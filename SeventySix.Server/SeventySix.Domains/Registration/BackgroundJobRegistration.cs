@@ -55,23 +55,11 @@ public static class BackgroundJobRegistration
 		this IServiceCollection services,
 		IConfiguration configuration)
 	{
-		// Skip all background jobs if disabled (e.g., in Test environment)
-		bool enabled =
-			configuration.GetValue<bool?>("BackgroundJobs:Enabled") ?? true;
-		if (!enabled)
-		{
-			return services;
-		}
-
-		// Core recurring job infrastructure
-		services.AddScoped<IMessageScheduler, WolverineMessageScheduler>();
+		// Always register recurring job repository (needed for ScheduledJobService)
+		// This is read-only infrastructure, independent of whether jobs run
 		services.AddScoped<IRecurringJobRepository, RecurringJobRepository>();
-		services.AddScoped<IRecurringJobService, RecurringJobService>();
 
-		// Database maintenance service
-		services.AddScoped<IDatabaseMaintenanceService, DatabaseMaintenanceService>();
-
-		// Settings for recurring jobs
+		// Always register settings (needed for ScheduledJobService health status calculation)
 		services.Configure<RefreshTokenCleanupSettings>(
 			configuration.GetSection(RefreshTokenCleanupSettings.SectionName));
 		services.Configure<IpAnonymizationSettings>(
@@ -82,6 +70,21 @@ public static class BackgroundJobRegistration
 			configuration.GetSection(DatabaseMaintenanceSettings.SectionName));
 		services.Configure<EmailQueueSettings>(
 			configuration.GetSection(EmailQueueSettings.SectionName));
+
+		// Skip background job execution if disabled (e.g., in Test environment)
+		bool enabled =
+			configuration.GetValue<bool?>("BackgroundJobs:Enabled") ?? true;
+		if (!enabled)
+		{
+			return services;
+		}
+
+		// Core recurring job infrastructure for job execution
+		services.AddScoped<IMessageScheduler, WolverineMessageScheduler>();
+		services.AddScoped<IRecurringJobService, RecurringJobService>();
+
+		// Database maintenance service
+		services.AddScoped<IDatabaseMaintenanceService, DatabaseMaintenanceService>();
 
 		// AdminSeederService - One-time admin user seeding at startup (remains as IHostedService)
 		services.Configure<AdminSeederSettings>(

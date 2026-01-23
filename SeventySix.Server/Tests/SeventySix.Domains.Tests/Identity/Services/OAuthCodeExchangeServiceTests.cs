@@ -222,39 +222,6 @@ public class OAuthCodeExchangeServiceTests
 
 	#endregion
 
-	#region Code Expiration Tests
-
-	/// <summary>
-	/// Verifies ExchangeCode returns null for an expired code (expiration behavior).
-	/// </summary>
-	[Fact]
-	public async Task ExchangeCode_ExpiredCode_ReturnsNullAsync()
-	{
-		// Arrange
-		OAuthCodeExchangeService service =
-			CreateService();
-
-		string code =
-			service.StoreTokens(
-			"access-token",
-			"refresh-token",
-			FixedExpiresAt,
-			TestEmail,
-			TestFullName);
-
-		// Wait briefly to verify immediate exchange works
-		await Task.Delay(TimeSpan.FromMilliseconds(100));
-
-		// For this test, we verify immediate exchange works
-		OAuthCodeExchangeResult? result =
-			service.ExchangeCode(code);
-
-		// Code should still be valid (within 60 seconds)
-		Assert.NotNull(result);
-	}
-
-	#endregion
-
 	#region Security Tests
 
 	/// <summary>

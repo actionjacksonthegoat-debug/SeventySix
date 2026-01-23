@@ -26,7 +26,7 @@ namespace SeventySix.Api.Tests.Controllers;
 /// Focuses on verifying API contract behavior (routes, status codes).
 /// Service-layer logic is tested separately in repository/service tests.
 /// </remarks>
-[Collection("PostgreSQL")]
+[Collection(CollectionNames.PostgreSql)]
 public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture)
 	: ApiPostgreSqlTestBase<Program>(fixture),
 		IAsyncLifetime

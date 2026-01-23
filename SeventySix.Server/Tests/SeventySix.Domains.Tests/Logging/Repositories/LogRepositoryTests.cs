@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using SeventySix.Logging;
+using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;
 
 namespace SeventySix.Domains.Tests.Logging.Repositories;
@@ -24,7 +25,7 @@ namespace SeventySix.Domains.Tests.Logging.Repositories;
 /// - Statistics generation
 /// - Cleanup operations
 /// </remarks>
-[Collection("DatabaseTests")]
+[Collection(CollectionNames.PostgreSql)]
 public class LogRepositoryTests : DataPostgreSqlTestBase
 {
 	private readonly LogRepository Repository;

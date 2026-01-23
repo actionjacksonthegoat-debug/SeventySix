@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using SeventySix.ApiTracking;
+using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;
 
 namespace SeventySix.Domains.Tests.ApiTracking.Repositories;
@@ -25,7 +26,7 @@ namespace SeventySix.Domains.Tests.ApiTracking.Repositories;
 /// - Query performance
 /// - Concurrency
 /// </remarks>
-[Collection("DatabaseTests")]
+[Collection(CollectionNames.PostgreSql)]
 public class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase
 {
 	private readonly ThirdPartyApiRequestRepository Repository;

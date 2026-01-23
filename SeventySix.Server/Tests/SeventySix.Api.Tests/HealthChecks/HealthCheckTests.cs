@@ -3,6 +3,7 @@
 // </copyright>
 
 using System.Net;
+using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;
 
 namespace SeventySix.Api.Tests.HealthChecks;
@@ -11,7 +12,7 @@ namespace SeventySix.Api.Tests.HealthChecks;
 /// Integration tests for the /health endpoint.
 /// Tests the built-in ASP.NET Core health check endpoint.
 /// </summary>
-[Collection("PostgreSQL")]
+[Collection(CollectionNames.PostgreSql)]
 public class HealthCheckTests(TestcontainersPostgreSqlFixture fixture)
 	: ApiPostgreSqlTestBase<Program>(fixture),
 		IAsyncLifetime

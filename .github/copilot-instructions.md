@@ -270,6 +270,30 @@ domains/    → @admin/*, @sandbox/*, @developer/*
 | Libraries     | xUnit, NSubstitute, Shouldly       |
 | Forbidden     | Moq, FluentAssertions              |
 
+### Server Test Rules (CRITICAL)
+
+| Rule            | ❌ NEVER                         | ✅ ALWAYS                                          |
+| --------------- | -------------------------------- | -------------------------------------------------- |
+| Test location   | Random folder                    | Mirror source structure exactly                    |
+| Time delays     | `Task.Delay()`, `Thread.Sleep()` | `FakeTimeProvider.Advance()`                       |
+| Collections     | `new List<T>()`                  | `[]` collection expressions                        |
+| Test naming     | `ServiceTests.cs` for all        | `*Tests.cs` (integration), `*UnitTests.cs` (mocks) |
+| Collection attr | `[Collection("DatabaseTests")]`  | `[Collection(CollectionNames.PostgreSql)]`         |
+| Test data       | Inline `new Entity()`            | Fluent builders (`UserBuilder`, etc.)              |
+| Auth tests      | Skip for "simple" endpoints      | Every protected endpoint needs auth tests          |
+
+### Server Test File Locations
+
+```
+Tests/{Project}.Tests/{Domain}/
+├── Commands/{CommandName}/     # Mirrors source: Domains/{Domain}/Commands/{CommandName}/
+├── Queries/{QueryName}/        # Mirrors source: Domains/{Domain}/Queries/{QueryName}/
+├── Services/                   # *UnitTests.cs and *Tests.cs
+├── Repositories/               # Integration tests only
+├── Jobs/                       # Job handler tests
+└── Validators/                 # Validator tests
+```
+
 ### ⚠️ Work Completion Requirements (CRITICAL)
 
 **ALL THREE** test suites must pass for work to be considered complete:

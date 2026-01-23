@@ -9,6 +9,7 @@ using SeventySix.Api.Infrastructure;
 using SeventySix.ApiTracking;
 using SeventySix.Shared;
 using SeventySix.Shared.Persistence;
+using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;
 using Shouldly;
 
@@ -19,7 +20,7 @@ namespace SeventySix.Api.Tests.Infrastructure.Services;
 /// Tests verify that rate limiting state persists correctly and handles concurrent requests.
 /// All tests share a single PostgreSQL instance to match production behavior.
 /// </summary>
-[Collection("DatabaseTests")]
+[Collection(CollectionNames.PostgreSql)]
 public class RateLimitingRepositoryTests : DataPostgreSqlTestBase
 {
 	private readonly ILogger<RateLimitingService> LoggerMock;

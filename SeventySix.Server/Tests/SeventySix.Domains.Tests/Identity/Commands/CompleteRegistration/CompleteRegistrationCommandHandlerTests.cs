@@ -14,6 +14,7 @@ using SeventySix.Identity.Commands.CompleteRegistration;
 using SeventySix.Identity.Constants;
 using SeventySix.Shared.Utilities;
 using SeventySix.TestUtilities.Builders;
+using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;
 using SeventySix.TestUtilities.TestHelpers;
 using Shouldly;
@@ -23,7 +24,7 @@ namespace SeventySix.Domains.Tests.Identity.Commands.CompleteRegistration;
 /// <summary>
 /// Tests for CompleteRegistrationCommandHandler using Identity's email confirmation token system.
 /// </summary>
-[Collection("DatabaseTests")]
+[Collection(CollectionNames.PostgreSql)]
 public class CompleteRegistrationCommandHandlerTests(
 	TestcontainersPostgreSqlFixture fixture) : DataPostgreSqlTestBase(fixture)
 {

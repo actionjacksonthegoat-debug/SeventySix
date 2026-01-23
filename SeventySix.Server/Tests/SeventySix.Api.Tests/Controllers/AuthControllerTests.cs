@@ -25,7 +25,7 @@ namespace SeventySix.Api.Tests.Controllers;
 /// Tests HTTP API endpoints for authentication operations.
 /// Uses shared WebApplicationFactory for improved test performance.
 /// </remarks>
-[Collection("PostgreSQL")]
+[Collection(CollectionNames.PostgreSql)]
 public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 	: ApiPostgreSqlTestBase<Program>(fixture),
 		IAsyncLifetime

@@ -12,8 +12,9 @@ public sealed record RateLimitingSettings
 {
 	/// <summary>
 	/// Gets the maximum number of requests allowed per window.
+	/// Default: 2500 requests per hour.
 	/// </summary>
-	public int PermitLimit { get; init; } = 250;
+	public int PermitLimit { get; init; } = 2500;
 
 	/// <summary>
 	/// Gets the time window in seconds.

@@ -12,7 +12,7 @@ namespace SeventySix.Api.Tests.Controllers;
 /// Authorization tests for LogsController.
 /// Tests that admin endpoints require proper authentication and admin role.
 /// </summary>
-[Collection("PostgreSQL")]
+[Collection(CollectionNames.PostgreSql)]
 public class LogsControllerAuthorizationTests(
 	TestcontainersPostgreSqlFixture fixture) : ApiPostgreSqlTestBase<Program>(fixture), IAsyncLifetime
 {

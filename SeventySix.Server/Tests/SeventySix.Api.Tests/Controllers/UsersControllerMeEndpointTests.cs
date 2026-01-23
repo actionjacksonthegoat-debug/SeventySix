@@ -18,7 +18,7 @@ namespace SeventySix.Api.Tests.Controllers;
 /// GET /me is handled by AuthController at /auth/me (see AuthControllerTests).
 /// 80/20 Rule: Only critical happy paths tested.
 /// </summary>
-[Collection("PostgreSQL")]
+[Collection(CollectionNames.PostgreSql)]
 public class UsersControllerMeEndpointTests(
 	TestcontainersPostgreSqlFixture fixture) : ApiPostgreSqlTestBase<Program>(fixture), IAsyncLifetime
 {

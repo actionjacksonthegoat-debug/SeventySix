@@ -428,8 +428,7 @@ public class PollyIntegrationClient(
 				new TimeoutStrategyOptions
 				{
 					Name = "HttpTimeout",
-					Timeout =
-						TimeSpan.FromSeconds(pollyOptions.TimeoutSeconds),
+					Timeout = pollyOptions.EffectiveTimeout,
 				})
 			.ConfigureTelemetry(telemetryOptions)
 			.Build();

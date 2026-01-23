@@ -16,15 +16,15 @@ namespace SeventySix.Api.Registration;
 /// </summary>
 /// <remarks>
 /// Rate limiting policies:
-/// - Global: Default limit for all endpoints (500/hour per IP)
-/// - auth-login: Stricter limit for login attempts (15/minute per IP)
+/// - Global: Default limit for all endpoints (2500/hour per IP)
+/// - auth-login: Stricter limit for login attempts (5/minute per IP)
 /// - auth-register: Stricter limit for registration (3/hour per IP)
-/// - auth-refresh: Moderate limit for token refresh (60/minute per IP)
+/// - auth-refresh: Moderate limit for token refresh (10/minute per IP)
+/// - health-check: Rate limit for health endpoints (30/minute per IP)
 ///
 /// Bypass policies (no rate limit):
 /// - OPTIONS requests (CORS preflight)
-/// - /health endpoints (container orchestrator health checks)
-/// - /metrics endpoints (Prometheus scraping)
+/// - /metrics endpoints (Prometheus scraping - internal only)
 /// </remarks>
 public static class RateLimitingRegistration
 {
@@ -61,6 +61,12 @@ public static class RateLimitingRegistration
 				.Get<AuthRateLimitSettings>()
 			?? new AuthRateLimitSettings();
 
+		HealthRateLimitSettings healthSettings =
+			configuration
+				.GetSection("RateLimiting:Health")
+				.Get<HealthRateLimitSettings>()
+			?? new HealthRateLimitSettings();
+
 		if (!globalSettings.Enabled)
 		{
 			return AddDisabledRateLimiting(services);
@@ -70,6 +76,7 @@ public static class RateLimitingRegistration
 			services,
 			globalSettings,
 			authSettings,
+			healthSettings,
 			configuration);
 	}
 
@@ -104,6 +111,7 @@ public static class RateLimitingRegistration
 		IServiceCollection services,
 		RateLimitingSettings globalSettings,
 		AuthRateLimitSettings authSettings,
+		HealthRateLimitSettings healthSettings,
 		IConfiguration configuration)
 	{
 		string[] allowedOrigins =
@@ -119,7 +127,7 @@ public static class RateLimitingRegistration
 			options =>
 			{
 				options.GlobalLimiter =
-					CreateGlobalLimiter(globalSettings);
+					CreateGlobalLimiter(globalSettings, healthSettings);
 				AddAuthPolicies(options, authSettings);
 
 				Func<
@@ -143,7 +151,8 @@ public static class RateLimitingRegistration
 	}
 
 	private static PartitionedRateLimiter<HttpContext> CreateGlobalLimiter(
-		RateLimitingSettings settings) =>
+		RateLimitingSettings settings,
+		HealthRateLimitSettings healthSettings) =>
 		PartitionedRateLimiter.Create<HttpContext, string>(
 			context =>
 			{
@@ -154,10 +163,27 @@ public static class RateLimitingRegistration
 						RateLimitPartitionKeys.Preflight);
 				}
 
-				// Bypass rate limiting for health checks and metrics endpoints
-				// Container orchestrators hit these frequently
+				// Apply rate limiting for health check endpoints (DDOS protection)
 				if (context.Request.Path.StartsWithSegments("/health")
-					|| context.Request.Path.StartsWithSegments("/metrics"))
+					|| context.Request.Path.StartsWithSegments("/api/v1/health"))
+				{
+					return RateLimitPartition.GetFixedWindowLimiter(
+						partitionKey: context.Connection.RemoteIpAddress?.ToString()
+							?? RateLimitPartitionKeys.Anonymous,
+						factory: _ =>
+							new FixedWindowRateLimiterOptions
+							{
+								PermitLimit = healthSettings.PermitLimit,
+								Window =
+									TimeSpan.FromSeconds(healthSettings.WindowSeconds),
+								QueueProcessingOrder =
+									QueueProcessingOrder.OldestFirst,
+								QueueLimit = 0,
+							});
+				}
+
+				// Bypass rate limiting for metrics endpoints (internal Prometheus only)
+				if (context.Request.Path.StartsWithSegments("/metrics"))
 				{
 					return RateLimitPartition.GetNoLimiter(
 						RateLimitPartitionKeys.Internal);

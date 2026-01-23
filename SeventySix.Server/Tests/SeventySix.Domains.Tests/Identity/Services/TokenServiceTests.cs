@@ -5,9 +5,11 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using SeventySix.Identity;
 using SeventySix.TestUtilities.Builders;
+using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;
 
 namespace SeventySix.Domains.Tests.Identity.Services;
@@ -17,7 +19,7 @@ namespace SeventySix.Domains.Tests.Identity.Services;
 /// Tests refresh token lifecycle, validation, and database persistence using real PostgreSQL.
 /// Pure JWT generation tests are in TokenServiceUnitTests.cs.
 /// </summary>
-[Collection("DatabaseTests")]
+[Collection(CollectionNames.PostgreSql)]
 public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture)
 	: DataPostgreSqlTestBase(fixture)
 {
@@ -48,7 +50,14 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture)
 					new TokenSettings { MaxActiveSessionsPerUser = 5 },
 			});
 
-	private TokenService CreateService(IdentityDbContext context)
+	private TokenService CreateService(IdentityDbContext context) =>
+		CreateService(
+			context,
+			TestTimeProviderBuilder.CreateDefault());
+
+	private TokenService CreateService(
+		IdentityDbContext context,
+		TimeProvider timeProvider)
 	{
 		ITokenRepository tokenRepository =
 			new TokenRepository(context);
@@ -58,7 +67,7 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture)
 			JwtOptions,
 			AuthOptions,
 			NullLogger<TokenService>.Instance,
-			TestTimeProviderBuilder.CreateDefault());
+			timeProvider);
 	}
 
 	#region GenerateRefreshTokenAsync Tests
@@ -577,6 +586,127 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture)
 		// Assert
 		Assert.Null(result);
 	}
+	#endregion
+	#region Absolute Session Timeout Tests
+
+	/// <summary>
+	/// Verifies that token rotation fails when the absolute session timeout (30 days) is exceeded.
+	/// This prevents indefinite session extension through continuous token rotation.
+	/// </summary>
+	[Fact]
+	public async Task RotateRefreshTokenAsync_ReturnsNull_WhenAbsoluteSessionTimeoutExceededAsync()
+	{
+		// Arrange
+		await using IdentityDbContext context = CreateIdentityDbContext();
+		FakeTimeProvider timeProvider = new();
+		ApplicationUser user =
+			await CreateTestUserAsync(context);
+
+		TokenService serviceAtSessionStart =
+			CreateService(
+				context,
+				timeProvider);
+
+		// Generate initial token at session start
+		string initialToken =
+			await serviceAtSessionStart.GenerateRefreshTokenAsync(
+				user.Id,
+				"127.0.0.1",
+				rememberMe: true, // 14-day expiration, but session has 30-day absolute limit
+				CancellationToken.None);
+
+		// Simulate multiple rotations over time (staying within token expiry but approaching session limit)
+		// Day 10: First rotation
+		timeProvider.Advance(TimeSpan.FromDays(10));
+		string? tokenDay10 =
+			await serviceAtSessionStart.RotateRefreshTokenAsync(
+				initialToken,
+				"127.0.0.1",
+				CancellationToken.None);
+
+		Assert.NotNull(tokenDay10);
+
+		// Day 20: Second rotation (still within 30-day session limit)
+		timeProvider.Advance(TimeSpan.FromDays(10));
+		string? tokenDay20 =
+			await serviceAtSessionStart.RotateRefreshTokenAsync(
+				tokenDay10,
+				"127.0.0.1",
+				CancellationToken.None);
+
+		Assert.NotNull(tokenDay20);
+
+		// Day 31: Beyond absolute session timeout (30 days from session start)
+		timeProvider.Advance(TimeSpan.FromDays(11));
+
+		// Act - Try to rotate after session has exceeded 30-day absolute limit
+		string? tokenDay31 =
+			await serviceAtSessionStart.RotateRefreshTokenAsync(
+				tokenDay20,
+				"127.0.0.1",
+				CancellationToken.None);
+
+		// Assert - Should be null because absolute session timeout exceeded
+		Assert.Null(tokenDay31);
+	}
+
+	/// <summary>
+	/// Verifies that token rotation succeeds when within the absolute session timeout window.
+	/// </summary>
+	[Fact]
+	public async Task RotateRefreshTokenAsync_Succeeds_WhenWithinAbsoluteSessionTimeoutAsync()
+	{
+		// Arrange
+		await using IdentityDbContext context = CreateIdentityDbContext();
+		FakeTimeProvider timeProvider = new();
+		ApplicationUser user =
+			await CreateTestUserAsync(context);
+
+		TokenService serviceAtSessionStart =
+			CreateService(
+				context,
+				timeProvider);
+
+		// Generate initial token with rememberMe=true (14-day expiration)
+		string currentToken =
+			await serviceAtSessionStart.GenerateRefreshTokenAsync(
+				user.Id,
+				"127.0.0.1",
+				rememberMe: true,
+				CancellationToken.None);
+
+		// Rotate at day 10 (within 14-day token expiration)
+		timeProvider.Advance(TimeSpan.FromDays(10));
+		currentToken =
+			(await serviceAtSessionStart.RotateRefreshTokenAsync(
+				currentToken,
+				"127.0.0.1",
+				CancellationToken.None))!;
+
+		Assert.NotNull(currentToken);
+
+		// Rotate again at day 20 (within new token's 14-day expiration)
+		timeProvider.Advance(TimeSpan.FromDays(10));
+		currentToken =
+			(await serviceAtSessionStart.RotateRefreshTokenAsync(
+				currentToken,
+				"127.0.0.1",
+				CancellationToken.None))!;
+
+		Assert.NotNull(currentToken);
+
+		// Act - Final rotation at day 29 (still within 30-day session limit)
+		timeProvider.Advance(TimeSpan.FromDays(9));
+		string? rotatedToken =
+			await serviceAtSessionStart.RotateRefreshTokenAsync(
+				currentToken,
+				"127.0.0.1",
+				CancellationToken.None);
+
+		// Assert - Should succeed because session is still within 30-day window
+		Assert.NotNull(rotatedToken);
+	}
+
 	#endregion
 	#region Helper Methods
 

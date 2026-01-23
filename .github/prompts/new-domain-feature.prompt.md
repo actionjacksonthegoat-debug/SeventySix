@@ -245,3 +245,29 @@ export const {{FEATURE}}_ROUTES: Routes =
 | E2E    | `npm run test:e2e` | `SeventySix.Client/e2e/`   |
 
 **Never** mark work complete with failing tests in any suite.
+
+### Server Test Structure (REQUIRED)
+
+Tests MUST mirror source structure:
+
+```
+Tests/SeventySix.Domains.Tests/
+└── {{Domain}}/
+    ├── Commands/
+    │   └── Create{{Name}}/
+    │       └── Create{{Name}}CommandHandlerTests.cs
+    ├── Queries/
+    │   └── Get{{Name}}ById/
+    │       └── Get{{Name}}ByIdQueryHandlerTests.cs
+    ├── Repositories/
+    │   └── {{Name}}RepositoryTests.cs
+    └── Validators/
+        └── Create{{Name}}RequestValidatorTests.cs
+```
+
+**Test Rules:**
+
+- `[Collection(CollectionNames.PostgreSql)]` for DB tests
+- `FakeTimeProvider` not `Task.Delay()` for time tests
+- Fluent builders for test data
+- `*UnitTests.cs` for mocks, `*Tests.cs` for integration

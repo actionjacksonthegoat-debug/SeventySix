@@ -206,8 +206,9 @@ public class PollyResiliencePolicyTests
 			new(
 			async (_, cancellationToken) =>
 			{
+				// Delay longer than timeout to ensure cancellation triggers
 				await Task.Delay(
-					TimeSpan.FromSeconds(15),
+					TimeSpan.FromMilliseconds(500),
 					cancellationToken);
 				return new HttpResponseMessage(HttpStatusCode.OK);
 			});
@@ -241,7 +242,7 @@ public class PollyResiliencePolicyTests
 			.CreateLogger(Arg.Any<string>())
 			.Returns(Substitute.For<ILogger>());
 
-		// Use 1 second timeout for fast test execution
+		// Use 100ms timeout for fast test execution (delay is 500ms)
 		IOptions<PollyOptions> options =
 			Options.Create(
 			new PollyOptions
@@ -251,7 +252,8 @@ public class PollyResiliencePolicyTests
 				CircuitBreakerFailureThreshold = 5,
 				CircuitBreakerSamplingDurationSeconds = 60,
 				CircuitBreakerBreakDurationSeconds = 30,
-				TimeoutSeconds = 1,
+				TimeoutSeconds = 0,
+				TimeoutMilliseconds = 100,
 			});
 
 		PollyIntegrationClient client =

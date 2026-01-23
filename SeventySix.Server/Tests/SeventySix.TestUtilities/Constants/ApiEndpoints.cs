@@ -182,4 +182,94 @@ public static class ApiEndpoints
 		/// <summary>Base endpoint.</summary>
 		public const string Base = "/api/v1/thirdpartyrequests";
 	}
+
+	/// <summary>Health check endpoints.</summary>
+	public static class Health
+	{
+		/// <summary>Base health endpoint.</summary>
+		public const string Base = "/api/v1/health";
+
+		/// <summary>Scheduled jobs status endpoint.</summary>
+		public const string ScheduledJobs = "/api/v1/health/scheduled-jobs";
+	}
+
+	/// <summary>Permission request endpoints (admin).</summary>
+	public static class PermissionRequests
+	{
+		/// <summary>Base permission requests endpoint.</summary>
+		public const string Base = "/api/v1/users/permission-requests";
+
+		/// <summary>
+		/// Gets approve endpoint for a permission request.
+		/// </summary>
+		/// <param name="id">
+		/// The permission request ID.
+		/// </param>
+		/// <returns>
+		/// The approve endpoint URL.
+		/// </returns>
+		public static string Approve(long id) => $"{Base}/{id}/approve";
+
+		/// <summary>
+		/// Gets reject endpoint for a permission request.
+		/// </summary>
+		/// <param name="id">
+		/// The permission request ID.
+		/// </param>
+		/// <returns>
+		/// The reject endpoint URL.
+		/// </returns>
+		public static string Reject(long id) => $"{Base}/{id}/reject";
+
+		/// <summary>Bulk approve endpoint.</summary>
+		public const string BulkApprove = "/api/v1/users/permission-requests/bulk/approve";
+
+		/// <summary>Bulk reject endpoint.</summary>
+		public const string BulkReject = "/api/v1/users/permission-requests/bulk/reject";
+	}
+
+	/// <summary>User role management endpoints.</summary>
+	public static class UserRoles
+	{
+		/// <summary>
+		/// Gets user roles endpoint.
+		/// </summary>
+		/// <param name="userId">
+		/// The user ID.
+		/// </param>
+		/// <returns>
+		/// The roles endpoint URL.
+		/// </returns>
+		public static string ById(long userId) => $"/api/v1/users/{userId}/roles";
+
+		/// <summary>
+		/// Gets add role endpoint.
+		/// </summary>
+		/// <param name="userId">
+		/// The user ID.
+		/// </param>
+		/// <param name="role">
+		/// The role name.
+		/// </param>
+		/// <returns>
+		/// The add role endpoint URL.
+		/// </returns>
+		public static string AddRole(long userId, string role) =>
+			$"/api/v1/users/{userId}/roles/{role}";
+
+		/// <summary>
+		/// Gets remove role endpoint.
+		/// </summary>
+		/// <param name="userId">
+		/// The user ID.
+		/// </param>
+		/// <param name="role">
+		/// The role name.
+		/// </param>
+		/// <returns>
+		/// The remove role endpoint URL.
+		/// </returns>
+		public static string RemoveRole(long userId, string role) =>
+			$"/api/v1/users/{userId}/roles/{role}";
+	}
 }

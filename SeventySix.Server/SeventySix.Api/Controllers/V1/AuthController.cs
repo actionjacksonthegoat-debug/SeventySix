@@ -285,6 +285,7 @@ public class AuthController(
 	/// </returns>
 	/// <response code="204">Logout successful.</response>
 	[HttpPost("logout")]
+	[EnableRateLimiting(RateLimitPolicyConstants.AuthRefresh)]
 	[ProducesResponseType(StatusCodes.Status204NoContent)]
 	public async Task<IActionResult> LogoutAsync(
 		CancellationToken cancellationToken)
@@ -352,6 +353,7 @@ public class AuthController(
 	/// </returns>
 	/// <response code="200">HTML response with postMessage to parent window.</response>
 	[HttpGet("github/callback")]
+	[EnableRateLimiting(RateLimitPolicyConstants.AuthRegister)]
 	[ProducesResponseType(StatusCodes.Status200OK)]
 	public async Task<IActionResult> GitHubCallbackAsync(
 		[FromQuery] string code,
@@ -630,6 +632,7 @@ public class AuthController(
 	/// <response code="200">Password set successfully, includes auth tokens.</response>
 	/// <response code="400">Invalid token, expired token, or validation error.</response>
 	[HttpPost("set-password")]
+	[EnableRateLimiting(RateLimitPolicyConstants.AuthLogin)]
 	[ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
 	[ProducesResponseType(
 		typeof(ProblemDetails),

@@ -8,6 +8,7 @@ using Serilog.Events;
 using Serilog.Parsing;
 using SeventySix.Api.Logging;
 using SeventySix.Logging;
+using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;
 
 namespace SeventySix.Api.Tests.Logging;
@@ -24,7 +25,7 @@ namespace SeventySix.Api.Tests.Logging;
 ///
 /// Uses shared PostgreSQL Testcontainer for efficient integration testing.
 /// </remarks>
-[Collection("PostgreSQL")]
+[Collection(CollectionNames.PostgreSql)]
 public class DatabaseLogSinkTests : IAsyncLifetime
 {
 	private readonly TestcontainersPostgreSqlFixture Fixture;

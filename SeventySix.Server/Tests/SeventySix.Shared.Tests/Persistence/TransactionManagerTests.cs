@@ -315,7 +315,7 @@ public class TransactionManagerTests : IDisposable
 				async cancellationToken =>
 				{
 					cancellationToken.ThrowIfCancellationRequested();
-					await Task.Delay(100, cancellationToken);
+					await Task.CompletedTask;
 					return 42;
 				},
 				cancellationToken: cancellationTokenSource.Token);

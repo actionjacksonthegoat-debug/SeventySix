@@ -15,7 +15,7 @@ namespace SeventySix.Api.Tests.Controllers;
 /// Authorization tests for permission request endpoints on UsersController.
 /// Focus: Authorization boundaries only (80/20).
 /// </summary>
-[Collection("PostgreSQL")]
+[Collection(CollectionNames.PostgreSql)]
 public class UsersControllerPermissionRequestsAuthorizationTests(
 	TestcontainersPostgreSqlFixture fixture) : ApiPostgreSqlTestBase<Program>(fixture), IAsyncLifetime
 {
