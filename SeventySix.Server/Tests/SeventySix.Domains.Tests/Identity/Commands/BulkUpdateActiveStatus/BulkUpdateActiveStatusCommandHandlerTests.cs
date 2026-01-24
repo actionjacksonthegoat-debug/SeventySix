@@ -3,8 +3,10 @@
 // </copyright>
 
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using SeventySix.Identity;
+using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.Mocks;
 using Shouldly;
 
@@ -213,12 +215,14 @@ public class BulkUpdateActiveStatusCommandHandlerTests
 		long userId,
 		bool isActive)
 	{
-		return new ApplicationUser
-		{
-			Id = userId,
-			UserName = $"user{userId}",
-			Email = $"user{userId}@example.com",
-			IsActive = isActive,
-		};
+		FakeTimeProvider timeProvider =
+			new(TestTimeProviderBuilder.DefaultTime);
+
+		return new UserBuilder(timeProvider)
+			.WithId(userId)
+			.WithUsername($"user{userId}")
+			.WithEmail($"user{userId}@example.com")
+			.WithIsActive(isActive)
+			.Build();
 	}
 }

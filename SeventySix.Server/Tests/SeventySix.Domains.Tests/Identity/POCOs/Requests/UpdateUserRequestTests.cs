@@ -5,7 +5,7 @@
 using SeventySix.Identity;
 using Shouldly;
 
-namespace SeventySix.Domains.Tests.Identity.DTOs;
+namespace SeventySix.Domains.Tests.Identity.POCOs.Requests;
 
 /// <summary>
 /// Unit tests for <see cref="UpdateUserRequest"/>.

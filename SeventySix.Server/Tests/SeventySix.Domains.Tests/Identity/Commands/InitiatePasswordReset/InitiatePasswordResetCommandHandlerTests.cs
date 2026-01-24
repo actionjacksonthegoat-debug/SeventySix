@@ -4,9 +4,11 @@
 
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using SeventySix.ElectronicNotifications.Emails;
 using SeventySix.Identity;
+using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.Mocks;
 using Shouldly;
 using Wolverine;
@@ -189,12 +191,14 @@ public class InitiatePasswordResetCommandHandlerTests
 
 	private static ApplicationUser CreateActiveUser(long userId, string email)
 	{
-		return new ApplicationUser
-		{
-			Id = userId,
-			UserName = "testuser",
-			Email = email,
-			IsActive = true,
-		};
+		FakeTimeProvider timeProvider =
+			new(TestTimeProviderBuilder.DefaultTime);
+
+		return new UserBuilder(timeProvider)
+			.WithId(userId)
+			.WithUsername("testuser")
+			.WithEmail(email)
+			.WithIsActive(true)
+			.Build();
 	}
 }

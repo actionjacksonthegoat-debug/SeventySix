@@ -185,27 +185,26 @@ public class RestoreUserCommandHandlerTests
 
 	private static ApplicationUser CreateDeletedUser(long userId)
 	{
-		return new ApplicationUser
-		{
-			Id = userId,
-			UserName = "testuser",
-			Email = "test@example.com",
-			IsDeleted = true,
-			DeletedAt = TimeProvider.GetUtcNow().AddDays(-1).UtcDateTime,
-			DeletedBy = "admin",
-			IsActive = false,
-		};
+		return new UserBuilder(TimeProvider)
+			.WithId(userId)
+			.WithUsername("testuser")
+			.WithEmail("test@example.com")
+			.WithDeletedInfo(
+				true,
+				TimeProvider.GetUtcNow().AddDays(-1).UtcDateTime,
+				"admin")
+			.WithIsActive(false)
+			.Build();
 	}
 
 	private static ApplicationUser CreateActiveUser(long userId)
 	{
-		return new ApplicationUser
-		{
-			Id = userId,
-			UserName = "activeuser",
-			Email = "active@example.com",
-			IsDeleted = false,
-			IsActive = true,
-		};
+		return new UserBuilder(TimeProvider)
+			.WithId(userId)
+			.WithUsername("activeuser")
+			.WithEmail("active@example.com")
+			.WithDeletedInfo(false)
+			.WithIsActive(true)
+			.Build();
 	}
 }

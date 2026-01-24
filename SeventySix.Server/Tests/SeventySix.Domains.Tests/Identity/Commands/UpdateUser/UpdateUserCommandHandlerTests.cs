@@ -4,8 +4,10 @@
 
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using SeventySix.Identity;
+using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.Mocks;
 using Shouldly;
 using Wolverine;
@@ -307,12 +309,14 @@ public class UpdateUserCommandHandlerTests
 		string username,
 		string email)
 	{
-		return new ApplicationUser
-		{
-			Id = userId,
-			UserName = username,
-			Email = email,
-			IsActive = true,
-		};
+		FakeTimeProvider timeProvider =
+			new(TestTimeProviderBuilder.DefaultTime);
+
+		return new UserBuilder(timeProvider)
+			.WithId(userId)
+			.WithUsername(username)
+			.WithEmail(email)
+			.WithIsActive(true)
+			.Build();
 	}
 }

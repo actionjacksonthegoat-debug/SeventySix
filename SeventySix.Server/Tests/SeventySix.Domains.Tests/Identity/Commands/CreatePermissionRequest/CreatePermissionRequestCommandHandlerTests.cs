@@ -4,10 +4,12 @@
 
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using SeventySix.Identity;
 using SeventySix.Identity.Commands.CreatePermissionRequest;
 using SeventySix.Identity.Constants;
+using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.Mocks;
 using Shouldly;
 
@@ -258,12 +260,14 @@ public class CreatePermissionRequestCommandHandlerTests
 
 	private static ApplicationUser CreateUser(long userId)
 	{
-		return new ApplicationUser
-		{
-			Id = userId,
-			UserName = "testuser",
-			Email = "test@example.com",
-			IsActive = true,
-		};
+		FakeTimeProvider timeProvider =
+			new(TestTimeProviderBuilder.DefaultTime);
+
+		return new UserBuilder(timeProvider)
+			.WithId(userId)
+			.WithUsername("testuser")
+			.WithEmail("test@example.com")
+			.WithIsActive(true)
+			.Build();
 	}
 }

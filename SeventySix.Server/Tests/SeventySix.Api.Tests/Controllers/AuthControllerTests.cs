@@ -601,7 +601,7 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 		// Act
 		HttpResponseMessage response =
 			await Client!.GetAsync(
-			"/api/v1/auth/me");
+			ApiEndpoints.Auth.Me);
 
 		// Assert
 		response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
@@ -641,7 +641,7 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 				authResponse!.AccessToken);
 
 		HttpResponseMessage response =
-			await Client.GetAsync("/api/v1/auth/me");
+			await Client.GetAsync(ApiEndpoints.Auth.Me);
 
 		// Assert
 		response.StatusCode.ShouldBe(HttpStatusCode.OK);
@@ -765,7 +765,7 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 
 		// Act
 		HttpResponseMessage response =
-			await Client.GetAsync("/api/v1/auth/me");
+			await Client.GetAsync(ApiEndpoints.Auth.Me);
 
 		// Assert
 		response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);

@@ -9,7 +9,7 @@ using SeventySix.ElectronicNotifications;
 using SeventySix.ElectronicNotifications.Emails;
 using Shouldly;
 
-namespace SeventySix.Domains.Tests.ElectronicNotifications.Emails.Commands;
+namespace SeventySix.Domains.Tests.ElectronicNotifications.Emails.Commands.EnqueueEmail;
 
 /// <summary>
 /// Unit tests for <see cref="EnqueueEmailCommandHandler"/>.
