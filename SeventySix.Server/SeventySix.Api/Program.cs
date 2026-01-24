@@ -119,7 +119,8 @@ string connectionString =
 // Infrastructure must be registered first (provides AuditInterceptor for DbContexts)
 builder.Services.AddInfrastructure();
 builder.Services.AddIdentityDomain(
-	connectionString);
+	connectionString,
+	builder.Configuration);
 builder.Services.AddLoggingDomain(
 	connectionString,
 	builder.Configuration);
@@ -255,14 +256,6 @@ app.UseAuthorization();
 
 // Endpoints
 app.MapHealthCheckEndpoints();
-
-bool openTelemetryEnabled =
-			builder.Configuration.GetValue<bool?>("OpenTelemetry:Enabled") ?? true;
-
-if (openTelemetryEnabled)
-{
-	app.MapPrometheusScrapingEndpoint();
-}
 
 app.MapControllers();
 

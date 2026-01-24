@@ -3,6 +3,7 @@
 // </copyright>
 
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SeventySix.Identity;
 using SeventySix.Identity.Infrastructure;
@@ -43,6 +44,9 @@ public static class IdentityRegistration
 	/// <param name="connectionString">
 	/// The database connection string for IdentityDbContext.
 	/// </param>
+	/// <param name="configuration">
+	/// The application configuration for binding settings.
+	/// </param>
 	/// <returns>
 	/// The service collection for method chaining.
 	/// </returns>
@@ -57,7 +61,8 @@ public static class IdentityRegistration
 	/// </remarks>
 	public static IServiceCollection AddIdentityDomain(
 		this IServiceCollection services,
-		string connectionString)
+		string connectionString,
+		IConfiguration configuration)
 	{
 		RegisterCoreInfrastructure(
 			services,
@@ -67,7 +72,9 @@ public static class IdentityRegistration
 
 		RegisterRepositories(services);
 
-		RegisterServices(services);
+		RegisterServices(
+			services,
+			configuration);
 
 		RegisterHealthCheckAndValidators(services);
 
@@ -160,7 +167,12 @@ public static class IdentityRegistration
 	/// <param name="services">
 	/// The service collection.
 	/// </param>
-	private static void RegisterServices(IServiceCollection services)
+	/// <param name="configuration">
+	/// The application configuration.
+	/// </param>
+	private static void RegisterServices(
+		IServiceCollection services,
+		IConfiguration configuration)
 	{
 		services.AddScoped<ITokenService, TokenService>();
 		services.AddScoped<AuthenticationService>();
@@ -173,8 +185,75 @@ public static class IdentityRegistration
 			OAuthCodeExchangeService>();
 		services.AddScoped<RegistrationService>();
 
-		// Register reCAPTCHA service with typed HttpClient
-		services.AddHttpClient<IRecaptchaService, RecaptchaService>();
+		// Register ALTCHA services
+		RegisterAltchaServices(
+			services,
+			configuration);
+	}
+
+	/// <summary>
+	/// Registers ALTCHA Proof-of-Work captcha services.
+	/// </summary>
+	/// <param name="services">
+	/// The service collection.
+	/// </param>
+	/// <param name="configuration">
+	/// The application configuration.
+	/// </param>
+	private static void RegisterAltchaServices(
+		IServiceCollection services,
+		IConfiguration configuration)
+	{
+		// Bind ALTCHA settings from configuration
+		services.Configure<AltchaSettings>(
+			configuration.GetSection(AltchaSettings.SectionName));
+
+		// Register EF-based challenge store
+		services.AddScoped<AltchaChallengeStore>();
+
+		// Read settings to determine if ALTCHA is enabled
+		AltchaSettings altchaSettings =
+			new();
+		configuration
+			.GetSection(AltchaSettings.SectionName)
+			.Bind(altchaSettings);
+
+		// Only register the Ixnas.AltchaNet library service when ALTCHA is enabled
+		// When disabled, register a null placeholder that AltchaService will handle
+		if (altchaSettings.Enabled)
+		{
+			byte[] hmacKey =
+				string.IsNullOrWhiteSpace(altchaSettings.HmacKeyBase64)
+					? throw new InvalidOperationException(
+						"ALTCHA is enabled but HmacKeyBase64 is not configured")
+					: Convert.FromBase64String(altchaSettings.HmacKeyBase64);
+
+			services.AddScoped(
+				serviceProvider =>
+				{
+					AltchaChallengeStore store =
+						serviceProvider.GetRequiredService<AltchaChallengeStore>();
+
+					return Ixnas.AltchaNet.Altcha.CreateServiceBuilder()
+						.UseSha256(hmacKey)
+						.UseStore(store)
+						.SetComplexity(
+							altchaSettings.ComplexityMin,
+							altchaSettings.ComplexityMax)
+						.SetExpiryInSeconds(altchaSettings.ExpirySeconds)
+						.Build();
+				});
+		}
+		else
+		{
+			// Register a null service when ALTCHA is disabled
+			// AltchaService will check IsEnabled before using this
+			services.AddScoped<Ixnas.AltchaNet.AltchaService>(
+				serviceProvider => null!);
+		}
+
+		// Register application's ALTCHA service wrapper
+		services.AddScoped<IAltchaService, AltchaService>();
 	}
 
 	/// <summary>

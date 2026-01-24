@@ -98,7 +98,7 @@ public class ThirdPartyApiLimitSettingsTests
 					new Dictionary<string, ThirdPartyApiLimit>
 					{
 						{
-							"RecaptchaApi",
+							"MonthlyLimitApi",
 							new ThirdPartyApiLimit
 							{
 								MonthlyLimit = 5000,
@@ -111,7 +111,7 @@ public class ThirdPartyApiLimitSettingsTests
 
 		// Act
 		int limit =
-			settings.GetLimit("RecaptchaApi");
+			settings.GetLimit("MonthlyLimitApi");
 
 		// Assert
 		limit.ShouldBe(5000);
@@ -177,7 +177,7 @@ public class ThirdPartyApiLimitSettingsTests
 					new Dictionary<string, ThirdPartyApiLimit>
 					{
 						{
-							"RecaptchaApi",
+							"MonthlyApi",
 							new ThirdPartyApiLimit
 							{
 								Interval = LimitInterval.Monthly,
@@ -190,7 +190,7 @@ public class ThirdPartyApiLimitSettingsTests
 
 		// Act
 		LimitInterval interval =
-			settings.GetLimitInterval("RecaptchaApi");
+			settings.GetLimitInterval("MonthlyApi");
 
 		// Assert
 		interval.ShouldBe(LimitInterval.Monthly);

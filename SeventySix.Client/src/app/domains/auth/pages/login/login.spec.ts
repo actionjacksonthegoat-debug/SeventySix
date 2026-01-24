@@ -8,15 +8,14 @@ import { provideZonelessChangeDetection, signal } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideRouter, Router } from "@angular/router";
 import { AuthResponse } from "@auth/models";
-import { DateService } from "@shared/services";
+import { AltchaService, DateService } from "@shared/services";
 import { AuthService } from "@shared/services/auth.service";
 import { NotificationService } from "@shared/services/notification.service";
-import { RecaptchaService } from "@shared/services/recaptcha.service";
 import {
+	createMockAltchaService,
 	createMockNotificationService,
-	createMockRecaptchaService,
-	MockNotificationService,
-	MockRecaptchaService
+	MockAltchaService,
+	MockNotificationService
 } from "@shared/testing";
 import { of, throwError } from "rxjs";
 import { vi } from "vitest";
@@ -36,7 +35,7 @@ describe("LoginComponent",
 		let fixture: ComponentFixture<LoginComponent>;
 		let mockAuthService: MockAuthService;
 		let mockNotificationService: MockNotificationService;
-		let mockRecaptchaService: MockRecaptchaService;
+		let mockAltchaService: MockAltchaService;
 		let router: Router;
 
 		const dateService: DateService =
@@ -63,8 +62,8 @@ describe("LoginComponent",
 					};
 				mockNotificationService =
 					createMockNotificationService();
-				mockRecaptchaService =
-					createMockRecaptchaService();
+				mockAltchaService =
+					createMockAltchaService(false);
 
 				await TestBed
 					.configureTestingModule(
@@ -79,8 +78,8 @@ describe("LoginComponent",
 									useValue: mockNotificationService
 								},
 								{
-									provide: RecaptchaService,
-									useValue: mockRecaptchaService
+									provide: AltchaService,
+									useValue: mockAltchaService
 								}
 							]
 						})
@@ -116,18 +115,18 @@ describe("LoginComponent",
 					});
 			});
 
-		describe("onLocalLoginAsync",
+		describe("onLocalLogin",
 			() =>
 			{
 				it("should show error when username is empty",
-					async () =>
+					() =>
 					{
 						// Arrange
 						(component as unknown as { usernameOrEmail: string; }).usernameOrEmail = "";
 						(component as unknown as { password: string; }).password = "password123";
 
 						// Act
-						await (component as unknown as { onLocalLoginAsync(): Promise<void>; }).onLocalLoginAsync();
+						(component as unknown as { onLocalLogin(): void; }).onLocalLogin();
 
 						// Assert
 						expect(mockNotificationService.error)
@@ -137,14 +136,14 @@ describe("LoginComponent",
 					});
 
 				it("should show error when password is empty",
-					async () =>
+					() =>
 					{
 						// Arrange
 						(component as unknown as { usernameOrEmail: string; }).usernameOrEmail = "testuser";
 						(component as unknown as { password: string; }).password = "";
 
 						// Act
-						await (component as unknown as { onLocalLoginAsync(): Promise<void>; }).onLocalLoginAsync();
+						(component as unknown as { onLocalLogin(): void; }).onLocalLogin();
 
 						// Assert
 						expect(mockNotificationService.error)
@@ -154,7 +153,7 @@ describe("LoginComponent",
 					});
 
 				it("should call authService.login with credentials",
-					async () =>
+					() =>
 					{
 						// Arrange
 						mockAuthService.login.mockReturnValue(of(mockAuthResponse));
@@ -163,7 +162,7 @@ describe("LoginComponent",
 						(component as unknown as { rememberMe: boolean; }).rememberMe = false;
 
 						// Act
-						await (component as unknown as { onLocalLoginAsync(): Promise<void>; }).onLocalLoginAsync();
+						(component as unknown as { onLocalLogin(): void; }).onLocalLogin();
 
 						// Assert
 						expect(mockAuthService.login)
@@ -172,12 +171,12 @@ describe("LoginComponent",
 									usernameOrEmail: "testuser",
 									password: "password123",
 									rememberMe: false,
-									recaptchaToken: null
+									altchaPayload: null
 								});
 					});
 
 				it("should navigate to return URL on successful login",
-					async () =>
+					() =>
 					{
 						// Arrange
 						mockAuthService.login.mockReturnValue(of(mockAuthResponse));
@@ -185,7 +184,7 @@ describe("LoginComponent",
 						(component as unknown as { password: string; }).password = "password123";
 
 						// Act
-						await (component as unknown as { onLocalLoginAsync(): Promise<void>; }).onLocalLoginAsync();
+						(component as unknown as { onLocalLogin(): void; }).onLocalLogin();
 
 						// Assert
 						expect(router.navigateByUrl)
@@ -193,7 +192,7 @@ describe("LoginComponent",
 					});
 
 				it("should include rememberMe when checked",
-					async () =>
+					() =>
 					{
 						// Arrange
 						mockAuthService.login.mockReturnValue(of(mockAuthResponse));
@@ -202,7 +201,7 @@ describe("LoginComponent",
 						(component as unknown as { rememberMe: boolean; }).rememberMe = true;
 
 						// Act
-						await (component as unknown as { onLocalLoginAsync(): Promise<void>; }).onLocalLoginAsync();
+						(component as unknown as { onLocalLogin(): void; }).onLocalLogin();
 
 						// Assert
 						expect(mockAuthService.login)
@@ -211,12 +210,12 @@ describe("LoginComponent",
 									usernameOrEmail: "testuser",
 									password: "password123",
 									rememberMe: true,
-									recaptchaToken: null
+									altchaPayload: null
 								});
 					});
 
 				it("should redirect to change-password when requiresPasswordChange is true",
-					async () =>
+					() =>
 					{
 						// Arrange
 						const responseWithPasswordChange: AuthResponse =
@@ -230,7 +229,7 @@ describe("LoginComponent",
 						(component as unknown as { password: string; }).password = "password123";
 
 						// Act
-						await (component as unknown as { onLocalLoginAsync(): Promise<void>; }).onLocalLoginAsync();
+						(component as unknown as { onLocalLogin(): void; }).onLocalLogin();
 
 						// Assert
 						expect(mockNotificationService.info)
@@ -243,7 +242,7 @@ describe("LoginComponent",
 					});
 
 				it("should show detailed error for 401 unauthorized",
-					async () =>
+					() =>
 					{
 						// Arrange
 						const errorResponse: HttpErrorResponse =
@@ -259,7 +258,7 @@ describe("LoginComponent",
 						(component as unknown as { password: string; }).password = "wrongpassword";
 
 						// Act
-						await (component as unknown as { onLocalLoginAsync(): Promise<void>; }).onLocalLoginAsync();
+						(component as unknown as { onLocalLogin(): void; }).onLocalLogin();
 
 						// Assert
 						expect(
@@ -272,7 +271,7 @@ describe("LoginComponent",
 					});
 
 				it("should show connection error for status 0",
-					async () =>
+					() =>
 					{
 						// Arrange
 						const errorResponse: HttpErrorResponse =
@@ -288,7 +287,7 @@ describe("LoginComponent",
 						(component as unknown as { password: string; }).password = "password";
 
 						// Act
-						await (component as unknown as { onLocalLoginAsync(): Promise<void>; }).onLocalLoginAsync();
+						(component as unknown as { onLocalLogin(): void; }).onLocalLogin();
 
 						// Assert
 						expect(
@@ -301,7 +300,7 @@ describe("LoginComponent",
 					});
 
 				it("should show rate limit error for 429",
-					async () =>
+					() =>
 					{
 						// Arrange
 						const errorResponse: HttpErrorResponse =
@@ -317,7 +316,7 @@ describe("LoginComponent",
 						(component as unknown as { password: string; }).password = "password";
 
 						// Act
-						await (component as unknown as { onLocalLoginAsync(): Promise<void>; }).onLocalLoginAsync();
+						(component as unknown as { onLocalLogin(): void; }).onLocalLogin();
 
 						// Assert
 						expect(
@@ -330,7 +329,7 @@ describe("LoginComponent",
 					});
 
 				it("should show generic error for unexpected status codes",
-					async () =>
+					() =>
 					{
 						// Arrange
 						const errorResponse: HttpErrorResponse =
@@ -346,7 +345,7 @@ describe("LoginComponent",
 						(component as unknown as { password: string; }).password = "password";
 
 						// Act
-						await (component as unknown as { onLocalLoginAsync(): Promise<void>; }).onLocalLoginAsync();
+						(component as unknown as { onLocalLogin(): void; }).onLocalLogin();
 
 						// Assert
 						expect(
@@ -358,7 +357,7 @@ describe("LoginComponent",
 					});
 
 				it("should use server error detail if available",
-					async () =>
+					() =>
 					{
 						// Arrange
 						const errorResponse: HttpErrorResponse =
@@ -375,7 +374,7 @@ describe("LoginComponent",
 						(component as unknown as { password: string; }).password = "password";
 
 						// Act
-						await (component as unknown as { onLocalLoginAsync(): Promise<void>; }).onLocalLoginAsync();
+						(component as unknown as { onLocalLogin(): void; }).onLocalLogin();
 
 						// Assert
 						expect(
@@ -387,7 +386,7 @@ describe("LoginComponent",
 					});
 
 				it("should set isLoading to true during login",
-					async () =>
+					() =>
 					{
 						// Arrange
 						mockAuthService.login.mockReturnValue(of(mockAuthResponse));
@@ -395,7 +394,7 @@ describe("LoginComponent",
 						(component as unknown as { password: string; }).password = "password123";
 
 						// Act
-						await (component as unknown as { onLocalLoginAsync(): Promise<void>; }).onLocalLoginAsync();
+						(component as unknown as { onLocalLogin(): void; }).onLocalLogin();
 
 						// Assert - isLoading is set to true during the request
 						// Note: It's reset in the subscribe callback, so we verify login was called
@@ -404,7 +403,7 @@ describe("LoginComponent",
 					});
 
 				it("should reset isLoading to false on login error",
-					async () =>
+					() =>
 					{
 						// Arrange
 						const errorResponse: HttpErrorResponse =
@@ -420,7 +419,7 @@ describe("LoginComponent",
 						(component as unknown as { password: string; }).password = "wrongpassword";
 
 						// Act
-						await (component as unknown as { onLocalLoginAsync(): Promise<void>; }).onLocalLoginAsync();
+						(component as unknown as { onLocalLogin(): void; }).onLocalLogin();
 
 						// Assert
 						expect((component as unknown as { isLoading(): boolean; }).isLoading())

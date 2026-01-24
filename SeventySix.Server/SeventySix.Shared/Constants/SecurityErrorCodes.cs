@@ -31,9 +31,9 @@ public static class SecurityErrorCodes
 	public const string InvalidTokenFamily = "INVALID_TOKEN_FAMILY";
 
 	/// <summary>
-	/// reCAPTCHA verification failed.
+	/// ALTCHA verification failed.
 	/// </summary>
-	public const string RecaptchaFailed = "RECAPTCHA_FAILED";
+	public const string AltchaFailed = "ALTCHA_FAILED";
 
 	/// <summary>
 	/// Invalid credentials provided.

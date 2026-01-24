@@ -17,15 +17,21 @@ import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
 import { ActivatedRoute, Router, RouterLink } from "@angular/router";
 import { AuthResponse, LoginRequest } from "@auth/models";
-import { AuthService } from "@shared/services/auth.service";
-import { NotificationService } from "@shared/services/notification.service";
-import { RecaptchaService } from "@shared/services/recaptcha.service";
+import { sanitizeRedirectUrl } from "@auth/utilities";
+import { AltchaWidgetComponent } from "@shared/components";
+import { AltchaService, AuthService, NotificationService } from "@shared/services";
 
 @Component(
 	{
 		selector: "app-login",
 		standalone: true,
-		imports: [FormsModule, RouterLink, MatButtonModule, MatIconModule],
+		imports: [
+			FormsModule,
+			RouterLink,
+			MatButtonModule,
+			MatIconModule,
+			AltchaWidgetComponent
+		],
 		changeDetection: ChangeDetectionStrategy.OnPush,
 		templateUrl: "./login.html",
 		styleUrl: "./login.scss"
@@ -65,11 +71,25 @@ export class LoginComponent implements OnInit
 		inject(NotificationService);
 
 	/**
-	 * reCAPTCHA service for bot protection.
-	 * @type {RecaptchaService}
+	 * ALTCHA service for bot protection.
+	 * @type {AltchaService}
 	 */
-	private readonly recaptchaService: RecaptchaService =
-		inject(RecaptchaService);
+	private readonly altchaService: AltchaService =
+		inject(AltchaService);
+
+	/**
+	 * Whether ALTCHA validation is enabled.
+	 * @type {boolean}
+	 */
+	protected readonly altchaEnabled: boolean =
+		this.altchaService.enabled;
+
+	/**
+	 * ALTCHA challenge endpoint URL.
+	 * @type {string}
+	 */
+	protected readonly challengeUrl: string =
+		this.altchaService.challengeEndpoint;
 
 	/**
 	 * Username or email entered by the user in the login form.
@@ -103,13 +123,21 @@ export class LoginComponent implements OnInit
 	private returnUrl: string = "/";
 
 	/**
+	 * ALTCHA verification payload from the widget.
+	 * @type {string | null}
+	 * @private
+	 */
+	private altchaPayload: string | null = null;
+
+	/**
 	 * Initialize component: determine post-login redirect and redirect if already authenticated.
 	 * @returns {void}
 	 */
 	ngOnInit(): void
 	{
+		// Sanitize returnUrl to prevent open redirect vulnerabilities
 		this.returnUrl =
-			this.route.snapshot.queryParams["returnUrl"] ?? "/";
+			sanitizeRedirectUrl(this.route.snapshot.queryParams["returnUrl"]);
 
 		// Redirect if already authenticated
 		if (this.authService.isAuthenticated())
@@ -119,11 +147,35 @@ export class LoginComponent implements OnInit
 	}
 
 	/**
+	 * Handles ALTCHA verification completion.
+	 * @param {string} payload
+	 * The ALTCHA verification payload.
+	 */
+	protected onAltchaVerified(payload: string): void
+	{
+		this.altchaPayload = payload;
+	}
+
+	/**
+	 * Checks if form can be submitted.
+	 * @returns {boolean}
+	 * True when all required fields are valid.
+	 */
+	protected canSubmit(): boolean
+	{
+		const hasCredentials: boolean =
+			this.usernameOrEmail.trim().length > 0 && this.password.length > 0;
+		const hasAltcha: boolean =
+			!this.altchaEnabled || this.altchaPayload !== null;
+		return hasCredentials && hasAltcha && !this.isLoading();
+	}
+
+	/**
 	 * Perform local credential login. Validates form, invokes AuthService, and
 	 * handles success and error flows with notifications and redirects.
-	 * @returns {Promise<void>}
+	 * @returns {void}
 	 */
-	protected async onLocalLoginAsync(): Promise<void>
+	protected onLocalLogin(): void
 	{
 		if (!this.usernameOrEmail || !this.password)
 		{
@@ -131,38 +183,32 @@ export class LoginComponent implements OnInit
 			return;
 		}
 
+		if (this.altchaEnabled && !this.altchaPayload)
+		{
+			this.notification.error("Please complete the verification challenge.");
+			return;
+		}
+
 		this.isLoading.set(true);
 
-		try
-		{
-			// Get reCAPTCHA token (null if disabled)
-			const recaptchaToken: string | null =
-				await this.recaptchaService.executeAsync("login");
+		const credentials: LoginRequest =
+			{
+				usernameOrEmail: this.usernameOrEmail,
+				password: this.password,
+				rememberMe: this.rememberMe,
+				altchaPayload: this.altchaPayload
+			};
 
-			const credentials: LoginRequest =
+		this
+			.authService
+			.login(credentials)
+			.subscribe(
 				{
-					usernameOrEmail: this.usernameOrEmail,
-					password: this.password,
-					rememberMe: this.rememberMe,
-					recaptchaToken
-				};
-
-			this
-				.authService
-				.login(credentials)
-				.subscribe(
-					{
-						next: (response: AuthResponse) =>
-							this.handleLoginSuccess(response),
-						error: (error: HttpErrorResponse) =>
-							this.handleLoginError(error)
-					});
-		}
-		catch
-		{
-			this.notification.error("Failed to verify request. Please try again.");
-			this.isLoading.set(false);
-		}
+					next: (response: AuthResponse) =>
+						this.handleLoginSuccess(response),
+					error: (error: HttpErrorResponse) =>
+						this.handleLoginError(error)
+				});
 	}
 
 	/**

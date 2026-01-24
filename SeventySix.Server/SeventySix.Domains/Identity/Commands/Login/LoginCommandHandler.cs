@@ -12,7 +12,7 @@ namespace SeventySix.Identity;
 /// </summary>
 /// <remarks>
 /// Thin wrapper that delegates credential checks to Identity's <see cref="SignInManager{TUser}"/> and preserves lockout semantics.
-/// Includes reCAPTCHA v3 validation when enabled.
+/// Includes ALTCHA Proof-of-Work validation when enabled.
 /// </remarks>
 public static class LoginCommandHandler
 {
@@ -31,8 +31,8 @@ public static class LoginCommandHandler
 	/// <param name="authenticationService">
 	/// Service to generate auth tokens on success.
 	/// </param>
-	/// <param name="recaptchaService">
-	/// Service for reCAPTCHA v3 token validation.
+	/// <param name="altchaService">
+	/// Service for ALTCHA Proof-of-Work validation.
 	/// </param>
 	/// <param name="cancellationToken">
 	/// Cancellation token.
@@ -45,19 +45,18 @@ public static class LoginCommandHandler
 		UserManager<ApplicationUser> userManager,
 		SignInManager<ApplicationUser> signInManager,
 		AuthenticationService authenticationService,
-		IRecaptchaService recaptchaService,
+		IAltchaService altchaService,
 		CancellationToken cancellationToken)
 	{
-		// Validate reCAPTCHA if enabled
-		if (recaptchaService.IsEnabled)
+		// Validate ALTCHA if enabled
+		if (altchaService.IsEnabled)
 		{
-			RecaptchaValidationResult recaptchaResult =
-				await recaptchaService.ValidateAsync(
-					command.Request.RecaptchaToken ?? string.Empty,
-					RecaptchaActionConstants.Login,
+			AltchaValidationResult altchaResult =
+				await altchaService.ValidateAsync(
+					command.Request.AltchaPayload ?? string.Empty,
 					cancellationToken);
 
-			if (!recaptchaResult.Success)
+			if (!altchaResult.Success)
 			{
 				// Return generic error to avoid revealing validation details to bots
 				return AuthResult.Failed(

@@ -8,6 +8,6 @@ namespace SeventySix.Identity;
 /// Command to initiate a password reset via email.
 /// </summary>
 /// <param name="Request">
-/// The forgot password request containing email and reCAPTCHA token.
+/// The forgot password request containing email and ALTCHA payload.
 /// </param>
 public record InitiatePasswordResetByEmailCommand(ForgotPasswordRequest Request);

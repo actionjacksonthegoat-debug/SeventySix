@@ -152,14 +152,12 @@ export interface AuthConfig
 }
 
 /**
- * reCAPTCHA v3 configuration.
+ * ALTCHA proof-of-work challenge configuration.
  */
-export interface RecaptchaConfig
+export interface AltchaConfig
 {
-	/** Whether reCAPTCHA validation is enabled. */
+	/** Whether ALTCHA validation is enabled. */
 	enabled: boolean;
-	/** Public site key from Google reCAPTCHA admin console. */
-	siteKey: string;
 }
 
 /**
@@ -181,5 +179,5 @@ export interface Environment
 	testing: TestingConfig;
 	telemetry: TelemetryConfig;
 	auth: AuthConfig;
-	recaptcha: RecaptchaConfig;
+	altcha: AltchaConfig;
 }

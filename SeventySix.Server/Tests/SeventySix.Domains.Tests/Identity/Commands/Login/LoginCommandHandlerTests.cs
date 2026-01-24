@@ -24,7 +24,7 @@ public class LoginCommandHandlerTests
 	private readonly UserManager<ApplicationUser> UserManager;
 	private readonly SignInManager<ApplicationUser> SignInManager;
 	private readonly AuthenticationService AuthenticationService;
-	private readonly IRecaptchaService RecaptchaService;
+	private readonly IAltchaService AltchaService;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="LoginCommandHandlerTests"/> class.
@@ -37,11 +37,11 @@ public class LoginCommandHandlerTests
 			CreateSignInManagerMock(UserManager);
 		AuthenticationService =
 			IdentityMockFactory.CreateAuthenticationService();
-		RecaptchaService =
-			Substitute.For<IRecaptchaService>();
+		AltchaService =
+			Substitute.For<IAltchaService>();
 
-		// Default: reCAPTCHA disabled for most tests
-		RecaptchaService.IsEnabled.Returns(false);
+		// Default: ALTCHA disabled for most tests
+		AltchaService.IsEnabled.Returns(false);
 	}
 
 	/// <summary>
@@ -67,7 +67,7 @@ public class LoginCommandHandlerTests
 				UserManager,
 				SignInManager,
 				AuthenticationService,
-				RecaptchaService,
+				AltchaService,
 				CancellationToken.None);
 
 		// Assert
@@ -102,7 +102,7 @@ public class LoginCommandHandlerTests
 				UserManager,
 				SignInManager,
 				AuthenticationService,
-				RecaptchaService,
+				AltchaService,
 				CancellationToken.None);
 
 		// Assert
@@ -137,7 +137,7 @@ public class LoginCommandHandlerTests
 				UserManager,
 				SignInManager,
 				AuthenticationService,
-				RecaptchaService,
+				AltchaService,
 				CancellationToken.None);
 
 		// Assert
@@ -169,7 +169,7 @@ public class LoginCommandHandlerTests
 				UserManager,
 				SignInManager,
 				AuthenticationService,
-				RecaptchaService,
+				AltchaService,
 				CancellationToken.None);
 
 		// Assert
@@ -200,7 +200,7 @@ public class LoginCommandHandlerTests
 				UserManager,
 				SignInManager,
 				AuthenticationService,
-				RecaptchaService,
+				AltchaService,
 				CancellationToken.None);
 
 		// Assert

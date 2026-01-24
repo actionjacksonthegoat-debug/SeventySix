@@ -23,7 +23,7 @@ public class RegisterCommandHandlerTests
 {
 	private readonly UserManager<ApplicationUser> UserManager;
 	private readonly AuthenticationService AuthenticationService;
-	private readonly IRecaptchaService RecaptchaService;
+	private readonly IAltchaService AltchaService;
 	private readonly TimeProvider TimeProvider;
 	private readonly ILogger<RegisterCommand> Logger;
 
@@ -36,15 +36,15 @@ public class RegisterCommandHandlerTests
 			IdentityMockFactory.CreateUserManager();
 		AuthenticationService =
 			IdentityMockFactory.CreateAuthenticationService();
-		RecaptchaService =
-			Substitute.For<IRecaptchaService>();
+		AltchaService =
+			Substitute.For<IAltchaService>();
 		TimeProvider =
 			Substitute.For<TimeProvider>();
 		Logger =
 			Substitute.For<ILogger<RegisterCommand>>();
 
-		// Default: reCAPTCHA disabled for most tests
-		RecaptchaService.IsEnabled.Returns(false);
+		// Default: ALTCHA disabled for most tests
+		AltchaService.IsEnabled.Returns(false);
 
 		// Setup default time
 		TimeProvider
@@ -71,7 +71,7 @@ public class RegisterCommandHandlerTests
 				command,
 				UserManager,
 				AuthenticationService,
-				RecaptchaService,
+				AltchaService,
 				TimeProvider,
 				Logger,
 				CancellationToken.None);
@@ -99,7 +99,7 @@ public class RegisterCommandHandlerTests
 			command,
 			UserManager,
 			AuthenticationService,
-			RecaptchaService,
+			AltchaService,
 			TimeProvider,
 			Logger,
 			CancellationToken.None);
@@ -140,7 +140,7 @@ public class RegisterCommandHandlerTests
 				command,
 				UserManager,
 				AuthenticationService,
-				RecaptchaService,
+				AltchaService,
 				TimeProvider,
 				Logger,
 				CancellationToken.None);
@@ -152,26 +152,22 @@ public class RegisterCommandHandlerTests
 	}
 
 	/// <summary>
-	/// Tests registration failure with invalid reCAPTCHA when enabled.
+	/// Tests registration failure with invalid ALTCHA when enabled.
 	/// </summary>
 	[Fact]
-	public async Task HandleAsync_InvalidRecaptcha_ReturnsFailedAsync()
+	public async Task HandleAsync_InvalidAltcha_ReturnsFailedAsync()
 	{
 		// Arrange
 		RegisterCommand command =
 			CreateRegisterCommand();
 
-		RecaptchaService.IsEnabled.Returns(true);
-		RecaptchaService
+		AltchaService.IsEnabled.Returns(true);
+		AltchaService
 			.ValidateAsync(
-				Arg.Any<string>(),
 				Arg.Any<string>(),
 				Arg.Any<CancellationToken>())
 			.Returns(
-				new RecaptchaValidationResult
-				{
-					Success = false,
-				});
+				AltchaValidationResult.Failed(AltchaErrorCodes.ValidationFailed));
 
 		// Act
 		AuthResult result =
@@ -179,7 +175,7 @@ public class RegisterCommandHandlerTests
 				command,
 				UserManager,
 				AuthenticationService,
-				RecaptchaService,
+				AltchaService,
 				TimeProvider,
 				Logger,
 				CancellationToken.None);

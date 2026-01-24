@@ -24,7 +24,6 @@ namespace SeventySix.Api.Registration;
 ///
 /// Bypass policies (no rate limit):
 /// - OPTIONS requests (CORS preflight)
-/// - /metrics endpoints (Prometheus scraping - internal only)
 /// </remarks>
 public static class RateLimitingRegistration
 {
@@ -180,13 +179,6 @@ public static class RateLimitingRegistration
 									QueueProcessingOrder.OldestFirst,
 								QueueLimit = 0,
 							});
-				}
-
-				// Bypass rate limiting for metrics endpoints (internal Prometheus only)
-				if (context.Request.Path.StartsWithSegments("/metrics"))
-				{
-					return RateLimitPartition.GetNoLimiter(
-						RateLimitPartitionKeys.Internal);
 				}
 
 				return RateLimitPartition.GetFixedWindowLimiter(

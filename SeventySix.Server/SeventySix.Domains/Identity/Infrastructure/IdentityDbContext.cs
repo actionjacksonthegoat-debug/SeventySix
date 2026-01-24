@@ -47,6 +47,13 @@ public class IdentityDbContext
 	public DbSet<PermissionRequest> PermissionRequests =>
 		Set<PermissionRequest>();
 
+	/// <summary>
+	/// Gets or sets the AltchaChallenges DbSet.
+	/// Used for ALTCHA replay attack prevention.
+	/// </summary>
+	public DbSet<AltchaChallenge> AltchaChallenges =>
+		Set<AltchaChallenge>();
+
 	/// <inheritdoc/>
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
 	{

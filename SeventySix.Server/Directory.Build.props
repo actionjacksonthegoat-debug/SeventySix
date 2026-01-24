@@ -1,4 +1,10 @@
 <Project>
+	<!-- Suppress NU1608 warnings for CodeAnalysis transitive dependency conflicts -->
+	<!-- WolverineFx brings in CodeAnalysis 5.0.0 but analyzer testing packages require 4.14.0 -->
+	<PropertyGroup>
+		<NoWarn>$(NoWarn);NU1608</NoWarn>
+	</PropertyGroup>
+
 	<!-- Reference custom analyzers (SS001, SS002) and codefixes for all projects -->
 	<ItemGroup Condition="'$(MSBuildProjectName)' != 'SeventySix.Analyzers' And '$(MSBuildProjectName)' != 'SeventySix.Analyzers.CodeFixes'">
 		<ProjectReference

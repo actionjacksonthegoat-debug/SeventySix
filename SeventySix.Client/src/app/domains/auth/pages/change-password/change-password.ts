@@ -16,8 +16,12 @@ import { FormsModule } from "@angular/forms";
 import { MatButtonModule } from "@angular/material/button";
 import { ActivatedRoute, Router } from "@angular/router";
 import { ValidationResult } from "@auth/models";
-import { mapAuthError } from "@auth/utilities";
-import { validatePassword, validatePasswordsMatch } from "@auth/utilities";
+import {
+	mapAuthError,
+	sanitizeRedirectUrl,
+	validatePassword,
+	validatePasswordsMatch
+} from "@auth/utilities";
 import { environment } from "@environments/environment";
 import { APP_ROUTES } from "@shared/constants";
 import { PASSWORD_VALIDATION } from "@shared/constants/validation.constants";
@@ -138,8 +142,10 @@ export class ChangePasswordComponent implements OnInit
 		this.isRequired.set(
 			requiredParam === "true"
 				|| this.authService.requiresPasswordChange());
+
+		// Sanitize returnUrl to prevent open redirect vulnerabilities
 		this.returnUrl =
-			this.route.snapshot.queryParams["returnUrl"] ?? "/";
+			sanitizeRedirectUrl(this.route.snapshot.queryParams["returnUrl"]);
 
 		// Redirect if not authenticated
 		if (!this.authService.isAuthenticated())

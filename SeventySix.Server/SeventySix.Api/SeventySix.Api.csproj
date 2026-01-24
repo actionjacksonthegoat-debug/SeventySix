@@ -20,23 +20,23 @@
 		<PackageReference Include="AspNetCore.HealthChecks.Redis" Version="9.0.0" />
 		<PackageReference
 			Include="Microsoft.AspNetCore.Authentication.JwtBearer"
-			Version="10.0.1"
+			Version="10.0.2"
 		/>
-		<PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.1" />
+		<PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.2" />
 		<PackageReference
 			Include="Microsoft.AspNetCore.OutputCaching.StackExchangeRedis"
-			Version="10.0.1"
+			Version="10.0.2"
 		/>
 		<PackageReference
 			Include="Microsoft.EntityFrameworkCore.Tools"
-			Version="10.0.1"
+			Version="10.0.2"
 		>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 			<PrivateAssets>all</PrivateAssets>
 		</PackageReference>
 		<PackageReference
 			Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore"
-			Version="10.0.1"
+			Version="10.0.2"
 		/>
 		<PackageReference
 			Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets"
@@ -44,27 +44,23 @@
 		/>
 		<PackageReference
 			Include="OpenTelemetry.Exporter.OpenTelemetryProtocol"
-			Version="1.14.0"
-		/>
-		<PackageReference
-			Include="OpenTelemetry.Exporter.Prometheus.AspNetCore"
-			Version="1.14.0-beta.1"
+			Version="1.15.0"
 		/>
 		<PackageReference
 			Include="OpenTelemetry.Extensions.Hosting"
-			Version="1.14.0"
+			Version="1.15.0"
 		/>
 		<PackageReference
 			Include="OpenTelemetry.Instrumentation.AspNetCore"
-			Version="1.14.0"
+			Version="1.15.0"
 		/>
 		<PackageReference
 			Include="OpenTelemetry.Instrumentation.Http"
-			Version="1.14.0"
+			Version="1.15.0"
 		/>
 		<PackageReference
 			Include="OpenTelemetry.Instrumentation.Runtime"
-			Version="1.14.0"
+			Version="1.15.0"
 		/>
 		<PackageReference
 			Include="Roslynator.Formatting.Analyzers"
@@ -73,7 +69,7 @@
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 			<PrivateAssets>all</PrivateAssets>
 		</PackageReference>
-		<PackageReference Include="Scalar.AspNetCore" Version="2.11.10" />
+		<PackageReference Include="Scalar.AspNetCore" Version="2.12.17" />
 		<PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
 		<PackageReference Include="Serilog.Enrichers.Environment" Version="3.0.1" />
 		<PackageReference Include="Serilog.Enrichers.Thread" Version="4.0.0" />

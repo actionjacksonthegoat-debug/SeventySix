@@ -10,6 +10,7 @@ export * from "./api.service";
 export * from "./selective-preloading.strategy";
 
 // Infrastructure services
+export * from "./altcha.service";
 export * from "./auth.service";
 export * from "./base-filter.service";
 export * from "./base-mutation.service";
@@ -25,7 +26,6 @@ export * from "./loading.service";
 export * from "./logger.service";
 export * from "./notification.service";
 export * from "./performance-monitor.service";
-export * from "./recaptcha.service";
 export * from "./sanitization.service";
 export * from "./storage.service";
 export * from "./sw-update.service";

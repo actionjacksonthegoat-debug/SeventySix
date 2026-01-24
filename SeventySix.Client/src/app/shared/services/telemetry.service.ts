@@ -23,7 +23,7 @@ interface TelemetryModules
 	registerInstrumentations: unknown;
 	DocumentLoadInstrumentation: unknown;
 	FetchInstrumentation: unknown;
-	Resource: unknown;
+	resourceFromAttributes: unknown;
 	AlwaysOffSampler: unknown;
 	AlwaysOnSampler: unknown;
 	BatchSpanProcessor: unknown;
@@ -160,7 +160,7 @@ export class TelemetryService
 			registerInstrumentations: instrModule.registerInstrumentations,
 			DocumentLoadInstrumentation: docLoadModule.DocumentLoadInstrumentation,
 			FetchInstrumentation: fetchModule.FetchInstrumentation,
-			Resource: resourceModule.Resource,
+			resourceFromAttributes: resourceModule.resourceFromAttributes,
 			AlwaysOffSampler: sdkModule.AlwaysOffSampler,
 			AlwaysOnSampler: sdkModule.AlwaysOnSampler,
 			BatchSpanProcessor: sdkModule.BatchSpanProcessor,
@@ -180,11 +180,11 @@ export class TelemetryService
 	 */
 	private createTracerProvider(modules: TelemetryModules): WebTracerProviderInstance
 	{
-		const ResourceConstructor: new(attributes: unknown) => unknown =
-			modules.Resource as new(
-				attributes: unknown) => unknown;
+		const createResource: (attributes: Record<string, unknown>) => unknown =
+			modules.resourceFromAttributes as (
+				attributes: Record<string, unknown>) => unknown;
 		const resource: unknown =
-			new ResourceConstructor(
+			createResource(
 				{
 					[modules.ATTR_SERVICE_NAME]: environment.telemetry.serviceName,
 					[modules.ATTR_SERVICE_VERSION]: environment.telemetry.serviceVersion

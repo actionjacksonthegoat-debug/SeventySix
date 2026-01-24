@@ -330,29 +330,27 @@ export function createMockLayoutService(): MockLayoutService
 	};
 }
 
-/** Mock RecaptchaService interface for testing. */
-export interface MockRecaptchaService
+/** Mock AltchaService interface for testing. */
+export interface MockAltchaService
 {
-	executeAsync: Mock;
-	reset: Mock;
+	enabled: boolean;
+	challengeEndpoint: string;
 }
 
 /**
- * Create a mocked RecaptchaService.
+ * Create a mocked AltchaService.
  * Used in auth component tests (login, register, forgot-password).
  *
- * @param {string | null} resolvedToken
- * Optional token value that executeAsync should resolve with.
- * @returns {MockRecaptchaService}
- * Vitest mock object implementing RecaptchaService methods for tests.
+ * @param {boolean} enabled
+ * Whether ALTCHA is enabled.
+ * @returns {MockAltchaService}
+ * Mock object implementing AltchaService properties for tests.
  */
-export function createMockRecaptchaService(
-	resolvedToken: string | null = null): MockRecaptchaService
+export function createMockAltchaService(
+	enabled: boolean = false): MockAltchaService
 {
 	return {
-		executeAsync: vi
-			.fn()
-			.mockResolvedValue(resolvedToken),
-		reset: vi.fn()
+		enabled,
+		challengeEndpoint: "http://localhost/api/v1/altcha/challenge"
 	};
 }

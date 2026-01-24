@@ -96,8 +96,8 @@ services:
             # Disable production features
             - OpenTelemetry__Enabled=false
             - HealthChecks__Enabled=true
-            # Disable reCAPTCHA for E2E testing
-            - Recaptcha__Enabled=false
+            # Disable ALTCHA for E2E testing
+            - Altcha__Enabled=false
             # Disable rate limiting for E2E testing
             - RateLimiting__Enabled=false
             # Disable token rotation for E2E testing (allows same token across test contexts)

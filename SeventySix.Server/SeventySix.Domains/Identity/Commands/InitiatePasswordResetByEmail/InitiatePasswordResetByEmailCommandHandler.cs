@@ -11,7 +11,7 @@ namespace SeventySix.Identity;
 /// </summary>
 /// <remarks>
 /// Uses silent success pattern - returns success even if user not found to prevent enumeration attacks.
-/// Includes reCAPTCHA v3 validation when enabled.
+/// Includes ALTCHA Proof-of-Work validation when enabled.
 /// </remarks>
 public static class InitiatePasswordResetByEmailCommandHandler
 {
@@ -21,8 +21,8 @@ public static class InitiatePasswordResetByEmailCommandHandler
 	/// <param name="command">
 	/// The command containing the forgot password request.
 	/// </param>
-	/// <param name="recaptchaService">
-	/// Service for reCAPTCHA v3 token validation.
+	/// <param name="altchaService">
+	/// Service for ALTCHA Proof-of-Work validation.
 	/// </param>
 	/// <param name="messageBus">
 	/// Message bus.
@@ -35,21 +35,20 @@ public static class InitiatePasswordResetByEmailCommandHandler
 	/// </returns>
 	public static async Task HandleAsync(
 		InitiatePasswordResetByEmailCommand command,
-		IRecaptchaService recaptchaService,
+		IAltchaService altchaService,
 		IMessageBus messageBus,
 		CancellationToken cancellationToken)
 	{
-		// Validate reCAPTCHA if enabled
+		// Validate ALTCHA if enabled
 		// Silent failure to prevent enumeration attacks
-		if (recaptchaService.IsEnabled)
+		if (altchaService.IsEnabled)
 		{
-			RecaptchaValidationResult recaptchaResult =
-				await recaptchaService.ValidateAsync(
-					command.Request.RecaptchaToken ?? string.Empty,
-					RecaptchaActionConstants.PasswordReset,
+			AltchaValidationResult altchaResult =
+				await altchaService.ValidateAsync(
+					command.Request.AltchaPayload ?? string.Empty,
 					cancellationToken);
 
-			if (!recaptchaResult.Success)
+			if (!altchaResult.Success)
 			{
 				// Silent return - don't reveal validation failure to potential bots
 				return;

@@ -90,8 +90,7 @@ export const environment: Environment =
 			loginUrl: "/auth/login",
 			tokenRefreshBufferSeconds: 60
 		},
-		recaptcha: {
-			enabled: false, // Disabled in tests
-			siteKey: ""
+		altcha: {
+			enabled: false // Disabled in tests
 		}
 	};

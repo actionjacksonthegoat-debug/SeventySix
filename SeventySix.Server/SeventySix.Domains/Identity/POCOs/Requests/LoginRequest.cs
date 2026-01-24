@@ -16,12 +16,12 @@ namespace SeventySix.Identity;
 /// <param name="RememberMe">
 /// Whether to extend refresh token expiration (default: false).
 /// </param>
-/// <param name="RecaptchaToken">
-/// reCAPTCHA v3 token for bot protection.
-/// Required when reCAPTCHA is enabled in configuration.
+/// <param name="AltchaPayload">
+/// ALTCHA Proof-of-Work payload for bot protection.
+/// Required when ALTCHA is enabled in configuration.
 /// </param>
 public record LoginRequest(
 	string UsernameOrEmail,
 	string Password,
 	bool RememberMe = false,
-	string? RecaptchaToken = null);
+	string? AltchaPayload = null);

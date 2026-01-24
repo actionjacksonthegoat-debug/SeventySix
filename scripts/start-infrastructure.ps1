@@ -80,7 +80,7 @@ Push-Location (Join-Path $PSScriptRoot "..\SeventySix.Server")
 
 try {
 	# Infrastructure services (not the API)
-	$services = @("postgres", "valkey", "redis-exporter", "jaeger", "prometheus", "grafana", "pgadmin")
+	$services = @("postgres", "valkey", "redis-exporter", "otel-collector", "jaeger", "prometheus", "grafana", "pgadmin")
 
 	Write-Host "Starting services: $($services -join ', ')" -ForegroundColor Cyan
 	Write-Host ""
@@ -95,12 +95,13 @@ try {
 		Write-Host "Infrastructure services started!" -ForegroundColor Green
 		Write-Host ""
 		Write-Host "Services available at:" -ForegroundColor Cyan
-		Write-Host "  PostgreSQL:  localhost:5433" -ForegroundColor White
-		Write-Host "  Valkey:      localhost:6379" -ForegroundColor White
-		Write-Host "  pgAdmin:     http://localhost:5050" -ForegroundColor White
-		Write-Host "  Jaeger UI:   http://localhost:16686" -ForegroundColor White
-		Write-Host "  Prometheus:  http://localhost:9090" -ForegroundColor White
-		Write-Host "  Grafana:     http://localhost:3000" -ForegroundColor White
+		Write-Host "  PostgreSQL:       localhost:5433" -ForegroundColor White
+		Write-Host "  Valkey:           localhost:6379" -ForegroundColor White
+		Write-Host "  pgAdmin:          http://localhost:5050" -ForegroundColor White
+		Write-Host "  OTel Collector:   localhost:4317 (OTLP gRPC)" -ForegroundColor White
+		Write-Host "  Jaeger UI:        http://localhost:16686" -ForegroundColor White
+		Write-Host "  Prometheus:       http://localhost:9090" -ForegroundColor White
+		Write-Host "  Grafana:          http://localhost:3000" -ForegroundColor White
 		Write-Host ""
 
 		# Start client in new PowerShell window if not already running

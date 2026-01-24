@@ -111,8 +111,7 @@ export const environment: Environment =
 			loginUrl: "/auth/login",
 			tokenRefreshBufferSeconds: 60 // Refresh token 60s before expiry
 		},
-		recaptcha: {
-			enabled: true,
-			siteKey: "" // Set via build configuration or environment variable
+		altcha: {
+			enabled: true
 		}
 	};

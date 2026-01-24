@@ -1504,7 +1504,7 @@ export interface components
 			token: string;
 			username: string;
 			password: string;
-			recaptchaToken?: null | string;
+			altchaPayload?: null | string;
 		};
 		CreateLogRequest: {
 			logLevel: string;
@@ -1548,6 +1548,7 @@ export interface components
 		};
 		ForgotPasswordRequest: {
 			email: string;
+			altchaPayload?: null | string;
 		};
 		HealthStatusResponse: {
 			status?: string;
@@ -1590,7 +1591,7 @@ export interface components
 			password: string;
 			/** @default false */
 			rememberMe: boolean;
-			recaptchaToken?: null | string;
+			altchaPayload?: null | string;
 		};
 		OAuthCodeExchangeRequest: {
 			code: string;
@@ -1665,7 +1666,7 @@ export interface components
 			email: string;
 			password: string;
 			fullName?: null | string;
-			recaptchaToken?: null | string;
+			altchaPayload?: null | string;
 		};
 		SetPasswordRequest: {
 			token: string;

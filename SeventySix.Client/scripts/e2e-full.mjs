@@ -61,22 +61,22 @@ function runCommand(
  */
 function setup()
 {
-	// Clean up any existing containers
+	// Clean up any existing containers and volumes
 	const cleanupCode =
 		runCommand(
-			`docker compose -f ${DOCKER_COMPOSE_FILE} down -v`,
-			"Cleaning up existing containers");
+			`docker compose -f ${DOCKER_COMPOSE_FILE} down -v --remove-orphans`,
+			"Cleaning up existing containers and volumes");
 
 	if (cleanupCode !== 0)
 	{
 		return cleanupCode;
 	}
 
-	// Build fresh containers
+	// Build fresh containers (both API and Client with no cache)
 	const buildCode =
 		runCommand(
-			`docker compose -f ${DOCKER_COMPOSE_FILE} build --no-cache api-e2e`,
-			"Building E2E containers");
+			`docker compose -f ${DOCKER_COMPOSE_FILE} build --no-cache api-e2e client-e2e`,
+			"Building E2E containers (API + Client)");
 
 	if (buildCode !== 0)
 	{
@@ -134,8 +134,8 @@ function runTests()
 function teardown()
 {
 	return runCommand(
-		`docker compose -f ${DOCKER_COMPOSE_FILE} down -v`,
-		"Tearing down E2E containers");
+		`docker compose -f ${DOCKER_COMPOSE_FILE} down -v --remove-orphans`,
+		"Tearing down E2E containers and volumes");
 }
 
 /**

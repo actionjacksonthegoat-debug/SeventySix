@@ -15,6 +15,16 @@ namespace SeventySix.ArchitectureTests;
 /// </summary>
 public class AsyncNamingTests : SourceCodeArchitectureTest
 {
+	/// <summary>
+	/// Method names from external library interfaces that cannot be renamed.
+	/// </summary>
+	private static readonly HashSet<string> ExternalInterfaceMethods =
+		[
+			// Ixnas.AltchaNet.IAltchaCancellableChallengeStore interface methods
+			"Store",
+			"Exists"
+		];
+
 	[Fact]
 	public void Async_Methods_Should_Have_Async_Suffix()
 	{
@@ -59,6 +69,12 @@ public class AsyncNamingTests : SourceCodeArchitectureTest
 					|| methodName.StartsWith("Handle")
 					|| methodName.StartsWith("Test")
 					|| file.Contains("Tests.cs"))
+				{
+					continue;
+				}
+
+				// Skip methods from external library interfaces
+				if (ExternalInterfaceMethods.Contains(methodName))
 				{
 					continue;
 				}

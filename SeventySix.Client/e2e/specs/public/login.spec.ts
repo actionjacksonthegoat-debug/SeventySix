@@ -84,13 +84,14 @@ test.describe("Login Page",
 		test.describe("Validation",
 			() =>
 			{
-				test("should show error when submitting empty form",
+				test("should disable submit button when form is empty",
 					async ({ authPage }) =>
 					{
-						await authPage.submitEmpty();
+						// Submit button should be disabled when form is empty
+						await expect(authPage.submitButton)
+							.toBeDisabled();
 
-						// Form should show validation errors (fields become invalid)
-						// Angular marks invalid controls - check aria-invalid or class
+						// Fields should be in invalid state
 						await expect(authPage.usernameInput)
 							.toHaveClass(/ng-invalid/);
 						await expect(authPage.passwordInput)

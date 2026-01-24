@@ -13,9 +13,4 @@ public static class ExternalApiConstants
 	/// Brevo (formerly Sendinblue) email service.
 	/// </summary>
 	public const string BrevoEmail = "BrevoEmail";
-
-	/// <summary>
-	/// Google reCAPTCHA v3 verification service.
-	/// </summary>
-	public const string GoogleRecaptcha = "GoogleRecaptcha";
 }

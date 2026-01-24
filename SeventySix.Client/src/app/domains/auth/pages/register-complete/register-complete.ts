@@ -17,22 +17,25 @@ import { FormsModule } from "@angular/forms";
 import { MatButtonModule } from "@angular/material/button";
 import { ActivatedRoute, Router, RouterLink } from "@angular/router";
 import { ValidationResult } from "@auth/models";
-import { mapAuthError } from "@auth/utilities";
-import { validateRegistrationForm } from "@auth/utilities";
+import { mapAuthError, validateRegistrationForm } from "@auth/utilities";
 import {
 	PASSWORD_VALIDATION,
 	USERNAME_VALIDATION
 } from "@shared/constants";
+import { AltchaWidgetComponent } from "@shared/components";
 import { AuthErrorResult } from "@shared/models";
-import { AuthService } from "@shared/services/auth.service";
-import { NotificationService } from "@shared/services/notification.service";
-import { RecaptchaService } from "@shared/services/recaptcha.service";
+import { AltchaService, AuthService, NotificationService } from "@shared/services";
 
 @Component(
 	{
 		selector: "app-register-complete",
 		standalone: true,
-		imports: [FormsModule, RouterLink, MatButtonModule],
+		imports: [
+			FormsModule,
+			RouterLink,
+			MatButtonModule,
+			AltchaWidgetComponent
+		],
 		changeDetection: ChangeDetectionStrategy.OnPush,
 		templateUrl: "./register-complete.html",
 		styleUrl: "./register-complete.scss"
@@ -72,11 +75,25 @@ export class RegisterCompleteComponent implements OnInit
 		inject(NotificationService);
 
 	/**
-	 * reCAPTCHA service for bot protection.
-	 * @type {RecaptchaService}
+	 * ALTCHA service for bot protection.
+	 * @type {AltchaService}
 	 */
-	private readonly recaptchaService: RecaptchaService =
-		inject(RecaptchaService);
+	private readonly altchaService: AltchaService =
+		inject(AltchaService);
+
+	/**
+	 * Whether ALTCHA validation is enabled.
+	 * @type {boolean}
+	 */
+	protected readonly altchaEnabled: boolean =
+		this.altchaService.enabled;
+
+	/**
+	 * ALTCHA challenge endpoint URL.
+	 * @type {string}
+	 */
+	protected readonly challengeUrl: string =
+		this.altchaService.challengeEndpoint;
 
 	// Expose validation constants to template
 	/**
@@ -146,6 +163,13 @@ export class RegisterCompleteComponent implements OnInit
 	private token: string = "";
 
 	/**
+	 * ALTCHA verification payload from the widget.
+	 * @type {string | null}
+	 * @private
+	 */
+	private altchaPayload: string | null = null;
+
+	/**
 	 * Component initialization - validate token and prepare UI state.
 	 * @returns {void}
 	 */
@@ -163,59 +187,79 @@ export class RegisterCompleteComponent implements OnInit
 	}
 
 	/**
-	 * Submits the registration completion request.
-	 * @returns {Promise<void>}
+	 * Handles ALTCHA verification completion.
+	 * @param {string} payload
+	 * The ALTCHA verification payload.
 	 */
-	protected async onSubmitAsync(): Promise<void>
+	protected onAltchaVerified(payload: string): void
+	{
+		this.altchaPayload = payload;
+	}
+
+	/**
+	 * Checks if form can be submitted.
+	 * @returns {boolean}
+	 * True when all required fields are valid.
+	 */
+	protected canSubmit(): boolean
+	{
+		const hasFields: boolean =
+			this.username.trim().length > 0
+				&& this.password.length > 0
+				&& this.confirmPassword.length > 0;
+		const hasAltcha: boolean =
+			!this.altchaEnabled || this.altchaPayload !== null;
+		return hasFields && hasAltcha && this.tokenValid() && !this.isLoading();
+	}
+
+	/**
+	 * Submits the registration completion request.
+	 * @returns {void}
+	 */
+	protected onSubmit(): void
 	{
 		if (!this.validateForm())
 		{
 			return;
 		}
 
+		if (this.altchaEnabled && !this.altchaPayload)
+		{
+			this.notification.error("Please complete the verification challenge.");
+			return;
+		}
+
 		this.isLoading.set(true);
 
-		try
-		{
-			// Get reCAPTCHA token (null if disabled)
-			const recaptchaToken: string | null =
-				await this.recaptchaService.executeAsync("register");
-
-			this
-				.authService
-				.completeRegistration(
-					this.token,
-					this.username,
-					this.password,
-					recaptchaToken)
-				.subscribe(
+		this
+			.authService
+			.completeRegistration(
+				this.token,
+				this.username,
+				this.password,
+				this.altchaPayload)
+			.subscribe(
+				{
+					next: () =>
 					{
-						next: () =>
-						{
-							this.notification.success("Account created successfully!");
-							this.router.navigate(
-								["/"]);
-						},
-						error: (error: HttpErrorResponse) =>
-						{
-							const errorResult: AuthErrorResult =
-								mapAuthError(error);
+						this.notification.success("Account created successfully!");
+						this.router.navigate(
+							["/"]);
+					},
+					error: (error: HttpErrorResponse) =>
+					{
+						const errorResult: AuthErrorResult =
+							mapAuthError(error);
 
-							if (errorResult.invalidateToken)
-							{
-								this.tokenValid.set(false);
-							}
-
-							this.notification.error(errorResult.message);
-							this.isLoading.set(false);
+						if (errorResult.invalidateToken)
+						{
+							this.tokenValid.set(false);
 						}
-					});
-		}
-		catch
-		{
-			this.notification.error("Failed to verify request. Please try again.");
-			this.isLoading.set(false);
-		}
+
+						this.notification.error(errorResult.message);
+						this.isLoading.set(false);
+					}
+				});
 	}
 
 	/**

@@ -49,8 +49,6 @@ public static class AuthenticationExtensions
 		// Bind configuration sections
 		services.Configure<JwtSettings>(configuration.GetSection(ConfigurationSectionConstants.Jwt));
 		services.Configure<AuthSettings>(configuration.GetSection(ConfigurationSectionConstants.Auth));
-		services.Configure<RecaptchaSettings>(
-			configuration.GetSection(RecaptchaSettings.SECTION_NAME));
 		services.Configure<AdminSeederSettings>(
 			configuration.GetSection(AdminSeederSettings.SectionName));
 		services.Configure<WhitelistedPermissionSettings>(

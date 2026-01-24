@@ -93,7 +93,7 @@ services:
       # Cache - Use Docker service name for Valkey connection
       - Cache__Valkey__ConnectionString=valkey:6379
       # OpenTelemetry - using container network DNS name
-      - OpenTelemetry__OtlpEndpoint=http://jaeger:4317
+      - OpenTelemetry__OtlpEndpoint=http://otel-collector:4317
     volumes:
       - ~/.aspnet/https:/https:ro
       - dataprotection_keys:/app/keys
@@ -130,10 +130,26 @@ services:
     container_name: seventysix-jaeger-dev
     ports:
       - "16686:16686"
-      - "4317:4317"
-      - "4318:4318"
     environment:
       - COLLECTOR_OTLP_ENABLED=true
+    networks:
+      - seventysix-network
+    restart: unless-stopped
+
+  # OpenTelemetry Collector - Telemetry routing
+  # Receives OTLP from API, exports traces to Jaeger and metrics to Prometheus format
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.123.0
+    container_name: seventysix-otel-collector-dev
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml:ro
+    ports:
+      - "4317:4317"   # OTLP gRPC
+      - "4318:4318"   # OTLP HTTP
+      - "8889:8889"   # Prometheus metrics export
+    depends_on:
+      - jaeger
     networks:
       - seventysix-network
     restart: unless-stopped

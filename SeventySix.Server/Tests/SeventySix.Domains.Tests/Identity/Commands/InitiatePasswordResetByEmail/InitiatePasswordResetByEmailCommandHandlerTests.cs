@@ -15,14 +15,14 @@ namespace SeventySix.Domains.Tests.Identity.Commands.InitiatePasswordResetByEmai
 /// </summary>
 /// <remarks>
 /// Tests follow 80/20 rule: focus on security-critical scenarios.
-/// Email enumeration prevention and reCAPTCHA validation are critical.
+/// Email enumeration prevention and ALTCHA validation are critical.
 /// </remarks>
 public class InitiatePasswordResetByEmailCommandHandlerTests
 {
 	private static readonly FakeTimeProvider TimeProvider =
 		new(TestTimeProviderBuilder.DefaultTime);
 
-	private readonly IRecaptchaService RecaptchaService;
+	private readonly IAltchaService AltchaService;
 	private readonly IMessageBus MessageBus;
 
 	/// <summary>
@@ -30,40 +30,39 @@ public class InitiatePasswordResetByEmailCommandHandlerTests
 	/// </summary>
 	public InitiatePasswordResetByEmailCommandHandlerTests()
 	{
-		RecaptchaService =
-			Substitute.For<IRecaptchaService>();
+		AltchaService =
+			Substitute.For<IAltchaService>();
 		MessageBus =
 			Substitute.For<IMessageBus>();
 	}
 
 	/// <summary>
-	/// Tests that failed reCAPTCHA validation silently returns.
+	/// Tests that failed ALTCHA validation silently returns.
 	/// </summary>
 	[Fact]
-	public async Task HandleAsync_FailedRecaptcha_SilentlyReturnsAsync()
+	public async Task HandleAsync_FailedAltcha_SilentlyReturnsAsync()
 	{
 		// Arrange
 		const string Email = "user@example.com";
-		const string RecaptchaToken = "invalid-token";
+		const string AltchaPayload = "invalid-payload";
 
 		ForgotPasswordRequest request =
-			new(Email, RecaptchaToken);
+			new(Email, AltchaPayload);
 
 		InitiatePasswordResetByEmailCommand command =
 			new(request);
 
-		RecaptchaService.IsEnabled.Returns(true);
-		RecaptchaService
+		AltchaService.IsEnabled.Returns(true);
+		AltchaService
 			.ValidateAsync(
-				RecaptchaToken,
-				RecaptchaActionConstants.PasswordReset,
+				AltchaPayload,
 				Arg.Any<CancellationToken>())
-			.Returns(RecaptchaValidationResult.Failed(["invalid-token"]));
+			.Returns(AltchaValidationResult.Failed(AltchaErrorCodes.ValidationFailed));
 
 		// Act
 		await InitiatePasswordResetByEmailCommandHandler.HandleAsync(
 			command,
-			RecaptchaService,
+			AltchaService,
 			MessageBus,
 			CancellationToken.None);
 
@@ -90,7 +89,7 @@ public class InitiatePasswordResetByEmailCommandHandlerTests
 		InitiatePasswordResetByEmailCommand command =
 			new(request);
 
-		RecaptchaService.IsEnabled.Returns(false);
+		AltchaService.IsEnabled.Returns(false);
 
 		MessageBus
 			.InvokeAsync<UserDto?>(
@@ -101,7 +100,7 @@ public class InitiatePasswordResetByEmailCommandHandlerTests
 		// Act
 		await InitiatePasswordResetByEmailCommandHandler.HandleAsync(
 			command,
-			RecaptchaService,
+			AltchaService,
 			MessageBus,
 			CancellationToken.None);
 
@@ -135,7 +134,7 @@ public class InitiatePasswordResetByEmailCommandHandlerTests
 		InitiatePasswordResetByEmailCommand command =
 			new(request);
 
-		RecaptchaService.IsEnabled.Returns(false);
+		AltchaService.IsEnabled.Returns(false);
 
 		MessageBus
 			.InvokeAsync<UserDto?>(
@@ -146,7 +145,7 @@ public class InitiatePasswordResetByEmailCommandHandlerTests
 		// Act
 		await InitiatePasswordResetByEmailCommandHandler.HandleAsync(
 			command,
-			RecaptchaService,
+			AltchaService,
 			MessageBus,
 			CancellationToken.None);
 
@@ -181,7 +180,7 @@ public class InitiatePasswordResetByEmailCommandHandlerTests
 		InitiatePasswordResetByEmailCommand command =
 			new(request);
 
-		RecaptchaService.IsEnabled.Returns(false);
+		AltchaService.IsEnabled.Returns(false);
 
 		MessageBus
 			.InvokeAsync<UserDto?>(
@@ -192,7 +191,7 @@ public class InitiatePasswordResetByEmailCommandHandlerTests
 		// Act
 		await InitiatePasswordResetByEmailCommandHandler.HandleAsync(
 			command,
-			RecaptchaService,
+			AltchaService,
 			MessageBus,
 			CancellationToken.None);
 
@@ -207,21 +206,21 @@ public class InitiatePasswordResetByEmailCommandHandlerTests
 	}
 
 	/// <summary>
-	/// Tests that reCAPTCHA is skipped when disabled.
+	/// Tests that ALTCHA is skipped when disabled.
 	/// </summary>
 	[Fact]
-	public async Task HandleAsync_RecaptchaDisabled_SkipsValidationAsync()
+	public async Task HandleAsync_AltchaDisabled_SkipsValidationAsync()
 	{
 		// Arrange
 		const string Email = "user@example.com";
 
 		ForgotPasswordRequest request =
-			new(Email, "any-token");
+			new(Email, "any-payload");
 
 		InitiatePasswordResetByEmailCommand command =
 			new(request);
 
-		RecaptchaService.IsEnabled.Returns(false);
+		AltchaService.IsEnabled.Returns(false);
 
 		MessageBus
 			.InvokeAsync<UserDto?>(
@@ -232,15 +231,14 @@ public class InitiatePasswordResetByEmailCommandHandlerTests
 		// Act
 		await InitiatePasswordResetByEmailCommandHandler.HandleAsync(
 			command,
-			RecaptchaService,
+			AltchaService,
 			MessageBus,
 			CancellationToken.None);
 
-		// Assert - reCAPTCHA validation should not be called
-		await RecaptchaService
+		// Assert - ALTCHA validation should not be called
+		await AltchaService
 			.DidNotReceive()
 			.ValidateAsync(
-				Arg.Any<string>(),
 				Arg.Any<string>(),
 				Arg.Any<CancellationToken>());
 	}

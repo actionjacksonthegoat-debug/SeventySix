@@ -119,9 +119,8 @@ services:
       - Email__SmtpUsername=${EMAIL_SMTP_USERNAME:?EMAIL_SMTP_USERNAME must be set in .env}
       - Email__SmtpPassword=${EMAIL_SMTP_PASSWORD:?EMAIL_SMTP_PASSWORD must be set in .env}
       - Email__FromAddress=${EMAIL_FROM_ADDRESS:?EMAIL_FROM_ADDRESS must be set in .env}
-      # reCAPTCHA v3
-      - Recaptcha__SiteKey=${RECAPTCHA_SITE_KEY:?RECAPTCHA_SITE_KEY must be set in .env}
-      - Recaptcha__SecretKey=${RECAPTCHA_SECRET_KEY:?RECAPTCHA_SECRET_KEY must be set in .env}
+      # ALTCHA (Proof-of-Work) - enabled by default, uses self-hosted verification
+      - Altcha__Enabled=true
       # CORS
       - Cors__AllowedOrigins__0=http://localhost:8080
       - Cors__AllowedOrigins__1=http://localhost:4200
