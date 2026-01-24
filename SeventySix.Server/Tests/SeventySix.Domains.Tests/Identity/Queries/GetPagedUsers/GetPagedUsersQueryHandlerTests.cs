@@ -21,9 +21,9 @@ namespace SeventySix.Domains.Tests.Identity.Queries.GetPagedUsers;
 /// 80/20 Focus: Tests critical pagination logic for admin user management.
 /// Includes search, filtering, and pagination edge cases.
 /// </remarks>
-[Collection(CollectionNames.PostgreSql)]
+[Collection(CollectionNames.IdentityPostgreSql)]
 public class GetPagedUsersQueryHandlerTests(
-	TestcontainersPostgreSqlFixture fixture) : DataPostgreSqlTestBase(fixture)
+	IdentityPostgreSqlFixture fixture) : DataPostgreSqlTestBase(fixture)
 {
 	private static readonly FakeTimeProvider TimeProvider =
 		new(TestTimeProviderBuilder.DefaultTime);

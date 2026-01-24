@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NSubstitute;
 using SeventySix.Api.Infrastructure;
+using SeventySix.Api.Tests.Fixtures;
 using SeventySix.ApiTracking;
 using SeventySix.Shared;
 using SeventySix.Shared.Persistence;
@@ -20,7 +21,7 @@ namespace SeventySix.Api.Tests.Infrastructure.Services;
 /// Tests verify that rate limiting state persists correctly and handles concurrent requests.
 /// All tests share a single PostgreSQL instance to match production behavior.
 /// </summary>
-[Collection(CollectionNames.PostgreSql)]
+[Collection(CollectionNames.ApiTrackingPostgreSql)]
 public class RateLimitingRepositoryTests : DataPostgreSqlTestBase
 {
 	private readonly ILogger<RateLimitingService> LoggerMock;
@@ -32,7 +33,7 @@ public class RateLimitingRepositoryTests : DataPostgreSqlTestBase
 	/// <param name="fixture">
 	/// PostgreSQL fixture.
 	/// </param>
-	public RateLimitingRepositoryTests(TestcontainersPostgreSqlFixture fixture)
+	public RateLimitingRepositoryTests(ApiTrackingApiPostgreSqlFixture fixture)
 		: base(fixture)
 	{
 		LoggerMock =

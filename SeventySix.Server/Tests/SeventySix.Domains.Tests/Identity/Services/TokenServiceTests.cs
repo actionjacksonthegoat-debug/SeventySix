@@ -19,8 +19,8 @@ namespace SeventySix.Domains.Tests.Identity.Services;
 /// Tests refresh token lifecycle, validation, and database persistence using real PostgreSQL.
 /// Pure JWT generation tests are in TokenServiceUnitTests.cs.
 /// </summary>
-[Collection(CollectionNames.PostgreSql)]
-public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture)
+[Collection(CollectionNames.IdentityPostgreSql)]
+public class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 	: DataPostgreSqlTestBase(fixture)
 {
 	/// <summary>

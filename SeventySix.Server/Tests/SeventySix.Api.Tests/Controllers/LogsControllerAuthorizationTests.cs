@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using SeventySix.Api.Tests.Fixtures;
 using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;
 using SeventySix.TestUtilities.TestHelpers;
@@ -12,9 +13,9 @@ namespace SeventySix.Api.Tests.Controllers;
 /// Authorization tests for LogsController.
 /// Tests that admin endpoints require proper authentication and admin role.
 /// </summary>
-[Collection(CollectionNames.PostgreSql)]
+[Collection(CollectionNames.LoggingPostgreSql)]
 public class LogsControllerAuthorizationTests(
-	TestcontainersPostgreSqlFixture fixture) : ApiPostgreSqlTestBase<Program>(fixture), IAsyncLifetime
+	LoggingApiPostgreSqlFixture fixture) : ApiPostgreSqlTestBase<Program>(fixture), IAsyncLifetime
 {
 	private const string Endpoint = ApiEndpoints.Logs.Base;
 	private AuthorizationTestHelper AuthHelper =

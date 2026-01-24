@@ -26,9 +26,9 @@ namespace SeventySix.Domains.Tests.Identity.Jobs;
 /// 80/20 Focus: Tests the critical anonymization logic with real database.
 /// Security/GDPR: Verifies IP addresses are removed after retention period.
 /// </remarks>
-[Collection(CollectionNames.PostgreSql)]
+[Collection(CollectionNames.IdentityPostgreSql)]
 public class IpAnonymizationJobHandlerTests(
-	TestcontainersPostgreSqlFixture fixture) : DataPostgreSqlTestBase(fixture)
+	IdentityPostgreSqlFixture fixture) : DataPostgreSqlTestBase(fixture)
 {
 	private static readonly DateTimeOffset TestTime =
 		TestTimeProviderBuilder.DefaultTime;

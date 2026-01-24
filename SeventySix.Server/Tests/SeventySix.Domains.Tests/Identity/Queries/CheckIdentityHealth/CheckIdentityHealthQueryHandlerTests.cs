@@ -18,9 +18,9 @@ namespace SeventySix.Domains.Tests.Identity.Queries.CheckIdentityHealth;
 /// 80/20 Focus: Tests critical health check logic for system monitoring.
 /// Infrastructure: Verifies database connectivity and exception handling.
 /// </remarks>
-[Collection(CollectionNames.PostgreSql)]
+[Collection(CollectionNames.IdentityPostgreSql)]
 public class CheckIdentityHealthQueryHandlerTests(
-	TestcontainersPostgreSqlFixture fixture) : DataPostgreSqlTestBase(fixture)
+	IdentityPostgreSqlFixture fixture) : DataPostgreSqlTestBase(fixture)
 {
 	/// <summary>
 	/// Tests that health check returns true when database is healthy.

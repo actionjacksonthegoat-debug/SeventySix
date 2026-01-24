@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Time.Testing;
+using SeventySix.Api.Tests.Fixtures;
 using SeventySix.Identity;
 using SeventySix.Shared.Utilities;
 using SeventySix.TestUtilities.Constants;
@@ -26,8 +27,8 @@ namespace SeventySix.Api.Tests.Controllers;
 /// Tests HTTP API endpoints for authentication operations.
 /// Uses shared WebApplicationFactory for improved test performance.
 /// </remarks>
-[Collection(CollectionNames.PostgreSql)]
-public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
+[Collection(CollectionNames.IdentityAuthPostgreSql)]
+public class AuthControllerTests(IdentityAuthApiPostgreSqlFixture fixture)
 	: ApiPostgreSqlTestBase<Program>(fixture),
 		IAsyncLifetime
 {

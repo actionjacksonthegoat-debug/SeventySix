@@ -4,6 +4,7 @@
 
 using System.Net;
 using System.Net.Http.Json;
+using SeventySix.Api.Tests.Fixtures;
 using SeventySix.Identity;
 using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;
@@ -15,9 +16,9 @@ namespace SeventySix.Api.Tests.Controllers;
 /// Authorization tests for permission request endpoints on UsersController.
 /// Focus: Authorization boundaries only (80/20).
 /// </summary>
-[Collection(CollectionNames.PostgreSql)]
+[Collection(CollectionNames.IdentityHealthPostgreSql)]
 public class UsersControllerPermissionRequestsAuthorizationTests(
-	TestcontainersPostgreSqlFixture fixture) : ApiPostgreSqlTestBase<Program>(fixture), IAsyncLifetime
+	IdentityHealthApiPostgreSqlFixture fixture) : ApiPostgreSqlTestBase<Program>(fixture), IAsyncLifetime
 {
 	private const string BaseEndpoint = ApiEndpoints.Users.Base;
 	private AuthorizationTestHelper AuthHelper =

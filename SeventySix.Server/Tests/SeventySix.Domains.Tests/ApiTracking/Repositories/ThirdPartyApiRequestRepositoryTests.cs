@@ -26,13 +26,13 @@ namespace SeventySix.Domains.Tests.ApiTracking.Repositories;
 /// - Query performance
 /// - Concurrency
 /// </remarks>
-[Collection(CollectionNames.PostgreSql)]
+[Collection(CollectionNames.ApiTrackingPostgreSql)]
 public class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase
 {
 	private readonly ThirdPartyApiRequestRepository Repository;
 
 	public ThirdPartyApiRequestRepositoryTests(
-		TestcontainersPostgreSqlFixture fixture)
+		ApiTrackingPostgreSqlFixture fixture)
 		: base(fixture)
 	{
 		ApiTrackingDbContext context = CreateApiTrackingDbContext();

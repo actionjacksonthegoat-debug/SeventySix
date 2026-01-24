@@ -22,8 +22,8 @@ namespace SeventySix.Domains.Tests.Identity.Queries.GetAllUsers;
 /// <remarks>
 /// Tests follow 80/20 rule: focus on critical query behavior with real database.
 /// </remarks>
-[Collection(CollectionNames.PostgreSql)]
-public class GetAllUsersQueryHandlerTests(TestcontainersPostgreSqlFixture fixture)
+[Collection(CollectionNames.IdentityPostgreSql)]
+public class GetAllUsersQueryHandlerTests(IdentityPostgreSqlFixture fixture)
 	: DataPostgreSqlTestBase(fixture)
 {
 	private static readonly FakeTimeProvider TimeProvider =

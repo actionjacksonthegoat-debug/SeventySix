@@ -3,6 +3,7 @@
 // </copyright>
 
 using System.Net;
+using SeventySix.Api.Tests.Fixtures;
 using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;
 using SeventySix.TestUtilities.TestHelpers;
@@ -13,8 +14,8 @@ namespace SeventySix.Api.Tests.Controllers;
 /// Integration tests for user role management endpoints.
 /// Focus: Authorization boundaries (80/20).
 /// </summary>
-[Collection(CollectionNames.PostgreSql)]
-public class UsersControllerRolesTests(TestcontainersPostgreSqlFixture fixture)
+[Collection(CollectionNames.IdentityUsersPostgreSql)]
+public class UsersControllerRolesTests(IdentityUsersApiPostgreSqlFixture fixture)
 	: ApiPostgreSqlTestBase<Program>(fixture),
 		IAsyncLifetime
 {

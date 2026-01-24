@@ -7,6 +7,7 @@ using Microsoft.Extensions.Options;
 using NSubstitute;
 using SeventySix.Identity;
 using SeventySix.Identity.Constants;
+using SeventySix.TestUtilities.Builders;
 
 namespace SeventySix.Domains.Tests.Identity.Services;
 
@@ -175,7 +176,7 @@ public class AuthenticationServiceTests
 				Arg.Any<CancellationToken>())
 			.Returns("refresh");
 
-		TimeProvider.GetUtcNow().Returns(DateTimeOffset.UtcNow);
+		TimeProvider.GetUtcNow().Returns(TestTimeProviderBuilder.DefaultTime);
 
 		// Act
 		await ServiceUnderTest.GenerateAuthResultAsync(
@@ -229,7 +230,7 @@ public class AuthenticationServiceTests
 				Arg.Any<CancellationToken>())
 			.Returns("refresh");
 
-		TimeProvider.GetUtcNow().Returns(DateTimeOffset.UtcNow);
+		TimeProvider.GetUtcNow().Returns(TestTimeProviderBuilder.DefaultTime);
 
 		// Act
 		AuthResult result =
@@ -286,7 +287,7 @@ public class AuthenticationServiceTests
 				Arg.Any<CancellationToken>())
 			.Returns("refresh");
 
-		TimeProvider.GetUtcNow().Returns(DateTimeOffset.UtcNow);
+		TimeProvider.GetUtcNow().Returns(TestTimeProviderBuilder.DefaultTime);
 
 		// Act
 		await ServiceUnderTest.GenerateAuthResultAsync(

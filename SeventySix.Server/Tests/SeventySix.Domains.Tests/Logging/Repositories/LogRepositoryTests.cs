@@ -26,12 +26,12 @@ namespace SeventySix.Domains.Tests.Logging.Repositories;
 /// - Statistics generation
 /// - Cleanup operations
 /// </remarks>
-[Collection(CollectionNames.PostgreSql)]
+[Collection(CollectionNames.LoggingPostgreSql)]
 public class LogRepositoryTests : DataPostgreSqlTestBase
 {
 	private readonly LogRepository Repository;
 
-	public LogRepositoryTests(TestcontainersPostgreSqlFixture fixture)
+	public LogRepositoryTests(LoggingPostgreSqlFixture fixture)
 		: base(fixture)
 	{
 		LoggingDbContext context = CreateLoggingDbContext();

@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using SeventySix.Api.Tests.Fixtures;
 using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;
 using SeventySix.TestUtilities.TestHelpers;
@@ -17,9 +18,9 @@ namespace SeventySix.Api.Tests.Controllers;
 /// The base /health endpoint remains public for container health checks.
 /// The /health/scheduled-jobs endpoint is protected to prevent information disclosure.
 /// </remarks>
-[Collection(CollectionNames.PostgreSql)]
+[Collection(CollectionNames.IdentityHealthPostgreSql)]
 public class HealthControllerAuthorizationTests(
-	TestcontainersPostgreSqlFixture fixture)
+	IdentityHealthApiPostgreSqlFixture fixture)
 	: ApiPostgreSqlTestBase<Program>(fixture), IAsyncLifetime
 {
 	private AuthorizationTestHelper AuthHelper =

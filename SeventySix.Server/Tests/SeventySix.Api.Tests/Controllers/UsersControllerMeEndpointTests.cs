@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using Microsoft.Extensions.Time.Testing;
+using SeventySix.Api.Tests.Fixtures;
 using SeventySix.Identity;
 using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;
@@ -18,9 +19,9 @@ namespace SeventySix.Api.Tests.Controllers;
 /// GET /me is handled by AuthController at /auth/me (see AuthControllerTests).
 /// 80/20 Rule: Only critical happy paths tested.
 /// </summary>
-[Collection(CollectionNames.PostgreSql)]
+[Collection(CollectionNames.IdentityUsersPostgreSql)]
 public class UsersControllerMeEndpointTests(
-	TestcontainersPostgreSqlFixture fixture) : ApiPostgreSqlTestBase<Program>(fixture), IAsyncLifetime
+	IdentityUsersApiPostgreSqlFixture fixture) : ApiPostgreSqlTestBase<Program>(fixture), IAsyncLifetime
 {
 	private HttpClient Client =
 		null!;

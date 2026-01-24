@@ -18,10 +18,10 @@ namespace SeventySix.Domains.Tests.Identity.Repositories;
 /// AuthRepository is now simplified to only handle UpdateLastLoginAsync.
 /// User lookup, external logins, and roles are handled by UserManager.
 /// </remarks>
-[Collection(CollectionNames.PostgreSql)]
+[Collection(CollectionNames.IdentityPostgreSql)]
 public class AuthRepositoryTests : DataPostgreSqlTestBase
 {
-	public AuthRepositoryTests(TestcontainersPostgreSqlFixture fixture)
+	public AuthRepositoryTests(IdentityPostgreSqlFixture fixture)
 		: base(fixture) { }
 
 	/// <summary>

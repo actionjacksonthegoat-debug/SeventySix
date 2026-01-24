@@ -20,9 +20,9 @@ namespace SeventySix.Domains.Tests.Identity.Queries.CheckUsernameExists;
 /// 80/20 Focus: Tests critical username uniqueness validation for registration/profile updates.
 /// Security: Prevents duplicate username registrations.
 /// </remarks>
-[Collection(CollectionNames.PostgreSql)]
+[Collection(CollectionNames.IdentityPostgreSql)]
 public class CheckUsernameExistsQueryHandlerTests(
-	TestcontainersPostgreSqlFixture fixture) : DataPostgreSqlTestBase(fixture)
+	IdentityPostgreSqlFixture fixture) : DataPostgreSqlTestBase(fixture)
 {
 	private static readonly FakeTimeProvider TimeProvider =
 		new(TestTimeProviderBuilder.DefaultTime);

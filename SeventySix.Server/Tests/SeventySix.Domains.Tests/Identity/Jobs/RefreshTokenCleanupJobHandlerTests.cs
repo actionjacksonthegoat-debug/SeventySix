@@ -26,9 +26,9 @@ namespace SeventySix.Domains.Tests.Identity.Jobs;
 /// 80/20 Focus: Tests the critical cleanup logic with real database.
 /// Security: Verifies tokens are properly deleted after retention period.
 /// </remarks>
-[Collection(CollectionNames.PostgreSql)]
+[Collection(CollectionNames.IdentityPostgreSql)]
 public class RefreshTokenCleanupJobHandlerTests(
-	TestcontainersPostgreSqlFixture fixture) : DataPostgreSqlTestBase(fixture)
+	IdentityPostgreSqlFixture fixture) : DataPostgreSqlTestBase(fixture)
 {
 	private static readonly DateTimeOffset TestTime =
 		TestTimeProviderBuilder.DefaultTime;

@@ -20,9 +20,9 @@ namespace SeventySix.Domains.Tests.Identity.Queries.CheckEmailExists;
 /// 80/20 Focus: Tests critical email uniqueness validation for registration/profile updates.
 /// Security: Prevents duplicate email registrations.
 /// </remarks>
-[Collection(CollectionNames.PostgreSql)]
+[Collection(CollectionNames.IdentityPostgreSql)]
 public class CheckEmailExistsQueryHandlerTests(
-	TestcontainersPostgreSqlFixture fixture) : DataPostgreSqlTestBase(fixture)
+	IdentityPostgreSqlFixture fixture) : DataPostgreSqlTestBase(fixture)
 {
 	private static readonly FakeTimeProvider TimeProvider =
 		new(TestTimeProviderBuilder.DefaultTime);

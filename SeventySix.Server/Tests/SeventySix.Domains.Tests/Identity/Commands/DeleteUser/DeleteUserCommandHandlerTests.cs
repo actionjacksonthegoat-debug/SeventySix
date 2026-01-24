@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using NSubstitute;
 using SeventySix.Identity;
 using SeventySix.Shared.POCOs;
+using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.Mocks;
 using Shouldly;
 
@@ -35,7 +36,7 @@ public class DeleteUserCommandHandlerTests
 		// Setup default time
 		TimeProvider
 			.GetUtcNow()
-			.Returns(DateTimeOffset.UtcNow);
+			.Returns(TestTimeProviderBuilder.DefaultTime);
 	}
 
 	/// <summary>

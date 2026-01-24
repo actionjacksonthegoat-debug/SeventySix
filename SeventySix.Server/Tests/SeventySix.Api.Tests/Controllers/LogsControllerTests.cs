@@ -7,6 +7,7 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Time.Testing;
+using SeventySix.Api.Tests.Fixtures;
 using SeventySix.Identity;
 using SeventySix.Logging;
 using SeventySix.Shared.POCOs;
@@ -26,8 +27,8 @@ namespace SeventySix.Api.Tests.Controllers;
 /// Focuses on verifying API contract behavior (routes, status codes).
 /// Service-layer logic is tested separately in repository/service tests.
 /// </remarks>
-[Collection(CollectionNames.PostgreSql)]
-public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture)
+[Collection(CollectionNames.LoggingPostgreSql)]
+public class LogsControllerTests(LoggingApiPostgreSqlFixture fixture)
 	: ApiPostgreSqlTestBase<Program>(fixture),
 		IAsyncLifetime
 {

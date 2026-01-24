@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using NSubstitute;
 using SeventySix.Identity;
 using SeventySix.Identity.Constants;
+using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.Mocks;
 using Shouldly;
 
@@ -48,7 +49,7 @@ public class RegisterCommandHandlerTests
 		// Setup default time
 		TimeProvider
 			.GetUtcNow()
-			.Returns(DateTimeOffset.UtcNow);
+			.Returns(TestTimeProviderBuilder.DefaultTime);
 	}
 
 	/// <summary>

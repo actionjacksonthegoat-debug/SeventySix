@@ -7,6 +7,7 @@ using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using SeventySix.ElectronicNotifications.Emails;
 using SeventySix.Identity;
+using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.Mocks;
 using Shouldly;
 using Wolverine;
@@ -36,7 +37,7 @@ public class InitiateRegistrationCommandHandlerTests
 		MessageBus =
 			Substitute.For<IMessageBus>();
 		TimeProvider =
-			new FakeTimeProvider(DateTimeOffset.UtcNow);
+			new FakeTimeProvider(TestTimeProviderBuilder.DefaultTime);
 	}
 
 	/// <summary>

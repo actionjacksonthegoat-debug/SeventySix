@@ -497,7 +497,8 @@ public class AuditInterceptorTests : IDisposable
 
 	private sealed class TestTimeProvider : TimeProvider
 	{
-		private DateTimeOffset CurrentTime = DateTimeOffset.UtcNow;
+		private DateTimeOffset CurrentTime =
+			new(2025, 1, 1, 12, 0, 0, TimeSpan.Zero);
 
 		public void SetUtcNow(DateTimeOffset time)
 		{

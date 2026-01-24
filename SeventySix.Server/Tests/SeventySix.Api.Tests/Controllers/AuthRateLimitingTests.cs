@@ -4,6 +4,7 @@
 
 using System.Net;
 using System.Net.Http.Json;
+using SeventySix.Api.Tests.Fixtures;
 using SeventySix.Identity;
 using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;
@@ -20,8 +21,8 @@ namespace SeventySix.Api.Tests.Controllers;
 /// rate limiting state for other tests.
 /// Rate limits are configured via UseSetting: Login=5/min, Register=3/hour, Refresh=10/min.
 /// </remarks>
-[Collection(CollectionNames.PostgreSql)]
-public class AuthRateLimitingTests(TestcontainersPostgreSqlFixture fixture)
+[Collection(CollectionNames.IdentityAuthPostgreSql)]
+public class AuthRateLimitingTests(IdentityAuthApiPostgreSqlFixture fixture)
 	: ApiPostgreSqlTestBase<Program>(fixture),
 		IAsyncLifetime
 {
@@ -41,6 +42,9 @@ public class AuthRateLimitingTests(TestcontainersPostgreSqlFixture fixture)
 			CreateIsolatedFactory(
 				builder =>
 				{
+					builder.UseSetting(
+						"RateLimiting:Enabled",
+						"true");
 					builder.UseSetting(
 						"Auth:RateLimit:LoginAttemptsPerMinute",
 						"5");

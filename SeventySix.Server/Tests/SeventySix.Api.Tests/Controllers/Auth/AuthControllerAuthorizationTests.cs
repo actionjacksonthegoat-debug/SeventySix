@@ -3,6 +3,7 @@
 // </copyright>
 
 using System.Net.Http.Json;
+using SeventySix.Api.Tests.Fixtures;
 using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;
 using SeventySix.TestUtilities.TestHelpers;
@@ -15,9 +16,9 @@ namespace SeventySix.Api.Tests.Controllers.Auth;
 /// Tests that protected endpoints require proper authentication.
 /// Per 80/20 rule: Focus on security-critical endpoints that require [Authorize].
 /// </summary>
-[Collection(CollectionNames.PostgreSql)]
+[Collection(CollectionNames.IdentityAuthPostgreSql)]
 public sealed class AuthControllerAuthorizationTests(
-	TestcontainersPostgreSqlFixture fixture) : ApiPostgreSqlTestBase<Program>(fixture), IAsyncLifetime
+	IdentityAuthApiPostgreSqlFixture fixture) : ApiPostgreSqlTestBase<Program>(fixture), IAsyncLifetime
 {
 	private AuthorizationTestHelper AuthHelper =
 		null!;

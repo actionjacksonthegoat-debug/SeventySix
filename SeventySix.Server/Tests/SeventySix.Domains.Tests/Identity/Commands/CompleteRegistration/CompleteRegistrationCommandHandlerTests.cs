@@ -24,9 +24,9 @@ namespace SeventySix.Domains.Tests.Identity.Commands.CompleteRegistration;
 /// <summary>
 /// Tests for CompleteRegistrationCommandHandler using Identity's email confirmation token system.
 /// </summary>
-[Collection(CollectionNames.PostgreSql)]
+[Collection(CollectionNames.IdentityPostgreSql)]
 public class CompleteRegistrationCommandHandlerTests(
-	TestcontainersPostgreSqlFixture fixture) : DataPostgreSqlTestBase(fixture)
+	IdentityPostgreSqlFixture fixture) : DataPostgreSqlTestBase(fixture)
 {
 	[Fact]
 	public async Task HandleAsync_ShouldFail_WhenUserNotFoundAsync()

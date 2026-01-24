@@ -3,6 +3,7 @@
 // </copyright>
 
 using System.Net.Http.Json;
+using SeventySix.Api.Tests.Fixtures;
 using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;
 using SeventySix.TestUtilities.TestHelpers;
@@ -13,9 +14,9 @@ namespace SeventySix.Api.Tests.Controllers;
 /// Authorization tests for PermissionRequestsController.
 /// Verifies that admin-only endpoints require proper authentication and admin role.
 /// </summary>
-[Collection(CollectionNames.PostgreSql)]
+[Collection(CollectionNames.IdentityHealthPostgreSql)]
 public class PermissionRequestsControllerAuthorizationTests(
-	TestcontainersPostgreSqlFixture fixture)
+	IdentityHealthApiPostgreSqlFixture fixture)
 	: ApiPostgreSqlTestBase<Program>(fixture), IAsyncLifetime
 {
 	/// <summary>

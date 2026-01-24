@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using SeventySix.Api.Tests.Fixtures;
 using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;
 using SeventySix.TestUtilities.TestHelpers;
@@ -12,9 +13,9 @@ namespace SeventySix.Api.Tests.Controllers;
 /// Authorization tests for UserRolesController.
 /// Verifies that admin-only endpoints require proper authentication and admin role.
 /// </summary>
-[Collection(CollectionNames.PostgreSql)]
+[Collection(CollectionNames.IdentityUsersPostgreSql)]
 public class UserRolesControllerAuthorizationTests(
-	TestcontainersPostgreSqlFixture fixture)
+	IdentityUsersApiPostgreSqlFixture fixture)
 	: ApiPostgreSqlTestBase<Program>(fixture), IAsyncLifetime
 {
 	/// <summary>
