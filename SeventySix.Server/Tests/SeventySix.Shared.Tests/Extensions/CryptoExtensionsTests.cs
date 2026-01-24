@@ -3,6 +3,7 @@
 // </copyright>
 
 using SeventySix.Shared.Extensions;
+using Shouldly;
 
 namespace SeventySix.Shared.Tests.Extensions;
 
@@ -19,8 +20,8 @@ public class CryptoExtensionsTests
 			CryptoExtensions.GenerateSecureToken();
 
 		// Assert
-		Assert.NotEmpty(token);
-		Assert.True(IsBase64(token));
+		token.ShouldNotBeNullOrEmpty();
+		IsBase64(token).ShouldBeTrue();
 	}
 
 	[Fact]
@@ -33,7 +34,7 @@ public class CryptoExtensionsTests
 			CryptoExtensions.GenerateSecureToken();
 
 		// Assert
-		Assert.NotEqual(token1, token2);
+		token1.ShouldNotBe(token2);
 	}
 
 	[Fact]
@@ -49,7 +50,7 @@ public class CryptoExtensionsTests
 		// Assert - Base64 encodes 3 bytes into 4 chars, with potential padding
 		byte[] decoded =
 			Convert.FromBase64String(token);
-		Assert.Equal(sizeInBytes, decoded.Length);
+		decoded.Length.ShouldBe(sizeInBytes);
 	}
 
 	[Fact]
@@ -60,10 +61,10 @@ public class CryptoExtensionsTests
 			CryptoExtensions.GeneratePkceCodeVerifier();
 
 		// Assert - Should be URL-safe (no +, /, or = padding)
-		Assert.NotEmpty(verifier);
-		Assert.DoesNotContain("+", verifier);
-		Assert.DoesNotContain("/", verifier);
-		Assert.DoesNotContain("=", verifier);
+		verifier.ShouldNotBeNullOrEmpty();
+		verifier.ShouldNotContain("+");
+		verifier.ShouldNotContain("/");
+		verifier.ShouldNotContain("=");
 	}
 
 	[Fact]
@@ -76,7 +77,7 @@ public class CryptoExtensionsTests
 			CryptoExtensions.GeneratePkceCodeVerifier();
 
 		// Assert
-		Assert.NotEqual(verifier1, verifier2);
+		verifier1.ShouldNotBe(verifier2);
 	}
 
 	[Fact]
@@ -92,8 +93,8 @@ public class CryptoExtensionsTests
 			CryptoExtensions.ComputeSha256Hash(input);
 
 		// Assert
-		Assert.Equal(hash1, hash2);
-		Assert.Equal(64, hash1.Length); // SHA256 = 32 bytes = 64 hex chars
+		hash1.ShouldBe(hash2);
+		hash1.Length.ShouldBe(64); // SHA256 = 32 bytes = 64 hex chars
 	}
 
 	[Fact]
@@ -106,7 +107,7 @@ public class CryptoExtensionsTests
 			CryptoExtensions.ComputeSha256Hash("input2");
 
 		// Assert
-		Assert.NotEqual(hash1, hash2);
+		hash1.ShouldNotBe(hash2);
 	}
 
 	[Fact]
@@ -121,10 +122,10 @@ public class CryptoExtensionsTests
 			CryptoExtensions.ComputePkceCodeChallenge(verifier);
 
 		// Assert - Should be URL-safe Base64
-		Assert.NotEmpty(challenge);
-		Assert.DoesNotContain("+", challenge);
-		Assert.DoesNotContain("/", challenge);
-		Assert.DoesNotContain("=", challenge);
+		challenge.ShouldNotBeNullOrEmpty();
+		challenge.ShouldNotContain("+");
+		challenge.ShouldNotContain("/");
+		challenge.ShouldNotContain("=");
 	}
 
 	[Fact]
@@ -140,7 +141,7 @@ public class CryptoExtensionsTests
 			CryptoExtensions.ComputePkceCodeChallenge(verifier);
 
 		// Assert
-		Assert.Equal(challenge1, challenge2);
+		challenge1.ShouldBe(challenge2);
 	}
 
 	private static bool IsBase64(string input)

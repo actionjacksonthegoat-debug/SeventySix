@@ -4,6 +4,7 @@
 
 using System.Collections.Generic;
 using System.IO;
+using Shouldly;
 using Xunit;
 
 namespace SeventySix.ArchitectureTests;
@@ -73,6 +74,6 @@ public class GodFileTests : SourceCodeArchitectureTest
 		}
 
 		// Assert
-		Assert.Empty(godFileViolations);
+		godFileViolations.ShouldBeEmpty();
 	}
 }

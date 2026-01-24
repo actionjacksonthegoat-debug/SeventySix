@@ -5,7 +5,7 @@
 using FluentValidation.TestHelper;
 using SeventySix.ElectronicNotifications.Emails;
 
-namespace SeventySix.Domains.Tests.ElectronicNotifications.Validators;
+namespace SeventySix.Domains.Tests.ElectronicNotifications.Emails.Commands.EnqueueEmail;
 
 /// <summary>
 /// Unit tests for EnqueueEmailCommandValidator.

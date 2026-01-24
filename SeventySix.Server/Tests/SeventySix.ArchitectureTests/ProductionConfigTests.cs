@@ -4,6 +4,7 @@
 
 using System.IO;
 using System.Text.Json;
+using Shouldly;
 using Xunit;
 
 namespace SeventySix.ArchitectureTests;
@@ -55,12 +56,10 @@ public class ProductionConfigTests : SourceCodeArchitectureTest
 				string? originValue =
 					origin.GetString();
 
-				Assert.False(
-					originValue?.Contains("localhost") == true,
+				(originValue?.Contains("localhost") == true).ShouldBeFalse(
 					$"Production CORS should not contain localhost. Found: {originValue}");
 
-				Assert.False(
-					originValue?.Contains("127.0.0.1") == true,
+				(originValue?.Contains("127.0.0.1") == true).ShouldBeFalse(
 					$"Production CORS should not contain 127.0.0.1. Found: {originValue}");
 			}
 		}
@@ -73,8 +72,7 @@ public class ProductionConfigTests : SourceCodeArchitectureTest
 			string? allowedHosts =
 				allowedHostsElement.GetString();
 
-			Assert.True(
-				allowedHosts != "*",
+			(allowedHosts != "*").ShouldBeTrue(
 				"Production AllowedHosts should not be wildcard '*'. " +
 				"Specify explicit hosts like 'seventysix.app;www.seventysix.app'");
 		}
@@ -114,10 +112,9 @@ public class ProductionConfigTests : SourceCodeArchitectureTest
 				string? connectionValue =
 					connectionString.Value.GetString();
 
-				Assert.False(
-					connectionValue?.Contains("localhost") == true ||
+				(connectionValue?.Contains("localhost") == true ||
 					connectionValue?.Contains("127.0.0.1") == true ||
-					connectionValue?.Contains("(local)") == true,
+					connectionValue?.Contains("(local)") == true).ShouldBeFalse(
 					$"Production connection string '{connectionString.Name}' should not use localhost. " +
 					$"Found: {connectionValue}");
 			}

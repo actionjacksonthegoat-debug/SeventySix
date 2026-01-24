@@ -3,13 +3,13 @@
 // </copyright>
 
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using SeventySix.Identity;
 using SeventySix.Shared.Constants;
 using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.Mocks;
+using SeventySix.TestUtilities.Testing;
 using Shouldly;
 using ZiggyCreatures.Caching.Fusion;
 
@@ -36,7 +36,7 @@ public class GetUserProfileQueryHandlerTests
 		UserManager =
 			IdentityMockFactory.CreateUserManager();
 		Cache =
-			CreateInMemoryCache();
+			TestCacheFactory.CreateIdentityCache();
 		CacheProvider =
 			Substitute.For<IFusionCacheProvider>();
 		CacheProvider
@@ -253,21 +253,5 @@ public class GetUserProfileQueryHandlerTests
 		await UserManager
 			.Received(1)
 			.FindByIdAsync(userId.ToString());
-	}
-
-	private static IFusionCache CreateInMemoryCache()
-	{
-		ServiceCollection services =
-			new();
-
-		services.AddFusionCache(CacheNames.Identity);
-
-		ServiceProvider serviceProvider =
-			services.BuildServiceProvider();
-
-		IFusionCacheProvider provider =
-			serviceProvider.GetRequiredService<IFusionCacheProvider>();
-
-		return provider.GetCache(CacheNames.Identity);
 	}
 }

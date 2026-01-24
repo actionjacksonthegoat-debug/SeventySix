@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using SeventySix.Shared.Interfaces;
 using SeventySix.Shared.Persistence;
+using Shouldly;
 using Xunit;
 
 namespace SeventySix.ArchitectureTests;
@@ -72,6 +73,6 @@ public class DatabaseHealthCheckTests
 			}
 		}
 
-		Assert.Empty(violations);
+		violations.ShouldBeEmpty();
 	}
 }

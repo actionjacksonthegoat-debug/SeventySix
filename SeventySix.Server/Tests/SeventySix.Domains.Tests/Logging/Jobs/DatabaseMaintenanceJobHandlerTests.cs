@@ -6,9 +6,11 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
+using NSubstitute.ExceptionExtensions;
 using SeventySix.Logging;
 using SeventySix.Logging.Jobs;
 using SeventySix.Shared.BackgroundJobs;
+using Shouldly;
 
 namespace SeventySix.Domains.Tests.Logging.Jobs;
 
@@ -188,5 +190,46 @@ public class DatabaseMaintenanceJobHandlerTests
 		await DatabaseMaintenanceService
 			.Received(1)
 			.ExecuteVacuumAnalyzeAsync(Arg.Any<CancellationToken>());
+	}
+
+	/// <summary>
+	/// Verifies that service exceptions propagate up for Wolverine error handling.
+	/// </summary>
+	/// <returns>
+	/// A task representing the asynchronous operation.
+	/// </returns>
+	/// <remarks>
+	/// Job error handling is delegated to Wolverine's retry policies.
+	/// This test ensures exceptions aren't swallowed by the handler.
+	/// </remarks>
+	[Fact]
+	public async Task HandleAsync_PropagatesServiceExceptions_ForWolverineHandlingAsync()
+	{
+		// Arrange
+		InvalidOperationException expectedException =
+			new("VACUUM failed - database locked");
+
+		DatabaseMaintenanceService
+			.ExecuteVacuumAnalyzeAsync(Arg.Any<CancellationToken>())
+			.ThrowsAsync(expectedException);
+
+		// Act & Assert
+		InvalidOperationException thrownException =
+			await Should.ThrowAsync<InvalidOperationException>(
+				async () =>
+					await Handler.HandleAsync(
+						new DatabaseMaintenanceJob(),
+						CancellationToken.None));
+
+		thrownException.Message.ShouldBe("VACUUM failed - database locked");
+
+		// Verify no rescheduling occurred (exception interrupted flow)
+		await RecurringJobService
+			.DidNotReceive()
+			.RecordAndScheduleNextAsync<DatabaseMaintenanceJob>(
+				Arg.Any<string>(),
+				Arg.Any<DateTimeOffset>(),
+				Arg.Any<TimeSpan>(),
+				Arg.Any<CancellationToken>());
 	}
 }

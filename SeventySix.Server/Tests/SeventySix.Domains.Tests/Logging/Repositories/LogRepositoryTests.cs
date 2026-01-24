@@ -8,6 +8,7 @@ using NSubstitute;
 using SeventySix.Logging;
 using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;
+using Shouldly;
 
 namespace SeventySix.Domains.Tests.Logging.Repositories;
 
@@ -62,9 +63,9 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 			await Repository.CreateAsync(log);
 
 		// Assert
-		Assert.NotEqual(0, result.Id);
-		Assert.Equal("Error", result.LogLevel);
-		Assert.Equal("Test error message", result.Message);
+		result.Id.ShouldNotBe(0);
+		result.LogLevel.ShouldBe("Error");
+		result.Message.ShouldBe("Test error message");
 	}
 
 	/// <summary>
@@ -74,7 +75,7 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 	public async Task CreateAsync_ThrowsArgumentNullException_WhenEntityIsNullAsync()
 	{
 		// Act & Assert
-		await Assert.ThrowsAsync<ArgumentNullException>(async () =>
+		await Should.ThrowAsync<ArgumentNullException>(async () =>
 			await Repository.CreateAsync(null!));
 	}
 
@@ -95,8 +96,8 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 			request);
 
 		// Assert
-		Assert.NotEmpty(logs);
-		Assert.True(logs.Count() >= 3);
+		logs.ShouldNotBeEmpty();
+		(logs.Count() >= 3).ShouldBeTrue();
 	}
 
 	/// <summary>
@@ -117,9 +118,7 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 			request);
 
 		// Assert
-		Assert.All(
-			logs,
-			log => Assert.Equal("Error", log.LogLevel));
+		logs.ShouldAllBe(log => log.LogLevel == "Error");
 	}
 
 	/// <summary>
@@ -148,13 +147,8 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 			request);
 
 		// Assert
-		Assert.All(
-			logs,
-			log =>
-			{
-				Assert.True(log.CreateDate >= startDate);
-				Assert.True(log.CreateDate <= endDate);
-			});
+		logs.ShouldAllBe(log =>
+			log.CreateDate >= startDate && log.CreateDate <= endDate);
 	}
 
 	/// <summary>
@@ -175,12 +169,8 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 			request);
 
 		// Assert
-		Assert.All(
-			logs,
-			log =>
-				Assert.Contains(
-					"UserService",
-					log.SourceContext ?? string.Empty));
+		logs.ShouldAllBe(log =>
+			(log.SourceContext ?? string.Empty).Contains("UserService"));
 	}
 
 	/// <summary>
@@ -201,12 +191,8 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 			request);
 
 		// Assert
-		Assert.All(
-			logs,
-			log =>
-				Assert.Contains(
-			"/api/users",
-			log.RequestPath ?? string.Empty));
+		logs.ShouldAllBe(log =>
+			(log.RequestPath ?? string.Empty).Contains("/api/users"));
 	}
 
 	/// <summary>
@@ -265,14 +251,10 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 			await Repository.GetPagedAsync(exceptionRequest);
 
 		// Assert - Verify search works across all fields
-		Assert.Single(messageLogs); // Only one log with "Authentication_{testId}" message
-		Assert.Equal(
-			2,
-			sourceLogs.Count()); // Two logs from UserService_{testId}
-		Assert.Equal(
-			2,
-			pathLogs.Count()); // Two logs with users_{testId} path
-		Assert.Single(exceptionLogs); // Only one with NullRef_{testId}
+		messageLogs.ShouldHaveSingleItem(); // Only one log with "Authentication_{testId}" message
+		sourceLogs.Count().ShouldBe(2); // Two logs from UserService_{testId}
+		pathLogs.Count().ShouldBe(2); // Two logs with users_{testId} path
+		exceptionLogs.ShouldHaveSingleItem(); // Only one with NullRef_{testId}
 	}
 
 	/// <summary>
@@ -299,13 +281,9 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 			page2Request);
 
 		// Assert
-		Assert.Equal(
-			2,
-			page1Logs.Count());
-		Assert.NotEmpty(page2Logs);
-		Assert.NotEqual(
-			page1Logs.First().Id,
-			page2Logs.First().Id);
+		page1Logs.Count().ShouldBe(2);
+		page2Logs.ShouldNotBeEmpty();
+		page1Logs.First().Id.ShouldNotBe(page2Logs.First().Id);
 	}
 
 	/// <summary>
@@ -329,7 +307,7 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 		// Assert - Default is now Id descending (newest first)
 		for (int logIndex = 0; logIndex < result.Count - 1; logIndex++)
 		{
-			Assert.True(result[logIndex].Id > result[logIndex + 1].Id);
+			(result[logIndex].Id > result[logIndex + 1].Id).ShouldBeTrue();
 		}
 	}
 
@@ -362,7 +340,7 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 			request);
 
 		// Assert
-		Assert.True(logs.Count() <= 100); // PageSize is capped at 100
+		(logs.Count() <= 100).ShouldBeTrue(); // PageSize is capped at 100
 	}
 
 	/// <summary>
@@ -382,7 +360,7 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 			request);
 
 		// Assert
-		Assert.True(count >= 3);
+		(count >= 3).ShouldBeTrue();
 	}
 
 	/// <summary>
@@ -409,7 +387,7 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 			request);
 
 		// Assert
-		Assert.True(count >= 1); // At least one Error log exists
+		(count >= 1).ShouldBeTrue(); // At least one Error log exists
 	}
 
 	/// <summary>
@@ -448,14 +426,12 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 			await Repository.DeleteOlderThanAsync(cutoffDate);
 
 		// Assert
-		Assert.True(deletedCount > 0);
+		(deletedCount > 0).ShouldBeTrue();
 		LogQueryRequest request =
 			new() { PageSize = 100 };
 		(IEnumerable<Log> remainingLogs, int _) =
 			await Repository.GetPagedAsync(request);
-		Assert.All(
-			remainingLogs,
-			log => Assert.True(log.CreateDate >= cutoffDate));
+		remainingLogs.ShouldAllBe(log => log.CreateDate >= cutoffDate);
 	}
 
 	/// <summary>
@@ -586,9 +562,9 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 	{
 		// Arrange & Act & Assert
 		ArgumentOutOfRangeException exception =
-			await Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () =>
+			await Should.ThrowAsync<ArgumentOutOfRangeException>(async () =>
 				await Repository.DeleteByIdAsync(0));
-		Assert.Equal("id", exception.ParamName);
+		exception.ParamName.ShouldBe("id");
 	}
 
 	/// <summary>
@@ -599,9 +575,9 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 	{
 		// Arrange & Act & Assert
 		ArgumentOutOfRangeException exception =
-			await Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () =>
+			await Should.ThrowAsync<ArgumentOutOfRangeException>(async () =>
 				await Repository.DeleteByIdAsync(-1));
-		Assert.Equal("id", exception.ParamName);
+		exception.ParamName.ShouldBe("id");
 	}
 
 	/// <summary>
@@ -612,9 +588,9 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 	{
 		// Arrange & Act & Assert
 		ArgumentNullException exception =
-			await Assert.ThrowsAsync<ArgumentNullException>(async () =>
+			await Should.ThrowAsync<ArgumentNullException>(async () =>
 				await Repository.DeleteBatchAsync(null!));
-		Assert.Equal("ids", exception.ParamName);
+		exception.ParamName.ShouldBe("ids");
 	}
 
 	/// <summary>
@@ -625,9 +601,9 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 	{
 		// Arrange & Act & Assert
 		ArgumentOutOfRangeException exception =
-			await Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () =>
+			await Should.ThrowAsync<ArgumentOutOfRangeException>(async () =>
 				await Repository.DeleteBatchAsync([]));
-		Assert.Equal("ids.Length", exception.ParamName);
+		exception.ParamName.ShouldBe("ids.Length");
 	}
 
 	#endregion

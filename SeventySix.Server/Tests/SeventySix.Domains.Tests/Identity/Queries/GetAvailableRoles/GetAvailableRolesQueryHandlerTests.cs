@@ -2,12 +2,12 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using SeventySix.Identity;
 using SeventySix.Identity.Constants;
 using SeventySix.Identity.Queries.GetAvailableRoles;
 using SeventySix.Shared.Constants;
+using SeventySix.TestUtilities.Testing;
 using Shouldly;
 using ZiggyCreatures.Caching.Fusion;
 
@@ -31,7 +31,7 @@ public class GetAvailableRolesQueryHandlerTests
 		Repository =
 			Substitute.For<IPermissionRequestRepository>();
 		Cache =
-			CreateInMemoryCache();
+			TestCacheFactory.CreateIdentityCache();
 		CacheProvider =
 			Substitute.For<IFusionCacheProvider>();
 		CacheProvider
@@ -264,21 +264,5 @@ public class GetAvailableRolesQueryHandlerTests
 			.GetUserExistingRolesAsync(
 				userId,
 				Arg.Any<CancellationToken>());
-	}
-
-	private static IFusionCache CreateInMemoryCache()
-	{
-		ServiceCollection services =
-			new();
-
-		services.AddFusionCache(CacheNames.Identity);
-
-		ServiceProvider serviceProvider =
-			services.BuildServiceProvider();
-
-		IFusionCacheProvider provider =
-			serviceProvider.GetRequiredService<IFusionCacheProvider>();
-
-		return provider.GetCache(CacheNames.Identity);
 	}
 }

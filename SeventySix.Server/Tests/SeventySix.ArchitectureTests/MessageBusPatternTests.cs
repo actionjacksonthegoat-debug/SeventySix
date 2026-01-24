@@ -5,6 +5,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Shouldly;
 using Xunit;
 
 namespace SeventySix.ArchitectureTests;
@@ -86,8 +87,7 @@ public partial class MessageBusPatternTests : SourceCodeArchitectureTest
 			}
 		}
 
-		Assert.True(
-			violations.Count == 0,
+		violations.ShouldBeEmpty(
 			$"MessageBus.InvokeAsync should use command/query record types for arrays.\n" +
 			$"Violations found:\n{string.Join("\n", violations)}\n\n" +
 			$"Fix: Create a record type like DeleteLogBatchCommand(long[] LogIds) and use new DeleteLogBatchCommand(ids)");
@@ -135,8 +135,7 @@ public partial class MessageBusPatternTests : SourceCodeArchitectureTest
 			}
 		}
 
-		Assert.True(
-			violations.Count == 0,
+		violations.ShouldBeEmpty(
 			$"MessageBus.InvokeAsync should use command types for token operations.\n" +
 			$"Violations found:\n{string.Join("\n", violations)}\n\n" +
 			$"Fix: Create a record type like RevokeTokenCommand(string Token) and use new RevokeTokenCommand(refreshToken)");

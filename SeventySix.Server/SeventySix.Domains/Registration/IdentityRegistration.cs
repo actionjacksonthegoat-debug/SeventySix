@@ -59,6 +59,34 @@ public static class IdentityRegistration
 		this IServiceCollection services,
 		string connectionString)
 	{
+		RegisterCoreInfrastructure(
+			services,
+			connectionString);
+
+		RegisterAspNetIdentity(services);
+
+		RegisterRepositories(services);
+
+		RegisterServices(services);
+
+		RegisterHealthCheckAndValidators(services);
+
+		return services;
+	}
+
+	/// <summary>
+	/// Registers core infrastructure including user context and DbContext.
+	/// </summary>
+	/// <param name="services">
+	/// The service collection.
+	/// </param>
+	/// <param name="connectionString">
+	/// The database connection string.
+	/// </param>
+	private static void RegisterCoreInfrastructure(
+		IServiceCollection services,
+		string connectionString)
+	{
 		// Register user context accessor (Identity owns authentication/user concerns)
 		services.AddScoped<IUserContextAccessor, UserContextAccessor>();
 
@@ -66,8 +94,16 @@ public static class IdentityRegistration
 		services.AddDomainDbContext<IdentityDbContext>(
 			connectionString,
 			SchemaConstants.Identity);
+	}
 
-		// Register ASP.NET Core Identity
+	/// <summary>
+	/// Registers ASP.NET Core Identity with password, lockout, and user settings.
+	/// </summary>
+	/// <param name="services">
+	/// The service collection.
+	/// </param>
+	private static void RegisterAspNetIdentity(IServiceCollection services)
+	{
 		services
 			.AddIdentityCore<ApplicationUser>(
 				options =>
@@ -81,8 +117,7 @@ public static class IdentityRegistration
 
 					// Lockout settings
 					options.Lockout.DefaultLockoutTimeSpan =
-						TimeSpan.FromMinutes(
-							15);
+						TimeSpan.FromMinutes(15);
 					options.Lockout.MaxFailedAccessAttempts = 5;
 					options.Lockout.AllowedForNewUsers = true;
 
@@ -102,37 +137,59 @@ public static class IdentityRegistration
 
 		// Register transaction manager for Identity context
 		services.AddTransactionManagerFor<IdentityDbContext>();
+	}
 
-		// Register custom repositories (for entities not managed by Identity)
+	/// <summary>
+	/// Registers custom repositories for entities not managed by Identity.
+	/// </summary>
+	/// <param name="services">
+	/// The service collection.
+	/// </param>
+	private static void RegisterRepositories(IServiceCollection services)
+	{
 		services.AddScoped<
 			IPermissionRequestRepository,
-			PermissionRequestRepository
-		>();
+			PermissionRequestRepository>();
 		services.AddScoped<ITokenRepository, TokenRepository>();
 		services.AddScoped<IAuthRepository, AuthRepository>();
+	}
 
-		// Register services - focused interfaces only (no composite IUserService)
+	/// <summary>
+	/// Registers application services including authentication, OAuth, and registration.
+	/// </summary>
+	/// <param name="services">
+	/// The service collection.
+	/// </param>
+	private static void RegisterServices(IServiceCollection services)
+	{
 		services.AddScoped<ITokenService, TokenService>();
 		services.AddScoped<AuthenticationService>();
 		services.AddScoped<OAuthService>();
-		services.AddScoped<IOAuthService>(serviceProvider =>
-			serviceProvider.GetRequiredService<OAuthService>());
+		services.AddScoped<IOAuthService>(
+			serviceProvider =>
+				serviceProvider.GetRequiredService<OAuthService>());
 		services.AddScoped<
 			IOAuthCodeExchangeService,
-			OAuthCodeExchangeService
-		>();
+			OAuthCodeExchangeService>();
 		services.AddScoped<RegistrationService>();
 
 		// Register reCAPTCHA service with typed HttpClient
 		services.AddHttpClient<IRecaptchaService, RecaptchaService>();
+	}
 
+	/// <summary>
+	/// Registers health check and validators for the Identity domain.
+	/// </summary>
+	/// <param name="services">
+	/// The service collection.
+	/// </param>
+	private static void RegisterHealthCheckAndValidators(IServiceCollection services)
+	{
 		// Register health check for multi-db health monitoring using generic Wolverine wrapper
 		services.AddWolverineHealthCheck<CheckIdentityHealthQuery>(
 			SchemaConstants.Identity);
 
 		// Register validators via scanning and command adapter
 		services.AddDomainValidatorsFromAssemblyContaining<IdentityDbContext>();
-
-		return services;
 	}
 }

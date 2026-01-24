@@ -388,18 +388,6 @@ public class TransactionManagerTests : IDisposable
 	}
 
 	/// <summary>
-	/// Documents that primary constructor usage behaves as expected (sanity check for DI behavior).
-	/// </summary>
-	[Fact]
-	public void Constructor_WithNullContext_DoesNotThrowBecauseOfPrimaryConstructor()
-	{
-		// Note: TransactionManager uses primary constructor syntax which relies on
-		// dependency injection to provide non-null dependencies.
-		// This test verifies we understand the pattern - no null checks in primary constructors.
-		Assert.True(true);
-	}
-
-	/// <summary>
 	/// Verifies retry behavior succeeds after an initial concurrency failure.
 	/// </summary>
 	[Fact]

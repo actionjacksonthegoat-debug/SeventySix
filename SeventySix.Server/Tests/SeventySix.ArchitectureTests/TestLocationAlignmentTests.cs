@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using SeventySix.Identity;
+using Shouldly;
 using Xunit;
 
 namespace SeventySix.ArchitectureTests;
@@ -91,16 +92,11 @@ public class TestLocationAlignmentTests : SourceCodeArchitectureTest
 		}
 
 		// Assert
-		if (missingTests.Count > 0)
-		{
-			string message =
-				$"Missing command handler tests ({missingTests.Count}):\n" +
-				string.Join(
-					"\n",
-					missingTests.Select(test => $"  - {test}"));
-
-			Assert.Fail(message);
-		}
+		missingTests.ShouldBeEmpty(
+			$"Missing command handler tests ({missingTests.Count}):\n" +
+			string.Join(
+				"\n",
+				missingTests.Select(test => $"  - {test}")));
 	}
 
 	/// <summary>
@@ -173,16 +169,11 @@ public class TestLocationAlignmentTests : SourceCodeArchitectureTest
 		}
 
 		// Assert
-		if (missingTests.Count > 0)
-		{
-			string message =
-				$"Missing query handler tests ({missingTests.Count}):\n" +
-				string.Join(
-					"\n",
-					missingTests.Select(test => $"  - {test}"));
-
-			Assert.Fail(message);
-		}
+		missingTests.ShouldBeEmpty(
+			$"Missing query handler tests ({missingTests.Count}):\n" +
+			string.Join(
+				"\n",
+				missingTests.Select(test => $"  - {test}")));
 	}
 
 	/// <summary>
@@ -240,16 +231,11 @@ public class TestLocationAlignmentTests : SourceCodeArchitectureTest
 		}
 
 		// Assert
-		if (missingTests.Count > 0)
-		{
-			string message =
-				$"Missing job handler tests ({missingTests.Count}):\n" +
-				string.Join(
-					"\n",
-					missingTests.Select(test => $"  - {test}"));
-
-			Assert.Fail(message);
-		}
+		missingTests.ShouldBeEmpty(
+			$"Missing job handler tests ({missingTests.Count}):\n" +
+			string.Join(
+				"\n",
+				missingTests.Select(test => $"  - {test}")));
 	}
 
 	/// <summary>
@@ -306,16 +292,11 @@ public class TestLocationAlignmentTests : SourceCodeArchitectureTest
 		}
 
 		// Assert
-		if (missingTests.Count > 0)
-		{
-			string message =
-				$"Missing repository tests ({missingTests.Count}):\n" +
-				string.Join(
-					"\n",
-					missingTests.Select(test => $"  - {test}"));
-
-			Assert.Fail(message);
-		}
+		missingTests.ShouldBeEmpty(
+			$"Missing repository tests ({missingTests.Count}):\n" +
+			string.Join(
+				"\n",
+				missingTests.Select(test => $"  - {test}")));
 	}
 
 	/// <summary>

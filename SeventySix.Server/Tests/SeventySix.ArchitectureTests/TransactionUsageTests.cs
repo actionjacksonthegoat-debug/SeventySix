@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using Shouldly;
 using Xunit;
 
 namespace SeventySix.ArchitectureTests;
@@ -100,7 +101,7 @@ public class TransactionUsageTests
 			}
 		}
 
-		Assert.Empty(violations);
+		violations.ShouldBeEmpty();
 	}
 
 	[Fact]
@@ -115,7 +116,7 @@ public class TransactionUsageTests
 		];
 
 		// No assertion - just documentation
-		Assert.NotEmpty(documentedPatterns);
+		documentedPatterns.ShouldNotBeEmpty();
 	}
 
 	private string? FindSourceFile(string typeName)

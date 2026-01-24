@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Shouldly;
 using Xunit;
 
 namespace SeventySix.ArchitectureTests;
@@ -46,7 +47,7 @@ public class IdTypeTests : SourceCodeArchitectureTest
 		}
 
 		// Assert - test should fail until entities are updated to use long
-		Assert.Empty(violations);
+		violations.ShouldBeEmpty();
 	}
 
 	[Fact]
@@ -89,6 +90,6 @@ public class IdTypeTests : SourceCodeArchitectureTest
 		}
 
 		// Assert - test should fail until FKs are updated to long
-		Assert.Empty(violations);
+		violations.ShouldBeEmpty();
 	}
 }

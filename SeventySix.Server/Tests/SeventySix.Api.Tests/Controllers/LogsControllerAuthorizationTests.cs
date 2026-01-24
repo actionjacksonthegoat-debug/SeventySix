@@ -57,6 +57,17 @@ public class LogsControllerAuthorizationTests(
 			Endpoint);
 
 	/// <summary>
+	/// Tests that GET /api/v1/logs returns 403 for User role.
+	/// This endpoint is Admin-only.
+	/// </summary>
+	[Fact]
+	public Task GetPagedAsync_WithUserRole_ReturnsForbiddenAsync() =>
+		AuthHelper.AssertForbiddenForRoleAsync(
+			TestRoleConstants.User,
+			HttpMethod.Get,
+			Endpoint);
+
+	/// <summary>
 	/// Tests that GET /api/v1/logs returns 200 for Admin role.
 	/// </summary>
 	[Fact]

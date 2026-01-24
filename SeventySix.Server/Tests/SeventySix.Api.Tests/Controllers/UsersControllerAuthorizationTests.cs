@@ -112,6 +112,32 @@ public class UsersControllerAuthorizationTests(
 
 	#endregion
 
+	#region User Role Access Tests (403)
+
+	/// <summary>
+	/// Tests that GET /api/v1/users returns 403 for User role.
+	/// This endpoint is Admin-only.
+	/// </summary>
+	[Fact]
+	public Task GetAllAsync_WithUserRole_ReturnsForbiddenAsync() =>
+		AuthHelper.AssertForbiddenForRoleAsync(
+			TestRoleConstants.User,
+			HttpMethod.Get,
+			Endpoint);
+
+	/// <summary>
+	/// Tests that DELETE /api/v1/users/{id} returns 403 for User role.
+	/// This endpoint is Admin-only.
+	/// </summary>
+	[Fact]
+	public Task DeleteAsync_WithUserRole_ReturnsForbiddenAsync() =>
+		AuthHelper.AssertForbiddenForRoleAsync(
+			TestRoleConstants.User,
+			HttpMethod.Delete,
+			$"{Endpoint}/1");
+
+	#endregion
+
 	#region Admin Role Access Tests (200)
 
 	/// <summary>

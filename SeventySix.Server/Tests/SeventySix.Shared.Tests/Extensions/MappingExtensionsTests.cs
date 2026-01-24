@@ -3,6 +3,7 @@
 // </copyright>
 
 using SeventySix.Shared.Extensions;
+using Shouldly;
 
 namespace SeventySix.Shared.Tests.Extensions;
 
@@ -32,19 +33,11 @@ public class MappingExtensionsTests
 
 		// Assert
 		List<TestDto> resultList = result.ToList();
-		Assert.Equal(3, resultList.Count);
-		Assert.Equal(
-			1,
-			resultList[0].Id);
-		Assert.Equal(
-			"FIRST",
-			resultList[0].DisplayName);
-		Assert.Equal(
-			2,
-			resultList[1].Id);
-		Assert.Equal(
-			"SECOND",
-			resultList[1].DisplayName);
+		resultList.Count.ShouldBe(3);
+		resultList[0].Id.ShouldBe(1);
+		resultList[0].DisplayName.ShouldBe("FIRST");
+		resultList[1].Id.ShouldBe(2);
+		resultList[1].DisplayName.ShouldBe("SECOND");
 	}
 
 	[Fact]
@@ -62,7 +55,7 @@ public class MappingExtensionsTests
 			});
 
 		// Assert
-		Assert.Empty(result);
+		result.ShouldBeEmpty();
 	}
 
 	[Fact]
@@ -72,12 +65,14 @@ public class MappingExtensionsTests
 		IEnumerable<TestEntity>? entities = null;
 
 		// Act & Assert
-		Assert.Throws<ArgumentNullException>(() =>
-			entities!.MapToDto(e => new TestDto
-			{
-				Id = e.Id,
-				DisplayName = e.Name,
-			}));
+		Should.Throw<ArgumentNullException>(
+			() =>
+				entities!.MapToDto(
+					entity => new TestDto
+					{
+						Id = entity.Id,
+						DisplayName = entity.Name,
+					}));
 	}
 
 	[Fact]
@@ -89,7 +84,8 @@ public class MappingExtensionsTests
 		Func<TestEntity, TestDto>? mapper = null;
 
 		// Act & Assert
-		Assert.Throws<ArgumentNullException>(() => entities.MapToDto(mapper!));
+		Should.Throw<ArgumentNullException>(
+			() => entities.MapToDto(mapper!));
 	}
 
 	[Fact]
@@ -110,14 +106,14 @@ public class MappingExtensionsTests
 		});
 
 		// Assert - no calls yet (deferred execution)
-		Assert.Equal(0, mapperCallCount);
+		mapperCallCount.ShouldBe(0);
 
 		// Enumerate
 		List<TestDto> materialized = result.ToList();
 
 		// Assert - now mapper was called
-		Assert.Equal(1, mapperCallCount);
-		Assert.Single(materialized);
+		mapperCallCount.ShouldBe(1);
+		materialized.ShouldHaveSingleItem();
 	}
 
 	private class TestEntity

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using NetArchTest.Rules;
+using Shouldly;
 using Xunit;
 
 namespace SeventySix.ArchitectureTests;
@@ -40,82 +41,109 @@ public class BoundedContextTests
 	{
 		Assembly domainAssembly =
 			typeof(SeventySix.Identity.ApplicationUser).Assembly;
-		string[] boundedContextNames =
-			domainAssembly
-			.GetTypes()
-			.Select(type => type.Namespace)
-			.Where(namespaceName =>
-				namespaceName != null
-				&& namespaceName.StartsWith("SeventySix.")
-				&& !namespaceName.Contains("Shared")
-				&& !namespaceName.Contains("Infrastructure")
-				&& !namespaceName.Contains("Extensions")
-				&& !namespaceName.Contains("Registration")
-				&& !namespaceName.Contains("Domains"))
-			.Select(namespaceName => namespaceName!.Split('.')[1])
-			.Distinct()
-			.ToArray();
 
-		List<string> circularDependencyViolations = [];
+		string[] boundedContextNames =
+			GetBoundedContextNames(domainAssembly);
+
+		List<string> circularDependencyViolations =
+			FindCircularDependencyViolations(boundedContextNames);
+
+		circularDependencyViolations.ShouldBeEmpty();
+	}
+
+	/// <summary>
+	/// Finds violations where one bounded context depends on another.
+	/// </summary>
+	/// <param name="boundedContextNames">
+	/// Names of all discovered bounded contexts.
+	/// </param>
+	/// <returns>
+	/// List of violation messages.
+	/// </returns>
+	private static List<string> FindCircularDependencyViolations(
+		string[] boundedContextNames)
+	{
+		List<string> violations = [];
 
 		foreach (string sourceContextName in boundedContextNames)
 		{
 			foreach (string targetContextName in boundedContextNames)
 			{
-				if (sourceContextName == targetContextName)
+				if (ShouldSkipDependencyCheck(
+					sourceContextName,
+					targetContextName))
 				{
 					continue;
 				}
 
-				// Check if this dependency is explicitly allowed
-				if (
-					AllowedDependencies.TryGetValue(
-						sourceContextName,
-						out string[]? allowed) && allowed.Contains(targetContextName))
-				{
-					continue;
-				}
-
-				TestResult architectureTestResult =
-					Types
-					.InNamespace($"SeventySix.{sourceContextName}")
-					.ShouldNot()
-					.HaveDependencyOn($"SeventySix.{targetContextName}")
-					.GetResult();
-
-				if (!architectureTestResult.IsSuccessful)
-				{
-					circularDependencyViolations.Add(
-						$"{sourceContextName} should not depend on {targetContextName}. Violating types: {string.Join(
-							", ",
-							architectureTestResult.FailingTypeNames ?? [])}");
-				}
+				CheckAndAddViolation(
+					sourceContextName,
+					targetContextName,
+					violations);
 			}
 		}
 
-		Assert.Empty(circularDependencyViolations);
+		return violations;
 	}
 
+	/// <summary>
+	/// Determines if a dependency check should be skipped.
+	/// </summary>
+	private static bool ShouldSkipDependencyCheck(
+		string sourceContextName,
+		string targetContextName)
+	{
+		// Skip self-references
+		if (sourceContextName == targetContextName)
+		{
+			return true;
+		}
+
+		// Check if this dependency is explicitly allowed
+		return AllowedDependencies.TryGetValue(
+			sourceContextName,
+			out string[]? allowed) && allowed.Contains(targetContextName);
+	}
+
+	/// <summary>
+	/// Checks if source depends on target and adds violation if found.
+	/// </summary>
+	private static void CheckAndAddViolation(
+		string sourceContextName,
+		string targetContextName,
+		List<string> violations)
+	{
+		TestResult architectureTestResult =
+			Types
+			.InNamespace($"SeventySix.{sourceContextName}")
+			.ShouldNot()
+			.HaveDependencyOn($"SeventySix.{targetContextName}")
+			.GetResult();
+
+		if (!architectureTestResult.IsSuccessful)
+		{
+			string failingTypes =
+				string.Join(
+					", ",
+					architectureTestResult.FailingTypeNames ?? []);
+
+			violations.Add(
+				$"{sourceContextName} should not depend on {targetContextName}. " +
+				$"Violating types: {failingTypes}");
+		}
+	}
+
+	/// <summary>
+	/// Verifies that each bounded context has its own DbContext (except service-only contexts).
+	/// </summary>
 	[Fact]
-	public void Each_Bounded_Context_Should_Have_DbContext()
+	public void Bounded_Contexts_Should_Have_Own_DbContext()
 	{
 		Assembly domainAssembly =
 			typeof(SeventySix.Identity.ApplicationUser).Assembly;
+
 		string[] boundedContextNames =
-			domainAssembly
-			.GetTypes()
-			.Select(type => type.Namespace)
-			.Where(namespaceName =>
-				namespaceName != null
-				&& namespaceName.StartsWith("SeventySix.")
-				&& !namespaceName.Contains("Shared")
-				&& !namespaceName.Contains("Infrastructure")
-				&& !namespaceName.Contains("Extensions")
-				&& !namespaceName.Contains("Registration")
-				&& !namespaceName.Contains("Domains"))
-			.Select(namespaceName => namespaceName!.Split('.')[1])
-			.Distinct()
-			.ToArray();
+			GetBoundedContextNames(domainAssembly);
 
 		List<string> contextsWithoutDbContext = [];
 
@@ -141,7 +169,7 @@ public class BoundedContextTests
 			}
 		}
 
-		Assert.Empty(contextsWithoutDbContext);
+		contextsWithoutDbContext.ShouldBeEmpty();
 	}
 
 	/// <summary>
@@ -178,5 +206,32 @@ public class BoundedContextTests
 		}
 
 		return false;
+	}
+
+	/// <summary>
+	/// Gets the names of all bounded contexts in the given assembly.
+	/// </summary>
+	/// <param name="domainAssembly">
+	/// The assembly to scan for bounded contexts.
+	/// </param>
+	/// <returns>
+	/// Array of bounded context names.
+	/// </returns>
+	private static string[] GetBoundedContextNames(Assembly domainAssembly)
+	{
+		return domainAssembly
+			.GetTypes()
+			.Select(type => type.Namespace)
+			.Where(namespaceName =>
+				namespaceName != null
+				&& namespaceName.StartsWith("SeventySix.")
+				&& !namespaceName.Contains("Shared")
+				&& !namespaceName.Contains("Infrastructure")
+				&& !namespaceName.Contains("Extensions")
+				&& !namespaceName.Contains("Registration")
+				&& !namespaceName.Contains("Domains"))
+			.Select(namespaceName => namespaceName!.Split('.')[1])
+			.Distinct()
+			.ToArray();
 	}
 }

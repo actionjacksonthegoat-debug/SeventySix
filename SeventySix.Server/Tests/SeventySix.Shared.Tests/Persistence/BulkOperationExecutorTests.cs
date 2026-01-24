@@ -4,6 +4,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using SeventySix.Shared.Persistence;
+using Shouldly;
 
 namespace SeventySix.Shared.Tests.Persistence;
 
@@ -57,13 +58,13 @@ public class BulkOperationExecutorTests
 			entity => entity.IsActive = true);
 
 		// Assert
-		Assert.Equal(2, updatedCount);
+		updatedCount.ShouldBe(2);
 
 		List<TestEntity> allEntities =
 			await context.TestEntities.ToListAsync();
-		Assert.True(allEntities.First(e => e.Id == 1).IsActive);
-		Assert.False(allEntities.First(e => e.Id == 2).IsActive);
-		Assert.True(allEntities.First(e => e.Id == 3).IsActive);
+		allEntities.First(entity => entity.Id == 1).IsActive.ShouldBeTrue();
+		allEntities.First(entity => entity.Id == 2).IsActive.ShouldBeFalse();
+		allEntities.First(entity => entity.Id == 3).IsActive.ShouldBeTrue();
 	}
 
 	[Fact]
@@ -99,7 +100,7 @@ public class BulkOperationExecutorTests
 			entity => entity.IsActive = true);
 
 		// Assert
-		Assert.Equal(0, updatedCount);
+		updatedCount.ShouldBe(0);
 	}
 
 	[Fact]
@@ -125,7 +126,7 @@ public class BulkOperationExecutorTests
 			entity => entity.IsActive = true);
 
 		// Assert
-		Assert.Equal(0, updatedCount);
+		updatedCount.ShouldBe(0);
 	}
 
 	[Fact]
@@ -171,19 +172,13 @@ public class BulkOperationExecutorTests
 				});
 
 		// Assert
-		Assert.Equal(2, updatedCount);
+		updatedCount.ShouldBe(2);
 
 		List<TestEntity> allEntities =
 			await context.TestEntities.ToListAsync();
-		Assert.All(
-			allEntities,
-			entity => Assert.True(entity.IsActive));
-		Assert.Equal(
-			"FIRST",
-			allEntities.First(entity => entity.Id == 1L).Name);
-		Assert.Equal(
-			"SECOND",
-			allEntities.First(entity => entity.Id == 2L).Name);
+		allEntities.ShouldAllBe(entity => entity.IsActive);
+		allEntities.First(entity => entity.Id == 1L).Name.ShouldBe("FIRST");
+		allEntities.First(entity => entity.Id == 2L).Name.ShouldBe("SECOND");
 	}
 
 	public class TestEntity
