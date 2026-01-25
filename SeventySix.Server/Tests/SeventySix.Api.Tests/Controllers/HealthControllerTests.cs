@@ -241,10 +241,18 @@ public class HealthControllerTests
 			Assert.IsType<OkObjectResult>(result.Result);
 		HealthStatusResponse returnedStatus =
 			Assert.IsType<HealthStatusResponse>(okResult.Value);
-		Assert.Equal("Healthy", returnedStatus.Status);
+		Assert.Equal(
+			"Healthy",
+			returnedStatus.Status);
 		Assert.True(returnedStatus.Database.IsConnected);
-		Assert.Equal(25.5, returnedStatus.Database.ResponseTimeMs);
-		Assert.Equal(5, returnedStatus.ErrorQueue.QueuedItems);
-		Assert.Equal(45.5, returnedStatus.System.CpuUsagePercent);
+		Assert.Equal(
+			25.5,
+			returnedStatus.Database.ResponseTimeMs);
+		Assert.Equal(
+			5,
+			returnedStatus.ErrorQueue.QueuedItems);
+		Assert.Equal(
+			45.5,
+			returnedStatus.System.CpuUsagePercent);
 	}
 }

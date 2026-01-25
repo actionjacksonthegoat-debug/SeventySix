@@ -24,7 +24,7 @@ async function waitForClient()
 
 			if (response.ok)
 			{
-				console.log(`✓ Angular client is ready after ${attemptNumber} attempts`);
+				console.log(`[OK] Angular client is ready after ${attemptNumber} attempts`);
 				return 0;
 			}
 		}
@@ -38,7 +38,7 @@ async function waitForClient()
 			(resolve) => setTimeout(resolve, POLL_DELAY_MS));
 	}
 
-	console.error("✗ Angular client failed to start within timeout");
+	console.error("[FAIL] Angular client failed to start within timeout");
 	return 1;
 }
 

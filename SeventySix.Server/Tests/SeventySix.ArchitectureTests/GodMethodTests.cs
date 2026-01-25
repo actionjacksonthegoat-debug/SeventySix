@@ -64,6 +64,7 @@ public class GodMethodTests : SourceCodeArchitectureTest
 		[
 			// Authentication handlers - Wolverine Injected dependencies
 			"SeventySix.Domains\\Identity\\Commands\\ChangePassword\\ChangePasswordCommandHandler.cs::HandleAsync",
+			"SeventySix.Domains\\Identity\\Commands\\Login\\LoginCommandHandler.cs::HandleAsync",
 			"SeventySix.Domains\\Identity\\Commands\\SetPassword\\SetPasswordCommandHandler.cs::HandleAsync",
 			"SeventySix.Domains\\Identity\\Commands\\Register\\RegisterCommandHandler.cs::HandleAsync",
 		];

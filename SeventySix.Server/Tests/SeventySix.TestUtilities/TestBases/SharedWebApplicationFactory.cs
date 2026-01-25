@@ -27,6 +27,7 @@ public sealed class SharedWebApplicationFactory<TProgram>
 {
 	private readonly string ConnectionString;
 	private readonly Action<IWebHostBuilder>? ConfigureAdditional;
+	private readonly Action<IServiceCollection>? ConfigureServicesAction;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="SharedWebApplicationFactory{TProgram}"/> class.
@@ -37,12 +38,17 @@ public sealed class SharedWebApplicationFactory<TProgram>
 	/// <param name="configureAdditional">
 	/// Optional additional configuration for the web host builder.
 	/// </param>
+	/// <param name="configureServicesAction">
+	/// Optional service collection configuration for mocking dependencies.
+	/// </param>
 	public SharedWebApplicationFactory(
 		string connectionString,
-		Action<IWebHostBuilder>? configureAdditional = null)
+		Action<IWebHostBuilder>? configureAdditional = null,
+		Action<IServiceCollection>? configureServicesAction = null)
 	{
 		ConnectionString = connectionString;
 		ConfigureAdditional = configureAdditional;
+		ConfigureServicesAction = configureServicesAction;
 	}
 
 	/// <inheritdoc/>
@@ -90,6 +96,9 @@ public sealed class SharedWebApplicationFactory<TProgram>
 					options => options.UseNpgsql(ConnectionString));
 				services.AddDbContext<ElectronicNotificationsDbContext>(
 					options => options.UseNpgsql(ConnectionString));
+
+				// Apply custom service configuration for mocking dependencies
+				ConfigureServicesAction?.Invoke(services);
 			});
 
 		// Apply any additional configuration LAST (e.g., for rate limiting tests)

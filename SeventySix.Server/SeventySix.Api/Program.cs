@@ -21,6 +21,7 @@
 /// interfaces with their concrete implementations.
 /// </remarks>
 
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Scalar.AspNetCore;
 using Serilog;
 using SeventySix.Api.Configuration;
@@ -50,15 +51,25 @@ builder.Services.Configure<SecuritySettings>(
 
 // Bind request limits settings for DoS protection
 RequestLimitsSettings requestLimitsSettings =
-	builder.Configuration
-		.GetSection(ConfigurationSectionConstants.RequestLimits)
-		.Get<RequestLimitsSettings>() ?? new RequestLimitsSettings();
+			builder.Configuration
+				.GetSection(ConfigurationSectionConstants.RequestLimits)
+				.Get<RequestLimitsSettings>() ?? new RequestLimitsSettings();
 
 // Configure Kestrel with request body size limits to prevent DoS attacks
 builder.WebHost.ConfigureKestrel(
 	serverOptions =>
 	{
-		serverOptions.Limits.MaxRequestBodySize = requestLimitsSettings.MaxRequestBodySizeBytes;
+		serverOptions.Limits.MaxRequestBodySize =
+			requestLimitsSettings.MaxRequestBodySizeBytes;
+
+		// Enable HTTP/2 for HTTPS endpoints (HTTP/2 requires TLS/ALPN)
+		// HTTP endpoints fall back to HTTP/1.1 only to avoid warnings
+		serverOptions.ConfigureEndpointDefaults(
+			listenOptions =>
+			{
+				listenOptions.Protocols =
+					HttpProtocols.Http1AndHttp2;
+			});
 
 		if (builder.Environment.IsDevelopment())
 		{
@@ -75,8 +86,10 @@ builder.WebHost.ConfigureKestrel(
 builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(
 	options =>
 	{
-		options.MultipartBodyLengthLimit = requestLimitsSettings.MaxMultipartBodyLengthBytes;
-		options.ValueLengthLimit = requestLimitsSettings.MaxFormOptionsBufferLength;
+		options.MultipartBodyLengthLimit =
+			requestLimitsSettings.MaxMultipartBodyLengthBytes;
+		options.ValueLengthLimit =
+			requestLimitsSettings.MaxFormOptionsBufferLength;
 	});
 
 // Configure Serilog for structured logging

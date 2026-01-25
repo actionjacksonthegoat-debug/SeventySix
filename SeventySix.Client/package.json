@@ -10,7 +10,8 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "format": "eslint e2e --ext .ts --fix && eslint . --fix && dprint fmt && eslint . --fix",
-    "test:e2e": "node scripts/e2e-full.mjs"
+    "test:e2e": "node scripts/e2e-full.mjs",
+    "generate:openapi": "openapi-typescript ../openapi.json -o src/app/shared/generated-open-api/generated-open-api.ts"
   },
   "private": true,
   "dependencies": {

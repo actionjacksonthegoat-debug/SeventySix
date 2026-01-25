@@ -19,7 +19,7 @@ public interface IClientInfoService
 	/// <returns>
 	/// The client IP address, or null if unavailable.
 	/// </returns>
-	string? ExtractClientIp();
+	public string? ExtractClientIp();
 
 	/// <summary>
 	/// Extracts the user agent string from the current HTTP context.
@@ -27,5 +27,5 @@ public interface IClientInfoService
 	/// <returns>
 	/// The user agent string, or null if unavailable.
 	/// </returns>
-	string? ExtractUserAgent();
+	public string? ExtractUserAgent();
 }

@@ -5,7 +5,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
+using Microsoft.AspNetCore.RateLimiting;
 using SeventySix.Api.Configuration;
+using SeventySix.Identity;
 using SeventySix.Identity.Constants;
 using SeventySix.Logging;
 using SeventySix.Shared.POCOs;
@@ -182,9 +184,13 @@ public class LogsController(
 	/// </returns>
 	/// <response code="204">Log successfully recorded.</response>
 	/// <response code="400">Invalid request data.</response>
+	/// <response code="429">Rate limit exceeded.</response>
 	[HttpPost("client")]
+	[AllowAnonymous]
+	[EnableRateLimiting(RateLimitPolicyConstants.ClientLogs)]
 	[ProducesResponseType(StatusCodes.Status204NoContent)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(StatusCodes.Status429TooManyRequests)]
 	public async Task<IActionResult> LogClientErrorAsync(
 		[FromBody] CreateLogRequest request,
 		CancellationToken cancellationToken = default)
@@ -208,9 +214,13 @@ public class LogsController(
 	/// </returns>
 	/// <response code="204">Logs successfully recorded.</response>
 	/// <response code="400">Invalid request data.</response>
+	/// <response code="429">Rate limit exceeded.</response>
 	[HttpPost("client/batch")]
+	[AllowAnonymous]
+	[EnableRateLimiting(RateLimitPolicyConstants.ClientLogs)]
 	[ProducesResponseType(StatusCodes.Status204NoContent)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(StatusCodes.Status429TooManyRequests)]
 	public async Task<IActionResult> LogClientErrorBatchAsync(
 		[FromBody] CreateLogRequest[] requests,
 		CancellationToken cancellationToken = default)

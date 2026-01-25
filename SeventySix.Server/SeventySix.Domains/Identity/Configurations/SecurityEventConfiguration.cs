@@ -11,11 +11,21 @@ namespace SeventySix.Identity;
 /// EF Core configuration for <see cref="SecurityEvent"/> entity.
 /// </summary>
 /// <remarks>
-/// Maps to security.SecurityEvents table.
+/// <para>Maps to security.SecurityEvents table.</para>
+/// <para>
+/// DESIGN DECISION: UserId has no foreign key constraint intentionally.
+/// This allows logging anonymous events and preserves the audit trail even
+/// if the user is deleted. Username is stored at event time (immutable copy)
+/// for permanent audit history.
+/// </para>
+/// <para>
 /// Indexes optimized for:
-/// - User-specific security history queries
-/// - Event type filtering with date ranges
-/// - Cleanup jobs for old events
+/// <list type="bullet">
+///   <item><description>User-specific security history queries (UserId)</description></item>
+///   <item><description>Event type filtering with date ranges (EventType + CreateDate)</description></item>
+///   <item><description>Cleanup jobs for old events (CreateDate)</description></item>
+/// </list>
+/// </para>
 /// </remarks>
 public class SecurityEventConfiguration : IEntityTypeConfiguration<SecurityEvent>
 {

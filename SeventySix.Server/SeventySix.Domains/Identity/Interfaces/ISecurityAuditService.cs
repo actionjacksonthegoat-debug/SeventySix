@@ -37,7 +37,7 @@ public interface ISecurityAuditService
 	/// <returns>
 	/// A task representing the asynchronous operation.
 	/// </returns>
-	Task LogEventAsync(
+	public Task LogEventAsync(
 		SecurityEventType eventType,
 		long? userId,
 		string? username,
@@ -66,7 +66,7 @@ public interface ISecurityAuditService
 	/// <returns>
 	/// A task representing the asynchronous operation.
 	/// </returns>
-	Task LogEventAsync(
+	public Task LogEventAsync(
 		SecurityEventType eventType,
 		ApplicationUser user,
 		bool success,

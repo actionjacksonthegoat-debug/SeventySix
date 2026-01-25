@@ -22,7 +22,7 @@ public static class StartupValidator
 	/// List of configuration keys that must have non-placeholder values in production.
 	/// </summary>
 	private static readonly string[] RequiredSecrets =
-	[
+		[
 		"Jwt:SecretKey",
 		"Database:Password",
 		"Auth:OAuth:Providers:0:ClientId",
@@ -76,7 +76,8 @@ public static class StartupValidator
 
 		foreach (string key in RequiredSecrets)
 		{
-			string? value = configuration[key];
+			string? value =
+				configuration[key];
 
 			if (string.IsNullOrWhiteSpace(value))
 			{

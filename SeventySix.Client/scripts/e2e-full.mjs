@@ -155,7 +155,7 @@ function main()
 
 	if (setupExitCode !== 0)
 	{
-		console.error("\n❌ Setup failed - skipping tests\n");
+		console.error("\n[FAIL] Setup failed - skipping tests\n");
 		testExitCode =
 			setupExitCode;
 	}
@@ -167,11 +167,11 @@ function main()
 
 		if (testExitCode === 0)
 		{
-			console.log("\n✅ All E2E tests passed!\n");
+			console.log("\n[PASS] All E2E tests passed!\n");
 		}
 		else
 		{
-			console.error(`\n❌ E2E tests failed with exit code: ${testExitCode}\n`);
+			console.error(`\n[FAIL] E2E tests failed with exit code: ${testExitCode}\n`);
 		}
 	}
 
@@ -183,16 +183,16 @@ function main()
 
 	if (teardownExitCode !== 0)
 	{
-		console.error("\n⚠️ Teardown encountered issues\n");
+		console.error("\n[WARN] Teardown encountered issues\n");
 	}
 
 	// Report final results
 	console.log("\n" + "=".repeat(60));
 	console.log("E2E Test Suite Complete");
 	console.log("=".repeat(60));
-	console.log(`  Setup:    ${setupExitCode === 0 ? "✅ Passed" : "❌ Failed"}`);
-	console.log(`  Tests:    ${testExitCode === 0 ? "✅ Passed" : "❌ Failed"}`);
-	console.log(`  Teardown: ${teardownExitCode === 0 ? "✅ Passed" : "⚠️ Issues"}`);
+	console.log(`  Setup:    ${setupExitCode === 0 ? "[PASS]" : "[FAIL]"}`);
+	console.log(`  Tests:    ${testExitCode === 0 ? "[PASS]" : "[FAIL]"}`);
+	console.log(`  Teardown: ${teardownExitCode === 0 ? "[PASS]" : "[WARN] Issues"}`);
 	console.log("=".repeat(60) + "\n");
 
 	// Exit with test exit code (or setup code if setup failed)

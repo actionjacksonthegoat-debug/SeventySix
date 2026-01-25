@@ -143,6 +143,16 @@ public record AuthRateLimitSettings
 	/// Gets max token refresh per minute. Default: 10.
 	/// </summary>
 	public int TokenRefreshPerMinute { get; init; } = 10;
+
+	/// <summary>
+	/// Gets max ALTCHA challenge requests per minute. Default: 10.
+	/// </summary>
+	public int AltchaChallengePerMinute { get; init; } = 10;
+
+	/// <summary>
+	/// Gets max client log submissions per minute. Default: 30.
+	/// </summary>
+	public int ClientLogsPerMinute { get; init; } = 30;
 }
 
 /// <summary>

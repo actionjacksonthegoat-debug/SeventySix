@@ -227,4 +227,3 @@ public class SecurityAuditServiceUnitTests
 		savedEvent.UserAgent.ShouldBeNull();
 	}
 }
-

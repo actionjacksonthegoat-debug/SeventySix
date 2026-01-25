@@ -4,7 +4,7 @@ export const environment: Environment =
 	{
 		production: false,
 		version: "1.0.0-dev",
-		apiUrl: "http://localhost:5085/api/v1", // API v1 - HTTP for local development (use https://localhost:7074/api/v1 for docker-compose)
+		apiUrl: "https://localhost:7074/api/v1", // HTTPS for local development with HTTP/2 support
 		logging: {
 			enableRemoteLogging: true,
 			consoleLogLevel: "warn", // Only show warnings and errors in console

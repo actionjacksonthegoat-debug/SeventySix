@@ -15,15 +15,24 @@ namespace SeventySix.Api.Registration;
 /// Registration for rate limiting services.
 /// </summary>
 /// <remarks>
+/// <para>
 /// Rate limiting policies:
-/// - Global: Default limit for all endpoints (2500/hour per IP)
-/// - auth-login: Stricter limit for login attempts (5/minute per IP)
-/// - auth-register: Stricter limit for registration (3/hour per IP)
-/// - auth-refresh: Moderate limit for token refresh (10/minute per IP)
-/// - health-check: Rate limit for health endpoints (30/minute per IP)
-///
+/// </para>
+/// <list type="bullet">
+///   <item><description>Global: Default limit for all endpoints (2500/hour per IP)</description></item>
+///   <item><description>auth-login: Stricter limit for login attempts (5/minute per IP)</description></item>
+///   <item><description>auth-register: Stricter limit for registration (3/hour per IP)</description></item>
+///   <item><description>auth-refresh: Moderate limit for token refresh (10/minute per IP)</description></item>
+///   <item><description>altcha-challenge: ALTCHA challenge generation (10/minute per IP)</description></item>
+///   <item><description>client-logs: Client-side logging endpoints (30/minute per IP)</description></item>
+///   <item><description>health-check: Rate limit for health endpoints (30/minute per IP)</description></item>
+/// </list>
+/// <para>
 /// Bypass policies (no rate limit):
-/// - OPTIONS requests (CORS preflight)
+/// </para>
+/// <list type="bullet">
+///   <item><description>OPTIONS requests (CORS preflight)</description></item>
+/// </list>
 /// </remarks>
 public static class RateLimitingRegistration
 {
@@ -100,6 +109,12 @@ public static class RateLimitingRegistration
 					_ => RateLimitPartition.GetNoLimiter(string.Empty));
 				options.AddPolicy(
 					RateLimitPolicyConstants.AuthRefresh,
+					_ => RateLimitPartition.GetNoLimiter(string.Empty));
+				options.AddPolicy(
+					RateLimitPolicyConstants.AltchaChallenge,
+					_ => RateLimitPartition.GetNoLimiter(string.Empty));
+				options.AddPolicy(
+					RateLimitPolicyConstants.ClientLogs,
 					_ => RateLimitPartition.GetNoLimiter(string.Empty));
 			});
 
@@ -202,24 +217,38 @@ public static class RateLimitingRegistration
 	{
 		options.AddPolicy(
 			RateLimitPolicyConstants.AuthLogin,
-			ctx =>
+			context =>
 				CreateAuthLimiter(
-					ctx,
+					context,
 					settings.LoginAttemptsPerMinute,
 					TimeSpan.FromMinutes(1)));
 		options.AddPolicy(
 			RateLimitPolicyConstants.AuthRegister,
-			ctx =>
+			context =>
 				CreateAuthLimiter(
-					ctx,
+					context,
 					settings.RegisterAttemptsPerHour,
 					TimeSpan.FromHours(1)));
 		options.AddPolicy(
 			RateLimitPolicyConstants.AuthRefresh,
-			ctx =>
+			context =>
 				CreateAuthLimiter(
-					ctx,
+					context,
 					settings.TokenRefreshPerMinute,
+					TimeSpan.FromMinutes(1)));
+		options.AddPolicy(
+			RateLimitPolicyConstants.AltchaChallenge,
+			context =>
+				CreateAuthLimiter(
+					context,
+					settings.AltchaChallengePerMinute,
+					TimeSpan.FromMinutes(1)));
+		options.AddPolicy(
+			RateLimitPolicyConstants.ClientLogs,
+			context =>
+				CreateAuthLimiter(
+					context,
+					settings.ClientLogsPerMinute,
 					TimeSpan.FromMinutes(1)));
 	}
 

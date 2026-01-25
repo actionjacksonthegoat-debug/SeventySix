@@ -5,12 +5,15 @@ services:
   # .NET API - Override for observability configuration
   seventysix-api:
     environment:
-      # OpenTelemetry configuration - Use service name for Docker networking
-      - OpenTelemetry__OtlpEndpoint=http://jaeger:4317
+      # OpenTelemetry configuration - Use otel-collector as single ingestion point
+      # otel-collector routes traces to Jaeger and exposes metrics for Prometheus
+      - OpenTelemetry__OtlpEndpoint=http://otel-collector:4317
     depends_on:
-      - jaeger
+      - otel-collector
 
   # Jaeger - Distributed Tracing UI
+  # Note: Receives traces FROM otel-collector, not directly from API
+  # OTLP ports (4317/4318) are owned by otel-collector to avoid conflicts
   jaeger:
     image: jaegertracing/all-in-one:1.53
     container_name: seventysix-jaeger-dev
@@ -26,8 +29,7 @@ services:
       - "14268:14268"     # Accept jaeger.thrift over HTTP
       - "14250:14250"     # Accept model.proto over gRPC
       - "9411:9411"       # Zipkin compatible endpoint
-      - "4317:4317"       # OTLP gRPC
-      - "4318:4318"       # OTLP HTTP
+      # NOTE: 4317/4318 intentionally NOT mapped - otel-collector owns these host ports
     networks:
       - seventysix-network
     restart: unless-stopped

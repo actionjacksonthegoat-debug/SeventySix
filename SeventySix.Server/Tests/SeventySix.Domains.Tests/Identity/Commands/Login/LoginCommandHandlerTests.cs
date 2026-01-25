@@ -57,7 +57,9 @@ public class LoginCommandHandlerTests
 		ApplicationUser user =
 			CreateTestUser();
 		LoginCommand command =
-			CreateLoginCommand("testuser", "ValidPass123!");
+			CreateLoginCommand(
+				"testuser",
+				"ValidPass123!");
 
 		SetupUserManagerForSuccess(user);
 		SetupSignInSuccess();
@@ -89,7 +91,9 @@ public class LoginCommandHandlerTests
 		ApplicationUser user =
 			CreateTestUser();
 		LoginCommand command =
-			CreateLoginCommand("testuser", "WrongPassword!");
+			CreateLoginCommand(
+				"testuser",
+				"WrongPassword!");
 
 		SetupUserManagerForSuccess(user);
 		SignInManager
@@ -125,7 +129,9 @@ public class LoginCommandHandlerTests
 		ApplicationUser user =
 			CreateTestUser();
 		LoginCommand command =
-			CreateLoginCommand("testuser", "ValidPass123!");
+			CreateLoginCommand(
+				"testuser",
+				"ValidPass123!");
 
 		SetupUserManagerForSuccess(user);
 		SignInManager
@@ -159,7 +165,9 @@ public class LoginCommandHandlerTests
 	{
 		// Arrange
 		LoginCommand command =
-			CreateLoginCommand("nonexistent", "Password123!");
+			CreateLoginCommand(
+				"nonexistent",
+				"Password123!");
 
 		UserManager
 			.FindByNameAsync(Arg.Any<string>())
@@ -194,7 +202,9 @@ public class LoginCommandHandlerTests
 		ApplicationUser user =
 			CreateTestUser(isActive: false);
 		LoginCommand command =
-			CreateLoginCommand("testuser", "ValidPass123!");
+			CreateLoginCommand(
+				"testuser",
+				"ValidPass123!");
 
 		UserManager
 			.FindByNameAsync(Arg.Any<string>())
@@ -291,7 +301,14 @@ public class LoginCommandHandlerTests
 				AuthResult.Succeeded(
 					accessToken: "test-access-token",
 					refreshToken: "test-refresh-token",
-					expiresAt: new DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero).UtcDateTime,
+					expiresAt: new DateTimeOffset(
+						2025,
+						1,
+						1,
+						0,
+						0,
+						0,
+						TimeSpan.Zero).UtcDateTime,
 					email: user.Email!,
 					fullName: user.FullName,
 					requiresPasswordChange: false));

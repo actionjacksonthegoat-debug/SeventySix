@@ -66,10 +66,10 @@ function test(name, fn) {
 	try {
 		fn();
 		passedTests++;
-		console.log(`✓ ${name}`);
+		console.log(`[PASS] ${name}`);
 	} catch (error) {
 		failedTests++;
-		console.error(`✗ ${name}`);
+		console.error(`[FAIL] ${name}`);
 		console.error(`  ${error.message}`);
 	}
 }

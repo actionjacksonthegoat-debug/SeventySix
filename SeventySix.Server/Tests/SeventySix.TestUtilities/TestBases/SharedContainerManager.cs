@@ -9,6 +9,7 @@ using SeventySix.ApiTracking;
 using SeventySix.ElectronicNotifications;
 using SeventySix.Identity;
 using SeventySix.Logging;
+using SeventySix.Shared.Constants;
 using Testcontainers.PostgreSql;
 
 namespace SeventySix.TestUtilities.TestBases;
@@ -100,16 +101,33 @@ public static class SharedContainerManager
 		// Ensure template exists (thread-safe, only created once)
 		await EnsureTemplateCreatedAsync(masterConnection);
 
-		// Create database from template (much faster than running migrations)
-		await using (NpgsqlConnection connection =
-			new(masterConnection))
+		// Clear all connection pools to ensure no lingering connections to template
+		// This prevents "source database is being accessed by other users" errors
+		NpgsqlConnection.ClearAllPools();
+
+		// Create database from template with retry logic for concurrent access
+		const int maxRetries = 3;
+		for (int attempt = 1; attempt <= maxRetries; attempt++)
 		{
-			await connection.OpenAsync();
-			await using NpgsqlCommand command =
-				new(
-				$"CREATE DATABASE \"{databaseName}\" TEMPLATE \"{TemplateDbName}\"",
-				connection);
-			await command.ExecuteNonQueryAsync();
+			try
+			{
+				await using NpgsqlConnection connection =
+					new(masterConnection);
+				await connection.OpenAsync();
+				await using NpgsqlCommand command =
+					new(
+					$"CREATE DATABASE \"{databaseName}\" TEMPLATE \"{TemplateDbName}\"",
+					connection);
+				await command.ExecuteNonQueryAsync();
+				break;
+			}
+			catch (PostgresException exception) when (
+				exception.SqlState == "55006" && attempt < maxRetries)
+			{
+				// Template is being accessed by other users, wait and retry
+				NpgsqlConnection.ClearAllPools();
+				await Task.Delay(100 * attempt);
+			}
 		}
 
 		NpgsqlConnectionStringBuilder builder =
@@ -117,7 +135,8 @@ public static class SharedContainerManager
 			{
 				Database = databaseName,
 			};
-		string connectionString = builder.ToString();
+		string connectionString =
+			builder.ToString();
 
 		DatabaseConnections.TryAdd(databaseName, connectionString);
 		return connectionString;
@@ -140,6 +159,37 @@ public static class SharedContainerManager
 			if (TemplateCreated)
 			{
 				return;
+			}
+
+			// Check if template database already exists (handles container reuse scenarios)
+			bool templateExists = false;
+			await using (NpgsqlConnection checkConnection =
+				new(masterConnection))
+			{
+				await checkConnection.OpenAsync();
+				await using NpgsqlCommand checkCommand =
+					new(
+					$"SELECT 1 FROM pg_database WHERE datname = '{TemplateDbName}'",
+					checkConnection);
+				object? result =
+					await checkCommand.ExecuteScalarAsync();
+				templateExists =
+					result is not null;
+			}
+
+			if (templateExists)
+			{
+				// Template exists but may be incomplete from previous failed run
+				// Drop it and recreate to ensure clean state
+				NpgsqlConnection.ClearAllPools();
+				await using NpgsqlConnection dropConnection =
+					new(masterConnection);
+				await dropConnection.OpenAsync();
+				await using NpgsqlCommand dropCommand =
+					new(
+					$"DROP DATABASE IF EXISTS \"{TemplateDbName}\" WITH (FORCE)",
+					dropConnection);
+				await dropCommand.ExecuteNonQueryAsync();
 			}
 
 			// Create template database
@@ -181,7 +231,12 @@ public static class SharedContainerManager
 	{
 		DbContextOptions<IdentityDbContext> identityOptions =
 			new DbContextOptionsBuilder<IdentityDbContext>()
-				.UseNpgsql(connectionString)
+				.UseNpgsql(
+					connectionString,
+					npgsqlOptions =>
+						npgsqlOptions.MigrationsHistoryTable(
+							DatabaseConstants.MigrationsHistoryTableName,
+							SchemaConstants.Identity))
 				.Options;
 		await using (IdentityDbContext context =
 			new(identityOptions))
@@ -191,7 +246,12 @@ public static class SharedContainerManager
 
 		DbContextOptions<LoggingDbContext> loggingOptions =
 			new DbContextOptionsBuilder<LoggingDbContext>()
-				.UseNpgsql(connectionString)
+				.UseNpgsql(
+					connectionString,
+					npgsqlOptions =>
+						npgsqlOptions.MigrationsHistoryTable(
+							DatabaseConstants.MigrationsHistoryTableName,
+							SchemaConstants.Logging))
 				.Options;
 		await using (LoggingDbContext context =
 			new(loggingOptions))
@@ -201,7 +261,12 @@ public static class SharedContainerManager
 
 		DbContextOptions<ApiTrackingDbContext> apiTrackingOptions =
 			new DbContextOptionsBuilder<ApiTrackingDbContext>()
-				.UseNpgsql(connectionString)
+				.UseNpgsql(
+					connectionString,
+					npgsqlOptions =>
+						npgsqlOptions.MigrationsHistoryTable(
+							DatabaseConstants.MigrationsHistoryTableName,
+							SchemaConstants.ApiTracking))
 				.Options;
 		await using (ApiTrackingDbContext context =
 			new(apiTrackingOptions))
@@ -211,7 +276,12 @@ public static class SharedContainerManager
 
 		DbContextOptions<ElectronicNotificationsDbContext> electronicNotificationsOptions =
 			new DbContextOptionsBuilder<ElectronicNotificationsDbContext>()
-				.UseNpgsql(connectionString)
+				.UseNpgsql(
+					connectionString,
+					npgsqlOptions =>
+						npgsqlOptions.MigrationsHistoryTable(
+							DatabaseConstants.MigrationsHistoryTableName,
+							SchemaConstants.ElectronicNotifications))
 				.Options;
 		await using (ElectronicNotificationsDbContext context =
 			new(electronicNotificationsOptions))

@@ -92,7 +92,7 @@ services:
       - Database__Port=5432
       # Cache - Use Docker service name for Valkey connection
       - Cache__Valkey__ConnectionString=valkey:6379
-      # OpenTelemetry - using container network DNS name
+      # OpenTelemetry - otel-collector is the single ingestion point for traces AND metrics
       - OpenTelemetry__OtlpEndpoint=http://otel-collector:4317
     volumes:
       - ~/.aspnet/https:/https:ro
@@ -125,18 +125,20 @@ services:
     restart: unless-stopped
 
   # Jaeger - Distributed tracing
+  # Note: Receives traces from otel-collector, NOT directly from API
+  # The otel-collector is the single ingestion point for all telemetry
   jaeger:
     image: jaegertracing/all-in-one:1.62.0
     container_name: seventysix-jaeger-dev
     ports:
-      - "16686:16686"
+      - "16686:16686"   # Jaeger UI only - OTLP ports handled by otel-collector
     environment:
       - COLLECTOR_OTLP_ENABLED=true
     networks:
       - seventysix-network
     restart: unless-stopped
 
-  # OpenTelemetry Collector - Telemetry routing
+  # OpenTelemetry Collector - Telemetry routing (REQUIRED for metrics)
   # Receives OTLP from API, exports traces to Jaeger and metrics to Prometheus format
   otel-collector:
     image: otel/opentelemetry-collector-contrib:0.123.0
@@ -145,7 +147,7 @@ services:
     volumes:
       - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml:ro
     ports:
-      - "4317:4317"   # OTLP gRPC
+      - "4317:4317"   # OTLP gRPC - single ingestion point
       - "4318:4318"   # OTLP HTTP
       - "8889:8889"   # Prometheus metrics export
     depends_on:

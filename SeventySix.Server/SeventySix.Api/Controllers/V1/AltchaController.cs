@@ -3,6 +3,7 @@
 // </copyright>
 
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using SeventySix.Api.Configuration;
 using SeventySix.Identity;
 
@@ -27,8 +28,11 @@ public class AltchaController(
 	/// Challenge parameters for the ALTCHA widget.
 	/// </returns>
 	/// <response code="200">Challenge generated successfully.</response>
+	/// <response code="429">Rate limit exceeded.</response>
 	[HttpGet("challenge")]
+	[EnableRateLimiting(RateLimitPolicyConstants.AltchaChallenge)]
 	[ProducesResponseType(typeof(AltchaChallengeDto), StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status429TooManyRequests)]
 	public ActionResult<AltchaChallengeDto> GetChallenge()
 	{
 		AltchaChallengeDto challenge =

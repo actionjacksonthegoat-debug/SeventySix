@@ -24,7 +24,7 @@ async function waitForApi()
 
 			if (response.ok)
 			{
-				console.log(`✓ API is ready after ${attemptNumber} attempts`);
+				console.log(`[OK] API is ready after ${attemptNumber} attempts`);
 				return 0;
 			}
 		}
@@ -38,7 +38,7 @@ async function waitForApi()
 			(resolve) => setTimeout(resolve, POLL_DELAY_MS));
 	}
 
-	console.error("✗ API failed to start within timeout");
+	console.error("[FAIL] API failed to start within timeout");
 	return 1;
 }
 
