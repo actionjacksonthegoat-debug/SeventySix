@@ -4,7 +4,6 @@
 
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using SeventySix.Identity;
@@ -31,9 +30,7 @@ public class RegistrationServiceTests
 		new(TestTimeProviderBuilder.DefaultTime);
 
 	private readonly UserManager<ApplicationUser> UserManager;
-	private readonly ITokenService TokenService;
-	private readonly IAuthRepository AuthRepository;
-	private readonly IOptions<JwtSettings> JwtSettings;
+	private readonly AuthenticationService AuthenticationService;
 	private readonly ILogger<RegistrationService> Logger;
 
 	private const string TestUsername = "newuser";
@@ -48,20 +45,29 @@ public class RegistrationServiceTests
 	{
 		UserManager =
 			IdentityMockFactory.CreateUserManager();
-		TokenService =
-			Substitute.For<ITokenService>();
-		AuthRepository =
-			Substitute.For<IAuthRepository>();
+		AuthenticationService =
+			Substitute.For<AuthenticationService>(
+				Substitute.For<IAuthRepository>(),
+				Substitute.For<ITokenService>(),
+				Microsoft.Extensions.Options.Options.Create(
+					new JwtSettings
+					{
+						AccessTokenExpirationMinutes = 15,
+						RefreshTokenExpirationDays = 7,
+					}),
+				TimeProvider,
+				Substitute.For<UserManager<ApplicationUser>>(
+					Substitute.For<IUserStore<ApplicationUser>>(),
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					null));
 		Logger =
 			Substitute.For<ILogger<RegistrationService>>();
-
-		JwtSettings =
-			Options.Create(
-			new JwtSettings
-			{
-				AccessTokenExpirationMinutes = 15,
-				RefreshTokenExpirationDays = 7,
-			});
 	}
 
 	#region CreateUserWithCredentialAsync Tests
@@ -308,10 +314,11 @@ public class RegistrationServiceTests
 	#region GenerateAuthResultAsync Tests
 
 	/// <summary>
-	/// Verifies auth result includes tokens when user is valid.
+	/// Verifies GenerateAuthResultAsync delegates to AuthenticationService (DRY compliance).
+	/// Actual token generation logic is tested in AuthenticationServiceTests (80/20 rule).
 	/// </summary>
 	[Fact]
-	public async Task GenerateAuthResultAsync_ValidUser_ReturnsTokensAsync()
+	public async Task GenerateAuthResultAsync_ValidUser_DelegatesToAuthenticationServiceAsync()
 	{
 		// Arrange
 		ApplicationUser user =
@@ -321,24 +328,23 @@ public class RegistrationServiceTests
 				.WithEmail(TestEmail)
 				.Build();
 
-		UserManager
-			.GetRolesAsync(user)
-			.Returns(new List<string> { RoleConstants.User });
+		AuthResult expectedResult =
+			AuthResult.Succeeded(
+				"access-token",
+				"refresh-token",
+				TimeProvider.GetUtcNow().AddMinutes(15).UtcDateTime,
+				TestEmail,
+				"Test User",
+				requiresPasswordChange: false);
 
-		TokenService
-			.GenerateAccessToken(
-				Arg.Any<long>(),
-				Arg.Any<string>(),
-				Arg.Any<IEnumerable<string>>())
-			.Returns("access-token");
-
-		TokenService
-			.GenerateRefreshTokenAsync(
-				Arg.Any<long>(),
-				Arg.Any<string?>(),
-				Arg.Any<bool>(),
+		AuthenticationService
+			.GenerateAuthResultAsync(
+				user,
+				"127.0.0.1",
+				false,
+				false,
 				Arg.Any<CancellationToken>())
-			.Returns("refresh-token");
+			.Returns(expectedResult);
 
 		RegistrationService service =
 			CreateService();
@@ -352,64 +358,17 @@ public class RegistrationServiceTests
 				rememberMe: false,
 				CancellationToken.None);
 
-		// Assert
-		result.Success.ShouldBeTrue();
-		result.AccessToken.ShouldBe("access-token");
-		result.RefreshToken.ShouldBe("refresh-token");
-	}
-
-	/// <summary>
-	/// Verifies last login is updated after token generation.
-	/// </summary>
-	[Fact]
-	public async Task GenerateAuthResultAsync_ValidUser_UpdatesLastLoginAsync()
-	{
-		// Arrange
-		ApplicationUser user =
-			new UserBuilder(TimeProvider)
-				.WithId(1)
-				.WithUsername(TestUsername)
-				.WithEmail(TestEmail)
-				.Build();
-
-		UserManager
-			.GetRolesAsync(user)
-			.Returns(new List<string> { RoleConstants.User });
-
-		TokenService
-			.GenerateAccessToken(
-				Arg.Any<long>(),
-				Arg.Any<string>(),
-				Arg.Any<IEnumerable<string>>())
-			.Returns("access-token");
-
-		TokenService
-			.GenerateRefreshTokenAsync(
-				Arg.Any<long>(),
-				Arg.Any<string?>(),
-				Arg.Any<bool>(),
-				Arg.Any<CancellationToken>())
-			.Returns("refresh-token");
-
-		RegistrationService service =
-			CreateService();
-
-		// Act
-		await service.GenerateAuthResultAsync(
-			user,
-			"192.168.1.1",
-			requiresPasswordChange: false,
-			rememberMe: false,
-			CancellationToken.None);
-
-		// Assert
-		await AuthRepository
+		// Assert - Verify delegation occurred and result passed through
+		await AuthenticationService
 			.Received(1)
-			.UpdateLastLoginAsync(
-				user.Id,
-				Arg.Any<DateTime>(),
-				"192.168.1.1",
+			.GenerateAuthResultAsync(
+				user,
+				"127.0.0.1",
+				false,
+				false,
 				Arg.Any<CancellationToken>());
+
+		result.ShouldBe(expectedResult);
 	}
 
 	#endregion
@@ -420,9 +379,7 @@ public class RegistrationServiceTests
 	{
 		return new RegistrationService(
 			UserManager,
-			TokenService,
-			AuthRepository,
-			JwtSettings,
+			AuthenticationService,
 			TimeProvider,
 			Logger);
 	}

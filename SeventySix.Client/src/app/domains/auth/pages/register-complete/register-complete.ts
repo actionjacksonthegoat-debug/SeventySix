@@ -18,11 +18,11 @@ import { MatButtonModule } from "@angular/material/button";
 import { ActivatedRoute, Router, RouterLink } from "@angular/router";
 import { ValidationResult } from "@auth/models";
 import { mapAuthError, validateRegistrationForm } from "@auth/utilities";
+import { AltchaWidgetComponent } from "@shared/components";
 import {
 	PASSWORD_VALIDATION,
 	USERNAME_VALIDATION
 } from "@shared/constants";
-import { AltchaWidgetComponent } from "@shared/components";
 import { AuthErrorResult } from "@shared/models";
 import { AltchaService, AuthService, NotificationService } from "@shared/services";
 

@@ -5,8 +5,7 @@
 /**
  * Default strings displayed in the ALTCHA widget UI.
  */
-export const ALTCHA_STRINGS:
-{
+export const ALTCHA_STRINGS: {
 	readonly label: string;
 	readonly verifying: string;
 	readonly verified: string;

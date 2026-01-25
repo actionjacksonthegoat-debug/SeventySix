@@ -48,7 +48,8 @@ public sealed class SharedWebApplicationFactory<TProgram>
 	{
 		ConnectionString = connectionString;
 		ConfigureAdditional = configureAdditional;
-		ConfigureServicesAction = configureServicesAction;
+		ConfigureServicesAction =
+			configureServicesAction;
 	}
 
 	/// <inheritdoc/>

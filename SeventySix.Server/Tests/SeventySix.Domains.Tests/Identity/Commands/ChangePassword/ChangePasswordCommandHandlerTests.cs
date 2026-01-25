@@ -12,6 +12,7 @@ public class ChangePasswordCommandHandlerTests
 	private readonly UserManager<ApplicationUser> UserManager;
 	private readonly ITokenRepository TokenRepository;
 	private readonly AuthenticationService AuthenticationService;
+	private readonly BreachCheckDependencies BreachCheck;
 	private readonly TimeProvider TimeProvider;
 	private readonly ILogger<ChangePasswordCommand> Logger;
 
@@ -23,6 +24,32 @@ public class ChangePasswordCommandHandlerTests
 			Substitute.For<ITokenRepository>();
 		AuthenticationService =
 			IdentityMockFactory.CreateAuthenticationService();
+
+		// Mock breached password service to return "not breached" by default
+		IBreachedPasswordService breachedPasswordService =
+			Substitute.For<IBreachedPasswordService>();
+		breachedPasswordService
+			.CheckPasswordAsync(
+				Arg.Any<string>(),
+				Arg.Any<CancellationToken>())
+			.Returns(BreachCheckResult.NotBreached());
+
+		// Mock auth settings with breach checking enabled
+		Microsoft.Extensions.Options.IOptions<AuthSettings> authSettings =
+			Microsoft.Extensions.Options.Options.Create(
+				new AuthSettings
+				{
+					BreachedPassword = new BreachedPasswordSettings
+					{
+						Enabled = true,
+						BlockBreachedPasswords = true,
+					},
+				});
+
+		// Create compound breach check dependencies
+		BreachCheck =
+			new BreachCheckDependencies(breachedPasswordService, authSettings);
+
 		TimeProvider =
 			Substitute.For<TimeProvider>();
 		Logger =
@@ -52,6 +79,7 @@ public class ChangePasswordCommandHandlerTests
 				UserManager,
 				TokenRepository,
 				AuthenticationService,
+				BreachCheck,
 				TimeProvider,
 				Logger,
 				CancellationToken.None);

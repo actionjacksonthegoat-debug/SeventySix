@@ -39,6 +39,11 @@ public record AuthSettings
 	/// Gets account lockout configuration.
 	/// </summary>
 	public LockoutSettings Lockout { get; init; } = new();
+
+	/// <summary>
+	/// Gets breached password checking configuration (OWASP ASVS V2.1.7).
+	/// </summary>
+	public BreachedPasswordSettings BreachedPassword { get; init; } = new();
 }
 
 /// <summary>
@@ -288,4 +293,48 @@ public record TokenSettings
 	/// WARNING: Only enable for E2E testing where the same token must work across contexts.
 	/// </summary>
 	public bool DisableRotation { get; init; } = false;
+}
+
+/// <summary>
+/// Breached password checking configuration using HaveIBeenPwned k-Anonymity API.
+/// Implements OWASP ASVS V2.1.7: "Verify that passwords submitted during account
+/// registration, login, and password change are checked against a set of breached passwords."
+/// </summary>
+/// <remarks>
+/// <para>
+/// Uses k-Anonymity model: Only first 5 characters of SHA-1 hash are sent to HIBP API.
+/// The actual password never leaves the server, ensuring privacy.
+/// </para>
+/// <para>
+/// API: https://api.pwnedpasswords.com/range/{first5HashChars}
+/// Rate limit: No authentication required, but reasonable use expected.
+/// </para>
+/// </remarks>
+public record BreachedPasswordSettings
+{
+	/// <summary>
+	/// Gets a value indicating whether breach checking is enabled.
+	/// Default: true (OWASP recommended).
+	/// </summary>
+	public bool Enabled { get; init; } = true;
+
+	/// <summary>
+	/// Gets the minimum breach count to consider a password compromised.
+	/// Default: 1 (any breach triggers warning).
+	/// Set higher (e.g., 10) to allow commonly weak but rarely breached passwords.
+	/// </summary>
+	public int MinBreachCount { get; init; } = 1;
+
+	/// <summary>
+	/// Gets a value indicating whether to block breached passwords.
+	/// When false, only logs a warning but allows registration.
+	/// Default: true (block).
+	/// </summary>
+	public bool BlockBreachedPasswords { get; init; } = true;
+
+	/// <summary>
+	/// Gets the API timeout in milliseconds.
+	/// Default: 3000 (3 seconds). Fail open if API is slow/unavailable.
+	/// </summary>
+	public int ApiTimeoutMs { get; init; } = 3000;
 }

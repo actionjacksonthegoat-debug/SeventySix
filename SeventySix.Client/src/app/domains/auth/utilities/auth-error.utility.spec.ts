@@ -95,6 +95,33 @@ describe("mapAuthError",
 					});
 			});
 
+		describe("when error is BAD_REQUEST with BREACHED_PASSWORD",
+			() =>
+			{
+				it("should return breached password message without invalidating token",
+					() =>
+					{
+						const error: HttpErrorResponse =
+							new HttpErrorResponse(
+								{
+									status: HTTP_STATUS.BAD_REQUEST,
+									error: {
+										extensions: {
+											errorCode: AUTH_ERROR_CODE.BREACHED_PASSWORD
+										}
+									}
+								});
+
+						const result: AuthErrorResult =
+							mapAuthError(error);
+
+						expect(result.message)
+							.toBe("This password has been found in a data breach. Please choose a different password.");
+						expect(result.invalidateToken)
+							.toBe(false);
+					});
+			});
+
 		describe("when error is BAD_REQUEST with unknown error code",
 			() =>
 			{

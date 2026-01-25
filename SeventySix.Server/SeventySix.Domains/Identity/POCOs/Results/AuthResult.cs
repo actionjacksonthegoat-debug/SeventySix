@@ -169,6 +169,11 @@ public static class AuthErrorCodes
 	/// User not found.
 	/// </summary>
 	public const string UserNotFound = "USER_NOT_FOUND";
+
+	/// <summary>
+	/// Password found in known data breaches (OWASP ASVS V2.1.7).
+	/// </summary>
+	public const string BreachedPassword = "BREACHED_PASSWORD";
 }
 
 /// <summary>

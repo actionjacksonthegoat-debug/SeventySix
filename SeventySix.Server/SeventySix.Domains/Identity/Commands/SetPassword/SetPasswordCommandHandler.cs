@@ -28,6 +28,9 @@ public static class SetPasswordCommandHandler
 	/// <param name="authenticationService">
 	/// Service to generate authentication results.
 	/// </param>
+	/// <param name="breachCheck">
+	/// Compound dependency for breach checking (service + settings).
+	/// </param>
 	/// <param name="timeProvider">
 	/// Time provider for current time values.
 	/// </param>
@@ -47,10 +50,25 @@ public static class SetPasswordCommandHandler
 		UserManager<ApplicationUser> userManager,
 		ITokenRepository tokenRepository,
 		AuthenticationService authenticationService,
+		BreachCheckDependencies breachCheck,
 		TimeProvider timeProvider,
 		ILogger<SetPasswordCommand> logger,
 		CancellationToken cancellationToken)
 	{
+		// Check new password against known breaches (OWASP ASVS V2.1.7)
+		AuthResult? breachError =
+			await ValidatePasswordNotBreachedAsync(
+				command.Request.NewPassword,
+				breachCheck,
+				"Password reset",
+				logger,
+				cancellationToken);
+
+		if (breachError is not null)
+		{
+			return breachError;
+		}
+
 		DateTime now =
 			timeProvider.GetUtcNow().UtcDateTime;
 
@@ -140,5 +158,36 @@ public static class SetPasswordCommandHandler
 			requiresPasswordChange: false,
 			rememberMe: false,
 			cancellationToken);
+	}
+
+	/// <summary>
+	/// Validates password against known breaches (OWASP ASVS V2.1.7).
+	/// </summary>
+	private static async Task<AuthResult?> ValidatePasswordNotBreachedAsync(
+		string password,
+		BreachCheckDependencies breachCheck,
+		string operationName,
+		ILogger logger,
+		CancellationToken cancellationToken)
+	{
+		BreachCheckResult result =
+			await breachCheck.Service.CheckPasswordAsync(
+				password,
+				cancellationToken);
+
+		if (result.IsBreached && breachCheck.Settings.Value.BreachedPassword.BlockBreachedPasswords)
+		{
+			logger.LogWarning(
+				"{Operation} blocked: password found in {BreachCount} data breaches",
+				operationName,
+				result.BreachCount);
+
+			return AuthResult.Failed(
+				$"This password has been found in {result.BreachCount:N0} data breaches. "
+					+ "Please choose a different password for your security.",
+				AuthErrorCodes.BreachedPassword);
+		}
+
+		return null;
 	}
 }

@@ -64,11 +64,21 @@ public static class IdentityRegistration
 		string connectionString,
 		IConfiguration configuration)
 	{
+		// Bind AuthSettings from configuration to use as single source of truth
+		AuthSettings authSettings =
+			configuration
+				.GetSection(Shared.Constants.ConfigurationSectionConstants.Auth)
+				.Get<AuthSettings>()
+			?? throw new InvalidOperationException(
+				$"Auth configuration section '{Shared.Constants.ConfigurationSectionConstants.Auth}' is missing.");
+
 		RegisterCoreInfrastructure(
 			services,
 			connectionString);
 
-		RegisterAspNetIdentity(services);
+		RegisterAspNetIdentity(
+			services,
+			authSettings);
 
 		RegisterRepositories(services);
 
@@ -109,24 +119,44 @@ public static class IdentityRegistration
 	/// <param name="services">
 	/// The service collection.
 	/// </param>
-	private static void RegisterAspNetIdentity(IServiceCollection services)
+	/// <param name="authSettings">
+	/// The authentication settings for configuring Identity options.
+	/// This is the single source of truth for password and lockout settings (DRY).
+	/// </param>
+	private static void RegisterAspNetIdentity(
+		IServiceCollection services,
+		AuthSettings authSettings)
 	{
+		PasswordSettings passwordSettings =
+			authSettings.Password;
+
+		LockoutSettings lockoutSettings =
+			authSettings.Lockout;
+
 		services
 			.AddIdentityCore<ApplicationUser>(
 				options =>
 				{
-					// Password settings (validation only - Argon2 handles hashing)
-					options.Password.RequiredLength = 8;
-					options.Password.RequireDigit = true;
-					options.Password.RequireLowercase = true;
-					options.Password.RequireUppercase = true;
-					options.Password.RequireNonAlphanumeric = true;
+					// Password settings bound from single source: AuthSettings (DRY)
+					// Validation only - Argon2 handles actual hashing
+					options.Password.RequiredLength =
+						passwordSettings.MinLength;
+					options.Password.RequireDigit =
+						passwordSettings.RequireDigit;
+					options.Password.RequireLowercase =
+						passwordSettings.RequireLowercase;
+					options.Password.RequireUppercase =
+						passwordSettings.RequireUppercase;
+					options.Password.RequireNonAlphanumeric =
+						passwordSettings.RequireSpecialChar;
 
-					// Lockout settings
+					// Lockout settings bound from single source: AuthSettings (DRY)
 					options.Lockout.DefaultLockoutTimeSpan =
-						TimeSpan.FromMinutes(15);
-					options.Lockout.MaxFailedAccessAttempts = 5;
-					options.Lockout.AllowedForNewUsers = true;
+						TimeSpan.FromMinutes(lockoutSettings.LockoutDurationMinutes);
+					options.Lockout.MaxFailedAccessAttempts =
+						lockoutSettings.MaxFailedAttempts;
+					options.Lockout.AllowedForNewUsers =
+						lockoutSettings.Enabled;
 
 					// User settings
 					options.User.RequireUniqueEmail = true;
@@ -191,10 +221,38 @@ public static class IdentityRegistration
 			OAuthCodeExchangeService>();
 		services.AddScoped<RegistrationService>();
 
+		// Register breached password checking service (OWASP ASVS V2.1.7)
+		RegisterBreachedPasswordService(services);
+
 		// Register ALTCHA services
 		RegisterAltchaServices(
 			services,
 			configuration);
+	}
+
+	/// <summary>
+	/// Registers the HaveIBeenPwned breached password checking service.
+	/// </summary>
+	/// <param name="services">
+	/// The service collection.
+	/// </param>
+	private static void RegisterBreachedPasswordService(IServiceCollection services)
+	{
+		// Register named HttpClient for HIBP API calls
+		services.AddHttpClient(
+			BreachedPasswordService.HttpClientName,
+			httpClient =>
+			{
+				httpClient.DefaultRequestHeaders.Add(
+					"User-Agent",
+					"SeventySix-BreachedPasswordCheck");
+			});
+
+		// Register the service
+		services.AddScoped<IBreachedPasswordService, BreachedPasswordService>();
+
+		// Register compound dependencies for Wolverine handlers (reduces params < 7)
+		services.AddScoped<BreachCheckDependencies>();
 	}
 
 	/// <summary>

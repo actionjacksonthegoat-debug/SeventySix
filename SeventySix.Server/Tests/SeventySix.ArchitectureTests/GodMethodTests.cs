@@ -53,6 +53,12 @@ public class GodMethodTests : SourceCodeArchitectureTest
 			// Analyzer tests - test methods with large code strings are unavoidably long
 			"Tests\\SeventySix.Analyzers.Tests\\AssignmentContinuationIndentCodeFixTests.cs::ExtensionsInitializer_WrongIndent_FixesToCorrectIndentAsync",
 			"Tests\\SeventySix.Analyzers.Tests\\AssignmentContinuationIndentCodeFixTests.cs::NestedDictionary_OuterBraceWrong_InnerNotFlaggedAsync",
+			// Wolverine CQRS handlers - extensive setup for Identity with breach checking (OWASP ASVS V2.1.7)
+			"SeventySix.Domains\\Identity\\Commands\\CompleteRegistration\\CompleteRegistrationCommandHandler.cs::HandleAsync",
+			"SeventySix.Domains\\Identity\\Commands\\SetPassword\\SetPasswordCommandHandler.cs::HandleAsync",
+			// Integration test setup methods - extensive mock configuration is unavoidable
+			"Tests\\SeventySix.Domains.Tests\\Identity\\Commands\\CompleteRegistration\\CompleteRegistrationCommandHandlerTests.cs::HandleAsync_ShouldCompleteRegistration_WhenCombinedTokenIsValid_RefactoredAsync",
+			"Tests\\SeventySix.Domains.Tests\\Identity\\Commands\\CompleteRegistration\\CompleteRegistrationCommandHandlerTests.cs::HandleAsync_ShouldFail_WhenPasswordIsBreachedAsync",
 		];
 
 	/// <summary>
@@ -64,6 +70,7 @@ public class GodMethodTests : SourceCodeArchitectureTest
 		[
 			// Authentication handlers - Wolverine Injected dependencies
 			"SeventySix.Domains\\Identity\\Commands\\ChangePassword\\ChangePasswordCommandHandler.cs::HandleAsync",
+			"SeventySix.Domains\\Identity\\Commands\\CompleteRegistration\\CompleteRegistrationCommandHandler.cs::HandleAsync",
 			"SeventySix.Domains\\Identity\\Commands\\Login\\LoginCommandHandler.cs::HandleAsync",
 			"SeventySix.Domains\\Identity\\Commands\\SetPassword\\SetPasswordCommandHandler.cs::HandleAsync",
 			"SeventySix.Domains\\Identity\\Commands\\Register\\RegisterCommandHandler.cs::HandleAsync",

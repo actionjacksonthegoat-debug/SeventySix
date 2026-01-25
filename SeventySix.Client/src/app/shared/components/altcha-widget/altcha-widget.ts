@@ -77,7 +77,8 @@ export class AltchaWidgetComponent implements OnInit, OnDestroy
 	 * @readonly
 	 */
 	private readonly widgetRef: Signal<ElementRef<HTMLElement> | undefined> =
-		viewChild<ElementRef<HTMLElement>>("widget");
+		viewChild<ElementRef<HTMLElement>>(
+			"widget");
 
 	/**
 	 * JSON-stringified widget UI strings.
@@ -147,7 +148,8 @@ export class AltchaWidgetComponent implements OnInit, OnDestroy
 	private handleStateChange(event: Event): void
 	{
 		const customEvent: CustomEvent<{ state: AltchaWidgetState; payload?: string; }> =
-			event as CustomEvent<{ state: AltchaWidgetState; payload?: string; }>;
+			event as CustomEvent<
+				{ state: AltchaWidgetState; payload?: string; }>;
 		const state: AltchaWidgetState =
 			customEvent.detail.state;
 
@@ -167,7 +169,9 @@ export class AltchaWidgetComponent implements OnInit, OnDestroy
 	reset(): void
 	{
 		const element: HTMLElement & { reset?: () => void; } | undefined =
-			this.widgetRef()?.nativeElement as HTMLElement & { reset?: () => void; };
+			this.widgetRef()?.nativeElement as
+			& HTMLElement
+			& { reset?: () => void; };
 		element?.reset?.();
 	}
 }

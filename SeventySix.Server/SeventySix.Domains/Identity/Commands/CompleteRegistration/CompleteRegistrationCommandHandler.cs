@@ -35,6 +35,9 @@ public static class CompleteRegistrationCommandHandler
 	/// <param name="authenticationService">
 	/// Service to generate auth tokens on success.
 	/// </param>
+	/// <param name="breachCheck">
+	/// Compound dependency for breach checking (service + settings).
+	/// </param>
 	/// <param name="timeProvider">
 	/// Time provider for timestamps.
 	/// </param>
@@ -55,10 +58,24 @@ public static class CompleteRegistrationCommandHandler
 		CompleteRegistrationCommand command,
 		UserManager<ApplicationUser> userManager,
 		AuthenticationService authenticationService,
+		BreachCheckDependencies breachCheck,
 		TimeProvider timeProvider,
 		ILogger<CompleteRegistrationCommand> logger,
 		CancellationToken cancellationToken)
 	{
+		// Check password against known breaches (OWASP ASVS V2.1.7)
+		AuthResult? breachError =
+			await ValidatePasswordNotBreachedAsync(
+				command.Request.Password,
+				breachCheck,
+				logger,
+				cancellationToken);
+
+		if (breachError is not null)
+		{
+			return breachError;
+		}
+
 		// Decode combined token (contains email + verification token)
 		CombinedRegistrationToken? decodedToken =
 			RegistrationTokenService.Decode(command.Request.Token);
@@ -209,5 +226,49 @@ public static class CompleteRegistrationCommandHandler
 		}
 
 		return existingUser;
+	}
+
+	/// <summary>
+	/// Validates password against known breaches (OWASP ASVS V2.1.7).
+	/// </summary>
+	/// <param name="password">
+	/// The password to validate.
+	/// </param>
+	/// <param name="breachCheck">
+	/// Breach check dependencies.
+	/// </param>
+	/// <param name="logger">
+	/// Logger instance.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// An error <see cref="AuthResult"/> if breached; null if safe.
+	/// </returns>
+	private static async Task<AuthResult?> ValidatePasswordNotBreachedAsync(
+		string password,
+		BreachCheckDependencies breachCheck,
+		ILogger logger,
+		CancellationToken cancellationToken)
+	{
+		BreachCheckResult result =
+			await breachCheck.Service.CheckPasswordAsync(
+				password,
+				cancellationToken);
+
+		if (result.IsBreached && breachCheck.Settings.Value.BreachedPassword.BlockBreachedPasswords)
+		{
+			logger.LogWarning(
+				"Operation blocked: password found in {BreachCount} data breaches",
+				result.BreachCount);
+
+			return AuthResult.Failed(
+				$"This password has been found in {result.BreachCount:N0} data breaches. "
+					+ "Please choose a different password for your security.",
+				AuthErrorCodes.BreachedPassword);
+		}
+
+		return null;
 	}
 }
