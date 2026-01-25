@@ -9,6 +9,9 @@ namespace SeventySix.Identity;
 /// <summary>
 /// Handler for refresh tokens command.
 /// </summary>
+/// <remarks>
+/// Rotates refresh tokens following security best practices and logs audit events.
+/// </remarks>
 public static class RefreshTokensCommandHandler
 {
 	/// <summary>
@@ -26,6 +29,9 @@ public static class RefreshTokensCommandHandler
 	/// <param name="authenticationService">
 	/// Service to generate new authentication results.
 	/// </param>
+	/// <param name="securityAuditService">
+	/// Service for logging security audit events.
+	/// </param>
 	/// <param name="cancellationToken">
 	/// Cancellation token.
 	/// </param>
@@ -37,6 +43,7 @@ public static class RefreshTokensCommandHandler
 		ITokenService tokenService,
 		UserManager<ApplicationUser> userManager,
 		AuthenticationService authenticationService,
+		ISecurityAuditService securityAuditService,
 		CancellationToken cancellationToken)
 	{
 		long? userId =
@@ -46,6 +53,15 @@ public static class RefreshTokensCommandHandler
 
 		if (userId == null)
 		{
+			// Log invalid token attempt without user context
+			await securityAuditService.LogEventAsync(
+				SecurityEventType.LoginFailed,
+				userId: null,
+				username: null,
+				success: false,
+				details: "Invalid or expired refresh token",
+				cancellationToken);
+
 			return AuthResult.Failed(
 				"Invalid or expired refresh token.",
 				AuthErrorCodes.InvalidToken);
@@ -57,6 +73,14 @@ public static class RefreshTokensCommandHandler
 
 		if (user == null || !user.IsActive)
 		{
+			await securityAuditService.LogEventAsync(
+				SecurityEventType.LoginFailed,
+				userId,
+				username: null,
+				success: false,
+				details: user is null ? "User not found during token refresh" : "User inactive during token refresh",
+				cancellationToken);
+
 			return AuthResult.Failed(
 				"User account is no longer valid.",
 				AuthErrorCodes.AccountInactive);
@@ -70,6 +94,14 @@ public static class RefreshTokensCommandHandler
 
 		if (newRefreshToken == null)
 		{
+			// Token reuse detected - critical security event
+			await securityAuditService.LogEventAsync(
+				SecurityEventType.TokenReuseDetected,
+				user,
+				success: false,
+				details: "Refresh token reuse attempt detected",
+				cancellationToken);
+
 			return AuthResult.Failed(
 				"Token has already been used. Please login again.",
 				AuthErrorCodes.TokenReuse);
@@ -88,6 +120,14 @@ public static class RefreshTokensCommandHandler
 				requiresPasswordChange,
 				rememberMe: false, // Refresh doesn't change remember-me preference
 				cancellationToken);
+
+		// Log successful token refresh
+		await securityAuditService.LogEventAsync(
+			SecurityEventType.TokenRefreshed,
+			user,
+			success: true,
+			details: null,
+			cancellationToken);
 
 		// Replace with rotated refresh token
 		return AuthResult.Succeeded(

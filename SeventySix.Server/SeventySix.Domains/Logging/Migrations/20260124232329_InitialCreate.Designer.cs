@@ -12,8 +12,8 @@ using SeventySix.Logging;
 namespace SeventySix.Domains.Logging.Migrations
 {
     [DbContext(typeof(LoggingDbContext))]
-    [Migration("20260120230342_UpdateTracingColumnsAndIndexes")]
-    partial class UpdateTracingColumnsAndIndexes
+    [Migration("20260124232329_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -21,7 +21,7 @@ namespace SeventySix.Domains.Logging.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("Logging")
-                .HasAnnotation("ProductVersion", "10.0.1")
+                .HasAnnotation("ProductVersion", "10.0.2")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);

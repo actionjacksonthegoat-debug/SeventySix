@@ -36,6 +36,11 @@ public static class ConfigurationSectionConstants
 	public const string RateLimiting = "RateLimiting";
 
 	/// <summary>
+	/// Request limits settings section for DoS protection.
+	/// </summary>
+	public const string RequestLimits = "RequestLimits";
+
+	/// <summary>
 	/// Cache settings section.
 	/// </summary>
 	public const string Cache = "Cache";

@@ -58,6 +58,9 @@ public static class EnvironmentVariableMappingExtensions
 			["DATA_PROTECTION_KEYS_DIRECTORY"] = "DataProtection:KeysDirectory",
 			["DATA_PROTECTION_ALLOW_UNPROTECTED_DEV"] =
 				"DataProtection:AllowUnprotectedKeysInDevelopment",
+
+			// ALTCHA (Bot Protection)
+			["ALTCHA_HMAC_KEY"] = "Altcha:HmacKeyBase64",
 		};
 
 	/// <summary>

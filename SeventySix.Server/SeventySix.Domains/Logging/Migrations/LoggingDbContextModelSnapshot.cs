@@ -18,7 +18,7 @@ namespace SeventySix.Domains.Logging.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("Logging")
-                .HasAnnotation("ProductVersion", "10.0.1")
+                .HasAnnotation("ProductVersion", "10.0.2")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);

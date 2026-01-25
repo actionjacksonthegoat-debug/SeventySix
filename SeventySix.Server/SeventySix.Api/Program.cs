@@ -48,21 +48,36 @@ builder.Configuration.AddEnvironmentVariableMapping();
 builder.Services.Configure<SecuritySettings>(
 	builder.Configuration.GetSection(ConfigurationSectionConstants.Security));
 
-// Disable HTTPS certificate requirements in development mode
-// This allows the app to run without certificate errors in Docker containers
-if (builder.Environment.IsDevelopment())
-{
-	builder.WebHost.ConfigureKestrel(
-		serverOptions =>
+// Bind request limits settings for DoS protection
+RequestLimitsSettings requestLimitsSettings =
+	builder.Configuration
+		.GetSection(ConfigurationSectionConstants.RequestLimits)
+		.Get<RequestLimitsSettings>() ?? new RequestLimitsSettings();
+
+// Configure Kestrel with request body size limits to prevent DoS attacks
+builder.WebHost.ConfigureKestrel(
+	serverOptions =>
+	{
+		serverOptions.Limits.MaxRequestBodySize = requestLimitsSettings.MaxRequestBodySizeBytes;
+
+		if (builder.Environment.IsDevelopment())
 		{
+			// Accept any client certificate without validation in development
 			serverOptions.ConfigureHttpsDefaults(
 				httpsOptions =>
 				{
-					// Accept any client certificate without validation
 					httpsOptions.AllowAnyClientCertificate();
 				});
-		});
-}
+		}
+	});
+
+// Configure form options for multipart uploads
+builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(
+	options =>
+	{
+		options.MultipartBodyLengthLimit = requestLimitsSettings.MaxMultipartBodyLengthBytes;
+		options.ValueLengthLimit = requestLimitsSettings.MaxFormOptionsBufferLength;
+	});
 
 // Configure Serilog for structured logging
 // Outputs: Console + Rolling file (daily rotation) + Database (Warning+ levels)
@@ -164,6 +179,12 @@ builder.Services.AddAuthenticationServices(builder.Configuration);
 builder.Services.AddOpenApi();
 
 WebApplication app = builder.Build();
+
+// Validate required configuration settings (fails fast in production if secrets missing)
+StartupValidator.ValidateConfiguration(
+	builder.Configuration,
+	app.Environment,
+	app.Services.GetRequiredService<ILogger<Program>>());
 
 // Validate dependencies (in debug scenarios this provides actionable errors for VS)
 await app.ValidateDependenciesAsync(builder.Configuration);

@@ -25,6 +25,7 @@ public class LoginCommandHandlerTests
 	private readonly SignInManager<ApplicationUser> SignInManager;
 	private readonly AuthenticationService AuthenticationService;
 	private readonly IAltchaService AltchaService;
+	private readonly ISecurityAuditService SecurityAuditService;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="LoginCommandHandlerTests"/> class.
@@ -39,6 +40,8 @@ public class LoginCommandHandlerTests
 			IdentityMockFactory.CreateAuthenticationService();
 		AltchaService =
 			Substitute.For<IAltchaService>();
+		SecurityAuditService =
+			Substitute.For<ISecurityAuditService>();
 
 		// Default: ALTCHA disabled for most tests
 		AltchaService.IsEnabled.Returns(false);
@@ -68,6 +71,7 @@ public class LoginCommandHandlerTests
 				SignInManager,
 				AuthenticationService,
 				AltchaService,
+				SecurityAuditService,
 				CancellationToken.None);
 
 		// Assert
@@ -103,6 +107,7 @@ public class LoginCommandHandlerTests
 				SignInManager,
 				AuthenticationService,
 				AltchaService,
+				SecurityAuditService,
 				CancellationToken.None);
 
 		// Assert
@@ -138,6 +143,7 @@ public class LoginCommandHandlerTests
 				SignInManager,
 				AuthenticationService,
 				AltchaService,
+				SecurityAuditService,
 				CancellationToken.None);
 
 		// Assert
@@ -170,6 +176,7 @@ public class LoginCommandHandlerTests
 				SignInManager,
 				AuthenticationService,
 				AltchaService,
+				SecurityAuditService,
 				CancellationToken.None);
 
 		// Assert
@@ -201,6 +208,7 @@ public class LoginCommandHandlerTests
 				SignInManager,
 				AuthenticationService,
 				AltchaService,
+				SecurityAuditService,
 				CancellationToken.None);
 
 		// Assert

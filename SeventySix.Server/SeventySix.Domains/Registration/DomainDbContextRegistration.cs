@@ -13,6 +13,24 @@ public static class DomainDbContextRegistration
 	/// <summary>
 	/// Registers a DbContext with UseNpgsql, migrations history table and AuditInterceptor.
 	/// </summary>
+	/// <typeparam name="TContext">
+	/// The DbContext type to register.
+	/// </typeparam>
+	/// <param name="services">
+	/// The service collection.
+	/// </param>
+	/// <param name="connectionString">
+	/// The database connection string.
+	/// </param>
+	/// <param name="schemaName">
+	/// The schema name for migrations history table.
+	/// </param>
+	/// <param name="configure">
+	/// Optional additional configuration for the DbContextOptionsBuilder.
+	/// </param>
+	/// <returns>
+	/// The service collection for chaining.
+	/// </returns>
 	public static IServiceCollection AddDomainDbContext<TContext>(
 		this IServiceCollection services,
 		string connectionString,

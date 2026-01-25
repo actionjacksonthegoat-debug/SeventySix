@@ -9,11 +9,11 @@ using SeventySix.Identity;
 
 #nullable disable
 
-namespace SeventySix.Domains.Identity.Infrastructure.Migrations
+namespace SeventySix.Domains.Identity.Migrations
 {
     [DbContext(typeof(IdentityDbContext))]
-    [Migration("20260124182251_AddAltchaChallengesTable")]
-    partial class AddAltchaChallengesTable
+    [Migration("20260124232321_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -21,7 +21,7 @@ namespace SeventySix.Domains.Identity.Infrastructure.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("Identity")
-                .HasAnnotation("ProductVersion", "10.0.1")
+                .HasAnnotation("ProductVersion", "10.0.2")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -131,11 +131,11 @@ namespace SeventySix.Domains.Identity.Infrastructure.Migrations
 
             modelBuilder.Entity("SeventySix.Identity.AltchaChallenge", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("bigint");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<string>("Challenge")
                         .IsRequired()
@@ -445,6 +445,56 @@ namespace SeventySix.Domains.Identity.Infrastructure.Migrations
                         .HasDatabaseName("IX_RefreshTokens_UserId_IsRevoked");
 
                     b.ToTable("RefreshTokens", "Identity");
+                });
+
+            modelBuilder.Entity("SeventySix.Identity.SecurityEvent", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime>("CreateDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Details")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<int>("EventType")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("IpAddress")
+                        .HasMaxLength(45)
+                        .HasColumnType("character varying(45)");
+
+                    b.Property<bool>("Success")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("UserAgent")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<long?>("UserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Username")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreateDate")
+                        .HasDatabaseName("IX_SecurityEvents_CreateDate");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("IX_SecurityEvents_UserId");
+
+                    b.HasIndex("EventType", "CreateDate")
+                        .HasDatabaseName("IX_SecurityEvents_EventType_CreateDate");
+
+                    b.ToTable("SecurityEvents", "security");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<long>", b =>

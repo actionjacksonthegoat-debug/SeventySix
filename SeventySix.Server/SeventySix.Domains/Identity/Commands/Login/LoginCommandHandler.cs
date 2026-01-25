@@ -3,7 +3,6 @@
 // </copyright>
 
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Logging;
 
 namespace SeventySix.Identity;
 
@@ -13,6 +12,7 @@ namespace SeventySix.Identity;
 /// <remarks>
 /// Thin wrapper that delegates credential checks to Identity's <see cref="SignInManager{TUser}"/> and preserves lockout semantics.
 /// Includes ALTCHA Proof-of-Work validation when enabled.
+/// Logs security audit events for compliance and forensics.
 /// </remarks>
 public static class LoginCommandHandler
 {
@@ -34,6 +34,9 @@ public static class LoginCommandHandler
 	/// <param name="altchaService">
 	/// Service for ALTCHA Proof-of-Work validation.
 	/// </param>
+	/// <param name="securityAuditService">
+	/// Service for logging security audit events.
+	/// </param>
 	/// <param name="cancellationToken">
 	/// Cancellation token.
 	/// </param>
@@ -46,6 +49,7 @@ public static class LoginCommandHandler
 		SignInManager<ApplicationUser> signInManager,
 		AuthenticationService authenticationService,
 		IAltchaService altchaService,
+		ISecurityAuditService securityAuditService,
 		CancellationToken cancellationToken)
 	{
 		// Validate ALTCHA if enabled
@@ -58,6 +62,15 @@ public static class LoginCommandHandler
 
 			if (!altchaResult.Success)
 			{
+				// Log ALTCHA failure without user context (bot protection)
+				await securityAuditService.LogEventAsync(
+					SecurityEventType.AltchaFailed,
+					userId: null,
+					username: command.Request.UsernameOrEmail,
+					success: false,
+					details: null,
+					cancellationToken);
+
 				// Return generic error to avoid revealing validation details to bots
 				return AuthResult.Failed(
 					AuthErrorMessages.InvalidCredentials,
@@ -72,6 +85,15 @@ public static class LoginCommandHandler
 
 		if (user is null || !user.IsActive)
 		{
+			// Log failed attempt for non-existent/inactive user
+			await securityAuditService.LogEventAsync(
+				SecurityEventType.LoginFailed,
+				userId: null,
+				username: command.Request.UsernameOrEmail,
+				success: false,
+				details: user is null ? "User not found" : "User inactive",
+				cancellationToken);
+
 			return AuthResult.Failed(
 				AuthErrorMessages.InvalidCredentials,
 				AuthErrorCodes.InvalidCredentials);
@@ -85,6 +107,13 @@ public static class LoginCommandHandler
 
 		if (result.IsLockedOut)
 		{
+			await securityAuditService.LogEventAsync(
+				SecurityEventType.AccountLocked,
+				user,
+				success: false,
+				details: null,
+				cancellationToken);
+
 			return AuthResult.Failed(
 				AuthErrorMessages.AccountLocked,
 				AuthErrorCodes.AccountLocked);
@@ -92,10 +121,25 @@ public static class LoginCommandHandler
 
 		if (!result.Succeeded)
 		{
+			await securityAuditService.LogEventAsync(
+				SecurityEventType.LoginFailed,
+				user,
+				success: false,
+				details: null,
+				cancellationToken);
+
 			return AuthResult.Failed(
 				AuthErrorMessages.InvalidCredentials,
 				AuthErrorCodes.InvalidCredentials);
 		}
+
+		// Log successful login
+		await securityAuditService.LogEventAsync(
+			SecurityEventType.LoginSuccess,
+			user,
+			success: true,
+			details: null,
+			cancellationToken);
 
 		// Determine if the user must change password on first login by checking DB flag
 		bool requiresPasswordChange =

@@ -19,6 +19,7 @@ namespace SeventySix.Domains.Tests.Identity.Commands.Logout;
 public class LogoutCommandHandlerTests
 {
 	private readonly ITokenService TokenService;
+	private readonly ISecurityAuditService SecurityAuditService;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="LogoutCommandHandlerTests"/> class.
@@ -27,6 +28,8 @@ public class LogoutCommandHandlerTests
 	{
 		TokenService =
 			Substitute.For<ITokenService>();
+		SecurityAuditService =
+			Substitute.For<ISecurityAuditService>();
 	}
 
 	/// <summary>
@@ -37,9 +40,16 @@ public class LogoutCommandHandlerTests
 	{
 		// Arrange
 		const string RefreshToken = "valid-refresh-token";
+		const long UserId = 123;
 
 		LogoutCommand command =
 			new(RefreshToken);
+
+		TokenService
+			.ValidateRefreshTokenAsync(
+				RefreshToken,
+				Arg.Any<CancellationToken>())
+			.Returns(UserId);
 
 		TokenService
 			.RevokeRefreshTokenAsync(
@@ -52,6 +62,7 @@ public class LogoutCommandHandlerTests
 			await LogoutCommandHandler.HandleAsync(
 				command,
 				TokenService,
+				SecurityAuditService,
 				CancellationToken.None);
 
 		// Assert
@@ -77,6 +88,12 @@ public class LogoutCommandHandlerTests
 			new(InvalidToken);
 
 		TokenService
+			.ValidateRefreshTokenAsync(
+				InvalidToken,
+				Arg.Any<CancellationToken>())
+			.Returns((long?)null);
+
+		TokenService
 			.RevokeRefreshTokenAsync(
 				InvalidToken,
 				Arg.Any<CancellationToken>())
@@ -87,6 +104,7 @@ public class LogoutCommandHandlerTests
 			await LogoutCommandHandler.HandleAsync(
 				command,
 				TokenService,
+				SecurityAuditService,
 				CancellationToken.None);
 
 		// Assert
@@ -102,11 +120,18 @@ public class LogoutCommandHandlerTests
 	{
 		// Arrange
 		const string RefreshToken = "test-token";
+		const long UserId = 456;
 		using CancellationTokenSource cancellationTokenSource =
 			new();
 
 		LogoutCommand command =
 			new(RefreshToken);
+
+		TokenService
+			.ValidateRefreshTokenAsync(
+				RefreshToken,
+				cancellationTokenSource.Token)
+			.Returns(UserId);
 
 		TokenService
 			.RevokeRefreshTokenAsync(
@@ -118,6 +143,7 @@ public class LogoutCommandHandlerTests
 		await LogoutCommandHandler.HandleAsync(
 			command,
 			TokenService,
+			SecurityAuditService,
 			cancellationTokenSource.Token);
 
 		// Assert

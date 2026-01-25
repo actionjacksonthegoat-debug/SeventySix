@@ -4,7 +4,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace SeventySix.Domains.Identity.Infrastructure.Migrations
+namespace SeventySix.Domains.Identity.Migrations
 {
 	/// <inheritdoc />
 	public partial class AddAltchaChallengesTable : Migration

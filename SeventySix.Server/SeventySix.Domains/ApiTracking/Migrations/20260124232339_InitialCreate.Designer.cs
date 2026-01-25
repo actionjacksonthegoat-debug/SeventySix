@@ -12,8 +12,8 @@ using SeventySix.ApiTracking;
 namespace SeventySix.Domains.ApiTracking.Migrations
 {
     [DbContext(typeof(ApiTrackingDbContext))]
-    [Migration("20260120230412_UpdateTracingColumns")]
-    partial class UpdateTracingColumns
+    [Migration("20260124232339_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -21,7 +21,7 @@ namespace SeventySix.Domains.ApiTracking.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("ApiTracking")
-                .HasAnnotation("ProductVersion", "10.0.1")
+                .HasAnnotation("ProductVersion", "10.0.2")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);

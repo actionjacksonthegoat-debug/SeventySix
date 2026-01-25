@@ -54,6 +54,13 @@ public class IdentityDbContext
 	public DbSet<AltchaChallenge> AltchaChallenges =>
 		Set<AltchaChallenge>();
 
+	/// <summary>
+	/// Gets or sets the SecurityEvents DbSet.
+	/// Used for security audit logging.
+	/// </summary>
+	public DbSet<SecurityEvent> SecurityEvents =>
+		Set<SecurityEvent>();
+
 	/// <inheritdoc/>
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
 	{

@@ -12,8 +12,8 @@ using SeventySix.Identity;
 namespace SeventySix.Domains.Identity.Migrations
 {
 	[DbContext(typeof(IdentityDbContext))]
-	[Migration("20260106011258_V1InitialCreate")]
-	partial class V1InitialCreate
+	[Migration("20260124182251_AddAltchaChallengesTable")]
+	partial class AddAltchaChallengesTable
 	{
 		/// <inheritdoc />
 		protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -21,7 +21,7 @@ namespace SeventySix.Domains.Identity.Migrations
 #pragma warning disable 612, 618
 			modelBuilder
 				.HasDefaultSchema("Identity")
-				.HasAnnotation("ProductVersion", "10.0.0")
+				.HasAnnotation("ProductVersion", "10.0.1")
 				.HasAnnotation("Relational:MaxIdentifierLength", 63);
 
 			NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -127,6 +127,34 @@ namespace SeventySix.Domains.Identity.Migrations
 					b.HasKey("UserId", "LoginProvider", "Name");
 
 					b.ToTable("UserTokens", "Identity");
+				});
+
+			modelBuilder.Entity("SeventySix.Identity.AltchaChallenge", b =>
+				{
+					b.Property<int>("Id")
+						.ValueGeneratedOnAdd()
+						.HasColumnType("integer");
+
+					NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+					b.Property<string>("Challenge")
+						.IsRequired()
+						.HasMaxLength(256)
+						.HasColumnType("character varying(256)");
+
+					b.Property<DateTime>("ExpiryUtc")
+						.HasColumnType("timestamp with time zone");
+
+					b.HasKey("Id");
+
+					b.HasIndex("Challenge")
+						.IsUnique()
+						.HasDatabaseName("IX_AltchaChallenges_Challenge");
+
+					b.HasIndex("ExpiryUtc")
+						.HasDatabaseName("IX_AltchaChallenges_ExpiryUtc");
+
+					b.ToTable("AltchaChallenges", "Identity");
 				});
 
 			modelBuilder.Entity("SeventySix.Identity.ApplicationRole", b =>

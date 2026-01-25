@@ -16,15 +16,16 @@ namespace SeventySix.Identity;
 /// Uses IdentityDbContext for storage in the Identity schema.
 /// Method names (Store, Exists) are defined by the Ixnas.AltchaNet interface
 /// and cannot be renamed to follow *Async convention.
+/// Registered as scoped service, matching IdentityDbContext lifetime.
 /// </remarks>
-/// <param name="contextFactory">
-/// Factory for creating scoped IdentityDbContext instances.
+/// <param name="context">
+/// The Identity database context (scoped).
 /// </param>
 /// <param name="timeProvider">
 /// Time provider for UTC time.
 /// </param>
 public class AltchaChallengeStore(
-	IDbContextFactory<IdentityDbContext> contextFactory,
+	IdentityDbContext context,
 	TimeProvider timeProvider) : IAltchaCancellableChallengeStore
 {
 	/// <inheritdoc/>
@@ -33,9 +34,6 @@ public class AltchaChallengeStore(
 		DateTimeOffset expiryUtc,
 		CancellationToken cancellationToken)
 	{
-		await using IdentityDbContext context =
-			await contextFactory.CreateDbContextAsync(cancellationToken);
-
 		AltchaChallenge entity =
 			new()
 			{
@@ -52,9 +50,6 @@ public class AltchaChallengeStore(
 		string challenge,
 		CancellationToken cancellationToken)
 	{
-		await using IdentityDbContext context =
-			await contextFactory.CreateDbContextAsync(cancellationToken);
-
 		// Clean up expired challenges first
 		DateTime utcNow =
 			timeProvider.GetUtcNow().UtcDateTime;

@@ -12,8 +12,8 @@ using SeventySix.ElectronicNotifications;
 namespace SeventySix.Domains.ElectronicNotifications.Migrations
 {
     [DbContext(typeof(ElectronicNotificationsDbContext))]
-    [Migration("20260106011322_V1InitialCreate")]
-    partial class V1InitialCreate
+    [Migration("20260124232348_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -21,7 +21,7 @@ namespace SeventySix.Domains.ElectronicNotifications.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("ElectronicNotifications")
-                .HasAnnotation("ProductVersion", "10.0.0")
+                .HasAnnotation("ProductVersion", "10.0.2")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);

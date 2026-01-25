@@ -174,6 +174,12 @@ public static class IdentityRegistration
 		IServiceCollection services,
 		IConfiguration configuration)
 	{
+		// Client info service for IP/UserAgent extraction (used by SecurityAuditService)
+		services.AddScoped<IClientInfoService, ClientInfoService>();
+
+		// Security audit logging service
+		services.AddScoped<ISecurityAuditService, SecurityAuditService>();
+
 		services.AddScoped<ITokenService, TokenService>();
 		services.AddScoped<AuthenticationService>();
 		services.AddScoped<OAuthService>();

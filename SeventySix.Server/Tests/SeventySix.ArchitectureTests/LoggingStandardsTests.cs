@@ -81,6 +81,7 @@ public class LoggingStandardsTests : SourceCodeArchitectureTest
 			bool isStartupConfig =
 				file.Contains("\\Extensions\\WebApplicationExtensions.cs")
 				|| file.Contains("\\Extensions\\ServiceCollectionExtensions.cs")
+				|| file.Contains("\\Configuration\\StartupValidator.cs")
 				|| file.Contains("Program.cs");
 
 			string content =
