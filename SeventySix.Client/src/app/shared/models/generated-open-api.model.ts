@@ -10,24 +10,23 @@ import { components } from "@shared/generated-open-api/generated-open-api";
 export type LoginRequest = components["schemas"]["LoginRequest"];
 export type UserProfileDto = components["schemas"]["UserProfileDto"];
 
-/**
- * Extended auth response that includes MFA fields.
- * Once OpenAPI is regenerated, this can be simplified to the generated type.
- */
-export type AuthResponse = components["schemas"]["AuthResponse"] & {
-	/**
-	 * Whether MFA verification is required to complete authentication.
-	 */
-	requiresMfa?: boolean;
+// MFA types - used across auth flows
+export type MfaMethod = components["schemas"]["MfaMethod"];
 
-	/**
-	 * Temporary token identifying the MFA challenge.
-	 */
-	mfaChallengeToken?: string | null;
-};
+// Auth response - now fully typed from OpenAPI
+export type AuthResponse = components["schemas"]["AuthResponse"];
+
+// TOTP types - used by TotpService
+export type TotpSetupResponse = components["schemas"]["TotpSetupResponse"];
+export type ConfirmTotpEnrollmentRequest = components["schemas"]["ConfirmTotpEnrollmentRequest"];
+export type DisableTotpRequest = components["schemas"]["DisableTotpRequest"];
+export type VerifyTotpRequest = components["schemas"]["VerifyTotpRequest"];
+
+// Backup code types - used by BackupCodesService
+export type VerifyBackupCodeRequest = components["schemas"]["VerifyBackupCodeRequest"];
 
 /**
- * Request to verify an MFA code.
+ * Request to verify an MFA code (email-based).
  */
 export interface VerifyMfaRequest
 {
@@ -72,6 +71,16 @@ export interface MfaState
 	 * The return URL after successful MFA.
 	 */
 	returnUrl: string;
+
+	/**
+	 * The MFA method in use (Email = 0, Totp = 1).
+	 */
+	mfaMethod?: MfaMethod | null;
+
+	/**
+	 * Available MFA methods for this user.
+	 */
+	availableMfaMethods?: MfaMethod[] | null;
 }
 
 // Error logging types - used by ClientErrorLoggerService, LoggerService (shared)

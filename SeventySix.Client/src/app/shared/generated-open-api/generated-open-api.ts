@@ -286,6 +286,550 @@ export interface paths
 		patch?: never;
 		trace?: never;
 	};
+	"/api/v1/auth/mfa/verify": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path?: never;
+				cookie?: never;
+			};
+			requestBody: {
+				content: {
+					"application/json": components["schemas"]["VerifyMfaRequest"];
+					"text/json": components["schemas"]["VerifyMfaRequest"];
+					"application/*+json": components["schemas"]["VerifyMfaRequest"];
+				};
+			};
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"text/plain": components["schemas"]["AuthResponse"];
+						"application/json": components["schemas"]["AuthResponse"];
+						"text/json": components["schemas"]["AuthResponse"];
+					};
+				};
+				/** @description Bad Request */
+				400: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"text/plain": components["schemas"]["ProblemDetails"];
+						"application/json": components["schemas"]["ProblemDetails"];
+						"text/json": components["schemas"]["ProblemDetails"];
+					};
+				};
+				/** @description Too Many Requests */
+				429: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"text/plain": components["schemas"]["ProblemDetails"];
+						"application/json": components["schemas"]["ProblemDetails"];
+						"text/json": components["schemas"]["ProblemDetails"];
+					};
+				};
+			};
+		};
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/api/v1/auth/mfa/resend": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path?: never;
+				cookie?: never;
+			};
+			requestBody: {
+				content: {
+					"application/json": components["schemas"]["ResendMfaCodeRequest"];
+					"text/json": components["schemas"]["ResendMfaCodeRequest"];
+					"application/*+json": components["schemas"]["ResendMfaCodeRequest"];
+				};
+			};
+			responses: {
+				/** @description No Content */
+				204: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content?: never;
+				};
+				/** @description Bad Request */
+				400: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"text/plain": components["schemas"]["ProblemDetails"];
+						"application/json": components["schemas"]["ProblemDetails"];
+						"text/json": components["schemas"]["ProblemDetails"];
+					};
+				};
+				/** @description Too Many Requests */
+				429: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"text/plain": components["schemas"]["ProblemDetails"];
+						"application/json": components["schemas"]["ProblemDetails"];
+						"text/json": components["schemas"]["ProblemDetails"];
+					};
+				};
+			};
+		};
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/api/v1/auth/mfa/verify-totp": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path?: never;
+				cookie?: never;
+			};
+			requestBody: {
+				content: {
+					"application/json": components["schemas"]["VerifyTotpRequest"];
+					"text/json": components["schemas"]["VerifyTotpRequest"];
+					"application/*+json": components["schemas"]["VerifyTotpRequest"];
+				};
+			};
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"text/plain": components["schemas"]["AuthResponse"];
+						"application/json": components["schemas"]["AuthResponse"];
+						"text/json": components["schemas"]["AuthResponse"];
+					};
+				};
+				/** @description Bad Request */
+				400: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"text/plain": components["schemas"]["ProblemDetails"];
+						"application/json": components["schemas"]["ProblemDetails"];
+						"text/json": components["schemas"]["ProblemDetails"];
+					};
+				};
+				/** @description Too Many Requests */
+				429: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"text/plain": components["schemas"]["ProblemDetails"];
+						"application/json": components["schemas"]["ProblemDetails"];
+						"text/json": components["schemas"]["ProblemDetails"];
+					};
+				};
+			};
+		};
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/api/v1/auth/mfa/verify-backup": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path?: never;
+				cookie?: never;
+			};
+			requestBody: {
+				content: {
+					"application/json": components["schemas"]["VerifyBackupCodeRequest"];
+					"text/json": components["schemas"]["VerifyBackupCodeRequest"];
+					"application/*+json": components["schemas"]["VerifyBackupCodeRequest"];
+				};
+			};
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"text/plain": components["schemas"]["AuthResponse"];
+						"application/json": components["schemas"]["AuthResponse"];
+						"text/json": components["schemas"]["AuthResponse"];
+					};
+				};
+				/** @description Bad Request */
+				400: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"text/plain": components["schemas"]["ProblemDetails"];
+						"application/json": components["schemas"]["ProblemDetails"];
+						"text/json": components["schemas"]["ProblemDetails"];
+					};
+				};
+				/** @description Too Many Requests */
+				429: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"text/plain": components["schemas"]["ProblemDetails"];
+						"application/json": components["schemas"]["ProblemDetails"];
+						"text/json": components["schemas"]["ProblemDetails"];
+					};
+				};
+			};
+		};
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/api/v1/auth/totp/setup": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path?: never;
+				cookie?: never;
+			};
+			requestBody?: never;
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"text/plain": components["schemas"]["TotpSetupResponse"];
+						"application/json": components["schemas"]["TotpSetupResponse"];
+						"text/json": components["schemas"]["TotpSetupResponse"];
+					};
+				};
+				/** @description Bad Request */
+				400: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"text/plain": components["schemas"]["ProblemDetails"];
+						"application/json": components["schemas"]["ProblemDetails"];
+						"text/json": components["schemas"]["ProblemDetails"];
+					};
+				};
+				/** @description Unauthorized */
+				401: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"text/plain": components["schemas"]["ProblemDetails"];
+						"application/json": components["schemas"]["ProblemDetails"];
+						"text/json": components["schemas"]["ProblemDetails"];
+					};
+				};
+			};
+		};
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/api/v1/auth/totp/confirm": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path?: never;
+				cookie?: never;
+			};
+			requestBody: {
+				content: {
+					"application/json": components["schemas"]["ConfirmTotpEnrollmentRequest"];
+					"text/json": components["schemas"]["ConfirmTotpEnrollmentRequest"];
+					"application/*+json": components["schemas"]["ConfirmTotpEnrollmentRequest"];
+				};
+			};
+			responses: {
+				/** @description No Content */
+				204: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content?: never;
+				};
+				/** @description Bad Request */
+				400: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"text/plain": components["schemas"]["ProblemDetails"];
+						"application/json": components["schemas"]["ProblemDetails"];
+						"text/json": components["schemas"]["ProblemDetails"];
+					};
+				};
+				/** @description Unauthorized */
+				401: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"text/plain": components["schemas"]["ProblemDetails"];
+						"application/json": components["schemas"]["ProblemDetails"];
+						"text/json": components["schemas"]["ProblemDetails"];
+					};
+				};
+			};
+		};
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/api/v1/auth/totp/disable": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path?: never;
+				cookie?: never;
+			};
+			requestBody: {
+				content: {
+					"application/json": components["schemas"]["DisableTotpRequest"];
+					"text/json": components["schemas"]["DisableTotpRequest"];
+					"application/*+json": components["schemas"]["DisableTotpRequest"];
+				};
+			};
+			responses: {
+				/** @description No Content */
+				204: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content?: never;
+				};
+				/** @description Bad Request */
+				400: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"text/plain": components["schemas"]["ProblemDetails"];
+						"application/json": components["schemas"]["ProblemDetails"];
+						"text/json": components["schemas"]["ProblemDetails"];
+					};
+				};
+				/** @description Unauthorized */
+				401: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"text/plain": components["schemas"]["ProblemDetails"];
+						"application/json": components["schemas"]["ProblemDetails"];
+						"text/json": components["schemas"]["ProblemDetails"];
+					};
+				};
+			};
+		};
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/api/v1/auth/backup-codes": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path?: never;
+				cookie?: never;
+			};
+			requestBody?: never;
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"text/plain": string[];
+						"application/json": string[];
+						"text/json": string[];
+					};
+				};
+				/** @description Bad Request */
+				400: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"text/plain": components["schemas"]["ProblemDetails"];
+						"application/json": components["schemas"]["ProblemDetails"];
+						"text/json": components["schemas"]["ProblemDetails"];
+					};
+				};
+				/** @description Unauthorized */
+				401: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"text/plain": components["schemas"]["ProblemDetails"];
+						"application/json": components["schemas"]["ProblemDetails"];
+						"text/json": components["schemas"]["ProblemDetails"];
+					};
+				};
+			};
+		};
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/api/v1/auth/backup-codes/remaining": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path?: never;
+				cookie?: never;
+			};
+			requestBody?: never;
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"text/plain": number | string;
+						"application/json": number | string;
+						"text/json": number | string;
+					};
+				};
+				/** @description Unauthorized */
+				401: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"text/plain": components["schemas"]["ProblemDetails"];
+						"application/json": components["schemas"]["ProblemDetails"];
+						"text/json": components["schemas"]["ProblemDetails"];
+					};
+				};
+			};
+		};
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	"/api/v1/auth/github": {
 		parameters: {
 			query?: never;
@@ -1659,13 +2203,18 @@ export interface components
 			lastChecked?: null | string;
 		};
 		AuthResponse: {
-			accessToken: string;
+			accessToken: null | string;
 			/** Format: date-time */
-			expiresAt: string;
-			email: string;
+			expiresAt: null | string;
+			email: null | string;
 			fullName: null | string;
 			/** @default false */
 			requiresPasswordChange: boolean;
+			/** @default false */
+			requiresMfa: boolean;
+			mfaChallengeToken?: null | string;
+			mfaMethod?: null | components["schemas"]["MfaMethod"];
+			availableMfaMethods?: null | components["schemas"]["MfaMethod"][];
 		};
 		AvailableRoleDto: {
 			name: string;
@@ -1679,6 +2228,9 @@ export interface components
 			token: string;
 			username: string;
 			password: string;
+		};
+		ConfirmTotpEnrollmentRequest: {
+			code: string;
 		};
 		CreateLogRequest: {
 			logLevel: string;
@@ -1714,6 +2266,9 @@ export interface components
 			contextResults?: {
 				[key: string]: boolean;
 			};
+		};
+		DisableTotpRequest: {
+			password: string;
 		};
 		ExternalApiHealthResponse: {
 			apis?: {
@@ -1767,6 +2322,7 @@ export interface components
 			rememberMe: boolean;
 			altchaPayload?: null | string;
 		};
+		MfaMethod: number;
 		OAuthCodeExchangeRequest: {
 			code: string;
 		};
@@ -1848,6 +2404,9 @@ export interface components
 			fullName?: null | string;
 			altchaPayload?: null | string;
 		};
+		ResendMfaCodeRequest: {
+			challengeToken: string;
+		};
 		SetPasswordRequest: {
 			token: string;
 			newPassword: string;
@@ -1885,6 +2444,10 @@ export interface components
 			lastCalledByApi?: {
 				[key: string]: null | string;
 			};
+		};
+		TotpSetupResponse: {
+			secret: string;
+			qrCodeUri: string;
 		};
 		UpdateProfileRequest: {
 			email: string;
@@ -1929,6 +2492,18 @@ export interface components
 			linkedProviders: string[];
 			/** Format: date-time */
 			lastLoginAt: null | string;
+		};
+		VerifyBackupCodeRequest: {
+			email: string;
+			code: string;
+		};
+		VerifyMfaRequest: {
+			challengeToken: string;
+			code: string;
+		};
+		VerifyTotpRequest: {
+			email: string;
+			code: string;
 		};
 	};
 	responses: never;

@@ -55,7 +55,8 @@ describe("LoginComponent",
 					.toISOString(),
 				email: "test@example.com",
 				fullName: "Test User",
-				requiresPasswordChange: false
+				requiresPasswordChange: false,
+				requiresMfa: false
 			};
 
 		beforeEach(

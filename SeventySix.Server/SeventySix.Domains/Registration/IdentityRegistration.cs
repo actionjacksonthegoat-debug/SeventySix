@@ -214,6 +214,24 @@ public static class IdentityRegistration
 		services.AddScoped<ITokenService, TokenService>();
 		services.AddScoped<AuthenticationService>();
 		services.AddScoped<IMfaService, MfaService>();
+		services.AddScoped<ITotpService, TotpService>();
+
+		// Register password hasher for BackupCode (required for BackupCodeService)
+		services.AddScoped<IPasswordHasher<BackupCode>, PasswordHasher<BackupCode>>();
+		services.AddScoped<IBackupCodeService, BackupCodeService>();
+
+		services.AddScoped<ITrustedDeviceService, TrustedDeviceService>();
+
+		// Configure MFA-related settings from appsettings.json
+		services.Configure<MfaSettings>(
+			configuration.GetSection(MfaSettings.SectionName));
+		services.Configure<TotpSettings>(
+			configuration.GetSection(TotpSettings.SectionName));
+		services.Configure<BackupCodeSettings>(
+			configuration.GetSection(BackupCodeSettings.SectionName));
+		services.Configure<TrustedDeviceSettings>(
+			configuration.GetSection(TrustedDeviceSettings.SectionName));
+
 		services.AddScoped<OAuthService>();
 		services.AddScoped<IOAuthService>(
 			serviceProvider =>

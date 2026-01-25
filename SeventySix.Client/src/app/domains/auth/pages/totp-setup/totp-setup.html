@@ -1,0 +1,187 @@
+<div class="totp-setup-container">
+	<div class="totp-setup-card">
+		<!-- Loading State -->
+		@if (currentStep() === STEP_LOADING) {
+		<div class="loading-state">
+			<h1>Setting up Authenticator</h1>
+			<p>Please wait while we prepare your setup...</p>
+			<div
+				class="spinner"
+				aria-label="Loading"></div>
+		</div>
+		}
+
+		<!-- Step 1: Scan QR Code -->
+		@if (currentStep() === STEP_SCAN) {
+		<h1>Set Up Authenticator App</h1>
+		<p class="subtitle">
+			Use an authenticator app like Google Authenticator, Microsoft
+			Authenticator, or Authy to scan this QR code.
+		</p>
+
+		<div class="qr-section">
+			@if (!showManualEntry()) {
+			@if (qrCodeDataUrl()) {
+			<img
+				[src]="qrCodeDataUrl()"
+				alt="TOTP QR Code"
+				class="qr-code"
+			/>
+			} @else {
+			<div
+				class="qr-placeholder"
+				aria-label="Generating QR code">
+				<div class="spinner"></div>
+			</div>
+			}
+			<button
+				type="button"
+				class="link-button"
+				(click)="onToggleManualEntry()">
+				Can't scan? Enter manually
+			</button>
+			} @else {
+			<div class="manual-entry">
+				<p class="manual-label">Enter this key in your app:</p>
+				<div class="secret-display">
+					<code class="secret-code">{{ secret() }}</code>
+					<button
+						type="button"
+						mat-icon-button
+						(click)="onCopySecret()"
+						[attr.aria-label]="
+							secretCopied() ? 'Copied' : 'Copy to clipboard'
+						">
+						<mat-icon>{{
+							secretCopied() ? "check" : "content_copy"
+						}}</mat-icon>
+					</button>
+				</div>
+				<p class="manual-hint">
+					Account name: Your email<br />
+					Type: Time-based
+				</p>
+			</div>
+			<button
+				type="button"
+				class="link-button"
+				(click)="onToggleManualEntry()">
+				Show QR code instead
+			</button>
+			}
+		</div>
+
+		<div class="action-buttons">
+			<button
+				mat-button
+				type="button"
+				(click)="onCancel()">
+				Cancel
+			</button>
+			<button
+				mat-flat-button
+				type="button"
+				(click)="onProceedToVerify()">
+				I've scanned the code
+			</button>
+		</div>
+		}
+
+		<!-- Step 2: Verify Code -->
+		@if (currentStep() === STEP_VERIFY) {
+		<h1>Verify Setup</h1>
+		<p class="subtitle">
+			Enter the 6-digit code from your authenticator app to confirm setup.
+		</p>
+
+		<form (ngSubmit)="onConfirmSetup()">
+			<div class="form-group">
+				<label for="verificationCode">Verification Code</label>
+				<input
+					type="text"
+					id="verificationCode"
+					name="verificationCode"
+					[(ngModel)]="verificationCode"
+					[disabled]="isLoading()"
+					maxlength="6"
+					pattern="[0-9]*"
+					inputmode="numeric"
+					autocomplete="one-time-code"
+					placeholder="000000"
+					aria-required="true"
+					[attr.aria-invalid]="errorMessage() ? 'true' : null"
+					aria-describedby="code-hint"
+				/>
+				<small
+					id="code-hint"
+					class="hint">
+					Enter the {{ CODE_LENGTH }}-digit code shown in your app
+				</small>
+			</div>
+
+			@if (errorMessage()) {
+			<p
+				class="error-message"
+				role="alert">
+				{{ errorMessage() }}
+			</p>
+			}
+
+			<div class="action-buttons">
+				<button
+					mat-button
+					type="button"
+					(click)="onBackToScan()"
+					[disabled]="isLoading()">
+					Back
+				</button>
+				<button
+					mat-flat-button
+					type="submit"
+					[disabled]="isLoading() || !isCodeValid()"
+					[attr.aria-busy]="isLoading()">
+					@if (isLoading()) {
+					<span>Verifying...</span>
+					} @else {
+					<span>Verify & Enable</span>
+					}
+				</button>
+			</div>
+		</form>
+		}
+
+		<!-- Step 3: Success -->
+		@if (currentStep() === STEP_SUCCESS) {
+		<div class="success-state">
+			<mat-icon class="success-icon">check_circle</mat-icon>
+			<h1>Authenticator Enabled!</h1>
+			<p class="subtitle">
+				Your account is now protected with two-factor authentication using
+				your authenticator app.
+			</p>
+
+			<div class="next-steps">
+				<p>
+					<strong>Important:</strong> We recommend setting up backup
+					codes in case you lose access to your authenticator app.
+				</p>
+			</div>
+
+			<div class="action-buttons stacked">
+				<button
+					mat-flat-button
+					type="button"
+					(click)="onSetupBackupCodes()">
+					Set Up Backup Codes
+				</button>
+				<button
+					mat-button
+					type="button"
+					(click)="onFinish()">
+					I'll do this later
+				</button>
+			</div>
+		</div>
+		}
+	</div>
+</div>

@@ -47,6 +47,16 @@ public class ApplicationUserConfiguration : IEntityTypeConfiguration<Application
 			.HasDefaultValue(false)
 			.IsRequired();
 
+		// TOTP fields
+		builder
+			.Property(user => user.TotpSecret)
+			.HasMaxLength(64)
+			.IsRequired(false);
+
+		builder
+			.Property(user => user.TotpEnrolledAt)
+			.IsRequired(false);
+
 		builder
 			.Property(user => user.RowVersion)
 			.IsRowVersion()

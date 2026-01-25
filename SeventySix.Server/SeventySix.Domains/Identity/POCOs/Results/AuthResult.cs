@@ -33,7 +33,13 @@ namespace SeventySix.Identity;
 /// Whether MFA verification is required to complete authentication.
 /// </param>
 /// <param name="MfaChallengeToken">
-/// Temporary token identifying the MFA challenge (null if MFA not required).
+/// Temporary token identifying the MFA challenge (null if MFA not required or TOTP).
+/// </param>
+/// <param name="MfaMethod">
+/// The MFA method required for verification (null if MFA not required).
+/// </param>
+/// <param name="AvailableMfaMethods">
+/// All available MFA methods for the user (null if MFA not required).
 /// </param>
 /// <param name="Error">
 /// Error message (null on success).
@@ -51,6 +57,8 @@ public record AuthResult(
 	bool RequiresPasswordChange = false,
 	bool RequiresMfa = false,
 	string? MfaChallengeToken = null,
+	MfaMethod? MfaMethod = null,
+	IReadOnlyList<MfaMethod>? AvailableMfaMethods = null,
 	string? Error = null,
 	string? ErrorCode = null)
 {
@@ -106,21 +114,31 @@ public record AuthResult(
 	/// Creates a result requiring MFA verification.
 	/// </summary>
 	/// <param name="challengeToken">
-	/// Temporary token to identify the MFA challenge.
+	/// Temporary token to identify the MFA challenge (null for TOTP).
 	/// </param>
 	/// <param name="email">
 	/// User's email (will be masked for display).
+	/// </param>
+	/// <param name="mfaMethod">
+	/// The preferred MFA method for verification.
+	/// </param>
+	/// <param name="availableMethods">
+	/// All available MFA methods for the user.
 	/// </param>
 	/// <returns>
 	/// MFA-required result.
 	/// </returns>
 	public static AuthResult MfaRequired(
-		string challengeToken,
-		string email) =>
+		string? challengeToken,
+		string email,
+		MfaMethod mfaMethod = Identity.MfaMethod.Email,
+		IReadOnlyList<MfaMethod>? availableMethods = null) =>
 		new(
 			Success: false,
 			RequiresMfa: true,
 			MfaChallengeToken: challengeToken,
+			MfaMethod: mfaMethod,
+			AvailableMfaMethods: availableMethods ?? [mfaMethod],
 			Email: MaskEmail(email));
 
 	/// <summary>

@@ -1,29 +1,50 @@
 /**
- * MFA verification page for email-based two-factor authentication.
+ * MFA verification page for email-based and TOTP two-factor authentication.
  * Displays code entry and handles verification/resend flows.
+ * Supports fallback to backup codes for TOTP users.
  */
 
 import { HttpErrorResponse } from "@angular/common/http";
 import {
 	ChangeDetectionStrategy,
 	Component,
+	computed,
 	inject,
 	OnInit,
+	Signal,
 	signal,
 	WritableSignal
 } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { MatButtonModule } from "@angular/material/button";
 import { Router } from "@angular/router";
-import { AuthResponse, MfaState, VerifyMfaRequest } from "@auth/models";
+import {
+	AuthResponse,
+	MfaMethod,
+	MfaState,
+	VerifyMfaRequest
+} from "@auth/models";
 import { MfaService } from "@auth/services";
 import { APP_ROUTES } from "@shared/constants";
+import { VerifyBackupCodeRequest, VerifyTotpRequest } from "@shared/models";
 import { AuthService, NotificationService } from "@shared/services";
+
+/**
+ * MFA method enum values.
+ * Email = 0, Totp = 1
+ */
+const MFA_METHOD_EMAIL: number = 0;
+const MFA_METHOD_TOTP: number = 1;
 
 /**
  * MFA code length.
  */
 const MFA_CODE_LENGTH: number = 6;
+
+/**
+ * Backup code length.
+ */
+const BACKUP_CODE_LENGTH: number = 8;
 
 /**
  * Resend cooldown in seconds.
@@ -41,7 +62,7 @@ const RESEND_COOLDOWN_SECONDS: number = 60;
 	})
 /**
  * Component that handles MFA code verification after initial login.
- * Provides code entry and resend functionality.
+ * Supports email-based MFA, TOTP, and backup code fallback.
  */
 export class MfaVerifyComponent implements OnInit
 {
@@ -89,7 +110,7 @@ export class MfaVerifyComponent implements OnInit
 	private mfaState: MfaState | null = null;
 
 	/**
-	 * The 6-digit verification code entered by user.
+	 * The verification code entered by user.
 	 * @type {string}
 	 * @protected
 	 */
@@ -141,6 +162,61 @@ export class MfaVerifyComponent implements OnInit
 		signal<string>("");
 
 	/**
+	 * Current MFA method being used.
+	 * @type {WritableSignal<MfaMethod>}
+	 * @protected
+	 * @readonly
+	 */
+	protected readonly mfaMethod: WritableSignal<MfaMethod> =
+		signal<MfaMethod>(MFA_METHOD_EMAIL);
+
+	/**
+	 * Whether showing backup code entry mode.
+	 * @type {WritableSignal<boolean>}
+	 * @protected
+	 * @readonly
+	 */
+	protected readonly showBackupCodeEntry: WritableSignal<boolean> =
+		signal<boolean>(false);
+
+	/**
+	 * Computed: Whether current method is email-based MFA.
+	 * @type {Signal<boolean>}
+	 * @protected
+	 * @readonly
+	 */
+	protected readonly isEmailMode: Signal<boolean> =
+		computed(
+			() =>
+				this.mfaMethod() === MFA_METHOD_EMAIL
+					&& !this.showBackupCodeEntry());
+
+	/**
+	 * Computed: Whether current method is TOTP.
+	 * @type {Signal<boolean>}
+	 * @protected
+	 * @readonly
+	 */
+	protected readonly isTotpMode: Signal<boolean> =
+		computed(
+			() =>
+				this.mfaMethod() === MFA_METHOD_TOTP
+					&& !this.showBackupCodeEntry());
+
+	/**
+	 * Computed: Expected code length based on current mode.
+	 * @type {Signal<number>}
+	 * @protected
+	 * @readonly
+	 */
+	protected readonly expectedCodeLength: Signal<number> =
+		computed(
+			() =>
+				this.showBackupCodeEntry()
+					? BACKUP_CODE_LENGTH
+					: MFA_CODE_LENGTH);
+
+	/**
 	 * Cooldown timer interval.
 	 * @type {number | null}
 	 * @private
@@ -163,6 +239,13 @@ export class MfaVerifyComponent implements OnInit
 		}
 
 		this.maskedEmail.set(this.mfaState.email);
+
+		// Set MFA method from state (default to email if not specified)
+		if (this.mfaState.mfaMethod !== null
+			&& this.mfaState.mfaMethod !== undefined)
+		{
+			this.mfaMethod.set(this.mfaState.mfaMethod);
+		}
 	}
 
 	/**
@@ -172,17 +255,43 @@ export class MfaVerifyComponent implements OnInit
 	 */
 	protected canVerify(): boolean
 	{
-		return this.code.length === MFA_CODE_LENGTH
+		return this.code.length === this.expectedCodeLength()
 			&& !this.isLoading()
 			&& !this.isResending();
 	}
 
 	/**
 	 * Handles verification code submission.
+	 * Routes to appropriate verification method based on current mode.
 	 */
 	protected onVerify(): void
 	{
 		if (!this.mfaState || !this.canVerify())
+		{
+			return;
+		}
+
+		if (this.showBackupCodeEntry())
+		{
+			this.verifyBackupCode();
+		}
+		else if (this.isTotpMode())
+		{
+			this.verifyTotp();
+		}
+		else
+		{
+			this.verifyEmailMfa();
+		}
+	}
+
+	/**
+	 * Verifies email-based MFA code.
+	 * @private
+	 */
+	private verifyEmailMfa(): void
+	{
+		if (!this.mfaState)
 		{
 			return;
 		}
@@ -204,6 +313,68 @@ export class MfaVerifyComponent implements OnInit
 						this.handleVerifySuccess(response),
 					error: (error: HttpErrorResponse) =>
 						this.handleVerifyError(error)
+				});
+	}
+
+	/**
+	 * Verifies TOTP code.
+	 * @private
+	 */
+	private verifyTotp(): void
+	{
+		if (!this.mfaState)
+		{
+			return;
+		}
+
+		this.isLoading.set(true);
+
+		const request: VerifyTotpRequest =
+			{
+				email: this.mfaState.email,
+				code: this.code
+			};
+
+		this
+			.mfaService
+			.verifyTotp(request)
+			.subscribe(
+				{
+					next: (response: AuthResponse) =>
+						this.handleVerifySuccess(response),
+					error: (error: HttpErrorResponse) =>
+						this.handleVerifyError(error)
+				});
+	}
+
+	/**
+	 * Verifies backup code.
+	 * @private
+	 */
+	private verifyBackupCode(): void
+	{
+		if (!this.mfaState)
+		{
+			return;
+		}
+
+		this.isLoading.set(true);
+
+		const request: VerifyBackupCodeRequest =
+			{
+				email: this.mfaState.email,
+				code: this.code
+			};
+
+		this
+			.mfaService
+			.verifyBackupCode(request)
+			.subscribe(
+				{
+					next: (response: AuthResponse) =>
+						this.handleVerifySuccess(response),
+					error: (error: HttpErrorResponse) =>
+						this.handleBackupCodeError(error)
 				});
 	}
 
@@ -257,12 +428,14 @@ export class MfaVerifyComponent implements OnInit
 		switch (errorCode)
 		{
 			case "MFA_INVALID_CODE":
+			case "TOTP_INVALID_CODE":
 				this.notification.error("Invalid verification code. Please try again.");
 				break;
 			case "MFA_CODE_EXPIRED":
 				this.notification.error("Code has expired. Please request a new code.");
 				break;
 			case "MFA_TOO_MANY_ATTEMPTS":
+			case "TOTP_TOO_MANY_ATTEMPTS":
 				this.notification.error(
 					"Too many attempts. Please request a new code.");
 				this.mfaService.clearMfaState();
@@ -275,6 +448,44 @@ export class MfaVerifyComponent implements OnInit
 				this.mfaService.clearMfaState();
 				this.router.navigate(
 					[APP_ROUTES.AUTH.LOGIN]);
+				break;
+			case "TOTP_NOT_ENABLED":
+				this.notification.error("Authenticator app is not set up. Please log in again.");
+				this.mfaService.clearMfaState();
+				this.router.navigate(
+					[APP_ROUTES.AUTH.LOGIN]);
+				break;
+			default:
+				this.notification.error(
+					error.error?.detail ?? "Verification failed. Please try again.");
+		}
+	}
+
+	/**
+	 * Handles backup code verification error.
+	 * @param {HttpErrorResponse} error
+	 * The HTTP error response.
+	 * @private
+	 */
+	private handleBackupCodeError(error: HttpErrorResponse): void
+	{
+		this.isLoading.set(false);
+		this.code = "";
+
+		const errorCode: string | undefined =
+			error.error?.errorCode;
+
+		switch (errorCode)
+		{
+			case "BACKUP_CODE_INVALID":
+				this.notification.error("Invalid backup code. Please try again.");
+				break;
+			case "BACKUP_CODE_ALREADY_USED":
+				this.notification.error("This backup code has already been used.");
+				break;
+			case "NO_BACKUP_CODES_AVAILABLE":
+				this.notification.error(
+					"No backup codes available. Please contact support.");
 				break;
 			default:
 				this.notification.error(
@@ -300,8 +511,7 @@ export class MfaVerifyComponent implements OnInit
 				{ challengeToken: this.mfaState.challengeToken })
 			.subscribe(
 				{
-					next: () =>
-						this.handleResendSuccess(),
+					next: () => this.handleResendSuccess(),
 					error: (error: HttpErrorResponse) =>
 						this.handleResendError(error)
 				});
@@ -401,5 +611,23 @@ export class MfaVerifyComponent implements OnInit
 		this.mfaService.clearMfaState();
 		this.router.navigate(
 			[APP_ROUTES.AUTH.LOGIN]);
+	}
+
+	/**
+	 * Switches to backup code entry mode.
+	 */
+	protected onUseBackupCode(): void
+	{
+		this.showBackupCodeEntry.set(true);
+		this.code = "";
+	}
+
+	/**
+	 * Switches back from backup code entry to normal MFA mode.
+	 */
+	protected onCancelBackupCode(): void
+	{
+		this.showBackupCodeEntry.set(false);
+		this.code = "";
 	}
 }

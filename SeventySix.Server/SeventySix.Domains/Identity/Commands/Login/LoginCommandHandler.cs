@@ -100,6 +100,31 @@ public static class LoginCommandHandler
 
 		if (mfaRequired)
 		{
+			// Determine available MFA methods based on user enrollment
+			bool hasTotpEnrolled =
+				!string.IsNullOrEmpty(user!.TotpSecret);
+
+			if (hasTotpEnrolled)
+			{
+				// User has TOTP enrolled - prefer TOTP (no email sent)
+				await securityAuditService.LogEventAsync(
+					SecurityEventType.MfaChallengeInitiated,
+					user,
+					success: true,
+					details: "TOTP",
+					cancellationToken);
+
+				List<MfaMethod> availableMethods =
+					[MfaMethod.Totp, MfaMethod.Email, MfaMethod.BackupCode];
+
+				return AuthResult.MfaRequired(
+					challengeToken: null,
+					email: user.Email!,
+					mfaMethod: MfaMethod.Totp,
+					availableMethods: availableMethods);
+			}
+
+			// Fall back to email-based MFA
 			return await InitiateMfaChallengeAsync(
 				user!,
 				command.ClientIp,
@@ -318,11 +343,16 @@ public static class LoginCommandHandler
 			SecurityEventType.MfaChallengeInitiated,
 			user,
 			success: true,
-			details: null,
+			details: "Email",
 			cancellationToken);
+
+		List<MfaMethod> availableMethods =
+			[MfaMethod.Email];
 
 		return AuthResult.MfaRequired(
 			challengeToken,
-			user.Email!);
+			user.Email!,
+			mfaMethod: MfaMethod.Email,
+			availableMethods: availableMethods);
 	}
 }

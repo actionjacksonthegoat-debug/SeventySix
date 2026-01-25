@@ -43,7 +43,8 @@ export class AuthFixtures
 				.toISOString(),
 			email: "test@example.com",
 			fullName: "Test User",
-			requiresPasswordChange: false
+			requiresPasswordChange: false,
+			requiresMfa: false
 		};
 	}
 
@@ -63,7 +64,8 @@ export class AuthFixtures
 				.toISOString(),
 			email: "expired@example.com",
 			fullName: "Expired Password User",
-			requiresPasswordChange: true
+			requiresPasswordChange: true,
+			requiresMfa: false
 		};
 	}
 

@@ -15,24 +15,14 @@ export type InitiateRegistrationRequest = components["schemas"]["InitiateRegistr
 export type CompleteRegistrationRequest = components["schemas"]["CompleteRegistrationRequest"];
 export type SetPasswordRequest = components["schemas"]["SetPasswordRequest"];
 
-/**
- * Extended auth response that includes MFA fields.
- * Once OpenAPI is regenerated, this can be simplified to the generated type.
- */
-export type AuthResponse = components["schemas"]["AuthResponse"] & {
-	/**
-	 * Whether MFA verification is required to complete authentication.
-	 */
-	requiresMfa?: boolean;
+// MFA types
+export type MfaMethod = components["schemas"]["MfaMethod"];
 
-	/**
-	 * Temporary token identifying the MFA challenge.
-	 */
-	mfaChallengeToken?: string | null;
-};
+// Auth response from API - now fully typed from OpenAPI
+export type AuthResponse = components["schemas"]["AuthResponse"];
 
 /**
- * Request to verify an MFA code.
+ * Request to verify an MFA code (email-based).
  */
 export interface VerifyMfaRequest
 {
@@ -77,6 +67,16 @@ export interface MfaState
 	 * The return URL after successful MFA.
 	 */
 	returnUrl: string;
+
+	/**
+	 * The MFA method in use (Email = 0, Totp = 1).
+	 */
+	mfaMethod?: MfaMethod | null;
+
+	/**
+	 * Available MFA methods for this user.
+	 */
+	availableMfaMethods?: MfaMethod[] | null;
 }
 
 // Validation models

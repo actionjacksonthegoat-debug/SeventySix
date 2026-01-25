@@ -14,6 +14,8 @@ export const APP_ROUTES: Readonly<{
 		FORGOT_PASSWORD: "/auth/forgot-password";
 		RESET_PASSWORD: "/auth/reset-password";
 		MFA_VERIFY: "/auth/mfa/verify";
+		TOTP_SETUP: "/auth/totp-setup";
+		BACKUP_CODES: "/auth/backup-codes";
 	};
 	ACCOUNT: {
 		PROFILE: "/account/profile";
@@ -34,7 +36,9 @@ export const APP_ROUTES: Readonly<{
 			REGISTER: "/auth/register",
 			FORGOT_PASSWORD: "/auth/forgot-password",
 			RESET_PASSWORD: "/auth/reset-password",
-			MFA_VERIFY: "/auth/mfa/verify"
+			MFA_VERIFY: "/auth/mfa/verify",
+			TOTP_SETUP: "/auth/totp-setup",
+			BACKUP_CODES: "/auth/backup-codes"
 		},
 		/** Account management routes. */
 		ACCOUNT: {

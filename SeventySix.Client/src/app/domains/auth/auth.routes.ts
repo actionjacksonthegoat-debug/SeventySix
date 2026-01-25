@@ -1,5 +1,5 @@
 import { Routes } from "@angular/router";
-import { MfaService } from "@auth/services";
+import { BackupCodesService, MfaService, TotpService } from "@auth/services";
 
 /**
  * Authentication feature routes (login, registration, password flows).
@@ -57,5 +57,21 @@ export const AUTH_ROUTES: Routes =
 					(m) => m.MfaVerifyComponent),
 			providers: [MfaService],
 			data: { breadcrumb: "Verify Identity" }
+		},
+		{
+			path: "totp-setup",
+			loadComponent: () =>
+				import("./pages/totp-setup/totp-setup").then(
+					(m) => m.TotpSetupComponent),
+			providers: [TotpService],
+			data: { breadcrumb: "Set Up Authenticator" }
+		},
+		{
+			path: "backup-codes",
+			loadComponent: () =>
+				import("./pages/backup-codes/backup-codes").then(
+					(m) => m.BackupCodesComponent),
+			providers: [BackupCodesService],
+			data: { breadcrumb: "Backup Codes" }
 		}
 	];

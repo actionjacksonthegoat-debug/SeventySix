@@ -68,6 +68,20 @@ public class IdentityDbContext
 	public DbSet<MfaChallenge> MfaChallenges =>
 		Set<MfaChallenge>();
 
+	/// <summary>
+	/// Gets or sets the BackupCodes DbSet.
+	/// Used for MFA recovery backup codes.
+	/// </summary>
+	public DbSet<BackupCode> BackupCodes =>
+		Set<BackupCode>();
+
+	/// <summary>
+	/// Gets or sets the TrustedDevices DbSet.
+	/// Used for "Remember This Device" MFA bypass.
+	/// </summary>
+	public DbSet<TrustedDevice> TrustedDevices =>
+		Set<TrustedDevice>();
+
 	/// <inheritdoc/>
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
 	{

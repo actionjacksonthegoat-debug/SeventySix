@@ -11,7 +11,9 @@ import {
 	AuthResponse,
 	MfaState,
 	ResendMfaCodeRequest,
-	VerifyMfaRequest
+	VerifyBackupCodeRequest,
+	VerifyMfaRequest,
+	VerifyTotpRequest
 } from "@shared/models";
 import { StorageService } from "@shared/services";
 import { Observable, tap } from "rxjs";
@@ -84,6 +86,46 @@ export class MfaService
 		return this
 			.httpClient
 			.post<void>(`${this.authUrl}/mfa/resend`, request);
+	}
+
+	/**
+	 * Verifies TOTP code during MFA.
+	 * @param {VerifyTotpRequest} request
+	 * The TOTP verification request.
+	 * @returns {Observable<AuthResponse>}
+	 * Observable that emits AuthResponse on success.
+	 */
+	verifyTotp(request: VerifyTotpRequest): Observable<AuthResponse>
+	{
+		return this
+			.httpClient
+			.post<AuthResponse>(
+				`${this.authUrl}/mfa/verify-totp`,
+				request,
+				{ withCredentials: true })
+			.pipe(
+				tap(
+					() => this.clearMfaState()));
+	}
+
+	/**
+	 * Verifies backup code during MFA.
+	 * @param {VerifyBackupCodeRequest} request
+	 * The backup code verification request.
+	 * @returns {Observable<AuthResponse>}
+	 * Observable that emits AuthResponse on success.
+	 */
+	verifyBackupCode(request: VerifyBackupCodeRequest): Observable<AuthResponse>
+	{
+		return this
+			.httpClient
+			.post<AuthResponse>(
+				`${this.authUrl}/mfa/verify-backup`,
+				request,
+				{ withCredentials: true })
+			.pipe(
+				tap(
+					() => this.clearMfaState()));
 	}
 
 	/**

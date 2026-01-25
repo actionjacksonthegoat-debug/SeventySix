@@ -26,7 +26,13 @@ namespace SeventySix.Identity;
 /// Whether MFA verification is required to complete authentication.
 /// </param>
 /// <param name="MfaChallengeToken">
-/// Temporary token identifying the MFA challenge (null if MFA not required).
+/// Temporary token identifying the MFA challenge (null if MFA not required or TOTP).
+/// </param>
+/// <param name="MfaMethod">
+/// The preferred MFA method required for verification (null if MFA not required).
+/// </param>
+/// <param name="AvailableMfaMethods">
+/// All available MFA methods for the user (null if MFA not required).
 /// </param>
 public record AuthResponse(
 	string? AccessToken,
@@ -35,7 +41,9 @@ public record AuthResponse(
 	string? FullName,
 	bool RequiresPasswordChange = false,
 	bool RequiresMfa = false,
-	string? MfaChallengeToken = null)
+	string? MfaChallengeToken = null,
+	MfaMethod? MfaMethod = null,
+	IReadOnlyList<MfaMethod>? AvailableMfaMethods = null)
 {
 	/// <summary>
 	/// Creates an AuthResponse from an AuthResult.
@@ -54,5 +62,7 @@ public record AuthResponse(
 			FullName: result.FullName,
 			RequiresPasswordChange: result.RequiresPasswordChange,
 			RequiresMfa: result.RequiresMfa,
-			MfaChallengeToken: result.MfaChallengeToken);
+			MfaChallengeToken: result.MfaChallengeToken,
+			MfaMethod: result.MfaMethod,
+			AvailableMfaMethods: result.AvailableMfaMethods);
 }

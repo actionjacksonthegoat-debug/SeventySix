@@ -132,5 +132,55 @@ public enum SecurityEventType
 	/// <summary>
 	/// MFA challenge initiated (code sent to user).
 	/// </summary>
-	MfaChallengeInitiated = 25
+	MfaChallengeInitiated = 25,
+
+	/// <summary>
+	/// TOTP enrollment process was initiated (QR code generated).
+	/// </summary>
+	TotpEnrollmentInitiated = 35,
+
+	/// <summary>
+	/// TOTP authenticator was enrolled for the user.
+	/// </summary>
+	TotpEnrolled = 26,
+
+	/// <summary>
+	/// TOTP authenticator was disabled for the user.
+	/// </summary>
+	TotpDisabled = 27,
+
+	/// <summary>
+	/// TOTP verification succeeded.
+	/// </summary>
+	TotpVerificationSuccess = 28,
+
+	/// <summary>
+	/// TOTP verification failed (invalid code).
+	/// </summary>
+	TotpVerificationFailed = 29,
+
+	/// <summary>
+	/// A backup code was used for MFA verification.
+	/// </summary>
+	BackupCodeUsed = 30,
+
+	/// <summary>
+	/// Backup codes were regenerated (old codes invalidated).
+	/// </summary>
+	BackupCodesRegenerated = 31,
+
+	/// <summary>
+	/// A new trusted device was registered.
+	/// </summary>
+	TrustedDeviceCreated = 32,
+
+	/// <summary>
+	/// A trusted device was used to skip MFA.
+	/// </summary>
+	TrustedDeviceUsed = 33,
+
+	/// <summary>
+	/// A trusted device was revoked by the user.
+	/// </summary>
+	TrustedDeviceRevoked = 34
 }

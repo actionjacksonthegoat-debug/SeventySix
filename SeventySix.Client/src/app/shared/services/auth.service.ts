@@ -226,10 +226,11 @@ export class AuthService
 							return;
 						}
 
+						// When MFA is not required, token fields are guaranteed non-null
 						this.setAccessToken(
-							response.accessToken,
-							response.expiresAt,
-							response.email,
+							response.accessToken!,
+							response.expiresAt!,
+							response.email!,
 							response.fullName);
 						this.requiresPasswordChangeSignal.set(
 							response.requiresPasswordChange);
@@ -309,10 +310,11 @@ export class AuthService
 					tap(
 						(response: AuthResponse) =>
 						{
+							// Refresh always returns token fields (no MFA on refresh)
 							this.setAccessToken(
-								response.accessToken,
-								response.expiresAt,
-								response.email,
+								response.accessToken!,
+								response.expiresAt!,
+								response.email!,
 								response.fullName);
 							this.requiresPasswordChangeSignal.set(
 								response.requiresPasswordChange);
@@ -454,10 +456,11 @@ export class AuthService
 				tap(
 					(response: AuthResponse) =>
 					{
+						// Registration complete always returns token fields
 						this.setAccessToken(
-							response.accessToken,
-							response.expiresAt,
-							response.email,
+							response.accessToken!,
+							response.expiresAt!,
+							response.email!,
 							response.fullName);
 						this.markHasSession();
 					}));
@@ -578,10 +581,11 @@ export class AuthService
 	 */
 	handleMfaSuccess(response: AuthResponse): void
 	{
+		// MFA success always returns token fields
 		this.setAccessToken(
-			response.accessToken,
-			response.expiresAt,
-			response.email,
+			response.accessToken!,
+			response.expiresAt!,
+			response.email!,
 			response.fullName);
 		this.requiresPasswordChangeSignal.set(
 			response.requiresPasswordChange);
