@@ -155,6 +155,49 @@ public class EmailService(
 	}
 
 	/// <summary>
+	/// Sends a multi-factor authentication verification code email.
+	/// </summary>
+	/// <param name="email">
+	/// The recipient's email address.
+	/// </param>
+	/// <param name="code">
+	/// The 6-digit verification code.
+	/// </param>
+	/// <param name="expirationMinutes">
+	/// Number of minutes until the code expires.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// A task representing the async operation.
+	/// </returns>
+	public async Task SendMfaCodeEmailAsync(
+		string email,
+		string code,
+		int expirationMinutes,
+		CancellationToken cancellationToken = default)
+	{
+		ArgumentException.ThrowIfNullOrWhiteSpace(email);
+		ArgumentException.ThrowIfNullOrWhiteSpace(code);
+		ArgumentOutOfRangeException.ThrowIfNegativeOrZero(expirationMinutes);
+
+		string subject =
+			EmailSubjectConstants.MfaVerification;
+
+		string body =
+			BuildMfaCodeEmailBody(
+				code,
+				expirationMinutes);
+
+		await SendEmailAsync(
+			email,
+			subject,
+			body,
+			cancellationToken);
+	}
+
+	/// <summary>
 	/// Builds the password reset URL with encoded token.
 	/// </summary>
 	/// <param name="resetToken">
@@ -460,6 +503,41 @@ public class EmailService(
 				</p>
 				<p>This link expires in 24 hours.</p>
 				<p>If you did not create an account with SeventySix, please ignore this email.</p>
+				<hr style="margin: 24px 0; border: none; border-top: 1px solid #eee;">
+				<p style="color: #666; font-size: 12px;">SeventySix Team</p>
+			</body>
+			</html>
+			""";
+
+	/// <summary>
+	/// Builds HTML body for MFA verification code email.
+	/// </summary>
+	/// <param name="code">
+	/// The 6-digit verification code.
+	/// </param>
+	/// <param name="expirationMinutes">
+	/// Number of minutes until the code expires.
+	/// </param>
+	/// <returns>
+	/// The HTML string for the MFA verification email body.
+	/// </returns>
+	private static string BuildMfaCodeEmailBody(
+		string code,
+		int expirationMinutes) =>
+		$$"""
+			<!DOCTYPE html>
+			<html>
+			<body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+				<h1>Your Verification Code</h1>
+				<p>Use the following code to complete your sign-in:</p>
+				<p style="margin: 24px 0; text-align: center;">
+					<span style="display: inline-block; background: #f5f5f5; padding: 16px 32px; font-size: 32px; font-weight: bold; letter-spacing: 8px; font-family: monospace; border-radius: 4px;">
+						{{code}}
+					</span>
+				</p>
+				<p>This code expires in {{expirationMinutes}} minutes.</p>
+				<p><strong>Security tip:</strong> Never share this code with anyone. SeventySix will never ask for your verification code.</p>
+				<p>If you did not attempt to sign in, please secure your account immediately by changing your password.</p>
 				<hr style="margin: 24px 0; border: none; border-top: 1px solid #eee;">
 				<p style="color: #666; font-size: 12px;">SeventySix Team</p>
 			</body>

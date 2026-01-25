@@ -189,6 +189,7 @@ public static class IdentityRegistration
 			PermissionRequestRepository>();
 		services.AddScoped<ITokenRepository, TokenRepository>();
 		services.AddScoped<IAuthRepository, AuthRepository>();
+		services.AddScoped<IMfaChallengeRepository, MfaChallengeRepository>();
 	}
 
 	/// <summary>
@@ -212,6 +213,7 @@ public static class IdentityRegistration
 
 		services.AddScoped<ITokenService, TokenService>();
 		services.AddScoped<AuthenticationService>();
+		services.AddScoped<IMfaService, MfaService>();
 		services.AddScoped<OAuthService>();
 		services.AddScoped<IOAuthService>(
 			serviceProvider =>

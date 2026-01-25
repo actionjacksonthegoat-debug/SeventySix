@@ -8,6 +8,7 @@ import { provideZonelessChangeDetection, signal } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideRouter, Router } from "@angular/router";
 import { AuthResponse } from "@auth/models";
+import { MfaService } from "@auth/services";
 import { AltchaService, DateService } from "@shared/services";
 import { AuthService } from "@shared/services/auth.service";
 import { NotificationService } from "@shared/services/notification.service";
@@ -28,12 +29,18 @@ interface MockAuthService
 	isAuthenticated: ReturnType<typeof signal<boolean>>;
 }
 
+interface MockMfaService
+{
+	setMfaState: ReturnType<typeof vi.fn>;
+}
+
 describe("LoginComponent",
 	() =>
 	{
 		let component: LoginComponent;
 		let fixture: ComponentFixture<LoginComponent>;
 		let mockAuthService: MockAuthService;
+		let mockMfaService: MockMfaService;
 		let mockNotificationService: MockNotificationService;
 		let mockAltchaService: MockAltchaService;
 		let router: Router;
@@ -60,6 +67,10 @@ describe("LoginComponent",
 						loginWithProvider: vi.fn(),
 						isAuthenticated: signal<boolean>(false)
 					};
+				mockMfaService =
+					{
+						setMfaState: vi.fn()
+					};
 				mockNotificationService =
 					createMockNotificationService();
 				mockAltchaService =
@@ -73,6 +84,7 @@ describe("LoginComponent",
 								provideZonelessChangeDetection(),
 								provideRouter([]),
 								{ provide: AuthService, useValue: mockAuthService },
+								{ provide: MfaService, useValue: mockMfaService },
 								{
 									provide: NotificationService,
 									useValue: mockNotificationService

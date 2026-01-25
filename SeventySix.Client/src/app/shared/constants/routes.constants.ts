@@ -13,6 +13,7 @@ export const APP_ROUTES: Readonly<{
 		REGISTER: "/auth/register";
 		FORGOT_PASSWORD: "/auth/forgot-password";
 		RESET_PASSWORD: "/auth/reset-password";
+		MFA_VERIFY: "/auth/mfa/verify";
 	};
 	ACCOUNT: {
 		PROFILE: "/account/profile";
@@ -32,7 +33,8 @@ export const APP_ROUTES: Readonly<{
 			LOGIN: "/auth/login",
 			REGISTER: "/auth/register",
 			FORGOT_PASSWORD: "/auth/forgot-password",
-			RESET_PASSWORD: "/auth/reset-password"
+			RESET_PASSWORD: "/auth/reset-password",
+			MFA_VERIFY: "/auth/mfa/verify"
 		},
 		/** Account management routes. */
 		ACCOUNT: {

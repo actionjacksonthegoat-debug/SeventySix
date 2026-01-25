@@ -116,6 +116,12 @@ public static class RateLimitingRegistration
 				options.AddPolicy(
 					RateLimitPolicyConstants.ClientLogs,
 					_ => RateLimitPartition.GetNoLimiter(string.Empty));
+				options.AddPolicy(
+					RateLimitPolicyConstants.MfaVerify,
+					_ => RateLimitPartition.GetNoLimiter(string.Empty));
+				options.AddPolicy(
+					RateLimitPolicyConstants.MfaResend,
+					_ => RateLimitPartition.GetNoLimiter(string.Empty));
 			});
 
 		return services;
@@ -249,6 +255,20 @@ public static class RateLimitingRegistration
 				CreateAuthLimiter(
 					context,
 					settings.ClientLogsPerMinute,
+					TimeSpan.FromMinutes(1)));
+		options.AddPolicy(
+			RateLimitPolicyConstants.MfaVerify,
+			context =>
+				CreateAuthLimiter(
+					context,
+					settings.MfaVerifyPerMinute,
+					TimeSpan.FromMinutes(1)));
+		options.AddPolicy(
+			RateLimitPolicyConstants.MfaResend,
+			context =>
+				CreateAuthLimiter(
+					context,
+					settings.MfaResendPerMinute,
 					TimeSpan.FromMinutes(1)));
 	}
 

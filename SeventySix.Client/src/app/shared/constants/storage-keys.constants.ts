@@ -11,6 +11,8 @@ export const STORAGE_KEYS: Readonly<{
 	AUTH_HAS_SESSION: "auth_has_session";
 	/** Authentication: return URL in sessionStorage. */
 	AUTH_RETURN_URL: "auth_return_url";
+	/** Authentication: MFA state in sessionStorage. */
+	AUTH_MFA_STATE: "auth_mfa_state";
 	/** Error queue: persisted errors in localStorage. */
 	ERROR_QUEUE: "error-queue";
 	/** Layout: sidebar collapsed state in sessionStorage. */
@@ -21,6 +23,7 @@ export const STORAGE_KEYS: Readonly<{
 	{
 		AUTH_HAS_SESSION: "auth_has_session",
 		AUTH_RETURN_URL: "auth_return_url",
+		AUTH_MFA_STATE: "auth_mfa_state",
 		ERROR_QUEUE: "error-queue",
 		SIDEBAR_SESSION: "seventysix-sidebar-session",
 		THEME_COLOR_SCHEME: "theme-color-scheme"

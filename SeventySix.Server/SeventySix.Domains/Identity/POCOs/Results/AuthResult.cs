@@ -29,6 +29,12 @@ namespace SeventySix.Identity;
 /// <param name="RequiresPasswordChange">
 /// Whether user must change password before accessing the app.
 /// </param>
+/// <param name="RequiresMfa">
+/// Whether MFA verification is required to complete authentication.
+/// </param>
+/// <param name="MfaChallengeToken">
+/// Temporary token identifying the MFA challenge (null if MFA not required).
+/// </param>
 /// <param name="Error">
 /// Error message (null on success).
 /// </param>
@@ -43,6 +49,8 @@ public record AuthResult(
 	string? Email = null,
 	string? FullName = null,
 	bool RequiresPasswordChange = false,
+	bool RequiresMfa = false,
+	string? MfaChallengeToken = null,
 	string? Error = null,
 	string? ErrorCode = null)
 {
@@ -95,6 +103,27 @@ public record AuthResult(
 			RequiresPasswordChange: requiresPasswordChange);
 
 	/// <summary>
+	/// Creates a result requiring MFA verification.
+	/// </summary>
+	/// <param name="challengeToken">
+	/// Temporary token to identify the MFA challenge.
+	/// </param>
+	/// <param name="email">
+	/// User's email (will be masked for display).
+	/// </param>
+	/// <returns>
+	/// MFA-required result.
+	/// </returns>
+	public static AuthResult MfaRequired(
+		string challengeToken,
+		string email) =>
+		new(
+			Success: false,
+			RequiresMfa: true,
+			MfaChallengeToken: challengeToken,
+			Email: MaskEmail(email));
+
+	/// <summary>
 	/// Creates a failed authentication result.
 	/// </summary>
 	/// <param name="error">
@@ -106,8 +135,35 @@ public record AuthResult(
 	/// <returns>
 	/// Failure result with error details.
 	/// </returns>
-	public static AuthResult Failed(string error, string? errorCode = null) =>
-		new(Success: false, Error: error, ErrorCode: errorCode);
+	public static AuthResult Failed(
+		string error,
+		string? errorCode = null) =>
+		new(
+			Success: false,
+			Error: error,
+			ErrorCode: errorCode);
+
+	/// <summary>
+	/// Masks an email address for display (e.g., "j***@example.com").
+	/// </summary>
+	/// <param name="email">
+	/// The email address to mask.
+	/// </param>
+	/// <returns>
+	/// Masked email address.
+	/// </returns>
+	private static string MaskEmail(string email)
+	{
+		int atIndex =
+			email.IndexOf('@');
+
+		if (atIndex <= 1)
+		{
+			return email;
+		}
+
+		return $"{email[0]}***{email[(atIndex - 1)..]}";
+	}
 }
 
 /// <summary>

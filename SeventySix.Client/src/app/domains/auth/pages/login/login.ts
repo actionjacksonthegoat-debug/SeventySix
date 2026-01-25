@@ -16,7 +16,8 @@ import { FormsModule } from "@angular/forms";
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
 import { ActivatedRoute, Router, RouterLink } from "@angular/router";
-import { AuthResponse, LoginRequest } from "@auth/models";
+import { AuthResponse, LoginRequest, MfaState } from "@auth/models";
+import { MfaService } from "@auth/services";
 import { sanitizeRedirectUrl } from "@auth/utilities";
 import { AltchaWidgetComponent } from "@shared/components";
 import { AltchaService, AuthService, NotificationService } from "@shared/services";
@@ -48,6 +49,13 @@ export class LoginComponent implements OnInit
 	 */
 	private readonly authService: AuthService =
 		inject(AuthService);
+
+	/**
+	 * MFA service for storing MFA state.
+	 * @type {MfaService}
+	 */
+	private readonly mfaService: MfaService =
+		inject(MfaService);
 
 	/**
 	 * Router for navigation after successful login.
@@ -212,14 +220,28 @@ export class LoginComponent implements OnInit
 	}
 
 	/**
-	 * Handle successful login response. Redirects to password change if required,
-	 * otherwise navigates to the return URL.
+	 * Handle successful login response. Redirects to MFA verify if required,
+	 * password change if required, otherwise navigates to the return URL.
 	 * @param response
 	 * The authentication response from the server.
 	 * @returns {void}
 	 */
 	private handleLoginSuccess(response: AuthResponse): void
 	{
+		if (response.requiresMfa && response.mfaChallengeToken)
+		{
+			const mfaState: MfaState =
+				{
+					challengeToken: response.mfaChallengeToken,
+					email: response.email ?? "",
+					returnUrl: this.returnUrl
+				};
+			this.mfaService.setMfaState(mfaState);
+			this.router.navigate(
+				["/auth/mfa/verify"]);
+			return;
+		}
+
 		if (response.requiresPasswordChange)
 		{
 			this.notification.info(

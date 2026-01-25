@@ -158,6 +158,16 @@ public record AuthRateLimitSettings
 	/// Gets max client log submissions per minute. Default: 30.
 	/// </summary>
 	public int ClientLogsPerMinute { get; init; } = 30;
+
+	/// <summary>
+	/// Gets max MFA verification attempts per minute. Default: 5.
+	/// </summary>
+	public int MfaVerifyPerMinute { get; init; } = 5;
+
+	/// <summary>
+	/// Gets max MFA code resend requests per minute. Default: 3.
+	/// </summary>
+	public int MfaResendPerMinute { get; init; } = 3;
 }
 
 /// <summary>

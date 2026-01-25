@@ -61,6 +61,13 @@ public class IdentityDbContext
 	public DbSet<SecurityEvent> SecurityEvents =>
 		Set<SecurityEvent>();
 
+	/// <summary>
+	/// Gets or sets the MfaChallenges DbSet.
+	/// Used for email-based MFA verification.
+	/// </summary>
+	public DbSet<MfaChallenge> MfaChallenges =>
+		Set<MfaChallenge>();
+
 	/// <inheritdoc/>
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
 	{

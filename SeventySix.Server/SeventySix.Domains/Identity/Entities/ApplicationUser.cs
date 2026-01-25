@@ -79,6 +79,14 @@ public class ApplicationUser : IdentityUser<long>, IAuditableEntity
 	public bool RequiresPasswordChange { get; set; } = false;
 
 	/// <summary>
+	/// Gets or sets whether multi-factor authentication is enabled for this user.
+	/// </summary>
+	/// <remarks>
+	/// When enabled, user must complete MFA verification after password authentication.
+	/// </remarks>
+	public bool MfaEnabled { get; set; } = false;
+
+	/// <summary>
 	/// Gets or sets user preferences as JSON.
 	/// </summary>
 	public string? Preferences { get; set; }

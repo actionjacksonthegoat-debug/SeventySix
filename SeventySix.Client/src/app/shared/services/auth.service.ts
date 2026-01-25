@@ -206,7 +206,7 @@ export class AuthService
 	 * @param {LoginRequest} credentials
 	 * The login request payload.
 	 * @returns {Observable<AuthResponse>}
-	 * Observable that emits AuthResponse on success.
+	 * Observable that emits AuthResponse on success or MFA required.
 	 */
 	login(credentials: LoginRequest): Observable<AuthResponse>
 	{
@@ -220,6 +220,12 @@ export class AuthService
 				tap(
 					(response: AuthResponse) =>
 					{
+						// Skip token handling when MFA is required
+						if (response.requiresMfa)
+						{
+							return;
+						}
+
 						this.setAccessToken(
 							response.accessToken,
 							response.expiresAt,
@@ -562,6 +568,24 @@ export class AuthService
 		}
 
 		return true;
+	}
+
+	/**
+	 * Handles successful MFA verification by storing tokens.
+	 * Called by MfaService after successful code verification.
+	 * @param {AuthResponse} response
+	 * The auth response from MFA verification.
+	 */
+	handleMfaSuccess(response: AuthResponse): void
+	{
+		this.setAccessToken(
+			response.accessToken,
+			response.expiresAt,
+			response.email,
+			response.fullName);
+		this.requiresPasswordChangeSignal.set(
+			response.requiresPasswordChange);
+		this.markHasSession();
 	}
 
 	/**

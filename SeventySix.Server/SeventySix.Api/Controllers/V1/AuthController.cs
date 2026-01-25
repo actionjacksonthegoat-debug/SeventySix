@@ -92,6 +92,11 @@ public class AuthController(
 				new LoginCommand(request, clientIp),
 				cancellationToken);
 
+		if (result.RequiresMfa)
+		{
+			return Ok(AuthResponse.FromResult(result));
+		}
+
 		if (!result.Success)
 		{
 			logger.LogWarning(
@@ -303,6 +308,131 @@ public class AuthController(
 
 		cookieService.ClearRefreshTokenCookie();
 		cookieService.ClearOAuthCookies();
+
+		return NoContent();
+	}
+
+	/// <summary>
+	/// Verifies an MFA code and completes authentication.
+	/// </summary>
+	/// <param name="request">
+	/// The verification request containing challenge token and code.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// Access token and sets refresh token cookie on successful verification.
+	/// </returns>
+	/// <response code="200">MFA verification successful.</response>
+	/// <response code="400">Invalid or expired code.</response>
+	/// <response code="429">Too many verification attempts.</response>
+	[HttpPost("mfa/verify")]
+	[EnableRateLimiting(RateLimitPolicyConstants.MfaVerify)]
+	[ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
+	[ProducesResponseType(
+		typeof(ProblemDetails),
+		StatusCodes.Status400BadRequest
+	)]
+	[ProducesResponseType(
+		typeof(ProblemDetails),
+		StatusCodes.Status429TooManyRequests
+	)]
+	public async Task<ActionResult<AuthResponse>> VerifyMfaAsync(
+		[FromBody] VerifyMfaRequest request,
+		CancellationToken cancellationToken)
+	{
+		string? clientIp = GetClientIpAddress();
+
+		AuthResult result =
+			await messageBus.InvokeAsync<AuthResult>(
+				new VerifyMfaCommand(request, clientIp),
+				cancellationToken);
+
+		if (!result.Success)
+		{
+			logger.LogWarning(
+				"MFA verification failed. Code: {ErrorCode}",
+				result.ErrorCode);
+
+			return BadRequest(
+				new ProblemDetails
+				{
+					Title = "MFA Verification Failed",
+					Detail = result.Error,
+					Status =
+						StatusCodes.Status400BadRequest,
+					Extensions =
+						{ ["errorCode"] = result.ErrorCode },
+				});
+		}
+
+		ValidatedAuthResult validatedResult =
+			ValidateSuccessfulAuthResult(result);
+
+		cookieService.SetRefreshTokenCookie(validatedResult.RefreshToken);
+
+		return Ok(
+			new AuthResponse(
+				AccessToken: validatedResult.AccessToken,
+				ExpiresAt: validatedResult.ExpiresAt,
+				Email: validatedResult.Email,
+				FullName: validatedResult.FullName,
+				RequiresPasswordChange: validatedResult.RequiresPasswordChange));
+	}
+
+	/// <summary>
+	/// Resends the MFA verification code.
+	/// </summary>
+	/// <param name="request">
+	/// The resend request containing challenge token.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// No content on success.
+	/// </returns>
+	/// <response code="204">Code resent successfully.</response>
+	/// <response code="400">Invalid challenge or cooldown not elapsed.</response>
+	/// <response code="429">Too many resend attempts.</response>
+	[HttpPost("mfa/resend")]
+	[EnableRateLimiting(RateLimitPolicyConstants.MfaResend)]
+	[ProducesResponseType(StatusCodes.Status204NoContent)]
+	[ProducesResponseType(
+		typeof(ProblemDetails),
+		StatusCodes.Status400BadRequest
+	)]
+	[ProducesResponseType(
+		typeof(ProblemDetails),
+		StatusCodes.Status429TooManyRequests
+	)]
+	public async Task<IActionResult> ResendMfaCodeAsync(
+		[FromBody] ResendMfaCodeRequest request,
+		CancellationToken cancellationToken)
+	{
+		MfaChallengeRefreshResult result =
+			await messageBus.InvokeAsync<MfaChallengeRefreshResult>(
+				new ResendMfaCodeCommand(request),
+				cancellationToken);
+
+		if (!result.Success)
+		{
+			logger.LogWarning(
+				"MFA code resend failed. Code: {ErrorCode}",
+				result.ErrorCode);
+
+			return BadRequest(
+				new ProblemDetails
+				{
+					Title = "MFA Resend Failed",
+					Detail = result.Error,
+					Status =
+						StatusCodes.Status400BadRequest,
+					Extensions =
+						{ ["errorCode"] = result.ErrorCode },
+				});
+		}
 
 		return NoContent();
 	}

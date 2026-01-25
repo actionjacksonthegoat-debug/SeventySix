@@ -10,6 +10,7 @@ using NSubstitute;
 using SeventySix.Identity;
 using SeventySix.TestUtilities.Mocks;
 using Shouldly;
+using Wolverine;
 
 namespace SeventySix.Domains.Tests.Identity.Commands.Login;
 
@@ -26,6 +27,9 @@ public class LoginCommandHandlerTests
 	private readonly AuthenticationService AuthenticationService;
 	private readonly IAltchaService AltchaService;
 	private readonly ISecurityAuditService SecurityAuditService;
+	private readonly IMfaService MfaService;
+	private readonly IOptions<MfaSettings> MfaSettings;
+	private readonly IMessageBus MessageBus;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="LoginCommandHandlerTests"/> class.
@@ -42,6 +46,21 @@ public class LoginCommandHandlerTests
 			Substitute.For<IAltchaService>();
 		SecurityAuditService =
 			Substitute.For<ISecurityAuditService>();
+		MfaService =
+			Substitute.For<IMfaService>();
+		MfaSettings =
+			Options.Create(
+				new MfaSettings
+				{
+					Enabled = false,
+					RequiredForAllUsers = false,
+					CodeLength = 6,
+					CodeExpirationMinutes = 5,
+					MaxAttempts = 5,
+					ResendCooldownSeconds = 60
+				});
+		MessageBus =
+			Substitute.For<IMessageBus>();
 
 		// Default: ALTCHA disabled for most tests
 		AltchaService.IsEnabled.Returns(false);
@@ -74,6 +93,9 @@ public class LoginCommandHandlerTests
 				AuthenticationService,
 				AltchaService,
 				SecurityAuditService,
+				MfaService,
+				MfaSettings,
+				MessageBus,
 				CancellationToken.None);
 
 		// Assert
@@ -112,6 +134,9 @@ public class LoginCommandHandlerTests
 				AuthenticationService,
 				AltchaService,
 				SecurityAuditService,
+				MfaService,
+				MfaSettings,
+				MessageBus,
 				CancellationToken.None);
 
 		// Assert
@@ -150,6 +175,9 @@ public class LoginCommandHandlerTests
 				AuthenticationService,
 				AltchaService,
 				SecurityAuditService,
+				MfaService,
+				MfaSettings,
+				MessageBus,
 				CancellationToken.None);
 
 		// Assert
@@ -185,6 +213,9 @@ public class LoginCommandHandlerTests
 				AuthenticationService,
 				AltchaService,
 				SecurityAuditService,
+				MfaService,
+				MfaSettings,
+				MessageBus,
 				CancellationToken.None);
 
 		// Assert
@@ -219,6 +250,9 @@ public class LoginCommandHandlerTests
 				AuthenticationService,
 				AltchaService,
 				SecurityAuditService,
+				MfaService,
+				MfaSettings,
+				MessageBus,
 				CancellationToken.None);
 
 		// Assert

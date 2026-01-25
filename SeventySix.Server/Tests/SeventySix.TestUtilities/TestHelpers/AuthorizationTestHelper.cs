@@ -225,7 +225,7 @@ public class AuthorizationTestHelper
 		AuthResponse? authResponse =
 			await response.Content.ReadFromJsonAsync<AuthResponse>();
 
-		return authResponse!.AccessToken;
+		return authResponse!.AccessToken!;
 	}
 
 	/// <summary>

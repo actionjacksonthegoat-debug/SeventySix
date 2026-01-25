@@ -1,0 +1,76 @@
+<div class="mfa-verify-container">
+	<div class="mfa-verify-card">
+		<h1>Verify Your Identity</h1>
+		<p class="subtitle">
+			Enter the 6-digit code sent to {{ maskedEmail() }}
+		</p>
+
+		<form
+			(ngSubmit)="onVerify()"
+			class="mfa-verify-form"
+			#mfaForm="ngForm">
+			<div class="form-group">
+				<label for="code">Verification Code</label>
+				<input
+					id="code"
+					type="text"
+					inputmode="numeric"
+					pattern="[0-9]*"
+					maxlength="6"
+					[(ngModel)]="code"
+					name="code"
+					#codeField="ngModel"
+					required
+					autocomplete="one-time-code"
+					placeholder="000000"
+					aria-required="true"
+					[attr.aria-invalid]="codeField.invalid && codeField.touched"
+					aria-describedby="code-hint"
+				/>
+				<span
+					id="code-hint"
+					class="hint">
+					Check your email for the code
+				</span>
+			</div>
+
+			<button
+				mat-flat-button
+				color="primary"
+				type="submit"
+				class="submit-button"
+				[disabled]="!canVerify()"
+				[attr.aria-busy]="isLoading()">
+				@if (isLoading()) { Verifying... } @else { Verify }
+			</button>
+		</form>
+
+		<div class="resend-section">
+			<p class="resend-text">Didn't receive the code?</p>
+			<button
+				mat-button
+				type="button"
+				(click)="onResendCode()"
+				[disabled]="resendOnCooldown() || isResending()"
+				class="resend-button">
+				@if (isResending()) {
+					Sending...
+				} @else if (resendOnCooldown()) {
+					Resend in {{ resendCooldownSeconds() }}s
+				} @else {
+					Resend Code
+				}
+			</button>
+		</div>
+
+		<div class="back-section">
+			<button
+				mat-button
+				type="button"
+				(click)="onBackToLogin()"
+				class="back-button">
+				Back to Login
+			</button>
+		</div>
+	</div>
+</div>

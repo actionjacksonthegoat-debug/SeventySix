@@ -82,4 +82,28 @@ public interface IEmailService
 		string email,
 		string verificationToken,
 		CancellationToken cancellationToken = default);
+
+	/// <summary>
+	/// Sends a multi-factor authentication verification code email.
+	/// </summary>
+	/// <param name="email">
+	/// The recipient's email address.
+	/// </param>
+	/// <param name="code">
+	/// The 6-digit verification code.
+	/// </param>
+	/// <param name="expirationMinutes">
+	/// Number of minutes until the code expires.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// A task representing the async operation.
+	/// </returns>
+	public Task SendMfaCodeEmailAsync(
+		string email,
+		string code,
+		int expirationMinutes,
+		CancellationToken cancellationToken = default);
 }

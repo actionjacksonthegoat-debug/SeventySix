@@ -38,4 +38,14 @@ public static class RateLimitPolicyConstants
 	/// Rate limit for client-side logging endpoints (30/minute per IP).
 	/// </summary>
 	public const string ClientLogs = "client-logs";
+
+	/// <summary>
+	/// Rate limit for MFA verification attempts (5/minute per IP).
+	/// </summary>
+	public const string MfaVerify = "mfa-verify";
+
+	/// <summary>
+	/// Rate limit for MFA code resend requests (3/minute per IP).
+	/// </summary>
+	public const string MfaResend = "mfa-resend";
 }

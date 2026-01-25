@@ -29,4 +29,10 @@ public static class EmailType
 	/// Required template data: verificationToken.
 	/// </summary>
 	public const string Verification = "Verification";
+
+	/// <summary>
+	/// MFA verification code email.
+	/// Required template data: code, expirationMinutes.
+	/// </summary>
+	public const string MfaVerification = "MfaVerification";
 }

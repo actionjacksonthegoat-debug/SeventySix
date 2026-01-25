@@ -24,4 +24,9 @@ public static class EmailSubjectConstants
 	/// Subject for email verification emails.
 	/// </summary>
 	public const string EmailVerification = "SeventySix - Verify Your Email";
+
+	/// <summary>
+	/// Subject for MFA verification code emails.
+	/// </summary>
+	public const string MfaVerification = "SeventySix - Your Verification Code";
 }

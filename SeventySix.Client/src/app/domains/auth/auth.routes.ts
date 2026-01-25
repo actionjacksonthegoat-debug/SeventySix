@@ -1,4 +1,5 @@
 import { Routes } from "@angular/router";
+import { MfaService } from "@auth/services";
 
 /**
  * Authentication feature routes (login, registration, password flows).
@@ -11,6 +12,7 @@ export const AUTH_ROUTES: Routes =
 			loadComponent: () =>
 				import("./pages/login/login").then(
 					(m) => m.LoginComponent),
+			providers: [MfaService],
 			data: { breadcrumb: "Login" }
 		},
 		{
@@ -47,5 +49,13 @@ export const AUTH_ROUTES: Routes =
 				import("./pages/set-password/set-password").then(
 					(m) => m.SetPasswordComponent),
 			data: { breadcrumb: "Set Password" }
+		},
+		{
+			path: "mfa/verify",
+			loadComponent: () =>
+				import("./pages/mfa-verify/mfa-verify").then(
+					(m) => m.MfaVerifyComponent),
+			providers: [MfaService],
+			data: { breadcrumb: "Verify Identity" }
 		}
 	];

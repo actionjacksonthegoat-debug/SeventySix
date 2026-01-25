@@ -112,5 +112,25 @@ public enum SecurityEventType
 	/// <summary>
 	/// Suspicious activity detected.
 	/// </summary>
-	SuspiciousActivity = 21
+	SuspiciousActivity = 21,
+
+	/// <summary>
+	/// MFA verification successful.
+	/// </summary>
+	MfaSuccess = 22,
+
+	/// <summary>
+	/// MFA verification failed (invalid code, expired, etc.).
+	/// </summary>
+	MfaFailed = 23,
+
+	/// <summary>
+	/// MFA verification code resent.
+	/// </summary>
+	MfaCodeResent = 24,
+
+	/// <summary>
+	/// MFA challenge initiated (code sent to user).
+	/// </summary>
+	MfaChallengeInitiated = 25
 }
