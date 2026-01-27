@@ -4,6 +4,7 @@
 
 using System.Net;
 using System.Net.Http.Json;
+using SeventySix.Api.Tests.Fixtures;
 using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;
 using SeventySix.TestUtilities.TestHelpers;
@@ -14,9 +15,9 @@ namespace SeventySix.Api.Tests.Controllers;
 /// Authorization tests for UsersController.
 /// Tests that admin endpoints require proper authentication and admin role.
 /// </summary>
-[Collection("PostgreSQL")]
+[Collection(CollectionNames.IdentityUsersPostgreSql)]
 public class UsersControllerAuthorizationTests(
-	TestcontainersPostgreSqlFixture fixture) : ApiPostgreSqlTestBase<Program>(fixture), IAsyncLifetime
+	IdentityUsersApiPostgreSqlFixture fixture) : ApiPostgreSqlTestBase<Program>(fixture), IAsyncLifetime
 {
 	private const string Endpoint = ApiEndpoints.Users.Base;
 	private AuthorizationTestHelper AuthHelper =
@@ -46,7 +47,9 @@ public class UsersControllerAuthorizationTests(
 	/// </summary>
 	[Fact]
 	public Task GetByIdAsync_WithoutAuth_ReturnsUnauthorizedAsync() =>
-		AuthHelper.AssertUnauthorizedAsync(HttpMethod.Get, $"{Endpoint}/1");
+		AuthHelper.AssertUnauthorizedAsync(
+			HttpMethod.Get,
+			$"{Endpoint}/1");
 
 	/// <summary>
 	/// Tests that POST /api/v1/users returns 401 without authentication.
@@ -80,7 +83,9 @@ public class UsersControllerAuthorizationTests(
 	/// </summary>
 	[Fact]
 	public Task DeleteAsync_WithoutAuth_ReturnsUnauthorizedAsync() =>
-		AuthHelper.AssertUnauthorizedAsync(HttpMethod.Delete, $"{Endpoint}/1");
+		AuthHelper.AssertUnauthorizedAsync(
+			HttpMethod.Delete,
+			$"{Endpoint}/1");
 
 	#endregion
 
@@ -103,6 +108,32 @@ public class UsersControllerAuthorizationTests(
 	public Task DeleteAsync_WithDeveloperRole_ReturnsForbiddenAsync() =>
 		AuthHelper.AssertForbiddenForRoleAsync(
 			TestRoleConstants.Developer,
+			HttpMethod.Delete,
+			$"{Endpoint}/1");
+
+	#endregion
+
+	#region User Role Access Tests (403)
+
+	/// <summary>
+	/// Tests that GET /api/v1/users returns 403 for User role.
+	/// This endpoint is Admin-only.
+	/// </summary>
+	[Fact]
+	public Task GetAllAsync_WithUserRole_ReturnsForbiddenAsync() =>
+		AuthHelper.AssertForbiddenForRoleAsync(
+			TestRoleConstants.User,
+			HttpMethod.Get,
+			Endpoint);
+
+	/// <summary>
+	/// Tests that DELETE /api/v1/users/{id} returns 403 for User role.
+	/// This endpoint is Admin-only.
+	/// </summary>
+	[Fact]
+	public Task DeleteAsync_WithUserRole_ReturnsForbiddenAsync() =>
+		AuthHelper.AssertForbiddenForRoleAsync(
+			TestRoleConstants.User,
 			HttpMethod.Delete,
 			$"{Endpoint}/1");
 

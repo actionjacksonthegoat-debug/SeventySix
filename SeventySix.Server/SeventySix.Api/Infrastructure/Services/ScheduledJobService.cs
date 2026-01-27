@@ -51,22 +51,38 @@ public class ScheduledJobService(
 	/// Metadata for each known scheduled job, keyed by job name.
 	/// Contains display information and expected execution intervals.
 	/// </summary>
-	private readonly Dictionary<string, (string DisplayName, TimeSpan Interval)> JobMetadata =
+	private readonly Dictionary<
+		string,
+		(string DisplayName, TimeSpan Interval)
+	> JobMetadata =
 		new()
 		{
 			["RefreshTokenCleanupJob"] =
-				("Refresh Token Cleanup", TimeSpan.FromHours(refreshTokenCleanupSettings.Value.IntervalHours)),
+				(
+					"Refresh Token Cleanup",
+					TimeSpan.FromHours(refreshTokenCleanupSettings.Value.IntervalHours)
+				),
 			["IpAnonymizationJob"] =
-				("IP Anonymization", TimeSpan.FromDays(ipAnonymizationSettings.Value.IntervalDays)),
+				(
+					"IP Anonymization",
+					TimeSpan.FromDays(ipAnonymizationSettings.Value.IntervalDays)
+				),
 			["LogCleanupJob"] =
-				("Log Cleanup", TimeSpan.FromHours(logCleanupSettings.Value.IntervalHours)),
+				(
+					"Log Cleanup",
+					TimeSpan.FromHours(logCleanupSettings.Value.IntervalHours)
+				),
 			["EmailQueueProcessJob"] =
-				("Email Queue Processor", TimeSpan.FromSeconds(emailQueueSettings.Value.ProcessingIntervalSeconds)),
+				(
+					"Email Queue Processor",
+					TimeSpan.FromSeconds(
+						emailQueueSettings.Value.ProcessingIntervalSeconds)
+				),
 		};
 
 	/// <inheritdoc />
-	public async Task<IReadOnlyList<RecurringJobStatusResponse>> GetAllJobStatusesAsync(
-		CancellationToken cancellationToken)
+	public async Task<
+		IReadOnlyList<RecurringJobStatusResponse>> GetAllJobStatusesAsync(CancellationToken cancellationToken)
 	{
 		IReadOnlyList<RecurringJobExecution> executions =
 			await recurringJobRepository.GetAllAsync(cancellationToken);
@@ -79,7 +95,10 @@ public class ScheduledJobService(
 		List<RecurringJobStatusResponse> responses =
 			[];
 
-		foreach (KeyValuePair<string, (string DisplayName, TimeSpan Interval)> jobEntry in JobMetadata)
+		foreach (
+			KeyValuePair<
+				string,
+				(string DisplayName, TimeSpan Interval)> jobEntry in JobMetadata)
 		{
 			executionsByName.TryGetValue(
 				jobEntry.Key,

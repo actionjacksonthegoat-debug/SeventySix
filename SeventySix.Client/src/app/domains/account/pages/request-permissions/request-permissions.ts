@@ -90,8 +90,8 @@ export class RequestPermissionsPage
 	 */
 	readonly rolesQuery: ReturnType<typeof this.accountService.getAvailableRoles> =
 		this
-		.accountService
-		.getAvailableRoles();
+			.accountService
+			.getAvailableRoles();
 
 	/**
 	 * Mutation used to submit permission requests.
@@ -99,8 +99,8 @@ export class RequestPermissionsPage
 	 */
 	readonly requestMutation: ReturnType<typeof this.accountService.createPermissionRequest> =
 		this
-		.accountService
-		.createPermissionRequest();
+			.accountService
+			.createPermissionRequest();
 
 	/**
 	 * Available roles returned by the server for selection.
@@ -165,12 +165,12 @@ export class RequestPermissionsPage
 				const map: Map<string, boolean> =
 					new Map();
 				this
-				.availableRoles()
-				.forEach(
-					(role: AvailableRoleDto) =>
-					{
-						map.set(role.name, selected.has(role.name));
-					});
+					.availableRoles()
+					.forEach(
+						(role: AvailableRoleDto) =>
+						{
+							map.set(role.name, selected.has(role.name));
+						});
 				return map;
 			});
 

@@ -20,7 +20,14 @@ namespace SeventySix.Shared.Persistence;
 /// </remarks>
 public sealed class QueryBuilder<T>
 {
+	/// <summary>
+	/// The current query being built.
+	/// </summary>
 	private IQueryable<T> Query;
+
+	/// <summary>
+	/// Indicates if the query has been ordered.
+	/// </summary>
 	private bool IsOrdered;
 
 	/// <summary>
@@ -112,7 +119,9 @@ public sealed class QueryBuilder<T>
 	/// <returns>
 	/// The QueryBuilder for method chaining.
 	/// </returns>
-	/// <exception cref="InvalidOperationException">Thrown when ThenBy is called before OrderBy or OrderByDescending.</exception>
+	/// <exception cref="InvalidOperationException">
+	/// Thrown when ThenBy is called before OrderBy or OrderByDescending.
+	/// </exception>
 	public QueryBuilder<T> ThenBy<TKey>(Expression<Func<T, TKey>> keySelector)
 	{
 		if (!IsOrdered)
@@ -135,7 +144,9 @@ public sealed class QueryBuilder<T>
 	/// <returns>
 	/// The QueryBuilder for method chaining.
 	/// </returns>
-	/// <exception cref="InvalidOperationException">Thrown when ThenByDescending is called before OrderBy or OrderByDescending.</exception>
+	/// <exception cref="InvalidOperationException">
+	/// Thrown when ThenByDescending is called before OrderBy or OrderByDescending.
+	/// </exception>
 	public QueryBuilder<T> ThenByDescending<TKey>(
 		Expression<Func<T, TKey>> keySelector)
 	{
@@ -158,7 +169,9 @@ public sealed class QueryBuilder<T>
 	/// <returns>
 	/// The QueryBuilder for method chaining.
 	/// </returns>
-	/// <exception cref="ArgumentOutOfRangeException">Thrown when count is negative.</exception>
+	/// <exception cref="ArgumentOutOfRangeException">
+	/// Thrown when count is negative.
+	/// </exception>
 	public QueryBuilder<T> Skip(int count)
 	{
 		if (count < 0)
@@ -181,7 +194,9 @@ public sealed class QueryBuilder<T>
 	/// <returns>
 	/// The QueryBuilder for method chaining.
 	/// </returns>
-	/// <exception cref="ArgumentOutOfRangeException">Thrown when count is negative.</exception>
+	/// <exception cref="ArgumentOutOfRangeException">
+	/// Thrown when count is negative.
+	/// </exception>
 	public QueryBuilder<T> Take(int count)
 	{
 		if (count < 0)
@@ -207,7 +222,9 @@ public sealed class QueryBuilder<T>
 	/// <returns>
 	/// The QueryBuilder for method chaining.
 	/// </returns>
-	/// <exception cref="ArgumentOutOfRangeException">Thrown when page or pageSize is less than 1.</exception>
+	/// <exception cref="ArgumentOutOfRangeException">
+	/// Thrown when page or pageSize is less than 1.
+	/// </exception>
 	public QueryBuilder<T> Paginate(int page, int pageSize)
 	{
 		if (page < 1)

@@ -5,19 +5,24 @@
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using ZiggyCreatures.Caching.Fusion.OpenTelemetry;
 
 namespace SeventySix.Api.Registration;
 
 /// <summary>Extension methods for OpenTelemetry configuration.</summary>
 public static class OpenTelemetryExtensions
 {
-	/// <summary>Adds OpenTelemetry with Jaeger tracing and Prometheus metrics.</summary>
+	/// <summary>Adds OpenTelemetry with OTLP export for traces and metrics.</summary>
 	/// <remarks>
 	/// Reads configuration keys:
 	/// - "OpenTelemetry:Enabled"
 	/// - "OpenTelemetry:ServiceName"
 	/// - "OpenTelemetry:ServiceVersion"
 	/// - "OpenTelemetry:OtlpEndpoint"
+	///
+	/// Telemetry is sent to OpenTelemetry Collector via OTLP, which routes:
+	/// - Traces to Jaeger
+	/// - Metrics to Prometheus (via OTel Collector's Prometheus exporter)
 	/// </remarks>
 	/// <param name="services">
 	/// The service collection.
@@ -56,6 +61,9 @@ public static class OpenTelemetryExtensions
 			configuration.GetValue<string>("OpenTelemetry:OtlpEndpoint")
 			?? "http://localhost:4317";
 
+		Uri otlpEndpointUri =
+			new(otlpEndpoint);
+
 		services
 			.AddOpenTelemetry()
 			.ConfigureResource(resource =>
@@ -70,22 +78,29 @@ public static class OpenTelemetryExtensions
 						}))
 			.WithTracing(tracing =>
 				tracing
-					.AddAspNetCoreInstrumentation(options =>
-					{
-						options.RecordException = true;
-					})
+					.AddAspNetCoreInstrumentation(
+						options =>
+						{
+							options.RecordException = true;
+						})
 					.AddHttpClientInstrumentation()
-					.AddOtlpExporter(options =>
-					{
-						options.Endpoint =
-							new Uri(otlpEndpoint);
-					}))
+					.AddFusionCacheInstrumentation()
+					.AddOtlpExporter(
+						options =>
+						{
+							options.Endpoint = otlpEndpointUri;
+						}))
 			.WithMetrics(metrics =>
 				metrics
 					.AddAspNetCoreInstrumentation()
 					.AddHttpClientInstrumentation()
 					.AddRuntimeInstrumentation()
-					.AddPrometheusExporter());
+					.AddFusionCacheInstrumentation()
+					.AddOtlpExporter(
+						options =>
+						{
+							options.Endpoint = otlpEndpointUri;
+						}));
 
 		return services;
 	}

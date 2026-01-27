@@ -17,7 +17,9 @@ public class EmailRateLimitExceptionTests
 	{
 		// Arrange & Act
 		EmailRateLimitException exception =
-			new(TimeSpan.FromHours(12), 0);
+			new(
+				TimeSpan.FromHours(12),
+				0);
 
 		// Assert
 		exception.TimeUntilReset.ShouldBe(TimeSpan.FromHours(12));

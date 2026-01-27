@@ -9,6 +9,7 @@ import {
 	PLATFORM_ID
 } from "@angular/core";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
+import { DEBOUNCE_TIME } from "@shared/constants";
 import { debounceTime, fromEvent } from "rxjs";
 
 /**
@@ -39,11 +40,6 @@ export class SiteLayoutChangedDirective implements OnInit
 	readonly layoutChanged: OutputEmitterRef<void> =
 		output<void>();
 
-	/**
-	 * Debounce time in milliseconds (default: 500ms)
-	 */
-	private readonly DEBOUNCE_TIME: number = 500;
-
 	ngOnInit(): void
 	{
 		if (!isPlatformBrowser(this.platformId))
@@ -53,13 +49,13 @@ export class SiteLayoutChangedDirective implements OnInit
 
 		// Listen to window resize events with debounce
 		fromEvent(window, "resize")
-		.pipe(
-			debounceTime(this.DEBOUNCE_TIME),
-			takeUntilDestroyed(this.destroyRef))
-		.subscribe(
-			() =>
-			{
-				this.layoutChanged.emit();
-			});
+			.pipe(
+				debounceTime(DEBOUNCE_TIME.RESIZE_EVENT),
+				takeUntilDestroyed(this.destroyRef))
+			.subscribe(
+				() =>
+				{
+					this.layoutChanged.emit();
+				});
 	}
 }

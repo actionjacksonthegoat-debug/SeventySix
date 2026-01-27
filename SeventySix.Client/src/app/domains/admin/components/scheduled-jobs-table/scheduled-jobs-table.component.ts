@@ -82,7 +82,9 @@ export class ScheduledJobsTableComponent
 	 * @type {ReturnType<typeof this.healthApiService.getScheduledJobs>}
 	 */
 	readonly jobsQuery: ReturnType<typeof this.healthApiService.getScheduledJobs> =
-		this.healthApiService.getScheduledJobs();
+		this
+			.healthApiService
+			.getScheduledJobs();
 
 	/**
 	 * Loading state derived from the query.

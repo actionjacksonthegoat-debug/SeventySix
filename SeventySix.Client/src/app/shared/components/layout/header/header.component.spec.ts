@@ -238,7 +238,7 @@ describe("HeaderComponent",
 
 						expect(router.navigate)
 							.toHaveBeenCalledWith(
-								["/account"]);
+								["/account/profile"]);
 					});
 			});
 	});

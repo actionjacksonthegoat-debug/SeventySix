@@ -4,6 +4,7 @@
 
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using Shouldly;
 using Xunit;
 
 namespace SeventySix.ArchitectureTests;
@@ -46,14 +47,18 @@ public class GodMethodTests : SourceCodeArchitectureTest
 		[
 			// Architecture test self-detection issue - method parser incorrectly counts helper methods
 			"Tests\\SeventySix.ArchitectureTests\\GodMethodTests.cs::FindOpeningBrace",
-			// Registration method - DI registration is inherently long, split would reduce readability
-			"SeventySix.Domains\\Registration\\IdentityRegistration.cs::AddIdentityDomain",
 			// Roslyn analyzers - complex AST traversal is inherently long, split would reduce readability
 			"SeventySix.Analyzers\\AssignmentContinuationIndentAnalyzer.cs::AnalyzeObjectCreationInitializerBrace",
 			"SeventySix.Analyzers.CodeFixes\\AssignmentContinuationIndentCodeFixProvider.cs::CalculateExpectedIndent",
 			// Analyzer tests - test methods with large code strings are unavoidably long
 			"Tests\\SeventySix.Analyzers.Tests\\AssignmentContinuationIndentCodeFixTests.cs::ExtensionsInitializer_WrongIndent_FixesToCorrectIndentAsync",
 			"Tests\\SeventySix.Analyzers.Tests\\AssignmentContinuationIndentCodeFixTests.cs::NestedDictionary_OuterBraceWrong_InnerNotFlaggedAsync",
+			// Wolverine CQRS handlers - extensive setup for Identity with breach checking (OWASP ASVS V2.1.7)
+			"SeventySix.Domains\\Identity\\Commands\\CompleteRegistration\\CompleteRegistrationCommandHandler.cs::HandleAsync",
+			"SeventySix.Domains\\Identity\\Commands\\SetPassword\\SetPasswordCommandHandler.cs::HandleAsync",
+			// Integration test setup methods - extensive mock configuration is unavoidable
+			"Tests\\SeventySix.Domains.Tests\\Identity\\Commands\\CompleteRegistration\\CompleteRegistrationCommandHandlerTests.cs::HandleAsync_ShouldCompleteRegistration_WhenCombinedTokenIsValid_RefactoredAsync",
+			"Tests\\SeventySix.Domains.Tests\\Identity\\Commands\\CompleteRegistration\\CompleteRegistrationCommandHandlerTests.cs::HandleAsync_ShouldFail_WhenPasswordIsBreachedAsync",
 		];
 
 	/// <summary>
@@ -63,8 +68,10 @@ public class GodMethodTests : SourceCodeArchitectureTest
 	/// </summary>
 	private static readonly HashSet<string> AllowedParameterExceptions =
 		[
-			// // Authentication handlers - Wolverine Injected dependencies
+			// Authentication handlers - Wolverine Injected dependencies
 			"SeventySix.Domains\\Identity\\Commands\\ChangePassword\\ChangePasswordCommandHandler.cs::HandleAsync",
+			"SeventySix.Domains\\Identity\\Commands\\CompleteRegistration\\CompleteRegistrationCommandHandler.cs::HandleAsync",
+			"SeventySix.Domains\\Identity\\Commands\\Login\\LoginCommandHandler.cs::HandleAsync",
 			"SeventySix.Domains\\Identity\\Commands\\SetPassword\\SetPasswordCommandHandler.cs::HandleAsync",
 		];
 
@@ -110,15 +117,8 @@ public class GodMethodTests : SourceCodeArchitectureTest
 		}
 
 		// Assert
-		if (godMethodViolations.Count > 0)
-		{
-			string violations =
-				string.Join("\n", godMethodViolations);
-			throw new Xunit.Sdk.XunitException(
-				$"God method violations found (split into smaller methods):\n{violations}");
-		}
-
-		Assert.Empty(godMethodViolations);
+		godMethodViolations.ShouldBeEmpty(
+			$"God method violations found (split into smaller methods):\n{string.Join("\n", godMethodViolations)}");
 	}
 
 	[Fact]
@@ -163,15 +163,8 @@ public class GodMethodTests : SourceCodeArchitectureTest
 		}
 
 		// Assert
-		if (parameterViolations.Count > 0)
-		{
-			string violations =
-				string.Join("\n", parameterViolations);
-			throw new Xunit.Sdk.XunitException(
-				$"Parameter explosion violations found (consider compound handler pattern):\n{violations}");
-		}
-
-		Assert.Empty(parameterViolations);
+		parameterViolations.ShouldBeEmpty(
+			$"Parameter explosion violations found (consider compound handler pattern):\n{string.Join("\n", parameterViolations)}");
 	}
 
 	private static readonly Regex MethodDeclarationRegex =
@@ -236,11 +229,11 @@ public class GodMethodTests : SourceCodeArchitectureTest
 
 	private static int FindOpeningBrace(string content, int startIndex)
 	{
-		for (int i = startIndex; i < content.Length; i++)
+		for (int charIndex = startIndex; charIndex < content.Length; charIndex++)
 		{
-			if (content[i] == '{')
+			if (content[charIndex] == '{')
 			{
-				return i + 1;
+				return charIndex + 1;
 			}
 		}
 
@@ -253,16 +246,16 @@ public class GodMethodTests : SourceCodeArchitectureTest
 		int nonBlankLineCount = 0;
 		int currentLineStart = startIndex;
 
-		for (int i = startIndex; i < content.Length; i++)
+		for (int charIndex = startIndex; charIndex < content.Length; charIndex++)
 		{
-			char c =
-				content[i];
+			char charValue =
+				content[charIndex];
 
-			if (c == '{')
+			if (charValue == '{')
 			{
 				braceDepth++;
 			}
-			else if (c == '}')
+			else if (charValue == '}')
 			{
 				braceDepth--;
 				if (braceDepth == 0)
@@ -270,18 +263,18 @@ public class GodMethodTests : SourceCodeArchitectureTest
 					nonBlankLineCount += CountLineIfNotBlank(
 						content,
 						currentLineStart,
-						i);
+						charIndex);
 					break;
 				}
 			}
-			else if (c == '\n')
+			else if (charValue == '\n')
 			{
 				nonBlankLineCount += CountLineIfNotBlank(
 					content,
 					currentLineStart,
-					i);
+					charIndex);
 				currentLineStart =
-					i + 1;
+					charIndex + 1;
 			}
 		}
 
@@ -291,7 +284,9 @@ public class GodMethodTests : SourceCodeArchitectureTest
 	private static int CountLineIfNotBlank(string content, int start, int end)
 	{
 		string line =
-			content.Substring(start, end - start).Trim();
+			content.Substring(
+				start,
+				end - start).Trim();
 		return !string.IsNullOrWhiteSpace(line) && !line.StartsWith("//")
 			? 1
 			: 0;
@@ -317,7 +312,9 @@ public class GodMethodTests : SourceCodeArchitectureTest
 
 		string parameterList =
 			fileContent
-			.Substring(openParenIndex + 1, closeParenIndex - openParenIndex - 1)
+			.Substring(
+				openParenIndex + 1,
+				closeParenIndex - openParenIndex - 1)
 			.Trim();
 
 		if (string.IsNullOrWhiteSpace(parameterList))
@@ -367,14 +364,14 @@ public class GodMethodTests : SourceCodeArchitectureTest
 
 	private static int FindOpeningParen(string content, int startIndex)
 	{
-		for (int i = startIndex; i < content.Length; i++)
+		for (int charIndex = startIndex; charIndex < content.Length; charIndex++)
 		{
-			if (content[i] == '(')
+			if (content[charIndex] == '(')
 			{
-				return i;
+				return charIndex;
 			}
 
-			if (content[i] == '{')
+			if (content[charIndex] == '{')
 			{
 				return -1;
 			}
@@ -386,19 +383,19 @@ public class GodMethodTests : SourceCodeArchitectureTest
 	private static int FindClosingParen(string content, int openParenIndex)
 	{
 		int depth = 1;
-		for (int i =
-			openParenIndex + 1; i < content.Length; i++)
+		for (int charIndex =
+			openParenIndex + 1; charIndex < content.Length; charIndex++)
 		{
-			if (content[i] == '(')
+			if (content[charIndex] == '(')
 			{
 				depth++;
 			}
-			else if (content[i] == ')')
+			else if (content[charIndex] == ')')
 			{
 				depth--;
 				if (depth == 0)
 				{
-					return i;
+					return charIndex;
 				}
 			}
 		}

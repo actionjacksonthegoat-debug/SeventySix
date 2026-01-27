@@ -227,10 +227,14 @@ public class OAuthService(
 		return new GitHubUserInfo(
 			Id: root.GetProperty("id").GetInt64().ToString(),
 			Login: root.GetProperty("login").GetString() ?? "",
-			Email: root.TryGetProperty("email", out JsonElement emailElement)
+			Email: root.TryGetProperty(
+				"email",
+				out JsonElement emailElement)
 				? emailElement.GetString()
 				: null,
-			Name: root.TryGetProperty("name", out JsonElement nameElement)
+			Name: root.TryGetProperty(
+				"name",
+				out JsonElement nameElement)
 				? nameElement.GetString()
 				: null);
 	}

@@ -1,3 +1,4 @@
+import { ADMIN_API_ENDPOINTS } from "@admin/constants";
 import {
 	DatabaseHealthResponse,
 	ExternalApiHealthResponse,
@@ -41,13 +42,14 @@ export class HealthApiService
 	 * @type {ReturnType<typeof getQueryConfig>}
 	 */
 	private readonly queryConfig: ReturnType<typeof getQueryConfig> =
-		getQueryConfig("health");
+		getQueryConfig(ADMIN_API_ENDPOINTS.HEALTH);
 
 	/**
 	 * API endpoint path for health checks.
 	 * @type {string}
 	 */
-	private readonly endpoint: string = "health";
+	private readonly endpoint: string =
+		ADMIN_API_ENDPOINTS.HEALTH;
 
 	/**
 	 * Retrieves overall health status.

@@ -120,4 +120,27 @@ internal class ThirdPartyApiRequestRepository(
 
 		return deletedCount;
 	}
+
+	/// <inheritdoc/>
+	public async Task<int> GetTotalCallCountInRangeAsync(
+		string apiName,
+		DateOnly startDate,
+		DateOnly endDate,
+		CancellationToken cancellationToken = default)
+	{
+		ArgumentException.ThrowIfNullOrWhiteSpace(apiName);
+
+		// Sum all call counts within the date range
+		int totalCount =
+			await GetQueryable()
+				.Where(request =>
+					request.ApiName == apiName
+					&& request.ResetDate >= startDate
+					&& request.ResetDate <= endDate)
+				.SumAsync(
+					request => request.CallCount,
+					cancellationToken);
+
+		return totalCount;
+	}
 }

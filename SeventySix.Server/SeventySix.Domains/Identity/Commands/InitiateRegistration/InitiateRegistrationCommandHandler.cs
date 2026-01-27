@@ -5,6 +5,7 @@
 using Microsoft.AspNetCore.Identity;
 using SeventySix.ElectronicNotifications.Emails;
 using SeventySix.Shared.Constants;
+using Wolverine;
 
 namespace SeventySix.Identity;
 
@@ -13,7 +14,8 @@ namespace SeventySix.Identity;
 /// </summary>
 /// <remarks>
 /// Uses ASP.NET Core Identity's token providers for email verification.
-/// Creates a temporary unconfirmed user and sends email confirmation token.
+/// Creates a temporary unconfirmed user and enqueues verification email via the email queue.
+/// Follows the same queue-based pattern as password reset for consistency.
 /// </remarks>
 public static class InitiateRegistrationCommandHandler
 {
@@ -26,8 +28,8 @@ public static class InitiateRegistrationCommandHandler
 	/// <param name="userManager">
 	/// Identity <see cref="UserManager{TUser}"/> for user operations.
 	/// </param>
-	/// <param name="emailService">
-	/// Email service.
+	/// <param name="messageBus">
+	/// Message bus for enqueuing emails.
 	/// </param>
 	/// <param name="timeProvider">
 	/// Time provider.
@@ -45,7 +47,7 @@ public static class InitiateRegistrationCommandHandler
 	public static async Task HandleAsync(
 		InitiateRegistrationRequest request,
 		UserManager<ApplicationUser> userManager,
-		IEmailService emailService,
+		IMessageBus messageBus,
 		TimeProvider timeProvider,
 		CancellationToken cancellationToken)
 	{
@@ -74,6 +76,7 @@ public static class InitiateRegistrationCommandHandler
 				Email = email,
 				IsActive = false, // Inactive until registration completes
 				EmailConfirmed = false,
+				LockoutEnabled = true,
 				CreateDate = now,
 				CreatedBy =
 					AuditConstants.SystemUser,
@@ -90,14 +93,23 @@ public static class InitiateRegistrationCommandHandler
 		}
 
 		// Generate email confirmation token using Identity's built-in token provider
-		string token =
+		string verificationToken =
 			await userManager.GenerateEmailConfirmationTokenAsync(
 				temporaryUser);
 
-		// Send verification email
-		await emailService.SendVerificationEmailAsync(
-			email,
-			token,
+		// Enqueue verification email for async delivery (consistent with password reset pattern)
+		Dictionary<string, string> templateData =
+			new()
+			{
+				["verificationToken"] = verificationToken
+			};
+
+		await messageBus.InvokeAsync(
+			new EnqueueEmailCommand(
+				EmailType.Verification,
+				email,
+				temporaryUser.Id,
+				templateData),
 			cancellationToken);
 	}
 }

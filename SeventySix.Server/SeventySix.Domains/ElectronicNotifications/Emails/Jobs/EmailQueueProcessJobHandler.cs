@@ -182,7 +182,7 @@ public class EmailQueueProcessJobHandler(
 	/// Sends an email based on its type using the appropriate service method.
 	/// </summary>
 	/// <param name="emailType">
-	/// The type of email to send (Welcome, PasswordReset, Verification).
+	/// The type of email to send (Welcome, PasswordReset, Verification, MfaVerification).
 	/// </param>
 	/// <param name="recipientEmail">
 	/// The recipient's email address.
@@ -224,6 +224,17 @@ public class EmailQueueProcessJobHandler(
 				await emailService.SendVerificationEmailAsync(
 					recipientEmail,
 					templateData.GetValueOrDefault("verificationToken", ""),
+					cancellationToken);
+				break;
+
+			case EmailType.MfaVerification:
+				await emailService.SendMfaCodeEmailAsync(
+					recipientEmail,
+					templateData.GetValueOrDefault("code", ""),
+					int.Parse(
+						templateData.GetValueOrDefault(
+							"expirationMinutes",
+							"5")),
 					cancellationToken);
 				break;
 

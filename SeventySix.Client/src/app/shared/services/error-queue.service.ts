@@ -2,6 +2,7 @@ import { HttpClient } from "@angular/common/http";
 import { inject, Injectable } from "@angular/core";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { environment } from "@environments/environment";
+import { STORAGE_KEYS } from "@shared/constants";
 import { CreateLogRequest } from "@shared/models";
 import { DateService } from "@shared/services/date.service";
 import { StorageService } from "@shared/services/storage.service";
@@ -61,11 +62,12 @@ export class ErrorQueueService
 
 	/**
 	 * Local storage key for the queued errors.
-	 * @type {string}
+	 * @type {typeof STORAGE_KEYS.ERROR_QUEUE}
 	 * @private
 	 * @readonly
 	 */
-	private readonly localStorageKey: string = "error-queue";
+	private readonly localStorageKey: typeof STORAGE_KEYS.ERROR_QUEUE =
+		STORAGE_KEYS.ERROR_QUEUE;
 
 	// Queue management
 	/**
@@ -161,12 +163,12 @@ export class ErrorQueueService
 
 		// Start batch processing interval with automatic cleanup
 		interval(this.batchInterval)
-		.pipe(takeUntilDestroyed())
-		.subscribe(
-			() =>
-			{
-				this.processBatch();
-			});
+			.pipe(takeUntilDestroyed())
+			.subscribe(
+				() =>
+				{
+					this.processBatch();
+				});
 	}
 
 	/**
@@ -220,29 +222,29 @@ export class ErrorQueueService
 
 		// Send to server
 		this
-		.http
-		.post(this.logEndpoint, batch,
-			{ observe: "response" })
-		.pipe(
-			catchError(
-				(err) =>
+			.http
+			.post(this.logEndpoint, batch,
+				{ observe: "response" })
+			.pipe(
+				catchError(
+					(err) =>
+					{
+						// Handle failure
+						this.handleBatchFailure(err);
+						return of(null);
+					}))
+			.subscribe(
+				(response) =>
 				{
-					// Handle failure
-					this.handleBatchFailure(err);
-					return of(null);
-				}))
-		.subscribe(
-			(response) =>
-			{
-				// Success if we got any response (including 204 No Content)
-				if (response !== null)
-				{
-					// Success - remove sent items from queue
-					this.queue.splice(0, batch.length);
-					this.saveQueueToStorage();
-					this.resetCircuitBreaker();
-				}
-			});
+					// Success if we got any response (including 204 No Content)
+					if (response !== null)
+					{
+						// Success - remove sent items from queue
+						this.queue.splice(0, batch.length);
+						this.saveQueueToStorage();
+						this.resetCircuitBreaker();
+					}
+				});
 	}
 
 	/**

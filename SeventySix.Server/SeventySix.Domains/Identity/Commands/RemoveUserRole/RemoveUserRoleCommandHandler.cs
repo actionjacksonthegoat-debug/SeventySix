@@ -3,21 +3,40 @@
 // </copyright>
 
 using Microsoft.AspNetCore.Identity;
+using SeventySix.Identity.Constants;
+using SeventySix.Shared.POCOs;
 
 namespace SeventySix.Identity;
 
 /// <summary>
 /// Handler for RemoveUserRoleCommand.
 /// </summary>
+/// <remarks>
+/// This handler enforces the business rule that at least one admin must exist
+/// in the system. Attempting to remove the Admin role from the last admin
+/// will throw a <see cref="LastAdminException"/>.
+/// </remarks>
 public static class RemoveUserRoleCommandHandler
 {
 	/// <summary>
 	/// Handles the RemoveUserRoleCommand request.
 	/// </summary>
+	/// <param name="command">
+	/// The command containing the user ID and role to remove.
+	/// </param>
+	/// <param name="userManager">
+	/// The ASP.NET Identity user manager.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token for async operation.
+	/// </param>
 	/// <returns>
-	/// True if role was removed, false if role not found on user.
+	/// A Result indicating success or failure with error details.
 	/// </returns>
-	public static async Task<bool> HandleAsync(
+	/// <exception cref="LastAdminException">
+	/// Thrown when attempting to remove Admin role from the last admin user.
+	/// </exception>
+	public static async Task<Result> HandleAsync(
 		RemoveUserRoleCommand command,
 		UserManager<ApplicationUser> userManager,
 		CancellationToken cancellationToken)
@@ -28,7 +47,7 @@ public static class RemoveUserRoleCommandHandler
 
 		if (user is null)
 		{
-			return false;
+			return Result.Failure($"User {command.UserId} not found");
 		}
 
 		IList<string> existingRoles =
@@ -36,14 +55,37 @@ public static class RemoveUserRoleCommandHandler
 
 		if (!existingRoles.Contains(command.Role))
 		{
-			return false;
+			return Result.Failure(
+				$"User {command.UserId} does not have role {command.Role}");
 		}
 
-		IdentityResult result =
+		if (command.Role == RoleConstants.Admin)
+		{
+			IList<ApplicationUser> adminUsers =
+				await userManager.GetUsersInRoleAsync(RoleConstants.Admin);
+
+			bool isLastAdmin =
+				adminUsers.Count <= 1
+					&& adminUsers.Any(
+						adminUser => adminUser.Id == command.UserId);
+
+			if (isLastAdmin)
+			{
+				throw new LastAdminException();
+			}
+		}
+
+		IdentityResult identityResult =
 			await userManager.RemoveFromRoleAsync(
 				user,
 				command.Role);
 
-		return result.Succeeded;
+		return identityResult.Succeeded
+			? Result.Success()
+			: Result.Failure(
+				string.Join(
+					", ",
+					identityResult.Errors.Select(
+						error => error.Description)));
 	}
 }

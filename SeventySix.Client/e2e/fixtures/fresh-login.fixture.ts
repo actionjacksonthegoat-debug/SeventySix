@@ -1,0 +1,150 @@
+// <copyright file="fresh-login.fixture.ts" company="SeventySix">
+// Copyright (c) SeventySix. All rights reserved.
+// </copyright>
+
+import { test as base, Page, BrowserContext, Browser } from "@playwright/test";
+import { TEST_USERS, SELECTORS, ROUTES, TIMEOUTS, E2E_CONFIG } from "./index";
+import type { TestUser } from "./test-users.constant";
+
+/**
+ * Fixture that provides pages with fresh login sessions.
+ * Use this for tests that perform logout or other destructive auth operations.
+ * These sessions are NOT shared with other tests.
+ */
+interface FreshLoginFixtures
+{
+	/**
+	 * User page with fresh login (not from shared auth state).
+	 */
+	freshUserPage: Page;
+
+	/**
+	 * Admin page with fresh login (not from shared auth state).
+	 */
+	freshAdminPage: Page;
+
+	/**
+	 * Developer page with fresh login (not from shared auth state).
+	 */
+	freshDeveloperPage: Page;
+}
+
+/**
+ * Performs a fresh login for a test user.
+ * @param browser
+ * The browser instance.
+ * @param baseURL
+ * The base URL for navigation.
+ * @param testUser
+ * The test user to log in as.
+ * @returns
+ * A page with fresh authentication.
+ */
+async function performFreshLogin(
+	browser: Browser,
+	baseURL: string,
+	testUser: TestUser): Promise<{ page: Page; browserContext: BrowserContext }>
+{
+	// Create a fresh context WITHOUT any storage state (no inherited auth)
+	const browserContext: BrowserContext =
+		await browser.newContext({
+			baseURL,
+			storageState: undefined,
+			ignoreHTTPSErrors: true
+		});
+	const page: Page =
+		await browserContext.newPage();
+
+	// Navigate to login page
+	await page.goto(ROUTES.auth.login);
+	await page
+		.locator(SELECTORS.form.usernameInput)
+		.waitFor({ state: "visible", timeout: TIMEOUTS.globalSetup });
+
+	// Fill login form
+	await page
+		.locator(SELECTORS.form.usernameInput)
+		.fill(testUser.username);
+	await page
+		.locator(SELECTORS.form.passwordInput)
+		.fill(testUser.password);
+
+	// Submit and wait for redirect
+	await page
+		.locator(SELECTORS.form.submitButton)
+		.click();
+	await page.waitForURL(ROUTES.home, { timeout: TIMEOUTS.globalSetup });
+
+	// Wait for the app to be fully interactive (user menu visible means auth complete)
+	await page
+		.locator(SELECTORS.layout.userMenuButton)
+		.waitFor({ state: "visible", timeout: TIMEOUTS.auth });
+
+	return { page, browserContext };
+}
+
+/**
+ * Test fixture with fresh login sessions.
+ * Use `freshLoginTest` from this file for logout/destructive auth tests.
+ */
+export const freshLoginTest =
+	base.extend<FreshLoginFixtures>({
+		freshUserPage:
+			async ({ browser }, use) =>
+			{
+				const userTestUser: TestUser | undefined =
+					TEST_USERS.find(
+						(testUser) => testUser.role === "User");
+
+				if (!userTestUser)
+				{
+					throw new Error("User test account not found");
+				}
+
+				const { page, browserContext } =
+					await performFreshLogin(browser, E2E_CONFIG.clientBaseUrl, userTestUser);
+
+				await use(page);
+				await browserContext.close();
+			},
+
+		freshAdminPage:
+			async ({ browser }, use) =>
+			{
+				const adminTestUser: TestUser | undefined =
+					TEST_USERS.find(
+						(testUser) => testUser.role === "Admin");
+
+				if (!adminTestUser)
+				{
+					throw new Error("Admin test account not found");
+				}
+
+				const { page, browserContext } =
+					await performFreshLogin(browser, E2E_CONFIG.clientBaseUrl, adminTestUser);
+
+				await use(page);
+				await browserContext.close();
+			},
+
+		freshDeveloperPage:
+			async ({ browser }, use) =>
+			{
+				const developerTestUser: TestUser | undefined =
+					TEST_USERS.find(
+						(testUser) => testUser.role === "Developer");
+
+				if (!developerTestUser)
+				{
+					throw new Error("Developer test account not found");
+				}
+
+				const { page, browserContext } =
+					await performFreshLogin(browser, E2E_CONFIG.clientBaseUrl, developerTestUser);
+
+				await use(page);
+				await browserContext.close();
+			}
+	});
+
+export { expect } from "@playwright/test";

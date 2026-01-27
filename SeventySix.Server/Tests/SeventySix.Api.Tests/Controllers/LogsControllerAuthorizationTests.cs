@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using SeventySix.Api.Tests.Fixtures;
 using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;
 using SeventySix.TestUtilities.TestHelpers;
@@ -12,9 +13,9 @@ namespace SeventySix.Api.Tests.Controllers;
 /// Authorization tests for LogsController.
 /// Tests that admin endpoints require proper authentication and admin role.
 /// </summary>
-[Collection("PostgreSQL")]
+[Collection(CollectionNames.LoggingPostgreSql)]
 public class LogsControllerAuthorizationTests(
-	TestcontainersPostgreSqlFixture fixture) : ApiPostgreSqlTestBase<Program>(fixture), IAsyncLifetime
+	LoggingApiPostgreSqlFixture fixture) : ApiPostgreSqlTestBase<Program>(fixture), IAsyncLifetime
 {
 	private const string Endpoint = ApiEndpoints.Logs.Base;
 	private AuthorizationTestHelper AuthHelper =
@@ -53,6 +54,17 @@ public class LogsControllerAuthorizationTests(
 	public Task GetPagedAsync_WithDeveloperRole_ReturnsForbiddenAsync() =>
 		AuthHelper.AssertForbiddenForRoleAsync(
 			TestRoleConstants.Developer,
+			HttpMethod.Get,
+			Endpoint);
+
+	/// <summary>
+	/// Tests that GET /api/v1/logs returns 403 for User role.
+	/// This endpoint is Admin-only.
+	/// </summary>
+	[Fact]
+	public Task GetPagedAsync_WithUserRole_ReturnsForbiddenAsync() =>
+		AuthHelper.AssertForbiddenForRoleAsync(
+			TestRoleConstants.User,
 			HttpMethod.Get,
 			Endpoint);
 

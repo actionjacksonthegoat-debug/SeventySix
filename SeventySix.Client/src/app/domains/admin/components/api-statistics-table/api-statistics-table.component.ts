@@ -1,4 +1,4 @@
-import { ThirdPartyApiRequestResponse } from "@admin/models";
+import { ThirdPartyApiRequestDto } from "@admin/models";
 import { ThirdPartyApiService } from "@admin/services";
 import {
 	ChangeDetectionStrategy,
@@ -21,7 +21,7 @@ import { NgxSkeletonLoaderModule } from "ngx-skeleton-loader";
 /**
  * Extended interface with computed display properties
  */
-interface ThirdPartyApiRequestDisplay extends ThirdPartyApiRequestResponse
+interface ThirdPartyApiRequestDisplay extends ThirdPartyApiRequestDto
 {
 	formattedLastCalled: string;
 	status: string;
@@ -109,7 +109,7 @@ export class ApiStatisticsTableComponent
 		computed(
 			() =>
 			{
-				const data: ThirdPartyApiRequestResponse[] =
+				const data: ThirdPartyApiRequestDto[] =
 					this.apiDataQuery.data() ?? [];
 				const displayData: ThirdPartyApiRequestDisplay[] =
 					data.map(

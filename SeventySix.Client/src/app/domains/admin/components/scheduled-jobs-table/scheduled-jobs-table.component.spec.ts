@@ -175,7 +175,8 @@ describe("ScheduledJobsTableComponent",
 			() =>
 			{
 				const mockQuery: ReturnType<typeof createMockQueryResult<RecurringJobStatusResponse[]>> =
-					createMockQueryResult(mockJobData);
+					createMockQueryResult(
+						mockJobData);
 				healthApiService.getScheduledJobs.mockReturnValue(mockQuery);
 
 				createComponent();

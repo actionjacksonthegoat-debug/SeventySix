@@ -13,18 +13,26 @@ import {
 	WritableSignal
 } from "@angular/core";
 import { FormsModule } from "@angular/forms";
-import { ActivatedRoute, Router, RouterLink } from "@angular/router";
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
-import { AuthResponse, LoginRequest } from "@auth/models";
-import { AuthService } from "@shared/services/auth.service";
-import { NotificationService } from "@shared/services/notification.service";
+import { ActivatedRoute, Router, RouterLink } from "@angular/router";
+import { AuthResponse, LoginRequest, MfaState } from "@auth/models";
+import { MfaService } from "@auth/services";
+import { sanitizeRedirectUrl } from "@auth/utilities";
+import { AltchaWidgetComponent } from "@shared/components";
+import { AltchaService, AuthService, NotificationService } from "@shared/services";
 
 @Component(
 	{
 		selector: "app-login",
 		standalone: true,
-		imports: [FormsModule, RouterLink, MatButtonModule, MatIconModule],
+		imports: [
+			FormsModule,
+			RouterLink,
+			MatButtonModule,
+			MatIconModule,
+			AltchaWidgetComponent
+		],
 		changeDetection: ChangeDetectionStrategy.OnPush,
 		templateUrl: "./login.html",
 		styleUrl: "./login.scss"
@@ -41,6 +49,13 @@ export class LoginComponent implements OnInit
 	 */
 	private readonly authService: AuthService =
 		inject(AuthService);
+
+	/**
+	 * MFA service for storing MFA state.
+	 * @type {MfaService}
+	 */
+	private readonly mfaService: MfaService =
+		inject(MfaService);
 
 	/**
 	 * Router for navigation after successful login.
@@ -62,6 +77,27 @@ export class LoginComponent implements OnInit
 	 */
 	private readonly notification: NotificationService =
 		inject(NotificationService);
+
+	/**
+	 * ALTCHA service for bot protection.
+	 * @type {AltchaService}
+	 */
+	private readonly altchaService: AltchaService =
+		inject(AltchaService);
+
+	/**
+	 * Whether ALTCHA validation is enabled.
+	 * @type {boolean}
+	 */
+	protected readonly altchaEnabled: boolean =
+		this.altchaService.enabled;
+
+	/**
+	 * ALTCHA challenge endpoint URL.
+	 * @type {string}
+	 */
+	protected readonly challengeUrl: string =
+		this.altchaService.challengeEndpoint;
 
 	/**
 	 * Username or email entered by the user in the login form.
@@ -95,19 +131,51 @@ export class LoginComponent implements OnInit
 	private returnUrl: string = "/";
 
 	/**
+	 * ALTCHA verification payload from the widget.
+	 * @type {string | null}
+	 * @private
+	 */
+	private altchaPayload: string | null = null;
+
+	/**
 	 * Initialize component: determine post-login redirect and redirect if already authenticated.
 	 * @returns {void}
 	 */
 	ngOnInit(): void
 	{
+		// Sanitize returnUrl to prevent open redirect vulnerabilities
 		this.returnUrl =
-			this.route.snapshot.queryParams["returnUrl"] ?? "/";
+			sanitizeRedirectUrl(this.route.snapshot.queryParams["returnUrl"]);
 
 		// Redirect if already authenticated
 		if (this.authService.isAuthenticated())
 		{
 			this.router.navigateByUrl(this.returnUrl);
 		}
+	}
+
+	/**
+	 * Handles ALTCHA verification completion.
+	 * @param {string} payload
+	 * The ALTCHA verification payload.
+	 */
+	protected onAltchaVerified(payload: string): void
+	{
+		this.altchaPayload = payload;
+	}
+
+	/**
+	 * Checks if form can be submitted.
+	 * @returns {boolean}
+	 * True when all required fields are valid.
+	 */
+	protected canSubmit(): boolean
+	{
+		const hasCredentials: boolean =
+			this.usernameOrEmail.trim().length > 0 && this.password.length > 0;
+		const hasAltcha: boolean =
+			!this.altchaEnabled || this.altchaPayload !== null;
+		return hasCredentials && hasAltcha && !this.isLoading();
 	}
 
 	/**
@@ -123,49 +191,89 @@ export class LoginComponent implements OnInit
 			return;
 		}
 
+		if (this.altchaEnabled && !this.altchaPayload)
+		{
+			this.notification.error("Please complete the verification challenge.");
+			return;
+		}
+
 		this.isLoading.set(true);
 
 		const credentials: LoginRequest =
 			{
 				usernameOrEmail: this.usernameOrEmail,
 				password: this.password,
-				rememberMe: this.rememberMe
+				rememberMe: this.rememberMe,
+				altchaPayload: this.altchaPayload
 			};
 
 		this
-		.authService
-		.login(credentials)
-		.subscribe(
-			{
-				next: (response: AuthResponse) =>
+			.authService
+			.login(credentials)
+			.subscribe(
 				{
-					if (response.requiresPasswordChange)
-					{
-						// Redirect to password change page
-						this.notification.info(
-							"You must change your password before continuing.");
-						this.router.navigate(
-							["/auth/change-password"],
-							{
-								queryParams: {
-									required: "true",
-									returnUrl: this.returnUrl
-								}
-							});
-					}
-					else
-					{
-						this.router.navigateByUrl(this.returnUrl);
-					}
-				},
-				error: (error: HttpErrorResponse) =>
+					next: (response: AuthResponse) =>
+						this.handleLoginSuccess(response),
+					error: (error: HttpErrorResponse) =>
+						this.handleLoginError(error)
+				});
+	}
+
+	/**
+	 * Handle successful login response. Redirects to MFA verify if required,
+	 * password change if required, otherwise navigates to the return URL.
+	 * @param response
+	 * The authentication response from the server.
+	 * @returns {void}
+	 */
+	private handleLoginSuccess(response: AuthResponse): void
+	{
+		if (response.requiresMfa && response.mfaChallengeToken)
+		{
+			const mfaState: MfaState =
 				{
-					const details: string[] =
-						this.getLoginErrorDetails(error);
-					this.notification.errorWithDetails("Login Failed", details);
-					this.isLoading.set(false);
-				}
-			});
+					challengeToken: response.mfaChallengeToken,
+					email: response.email ?? "",
+					returnUrl: this.returnUrl
+				};
+			this.mfaService.setMfaState(mfaState);
+			this.router.navigate(
+				["/auth/mfa/verify"]);
+			return;
+		}
+
+		if (response.requiresPasswordChange)
+		{
+			this.notification.info(
+				"You must change your password before continuing.");
+			this.router.navigate(
+				["/auth/change-password"],
+				{
+					queryParams: {
+						required: "true",
+						returnUrl: this.returnUrl
+					}
+				});
+		}
+		else
+		{
+			this.router.navigateByUrl(this.returnUrl);
+		}
+	}
+
+	/**
+	 * Handle login error response. Displays error notification with details
+	 * and resets loading state.
+	 * @param error
+	 * The HTTP error response from the server.
+	 * @returns {void}
+	 */
+	private handleLoginError(error: HttpErrorResponse): void
+	{
+		const details: string[] =
+			this.getLoginErrorDetails(error);
+		this.notification.errorWithDetails("Login Failed", details);
+		this.isLoading.set(false);
 	}
 
 	/**

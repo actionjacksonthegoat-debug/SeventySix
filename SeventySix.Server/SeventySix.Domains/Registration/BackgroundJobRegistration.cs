@@ -8,6 +8,7 @@ using SeventySix.ElectronicNotifications.Emails;
 using SeventySix.Identity;
 using SeventySix.Identity.Settings;
 using SeventySix.Logging;
+using SeventySix.Logging.Jobs;
 using SeventySix.Shared.BackgroundJobs;
 
 namespace SeventySix.Registration;
@@ -28,6 +29,7 @@ namespace SeventySix.Registration;
 ///   <item><see cref="AdminSeederService"/> - One-time admin user seeding at startup (Identity)</item>
 ///   <item><see cref="ElectronicNotifications.Emails.Jobs.EmailQueueProcessJob"/> - Periodic processing of email queue (ElectronicNotifications)</item>
 ///   <item><see cref="Logging.Jobs.LogCleanupJob"/> - Periodic cleanup of old log files and database entries (Logging)</item>
+///   <item><see cref="Logging.Jobs.DatabaseMaintenanceJob"/> - Nightly PostgreSQL VACUUM ANALYZE for all schemas (Logging)</item>
 /// </list>
 ///
 /// <para><strong>Usage in Program.cs:</strong></para>
@@ -53,7 +55,23 @@ public static class BackgroundJobRegistration
 		this IServiceCollection services,
 		IConfiguration configuration)
 	{
-		// Skip all background jobs if disabled (e.g., in Test environment)
+		// Always register recurring job repository (needed for ScheduledJobService)
+		// This is read-only infrastructure, independent of whether jobs run
+		services.AddScoped<IRecurringJobRepository, RecurringJobRepository>();
+
+		// Always register settings (needed for ScheduledJobService health status calculation)
+		services.Configure<RefreshTokenCleanupSettings>(
+			configuration.GetSection(RefreshTokenCleanupSettings.SectionName));
+		services.Configure<IpAnonymizationSettings>(
+			configuration.GetSection(IpAnonymizationSettings.SectionName));
+		services.Configure<LogCleanupSettings>(
+			configuration.GetSection(LogCleanupSettings.SectionName));
+		services.Configure<DatabaseMaintenanceSettings>(
+			configuration.GetSection(DatabaseMaintenanceSettings.SectionName));
+		services.Configure<EmailQueueSettings>(
+			configuration.GetSection(EmailQueueSettings.SectionName));
+
+		// Skip background job execution if disabled (e.g., in Test environment)
 		bool enabled =
 			configuration.GetValue<bool?>("BackgroundJobs:Enabled") ?? true;
 		if (!enabled)
@@ -61,20 +79,12 @@ public static class BackgroundJobRegistration
 			return services;
 		}
 
-		// Core recurring job infrastructure
+		// Core recurring job infrastructure for job execution
 		services.AddScoped<IMessageScheduler, WolverineMessageScheduler>();
-		services.AddScoped<IRecurringJobRepository, RecurringJobRepository>();
 		services.AddScoped<IRecurringJobService, RecurringJobService>();
 
-		// Settings for recurring jobs
-		services.Configure<RefreshTokenCleanupSettings>(
-			configuration.GetSection(RefreshTokenCleanupSettings.SectionName));
-		services.Configure<IpAnonymizationSettings>(
-			configuration.GetSection(IpAnonymizationSettings.SectionName));
-		services.Configure<LogCleanupSettings>(
-			configuration.GetSection(LogCleanupSettings.SectionName));
-		services.Configure<EmailQueueSettings>(
-			configuration.GetSection(EmailQueueSettings.SectionName));
+		// Database maintenance service
+		services.AddScoped<IDatabaseMaintenanceService, DatabaseMaintenanceService>();
 
 		// AdminSeederService - One-time admin user seeding at startup (remains as IHostedService)
 		services.Configure<AdminSeederSettings>(

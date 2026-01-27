@@ -169,7 +169,7 @@
 						<mat-icon
 							matIconPrefix
 							aria-hidden="true">
-							badge
+							person
 						</mat-icon>
 						<mat-error>
 							{{ fullNameError() }}
@@ -258,19 +258,20 @@
 							<mat-chip-set>
 								@for ( role of userRoles(); track role ) {
 								<mat-chip
-									[removable]="true"
-									(removed)="
-														onRemoveRole(role)
-													"
-									[disabled]="
-														isRoleMutating()
-													">
+									[removable]="canRemoveAdminRole() || role !== ROLE_ADMIN"
+									(removed)="onRemoveRole(role)"
+									[disabled]="isRoleMutating() || (role === ROLE_ADMIN && !canRemoveAdminRole())"
+									[matTooltip]="role === ROLE_ADMIN && !canRemoveAdminRole()
+										? 'Cannot remove Admin role from the last admin user'
+										: ''">
 									{{ role }}
+									@if (canRemoveAdminRole() || role !== ROLE_ADMIN) {
 									<button matChipRemove>
 										<mat-icon aria-hidden="true">
 											cancel
 										</mat-icon>
 									</button>
+									}
 								</mat-chip>
 								}
 							</mat-chip-set>

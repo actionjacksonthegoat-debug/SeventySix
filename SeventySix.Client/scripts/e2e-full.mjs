@@ -1,0 +1,217 @@
+// <copyright file="e2e-full.mjs" company="SeventySix">
+// Copyright (c) SeventySix. All rights reserved.
+// </copyright>
+
+/**
+ * Cross-platform E2E test runner with guaranteed teardown.
+ * Handles setup, test execution, and teardown regardless of test results.
+ */
+
+import { spawnSync } from "child_process";
+
+const DOCKER_COMPOSE_FILE =
+	"../docker-compose.e2e.yml";
+
+/**
+ * Runs a shell command synchronously and returns the exit code.
+ * @param commandWithArgs
+ * The full command string to run.
+ * @param label
+ * Display label for the command.
+ * @returns
+ * The exit code (0 for success).
+ */
+function runCommand(
+	commandWithArgs,
+	label)
+{
+	console.log(`\n${"=".repeat(60)}`);
+	console.log(`Running: ${label}`);
+	console.log(`${"=".repeat(60)}\n`);
+
+	try
+	{
+		const result =
+			spawnSync(
+				commandWithArgs,
+				{
+					stdio: "inherit",
+					shell: true
+				});
+
+		if (result.error)
+		{
+			console.error(`Failed to run ${label}:`, result.error.message);
+			return 1;
+		}
+
+		return result.status ?? 0;
+	}
+	catch (error)
+	{
+		console.error(`Exception running ${label}:`, error.message);
+		return 1;
+	}
+}
+
+/**
+ * Runs the E2E environment setup.
+ * @returns
+ * Exit code (0 for success).
+ */
+function setup()
+{
+	// Kill any local processes on ports that E2E needs (Windows-specific)
+	// This prevents conflicts between local dev servers and E2E Docker containers
+	if (process.platform === "win32")
+	{
+		const cleanupPortsCode =
+			runCommand(
+				"powershell -ExecutionPolicy Bypass -File ../scripts/cleanup-ports.ps1 -Quiet",
+				"Killing orphaned local processes on E2E ports");
+
+		if (cleanupPortsCode !== 0)
+		{
+			console.warn("Warning: Port cleanup encountered issues, continuing anyway...");
+		}
+	}
+
+	// Clean up any existing containers and volumes
+	const cleanupCode =
+		runCommand(
+			`docker compose -f ${DOCKER_COMPOSE_FILE} down -v --remove-orphans`,
+			"Cleaning up existing containers and volumes");
+
+	if (cleanupCode !== 0)
+	{
+		return cleanupCode;
+	}
+
+	// Build fresh containers (both API and Client with no cache)
+	const buildCode =
+		runCommand(
+			`docker compose -f ${DOCKER_COMPOSE_FILE} build --no-cache api-e2e client-e2e`,
+			"Building E2E containers (API + Client)");
+
+	if (buildCode !== 0)
+	{
+		return buildCode;
+	}
+
+	// Start containers
+	const startCode =
+		runCommand(
+			`docker compose -f ${DOCKER_COMPOSE_FILE} up -d`,
+			"Starting E2E containers");
+
+	if (startCode !== 0)
+	{
+		return startCode;
+	}
+
+	// Wait for API
+	const waitApiCode =
+		runCommand(
+			"node scripts/wait-for-api.mjs",
+			"Waiting for API");
+
+	if (waitApiCode !== 0)
+	{
+		return waitApiCode;
+	}
+
+	// Wait for client
+	const waitClientCode =
+		runCommand(
+			"node scripts/wait-for-client.mjs",
+			"Waiting for client");
+
+	return waitClientCode;
+}
+
+/**
+ * Runs the Playwright E2E tests.
+ * @returns
+ * Exit code (0 for success).
+ */
+function runTests()
+{
+	return runCommand(
+		"npx playwright test",
+		"Playwright E2E Tests");
+}
+
+/**
+ * Tears down the E2E environment.
+ * @returns
+ * Exit code (0 for success).
+ */
+function teardown()
+{
+	return runCommand(
+		`docker compose -f ${DOCKER_COMPOSE_FILE} down -v --remove-orphans`,
+		"Tearing down E2E containers and volumes");
+}
+
+/**
+ * Main execution flow for E2E tests.
+ * Always runs teardown regardless of setup or test failures.
+ */
+function main()
+{
+	console.log("\nStarting E2E Test Suite\n");
+
+	let testExitCode =
+		0;
+
+	// Setup phase
+	const setupExitCode =
+		setup();
+
+	if (setupExitCode !== 0)
+	{
+		console.error("\n[FAIL] Setup failed - skipping tests\n");
+		testExitCode =
+			setupExitCode;
+	}
+	else
+	{
+		// Test phase (only if setup succeeded)
+		testExitCode =
+			runTests();
+
+		if (testExitCode === 0)
+		{
+			console.log("\n[PASS] All E2E tests passed!\n");
+		}
+		else
+		{
+			console.error(`\n[FAIL] E2E tests failed with exit code: ${testExitCode}\n`);
+		}
+	}
+
+	// Teardown phase (ALWAYS runs)
+	console.log("\nRunning teardown (always executed)...\n");
+
+	const teardownExitCode =
+		teardown();
+
+	if (teardownExitCode !== 0)
+	{
+		console.error("\n[WARN] Teardown encountered issues\n");
+	}
+
+	// Report final results
+	console.log("\n" + "=".repeat(60));
+	console.log("E2E Test Suite Complete");
+	console.log("=".repeat(60));
+	console.log(`  Setup:    ${setupExitCode === 0 ? "[PASS]" : "[FAIL]"}`);
+	console.log(`  Tests:    ${testExitCode === 0 ? "[PASS]" : "[FAIL]"}`);
+	console.log(`  Teardown: ${teardownExitCode === 0 ? "[PASS]" : "[WARN] Issues"}`);
+	console.log("=".repeat(60) + "\n");
+
+	// Exit with test exit code (or setup code if setup failed)
+	process.exit(testExitCode);
+}
+
+main();

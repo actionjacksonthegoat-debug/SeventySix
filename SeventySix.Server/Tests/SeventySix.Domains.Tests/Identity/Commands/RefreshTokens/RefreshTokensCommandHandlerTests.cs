@@ -9,8 +9,28 @@ using Xunit;
 
 namespace SeventySix.Domains.Tests.Identity.Commands.RefreshTokens;
 
+/// <summary>
+/// Unit tests for <see cref="RefreshTokensCommandHandler"/>.
+/// </summary>
+/// <remarks>
+/// Tests follow 80/20 rule: focus on token rotation and password change scenarios.
+/// </remarks>
 public class RefreshTokensCommandHandlerTests
 {
+	private readonly ISecurityAuditService SecurityAuditService;
+
+	/// <summary>
+	/// Initializes a new instance of the <see cref="RefreshTokensCommandHandlerTests"/> class.
+	/// </summary>
+	public RefreshTokensCommandHandlerTests()
+	{
+		SecurityAuditService =
+			Substitute.For<ISecurityAuditService>();
+	}
+
+	/// <summary>
+	/// Tests that a user who has changed their password gets RequiresPasswordChange = false.
+	/// </summary>
 	[Fact]
 	public async Task HandleAsync_WhenUserHasChangedPassword_ReturnsFalseForRequiresPasswordChangeAsync()
 	{
@@ -87,12 +107,16 @@ public class RefreshTokensCommandHandlerTests
 				tokenService,
 				userManager,
 				authenticationService,
+				SecurityAuditService,
 				CancellationToken.None);
 
 		// Assert
 		result.RequiresPasswordChange.ShouldBeFalse();
 	}
 
+	/// <summary>
+	/// Tests that a user who requires password change gets RequiresPasswordChange = true.
+	/// </summary>
 	[Fact]
 	public async Task HandleAsync_WhenUserRequiresPasswordChange_ReturnsTrueAsync()
 	{
@@ -169,6 +193,7 @@ public class RefreshTokensCommandHandlerTests
 				tokenService,
 				userManager,
 				authenticationService,
+				SecurityAuditService,
 				CancellationToken.None);
 
 		// Assert

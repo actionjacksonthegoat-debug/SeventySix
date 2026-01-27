@@ -233,7 +233,7 @@ describe("BreadcrumbComponent",
 
 				const breadcrumbs: BreadcrumbItem[] =
 					component.breadcrumbs();
-				expect(breadcrumbs.map(crumb => crumb.label))
+				expect(breadcrumbs.map((crumb) => crumb.label))
 					.toEqual(
 						["Home", "Login"]);
 				expect(breadcrumbs[1].isActive)
@@ -249,7 +249,7 @@ describe("BreadcrumbComponent",
 
 				const breadcrumbs: BreadcrumbItem[] =
 					component.breadcrumbs();
-				expect(breadcrumbs.map(crumb => crumb.label))
+				expect(breadcrumbs.map((crumb) => crumb.label))
 					.toEqual(
 						["Home", "Developer", "Architecture Guide"]);
 			});

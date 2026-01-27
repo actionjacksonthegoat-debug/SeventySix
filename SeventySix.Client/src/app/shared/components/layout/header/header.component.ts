@@ -13,6 +13,7 @@ import { MatToolbarModule } from "@angular/material/toolbar";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { Router } from "@angular/router";
 import { BreadcrumbComponent } from "@shared/components";
+import { APP_ROUTES } from "@shared/constants";
 import { UserProfileDto } from "@shared/models";
 import {
 	AuthService,
@@ -136,7 +137,7 @@ export class HeaderComponent
 	navigateToLogin(): void
 	{
 		this.router.navigate(
-			["/auth/login"]);
+			[APP_ROUTES.AUTH.LOGIN]);
 	}
 
 	/**
@@ -146,7 +147,7 @@ export class HeaderComponent
 	navigateToRegister(): void
 	{
 		this.router.navigate(
-			["/auth/register"]);
+			[APP_ROUTES.AUTH.REGISTER]);
 	}
 
 	/**
@@ -156,7 +157,7 @@ export class HeaderComponent
 	navigateToAccount(): void
 	{
 		this.router.navigate(
-			["/account"]);
+			[APP_ROUTES.ACCOUNT.PROFILE]);
 	}
 
 	/**

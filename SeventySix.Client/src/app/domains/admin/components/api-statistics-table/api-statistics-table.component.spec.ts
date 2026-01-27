@@ -1,4 +1,4 @@
-import { ThirdPartyApiRequestResponse } from "@admin/models";
+import { ThirdPartyApiRequestDto } from "@admin/models";
 import { ThirdPartyApiService } from "@admin/services";
 import { provideHttpClient } from "@angular/common/http";
 import { provideHttpClientTesting } from "@angular/common/http/testing";
@@ -21,7 +21,7 @@ describe("ApiStatisticsTableComponent",
 
 		let thirdPartyApiService: MockThirdPartyApiService;
 
-		const mockApiData: ThirdPartyApiRequestResponse[] =
+		const mockApiData: ThirdPartyApiRequestDto[] =
 			[
 				{
 					id: 1,
@@ -137,7 +137,7 @@ describe("ApiStatisticsTableComponent",
 			() =>
 			{
 				thirdPartyApiService.getAllThirdPartyApis.mockReturnValue(
-					createMockQueryResult<ThirdPartyApiRequestResponse[]>(undefined,
+					createMockQueryResult<ThirdPartyApiRequestDto[]>(undefined,
 						{
 							isLoading: true
 						}));
@@ -153,7 +153,7 @@ describe("ApiStatisticsTableComponent",
 			{
 				const errorMessage: string = "Failed to load API data";
 				thirdPartyApiService.getAllThirdPartyApis.mockReturnValue(
-					createMockQueryResult<ThirdPartyApiRequestResponse[]>(undefined,
+					createMockQueryResult<ThirdPartyApiRequestDto[]>(undefined,
 						{
 							isError: true,
 							error: new Error(errorMessage)
@@ -172,8 +172,9 @@ describe("ApiStatisticsTableComponent",
 		it("should reload data when refresh is called",
 			() =>
 			{
-				const mockQuery: ReturnType<typeof createMockQueryResult<ThirdPartyApiRequestResponse[]>> =
-					createMockQueryResult(mockApiData);
+				const mockQuery: ReturnType<typeof createMockQueryResult<ThirdPartyApiRequestDto[]>> =
+					createMockQueryResult(
+						mockApiData);
 				thirdPartyApiService.getAllThirdPartyApis.mockReturnValue(mockQuery);
 
 				createComponent();
@@ -208,7 +209,7 @@ describe("ApiStatisticsTableComponent",
 			() =>
 			{
 				thirdPartyApiService.getAllThirdPartyApis.mockReturnValue(
-					createMockQueryResult<ThirdPartyApiRequestResponse[]>([]));
+					createMockQueryResult<ThirdPartyApiRequestDto[]>([]));
 
 				createComponent();
 

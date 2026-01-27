@@ -103,6 +103,13 @@ public sealed class AssignmentNewlineAnalyzer : DiagnosticAnalyzer
 		AssignmentExpressionSyntax assignment = (AssignmentExpressionSyntax)
 			context.Node;
 
+		// Skip property assignments inside object initializers
+		// These use a different style convention
+		if (IsInsideObjectInitializer(assignment))
+		{
+			return;
+		}
+
 		// Fast path: skip simple values first
 		if (IsSimpleValueFast(assignment.Right))
 		{
@@ -117,6 +124,30 @@ public sealed class AssignmentNewlineAnalyzer : DiagnosticAnalyzer
 				Diagnostic.Create(Rule, operatorToken.GetLocation())
 			);
 		}
+	}
+
+	/// <summary>
+	/// Checks if the assignment is inside an object initializer.
+	/// Property assignments inside object initializers follow a different style.
+	/// </summary>
+	private static bool IsInsideObjectInitializer(
+		AssignmentExpressionSyntax assignment)
+	{
+		SyntaxNode? parent = assignment.Parent;
+
+		while (parent is not null)
+		{
+			if (parent is InitializerExpressionSyntax initializer
+				&& (initializer.Kind() == SyntaxKind.ObjectInitializerExpression
+					|| initializer.Kind() == SyntaxKind.WithInitializerExpression))
+			{
+				return true;
+			}
+
+			parent = parent.Parent;
+		}
+
+		return false;
 	}
 
 	/// <summary>

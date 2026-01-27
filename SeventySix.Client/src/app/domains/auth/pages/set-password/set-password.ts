@@ -13,15 +13,16 @@ import {
 	WritableSignal
 } from "@angular/core";
 import { FormsModule } from "@angular/forms";
-import { ActivatedRoute, Router } from "@angular/router";
 import { MatButtonModule } from "@angular/material/button";
+import { ActivatedRoute, Router } from "@angular/router";
+import { ValidationResult } from "@auth/models";
 import { mapAuthError } from "@auth/utilities";
-import { PASSWORD_VALIDATION } from "@shared/constants/validation.constants";
 import { validatePassword, validatePasswordsMatch } from "@auth/utilities";
+import { APP_ROUTES } from "@shared/constants";
+import { PASSWORD_VALIDATION } from "@shared/constants/validation.constants";
+import { AuthErrorResult } from "@shared/models";
 import { AuthService } from "@shared/services/auth.service";
 import { NotificationService } from "@shared/services/notification.service";
-import { ValidationResult } from "@auth/models";
-import { AuthErrorResult } from "@shared/models";
 
 @Component(
 	{
@@ -144,7 +145,7 @@ export class SetPasswordComponent implements OnInit
 			return;
 		}
 
-		const passwordResult: ValidationResult	=
+		const passwordResult: ValidationResult =
 			validatePassword(this.newPassword);
 		if (!passwordResult.valid)
 		{
@@ -155,28 +156,28 @@ export class SetPasswordComponent implements OnInit
 		this.isLoading.set(true);
 
 		this
-		.authService
-		.setPassword(this.token, this.newPassword)
-		.subscribe(
-			{
-				next: () =>
+			.authService
+			.setPassword(this.token, this.newPassword)
+			.subscribe(
 				{
-					this.notification.success(
-						"Password set successfully. You can now sign in.");
-					this.router.navigate(
-						["/auth/login"]);
-				},
-				error: (error: HttpErrorResponse) =>
-				{
-					const errorResult: AuthErrorResult =
-						mapAuthError(error);
-					if (errorResult.invalidateToken)
+					next: () =>
 					{
-						this.tokenValid.set(false);
+						this.notification.success(
+							"Password set successfully. You can now sign in.");
+						this.router.navigate(
+							[APP_ROUTES.AUTH.LOGIN]);
+					},
+					error: (error: HttpErrorResponse) =>
+					{
+						const errorResult: AuthErrorResult =
+							mapAuthError(error);
+						if (errorResult.invalidateToken)
+						{
+							this.tokenValid.set(false);
+						}
+						this.notification.error(errorResult.message);
+						this.isLoading.set(false);
 					}
-					this.notification.error(errorResult.message);
-					this.isLoading.set(false);
-				}
-			});
+				});
 	}
 }

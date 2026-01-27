@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Shouldly;
 using Xunit;
 
 namespace SeventySix.ArchitectureTests;
@@ -71,15 +72,8 @@ public class VariableNamingTests : SourceCodeArchitectureTest
 		}
 
 		// Assert
-		if (violations.Count > 0)
-		{
-			string violationDetails =
-				string.Join("\n", violations);
-			throw new Xunit.Sdk.XunitException(
-				$"Single-letter lambda parameters found in production code:\n{violationDetails}");
-		}
-
-		Assert.Empty(violations);
+		violations.ShouldBeEmpty(
+			$"Single-letter lambda parameters found in production code:\n{string.Join("\n", violations)}");
 	}
 
 	[Fact]
@@ -118,28 +112,29 @@ public class VariableNamingTests : SourceCodeArchitectureTest
 		}
 
 		// Assert
-		if (violations.Count > 0)
-		{
-			string violationDetails =
-				string.Join("\n", violations);
-			throw new Xunit.Sdk.XunitException(
-				$"For loop counters found in production code:\n{violationDetails}");
-		}
-
-		Assert.Empty(violations);
+		violations.ShouldBeEmpty(
+			$"For loop counters found in production code:\n{string.Join("\n", violations)}");
 	}
 
 	private static string GetCodeContext(string content, int matchIndex)
 	{
 		int contextLength = 50;
 		int startIndex =
-			Math.Max(0, matchIndex - contextLength);
+			Math.Max(
+				0,
+				matchIndex - contextLength);
 		int endIndex =
-			Math.Min(content.Length, matchIndex + contextLength);
+			Math.Min(
+				content.Length,
+				matchIndex + contextLength);
 
 		return content
-			.Substring(startIndex, endIndex - startIndex)
-			.Replace("\r", string.Empty)
+			.Substring(
+				startIndex,
+				endIndex - startIndex)
+			.Replace(
+				"\r",
+				string.Empty)
 			.Replace("\n", " ")
 			.Trim();
 	}

@@ -45,31 +45,31 @@ export class LoadingService
 	{
 		// Subscribe to router events with automatic cleanup
 		this
-		.router
-		.events
-		.pipe(
-			filter(
+			.router
+			.events
+			.pipe(
+				filter(
+					(event) =>
+						event instanceof NavigationStart
+							|| event instanceof NavigationEnd
+							|| event instanceof NavigationCancel
+							|| event instanceof NavigationError),
+				takeUntilDestroyed())
+			.subscribe(
 				(event) =>
-					event instanceof NavigationStart
-						|| event instanceof NavigationEnd
-						|| event instanceof NavigationCancel
-						|| event instanceof NavigationError),
-			takeUntilDestroyed())
-		.subscribe(
-			(event) =>
-			{
-				if (event instanceof NavigationStart)
 				{
-					this.show();
-				}
-				else if (
-					event instanceof NavigationEnd
-						|| event instanceof NavigationCancel
-						|| event instanceof NavigationError)
-				{
-					this.hide();
-				}
-			});
+					if (event instanceof NavigationStart)
+					{
+						this.show();
+					}
+					else if (
+						event instanceof NavigationEnd
+							|| event instanceof NavigationCancel
+							|| event instanceof NavigationError)
+					{
+						this.hide();
+					}
+				});
 	}
 
 	/**

@@ -55,5 +55,5 @@ public static class LogExtensions
 	/// A collection of LogDto DTOs.
 	/// </returns>
 	public static IEnumerable<LogDto> ToDto(this IEnumerable<Log> entities) =>
-		entities.MapToDto(e => e.ToDto());
+		entities.MapToDto(logEntry => logEntry.ToDto());
 }

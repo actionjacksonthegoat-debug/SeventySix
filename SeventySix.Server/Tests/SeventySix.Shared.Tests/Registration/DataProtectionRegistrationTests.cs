@@ -21,7 +21,7 @@ namespace SeventySix.Shared.Tests.Registration;
 public class DataProtectionRegistrationTests
 {
 	[Fact]
-	public void AddConfiguredDataProtection_WithMissingCertificate_InProduction_ValidationFailsAsync()
+	public void AddConfiguredDataProtection_WithMissingCertificate_InProduction_ThrowsInvalidOperationException()
 	{
 		// Arrange
 		Dictionary<string, string?> configurationValues =
@@ -46,27 +46,15 @@ public class DataProtectionRegistrationTests
 		environment.EnvironmentName =
 			Environments.Production;
 
-		// Act
-		services.AddConfiguredDataProtection(
-			configuration,
-			environment);
+		// Act & Assert - Fail-fast: throws immediately when certificate is required but missing
+		InvalidOperationException exception =
+			Should.Throw<InvalidOperationException>(
+				() => services.AddConfiguredDataProtection(
+					configuration,
+					environment));
 
-		ServiceProvider provider =
-			services.BuildServiceProvider();
-
-		// Assert
-		OptionsValidationException validationException =
-			Should.Throw<OptionsValidationException>(() =>
-			{
-				IOptions<AppDataProtectionOptions> dataProtectionOptions =
-					provider.GetRequiredService<
-						IOptions<AppDataProtectionOptions>>();
-				_ =
-					dataProtectionOptions.Value;
-			});
-
-		validationException.Message.ShouldContain(
-			"Invalid DataProtection configuration");
+		exception.Message.ShouldContain(
+			"Data Protection certificate is required in production");
 	}
 
 	[Fact]
@@ -188,13 +176,14 @@ public class DataProtectionRegistrationTests
 			services.BuildServiceProvider();
 
 		// Assert - Should throw even in development when fallback is disabled
-		Should.Throw<OptionsValidationException>(() =>
-		{
-			IOptions<AppDataProtectionOptions> dataProtectionOptions =
-				provider.GetRequiredService<
-					IOptions<AppDataProtectionOptions>>();
-			_ =
-				dataProtectionOptions.Value;
-		});
+		Should.Throw<OptionsValidationException>(
+			() =>
+			{
+				IOptions<AppDataProtectionOptions> dataProtectionOptions =
+					provider.GetRequiredService<
+						IOptions<AppDataProtectionOptions>>();
+				_ =
+					dataProtectionOptions.Value;
+			});
 	}
 }

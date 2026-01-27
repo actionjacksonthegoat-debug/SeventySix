@@ -6,11 +6,11 @@ import {
 import {
 	ApplicationConfig,
 	ErrorHandler,
-	isDevMode,
-	provideBrowserGlobalErrorListeners,
-	provideZonelessChangeDetection,
 	inject,
-	provideAppInitializer
+	isDevMode,
+	provideAppInitializer,
+	provideBrowserGlobalErrorListeners,
+	provideZonelessChangeDetection
 } from "@angular/core";
 import { provideAnimations } from "@angular/platform-browser/animations";
 import {
@@ -25,6 +25,7 @@ import {
 import { provideNgxSkeletonLoader } from "ngx-skeleton-loader";
 
 import { environment } from "@environments/environment";
+import { HTTP_HEADER_XSRF_TOKEN } from "@shared/constants/http.constants";
 import {
 	authInterceptor,
 	cacheBypassInterceptor,
@@ -112,10 +113,10 @@ export const appConfig: ApplicationConfig =
 								gcTime: environment.cache.query.default.gcTime,
 								retry: environment.cache.query.default.retry,
 								refetchOnWindowFocus: environment
-								.cache
-								.query
-								.default
-								.refetchOnWindowFocus,
+									.cache
+									.query
+									.default
+									.refetchOnWindowFocus,
 								refetchOnReconnect: environment.cache.query.default.refetchOnReconnect
 							}
 						}
@@ -133,7 +134,7 @@ export const appConfig: ApplicationConfig =
 				withXsrfConfiguration(
 					{
 						cookieName: "XSRF-TOKEN",
-						headerName: "X-XSRF-TOKEN"
+						headerName: HTTP_HEADER_XSRF_TOKEN
 					})),
 			provideBrowserGlobalErrorListeners(),
 			provideZonelessChangeDetection(),

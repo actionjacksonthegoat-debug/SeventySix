@@ -12,7 +12,7 @@ import {
 	MEDIA_TYPE_JSON
 } from "@shared/constants";
 import { LoggerService } from "@shared/services/logger.service";
-import { catchError, Observable, throwError } from "rxjs";
+import { catchError, Observable, throwError, timeout } from "rxjs";
 
 /**
  * Low-level HTTP wrapper for API communication.
@@ -55,6 +55,15 @@ export class ApiService
 		inject(LoggerService);
 
 	/**
+	 * Default request timeout in milliseconds from environment config.
+	 * @type {number}
+	 * @private
+	 * @readonly
+	 */
+	private readonly defaultTimeout: number =
+		environment.http.defaultTimeout;
+
+	/**
 	 * Default HTTP headers applied to all requests from this service.
 	 * @type {HttpHeaders}
 	 * @private
@@ -74,7 +83,7 @@ export class ApiService
 	 * @param {HttpContext} context
 	 * Optional HTTP context for request-scoped metadata.
 	 * @returns {Observable<T>}
-	 * Observable that resolves to the typed response body.
+	 * Observable that resolves to the typed response body or errors on timeout.
 	 */
 	get<T>(
 		endpoint: string,
@@ -82,14 +91,16 @@ export class ApiService
 		context?: HttpContext): Observable<T>
 	{
 		return this
-		.http
-		.get<T>(`${this.baseUrl}/${endpoint}`,
-			{
-				headers: this.defaultHeaders,
-				params,
-				context
-			})
-		.pipe(catchError(this.handleError));
+			.http
+			.get<T>(`${this.baseUrl}/${endpoint}`,
+				{
+					headers: this.defaultHeaders,
+					params,
+					context
+				})
+			.pipe(
+				timeout(this.defaultTimeout),
+				catchError(this.handleError));
 	}
 
 	/**
@@ -99,17 +110,19 @@ export class ApiService
 	 * @param {U} body
 	 * The request payload to send to the server.
 	 * @returns {Observable<T>}
-	 * Observable that resolves to the typed response body.
+	 * Observable that resolves to the typed response body or errors on timeout.
 	 */
 	post<T, U = Partial<T>>(endpoint: string, body: U): Observable<T>
 	{
 		return this
-		.http
-		.post<T>(`${this.baseUrl}/${endpoint}`, body,
-			{
-				headers: this.defaultHeaders
-			})
-		.pipe(catchError(this.handleError));
+			.http
+			.post<T>(`${this.baseUrl}/${endpoint}`, body,
+				{
+					headers: this.defaultHeaders
+				})
+			.pipe(
+				timeout(this.defaultTimeout),
+				catchError(this.handleError));
 	}
 
 	/**
@@ -119,17 +132,19 @@ export class ApiService
 	 * @param {U} body
 	 * The request payload to send to the server.
 	 * @returns {Observable<T>}
-	 * Observable that resolves to the typed response body.
+	 * Observable that resolves to the typed response body or errors on timeout.
 	 */
 	put<T, U = Partial<T>>(endpoint: string, body: U): Observable<T>
 	{
 		return this
-		.http
-		.put<T>(`${this.baseUrl}/${endpoint}`, body,
-			{
-				headers: this.defaultHeaders
-			})
-		.pipe(catchError(this.handleError));
+			.http
+			.put<T>(`${this.baseUrl}/${endpoint}`, body,
+				{
+					headers: this.defaultHeaders
+				})
+			.pipe(
+				timeout(this.defaultTimeout),
+				catchError(this.handleError));
 	}
 
 	/**
@@ -139,17 +154,19 @@ export class ApiService
 	 * @param {U} body
 	 * The request payload to send to the server.
 	 * @returns {Observable<T>}
-	 * Observable that resolves to the typed response body.
+	 * Observable that resolves to the typed response body or errors on timeout.
 	 */
 	patch<T, U = Partial<T>>(endpoint: string, body: U): Observable<T>
 	{
 		return this
-		.http
-		.patch<T>(`${this.baseUrl}/${endpoint}`, body,
-			{
-				headers: this.defaultHeaders
-			})
-		.pipe(catchError(this.handleError));
+			.http
+			.patch<T>(`${this.baseUrl}/${endpoint}`, body,
+				{
+					headers: this.defaultHeaders
+				})
+			.pipe(
+				timeout(this.defaultTimeout),
+				catchError(this.handleError));
 	}
 
 	/**
@@ -159,18 +176,20 @@ export class ApiService
 	 * @param {U} body
 	 * Optional request body for delete operations.
 	 * @returns {Observable<T>}
-	 * Observable that resolves to the typed response body.
+	 * Observable that resolves to the typed response body or errors on timeout.
 	 */
 	delete<T, U = unknown>(endpoint: string, body?: U): Observable<T>
 	{
 		return this
-		.http
-		.request<T>("DELETE", `${this.baseUrl}/${endpoint}`,
-			{
-				headers: this.defaultHeaders,
-				body
-			})
-		.pipe(catchError(this.handleError));
+			.http
+			.request<T>("DELETE", `${this.baseUrl}/${endpoint}`,
+				{
+					headers: this.defaultHeaders,
+					body
+				})
+			.pipe(
+				timeout(this.defaultTimeout),
+				catchError(this.handleError));
 	}
 
 	/**
@@ -182,13 +201,13 @@ export class ApiService
 	addHeaders(headers: Record<string, string>): void
 	{
 		Object
-		.entries(headers)
-		.forEach(
-			([key, value]) =>
-			{
-				this.defaultHeaders =
-					this.defaultHeaders.set(key, value);
-			});
+			.entries(headers)
+			.forEach(
+				([key, value]) =>
+				{
+					this.defaultHeaders =
+						this.defaultHeaders.set(key, value);
+				});
 	}
 
 	/**

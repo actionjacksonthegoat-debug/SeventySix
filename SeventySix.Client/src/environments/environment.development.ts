@@ -4,7 +4,7 @@ export const environment: Environment =
 	{
 		production: false,
 		version: "1.0.0-dev",
-		apiUrl: "http://localhost:5085/api/v1", // API v1 - HTTP for local development (use https://localhost:7074/api/v1 for docker-compose)
+		apiUrl: "https://localhost:7074/api/v1", // HTTPS for local development with HTTP/2 support
 		logging: {
 			enableRemoteLogging: true,
 			consoleLogLevel: "warn", // Only show warnings and errors in console
@@ -22,7 +22,8 @@ export const environment: Environment =
 			grafanaUrl: "http://localhost:3000", // Grafana for metrics visualization
 			dashboards: {
 				systemOverview: "seventysix-system-overview",
-				apiEndpoints: "seventysix-api-endpoints"
+				apiEndpoints: "seventysix-api-endpoints",
+				valkeyCache: "seventysix-valkey"
 			}
 		},
 		cache: {
@@ -37,7 +38,9 @@ export const environment: Environment =
 				users: { staleTime: 0, gcTime: 60000, retry: 1 },
 				logs: { staleTime: 0, gcTime: 60000, retry: 1 },
 				health: { staleTime: 0, gcTime: 60000, retry: 1 },
-				thirdpartyrequests: { staleTime: 0, gcTime: 60000, retry: 1 }
+				thirdpartyrequests: { staleTime: 0, gcTime: 60000, retry: 1 },
+				account: { staleTime: 0, gcTime: 60000, retry: 1 },
+				permissionrequests: { staleTime: 0, gcTime: 60000, retry: 1 }
 			}
 		},
 		dashboard: {
@@ -56,6 +59,10 @@ export const environment: Environment =
 				enableMonitoring: true,
 				fpsWarningThreshold: 30
 			}
+		},
+		http: {
+			defaultTimeout: 30000, // 30 seconds
+			uploadTimeout: 120000 // 2 minutes for file uploads
 		},
 		dateTime: {
 			defaultDisplayFormat: "yyyy-MM-dd HH:mm:ss",
@@ -77,5 +84,8 @@ export const environment: Environment =
 		auth: {
 			loginUrl: "/auth/login",
 			tokenRefreshBufferSeconds: 60 // Refresh 60 seconds before expiry
+		},
+		altcha: {
+			enabled: false // Disabled in development
 		}
 	};

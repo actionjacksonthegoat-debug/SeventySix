@@ -12,6 +12,24 @@
 # Setup: Copy ../.env.example to ../.env and update with your values
 
 services:
+  # Valkey - Open Source Redis-Compatible Cache (BSD licensed, Linux Foundation)
+  valkey:
+    image: valkey/valkey:9.0-alpine
+    container_name: seventysix-valkey-dev
+    ports:
+      - "6379:6379"
+    volumes:
+      - valkey_data:/data
+    command: valkey-server --save 60 1 --loglevel warning
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - seventysix-network
+    restart: unless-stopped
+
   # PostgreSQL Database - Persistent storage for development
   postgres:
     image: postgres:18-alpine
@@ -60,11 +78,9 @@ services:
     env_file:
       - ../.env
     ports:
-      - "5085:8080"  # HTTP
-      - "7074:8081"  # HTTPS
+      - "7074:8081"  # HTTPS - single development port
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_HTTP_PORTS=8080
       - ASPNETCORE_HTTPS_PORTS=8081
       - ASPNETCORE_Kestrel__Certificates__Default__Password=password
       - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
@@ -72,14 +88,25 @@ services:
       # Note: API container connects to postgres:5432 via Docker internal network
       - Database__Host=postgres
       - Database__Port=5432
-      # OpenTelemetry - using container network DNS name
-      - OpenTelemetry__OtlpEndpoint=http://jaeger:4317
+      # Cache - Use Docker service name for Valkey connection
+      - Cache__Valkey__ConnectionString=valkey:6379
+      # OpenTelemetry - otel-collector is the single ingestion point for traces AND metrics
+      - OpenTelemetry__OtlpEndpoint=http://otel-collector:4317
     volumes:
       - ~/.aspnet/https:/https:ro
       - dataprotection_keys:/app/keys
+      - ./SeventySix.Api/keys/dataprotection.pfx:/app/keys/dataprotection.pfx:ro
     depends_on:
       postgres:
         condition: service_healthy
+      valkey:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fk", "https://localhost:8081/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
     restart: "no"
     networks:
       - seventysix-network
@@ -96,20 +123,55 @@ services:
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
       - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=7d"
+      - "--storage.tsdb.retention.size=1GB"
     networks:
       - seventysix-network
     restart: unless-stopped
 
   # Jaeger - Distributed tracing
+  # Note: Receives traces from otel-collector, NOT directly from API
+  # The otel-collector is the single ingestion point for all telemetry
   jaeger:
     image: jaegertracing/all-in-one:1.62.0
     container_name: seventysix-jaeger-dev
     ports:
-      - "16686:16686"
-      - "4317:4317"
-      - "4318:4318"
+      - "16686:16686"   # Jaeger UI only - OTLP ports handled by otel-collector
     environment:
       - COLLECTOR_OTLP_ENABLED=true
+    networks:
+      - seventysix-network
+    restart: unless-stopped
+
+  # OpenTelemetry Collector - Telemetry routing (REQUIRED for metrics)
+  # Receives OTLP from API, exports traces to Jaeger and metrics to Prometheus format
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.123.0
+    container_name: seventysix-otel-collector-dev
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml:ro
+    ports:
+      - "4317:4317"   # OTLP gRPC - single ingestion point
+      - "4318:4318"   # OTLP HTTP
+      - "8889:8889"   # Prometheus metrics export
+    depends_on:
+      - jaeger
+    networks:
+      - seventysix-network
+    restart: unless-stopped
+
+  # Redis Exporter - Prometheus metrics for Valkey monitoring
+  redis-exporter:
+    image: oliver006/redis_exporter:latest
+    container_name: seventysix-redis-exporter-dev
+    environment:
+      REDIS_ADDR: "valkey:6379"
+    ports:
+      - "9121:9121"
+    depends_on:
+      valkey:
+        condition: service_healthy
     networks:
       - seventysix-network
     restart: unless-stopped
@@ -141,6 +203,9 @@ services:
 
 # Named volumes for persistent data across container restarts
 volumes:
+  valkey_data:
+    driver: local
+    name: seventysix_valkey_dev_data
   postgres_data:
     driver: local
     name: seventysix_postgres_data

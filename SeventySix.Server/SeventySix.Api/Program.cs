@@ -20,6 +20,8 @@
 /// Architecture: Implements Dependency Inversion Principle (DIP) by registering
 /// interfaces with their concrete implementations.
 /// </remarks>
+
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Scalar.AspNetCore;
 using Serilog;
 using SeventySix.Api.Configuration;
@@ -28,6 +30,8 @@ using SeventySix.Api.Middleware;
 using SeventySix.Api.Registration;
 using SeventySix.Api.Utilities;
 using SeventySix.Registration;
+using SeventySix.Shared.Constants;
+using SeventySix.Shared.Registration;
 using Wolverine;
 using Wolverine.FluentValidation;
 
@@ -43,36 +47,66 @@ builder.Configuration.AddEnvironmentVariableMapping();
 
 // Bind centralized security settings (single source of truth for HTTPS enforcement)
 builder.Services.Configure<SecuritySettings>(
-	builder.Configuration.GetSection("Security"));
+	builder.Configuration.GetSection(ConfigurationSectionConstants.Security));
 
-// Disable HTTPS certificate requirements in development mode
-// This allows the app to run without certificate errors in Docker containers
-if (builder.Environment.IsDevelopment())
-{
-	builder.WebHost.ConfigureKestrel(serverOptions =>
+// Bind request limits settings for DoS protection
+RequestLimitsSettings requestLimitsSettings =
+			builder.Configuration
+				.GetSection(ConfigurationSectionConstants.RequestLimits)
+				.Get<RequestLimitsSettings>() ?? new RequestLimitsSettings();
+
+// Configure Kestrel with request body size limits to prevent DoS attacks
+builder.WebHost.ConfigureKestrel(
+	serverOptions =>
 	{
-		serverOptions.ConfigureHttpsDefaults(httpsOptions =>
+		serverOptions.Limits.MaxRequestBodySize =
+			requestLimitsSettings.MaxRequestBodySizeBytes;
+
+		// Enable HTTP/2 for HTTPS endpoints (HTTP/2 requires TLS/ALPN)
+		// HTTP endpoints fall back to HTTP/1.1 only to avoid warnings
+		serverOptions.ConfigureEndpointDefaults(
+			listenOptions =>
+			{
+				listenOptions.Protocols =
+					HttpProtocols.Http1AndHttp2;
+			});
+
+		if (builder.Environment.IsDevelopment())
 		{
-			// Accept any client certificate without validation
-			httpsOptions.AllowAnyClientCertificate();
-		});
+			// Accept any client certificate without validation in development
+			serverOptions.ConfigureHttpsDefaults(
+				httpsOptions =>
+				{
+					httpsOptions.AllowAnyClientCertificate();
+				});
+		}
 	});
-}
+
+// Configure form options for multipart uploads
+builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(
+	options =>
+	{
+		options.MultipartBodyLengthLimit =
+			requestLimitsSettings.MaxMultipartBodyLengthBytes;
+		options.ValueLengthLimit =
+			requestLimitsSettings.MaxFormOptionsBufferLength;
+	});
 
 // Configure Serilog for structured logging
 // Outputs: Console + Rolling file (daily rotation) + Database (Warning+ levels)
 // Note: Database sink is added after building the app to access IServiceProvider
 // In Test environment, configures silent logging (no sinks) for performance
 Log.Logger =
-			new LoggerConfiguration()
-				.ConfigureBaseSerilog(
-					builder.Configuration,
-					builder.Environment.EnvironmentName)
-				.CreateLogger();
+	new LoggerConfiguration()
+		.ConfigureBaseSerilog(
+			builder.Configuration,
+			builder.Environment.EnvironmentName)
+		.CreateLogger();
 
 builder.Host.UseSerilog();
 
 // Configure Wolverine for CQRS handlers
+// ExtensionDiscovery.ManualOnly disables automatic assembly scanning messages
 builder.Host.UseWolverine(
 	options =>
 	{
@@ -81,12 +115,19 @@ builder.Host.UseWolverine(
 
 		// Use FluentValidation for command validation
 		options.UseFluentValidation();
-	});
+	},
+	ExtensionDiscovery.ManualOnly);
 
 // Services
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddApplicationHealthChecks(builder.Configuration);
 builder.Services.AddConfiguredOpenTelemetry(
+	builder.Configuration,
+	builder.Environment.EnvironmentName);
+
+// Add FusionCache with Valkey backend and MemoryPack serialization
+// In Test environment, uses memory-only cache to avoid Valkey connection timeouts
+builder.Services.AddFusionCacheWithValkey(
 	builder.Configuration,
 	builder.Environment.EnvironmentName);
 
@@ -106,7 +147,8 @@ string connectionString =
 // Infrastructure must be registered first (provides AuditInterceptor for DbContexts)
 builder.Services.AddInfrastructure();
 builder.Services.AddIdentityDomain(
-	connectionString);
+	connectionString,
+	builder.Configuration);
 builder.Services.AddLoggingDomain(
 	connectionString,
 	builder.Configuration);
@@ -120,11 +162,17 @@ builder.Services.AddElectronicNotificationsDomain(
 // Register all background jobs (single registration point)
 builder.Services.AddBackgroundJobs(builder.Configuration);
 
+// E2E test seeder (only runs when E2ESeeder:Enabled is true)
+builder.Services.AddE2ESeeder(builder.Configuration);
+
 // Add response compression (Brotli + Gzip)
 builder.Services.AddOptimizedResponseCompression(builder.Configuration);
 
 // Add output caching with auto-discovery from configuration
-builder.Services.AddConfiguredOutputCache(builder.Configuration);
+// In Test environment, uses in-memory cache (no Valkey dependency)
+builder.Services.AddConfiguredOutputCache(
+	builder.Configuration,
+	builder.Environment.EnvironmentName);
 
 // Add rate limiting (replaces custom middleware)
 builder.Services.AddConfiguredRateLimiting(builder.Configuration);
@@ -144,6 +192,12 @@ builder.Services.AddAuthenticationServices(builder.Configuration);
 builder.Services.AddOpenApi();
 
 WebApplication app = builder.Build();
+
+// Validate required configuration settings (fails fast in production if secrets missing)
+StartupValidator.ValidateConfiguration(
+	builder.Configuration,
+	app.Environment,
+	app.Services.GetRequiredService<ILogger<Program>>());
 
 // Validate dependencies (in debug scenarios this provides actionable errors for VS)
 await app.ValidateDependenciesAsync(builder.Configuration);
@@ -171,7 +225,9 @@ app.UseSerilogRequestLogging(
 			diagnosticContext.Set(
 				"RequestHost",
 				httpContext.Request.Host.Value ?? "unknown");
-			diagnosticContext.Set("RequestScheme", httpContext.Request.Scheme);
+			diagnosticContext.Set(
+				"RequestScheme",
+				httpContext.Request.Scheme);
 			diagnosticContext.Set(
 				"RemoteIpAddress",
 				httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown");
@@ -187,13 +243,14 @@ app.UseConfiguredForwardedHeaders(builder.Configuration);
 // CORS - Must be early so preflight (OPTIONS) requests are handled
 app.UseCors("AllowedOrigins");
 
+// Global exception handling - Catches all unhandled exceptions
+// Returns consistent ProblemDetails responses (RFC 7807)
+// Must be early to catch exceptions from all subsequent middleware
+app.UseMiddleware<GlobalExceptionMiddleware>();
+
 // Security headers middleware - Attribute-aware implementation
 // Reads [SecurityHeaders] attributes from controllers/actions for customization
 app.UseMiddleware<AttributeBasedSecurityHeadersMiddleware>();
-
-// Global exception handling - Catches all unhandled exceptions
-// Returns consistent ProblemDetails responses (RFC 7807)
-app.UseMiddleware<GlobalExceptionMiddleware>();
 
 // Rate limiting - Uses ASP.NET Core's built-in rate limiter
 app.UseRateLimiter();
@@ -201,7 +258,7 @@ app.UseRateLimiter();
 // Enable response compression
 bool responseCompressionEnabled =
 			builder.Configuration.GetValue<bool?>("ResponseCompression:Enabled")
-	?? true;
+				?? true;
 
 if (responseCompressionEnabled)
 {
@@ -233,14 +290,6 @@ app.UseAuthorization();
 
 // Endpoints
 app.MapHealthCheckEndpoints();
-
-bool openTelemetryEnabled =
-			builder.Configuration.GetValue<bool?>("OpenTelemetry:Enabled") ?? true;
-
-if (openTelemetryEnabled)
-{
-	app.MapPrometheusScrapingEndpoint();
-}
 
 app.MapControllers();
 

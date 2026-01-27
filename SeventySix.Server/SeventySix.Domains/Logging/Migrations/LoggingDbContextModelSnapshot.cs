@@ -18,7 +18,7 @@ namespace SeventySix.Domains.Logging.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("Logging")
-                .HasAnnotation("ProductVersion", "10.0.1")
+                .HasAnnotation("ProductVersion", "10.0.2")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -36,7 +36,8 @@ namespace SeventySix.Domains.Logging.Migrations
                         .HasColumnType("character varying(2000)");
 
                     b.Property<string>("CorrelationId")
-                        .HasColumnType("text");
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
 
                     b.Property<DateTime>("CreateDate")
                         .ValueGeneratedOnAdd()
@@ -70,7 +71,8 @@ namespace SeventySix.Domains.Logging.Migrations
                         .HasColumnType("character varying(4000)");
 
                     b.Property<string>("ParentSpanId")
-                        .HasColumnType("text");
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
 
                     b.Property<string>("Properties")
                         .HasColumnType("text");
@@ -88,7 +90,8 @@ namespace SeventySix.Domains.Logging.Migrations
                         .HasColumnType("character varying(500)");
 
                     b.Property<string>("SpanId")
-                        .HasColumnType("text");
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
 
                     b.Property<string>("StackTrace")
                         .HasColumnType("text");
@@ -98,8 +101,11 @@ namespace SeventySix.Domains.Logging.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CorrelationId")
+                        .HasDatabaseName("IX_Logs_CorrelationId");
+
                     b.HasIndex("CreateDate")
-                        .HasDatabaseName("IX_Logs_CreatedAt");
+                        .HasDatabaseName("IX_Logs_CreateDate");
 
                     b.HasIndex("LogLevel")
                         .HasDatabaseName("IX_Logs_LogLevel");
@@ -111,7 +117,7 @@ namespace SeventySix.Domains.Logging.Migrations
                         .HasDatabaseName("IX_Logs_SourceContext");
 
                     b.HasIndex("LogLevel", "CreateDate")
-                        .HasDatabaseName("IX_Logs_LogLevel_CreatedAt");
+                        .HasDatabaseName("IX_Logs_LogLevel_CreateDate");
 
                     b.ToTable("Logs", "Logging");
                 });

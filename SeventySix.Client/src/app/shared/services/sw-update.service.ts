@@ -82,21 +82,21 @@ export class SwUpdateService
 			concat(appIsStable$, everySixHours$);
 
 		everySixHoursOnceAppIsStable$
-		.pipe(takeUntilDestroyed())
-		.subscribe(
-			async () =>
-			{
-				try
+			.pipe(takeUntilDestroyed())
+			.subscribe(
+				async () =>
 				{
-					await this.swUpdate.checkForUpdate();
-				}
-				catch (error)
-				{
-					this.logger.error(
-						"Failed to check for updates",
-						error instanceof Error ? error : undefined);
-				}
-			});
+					try
+					{
+						await this.swUpdate.checkForUpdate();
+					}
+					catch (error)
+					{
+						this.logger.error(
+							"Failed to check for updates",
+							error instanceof Error ? error : undefined);
+					}
+				});
 	}
 
 	/**
@@ -107,21 +107,21 @@ export class SwUpdateService
 	private handleVersionUpdates(): void
 	{
 		this
-		.swUpdate
-		.versionUpdates
-		.pipe(
-			filter(
-				(evt): evt is VersionReadyEvent =>
-					evt.type === "VERSION_READY"),
-			takeUntilDestroyed())
-		.subscribe(
-			() =>
-			{
-				if (this.confirmUpdate())
+			.swUpdate
+			.versionUpdates
+			.pipe(
+				filter(
+					(evt): evt is VersionReadyEvent =>
+						evt.type === "VERSION_READY"),
+				takeUntilDestroyed())
+			.subscribe(
+				() =>
 				{
-					this.activateUpdate();
-				}
-			});
+					if (this.confirmUpdate())
+					{
+						this.activateUpdate();
+					}
+				});
 	}
 
 	/**
@@ -132,24 +132,24 @@ export class SwUpdateService
 	private handleUnrecoverableState(): void
 	{
 		this
-		.swUpdate
-		.unrecoverable
-		.pipe(takeUntilDestroyed())
-		.subscribe(
-			(event) =>
-			{
-				this.logger.error(
-					"Service Worker unrecoverable state",
-					undefined,
-					{
-						reason: event.reason
-					});
+			.swUpdate
+			.unrecoverable
+			.pipe(takeUntilDestroyed())
+			.subscribe(
+				(event) =>
+				{
+					this.logger.error(
+						"Service Worker unrecoverable state",
+						undefined,
+						{
+							reason: event.reason
+						});
 
-				// Reload the page
-				this.notifyUnrecoverableState(
-					"An error occurred that requires reloading the page.");
-				window.location.reload();
-			});
+					// Reload the page
+					this.notifyUnrecoverableState(
+						"An error occurred that requires reloading the page.");
+					window.location.reload();
+				});
 	}
 
 	/**

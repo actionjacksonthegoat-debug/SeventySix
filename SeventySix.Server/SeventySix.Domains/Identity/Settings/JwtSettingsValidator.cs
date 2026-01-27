@@ -116,6 +116,8 @@ public class JwtSettingsValidator : AbstractValidator<JwtSettings>
 
 		// Reject common weak patterns
 		return WeakPatterns.Any(pattern =>
-			key.Contains(pattern, StringComparison.OrdinalIgnoreCase));
+			key.Contains(
+				pattern,
+				StringComparison.OrdinalIgnoreCase));
 	}
 }

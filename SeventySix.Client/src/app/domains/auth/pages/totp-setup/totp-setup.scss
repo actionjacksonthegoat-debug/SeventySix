@@ -1,0 +1,248 @@
+@use "variables" as vars;
+
+.totp-setup-container {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	min-height: 100%;
+	padding: vars.$spacing-lg;
+	background: var(--mat-app-background-color);
+}
+
+.totp-setup-card {
+	width: 100%;
+	max-width: 28rem;
+	padding: vars.$spacing-2xl;
+	background: var(--mat-sys-surface);
+	border-radius: 1rem;
+	box-shadow: var(--mat-sys-level2);
+
+	h1 {
+		margin: 0 0 vars.$spacing-sm;
+		font-size: 1.5rem;
+		font-weight: 500;
+		text-align: center;
+		color: var(--mat-sys-on-surface);
+	}
+}
+
+.subtitle {
+	margin: 0 0 vars.$spacing-xl;
+	text-align: center;
+	color: var(--mat-sys-on-surface-variant);
+	line-height: 1.5;
+}
+
+// Loading state
+.loading-state {
+	text-align: center;
+
+	p {
+		color: var(--mat-sys-on-surface-variant);
+		margin-bottom: vars.$spacing-xl;
+	}
+}
+
+.spinner {
+	width: 3rem;
+	height: 3rem;
+	margin: 0 auto;
+	border: 3px solid var(--mat-sys-surface-variant);
+	border-top-color: var(--mat-sys-primary);
+	border-radius: 50%;
+	animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+// QR code section
+.qr-section {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	margin-bottom: vars.$spacing-xl;
+}
+
+.qr-code {
+	width: 12.5rem;
+	height: 12.5rem;
+	border-radius: 0.5rem;
+	border: 1px solid var(--mat-sys-outline-variant);
+	margin-bottom: vars.$spacing-md;
+}
+
+.qr-placeholder {
+	width: 12.5rem;
+	height: 12.5rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: var(--mat-sys-surface-variant);
+	border-radius: 0.5rem;
+	margin-bottom: vars.$spacing-md;
+}
+
+.link-button {
+	background: none;
+	border: none;
+	color: var(--mat-sys-primary);
+	cursor: pointer;
+	font-size: 0.875rem;
+	text-decoration: underline;
+	padding: vars.$spacing-xs;
+
+	&:hover {
+		color: var(--mat-sys-primary);
+		opacity: 0.8;
+	}
+
+	&:focus-visible {
+		outline: 2px solid var(--mat-sys-primary);
+		outline-offset: 2px;
+		border-radius: 2px;
+	}
+}
+
+// Manual entry section
+.manual-entry {
+	width: 100%;
+	text-align: center;
+	margin-bottom: vars.$spacing-md;
+}
+
+.manual-label {
+	margin: 0 0 vars.$spacing-sm;
+	font-weight: 500;
+	color: var(--mat-sys-on-surface);
+}
+
+.secret-display {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: vars.$spacing-sm;
+	background: var(--mat-sys-surface-variant);
+	border-radius: 0.5rem;
+	padding: vars.$spacing-md;
+	margin-bottom: vars.$spacing-sm;
+}
+
+.secret-code {
+	font-family: "Roboto Mono", monospace;
+	font-size: 1rem;
+	letter-spacing: 0.125rem;
+	word-break: break-all;
+	color: var(--mat-sys-on-surface);
+}
+
+.manual-hint {
+	margin: 0;
+	font-size: 0.75rem;
+	color: var(--mat-sys-on-surface-variant);
+	line-height: 1.5;
+}
+
+// Form elements
+.form-group {
+	margin-bottom: vars.$spacing-lg;
+}
+
+label {
+	display: block;
+	margin-bottom: vars.$spacing-xs;
+	font-weight: 500;
+	color: var(--mat-sys-on-surface);
+}
+
+input {
+	width: 100%;
+	padding: vars.$spacing-md;
+	border: 1px solid var(--mat-sys-outline);
+	border-radius: 0.5rem;
+	font-size: 1.5rem;
+	text-align: center;
+	letter-spacing: 0.5rem;
+	color: var(--mat-sys-on-surface);
+	background: var(--mat-sys-surface);
+	transition: border-color 0.2s;
+
+	&:focus {
+		outline: none;
+		border-color: var(--mat-sys-primary);
+		box-shadow: 0 0 0 1px var(--mat-sys-primary);
+	}
+
+	&:disabled {
+		opacity: 0.6;
+		cursor: not-allowed;
+	}
+
+	&::placeholder {
+		color: var(--mat-sys-on-surface-variant);
+		opacity: 0.5;
+	}
+}
+
+.hint {
+	display: block;
+	margin-top: vars.$spacing-xs;
+	font-size: 0.75rem;
+	color: var(--mat-sys-on-surface-variant);
+}
+
+.error-message {
+	margin: 0 0 vars.$spacing-lg;
+	padding: vars.$spacing-sm vars.$spacing-md;
+	background: var(--mat-sys-error-container);
+	border-radius: 0.5rem;
+	color: var(--mat-sys-on-error-container);
+	font-size: 0.875rem;
+}
+
+// Action buttons
+.action-buttons {
+	display: flex;
+	justify-content: flex-end;
+	gap: vars.$spacing-md;
+
+	&.stacked {
+		flex-direction: column;
+		align-items: stretch;
+
+		button {
+			width: 100%;
+		}
+	}
+}
+
+// Success state
+.success-state {
+	text-align: center;
+}
+
+.success-icon {
+	font-size: 4rem;
+	width: 4rem;
+	height: 4rem;
+	color: var(--mat-sys-primary);
+	margin-bottom: vars.$spacing-md;
+}
+
+.next-steps {
+	background: var(--mat-sys-tertiary-container);
+	border-radius: 0.5rem;
+	padding: vars.$spacing-md;
+	margin-bottom: vars.$spacing-xl;
+	text-align: left;
+
+	p {
+		margin: 0;
+		color: var(--mat-sys-on-tertiary-container);
+		font-size: 0.875rem;
+		line-height: 1.5;
+	}
+}

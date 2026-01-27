@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using SeventySix.Shared.Constants;
+using Shouldly;
 using Xunit;
 
 namespace SeventySix.ArchitectureTests;
@@ -80,6 +81,6 @@ public class NamingConventionTests : SourceCodeArchitectureTest
 		}
 
 		// Assert
-		Assert.Empty(violations);
+		violations.ShouldBeEmpty();
 	}
 }

@@ -1,10 +1,25 @@
 <Project>
-	<!-- Reference custom analyzers (SS001, SS002) and codefixes for all projects -->
+	<!--
+		Reference custom analyzers (SS001, SS002, SS003, SS006) and codefixes for all projects.
+		Also force Microsoft.CodeAnalysis.* versions to 5.0.0 for consistency with WolverineFx.
+	-->
 	<ItemGroup Condition="'$(MSBuildProjectName)' != 'SeventySix.Analyzers' And '$(MSBuildProjectName)' != 'SeventySix.Analyzers.CodeFixes'">
 		<ProjectReference
 			Include="$(MSBuildThisFileDirectory)SeventySix.Analyzers\SeventySix.Analyzers.csproj"
 			OutputItemType="Analyzer"
 			ReferenceOutputAssembly="false"
 		/>
+	</ItemGroup>
+
+	<!--
+		Force Microsoft.CodeAnalysis.* packages to version 5.0.0 to resolve version conflicts.
+		WolverineFx requires 5.0.0 while some transitive dependencies pull in 4.14.0.
+	-->
+	<ItemGroup Condition="'$(MSBuildProjectName)' != 'SeventySix.Analyzers' And '$(MSBuildProjectName)' != 'SeventySix.Analyzers.CodeFixes' And '$(MSBuildProjectName)' != 'SeventySix.Analyzers.Tests'">
+		<PackageReference Include="Microsoft.CodeAnalysis" Version="5.0.0" />
+		<PackageReference Include="Microsoft.CodeAnalysis.Scripting" Version="5.0.0" />
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="5.0.0" />
+		<PackageReference Include="Microsoft.CodeAnalysis.VisualBasic" Version="5.0.0" />
+		<PackageReference Include="Microsoft.CodeAnalysis.VisualBasic.Workspaces" Version="5.0.0" />
 	</ItemGroup>
 </Project>

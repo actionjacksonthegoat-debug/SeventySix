@@ -1,6 +1,6 @@
+import { inject } from "@angular/core";
 import { AbstractControl, ValidationErrors, ValidatorFn } from "@angular/forms";
 import { DateService } from "@shared/services";
-import { inject } from "@angular/core";
 import { isNullOrUndefined, isNullOrWhitespace } from "@shared/utilities/null-check.utility";
 
 /**
@@ -111,7 +111,9 @@ export function futureDateValidator(): ValidatorFn
 		}
 
 		const value: Date =
-			typeof control.value === "string" ? dateService.parseUTC(control.value) : (control.value as Date);
+			typeof control.value === "string"
+				? dateService.parseUTC(control.value)
+				: (control.value as Date);
 		const today: Date =
 			dateService.nowDate();
 		today.setHours(0, 0, 0, 0);

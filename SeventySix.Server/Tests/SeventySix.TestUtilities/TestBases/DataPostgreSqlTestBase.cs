@@ -8,20 +8,21 @@ namespace SeventySix.TestUtilities.TestBases;
 
 /// <summary>
 /// Base class for Data layer tests that require an isolated PostgreSQL database.
-/// Uses TestcontainersPostgreSqlFixture for Docker-based PostgreSQL.
+/// Supports both TestcontainersPostgreSqlFixture and domain-specific fixtures.
 /// Each test class gets its own isolated database for complete test isolation.
 /// </summary>
 public abstract class DataPostgreSqlTestBase : BasePostgreSqlTestBase
 {
-	private readonly TestcontainersPostgreSqlFixture Fixture;
+	private readonly BasePostgreSqlFixture Fixture;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="DataPostgreSqlTestBase"/> class.
 	/// </summary>
 	/// <param name="fixture">
 	/// The PostgreSQL fixture that provides an isolated database for this test class.
+	/// Accepts both shared fixtures and domain-specific fixtures.
 	/// </param>
-	protected DataPostgreSqlTestBase(TestcontainersPostgreSqlFixture fixture)
+	protected DataPostgreSqlTestBase(BasePostgreSqlFixture fixture)
 	{
 		Fixture = fixture;
 	}

@@ -12,8 +12,8 @@ import {
 	WritableSignal
 } from "@angular/core";
 import { FormsModule } from "@angular/forms";
-import { RouterLink } from "@angular/router";
 import { MatButtonModule } from "@angular/material/button";
+import { RouterLink } from "@angular/router";
 import { AuthService } from "@shared/services/auth.service";
 import { NotificationService } from "@shared/services/notification.service";
 
@@ -99,21 +99,21 @@ export class RegisterEmailComponent
 		this.isLoading.set(true);
 
 		this
-		.authService
-		.initiateRegistration(this.email)
-		.subscribe(
-			{
-				next: () =>
+			.authService
+			.initiateRegistration(this.email)
+			.subscribe(
 				{
-					this.submitted.set(true);
-					this.isLoading.set(false);
-				},
-				error: () =>
-				{
-					// Still show success to prevent email enumeration
-					this.submitted.set(true);
-					this.isLoading.set(false);
-				}
-			});
+					next: () =>
+					{
+						this.submitted.set(true);
+						this.isLoading.set(false);
+					},
+					error: () =>
+					{
+						// Still show success to prevent email enumeration
+						this.submitted.set(true);
+						this.isLoading.set(false);
+					}
+				});
 	}
 }

@@ -51,12 +51,12 @@ export type RecurringJobStatusResponse = components["schemas"]["RecurringJobStat
 // Third-party API types
 /**
  * Response describing a third-party API request entry.
- * Mirrors the generated `ThirdPartyApiRequestResponse` schema.
+ * Mirrors the generated `ThirdPartyApiRequestDto` schema.
  */
-export type ThirdPartyApiRequestResponse = components["schemas"]["ThirdPartyApiRequestResponse"];
+export type ThirdPartyApiRequestDto = components["schemas"]["ThirdPartyApiRequestDto"];
 
 /**
  * Aggregated statistics for third-party API usage.
- * Mirrors the generated `ThirdPartyApiStatisticsResponse` schema.
+ * Mirrors the generated `ThirdPartyApiStatisticsDto` schema.
  */
-export type ThirdPartyApiStatisticsResponse = components["schemas"]["ThirdPartyApiStatisticsResponse"];
+export type ThirdPartyApiStatisticsDto = components["schemas"]["ThirdPartyApiStatisticsDto"];

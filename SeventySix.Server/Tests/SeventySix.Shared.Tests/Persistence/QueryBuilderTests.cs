@@ -1,4 +1,5 @@
 using SeventySix.Shared.Persistence;
+using Shouldly;
 
 namespace SeventySix.Shared.Tests.Persistence;
 
@@ -45,9 +46,9 @@ public sealed class QueryBuilderTests
 			.ToList();
 
 		// Assert
-		Assert.Equal(2, result.Count);
-		Assert.Contains(result, entity => entity.Name == "Alice");
-		Assert.Contains(result, entity => entity.Name == "Charlie");
+		result.Count.ShouldBe(2);
+		result.ShouldContain(entity => entity.Name == "Alice");
+		result.ShouldContain(entity => entity.Name == "Charlie");
 	}
 
 	/// <summary>
@@ -100,9 +101,9 @@ public sealed class QueryBuilderTests
 			.ToList();
 
 		// Assert
-		Assert.Equal(2, result.Count);
-		Assert.Contains(result, entity => entity.Name == "Alice");
-		Assert.Contains(result, entity => entity.Name == "Charlie");
+		result.Count.ShouldBe(2);
+		result.ShouldContain(entity => entity.Name == "Alice");
+		result.ShouldContain(entity => entity.Name == "Charlie");
 	}
 
 	/// <summary>
@@ -143,10 +144,10 @@ public sealed class QueryBuilderTests
 			.ToList();
 
 		// Assert
-		Assert.Equal(3, result.Count);
-		Assert.Equal("Alice", result[0].Name);
-		Assert.Equal("Bob", result[1].Name);
-		Assert.Equal("Charlie", result[2].Name);
+		result.Count.ShouldBe(3);
+		result[0].Name.ShouldBe("Alice");
+		result[1].Name.ShouldBe("Bob");
+		result[2].Name.ShouldBe("Charlie");
 	}
 
 	/// <summary>
@@ -187,10 +188,10 @@ public sealed class QueryBuilderTests
 			.ToList();
 
 		// Assert
-		Assert.Equal(3, result.Count);
-		Assert.Equal(35, result[0].Age);
-		Assert.Equal(30, result[1].Age);
-		Assert.Equal(25, result[2].Age);
+		result.Count.ShouldBe(3);
+		result[0].Age.ShouldBe(35);
+		result[1].Age.ShouldBe(30);
+		result[2].Age.ShouldBe(25);
 	}
 
 	/// <summary>
@@ -233,10 +234,10 @@ public sealed class QueryBuilderTests
 			.ToList();
 
 		// Assert
-		Assert.Equal(3, result.Count);
-		Assert.Equal("Alice", result[0].Name);
-		Assert.Equal("Bob", result[1].Name);
-		Assert.Equal("Charlie", result[2].Name);
+		result.Count.ShouldBe(3);
+		result[0].Name.ShouldBe("Alice");
+		result[1].Name.ShouldBe("Bob");
+		result[2].Name.ShouldBe("Charlie");
 	}
 
 	/// <summary>
@@ -282,9 +283,9 @@ public sealed class QueryBuilderTests
 			.ToList();
 
 		// Assert
-		Assert.Equal(2, result.Count);
-		Assert.Contains(result, entity => entity.Name == "Charlie");
-		Assert.Contains(result, entity => entity.Name == "Diana");
+		result.Count.ShouldBe(2);
+		result.ShouldContain(entity => entity.Name == "Charlie");
+		result.ShouldContain(entity => entity.Name == "Diana");
 	}
 
 	/// <summary>
@@ -330,7 +331,7 @@ public sealed class QueryBuilderTests
 			.ToList();
 
 		// Assert
-		Assert.Equal(2, result.Count);
+		result.Count.ShouldBe(2);
 	}
 
 	/// <summary>
@@ -382,9 +383,9 @@ public sealed class QueryBuilderTests
 			.ToList();
 
 		// Assert
-		Assert.Equal(2, result.Count);
-		Assert.Contains(result, entity => entity.Name == "Charlie");
-		Assert.Contains(result, entity => entity.Name == "Diana");
+		result.Count.ShouldBe(2);
+		result.ShouldContain(entity => entity.Name == "Charlie");
+		result.ShouldContain(entity => entity.Name == "Diana");
 	}
 
 	/// <summary>
@@ -455,9 +456,9 @@ public sealed class QueryBuilderTests
 			.ToList();
 
 		// Assert
-		Assert.Equal(2, result.Count);
-		Assert.Equal("Eve", result[0].Name);
-		Assert.Equal("Alice", result[1].Name);
+		result.Count.ShouldBe(2);
+		result[0].Name.ShouldBe("Eve");
+		result[1].Name.ShouldBe("Alice");
 	}
 
 	/// <summary>
@@ -491,7 +492,7 @@ public sealed class QueryBuilderTests
 			.ToList();
 
 		// Assert
-		Assert.Equal(2, result.Count);
+		result.Count.ShouldBe(2);
 	}
 }
 

@@ -39,6 +39,11 @@ public record AuthSettings
 	/// Gets account lockout configuration.
 	/// </summary>
 	public LockoutSettings Lockout { get; init; } = new();
+
+	/// <summary>
+	/// Gets breached password checking configuration (OWASP ASVS V2.1.7).
+	/// </summary>
+	public BreachedPasswordSettings BreachedPassword { get; init; } = new();
 }
 
 /// <summary>
@@ -143,6 +148,26 @@ public record AuthRateLimitSettings
 	/// Gets max token refresh per minute. Default: 10.
 	/// </summary>
 	public int TokenRefreshPerMinute { get; init; } = 10;
+
+	/// <summary>
+	/// Gets max ALTCHA challenge requests per minute. Default: 10.
+	/// </summary>
+	public int AltchaChallengePerMinute { get; init; } = 10;
+
+	/// <summary>
+	/// Gets max client log submissions per minute. Default: 30.
+	/// </summary>
+	public int ClientLogsPerMinute { get; init; } = 30;
+
+	/// <summary>
+	/// Gets max MFA verification attempts per minute. Default: 5.
+	/// </summary>
+	public int MfaVerifyPerMinute { get; init; } = 5;
+
+	/// <summary>
+	/// Gets max MFA code resend requests per minute. Default: 3.
+	/// </summary>
+	public int MfaResendPerMinute { get; init; } = 3;
 }
 
 /// <summary>
@@ -170,6 +195,13 @@ public record AuthCookieSettings
 	/// Gets a value indicating whether to use secure cookies.
 	/// </summary>
 	public bool SecureCookie { get; init; } = true;
+
+	/// <summary>
+	/// Gets a value indicating whether to use SameSite=Lax for cookies.
+	/// Set to true for E2E testing where client and API are on different ports.
+	/// Default is false (uses Strict for production security).
+	/// </summary>
+	public bool SameSiteLax { get; init; } = false;
 }
 
 /// <summary>
@@ -264,4 +296,55 @@ public record TokenSettings
 	/// When exceeded, oldest token is automatically revoked.
 	/// </summary>
 	public int MaxActiveSessionsPerUser { get; init; } = 5;
+
+	/// <summary>
+	/// Gets a value indicating whether to disable token rotation on refresh.
+	/// Default: false. When true, the old refresh token is NOT revoked during rotation.
+	/// WARNING: Only enable for E2E testing where the same token must work across contexts.
+	/// </summary>
+	public bool DisableRotation { get; init; } = false;
+}
+
+/// <summary>
+/// Breached password checking configuration using HaveIBeenPwned k-Anonymity API.
+/// Implements OWASP ASVS V2.1.7: "Verify that passwords submitted during account
+/// registration, login, and password change are checked against a set of breached passwords."
+/// </summary>
+/// <remarks>
+/// <para>
+/// Uses k-Anonymity model: Only first 5 characters of SHA-1 hash are sent to HIBP API.
+/// The actual password never leaves the server, ensuring privacy.
+/// </para>
+/// <para>
+/// API: https://api.pwnedpasswords.com/range/{first5HashChars}
+/// Rate limit: No authentication required, but reasonable use expected.
+/// </para>
+/// </remarks>
+public record BreachedPasswordSettings
+{
+	/// <summary>
+	/// Gets a value indicating whether breach checking is enabled.
+	/// Default: true (OWASP recommended).
+	/// </summary>
+	public bool Enabled { get; init; } = true;
+
+	/// <summary>
+	/// Gets the minimum breach count to consider a password compromised.
+	/// Default: 1 (any breach triggers warning).
+	/// Set higher (e.g., 10) to allow commonly weak but rarely breached passwords.
+	/// </summary>
+	public int MinBreachCount { get; init; } = 1;
+
+	/// <summary>
+	/// Gets a value indicating whether to block breached passwords.
+	/// When false, only logs a warning but allows registration.
+	/// Default: true (block).
+	/// </summary>
+	public bool BlockBreachedPasswords { get; init; } = true;
+
+	/// <summary>
+	/// Gets the API timeout in milliseconds.
+	/// Default: 3000 (3 seconds). Fail open if API is slow/unavailable.
+	/// </summary>
+	public int ApiTimeoutMs { get; init; } = 3000;
 }

@@ -22,7 +22,8 @@
 						"inlineStyleLanguage": "scss",
 						"allowedCommonJsDependencies": [
 							"shimmer",
-							"protobufjs/minimal"
+							"protobufjs/minimal",
+							"qrcode"
 						],
 						"assets": [
 							{
@@ -80,6 +81,17 @@
 									"with": "src/environments/environment.development.ts"
 								}
 							]
+						},
+						"e2e": {
+							"optimization": false,
+							"extractLicenses": false,
+							"sourceMap": true,
+							"fileReplacements": [
+								{
+									"replace": "src/environments/environment.ts",
+									"with": "src/environments/environment.e2e.ts"
+								}
+							]
 						}
 					},
 					"defaultConfiguration": "production"
@@ -95,6 +107,9 @@
 						},
 						"development": {
 							"buildTarget": "SeventySix.Client:build:development"
+						},
+						"e2e": {
+							"buildTarget": "SeventySix.Client:build:e2e"
 						}
 					},
 					"defaultConfiguration": "development"

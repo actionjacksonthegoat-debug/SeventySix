@@ -322,10 +322,35 @@ export function createMockLayoutService(): MockLayoutService
 		openSidebar: vi.fn(),
 		closeSidebar: vi.fn(),
 		sidebarMode: vi
-		.fn()
-		.mockReturnValue("side"),
+			.fn()
+			.mockReturnValue("side"),
 		sidebarExpanded: vi
-		.fn()
-		.mockReturnValue(true)
+			.fn()
+			.mockReturnValue(true)
+	};
+}
+
+/** Mock AltchaService interface for testing. */
+export interface MockAltchaService
+{
+	enabled: boolean;
+	challengeEndpoint: string;
+}
+
+/**
+ * Create a mocked AltchaService.
+ * Used in auth component tests (login, register, forgot-password).
+ *
+ * @param {boolean} enabled
+ * Whether ALTCHA is enabled.
+ * @returns {MockAltchaService}
+ * Mock object implementing AltchaService properties for tests.
+ */
+export function createMockAltchaService(
+	enabled: boolean = false): MockAltchaService
+{
+	return {
+		enabled,
+		challengeEndpoint: "http://localhost/api/v1/altcha/challenge"
 	};
 }

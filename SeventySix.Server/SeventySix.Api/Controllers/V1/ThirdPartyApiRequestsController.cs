@@ -44,18 +44,18 @@ public class ThirdPartyApiRequestsController(IMessageBus messageBus)
 	/// <response code="200">Returns the list of API request records.</response>
 	[HttpGet]
 	[ProducesResponseType(
-		typeof(IEnumerable<ThirdPartyApiRequestResponse>),
+		typeof(IEnumerable<ThirdPartyApiRequestDto>),
 		StatusCodes.Status200OK
 	)]
 	[OutputCache(PolicyName = CachePolicyConstants.ThirdPartyRequests)]
 	public async Task<
-		ActionResult<IEnumerable<ThirdPartyApiRequestResponse>>
+		ActionResult<IEnumerable<ThirdPartyApiRequestDto>>
 	> GetAllAsync(CancellationToken cancellationToken)
 	{
-		IEnumerable<ThirdPartyApiRequestResponse> requests =
-			await messageBus.InvokeAsync<
-				IEnumerable<ThirdPartyApiRequestResponse>
-			>(new GetAllApiRequestsQuery(), cancellationToken);
+		IEnumerable<ThirdPartyApiRequestDto> requests =
+			await messageBus.InvokeAsync<IEnumerable<ThirdPartyApiRequestDto>>(
+				new GetAllApiRequestsQuery(),
+				cancellationToken);
 
 		return Ok(requests);
 	}
@@ -72,16 +72,16 @@ public class ThirdPartyApiRequestsController(IMessageBus messageBus)
 	/// <response code="200">Returns the aggregated statistics.</response>
 	[HttpGet("statistics")]
 	[ProducesResponseType(
-		typeof(ThirdPartyApiStatisticsResponse),
+		typeof(ThirdPartyApiStatisticsDto),
 		StatusCodes.Status200OK
 	)]
 	[OutputCache(PolicyName = CachePolicyConstants.ThirdPartyRequests)]
 	public async Task<
-		ActionResult<ThirdPartyApiStatisticsResponse>
+		ActionResult<ThirdPartyApiStatisticsDto>
 	> GetStatisticsAsync(CancellationToken cancellationToken)
 	{
-		ThirdPartyApiStatisticsResponse statistics =
-			await messageBus.InvokeAsync<ThirdPartyApiStatisticsResponse>(
+		ThirdPartyApiStatisticsDto statistics =
+			await messageBus.InvokeAsync<ThirdPartyApiStatisticsDto>(
 				new GetApiRequestStatisticsQuery(),
 				cancellationToken);
 

@@ -3,6 +3,7 @@
 // </copyright>
 
 using Microsoft.AspNetCore.Identity;
+using SeventySix.Shared.POCOs;
 
 namespace SeventySix.Identity;
 
@@ -24,9 +25,9 @@ public static class RestoreUserCommandHandler
 	/// Cancellation token.
 	/// </param>
 	/// <returns>
-	/// True if the user was restored; otherwise false.
+	/// A Result indicating success or failure with error details.
 	/// </returns>
-	public static async Task<bool> HandleAsync(
+	public static async Task<Result> HandleAsync(
 		RestoreUserCommand command,
 		UserManager<ApplicationUser> userManager,
 		CancellationToken cancellationToken)
@@ -35,20 +36,30 @@ public static class RestoreUserCommandHandler
 			await userManager.FindByIdAsync(
 				command.UserId.ToString());
 
-		if (user == null || !user.IsDeleted)
+		if (user is null)
 		{
-			return false;
+			return Result.Failure($"User {command.UserId} not found");
 		}
 
-		// Restore user - clear soft delete flags
+		if (!user.IsDeleted)
+		{
+			return Result.Failure($"User {command.UserId} is not deleted");
+		}
+
 		user.IsDeleted = false;
 		user.DeletedAt = null;
 		user.DeletedBy = null;
 		user.IsActive = true;
 
-		IdentityResult result =
+		IdentityResult identityResult =
 			await userManager.UpdateAsync(user);
 
-		return result.Succeeded;
+		return identityResult.Succeeded
+			? Result.Success()
+			: Result.Failure(
+				string.Join(
+					", ",
+					identityResult.Errors.Select(
+						error => error.Description)));
 	}
 }

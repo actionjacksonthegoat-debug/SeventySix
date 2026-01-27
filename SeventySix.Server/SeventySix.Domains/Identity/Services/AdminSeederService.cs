@@ -10,6 +10,7 @@ using Microsoft.Extensions.Options;
 using SeventySix.Identity.Constants;
 using SeventySix.Identity.Settings;
 using SeventySix.Shared.Constants;
+using SeventySix.Shared.Exceptions;
 
 namespace SeventySix.Identity;
 
@@ -37,13 +38,29 @@ public class AdminSeederService(
 			return;
 		}
 
+		// Security: Validate password is provided
+		if (string.IsNullOrWhiteSpace(settings.Value.InitialPassword))
+		{
+			throw new StartupFailedException(
+				StartupFailedReason.SecurityConfiguration,
+				"Admin seeder enabled but InitialPassword not configured. "
+					+ "Set ADMIN_PASSWORD environment variable.");
+		}
+
 		try
 		{
 			await SeedAdminUserAsync(stoppingToken);
 		}
-		catch (Exception ex)
+		catch (StartupFailedException)
 		{
-			logger.LogError(ex, "Failed to seed admin user");
+			// Re-throw startup failures without wrapping
+			throw;
+		}
+		catch (Exception exception)
+		{
+			logger.LogError(
+				exception,
+				"Failed to seed admin user");
 		}
 	}
 
@@ -130,12 +147,14 @@ public class AdminSeederService(
 				CreatedBy =
 					AuditConstants.SystemUser,
 				RequiresPasswordChange = true,
+				EmailConfirmed = true,
+				LockoutEnabled = true,
 			};
 
 		IdentityResult createResult =
 			await userManager.CreateAsync(
 				adminUser,
-				settings.Value.InitialPassword);
+				settings.Value.InitialPassword!);
 
 		if (!createResult.Succeeded)
 		{

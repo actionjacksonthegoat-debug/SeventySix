@@ -24,6 +24,7 @@ public class SetPasswordCommandHandlerTests
 	private readonly UserManager<ApplicationUser> UserManager;
 	private readonly ITokenRepository TokenRepository;
 	private readonly AuthenticationService AuthenticationService;
+	private readonly BreachCheckDependencies BreachCheck;
 	private readonly FakeTimeProvider TimeProvider;
 	private readonly ILogger<SetPasswordCommand> Logger;
 
@@ -35,6 +36,32 @@ public class SetPasswordCommandHandlerTests
 			Substitute.For<ITokenRepository>();
 		AuthenticationService =
 			IdentityMockFactory.CreateAuthenticationService();
+
+		// Mock breached password service to return "not breached" by default
+		IBreachedPasswordService breachedPasswordService =
+			Substitute.For<IBreachedPasswordService>();
+		breachedPasswordService
+			.CheckPasswordAsync(
+				Arg.Any<string>(),
+				Arg.Any<CancellationToken>())
+			.Returns(BreachCheckResult.NotBreached());
+
+		// Mock auth settings with breach checking enabled
+		Microsoft.Extensions.Options.IOptions<AuthSettings> authSettings =
+			Microsoft.Extensions.Options.Options.Create(
+				new AuthSettings
+				{
+					BreachedPassword = new BreachedPasswordSettings
+					{
+						Enabled = true,
+						BlockBreachedPasswords = true,
+					},
+				});
+
+		// Create compound breach check dependencies
+		BreachCheck =
+			new BreachCheckDependencies(breachedPasswordService, authSettings);
+
 		Logger =
 			Substitute.For<ILogger<SetPasswordCommand>>();
 		TimeProvider =
@@ -48,7 +75,9 @@ public class SetPasswordCommandHandlerTests
 	{
 		// Arrange - Token without colon separator
 		SetPasswordRequest request =
-			new("invalid-token-without-colon", "NewPassword123!");
+			new(
+				"invalid-token-without-colon",
+				"NewPassword123!");
 
 		SetPasswordCommand command =
 			new(request, "127.0.0.1");
@@ -61,6 +90,7 @@ public class SetPasswordCommandHandlerTests
 					UserManager,
 					TokenRepository,
 					AuthenticationService,
+					BreachCheck,
 					TimeProvider,
 					Logger,
 					CancellationToken.None));
@@ -74,7 +104,9 @@ public class SetPasswordCommandHandlerTests
 	{
 		// Arrange - Token with non-numeric user ID
 		SetPasswordRequest request =
-			new("notanumber:sometoken", "NewPassword123!");
+			new(
+				"notanumber:sometoken",
+				"NewPassword123!");
 
 		SetPasswordCommand command =
 			new(request, "127.0.0.1");
@@ -87,6 +119,7 @@ public class SetPasswordCommandHandlerTests
 					UserManager,
 					TokenRepository,
 					AuthenticationService,
+					BreachCheck,
 					TimeProvider,
 					Logger,
 					CancellationToken.None));
@@ -116,6 +149,7 @@ public class SetPasswordCommandHandlerTests
 					UserManager,
 					TokenRepository,
 					AuthenticationService,
+					BreachCheck,
 					TimeProvider,
 					Logger,
 					CancellationToken.None));
@@ -154,6 +188,7 @@ public class SetPasswordCommandHandlerTests
 					UserManager,
 					TokenRepository,
 					AuthenticationService,
+					BreachCheck,
 					TimeProvider,
 					Logger,
 					CancellationToken.None));
@@ -176,7 +211,9 @@ public class SetPasswordCommandHandlerTests
 			};
 
 		SetPasswordRequest request =
-			new("456:valid-reset-token", "NewSecurePassword123!");
+			new(
+				"456:valid-reset-token",
+				"NewSecurePassword123!");
 
 		SetPasswordCommand command =
 			new(request, "192.168.1.1");
@@ -220,6 +257,7 @@ public class SetPasswordCommandHandlerTests
 				UserManager,
 				TokenRepository,
 				AuthenticationService,
+				BreachCheck,
 				TimeProvider,
 				Logger,
 				CancellationToken.None);
@@ -282,6 +320,7 @@ public class SetPasswordCommandHandlerTests
 					UserManager,
 					TokenRepository,
 					AuthenticationService,
+					BreachCheck,
 					TimeProvider,
 					Logger,
 					CancellationToken.None));

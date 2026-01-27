@@ -7,6 +7,7 @@ using Microsoft.Extensions.Options;
 using NSubstitute;
 using SeventySix.Identity;
 using SeventySix.Identity.Constants;
+using SeventySix.TestUtilities.Builders;
 
 namespace SeventySix.Domains.Tests.Identity.Services;
 
@@ -122,8 +123,12 @@ public class AuthenticationServiceTests
 		// Assert
 		Assert.True(result.Success);
 		Assert.Equal(expectedAccessToken, result.AccessToken);
-		Assert.Equal(expectedRefreshToken, result.RefreshToken);
-		Assert.Equal(utcNow.AddMinutes(15), result.ExpiresAt);
+		Assert.Equal(
+			expectedRefreshToken,
+			result.RefreshToken);
+		Assert.Equal(
+			utcNow.AddMinutes(15),
+			result.ExpiresAt);
 		Assert.Equal(user.Email, result.Email);
 		Assert.Equal(user.FullName, result.FullName);
 		Assert.False(result.RequiresPasswordChange);
@@ -171,7 +176,7 @@ public class AuthenticationServiceTests
 				Arg.Any<CancellationToken>())
 			.Returns("refresh");
 
-		TimeProvider.GetUtcNow().Returns(DateTimeOffset.UtcNow);
+		TimeProvider.GetUtcNow().Returns(TestTimeProviderBuilder.DefaultTime);
 
 		// Act
 		await ServiceUnderTest.GenerateAuthResultAsync(
@@ -225,7 +230,7 @@ public class AuthenticationServiceTests
 				Arg.Any<CancellationToken>())
 			.Returns("refresh");
 
-		TimeProvider.GetUtcNow().Returns(DateTimeOffset.UtcNow);
+		TimeProvider.GetUtcNow().Returns(TestTimeProviderBuilder.DefaultTime);
 
 		// Act
 		AuthResult result =
@@ -282,7 +287,7 @@ public class AuthenticationServiceTests
 				Arg.Any<CancellationToken>())
 			.Returns("refresh");
 
-		TimeProvider.GetUtcNow().Returns(DateTimeOffset.UtcNow);
+		TimeProvider.GetUtcNow().Returns(TestTimeProviderBuilder.DefaultTime);
 
 		// Act
 		await ServiceUnderTest.GenerateAuthResultAsync(

@@ -1,6 +1,7 @@
+import { ADMIN_API_ENDPOINTS } from "@admin/constants";
 import {
-	ThirdPartyApiRequestResponse,
-	ThirdPartyApiStatisticsResponse
+	ThirdPartyApiRequestDto,
+	ThirdPartyApiStatisticsDto
 } from "@admin/models";
 import { inject, Injectable } from "@angular/core";
 import { ApiService } from "@shared/services/api.service";
@@ -35,7 +36,8 @@ export class ThirdPartyApiService
 	 * @readonly
 	 */
 	private readonly queryConfig: ReturnType<typeof getQueryConfig> =
-		getQueryConfig("thirdpartyrequests");
+		getQueryConfig(
+			ADMIN_API_ENDPOINTS.THIRD_PARTY_REQUESTS);
 
 	/**
 	 * REST endpoint path for third-party API requests.
@@ -43,20 +45,21 @@ export class ThirdPartyApiService
 	 * @private
 	 * @readonly
 	 */
-	private readonly endpoint: string = "thirdpartyrequests";
+	private readonly endpoint: string =
+		ADMIN_API_ENDPOINTS.THIRD_PARTY_REQUESTS;
 
 	/**
 	 * Retrieves a list of third-party API requests.
-	 * @returns {CreateQueryResult<ThirdPartyApiRequestResponse[], Error>}
+	 * @returns {CreateQueryResult<ThirdPartyApiRequestDto[], Error>}
 	 * CreateQueryResult with list of third-party API requests.
 	 */
-	getAllThirdPartyApis(): CreateQueryResult<ThirdPartyApiRequestResponse[], Error>
+	getAllThirdPartyApis(): CreateQueryResult<ThirdPartyApiRequestDto[], Error>
 	{
 		return injectQuery(
 			() => ({
 				queryKey: QueryKeys.thirdPartyApi.list,
 				queryFn: () =>
-					lastValueFrom(this.apiService.get<ThirdPartyApiRequestResponse[]>(
+					lastValueFrom(this.apiService.get<ThirdPartyApiRequestDto[]>(
 						this.endpoint)),
 				...this.queryConfig
 			}));
@@ -66,11 +69,11 @@ export class ThirdPartyApiService
 	 * Retrieves requests filtered by API name.
 	 * @param {string} apiName
 	 * The name of the third-party API to filter by.
-	 * @returns {CreateQueryResult<ThirdPartyApiRequestResponse[], Error>}
+	 * @returns {CreateQueryResult<ThirdPartyApiRequestDto[], Error>}
 	 * CreateQueryResult with filtered list of requests.
 	 */
 	getByApiName(
-		apiName: string): CreateQueryResult<ThirdPartyApiRequestResponse[], Error>
+		apiName: string): CreateQueryResult<ThirdPartyApiRequestDto[], Error>
 	{
 		return injectQuery(
 			() => ({
@@ -80,7 +83,7 @@ export class ThirdPartyApiService
 					const encodedName: string =
 						encodeURIComponent(apiName);
 					return lastValueFrom(
-						this.apiService.get<ThirdPartyApiRequestResponse[]>(
+						this.apiService.get<ThirdPartyApiRequestDto[]>(
 							`${this.endpoint}/${encodedName}`));
 				},
 				...this.queryConfig
@@ -89,17 +92,17 @@ export class ThirdPartyApiService
 
 	/**
 	 * Retrieves aggregated statistics for third-party API usage.
-	 * @returns {CreateQueryResult<ThirdPartyApiStatisticsResponse, Error>}
+	 * @returns {CreateQueryResult<ThirdPartyApiStatisticsDto, Error>}
 	 * CreateQueryResult with aggregated statistics.
 	 */
-	getStatistics(): CreateQueryResult<ThirdPartyApiStatisticsResponse, Error>
+	getStatistics(): CreateQueryResult<ThirdPartyApiStatisticsDto, Error>
 	{
 		return injectQuery(
 			() => ({
 				queryKey: QueryKeys.thirdPartyApi.statistics,
 				queryFn: () =>
 					lastValueFrom(
-						this.apiService.get<ThirdPartyApiStatisticsResponse>(
+						this.apiService.get<ThirdPartyApiStatisticsDto>(
 							`${this.endpoint}/statistics`)),
 				...this.queryConfig
 			}));

@@ -4,6 +4,7 @@
 
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.DependencyInjection;
 using SeventySix.TestUtilities.Constants;
 
 namespace SeventySix.TestUtilities.TestBases;
@@ -94,6 +95,28 @@ public abstract class ApiPostgreSqlTestBase<TProgram> : BasePostgreSqlTestBase
 	/// </returns>
 	protected SharedWebApplicationFactory<TProgram> CreateIsolatedFactory(
 		Action<IWebHostBuilder> configureAdditional) => new(ConnectionString, configureAdditional);
+
+	/// <summary>
+	/// Creates a new isolated WebApplicationFactory with host and service configuration.
+	/// Use for tests requiring isolated state with custom service mocking.
+	/// The caller is responsible for disposing the returned factory.
+	/// </summary>
+	/// <param name="configureWebHost">
+	/// Web host builder configuration (e.g., configuration values).
+	/// </param>
+	/// <param name="configureServices">
+	/// Service collection configuration (e.g., mock service registration).
+	/// </param>
+	/// <returns>
+	/// A new WebApplicationFactory instance.
+	/// </returns>
+	protected SharedWebApplicationFactory<TProgram> CreateIsolatedFactory(
+		Action<IWebHostBuilder> configureWebHost,
+		Action<IServiceCollection> configureServices) =>
+			new(
+				ConnectionString,
+				configureWebHost,
+				configureServices);
 
 	/// <summary>
 	/// Called before each test. Clears all data from the database to ensure test isolation.

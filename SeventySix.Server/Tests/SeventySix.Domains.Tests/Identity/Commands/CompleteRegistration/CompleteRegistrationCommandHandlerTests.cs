@@ -12,8 +12,9 @@ using NSubstitute;
 using SeventySix.Identity;
 using SeventySix.Identity.Commands.CompleteRegistration;
 using SeventySix.Identity.Constants;
-using SeventySix.Shared.Extensions;
+using SeventySix.Shared.Utilities;
 using SeventySix.TestUtilities.Builders;
+using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;
 using SeventySix.TestUtilities.TestHelpers;
 using Shouldly;
@@ -23,9 +24,9 @@ namespace SeventySix.Domains.Tests.Identity.Commands.CompleteRegistration;
 /// <summary>
 /// Tests for CompleteRegistrationCommandHandler using Identity's email confirmation token system.
 /// </summary>
-[Collection("DatabaseTests")]
+[Collection(CollectionNames.IdentityPostgreSql)]
 public class CompleteRegistrationCommandHandlerTests(
-	TestcontainersPostgreSqlFixture fixture) : DataPostgreSqlTestBase(fixture)
+	IdentityPostgreSqlFixture fixture) : DataPostgreSqlTestBase(fixture)
 {
 	[Fact]
 	public async Task HandleAsync_ShouldFail_WhenUserNotFoundAsync()
@@ -123,6 +124,32 @@ public class CompleteRegistrationCommandHandlerTests(
 				Options.Create(jwtSettings),
 				timeProvider,
 				userManager);
+
+		// Mock breached password service to return "not breached"
+		IBreachedPasswordService breachedPasswordService =
+			Substitute.For<IBreachedPasswordService>();
+		breachedPasswordService
+			.CheckPasswordAsync(
+				Arg.Any<string>(),
+				Arg.Any<CancellationToken>())
+			.Returns(BreachCheckResult.NotBreached());
+
+		// Auth settings with breach checking enabled
+		IOptions<AuthSettings> authSettings =
+			Options.Create(
+				new AuthSettings
+				{
+					BreachedPassword = new BreachedPasswordSettings
+					{
+						Enabled = true,
+						BlockBreachedPasswords = true,
+					},
+				});
+
+		// Create compound breach check dependencies
+		BreachCheckDependencies breachCheck =
+			new(breachedPasswordService, authSettings);
+
 		ILogger<CompleteRegistrationCommand> logger =
 			NullLogger<CompleteRegistrationCommand>.Instance;
 
@@ -141,11 +168,107 @@ public class CompleteRegistrationCommandHandlerTests(
 				command,
 				userManager,
 				authenticationService,
+				breachCheck,
 				timeProvider,
 				logger,
 				CancellationToken.None);
 
 		result.Success.ShouldBeTrue();
+	}
+
+	[Fact]
+	public async Task HandleAsync_ShouldFail_WhenPasswordIsBreachedAsync()
+	{
+		await using IdentityDbContext context = CreateIdentityDbContext();
+		UserManager<ApplicationUser> userManager =
+			CreateUserManager(context);
+		TimeProvider timeProvider =
+			TestTimeProviderBuilder.CreateDefault();
+
+		ApplicationUser user =
+			await CreateTemporaryUserWithUserManagerAsync(
+				userManager,
+				timeProvider);
+		await EnsureRoleExistsAsync(
+			context,
+			RoleConstants.User,
+			timeProvider);
+
+		string emailToken =
+			await userManager.GenerateEmailConfirmationTokenAsync(user);
+		string combinedToken =
+			RegistrationTokenService.Encode(
+				user.Email!,
+				emailToken);
+
+		IAuthRepository authRepository =
+			Substitute.For<IAuthRepository>();
+		ITokenService tokenService =
+			Substitute.For<ITokenService>();
+
+		JwtSettings jwtSettings =
+			new()
+			{
+				AccessTokenExpirationMinutes = 60
+			};
+		AuthenticationService authenticationService =
+			new(
+				authRepository,
+				tokenService,
+				Options.Create(jwtSettings),
+				timeProvider,
+				userManager);
+
+		// Mock breached password service to return BREACHED
+		IBreachedPasswordService breachedPasswordService =
+			Substitute.For<IBreachedPasswordService>();
+		breachedPasswordService
+			.CheckPasswordAsync(
+				Arg.Any<string>(),
+				Arg.Any<CancellationToken>())
+			.Returns(BreachCheckResult.Breached(1000000));
+
+		// Auth settings with breach checking enabled and blocking
+		IOptions<AuthSettings> authSettings =
+			Options.Create(
+				new AuthSettings
+				{
+					BreachedPassword = new BreachedPasswordSettings
+					{
+						Enabled = true,
+						BlockBreachedPasswords = true,
+					},
+				});
+
+		// Create compound breach check dependencies
+		BreachCheckDependencies breachCheck =
+			new(breachedPasswordService, authSettings);
+
+		ILogger<CompleteRegistrationCommand> logger =
+			NullLogger<CompleteRegistrationCommand>.Instance;
+
+		CompleteRegistrationRequest request =
+			new(
+				combinedToken,
+				"newusername",
+				"password"); // Common breached password
+		CompleteRegistrationCommand command =
+			new(
+				request,
+				ClientIp: null);
+
+		AuthResult result =
+			await CompleteRegistrationCommandHandler.HandleAsync(
+				command,
+				userManager,
+				authenticationService,
+				breachCheck,
+				timeProvider,
+				logger,
+				CancellationToken.None);
+
+		result.Success.ShouldBeFalse();
+		result.ErrorCode.ShouldBe(AuthErrorCodes.BreachedPassword);
 	}
 
 	[Fact]
@@ -204,7 +327,9 @@ public class CompleteRegistrationCommandHandlerTests(
 			await userManager.CreateAsync(user);
 
 		createResult.Succeeded.ShouldBeTrue(
-			$"Failed to create user: {string.Join(", ", createResult.Errors.Select(error => error.Description))}");
+			$"Failed to create user: {string.Join(
+				", ",
+				createResult.Errors.Select(error => error.Description))}");
 
 		return user;
 	}

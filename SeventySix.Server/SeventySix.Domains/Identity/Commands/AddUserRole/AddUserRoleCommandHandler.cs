@@ -4,6 +4,7 @@
 
 using Microsoft.AspNetCore.Identity;
 using SeventySix.Identity.Constants;
+using SeventySix.Shared.POCOs;
 
 namespace SeventySix.Identity;
 
@@ -15,11 +16,28 @@ public static class AddUserRoleCommandHandler
 	/// <summary>
 	/// Handles the AddUserRoleCommand request.
 	/// </summary>
+	/// <param name="command">
+	/// The command containing user ID and role to add.
+	/// </param>
+	/// <param name="userManager">
+	/// The ASP.NET Identity user manager.
+	/// </param>
+	/// <param name="permissionRequestRepository">
+	/// Repository for permission request cleanup.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
 	/// <returns>
-	/// True if role was added, false if user already has the role.
+	/// A Result indicating success or failure with error details.
 	/// </returns>
-	/// <exception cref="ArgumentException">Thrown when role is invalid.</exception>
-	public static async Task<bool> HandleAsync(
+	/// <exception cref="ArgumentException">
+	/// Thrown when role is invalid.
+	/// </exception>
+	/// <exception cref="UserNotFoundException">
+	/// Thrown when user is not found.
+	/// </exception>
+	public static async Task<Result> HandleAsync(
 		AddUserRoleCommand command,
 		UserManager<ApplicationUser> userManager,
 		IPermissionRequestRepository permissionRequestRepository,
@@ -46,27 +64,29 @@ public static class AddUserRoleCommandHandler
 
 		if (existingRoles.Contains(command.Role))
 		{
-			return false;
+			return Result.Failure(
+				$"User {command.UserId} already has role {command.Role}");
 		}
 
-		// Add role using Identity's UserManager
-		IdentityResult result =
+		IdentityResult identityResult =
 			await userManager.AddToRoleAsync(
 				user,
 				command.Role);
 
-		if (!result.Succeeded)
+		if (!identityResult.Succeeded)
 		{
-			throw new InvalidOperationException(
-				$"Failed to add role: {string.Join(", ", result.Errors.Select(error => error.Description))}");
+			return Result.Failure(
+				$"Failed to add role: {string.Join(
+					", ",
+					identityResult.Errors.Select(
+						error => error.Description))}");
 		}
 
-		// Cleanup pending permission request for this role
 		await permissionRequestRepository.DeleteByUserAndRoleAsync(
 			command.UserId,
 			command.Role,
 			cancellationToken);
 
-		return true;
+		return Result.Success();
 	}
 }

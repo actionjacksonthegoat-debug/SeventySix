@@ -4,10 +4,12 @@
 
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using SeventySix.Identity;
 using SeventySix.Identity.Constants;
 using SeventySix.Identity.Settings;
+using SeventySix.Shared.Constants;
 
 namespace SeventySix.Api.Registration;
 
@@ -45,93 +47,104 @@ public static class AuthenticationExtensions
 		IConfiguration configuration)
 	{
 		// Bind configuration sections
-		services.Configure<JwtSettings>(configuration.GetSection("Jwt"));
-		services.Configure<AuthSettings>(configuration.GetSection("Auth"));
+		services.Configure<JwtSettings>(configuration.GetSection(ConfigurationSectionConstants.Jwt));
+		services.Configure<AuthSettings>(configuration.GetSection(ConfigurationSectionConstants.Auth));
 		services.Configure<AdminSeederSettings>(
 			configuration.GetSection(AdminSeederSettings.SectionName));
 		services.Configure<WhitelistedPermissionSettings>(
 			configuration.GetSection(WhitelistedPermissionSettings.SectionName));
 
 		JwtSettings jwtSettings =
-			configuration.GetSection("Jwt").Get<JwtSettings>()
+			configuration.GetSection(ConfigurationSectionConstants.Jwt).Get<JwtSettings>()
 			?? throw new InvalidOperationException(
-				"JWT configuration section 'Jwt' is missing.");
+				$"JWT configuration section '{ConfigurationSectionConstants.Jwt}' is missing.");
 
 		AuthSettings authSettings =
-			configuration.GetSection("Auth").Get<AuthSettings>()
+			configuration.GetSection(ConfigurationSectionConstants.Auth).Get<AuthSettings>()
 			?? throw new InvalidOperationException(
-				"Auth configuration section 'Auth' is missing.");
+				$"Auth configuration section '{ConfigurationSectionConstants.Auth}' is missing.");
 
 		services
-			.AddAuthentication(options =>
-			{
-				options.DefaultAuthenticateScheme =
-					JwtBearerDefaults.AuthenticationScheme;
-				options.DefaultChallengeScheme =
-					JwtBearerDefaults.AuthenticationScheme;
-			})
-			.AddJwtBearer(options =>
-			{
-				options.MapInboundClaims = false;
+			.AddAuthentication(
+				options =>
+				{
+					options.DefaultAuthenticateScheme =
+						JwtBearerDefaults.AuthenticationScheme;
+					options.DefaultChallengeScheme =
+						JwtBearerDefaults.AuthenticationScheme;
+				})
+			.AddJwtBearer(
+				options =>
+				{
+					options.MapInboundClaims = false;
 
-				options.TokenValidationParameters =
-					new TokenValidationParameters
-					{
-						ValidateIssuer = true,
-						ValidateAudience = true,
-						ValidateLifetime = true,
-						ValidateIssuerSigningKey = true,
-						ValidIssuer = jwtSettings.Issuer,
-						ValidAudience = jwtSettings.Audience,
-						IssuerSigningKey =
-							new SymmetricSecurityKey(
-								Encoding.UTF8.GetBytes(jwtSettings.SecretKey)),
-						ClockSkew =
-							TimeSpan.FromMinutes(1),
-						// Explicit algorithm validation (defense-in-depth against alg:none attacks)
-						ValidAlgorithms =
-							[SecurityAlgorithms.HmacSha256],
-					};
+					options.TokenValidationParameters =
+						new TokenValidationParameters
+						{
+							ValidateIssuer = true,
+							ValidateAudience = true,
+							ValidateLifetime = true,
+							ValidateIssuerSigningKey = true,
+							ValidIssuer = jwtSettings.Issuer,
+							ValidAudience = jwtSettings.Audience,
+							IssuerSigningKey =
+								new SymmetricSecurityKey(
+									Encoding.UTF8.GetBytes(jwtSettings.SecretKey)),
+							ClockSkew =
+								TimeSpan.FromMinutes(1),
+							// Explicit algorithm validation (defense-in-depth against alg:none attacks)
+							ValidAlgorithms =
+								[SecurityAlgorithms.HmacSha256],
+						};
 
-				options.Events =
-					new JwtBearerEvents
-					{
-						OnAuthenticationFailed =
-							context =>
-							{
-								if (context.Exception is SecurityTokenExpiredException)
+					options.Events =
+						new JwtBearerEvents
+						{
+							OnAuthenticationFailed =
+								context =>
 								{
-									context.Response.Headers.Append(
-										"X-Token-Expired",
-										"true");
-								}
+									if (context.Exception is SecurityTokenExpiredException)
+									{
+										context.Response.Headers.Append(
+											HttpHeaderConstants.TokenExpired,
+											"true");
+									}
 
-								return Task.CompletedTask;
-							}
-					};
-			});
+									return Task.CompletedTask;
+								},
+						};
+				});
 
-		services.AddAuthorization(options =>
-		{
-			options.AddPolicy(
-				PolicyConstants.AdminOnly,
-				policy => policy.RequireRole(RoleConstants.Admin));
-
-			options.AddPolicy(
-				"DeveloperOrAdmin",
-				policy =>
-					policy.RequireRole(
-						RoleConstants.Developer,
-						RoleConstants.Admin));
-
-			options.AddPolicy(
-				"Authenticated",
-				policy => policy.RequireAuthenticatedUser());
-		});
+		services.AddAuthorization(ConfigureAuthorizationPolicies);
 
 		// Add HttpClientFactory for OAuth
 		services.AddHttpClient();
 
 		return services;
+	}
+
+	/// <summary>
+	/// Configures authorization policies for the application.
+	/// </summary>
+	/// <param name="options">
+	/// The authorization options to configure.
+	/// </param>
+	private static void ConfigureAuthorizationPolicies(
+		AuthorizationOptions options)
+	{
+		options.AddPolicy(
+			PolicyConstants.AdminOnly,
+			policy => policy.RequireRole(RoleConstants.Admin));
+
+		options.AddPolicy(
+			PolicyConstants.DeveloperOrAdmin,
+			policy =>
+				policy.RequireRole(
+					RoleConstants.Developer,
+					RoleConstants.Admin));
+
+		options.AddPolicy(
+			PolicyConstants.Authenticated,
+			policy => policy.RequireAuthenticatedUser());
 	}
 }

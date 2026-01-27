@@ -179,6 +179,40 @@ export class ComponentTestBed<T>
 	}
 
 	/**
+	 * Add basic routing support for component testing.
+	 * Use when component needs Router but not full HTTP stack.
+	 *
+	 * @returns {this}
+	 * this for chaining
+	 *
+	 * @example
+	 * const fixture = await new ComponentTestBed<LoginComponent>()
+	 *     .withRouting()
+	 *     .withAuthDefaults()
+	 *     .build(LoginComponent);
+	 */
+	withRouting(): this
+	{
+		this.providers.push(provideRouter([]));
+		return this;
+	}
+
+	/**
+	 * Add HTTP client testing providers.
+	 * Use when component needs HTTP but not TanStack Query.
+	 *
+	 * @returns {this}
+	 * this for chaining
+	 */
+	withHttpTesting(): this
+	{
+		this.providers.push(
+			provideHttpClient(withFetch()),
+			provideHttpClientTesting());
+		return this;
+	}
+
+	/**
 	 * Add an import (module or standalone component) to the test configuration
 	 *
 	 * @param {Type<object>} importItem
@@ -205,16 +239,16 @@ export class ComponentTestBed<T>
 	async build(component: Type<T>): Promise<ComponentFixture<T>>
 	{
 		await TestBed
-		.configureTestingModule(
-			{
-				imports: [component, ...this.imports],
-				providers: [
-					provideZonelessChangeDetection(),
-					provideAnimations(),
-					...this.providers
-				]
-			})
-		.compileComponents();
+			.configureTestingModule(
+				{
+					imports: [component, ...this.imports],
+					providers: [
+						provideZonelessChangeDetection(),
+						provideAnimations(),
+						...this.providers
+					]
+				})
+			.compileComponents();
 
 		return TestBed.createComponent(component);
 	}

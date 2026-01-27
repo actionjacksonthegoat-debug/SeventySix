@@ -12,7 +12,7 @@ import {
 import { provideZonelessChangeDetection } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
 import { environment } from "@environments/environment";
-import { flushMicrotasks } from "@shared/testing";
+import { createTestQueryClient, flushMicrotasks } from "@shared/testing";
 import {
 	provideTanStackQuery,
 	QueryClient
@@ -39,13 +39,7 @@ describe("HealthApiService",
 						{});
 
 				queryClient =
-					new QueryClient(
-						{
-							defaultOptions: {
-								queries: { retry: false },
-								mutations: { retry: false }
-							}
-						});
+					createTestQueryClient();
 
 				TestBed.configureTestingModule(
 					{

@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using SeventySix.ApiTracking;
+using SeventySix.ElectronicNotifications;
 using SeventySix.Identity;
 using SeventySix.Logging;
 
@@ -26,6 +27,7 @@ public sealed class SharedWebApplicationFactory<TProgram>
 {
 	private readonly string ConnectionString;
 	private readonly Action<IWebHostBuilder>? ConfigureAdditional;
+	private readonly Action<IServiceCollection>? ConfigureServicesAction;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="SharedWebApplicationFactory{TProgram}"/> class.
@@ -36,12 +38,18 @@ public sealed class SharedWebApplicationFactory<TProgram>
 	/// <param name="configureAdditional">
 	/// Optional additional configuration for the web host builder.
 	/// </param>
+	/// <param name="configureServicesAction">
+	/// Optional service collection configuration for mocking dependencies.
+	/// </param>
 	public SharedWebApplicationFactory(
 		string connectionString,
-		Action<IWebHostBuilder>? configureAdditional = null)
+		Action<IWebHostBuilder>? configureAdditional = null,
+		Action<IServiceCollection>? configureServicesAction = null)
 	{
 		ConnectionString = connectionString;
 		ConfigureAdditional = configureAdditional;
+		ConfigureServicesAction =
+			configureServicesAction;
 	}
 
 	/// <inheritdoc/>
@@ -65,26 +73,34 @@ public sealed class SharedWebApplicationFactory<TProgram>
 			});
 
 		// Suppress Microsoft.Extensions.Logging providers (fallback logging)
-		builder.ConfigureLogging(logging =>
-		{
-			logging.ClearProviders();
-			logging.SetMinimumLevel(LogLevel.Error);
-		});
+		builder.ConfigureLogging(
+			logging =>
+			{
+				logging.ClearProviders();
+				logging.SetMinimumLevel(LogLevel.Error);
+			});
 
-		builder.ConfigureServices(services =>
-		{
-			// Replace DbContexts with test database connection string
-			services.RemoveAll<DbContextOptions<IdentityDbContext>>();
-			services.RemoveAll<DbContextOptions<LoggingDbContext>>();
-			services.RemoveAll<DbContextOptions<ApiTrackingDbContext>>();
+		builder.ConfigureServices(
+			services =>
+			{
+				// Replace DbContexts with test database connection string
+				services.RemoveAll<DbContextOptions<IdentityDbContext>>();
+				services.RemoveAll<DbContextOptions<LoggingDbContext>>();
+				services.RemoveAll<DbContextOptions<ApiTrackingDbContext>>();
+				services.RemoveAll<DbContextOptions<ElectronicNotificationsDbContext>>();
 
-			services.AddDbContext<IdentityDbContext>(options =>
-				options.UseNpgsql(ConnectionString));
-			services.AddDbContext<LoggingDbContext>(options =>
-				options.UseNpgsql(ConnectionString));
-			services.AddDbContext<ApiTrackingDbContext>(options =>
-				options.UseNpgsql(ConnectionString));
-		});
+				services.AddDbContext<IdentityDbContext>(
+					options => options.UseNpgsql(ConnectionString));
+				services.AddDbContext<LoggingDbContext>(
+					options => options.UseNpgsql(ConnectionString));
+				services.AddDbContext<ApiTrackingDbContext>(
+					options => options.UseNpgsql(ConnectionString));
+				services.AddDbContext<ElectronicNotificationsDbContext>(
+					options => options.UseNpgsql(ConnectionString));
+
+				// Apply custom service configuration for mocking dependencies
+				ConfigureServicesAction?.Invoke(services);
+			});
 
 		// Apply any additional configuration LAST (e.g., for rate limiting tests)
 		// Configuration from AddInMemoryCollection calls here will override appsettings.Test.json

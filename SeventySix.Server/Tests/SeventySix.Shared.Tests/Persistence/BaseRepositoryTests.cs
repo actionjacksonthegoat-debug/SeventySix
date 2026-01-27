@@ -8,6 +8,7 @@ using NSubstitute;
 using SeventySix.Shared.Constants;
 using SeventySix.Shared.Entities;
 using SeventySix.Shared.Persistence;
+using Shouldly;
 
 namespace SeventySix.Shared.Tests.Persistence;
 
@@ -53,7 +54,7 @@ public class BaseRepositoryTests
 			"TestEntity");
 
 		// Assert
-		Assert.Equal(expectedResult, result);
+		result.ShouldBe(expectedResult);
 		Logger
 			.DidNotReceive()
 			.Log(
@@ -76,14 +77,14 @@ public class BaseRepositoryTests
 
 		// Act & Assert
 		DbUpdateException thrown =
-			await Assert.ThrowsAsync<DbUpdateException>(
+			await Should.ThrowAsync<DbUpdateException>(
 			async () =>
 				await Repository.TestExecuteWithErrorHandlingAsync<int>(
 					() => throw exception,
 					"TestOperation",
 					"TestEntity"));
 
-		Assert.Same(exception, thrown);
+		thrown.ShouldBeSameAs(exception);
 		Logger
 			.Received()
 			.Log(
@@ -106,13 +107,13 @@ public class BaseRepositoryTests
 
 		// Act & Assert
 		DbUpdateConcurrencyException thrown =
-			await Assert.ThrowsAsync<DbUpdateConcurrencyException>(async () =>
+			await Should.ThrowAsync<DbUpdateConcurrencyException>(async () =>
 				await Repository.TestExecuteWithErrorHandlingAsync<int>(
 					() => throw exception,
 					"TestOperation",
 					"TestEntity"));
 
-		Assert.Same(exception, thrown);
+		thrown.ShouldBeSameAs(exception);
 		Logger
 			.Received()
 			.Log(
@@ -136,13 +137,13 @@ public class BaseRepositoryTests
 
 		// Act & Assert
 		Exception thrown =
-			await Assert.ThrowsAsync<Exception>(async () =>
+			await Should.ThrowAsync<Exception>(async () =>
 			await Repository.TestExecuteWithErrorHandlingAsync<int>(
 				() => throw exception,
 				"TestOperation",
 				"TestEntity"));
 
-		Assert.Same(exception, thrown);
+		thrown.ShouldBeSameAs(exception);
 		Logger
 			.Received()
 			.Log(
@@ -168,9 +169,9 @@ public class BaseRepositoryTests
 			await Repository.TestCreateAsync(entity);
 
 		// Assert
-		Assert.Equal(entity, result);
-		Assert.Single(Context.TestEntities);
-		Assert.Equal("Test", Context.TestEntities.First().Name);
+		result.ShouldBe(entity);
+		Context.TestEntities.ShouldHaveSingleItem();
+		Context.TestEntities.First().Name.ShouldBe("Test");
 	}
 
 	/// <summary>

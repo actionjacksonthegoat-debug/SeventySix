@@ -564,6 +564,13 @@ dotnet_sort_system_directives_first = true
 dotnet_separate_import_directive_groups = false
 
 # ========================================
+# DISABLE RULES THAT CONFLICT WITH CUSTOM ANALYZERS
+# ========================================
+# IDE0055 (Fix formatting) conflicts with SS001, SS002, SS003 formatting
+# Keep as suggestion for IDE hints without auto-fix conflicts
+dotnet_diagnostic.IDE0055.severity = suggestion
+
+# ========================================
 # ROSLYNATOR FORMATTING RULES
 # ========================================
 # RCS0054: Fix formatting of call chains - each method call on separate line with proper indentation
@@ -584,3 +591,6 @@ dotnet_diagnostic.RCS0053.severity = none
 dotnet_diagnostic.RCS0054.severity = none
 dotnet_diagnostic.RCS0052.severity = none
 dotnet_diagnostic.SS001.severity = none
+dotnet_diagnostic.SS002.severity = none
+dotnet_diagnostic.SS003.severity = none
+dotnet_diagnostic.SS006.severity = none

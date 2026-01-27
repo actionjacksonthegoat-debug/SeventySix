@@ -1,7 +1,7 @@
 import { ApiStatisticsTableComponent } from "@admin/components/api-statistics-table/api-statistics-table.component";
 import { GrafanaDashboardEmbedComponent } from "@admin/components/grafana-dashboard-embed/grafana-dashboard-embed.component";
 import { ScheduledJobsTableComponent } from "@admin/components/scheduled-jobs-table/scheduled-jobs-table.component";
-import { RecurringJobStatusResponse, ThirdPartyApiRequestResponse } from "@admin/models";
+import { RecurringJobStatusResponse, ThirdPartyApiRequestDto } from "@admin/models";
 import { HealthApiService, ThirdPartyApiService } from "@admin/services";
 import { provideHttpClient } from "@angular/common/http";
 import { provideHttpClientTesting } from "@angular/common/http/testing";
@@ -45,7 +45,7 @@ describe("AdminDashboardPage",
 
 				// Set up TanStack Query mocks for child components
 				thirdPartyApiServiceSpy.getAllThirdPartyApis.mockReturnValue(
-					createMockQueryResult<ThirdPartyApiRequestResponse[]>([]));
+					createMockQueryResult<ThirdPartyApiRequestDto[]>([]));
 
 				healthApiServiceSpy.getScheduledJobs.mockReturnValue(
 					createMockQueryResult<RecurringJobStatusResponse[]>([]));

@@ -13,6 +13,51 @@
 version: '3.8'
 
 services:
+  # Valkey - Open Source Redis-Compatible Cache (BSD licensed, Linux Foundation)
+  valkey:
+    image: valkey/valkey:9.0-alpine
+    container_name: seventysix-valkey-prod
+    volumes:
+      - valkey_data:/data
+    command: valkey-server --save 60 1 --loglevel warning --appendonly yes
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - seventysix-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+
+  # Redis Exporter - Prometheus metrics for Valkey monitoring
+  redis-exporter:
+    image: oliver006/redis_exporter:latest
+    container_name: seventysix-redis-exporter-prod
+    environment:
+      REDIS_ADDR: "valkey:6379"
+    ports:
+      - "9121:9121"
+    depends_on:
+      valkey:
+        condition: service_healthy
+    networks:
+      - seventysix-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 64M
+
   # PostgreSQL Database - Persistent storage for production
   database:
     image: postgres:18-alpine
@@ -74,13 +119,19 @@ services:
       - Email__SmtpUsername=${EMAIL_SMTP_USERNAME:?EMAIL_SMTP_USERNAME must be set in .env}
       - Email__SmtpPassword=${EMAIL_SMTP_PASSWORD:?EMAIL_SMTP_PASSWORD must be set in .env}
       - Email__FromAddress=${EMAIL_FROM_ADDRESS:?EMAIL_FROM_ADDRESS must be set in .env}
+      # ALTCHA (Proof-of-Work) - enabled by default, uses self-hosted verification
+      - Altcha__Enabled=true
       # CORS
       - Cors__AllowedOrigins__0=http://localhost:8080
       - Cors__AllowedOrigins__1=http://localhost:4200
+      # Valkey Cache Connection
+      - Cache__Valkey__ConnectionString=valkey:6379
     volumes:
       - dataprotection_keys:/app/keys
     depends_on:
       database:
+        condition: service_healthy
+      valkey:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
@@ -222,6 +273,9 @@ services:
 # Named volumes for data persistence across container lifecycle
 # Data survives: docker-compose down, docker-compose up, container restarts
 volumes:
+  valkey_data:
+    driver: local
+    name: seventysix_valkey_prod_data
   postgres_data:
     driver: local
     name: seventysix_postgres_prod_data

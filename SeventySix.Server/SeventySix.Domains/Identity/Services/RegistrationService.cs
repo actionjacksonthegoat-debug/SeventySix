@@ -4,7 +4,6 @@
 
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace SeventySix.Identity;
 
@@ -15,18 +14,13 @@ namespace SeventySix.Identity;
 /// Encapsulates complex registration workflows including user creation,
 /// credential setup, role assignment, and token generation.
 /// Uses ASP.NET Core Identity UserManager for user operations.
+/// Delegates token generation to <see cref="AuthenticationService"/> for DRY compliance.
 /// </remarks>
 /// <param name="userManager">
 /// The UserManager for ApplicationUser.
 /// </param>
-/// <param name="tokenService">
-/// The token service for generating auth tokens.
-/// </param>
-/// <param name="authRepository">
-/// The authentication repository for user data operations.
-/// </param>
-/// <param name="jwtSettings">
-/// The JWT settings options.
+/// <param name="authenticationService">
+/// The authentication service for generating auth tokens (DRY - single source of truth).
 /// </param>
 /// <param name="timeProvider">
 /// The time provider for current time.
@@ -36,9 +30,7 @@ namespace SeventySix.Identity;
 /// </param>
 public class RegistrationService(
 	UserManager<ApplicationUser> userManager,
-	ITokenService tokenService,
-	IAuthRepository authRepository,
-	IOptions<JwtSettings> jwtSettings,
+	AuthenticationService authenticationService,
 	TimeProvider timeProvider,
 	ILogger<RegistrationService> logger)
 {
@@ -130,6 +122,10 @@ public class RegistrationService(
 	/// <summary>
 	/// Generates authentication result with access and refresh tokens.
 	/// </summary>
+	/// <remarks>
+	/// Delegates to <see cref="AuthenticationService"/> for DRY compliance.
+	/// All token generation logic is centralized in AuthenticationService.
+	/// </remarks>
 	/// <param name="user">
 	/// The authenticated user for whom to generate tokens.
 	/// </param>
@@ -148,45 +144,19 @@ public class RegistrationService(
 	/// <returns>
 	/// An <see cref="AuthResult"/> containing tokens and metadata.
 	/// </returns>
-	public virtual async Task<AuthResult> GenerateAuthResultAsync(
+	public Task<AuthResult> GenerateAuthResultAsync(
 		ApplicationUser user,
 		string? clientIp,
 		bool requiresPasswordChange,
 		bool rememberMe,
 		CancellationToken cancellationToken)
 	{
-		// Get user roles
-		IList<string> roles =
-			await userManager.GetRolesAsync(user);
-
-		string accessToken =
-			tokenService.GenerateAccessToken(
-				user.Id,
-				user.UserName ?? string.Empty,
-				[.. roles]);
-
-		string refreshToken =
-			await tokenService.GenerateRefreshTokenAsync(
-				user.Id,
-				clientIp,
-				rememberMe,
-				cancellationToken);
-
-		await authRepository.UpdateLastLoginAsync(
-			user.Id,
-			timeProvider.GetUtcNow().UtcDateTime,
+		// Delegate to AuthenticationService (DRY - single source of truth)
+		return authenticationService.GenerateAuthResultAsync(
+			user,
 			clientIp,
+			requiresPasswordChange,
+			rememberMe,
 			cancellationToken);
-
-		return AuthResult.Succeeded(
-			accessToken,
-			refreshToken,
-			timeProvider
-				.GetUtcNow()
-				.AddMinutes(jwtSettings.Value.AccessTokenExpirationMinutes)
-				.UtcDateTime,
-			user.Email ?? string.Empty,
-			user.FullName,
-			requiresPasswordChange);
 	}
 }

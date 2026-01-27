@@ -34,7 +34,7 @@ if (-not $dockerAvailable) {
 	Write-Host "Docker is not running or not available" -ForegroundColor Yellow
 	Write-Host "  Skipping container cleanup" -ForegroundColor DarkGray
 	Write-Host ""
-	Write-Host "Ports 5085/7074 should be free for Visual Studio debugging" -ForegroundColor Green
+	Write-Host "Port 7074 should be free for Visual Studio debugging" -ForegroundColor Green
 	Write-Host ""
 	exit 0
 }
@@ -55,5 +55,5 @@ else {
 }
 
 Write-Host ""
-Write-Host "Ports 5085/7074 should be free for Visual Studio debugging" -ForegroundColor Green
+Write-Host "Port 7074 should be free for Visual Studio debugging" -ForegroundColor Green
 Write-Host ""

@@ -66,10 +66,10 @@ function test(name, fn) {
 	try {
 		fn();
 		passedTests++;
-		console.log(`✓ ${name}`);
+		console.log(`[PASS] ${name}`);
 	} catch (error) {
 		failedTests++;
-		console.error(`✗ ${name}`);
+		console.error(`[FAIL] ${name}`);
 		console.error(`  ${error.message}`);
 	}
 }
@@ -318,7 +318,7 @@ function countMethodLines(lines, startIndex) {
 // ANGULAR PATTERN TESTS
 // ============================================================================
 
-console.log('\n🔍 Signal Pattern Tests');
+console.log('\nSignal Pattern Tests');
 
 test('components should not use @Input decorator', async () => {
 	const componentFiles = await getFiles(SRC_DIR, '.component.ts');
@@ -369,7 +369,7 @@ test('components should use OnPush change detection', async () => {
 	assertEmpty(violations, 'Components not using OnPush change detection');
 });
 
-console.log('\n🔍 Control Flow Syntax Tests');
+console.log('\nControl Flow Syntax Tests');
 
 test('templates should not use *ngIf', async () => {
 	const violations = await checkTemplatesForPattern('*ngIf', 'Templates using *ngIf (use @if instead)');
@@ -386,7 +386,7 @@ test('templates should not use *ngSwitch', async () => {
 	assertEmpty(violations, 'Templates using *ngSwitch (use @switch instead)');
 });
 
-console.log('\n🔍 Dependency Injection Pattern Tests');
+console.log('\nDependency Injection Pattern Tests');
 
 test('components should use inject() not constructor injection', async () => {
 	const componentFiles = await getFiles(SRC_DIR, '.component.ts');
@@ -420,7 +420,7 @@ test('services should use inject() not constructor injection', async () => {
 	assertEmpty(violations, 'Services using constructor injection (use inject() instead)');
 });
 
-console.log('\n🔍 Service Scoping Tests');
+console.log('\nService Scoping Tests');
 
 test('feature services should not use providedIn root', async () => {
 	const serviceFiles = await getFiles(SRC_DIR, '.service.ts');
@@ -467,7 +467,7 @@ test('shared services should use providedIn root', async () => {
 	}
 });
 
-console.log('\n🔍 Zoneless Architecture Tests');
+console.log('\nZoneless Architecture Tests');
 
 test('production code should not import NgZone', async () => {
 	const tsFiles = (await getFiles(SRC_DIR, '.ts')).filter((f) => !f.endsWith('.spec.ts'));
@@ -526,7 +526,7 @@ test('tests should use provideZonelessChangeDetection', async () => {
 	assertEmpty(violations, 'Test files not using provideZonelessChangeDetection()');
 });
 
-console.log('\n🔍 Template Performance Tests');
+console.log('\nTemplate Performance Tests');
 
 test('templates should not call component methods in interpolation', async () => {
 	const violations = await checkTemplatesForMethodCalls(
@@ -542,7 +542,7 @@ test('templates should not call methods in property bindings', async () => {
 	assertEmpty(violations, 'Templates calling methods with arguments in property bindings (use computed() signals instead)');
 });
 
-console.log('\n🔍 Date Handling Standards Tests');
+console.log('\nDate Handling Standards Tests');
 
 test('code (including tests/specs) should use DateService and approved test helpers', async () => {
 	const sourceFiles = await getFiles(SRC_DIR, '.ts');
@@ -584,7 +584,7 @@ test('code (including tests/specs) should use DateService and approved test help
 // FILE STRUCTURE TESTS
 // ============================================================================
 
-console.log('\n🔍 File Structure Tests');
+console.log('\nFile Structure Tests');
 
 test('all files should have less than 800 lines', async () => {
 	const sourceFiles = await getFiles(SRC_DIR, '.ts');
@@ -618,7 +618,7 @@ test('all files should have less than 800 lines', async () => {
 // METHOD STRUCTURE TESTS
 // ============================================================================
 
-console.log('\n🔍 Method Structure Tests');
+console.log('\nMethod Structure Tests');
 
 test('methods should have less than 50 lines', async () => {
 	const sourceFiles = await getFiles(SRC_DIR, '.ts');
@@ -697,7 +697,7 @@ test('methods should have less than 6 parameters', async () => {
 // CLASS STRUCTURE TESTS (SRP ENFORCEMENT)
 // ============================================================================
 
-console.log('\n🔍 Class Structure Tests');
+console.log('\nClass Structure Tests');
 
 test('services should have less than 12 public methods', async () => {
 	const serviceFiles = await getFiles(SRC_DIR, '.service.ts');
@@ -772,7 +772,7 @@ test('components should have less than 12 public methods', async () => {
 // DOMAIN BOUNDARY TESTS (Bounded Context Enforcement)
 // ============================================================================
 
-console.log('\n🔍 Domain Boundary Tests');
+console.log('\nDomain Boundary Tests');
 
 // Domain constants for architecture enforcement
 const DOMAINS = ['admin', 'game', 'commerce', 'auth', 'account', 'home', 'physics', 'developer'];
@@ -1016,7 +1016,7 @@ test('relative imports should only be used in index.ts barrel files', async () =
 // Variable Naming Tests
 // ============================================================================
 
-console.log('\n🔍 Variable Naming Tests');
+console.log('\nVariable Naming Tests');
 
 test('production code should not have single-letter lambda parameters', async () =>
 {
@@ -1154,10 +1154,12 @@ test('Files should have single primary export (with approved exceptions)', async
 			/animations\.ts$/,
 			/material-bundles\.ts$/,
 			/table\.model\.ts$/,
+			/navigation\.model\.ts$/,
 			/log-filter\.model\.ts$/,
 			/testing[/\\]/,
 			/custom-validators\.ts$/,
-			/cache-bypass\.interceptor\.ts$/
+			/cache-bypass\.interceptor\.ts$/,
+			/managers[/\\].*\.manager\.ts$/
 		];
 
 	for (const file of tsFiles)

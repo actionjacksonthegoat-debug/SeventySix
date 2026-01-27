@@ -229,3 +229,49 @@
 	white-space: nowrap !important;
 	border: 0 !important;
 }
+
+// =============================================================================
+// ICON UTILITIES
+// =============================================================================
+// Utility classes for icon alignment when mixins aren't available.
+// Use sparingly - prefer global styles in _base.scss for consistency.
+
+/**
+ * Aligned icon utility class
+ * Apply directly to mat-icon when component-level mixin isn't available.
+ *
+ * @example
+ *   <mat-icon class="icon-aligned">home</mat-icon>
+ */
+.icon-aligned {
+	display: inline-flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	vertical-align: middle !important;
+	line-height: 1 !important;
+	flex-shrink: 0 !important;
+}
+
+/**
+ * Icon with text container utility
+ * Apply to containers that have both icon and text content.
+ *
+ * @example
+ *   <span class="icon-text-inline">
+ *     <mat-icon>info</mat-icon>
+ *     Help Text
+ *   </span>
+ */
+.icon-text-inline {
+	display: inline-flex !important;
+	align-items: center !important;
+	gap: vars.$spacing-sm !important;
+
+	mat-icon {
+		display: inline-flex !important;
+		align-items: center !important;
+		justify-content: center !important;
+		vertical-align: middle !important;
+		flex-shrink: 0 !important;
+	}
+}

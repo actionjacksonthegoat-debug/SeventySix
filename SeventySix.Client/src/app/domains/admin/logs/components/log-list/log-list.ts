@@ -500,12 +500,12 @@ export class LogList
 
 		// Clean up subscription when dialog closes
 		dialogRef
-		.afterClosed()
-		.subscribe(
-			() =>
-			{
-				subscription.unsubscribe();
-			});
+			.afterClosed()
+			.subscribe(
+				() =>
+				{
+					subscription.unsubscribe();
+				});
 	}
 
 	/**
@@ -518,30 +518,30 @@ export class LogList
 	private deleteLog(id: number): void
 	{
 		this
-		.dialogService
-		.confirmDelete("log")
-		.subscribe(
-			(confirmed: boolean) =>
-			{
-				if (!confirmed)
+			.dialogService
+			.confirmDelete("log")
+			.subscribe(
+				(confirmed: boolean) =>
 				{
-					return;
-				}
-
-				this.deleteLogMutation.mutate(id,
+					if (!confirmed)
 					{
-						onSuccess: () =>
+						return;
+					}
+
+					this.deleteLogMutation.mutate(id,
 						{
-							this.notificationService.success(
-								"Log entry deleted successfully");
-						},
-						onError: (error: Error) =>
-						{
-							this.notificationService.error(
-								`Failed to delete log entry: ${error.message}`);
-						}
-					});
-			});
+							onSuccess: () =>
+							{
+								this.notificationService.success(
+									"Log entry deleted successfully");
+							},
+							onError: (error: Error) =>
+							{
+								this.notificationService.error(
+									`Failed to delete log entry: ${error.message}`);
+							}
+						});
+				});
 	}
 
 	/**
@@ -562,29 +562,29 @@ export class LogList
 			ids.length;
 
 		this
-		.dialogService
-		.confirmDelete("log", count)
-		.subscribe(
-			(confirmed: boolean) =>
-			{
-				if (!confirmed)
+			.dialogService
+			.confirmDelete("log", count)
+			.subscribe(
+				(confirmed: boolean) =>
 				{
-					return;
-				}
-
-				this.deleteLogsMutation.mutate(ids,
+					if (!confirmed)
 					{
-						onSuccess: () =>
+						return;
+					}
+
+					this.deleteLogsMutation.mutate(ids,
 						{
-							this.notificationService.success(
-								`Successfully deleted ${count} log ${count === 1 ? "entry" : "entries"}`);
-						},
-						onError: (error: Error) =>
-						{
-							this.notificationService.error(
-								`Failed to delete logs: ${error.message}`);
-						}
-					});
-			});
+							onSuccess: () =>
+							{
+								this.notificationService.success(
+									`Successfully deleted ${count} log ${count === 1 ? "entry" : "entries"}`);
+							},
+							onError: (error: Error) =>
+							{
+								this.notificationService.error(
+									`Failed to delete logs: ${error.message}`);
+							}
+						});
+				});
 	}
 }

@@ -1,7 +1,7 @@
 import { HttpInterceptorFn, HttpResponse } from "@angular/common/http";
-import { map } from "rxjs/operators";
 import { inject } from "@angular/core";
 import { DateService } from "@shared/services";
+import { map } from "rxjs/operators";
 
 /**
  * ISO 8601 date regex (matches API date format)
@@ -60,16 +60,16 @@ export const dateParserInterceptor: HttpInterceptorFn =
 			inject(DateService);
 
 		return next(req)
-		.pipe(
-			map(
-				(event) =>
-				{
-					if (event instanceof HttpResponse && event.body)
+			.pipe(
+				map(
+					(event) =>
 					{
-						return event.clone(
-							{ body: parseDates(event.body, dateService) });
-					}
+						if (event instanceof HttpResponse && event.body)
+						{
+							return event.clone(
+								{ body: parseDates(event.body, dateService) });
+						}
 
-					return event;
-				}));
+						return event;
+					}));
 	};

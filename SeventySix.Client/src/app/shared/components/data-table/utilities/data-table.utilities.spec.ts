@@ -1,6 +1,6 @@
 import { DateRangeEvent } from "@shared/models";
-import { DataTableUtilities } from "./data-table.utilities";
 import { DateService } from "@shared/services";
+import { DataTableUtilities } from "./data-table.utilities";
 
 /**
  * Unit tests for DataTableUtilities.
@@ -128,7 +128,10 @@ describe("DataTableUtilities",
 					() =>
 					{
 						const result: DateRangeEvent | null =
-							DataTableUtilities.calculateDateRange("invalid", referenceTime, new DateService());
+							DataTableUtilities.calculateDateRange(
+								"invalid",
+								referenceTime,
+								new DateService());
 						expect(result)
 							.toBeNull();
 					});
@@ -137,7 +140,10 @@ describe("DataTableUtilities",
 					() =>
 					{
 						const result: DateRangeEvent | null =
-							DataTableUtilities.calculateDateRange("1h", referenceTime, new DateService());
+							DataTableUtilities.calculateDateRange(
+								"1h",
+								referenceTime,
+								new DateService());
 						expect(result)
 							.not
 							.toBeNull();

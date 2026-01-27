@@ -5,6 +5,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Shouldly;
 using Xunit;
 
 namespace SeventySix.ArchitectureTests;
@@ -65,7 +66,7 @@ public class AuditFieldTests : SourceCodeArchitectureTest
 		}
 
 		// Assert
-		Assert.Empty(violations);
+		violations.ShouldBeEmpty();
 	}
 
 	[Fact]
@@ -117,6 +118,6 @@ public class AuditFieldTests : SourceCodeArchitectureTest
 		}
 
 		// Assert
-		Assert.Empty(violations);
+		violations.ShouldBeEmpty();
 	}
 }

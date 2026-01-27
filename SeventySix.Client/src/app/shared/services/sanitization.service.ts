@@ -1,4 +1,4 @@
-import { inject, Injectable } from "@angular/core";
+import { inject, Injectable, isDevMode } from "@angular/core";
 import {
 	DomSanitizer,
 	SafeHtml,
@@ -71,6 +71,7 @@ export class SanitizationService
 	 */
 	trustHtml(html: string): SafeHtml
 	{
+		this.warnBypassUsage("trustHtml", html);
 		return this.sanitizer.bypassSecurityTrustHtml(html);
 	}
 
@@ -84,7 +85,22 @@ export class SanitizationService
 	 */
 	trustUrl(url: string): SafeUrl
 	{
+		this.warnBypassUsage("trustUrl", url);
 		return this.sanitizer.bypassSecurityTrustUrl(url);
+	}
+
+	/**
+	 * Bypasses sanitization for trusted resource URLs.
+	 * Use with extreme caution - only for URLs you control.
+	 * @param {string} url
+	 * The trusted resource URL to mark as safe.
+	 * @returns {SafeResourceUrl}
+	 * Trusted resource URL token suitable for iframe/embed usage.
+	 */
+	trustResourceUrl(url: string): SafeResourceUrl
+	{
+		this.warnBypassUsage("trustResourceUrl", url);
+		return this.sanitizer.bypassSecurityTrustResourceUrl(url);
 	}
 
 	/**
@@ -145,6 +161,30 @@ export class SanitizationService
 		catch
 		{
 			return null;
+		}
+	}
+
+	/**
+	 * Logs a warning in development mode when bypass methods are used.
+	 * Helps identify potential security risks during development.
+	 * @param {string} methodName
+	 * The name of the bypass method being called.
+	 * @param {string} value
+	 * The value being bypassed (truncated in log for readability).
+	 * @returns {void}
+	 */
+	private warnBypassUsage(
+		methodName: string,
+		value: string): void
+	{
+		if (isDevMode())
+		{
+			const truncatedValue: string =
+				value.length > 100 ? `${value.substring(0, 100)}...` : value;
+			console.warn(
+				`[SanitizationService] ${methodName}() called - bypassing Angular sanitization.\n`
+					+ `Value: "${truncatedValue}"\n`
+					+ `Ensure this content is from a trusted source to prevent XSS attacks.`);
 		}
 	}
 }

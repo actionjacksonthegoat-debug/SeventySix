@@ -2,6 +2,8 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using SeventySix.Shared.POCOs;
+
 namespace SeventySix.Logging;
 
 /// <summary>
@@ -22,15 +24,20 @@ public static class DeleteLogCommandHandler
 	/// Cancellation token.
 	/// </param>
 	/// <returns>
-	/// True if the log was deleted successfully, false otherwise.
+	/// A Result indicating success or failure with error details.
 	/// </returns>
-	public static async Task<bool> HandleAsync(
+	public static async Task<Result> HandleAsync(
 		DeleteLogCommand command,
 		ILogRepository repository,
 		CancellationToken cancellationToken)
 	{
-		return await repository.DeleteByIdAsync(
-			command.LogId,
-			cancellationToken);
+		bool deleted =
+			await repository.DeleteByIdAsync(
+				command.LogId,
+				cancellationToken);
+
+		return deleted
+			? Result.Success()
+			: Result.Failure($"Log {command.LogId} not found");
 	}
 }

@@ -1,10 +1,29 @@
 import { SelectionModel } from "@angular/cdk/collections";
+import { DestroyRef } from "@angular/core";
 import { DataTableSelectionManager } from "./selection.manager";
 
 interface TestEntity
 {
 	id: number;
 	name: string;
+}
+
+/**
+ * Creates a mock DestroyRef for testing.
+ * @returns {DestroyRef}
+ * A mock DestroyRef that does nothing on destroy.
+ */
+function createMockDestroyRef(): DestroyRef
+{
+	return {
+		onDestroy: (_callback: () => void): () => void =>
+		{
+			// Store callback but don't call it - allows normal test execution
+			return () =>
+			{/* cleanup */};
+		},
+		destroyed: false
+	} as DestroyRef;
 }
 
 /**
@@ -15,6 +34,7 @@ describe("DataTableSelectionManager",
 	() =>
 	{
 		let manager: DataTableSelectionManager<TestEntity>;
+		let mockDestroyRef: DestroyRef;
 
 		const mockData: TestEntity[] =
 			[
@@ -26,8 +46,10 @@ describe("DataTableSelectionManager",
 		beforeEach(
 			() =>
 			{
+				mockDestroyRef =
+					createMockDestroyRef();
 				manager =
-					new DataTableSelectionManager<TestEntity>();
+					new DataTableSelectionManager<TestEntity>(mockDestroyRef);
 			});
 
 		describe("initialization",

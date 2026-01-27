@@ -32,7 +32,8 @@ public class IdentityDbContextFactory
 	/// </returns>
 	public IdentityDbContext CreateDbContext(string[] args)
 	{
-		DbContextOptionsBuilder<IdentityDbContext> optionsBuilder = new();
+		DbContextOptionsBuilder<IdentityDbContext> optionsBuilder =
+			new();
 
 		// Load connection string from .env file (single source of truth)
 		string connectionString =
@@ -40,8 +41,8 @@ public class IdentityDbContextFactory
 
 		optionsBuilder.UseNpgsql(
 			connectionString,
-			options =>
-				options.MigrationsHistoryTable(
+			npgsqlOptions =>
+				npgsqlOptions.MigrationsHistoryTable(
 					DatabaseConstants.MigrationsHistoryTableName,
 					SchemaConstants.Identity));
 

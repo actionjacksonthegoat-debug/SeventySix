@@ -62,7 +62,7 @@ const sharedRules = {
 	"local/operator-continuation-indent": "error",
 	"local/call-argument-object-newline": "error",
 	"@stylistic/brace-style": ["error", "allman", { "allowSingleLine": false }],
-	"@stylistic/indent": ["error", "tab", { "SwitchCase": 1, "MemberExpression": 0 }],
+	"@stylistic/indent": ["error", "tab", { "SwitchCase": 1, "MemberExpression": 1 }],
 	"@stylistic/quotes": "off",
 	"@stylistic/semi": "off",
 	"@stylistic/comma-dangle": "off"

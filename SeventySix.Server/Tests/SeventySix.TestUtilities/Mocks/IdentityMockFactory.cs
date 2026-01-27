@@ -49,4 +49,41 @@ public static class IdentityMockFactory
 			Substitute.For<TimeProvider>(),
 			CreateUserManager());
 	}
+
+	/// <summary>
+	/// Creates a mock <see cref="IAltchaService"/> that returns predictable challenges.
+	/// Use for tests where ALTCHA functionality is not the test subject.
+	/// </summary>
+	/// <param name="isEnabled">
+	/// Whether ALTCHA should report as enabled. Default true.
+	/// </param>
+	/// <returns>
+	/// A configured NSubstitute mock for IAltchaService.
+	/// </returns>
+	public static IAltchaService CreateAltchaService(bool isEnabled = true)
+	{
+		IAltchaService altchaService =
+			Substitute.For<IAltchaService>();
+
+		altchaService.IsEnabled.Returns(isEnabled);
+
+		altchaService
+			.GenerateChallenge()
+			.Returns(
+				callInfo =>
+					new AltchaChallengeDto(
+						Algorithm: "SHA-256",
+						Challenge: $"mock-challenge-{Guid.NewGuid():N}",
+						MaxNumber: 100000,
+						Salt: "mock-salt",
+						Signature: "mock-signature"));
+
+		altchaService
+			.ValidateAsync(
+				Arg.Any<string>(),
+				Arg.Any<CancellationToken>())
+			.Returns(AltchaValidationResult.Succeeded());
+
+		return altchaService;
+	}
 }

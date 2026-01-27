@@ -1,7 +1,7 @@
 import { provideZonelessChangeDetection } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
-import { FooterComponent } from "./footer.component";
 import { DateService } from "@shared/services";
+import { FooterComponent } from "./footer.component";
 
 describe("FooterComponent",
 	() =>

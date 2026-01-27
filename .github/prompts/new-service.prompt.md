@@ -13,12 +13,15 @@ Ask user which domain: Identity, Logging, ApiTracking, ElectronicNotifications
 
 ## File Locations
 
-| Type       | Path                                        | Namespace             |
-| ---------- | ------------------------------------------- | --------------------- |
-| Service    | `SeventySix.Domains/{Domain}/Services/`     | `SeventySix.{Domain}` |
-| Repository | `SeventySix.Domains/{Domain}/Repositories/` | `SeventySix.{Domain}` |
-| Entity     | `SeventySix.Domains/{Domain}/Entities/`     | `SeventySix.{Domain}` |
-| DTO        | `SeventySix.Domains/{Domain}/DTOs/`         | `SeventySix.{Domain}` |
+| Type       | Path                                           | Namespace             |
+| ---------- | ---------------------------------------------- | --------------------- |
+| Service    | `SeventySix.Domains/{Domain}/Services/`        | `SeventySix.{Domain}` |
+| Repository | `SeventySix.Domains/{Domain}/Repositories/`    | `SeventySix.{Domain}` |
+| Entity     | `SeventySix.Domains/{Domain}/Entities/`        | `SeventySix.{Domain}` |
+| DTO        | `SeventySix.Domains/{Domain}/POCOs/DTOs/`      | `SeventySix.{Domain}` |
+| Request    | `SeventySix.Domains/{Domain}/POCOs/Requests/`  | `SeventySix.{Domain}` |
+| Response   | `SeventySix.Domains/{Domain}/POCOs/Responses/` | `SeventySix.{Domain}` |
+| Result     | `SeventySix.Domains/{Domain}/POCOs/Results/`   | `SeventySix.{Domain}` |
 
 ## Required Patterns
 
@@ -32,11 +35,11 @@ Ask user which domain: Identity, Logging, ApiTracking, ElectronicNotifications
 
 ## Formatting Rules
 
--   New line after every `=` with indented value
--   New line before every `.` in chains
--   Lambda params on new line after `(`
--   Each param on new line when 2+ params
--   Null-conditional `?.` over verbose null checks
+- New line after every `=` with indented value
+- New line before every `.` in chains
+- Lambda params on new line after `(`
+- Each param on new line when 2+ params
+- Null-conditional `?.` over verbose null checks
 
 ## Service Template
 
@@ -111,3 +114,20 @@ public record Create{{Name}}Request(
 | Information | Background job completion ONLY |
 | Warning     | Recoverable issues             |
 | Error       | Unrecoverable failures         |
+
+## Test Requirements (CRITICAL)
+
+When creating a service, ALWAYS create corresponding tests:
+
+| Test Type         | File Name                     | Location                             |
+| ----------------- | ----------------------------- | ------------------------------------ |
+| Unit tests        | `{{Name}}ServiceUnitTests.cs` | `Tests/{Domain}.Tests/Services/`     |
+| Integration tests | `{{Name}}ServiceTests.cs`     | `Tests/{Domain}.Tests/Services/`     |
+| Repository tests  | `{{Name}}RepositoryTests.cs`  | `Tests/{Domain}.Tests/Repositories/` |
+
+**Test Rules:**
+
+- Use `FakeTimeProvider` not `Task.Delay()` for time tests
+- Use `[Collection(CollectionNames.PostgreSql)]` for DB tests
+- Use fluent builders for test data, not inline `new Entity()`
+- Test file location MUST mirror source file location

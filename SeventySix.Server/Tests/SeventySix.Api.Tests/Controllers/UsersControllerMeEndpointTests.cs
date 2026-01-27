@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using Microsoft.Extensions.Time.Testing;
+using SeventySix.Api.Tests.Fixtures;
 using SeventySix.Identity;
 using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;
@@ -18,9 +19,9 @@ namespace SeventySix.Api.Tests.Controllers;
 /// GET /me is handled by AuthController at /auth/me (see AuthControllerTests).
 /// 80/20 Rule: Only critical happy paths tested.
 /// </summary>
-[Collection("PostgreSQL")]
+[Collection(CollectionNames.IdentityUsersPostgreSql)]
 public class UsersControllerMeEndpointTests(
-	TestcontainersPostgreSqlFixture fixture) : ApiPostgreSqlTestBase<Program>(fixture), IAsyncLifetime
+	IdentityUsersApiPostgreSqlFixture fixture) : ApiPostgreSqlTestBase<Program>(fixture), IAsyncLifetime
 {
 	private HttpClient Client =
 		null!;
@@ -85,7 +86,9 @@ public class UsersControllerMeEndpointTests(
 			await response.Content.ReadFromJsonAsync<UserProfileDto>();
 
 		Assert.NotNull(profile);
-		Assert.Equal($"updated_{testId}@example.com", profile.Email);
+		Assert.Equal(
+			$"updated_{testId}@example.com",
+			profile.Email);
 		Assert.Equal("Updated Full Name", profile.FullName);
 		Assert.Equal(username, profile.Username); // Username unchanged
 	}
@@ -129,7 +132,9 @@ public class UsersControllerMeEndpointTests(
 			updateRequest);
 
 		// Assert
-		Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+		Assert.Equal(
+			HttpStatusCode.BadRequest,
+			response.StatusCode);
 	}
 
 	/// <summary>
@@ -154,6 +159,6 @@ public class UsersControllerMeEndpointTests(
 		AuthResponse? authResponse =
 			await loginResponse.Content.ReadFromJsonAsync<AuthResponse>();
 
-		return authResponse!.AccessToken;
+		return authResponse!.AccessToken!;
 	}
 }

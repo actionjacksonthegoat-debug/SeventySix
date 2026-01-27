@@ -8,12 +8,18 @@ import { provideZonelessChangeDetection, signal } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideRouter, Router } from "@angular/router";
 import { AuthResponse } from "@auth/models";
+import { MfaService } from "@auth/services";
+import { AltchaService, DateService } from "@shared/services";
 import { AuthService } from "@shared/services/auth.service";
 import { NotificationService } from "@shared/services/notification.service";
-import { createMockNotificationService } from "@shared/testing";
+import {
+	createMockAltchaService,
+	createMockNotificationService,
+	MockAltchaService,
+	MockNotificationService
+} from "@shared/testing";
 import { of, throwError } from "rxjs";
 import { vi } from "vitest";
-import { DateService } from "@shared/services";
 import { LoginComponent } from "./login";
 
 interface MockAuthService
@@ -23,13 +29,9 @@ interface MockAuthService
 	isAuthenticated: ReturnType<typeof signal<boolean>>;
 }
 
-interface MockNotificationService
+interface MockMfaService
 {
-	success: ReturnType<typeof vi.fn>;
-	error: ReturnType<typeof vi.fn>;
-	info: ReturnType<typeof vi.fn>;
-	warning: ReturnType<typeof vi.fn>;
-	errorWithDetails: ReturnType<typeof vi.fn>;
+	setMfaState: ReturnType<typeof vi.fn>;
 }
 
 describe("LoginComponent",
@@ -38,7 +40,9 @@ describe("LoginComponent",
 		let component: LoginComponent;
 		let fixture: ComponentFixture<LoginComponent>;
 		let mockAuthService: MockAuthService;
+		let mockMfaService: MockMfaService;
 		let mockNotificationService: MockNotificationService;
+		let mockAltchaService: MockAltchaService;
 		let router: Router;
 
 		const dateService: DateService =
@@ -46,11 +50,13 @@ describe("LoginComponent",
 		const mockAuthResponse: AuthResponse =
 			{
 				accessToken: "test-token",
-				expiresAt: dateService.fromMillis(dateService.nowTimestamp() + 3600000)
+				expiresAt: dateService
+					.fromMillis(dateService.nowTimestamp() + 3600000)
 					.toISOString(),
 				email: "test@example.com",
 				fullName: "Test User",
-				requiresPasswordChange: false
+				requiresPasswordChange: false,
+				requiresMfa: false
 			};
 
 		beforeEach(
@@ -62,8 +68,14 @@ describe("LoginComponent",
 						loginWithProvider: vi.fn(),
 						isAuthenticated: signal<boolean>(false)
 					};
+				mockMfaService =
+					{
+						setMfaState: vi.fn()
+					};
 				mockNotificationService =
 					createMockNotificationService();
+				mockAltchaService =
+					createMockAltchaService(false);
 
 				await TestBed
 					.configureTestingModule(
@@ -73,9 +85,14 @@ describe("LoginComponent",
 								provideZonelessChangeDetection(),
 								provideRouter([]),
 								{ provide: AuthService, useValue: mockAuthService },
+								{ provide: MfaService, useValue: mockMfaService },
 								{
 									provide: NotificationService,
 									useValue: mockNotificationService
+								},
+								{
+									provide: AltchaService,
+									useValue: mockAltchaService
 								}
 							]
 						})
@@ -166,7 +183,8 @@ describe("LoginComponent",
 								{
 									usernameOrEmail: "testuser",
 									password: "password123",
-									rememberMe: false
+									rememberMe: false,
+									altchaPayload: null
 								});
 					});
 
@@ -204,7 +222,8 @@ describe("LoginComponent",
 								{
 									usernameOrEmail: "testuser",
 									password: "password123",
-									rememberMe: true
+									rememberMe: true,
+									altchaPayload: null
 								});
 					});
 

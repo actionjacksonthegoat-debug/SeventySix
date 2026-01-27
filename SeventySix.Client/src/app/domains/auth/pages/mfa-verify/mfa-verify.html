@@ -1,0 +1,133 @@
+<div class="mfa-verify-container">
+	<div class="mfa-verify-card">
+		@if (showBackupCodeEntry()) {
+			<h1>Use Backup Code</h1>
+			<p class="subtitle">
+				Enter one of your 8-character backup codes
+			</p>
+		} @else if (isTotpMode()) {
+			<h1>Authenticator Code</h1>
+			<p class="subtitle">
+				Enter the 6-digit code from your authenticator app
+			</p>
+		} @else {
+			<h1>Verify Your Identity</h1>
+			<p class="subtitle">
+				Enter the 6-digit code sent to {{ maskedEmail() }}
+			</p>
+		}
+
+		<form
+			(ngSubmit)="onVerify()"
+			class="mfa-verify-form"
+			#mfaForm="ngForm">
+			<div class="form-group">
+				@if (showBackupCodeEntry()) {
+					<label for="code">Backup Code</label>
+				} @else {
+					<label for="code">Verification Code</label>
+				}
+				<input
+					id="code"
+					type="text"
+					inputmode="numeric"
+					[pattern]="showBackupCodeEntry() ? '[A-Za-z0-9]*' : '[0-9]*'"
+					[maxlength]="expectedCodeLength()"
+					[(ngModel)]="code"
+					name="code"
+					#codeField="ngModel"
+					required
+					autocomplete="one-time-code"
+					[placeholder]="showBackupCodeEntry() ? 'XXXXXXXX' : '000000'"
+					aria-required="true"
+					[attr.aria-invalid]="codeField.invalid && codeField.touched"
+					aria-describedby="code-hint"
+				/>
+				@if (showBackupCodeEntry()) {
+					<span
+						id="code-hint"
+						class="hint">
+						Use one of your backup codes
+					</span>
+				} @else if (isTotpMode()) {
+					<span
+						id="code-hint"
+						class="hint">
+						Open your authenticator app
+					</span>
+				} @else {
+					<span
+						id="code-hint"
+						class="hint">
+						Check your email for the code
+					</span>
+				}
+			</div>
+
+			<button
+				mat-flat-button
+				color="primary"
+				type="submit"
+				class="submit-button"
+				[disabled]="!canVerify()"
+				[attr.aria-busy]="isLoading()">
+				@if (isLoading()) { Verifying... } @else { Verify }
+			</button>
+		</form>
+
+		@if (isEmailMode()) {
+			<div class="resend-section">
+				<p class="resend-text">Didn't receive the code?</p>
+				<button
+					mat-button
+					type="button"
+					(click)="onResendCode()"
+					[disabled]="resendOnCooldown() || isResending()"
+					class="resend-button">
+					@if (isResending()) {
+						Sending...
+					} @else if (resendOnCooldown()) {
+						Resend in {{ resendCooldownSeconds() }}s
+					} @else {
+						Resend Code
+					}
+				</button>
+			</div>
+		}
+
+		@if (isTotpMode()) {
+			<div class="backup-section">
+				<p class="backup-text">Can't access your authenticator?</p>
+				<button
+					mat-button
+					type="button"
+					(click)="onUseBackupCode()"
+					class="backup-button">
+					Use a Backup Code
+				</button>
+			</div>
+		}
+
+		@if (showBackupCodeEntry()) {
+			<div class="backup-section">
+				<button
+					mat-button
+					type="button"
+					(click)="onCancelBackupCode()"
+					class="backup-button">
+					Back to Authenticator
+				</button>
+			</div>
+		}
+
+		<div class="back-section">
+			<button
+				mat-button
+				type="button"
+				(click)="onBackToLogin()"
+				class="back-button">
+				Back to Login
+			</button>
+		</div>
+	</div>
+</div>

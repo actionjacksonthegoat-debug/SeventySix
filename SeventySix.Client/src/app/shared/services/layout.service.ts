@@ -11,6 +11,7 @@ import {
 	signal
 } from "@angular/core";
 import { toSignal } from "@angular/core/rxjs-interop";
+import { STORAGE_KEYS } from "@shared/constants";
 import { isNullOrUndefined } from "@shared/utilities/null-check.utility";
 
 /**
@@ -43,11 +44,12 @@ export class LayoutService
 
 	/**
 	 * Session storage key for persisting sidebar expanded state within a browser session.
-	 * @type {string}
+	 * @type {typeof STORAGE_KEYS.SIDEBAR_SESSION}
 	 * @private
 	 * @readonly
 	 */
-	private readonly SIDEBAR_SESSION_KEY: string = "seventysix-sidebar-session";
+	private readonly SIDEBAR_SESSION_KEY: typeof STORAGE_KEYS.SIDEBAR_SESSION =
+		STORAGE_KEYS.SIDEBAR_SESSION;
 
 	/**
 	 * Sidebar expanded state.
@@ -100,8 +102,8 @@ export class LayoutService
 			{
 				const bp: { [key: string]: boolean; } =
 					this
-					.breakpoints()
-					.breakpoints as { [key: string]: boolean; };
+						.breakpoints()
+						.breakpoints as { [key: string]: boolean; };
 				return !!bp[Breakpoints.XSmall];
 			});
 
@@ -116,8 +118,8 @@ export class LayoutService
 			{
 				const bp: { [key: string]: boolean; } =
 					this
-					.breakpoints()
-					.breakpoints as { [key: string]: boolean; };
+						.breakpoints()
+						.breakpoints as { [key: string]: boolean; };
 				return !!bp[Breakpoints.Small];
 			});
 
@@ -132,8 +134,8 @@ export class LayoutService
 			{
 				const bp: { [key: string]: boolean; } =
 					this
-					.breakpoints()
-					.breakpoints as { [key: string]: boolean; };
+						.breakpoints()
+						.breakpoints as { [key: string]: boolean; };
 				return !!bp[Breakpoints.Medium];
 			});
 
@@ -148,8 +150,8 @@ export class LayoutService
 			{
 				const bp: { [key: string]: boolean; } =
 					this
-					.breakpoints()
-					.breakpoints as { [key: string]: boolean; };
+						.breakpoints()
+						.breakpoints as { [key: string]: boolean; };
 				return !!bp[Breakpoints.Large] || !!bp[Breakpoints.XLarge];
 			});
 
@@ -164,8 +166,8 @@ export class LayoutService
 			{
 				const bp: { [key: string]: boolean; } =
 					this
-					.breakpoints()
-					.breakpoints as { [key: string]: boolean; };
+						.breakpoints()
+						.breakpoints as { [key: string]: boolean; };
 				return !!bp[Breakpoints.XLarge];
 			});
 

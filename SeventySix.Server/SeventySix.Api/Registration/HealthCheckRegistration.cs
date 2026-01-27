@@ -7,6 +7,7 @@ using SeventySix.Api.HealthChecks;
 using SeventySix.ApiTracking;
 using SeventySix.Identity;
 using SeventySix.Logging;
+using StackExchange.Redis;
 
 namespace SeventySix.Api.Registration;
 
@@ -54,6 +55,12 @@ public static class HealthCheckExtensions
 				name: "apitracking-database",
 				failureStatus: HealthStatus.Unhealthy,
 				tags: ["ready", "db"])
+			.AddRedis(
+				connectionMultiplexerFactory: serviceProvider =>
+					serviceProvider.GetRequiredService<IConnectionMultiplexer>(),
+				name: "valkey-cache",
+				failureStatus: HealthStatus.Degraded,
+				tags: ["ready", "cache"])
 			.AddCheck<JaegerHealthCheck>(
 				name: "jaeger",
 				failureStatus: HealthStatus.Degraded,

@@ -39,6 +39,12 @@ describe("loggingInterceptor",
 						{});
 			});
 
+		afterEach(
+			() =>
+			{
+				vi.restoreAllMocks();
+			});
+
 		it("should log HTTP requests in development",
 			async () =>
 			{

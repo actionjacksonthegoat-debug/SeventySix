@@ -102,7 +102,9 @@ public static class TestUserHelper
 		if (!result.Succeeded)
 		{
 			string errors =
-				string.Join(", ", result.Errors.Select(error => error.Description));
+				string.Join(
+				", ",
+				result.Errors.Select(error => error.Description));
 
 			throw new InvalidOperationException(
 				$"Failed to create test user: {errors}");

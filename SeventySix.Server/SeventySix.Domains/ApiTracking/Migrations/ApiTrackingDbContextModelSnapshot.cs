@@ -10,78 +10,78 @@ using SeventySix.ApiTracking;
 
 namespace SeventySix.Domains.ApiTracking.Migrations
 {
-	[DbContext(typeof(ApiTrackingDbContext))]
-	partial class ApiTrackingDbContextModelSnapshot : ModelSnapshot
-	{
-		protected override void BuildModel(ModelBuilder modelBuilder)
-		{
+    [DbContext(typeof(ApiTrackingDbContext))]
+    partial class ApiTrackingDbContextModelSnapshot : ModelSnapshot
+    {
+        protected override void BuildModel(ModelBuilder modelBuilder)
+        {
 #pragma warning disable 612, 618
-			modelBuilder
-				.HasDefaultSchema("ApiTracking")
-				.HasAnnotation("ProductVersion", "10.0.0")
-				.HasAnnotation("Relational:MaxIdentifierLength", 63);
+            modelBuilder
+                .HasDefaultSchema("ApiTracking")
+                .HasAnnotation("ProductVersion", "10.0.2")
+                .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
-			NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+            NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-			modelBuilder.Entity("SeventySix.ApiTracking.ThirdPartyApiRequest", b =>
-				{
-					b.Property<long>("Id")
-						.ValueGeneratedOnAdd()
-						.HasColumnType("bigint");
+            modelBuilder.Entity("SeventySix.ApiTracking.ThirdPartyApiRequest", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
 
-					NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
-					b.Property<string>("ApiName")
-						.IsRequired()
-						.HasMaxLength(100)
-						.HasColumnType("character varying(100)");
+                    b.Property<string>("ApiName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
-					b.Property<string>("BaseUrl")
-						.IsRequired()
-						.HasMaxLength(500)
-						.HasColumnType("character varying(500)");
+                    b.Property<string>("BaseUrl")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
 
-					b.Property<int>("CallCount")
-						.ValueGeneratedOnAdd()
-						.HasColumnType("integer")
-						.HasDefaultValue(0);
+                    b.Property<int>("CallCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
 
-					b.Property<DateTime>("CreateDate")
-						.ValueGeneratedOnAdd()
-						.HasColumnType("timestamp with time zone")
-						.HasDefaultValueSql("NOW()");
+                    b.Property<DateTime>("CreateDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("NOW()");
 
-					b.Property<DateTime?>("LastCalledAt")
-						.HasColumnType("timestamp with time zone");
+                    b.Property<DateTime?>("LastCalledAt")
+                        .HasColumnType("timestamp with time zone");
 
-					b.Property<DateTime?>("ModifyDate")
-						.HasColumnType("timestamp with time zone");
+                    b.Property<DateTime?>("ModifyDate")
+                        .HasColumnType("timestamp with time zone");
 
-					b.Property<DateOnly>("ResetDate")
-						.HasColumnType("date");
+                    b.Property<DateOnly>("ResetDate")
+                        .HasColumnType("date");
 
-					b.Property<uint>("RowVersion")
-						.IsConcurrencyToken()
-						.ValueGeneratedOnAddOrUpdate()
-						.HasColumnType("xid")
-						.HasDefaultValue(0u)
-						.HasColumnName("xmin");
+                    b.Property<uint>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasDefaultValue(0u)
+                        .HasColumnName("xmin");
 
-					b.HasKey("Id");
+                    b.HasKey("Id");
 
-					b.HasIndex("LastCalledAt")
-						.HasDatabaseName("IX_ThirdPartyApiRequests_LastCalledAt");
+                    b.HasIndex("LastCalledAt")
+                        .HasDatabaseName("IX_ThirdPartyApiRequests_LastCalledAt");
 
-					b.HasIndex("ApiName", "ResetDate")
-						.IsUnique()
-						.HasDatabaseName("IX_ThirdPartyApiRequests_ApiName_ResetDate");
+                    b.HasIndex("ApiName", "ResetDate")
+                        .IsUnique()
+                        .HasDatabaseName("UQ_ThirdPartyApiRequests_ApiName_ResetDate");
 
-					b.ToTable("ThirdPartyApiRequests", "ApiTracking", t =>
-						{
-							t.HasCheckConstraint("CK_ThirdPartyApiRequests_CallCount", "\"CallCount\" >= 0");
-						});
-				});
+                    b.ToTable("ThirdPartyApiRequests", "ApiTracking", t =>
+                        {
+                            t.HasCheckConstraint("CK_ThirdPartyApiRequests_CallCount", "\"CallCount\" >= 0");
+                        });
+                });
 #pragma warning restore 612, 618
-		}
-	}
+        }
+    }
 }

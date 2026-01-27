@@ -30,7 +30,7 @@ describe("QueryKeys",
 							QueryKeys.logs.paged(filter);
 						expect(key)
 							.toEqual(
-								["logs", filter]);
+								["logs", "paged", filter]);
 					});
 
 				it("should generate correct count key with filter",
@@ -78,7 +78,7 @@ describe("QueryKeys",
 							QueryKeys.users.single(123);
 						expect(key)
 							.toEqual(
-								["users", "user", 123]);
+								["users", "single", 123]);
 					});
 
 				it("should generate correct single key with string id",
@@ -88,7 +88,7 @@ describe("QueryKeys",
 							QueryKeys.users.single("abc");
 						expect(key)
 							.toEqual(
-								["users", "user", "abc"]);
+								["users", "single", "abc"]);
 					});
 
 				it("should generate correct byUsername key",
@@ -98,7 +98,7 @@ describe("QueryKeys",
 							QueryKeys.users.byUsername("testuser");
 						expect(key)
 							.toEqual(
-								["users", "username", "testuser"]);
+								["users", "byUsername", "testuser"]);
 					});
 			});
 

@@ -159,7 +159,9 @@ public static class DesignTimeConnectionStringProvider
 					|| (value.StartsWith('\'') && value.EndsWith('\''))))
 			{
 				value =
-					value.Substring(1, value.Length - 2);
+					value.Substring(
+						1,
+						value.Length - 2);
 			}
 
 			if (Environment.GetEnvironmentVariable(key) == null)

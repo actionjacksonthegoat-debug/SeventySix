@@ -5,6 +5,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Shouldly;
 using Xunit;
 
 namespace SeventySix.ArchitectureTests;
@@ -64,7 +65,7 @@ public class EntityConfigurationTests : SourceCodeArchitectureTest
 		}
 
 		// Assert
-		Assert.Empty(violations);
+		violations.ShouldBeEmpty();
 	}
 
 	[Fact]
@@ -107,8 +108,12 @@ public class EntityConfigurationTests : SourceCodeArchitectureTest
 
 			string expectedConfigFile =
 				entityFile
-				.Replace("\\Models\\", "\\Data\\Configurations\\")
-				.Replace($"{entityName}.cs", $"{entityName}Configuration.cs");
+				.Replace(
+					"\\Models\\",
+					"\\Data\\Configurations\\")
+				.Replace(
+					$"{entityName}.cs",
+					$"{entityName}Configuration.cs");
 
 			if (!File.Exists(expectedConfigFile))
 			{
@@ -121,6 +126,6 @@ public class EntityConfigurationTests : SourceCodeArchitectureTest
 		}
 
 		// Assert
-		Assert.Empty(violations);
+		violations.ShouldBeEmpty();
 	}
 }

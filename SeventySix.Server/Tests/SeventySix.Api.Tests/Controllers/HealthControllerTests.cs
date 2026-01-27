@@ -13,30 +13,41 @@ namespace SeventySix.Api.Tests.Controllers;
 /// <summary>
 /// Unit tests for HealthController.
 /// </summary>
+/// <remarks>
+/// Tests the public health endpoint which returns minimal status info (PublicHealthDto).
+/// Detailed health endpoint tests are in HealthControllerAuthorizationTests.
+/// </remarks>
 public class HealthControllerTests
 {
-	private readonly IHealthCheckService Service;
+	private readonly IHealthCheckService HealthService;
+	private readonly IScheduledJobService ScheduledJobService;
 	private readonly HealthController Controller;
 
 	public HealthControllerTests()
 	{
-		Service =
+		HealthService =
 			Substitute.For<IHealthCheckService>();
+		ScheduledJobService =
+			Substitute.For<IScheduledJobService>();
 		Controller =
-			new HealthController(Service);
+			new HealthController(
+				HealthService,
+				ScheduledJobService);
 	}
 
 	[Fact]
-	public async Task GetHealthStatus_ReturnsOkResult_WithHealthStatusAsync()
+	public async Task GetHealthStatus_ReturnsOkResult_WithMinimalHealthStatusAsync()
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		HealthStatusResponse expectedStatus =
+		DateTime checkedAt =
+			timeProvider.GetUtcNow().UtcDateTime;
+
+		HealthStatusResponse fullStatus =
 			new()
 			{
 				Status = "Healthy",
-				CheckedAt =
-					timeProvider.GetUtcNow().UtcDateTime,
+				CheckedAt = checkedAt,
 				Database =
 					new DatabaseHealthResponse
 					{
@@ -45,26 +56,7 @@ public class HealthControllerTests
 						Status = "Healthy",
 					},
 				ExternalApis =
-					new ExternalApiHealthResponse
-					{
-						Apis =
-							new Dictionary<string, ApiHealthStatus>
-							{
-								{
-									"ThirdPartyRateLimit",
-									new ApiHealthStatus
-									{
-										ApiName = "ThirdPartyRateLimit",
-										IsAvailable = true,
-										ResponseTimeMs = 150.5,
-										LastChecked =
-											timeProvider
-											.GetUtcNow()
-											.UtcDateTime.AddMinutes(-1),
-									}
-								},
-							},
-					},
+					new ExternalApiHealthResponse { Apis = [] },
 				ErrorQueue =
 					new QueueHealthResponse
 					{
@@ -73,33 +65,25 @@ public class HealthControllerTests
 						CircuitBreakerOpen = false,
 						Status = "Healthy",
 					},
-				System =
-					new SystemResourcesResponse
-					{
-						CpuUsagePercent = 45.5,
-						MemoryUsedMb = 2048,
-						MemoryTotalMb = 8192,
-						DiskUsagePercent = 67.3,
-					},
+				System = new SystemResourcesResponse(),
 			};
 
-		Service
+		HealthService
 			.GetHealthStatusAsync(Arg.Any<CancellationToken>())
-			.Returns(expectedStatus);
+			.Returns(fullStatus);
 
 		// Act
-		ActionResult<HealthStatusResponse> result =
+		ActionResult<PublicHealthDto> result =
 			await Controller.GetHealthStatusAsync(CancellationToken.None);
 
-		// Assert
+		// Assert - Only status and timestamp, no infrastructure details
 		OkObjectResult okResult =
 			Assert.IsType<OkObjectResult>(result.Result);
-		HealthStatusResponse returnedStatus =
-			Assert.IsType<HealthStatusResponse>(okResult.Value);
+		PublicHealthDto returnedStatus =
+			Assert.IsType<PublicHealthDto>(okResult.Value);
 		Assert.Equal("Healthy", returnedStatus.Status);
-		Assert.True(returnedStatus.Database.IsConnected);
-		Assert.Equal(5, returnedStatus.ErrorQueue.QueuedItems);
-		await Service
+		Assert.Equal(checkedAt, returnedStatus.CheckedAt);
+		await HealthService
 			.Received(1)
 			.GetHealthStatusAsync(Arg.Any<CancellationToken>());
 	}
@@ -109,12 +93,14 @@ public class HealthControllerTests
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		HealthStatusResponse expectedStatus =
+		DateTime checkedAt =
+			timeProvider.GetUtcNow().UtcDateTime;
+
+		HealthStatusResponse fullStatus =
 			new()
 			{
 				Status = "Degraded",
-				CheckedAt =
-					timeProvider.GetUtcNow().UtcDateTime,
+				CheckedAt = checkedAt,
 				Database =
 					new DatabaseHealthResponse
 					{
@@ -135,22 +121,21 @@ public class HealthControllerTests
 				System = new SystemResourcesResponse(),
 			};
 
-		Service
+		HealthService
 			.GetHealthStatusAsync(Arg.Any<CancellationToken>())
-			.Returns(expectedStatus);
+			.Returns(fullStatus);
 
 		// Act
-		ActionResult<HealthStatusResponse> result =
+		ActionResult<PublicHealthDto> result =
 			await Controller.GetHealthStatusAsync(CancellationToken.None);
 
-		// Assert
+		// Assert - Only status exposed, no degraded component details
 		OkObjectResult okResult =
 			Assert.IsType<OkObjectResult>(result.Result);
-		HealthStatusResponse returnedStatus =
-			Assert.IsType<HealthStatusResponse>(okResult.Value);
+		PublicHealthDto returnedStatus =
+			Assert.IsType<PublicHealthDto>(okResult.Value);
 		Assert.Equal("Degraded", returnedStatus.Status);
-		Assert.Equal("Degraded", returnedStatus.Database.Status);
-		Assert.Equal(100, returnedStatus.ErrorQueue.QueuedItems);
+		Assert.Equal(checkedAt, returnedStatus.CheckedAt);
 	}
 
 	[Fact]
@@ -158,12 +143,14 @@ public class HealthControllerTests
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		HealthStatusResponse expectedStatus =
+		DateTime checkedAt =
+			timeProvider.GetUtcNow().UtcDateTime;
+
+		HealthStatusResponse fullStatus =
 			new()
 			{
 				Status = "Unhealthy",
-				CheckedAt =
-					timeProvider.GetUtcNow().UtcDateTime,
+				CheckedAt = checkedAt,
 				Database =
 					new DatabaseHealthResponse
 					{
@@ -184,21 +171,88 @@ public class HealthControllerTests
 				System = new SystemResourcesResponse(),
 			};
 
-		Service
+		HealthService
+			.GetHealthStatusAsync(Arg.Any<CancellationToken>())
+			.Returns(fullStatus);
+
+		// Act
+		ActionResult<PublicHealthDto> result =
+			await Controller.GetHealthStatusAsync(CancellationToken.None);
+
+		// Assert - Only status exposed, no failure details
+		OkObjectResult okResult =
+			Assert.IsType<OkObjectResult>(result.Result);
+		PublicHealthDto returnedStatus =
+			Assert.IsType<PublicHealthDto>(okResult.Value);
+		Assert.Equal("Unhealthy", returnedStatus.Status);
+		Assert.Equal(checkedAt, returnedStatus.CheckedAt);
+	}
+
+	[Fact]
+	public async Task GetDetailedHealthStatus_ReturnsOkResult_WithFullHealthStatusAsync()
+	{
+		// Arrange
+		FakeTimeProvider timeProvider = new();
+		DateTime checkedAt =
+			timeProvider.GetUtcNow().UtcDateTime;
+
+		HealthStatusResponse expectedStatus =
+			new()
+			{
+				Status = "Healthy",
+				CheckedAt = checkedAt,
+				Database =
+					new DatabaseHealthResponse
+					{
+						IsConnected = true,
+						ResponseTimeMs = 25.5,
+						Status = "Healthy",
+					},
+				ExternalApis =
+					new ExternalApiHealthResponse { Apis = [] },
+				ErrorQueue =
+					new QueueHealthResponse
+					{
+						QueuedItems = 5,
+						FailedItems = 0,
+						CircuitBreakerOpen = false,
+						Status = "Healthy",
+					},
+				System =
+					new SystemResourcesResponse
+					{
+						CpuUsagePercent = 45.5,
+						MemoryUsedMb = 2048,
+						MemoryTotalMb = 8192,
+						DiskUsagePercent = 67.3,
+					},
+			};
+
+		HealthService
 			.GetHealthStatusAsync(Arg.Any<CancellationToken>())
 			.Returns(expectedStatus);
 
 		// Act
 		ActionResult<HealthStatusResponse> result =
-			await Controller.GetHealthStatusAsync(CancellationToken.None);
+			await Controller.GetDetailedHealthStatusAsync(CancellationToken.None);
 
-		// Assert
+		// Assert - Full infrastructure details exposed
 		OkObjectResult okResult =
 			Assert.IsType<OkObjectResult>(result.Result);
 		HealthStatusResponse returnedStatus =
 			Assert.IsType<HealthStatusResponse>(okResult.Value);
-		Assert.Equal("Unhealthy", returnedStatus.Status);
-		Assert.False(returnedStatus.Database.IsConnected);
-		Assert.True(returnedStatus.ErrorQueue.CircuitBreakerOpen);
+		Assert.Equal(
+			"Healthy",
+			returnedStatus.Status);
+		Assert.True(returnedStatus.Database.IsConnected);
+		Assert.Equal(
+			25.5,
+			returnedStatus.Database.ResponseTimeMs);
+		Assert.Equal(
+			5,
+			returnedStatus.ErrorQueue.QueuedItems);
+		Assert.Equal(
+			45.5,
+			returnedStatus.System.CpuUsagePercent);
 	}
 }

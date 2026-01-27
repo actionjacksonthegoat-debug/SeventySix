@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using SeventySix.Api.Configuration;
 using SeventySix.Api.Middleware;
 using SeventySix.Identity;
+using SeventySix.Shared.Constants;
 
 namespace SeventySix.Api.Registration;
 
@@ -14,11 +15,24 @@ namespace SeventySix.Api.Registration;
 /// Registration for rate limiting services.
 /// </summary>
 /// <remarks>
+/// <para>
 /// Rate limiting policies:
-/// - Global: Default limit for all endpoints (250/hour per IP)
-/// - auth-login: Stricter limit for login attempts (5/minute per IP)
-/// - auth-register: Stricter limit for registration (3/hour per IP)
-/// - auth-refresh: Moderate limit for token refresh (10/minute per IP)
+/// </para>
+/// <list type="bullet">
+///   <item><description>Global: Default limit for all endpoints (2500/hour per IP)</description></item>
+///   <item><description>auth-login: Stricter limit for login attempts (5/minute per IP)</description></item>
+///   <item><description>auth-register: Stricter limit for registration (3/hour per IP)</description></item>
+///   <item><description>auth-refresh: Moderate limit for token refresh (10/minute per IP)</description></item>
+///   <item><description>altcha-challenge: ALTCHA challenge generation (10/minute per IP)</description></item>
+///   <item><description>client-logs: Client-side logging endpoints (30/minute per IP)</description></item>
+///   <item><description>health-check: Rate limit for health endpoints (30/minute per IP)</description></item>
+/// </list>
+/// <para>
+/// Bypass policies (no rate limit):
+/// </para>
+/// <list type="bullet">
+///   <item><description>OPTIONS requests (CORS preflight)</description></item>
+/// </list>
 /// </remarks>
 public static class RateLimitingRegistration
 {
@@ -46,14 +60,20 @@ public static class RateLimitingRegistration
 		IConfiguration configuration)
 	{
 		RateLimitingSettings globalSettings =
-			configuration.GetSection("RateLimiting").Get<RateLimitingSettings>()
+			configuration.GetSection(ConfigurationSectionConstants.RateLimiting).Get<RateLimitingSettings>()
 			?? new RateLimitingSettings();
 
 		AuthRateLimitSettings authSettings =
 			configuration
-				.GetSection("Auth:RateLimit")
+				.GetSection(ConfigurationSectionConstants.AuthNested.RateLimit)
 				.Get<AuthRateLimitSettings>()
 			?? new AuthRateLimitSettings();
+
+		HealthRateLimitSettings healthSettings =
+			configuration
+				.GetSection("RateLimiting:Health")
+				.Get<HealthRateLimitSettings>()
+			?? new HealthRateLimitSettings();
 
 		if (!globalSettings.Enabled)
 		{
@@ -64,30 +84,45 @@ public static class RateLimitingRegistration
 			services,
 			globalSettings,
 			authSettings,
+			healthSettings,
 			configuration);
 	}
 
 	private static IServiceCollection AddDisabledRateLimiting(
 		IServiceCollection services)
 	{
-		services.AddRateLimiter(options =>
-		{
-			options.GlobalLimiter =
-				PartitionedRateLimiter.Create<
-					HttpContext,
-					string
-			>(_ => RateLimitPartition.GetNoLimiter<string>(string.Empty));
+		services.AddRateLimiter(
+			options =>
+			{
+				options.GlobalLimiter =
+					PartitionedRateLimiter.Create<
+						HttpContext,
+						string>(
+							_ =>
+								RateLimitPartition.GetNoLimiter(string.Empty));
 
-			options.AddPolicy(
-				RateLimitPolicyConstants.AuthLogin,
-				_ => RateLimitPartition.GetNoLimiter<string>(string.Empty));
-			options.AddPolicy(
-				RateLimitPolicyConstants.AuthRegister,
-				_ => RateLimitPartition.GetNoLimiter<string>(string.Empty));
-			options.AddPolicy(
-				RateLimitPolicyConstants.AuthRefresh,
-				_ => RateLimitPartition.GetNoLimiter<string>(string.Empty));
-		});
+				options.AddPolicy(
+					RateLimitPolicyConstants.AuthLogin,
+					_ => RateLimitPartition.GetNoLimiter(string.Empty));
+				options.AddPolicy(
+					RateLimitPolicyConstants.AuthRegister,
+					_ => RateLimitPartition.GetNoLimiter(string.Empty));
+				options.AddPolicy(
+					RateLimitPolicyConstants.AuthRefresh,
+					_ => RateLimitPartition.GetNoLimiter(string.Empty));
+				options.AddPolicy(
+					RateLimitPolicyConstants.AltchaChallenge,
+					_ => RateLimitPartition.GetNoLimiter(string.Empty));
+				options.AddPolicy(
+					RateLimitPolicyConstants.ClientLogs,
+					_ => RateLimitPartition.GetNoLimiter(string.Empty));
+				options.AddPolicy(
+					RateLimitPolicyConstants.MfaVerify,
+					_ => RateLimitPartition.GetNoLimiter(string.Empty));
+				options.AddPolicy(
+					RateLimitPolicyConstants.MfaResend,
+					_ => RateLimitPartition.GetNoLimiter(string.Empty));
+			});
 
 		return services;
 	}
@@ -96,66 +131,91 @@ public static class RateLimitingRegistration
 		IServiceCollection services,
 		RateLimitingSettings globalSettings,
 		AuthRateLimitSettings authSettings,
+		HealthRateLimitSettings healthSettings,
 		IConfiguration configuration)
 	{
 		string[] allowedOrigins =
-			configuration?.GetSection("Cors:AllowedOrigins").Get<string[]>()
-			?? new[] { "http://localhost:4200" };
+			configuration?.GetSection(ConfigurationSectionConstants.Cors.AllowedOrigins).Get<string[]>()
+			?? ["http://localhost:4200"];
 
 		ISet<string> allowedOriginsSet =
 			new HashSet<string>(
 				allowedOrigins,
 				StringComparer.OrdinalIgnoreCase);
 
-		services.AddRateLimiter(options =>
-		{
-			options.GlobalLimiter =
-				CreateGlobalLimiter(globalSettings);
-			AddAuthPolicies(options, authSettings);
+		services.AddRateLimiter(
+			options =>
+			{
+				options.GlobalLimiter =
+					CreateGlobalLimiter(globalSettings, healthSettings);
+				AddAuthPolicies(options, authSettings);
 
-			Func<
-				OnRejectedContext,
-				CancellationToken,
-				ValueTask> originalOnRejected =
-				CreateRejectedHandler(globalSettings);
-			options.OnRejected =
-				async (context, cancellationToken) =>
-				{
-					// Preserve CORS headers on rate limiter rejections
-					CorsHeaderHelper.AddCorsHeadersIfAllowed(
-						context.HttpContext,
-						allowedOriginsSet);
+				Func<
+					OnRejectedContext,
+					CancellationToken,
+					ValueTask> originalOnRejected =
+					CreateRejectedHandler(globalSettings);
+				options.OnRejected =
+					async (context, cancellationToken) =>
+					{
+						// Preserve CORS headers on rate limiter rejections
+						CorsHeaderHelper.AddCorsHeadersIfAllowed(
+							context.HttpContext,
+							allowedOriginsSet);
 
-					await originalOnRejected(context, cancellationToken);
-				};
-		});
+						await originalOnRejected(context, cancellationToken);
+					};
+			});
 
 		return services;
 	}
 
 	private static PartitionedRateLimiter<HttpContext> CreateGlobalLimiter(
-		RateLimitingSettings settings) =>
-		PartitionedRateLimiter.Create<HttpContext, string>(context =>
-		{
-			// Bypass rate limiting for CORS preflight (OPTIONS) requests
-			if (HttpMethods.IsOptions(context.Request.Method))
+		RateLimitingSettings settings,
+		HealthRateLimitSettings healthSettings) =>
+		PartitionedRateLimiter.Create<HttpContext, string>(
+			context =>
 			{
-				return RateLimitPartition.GetNoLimiter<string>("__preflight__");
-			}
-
-			return RateLimitPartition.GetFixedWindowLimiter(
-				partitionKey: context.Connection.RemoteIpAddress?.ToString()
-					?? "anonymous",
-				factory: _ => new FixedWindowRateLimiterOptions
+				// Bypass rate limiting for CORS preflight (OPTIONS) requests
+				if (HttpMethods.IsOptions(context.Request.Method))
 				{
-					PermitLimit = settings.PermitLimit,
-					Window =
-						TimeSpan.FromSeconds(settings.WindowSeconds),
-					QueueProcessingOrder =
-						QueueProcessingOrder.OldestFirst,
-					QueueLimit = 0,
-				});
-		});
+					return RateLimitPartition.GetNoLimiter(
+						RateLimitPartitionKeys.Preflight);
+				}
+
+				// Apply rate limiting for health check endpoints (DDOS protection)
+				if (context.Request.Path.StartsWithSegments("/health")
+					|| context.Request.Path.StartsWithSegments("/api/v1/health"))
+				{
+					return RateLimitPartition.GetFixedWindowLimiter(
+						partitionKey: context.Connection.RemoteIpAddress?.ToString()
+							?? RateLimitPartitionKeys.Anonymous,
+						factory: _ =>
+							new FixedWindowRateLimiterOptions
+							{
+								PermitLimit = healthSettings.PermitLimit,
+								Window =
+									TimeSpan.FromSeconds(healthSettings.WindowSeconds),
+								QueueProcessingOrder =
+									QueueProcessingOrder.OldestFirst,
+								QueueLimit = 0,
+							});
+				}
+
+				return RateLimitPartition.GetFixedWindowLimiter(
+					partitionKey: context.Connection.RemoteIpAddress?.ToString()
+						?? RateLimitPartitionKeys.Anonymous,
+					factory: _ =>
+						new FixedWindowRateLimiterOptions
+						{
+							PermitLimit = settings.PermitLimit,
+							Window =
+								TimeSpan.FromSeconds(settings.WindowSeconds),
+							QueueProcessingOrder =
+								QueueProcessingOrder.OldestFirst,
+							QueueLimit = 0,
+						});
+			});
 
 	private static void AddAuthPolicies(
 		RateLimiterOptions options,
@@ -163,24 +223,52 @@ public static class RateLimitingRegistration
 	{
 		options.AddPolicy(
 			RateLimitPolicyConstants.AuthLogin,
-			ctx =>
+			context =>
 				CreateAuthLimiter(
-					ctx,
+					context,
 					settings.LoginAttemptsPerMinute,
 					TimeSpan.FromMinutes(1)));
 		options.AddPolicy(
 			RateLimitPolicyConstants.AuthRegister,
-			ctx =>
+			context =>
 				CreateAuthLimiter(
-					ctx,
+					context,
 					settings.RegisterAttemptsPerHour,
 					TimeSpan.FromHours(1)));
 		options.AddPolicy(
 			RateLimitPolicyConstants.AuthRefresh,
-			ctx =>
+			context =>
 				CreateAuthLimiter(
-					ctx,
+					context,
 					settings.TokenRefreshPerMinute,
+					TimeSpan.FromMinutes(1)));
+		options.AddPolicy(
+			RateLimitPolicyConstants.AltchaChallenge,
+			context =>
+				CreateAuthLimiter(
+					context,
+					settings.AltchaChallengePerMinute,
+					TimeSpan.FromMinutes(1)));
+		options.AddPolicy(
+			RateLimitPolicyConstants.ClientLogs,
+			context =>
+				CreateAuthLimiter(
+					context,
+					settings.ClientLogsPerMinute,
+					TimeSpan.FromMinutes(1)));
+		options.AddPolicy(
+			RateLimitPolicyConstants.MfaVerify,
+			context =>
+				CreateAuthLimiter(
+					context,
+					settings.MfaVerifyPerMinute,
+					TimeSpan.FromMinutes(1)));
+		options.AddPolicy(
+			RateLimitPolicyConstants.MfaResend,
+			context =>
+				CreateAuthLimiter(
+					context,
+					settings.MfaResendPerMinute,
 					TimeSpan.FromMinutes(1)));
 	}
 
@@ -190,7 +278,7 @@ public static class RateLimitingRegistration
 		TimeSpan window) =>
 		RateLimitPartition.GetFixedWindowLimiter(
 			partitionKey: context.Connection.RemoteIpAddress?.ToString()
-				?? "anonymous",
+				?? RateLimitPartitionKeys.Anonymous,
 			factory: _ => new FixedWindowRateLimiterOptions
 			{
 				PermitLimit = permitLimit,
@@ -212,13 +300,21 @@ public static class RateLimitingRegistration
 			context.HttpContext.Response.Headers.RetryAfter =
 				settings.RetryAfterSeconds.ToString();
 
-			await context.HttpContext.Response.WriteAsJsonAsync(
-				new
+			Microsoft.AspNetCore.Mvc.ProblemDetails problemDetails =
+				new()
 				{
-					error = "Too Many Requests",
-					message = "Rate limit exceeded. Please try again later.",
-					retryAfter = settings.RetryAfterSeconds,
-				},
+					Type = ProblemDetailConstants.Types.RateLimit,
+					Title = ProblemDetailConstants.Titles.TooManyRequests,
+					Status = StatusCodes.Status429TooManyRequests,
+					Detail = ProblemDetailConstants.Details.RateLimitExceeded,
+					Instance = context.HttpContext.Request.Path,
+				};
+
+			problemDetails.Extensions["retryAfter"] =
+				settings.RetryAfterSeconds;
+
+			await context.HttpContext.Response.WriteAsJsonAsync(
+				problemDetails,
 				cancellationToken);
 		};
 }

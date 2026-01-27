@@ -7,6 +7,7 @@ using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using SeventySix.Api.Controllers;
 using SeventySix.ApiTracking;
+using SeventySix.Shared.Constants;
 using Wolverine;
 
 namespace SeventySix.Api.Tests.Controllers;
@@ -31,9 +32,9 @@ public class ThirdPartyApiRequestsControllerTests
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		List<ThirdPartyApiRequestResponse> expectedRequests =
+		List<ThirdPartyApiRequestDto> expectedRequests =
 			[
-			new ThirdPartyApiRequestResponse
+			new ThirdPartyApiRequestDto
 			{
 				Id = 1,
 				ApiName =
@@ -48,7 +49,7 @@ public class ThirdPartyApiRequestsControllerTests
 					DateOnly.FromDateTime(
 					timeProvider.GetUtcNow().UtcDateTime.AddDays(1)),
 			},
-			new ThirdPartyApiRequestResponse
+			new ThirdPartyApiRequestDto
 			{
 				Id = 2,
 				ApiName = "GoogleMaps",
@@ -65,26 +66,28 @@ public class ThirdPartyApiRequestsControllerTests
 		];
 
 		MessageBus
-			.InvokeAsync<IEnumerable<ThirdPartyApiRequestResponse>>(
+			.InvokeAsync<IEnumerable<ThirdPartyApiRequestDto>>(
 				Arg.Any<GetAllApiRequestsQuery>(),
 				Arg.Any<CancellationToken>())
 			.Returns(expectedRequests);
 
 		// Act
-		ActionResult<IEnumerable<ThirdPartyApiRequestResponse>> result =
+		ActionResult<IEnumerable<ThirdPartyApiRequestDto>> result =
 			await Controller.GetAllAsync(CancellationToken.None);
 
 		// Assert
 		OkObjectResult okResult =
 			Assert.IsType<OkObjectResult>(result.Result);
-		IEnumerable<ThirdPartyApiRequestResponse> returnedRequests =
-			Assert.IsAssignableFrom<IEnumerable<ThirdPartyApiRequestResponse>>(
+		IEnumerable<ThirdPartyApiRequestDto> returnedRequests =
+			Assert.IsAssignableFrom<IEnumerable<ThirdPartyApiRequestDto>>(
 				okResult.Value);
-		Assert.Equal(2, returnedRequests.Count());
+		Assert.Equal(
+			2,
+			returnedRequests.Count());
 
 		await MessageBus
 			.Received(1)
-			.InvokeAsync<IEnumerable<ThirdPartyApiRequestResponse>>(
+			.InvokeAsync<IEnumerable<ThirdPartyApiRequestDto>>(
 				Arg.Any<GetAllApiRequestsQuery>(),
 				Arg.Any<CancellationToken>());
 	}
@@ -94,20 +97,20 @@ public class ThirdPartyApiRequestsControllerTests
 	{
 		// Arrange
 		MessageBus
-			.InvokeAsync<IEnumerable<ThirdPartyApiRequestResponse>>(
+			.InvokeAsync<IEnumerable<ThirdPartyApiRequestDto>>(
 				Arg.Any<GetAllApiRequestsQuery>(),
 				Arg.Any<CancellationToken>())
-			.Returns(Enumerable.Empty<ThirdPartyApiRequestResponse>());
+			.Returns(Enumerable.Empty<ThirdPartyApiRequestDto>());
 
 		// Act
-		ActionResult<IEnumerable<ThirdPartyApiRequestResponse>> result =
+		ActionResult<IEnumerable<ThirdPartyApiRequestDto>> result =
 			await Controller.GetAllAsync(CancellationToken.None);
 
 		// Assert
 		OkObjectResult okResult =
 			Assert.IsType<OkObjectResult>(result.Result);
-		IEnumerable<ThirdPartyApiRequestResponse> returnedRequests =
-			Assert.IsAssignableFrom<IEnumerable<ThirdPartyApiRequestResponse>>(
+		IEnumerable<ThirdPartyApiRequestDto> returnedRequests =
+			Assert.IsAssignableFrom<IEnumerable<ThirdPartyApiRequestDto>>(
 				okResult.Value);
 		Assert.Empty(returnedRequests);
 	}
@@ -117,7 +120,7 @@ public class ThirdPartyApiRequestsControllerTests
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		ThirdPartyApiStatisticsResponse expectedStats =
+		ThirdPartyApiStatisticsDto expectedStats =
 			new()
 			{
 				TotalCallsToday = 225,
@@ -143,27 +146,27 @@ public class ThirdPartyApiRequestsControllerTests
 			};
 
 		MessageBus
-			.InvokeAsync<ThirdPartyApiStatisticsResponse>(
+			.InvokeAsync<ThirdPartyApiStatisticsDto>(
 				Arg.Any<GetApiRequestStatisticsQuery>(),
 				Arg.Any<CancellationToken>())
 			.Returns(expectedStats);
 
 		// Act
-		ActionResult<ThirdPartyApiStatisticsResponse> result =
+		ActionResult<ThirdPartyApiStatisticsDto> result =
 			await Controller.GetStatisticsAsync(CancellationToken.None);
 
 		// Assert
 		OkObjectResult okResult =
 			Assert.IsType<OkObjectResult>(result.Result);
-		ThirdPartyApiStatisticsResponse returnedStats =
-			Assert.IsType<ThirdPartyApiStatisticsResponse>(okResult.Value);
+		ThirdPartyApiStatisticsDto returnedStats =
+			Assert.IsType<ThirdPartyApiStatisticsDto>(okResult.Value);
 		Assert.Equal(225, returnedStats.TotalCallsToday);
 		Assert.Equal(2, returnedStats.TotalApisTracked);
 		Assert.Equal(2, returnedStats.CallsByApi.Count);
 
 		await MessageBus
 			.Received(1)
-			.InvokeAsync<ThirdPartyApiStatisticsResponse>(
+			.InvokeAsync<ThirdPartyApiStatisticsDto>(
 				Arg.Any<GetApiRequestStatisticsQuery>(),
 				Arg.Any<CancellationToken>());
 	}
@@ -172,7 +175,7 @@ public class ThirdPartyApiRequestsControllerTests
 	public async Task GetStatistics_ReturnsEmptyStatistics_WhenNoDataAsync()
 	{
 		// Arrange
-		ThirdPartyApiStatisticsResponse expectedStats =
+		ThirdPartyApiStatisticsDto expectedStats =
 			new()
 			{
 				TotalCallsToday = 0,
@@ -182,20 +185,20 @@ public class ThirdPartyApiRequestsControllerTests
 			};
 
 		MessageBus
-			.InvokeAsync<ThirdPartyApiStatisticsResponse>(
+			.InvokeAsync<ThirdPartyApiStatisticsDto>(
 				Arg.Any<GetApiRequestStatisticsQuery>(),
 				Arg.Any<CancellationToken>())
 			.Returns(expectedStats);
 
 		// Act
-		ActionResult<ThirdPartyApiStatisticsResponse> result =
+		ActionResult<ThirdPartyApiStatisticsDto> result =
 			await Controller.GetStatisticsAsync(CancellationToken.None);
 
 		// Assert
 		OkObjectResult okResult =
 			Assert.IsType<OkObjectResult>(result.Result);
-		ThirdPartyApiStatisticsResponse returnedStats =
-			Assert.IsType<ThirdPartyApiStatisticsResponse>(okResult.Value);
+		ThirdPartyApiStatisticsDto returnedStats =
+			Assert.IsType<ThirdPartyApiStatisticsDto>(okResult.Value);
 		Assert.Equal(0, returnedStats.TotalCallsToday);
 		Assert.Empty(returnedStats.CallsByApi);
 	}

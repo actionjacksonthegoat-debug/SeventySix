@@ -28,21 +28,22 @@ type MockUserMutation = ReturnType<
 		{ userId: string | number; user: UpdateUserRequest; },
 		unknown>>;
 
+/** Mock UserService interface for testing. */
+interface MockUserService
+{
+	getUserById: ReturnType<typeof vi.fn>;
+	updateUser: ReturnType<typeof vi.fn>;
+	getUserRoles: ReturnType<typeof vi.fn>;
+	addRole: ReturnType<typeof vi.fn>;
+	removeRole: ReturnType<typeof vi.fn>;
+	getAdminCount: ReturnType<typeof vi.fn>;
+}
+
 describe("UserDetailPage",
 	() =>
 	{
 		let component: UserDetailPage;
 		let fixture: ComponentFixture<UserDetailPage>;
-
-		interface MockUserService
-		{
-			getUserById: ReturnType<typeof vi.fn>;
-			updateUser: ReturnType<typeof vi.fn>;
-			getUserRoles: ReturnType<typeof vi.fn>;
-			addRole: ReturnType<typeof vi.fn>;
-			removeRole: ReturnType<typeof vi.fn>;
-		}
-
 		let mockUserService: MockUserService;
 		let mockLogger: ReturnType<typeof createMockLogger>;
 		let mockRouter: ReturnType<typeof createMockRouter>;
@@ -66,6 +67,36 @@ describe("UserDetailPage",
 				deletedBy: null
 			};
 
+		/**
+		 * Creates a fresh component instance with optional mock overrides.
+		 * Use this instead of calling TestBed.createComponent directly.
+		 * @param {Partial<MockUserService>} [mockOverrides]
+		 * Optional overrides for mock service methods.
+		 * @returns {{ fixture: ComponentFixture<UserDetailPage>; component: UserDetailPage; }}
+		 * The fixture and component instance.
+		 */
+		function createComponent(
+			mockOverrides?: Partial<MockUserService>): { fixture: ComponentFixture<UserDetailPage>; component: UserDetailPage; }
+		{
+			if (mockOverrides)
+			{
+				Object.assign(mockUserService, mockOverrides);
+			}
+
+			const newFixture: ComponentFixture<UserDetailPage> =
+				TestBed.createComponent(UserDetailPage);
+			const newComponent: UserDetailPage =
+				newFixture.componentInstance;
+
+			TestBed.runInInjectionContext(
+				() =>
+				{
+					newFixture.detectChanges();
+				});
+
+			return { fixture: newFixture, component: newComponent };
+		}
+
 		beforeEach(
 			async () =>
 			{
@@ -75,7 +106,8 @@ describe("UserDetailPage",
 						updateUser: vi.fn(),
 						getUserRoles: vi.fn(),
 						addRole: vi.fn(),
-						removeRole: vi.fn()
+						removeRole: vi.fn(),
+						getAdminCount: vi.fn()
 					};
 				mockLogger =
 					createMockLogger();
@@ -95,6 +127,8 @@ describe("UserDetailPage",
 						["Developer"]));
 				mockUserService.addRole.mockReturnValue(createMockMutationResult());
 				mockUserService.removeRole.mockReturnValue(createMockMutationResult());
+				mockUserService.getAdminCount.mockReturnValue(
+					createMockQueryResult(2));
 
 				await TestBed
 					.configureTestingModule(
@@ -113,17 +147,13 @@ describe("UserDetailPage",
 						})
 					.compileComponents();
 
+				// Create default component for most tests
+				const created: { fixture: ComponentFixture<UserDetailPage>; component: UserDetailPage; } =
+					createComponent();
 				fixture =
-					TestBed.createComponent(UserDetailPage);
+					created.fixture;
 				component =
-					fixture.componentInstance;
-
-				// Run initial detectChanges in injection context to handle effect()
-				TestBed.runInInjectionContext(
-					() =>
-					{
-						fixture.detectChanges();
-					});
+					created.component;
 			});
 
 		it("should create",
@@ -173,16 +203,9 @@ describe("UserDetailPage",
 							error
 						}));
 
-				// Recreate component with error mock
-				const errorFixture: ComponentFixture<UserDetailPage> =
-					TestBed.createComponent(UserDetailPage);
-				const errorComponent: UserDetailPage =
-					errorFixture.componentInstance;
-				TestBed.runInInjectionContext(
-					() =>
-					{
-						errorFixture.detectChanges();
-					});
+				// Use factory to create component with error mock
+				const { fixture: errorFixture, component: errorComponent } =
+					createComponent();
 				await errorFixture.whenStable();
 
 				expect(errorComponent.error())
@@ -255,24 +278,16 @@ describe("UserDetailPage",
 							});
 				mockUserService.updateUser.mockReturnValue(localMockMutationResult);
 
-				// Recreate component to get new mutation instance
-				fixture =
-					TestBed.createComponent(UserDetailPage);
-				component =
-					fixture.componentInstance;
-				TestBed.runInInjectionContext(
-					() =>
-					{
-						fixture.detectChanges();
-					});
+				// Use factory to create component with new mutation
+				const { fixture: submitFixture, component: submitComponent } =
+					createComponent();
+				await submitFixture.whenStable();
 
-				await fixture.whenStable();
-
-				component.userForm.patchValue(
+				submitComponent.userForm.patchValue(
 					{ fullName: "Jane Doe" });
-				await component.onSubmit();
+				await submitComponent.onSubmit();
 
-				expect(component.updateMutation.mutate)
+				expect(submitComponent.updateMutation.mutate)
 					.toHaveBeenCalledWith(
 						{
 							userId: "1",
@@ -322,22 +337,14 @@ describe("UserDetailPage",
 
 				mockUserService.updateUser.mockReturnValue(errorMutation);
 
-				// Recreate component to get new mutation
-				fixture =
-					TestBed.createComponent(UserDetailPage);
-				component =
-					fixture.componentInstance;
-				TestBed.runInInjectionContext(
-					() =>
-					{
-						fixture.detectChanges();
-					});
+				// Use factory to create component with error mutation
+				const { fixture: errorFixture, component: errorComponent } =
+					createComponent();
+				await errorFixture.whenStable();
 
-				await fixture.whenStable();
+				await errorComponent.onSubmit();
 
-				await component.onSubmit();
-
-				expect(component.saveError())
+				expect(errorComponent.saveError())
 					.toBe(
 						"Failed to save user. Please try again.");
 				expect(mockLogger.error)
@@ -410,25 +417,17 @@ describe("UserDetailPage",
 							});
 				mockUserService.updateUser.mockReturnValue(localMockMutationResult);
 
-				// Recreate component to get new mutation instance
-				fixture =
-					TestBed.createComponent(UserDetailPage);
-				component =
-					fixture.componentInstance;
-				TestBed.runInInjectionContext(
-					() =>
-					{
-						fixture.detectChanges();
-					});
+				// Use factory to create component with new mutation
+				const { fixture: pristineFixture, component: pristineComponent } =
+					createComponent();
+				await pristineFixture.whenStable();
 
-				await fixture.whenStable();
-
-				component.userForm.patchValue(
+				pristineComponent.userForm.patchValue(
 					{ fullName: "Updated Name" });
-				component.userForm.markAsDirty();
-				await component.onSubmit();
+				pristineComponent.userForm.markAsDirty();
+				await pristineComponent.onSubmit();
 
-				expect(component.userForm.pristine)
+				expect(pristineComponent.userForm.pristine)
 					.toBe(true);
 			});
 
@@ -459,24 +458,16 @@ describe("UserDetailPage",
 									});
 						mockUserService.updateUser.mockReturnValue(localMockMutationResult);
 
-						// Recreate component to get new mutation instance
-						fixture =
-							TestBed.createComponent(UserDetailPage);
-						component =
-							fixture.componentInstance;
-						TestBed.runInInjectionContext(
-							() =>
-							{
-								fixture.detectChanges();
-							});
+						// Use factory to create component with new mutation
+						const { fixture: fieldsFixture, component: fieldsComponent } =
+							createComponent();
+						await fieldsFixture.whenStable();
 
-						await fixture.whenStable();
-
-						component.userForm.patchValue(
+						fieldsComponent.userForm.patchValue(
 							{ fullName: "New Name" });
-						await component.onSubmit();
+						await fieldsComponent.onSubmit();
 
-						expect(component.updateMutation.mutate)
+						expect(fieldsComponent.updateMutation.mutate)
 							.toHaveBeenCalledWith(
 								{
 									userId: "1",
@@ -518,23 +509,14 @@ describe("UserDetailPage",
 
 						mockUserService.updateUser.mockReturnValue(errorMutation);
 
-						// Recreate component to get new mutation
-						fixture =
-							TestBed.createComponent(UserDetailPage);
-						component =
-							fixture.componentInstance;
+						// Use factory to create component with conflict error mutation
+						const { fixture: conflictFixture, component: conflictComponent } =
+							createComponent();
+						await conflictFixture.whenStable();
 
-						TestBed.runInInjectionContext(
-							() =>
-							{
-								fixture.detectChanges();
-							});
-
-						await fixture.whenStable();
-
-						component.userForm.patchValue(
+						conflictComponent.userForm.patchValue(
 							{ fullName: "Modified" });
-						await component.onSubmit();
+						await conflictComponent.onSubmit();
 
 						expect(mockNotificationService.warningWithAction)
 							.toHaveBeenCalledWith(
@@ -552,16 +534,9 @@ describe("UserDetailPage",
 									isLoading: true
 								}));
 
-						// Recreate component with loading state
-						const loadingFixture: ComponentFixture<UserDetailPage> =
-							TestBed.createComponent(UserDetailPage);
-						const loadingComponent: UserDetailPage =
-							loadingFixture.componentInstance;
-						TestBed.runInInjectionContext(
-							() =>
-							{
-								loadingFixture.detectChanges();
-							});
+						// Use factory to create component with loading state
+						const { fixture: loadingFixture, component: loadingComponent } =
+							createComponent();
 						await loadingFixture.whenStable();
 
 						loadingComponent.userForm.patchValue(
@@ -604,29 +579,21 @@ describe("UserDetailPage",
 									});
 						mockUserService.updateUser.mockReturnValue(localMockMutationResult);
 
-						// Recreate component to get new mutation instance
-						fixture =
-							TestBed.createComponent(UserDetailPage);
-						component =
-							fixture.componentInstance;
-						TestBed.runInInjectionContext(
-							() =>
-							{
-								fixture.detectChanges();
-							});
+						// Use factory to create component with new mutation
+						const { fixture: allFieldsFixture, component: allFieldsComponent } =
+							createComponent();
+						await allFieldsFixture.whenStable();
 
-						await fixture.whenStable();
-
-						component.userForm.patchValue(
+						allFieldsComponent.userForm.patchValue(
 							{
 								username: "new_username",
 								email: "new@example.com",
 								fullName: "New Full Name",
 								isActive: false
 							});
-						await component.onSubmit();
+						await allFieldsComponent.onSubmit();
 
-						expect(component.updateMutation.mutate)
+						expect(allFieldsComponent.updateMutation.mutate)
 							.toHaveBeenCalledWith(
 								{
 									userId: "1",

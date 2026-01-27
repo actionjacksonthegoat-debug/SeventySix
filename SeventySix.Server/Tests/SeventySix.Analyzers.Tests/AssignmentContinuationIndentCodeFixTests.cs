@@ -42,8 +42,10 @@ public class AssignmentContinuationIndentCodeFixTests
 
 		await VerifyCodeFixAsync<
 			AssignmentContinuationIndentAnalyzer,
-			AssignmentContinuationIndentCodeFixProvider
-		>(testCode, fixedCode, ExpectSS003(line: 6, column: 1));
+			AssignmentContinuationIndentCodeFixProvider>(
+			testCode,
+			fixedCode,
+			ExpectSS003(line: 6, column: 1));
 	}
 
 	/// <summary>
@@ -94,8 +96,10 @@ public class AssignmentContinuationIndentCodeFixTests
 
 		await VerifyCodeFixAsync<
 			AssignmentContinuationIndentAnalyzer,
-			AssignmentContinuationIndentCodeFixProvider
-		>(testCode, fixedCode, ExpectSS003(line: 9, column: 1));
+			AssignmentContinuationIndentCodeFixProvider>(
+			testCode,
+			fixedCode,
+			ExpectSS003(line: 9, column: 1));
 	}
 
 	/// <summary>
@@ -152,8 +156,10 @@ public class AssignmentContinuationIndentCodeFixTests
 
 		await VerifyCodeFixAsync<
 			AssignmentContinuationIndentAnalyzer,
-			AssignmentContinuationIndentCodeFixProvider
-		>(testCode, fixedCode, ExpectSS003(line: 11, column: 4));
+			AssignmentContinuationIndentCodeFixProvider>(
+			testCode,
+			fixedCode,
+			ExpectSS003(line: 11, column: 4));
 	}
 
 	/// <summary>
@@ -632,79 +638,5 @@ public class AssignmentContinuationIndentCodeFixTests
 			AssignmentContinuationIndentAnalyzer,
 			AssignmentContinuationIndentCodeFixProvider
 		>(testCode, testCode);
-	}
-
-	/// <summary>
-	/// CRITICAL TEST: Shows what dotnet format (IDE0055) does to our correctly-formatted code.
-	/// After our analyzers run, IDE0055 de-indents the dictionary entries.
-	/// This test proves the pattern that's breaking in the real codebase.
-	/// TODO: Analyzer doesn't yet detect collection expression entries - requires production code changes.
-	/// </summary>
-	[Fact(Skip = "Analyzer doesn't yet detect collection expression entries (needs production code changes)")]
-	public async Task SimpleDictionaryEntries_AfterIDE0055DeIndents_ShouldBeDetectedAsync()
-	{
-		// This is what IDE0055 produces (WRONG)
-		const string wrongCode = """
-			using System.Collections.Generic;
-
-			class TestClass
-			{
-				void TestMethod()
-				{
-					var stats =
-						new StatsResponse
-						{
-							CallsByApi =
-								new Dictionary<string, int>
-								{
-			{ "ExternalAPI", 150 },
-			{ "GoogleMaps", 75 },
-								},
-						};
-				}
-			}
-
-			class StatsResponse
-			{
-				public Dictionary<string, int> CallsByApi { get; set; }
-			}
-			""";
-
-		// This is what it should be (CORRECT)
-		const string correctCode = """
-			using System.Collections.Generic;
-
-			class TestClass
-			{
-				void TestMethod()
-				{
-					var stats =
-						new StatsResponse
-						{
-							CallsByApi =
-								new Dictionary<string, int>
-								{
-									{ "ExternalAPI", 150 },
-									{ "GoogleMaps", 75 },
-								},
-						};
-				}
-			}
-
-			class StatsResponse
-			{
-				public Dictionary<string, int> CallsByApi { get; set; }
-			}
-			""";
-
-		// Should detect and fix the de-indented entries
-		await VerifyCodeFixAsync<
-			AssignmentContinuationIndentAnalyzer,
-			AssignmentContinuationIndentCodeFixProvider
-		>(
-			wrongCode,
-			correctCode,
-			ExpectSS003(line: 13, column: 1),
-			ExpectSS003(line: 14, column: 1));
 	}
 }

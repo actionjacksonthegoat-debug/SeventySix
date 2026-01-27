@@ -65,7 +65,7 @@ public static class ElectronicNotificationsRegistration
 			SchemaConstants.ElectronicNotifications);
 
 		// Bind email settings from configuration
-		services.Configure<EmailSettings>(configuration.GetSection("Email"));
+		services.Configure<EmailSettings>(configuration.GetSection(ConfigurationSectionConstants.Email));
 
 		// Bind email queue settings
 		services.Configure<EmailQueueSettings>(

@@ -5,8 +5,15 @@ import { provideHttpClientTesting } from "@angular/common/http/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideRouter } from "@angular/router";
+import { AltchaService } from "@shared/services";
 import { AuthService } from "@shared/services/auth.service";
 import { NotificationService } from "@shared/services/notification.service";
+import {
+	createMockAltchaService,
+	createMockNotificationService,
+	MockAltchaService,
+	MockNotificationService
+} from "@shared/testing";
 import { of, throwError } from "rxjs";
 import { vi } from "vitest";
 import { ForgotPasswordComponent } from "./forgot-password";
@@ -16,12 +23,6 @@ interface MockAuthService
 	requestPasswordReset: ReturnType<typeof vi.fn>;
 }
 
-interface MockNotificationService
-{
-	success: ReturnType<typeof vi.fn>;
-	error: ReturnType<typeof vi.fn>;
-}
-
 describe("ForgotPasswordComponent",
 	() =>
 	{
@@ -29,6 +30,7 @@ describe("ForgotPasswordComponent",
 		let component: ForgotPasswordComponent;
 		let authServiceSpy: MockAuthService;
 		let notificationSpy: MockNotificationService;
+		let altchaSpy: MockAltchaService;
 
 		beforeEach(
 			async () =>
@@ -36,10 +38,9 @@ describe("ForgotPasswordComponent",
 				authServiceSpy =
 					{ requestPasswordReset: vi.fn() };
 				notificationSpy =
-					{
-						success: vi.fn(),
-						error: vi.fn()
-					};
+					createMockNotificationService();
+				altchaSpy =
+					createMockAltchaService(false);
 
 				await TestBed
 					.configureTestingModule(
@@ -58,6 +59,10 @@ describe("ForgotPasswordComponent",
 								{
 									provide: NotificationService,
 									useValue: notificationSpy
+								},
+								{
+									provide: AltchaService,
+									useValue: altchaSpy
 								}
 							]
 						})
@@ -133,8 +138,8 @@ describe("ForgotPasswordComponent",
 					.toBe(false);
 			});
 
-		it("should call requestPasswordReset with email",
-			() =>
+		it("should call requestPasswordReset with email and null payload when ALTCHA disabled",
+			async () =>
 			{
 				// Arrange
 				authServiceSpy.requestPasswordReset.mockReturnValue(of(undefined));
@@ -142,11 +147,13 @@ describe("ForgotPasswordComponent",
 
 				// Act
 				component["onSubmit"]();
+				await fixture.whenStable();
 
 				// Assert
 				expect(authServiceSpy.requestPasswordReset)
 					.toHaveBeenCalledWith(
-						"user@example.com");
+						"user@example.com",
+						null);
 			});
 
 		it("should show error notification on API failure",

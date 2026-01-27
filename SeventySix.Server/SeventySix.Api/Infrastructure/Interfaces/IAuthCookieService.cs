@@ -1,0 +1,83 @@
+// <copyright file="IAuthCookieService.cs" company="SeventySix">
+// Copyright (c) SeventySix. All rights reserved.
+// </copyright>
+
+namespace SeventySix.Api.Infrastructure;
+
+/// <summary>
+/// Service for managing authentication and OAuth cookies.
+/// </summary>
+/// <remarks>
+/// Abstracts cookie operations from controllers for:
+/// - Testability (can mock cookie operations)
+/// - Single Responsibility (controllers focus on HTTP flow)
+/// - Consistency (all cookie operations go through one service)
+/// </remarks>
+public interface IAuthCookieService
+{
+	/// <summary>
+	/// Sets the refresh token as an HTTP-only secure cookie.
+	/// </summary>
+	/// <param name="refreshToken">
+	/// The refresh token value.
+	/// </param>
+	public void SetRefreshTokenCookie(string refreshToken);
+
+	/// <summary>
+	/// Gets the refresh token from the request cookies.
+	/// </summary>
+	/// <returns>
+	/// The refresh token if present; otherwise null.
+	/// </returns>
+	public string? GetRefreshToken();
+
+	/// <summary>
+	/// Clears the refresh token cookie.
+	/// </summary>
+	public void ClearRefreshTokenCookie();
+
+	/// <summary>
+	/// Sets the OAuth state cookie for CSRF protection.
+	/// </summary>
+	/// <param name="state">
+	/// The state value for CSRF validation.
+	/// </param>
+	public void SetOAuthStateCookie(string state);
+
+	/// <summary>
+	/// Gets the OAuth state from the request cookies.
+	/// </summary>
+	/// <returns>
+	/// The state value if present; otherwise null.
+	/// </returns>
+	public string? GetOAuthState();
+
+	/// <summary>
+	/// Sets the OAuth code verifier cookie for PKCE flow.
+	/// </summary>
+	/// <param name="codeVerifier">
+	/// The PKCE code verifier.
+	/// </param>
+	public void SetOAuthCodeVerifierCookie(string codeVerifier);
+
+	/// <summary>
+	/// Gets the OAuth code verifier from the request cookies.
+	/// </summary>
+	/// <returns>
+	/// The code verifier if present; otherwise null.
+	/// </returns>
+	public string? GetOAuthCodeVerifier();
+
+	/// <summary>
+	/// Clears all OAuth-related cookies.
+	/// </summary>
+	public void ClearOAuthCookies();
+
+	/// <summary>
+	/// Gets the allowed origin for OAuth postMessage communication.
+	/// </summary>
+	/// <returns>
+	/// The origin URL (scheme + authority).
+	/// </returns>
+	public string GetAllowedOrigin();
+}

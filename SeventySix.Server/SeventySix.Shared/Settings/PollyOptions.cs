@@ -46,8 +46,25 @@ public record PollyOptions
 
 	/// <summary>
 	/// HTTP request timeout (seconds).
+	/// For sub-second timeouts, use TimeoutMilliseconds instead.
 	/// </summary>
 	public int TimeoutSeconds { get; init; } = 10;
+
+	/// <summary>
+	/// HTTP request timeout in milliseconds.
+	/// Takes precedence over TimeoutSeconds when set to a value greater than 0.
+	/// Useful for testing with fast timeouts.
+	/// </summary>
+	public int TimeoutMilliseconds { get; init; } = 0;
+
+	/// <summary>
+	/// Gets the effective timeout as a TimeSpan.
+	/// Uses TimeoutMilliseconds if set, otherwise TimeoutSeconds.
+	/// </summary>
+	public TimeSpan EffectiveTimeout =>
+		TimeoutMilliseconds > 0
+			? TimeSpan.FromMilliseconds(TimeoutMilliseconds)
+			: TimeSpan.FromSeconds(TimeoutSeconds);
 
 	/// <summary>
 	/// Enable jitter in retry delays to prevent thundering herd.

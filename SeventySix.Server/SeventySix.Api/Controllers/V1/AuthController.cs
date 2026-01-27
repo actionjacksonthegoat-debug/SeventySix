@@ -5,11 +5,12 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
-using Microsoft.Extensions.Options;
 using SeventySix.Api.Configuration;
 using SeventySix.Api.Extensions;
+using SeventySix.Api.Infrastructure;
 using SeventySix.Identity;
 using SeventySix.Shared.Extensions;
+using SeventySix.Shared.POCOs;
 using Wolverine;
 
 namespace SeventySix.Api.Controllers;
@@ -25,14 +26,28 @@ namespace SeventySix.Api.Controllers;
 /// - PKCE flow for OAuth (code verifier in session/cookie)
 /// - OAuth uses code exchange pattern to avoid token exposure in postMessage
 /// </remarks>
+/// <param name="messageBus">
+/// The Wolverine message bus for CQRS operations.
+/// </param>
+/// <param name="oAuthService">
+/// Service for OAuth provider integrations.
+/// </param>
+/// <param name="oauthCodeExchange">
+/// Service for OAuth code exchange flow.
+/// </param>
+/// <param name="cookieService">
+/// Service for authentication cookie management.
+/// </param>
+/// <param name="logger">
+/// Logger for authentication operations.
+/// </param>
 [ApiController]
 [Route(ApiVersionConfig.VersionedRoutePrefix + "/auth")]
 public class AuthController(
 	IMessageBus messageBus,
 	IOAuthService oAuthService,
 	IOAuthCodeExchangeService oauthCodeExchange,
-	IOptions<AuthSettings> authSettings,
-	IOptions<JwtSettings> jwtSettings,
+	IAuthCookieService cookieService,
 	ILogger<AuthController> logger) : ControllerBase
 {
 	/// <summary>
@@ -77,6 +92,11 @@ public class AuthController(
 				new LoginCommand(request, clientIp),
 				cancellationToken);
 
+		if (result.RequiresMfa)
+		{
+			return Ok(AuthResponse.FromResult(result));
+		}
+
 		if (!result.Success)
 		{
 			logger.LogWarning(
@@ -96,83 +116,18 @@ public class AuthController(
 				});
 		}
 
-		SetRefreshTokenCookie(result.RefreshToken!);
+		ValidatedAuthResult validatedResult =
+			ValidateSuccessfulAuthResult(result);
+
+		cookieService.SetRefreshTokenCookie(validatedResult.RefreshToken);
 
 		return Ok(
 			new AuthResponse(
-				AccessToken: result.AccessToken!,
-				ExpiresAt: result.ExpiresAt!.Value,
-				Email: result.Email!,
-				FullName: result.FullName,
-				RequiresPasswordChange: result.RequiresPasswordChange));
-	}
-
-	/// <summary>
-	/// Registers a new user account.
-	/// </summary>
-	/// <param name="request">
-	/// Registration details.
-	/// </param>
-	/// <param name="cancellationToken">
-	/// Cancellation token.
-	/// </param>
-	/// <returns>
-	/// Access token and sets refresh token cookie.
-	/// </returns>
-	/// <response code="201">Registration successful.</response>
-	/// <response code="400">Validation error or username/email taken.</response>
-	/// <response code="429">Too many registration attempts.</response>
-	[HttpPost("register")]
-	[EnableRateLimiting(RateLimitPolicyConstants.AuthRegister)]
-	[ProducesResponseType(typeof(AuthResponse), StatusCodes.Status201Created)]
-	[ProducesResponseType(
-		typeof(ProblemDetails),
-		StatusCodes.Status400BadRequest
-	)]
-	[ProducesResponseType(
-		typeof(ProblemDetails),
-		StatusCodes.Status429TooManyRequests
-	)]
-	public async Task<ActionResult<AuthResponse>> RegisterAsync(
-		[FromBody] RegisterRequest request,
-		CancellationToken cancellationToken)
-	{
-		string? clientIp = GetClientIpAddress();
-
-		AuthResult result =
-			await messageBus.InvokeAsync<AuthResult>(
-				new RegisterCommand(request, clientIp),
-				cancellationToken);
-
-		if (!result.Success)
-		{
-			logger.LogWarning(
-				"Registration failed. Error: {Error}, Code: {ErrorCode}",
-				result.Error,
-				result.ErrorCode);
-
-			return BadRequest(
-				new ProblemDetails
-				{
-					Title = "Registration Failed",
-					Detail = result.Error,
-					Status =
-						StatusCodes.Status400BadRequest,
-					Extensions =
-						{ ["errorCode"] = result.ErrorCode },
-				});
-		}
-
-		SetRefreshTokenCookie(result.RefreshToken!);
-
-		return StatusCode(
-			StatusCodes.Status201Created,
-			new AuthResponse(
-				AccessToken: result.AccessToken!,
-				ExpiresAt: result.ExpiresAt!.Value,
-				Email: result.Email!,
-				FullName: result.FullName,
-				RequiresPasswordChange: result.RequiresPasswordChange));
+				AccessToken: validatedResult.AccessToken,
+				ExpiresAt: validatedResult.ExpiresAt,
+				Email: validatedResult.Email,
+				FullName: validatedResult.FullName,
+				RequiresPasswordChange: validatedResult.RequiresPasswordChange));
 	}
 
 	/// <summary>
@@ -202,9 +157,7 @@ public class AuthController(
 		CancellationToken cancellationToken)
 	{
 		string? refreshToken =
-			Request.Cookies[
-				authSettings.Value.Cookie.RefreshTokenCookieName
-		];
+			cookieService.GetRefreshToken();
 
 		if (string.IsNullOrEmpty(refreshToken))
 		{
@@ -227,7 +180,7 @@ public class AuthController(
 
 		if (!result.Success)
 		{
-			ClearRefreshTokenCookie();
+			cookieService.ClearRefreshTokenCookie();
 
 			return Unauthorized(
 				new ProblemDetails
@@ -241,15 +194,18 @@ public class AuthController(
 				});
 		}
 
-		SetRefreshTokenCookie(result.RefreshToken!);
+		ValidatedAuthResult validatedResult =
+			ValidateSuccessfulAuthResult(result);
+
+		cookieService.SetRefreshTokenCookie(validatedResult.RefreshToken);
 
 		return Ok(
 			new AuthResponse(
-				AccessToken: result.AccessToken!,
-				ExpiresAt: result.ExpiresAt!.Value,
-				Email: result.Email!,
-				FullName: result.FullName,
-				RequiresPasswordChange: result.RequiresPasswordChange));
+				AccessToken: validatedResult.AccessToken,
+				ExpiresAt: validatedResult.ExpiresAt,
+				Email: validatedResult.Email,
+				FullName: validatedResult.FullName,
+				RequiresPasswordChange: validatedResult.RequiresPasswordChange));
 	}
 
 	/// <summary>
@@ -263,24 +219,564 @@ public class AuthController(
 	/// </returns>
 	/// <response code="204">Logout successful.</response>
 	[HttpPost("logout")]
+	[EnableRateLimiting(RateLimitPolicyConstants.AuthRefresh)]
 	[ProducesResponseType(StatusCodes.Status204NoContent)]
 	public async Task<IActionResult> LogoutAsync(
 		CancellationToken cancellationToken)
 	{
 		string? refreshToken =
-			Request.Cookies[
-				authSettings.Value.Cookie.RefreshTokenCookieName
-		];
+			cookieService.GetRefreshToken();
 
 		if (!string.IsNullOrEmpty(refreshToken))
 		{
-			await messageBus.InvokeAsync<bool>(refreshToken, cancellationToken);
+			LogoutCommand command =
+				new(refreshToken);
+
+			await messageBus.InvokeAsync<Result>(command, cancellationToken);
 		}
 
-		ClearRefreshTokenCookie();
-		ClearOAuthCookies();
+		cookieService.ClearRefreshTokenCookie();
+		cookieService.ClearOAuthCookies();
 
 		return NoContent();
+	}
+
+	/// <summary>
+	/// Verifies an MFA code and completes authentication.
+	/// </summary>
+	/// <param name="request">
+	/// The verification request containing challenge token and code.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// Access token and sets refresh token cookie on successful verification.
+	/// </returns>
+	/// <response code="200">MFA verification successful.</response>
+	/// <response code="400">Invalid or expired code.</response>
+	/// <response code="429">Too many verification attempts.</response>
+	[HttpPost("mfa/verify")]
+	[EnableRateLimiting(RateLimitPolicyConstants.MfaVerify)]
+	[ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
+	[ProducesResponseType(
+		typeof(ProblemDetails),
+		StatusCodes.Status400BadRequest
+	)]
+	[ProducesResponseType(
+		typeof(ProblemDetails),
+		StatusCodes.Status429TooManyRequests
+	)]
+	public async Task<ActionResult<AuthResponse>> VerifyMfaAsync(
+		[FromBody] VerifyMfaRequest request,
+		CancellationToken cancellationToken)
+	{
+		string? clientIp = GetClientIpAddress();
+
+		AuthResult result =
+			await messageBus.InvokeAsync<AuthResult>(
+				new VerifyMfaCommand(request, clientIp),
+				cancellationToken);
+
+		if (!result.Success)
+		{
+			logger.LogWarning(
+				"MFA verification failed. Code: {ErrorCode}",
+				result.ErrorCode);
+
+			return BadRequest(
+				new ProblemDetails
+				{
+					Title = "MFA Verification Failed",
+					Detail = result.Error,
+					Status =
+						StatusCodes.Status400BadRequest,
+					Extensions =
+						{ ["errorCode"] = result.ErrorCode },
+				});
+		}
+
+		ValidatedAuthResult validatedResult =
+			ValidateSuccessfulAuthResult(result);
+
+		cookieService.SetRefreshTokenCookie(validatedResult.RefreshToken);
+
+		return Ok(
+			new AuthResponse(
+				AccessToken: validatedResult.AccessToken,
+				ExpiresAt: validatedResult.ExpiresAt,
+				Email: validatedResult.Email,
+				FullName: validatedResult.FullName,
+				RequiresPasswordChange: validatedResult.RequiresPasswordChange));
+	}
+
+	/// <summary>
+	/// Resends the MFA verification code.
+	/// </summary>
+	/// <param name="request">
+	/// The resend request containing challenge token.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// No content on success.
+	/// </returns>
+	/// <response code="204">Code resent successfully.</response>
+	/// <response code="400">Invalid challenge or cooldown not elapsed.</response>
+	/// <response code="429">Too many resend attempts.</response>
+	[HttpPost("mfa/resend")]
+	[EnableRateLimiting(RateLimitPolicyConstants.MfaResend)]
+	[ProducesResponseType(StatusCodes.Status204NoContent)]
+	[ProducesResponseType(
+		typeof(ProblemDetails),
+		StatusCodes.Status400BadRequest
+	)]
+	[ProducesResponseType(
+		typeof(ProblemDetails),
+		StatusCodes.Status429TooManyRequests
+	)]
+	public async Task<IActionResult> ResendMfaCodeAsync(
+		[FromBody] ResendMfaCodeRequest request,
+		CancellationToken cancellationToken)
+	{
+		MfaChallengeRefreshResult result =
+			await messageBus.InvokeAsync<MfaChallengeRefreshResult>(
+				new ResendMfaCodeCommand(request),
+				cancellationToken);
+
+		if (!result.Success)
+		{
+			logger.LogWarning(
+				"MFA code resend failed. Code: {ErrorCode}",
+				result.ErrorCode);
+
+			return BadRequest(
+				new ProblemDetails
+				{
+					Title = "MFA Resend Failed",
+					Detail = result.Error,
+					Status =
+						StatusCodes.Status400BadRequest,
+					Extensions =
+						{ ["errorCode"] = result.ErrorCode },
+				});
+		}
+
+		return NoContent();
+	}
+
+	/// <summary>
+	/// Verifies a TOTP code during MFA authentication.
+	/// </summary>
+	/// <param name="request">
+	/// The verification request containing email and TOTP code.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// Access token and sets refresh token cookie on successful verification.
+	/// </returns>
+	/// <response code="200">TOTP verification successful.</response>
+	/// <response code="400">Invalid or expired code.</response>
+	/// <response code="429">Too many verification attempts.</response>
+	[HttpPost("mfa/verify-totp")]
+	[EnableRateLimiting(RateLimitPolicyConstants.MfaVerify)]
+	[ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
+	[ProducesResponseType(
+		typeof(ProblemDetails),
+		StatusCodes.Status400BadRequest
+	)]
+	[ProducesResponseType(
+		typeof(ProblemDetails),
+		StatusCodes.Status429TooManyRequests
+	)]
+	public async Task<ActionResult<AuthResponse>> VerifyTotpAsync(
+		[FromBody] VerifyTotpRequest request,
+		CancellationToken cancellationToken)
+	{
+		string? clientIp = GetClientIpAddress();
+
+		AuthResult result =
+			await messageBus.InvokeAsync<AuthResult>(
+				new VerifyTotpCodeCommand(request, clientIp),
+				cancellationToken);
+
+		if (!result.Success)
+		{
+			logger.LogWarning(
+				"TOTP verification failed. Code: {ErrorCode}",
+				result.ErrorCode);
+
+			return BadRequest(
+				new ProblemDetails
+				{
+					Title = "TOTP Verification Failed",
+					Detail = result.Error,
+					Status =
+						StatusCodes.Status400BadRequest,
+					Extensions =
+						{ ["errorCode"] = result.ErrorCode },
+				});
+		}
+
+		ValidatedAuthResult validatedResult =
+			ValidateSuccessfulAuthResult(result);
+
+		cookieService.SetRefreshTokenCookie(validatedResult.RefreshToken);
+
+		return Ok(
+			new AuthResponse(
+				AccessToken: validatedResult.AccessToken,
+				ExpiresAt: validatedResult.ExpiresAt,
+				Email: validatedResult.Email,
+				FullName: validatedResult.FullName,
+				RequiresPasswordChange: validatedResult.RequiresPasswordChange));
+	}
+
+	/// <summary>
+	/// Verifies a backup code during MFA authentication.
+	/// </summary>
+	/// <param name="request">
+	/// The verification request containing email and backup code.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// Access token and sets refresh token cookie on successful verification.
+	/// </returns>
+	/// <response code="200">Backup code verification successful.</response>
+	/// <response code="400">Invalid or already used code.</response>
+	/// <response code="429">Too many verification attempts.</response>
+	[HttpPost("mfa/verify-backup")]
+	[EnableRateLimiting(RateLimitPolicyConstants.MfaVerify)]
+	[ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
+	[ProducesResponseType(
+		typeof(ProblemDetails),
+		StatusCodes.Status400BadRequest
+	)]
+	[ProducesResponseType(
+		typeof(ProblemDetails),
+		StatusCodes.Status429TooManyRequests
+	)]
+	public async Task<ActionResult<AuthResponse>> VerifyBackupCodeAsync(
+		[FromBody] VerifyBackupCodeRequest request,
+		CancellationToken cancellationToken)
+	{
+		string? clientIp = GetClientIpAddress();
+
+		AuthResult result =
+			await messageBus.InvokeAsync<AuthResult>(
+				new VerifyBackupCodeCommand(request, clientIp),
+				cancellationToken);
+
+		if (!result.Success)
+		{
+			logger.LogWarning(
+				"Backup code verification failed. Code: {ErrorCode}",
+				result.ErrorCode);
+
+			return BadRequest(
+				new ProblemDetails
+				{
+					Title = "Backup Code Verification Failed",
+					Detail = result.Error,
+					Status =
+						StatusCodes.Status400BadRequest,
+					Extensions =
+						{ ["errorCode"] = result.ErrorCode },
+				});
+		}
+
+		ValidatedAuthResult validatedResult =
+			ValidateSuccessfulAuthResult(result);
+
+		cookieService.SetRefreshTokenCookie(validatedResult.RefreshToken);
+
+		return Ok(
+			new AuthResponse(
+				AccessToken: validatedResult.AccessToken,
+				ExpiresAt: validatedResult.ExpiresAt,
+				Email: validatedResult.Email,
+				FullName: validatedResult.FullName,
+				RequiresPasswordChange: validatedResult.RequiresPasswordChange));
+	}
+
+	/// <summary>
+	/// Initiates TOTP enrollment for the authenticated user.
+	/// </summary>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// TOTP setup information including secret and QR code URI.
+	/// </returns>
+	/// <response code="200">TOTP enrollment initiated.</response>
+	/// <response code="400">TOTP already configured or other error.</response>
+	/// <response code="401">Unauthorized.</response>
+	[HttpPost("totp/setup")]
+	[Authorize]
+	[ProducesResponseType(typeof(TotpSetupResponse), StatusCodes.Status200OK)]
+	[ProducesResponseType(
+		typeof(ProblemDetails),
+		StatusCodes.Status400BadRequest
+	)]
+	[ProducesResponseType(
+		typeof(ProblemDetails),
+		StatusCodes.Status401Unauthorized
+	)]
+	public async Task<ActionResult<TotpSetupResponse>> InitiateTotpEnrollmentAsync(
+		CancellationToken cancellationToken)
+	{
+		if (User.GetUserId() is not long userId)
+		{
+			return Unauthorized();
+		}
+
+		TotpSetupResult result =
+			await messageBus.InvokeAsync<TotpSetupResult>(
+				new InitiateTotpEnrollmentCommand(userId),
+				cancellationToken);
+
+		if (!result.Success)
+		{
+			logger.LogWarning(
+				"TOTP enrollment initiation failed for user {UserId}. Code: {ErrorCode}",
+				userId,
+				result.ErrorCode);
+
+			return BadRequest(
+				new ProblemDetails
+				{
+					Title = "TOTP Enrollment Failed",
+					Detail = result.Error,
+					Status =
+						StatusCodes.Status400BadRequest,
+					Extensions =
+						{ ["errorCode"] = result.ErrorCode },
+				});
+		}
+
+		return Ok(
+			new TotpSetupResponse(
+				result.Secret!,
+				result.QrCodeUri!));
+	}
+
+	/// <summary>
+	/// Confirms TOTP enrollment by verifying a code from the authenticator app.
+	/// </summary>
+	/// <param name="request">
+	/// The confirmation request containing the TOTP code.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// No content on success.
+	/// </returns>
+	/// <response code="204">TOTP enrollment confirmed.</response>
+	/// <response code="400">Invalid code or enrollment not initiated.</response>
+	/// <response code="401">Unauthorized.</response>
+	[HttpPost("totp/confirm")]
+	[Authorize]
+	[ProducesResponseType(StatusCodes.Status204NoContent)]
+	[ProducesResponseType(
+		typeof(ProblemDetails),
+		StatusCodes.Status400BadRequest
+	)]
+	[ProducesResponseType(
+		typeof(ProblemDetails),
+		StatusCodes.Status401Unauthorized
+	)]
+	public async Task<IActionResult> ConfirmTotpEnrollmentAsync(
+		[FromBody] ConfirmTotpEnrollmentRequest request,
+		CancellationToken cancellationToken)
+	{
+		if (User.GetUserId() is not long userId)
+		{
+			return Unauthorized();
+		}
+
+		Shared.POCOs.Result result =
+			await messageBus.InvokeAsync<Shared.POCOs.Result>(
+				new ConfirmTotpEnrollmentCommand(userId, request),
+				cancellationToken);
+
+		if (!result.IsSuccess)
+		{
+			logger.LogWarning(
+				"TOTP enrollment confirmation failed for user {UserId}",
+				userId);
+
+			return BadRequest(
+				new ProblemDetails
+				{
+					Title = "TOTP Confirmation Failed",
+					Detail = result.Error,
+					Status =
+						StatusCodes.Status400BadRequest,
+				});
+		}
+
+		return NoContent();
+	}
+
+	/// <summary>
+	/// Disables TOTP authentication for the authenticated user.
+	/// </summary>
+	/// <param name="request">
+	/// The request containing password for verification.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// No content on success.
+	/// </returns>
+	/// <response code="204">TOTP disabled successfully.</response>
+	/// <response code="400">Invalid password or TOTP not configured.</response>
+	/// <response code="401">Unauthorized.</response>
+	[HttpPost("totp/disable")]
+	[Authorize]
+	[ProducesResponseType(StatusCodes.Status204NoContent)]
+	[ProducesResponseType(
+		typeof(ProblemDetails),
+		StatusCodes.Status400BadRequest
+	)]
+	[ProducesResponseType(
+		typeof(ProblemDetails),
+		StatusCodes.Status401Unauthorized
+	)]
+	public async Task<IActionResult> DisableTotpAsync(
+		[FromBody] DisableTotpRequest request,
+		CancellationToken cancellationToken)
+	{
+		if (User.GetUserId() is not long userId)
+		{
+			return Unauthorized();
+		}
+
+		Shared.POCOs.Result result =
+			await messageBus.InvokeAsync<Shared.POCOs.Result>(
+				new DisableTotpCommand(userId, request),
+				cancellationToken);
+
+		if (!result.IsSuccess)
+		{
+			logger.LogWarning(
+				"TOTP disable failed for user {UserId}",
+				userId);
+
+			return BadRequest(
+				new ProblemDetails
+				{
+					Title = "TOTP Disable Failed",
+					Detail = result.Error,
+					Status =
+						StatusCodes.Status400BadRequest,
+				});
+		}
+
+		return NoContent();
+	}
+
+	/// <summary>
+	/// Generates new backup codes for the authenticated user.
+	/// </summary>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// List of generated backup codes (shown once only).
+	/// </returns>
+	/// <response code="200">Backup codes generated.</response>
+	/// <response code="400">Error generating codes.</response>
+	/// <response code="401">Unauthorized.</response>
+	[HttpPost("backup-codes")]
+	[Authorize]
+	[ProducesResponseType(typeof(IReadOnlyList<string>), StatusCodes.Status200OK)]
+	[ProducesResponseType(
+		typeof(ProblemDetails),
+		StatusCodes.Status400BadRequest
+	)]
+	[ProducesResponseType(
+		typeof(ProblemDetails),
+		StatusCodes.Status401Unauthorized
+	)]
+	public async Task<ActionResult<IReadOnlyList<string>>> GenerateBackupCodesAsync(
+		CancellationToken cancellationToken)
+	{
+		if (User.GetUserId() is not long userId)
+		{
+			return Unauthorized();
+		}
+
+		BackupCodesResult result =
+			await messageBus.InvokeAsync<BackupCodesResult>(
+				new GenerateBackupCodesCommand(userId),
+				cancellationToken);
+
+		if (!result.Success)
+		{
+			logger.LogWarning(
+				"Backup code generation failed for user {UserId}. Code: {ErrorCode}",
+				userId,
+				result.ErrorCode);
+
+			return BadRequest(
+				new ProblemDetails
+				{
+					Title = "Backup Code Generation Failed",
+					Detail = result.Error,
+					Status =
+						StatusCodes.Status400BadRequest,
+					Extensions =
+						{ ["errorCode"] = result.ErrorCode },
+				});
+		}
+
+		return Ok(result.Codes);
+	}
+
+	/// <summary>
+	/// Gets the count of remaining unused backup codes.
+	/// </summary>
+	/// <param name="backupCodeService">
+	/// Backup code service for count retrieval.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// The number of remaining backup codes.
+	/// </returns>
+	/// <response code="200">Remaining count returned.</response>
+	/// <response code="401">Unauthorized.</response>
+	[HttpGet("backup-codes/remaining")]
+	[Authorize]
+	[ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
+	[ProducesResponseType(
+		typeof(ProblemDetails),
+		StatusCodes.Status401Unauthorized
+	)]
+	public async Task<ActionResult<int>> GetBackupCodesRemainingAsync(
+		[FromServices] IBackupCodeService backupCodeService,
+		CancellationToken cancellationToken)
+	{
+		if (User.GetUserId() is not long userId)
+		{
+			return Unauthorized();
+		}
+
+		int remaining =
+			await backupCodeService.GetRemainingCountAsync(
+				userId,
+				cancellationToken);
+
+		return Ok(remaining);
 	}
 
 	/// <summary>
@@ -301,8 +797,8 @@ public class AuthController(
 			CryptoExtensions.GeneratePkceCodeVerifier();
 
 		// Store state and code verifier in cookies for callback validation
-		SetOAuthStateCookie(state);
-		SetOAuthCodeVerifierCookie(codeVerifier);
+		cookieService.SetOAuthStateCookie(state);
+		cookieService.SetOAuthCodeVerifierCookie(codeVerifier);
 
 		string authorizationUrl =
 			oAuthService.BuildGitHubAuthorizationUrl(
@@ -329,6 +825,7 @@ public class AuthController(
 	/// </returns>
 	/// <response code="200">HTML response with postMessage to parent window.</response>
 	[HttpGet("github/callback")]
+	[EnableRateLimiting(RateLimitPolicyConstants.AuthRegister)]
 	[ProducesResponseType(StatusCodes.Status200OK)]
 	public async Task<IActionResult> GitHubCallbackAsync(
 		[FromQuery] string code,
@@ -337,9 +834,7 @@ public class AuthController(
 	{
 		// Validate state
 		string? storedState =
-			Request.Cookies[
-				authSettings.Value.Cookie.OAuthStateCookieName
-		];
+			cookieService.GetOAuthState();
 
 		if (string.IsNullOrEmpty(storedState) || storedState != state)
 		{
@@ -349,9 +844,7 @@ public class AuthController(
 
 		// Get code verifier
 		string? codeVerifier =
-			Request.Cookies[
-				authSettings.Value.Cookie.OAuthCodeVerifierCookieName
-		];
+			cookieService.GetOAuthCodeVerifier();
 
 		if (string.IsNullOrEmpty(codeVerifier))
 		{
@@ -368,24 +861,34 @@ public class AuthController(
 				clientIp,
 				cancellationToken);
 
-		ClearOAuthCookies();
+		cookieService.ClearOAuthCookies();
 
 		if (!result.Success)
 		{
 			logger.LogWarning(
 				"GitHub OAuth failed. Error: {Error}",
 				result.Error);
-			return CreateOAuthErrorResponse(result.Error!);
+
+			if (result.Error is null)
+			{
+				throw new InvalidOperationException(
+					"Failed AuthResult must contain an Error message.");
+			}
+
+			return CreateOAuthErrorResponse(result.Error);
 		}
+
+		ValidatedAuthResult validatedResult =
+			ValidateSuccessfulAuthResult(result);
 
 		// Don't set refresh token cookie here - it will be set during code exchange
 		// This ensures the cookie is set on the main domain, not the popup
 		return CreateOAuthSuccessResponse(
-			result.AccessToken!,
-			result.RefreshToken!,
-			result.ExpiresAt!.Value,
-			result.Email!,
-			result.FullName);
+			validatedResult.AccessToken,
+			validatedResult.RefreshToken,
+			validatedResult.ExpiresAt,
+			validatedResult.Email,
+			validatedResult.FullName);
 	}
 
 	/// <summary>
@@ -429,7 +932,7 @@ public class AuthController(
 				});
 		}
 
-		SetRefreshTokenCookie(result.RefreshToken);
+		cookieService.SetRefreshTokenCookie(result.RefreshToken);
 
 		return Ok(
 			new AuthResponse(
@@ -530,7 +1033,7 @@ public class AuthController(
 		}
 
 		// Clear refresh token after password change
-		ClearRefreshTokenCookie();
+		cookieService.ClearRefreshTokenCookie();
 
 		return NoContent();
 	}
@@ -569,14 +1072,14 @@ public class AuthController(
 		[FromBody] ForgotPasswordRequest request,
 		CancellationToken cancellationToken)
 	{
-		await messageBus.InvokeAsync(request.Email, cancellationToken);
+		await messageBus.InvokeAsync(
+			new InitiatePasswordResetByEmailCommand(request),
+			cancellationToken);
 
 		// Always return OK to prevent email enumeration
 		return Ok(
-			new
-			{
-				message = "If an account exists with this email, a reset link has been sent.",
-			});
+			new MessageResponse(
+				"If an account exists with this email, a reset link has been sent."));
 	}
 
 	/// <summary>
@@ -601,6 +1104,7 @@ public class AuthController(
 	/// <response code="200">Password set successfully, includes auth tokens.</response>
 	/// <response code="400">Invalid token, expired token, or validation error.</response>
 	[HttpPost("set-password")]
+	[EnableRateLimiting(RateLimitPolicyConstants.AuthLogin)]
 	[ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
 	[ProducesResponseType(
 		typeof(ProblemDetails),
@@ -636,7 +1140,7 @@ public class AuthController(
 				});
 		}
 
-		SetRefreshTokenCookie(result.RefreshToken!);
+		cookieService.SetRefreshTokenCookie(result.RefreshToken!);
 
 		return Ok(
 			new AuthResponse(
@@ -686,10 +1190,8 @@ public class AuthController(
 
 		// Always return OK to prevent email enumeration
 		return Ok(
-			new
-			{
-				message = "If this email is available, a verification link has been sent.",
-			});
+			new MessageResponse(
+				"If this email is available, a verification link has been sent."));
 	}
 
 	/// <summary>
@@ -747,7 +1249,7 @@ public class AuthController(
 				});
 		}
 
-		SetRefreshTokenCookie(result.RefreshToken!);
+		cookieService.SetRefreshTokenCookie(result.RefreshToken!);
 
 		return StatusCode(
 			StatusCodes.Status201Created,
@@ -767,89 +1269,6 @@ public class AuthController(
 		HttpContext.Connection.RemoteIpAddress?.ToString();
 
 	/// <summary>
-	/// Sets an HTTP-only secure cookie.
-	/// </summary>
-	private void SetSecureCookie(
-		string name,
-		string value,
-		TimeSpan expiration,
-		SameSiteMode sameSite = SameSiteMode.Strict)
-	{
-		CookieOptions options =
-			new()
-			{
-				HttpOnly = true,
-				Secure =
-					authSettings.Value.Cookie.SecureCookie,
-				SameSite = sameSite,
-				Expires =
-					DateTimeOffset.UtcNow.Add(expiration),
-			};
-
-		Response.Cookies.Append(name, value, options);
-	}
-
-	/// <summary>
-	/// Deletes a cookie by name.
-	/// </summary>
-	private void DeleteCookie(string name) => Response.Cookies.Delete(name);
-
-	/// <summary>
-	/// Sets the refresh token cookie.
-	/// </summary>
-	private void SetRefreshTokenCookie(string refreshToken) =>
-		SetSecureCookie(
-			authSettings.Value.Cookie.RefreshTokenCookieName,
-			refreshToken,
-			TimeSpan.FromDays(jwtSettings.Value.RefreshTokenExpirationDays));
-
-	/// <summary>
-	/// Clears the refresh token cookie.
-	/// </summary>
-	private void ClearRefreshTokenCookie() =>
-		DeleteCookie(authSettings.Value.Cookie.RefreshTokenCookieName);
-
-	/// <summary>
-	/// Sets OAuth state cookie for CSRF protection.
-	/// </summary>
-	private void SetOAuthStateCookie(string state) =>
-		SetSecureCookie(
-			authSettings.Value.Cookie.OAuthStateCookieName,
-			state,
-			TimeSpan.FromMinutes(5),
-			SameSiteMode.Lax);
-
-	/// <summary>
-	/// Sets OAuth code verifier cookie for PKCE.
-	/// </summary>
-	private void SetOAuthCodeVerifierCookie(string codeVerifier) =>
-		SetSecureCookie(
-			authSettings.Value.Cookie.OAuthCodeVerifierCookieName,
-			codeVerifier,
-			TimeSpan.FromMinutes(5),
-			SameSiteMode.Lax);
-
-	/// <summary>
-	/// Clears OAuth cookies.
-	/// </summary>
-	private void ClearOAuthCookies()
-	{
-		DeleteCookie(authSettings.Value.Cookie.OAuthStateCookieName);
-		DeleteCookie(authSettings.Value.Cookie.OAuthCodeVerifierCookieName);
-	}
-
-	/// <summary>
-	/// Gets the allowed origin from OAuth callback URL.
-	/// </summary>
-	private string GetAllowedOrigin()
-	{
-		Uri callbackUri =
-			new(authSettings.Value.OAuth.ClientCallbackUrl);
-
-		return $"{callbackUri.Scheme}://{callbackUri.Authority}";
-	}
-
-	/// <summary>
 	/// Creates HTML response that posts OAuth authorization code to parent window.
 	/// Tokens are stored server-side; client exchanges code for tokens via API.
 	/// </summary>
@@ -860,7 +1279,8 @@ public class AuthController(
 		string email,
 		string? fullName)
 	{
-		string origin = GetAllowedOrigin();
+		string origin =
+			cookieService.GetAllowedOrigin();
 
 		// Store tokens and get one-time code (60 second TTL)
 		string code =
@@ -899,7 +1319,8 @@ public class AuthController(
 	/// </summary>
 	private ContentResult CreateOAuthErrorResponse(string error)
 	{
-		string origin = GetAllowedOrigin();
+		string origin =
+			cookieService.GetAllowedOrigin();
 
 		string escapedError =
 			Uri.EscapeDataString(error);
@@ -925,5 +1346,66 @@ public class AuthController(
 			""";
 
 		return Content(html, "text/html");
+	}
+
+	/// <summary>
+	/// Validated authentication result with non-nullable token fields.
+	/// </summary>
+	/// <param name="AccessToken">
+	/// The JWT access token.
+	/// </param>
+	/// <param name="RefreshToken">
+	/// The refresh token.
+	/// </param>
+	/// <param name="ExpiresAt">
+	/// Token expiration time.
+	/// </param>
+	/// <param name="Email">
+	/// User's email address.
+	/// </param>
+	/// <param name="FullName">
+	/// User's full name (optional).
+	/// </param>
+	/// <param name="RequiresPasswordChange">
+	/// Whether user must change password.
+	/// </param>
+	private readonly record struct ValidatedAuthResult(
+		string AccessToken,
+		string RefreshToken,
+		DateTime ExpiresAt,
+		string Email,
+		string? FullName,
+		bool RequiresPasswordChange);
+
+	/// <summary>
+	/// Validates that a successful AuthResult contains all required token fields.
+	/// </summary>
+	/// <param name="result">
+	/// The authentication result to validate.
+	/// </param>
+	/// <returns>
+	/// A validated result with non-nullable token fields.
+	/// </returns>
+	/// <exception cref="InvalidOperationException">
+	/// Thrown when a successful result is missing required fields.
+	/// </exception>
+	private static ValidatedAuthResult ValidateSuccessfulAuthResult(AuthResult result)
+	{
+		if (result.AccessToken is null
+			|| result.RefreshToken is null
+			|| result.ExpiresAt is null
+			|| result.Email is null)
+		{
+			throw new InvalidOperationException(
+				"Successful AuthResult must contain AccessToken, RefreshToken, ExpiresAt, and Email.");
+		}
+
+		return new ValidatedAuthResult(
+			result.AccessToken,
+			result.RefreshToken,
+			result.ExpiresAt.Value,
+			result.Email,
+			result.FullName,
+			result.RequiresPasswordChange);
 	}
 }

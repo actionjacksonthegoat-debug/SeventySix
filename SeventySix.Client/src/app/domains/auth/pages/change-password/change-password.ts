@@ -15,14 +15,19 @@ import {
 import { FormsModule } from "@angular/forms";
 import { MatButtonModule } from "@angular/material/button";
 import { ActivatedRoute, Router } from "@angular/router";
-import { mapAuthError } from "@auth/utilities";
+import { ValidationResult } from "@auth/models";
+import {
+	mapAuthError,
+	sanitizeRedirectUrl,
+	validatePassword,
+	validatePasswordsMatch
+} from "@auth/utilities";
 import { environment } from "@environments/environment";
+import { APP_ROUTES } from "@shared/constants";
 import { PASSWORD_VALIDATION } from "@shared/constants/validation.constants";
-import { validatePassword, validatePasswordsMatch } from "@auth/utilities";
+import { AuthErrorResult } from "@shared/models";
 import { AuthService } from "@shared/services/auth.service";
 import { NotificationService } from "@shared/services/notification.service";
-import { ValidationResult } from "@auth/models";
-import { AuthErrorResult } from "@shared/models";
 
 interface ChangePasswordRequest
 {
@@ -137,14 +142,16 @@ export class ChangePasswordComponent implements OnInit
 		this.isRequired.set(
 			requiredParam === "true"
 				|| this.authService.requiresPasswordChange());
+
+		// Sanitize returnUrl to prevent open redirect vulnerabilities
 		this.returnUrl =
-			this.route.snapshot.queryParams["returnUrl"] ?? "/";
+			sanitizeRedirectUrl(this.route.snapshot.queryParams["returnUrl"]);
 
 		// Redirect if not authenticated
 		if (!this.authService.isAuthenticated())
 		{
 			this.router.navigate(
-				["/auth/login"]);
+				[APP_ROUTES.AUTH.LOGIN]);
 		}
 	}
 
@@ -180,33 +187,33 @@ export class ChangePasswordComponent implements OnInit
 			};
 
 		this
-		.http
-		.post<void>(`${environment.apiUrl}/auth/change-password`, request,
-			{
-				withCredentials: true
-			})
-		.subscribe(
-			{
-				next: () =>
+			.http
+			.post<void>(`${environment.apiUrl}/auth/change-password`, request,
 				{
-					this.notification.success(
-						"Password changed successfully. Please log in again.");
-					// Clear auth state locally (server already revoked tokens) and redirect to login
-					this.authService.forceLogoutLocally();
-					// The API clears the refresh token, so user needs to log in again
-					this.router.navigate(
-						["/auth/login"],
-						{
-							queryParams: { returnUrl: this.returnUrl }
-						});
-				},
-				error: (error: HttpErrorResponse) =>
+					withCredentials: true
+				})
+			.subscribe(
 				{
-					const errorResult: AuthErrorResult =
-						mapAuthError(error);
-					this.notification.error(errorResult.message);
-					this.isLoading.set(false);
-				}
-			});
+					next: () =>
+					{
+						this.notification.success(
+							"Password changed successfully. Please log in again.");
+						// Clear auth state locally (server already revoked tokens) and redirect to login
+						this.authService.forceLogoutLocally();
+						// The API clears the refresh token, so user needs to log in again
+						this.router.navigate(
+							[APP_ROUTES.AUTH.LOGIN],
+							{
+								queryParams: { returnUrl: this.returnUrl }
+							});
+					},
+					error: (error: HttpErrorResponse) =>
+					{
+						const errorResult: AuthErrorResult =
+							mapAuthError(error);
+						this.notification.error(errorResult.message);
+						this.isLoading.set(false);
+					}
+				});
 	}
 }

@@ -22,7 +22,8 @@ export const environment: Environment =
 			grafanaUrl: "http://localhost:3000", // Grafana for metrics visualization
 			dashboards: {
 				systemOverview: "seventysix-system-overview",
-				apiEndpoints: "seventysix-api-endpoints"
+				apiEndpoints: "seventysix-api-endpoints",
+				valkeyCache: "seventysix-valkey"
 			}
 		},
 		cache: {
@@ -55,6 +56,16 @@ export const environment: Environment =
 					staleTime: 60000, // 1min
 					gcTime: 300000, // 5min
 					retry: 2
+				},
+				account: {
+					staleTime: 120000, // 2min - User profile changes infrequently
+					gcTime: 600000, // 10min
+					retry: 2
+				},
+				permissionrequests: {
+					staleTime: 60000, // 1min
+					gcTime: 300000, // 5min
+					retry: 2
 				}
 			}
 		},
@@ -74,6 +85,10 @@ export const environment: Environment =
 				enableMonitoring: true,
 				fpsWarningThreshold: 30
 			}
+		},
+		http: {
+			defaultTimeout: 30000, // 30 seconds
+			uploadTimeout: 120000 // 2 minutes for file uploads
 		},
 		dateTime: {
 			defaultDisplayFormat: "yyyy-MM-dd HH:mm:ss",
@@ -95,5 +110,8 @@ export const environment: Environment =
 		auth: {
 			loginUrl: "/auth/login",
 			tokenRefreshBufferSeconds: 60 // Refresh token 60s before expiry
+		},
+		altcha: {
+			enabled: true
 		}
 	};

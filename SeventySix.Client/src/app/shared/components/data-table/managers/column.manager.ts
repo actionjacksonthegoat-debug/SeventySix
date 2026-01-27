@@ -55,16 +55,16 @@ export class DataTableColumnManager<T>
 					const visibility: Map<string, boolean> =
 						this.columnVisibility();
 					return this
-					.columns()
-					.filter(
-						(column: TableColumn<T>) =>
-						{
-							const isVisible: boolean | undefined =
-								visibility.get(column.key);
-							return isVisible !== undefined
-								? isVisible
-								: column.visible;
-						});
+						.columns()
+						.filter(
+							(column: TableColumn<T>) =>
+							{
+								const isVisible: boolean | undefined =
+									visibility.get(column.key);
+								return isVisible !== undefined
+									? isVisible
+									: column.visible;
+							});
 				});
 	}
 
@@ -86,9 +86,9 @@ export class DataTableColumnManager<T>
 
 		columns.push(
 			...this
-			.visibleColumns()
-			.map(
-				(column: TableColumn<T>) => column.key));
+				.visibleColumns()
+				.map(
+					(column: TableColumn<T>) => column.key));
 
 		if (options.hasRowActions)
 		{
@@ -111,10 +111,10 @@ export class DataTableColumnManager<T>
 			this.columnVisibility();
 		const column: TableColumn<T> | undefined =
 			this
-			.columns()
-			.find(
-				(col: TableColumn<T>): boolean =>
-					col.key === columnKey);
+				.columns()
+				.find(
+					(col: TableColumn<T>): boolean =>
+						col.key === columnKey);
 
 		return visibility.get(columnKey) ?? column?.visible ?? true;
 	}
@@ -133,10 +133,10 @@ export class DataTableColumnManager<T>
 			visibility.get(columnKey);
 		const column: TableColumn<T> | undefined =
 			this
-			.columns()
-			.find(
-				(col: TableColumn<T>) =>
-					col.key === columnKey);
+				.columns()
+				.find(
+					(col: TableColumn<T>) =>
+						col.key === columnKey);
 
 		if (column)
 		{

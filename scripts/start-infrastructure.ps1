@@ -18,6 +18,9 @@ Write-Host "  SeventySix Infrastructure Startup" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 
+# Clean up orphaned processes before starting (prevents port conflicts)
+& (Join-Path $PSScriptRoot "cleanup-ports.ps1")
+
 # Ensure Docker Desktop is running
 if (-not (Get-Process 'Docker Desktop' -ErrorAction SilentlyContinue)) {
 	Write-Host "Starting Docker Desktop..." -ForegroundColor Yellow
@@ -80,7 +83,7 @@ Push-Location (Join-Path $PSScriptRoot "..\SeventySix.Server")
 
 try {
 	# Infrastructure services (not the API)
-	$services = @("postgres", "jaeger", "prometheus", "grafana", "pgadmin")
+	$services = @("postgres", "valkey", "redis-exporter", "otel-collector", "jaeger", "prometheus", "grafana", "pgadmin")
 
 	Write-Host "Starting services: $($services -join ', ')" -ForegroundColor Cyan
 	Write-Host ""
@@ -95,11 +98,13 @@ try {
 		Write-Host "Infrastructure services started!" -ForegroundColor Green
 		Write-Host ""
 		Write-Host "Services available at:" -ForegroundColor Cyan
-		Write-Host "  PostgreSQL:  localhost:5433" -ForegroundColor White
-		Write-Host "  pgAdmin:     http://localhost:5050" -ForegroundColor White
-		Write-Host "  Jaeger UI:   http://localhost:16686" -ForegroundColor White
-		Write-Host "  Prometheus:  http://localhost:9090" -ForegroundColor White
-		Write-Host "  Grafana:     http://localhost:3000" -ForegroundColor White
+		Write-Host "  PostgreSQL:       localhost:5433" -ForegroundColor White
+		Write-Host "  Valkey:           localhost:6379" -ForegroundColor White
+		Write-Host "  pgAdmin:          http://localhost:5050" -ForegroundColor White
+		Write-Host "  OTel Collector:   localhost:4317 (OTLP gRPC)" -ForegroundColor White
+		Write-Host "  Jaeger UI:        http://localhost:16686" -ForegroundColor White
+		Write-Host "  Prometheus:       http://localhost:9090" -ForegroundColor White
+		Write-Host "  Grafana:          http://localhost:3000" -ForegroundColor White
 		Write-Host ""
 
 		# Start client in new PowerShell window if not already running

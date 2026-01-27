@@ -2,6 +2,7 @@
  * Shared components barrel export
  */
 
+export { AltchaWidgetComponent } from "./altcha-widget/altcha-widget";
 export { BreadcrumbComponent } from "./breadcrumb/breadcrumb.component";
 export { ConfirmDialogComponent } from "./confirm-dialog/confirm-dialog.component";
 export { DataTableComponent } from "./data-table/data-table.component";

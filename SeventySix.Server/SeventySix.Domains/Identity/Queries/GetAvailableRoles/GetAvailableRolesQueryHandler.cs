@@ -3,22 +3,34 @@
 // </copyright>
 
 using SeventySix.Identity.Constants;
+using SeventySix.Shared.Constants;
+using ZiggyCreatures.Caching.Fusion;
 
 namespace SeventySix.Identity.Queries.GetAvailableRoles;
 
 /// <summary>
-/// Handler for retrieving roles available for a user to request.
+/// Handler for retrieving roles available for a user to request with cache-aside pattern.
 /// </summary>
+/// <remarks>
+/// Caching Strategy (per Microsoft best practices):
+/// - Available roles are semi-static reference data (role definitions rarely change)
+/// - However, user's existing roles/pending requests can change
+/// - TTL: 1 minute (Identity cache default) - balances freshness vs performance
+/// - Cache invalidation: On role assignment or permission request creation
+/// </remarks>
 public static class GetAvailableRolesQueryHandler
 {
 	/// <summary>
-	/// Handles the query to get available roles for a user.
+	/// Handles the query to get available roles for a user with cache-aside pattern.
 	/// </summary>
 	/// <param name="query">
 	/// The query containing user ID.
 	/// </param>
 	/// <param name="repository">
 	/// The permission request repository.
+	/// </param>
+	/// <param name="cacheProvider">
+	/// The FusionCache provider for named cache access.
 	/// </param>
 	/// <param name="cancellationToken">
 	/// Cancellation token.
@@ -29,15 +41,58 @@ public static class GetAvailableRolesQueryHandler
 	public static async Task<IEnumerable<AvailableRoleDto>> HandleAsync(
 		GetAvailableRolesQuery query,
 		IPermissionRequestRepository repository,
+		IFusionCacheProvider cacheProvider,
+		CancellationToken cancellationToken)
+	{
+		IFusionCache cache =
+			cacheProvider.GetCache(CacheNames.Identity);
+
+		string cacheKey =
+			IdentityCacheKeys.AvailableRoles(query.UserId);
+
+		// Must use List<T> (not IEnumerable<T>) for MemoryPack serialization
+		return await cache.GetOrSetAsync<List<AvailableRoleDto>>(
+			cacheKey,
+			async token =>
+			{
+				IEnumerable<AvailableRoleDto> roles =
+					await FetchAvailableRolesAsync(
+						query.UserId,
+						repository,
+						token);
+				return roles.ToList();
+			},
+			token: cancellationToken)
+			?? [];
+	}
+
+	/// <summary>
+	/// Fetches available roles from the database.
+	/// </summary>
+	/// <param name="userId">
+	/// The user ID.
+	/// </param>
+	/// <param name="repository">
+	/// The permission request repository.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// List of available roles.
+	/// </returns>
+	private static async Task<IEnumerable<AvailableRoleDto>> FetchAvailableRolesAsync(
+		long userId,
+		IPermissionRequestRepository repository,
 		CancellationToken cancellationToken)
 	{
 		IEnumerable<string> existingRoles =
 			await repository.GetUserExistingRolesAsync(
-				query.UserId,
+				userId,
 				cancellationToken);
 
 		IEnumerable<PermissionRequest> pendingRequests =
-			await repository.GetByUserIdAsync(query.UserId, cancellationToken);
+			await repository.GetByUserIdAsync(userId, cancellationToken);
 
 		HashSet<string> excludedRoles =
 			existingRoles

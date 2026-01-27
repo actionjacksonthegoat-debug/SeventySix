@@ -58,11 +58,11 @@ interface UserQueryKeys
 	readonly paged: (filter: BaseQueryRequest) => QueryKeyElement[];
 
 	/**
-	 * @param {number | string} id
+	 * @param {number | string} userId
 	 * Returns a query key for a single user by id.
 	 * @returns {QueryKeyElement[]}
 	 */
-	readonly single: (id: number | string) => QueryKeyElement[];
+	readonly single: (userId: number | string) => QueryKeyElement[];
 
 	/**
 	 * @param {string} username
@@ -77,6 +77,13 @@ interface UserQueryKeys
 	 * @returns {QueryKeyElement[]}
 	 */
 	readonly roles: (userId: number | string) => QueryKeyElement[];
+
+	/**
+	 * @type {readonly ["users", "adminCount"]}
+	 * Key representing the count of admin users.
+	 * Used to determine if Admin role removal should be disabled.
+	 */
+	readonly adminCount: readonly ["users", "adminCount"];
 }
 
 /**
@@ -127,17 +134,17 @@ interface ThirdPartyApiQueryKeys
 	readonly all: readonly ["thirdPartyApi"];
 
 	/**
-	 * @type {readonly ["thirdPartyApi", "all"]}
+	 * @type {readonly ["thirdPartyApi", "list"]}
 	 * Key for listing all third party APIs.
 	 */
-	readonly list: readonly ["thirdPartyApi", "all"];
+	readonly list: readonly ["thirdPartyApi", "list"];
 
 	/**
-	 * @param {string} name
+	 * @param {string} apiName
 	 * Returns a query key for a third party API by name.
 	 * @returns {QueryKeyElement[]}
 	 */
-	readonly byName: (name: string) => QueryKeyElement[];
+	readonly byName: (apiName: string) => QueryKeyElement[];
 
 	/**
 	 * @type {readonly ["thirdPartyApi", "statistics"]}
@@ -164,16 +171,16 @@ interface AccountQueryKeys
 	readonly profile: readonly ["account", "profile"];
 
 	/**
-	 * @type {readonly ["account", "available-roles"]}
+	 * @type {readonly ["account", "availableRoles"]}
 	 * Key representing available roles for the current account.
 	 */
-	readonly availableRoles: readonly ["account", "available-roles"];
+	readonly availableRoles: readonly ["account", "availableRoles"];
 
 	/**
-	 * @type {readonly ["account", "permission-request"]}
+	 * @type {readonly ["account", "permissionRequest"]}
 	 * Key representing permission request resources.
 	 */
-	readonly permissionRequest: readonly ["account", "permission-request"];
+	readonly permissionRequest: readonly ["account", "permissionRequest"];
 }
 
 /**
@@ -182,22 +189,22 @@ interface AccountQueryKeys
 interface PermissionRequestQueryKeys
 {
 	/**
-	 * @type {readonly ["permission-requests"]}
+	 * @type {readonly ["permissionRequests"]}
 	 * Constant key representing permission-requests.
 	 */
-	readonly all: readonly ["permission-requests"];
+	readonly all: readonly ["permissionRequests"];
 
 	/**
-	 * @type {readonly ["permission-requests", "all"]}
+	 * @type {readonly ["permissionRequests", "list"]}
 	 * Key for listing all permission requests.
 	 */
-	readonly list: readonly ["permission-requests", "all"];
+	readonly list: readonly ["permissionRequests", "list"];
 
 	/**
-	 * @type {readonly ["permission-requests", "available-roles"]}
+	 * @type {readonly ["permissionRequests", "availableRoles"]}
 	 * Key representing available roles for permission requests.
 	 */
-	readonly availableRoles: readonly ["permission-requests", "available-roles"];
+	readonly availableRoles: readonly ["permissionRequests", "availableRoles"];
 }
 
 /**
@@ -222,6 +229,8 @@ interface QueryKeysType
  * Use these helpers to construct TanStack Query keys in a consistent and
  * type-safe manner across the application.
  *
+ * Pattern: [resource, operation, ...params] for all dynamic keys.
+ *
  * @type {QueryKeysType}
  */
 export const QueryKeys: QueryKeysType =
@@ -229,7 +238,7 @@ export const QueryKeys: QueryKeysType =
 		logs: {
 			all: ["logs"] as const,
 			paged: (filter: BaseQueryRequest): QueryKeyElement[] =>
-				["logs", filter],
+				["logs", "paged", filter],
 			count: (filter: BaseQueryRequest): QueryKeyElement[] =>
 				["logs", "count", filter]
 		},
@@ -238,12 +247,13 @@ export const QueryKeys: QueryKeysType =
 			all: ["users"] as const,
 			paged: (filter: BaseQueryRequest): QueryKeyElement[] =>
 				["users", "paged", filter],
-			single: (id: number | string): QueryKeyElement[] =>
-				["users", "user", id],
+			single: (userId: number | string): QueryKeyElement[] =>
+				["users", "single", userId],
 			byUsername: (username: string): QueryKeyElement[] =>
-				["users", "username", username],
+				["users", "byUsername", username],
 			roles: (userId: number | string): QueryKeyElement[] =>
-				["users", userId, "roles"]
+				["users", "roles", userId],
+			adminCount: ["users", "adminCount"] as const
 		},
 
 		health: {
@@ -256,22 +266,22 @@ export const QueryKeys: QueryKeysType =
 
 		thirdPartyApi: {
 			all: ["thirdPartyApi"] as const,
-			list: ["thirdPartyApi", "all"] as const,
-			byName: (name: string): QueryKeyElement[] =>
-				["thirdPartyApi", "byName", name],
+			list: ["thirdPartyApi", "list"] as const,
+			byName: (apiName: string): QueryKeyElement[] =>
+				["thirdPartyApi", "byName", apiName],
 			statistics: ["thirdPartyApi", "statistics"] as const
 		},
 
 		account: {
 			all: ["account"] as const,
 			profile: ["account", "profile"] as const,
-			availableRoles: ["account", "available-roles"] as const,
-			permissionRequest: ["account", "permission-request"] as const
+			availableRoles: ["account", "availableRoles"] as const,
+			permissionRequest: ["account", "permissionRequest"] as const
 		},
 
 		permissionRequests: {
-			all: ["permission-requests"] as const,
-			list: ["permission-requests", "all"] as const,
-			availableRoles: ["permission-requests", "available-roles"] as const
+			all: ["permissionRequests"] as const,
+			list: ["permissionRequests", "list"] as const,
+			availableRoles: ["permissionRequests", "availableRoles"] as const
 		}
 	} as const;

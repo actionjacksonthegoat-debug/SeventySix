@@ -106,7 +106,9 @@ public class PollyIntegrationClientTests : IDisposable
 		const string apiName = "TestApi";
 
 		RateLimiter
-			.CanMakeRequestAsync(apiName, Arg.Any<CancellationToken>())
+			.CanMakeRequestAsync(
+				apiName,
+				Arg.Any<CancellationToken>())
 			.Returns(false);
 		RateLimiter.GetTimeUntilReset().Returns(TimeSpan.FromHours(1));
 
@@ -126,7 +128,9 @@ public class PollyIntegrationClientTests : IDisposable
 		const string cacheKey = "test-key";
 
 		RateLimiter
-			.CanMakeRequestAsync(apiName, Arg.Any<CancellationToken>())
+			.CanMakeRequestAsync(
+				apiName,
+				Arg.Any<CancellationToken>())
 			.Returns(true);
 		RateLimiter
 			.TryIncrementRequestCountAsync(
@@ -155,8 +159,12 @@ public class PollyIntegrationClientTests : IDisposable
 				Arg.Any<CancellationToken>());
 
 		// Verify cached
-		Assert.True(Cache.TryGetValue(cacheKey, out TestResponse? cached));
-		Assert.Equal("success", cached?.Value);
+		Assert.True(Cache.TryGetValue(
+			cacheKey,
+			out TestResponse? cached));
+		Assert.Equal(
+			"success",
+			cached?.Value);
 	}
 
 	[Fact]
@@ -167,7 +175,9 @@ public class PollyIntegrationClientTests : IDisposable
 
 		// Act & Assert
 		await Assert.ThrowsAsync<ArgumentNullException>(async () =>
-			await sut.GetAsync<TestResponse>(null!, "TestApi"));
+			await sut.GetAsync<TestResponse>(
+				null!,
+				"TestApi"));
 	}
 
 	[Fact]
@@ -178,7 +188,9 @@ public class PollyIntegrationClientTests : IDisposable
 
 		// Act & Assert
 		await Assert.ThrowsAsync<ArgumentNullException>(async () =>
-			await sut.GetAsync<TestResponse>("/test", null!));
+			await sut.GetAsync<TestResponse>(
+				"/test",
+				null!));
 	}
 
 	[Fact]
@@ -187,7 +199,9 @@ public class PollyIntegrationClientTests : IDisposable
 		// Arrange
 		const string apiName = "TestApi";
 		RateLimiter
-			.CanMakeRequestAsync(apiName, Arg.Any<CancellationToken>())
+			.CanMakeRequestAsync(
+				apiName,
+				Arg.Any<CancellationToken>())
 			.Returns(true);
 
 		PollyIntegrationClient sut = CreateSut();
@@ -200,7 +214,9 @@ public class PollyIntegrationClientTests : IDisposable
 		Assert.True(result);
 		await RateLimiter
 			.Received(1)
-			.CanMakeRequestAsync(apiName, Arg.Any<CancellationToken>());
+			.CanMakeRequestAsync(
+				apiName,
+				Arg.Any<CancellationToken>());
 	}
 
 	[Fact]
@@ -209,7 +225,9 @@ public class PollyIntegrationClientTests : IDisposable
 		// Arrange
 		const string apiName = "TestApi";
 		RateLimiter
-			.GetRemainingQuotaAsync(apiName, Arg.Any<CancellationToken>())
+			.GetRemainingQuotaAsync(
+				apiName,
+				Arg.Any<CancellationToken>())
 			.Returns(500);
 
 		PollyIntegrationClient sut = CreateSut();
@@ -222,7 +240,9 @@ public class PollyIntegrationClientTests : IDisposable
 		Assert.Equal(500, result);
 		await RateLimiter
 			.Received(1)
-			.GetRemainingQuotaAsync(apiName, Arg.Any<CancellationToken>());
+			.GetRemainingQuotaAsync(
+				apiName,
+				Arg.Any<CancellationToken>());
 	}
 
 	public void Dispose()

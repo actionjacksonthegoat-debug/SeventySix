@@ -39,11 +39,16 @@ export function mapAuthError(error: HttpErrorResponse): AuthErrorResult
 					invalidateToken: false
 				};
 
+			case AUTH_ERROR_CODE.BREACHED_PASSWORD:
+				return {
+					message: "This password has been found in a data breach. Please choose a different password.",
+					invalidateToken: false
+				};
+
 			default:
 				return {
-					message:
-						error.error?.detail
-							?? "Invalid request. Please check your input.",
+					message: error.error?.detail
+						?? "Invalid request. Please check your input.",
 					invalidateToken: false
 				};
 		}

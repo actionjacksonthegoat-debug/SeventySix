@@ -76,9 +76,9 @@ public class JaegerHealthCheck(
 					description: $"Timeout connecting to Jaeger at {otlpEndpoint}",
 					data: new Dictionary<string, object>
 					{
-						{ "endpoint", otlpEndpoint },
-						{ "host", host },
-						{ "port", port },
+						["endpoint"] = otlpEndpoint,
+						["host"] = host,
+						["port"] = port,
 					});
 			}
 
@@ -88,9 +88,9 @@ public class JaegerHealthCheck(
 					description: $"Jaeger OTLP endpoint reachable at {otlpEndpoint}",
 					data: new Dictionary<string, object>
 					{
-						{ "endpoint", otlpEndpoint },
-						{ "host", host },
-						{ "port", port },
+						["endpoint"] = otlpEndpoint,
+						["host"] = host,
+						["port"] = port,
 					});
 			}
 
@@ -101,9 +101,9 @@ public class JaegerHealthCheck(
 				description: $"Cannot connect to Jaeger at {otlpEndpoint}",
 				data: new Dictionary<string, object>
 				{
-					{ "endpoint", otlpEndpoint },
-					{ "host", host },
-					{ "port", port },
+					["endpoint"] = otlpEndpoint,
+					["host"] = host,
+					["port"] = port,
 				});
 		}
 		catch (Exception ex)

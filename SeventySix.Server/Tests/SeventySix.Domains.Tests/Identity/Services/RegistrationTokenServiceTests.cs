@@ -1,5 +1,6 @@
 using SeventySix.Shared;
-using SeventySix.Shared.Extensions;
+using SeventySix.Shared.POCOs;
+using SeventySix.Shared.Utilities;
 using Shouldly;
 using Xunit;
 

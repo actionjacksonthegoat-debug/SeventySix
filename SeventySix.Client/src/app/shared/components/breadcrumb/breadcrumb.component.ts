@@ -8,7 +8,7 @@ import {
 import { toSignal } from "@angular/core/rxjs-interop";
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
-import { ActivatedRoute, NavigationEnd, Router, UrlTree, UrlSegmentGroup, UrlSegment } from "@angular/router";
+import { ActivatedRoute, NavigationEnd, Router, UrlSegment, UrlSegmentGroup, UrlTree } from "@angular/router";
 import { RouterLink } from "@angular/router";
 import { BreadcrumbItem } from "@shared/models";
 import { filter, map, startWith } from "rxjs/operators";
@@ -225,17 +225,19 @@ export class BreadcrumbComponent
 			this.router.parseUrl(currentUrl);
 
 		const primaryOutlet: UrlSegmentGroup | undefined =
-			urlTree.root.children["primary"] as UrlSegmentGroup | undefined;
+			urlTree.root.children["primary"] as
+			| UrlSegmentGroup
+			| undefined;
 
 		const primarySegments: UrlSegment[] =
 			primaryOutlet?.segments ?? [];
 
-		var segments: string[] =
+		const segments: string[] =
 			primarySegments
-			.map(
-				(segment) => segment.path)
-			.filter(
-				(segment) => segment.length > 0);
+				.map(
+					(segment) => segment.path)
+				.filter(
+					(segment) => segment.length > 0);
 
 		return segments;
 	}
@@ -402,12 +404,12 @@ export class BreadcrumbComponent
 
 		// Convert kebab-case to Title Case
 		return cleaned
-		.split("-")
-		.map(
-			(word) =>
-				word
-				.charAt(0)
-				.toUpperCase() + word.slice(1))
-		.join(" ");
+			.split("-")
+			.map(
+				(word) =>
+					word
+						.charAt(0)
+						.toUpperCase() + word.slice(1))
+			.join(" ");
 	}
 }

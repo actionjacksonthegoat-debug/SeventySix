@@ -20,6 +20,12 @@ describe("ThemeService",
 					setupSimpleServiceTest(ThemeService);
 			});
 
+		afterEach(
+			() =>
+			{
+				vi.restoreAllMocks();
+			});
+
 		it("should be created",
 			() =>
 			{

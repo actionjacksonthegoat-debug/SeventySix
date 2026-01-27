@@ -28,7 +28,11 @@ internal class AuthRepository(IdentityDbContext context) : IAuthRepository
 			.ExecuteUpdateAsync(
 				setters =>
 					setters
-						.SetProperty(user => user.LastLoginAt, loginTime)
-						.SetProperty(user => user.LastLoginIp, clientIp),
+						.SetProperty(
+							user => user.LastLoginAt,
+							loginTime)
+						.SetProperty(
+							user => user.LastLoginIp,
+							clientIp),
 				cancellationToken);
 }

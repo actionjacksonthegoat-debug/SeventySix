@@ -1,5 +1,12 @@
 import { SelectionModel } from "@angular/cdk/collections";
-import { computed, Signal, signal, WritableSignal } from "@angular/core";
+import {
+	computed,
+	DestroyRef,
+	Signal,
+	signal,
+	WritableSignal
+} from "@angular/core";
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 
 /**
  * Manages row selection state for DataTableComponent.
@@ -10,48 +17,57 @@ import { computed, Signal, signal, WritableSignal } from "@angular/core";
  * @remarks
  * Uses Angular signals for reactive state management.
  * The underlying SelectionModel supports multi-select by default.
+ * Requires DestroyRef from parent component to prevent memory leaks.
  */
-export class DataTableSelectionManager<T extends { id: number; }>
+export class DataTableSelectionManager<TRow extends { id: number; }>
 {
 	/**
 	 * CDK SelectionModel for managing row selection state.
-	 * @type {SelectionModel<T>}
+	 * @type {SelectionModel<TRow>}
 	 * @readonly
 	 */
-	readonly selection: SelectionModel<T>;
+	readonly selection: SelectionModel<TRow>;
 
 	/**
 	 * Signal tracking selection changes from the SelectionModel.
-	 * @type {WritableSignal<readonly T[]>}
+	 * @type {WritableSignal<readonly TRow[]>}
 	 * @private
 	 * @readonly
 	 */
-	private readonly selectionState: WritableSignal<readonly T[]> =
-		signal<readonly T[]>([]);
+	private readonly selectionState: WritableSignal<readonly TRow[]> =
+		signal<readonly TRow[]>([]);
 
 	/**
 	 * Initializes the selection manager with a CDK SelectionModel.
 	 * Subscribes to selection changes to keep signals in sync.
+	 * Uses takeUntilDestroyed to prevent memory leaks.
+	 * @param {DestroyRef} destroyRef
+	 * Angular destroy reference from parent component for cleanup.
 	 */
-	constructor()
+	constructor(destroyRef: DestroyRef)
 	{
 		this.selection =
-			new SelectionModel<T>(true, []);
+			new SelectionModel<TRow>(true, []);
 
-		this.selection.changed.subscribe(
-			() =>
-			{
-				this.selectionState.set(
-					this.selection.selected as readonly T[]);
-			});
+		// Subscribe with automatic cleanup on component destroy
+		this
+			.selection
+			.changed
+			.pipe(takeUntilDestroyed(destroyRef))
+			.subscribe(
+				() =>
+				{
+					this.selectionState.set(
+						this.selection.selected as readonly TRow[]);
+				});
 	}
 
 	/**
 	 * Currently selected rows as a reactive signal.
-	 * @type {Signal<readonly T[]>}
+	 * @type {Signal<readonly TRow[]>}
 	 * @readonly
 	 */
-	readonly selected: Signal<readonly T[]> =
+	readonly selected: Signal<readonly TRow[]> =
 		computed(
 			() => this.selectionState());
 
@@ -89,11 +105,11 @@ export class DataTableSelectionManager<T extends { id: number; }>
 
 	/**
 	 * Toggles between select-all and clear-all states.
-	 * @param {T[]} data
+	 * @param {TRow[]} data
 	 * The data array to select from or clear.
 	 * @returns {void}
 	 */
-	toggleAll(data: T[]): void
+	toggleAll(data: TRow[]): void
 	{
 		if (this.isAllSelected(data.length))
 		{
@@ -102,7 +118,8 @@ export class DataTableSelectionManager<T extends { id: number; }>
 		else
 		{
 			data.forEach(
-				(row: T) => this.selection.select(row));
+				(row: TRow) =>
+					this.selection.select(row));
 		}
 	}
 

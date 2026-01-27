@@ -52,6 +52,7 @@ export interface ObservabilityConfig
 	dashboards: {
 		systemOverview: string;
 		apiEndpoints: string;
+		valkeyCache: string;
 	};
 }
 
@@ -66,6 +67,8 @@ export interface CacheConfig
 		logs: CacheQueryConfig;
 		health: CacheQueryConfig;
 		thirdpartyrequests: CacheQueryConfig;
+		account: CacheQueryConfig;
+		permissionrequests: CacheQueryConfig;
 	};
 }
 
@@ -94,6 +97,17 @@ export interface UiConfig
 		enableMonitoring: boolean;
 		fpsWarningThreshold: number;
 	};
+}
+
+/**
+ * HTTP configuration for request handling.
+ */
+export interface HttpConfig
+{
+	/** Default request timeout in milliseconds. */
+	defaultTimeout: number;
+	/** Extended timeout for file upload operations in milliseconds. */
+	uploadTimeout: number;
 }
 
 /**
@@ -138,6 +152,15 @@ export interface AuthConfig
 }
 
 /**
+ * ALTCHA proof-of-work challenge configuration.
+ */
+export interface AltchaConfig
+{
+	/** Whether ALTCHA validation is enabled. */
+	enabled: boolean;
+}
+
+/**
  * Complete environment configuration interface.
  * Shared across all environment files (production, development, test).
  */
@@ -151,8 +174,10 @@ export interface Environment
 	cache: CacheConfig;
 	dashboard: DashboardConfig;
 	ui: UiConfig;
+	http: HttpConfig;
 	dateTime: DateTimeConfig;
 	testing: TestingConfig;
 	telemetry: TelemetryConfig;
 	auth: AuthConfig;
+	altcha: AltchaConfig;
 }

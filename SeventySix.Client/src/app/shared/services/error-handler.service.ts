@@ -278,9 +278,9 @@ export class ErrorHandlerService implements ErrorHandler
 				Object.keys(error.errors).length;
 			const firstError: string | undefined =
 				Object
-				.values(
-					error.errors)[0]
-				?.[0];
+					.values(
+						error.errors)[0]
+					?.[0];
 			return errorCount === 1 && firstError
 				? firstError
 				: `Validation failed: ${errorCount} error(s).`;

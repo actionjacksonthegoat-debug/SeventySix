@@ -1,9 +1,15 @@
 import { inject } from "@angular/core";
 import { BaseQueryRequest } from "@shared/models";
 import { BaseFilterService } from "@shared/services/base-filter.service";
+import {
+	createMutation as createMutationFactory
+} from "@shared/utilities/mutation-factory.utility";
 import { getQueryConfig } from "@shared/utilities/query-config.utility";
-import { CreateMutationResult, injectMutation, QueryClient } from "@tanstack/angular-query-experimental";
-import { lastValueFrom, Observable } from "rxjs";
+import {
+	CreateMutationResult,
+	QueryClient
+} from "@tanstack/angular-query-experimental";
+import { Observable } from "rxjs";
 
 /**
  * Base class for services that use TanStack Query.
@@ -96,21 +102,10 @@ export abstract class BaseQueryService<TFilter extends BaseQueryRequest> extends
 			result: TResult,
 			variables: TInput) => void): CreateMutationResult<TResult, Error, TInput>
 	{
-		return injectMutation(
-			() => ({
-				mutationFn: (input: TInput) =>
-					lastValueFrom(mutationFunction(input)),
-				onSuccess: (result, variables) =>
-				{
-					if (onSuccessCallback)
-					{
-						onSuccessCallback(result, variables);
-					}
-					else
-					{
-						this.invalidateAll();
-					}
-				}
-			}));
+		return createMutationFactory(
+			this.queryClient,
+			this.queryKeyPrefix,
+			mutationFunction,
+			onSuccessCallback);
 	}
 }

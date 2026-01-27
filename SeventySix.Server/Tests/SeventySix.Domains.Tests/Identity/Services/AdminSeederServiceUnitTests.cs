@@ -18,9 +18,9 @@ public class AdminSeederServiceUnitTests
 {
 	[Fact]
 	/// <summary>
-	/// Seeds admin user when none exists and verifies the created account requires password change.
+	/// Seeds admin user when none exists and verifies the created account has correct Identity properties.
 	/// </summary>
-	public async Task SeedAdminUserForTestsAsync_WhenNoAdmin_CreatesAdminWithRequiresPasswordChangeAsync()
+	public async Task SeedAdminUserAsync_WhenNoAdmin_CreatesAdminWithCorrectIdentityPropertiesAsync()
 	{
 		(
 			IServiceScopeFactory? scopeFactory,
@@ -57,10 +57,14 @@ public class AdminSeederServiceUnitTests
 			.Returns(new ApplicationRole { Name = RoleConstants.Admin });
 
 		userManager
-			.CreateAsync(Arg.Any<ApplicationUser>(), Arg.Any<string>())
+			.CreateAsync(
+				Arg.Any<ApplicationUser>(),
+				Arg.Any<string>())
 			.Returns(IdentityResult.Success);
 		userManager
-			.AddToRoleAsync(Arg.Any<ApplicationUser>(), RoleConstants.Admin)
+			.AddToRoleAsync(
+				Arg.Any<ApplicationUser>(),
+				RoleConstants.Admin)
 			.Returns(IdentityResult.Success);
 
 		AdminSeederService service =
@@ -73,16 +77,21 @@ public class AdminSeederServiceUnitTests
 		// Act
 		await service.SeedAdminUserAsync(CancellationToken.None);
 
-		// Assert
+		// Assert - Verify all required Identity properties
 		await userManager
 			.Received(1)
 			.CreateAsync(
-				Arg.Is<ApplicationUser>(user =>
-					user.RequiresPasswordChange == true),
-				settings.InitialPassword);
+				Arg.Is<ApplicationUser>(
+					adminUser =>
+						adminUser.RequiresPasswordChange == true
+						&& adminUser.LockoutEnabled == true
+						&& adminUser.EmailConfirmed == true),
+				settings.InitialPassword!);
 		await userManager
 			.Received(1)
-			.AddToRoleAsync(Arg.Any<ApplicationUser>(), RoleConstants.Admin);
+			.AddToRoleAsync(
+				Arg.Any<ApplicationUser>(),
+				RoleConstants.Admin);
 	}
 
 	[Fact]
@@ -206,5 +215,53 @@ public class AdminSeederServiceUnitTests
 			Email = "admin@example.com",
 			InitialPassword = "TempPass123!",
 		};
+	}
+
+	[Fact]
+	/// <summary>
+	/// When InitialPassword is null or empty, the seeder should log error and not create user.
+	/// </summary>
+	public async Task ExecuteAsync_WhenNoPassword_LogsErrorAndSkipsAsync()
+	{
+		// Arrange
+		(
+			IServiceScopeFactory scopeFactory,
+			IServiceProvider serviceProvider,
+			UserManager<ApplicationUser> userManager,
+			RoleManager<ApplicationRole> roleManager
+		) = CreateScopeWithManagers();
+
+		AdminSeederSettings settings =
+			new()
+			{
+				Enabled = true,
+				Username = "admin",
+				Email = "admin@example.com",
+				InitialPassword = null,
+			};
+		IOptions<AdminSeederSettings> options =
+			Options.Create(settings);
+		TimeProvider timeProvider =
+			Substitute.For<TimeProvider>();
+		ILogger<AdminSeederService> logger =
+			Substitute.For<ILogger<AdminSeederService>>();
+
+		AdminSeederService service =
+			new(
+				scopeFactory,
+				options,
+				timeProvider,
+				logger);
+
+		// Act
+		await service.StartAsync(CancellationToken.None);
+		await service.StopAsync(CancellationToken.None);
+
+		// Assert - should not attempt to create user
+		await userManager
+			.DidNotReceive()
+			.CreateAsync(
+				Arg.Any<ApplicationUser>(),
+				Arg.Any<string>());
 	}
 }

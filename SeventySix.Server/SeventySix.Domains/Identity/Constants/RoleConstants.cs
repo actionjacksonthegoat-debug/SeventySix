@@ -34,7 +34,9 @@ public static class RoleConstants
 	/// </remarks>
 	public static readonly IReadOnlyList<AvailableRoleDto> AllRequestableRoles =
 		[
-		new AvailableRoleDto(Developer, "Access to developer tools and APIs"),
+		new AvailableRoleDto(
+			Developer,
+			"Access to developer tools and APIs"),
 		new AvailableRoleDto(Admin, "Full administrative access"),
 	];
 

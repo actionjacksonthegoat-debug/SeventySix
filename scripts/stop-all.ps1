@@ -1,5 +1,5 @@
 # stop-all.ps1
-# Stops all SeventySix Docker containers and releases API ports
+# Stops all SeventySix Docker containers, releases API ports, and kills orphaned processes
 #
 # Usage:
 #   npm run stop
@@ -14,11 +14,14 @@ Write-Host "  SeventySix Full Shutdown" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 
+# First, kill any orphaned local processes on development ports
+& (Join-Path $PSScriptRoot "cleanup-ports.ps1")
+
 # Check if Docker is available
 $dockerAvailable = $false
 try {
 	$dockerVersion =
-		docker version --format "{{.Server.Version}}" 2>$null
+	docker version --format "{{.Server.Version}}" 2>$null
 	if ($dockerVersion) {
 		$dockerAvailable = $true
 	}

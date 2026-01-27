@@ -1,7 +1,6 @@
 import { Component } from "@angular/core";
 import { provideZonelessChangeDetection } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
-import { delay } from "@shared/testing";
 import { Mock, vi } from "vitest";
 import { SiteLayoutChangedDirective } from "./site-layout-changed.directive";
 
@@ -33,6 +32,8 @@ describe("SiteLayoutChangedDirective",
 		beforeEach(
 			async () =>
 			{
+				vi.useFakeTimers();
+
 				await TestBed
 					.configureTestingModule(
 						{
@@ -48,6 +49,12 @@ describe("SiteLayoutChangedDirective",
 				fixture.detectChanges();
 			});
 
+		afterEach(
+			() =>
+			{
+				vi.useRealTimers();
+			});
+
 		it("should create directive",
 			() =>
 			{
@@ -60,8 +67,8 @@ describe("SiteLayoutChangedDirective",
 			{
 				window.dispatchEvent(new Event("resize"));
 
-				// Wait for directive's 500ms debounce + buffer
-				await delay(600);
+				// Advance past directive's 500ms debounce + buffer
+				await vi.advanceTimersByTimeAsync(600);
 
 				expect(component.layoutChanged)
 					.toHaveBeenCalled();

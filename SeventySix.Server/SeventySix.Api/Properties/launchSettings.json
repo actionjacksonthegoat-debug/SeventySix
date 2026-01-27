@@ -1,20 +1,13 @@
 {
+	"$schema": "https://json.schemastore.org/launchsettings.json",
 	"profiles": {
-		"http": {
-			"commandName": "Project",
-			"environmentVariables": {
-				"ASPNETCORE_ENVIRONMENT": "Development"
-			},
-			"dotnetRunMessages": true,
-			"applicationUrl": "http://localhost:5085"
-		},
 		"https": {
 			"commandName": "Project",
 			"environmentVariables": {
 				"ASPNETCORE_ENVIRONMENT": "Development"
 			},
 			"dotnetRunMessages": true,
-			"applicationUrl": "https://localhost:7074;http://localhost:5085"
+			"applicationUrl": "https://localhost:7074"
 		},
 		"Production": {
 			"commandName": "Project",
@@ -23,22 +16,6 @@
 			},
 			"dotnetRunMessages": true,
 			"applicationUrl": "https://localhost:7074"
-		},
-		"Container (Dockerfile)": {
-			"commandName": "Docker",
-			"launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/scalar/v1",
-			"environmentVariables": {
-				"ASPNETCORE_ENVIRONMENT": "Development",
-				"ASPNETCORE_HTTP_PORTS": "8080",
-				"Database__Host": "host.docker.internal",
-				"Database__Port": "5433",
-				"OpenTelemetry__OtlpEndpoint": "http://host.docker.internal:4317"
-			},
-			"dockerfileRunArguments": "--env-file ../.env --add-host=host.docker.internal:host-gateway",
-			"publishAllPorts": false,
-			"httpPort": 5085,
-			"useSSL": false
 		}
-	},
-	"$schema": "https://json.schemastore.org/launchsettings.json"
+	}
 }

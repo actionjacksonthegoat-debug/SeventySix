@@ -33,6 +33,7 @@ public static class InfrastructureRegistration
 	/// - IHealthCheckService as scoped (per-request health checks)
 	/// - IRateLimitingService as scoped (per-request rate limit tracking)
 	/// - IScheduledJobService as scoped (per-request scheduled job status retrieval)
+	/// - IAuthCookieService as scoped (per-request cookie management)
 	/// - AuditInterceptor as scoped (per-request audit tracking).
 	/// </remarks>
 	public static IServiceCollection AddInfrastructure(
@@ -46,6 +47,7 @@ public static class InfrastructureRegistration
 		services.AddScoped<IHealthCheckService, HealthCheckService>();
 		services.AddScoped<IRateLimitingService, RateLimitingService>();
 		services.AddScoped<IScheduledJobService, ScheduledJobService>();
+		services.AddScoped<IAuthCookieService, AuthCookieService>();
 
 		// Register audit infrastructure (scoped for per-request user context)
 		services.AddScoped<AuditInterceptor>();

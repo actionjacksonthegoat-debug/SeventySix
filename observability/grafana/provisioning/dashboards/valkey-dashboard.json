@@ -1,0 +1,325 @@
+{
+	"annotations": {
+		"list": []
+	},
+	"description": "Valkey (Redis) Cache Monitoring Dashboard - L2 Distributed Cache Metrics",
+	"editable": true,
+	"fiscalYearStartMonth": 0,
+	"graphTooltip": 0,
+	"id": null,
+	"links": [],
+	"liveNow": false,
+	"panels": [
+		{
+			"id": 5,
+			"title": "Connected Clients",
+			"description": "Number of active client connections to Valkey",
+			"type": "stat",
+			"gridPos": { "h": 6, "w": 6, "x": 0, "y": 0 },
+			"datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+			"targets": [
+				{
+					"expr": "redis_connected_clients",
+					"legendFormat": "Clients"
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{ "color": "green", "value": null },
+							{ "color": "yellow", "value": 50 },
+							{ "color": "red", "value": 100 }
+						]
+					}
+				}
+			}
+		},
+		{
+			"id": 2,
+			"title": "Memory Usage",
+			"description": "Current memory used by Valkey",
+			"type": "gauge",
+			"gridPos": { "h": 6, "w": 6, "x": 6, "y": 0 },
+			"datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+			"targets": [
+				{
+					"expr": "redis_memory_used_bytes",
+					"legendFormat": "Used Memory"
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"unit": "bytes",
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{ "color": "green", "value": null },
+							{ "color": "yellow", "value": 268435456 },
+							{ "color": "red", "value": 536870912 }
+						]
+					}
+				}
+			}
+		},
+		{
+			"id": 10,
+			"title": "Uptime & Status",
+			"description": "Valkey server uptime - Green when running",
+			"type": "stat",
+			"gridPos": { "h": 6, "w": 12, "x": 12, "y": 0 },
+			"datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+			"targets": [
+				{
+					"expr": "redis_uptime_in_seconds",
+					"legendFormat": "Uptime"
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"unit": "s",
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [{ "color": "green", "value": null }]
+					}
+				}
+			}
+		},
+		{
+			"id": 1,
+			"title": "L2 Cache Hit Rate",
+			"description": "Distributed cache hit rate. Hits = served from L2 cache. Misses = key not found, triggers DB lookup.",
+			"type": "stat",
+			"gridPos": { "h": 6, "w": 8, "x": 0, "y": 6 },
+			"datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+			"targets": [
+				{
+					"expr": "redis_keyspace_hits_total / (redis_keyspace_hits_total + redis_keyspace_misses_total) * 100",
+					"legendFormat": "Hit Rate %",
+					"refId": "A"
+				},
+				{
+					"expr": "redis_keyspace_hits_total",
+					"legendFormat": "Total Hits",
+					"refId": "B"
+				},
+				{
+					"expr": "redis_keyspace_misses_total",
+					"legendFormat": "Total DB Lookups",
+					"refId": "C"
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{ "color": "red", "value": null },
+							{ "color": "yellow", "value": 70 },
+							{ "color": "green", "value": 90 }
+						]
+					}
+				},
+				"overrides": [
+					{
+						"matcher": { "id": "byName", "options": "Hit Rate %" },
+						"properties": [
+							{ "id": "unit", "value": "percent" },
+							{ "id": "min", "value": 0 },
+							{ "id": "max", "value": 100 }
+						]
+					},
+					{
+						"matcher": { "id": "byName", "options": "Total Hits" },
+						"properties": [
+							{ "id": "unit", "value": "short" },
+							{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }
+						]
+					},
+					{
+						"matcher": { "id": "byName", "options": "Total DB Lookups" },
+						"properties": [
+							{ "id": "unit", "value": "short" },
+							{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }
+						]
+					}
+				]
+			},
+			"options": {
+				"graphMode": "none",
+				"colorMode": "value",
+				"justifyMode": "auto",
+				"textMode": "auto"
+			}
+		},
+		{
+			"id": 6,
+			"title": "L2 Cache Hits vs DB Lookups (Rate)",
+			"description": "Rate of L2 cache hits vs misses. Misses (red) = key not in cache, triggers database query.",
+			"type": "timeseries",
+			"gridPos": { "h": 6, "w": 16, "x": 8, "y": 6 },
+			"datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+			"targets": [
+				{
+					"expr": "rate(redis_keyspace_hits_total[1m])",
+					"legendFormat": "Cache Hits/sec"
+				},
+				{
+					"expr": "rate(redis_keyspace_misses_total[1m])",
+					"legendFormat": "DB Lookups/sec"
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"unit": "ops",
+					"custom": {
+						"lineWidth": 2,
+						"fillOpacity": 20
+					}
+				},
+				"overrides": [
+					{
+						"matcher": { "id": "byName", "options": "Cache Hits/sec" },
+						"properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }]
+					},
+					{
+						"matcher": { "id": "byName", "options": "DB Lookups/sec" },
+						"properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }]
+					}
+				]
+			}
+		},
+		{
+			"id": 9,
+			"title": "Network I/O",
+			"description": "Input/Output bytes transferred to Valkey",
+			"type": "timeseries",
+			"gridPos": { "h": 6, "w": 12, "x": 0, "y": 12 },
+			"datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+			"targets": [
+				{
+					"expr": "rate(redis_net_input_bytes_total[1m])",
+					"legendFormat": "Input"
+				},
+				{
+					"expr": "rate(redis_net_output_bytes_total[1m])",
+					"legendFormat": "Output"
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"unit": "Bps",
+					"custom": {
+						"lineWidth": 2,
+						"fillOpacity": 10
+					}
+				}
+			}
+		},
+		{
+			"id": 3,
+			"title": "Operations per Second",
+			"description": "All Valkey commands processed (GET, SET, etc.)",
+			"type": "timeseries",
+			"gridPos": { "h": 6, "w": 12, "x": 12, "y": 12 },
+			"datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+			"targets": [
+				{
+					"expr": "rate(redis_commands_processed_total[1m])",
+					"legendFormat": "Commands/sec"
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"unit": "ops",
+					"custom": {
+						"lineWidth": 2,
+						"fillOpacity": 20
+					}
+				}
+			}
+		},
+		{
+			"id": 11,
+			"title": "Total Keys Stored",
+			"description": "Total keys in Valkey L2 cache. Increase confirms cache writes are working.",
+			"type": "stat",
+			"gridPos": { "h": 6, "w": 8, "x": 0, "y": 18 },
+			"datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+			"targets": [
+				{
+					"expr": "sum(redis_db_keys) or vector(0)",
+					"legendFormat": "Keys in L2 Cache"
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"unit": "short",
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{ "color": "blue", "value": null },
+							{ "color": "green", "value": 1 }
+						]
+					}
+				}
+			},
+			"options": {
+				"graphMode": "area",
+				"colorMode": "value"
+			}
+		},
+		{
+			"id": 13,
+			"title": "Commands (Cache Reads & Writes)",
+			"description": "GET = cache reads, SET/SETEX = cache writes. These are L2 cache operations, not DB operations.",
+			"type": "timeseries",
+			"gridPos": { "h": 6, "w": 16, "x": 8, "y": 18 },
+			"datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+			"targets": [
+				{
+					"expr": "sum(rate(redis_commands_total{cmd=~\"set|setex\"}[1m])) or vector(0)",
+					"legendFormat": "Cache Writes/sec (SET)"
+				},
+				{
+					"expr": "sum(rate(redis_commands_total{cmd=\"get\"}[1m])) or vector(0)",
+					"legendFormat": "Cache Reads/sec (GET)"
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"unit": "ops",
+					"custom": {
+						"lineWidth": 2,
+						"fillOpacity": 20
+					}
+				},
+				"overrides": [
+					{
+						"matcher": { "id": "byName", "options": "Cache Writes/sec (SET)" },
+						"properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }]
+					},
+					{
+						"matcher": { "id": "byName", "options": "Cache Reads/sec (GET)" },
+						"properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }]
+					}
+				]
+			}
+		}
+	],
+	"refresh": "5s",
+	"schemaVersion": 39,
+	"tags": ["redis", "valkey", "cache", "seventysix", "l2-cache"],
+	"templating": {
+		"list": []
+	},
+	"time": {
+		"from": "now-1h",
+		"to": "now"
+	},
+	"title": "SeventySix Valkey Cache Dashboard",
+	"uid": "seventysix-valkey",
+	"version": 1,
+	"weekStart": ""
+}

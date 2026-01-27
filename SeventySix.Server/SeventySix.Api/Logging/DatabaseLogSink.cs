@@ -320,7 +320,9 @@ public class DatabaseLogSink(
 		if (
 			logEvent.Properties.TryGetValue(
 				"StatusCode",
-				out LogEventPropertyValue? statusCode) && int.TryParse(statusCode.ToString(), out int statusCodeValue))
+				out LogEventPropertyValue? statusCode) && int.TryParse(
+					statusCode.ToString(),
+					out int statusCodeValue))
 		{
 			log.StatusCode = statusCodeValue;
 		}
@@ -328,7 +330,9 @@ public class DatabaseLogSink(
 		if (
 			logEvent.Properties.TryGetValue(
 				"Elapsed",
-				out LogEventPropertyValue? elapsed) && double.TryParse(elapsed.ToString(), out double elapsedValue))
+				out LogEventPropertyValue? elapsed) && double.TryParse(
+					elapsed.ToString(),
+					out double elapsedValue))
 		{
 			log.DurationMs =
 				(long)elapsedValue;

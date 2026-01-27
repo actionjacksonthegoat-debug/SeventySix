@@ -97,8 +97,7 @@ export class LogFixtures
 				LogFixtures.createLog(
 					{
 						id: i + 1,
-						createDate:
-							dateService
+						createDate: dateService
 							.fromMillis(
 								dateService.nowTimestamp() - i * 60000)
 							.toISOString(),

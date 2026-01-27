@@ -4,10 +4,19 @@
 
 namespace SeventySix.Shared.Entities;
 
-/// <summary>Entity with create + modify timestamps.</summary>
-public interface IModifiableEntity : IEntity
+/// <summary>
+/// Entity with create and modify timestamps.
+/// </summary>
+/// <remarks>
+/// Extends <see cref="ICreatableEntity"/> with modification tracking.
+/// </remarks>
+public interface IModifiableEntity : ICreatableEntity
 {
-	public DateTime CreateDate { get; set; }
-
+	/// <summary>
+	/// Gets or sets the modification timestamp for the entity.
+	/// </summary>
+	/// <remarks>
+	/// Null when entity has never been modified. Stored in UTC.
+	/// </remarks>
 	public DateTime? ModifyDate { get; set; }
 }

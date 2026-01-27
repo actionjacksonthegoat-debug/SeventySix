@@ -4,6 +4,7 @@
 
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using Shouldly;
 using Xunit;
 
 namespace SeventySix.ArchitectureTests;
@@ -51,7 +52,7 @@ public class LoggingStandardsTests : SourceCodeArchitectureTest
 		}
 
 		// Assert
-		Assert.Empty(violations);
+		violations.ShouldBeEmpty();
 	}
 
 	[Fact]
@@ -63,8 +64,8 @@ public class LoggingStandardsTests : SourceCodeArchitectureTest
 
 		Regex logInformationPattern =
 			new Regex(
-			@"\.LogInformation\(",
-			RegexOptions.Compiled);
+				@"\.LogInformation\(",
+				RegexOptions.Compiled);
 
 		List<string> violations = [];
 
@@ -80,6 +81,7 @@ public class LoggingStandardsTests : SourceCodeArchitectureTest
 			bool isStartupConfig =
 				file.Contains("\\Extensions\\WebApplicationExtensions.cs")
 				|| file.Contains("\\Extensions\\ServiceCollectionExtensions.cs")
+				|| file.Contains("\\Configuration\\StartupValidator.cs")
 				|| file.Contains("Program.cs");
 
 			string content =
@@ -103,6 +105,6 @@ public class LoggingStandardsTests : SourceCodeArchitectureTest
 		}
 
 		// Assert
-		Assert.Empty(violations);
+		violations.ShouldBeEmpty();
 	}
 }

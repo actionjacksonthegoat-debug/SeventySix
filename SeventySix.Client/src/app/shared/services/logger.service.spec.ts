@@ -1,8 +1,9 @@
 /* eslint-disable no-console */
 
+import { provideHttpClient } from "@angular/common/http";
 import {
-	HttpClientTestingModule,
-	HttpTestingController
+	HttpTestingController,
+	provideHttpClientTesting
 } from "@angular/common/http/testing";
 import { TestBed } from "@angular/core/testing";
 import { setupSimpleServiceTest } from "@shared/testing";
@@ -26,8 +27,10 @@ describe("LoggerService",
 				service =
 					setupSimpleServiceTest(
 						LoggerService,
-						[],
-						[HttpClientTestingModule]);
+						[
+							provideHttpClient(),
+							provideHttpClientTesting()
+						]);
 				httpMock =
 					TestBed.inject(HttpTestingController);
 

@@ -169,11 +169,17 @@ public class Argon2PasswordHasher(IOptions<AuthSettings> authSettings)
 		}
 
 		int? memory =
-			ParseParameter(paramParts[0], "m=");
+			ParseParameter(
+				paramParts[0],
+				"m=");
 		int? iterations =
-			ParseParameter(paramParts[1], "t=");
+			ParseParameter(
+				paramParts[1],
+				"t=");
 		int? parallelism =
-			ParseParameter(paramParts[2], "p=");
+			ParseParameter(
+				paramParts[2],
+				"p=");
 
 		if (memory is null || iterations is null || parallelism is null)
 		{
@@ -193,7 +199,9 @@ public class Argon2PasswordHasher(IOptions<AuthSettings> authSettings)
 			return null;
 		}
 
-		if (int.TryParse(part[prefix.Length..], out int value))
+		if (int.TryParse(
+			part[prefix.Length..],
+			out int value))
 		{
 			return value;
 		}

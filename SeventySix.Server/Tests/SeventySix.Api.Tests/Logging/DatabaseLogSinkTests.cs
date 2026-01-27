@@ -7,7 +7,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Serilog.Events;
 using Serilog.Parsing;
 using SeventySix.Api.Logging;
+using SeventySix.Api.Tests.Fixtures;
 using SeventySix.Logging;
+using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;
 
 namespace SeventySix.Api.Tests.Logging;
@@ -24,10 +26,10 @@ namespace SeventySix.Api.Tests.Logging;
 ///
 /// Uses shared PostgreSQL Testcontainer for efficient integration testing.
 /// </remarks>
-[Collection("PostgreSQL")]
+[Collection(CollectionNames.LoggingPostgreSql)]
 public class DatabaseLogSinkTests : IAsyncLifetime
 {
-	private readonly TestcontainersPostgreSqlFixture Fixture;
+	private readonly LoggingApiPostgreSqlFixture Fixture;
 	private LoggingDbContext? Context;
 	private ServiceProvider? ServiceProvider;
 	private ILogRepository? LogRepository;
@@ -38,7 +40,7 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 	/// <param name="fixture">
 	/// The shared PostgreSQL fixture.
 	/// </param>
-	public DatabaseLogSinkTests(TestcontainersPostgreSqlFixture fixture)
+	public DatabaseLogSinkTests(LoggingApiPostgreSqlFixture fixture)
 	{
 		Fixture = fixture;
 	}
@@ -270,7 +272,9 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 			request);
 		Assert.Single(logs);
 		Log log = logs.First();
-		Assert.Equal("Test exception message", log.ExceptionMessage);
+		Assert.Equal(
+			"Test exception message",
+			log.ExceptionMessage);
 		Assert.NotNull(log.StackTrace); // Should have stack trace
 	}
 
@@ -331,7 +335,9 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 		Assert.Single(logs);
 		Log log = logs.First();
 		Assert.Equal("Outer exception", log.ExceptionMessage);
-		Assert.Equal("Inner exception", log.BaseExceptionMessage);
+		Assert.Equal(
+			"Inner exception",
+			log.BaseExceptionMessage);
 	}
 
 	/// <summary>

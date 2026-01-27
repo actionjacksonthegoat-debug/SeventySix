@@ -19,7 +19,9 @@ public class CreatePermissionRequestValidatorTests
 		// Arrange
 		CreatePermissionRequestValidator validator = new();
 		CreatePermissionRequestDto dto =
-			new(["NotARole"], null);
+			new(
+				["NotARole"],
+				null);
 		CreatePermissionRequestCommand command =
 			new(1, "tester", dto);
 
@@ -39,7 +41,9 @@ public class CreatePermissionRequestValidatorTests
 		// Arrange
 		CreatePermissionRequestValidator validator = new();
 		CreatePermissionRequestDto dto =
-			new([RoleConstants.Developer], null);
+			new(
+				[RoleConstants.Developer],
+				null);
 		CreatePermissionRequestCommand command =
 			new(1, "tester", dto);
 

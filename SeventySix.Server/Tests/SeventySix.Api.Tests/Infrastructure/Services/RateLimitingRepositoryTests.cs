@@ -6,8 +6,11 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NSubstitute;
 using SeventySix.Api.Infrastructure;
+using SeventySix.Api.Tests.Fixtures;
 using SeventySix.ApiTracking;
+using SeventySix.Shared;
 using SeventySix.Shared.Persistence;
+using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;
 using Shouldly;
 
@@ -18,7 +21,7 @@ namespace SeventySix.Api.Tests.Infrastructure.Services;
 /// Tests verify that rate limiting state persists correctly and handles concurrent requests.
 /// All tests share a single PostgreSQL instance to match production behavior.
 /// </summary>
-[Collection("DatabaseTests")]
+[Collection(CollectionNames.ApiTrackingPostgreSql)]
 public class RateLimitingRepositoryTests : DataPostgreSqlTestBase
 {
 	private readonly ILogger<RateLimitingService> LoggerMock;
@@ -30,7 +33,7 @@ public class RateLimitingRepositoryTests : DataPostgreSqlTestBase
 	/// <param name="fixture">
 	/// PostgreSQL fixture.
 	/// </param>
-	public RateLimitingRepositoryTests(TestcontainersPostgreSqlFixture fixture)
+	public RateLimitingRepositoryTests(ApiTrackingApiPostgreSqlFixture fixture)
 		: base(fixture)
 	{
 		LoggerMock =
@@ -187,7 +190,7 @@ public class RateLimitingRepositoryTests : DataPostgreSqlTestBase
 			TimeProvider.System);
 
 		// Consume all quota
-		for (int i = 0; i < 1000; i++)
+		for (int requestNumber = 0; requestNumber < 1000; requestNumber++)
 		{
 			await sut.TryIncrementRequestCountAsync(
 				apiName,
@@ -338,7 +341,9 @@ public class RateLimitingRepositoryTests : DataPostgreSqlTestBase
 			await service2.GetRemainingQuotaAsync(apiName);
 
 		// Assert
-		count.ShouldBe(2, "state should persist across service instances");
+		count.ShouldBe(
+			2,
+			"state should persist across service instances");
 		remaining.ShouldBe(
 			998,
 			"remaining quota should be calculated from persisted state");

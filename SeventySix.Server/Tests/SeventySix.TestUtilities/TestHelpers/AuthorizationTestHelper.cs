@@ -7,7 +7,7 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using SeventySix.Identity;
 using SeventySix.TestUtilities.Constants;
-using Xunit;
+using Shouldly;
 
 namespace SeventySix.TestUtilities.TestHelpers;
 
@@ -62,7 +62,7 @@ public class AuthorizationTestHelper
 			endpoint,
 			content);
 
-		Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+		response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
 	}
 
 	/// <summary>
@@ -94,7 +94,7 @@ public class AuthorizationTestHelper
 			endpoint,
 			content);
 
-		Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+		response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
 	}
 
 	/// <summary>
@@ -128,8 +128,7 @@ public class AuthorizationTestHelper
 			content);
 
 		// Accept any 2xx status code as success (200, 201, 204, etc.)
-		Assert.True(
-			response.IsSuccessStatusCode,
+		response.IsSuccessStatusCode.ShouldBeTrue(
 			$"Expected success status code but got {response.StatusCode}");
 	}
 
@@ -166,7 +165,7 @@ public class AuthorizationTestHelper
 			endpoint,
 			content);
 
-		Assert.Equal(expectedStatusCode, response.StatusCode);
+		response.StatusCode.ShouldBe(expectedStatusCode);
 	}
 
 	/// <summary>
@@ -226,7 +225,7 @@ public class AuthorizationTestHelper
 		AuthResponse? authResponse =
 			await response.Content.ReadFromJsonAsync<AuthResponse>();
 
-		return authResponse!.AccessToken;
+		return authResponse!.AccessToken!;
 	}
 
 	/// <summary>

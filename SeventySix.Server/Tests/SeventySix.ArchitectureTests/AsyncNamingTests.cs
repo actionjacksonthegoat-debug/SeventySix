@@ -4,6 +4,7 @@
 
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using Shouldly;
 using Xunit;
 
 namespace SeventySix.ArchitectureTests;
@@ -14,6 +15,16 @@ namespace SeventySix.ArchitectureTests;
 /// </summary>
 public class AsyncNamingTests : SourceCodeArchitectureTest
 {
+	/// <summary>
+	/// Method names from external library interfaces that cannot be renamed.
+	/// </summary>
+	private static readonly HashSet<string> ExternalInterfaceMethods =
+		[
+			// Ixnas.AltchaNet.IAltchaCancellableChallengeStore interface methods
+			"Store",
+			"Exists"
+		];
+
 	[Fact]
 	public void Async_Methods_Should_Have_Async_Suffix()
 	{
@@ -62,6 +73,12 @@ public class AsyncNamingTests : SourceCodeArchitectureTest
 					continue;
 				}
 
+				// Skip methods from external library interfaces
+				if (ExternalInterfaceMethods.Contains(methodName))
+				{
+					continue;
+				}
+
 				if (!methodName.EndsWith("Async"))
 				{
 					string relativePath =
@@ -74,6 +91,6 @@ public class AsyncNamingTests : SourceCodeArchitectureTest
 		}
 
 		// Assert
-		Assert.Empty(violations);
+		violations.ShouldBeEmpty();
 	}
 }

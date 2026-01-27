@@ -30,6 +30,7 @@ namespace SeventySix.TestUtilities.Builders;
 public class UserBuilder
 {
 	private readonly TimeProvider TimeProvider;
+	private long? UserId = null;
 	private string Username =
 		TestUserConstants.DefaultUsername;
 	private string Email =
@@ -61,6 +62,21 @@ public class UserBuilder
 		TimeProvider = timeProvider;
 		CreateDate =
 			timeProvider.GetUtcNow().UtcDateTime;
+	}
+
+	/// <summary>
+	/// Sets the user ID.
+	/// </summary>
+	/// <param name="userId">
+	/// The user ID.
+	/// </param>
+	/// <returns>
+	/// The builder instance for method chaining.
+	/// </returns>
+	public UserBuilder WithId(long userId)
+	{
+		UserId = userId;
+		return this;
 	}
 
 	/// <summary>
@@ -250,26 +266,34 @@ public class UserBuilder
 	/// </returns>
 	public ApplicationUser Build()
 	{
-		return new ApplicationUser
+		ApplicationUser user =
+			new()
+			{
+				UserName = Username,
+				Email = Email,
+				FullName = FullName,
+				CreateDate = CreateDate,
+				CreatedBy =
+					CreatedBy ?? string.Empty,
+				ModifyDate = ModifyDate,
+				ModifiedBy =
+					ModifiedBy ?? string.Empty,
+				IsActive = IsActive,
+				IsDeleted = IsDeleted,
+				DeletedAt = DeletedAt,
+				DeletedBy = DeletedBy,
+				RowVersion = RowVersion,
+				Preferences = Preferences,
+				LastLoginAt = LastLoginAt,
+				LastLoginIp = LastLoginIp,
+			};
+
+		if (UserId.HasValue)
 		{
-			UserName = Username,
-			Email = Email,
-			FullName = FullName,
-			CreateDate = CreateDate,
-			CreatedBy =
-				CreatedBy ?? string.Empty,
-			ModifyDate = ModifyDate,
-			ModifiedBy =
-				ModifiedBy ?? string.Empty,
-			IsActive = IsActive,
-			IsDeleted = IsDeleted,
-			DeletedAt = DeletedAt,
-			DeletedBy = DeletedBy,
-			RowVersion = RowVersion,
-			Preferences = Preferences,
-			LastLoginAt = LastLoginAt,
-			LastLoginIp = LastLoginIp,
-		};
+			user.Id = UserId.Value;
+		}
+
+		return user;
 	}
 
 	/// <summary>

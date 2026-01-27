@@ -42,6 +42,12 @@ describe("roleGuard",
 					});
 			});
 
+		afterEach(
+			() =>
+			{
+				vi.restoreAllMocks();
+			});
+
 		describe("roleGuard() - no roles required",
 			() =>
 			{

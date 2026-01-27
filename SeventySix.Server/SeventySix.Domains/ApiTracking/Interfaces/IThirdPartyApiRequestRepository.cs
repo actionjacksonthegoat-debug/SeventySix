@@ -89,4 +89,29 @@ public interface IThirdPartyApiRequestRepository
 	public Task<int> DeleteOlderThanAsync(
 		DateOnly cutoffDate,
 		CancellationToken cancellationToken = default);
+
+	/// <summary>
+	/// Gets the total call count for an API within a date range (inclusive).
+	/// Used for monthly rate limiting where calls are summed across multiple days.
+	/// </summary>
+	/// <param name="apiName">
+	/// The external API name to filter by.
+	/// </param>
+	/// <param name="startDate">
+	/// The inclusive start date of the range.
+	/// </param>
+	/// <param name="endDate">
+	/// The inclusive end date of the range.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token for async operation.
+	/// </param>
+	/// <returns>
+	/// The sum of all CallCount values within the date range.
+	/// </returns>
+	public Task<int> GetTotalCallCountInRangeAsync(
+		string apiName,
+		DateOnly startDate,
+		DateOnly endDate,
+		CancellationToken cancellationToken = default);
 }

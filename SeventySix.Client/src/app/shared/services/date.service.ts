@@ -61,7 +61,7 @@ export class DateService
 	now(): string
 	{
 		return new Date()
-		.toISOString();
+			.toISOString();
 	}
 
 	/**
@@ -201,9 +201,9 @@ export class DateService
 		return toZonedTime(
 			parsedDate,
 			Intl
-			.DateTimeFormat()
-			.resolvedOptions()
-			.timeZone);
+				.DateTimeFormat()
+				.resolvedOptions()
+				.timeZone);
 	}
 
 	// ========================================
@@ -451,7 +451,7 @@ export class DateService
 				: timestamp;
 		const diffMs: number =
 			new Date()
-			.getTime() - parsedDate.getTime();
+				.getTime() - parsedDate.getTime();
 		return Math.floor(diffMs / 3600000);
 	}
 
@@ -471,7 +471,7 @@ export class DateService
 				: timestamp;
 		const diffMs: number =
 			new Date()
-			.getTime() - parsedDate.getTime();
+				.getTime() - parsedDate.getTime();
 		return Math.floor(diffMs / 60000);
 	}
 }

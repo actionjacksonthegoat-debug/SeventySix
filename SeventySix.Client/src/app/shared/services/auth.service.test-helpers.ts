@@ -60,6 +60,7 @@ export function createMockAuthResponse(
 		email: "test@example.com",
 		fullName: "Test User",
 		requiresPasswordChange: false,
+		requiresMfa: false,
 		...responseOverrides
 	};
 }

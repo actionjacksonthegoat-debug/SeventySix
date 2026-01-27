@@ -5,8 +5,8 @@ import {
 } from "@admin/logs/models";
 import { WritableSignal } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
-import { ApiService } from "@shared/services/api.service";
 import { DateService } from "@shared/services";
+import { ApiService } from "@shared/services/api.service";
 
 import { createMockApiService, MockApiService, setupServiceTest } from "@shared/testing";
 import { of } from "rxjs";
@@ -155,9 +155,8 @@ describe("LogManagementService",
 						service.updateFilter(
 							{
 								logLevel: LogLevel.Error.toString(),
-								startDate:
-									new DateService()
-										.nowDate()
+								startDate: new DateService()
+									.nowDate()
 							});
 						service.toggleSelection(1);
 
@@ -276,27 +275,27 @@ describe("LogManagementService",
 		describe("forceRefresh",
 			() =>
 			{
-				it("should toggle force refresh trigger",
+				it("should increment force refresh counter",
 					() =>
 					{
 						// Access the private signal via bracket notation for testing
-						const signal: WritableSignal<boolean> =
-							(service as unknown as { forceRefreshTrigger: WritableSignal<boolean>; })
+						const forceRefreshSignal: WritableSignal<number> =
+							(service as unknown as { forceRefreshTrigger: WritableSignal<number>; })
 								.forceRefreshTrigger;
 
-						const initialValue: boolean =
-							signal();
+						const initialValue: number =
+							forceRefreshSignal();
 
-						// Force refresh - toggle the signal
+						// Force refresh - increment the counter
 						TestBed.runInInjectionContext(
 							() => service.forceRefresh());
 
-						const newValue: boolean =
-							signal();
+						const newValue: number =
+							forceRefreshSignal();
 
-						// Signal should have toggled
+						// Counter should have incremented
 						expect(newValue)
-							.toBe(!initialValue);
+							.toBe(initialValue + 1);
 					});
 			});
 	});

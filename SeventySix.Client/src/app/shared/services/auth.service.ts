@@ -8,7 +8,7 @@
  * - Token refresh handled transparently by auth interceptor
  */
 
-import { HttpClient } from "@angular/common/http";
+import { HttpClient, HttpErrorResponse } from "@angular/common/http";
 import {
 	computed,
 	inject,
@@ -19,18 +19,26 @@ import {
 } from "@angular/core";
 import { Router } from "@angular/router";
 import { environment } from "@environments/environment";
+import { APP_ROUTES, STORAGE_KEYS } from "@shared/constants";
 import {
 	AuthResponse,
 	LoginRequest,
 	UserProfileDto
 } from "@shared/models";
-import { DateService } from "@shared/services";
+import { DateService, StorageService } from "@shared/services";
 import {
 	DOTNET_ROLE_CLAIM,
 	JwtClaims,
 	OAuthProvider
 } from "@shared/services/auth.types";
-import { catchError, Observable, of, tap } from "rxjs";
+import {
+	catchError,
+	finalize,
+	Observable,
+	of,
+	shareReplay,
+	tap
+} from "rxjs";
 
 /**
  * Provides authentication flows (local and OAuth), session restoration, and in-memory token management.
@@ -70,6 +78,15 @@ export class AuthService
 		inject(DateService);
 
 	/**
+	 * Storage service for SSR-safe localStorage access.
+	 * @type {StorageService}
+	 * @private
+	 * @readonly
+	 */
+	private readonly storageService: StorageService =
+		inject(StorageService);
+
+	/**
 	 * Base auth API URL.
 	 * @type {string}
 	 * @private
@@ -77,14 +94,6 @@ export class AuthService
 	 */
 	private readonly authUrl: string =
 		`${environment.apiUrl}/auth`;
-
-	/**
-	 * Key for tracking if user has logged in before (for session restoration).
-	 * @type {string}
-	 * @private
-	 * @readonly
-	 */
-	private static readonly HAS_SESSION_KEY: string = "auth_has_session";
 
 	/**
 	 * Access token stored in memory only for XSS protection.
@@ -106,6 +115,14 @@ export class AuthService
 	 * @private
 	 */
 	private initialized: boolean = false;
+
+	/**
+	 * In-flight refresh request observable for single-flight pattern.
+	 * Prevents concurrent refresh requests from exhausting rate limits.
+	 * @type {Observable<AuthResponse | null> | null}
+	 * @private
+	 */
+	private refreshInProgress: Observable<AuthResponse | null> | null = null;
 
 	/**
 	 * Current authenticated user signal.
@@ -189,29 +206,36 @@ export class AuthService
 	 * @param {LoginRequest} credentials
 	 * The login request payload.
 	 * @returns {Observable<AuthResponse>}
-	 * Observable that emits AuthResponse on success.
+	 * Observable that emits AuthResponse on success or MFA required.
 	 */
 	login(credentials: LoginRequest): Observable<AuthResponse>
 	{
 		return this
-		.httpClient
-		.post<AuthResponse>(`${this.authUrl}/login`, credentials,
-			{
-				withCredentials: true
-			})
-		.pipe(
-			tap(
-				(response: AuthResponse) =>
+			.httpClient
+			.post<AuthResponse>(`${this.authUrl}/login`, credentials,
 				{
-					this.setAccessToken(
-						response.accessToken,
-						response.expiresAt,
-						response.email,
-						response.fullName);
-					this.requiresPasswordChangeSignal.set(
-						response.requiresPasswordChange);
-					this.markHasSession();
-				}));
+					withCredentials: true
+				})
+			.pipe(
+				tap(
+					(response: AuthResponse) =>
+					{
+						// Skip token handling when MFA is required
+						if (response.requiresMfa)
+						{
+							return;
+						}
+
+						// When MFA is not required, token fields are guaranteed non-null
+						this.setAccessToken(
+							response.accessToken!,
+							response.expiresAt!,
+							response.email!,
+							response.fullName);
+						this.requiresPasswordChangeSignal.set(
+							response.requiresPasswordChange);
+						this.markHasSession();
+					}));
 	}
 
 	/**
@@ -223,46 +247,100 @@ export class AuthService
 	 * Return URL after successful OAuth (default: '/').
 	 * @returns {void}
 	 */
-	loginWithProvider(provider: OAuthProvider, returnUrl: string = "/"): void
+	loginWithProvider(
+		provider: OAuthProvider,
+		returnUrl: string = "/"): void
 	{
-		// Store return URL for after OAuth callback
-		sessionStorage.setItem("auth_return_url", returnUrl);
+		// Validate returnUrl is relative or same-origin (XSS protection)
+		const validatedUrl: string =
+			this.validateReturnUrl(returnUrl);
+
+		// Use StorageService for SSR-safe session storage access
+		this.storageService.setSessionItem(
+			STORAGE_KEYS.AUTH_RETURN_URL,
+			validatedUrl);
+
 		window.location.href =
 			`${this.authUrl}/${provider}`;
 	}
 
 	/**
+	 * Validates OAuth return URL to prevent open redirect vulnerabilities.
+	 * Only allows relative URLs that don't start with protocol-relative syntax.
+	 * @param {string} url
+	 * The URL to validate.
+	 * @returns {string}
+	 * The validated URL if safe, or '/' as fallback.
+	 */
+	private validateReturnUrl(url: string): string
+	{
+		// Only allow relative URLs starting with single slash
+		// Reject absolute URLs and protocol-relative URLs (//evil.com)
+		if (url.startsWith("/") && !url.startsWith("//"))
+		{
+			return url;
+		}
+		return "/";
+	}
+
+	/**
 	 * Refreshes the access token using refresh token cookie.
+	 * Implements single-flight pattern: concurrent calls share one HTTP request.
+	 * Only clears auth on 401 (invalid token), NOT on 429 (rate limited).
 	 * @returns {Observable<AuthResponse|null>}
 	 * Observable that emits AuthResponse on success or null on failure.
 	 */
 	refreshToken(): Observable<AuthResponse | null>
 	{
-		return this
-		.httpClient
-		.post<AuthResponse>(
-			`${this.authUrl}/refresh`,
-			{},
-			{ withCredentials: true })
-		.pipe(
-			tap(
-				(response: AuthResponse) =>
-				{
-					this.setAccessToken(
-						response.accessToken,
-						response.expiresAt,
-						response.email,
-						response.fullName);
-					this.requiresPasswordChangeSignal.set(
-						response.requiresPasswordChange);
-					this.markHasSession();
-				}),
-			catchError(
-				() =>
-				{
-					this.clearAuth();
-					return of(null);
-				}));
+		// If refresh already in progress, return the same observable
+		// This prevents concurrent requests from exhausting rate limits
+		if (this.refreshInProgress)
+		{
+			return this.refreshInProgress;
+		}
+
+		this.refreshInProgress =
+			this
+				.httpClient
+				.post<AuthResponse>(
+					`${this.authUrl}/refresh`,
+					{},
+					{ withCredentials: true })
+				.pipe(
+					tap(
+						(response: AuthResponse) =>
+						{
+							// Refresh always returns token fields (no MFA on refresh)
+							this.setAccessToken(
+								response.accessToken!,
+								response.expiresAt!,
+								response.email!,
+								response.fullName);
+							this.requiresPasswordChangeSignal.set(
+								response.requiresPasswordChange);
+							this.markHasSession();
+						}),
+					catchError(
+						(error: HttpErrorResponse) =>
+						{
+						// Only clear auth on 401 (invalid/expired refresh token)
+						// Do NOT clear on 429 (rate limited) - try again later
+							if (error.status === 401)
+							{
+								this.clearAuth();
+							}
+							return of(null);
+						}),
+					finalize(
+						() =>
+						{
+						// Clear the in-progress marker after completion
+							this.refreshInProgress = null;
+						}),
+					// Share the same observable among all concurrent subscribers
+					shareReplay(1));
+
+		return this.refreshInProgress;
 	}
 
 	/**
@@ -272,25 +350,25 @@ export class AuthService
 	logout(): void
 	{
 		this
-		.httpClient
-		.post<void>(`${this.authUrl}/logout`, {},
-			{ withCredentials: true })
-		.subscribe(
-			{
-				complete: () =>
+			.httpClient
+			.post<void>(`${this.authUrl}/logout`, {},
+				{ withCredentials: true })
+			.subscribe(
 				{
-					this.clearAuth();
-					this.router.navigate(
-						["/"]);
-				},
-				error: () =>
-				{
-					// Clear local state even if server call fails
-					this.clearAuth();
-					this.router.navigate(
-						["/"]);
-				}
-			});
+					complete: () =>
+					{
+						this.clearAuth();
+						this.router.navigate(
+							[APP_ROUTES.HOME]);
+					},
+					error: () =>
+					{
+						// Clear local state even if server call fails
+						this.clearAuth();
+						this.router.navigate(
+							[APP_ROUTES.HOME]);
+					}
+				});
 	}
 
 	/**
@@ -317,14 +395,19 @@ export class AuthService
 	 * Always succeeds from the client's perspective (prevents email enumeration).
 	 * @param {string} email
 	 * The email address to send the reset link to.
+	 * @param {string | null} altchaPayload
+	 * ALTCHA verification payload for bot protection (null if disabled).
 	 * @returns {Observable<void>}
 	 * Observable that completes when the request is accepted.
 	 */
-	requestPasswordReset(email: string): Observable<void>
+	requestPasswordReset(
+		email: string,
+		altchaPayload: string | null = null): Observable<void>
 	{
 		return this.httpClient.post<void>(`${this.authUrl}/forgot-password`,
 			{
-				email
+				email,
+				altchaPayload
 			});
 	}
 
@@ -352,31 +435,35 @@ export class AuthService
 	 * The desired username.
 	 * @param {string} password
 	 * The desired password.
+	 * @param {string | null} altchaPayload
+	 * The ALTCHA payload for bot protection (null when disabled).
 	 * @returns {Observable<AuthResponse>}
 	 * Observable that resolves to authentication response on success.
 	 */
 	completeRegistration(
 		token: string,
 		username: string,
-		password: string): Observable<AuthResponse>
+		password: string,
+		altchaPayload: string | null): Observable<AuthResponse>
 	{
 		return this
-		.httpClient
-		.post<AuthResponse>(
-			`${this.authUrl}/register/complete`,
-			{ token, username, password },
-			{ withCredentials: true })
-		.pipe(
-			tap(
-				(response: AuthResponse) =>
-				{
-					this.setAccessToken(
-						response.accessToken,
-						response.expiresAt,
-						response.email,
-						response.fullName);
-					this.markHasSession();
-				}));
+			.httpClient
+			.post<AuthResponse>(
+				`${this.authUrl}/register/complete`,
+				{ token, username, password, altchaPayload },
+				{ withCredentials: true })
+			.pipe(
+				tap(
+					(response: AuthResponse) =>
+					{
+						// Registration complete always returns token fields
+						this.setAccessToken(
+							response.accessToken!,
+							response.expiresAt!,
+							response.email!,
+							response.fullName);
+						this.markHasSession();
+					}));
 	}
 
 	/**
@@ -478,12 +565,31 @@ export class AuthService
 
 			// Navigate to stored return URL
 			const returnUrl: string =
-				sessionStorage.getItem("auth_return_url") ?? "/";
-			sessionStorage.removeItem("auth_return_url");
+				sessionStorage.getItem(STORAGE_KEYS.AUTH_RETURN_URL) ?? "/";
+			sessionStorage.removeItem(STORAGE_KEYS.AUTH_RETURN_URL);
 			this.router.navigateByUrl(returnUrl);
 		}
 
 		return true;
+	}
+
+	/**
+	 * Handles successful MFA verification by storing tokens.
+	 * Called by MfaService after successful code verification.
+	 * @param {AuthResponse} response
+	 * The auth response from MFA verification.
+	 */
+	handleMfaSuccess(response: AuthResponse): void
+	{
+		// MFA success always returns token fields
+		this.setAccessToken(
+			response.accessToken!,
+			response.expiresAt!,
+			response.email!,
+			response.fullName);
+		this.requiresPasswordChangeSignal.set(
+			response.requiresPasswordChange);
+		this.markHasSession();
 	}
 
 	/**
@@ -507,8 +613,10 @@ export class AuthService
 	{
 		this.accessToken = token;
 		this.tokenExpiresAt =
-			this.dateService.parseUTC(expiresAt)
-			.getTime();
+			this
+				.dateService
+				.parseUTC(expiresAt)
+				.getTime();
 
 		const claims: JwtClaims | null =
 			this.parseJwt(token);
@@ -518,7 +626,7 @@ export class AuthService
 			// Handle role claim - .NET uses full ClaimTypes URI, can be string or array
 			const roleClaim: string | string[] | undefined =
 				claims[
-				DOTNET_ROLE_CLAIM
+					DOTNET_ROLE_CLAIM
 				] as string | string[] | undefined;
 			const roles: string[] =
 				Array.isArray(roleClaim)
@@ -598,20 +706,20 @@ export class AuthService
 				parts[1];
 			const base64: string =
 				base64Url
-				.replace(/-/g, "+")
-				.replace(/_/g, "/");
+					.replace(/-/g, "+")
+					.replace(/_/g, "/");
 			const json: string =
 				decodeURIComponent(
 					atob(base64)
-					.split("")
-					.map(
-						(c: string) =>
-							"%"
-								+ ("00" + c
-								.charCodeAt(0)
-								.toString(16))
-								.slice(-2))
-					.join(""));
+						.split("")
+						.map(
+							(c: string) =>
+								"%"
+									+ ("00" + c
+										.charCodeAt(0)
+										.toString(16))
+										.slice(-2))
+						.join(""));
 
 			return JSON.parse(json);
 		}
@@ -629,7 +737,11 @@ export class AuthService
 	 */
 	private hasExistingSession(): boolean
 	{
-		return localStorage.getItem(AuthService.HAS_SESSION_KEY) === "true";
+		const marker: boolean | string | null =
+			this.storageService.getItem<boolean | string>(
+				STORAGE_KEYS.AUTH_HAS_SESSION);
+		// Handle both boolean (from JSON.parse) and string (legacy) formats
+		return marker === true || marker === "true";
 	}
 
 	/**
@@ -639,7 +751,7 @@ export class AuthService
 	 */
 	private markHasSession(): void
 	{
-		localStorage.setItem(AuthService.HAS_SESSION_KEY, "true");
+		this.storageService.setItem(STORAGE_KEYS.AUTH_HAS_SESSION, "true");
 	}
 
 	/**
@@ -649,6 +761,6 @@ export class AuthService
 	 */
 	private clearHasSession(): void
 	{
-		localStorage.removeItem(AuthService.HAS_SESSION_KEY);
+		this.storageService.removeItem(STORAGE_KEYS.AUTH_HAS_SESSION);
 	}
 }

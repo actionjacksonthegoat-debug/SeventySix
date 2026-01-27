@@ -11,7 +11,7 @@ using SeventySix.ElectronicNotifications.Emails;
 using SeventySix.Identity;
 using SeventySix.Identity.Constants;
 using SeventySix.Shared.Constants;
-using SeventySix.Shared.DTOs;
+using SeventySix.Shared.POCOs;
 using Wolverine;
 
 namespace SeventySix.Api.Controllers;
@@ -96,6 +96,34 @@ public class UsersController(
 	#region Admin User Management Endpoints
 
 	/// <summary>
+	/// Gets the count of users with the Admin role.
+	/// Used by clients to determine if Admin role removal should be disabled.
+	/// </summary>
+	/// <param name="cancellationToken">
+	/// Cancellation token for async operation.
+	/// </param>
+	/// <returns>
+	/// The count of admin users.
+	/// </returns>
+	/// <response code="200">Returns the admin count.</response>
+	/// <response code="500">If an unexpected error occurs.</response>
+	[HttpGet("admin-count", Name = "GetAdminCount")]
+	[Authorize(Policy = PolicyConstants.AdminOnly)]
+	[ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
+	[OutputCache(PolicyName = CachePolicyConstants.Users)]
+	public async Task<ActionResult<int>> GetAdminCountAsync(
+		CancellationToken cancellationToken)
+	{
+		int adminCount =
+			await messageBus.InvokeAsync<int>(
+				new GetAdminCountQuery(),
+				cancellationToken);
+
+		return Ok(adminCount);
+	}
+
+	/// <summary>
 	/// Gets all users.
 	/// </summary>
 	/// <param name="cancellationToken">
@@ -126,8 +154,9 @@ public class UsersController(
 	{
 		IEnumerable<UserDto> users =
 			await messageBus.InvokeAsync<
-				IEnumerable<UserDto>
-		>(new GetAllUsersQuery(), cancellationToken);
+				IEnumerable<UserDto>>(
+					new GetAllUsersQuery(),
+					cancellationToken);
 
 		return Ok(users);
 	}
@@ -229,7 +258,10 @@ public class UsersController(
 					request,
 					cancellationToken);
 
-			return CreatedAtRoute("GetUserById", new { id = user.Id }, user);
+			return CreatedAtRoute(
+				"GetUserById",
+				new { id = user.Id },
+				user);
 		}
 		catch (EmailRateLimitException)
 		{
@@ -254,7 +286,10 @@ public class UsersController(
 				"User {UserId} created but email rate limited",
 				user.Id);
 
-			return AcceptedAtRoute("GetUserById", new { id = user.Id }, user);
+			return AcceptedAtRoute(
+				"GetUserById",
+				new { id = user.Id },
+				user);
 		}
 	}
 
@@ -292,7 +327,13 @@ public class UsersController(
 	{
 		if (id != request.Id)
 		{
-			return BadRequest("ID in URL does not match ID in request body");
+			return BadRequest(
+				new ProblemDetails
+				{
+					Title = "Invalid Request",
+					Detail = "ID in URL does not match ID in request body",
+					Status = StatusCodes.Status400BadRequest,
+				});
 		}
 
 		UserDto user =
@@ -327,12 +368,17 @@ public class UsersController(
 		long id,
 		CancellationToken cancellationToken)
 	{
-		bool result =
-			await messageBus.InvokeAsync<bool>(
-				new DeleteUserCommand(id, AuditConstants.SystemUser),
+		string username =
+			User.GetRequiredUsername();
+
+		Result result =
+			await messageBus.InvokeAsync<Result>(
+				new DeleteUserCommand(
+					id,
+					username),
 				cancellationToken);
 
-		return result ? NoContent() : NotFound();
+		return result.IsSuccess ? NoContent() : NotFound();
 	}
 
 	/// <summary>
@@ -359,12 +405,12 @@ public class UsersController(
 		long id,
 		CancellationToken cancellationToken)
 	{
-		bool result =
-			await messageBus.InvokeAsync<bool>(
+		Result result =
+			await messageBus.InvokeAsync<Result>(
 				new RestoreUserCommand(id),
 				cancellationToken);
 
-		return result ? NoContent() : NotFound();
+		return result.IsSuccess ? NoContent() : NotFound();
 	}
 
 	/// <summary>
@@ -397,8 +443,9 @@ public class UsersController(
 	{
 		PagedResult<UserDto> result =
 			await messageBus.InvokeAsync<
-				PagedResult<UserDto>
-		>(new GetPagedUsersQuery(request), cancellationToken);
+				PagedResult<UserDto>>(
+					new GetPagedUsersQuery(request),
+					cancellationToken);
 
 		return Ok(result);
 	}
@@ -499,12 +546,15 @@ public class UsersController(
 		[FromBody] IEnumerable<long> ids,
 		CancellationToken cancellationToken)
 	{
+		string username =
+			User.GetRequiredUsername();
+
 		int count =
 			await messageBus.InvokeAsync<int>(
 				new BulkUpdateActiveStatusCommand(
 					ids,
 					true,
-					AuditConstants.SystemUser),
+					username),
 				cancellationToken);
 
 		return Ok(count);
@@ -534,12 +584,15 @@ public class UsersController(
 		[FromBody] IEnumerable<long> ids,
 		CancellationToken cancellationToken)
 	{
+		string username =
+			User.GetRequiredUsername();
+
 		int count =
 			await messageBus.InvokeAsync<int>(
 				new BulkUpdateActiveStatusCommand(
 					ids,
 					false,
-					AuditConstants.SystemUser),
+					username),
 				cancellationToken);
 
 		return Ok(count);

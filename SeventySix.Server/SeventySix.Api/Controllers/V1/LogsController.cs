@@ -5,10 +5,12 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
+using Microsoft.AspNetCore.RateLimiting;
 using SeventySix.Api.Configuration;
+using SeventySix.Identity;
 using SeventySix.Identity.Constants;
 using SeventySix.Logging;
-using SeventySix.Shared.DTOs;
+using SeventySix.Shared.POCOs;
 using Wolverine;
 
 namespace SeventySix.Api.Controllers;
@@ -49,8 +51,9 @@ public class LogsController(
 	{
 		PagedResult<LogDto> result =
 			await messageBus.InvokeAsync<
-				PagedResult<LogDto>
-		>(new GetLogsPagedQuery(request), cancellationToken);
+				PagedResult<LogDto>>(
+					new GetLogsPagedQuery(request),
+					cancellationToken);
 
 		return Ok(result);
 	}
@@ -74,12 +77,12 @@ public class LogsController(
 		long id,
 		CancellationToken cancellationToken = default)
 	{
-		bool deleted =
-			await messageBus.InvokeAsync<bool>(
+		Result deleted =
+			await messageBus.InvokeAsync<Result>(
 				new DeleteLogCommand(id),
 				cancellationToken);
 
-		if (!deleted)
+		if (!deleted.IsSuccess)
 		{
 			return NotFound();
 		}
@@ -110,12 +113,18 @@ public class LogsController(
 	{
 		if (ids == null || ids.Length == 0)
 		{
-			return BadRequest("No log IDs provided");
+			return BadRequest(
+				new ProblemDetails
+				{
+					Title = "Invalid Request",
+					Detail = "No log IDs provided",
+					Status = StatusCodes.Status400BadRequest,
+				});
 		}
 
 		int deletedCount =
 			await messageBus.InvokeAsync<int>(
-				ids,
+				new DeleteLogsBatchCommand(ids),
 				cancellationToken);
 
 		await outputCacheStore.EvictByTagAsync("logs", cancellationToken);
@@ -144,12 +153,18 @@ public class LogsController(
 	{
 		if (!cutoffDate.HasValue)
 		{
-			return BadRequest("Cutoff date is required");
+			return BadRequest(
+				new ProblemDetails
+				{
+					Title = "Invalid Request",
+					Detail = "Cutoff date is required",
+					Status = StatusCodes.Status400BadRequest,
+				});
 		}
 
 		int deletedCount =
 			await messageBus.InvokeAsync<int>(
-				cutoffDate.Value,
+				new DeleteLogsOlderThanCommand(cutoffDate.Value),
 				cancellationToken);
 
 		await outputCacheStore.EvictByTagAsync("logs", cancellationToken);
@@ -169,9 +184,13 @@ public class LogsController(
 	/// </returns>
 	/// <response code="204">Log successfully recorded.</response>
 	/// <response code="400">Invalid request data.</response>
+	/// <response code="429">Rate limit exceeded.</response>
 	[HttpPost("client")]
+	[AllowAnonymous]
+	[EnableRateLimiting(RateLimitPolicyConstants.ClientLogs)]
 	[ProducesResponseType(StatusCodes.Status204NoContent)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(StatusCodes.Status429TooManyRequests)]
 	public async Task<IActionResult> LogClientErrorAsync(
 		[FromBody] CreateLogRequest request,
 		CancellationToken cancellationToken = default)
@@ -195,9 +214,13 @@ public class LogsController(
 	/// </returns>
 	/// <response code="204">Logs successfully recorded.</response>
 	/// <response code="400">Invalid request data.</response>
+	/// <response code="429">Rate limit exceeded.</response>
 	[HttpPost("client/batch")]
+	[AllowAnonymous]
+	[EnableRateLimiting(RateLimitPolicyConstants.ClientLogs)]
 	[ProducesResponseType(StatusCodes.Status204NoContent)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(StatusCodes.Status429TooManyRequests)]
 	public async Task<IActionResult> LogClientErrorBatchAsync(
 		[FromBody] CreateLogRequest[] requests,
 		CancellationToken cancellationToken = default)

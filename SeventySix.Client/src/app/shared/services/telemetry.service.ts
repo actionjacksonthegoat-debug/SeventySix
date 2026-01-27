@@ -23,7 +23,7 @@ interface TelemetryModules
 	registerInstrumentations: unknown;
 	DocumentLoadInstrumentation: unknown;
 	FetchInstrumentation: unknown;
-	Resource: unknown;
+	resourceFromAttributes: unknown;
 	AlwaysOffSampler: unknown;
 	AlwaysOnSampler: unknown;
 	BatchSpanProcessor: unknown;
@@ -34,11 +34,9 @@ interface TelemetryModules
 }
 
 /**
- * WebTracerProvider instance interface.
- */
+ * WebTracerProvider instance interface. */
 interface WebTracerProviderInstance
 {
-	addSpanProcessor(processor: unknown): void;
 	register(): void;
 }
 
@@ -92,11 +90,11 @@ export class TelemetryService
 
 		// Defer telemetry setup to not block initial render
 		timer(TELEMETRY_INIT_DELAY_MS)
-		.subscribe(
-			() =>
-			{
-				this.initializeTelemetryAsync();
-			});
+			.subscribe(
+				() =>
+				{
+					this.initializeTelemetryAsync();
+				});
 	}
 
 	/**
@@ -160,7 +158,7 @@ export class TelemetryService
 			registerInstrumentations: instrModule.registerInstrumentations,
 			DocumentLoadInstrumentation: docLoadModule.DocumentLoadInstrumentation,
 			FetchInstrumentation: fetchModule.FetchInstrumentation,
-			Resource: resourceModule.Resource,
+			resourceFromAttributes: resourceModule.resourceFromAttributes,
 			AlwaysOffSampler: sdkModule.AlwaysOffSampler,
 			AlwaysOnSampler: sdkModule.AlwaysOnSampler,
 			BatchSpanProcessor: sdkModule.BatchSpanProcessor,
@@ -172,7 +170,7 @@ export class TelemetryService
 	}
 
 	/**
-	 * Creates the WebTracerProvider with resource and sampler.
+	 * Creates the WebTracerProvider with resource, sampler, and span processor.
 	 * @param {TelemetryModules} modules
 	 * The loaded telemetry modules to construct provider and exporter.
 	 * @returns {WebTracerProviderInstance}
@@ -180,11 +178,11 @@ export class TelemetryService
 	 */
 	private createTracerProvider(modules: TelemetryModules): WebTracerProviderInstance
 	{
-		const ResourceConstructor: new(attributes: unknown) => unknown =
-			modules.Resource as new(
-				attributes: unknown) => unknown;
+		const createResource: (attributes: Record<string, unknown>) => unknown =
+			modules.resourceFromAttributes as (
+				attributes: Record<string, unknown>) => unknown;
 		const resource: unknown =
-			new ResourceConstructor(
+			createResource(
 				{
 					[modules.ATTR_SERVICE_NAME]: environment.telemetry.serviceName,
 					[modules.ATTR_SERVICE_VERSION]: environment.telemetry.serviceVersion
@@ -205,6 +203,12 @@ export class TelemetryService
 				modules.AlwaysOnSampler as new() => unknown,
 				modules.TraceIdRatioBasedSampler as new(ratio: number) => unknown);
 
+		const ProcessorConstructor: new(exporter: unknown) => unknown =
+			modules.BatchSpanProcessor as new(
+				exporter: unknown) => unknown;
+		const spanProcessor: unknown =
+			new ProcessorConstructor(exporter);
+
 		const ProviderConstructor: new(config: unknown) => WebTracerProviderInstance =
 			modules.WebTracerProvider as new(
 				config: unknown) => WebTracerProviderInstance;
@@ -212,13 +216,9 @@ export class TelemetryService
 			new ProviderConstructor(
 				{
 					resource,
-					sampler
+					sampler,
+					spanProcessors: [spanProcessor]
 				});
-
-		const ProcessorConstructor: new(exporter: unknown) => unknown =
-			modules.BatchSpanProcessor as new(
-				exporter: unknown) => unknown;
-		provider.addSpanProcessor(new ProcessorConstructor(exporter));
 
 		return provider;
 	}

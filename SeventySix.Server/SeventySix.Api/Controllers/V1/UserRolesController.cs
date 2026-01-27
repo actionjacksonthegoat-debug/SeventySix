@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using SeventySix.Api.Configuration;
 using SeventySix.Identity;
 using SeventySix.Identity.Constants;
+using SeventySix.Shared.POCOs;
 using Wolverine;
 
 namespace SeventySix.Api.Controllers;
@@ -56,8 +57,9 @@ public class UserRolesController(IMessageBus messageBus) : ControllerBase
 
 		IEnumerable<string> roles =
 			await messageBus.InvokeAsync<
-				IEnumerable<string>
-		>(new GetUserRolesQuery(id), cancellationToken);
+				IEnumerable<string>>(
+					new GetUserRolesQuery(id),
+					cancellationToken);
 
 		return Ok(roles);
 	}
@@ -104,21 +106,33 @@ public class UserRolesController(IMessageBus messageBus) : ControllerBase
 
 		try
 		{
-			bool added =
-				await messageBus.InvokeAsync<bool>(
+			Result added =
+				await messageBus.InvokeAsync<Result>(
 					new AddUserRoleCommand(id, role),
 					cancellationToken);
 
-			if (!added)
+			if (!added.IsSuccess)
 			{
-				return Conflict("User already has this role");
+				return Conflict(
+					new ProblemDetails
+					{
+						Title = "Role Already Assigned",
+						Detail = "User already has this role",
+						Status = StatusCodes.Status409Conflict,
+					});
 			}
 
 			return NoContent();
 		}
-		catch (ArgumentException ex)
+		catch (ArgumentException argumentException)
 		{
-			return BadRequest(ex.Message);
+			return BadRequest(
+				new ProblemDetails
+				{
+					Title = "Invalid Role",
+					Detail = argumentException.Message,
+					Status = StatusCodes.Status400BadRequest,
+				});
 		}
 	}
 
@@ -133,15 +147,17 @@ public class UserRolesController(IMessageBus messageBus) : ControllerBase
 	/// Cancellation token for async operation.
 	/// </param>
 	/// <returns>
-	/// No content if successful; 404 if user or role not found.
+	/// No content if successful; 404 if user or role not found; 409 if last admin.
 	/// </returns>
 	/// <response code="204">Role removed successfully.</response>
 	/// <response code="404">If the user or role is not found.</response>
+	/// <response code="409">If attempting to remove Admin role from last admin.</response>
 	/// <response code="500">If an unexpected error occurs.</response>
 	[HttpDelete("{id}/roles/{role}", Name = "RemoveUserRole")]
 	[Authorize(Policy = PolicyConstants.AdminOnly)]
 	[ProducesResponseType(StatusCodes.Status204NoContent)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
+	[ProducesResponseType(StatusCodes.Status409Conflict)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 	public async Task<IActionResult> RemoveUserRoleAsync(
 		int id,
@@ -158,16 +174,35 @@ public class UserRolesController(IMessageBus messageBus) : ControllerBase
 			return NotFound();
 		}
 
-		bool removed =
-			await messageBus.InvokeAsync<bool>(
-				new RemoveUserRoleCommand(id, role),
-				cancellationToken);
-
-		if (!removed)
+		try
 		{
-			return NotFound("Role not found on user");
-		}
+			Result removed =
+				await messageBus.InvokeAsync<Result>(
+					new RemoveUserRoleCommand(id, role),
+					cancellationToken);
 
-		return NoContent();
+			if (!removed.IsSuccess)
+			{
+				return NotFound(
+					new ProblemDetails
+					{
+						Title = "Role Not Found",
+						Detail = "Role not found on user",
+						Status = StatusCodes.Status404NotFound,
+					});
+			}
+
+			return NoContent();
+		}
+		catch (LastAdminException lastAdminException)
+		{
+			return Conflict(
+				new ProblemDetails
+				{
+					Title = "Operation Forbidden",
+					Detail = lastAdminException.Message,
+					Status = StatusCodes.Status409Conflict,
+				});
+		}
 	}
 }

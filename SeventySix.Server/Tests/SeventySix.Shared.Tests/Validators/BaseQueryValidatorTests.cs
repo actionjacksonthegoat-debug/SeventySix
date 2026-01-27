@@ -5,7 +5,7 @@
 using FluentValidation.TestHelper;
 using Microsoft.Extensions.Time.Testing;
 using SeventySix.Shared.Constants;
-using SeventySix.Shared.DTOs;
+using SeventySix.Shared.POCOs;
 using SeventySix.Shared.Validators;
 
 namespace SeventySix.Shared.Tests.Validators;

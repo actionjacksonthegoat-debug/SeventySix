@@ -47,6 +47,41 @@ public class IdentityDbContext
 	public DbSet<PermissionRequest> PermissionRequests =>
 		Set<PermissionRequest>();
 
+	/// <summary>
+	/// Gets or sets the AltchaChallenges DbSet.
+	/// Used for ALTCHA replay attack prevention.
+	/// </summary>
+	public DbSet<AltchaChallenge> AltchaChallenges =>
+		Set<AltchaChallenge>();
+
+	/// <summary>
+	/// Gets or sets the SecurityEvents DbSet.
+	/// Used for security audit logging.
+	/// </summary>
+	public DbSet<SecurityEvent> SecurityEvents =>
+		Set<SecurityEvent>();
+
+	/// <summary>
+	/// Gets or sets the MfaChallenges DbSet.
+	/// Used for email-based MFA verification.
+	/// </summary>
+	public DbSet<MfaChallenge> MfaChallenges =>
+		Set<MfaChallenge>();
+
+	/// <summary>
+	/// Gets or sets the BackupCodes DbSet.
+	/// Used for MFA recovery backup codes.
+	/// </summary>
+	public DbSet<BackupCode> BackupCodes =>
+		Set<BackupCode>();
+
+	/// <summary>
+	/// Gets or sets the TrustedDevices DbSet.
+	/// Used for "Remember This Device" MFA bypass.
+	/// </summary>
+	public DbSet<TrustedDevice> TrustedDevices =>
+		Set<TrustedDevice>();
+
 	/// <inheritdoc/>
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
 	{

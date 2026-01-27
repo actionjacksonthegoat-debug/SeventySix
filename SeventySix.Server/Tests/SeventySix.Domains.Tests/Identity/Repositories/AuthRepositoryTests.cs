@@ -5,6 +5,7 @@
 using Microsoft.Extensions.Time.Testing;
 using SeventySix.Identity;
 using SeventySix.TestUtilities.Builders;
+using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;
 using Shouldly;
 
@@ -17,10 +18,10 @@ namespace SeventySix.Domains.Tests.Identity.Repositories;
 /// AuthRepository is now simplified to only handle UpdateLastLoginAsync.
 /// User lookup, external logins, and roles are handled by UserManager.
 /// </remarks>
-[Collection("DatabaseTests")]
+[Collection(CollectionNames.IdentityPostgreSql)]
 public class AuthRepositoryTests : DataPostgreSqlTestBase
 {
-	public AuthRepositoryTests(TestcontainersPostgreSqlFixture fixture)
+	public AuthRepositoryTests(IdentityPostgreSqlFixture fixture)
 		: base(fixture) { }
 
 	/// <summary>

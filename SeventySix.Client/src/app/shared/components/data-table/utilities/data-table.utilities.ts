@@ -178,15 +178,15 @@ export class DataTableUtilities
 				new Map<string, boolean>();
 
 			Object
-			.entries(preferences)
-			.forEach(
-				([key, value]) =>
-				{
-					if (typeof value === "boolean")
+				.entries(preferences)
+				.forEach(
+					([key, value]) =>
 					{
-						visibility.set(key, value);
-					}
-				});
+						if (typeof value === "boolean")
+						{
+							visibility.set(key, value);
+						}
+					});
 
 			return visibility;
 		}

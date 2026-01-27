@@ -178,7 +178,7 @@ export class PerformanceMonitorService
 				const memory: PerformanceMemory | undefined =
 					(
 						performance as PerformanceWithMemory)
-					.memory;
+						.memory;
 				const memoryUsed: number =
 					memory
 						? Math.round(memory.usedJSHeapSize / this.MB)

@@ -3,9 +3,14 @@ import { provideZonelessChangeDetection } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideRouter, Router } from "@angular/router";
 import { ActivatedRoute } from "@angular/router";
+import { AltchaService } from "@shared/services";
 import { AuthService } from "@shared/services/auth.service";
 import { NotificationService } from "@shared/services/notification.service";
-import { createMockNotificationService } from "@shared/testing";
+import {
+	createMockAltchaService,
+	createMockNotificationService,
+	MockAltchaService
+} from "@shared/testing";
 import { of, throwError } from "rxjs";
 import { vi } from "vitest";
 import { RegisterCompleteComponent } from "./register-complete";
@@ -22,6 +27,7 @@ describe("RegisterCompleteComponent",
 		let fixture: ComponentFixture<RegisterCompleteComponent>;
 		let mockAuthService: MockAuthService;
 		let mockNotificationService: ReturnType<typeof createMockNotificationService>;
+		let mockAltchaService: MockAltchaService;
 		let router: Router;
 
 		function setupTestBed(queryParams: Record<string, string> = {})
@@ -36,6 +42,10 @@ describe("RegisterCompleteComponent",
 						{
 							provide: NotificationService,
 							useValue: mockNotificationService
+						},
+						{
+							provide: AltchaService,
+							useValue: mockAltchaService
 						},
 						{ provide: ActivatedRoute, useValue: { snapshot: { queryParams } } }
 					]
@@ -58,6 +68,8 @@ describe("RegisterCompleteComponent",
 					{ completeRegistration: vi.fn() };
 				mockNotificationService =
 					createMockNotificationService();
+				mockAltchaService =
+					createMockAltchaService(false);
 			});
 
 		it("should create",
@@ -77,7 +89,7 @@ describe("RegisterCompleteComponent",
 				expect(mockNotificationService.error)
 					.toHaveBeenCalledWith(
 						"Invalid registration link. Please request a new one.");
-				expect((component as unknown as { tokenValid(): boolean }).tokenValid())
+				expect((component as unknown as { tokenValid(): boolean; }).tokenValid())
 					.toBe(false);
 			});
 
@@ -87,11 +99,11 @@ describe("RegisterCompleteComponent",
 				setupTestBed(
 					{ token: "valid-token" });
 
-				(component as unknown as { username: string }).username = "ab"; // too short
-				(component as unknown as { password: string }).password = "short";
-				(component as unknown as { confirmPassword: string }).confirmPassword = "short";
+				(component as unknown as { username: string; }).username = "ab"; // too short
+				(component as unknown as { password: string; }).password = "short";
+				(component as unknown as { confirmPassword: string; }).confirmPassword = "short";
 
-				(component as unknown as { onSubmit(): void }).onSubmit();
+				(component as unknown as { onSubmit(): void; }).onSubmit();
 
 				expect(mockNotificationService.error)
 					.toHaveBeenCalled();
@@ -99,23 +111,25 @@ describe("RegisterCompleteComponent",
 			});
 
 		it("should navigate to root on successful registration",
-			() =>
+			async () =>
 			{
 				setupTestBed(
 					{ token: "valid-token" });
 				mockAuthService.completeRegistration.mockReturnValue(of(undefined));
 
-				(component as unknown as { username: string }).username = "valid_user";
-				(component as unknown as { password: string }).password = "ValidPassword123!";
-				(component as unknown as { confirmPassword: string }).confirmPassword = "ValidPassword123!";
+				(component as unknown as { username: string; }).username = "valid_user";
+				(component as unknown as { password: string; }).password = "ValidPassword123!";
+				(component as unknown as { confirmPassword: string; }).confirmPassword = "ValidPassword123!";
 
-				(component as unknown as { onSubmit(): void }).onSubmit();
+				(component as unknown as { onSubmit(): void; }).onSubmit();
+				await fixture.whenStable();
 
 				expect(mockAuthService.completeRegistration)
 					.toHaveBeenCalledWith(
 						"valid-token",
 						"valid_user",
-						"ValidPassword123!");
+						"ValidPassword123!",
+						null);
 				expect(mockNotificationService.success)
 					.toHaveBeenCalledWith("Account created successfully!");
 				expect(router.navigate)
@@ -124,7 +138,7 @@ describe("RegisterCompleteComponent",
 			});
 
 		it("should show error message from API on failure",
-			() =>
+			async () =>
 			{
 				setupTestBed(
 					{ token: "valid-token" });
@@ -133,11 +147,12 @@ describe("RegisterCompleteComponent",
 						{ status: 400, statusText: "Bad Request", error: { detail: "Username already exists." } });
 				mockAuthService.completeRegistration.mockReturnValue(throwError(() => errorResponse));
 
-				(component as unknown as { username: string }).username = "valid_user";
-				(component as unknown as { password: string }).password = "ValidPassword123!";
-				(component as unknown as { confirmPassword: string }).confirmPassword = "ValidPassword123!";
+				(component as unknown as { username: string; }).username = "valid_user";
+				(component as unknown as { password: string; }).password = "ValidPassword123!";
+				(component as unknown as { confirmPassword: string; }).confirmPassword = "ValidPassword123!";
 
-				(component as unknown as { onSubmit(): void }).onSubmit();
+				(component as unknown as { onSubmit(): void; }).onSubmit();
+				await fixture.whenStable();
 
 				expect(mockNotificationService.error)
 					.toHaveBeenCalledWith("Username already exists.");

@@ -4,6 +4,7 @@
 
 using System.Net;
 using System.Net.Http.Json;
+using SeventySix.Api.Tests.Fixtures;
 using SeventySix.Identity;
 using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;
@@ -20,8 +21,8 @@ namespace SeventySix.Api.Tests.Controllers;
 /// rate limiting state for other tests.
 /// Rate limits are configured via UseSetting: Login=5/min, Register=3/hour, Refresh=10/min.
 /// </remarks>
-[Collection("PostgreSQL")]
-public class AuthRateLimitingTests(TestcontainersPostgreSqlFixture fixture)
+[Collection(CollectionNames.IdentityAuthPostgreSql)]
+public class AuthRateLimitingTests(IdentityAuthApiPostgreSqlFixture fixture)
 	: ApiPostgreSqlTestBase<Program>(fixture),
 		IAsyncLifetime
 {
@@ -38,12 +39,22 @@ public class AuthRateLimitingTests(TestcontainersPostgreSqlFixture fixture)
 		// Each test gets a fresh factory with its own rate limiter state
 		// UseSetting provides configuration at the host level, overriding appsettings
 		IsolatedFactory =
-			CreateIsolatedFactory(builder =>
-		{
-			builder.UseSetting("Auth:RateLimit:LoginAttemptsPerMinute", "5");
-			builder.UseSetting("Auth:RateLimit:RegisterAttemptsPerHour", "3");
-			builder.UseSetting("Auth:RateLimit:TokenRefreshPerMinute", "10");
-		});
+			CreateIsolatedFactory(
+				builder =>
+				{
+					builder.UseSetting(
+						"RateLimiting:Enabled",
+						"true");
+					builder.UseSetting(
+						"Auth:RateLimit:LoginAttemptsPerMinute",
+						"5");
+					builder.UseSetting(
+						"Auth:RateLimit:RegisterAttemptsPerHour",
+						"3");
+					builder.UseSetting(
+						"Auth:RateLimit:TokenRefreshPerMinute",
+						"10");
+				});
 		Client =
 			IsolatedFactory.CreateClient();
 	}
@@ -70,7 +81,7 @@ public class AuthRateLimitingTests(TestcontainersPostgreSqlFixture fixture)
 
 		// Act - Make 6 requests (limit is 5)
 		List<HttpResponseMessage> responses = [];
-		for (int i = 0; i < 6; i++)
+		for (int attemptIndex = 0; attemptIndex < 6; attemptIndex++)
 		{
 			HttpResponseMessage response =
 				await Client!.PostAsJsonAsync(
@@ -83,40 +94,6 @@ public class AuthRateLimitingTests(TestcontainersPostgreSqlFixture fixture)
 		Assert.Equal(
 			5,
 			responses.Count(r => r.StatusCode == HttpStatusCode.Unauthorized));
-		Assert.Single(
-			responses,
-			r => r.StatusCode == HttpStatusCode.TooManyRequests);
-	}
-
-	/// <summary>
-	/// Tests that POST /auth/register returns 429 after exceeding rate limit.
-	/// </summary>
-	[Fact]
-	public async Task RegisterAsync_ExceedsRateLimit_ReturnsTooManyRequestsAsync()
-	{
-		// Arrange - Rate limit is 3 per hour
-		// Act - Make 4 requests (limit is 3)
-		List<HttpResponseMessage> responses = [];
-		for (int i = 0; i < 4; i++)
-		{
-			RegisterRequest request =
-				new(
-				Username: $"testuser{i}",
-				Email: $"test{i}@example.com",
-				Password: "Password123!",
-				FullName: $"Test User {i}");
-
-			HttpResponseMessage response =
-				await Client!.PostAsJsonAsync(
-				"/api/v1/auth/register",
-				request);
-			responses.Add(response);
-		}
-
-		// Assert - First 3 should succeed (201), 4th should be 429
-		Assert.Equal(
-			3,
-			responses.Count(r => r.StatusCode == HttpStatusCode.Created));
 		Assert.Single(
 			responses,
 			r => r.StatusCode == HttpStatusCode.TooManyRequests);
@@ -136,7 +113,7 @@ public class AuthRateLimitingTests(TestcontainersPostgreSqlFixture fixture)
 
 		// Act - Exceed limit
 		HttpResponseMessage? rateLimitedResponse = null;
-		for (int i = 0; i < 6; i++)
+		for (int attemptIndex = 0; attemptIndex < 6; attemptIndex++)
 		{
 			HttpResponseMessage response =
 				await Client!.PostAsJsonAsync(

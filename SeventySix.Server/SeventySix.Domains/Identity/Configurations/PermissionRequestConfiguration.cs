@@ -71,5 +71,10 @@ public class PermissionRequestConfiguration
 			.WithMany()
 			.HasForeignKey(request => request.RequestedRoleId)
 			.OnDelete(DeleteBehavior.Restrict);
+
+		// Global query filter to exclude permission requests for soft-deleted users
+		// This matches the ApplicationUser.HasQueryFilter(u => !u.IsDeleted) filter
+		// Required to avoid EF Core warning about mismatched query filters on required navigations
+		builder.HasQueryFilter(request => request.User != null && !request.User.IsDeleted);
 	}
 }

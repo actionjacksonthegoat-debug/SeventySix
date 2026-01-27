@@ -17,6 +17,7 @@ using SeventySix.ElectronicNotifications;
 using SeventySix.Identity;
 using SeventySix.Logging;
 using SeventySix.Shared.Constants;
+using SeventySix.Shared.Exceptions;
 
 namespace SeventySix.Api.Extensions;
 
@@ -142,7 +143,11 @@ public static class WebApplicationExtensions
 			return singleLine;
 		}
 
-		return string.Concat(singleLine.AsSpan(0, maxLength - 3), "...");
+		return string.Concat(
+			singleLine.AsSpan(
+				0,
+				maxLength - 3),
+			"...");
 	}
 
 	/// <summary>
@@ -387,7 +392,9 @@ public static class WebApplicationExtensions
 	{
 		Dictionary<string, string> parts =
 			connectionString
-				.Split(';', StringSplitOptions.RemoveEmptyEntries)
+				.Split(
+					';',
+					StringSplitOptions.RemoveEmptyEntries)
 				.Select(segment => segment.Split('=', 2))
 				.Where(keyValue => keyValue.Length == 2)
 				.ToDictionary(
@@ -443,7 +450,9 @@ public static class WebApplicationExtensions
 
 		foreach (string proxy in settings.KnownProxies)
 		{
-			if (IPAddress.TryParse(proxy, out IPAddress? ip))
+			if (IPAddress.TryParse(
+				proxy,
+				out IPAddress? ip))
 			{
 				options.KnownProxies.Add(ip);
 			}
@@ -456,8 +465,12 @@ public static class WebApplicationExtensions
 
 			if (
 				parts.Length == 2
-				&& IPAddress.TryParse(parts[0], out IPAddress? prefix)
-				&& int.TryParse(parts[1], out int prefixLength))
+				&& IPAddress.TryParse(
+					parts[0],
+					out IPAddress? prefix)
+				&& int.TryParse(
+					parts[1],
+					out int prefixLength))
 			{
 				options.KnownIPNetworks.Add(
 					new System.Net.IPNetwork(prefix, prefixLength));

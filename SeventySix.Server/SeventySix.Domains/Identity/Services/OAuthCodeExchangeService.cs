@@ -3,22 +3,22 @@
 // </copyright>
 
 using System.Security.Cryptography;
-using Microsoft.Extensions.Caching.Memory;
+using SeventySix.Shared.Constants;
+using ZiggyCreatures.Caching.Fusion;
 
 namespace SeventySix.Identity;
 
 /// <summary>
-/// Implements secure OAuth code exchange pattern using memory cache.
+/// Implements secure OAuth code exchange pattern using FusionCache.
 /// </summary>
 /// <remarks>
 /// Security Design:
 /// - Codes are cryptographically random (32 bytes, base64url encoded)
 /// - 60 second TTL prevents replay attacks
 /// - One-time use: code removed from cache after exchange
-/// - Memory-only: codes never persisted to disk/database
+/// - Memory-only: codes never distributed (SetSkipDistributedCache)
 /// </remarks>
-public class OAuthCodeExchangeService(IMemoryCache cache)
-	: IOAuthCodeExchangeService
+public class OAuthCodeExchangeService : IOAuthCodeExchangeService
 {
 	/// <summary>
 	/// Cache key prefix for OAuth codes.
@@ -30,6 +30,23 @@ public class OAuthCodeExchangeService(IMemoryCache cache)
 	/// </summary>
 	private const int CodeExpirationSeconds = 60;
 
+	/// <summary>
+	/// The identity domain cache.
+	/// </summary>
+	private readonly IFusionCache IdentityCache;
+
+	/// <summary>
+	/// Initializes a new instance of the <see cref="OAuthCodeExchangeService"/> class.
+	/// </summary>
+	/// <param name="cacheProvider">
+	/// The FusionCache provider for named cache access.
+	/// </param>
+	public OAuthCodeExchangeService(IFusionCacheProvider cacheProvider)
+	{
+		IdentityCache =
+			cacheProvider.GetCache(CacheNames.Identity);
+	}
+
 	/// <inheritdoc/>
 	public string StoreTokens(
 		string accessToken,
@@ -38,7 +55,8 @@ public class OAuthCodeExchangeService(IMemoryCache cache)
 		string email,
 		string? fullName)
 	{
-		string code = GenerateSecureCode();
+		string code =
+			GenerateSecureCode();
 
 		OAuthCodeExchangeResult tokenData =
 			new(
@@ -48,12 +66,19 @@ public class OAuthCodeExchangeService(IMemoryCache cache)
 				email,
 				fullName);
 
-		MemoryCacheEntryOptions options =
-			new MemoryCacheEntryOptions()
-				.SetAbsoluteExpiration(TimeSpan.FromSeconds(CodeExpirationSeconds))
-				.SetPriority(CacheItemPriority.High);
-
-		cache.Set($"{CacheKeyPrefix}{code}", tokenData, options);
+		// Memory-only for OAuth codes: short-lived, security-sensitive
+		IdentityCache.Set(
+			$"{CacheKeyPrefix}{code}",
+			tokenData,
+			options =>
+			{
+				options.Duration =
+					TimeSpan.FromSeconds(CodeExpirationSeconds);
+				options.SkipDistributedCacheWrite =
+					true;
+				options.SkipBackplaneNotifications =
+					true;
+			});
 
 		return code;
 	}
@@ -64,14 +89,14 @@ public class OAuthCodeExchangeService(IMemoryCache cache)
 		string cacheKey =
 			$"{CacheKeyPrefix}{code}";
 
-		if (
-			!cache.TryGetValue(cacheKey, out OAuthCodeExchangeResult? tokenData))
-		{
-			return null;
-		}
+		OAuthCodeExchangeResult? tokenData =
+			IdentityCache.GetOrDefault<OAuthCodeExchangeResult>(cacheKey);
 
-		// One-time use: remove immediately after retrieval
-		cache.Remove(cacheKey);
+		if (tokenData is not null)
+		{
+			// One-time use: remove immediately after retrieval
+			IdentityCache.Remove(cacheKey);
+		}
 
 		return tokenData;
 	}

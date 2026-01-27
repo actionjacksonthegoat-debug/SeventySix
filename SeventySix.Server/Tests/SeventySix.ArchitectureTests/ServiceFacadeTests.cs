@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using NetArchTest.Rules;
+using Shouldly;
 using Xunit;
 
 namespace SeventySix.ArchitectureTests;
@@ -47,9 +48,10 @@ public class ServiceFacadeTests
 				.HaveDependencyOn(repositoryNamespace)
 				.GetResult();
 
-			Assert.True(
-				architectureTestResult.IsSuccessful,
-				$"Controllers must not depend on {repositoryNamespace} directly. Found violations: {string.Join(", ", architectureTestResult.FailingTypeNames ?? [])}");
+			architectureTestResult.IsSuccessful.ShouldBeTrue(
+				$"Controllers must not depend on {repositoryNamespace} directly. Found violations: {string.Join(
+					", ",
+					architectureTestResult.FailingTypeNames ?? [])}");
 		}
 	}
 
@@ -80,7 +82,7 @@ public class ServiceFacadeTests
 			}
 		}
 
-		Assert.Empty(publicRepositoryNames);
+		publicRepositoryNames.ShouldBeEmpty();
 	}
 
 	[Fact]
@@ -123,6 +125,6 @@ public class ServiceFacadeTests
 			}
 		}
 
-		Assert.Empty(dependencyViolations);
+		dependencyViolations.ShouldBeEmpty();
 	}
 }

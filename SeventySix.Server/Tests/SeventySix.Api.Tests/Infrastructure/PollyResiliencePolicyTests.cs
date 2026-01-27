@@ -103,7 +103,9 @@ public class PollyResiliencePolicyTests
 			cancellationToken: CancellationToken.None);
 
 		// Assert
-		callCount.ShouldBe(3, "Should retry twice (3 attempts total)");
+		callCount.ShouldBe(
+			3,
+			"Should retry twice (3 attempts total)");
 	}
 
 	/// <summary>
@@ -170,7 +172,7 @@ public class PollyResiliencePolicyTests
 			options);
 
 		// Act - Trigger circuit breaker
-		for (int i = 0; i < 5; i++)
+		for (int failureAttempt = 0; failureAttempt < 5; failureAttempt++)
 		{
 			try
 			{
@@ -204,7 +206,10 @@ public class PollyResiliencePolicyTests
 			new(
 			async (_, cancellationToken) =>
 			{
-				await Task.Delay(TimeSpan.FromSeconds(15), cancellationToken);
+				// Delay longer than timeout to ensure cancellation triggers
+				await Task.Delay(
+					TimeSpan.FromMilliseconds(500),
+					cancellationToken);
 				return new HttpResponseMessage(HttpStatusCode.OK);
 			});
 
@@ -237,7 +242,7 @@ public class PollyResiliencePolicyTests
 			.CreateLogger(Arg.Any<string>())
 			.Returns(Substitute.For<ILogger>());
 
-		// Use 1 second timeout for fast test execution
+		// Use 100ms timeout for fast test execution (delay is 500ms)
 		IOptions<PollyOptions> options =
 			Options.Create(
 			new PollyOptions
@@ -247,7 +252,8 @@ public class PollyResiliencePolicyTests
 				CircuitBreakerFailureThreshold = 5,
 				CircuitBreakerSamplingDurationSeconds = 60,
 				CircuitBreakerBreakDurationSeconds = 30,
-				TimeoutSeconds = 1,
+				TimeoutSeconds = 0,
+				TimeoutMilliseconds = 100,
 			});
 
 		PollyIntegrationClient client =

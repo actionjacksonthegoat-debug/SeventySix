@@ -67,8 +67,8 @@ export class SelectivePreloadingStrategy implements PreloadingStrategy
 
 		// Preload after delay to not block initial render
 		return timer(PRELOAD_DELAY_MS)
-		.pipe(
-			mergeMap(
-				() => load()));
+			.pipe(
+				mergeMap(
+					() => load()));
 	}
 }

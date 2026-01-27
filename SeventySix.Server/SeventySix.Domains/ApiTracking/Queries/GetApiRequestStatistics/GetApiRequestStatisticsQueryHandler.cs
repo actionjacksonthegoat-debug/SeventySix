@@ -24,7 +24,7 @@ public static class GetApiRequestStatisticsQueryHandler
 	/// <returns>
 	/// Aggregated API request statistics.
 	/// </returns>
-	public static async Task<ThirdPartyApiStatisticsResponse> HandleAsync(
+	public static async Task<ThirdPartyApiStatisticsDto> HandleAsync(
 		GetApiRequestStatisticsQuery query,
 		IThirdPartyApiRequestRepository repository,
 		CancellationToken cancellationToken)
@@ -35,7 +35,7 @@ public static class GetApiRequestStatisticsQueryHandler
 		List<ThirdPartyApiRequest> requestList =
 			[.. requests];
 
-		return new ThirdPartyApiStatisticsResponse
+		return new ThirdPartyApiStatisticsDto
 		{
 			TotalCallsToday =
 				requestList.Sum(request => request.CallCount),

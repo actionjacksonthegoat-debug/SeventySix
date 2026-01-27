@@ -27,7 +27,8 @@ export const environment: Environment =
 			enabled: false, // Disabled in tests
 			dashboards: {
 				systemOverview: "seventysix-system-overview",
-				apiEndpoints: "seventysix-api-endpoints"
+				apiEndpoints: "seventysix-api-endpoints",
+				valkeyCache: "seventysix-valkey"
 			}
 		},
 		cache: {
@@ -42,7 +43,9 @@ export const environment: Environment =
 				users: { staleTime: 0, gcTime: 0, retry: 0 },
 				logs: { staleTime: 0, gcTime: 0, retry: 0 },
 				health: { staleTime: 0, gcTime: 0, retry: 0 },
-				thirdpartyrequests: { staleTime: 0, gcTime: 0, retry: 0 }
+				thirdpartyrequests: { staleTime: 0, gcTime: 0, retry: 0 },
+				account: { staleTime: 0, gcTime: 0, retry: 0 },
+				permissionrequests: { staleTime: 0, gcTime: 0, retry: 0 }
 			}
 		},
 		dashboard: {
@@ -61,6 +64,10 @@ export const environment: Environment =
 				enableMonitoring: false, // Disabled in tests
 				fpsWarningThreshold: 30
 			}
+		},
+		http: {
+			defaultTimeout: 5000, // 5 seconds - shorter for tests
+			uploadTimeout: 10000 // 10 seconds - shorter for tests
 		},
 		testing: {
 			runIntegrationTests: false // Integration tests disabled by default
@@ -82,5 +89,8 @@ export const environment: Environment =
 		auth: {
 			loginUrl: "/auth/login",
 			tokenRefreshBufferSeconds: 60
+		},
+		altcha: {
+			enabled: false // Disabled in tests
 		}
 	};

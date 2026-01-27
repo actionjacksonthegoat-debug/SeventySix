@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
+using Shouldly;
 using Xunit;
 
 namespace SeventySix.ArchitectureTests;
@@ -72,7 +73,7 @@ public class CancellationTokenTests
 			}
 		}
 
-		Assert.Empty(missingCancellationTokenViolations);
+		missingCancellationTokenViolations.ShouldBeEmpty();
 	}
 
 	[Fact]
@@ -105,7 +106,7 @@ public class CancellationTokenTests
 			}
 		}
 
-		Assert.Empty(missingCancellationTokenViolations);
+		missingCancellationTokenViolations.ShouldBeEmpty();
 	}
 
 	[Fact]
@@ -140,15 +141,8 @@ public class CancellationTokenTests
 			}
 		}
 
-		if (missingCancellationTokenViolations.Any())
-		{
-			string violations =
-				string.Join(
-				"\n",
-				missingCancellationTokenViolations);
-			Assert.Fail(
-				$"Service mutation methods missing CancellationToken:\n{violations}");
-		}
+		missingCancellationTokenViolations.ShouldBeEmpty(
+			$"Service mutation methods missing CancellationToken:\n{string.Join("\n", missingCancellationTokenViolations)}");
 	}
 
 	[Fact]
@@ -183,15 +177,8 @@ public class CancellationTokenTests
 			}
 		}
 
-		if (missingCancellationTokenViolations.Any())
-		{
-			string violations =
-				string.Join(
-				"\n",
-				missingCancellationTokenViolations);
-			Assert.Fail(
-				$"Repository mutation methods missing CancellationToken:\n{violations}");
-		}
+		missingCancellationTokenViolations.ShouldBeEmpty(
+			$"Repository mutation methods missing CancellationToken:\n{string.Join("\n", missingCancellationTokenViolations)}");
 	}
 
 	private static Type[] GetAllServiceInterfaces()

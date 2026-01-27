@@ -5,6 +5,7 @@
 using FluentValidation;
 using FluentValidation.Results;
 using SeventySix.Shared.Validators;
+using Shouldly;
 
 namespace SeventySix.Shared.Tests.Validators;
 
@@ -57,7 +58,7 @@ public class CommandValidatorFactoryTests
 			validCommand);
 
 		// Assert
-		Assert.True(result.IsValid);
+		result.IsValid.ShouldBeTrue();
 	}
 
 	[Fact]
@@ -80,10 +81,10 @@ public class CommandValidatorFactoryTests
 			invalidCommand);
 
 		// Assert
-		Assert.False(result.IsValid);
-		Assert.Single(result.Errors);
-		Assert.Equal("Value is required", result.Errors[0].ErrorMessage);
-		Assert.Equal("Request.Value", result.Errors[0].PropertyName);
+		result.IsValid.ShouldBeFalse();
+		result.Errors.ShouldHaveSingleItem();
+		result.Errors[0].ErrorMessage.ShouldBe("Value is required");
+		result.Errors[0].PropertyName.ShouldBe("Request.Value");
 	}
 
 	[Fact]
@@ -107,6 +108,6 @@ public class CommandValidatorFactoryTests
 
 		// Assert
 		// Property path should be "Request.Value" not just "Value"
-		Assert.Equal("Request.Value", result.Errors[0].PropertyName);
+		result.Errors[0].PropertyName.ShouldBe("Request.Value");
 	}
 }

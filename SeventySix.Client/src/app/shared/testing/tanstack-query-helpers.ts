@@ -39,14 +39,14 @@ export function createMockQueryResult<TData, TError = Error>(
 
 	const refetchSpy: Mock =
 		vi
-		.fn()
-		.mockResolvedValue(
-			{
-				data,
-				error: options.error ?? null,
-				isError: options.isError ?? false,
-				isSuccess: !options.isLoading && !options.isError && data !== undefined
-			});
+			.fn()
+			.mockResolvedValue(
+				{
+					data,
+					error: options.error ?? null,
+					isError: options.isError ?? false,
+					isSuccess: !options.isLoading && !options.isError && data !== undefined
+				});
 
 	return {
 		data: dataSignal,
@@ -99,8 +99,8 @@ export function createMockMutationResult<
 		vi.fn();
 	const mutateAsyncSpy: Mock =
 		vi
-		.fn()
-		.mockResolvedValue(options.data);
+			.fn()
+			.mockResolvedValue(options.data);
 	const resetSpy: Mock =
 		vi.fn();
 
