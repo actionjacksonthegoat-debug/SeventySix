@@ -26,17 +26,13 @@ namespace SeventySix.Domains.Identity.Migrations
 				columns: table => new
 				{
 					Id = table.Column<long>(type: "bigint", nullable: false)
-						.Annotation(
-							"Npgsql:ValueGenerationStrategy",
-							NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+						.Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
 					Challenge = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: false),
 					ExpiryUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
 				},
 				constraints: table =>
 				{
-					table.PrimaryKey(
-						"PK_AltchaChallenges",
-						x => x.Id);
+					table.PrimaryKey("PK_AltchaChallenges", x => x.Id);
 				});
 
 			migrationBuilder.CreateTable(
@@ -45,9 +41,7 @@ namespace SeventySix.Domains.Identity.Migrations
 				columns: table => new
 				{
 					Id = table.Column<long>(type: "bigint", nullable: false)
-						.Annotation(
-							"Npgsql:ValueGenerationStrategy",
-							NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+						.Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
 					Description = table.Column<string>(type: "text", nullable: true),
 					IsActive = table.Column<bool>(type: "boolean", nullable: false),
 					CreateDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -57,9 +51,7 @@ namespace SeventySix.Domains.Identity.Migrations
 				},
 				constraints: table =>
 				{
-					table.PrimaryKey(
-						"PK_Roles",
-						x => x.Id);
+					table.PrimaryKey("PK_Roles", x => x.Id);
 				});
 
 			migrationBuilder.CreateTable(
@@ -68,9 +60,7 @@ namespace SeventySix.Domains.Identity.Migrations
 				columns: table => new
 				{
 					Id = table.Column<long>(type: "bigint", nullable: false)
-						.Annotation(
-							"Npgsql:ValueGenerationStrategy",
-							NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+						.Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
 					EventType = table.Column<int>(type: "integer", nullable: false),
 					UserId = table.Column<long>(type: "bigint", nullable: true),
 					Username = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
@@ -82,9 +72,7 @@ namespace SeventySix.Domains.Identity.Migrations
 				},
 				constraints: table =>
 				{
-					table.PrimaryKey(
-						"PK_SecurityEvents",
-						x => x.Id);
+					table.PrimaryKey("PK_SecurityEvents", x => x.Id);
 				});
 
 			migrationBuilder.CreateTable(
@@ -93,9 +81,7 @@ namespace SeventySix.Domains.Identity.Migrations
 				columns: table => new
 				{
 					Id = table.Column<long>(type: "bigint", nullable: false)
-						.Annotation(
-							"Npgsql:ValueGenerationStrategy",
-							NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+						.Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
 					FullName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
 					CreateDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
 					CreatedBy = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
@@ -108,6 +94,9 @@ namespace SeventySix.Domains.Identity.Migrations
 					LastLoginAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
 					LastLoginIp = table.Column<string>(type: "character varying(45)", maxLength: 45, nullable: true),
 					RequiresPasswordChange = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
+					MfaEnabled = table.Column<bool>(type: "boolean", nullable: false),
+					TotpSecret = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: true),
+					TotpEnrolledAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
 					Preferences = table.Column<string>(type: "text", nullable: true),
 					xmin = table.Column<uint>(type: "xid", rowVersion: true, nullable: true),
 					UserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
@@ -127,9 +116,7 @@ namespace SeventySix.Domains.Identity.Migrations
 				},
 				constraints: table =>
 				{
-					table.PrimaryKey(
-						"PK_Users",
-						x => x.Id);
+					table.PrimaryKey("PK_Users", x => x.Id);
 				});
 
 			migrationBuilder.CreateTable(
@@ -138,23 +125,45 @@ namespace SeventySix.Domains.Identity.Migrations
 				columns: table => new
 				{
 					Id = table.Column<int>(type: "integer", nullable: false)
-						.Annotation(
-							"Npgsql:ValueGenerationStrategy",
-							NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+						.Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
 					RoleId = table.Column<long>(type: "bigint", nullable: false),
 					ClaimType = table.Column<string>(type: "text", nullable: true),
 					ClaimValue = table.Column<string>(type: "text", nullable: true)
 				},
 				constraints: table =>
 				{
-					table.PrimaryKey(
-						"PK_RoleClaims",
-						x => x.Id);
+					table.PrimaryKey("PK_RoleClaims", x => x.Id);
 					table.ForeignKey(
 						name: "FK_RoleClaims_Roles_RoleId",
 						column: x => x.RoleId,
 						principalSchema: "Identity",
 						principalTable: "Roles",
+						principalColumn: "Id",
+						onDelete: ReferentialAction.Cascade);
+				});
+
+			migrationBuilder.CreateTable(
+				name: "BackupCodes",
+				schema: "Identity",
+				columns: table => new
+				{
+					Id = table.Column<long>(type: "bigint", nullable: false)
+						.Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+					UserId = table.Column<long>(type: "bigint", nullable: false),
+					CodeHash = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
+					IsUsed = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
+					UsedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+					CreateDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+					IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false)
+				},
+				constraints: table =>
+				{
+					table.PrimaryKey("PK_BackupCodes", x => x.Id);
+					table.ForeignKey(
+						name: "FK_BackupCodes_Users_UserId",
+						column: x => x.UserId,
+						principalSchema: "Identity",
+						principalTable: "Users",
 						principalColumn: "Id",
 						onDelete: ReferentialAction.Cascade);
 				});
@@ -171,11 +180,38 @@ namespace SeventySix.Domains.Identity.Migrations
 				},
 				constraints: table =>
 				{
-					table.PrimaryKey(
-						"PK_ExternalLogins",
-						x => new { x.LoginProvider, x.ProviderKey });
+					table.PrimaryKey("PK_ExternalLogins", x => new { x.LoginProvider, x.ProviderKey });
 					table.ForeignKey(
 						name: "FK_ExternalLogins_Users_UserId",
+						column: x => x.UserId,
+						principalSchema: "Identity",
+						principalTable: "Users",
+						principalColumn: "Id",
+						onDelete: ReferentialAction.Cascade);
+				});
+
+			migrationBuilder.CreateTable(
+				name: "MfaChallenges",
+				schema: "Identity",
+				columns: table => new
+				{
+					Id = table.Column<long>(type: "bigint", nullable: false)
+						.Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+					Token = table.Column<string>(type: "character varying(32)", maxLength: 32, nullable: false),
+					UserId = table.Column<long>(type: "bigint", nullable: false),
+					CodeHash = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
+					ExpiresAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+					Attempts = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
+					IsUsed = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
+					ClientIp = table.Column<string>(type: "character varying(45)", maxLength: 45, nullable: true),
+					CreateDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+					IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false)
+				},
+				constraints: table =>
+				{
+					table.PrimaryKey("PK_MfaChallenges", x => x.Id);
+					table.ForeignKey(
+						name: "FK_MfaChallenges_Users_UserId",
 						column: x => x.UserId,
 						principalSchema: "Identity",
 						principalTable: "Users",
@@ -189,9 +225,7 @@ namespace SeventySix.Domains.Identity.Migrations
 				columns: table => new
 				{
 					Id = table.Column<long>(type: "bigint", nullable: false)
-						.Annotation(
-							"Npgsql:ValueGenerationStrategy",
-							NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+						.Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
 					UserId = table.Column<long>(type: "bigint", nullable: false),
 					RequestedRoleId = table.Column<long>(type: "bigint", nullable: false),
 					RequestMessage = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
@@ -200,9 +234,7 @@ namespace SeventySix.Domains.Identity.Migrations
 				},
 				constraints: table =>
 				{
-					table.PrimaryKey(
-						"PK_PermissionRequests",
-						x => x.Id);
+					table.PrimaryKey("PK_PermissionRequests", x => x.Id);
 					table.ForeignKey(
 						name: "FK_PermissionRequests_Roles_RequestedRoleId",
 						column: x => x.RequestedRoleId,
@@ -225,29 +257,53 @@ namespace SeventySix.Domains.Identity.Migrations
 				columns: table => new
 				{
 					Id = table.Column<long>(type: "bigint", nullable: false)
-						.Annotation(
-							"Npgsql:ValueGenerationStrategy",
-							NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+						.Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
 					TokenHash = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
 					FamilyId = table.Column<Guid>(type: "uuid", nullable: false),
 					UserId = table.Column<long>(type: "bigint", nullable: false),
 					ExpiresAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
 					SessionStartedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-					CreateDate = table.Column<DateTime>(
-				type: "timestamp with time zone",
-				nullable: false,
-				defaultValueSql: "NOW()"),
+					CreateDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()"),
 					IsRevoked = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
 					RevokedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
 					CreatedByIp = table.Column<string>(type: "character varying(45)", maxLength: 45, nullable: true)
 				},
 				constraints: table =>
 				{
-					table.PrimaryKey(
-						"PK_RefreshTokens",
-						x => x.Id);
+					table.PrimaryKey("PK_RefreshTokens", x => x.Id);
 					table.ForeignKey(
 						name: "FK_RefreshTokens_Users_UserId",
+						column: x => x.UserId,
+						principalSchema: "Identity",
+						principalTable: "Users",
+						principalColumn: "Id",
+						onDelete: ReferentialAction.Cascade);
+				});
+
+			migrationBuilder.CreateTable(
+				name: "TrustedDevices",
+				schema: "Identity",
+				columns: table => new
+				{
+					Id = table.Column<long>(type: "bigint", nullable: false)
+						.Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+					UserId = table.Column<long>(type: "bigint", nullable: false),
+					TokenHash = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
+					DeviceFingerprint = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
+					DeviceName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+					ExpiresAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+					LastUsedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+					CreateDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+					CreatedBy = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+					ModifyDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+					ModifiedBy = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+					IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false)
+				},
+				constraints: table =>
+				{
+					table.PrimaryKey("PK_TrustedDevices", x => x.Id);
+					table.ForeignKey(
+						name: "FK_TrustedDevices_Users_UserId",
 						column: x => x.UserId,
 						principalSchema: "Identity",
 						principalTable: "Users",
@@ -261,18 +317,14 @@ namespace SeventySix.Domains.Identity.Migrations
 				columns: table => new
 				{
 					Id = table.Column<int>(type: "integer", nullable: false)
-						.Annotation(
-							"Npgsql:ValueGenerationStrategy",
-							NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+						.Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
 					UserId = table.Column<long>(type: "bigint", nullable: false),
 					ClaimType = table.Column<string>(type: "text", nullable: true),
 					ClaimValue = table.Column<string>(type: "text", nullable: true)
 				},
 				constraints: table =>
 				{
-					table.PrimaryKey(
-						"PK_UserClaims",
-						x => x.Id);
+					table.PrimaryKey("PK_UserClaims", x => x.Id);
 					table.ForeignKey(
 						name: "FK_UserClaims_Users_UserId",
 						column: x => x.UserId,
@@ -292,9 +344,7 @@ namespace SeventySix.Domains.Identity.Migrations
 				},
 				constraints: table =>
 				{
-					table.PrimaryKey(
-						"PK_UserRoles",
-						x => new { x.UserId, x.RoleId });
+					table.PrimaryKey("PK_UserRoles", x => new { x.UserId, x.RoleId });
 					table.ForeignKey(
 						name: "FK_UserRoles_Roles_RoleId",
 						column: x => x.RoleId,
@@ -323,9 +373,7 @@ namespace SeventySix.Domains.Identity.Migrations
 				},
 				constraints: table =>
 				{
-					table.PrimaryKey(
-						"PK_UserTokens",
-						x => new { x.UserId, x.LoginProvider, x.Name });
+					table.PrimaryKey("PK_UserTokens", x => new { x.UserId, x.LoginProvider, x.Name });
 					table.ForeignKey(
 						name: "FK_UserTokens_Users_UserId",
 						column: x => x.UserId,
@@ -360,10 +408,30 @@ namespace SeventySix.Domains.Identity.Migrations
 				column: "ExpiryUtc");
 
 			migrationBuilder.CreateIndex(
+				name: "IX_BackupCodes_UserId_IsUsed",
+				schema: "Identity",
+				table: "BackupCodes",
+				columns: new[] { "UserId", "IsUsed" });
+
+			migrationBuilder.CreateIndex(
 				name: "IX_ExternalLogins_UserId",
 				schema: "Identity",
 				table: "ExternalLogins",
 				column: "UserId");
+
+			migrationBuilder.CreateIndex(
+				name: "IX_MfaChallenges_Token",
+				schema: "Identity",
+				table: "MfaChallenges",
+				column: "Token",
+				unique: true);
+
+			migrationBuilder.CreateIndex(
+				name: "IX_MfaChallenges_UserId_ExpiresAt_Active",
+				schema: "Identity",
+				table: "MfaChallenges",
+				columns: new[] { "UserId", "ExpiresAt" },
+				filter: "\"IsUsed\" = false");
 
 			migrationBuilder.CreateIndex(
 				name: "IX_PermissionRequests_RequestedRoleId",
@@ -429,6 +497,19 @@ namespace SeventySix.Domains.Identity.Migrations
 				column: "UserId");
 
 			migrationBuilder.CreateIndex(
+				name: "IX_TrustedDevices_TokenHash",
+				schema: "Identity",
+				table: "TrustedDevices",
+				column: "TokenHash",
+				unique: true);
+
+			migrationBuilder.CreateIndex(
+				name: "IX_TrustedDevices_UserId",
+				schema: "Identity",
+				table: "TrustedDevices",
+				column: "UserId");
+
+			migrationBuilder.CreateIndex(
 				name: "IX_UserClaims_UserId",
 				schema: "Identity",
 				table: "UserClaims",
@@ -475,7 +556,15 @@ namespace SeventySix.Domains.Identity.Migrations
 				schema: "Identity");
 
 			migrationBuilder.DropTable(
+				name: "BackupCodes",
+				schema: "Identity");
+
+			migrationBuilder.DropTable(
 				name: "ExternalLogins",
+				schema: "Identity");
+
+			migrationBuilder.DropTable(
+				name: "MfaChallenges",
 				schema: "Identity");
 
 			migrationBuilder.DropTable(
@@ -493,6 +582,10 @@ namespace SeventySix.Domains.Identity.Migrations
 			migrationBuilder.DropTable(
 				name: "SecurityEvents",
 				schema: "security");
+
+			migrationBuilder.DropTable(
+				name: "TrustedDevices",
+				schema: "Identity");
 
 			migrationBuilder.DropTable(
 				name: "UserClaims",

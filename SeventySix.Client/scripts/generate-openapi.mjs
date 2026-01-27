@@ -27,13 +27,16 @@ const OPENAPI_JSON_PATH =
 	join(ROOT_DIR, "openapi.json");
 
 const API_OPENAPI_URL =
-	"http://localhost:5085/openapi/v1.json";
+	"https://localhost:7074/openapi/v1.json";
 
 const MAX_POLL_ATTEMPTS =
 	60;
 
 const POLL_DELAY_MS =
 	2000;
+
+// Disable TLS certificate validation for self-signed development certificates
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
 /**
  * Runs a command synchronously and returns the exit code.

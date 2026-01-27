@@ -159,6 +159,6 @@ public class UsersControllerMeEndpointTests(
 		AuthResponse? authResponse =
 			await loginResponse.Content.ReadFromJsonAsync<AuthResponse>();
 
-		return authResponse!.AccessToken;
+		return authResponse!.AccessToken!;
 	}
 }

@@ -85,6 +85,15 @@ public class MfaChallengeConfiguration : IEntityTypeConfiguration<MfaChallenge>
 			.Property(challenge => challenge.CreateDate)
 			.IsRequired();
 
+		// IsDeleted - Required with default false
+		builder
+			.Property(challenge => challenge.IsDeleted)
+			.IsRequired()
+			.HasDefaultValue(false);
+
+		// Query filter to match ApplicationUser's soft-delete filter
+		builder.HasQueryFilter(challenge => !challenge.IsDeleted);
+
 		// Filtered index for finding active challenges by user
 		builder
 			.HasIndex(

@@ -93,6 +93,15 @@ public class TrustedDeviceConfiguration : IEntityTypeConfiguration<TrustedDevice
 			.HasMaxLength(100)
 			.IsRequired(false);
 
+		// IsDeleted - Required with default false
+		builder
+			.Property(device => device.IsDeleted)
+			.IsRequired()
+			.HasDefaultValue(false);
+
+		// Query filter to match ApplicationUser's soft-delete filter
+		builder.HasQueryFilter(device => !device.IsDeleted);
+
 		// Index for finding user's devices
 		builder
 			.HasIndex(device => device.UserId)

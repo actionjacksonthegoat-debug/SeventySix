@@ -7,6 +7,7 @@
  * Polls the health endpoint until ready or timeout.
  */
 
+// Use HTTP on port 5086 for E2E API (isolated from dev HTTPS port 7074)
 const API_HEALTH_URL = "http://localhost:5086/health";
 const MAX_POLL_ATTEMPTS = 30;
 const POLL_DELAY_MS = 2000;

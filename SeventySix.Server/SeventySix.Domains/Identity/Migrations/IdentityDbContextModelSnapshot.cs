@@ -376,6 +376,11 @@ namespace SeventySix.Domains.Identity.Migrations
                     b.Property<DateTime>("CreateDate")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
                     b.Property<bool>("IsUsed")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
@@ -422,6 +427,11 @@ namespace SeventySix.Domains.Identity.Migrations
 
                     b.Property<DateTime>("ExpiresAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
 
                     b.Property<bool>("IsUsed")
                         .ValueGeneratedOnAdd()
@@ -620,6 +630,11 @@ namespace SeventySix.Domains.Identity.Migrations
 
                     b.Property<DateTime>("ExpiresAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
 
                     b.Property<DateTime?>("LastUsedAt")
                         .HasColumnType("timestamp with time zone");

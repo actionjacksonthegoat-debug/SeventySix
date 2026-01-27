@@ -33,7 +33,7 @@ async function globalSetup(config: FullConfig): Promise<void>
 	for (const testUser of TEST_USERS)
 	{
 		const browserContext: BrowserContext =
-			await browser.newContext({ baseURL });
+			await browser.newContext({ baseURL, ignoreHTTPSErrors: true });
 		const page: Page =
 			await browserContext.newPage();
 

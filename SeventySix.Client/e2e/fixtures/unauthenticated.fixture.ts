@@ -34,7 +34,8 @@ export const unauthenticatedTest =
 				const browserContext: BrowserContext =
 					await browser.newContext({
 						baseURL: E2E_CONFIG.clientBaseUrl,
-						storageState: undefined
+						storageState: undefined,
+						ignoreHTTPSErrors: true
 					});
 
 				const page: Page =

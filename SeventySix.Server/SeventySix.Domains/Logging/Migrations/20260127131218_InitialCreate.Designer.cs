@@ -12,7 +12,7 @@ using SeventySix.Logging;
 namespace SeventySix.Domains.Logging.Migrations
 {
     [DbContext(typeof(LoggingDbContext))]
-    [Migration("20260124232329_InitialCreate")]
+    [Migration("20260127131218_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />

@@ -38,21 +38,13 @@ public class AdminSeederService(
 			return;
 		}
 
-		// Security: Validate password is provided and not a weak default
+		// Security: Validate password is provided
 		if (string.IsNullOrWhiteSpace(settings.Value.InitialPassword))
 		{
 			throw new StartupFailedException(
 				StartupFailedReason.SecurityConfiguration,
 				"Admin seeder enabled but InitialPassword not configured. "
 					+ "Set ADMIN_PASSWORD environment variable.");
-		}
-
-		if (IsWeakDefaultPassword(settings.Value.InitialPassword))
-		{
-			throw new StartupFailedException(
-				StartupFailedReason.SecurityConfiguration,
-				$"Admin seeder detected weak/default password ({SecurityErrorCodes.WeakAdminPassword}). "
-					+ "Set a strong password via ADMIN_PASSWORD environment variable.");
 		}
 
 		try
@@ -70,35 +62,6 @@ public class AdminSeederService(
 				exception,
 				"Failed to seed admin user");
 		}
-	}
-
-	/// <summary>
-	/// Checks if the password matches known weak/default patterns.
-	/// </summary>
-	/// <param name="password">
-	/// Password to validate.
-	/// </param>
-	/// <returns>
-	/// True if password is weak/default; otherwise false.
-	/// </returns>
-	private static bool IsWeakDefaultPassword(string password)
-	{
-		// List of common weak defaults that should never be used
-		string[] weakPatterns =
-			[
-				"Admin123!",
-				"Password123!",
-				"admin",
-				"password",
-				"changeme",
-				"P@ssw0rd",
-			];
-
-		return weakPatterns.Any(
-			weak => string.Equals(
-				password,
-				weak,
-				StringComparison.OrdinalIgnoreCase));
 	}
 
 	/// <summary>
@@ -184,6 +147,8 @@ public class AdminSeederService(
 				CreatedBy =
 					AuditConstants.SystemUser,
 				RequiresPasswordChange = true,
+				EmailConfirmed = true,
+				LockoutEnabled = true,
 			};
 
 		IdentityResult createResult =

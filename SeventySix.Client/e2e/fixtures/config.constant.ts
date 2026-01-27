@@ -14,7 +14,7 @@ export const E2E_CONFIG =
 		clientBaseUrl: "http://localhost:4200",
 
 		/**
-		 * Base URL for the API server.
+		 * Base URL for the API server (HTTP for E2E).
 		 */
 		apiBaseUrl: "http://localhost:5086",
 

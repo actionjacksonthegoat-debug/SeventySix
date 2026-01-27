@@ -2,13 +2,13 @@ import { Environment } from "./environment.interface";
 
 /**
  * E2E Test Environment Configuration
- * Uses Docker container API on port 5086
+ * Uses Docker container API on HTTP port 5086
  */
 export const environment: Environment =
 	{
 		production: false,
 		version: "1.0.0-e2e",
-		apiUrl: "http://localhost:5086/api/v1", // Docker E2E API container
+		apiUrl: "http://localhost:5086/api/v1", // Docker E2E API container (HTTP, isolated from dev)
 		logging: {
 			enableRemoteLogging: false,
 			consoleLogLevel: "debug",

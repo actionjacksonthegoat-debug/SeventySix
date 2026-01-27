@@ -18,6 +18,9 @@ Write-Host "  SeventySix Infrastructure Startup" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 
+# Clean up orphaned processes before starting (prevents port conflicts)
+& (Join-Path $PSScriptRoot "cleanup-ports.ps1")
+
 # Ensure Docker Desktop is running
 if (-not (Get-Process 'Docker Desktop' -ErrorAction SilentlyContinue)) {
 	Write-Host "Starting Docker Desktop..." -ForegroundColor Yellow

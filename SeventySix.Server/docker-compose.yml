@@ -78,11 +78,9 @@ services:
     env_file:
       - ../.env
     ports:
-      - "5085:8080"  # HTTP
-      - "7074:8081"  # HTTPS
+      - "7074:8081"  # HTTPS - single development port
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_HTTP_PORTS=8080
       - ASPNETCORE_HTTPS_PORTS=8081
       - ASPNETCORE_Kestrel__Certificates__Default__Password=password
       - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
@@ -97,11 +95,18 @@ services:
     volumes:
       - ~/.aspnet/https:/https:ro
       - dataprotection_keys:/app/keys
+      - ./SeventySix.Api/keys/dataprotection.pfx:/app/keys/dataprotection.pfx:ro
     depends_on:
       postgres:
         condition: service_healthy
       valkey:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fk", "https://localhost:8081/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
     restart: "no"
     networks:
       - seventysix-network

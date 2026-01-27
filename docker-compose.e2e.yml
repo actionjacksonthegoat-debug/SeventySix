@@ -57,7 +57,7 @@ services:
             dockerfile: SeventySix.Api/Dockerfile
         container_name: seventysix-api-e2e
         ports:
-            - "5086:8080"
+            - "5086:8080"  # HTTP - E2E isolated port (distinct from dev port 7074)
         environment:
             - ASPNETCORE_ENVIRONMENT=Test
             - ASPNETCORE_HTTP_PORTS=8080
@@ -83,7 +83,7 @@ services:
             - Email__Queue__BatchSize=10
             # JWT (test secret - minimum 64 chars for security)
             - Jwt__SecretKey=E2E_Test_JWT_Secret_Key_That_Is_At_Least_64_Characters_Long_For_Security
-            # Auth - disable secure cookies for http E2E testing
+            # Auth - HTTP mode for E2E (same protocol as Angular client)
             - Auth__Cookie__SecureCookie=false
             # Auth - use SameSite=Lax for cross-port cookie sharing in E2E
             - Auth__Cookie__SameSiteLax=true

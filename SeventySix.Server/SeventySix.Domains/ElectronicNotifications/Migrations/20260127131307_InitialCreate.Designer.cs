@@ -12,7 +12,7 @@ using SeventySix.ElectronicNotifications;
 namespace SeventySix.Domains.ElectronicNotifications.Migrations
 {
     [DbContext(typeof(ElectronicNotificationsDbContext))]
-    [Migration("20260124232348_InitialCreate")]
+    [Migration("20260127131307_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />

@@ -105,7 +105,7 @@ while ((Get-Date) - $startTime -lt $timeout) {
 		else {
 			# No health check defined, check if we can reach the health endpoint
 			try {
-				$response = Invoke-WebRequest -Uri "http://localhost:5085/health/live" -UseBasicParsing -TimeoutSec 5 -ErrorAction SilentlyContinue
+				$response = Invoke-WebRequest -Uri "https://localhost:7074/health/live" -UseBasicParsing -TimeoutSec 5 -SkipCertificateCheck -ErrorAction SilentlyContinue
 				if ($response.StatusCode -eq 200) {
 					Write-Host ""
 					Write-Host "  API is responding" -ForegroundColor Green

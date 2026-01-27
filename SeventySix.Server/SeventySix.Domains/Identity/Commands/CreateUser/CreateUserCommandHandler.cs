@@ -67,6 +67,8 @@ public static class CreateUserCommandHandler
 				CreateDate = now,
 				CreatedBy =
 					request.CreatedBy ?? string.Empty,
+				EmailConfirmed = true,
+				LockoutEnabled = true,
 			};
 
 		UserDto createdUser;

@@ -12,7 +12,7 @@ using SeventySix.ApiTracking;
 namespace SeventySix.Domains.ApiTracking.Migrations
 {
     [DbContext(typeof(ApiTrackingDbContext))]
-    [Migration("20260124232339_InitialCreate")]
+    [Migration("20260127131226_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />

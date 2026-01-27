@@ -238,3 +238,42 @@ public async Task Handle_ValidInput_SucceedsAsync()
 - [ ] No single/two-letter variable names
 - [ ] `dotnet test` passes all suites
 
+---
+
+## EF Core Migrations (CRITICAL)
+
+### Migration Folder Structure
+
+**RULE**: Each domain has ONE migrations folder at `{Domain}/Migrations/`. Never place migrations in `Infrastructure/Migrations/`.
+
+| ✅ CORRECT                            | ❌ NEVER                                             |
+| ------------------------------------- | ---------------------------------------------------- |
+| `Identity/Migrations/`                | `Identity/Infrastructure/Migrations/`                |
+| `Logging/Migrations/`                 | `Logging/Infrastructure/Migrations/`                 |
+| `ApiTracking/Migrations/`             | `ApiTracking/Infrastructure/Migrations/`             |
+| `ElectronicNotifications/Migrations/` | `ElectronicNotifications/Infrastructure/Migrations/` |
+
+### Migration Commands
+
+Run from `SeventySix.Server/SeventySix.Domains/` directory:
+
+```powershell
+# Identity
+dotnet ef migrations add MigrationName -c IdentityDbContext -o Identity/Migrations
+
+# Logging
+dotnet ef migrations add MigrationName -c LoggingDbContext -o Logging/Migrations
+
+# ApiTracking
+dotnet ef migrations add MigrationName -c ApiTrackingDbContext -o ApiTracking/Migrations
+
+# ElectronicNotifications
+dotnet ef migrations add MigrationName -c ElectronicNotificationsDbContext -o ElectronicNotifications/Migrations
+```
+
+### Migration Naming
+
+- `InitialCreate` - First migration establishing the schema
+- `Add{Feature}` - Adding new tables or columns
+- `Remove{Feature}` - Removing tables or columns
+- `Update{Entity}{Property}` - Modifying existing columns

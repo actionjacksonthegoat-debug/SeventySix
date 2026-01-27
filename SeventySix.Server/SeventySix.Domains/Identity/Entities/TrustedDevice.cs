@@ -77,6 +77,15 @@ public class TrustedDevice : ICreatableEntity, IAuditableEntity
 	public string ModifiedBy { get; set; } = string.Empty;
 
 	/// <summary>
+	/// Gets or sets whether this trusted device is soft-deleted.
+	/// </summary>
+	/// <remarks>
+	/// Matches ApplicationUser's IsDeleted filter to prevent orphan records
+	/// when parent user is soft-deleted.
+	/// </remarks>
+	public bool IsDeleted { get; set; }
+
+	/// <summary>
 	/// Navigation property to the user.
 	/// </summary>
 	public ApplicationUser? User { get; set; }

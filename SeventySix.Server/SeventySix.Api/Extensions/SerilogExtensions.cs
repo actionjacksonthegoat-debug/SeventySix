@@ -75,8 +75,6 @@ public static class SerilogExtensions
 			.ReadFrom
 			.Configuration(configuration)
 			.ConfigureEnrichers()
-			.ConfigureConsoleSink()
-			.ConfigureFileSink()
 			.ConfigureMinimumLevels();
 	}
 
@@ -118,8 +116,6 @@ public static class SerilogExtensions
 				.ReadFrom
 				.Configuration(configuration)
 				.ConfigureEnrichers()
-				.ConfigureConsoleSink()
-				.ConfigureFileSink()
 				.WriteTo
 				.Database(
 					serviceProvider: serviceProvider,

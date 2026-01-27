@@ -63,6 +63,15 @@ public class BackupCodeConfiguration : IEntityTypeConfiguration<BackupCode>
 			.Property(code => code.CreateDate)
 			.IsRequired();
 
+		// IsDeleted - Required with default false
+		builder
+			.Property(code => code.IsDeleted)
+			.IsRequired()
+			.HasDefaultValue(false);
+
+		// Query filter to match ApplicationUser's soft-delete filter
+		builder.HasQueryFilter(code => !code.IsDeleted);
+
 		// Index for finding user's unused codes
 		builder
 			.HasIndex(

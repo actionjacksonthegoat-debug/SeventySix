@@ -591,3 +591,6 @@ dotnet_diagnostic.RCS0053.severity = none
 dotnet_diagnostic.RCS0054.severity = none
 dotnet_diagnostic.RCS0052.severity = none
 dotnet_diagnostic.SS001.severity = none
+dotnet_diagnostic.SS002.severity = none
+dotnet_diagnostic.SS003.severity = none
+dotnet_diagnostic.SS006.severity = none

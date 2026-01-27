@@ -22,7 +22,8 @@
 						"inlineStyleLanguage": "scss",
 						"allowedCommonJsDependencies": [
 							"shimmer",
-							"protobufjs/minimal"
+							"protobufjs/minimal",
+							"qrcode"
 						],
 						"assets": [
 							{
@@ -97,9 +98,6 @@
 				},
 				"serve": {
 					"builder": "@angular/build:dev-server",
-					"options": {
-						"proxyConfig": "proxy.conf.json"
-					},
 					"configurations": {
 						"production": {
 							"buildTarget": "SeventySix.Client:build:production"

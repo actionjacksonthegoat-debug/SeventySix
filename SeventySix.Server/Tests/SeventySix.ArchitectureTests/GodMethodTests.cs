@@ -73,7 +73,6 @@ public class GodMethodTests : SourceCodeArchitectureTest
 			"SeventySix.Domains\\Identity\\Commands\\CompleteRegistration\\CompleteRegistrationCommandHandler.cs::HandleAsync",
 			"SeventySix.Domains\\Identity\\Commands\\Login\\LoginCommandHandler.cs::HandleAsync",
 			"SeventySix.Domains\\Identity\\Commands\\SetPassword\\SetPasswordCommandHandler.cs::HandleAsync",
-			"SeventySix.Domains\\Identity\\Commands\\Register\\RegisterCommandHandler.cs::HandleAsync",
 		];
 
 	[Fact]

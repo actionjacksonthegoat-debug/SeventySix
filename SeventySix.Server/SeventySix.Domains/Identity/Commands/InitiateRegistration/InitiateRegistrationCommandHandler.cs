@@ -76,6 +76,7 @@ public static class InitiateRegistrationCommandHandler
 				Email = email,
 				IsActive = false, // Inactive until registration completes
 				EmailConfirmed = false,
+				LockoutEnabled = true,
 				CreateDate = now,
 				CreatedBy =
 					AuditConstants.SystemUser,

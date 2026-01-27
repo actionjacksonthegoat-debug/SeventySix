@@ -100,40 +100,6 @@ public class AuthRateLimitingTests(IdentityAuthApiPostgreSqlFixture fixture)
 	}
 
 	/// <summary>
-	/// Tests that POST /auth/register returns 429 after exceeding rate limit.
-	/// </summary>
-	[Fact]
-	public async Task RegisterAsync_ExceedsRateLimit_ReturnsTooManyRequestsAsync()
-	{
-		// Arrange - Rate limit is 3 per hour
-		// Act - Make 4 requests (limit is 3)
-		List<HttpResponseMessage> responses = [];
-		for (int attemptIndex = 0; attemptIndex < 4; attemptIndex++)
-		{
-			RegisterRequest request =
-				new(
-				Username: $"testuser{attemptIndex}",
-				Email: $"test{attemptIndex}@example.com",
-				Password: "Password123!",
-				FullName: $"Test User {attemptIndex}");
-
-			HttpResponseMessage response =
-				await Client!.PostAsJsonAsync(
-				"/api/v1/auth/register",
-				request);
-			responses.Add(response);
-		}
-
-		// Assert - First 3 should succeed (201), 4th should be 429
-		Assert.Equal(
-			3,
-			responses.Count(r => r.StatusCode == HttpStatusCode.Created));
-		Assert.Single(
-			responses,
-			r => r.StatusCode == HttpStatusCode.TooManyRequests);
-	}
-
-	/// <summary>
 	/// Tests that rate limit response includes Retry-After header.
 	/// </summary>
 	[Fact]

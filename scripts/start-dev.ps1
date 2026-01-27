@@ -1,8 +1,15 @@
 # start-dev.ps1
 # Starts API container and launches Angular client in separate window.
-# Skips client launch if port 4200 is already in use.
+# Automatically cleans up orphaned processes before starting.
+#
+# Usage:
+#   npm run start
+#   .\scripts\start-dev.ps1
+#   .\scripts\start-dev.ps1 -SkipCleanup  # Skip cleanup (faster restart)
 
-param()
+param(
+	[switch]$SkipCleanup
+)
 
 $ErrorActionPreference = "Stop"
 
@@ -11,6 +18,11 @@ Write-Host "========================================" -ForegroundColor Cyan
 Write-Host "  SeventySix Development Startup" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
+
+# Clean up orphaned processes before starting (prevents port conflicts)
+if (-not $SkipCleanup) {
+	& (Join-Path $PSScriptRoot "cleanup-ports.ps1")
+}
 
 # Start Docker Desktop if not running
 $dockerProcess =
@@ -73,7 +85,7 @@ if ($clientPortInUse -and $clientResponding) {
 	Write-Host "  Client Already Running" -ForegroundColor Yellow
 	Write-Host "========================================" -ForegroundColor Yellow
 	Write-Host "  Port 4200 is responding - client is active." -ForegroundColor Yellow
-	Write-Host "  API:    http://localhost:5085" -ForegroundColor Cyan
+	Write-Host "  API:    https://localhost:7074" -ForegroundColor Cyan
 	Write-Host "  Client: http://localhost:4200" -ForegroundColor Cyan
 	Write-Host "========================================" -ForegroundColor Yellow
 }
@@ -93,7 +105,7 @@ Write-Host ""
 Write-Host "========================================" -ForegroundColor Green
 Write-Host "  Streaming API Logs (Ctrl+C to stop)" -ForegroundColor Green
 Write-Host "========================================" -ForegroundColor Green
-Write-Host "  API:    http://localhost:5085" -ForegroundColor Cyan
+Write-Host "  API:    https://localhost:7074" -ForegroundColor Cyan
 Write-Host "  Client: http://localhost:4200" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Green
 Write-Host ""

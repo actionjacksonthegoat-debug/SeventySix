@@ -99,7 +99,8 @@ public class E2ETestSeeder(
 				UserName = username,
 				Email = email,
 				EmailConfirmed = true,
-				CreateDate = timeProvider.GetUtcNow().UtcDateTime
+				LockoutEnabled = true,
+				CreateDate = timeProvider.GetUtcNow().UtcDateTime,
 			};
 
 		IdentityResult createResult =

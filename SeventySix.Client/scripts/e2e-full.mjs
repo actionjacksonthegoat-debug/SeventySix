@@ -61,6 +61,21 @@ function runCommand(
  */
 function setup()
 {
+	// Kill any local processes on ports that E2E needs (Windows-specific)
+	// This prevents conflicts between local dev servers and E2E Docker containers
+	if (process.platform === "win32")
+	{
+		const cleanupPortsCode =
+			runCommand(
+				"powershell -ExecutionPolicy Bypass -File ../scripts/cleanup-ports.ps1 -Quiet",
+				"Killing orphaned local processes on E2E ports");
+
+		if (cleanupPortsCode !== 0)
+		{
+			console.warn("Warning: Port cleanup encountered issues, continuing anyway...");
+		}
+	}
+
 	// Clean up any existing containers and volumes
 	const cleanupCode =
 		runCommand(

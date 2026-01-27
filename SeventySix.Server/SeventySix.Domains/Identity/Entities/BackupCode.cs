@@ -49,6 +49,15 @@ public class BackupCode : ICreatableEntity
 	public DateTime CreateDate { get; set; }
 
 	/// <summary>
+	/// Gets or sets whether this backup code is soft-deleted.
+	/// </summary>
+	/// <remarks>
+	/// Matches ApplicationUser's IsDeleted filter to prevent orphan records
+	/// when parent user is soft-deleted.
+	/// </remarks>
+	public bool IsDeleted { get; set; }
+
+	/// <summary>
 	/// Navigation property to the user.
 	/// </summary>
 	public ApplicationUser? User { get; set; }

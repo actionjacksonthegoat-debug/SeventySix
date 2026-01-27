@@ -49,7 +49,8 @@ async function performFreshLogin(
 	const browserContext: BrowserContext =
 		await browser.newContext({
 			baseURL,
-			storageState: undefined
+			storageState: undefined,
+			ignoreHTTPSErrors: true
 		});
 	const page: Page =
 		await browserContext.newPage();
