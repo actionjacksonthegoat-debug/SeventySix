@@ -32,13 +32,13 @@ export class TotpService
 		inject(HttpClient);
 
 	/**
-	 * Base auth API URL.
+	 * Base MFA TOTP API URL.
 	 * @type {string}
 	 * @private
 	 * @readonly
 	 */
-	private readonly authUrl: string =
-		`${environment.apiUrl}/auth`;
+	private readonly mfaUrl: string =
+		`${environment.apiUrl}/auth/mfa`;
 
 	/**
 	 * Initiates TOTP enrollment.
@@ -50,7 +50,7 @@ export class TotpService
 		return this
 			.httpClient
 			.post<TotpSetupResponse>(
-				`${this.authUrl}/totp/setup`,
+				`${this.mfaUrl}/totp/setup`,
 				{},
 				{ withCredentials: true });
 	}
@@ -67,7 +67,7 @@ export class TotpService
 		return this
 			.httpClient
 			.post<void>(
-				`${this.authUrl}/totp/confirm`,
+				`${this.mfaUrl}/totp/confirm`,
 				request,
 				{ withCredentials: true });
 	}
@@ -84,7 +84,7 @@ export class TotpService
 		return this
 			.httpClient
 			.post<void>(
-				`${this.authUrl}/totp/disable`,
+				`${this.mfaUrl}/totp/disable`,
 				request,
 				{ withCredentials: true });
 	}

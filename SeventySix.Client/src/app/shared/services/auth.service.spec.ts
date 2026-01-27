@@ -618,10 +618,10 @@ describe("AuthService",
 					{
 						// Test that the URL would be correct without triggering redirect
 						const expectedUrl: string =
-							`${environment.apiUrl}/auth/github`;
+							`${environment.apiUrl}/auth/oauth/github`;
 
 						expect(expectedUrl)
-							.toContain("/auth/github");
+							.toContain("/auth/oauth/github");
 					});
 			});
 
@@ -780,7 +780,7 @@ describe("AuthService",
 
 						const req: TestRequest =
 							httpMock.expectOne(
-								`${environment.apiUrl}/auth/set-password`);
+								`${environment.apiUrl}/auth/password/set`);
 						expect(req.request.method)
 							.toBe("POST");
 						expect(req.request.body)

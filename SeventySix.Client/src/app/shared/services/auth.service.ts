@@ -261,7 +261,7 @@ export class AuthService
 			validatedUrl);
 
 		window.location.href =
-			`${this.authUrl}/${provider}`;
+			`${this.authUrl}/oauth/${provider}`;
 	}
 
 	/**
@@ -383,7 +383,7 @@ export class AuthService
 	 */
 	setPassword(token: string, newPassword: string): Observable<void>
 	{
-		return this.httpClient.post<void>(`${this.authUrl}/set-password`,
+		return this.httpClient.post<void>(`${this.authUrl}/password/set`,
 			{
 				token,
 				newPassword
@@ -404,7 +404,7 @@ export class AuthService
 		email: string,
 		altchaPayload: string | null = null): Observable<void>
 	{
-		return this.httpClient.post<void>(`${this.authUrl}/forgot-password`,
+		return this.httpClient.post<void>(`${this.authUrl}/password/forgot`,
 			{
 				email,
 				altchaPayload

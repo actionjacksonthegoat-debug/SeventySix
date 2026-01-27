@@ -85,8 +85,8 @@ function isPublicAuthEndpoint(url: string): boolean
 			"/auth/login",
 			"/auth/refresh",
 			"/auth/logout",
-			"/auth/github",
-			"/auth/callback"
+			"/auth/oauth/github",
+			"/auth/oauth/github/callback"
 		];
 
 	return publicAuthPaths.some(

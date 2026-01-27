@@ -112,7 +112,7 @@ describe("authInterceptor",
 				const req: HttpRequest<unknown> =
 					new HttpRequest(
 						"POST",
-						"/api/v1/auth/change-password",
+						"/api/v1/auth/password/change",
 						{ currentPassword: "old", newPassword: "new" });
 
 				TestBed.runInInjectionContext(

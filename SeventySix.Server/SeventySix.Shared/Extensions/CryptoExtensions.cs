@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using System.Buffers.Text;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -61,12 +62,7 @@ public static class CryptoExtensions
 			new byte[sizeInBytes];
 		RandomNumberGenerator.Fill(randomBytes);
 
-		// Base64URL encoding (no padding, URL-safe)
-		return Convert
-			.ToBase64String(randomBytes)
-			.TrimEnd('=')
-			.Replace('+', '-')
-			.Replace('/', '_');
+		return Base64Url.EncodeToString(randomBytes);
 	}
 
 	/// <summary>
@@ -104,11 +100,6 @@ public static class CryptoExtensions
 		byte[] hash =
 			SHA256.HashData(Encoding.UTF8.GetBytes(codeVerifier));
 
-		// Base64URL encoding (no padding, URL-safe)
-		return Convert
-			.ToBase64String(hash)
-			.TrimEnd('=')
-			.Replace('+', '-')
-			.Replace('/', '_');
+		return Base64Url.EncodeToString(hash);
 	}
 }

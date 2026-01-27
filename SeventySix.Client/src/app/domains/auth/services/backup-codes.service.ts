@@ -27,13 +27,13 @@ export class BackupCodesService
 		inject(HttpClient);
 
 	/**
-	 * Base auth API URL.
+	 * Base MFA backup codes API URL.
 	 * @type {string}
 	 * @private
 	 * @readonly
 	 */
-	private readonly authUrl: string =
-		`${environment.apiUrl}/auth`;
+	private readonly mfaUrl: string =
+		`${environment.apiUrl}/auth/mfa`;
 
 	/**
 	 * Generates new backup codes (invalidates existing).
@@ -45,7 +45,7 @@ export class BackupCodesService
 		return this
 			.httpClient
 			.post<string[]>(
-				`${this.authUrl}/backup-codes`,
+				`${this.mfaUrl}/backup-codes`,
 				{},
 				{ withCredentials: true });
 	}
@@ -60,7 +60,7 @@ export class BackupCodesService
 		return this
 			.httpClient
 			.get<number>(
-				`${this.authUrl}/backup-codes/remaining`,
+				`${this.mfaUrl}/backup-codes/remaining`,
 				{ withCredentials: true });
 	}
 }

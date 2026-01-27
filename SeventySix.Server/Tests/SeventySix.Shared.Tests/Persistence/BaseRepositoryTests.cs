@@ -126,16 +126,20 @@ public class BaseRepositoryTests
 	}
 
 	/// <summary>
-	/// Verifies a generic exception is logged and rethrown by ExecuteWithErrorHandlingAsync.
+	/// Verifies a generic exception is rethrown without logging by ExecuteWithErrorHandlingAsync.
 	/// </summary>
+	/// <remarks>
+	/// Unexpected exceptions propagate with full stack traces for debugging.
+	/// Only DbUpdateException types are logged.
+	/// </remarks>
 	[Fact]
-	public async Task ExecuteWithErrorHandlingAsync_GenericException_LogsAndRethrowsAsync()
+	public async Task ExecuteWithErrorHandlingAsync_GenericException_RethrowsWithoutLoggingAsync()
 	{
 		// Arrange
 		Exception exception =
-			new Exception("Unexpected error");
+			new("Unexpected error");
 
-		// Act & Assert
+		// Act & Assert - exception is rethrown
 		Exception thrown =
 			await Should.ThrowAsync<Exception>(async () =>
 			await Repository.TestExecuteWithErrorHandlingAsync<int>(
@@ -144,12 +148,14 @@ public class BaseRepositoryTests
 				"TestEntity"));
 
 		thrown.ShouldBeSameAs(exception);
+
+		// Verify NO logging occurred (generic exceptions are not logged)
 		Logger
-			.Received()
+			.DidNotReceive()
 			.Log(
-				LogLevel.Error,
+				Arg.Any<LogLevel>(),
 				Arg.Any<EventId>(),
-				Arg.Is<object>(v => v.ToString()!.Contains("Unexpected error")),
+				Arg.Any<object>(),
 				Arg.Any<Exception>(),
 				Arg.Any<Func<object, Exception?, string>>());
 	}

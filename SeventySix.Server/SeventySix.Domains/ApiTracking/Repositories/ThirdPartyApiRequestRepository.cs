@@ -73,16 +73,10 @@ internal class ThirdPartyApiRequestRepository(
 	{
 		ArgumentException.ThrowIfNullOrWhiteSpace(apiName);
 
-		// Use QueryBuilder for read-only query with ordering
-		QueryBuilder<ThirdPartyApiRequest> queryBuilder =
-			new QueryBuilder<ThirdPartyApiRequest>(GetQueryable());
-		queryBuilder
-			.Where(request => request.ApiName == apiName)
-			.OrderByDescending(request => request.ResetDate);
-
 		List<ThirdPartyApiRequest> requests =
-			await queryBuilder
-				.Build()
+			await GetQueryable()
+				.Where(request => request.ApiName == apiName)
+				.OrderByDescending(request => request.ResetDate)
 				.ToListAsync(cancellationToken);
 
 		return requests;
@@ -92,14 +86,9 @@ internal class ThirdPartyApiRequestRepository(
 	public async Task<IEnumerable<ThirdPartyApiRequest>> GetAllAsync(
 		CancellationToken cancellationToken = default)
 	{
-		// Use QueryBuilder for read-only query with ordering
-		QueryBuilder<ThirdPartyApiRequest> queryBuilder =
-			new QueryBuilder<ThirdPartyApiRequest>(GetQueryable());
-		queryBuilder.OrderBy(request => request.ApiName);
-
 		List<ThirdPartyApiRequest> requests =
-			await queryBuilder
-				.Build()
+			await GetQueryable()
+				.OrderBy(request => request.ApiName)
 				.ToListAsync(cancellationToken);
 
 		return requests;

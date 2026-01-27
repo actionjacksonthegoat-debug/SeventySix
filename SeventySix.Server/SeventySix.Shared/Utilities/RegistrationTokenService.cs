@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using System.Buffers.Text;
 using System.Text;
 using System.Text.Json;
 using SeventySix.Shared.POCOs;
@@ -38,7 +39,7 @@ public static class RegistrationTokenService
 		byte[] payloadBytes =
 			Encoding.UTF8.GetBytes(jsonPayload);
 
-		return Base64UrlEncode(payloadBytes);
+		return Base64Url.EncodeToString(payloadBytes);
 	}
 
 	/// <summary>
@@ -60,7 +61,7 @@ public static class RegistrationTokenService
 		try
 		{
 			byte[] decodedBytes =
-				Base64UrlDecode(encodedToken);
+				Base64Url.DecodeFromChars(encodedToken);
 
 			string jsonPayload =
 				Encoding.UTF8.GetString(decodedBytes);
@@ -72,39 +73,5 @@ public static class RegistrationTokenService
 		{
 			return null;
 		}
-	}
-
-	/// <summary>
-	/// Encodes bytes to URL-safe Base64 string (RFC 4648).
-	/// </summary>
-	private static string Base64UrlEncode(byte[] input)
-	{
-		string base64Standard =
-			Convert.ToBase64String(input);
-
-		return base64Standard
-			.Replace('+', '-')
-			.Replace('/', '_')
-			.TrimEnd('=');
-	}
-
-	/// <summary>
-	/// Decodes URL-safe Base64 string to bytes (RFC 4648).
-	/// </summary>
-	private static byte[] Base64UrlDecode(string input)
-	{
-		string base64Standard =
-			input
-				.Replace('-', '+')
-				.Replace('_', '/');
-
-		// Add padding if needed
-		int paddingNeeded =
-			(4 - base64Standard.Length % 4) % 4;
-
-		base64Standard +=
-			new string('=', paddingNeeded);
-
-		return Convert.FromBase64String(base64Standard);
 	}
 }

@@ -170,7 +170,7 @@ describe("ChangePasswordComponent",
 						// Assert
 						const req: TestRequest =
 							httpTestingController.expectOne(
-								`${environment.apiUrl}/auth/change-password`);
+								`${environment.apiUrl}/auth/password/change`);
 						expect(req.request.method)
 							.toBe("POST");
 						expect(req.request.body)
@@ -200,7 +200,7 @@ describe("ChangePasswordComponent",
 						// Complete the HTTP request
 						const req: TestRequest =
 							httpTestingController.expectOne(
-								`${environment.apiUrl}/auth/change-password`);
+								`${environment.apiUrl}/auth/password/change`);
 						req.flush(null);
 
 						// Assert
@@ -232,7 +232,7 @@ describe("ChangePasswordComponent",
 						// Complete the HTTP request with error
 						const req: TestRequest =
 							httpTestingController.expectOne(
-								`${environment.apiUrl}/auth/change-password`);
+								`${environment.apiUrl}/auth/password/change`);
 						req.flush(
 							{ detail: "Current password is incorrect." },
 							{ status: 400, statusText: "Bad Request" });
@@ -257,7 +257,7 @@ describe("ChangePasswordComponent",
 						// Complete the HTTP request with error without detail
 						const req: TestRequest =
 							httpTestingController.expectOne(
-								`${environment.apiUrl}/auth/change-password`);
+								`${environment.apiUrl}/auth/password/change`);
 						req.flush(null,
 							{ status: 500, statusText: "Server Error" });
 
@@ -285,7 +285,7 @@ describe("ChangePasswordComponent",
 						// Complete the request
 						const req: TestRequest =
 							httpTestingController.expectOne(
-								`${environment.apiUrl}/auth/change-password`);
+								`${environment.apiUrl}/auth/password/change`);
 						req.flush(null);
 					});
 
@@ -303,7 +303,7 @@ describe("ChangePasswordComponent",
 						// Complete the HTTP request with error
 						const req: TestRequest =
 							httpTestingController.expectOne(
-								`${environment.apiUrl}/auth/change-password`);
+								`${environment.apiUrl}/auth/password/change`);
 						req.flush(null,
 							{ status: 500, statusText: "Server Error" });
 

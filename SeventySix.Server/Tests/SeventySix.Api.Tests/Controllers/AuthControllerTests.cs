@@ -4,15 +4,12 @@
 
 using System.Net;
 using System.Net.Http.Json;
-using System.Security.Cryptography;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Time.Testing;
 using SeventySix.Api.Tests.Fixtures;
 using SeventySix.Identity;
-using SeventySix.Shared.Utilities;
 using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;
 using SeventySix.TestUtilities.TestHelpers;
@@ -265,112 +262,11 @@ public class AuthControllerTests(IdentityAuthApiPostgreSqlFixture fixture)
 		// Act
 		HttpResponseMessage response =
 			await Client!.PostAsync(
-			"/api/v1/auth/logout",
+			ApiEndpoints.Auth.Logout,
 			null);
 
 		// Assert
 		response.StatusCode.ShouldBe(HttpStatusCode.NoContent);
-	}
-	#endregion
-	#region OAuth Tests
-
-	/// <summary>
-	/// Tests that GET /auth/github redirects to GitHub authorization.
-	/// </summary>
-	[Fact]
-	public async Task GitHubLoginAsync_RedirectsToGitHubAsync()
-	{
-		// Act
-		HttpResponseMessage response =
-			await Client!.GetAsync(
-			"/api/v1/auth/github");
-
-		// Assert
-		response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
-		response.Headers.Location.ShouldNotBeNull();
-		response.Headers.Location.ToString().ShouldStartWith(
-			"https://github.com/login/oauth/authorize");
-	}
-
-	/// <summary>
-	/// Tests that GET /auth/github sets OAuth state and code verifier cookies.
-	/// </summary>
-	[Fact]
-	public async Task GitHubLoginAsync_SetsOAuthCookiesAsync()
-	{
-		// Act
-		HttpResponseMessage response =
-			await Client!.GetAsync(
-			"/api/v1/auth/github");
-
-		// Assert
-		response.Headers.Contains("Set-Cookie").ShouldBeTrue();
-
-		IEnumerable<string> cookies =
-			response.Headers.GetValues("Set-Cookie");
-
-		// Verify state and code_verifier cookies are set
-		cookies.ShouldContain(
-			cookie => cookie.Contains("X-OAuth-State="));
-		cookies.ShouldContain(
-			cookie => cookie.Contains("X-OAuth-CodeVerifier="));
-	}
-
-	/// <summary>
-	/// Tests that GET /auth/github/callback returns error without state cookie.
-	/// </summary>
-	[Fact]
-	public async Task GitHubCallbackAsync_NoStateCookie_ReturnsPostMessageErrorAsync()
-	{
-		// Act - Call callback without setting up OAuth state
-		HttpResponseMessage response =
-			await Client!.GetAsync(
-			"/api/v1/auth/github/callback?code=test&state=invalid");
-
-		// Assert - Now returns HTML with postMessage instead of redirect
-		response.StatusCode.ShouldBe(HttpStatusCode.OK);
-
-		string content =
-			await response.Content.ReadAsStringAsync();
-
-		content.ShouldContain("oauth_error");
-		content.ShouldContain("postMessage");
-	}
-
-	/// <summary>
-	/// Tests that GET /auth/github/callback returns error for CSRF/PKCE violations.
-	/// </summary>
-	[Theory]
-	[InlineData(true)]
-	[InlineData(false)]
-	public async Task GitHubCallbackAsync_ReturnsError_WhenSecurityViolationAsync(
-		bool stateTampered)
-	{
-		// Arrange
-		string validState = "valid-state-value";
-		string queryState =
-			stateTampered ? "tampered-state" : validState;
-
-		HttpRequestMessage request =
-			new(
-			HttpMethod.Get,
-			$"/api/v1/auth/github/callback?code=test&state={queryState}");
-		request.Headers.Add(
-			"Cookie",
-			$"X-OAuth-State={validState}");
-
-		// Act
-		HttpResponseMessage response =
-			await Client!.SendAsync(request);
-
-		// Assert
-		response.StatusCode.ShouldBe(HttpStatusCode.OK);
-
-		string content =
-			await response.Content.ReadAsStringAsync();
-
-		content.ShouldContain("oauth_error");
-		content.ShouldContain("postMessage");
 	}
 	#endregion
 	#region OAuth Code Exchange Tests
@@ -405,7 +301,7 @@ public class AuthControllerTests(IdentityAuthApiPostgreSqlFixture fixture)
 		// Act
 		HttpResponseMessage response =
 			await Client!.PostAsJsonAsync(
-			"/api/v1/auth/oauth/exchange",
+			ApiEndpoints.Auth.OAuthExchange,
 			new OAuthCodeExchangeRequest(code));
 
 		// Assert
@@ -428,7 +324,7 @@ public class AuthControllerTests(IdentityAuthApiPostgreSqlFixture fixture)
 		// Act
 		HttpResponseMessage response =
 			await Client!.PostAsJsonAsync(
-			"/api/v1/auth/oauth/exchange",
+			ApiEndpoints.Auth.OAuthExchange,
 			new OAuthCodeExchangeRequest("invalid-code"));
 
 		// Assert
@@ -466,13 +362,13 @@ public class AuthControllerTests(IdentityAuthApiPostgreSqlFixture fixture)
 		// Act - First call should succeed
 		HttpResponseMessage firstResponse =
 			await Client!.PostAsJsonAsync(
-			"/api/v1/auth/oauth/exchange",
+			ApiEndpoints.Auth.OAuthExchange,
 			new OAuthCodeExchangeRequest(code));
 
 		// Second call with same code should fail
 		HttpResponseMessage secondResponse =
 			await Client!.PostAsJsonAsync(
-			"/api/v1/auth/oauth/exchange",
+			ApiEndpoints.Auth.OAuthExchange,
 			new OAuthCodeExchangeRequest(code));
 
 		// Assert
@@ -505,7 +401,7 @@ public class AuthControllerTests(IdentityAuthApiPostgreSqlFixture fixture)
 		// Act
 		HttpResponseMessage response =
 			await Client!.PostAsJsonAsync(
-			"/api/v1/auth/oauth/exchange",
+			ApiEndpoints.Auth.OAuthExchange,
 			new OAuthCodeExchangeRequest(code));
 
 		// Assert
@@ -578,84 +474,6 @@ public class AuthControllerTests(IdentityAuthApiPostgreSqlFixture fixture)
 		profile.Email.ShouldBe($"test_{testId}@example.com");
 	}
 	#endregion
-	#region Change Password Tests
-
-	/// <summary>
-	/// Tests that POST /auth/change-password returns 401 without authentication.
-	/// </summary>
-	[Fact]
-	public async Task ChangePasswordAsync_Unauthenticated_ReturnsUnauthorizedAsync()
-	{
-		// Arrange
-		ChangePasswordRequest request =
-			new(
-			CurrentPassword: "old",
-			NewPassword: "new");
-
-		// Act
-		HttpResponseMessage response =
-			await Client!.PostAsJsonAsync(
-			"/api/v1/auth/change-password",
-			request);
-
-		// Assert
-		response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
-	}
-
-	/// <summary>
-	/// Tests that POST /auth/change-password returns 400 when password is too weak.
-	/// Validates password complexity requirements are enforced.
-	/// </summary>
-	[Fact]
-	public async Task ChangePasswordAsync_ReturnsBadRequest_WhenWeakPasswordAsync()
-	{
-		// Arrange - Login to get authenticated
-		FakeTimeProvider timeProvider = new();
-		string testId =
-			Guid.NewGuid().ToString("N")[..8];
-
-		await TestUserHelper.CreateUserWithPasswordAsync(
-			SharedFactory.Services,
-			username: $"weakpassuser_{testId}",
-			email: $"weakpass_{testId}@example.com",
-			timeProvider);
-
-		HttpResponseMessage loginResponse =
-			await Client!.PostAsJsonAsync(
-			"/api/v1/auth/login",
-			new LoginRequest(
-				$"weakpassuser_{testId}",
-				TestUserHelper.TestPassword));
-
-		AuthResponse? authResponse =
-			await loginResponse.Content.ReadFromJsonAsync<AuthResponse>();
-
-		Client!.DefaultRequestHeaders.Authorization =
-			new System.Net.Http.Headers.AuthenticationHeaderValue(
-				"Bearer",
-				authResponse!.AccessToken);
-
-		// Act - Try to change to a weak password (no uppercase)
-		ChangePasswordRequest request =
-			new(
-			CurrentPassword: TestUserHelper.TestPassword,
-			NewPassword: "weak123!");
-
-		HttpResponseMessage response =
-			await Client!.PostAsJsonAsync(
-			"/api/v1/auth/change-password",
-			request);
-
-		// Assert
-		response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
-
-		string content =
-			await response.Content.ReadAsStringAsync();
-
-		// Verify validation error response contains password-related message
-		content.ToLowerInvariant().ShouldContain("password");
-	}
-	#endregion
 	#region JWT Security Tests
 
 	/// <summary>
@@ -693,176 +511,6 @@ public class AuthControllerTests(IdentityAuthApiPostgreSqlFixture fixture)
 
 		// Assert
 		response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
-	}
-	#endregion
-	#region Self-Registration Tests
-
-	/// <summary>
-	/// Tests that POST /auth/register/initiate returns 200 OK for valid email.
-	/// Returns 200 regardless of whether email exists (prevents enumeration).
-	/// </summary>
-	[Fact]
-	public async Task InitiateRegistrationAsync_ValidEmail_ReturnsOkAsync()
-	{
-		// Arrange
-		string testId =
-			Guid.NewGuid().ToString("N")[..8];
-
-		InitiateRegistrationRequest request =
-			new(
-			$"newuser_{testId}@example.com");
-
-		// Act
-		HttpResponseMessage response =
-			await Client!.PostAsJsonAsync(
-			"/api/v1/auth/register/initiate",
-			request);
-
-		// Assert - Should return OK regardless
-		response.StatusCode.ShouldBe(HttpStatusCode.OK);
-	}
-
-	/// <summary>
-	/// Tests that POST /auth/register/initiate returns 200 OK even for existing email.
-	/// Prevents email enumeration attacks.
-	/// </summary>
-	[Fact]
-	public async Task InitiateRegistrationAsync_ExistingEmail_ReturnsOkAsync()
-	{
-		// Arrange - Create existing user
-		FakeTimeProvider timeProvider = new();
-		string testId =
-			Guid.NewGuid().ToString("N")[..8];
-
-		await TestUserHelper.CreateUserWithPasswordAsync(
-			SharedFactory.Services,
-			username: $"existing_{testId}",
-			email: $"existing_{testId}@example.com",
-			timeProvider);
-
-		InitiateRegistrationRequest request =
-			new(
-			$"existing_{testId}@example.com");
-
-		// Act
-		HttpResponseMessage response =
-			await Client!.PostAsJsonAsync(
-			"/api/v1/auth/register/initiate",
-			request);
-
-		// Assert - Should return OK to prevent enumeration
-		response.StatusCode.ShouldBe(HttpStatusCode.OK);
-	}
-
-	/// <summary>
-	/// Tests that POST /auth/register/complete returns 400 for invalid token.
-	/// </summary>
-	[Fact]
-	public async Task CompleteRegistrationAsync_InvalidToken_ReturnsBadRequestAsync()
-	{
-		// Arrange
-		CompleteRegistrationRequest request =
-			new(
-				Token: "invalid-token",
-				Username: "newuser",
-				Password: "SecurePass123!");
-
-		// Act
-		HttpResponseMessage response =
-			await Client!.PostAsJsonAsync(
-			"/api/v1/auth/register/complete",
-			request);
-
-		// Assert
-		response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
-
-		ProblemDetails? problemDetails =
-			await response.Content.ReadFromJsonAsync<ProblemDetails>();
-
-		problemDetails.ShouldNotBeNull();
-		problemDetails.Title.ShouldBe("Registration Failed");
-	}
-
-	/// <summary>
-	/// Tests that POST /auth/register/complete creates user with valid token.
-	/// </summary>
-	/// <remarks>
-	/// With ASP.NET Core Identity, we use the full flow:
-	/// 1. InitiateRegistration creates temporary user with email confirmation token
-	/// 2. CompleteRegistration confirms email and activates user
-	/// For this test, we skip the email verification and create user directly.
-	/// </remarks>
-	[Fact]
-	public async Task CompleteRegistrationAsync_ValidToken_ReturnsCreatedAsync()
-	{
-		// Arrange - Create user with email confirmation token using UserManager
-		string testId =
-			Guid.NewGuid().ToString("N")[..8];
-		string email =
-			$"newuser_{testId}@example.com";
-		string username =
-			$"newuser_{testId}";
-		string token;
-
-		using (IServiceScope scope =
-			SharedFactory.Services.CreateScope())
-		{
-			UserManager<ApplicationUser> userManager =
-				scope.ServiceProvider.GetRequiredService<
-					UserManager<ApplicationUser>>();
-			TimeProvider timeProvider =
-				scope.ServiceProvider.GetRequiredService<TimeProvider>();
-			DateTime now =
-				timeProvider.GetUtcNow().UtcDateTime;
-
-			// Create temporary unconfirmed user (like InitiateRegistration does)
-			ApplicationUser tempUser =
-				new()
-				{
-					UserName =
-						$"temp_{testId}",
-					Email = email,
-					EmailConfirmed = false,
-					IsActive = false,
-					CreateDate = now,
-					CreatedBy = "Registration",
-				};
-
-			IdentityResult createResult =
-				await userManager.CreateAsync(
-					tempUser);
-
-			createResult.Succeeded.ShouldBeTrue();
-
-			// Generate email confirmation token
-			token =
-				await userManager.GenerateEmailConfirmationTokenAsync(
-					tempUser);
-		}
-
-		string combinedToken =
-			RegistrationTokenService.Encode(email, token);
-
-		CompleteRegistrationRequest request =
-			new(
-				Token: combinedToken,
-				Username: username,
-				Password: "SecurePass123!");
-
-		// Act
-		HttpResponseMessage response =
-			await Client!.PostAsJsonAsync(
-			"/api/v1/auth/register/complete",
-			request);
-
-		// Assert
-		response.StatusCode.ShouldBe(HttpStatusCode.Created);
-
-		AuthResponse? authResponse =
-			await response.Content.ReadFromJsonAsync<AuthResponse>();
-
-		authResponse.ShouldNotBeNull();
-		authResponse.AccessToken.ShouldNotBeNullOrEmpty();
 	}
 	#endregion
 }

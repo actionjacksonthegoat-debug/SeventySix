@@ -188,7 +188,7 @@ export class ChangePasswordComponent implements OnInit
 
 		this
 			.http
-			.post<void>(`${environment.apiUrl}/auth/change-password`, request,
+			.post<void>(`${environment.apiUrl}/auth/password/change`, request,
 				{
 					withCredentials: true
 				})
