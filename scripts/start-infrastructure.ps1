@@ -22,7 +22,8 @@ Write-Host ""
 & (Join-Path $PSScriptRoot "cleanup-ports.ps1")
 
 # Ensure Docker Desktop is running
-if (-not (Get-Process 'Docker Desktop' -ErrorAction SilentlyContinue)) {
+if (-not (Get-Process 'Docker Desktop' -ErrorAction SilentlyContinue))
+{
 	Write-Host "Starting Docker Desktop..." -ForegroundColor Yellow
 	Start-Process 'C:\Program Files\Docker\Docker\Docker Desktop.exe'
 	Write-Host "Waiting for Docker to initialize..." -ForegroundColor Yellow
@@ -35,27 +36,33 @@ $maxWaitSeconds = 60
 $waitedSeconds = 0
 $dockerReady = $false
 
-while (-not $dockerReady -and $waitedSeconds -lt $maxWaitSeconds) {
-	try {
+while (-not $dockerReady -and $waitedSeconds -lt $maxWaitSeconds)
+{
+	try
+	{
 		$dockerVersion =
 		docker version --format "{{.Server.Version}}" 2>$null
-		if ($dockerVersion) {
+		if ($dockerVersion)
+		{
 			$dockerReady = $true
 			Write-Host "  Docker daemon ready (v$dockerVersion)" -ForegroundColor Green
 		}
 	}
-	catch {
+	catch
+	{
 		# Docker not ready yet
 	}
 
-	if (-not $dockerReady) {
+	if (-not $dockerReady)
+	{
 		Start-Sleep -Seconds 2
 		$waitedSeconds += 2
 		Write-Host "  Waiting for Docker daemon... ($waitedSeconds/$maxWaitSeconds seconds)" -ForegroundColor DarkGray
 	}
 }
 
-if (-not $dockerReady) {
+if (-not $dockerReady)
+{
 	Write-Host ""
 	Write-Host "ERROR: Docker daemon did not start within $maxWaitSeconds seconds" -ForegroundColor Red
 	Write-Host "  Please start Docker Desktop manually and try again" -ForegroundColor Yellow
@@ -69,7 +76,8 @@ Write-Host "Ensuring API ports are free for debugging..." -ForegroundColor Yello
 
 # Verify .env file exists
 $envFilePath = Join-Path $PSScriptRoot "..\.env"
-if (-not (Test-Path $envFilePath)) {
+if (-not (Test-Path $envFilePath))
+{
 	Write-Host ""
 	Write-Host "ERROR: .env file not found!" -ForegroundColor Red
 	Write-Host "Please copy .env.example to .env and configure your values:" -ForegroundColor Yellow
@@ -81,17 +89,20 @@ if (-not (Test-Path $envFilePath)) {
 # Change to server directory
 Push-Location (Join-Path $PSScriptRoot "..\SeventySix.Server")
 
-try {
+try
+{
 	# Infrastructure services (not the API)
 	$services = @("postgres", "valkey", "redis-exporter", "otel-collector", "jaeger", "prometheus", "grafana", "pgadmin")
 
 	Write-Host "Starting services: $($services -join ', ')" -ForegroundColor Cyan
 	Write-Host ""
 
-	if ($Attached) {
+	if ($Attached)
+	{
 		docker compose --env-file ../.env up $services
 	}
-	else {
+	else
+	{
 		docker compose --env-file ../.env up -d $services
 
 		Write-Host ""
@@ -110,19 +121,23 @@ try {
 		# Start client in new PowerShell window if not already running
 		$clientPort = 4200
 		$clientRunning = $false
-		try {
+		try
+		{
 			$tcpConnection =
 			Get-NetTCPConnection -LocalPort $clientPort -ErrorAction SilentlyContinue
-			if ($tcpConnection) {
+			if ($tcpConnection)
+			{
 				$clientRunning = $true
 				Write-Host "Angular client already running on port $clientPort" -ForegroundColor Green
 			}
 		}
-		catch {
+		catch
+		{
 			# Port not in use
 		}
 
-		if (-not $clientRunning) {
+		if (-not $clientRunning)
+		{
 			Write-Host "Starting Angular client in new window..." -ForegroundColor Cyan
 			$clientPath =
 			Join-Path $PSScriptRoot "..\SeventySix.Client"
@@ -143,6 +158,7 @@ try {
 		Write-Host ""
 	}
 }
-finally {
+finally
+{
 	Pop-Location
 }

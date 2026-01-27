@@ -20,10 +20,12 @@ Write-Host "Current Docker disk usage:" -ForegroundColor Yellow
 docker system df
 Write-Host ""
 
-if (-not $Force) {
+if (-not $Force)
+{
 	$confirmation =
 		Read-Host "Proceed with cleanup? (y/N)"
-	if ($confirmation -ne 'y') {
+	if ($confirmation -ne 'y')
+	{
 		Write-Host "Cleanup cancelled." -ForegroundColor Yellow
 		exit 0
 	}
@@ -49,7 +51,8 @@ Write-Host ""
 Write-Host "Removing build cache (keeping 2GB)..." -ForegroundColor Yellow
 docker builder prune -f --keep-storage 2GB
 
-if ($IncludeVolumes) {
+if ($IncludeVolumes)
+{
 	Write-Host ""
 	Write-Host "WARNING: Removing unused volumes (data loss possible)..." -ForegroundColor Red
 	docker volume prune -f

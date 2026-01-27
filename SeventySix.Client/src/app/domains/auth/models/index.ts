@@ -7,7 +7,6 @@ import { components } from "@shared/generated-open-api/generated-open-api";
 
 // Authentication DTOs
 export type LoginRequest = components["schemas"]["LoginRequest"];
-export type RegisterRequest = components["schemas"]["RegisterRequest"];
 export type OAuthCodeExchangeRequest = components["schemas"]["OAuthCodeExchangeRequest"];
 export type ChangePasswordRequest = components["schemas"]["ChangePasswordRequest"];
 export type ForgotPasswordRequest = components["schemas"]["ForgotPasswordRequest"];

@@ -10,7 +10,6 @@ import {
 	CompleteRegistrationRequest,
 	ForgotPasswordRequest,
 	LoginRequest,
-	RegisterRequest,
 	SetPasswordRequest
 } from "@auth/models";
 import { DateService } from "@shared/services";
@@ -127,39 +126,6 @@ export class LoginFixtures
 	static create(overrides?: Partial<LoginRequest>): LoginRequest
 	{
 		return { ...LoginFixtures.VALID_REQUEST, ...overrides };
-	}
-}
-
-/**
- * Registration request fixture factory.
- * Provides consistent test data for registration flows.
- */
-export class RegisterFixtures
-{
-	/**
-	 * Standard valid registration request.
-	 *
-	 * @type {RegisterRequest}
-	 */
-	static readonly VALID_REQUEST: RegisterRequest =
-		{
-			username: "newuser",
-			email: "newuser@example.com",
-			fullName: "New User",
-			password: "ValidP@ssw0rd!"
-		};
-
-	/**
-	 * Create a custom registration request with optional overrides.
-	 *
-	 * @param {Partial<RegisterRequest>} overrides
-	 * Partial registration request properties to override.
-	 * @returns {RegisterRequest}
-	 * Registration request with merged properties.
-	 */
-	static create(overrides?: Partial<RegisterRequest>): RegisterRequest
-	{
-		return { ...RegisterFixtures.VALID_REQUEST, ...overrides };
 	}
 }
 

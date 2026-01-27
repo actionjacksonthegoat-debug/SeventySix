@@ -99,21 +99,15 @@ interface HealthQueryKeys
 
 	/**
 	 * @type {readonly ["health", "status"]}
-	 * Key representing a health status check.
+	 * Key representing a minimal public health status check.
 	 */
 	readonly status: readonly ["health", "status"];
 
 	/**
-	 * @type {readonly ["health", "database"]}
-	 * Key representing database health checks.
+	 * @type {readonly ["health", "detailed"]}
+	 * Key representing detailed infrastructure health checks.
 	 */
-	readonly database: readonly ["health", "database"];
-
-	/**
-	 * @type {readonly ["health", "externalApis"]}
-	 * Key representing external API health checks.
-	 */
-	readonly externalApis: readonly ["health", "externalApis"];
+	readonly detailed: readonly ["health", "detailed"];
 
 	/**
 	 * @type {readonly ["health", "scheduledJobs"]}
@@ -138,13 +132,6 @@ interface ThirdPartyApiQueryKeys
 	 * Key for listing all third party APIs.
 	 */
 	readonly list: readonly ["thirdPartyApi", "list"];
-
-	/**
-	 * @param {string} apiName
-	 * Returns a query key for a third party API by name.
-	 * @returns {QueryKeyElement[]}
-	 */
-	readonly byName: (apiName: string) => QueryKeyElement[];
 
 	/**
 	 * @type {readonly ["thirdPartyApi", "statistics"]}
@@ -259,16 +246,13 @@ export const QueryKeys: QueryKeysType =
 		health: {
 			all: ["health"] as const,
 			status: ["health", "status"] as const,
-			database: ["health", "database"] as const,
-			externalApis: ["health", "externalApis"] as const,
+			detailed: ["health", "detailed"] as const,
 			scheduledJobs: ["health", "scheduledJobs"] as const
 		},
 
 		thirdPartyApi: {
 			all: ["thirdPartyApi"] as const,
 			list: ["thirdPartyApi", "list"] as const,
-			byName: (apiName: string): QueryKeyElement[] =>
-				["thirdPartyApi", "byName", apiName],
 			statistics: ["thirdPartyApi", "statistics"] as const
 		},
 

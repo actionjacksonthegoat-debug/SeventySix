@@ -1,7 +1,5 @@
 import { ADMIN_API_ENDPOINTS } from "@admin/constants";
 import {
-	DatabaseHealthResponse,
-	ExternalApiHealthResponse,
 	HealthStatusResponse,
 	RecurringJobStatusResponse
 } from "@admin/models";
@@ -52,7 +50,7 @@ export class HealthApiService
 		ADMIN_API_ENDPOINTS.HEALTH;
 
 	/**
-	 * Retrieves overall health status.
+	 * Retrieves minimal public health status.
 	 * @returns {CreateQueryResult<HealthStatusResponse, Error>}
 	 * CreateQueryResult for health status response.
 	 */
@@ -69,35 +67,20 @@ export class HealthApiService
 	}
 
 	/**
-	 * Retrieves database health details.
-	 * @returns {CreateQueryResult<DatabaseHealthResponse, Error>}
-	 * CreateQueryResult for database health response.
+	 * Retrieves comprehensive health status with infrastructure details.
+	 * Includes database, external APIs, error queue, and system resources.
+	 * Requires Developer or Admin role.
+	 * @returns {CreateQueryResult<HealthStatusResponse, Error>}
+	 * CreateQueryResult for detailed health status response.
 	 */
-	getDatabaseHealth(): CreateQueryResult<DatabaseHealthResponse, Error>
+	getDetailedHealth(): CreateQueryResult<HealthStatusResponse, Error>
 	{
 		return injectQuery(
 			() => ({
-				queryKey: QueryKeys.health.database,
+				queryKey: QueryKeys.health.detailed,
 				queryFn: () =>
-					lastValueFrom(this.apiService.get<DatabaseHealthResponse>(
-						`${this.endpoint}/database`)),
-				...this.queryConfig
-			}));
-	}
-
-	/**
-	 * Retrieves health status for external third-party APIs.
-	 * @returns {CreateQueryResult<ExternalApiHealthResponse, Error>}
-	 * CreateQueryResult for external API health response.
-	 */
-	getExternalApiHealth(): CreateQueryResult<ExternalApiHealthResponse, Error>
-	{
-		return injectQuery(
-			() => ({
-				queryKey: QueryKeys.health.externalApis,
-				queryFn: () =>
-					lastValueFrom(this.apiService.get<ExternalApiHealthResponse>(
-						`${this.endpoint}/external-apis`)),
+					lastValueFrom(this.apiService.get<HealthStatusResponse>(
+						`${this.endpoint}/detailed`)),
 				...this.queryConfig
 			}));
 	}

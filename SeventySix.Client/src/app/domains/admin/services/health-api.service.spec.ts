@@ -1,8 +1,4 @@
-import {
-	DatabaseHealthResponse,
-	ExternalApiHealthResponse,
-	HealthStatusResponse
-} from "@admin/models";
+import { HealthStatusResponse } from "@admin/models";
 import { provideHttpClient } from "@angular/common/http";
 import {
 	HttpTestingController,
@@ -213,220 +209,148 @@ describe("HealthApiService",
 							.toBeUndefined();
 					});
 			});
-		describe("getDatabaseHealth",
+		describe("getDetailedHealth",
 			() =>
 			{
-				it("should return database health status",
+				it("should return comprehensive health status with infrastructure details",
 					async () =>
 					{
-						const mockDbHealth: DatabaseHealthResponse =
+						const mockDetailedHealth: HealthStatusResponse =
 							{
-								isConnected: true,
-								responseTimeMs: 10.2,
-								status: "Healthy"
+								status: "Healthy",
+								checkedAt: "2025-11-12T10:30:00Z",
+								database: {
+									isConnected: true,
+									responseTimeMs: 15.5,
+									status: "Healthy"
+								},
+								externalApis: {
+									apis: {
+										ExternalAPI: {
+											apiName: "ExternalAPI",
+											isAvailable: true,
+											responseTimeMs: 120.3,
+											lastChecked: "2025-11-12T10:29:00Z"
+										}
+									}
+								},
+								errorQueue: {
+									queuedItems: 0,
+									failedItems: 0,
+									circuitBreakerOpen: false,
+									status: "Healthy"
+								},
+								system: {
+									cpuUsagePercent: 25.5,
+									memoryUsedMb: 512,
+									memoryTotalMb: 2048,
+									diskUsagePercent: 45.2
+								}
 							};
 
-						const query: ReturnType<typeof service.getDatabaseHealth> =
+						const query: ReturnType<typeof service.getDetailedHealth> =
 							TestBed.runInInjectionContext(
-								() => service.getDatabaseHealth());
+								() => service.getDetailedHealth());
 
 						await flushMicrotasks();
 
 						const req: TestRequest =
-							httpMock.expectOne(`${apiUrl}/database`);
+							httpMock.expectOne(`${apiUrl}/detailed`);
 						expect(req.request.method)
 							.toBe("GET");
-						req.flush(mockDbHealth);
+						req.flush(mockDetailedHealth);
 
 						await flushMicrotasks();
 
-						const dbHealth: DatabaseHealthResponse | undefined =
+						const health: HealthStatusResponse | undefined =
 							query.data();
-						expect(dbHealth)
-							.toEqual(mockDbHealth);
-						expect(dbHealth?.isConnected)
+						expect(health)
+							.toEqual(mockDetailedHealth);
+						expect(health?.status)
+							.toBe("Healthy");
+						expect(health?.database?.isConnected)
 							.toBe(true);
-						expect(dbHealth?.responseTimeMs)
+						expect(health?.externalApis?.apis?.["ExternalAPI"].isAvailable)
+							.toBe(true);
+						expect(health?.system?.cpuUsagePercent)
 							.toBeLessThan(50);
 					});
 
-				it("should handle database connection failure",
+				it("should handle degraded system status with all components",
 					async () =>
 					{
-						const mockDbHealth: DatabaseHealthResponse =
+						const mockDetailedHealth: HealthStatusResponse =
 							{
-								isConnected: false,
-								responseTimeMs: 0,
-								status: "Unhealthy"
-							};
-
-						const query: ReturnType<typeof service.getDatabaseHealth> =
-							TestBed.runInInjectionContext(
-								() => service.getDatabaseHealth());
-
-						await flushMicrotasks();
-
-						const req: TestRequest =
-							httpMock.expectOne(`${apiUrl}/database`);
-						req.flush(mockDbHealth);
-
-						await flushMicrotasks();
-
-						const dbHealth: DatabaseHealthResponse | undefined =
-							query.data();
-						expect(dbHealth?.isConnected)
-							.toBe(false);
-						expect(dbHealth?.status)
-							.toBe("Unhealthy");
-					});
-
-				it("should handle HTTP errors",
-					async () =>
-					{
-						const query: ReturnType<typeof service.getDatabaseHealth> =
-							TestBed.runInInjectionContext(
-								() => service.getDatabaseHealth());
-
-						await flushMicrotasks();
-
-						const req: TestRequest =
-							httpMock.expectOne(`${apiUrl}/database`);
-						req.flush("Server error",
-							{
-								status: 500,
-								statusText: "Internal Server Error"
-							});
-
-						await flushMicrotasks();
-
-						expect(query.error())
-							.toBeTruthy();
-						expect(query.data())
-							.toBeUndefined();
-					});
-			});
-
-		describe("getExternalApiHealth",
-			() =>
-			{
-				it("should return external API health status",
-					async () =>
-					{
-						const mockApiHealth: ExternalApiHealthResponse =
-							{
-								apis: {
-									ExternalAPI: {
-										apiName: "ExternalAPI",
-										isAvailable: true,
-										responseTimeMs: 150.5,
-										lastChecked: "2025-11-12T10:28:00Z"
-									},
-									GeocodeAPI: {
-										apiName: "GeocodeAPI",
-										isAvailable: true,
-										responseTimeMs: 200.0,
-										lastChecked: "2025-11-12T10:27:00Z"
+								status: "Degraded",
+								checkedAt: "2025-11-12T10:30:00Z",
+								database: {
+									isConnected: true,
+									responseTimeMs: 500.0,
+									status: "Degraded"
+								},
+								externalApis: {
+									apis: {
+										ExternalAPI: {
+											apiName: "ExternalAPI",
+											isAvailable: false,
+											responseTimeMs: 0,
+											lastChecked: "2025-11-12T10:20:00Z"
+										}
 									}
+								},
+								errorQueue: {
+									queuedItems: 100,
+									failedItems: 5,
+									circuitBreakerOpen: false,
+									status: "Degraded"
+								},
+								system: {
+									cpuUsagePercent: 85.0,
+									memoryUsedMb: 1900,
+									memoryTotalMb: 2048,
+									diskUsagePercent: 90.0
 								}
 							};
 
-						const query: ReturnType<typeof service.getExternalApiHealth> =
+						const query: ReturnType<typeof service.getDetailedHealth> =
 							TestBed.runInInjectionContext(
-								() => service.getExternalApiHealth());
+								() => service.getDetailedHealth());
 
 						await flushMicrotasks();
 
 						const req: TestRequest =
-							httpMock.expectOne(`${apiUrl}/external-apis`);
-						expect(req.request.method)
-							.toBe("GET");
-						req.flush(mockApiHealth);
+							httpMock.expectOne(`${apiUrl}/detailed`);
+						req.flush(mockDetailedHealth);
+
 						await flushMicrotasks();
 
-						const apiHealth: ExternalApiHealthResponse | undefined =
+						const health: HealthStatusResponse | undefined =
 							query.data();
-						expect(apiHealth)
-							.toEqual(mockApiHealth);
-						expect(Object.keys(apiHealth?.apis ?? {}).length)
-							.toBe(2);
-						expect(apiHealth?.apis?.["ExternalAPI"].isAvailable)
-							.toBe(true);
-					});
-
-				it("should handle APIs with unavailable status",
-					async () =>
-					{
-						const mockApiHealth: ExternalApiHealthResponse =
-							{
-								apis: {
-									ExternalAPI: {
-										apiName: "ExternalAPI",
-										isAvailable: false,
-										responseTimeMs: 0,
-										lastChecked: "2025-11-12T10:20:00Z"
-									}
-								}
-							};
-
-						const query: ReturnType<typeof service.getExternalApiHealth> =
-							TestBed.runInInjectionContext(
-								() => service.getExternalApiHealth());
-						await flushMicrotasks();
-
-						const req: TestRequest =
-							httpMock.expectOne(`${apiUrl}/external-apis`);
-						req.flush(mockApiHealth);
-
-						await flushMicrotasks();
-
-						const apiHealth: ExternalApiHealthResponse | undefined =
-							query.data();
-						expect(apiHealth?.apis?.["ExternalAPI"].isAvailable)
+						expect(health?.status)
+							.toBe("Degraded");
+						expect(health?.database?.status)
+							.toBe("Degraded");
+						expect(health?.externalApis?.apis?.["ExternalAPI"].isAvailable)
 							.toBe(false);
-						expect(apiHealth?.apis?.["ExternalAPI"].responseTimeMs)
-							.toBe(0);
+						expect(health?.system?.cpuUsagePercent)
+							.toBeGreaterThan(80);
 					});
 
-				it("should handle empty APIs list",
+				it("should handle HTTP errors (e.g. 401 Unauthorized)",
 					async () =>
 					{
-						const mockExternalApis: ExternalApiHealthResponse =
-							{
-								apis: {}
-							};
-
-						const query: ReturnType<typeof service.getExternalApiHealth> =
+						const query: ReturnType<typeof service.getDetailedHealth> =
 							TestBed.runInInjectionContext(
-								() => service.getExternalApiHealth());
-						await flushMicrotasks();
-
-						const req: TestRequest =
-							httpMock.expectOne(`${apiUrl}/external-apis`);
-						req.flush(mockExternalApis);
-
-						await flushMicrotasks();
-
-						const apiHealth: ExternalApiHealthResponse | undefined =
-							query.data();
-						expect(Object.keys(apiHealth?.apis ?? {}).length)
-							.toBe(0);
-					});
-
-				it("should handle HTTP errors",
-					async () =>
-					{
-						const query: ReturnType<typeof service.getExternalApiHealth> =
-							TestBed.runInInjectionContext(
-								() => service.getExternalApiHealth());
+								() => service.getDetailedHealth());
 
 						await flushMicrotasks();
 
 						const req: TestRequest =
-							httpMock.expectOne(`${apiUrl}/external-apis`);
-						req.flush("Bad gateway",
+							httpMock.expectOne(`${apiUrl}/detailed`);
+						req.flush("Unauthorized",
 							{
-								status: 502,
-								statusText: "Bad Gateway"
+								status: 401,
+								statusText: "Unauthorized"
 							});
 
 						await flushMicrotasks();

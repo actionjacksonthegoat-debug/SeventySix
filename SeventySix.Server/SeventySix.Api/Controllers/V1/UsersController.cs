@@ -124,44 +124,6 @@ public class UsersController(
 	}
 
 	/// <summary>
-	/// Gets all users.
-	/// </summary>
-	/// <param name="cancellationToken">
-	/// Cancellation token for async operation.
-	/// </param>
-	/// <returns>
-	/// A list of all users.
-	/// </returns>
-	/// <response code="200">Returns the list of users.</response>
-	/// <response code="500">If an unexpected error occurs.</response>
-	/// <remarks>
-	/// Sample request:
-	///
-	///     GET /api/user
-	///
-	/// Response is cached for 60 seconds to improve performance.
-	/// </remarks>
-	[HttpGet(Name = "GetUsers")]
-	[Authorize(Policy = PolicyConstants.AdminOnly)]
-	[ProducesResponseType(
-		typeof(IEnumerable<UserDto>),
-		StatusCodes.Status200OK
-	)]
-	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
-	[OutputCache(PolicyName = CachePolicyConstants.Users)]
-	public async Task<ActionResult<IEnumerable<UserDto>>> GetAllAsync(
-		CancellationToken cancellationToken)
-	{
-		IEnumerable<UserDto> users =
-			await messageBus.InvokeAsync<
-				IEnumerable<UserDto>>(
-					new GetAllUsersQuery(),
-					cancellationToken);
-
-		return Ok(users);
-	}
-
-	/// <summary>
 	/// Gets a user by their identifier.
 	/// </summary>
 	/// <param name="id">

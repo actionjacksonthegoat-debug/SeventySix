@@ -19,18 +19,22 @@ Write-Host ""
 
 # Check if Docker is available
 $dockerAvailable = $false
-try {
+try
+{
 	$dockerVersion =
 		docker version --format "{{.Server.Version}}" 2>$null
-	if ($dockerVersion) {
+	if ($dockerVersion)
+	{
 		$dockerAvailable = $true
 	}
 }
-catch {
+catch
+{
 	# Docker not available
 }
 
-if (-not $dockerAvailable) {
+if (-not $dockerAvailable)
+{
 	Write-Host "Docker is not running or not available" -ForegroundColor Yellow
 	Write-Host "  Skipping container cleanup" -ForegroundColor DarkGray
 	Write-Host ""
@@ -44,13 +48,15 @@ $containerExists =
 	docker ps -a --format "{{.Names}}" 2>$null |
 	Where-Object { $_ -eq $apiContainerName }
 
-if ($containerExists) {
+if ($containerExists)
+{
 	Write-Host "Stopping container: $apiContainerName" -ForegroundColor Yellow
 	docker stop $apiContainerName 2>$null | Out-Null
 	docker rm $apiContainerName 2>$null | Out-Null
 	Write-Host "  Container stopped and removed" -ForegroundColor Green
 }
-else {
+else
+{
 	Write-Host "Container $apiContainerName not running" -ForegroundColor DarkGray
 }
 

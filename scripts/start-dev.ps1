@@ -20,14 +20,16 @@ Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 
 # Clean up orphaned processes before starting (prevents port conflicts)
-if (-not $SkipCleanup) {
+if (-not $SkipCleanup)
+{
 	& (Join-Path $PSScriptRoot "cleanup-ports.ps1")
 }
 
 # Start Docker Desktop if not running
 $dockerProcess =
 	Get-Process 'Docker Desktop' -ErrorAction SilentlyContinue
-if (-not $dockerProcess) {
+if (-not $dockerProcess)
+{
 	Write-Host "Starting Docker Desktop..." -ForegroundColor Yellow
 	Start-Process 'C:\Program Files\Docker\Docker\Docker Desktop.exe'
 	Start-Sleep -Seconds 10
@@ -51,12 +53,14 @@ public static extern IntPtr GetConsoleWindow();
 [DllImport("user32.dll")]
 public static extern bool SetForegroundWindow(IntPtr hWnd);
 '@ -ErrorAction SilentlyContinue
-try {
+try
+{
 	$consoleHandle = [Console.Win32]::GetConsoleWindow()
 	[Console.Win32]::SetForegroundWindow($consoleHandle) | Out-Null
 	[Console]::Title = 'SeventySix API'
 }
-catch {
+catch
+{
 	# If platform doesn't support bringing window to front, ignore
 }
 # Check if Angular client is already running on port 4200
@@ -65,13 +69,16 @@ $clientPortInUse =
 
 # Verify the port is actually responding (extra safety check)
 $clientResponding = $false
-if ($clientPortInUse) {
-	try {
+if ($clientPortInUse)
+{
+	try
+	{
 		$response =
 			Invoke-WebRequest -Uri "http://localhost:4200" -TimeoutSec 2 -UseBasicParsing -ErrorAction SilentlyContinue
 		$clientResponding = ($response.StatusCode -eq 200)
 	}
-	catch {
+	catch
+	{
 		$clientResponding = $false
 	}
 }
@@ -79,7 +86,8 @@ if ($clientPortInUse) {
 $clientPath =
 	"$PSScriptRoot\..\SeventySix.Client"
 
-if ($clientPortInUse -and $clientResponding) {
+if ($clientPortInUse -and $clientResponding)
+{
 	Write-Host ""
 	Write-Host "========================================" -ForegroundColor Yellow
 	Write-Host "  Client Already Running" -ForegroundColor Yellow
@@ -89,7 +97,8 @@ if ($clientPortInUse -and $clientResponding) {
 	Write-Host "  Client: http://localhost:4200" -ForegroundColor Cyan
 	Write-Host "========================================" -ForegroundColor Yellow
 }
-else {
+else
+{
 	# Launch Angular client in NEW PowerShell window BEFORE streaming logs
 	Write-Host "Launching Angular client in new window..." -ForegroundColor Yellow
 

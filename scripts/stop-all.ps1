@@ -19,18 +19,22 @@ Write-Host ""
 
 # Check if Docker is available
 $dockerAvailable = $false
-try {
+try
+{
 	$dockerVersion =
 	docker version --format "{{.Server.Version}}" 2>$null
-	if ($dockerVersion) {
+	if ($dockerVersion)
+	{
 		$dockerAvailable = $true
 	}
 }
-catch {
+catch
+{
 	# Docker not available
 }
 
-if (-not $dockerAvailable) {
+if (-not $dockerAvailable)
+{
 	Write-Host "Docker is not running or not available" -ForegroundColor Yellow
 	Write-Host "  Nothing to stop" -ForegroundColor DarkGray
 	Write-Host ""
@@ -43,7 +47,8 @@ if (-not $dockerAvailable) {
 # Stop all Docker containers
 Push-Location (Join-Path $PSScriptRoot "..\SeventySix.Server")
 
-try {
+try
+{
 	Write-Host "Stopping all Docker containers..." -ForegroundColor Yellow
 	docker compose down --remove-orphans 2>$null
 
@@ -53,6 +58,7 @@ try {
 	Write-Host "========================================" -ForegroundColor Green
 	Write-Host ""
 }
-finally {
+finally
+{
 	Pop-Location
 }

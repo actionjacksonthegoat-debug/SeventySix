@@ -13,11 +13,13 @@ $timeout = New-TimeSpan -Seconds $TimeoutSeconds
 
 Write-Host "Waiting for $containerName to become healthy..." -ForegroundColor Cyan
 
-while ((Get-Date) - $startTime -lt $timeout) {
+while ((Get-Date) - $startTime -lt $timeout)
+{
 	# Get container status
 	$containerJson = docker inspect $containerName 2>$null | ConvertFrom-Json
 
-	if (-not $containerJson) {
+	if (-not $containerJson)
+	{
 		Write-Host "  Container not found yet, waiting..." -ForegroundColor Yellow
 		Start-Sleep -Seconds $PollIntervalSeconds
 		continue
@@ -29,7 +31,8 @@ while ((Get-Date) - $startTime -lt $timeout) {
 	$running = $state.Running
 
 	# Check if container has exited (startup failure)
-	if ($status -eq "exited" -or (-not $running -and $exitCode -ne 0)) {
+	if ($status -eq "exited" -or (-not $running -and $exitCode -ne 0))
+	{
 		Write-Host ""
 		Write-Host "===================================================================" -ForegroundColor Red
 		Write-Host "  CONTAINER STARTUP FAILED" -ForegroundColor Red
@@ -47,9 +50,11 @@ while ((Get-Date) - $startTime -lt $timeout) {
 	}
 
 	# Check if container is restarting (indicates repeated failures)
-	if ($status -eq "restarting") {
+	if ($status -eq "restarting")
+	{
 		$restartCount = $containerJson[0].RestartCount
-		if ($restartCount -gt 2) {
+		if ($restartCount -gt 2)
+		{
 			Write-Host ""
 			Write-Host "===================================================================" -ForegroundColor Red
 			Write-Host "  CONTAINER STUCK IN RESTART LOOP (Restarted $restartCount times)" -ForegroundColor Red
@@ -72,19 +77,23 @@ while ((Get-Date) - $startTime -lt $timeout) {
 	}
 
 	# Check health status if running
-	if ($running) {
+	if ($running)
+	{
 		$healthState = $containerJson[0].State.Health
 
-		if ($healthState) {
+		if ($healthState)
+		{
 			$healthStatus = $healthState.Status
 
-			if ($healthStatus -eq "healthy") {
+			if ($healthStatus -eq "healthy")
+			{
 				Write-Host ""
 				Write-Host "  API container is healthy" -ForegroundColor Green
 				Write-Host ""
 				exit 0
 			}
-			elseif ($healthStatus -eq "unhealthy") {
+			elseif ($healthStatus -eq "unhealthy")
+			{
 				Write-Host ""
 				Write-Host "===================================================================" -ForegroundColor Red
 				Write-Host "  CONTAINER HEALTH CHECK FAILED" -ForegroundColor Red
@@ -96,24 +105,29 @@ while ((Get-Date) - $startTime -lt $timeout) {
 				Write-Host "-------------------------------------------------------------------" -ForegroundColor DarkGray
 				exit 1
 			}
-			else {
+			else
+			{
 				# starting or other health status
 				$elapsed = [math]::Round(((Get-Date) - $startTime).TotalSeconds)
 				Write-Host "  Health: $healthStatus (${elapsed}s elapsed)" -ForegroundColor Yellow
 			}
 		}
-		else {
+		else
+		{
 			# No health check defined, check if we can reach the health endpoint
-			try {
+			try
+			{
 				$response = Invoke-WebRequest -Uri "https://localhost:7074/health/live" -UseBasicParsing -TimeoutSec 5 -SkipCertificateCheck -ErrorAction SilentlyContinue
-				if ($response.StatusCode -eq 200) {
+				if ($response.StatusCode -eq 200)
+				{
 					Write-Host ""
 					Write-Host "  API is responding" -ForegroundColor Green
 					Write-Host ""
 					exit 0
 				}
 			}
-			catch {
+			catch
+			{
 				$elapsed = [math]::Round(((Get-Date) - $startTime).TotalSeconds)
 				Write-Host "  Waiting for API to respond (${elapsed}s elapsed)..." -ForegroundColor Yellow
 			}
