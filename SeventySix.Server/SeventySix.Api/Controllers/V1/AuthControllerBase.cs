@@ -33,6 +33,44 @@ public abstract class AuthControllerBase(
 	protected IAuthCookieService CookieService { get; } = cookieService;
 
 	/// <summary>
+	/// Handles a failed authentication result by logging and returning appropriate response.
+	/// </summary>
+	/// <param name="result">
+	/// The failed auth result.
+	/// </param>
+	/// <param name="operationName">
+	/// The name of the operation that failed, used for logging and title.
+	/// </param>
+	/// <param name="statusCode">
+	/// The HTTP status code to return. Defaults to BadRequest (400).
+	/// </param>
+	/// <returns>
+	/// An ObjectResult with appropriate status code and ProblemDetails.
+	/// </returns>
+	protected ObjectResult HandleFailedAuthResult(
+		AuthResult result,
+		string operationName,
+		int statusCode = StatusCodes.Status400BadRequest)
+	{
+		Logger.LogWarning(
+			"{Operation} failed. Error: {Error}, Code: {ErrorCode}",
+			operationName,
+			result.Error,
+			result.ErrorCode);
+
+		return StatusCode(
+			statusCode,
+			new ProblemDetails
+			{
+				Title = $"{operationName} Failed",
+				Detail = result.Error,
+				Status = statusCode,
+				Extensions =
+					{ ["errorCode"] = result.ErrorCode },
+			});
+	}
+
+	/// <summary>
 	/// Gets client IP address from HttpContext.
 	/// ForwardedHeadersMiddleware handles X-Forwarded-For validation.
 	/// </summary>

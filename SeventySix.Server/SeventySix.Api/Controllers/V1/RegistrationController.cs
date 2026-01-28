@@ -112,21 +112,7 @@ public class RegistrationController(
 
 		if (!result.Success)
 		{
-			Logger.LogWarning(
-				"Registration completion failed. Error: {Error}, Code: {ErrorCode}",
-				result.Error,
-				result.ErrorCode);
-
-			return BadRequest(
-				new ProblemDetails
-				{
-					Title = "Registration Completion Failed",
-					Detail = result.Error,
-					Status =
-						StatusCodes.Status400BadRequest,
-					Extensions =
-						{ ["errorCode"] = result.ErrorCode },
-				});
+			return HandleFailedAuthResult(result, "Registration Completion");
 		}
 
 		CookieService.SetRefreshTokenCookie(result.RefreshToken!);

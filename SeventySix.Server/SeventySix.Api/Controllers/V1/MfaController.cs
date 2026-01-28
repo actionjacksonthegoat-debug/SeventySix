@@ -70,20 +70,7 @@ public class MfaController(
 
 		if (!result.Success)
 		{
-			Logger.LogWarning(
-				"MFA verification failed. Code: {ErrorCode}",
-				result.ErrorCode);
-
-			return BadRequest(
-				new ProblemDetails
-				{
-					Title = "MFA Verification Failed",
-					Detail = result.Error,
-					Status =
-						StatusCodes.Status400BadRequest,
-					Extensions =
-						{ ["errorCode"] = result.ErrorCode },
-				});
+			return HandleFailedAuthResult(result, "MFA Verification");
 		}
 
 		ValidatedAuthResult validatedResult =
@@ -185,20 +172,7 @@ public class MfaController(
 
 		if (!result.Success)
 		{
-			Logger.LogWarning(
-				"TOTP verification failed. Code: {ErrorCode}",
-				result.ErrorCode);
-
-			return BadRequest(
-				new ProblemDetails
-				{
-					Title = "TOTP Verification Failed",
-					Detail = result.Error,
-					Status =
-						StatusCodes.Status400BadRequest,
-					Extensions =
-						{ ["errorCode"] = result.ErrorCode },
-				});
+			return HandleFailedAuthResult(result, "TOTP Verification");
 		}
 
 		ValidatedAuthResult validatedResult =
@@ -246,20 +220,7 @@ public class MfaController(
 
 		if (!result.Success)
 		{
-			Logger.LogWarning(
-				"Backup code verification failed. Code: {ErrorCode}",
-				result.ErrorCode);
-
-			return BadRequest(
-				new ProblemDetails
-				{
-					Title = "Backup Code Verification Failed",
-					Detail = result.Error,
-					Status =
-						StatusCodes.Status400BadRequest,
-					Extensions =
-						{ ["errorCode"] = result.ErrorCode },
-				});
+			return HandleFailedAuthResult(result, "Backup Code Verification");
 		}
 
 		ValidatedAuthResult validatedResult =

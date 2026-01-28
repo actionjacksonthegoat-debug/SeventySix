@@ -11,6 +11,7 @@ using SeventySix.Identity;
 using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;
+using Shouldly;
 
 namespace SeventySix.Domains.Tests.Identity.Services;
 
@@ -95,25 +96,24 @@ public class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 			CancellationToken.None);
 
 		// Assert
-		Assert.NotNull(refreshToken);
-		Assert.NotEmpty(refreshToken);
+		refreshToken.ShouldNotBeNull();
+		refreshToken.ShouldNotBeEmpty();
 
 		RefreshToken? storedToken =
 			await context.RefreshTokens.FirstOrDefaultAsync(t =>
 				t.UserId == user.Id);
 
-		Assert.NotNull(storedToken);
-		Assert.False(storedToken.IsRevoked);
-		Assert.Equal("127.0.0.1", storedToken.CreatedByIp);
+		storedToken.ShouldNotBeNull();
+		storedToken.IsRevoked.ShouldBeFalse();
+		storedToken.CreatedByIp.ShouldBe("127.0.0.1");
 
 		DateTime expectedExpiry =
 			FixedTime
 			.AddDays(expectedExpirationDays)
 			.UtcDateTime;
 
-		Assert.Equal(
+		storedToken.ExpiresAt.ShouldBe(
 			expectedExpiry,
-			storedToken.ExpiresAt,
 			TimeSpan.FromSeconds(1));
 	}
 	#endregion
@@ -197,12 +197,12 @@ public class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 		// Assert
 		if (shouldReturnUserId)
 		{
-			Assert.NotNull(actualUserId);
-			Assert.Equal(user.Id, actualUserId.Value);
+			actualUserId.ShouldNotBeNull();
+			actualUserId.Value.ShouldBe(user.Id);
 		}
 		else
 		{
-			Assert.Null(actualUserId);
+			actualUserId.ShouldBeNull();
 		}
 	}
 	#endregion
@@ -246,7 +246,7 @@ public class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 			CancellationToken.None);
 
 		// Assert
-		Assert.Equal(expectedResult, actualResult);
+		actualResult.ShouldBe(expectedResult);
 
 		if (isValidToken)
 		{
@@ -255,8 +255,8 @@ public class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 				.RefreshTokens.AsNoTracking()
 				.FirstAsync(token => token.UserId == userId);
 
-			Assert.True(storedToken.IsRevoked);
-			Assert.NotNull(storedToken.RevokedAt);
+			storedToken.IsRevoked.ShouldBeTrue();
+			storedToken.RevokedAt.ShouldNotBeNull();
 		}
 	}
 	#endregion
@@ -302,7 +302,7 @@ public class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 			CancellationToken.None);
 
 		// Assert
-		Assert.Equal(expectedRevokedCount, actualRevokedCount);
+		actualRevokedCount.ShouldBe(expectedRevokedCount);
 
 		if (tokensToCreate > 0)
 		{
@@ -312,9 +312,7 @@ public class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 				.Where(t => t.UserId == userId)
 				.ToListAsync();
 
-			Assert.All(
-				tokens,
-				t => Assert.True(t.IsRevoked));
+			tokens.ShouldAllBe(token => token.IsRevoked);
 		}
 	}
 	#endregion
@@ -393,15 +391,15 @@ public class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 			.OrderBy(t => t.CreateDate)
 			.ToListAsync();
 
-		Assert.Equal(3, tokens.Count);
+		tokens.Count.ShouldBe(3);
 
 		// Oldest token (first) should be revoked
-		Assert.True(tokens[0].IsRevoked);
-		Assert.NotNull(tokens[0].RevokedAt);
+		tokens[0].IsRevoked.ShouldBeTrue();
+		tokens[0].RevokedAt.ShouldNotBeNull();
 
 		// Second and third tokens should still be active
-		Assert.False(tokens[1].IsRevoked);
-		Assert.False(tokens[2].IsRevoked);
+		tokens[1].IsRevoked.ShouldBeFalse();
+		tokens[2].IsRevoked.ShouldBeFalse();
 	}
 	#endregion
 	#region Token Family Reuse Detection Tests
@@ -428,8 +426,8 @@ public class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 			.RefreshTokens.AsNoTracking()
 			.FirstOrDefaultAsync(t => t.UserId == user.Id);
 
-		Assert.NotNull(storedToken);
-		Assert.NotEqual(Guid.Empty, storedToken.FamilyId);
+		storedToken.ShouldNotBeNull();
+		storedToken.FamilyId.ShouldNotBe(Guid.Empty);
 	}
 
 	[Fact]
@@ -451,8 +449,8 @@ public class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 			CancellationToken.None);
 
 		// Assert
-		Assert.NotNull(newToken);
-		Assert.NotEqual(originalToken, newToken);
+		newToken.ShouldNotBeNull();
+		newToken.ShouldNotBe(originalToken);
 
 		RefreshToken? newStoredToken =
 			await context
@@ -461,10 +459,8 @@ public class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 			.Where(t => !t.IsRevoked)
 			.FirstOrDefaultAsync();
 
-		Assert.NotNull(newStoredToken);
-		Assert.Equal(
-			originalFamilyId,
-			newStoredToken.FamilyId);
+		newStoredToken.ShouldNotBeNull();
+		newStoredToken.FamilyId.ShouldBe(originalFamilyId);
 	}
 
 	[Fact]
@@ -487,7 +483,7 @@ public class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 				originalToken,
 				CancellationToken.None);
 
-		Assert.Null(userId);
+		userId.ShouldBeNull();
 	}
 
 	[Fact]
@@ -511,7 +507,7 @@ public class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 				CancellationToken.None);
 
 		// Assert
-		Assert.Null(userId);
+		userId.ShouldBeNull();
 	}
 
 	[Fact]
@@ -529,7 +525,7 @@ public class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 			"127.0.0.1",
 			CancellationToken.None);
 
-		Assert.NotNull(legitimateNewToken);
+		legitimateNewToken.ShouldNotBeNull();
 
 		// Act - Attacker tries to rotate the revoked original token
 		string? attackerToken =
@@ -539,7 +535,7 @@ public class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 			CancellationToken.None);
 
 		// Assert - Attack detected, returns null
-		Assert.Null(attackerToken);
+		attackerToken.ShouldBeNull();
 
 		// Verify ENTIRE family is revoked (including legitimate user's new token)
 		List<RefreshToken> familyTokens =
@@ -548,9 +544,7 @@ public class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 			.Where(t => t.UserId == user.Id)
 			.ToListAsync();
 
-		Assert.All(
-			familyTokens,
-			t => Assert.True(t.IsRevoked));
+		familyTokens.ShouldAllBe(token => token.IsRevoked);
 
 		// Verify legitimate user's new token no longer works
 		long? userId =
@@ -558,7 +552,7 @@ public class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 				legitimateNewToken,
 				CancellationToken.None);
 
-		Assert.Null(userId);
+		userId.ShouldBeNull();
 	}
 
 	[Theory]
@@ -584,7 +578,7 @@ public class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 			CancellationToken.None);
 
 		// Assert
-		Assert.Null(result);
+		result.ShouldBeNull();
 	}
 	#endregion
 	#region Absolute Session Timeout Tests
@@ -624,7 +618,7 @@ public class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 				"127.0.0.1",
 				CancellationToken.None);
 
-		Assert.NotNull(tokenDay10);
+		tokenDay10.ShouldNotBeNull();
 
 		// Day 20: Second rotation (still within 30-day session limit)
 		timeProvider.Advance(TimeSpan.FromDays(10));
@@ -634,7 +628,7 @@ public class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 				"127.0.0.1",
 				CancellationToken.None);
 
-		Assert.NotNull(tokenDay20);
+		tokenDay20.ShouldNotBeNull();
 
 		// Day 31: Beyond absolute session timeout (30 days from session start)
 		timeProvider.Advance(TimeSpan.FromDays(11));
@@ -647,7 +641,7 @@ public class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 				CancellationToken.None);
 
 		// Assert - Should be null because absolute session timeout exceeded
-		Assert.Null(tokenDay31);
+		tokenDay31.ShouldBeNull();
 	}
 
 	/// <summary>
@@ -683,7 +677,7 @@ public class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 				"127.0.0.1",
 				CancellationToken.None))!;
 
-		Assert.NotNull(currentToken);
+		currentToken.ShouldNotBeNull();
 
 		// Rotate again at day 20 (within new token's 14-day expiration)
 		timeProvider.Advance(TimeSpan.FromDays(10));
@@ -693,7 +687,7 @@ public class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 				"127.0.0.1",
 				CancellationToken.None))!;
 
-		Assert.NotNull(currentToken);
+		currentToken.ShouldNotBeNull();
 
 		// Act - Final rotation at day 29 (still within 30-day session limit)
 		timeProvider.Advance(TimeSpan.FromDays(9));
@@ -704,7 +698,7 @@ public class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 				CancellationToken.None);
 
 		// Assert - Should succeed because session is still within 30-day window
-		Assert.NotNull(rotatedToken);
+		rotatedToken.ShouldNotBeNull();
 	}
 
 	#endregion

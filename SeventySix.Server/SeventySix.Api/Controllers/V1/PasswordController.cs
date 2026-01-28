@@ -72,16 +72,7 @@ public class PasswordController(
 
 		if (!result.Success)
 		{
-			return BadRequest(
-				new ProblemDetails
-				{
-					Title = "Password Change Failed",
-					Detail = result.Error,
-					Status =
-						StatusCodes.Status400BadRequest,
-					Extensions =
-						{ ["errorCode"] = result.ErrorCode },
-				});
+			return HandleFailedAuthResult(result, "Password Change");
 		}
 
 		// Clear refresh token after password change
@@ -172,21 +163,7 @@ public class PasswordController(
 
 		if (!result.Success)
 		{
-			Logger.LogWarning(
-				"Set password failed. Error: {Error}, Code: {ErrorCode}",
-				result.Error,
-				result.ErrorCode);
-
-			return BadRequest(
-				new ProblemDetails
-				{
-					Title = "Set Password Failed",
-					Detail = result.Error,
-					Status =
-						StatusCodes.Status400BadRequest,
-					Extensions =
-						{ ["errorCode"] = result.ErrorCode },
-				});
+			return HandleFailedAuthResult(result, "Set Password");
 		}
 
 		CookieService.SetRefreshTokenCookie(result.RefreshToken!);

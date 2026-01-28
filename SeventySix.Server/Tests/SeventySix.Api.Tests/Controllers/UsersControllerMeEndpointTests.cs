@@ -11,6 +11,7 @@ using SeventySix.Identity;
 using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;
 using SeventySix.TestUtilities.TestHelpers;
+using Shouldly;
 
 namespace SeventySix.Api.Tests.Controllers;
 
@@ -80,17 +81,15 @@ public class UsersControllerMeEndpointTests(
 			updateRequest);
 
 		// Assert
-		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+		response.StatusCode.ShouldBe(HttpStatusCode.OK);
 
 		UserProfileDto? profile =
 			await response.Content.ReadFromJsonAsync<UserProfileDto>();
 
-		Assert.NotNull(profile);
-		Assert.Equal(
-			$"updated_{testId}@example.com",
-			profile.Email);
-		Assert.Equal("Updated Full Name", profile.FullName);
-		Assert.Equal(username, profile.Username); // Username unchanged
+		profile.ShouldNotBeNull();
+		profile.Email.ShouldBe($"updated_{testId}@example.com");
+		profile.FullName.ShouldBe("Updated Full Name");
+		profile.Username.ShouldBe(username); // Username unchanged
 	}
 
 	/// <summary>
@@ -132,9 +131,7 @@ public class UsersControllerMeEndpointTests(
 			updateRequest);
 
 		// Assert
-		Assert.Equal(
-			HttpStatusCode.BadRequest,
-			response.StatusCode);
+		response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
 	}
 
 	/// <summary>

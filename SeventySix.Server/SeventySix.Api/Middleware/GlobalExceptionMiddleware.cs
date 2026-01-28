@@ -26,7 +26,6 @@ namespace SeventySix.Api.Middleware;
 /// - EntityNotFoundException -> 404 Not Found
 /// - BusinessRuleViolationException -> 422 Unprocessable Entity
 /// - DomainException -> 400 Bad Request
-/// - ExternalServiceException -> 503 Service Unavailable
 /// - ArgumentException/ArgumentNullException -> 400 Bad Request
 /// - KeyNotFoundException -> 404 Not Found
 /// - UnauthorizedAccessException -> 401 Unauthorized
@@ -217,17 +216,6 @@ public class GlobalExceptionMiddleware
 	}
 
 	/// <summary>
-	/// Adds CORS response headers when the Origin header is present and allowed.
-	/// </summary>
-	/// <param name="context">The http context for the current request.</param>
-	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-	private void AddCorsHeadersIfNeeded(HttpContext context)
-	{
-		// Keep for backward compatibility with existing tests that may call this method
-		CorsHeaderHelper.AddCorsHeadersIfAllowed(context, AllowedOrigins);
-	}
-
-	/// <summary>
 	/// Maps an exception to a <see cref="ProblemDetails"/> instance.
 	/// </summary>
 	/// <param name="context">
@@ -257,11 +245,6 @@ public class GlobalExceptionMiddleware
 				HttpStatusCode.UnprocessableEntity,
 				"Business Rule Violation",
 				businessException.Message),
-			ExternalServiceException serviceException => CreateProblemDetails(
-				context,
-				HttpStatusCode.ServiceUnavailable,
-				"External Service Error",
-				serviceException.Message),
 			DomainException domainException => CreateProblemDetails(
 				context,
 				HttpStatusCode.BadRequest,

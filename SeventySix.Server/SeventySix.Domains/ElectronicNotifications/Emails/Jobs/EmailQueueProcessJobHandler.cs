@@ -72,7 +72,9 @@ public class EmailQueueProcessJobHandler(
 		{
 			IReadOnlyList<EmailQueueEntry> pendingEmails =
 				await messageBus.InvokeAsync<IReadOnlyList<EmailQueueEntry>>(
-					new GetPendingEmailsQuery(queueConfig.BatchSize),
+					new GetPendingEmailsQuery(
+						queueConfig.BatchSize,
+						queueConfig.RetryDelayMinutes),
 					cancellationToken);
 
 			if (pendingEmails.Count > 0)
@@ -228,13 +230,17 @@ public class EmailQueueProcessJobHandler(
 				break;
 
 			case EmailType.MfaVerification:
+				int expirationMinutes =
+					int.TryParse(
+						templateData.GetValueOrDefault("expirationMinutes", "5"),
+						out int minutes)
+						? minutes
+						: 5;
+
 				await emailService.SendMfaCodeEmailAsync(
 					recipientEmail,
 					templateData.GetValueOrDefault("code", ""),
-					int.Parse(
-						templateData.GetValueOrDefault(
-							"expirationMinutes",
-							"5")),
+					expirationMinutes,
 					cancellationToken);
 				break;
 

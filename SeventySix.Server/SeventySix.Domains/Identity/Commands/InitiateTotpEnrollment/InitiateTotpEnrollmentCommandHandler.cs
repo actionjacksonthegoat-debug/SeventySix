@@ -42,7 +42,7 @@ public static class InitiateTotpEnrollmentCommandHandler
 		ApplicationUser? user =
 			await userManager.FindByIdAsync(command.UserId.ToString());
 
-		if (user is null || !user.IsActive)
+		if (!user.IsValidForAuthentication())
 		{
 			return TotpSetupResult.Failed(
 				AuthErrorMessages.InvalidCredentials,

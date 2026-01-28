@@ -32,7 +32,7 @@ public sealed class ClosingParenSameLineAnalyzer : DiagnosticAnalyzer
 		DiagnosticId,
 		"Closing parenthesis should not be alone on line",
 		"Closing ')' should be on the same line as the last content",
-		"Formatting",
+		DiagnosticCategories.Formatting,
 		DiagnosticSeverity.Warning,
 		isEnabledByDefault: true,
 		description: "Closing parentheses should not be alone on their own line. Multiple consecutive ) should all be on the same line as the last argument."

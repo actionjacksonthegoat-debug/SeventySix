@@ -60,7 +60,7 @@ public static class InitiatePasswordResetByEmailCommandHandler
 				new GetUserByEmailQuery(command.Request.Email),
 				cancellationToken);
 
-		if (user is null || !user.IsActive)
+		if (!user.IsValidForAuthentication())
 		{
 			return;
 		}

@@ -20,6 +20,7 @@ public class EnqueueEmailCommandValidator : AbstractValidator<EnqueueEmailComman
 			EmailType.Welcome,
 			EmailType.PasswordReset,
 			EmailType.Verification,
+			EmailType.MfaVerification,
 		];
 
 	/// <summary>

@@ -8,6 +8,7 @@ using NSubstitute;
 using SeventySix.Api.Controllers;
 using SeventySix.ApiTracking;
 using SeventySix.Shared.Constants;
+using Shouldly;
 using Wolverine;
 
 namespace SeventySix.Api.Tests.Controllers;
@@ -77,13 +78,10 @@ public class ThirdPartyApiRequestsControllerTests
 
 		// Assert
 		OkObjectResult okResult =
-			Assert.IsType<OkObjectResult>(result.Result);
+			result.Result.ShouldBeOfType<OkObjectResult>();
 		IEnumerable<ThirdPartyApiRequestDto> returnedRequests =
-			Assert.IsAssignableFrom<IEnumerable<ThirdPartyApiRequestDto>>(
-				okResult.Value);
-		Assert.Equal(
-			2,
-			returnedRequests.Count());
+			okResult.Value.ShouldBeAssignableTo<IEnumerable<ThirdPartyApiRequestDto>>()!;
+		returnedRequests.Count().ShouldBe(2);
 
 		await MessageBus
 			.Received(1)
@@ -108,11 +106,10 @@ public class ThirdPartyApiRequestsControllerTests
 
 		// Assert
 		OkObjectResult okResult =
-			Assert.IsType<OkObjectResult>(result.Result);
+			result.Result.ShouldBeOfType<OkObjectResult>();
 		IEnumerable<ThirdPartyApiRequestDto> returnedRequests =
-			Assert.IsAssignableFrom<IEnumerable<ThirdPartyApiRequestDto>>(
-				okResult.Value);
-		Assert.Empty(returnedRequests);
+			okResult.Value.ShouldBeAssignableTo<IEnumerable<ThirdPartyApiRequestDto>>()!;
+		returnedRequests.ShouldBeEmpty();
 	}
 
 	[Fact]
@@ -157,12 +154,12 @@ public class ThirdPartyApiRequestsControllerTests
 
 		// Assert
 		OkObjectResult okResult =
-			Assert.IsType<OkObjectResult>(result.Result);
+			result.Result.ShouldBeOfType<OkObjectResult>();
 		ThirdPartyApiStatisticsDto returnedStats =
-			Assert.IsType<ThirdPartyApiStatisticsDto>(okResult.Value);
-		Assert.Equal(225, returnedStats.TotalCallsToday);
-		Assert.Equal(2, returnedStats.TotalApisTracked);
-		Assert.Equal(2, returnedStats.CallsByApi.Count);
+			okResult.Value.ShouldBeOfType<ThirdPartyApiStatisticsDto>();
+		returnedStats.TotalCallsToday.ShouldBe(225);
+		returnedStats.TotalApisTracked.ShouldBe(2);
+		returnedStats.CallsByApi.Count.ShouldBe(2);
 
 		await MessageBus
 			.Received(1)
@@ -196,10 +193,10 @@ public class ThirdPartyApiRequestsControllerTests
 
 		// Assert
 		OkObjectResult okResult =
-			Assert.IsType<OkObjectResult>(result.Result);
+			result.Result.ShouldBeOfType<OkObjectResult>();
 		ThirdPartyApiStatisticsDto returnedStats =
-			Assert.IsType<ThirdPartyApiStatisticsDto>(okResult.Value);
-		Assert.Equal(0, returnedStats.TotalCallsToday);
-		Assert.Empty(returnedStats.CallsByApi);
+			okResult.Value.ShouldBeOfType<ThirdPartyApiStatisticsDto>();
+		returnedStats.TotalCallsToday.ShouldBe(0);
+		returnedStats.CallsByApi.ShouldBeEmpty();
 	}
 }

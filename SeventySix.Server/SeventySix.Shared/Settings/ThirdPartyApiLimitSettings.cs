@@ -15,7 +15,7 @@ public record ThirdPartyApiLimitSettings
 	/// <summary>
 	/// Configuration section name in appsettings.json.
 	/// </summary>
-	public const string SECTION_NAME = "ThirdPartyApiLimits";
+	public const string SectionName = "ThirdPartyApiLimits";
 
 	/// <summary>
 	/// Gets the default daily limit when API-specific limit not configured.

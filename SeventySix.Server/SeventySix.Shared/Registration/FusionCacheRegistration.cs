@@ -48,12 +48,12 @@ public static class FusionCacheRegistration
 	{
 		CacheSettings cacheSettings =
 			configuration
-				.GetSection(CacheSettings.SECTION_NAME)
+				.GetSection(CacheSettings.SectionName)
 				.Get<CacheSettings>()
 			?? new CacheSettings();
 
 		services.Configure<CacheSettings>(
-			configuration.GetSection(CacheSettings.SECTION_NAME));
+			configuration.GetSection(CacheSettings.SectionName));
 
 		// Skip Valkey in Test environment - use memory-only cache for fast tests
 		if (string.Equals(

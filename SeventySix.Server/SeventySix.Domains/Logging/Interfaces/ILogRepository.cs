@@ -26,6 +26,22 @@ public interface ILogRepository
 		CancellationToken cancellationToken = default);
 
 	/// <summary>
+	/// Creates multiple <see cref="Log"/> records in a single batch operation.
+	/// </summary>
+	/// <param name="entities">
+	/// The log entities to create.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token for async operation.
+	/// </param>
+	/// <returns>
+	/// A task representing the asynchronous operation.
+	/// </returns>
+	public Task CreateBatchAsync(
+		IEnumerable<Log> entities,
+		CancellationToken cancellationToken = default);
+
+	/// <summary>
 	/// Retrieves paged log records based on the provided query.
 	/// </summary>
 	/// <param name="request">

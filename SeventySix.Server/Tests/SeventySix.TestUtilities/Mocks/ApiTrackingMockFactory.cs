@@ -47,37 +47,4 @@ public static class ApiTrackingMockFactory
 
 		return repository;
 	}
-
-	/// <summary>
-	/// Creates a mock <see cref="IThirdPartyApiRequestService"/> with default empty returns.
-	/// </summary>
-	/// <returns>
-	/// A configured NSubstitute mock for IThirdPartyApiRequestService.
-	/// </returns>
-	public static IThirdPartyApiRequestService CreateThirdPartyApiRequestService()
-	{
-		IThirdPartyApiRequestService service =
-			Substitute.For<IThirdPartyApiRequestService>();
-
-		// Default: return empty list for GetAll
-		service
-			.GetAllAsync(
-				Arg.Any<CancellationToken>())
-			.Returns([]);
-
-		// Default: return empty statistics
-		service
-			.GetStatisticsAsync(
-				Arg.Any<CancellationToken>())
-			.Returns(
-				new ThirdPartyApiStatisticsDto
-				{
-					TotalCallsToday = 0,
-					TotalApisTracked = 0,
-					CallsByApi = [],
-					LastCalledByApi = [],
-				});
-
-		return service;
-	}
 }

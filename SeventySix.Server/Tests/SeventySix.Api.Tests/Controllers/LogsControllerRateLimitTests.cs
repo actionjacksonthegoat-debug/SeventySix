@@ -8,6 +8,7 @@ using SeventySix.Api.Tests.Fixtures;
 using SeventySix.Logging;
 using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;
+using Shouldly;
 
 namespace SeventySix.Api.Tests.Controllers;
 
@@ -84,11 +85,9 @@ public class LogsControllerRateLimitTests(LoggingApiPostgreSqlFixture fixture)
 		}
 
 		// Assert - First 5 should succeed (204), 6th should be 429
-		Assert.Equal(
-			rateLimit,
-			responses.Count(response => response.StatusCode == HttpStatusCode.NoContent));
-		Assert.Single(
-			responses,
+		responses.Count(response => response.StatusCode == HttpStatusCode.NoContent)
+			.ShouldBe(rateLimit);
+		responses.ShouldContain(
 			response => response.StatusCode == HttpStatusCode.TooManyRequests);
 	}
 
@@ -121,11 +120,9 @@ public class LogsControllerRateLimitTests(LoggingApiPostgreSqlFixture fixture)
 		}
 
 		// Assert - First 5 should succeed (204), 6th should be 429
-		Assert.Equal(
-			rateLimit,
-			responses.Count(response => response.StatusCode == HttpStatusCode.NoContent));
-		Assert.Single(
-			responses,
+		responses.Count(response => response.StatusCode == HttpStatusCode.NoContent)
+			.ShouldBe(rateLimit);
+		responses.ShouldContain(
 			response => response.StatusCode == HttpStatusCode.TooManyRequests);
 	}
 
@@ -161,7 +158,7 @@ public class LogsControllerRateLimitTests(LoggingApiPostgreSqlFixture fixture)
 		}
 
 		// Assert
-		Assert.NotNull(rateLimitedResponse);
-		Assert.True(rateLimitedResponse.Headers.Contains("Retry-After"));
+		rateLimitedResponse.ShouldNotBeNull();
+		rateLimitedResponse.Headers.Contains("Retry-After").ShouldBeTrue();
 	}
 }

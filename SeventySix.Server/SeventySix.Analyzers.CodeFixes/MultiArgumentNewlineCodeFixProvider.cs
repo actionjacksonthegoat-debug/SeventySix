@@ -12,6 +12,7 @@ using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
+using SeventySix.Analyzers;
 
 namespace SeventySix.Analyzers.CodeFixes;
 
@@ -60,7 +61,7 @@ public sealed class MultiArgumentNewlineCodeFixProvider : CodeFixProvider
 
 		context.RegisterCodeFix(
 			CodeAction.Create(
-				title: "Put each argument on separate line",
+				title: CodeFixTitles.PutArgumentsOnSeparateLines,
 				createChangedDocument: cancellationToken => MoveArgumentsToSeparateLinesAsync(
 					context.Document,
 					argumentList,

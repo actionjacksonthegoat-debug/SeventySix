@@ -85,21 +85,10 @@ public class AuthController(
 
 		if (!result.Success)
 		{
-			Logger.LogWarning(
-				"Login failed. Error: {Error}, Code: {ErrorCode}",
-				result.Error,
-				result.ErrorCode);
-
-			return Unauthorized(
-				new ProblemDetails
-				{
-					Title = "Authentication Failed",
-					Detail = result.Error,
-					Status =
-						StatusCodes.Status401Unauthorized,
-					Extensions =
-						{ ["errorCode"] = result.ErrorCode },
-				});
+			return HandleFailedAuthResult(
+				result,
+				"Authentication",
+				StatusCodes.Status401Unauthorized);
 		}
 
 		ValidatedAuthResult validatedResult =
@@ -160,16 +149,10 @@ public class AuthController(
 		{
 			CookieService.ClearRefreshTokenCookie();
 
-			return Unauthorized(
-				new ProblemDetails
-				{
-					Title = "Authentication Failed",
-					Detail = result.Error,
-					Status =
-						StatusCodes.Status401Unauthorized,
-					Extensions =
-						{ ["errorCode"] = result.ErrorCode },
-				});
+			return HandleFailedAuthResult(
+				result,
+				"Authentication",
+				StatusCodes.Status401Unauthorized);
 		}
 
 		ValidatedAuthResult validatedResult =

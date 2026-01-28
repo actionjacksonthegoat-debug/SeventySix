@@ -11,6 +11,7 @@ using NSubstitute;
 using SeventySix.Identity;
 using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.Constants;
+using Shouldly;
 
 namespace SeventySix.Domains.Tests.Identity.Services;
 
@@ -81,15 +82,15 @@ public class TokenServiceUnitTests
 			roles: [TestRoleConstants.Developer, TestRoleConstants.Admin]);
 
 		// Assert
-		Assert.NotNull(token);
-		Assert.NotEmpty(token);
+		token.ShouldNotBeNull();
+		token.ShouldNotBeEmpty();
 
 		JwtSecurityTokenHandler handler = new();
 		JwtSecurityToken jwt =
 			handler.ReadJwtToken(token);
 
-		Assert.Equal(JwtOptions.Value.Issuer, jwt.Issuer);
-		Assert.Contains(JwtOptions.Value.Audience, jwt.Audiences);
+		jwt.Issuer.ShouldBe(JwtOptions.Value.Issuer);
+		jwt.Audiences.ShouldContain(JwtOptions.Value.Audience);
 	}
 
 	/// <summary>
@@ -113,8 +114,8 @@ public class TokenServiceUnitTests
 			jwt.Claims.FirstOrDefault(claim =>
 			claim.Type == JwtRegisteredClaimNames.Sub);
 
-		Assert.NotNull(subClaim);
-		Assert.Equal("42", subClaim.Value);
+		subClaim.ShouldNotBeNull();
+		subClaim.Value.ShouldBe("42");
 	}
 
 	/// <summary>
@@ -139,8 +140,8 @@ public class TokenServiceUnitTests
 			.Select(claim => claim.Value)
 			.ToList();
 
-		Assert.Contains(TestRoleConstants.Developer, roleClaims);
-		Assert.Contains(TestRoleConstants.Admin, roleClaims);
+		roleClaims.ShouldContain(TestRoleConstants.Developer);
+		roleClaims.ShouldContain(TestRoleConstants.Admin);
 	}
 
 	/// <summary>
@@ -162,8 +163,7 @@ public class TokenServiceUnitTests
 			.AddMinutes(JwtOptions.Value.AccessTokenExpirationMinutes)
 			.UtcDateTime;
 
-		Assert.True(
-			Math.Abs((jwt.ValidTo - expectedExpiry).TotalSeconds) < 1,
+		(Math.Abs((jwt.ValidTo - expectedExpiry).TotalSeconds) < 1).ShouldBeTrue(
 			$"Expected expiry around {expectedExpiry}, got {jwt.ValidTo}");
 	}
 

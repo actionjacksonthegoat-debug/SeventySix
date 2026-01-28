@@ -68,7 +68,7 @@ public static class VerifyMfaCommandHandler
 			await userManager.FindByIdAsync(
 				verificationResult.UserId.ToString());
 
-		if (user is null || !user.IsActive)
+		if (!user.IsValidForAuthentication())
 		{
 			return AuthResult.Failed(
 				AuthErrorMessages.InvalidCredentials,

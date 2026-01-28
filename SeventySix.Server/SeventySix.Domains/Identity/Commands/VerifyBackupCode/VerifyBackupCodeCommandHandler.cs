@@ -46,7 +46,7 @@ public static class VerifyBackupCodeCommandHandler
 		ApplicationUser? user =
 			await userManager.FindByEmailAsync(command.Request.Email);
 
-		if (user is null || !user.IsActive)
+		if (!user.IsValidForAuthentication())
 		{
 			return AuthResult.Failed(
 				AuthErrorMessages.InvalidCredentials,

@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using System.Buffers.Text;
 using System.Security.Cryptography;
 using SeventySix.Shared.Constants;
 using ZiggyCreatures.Caching.Fusion;
@@ -112,11 +113,6 @@ public class OAuthCodeExchangeService : IOAuthCodeExchangeService
 		byte[] bytes =
 			RandomNumberGenerator.GetBytes(32);
 
-		// Base64url encoding (no padding, URL-safe)
-		return Convert
-			.ToBase64String(bytes)
-			.Replace("+", "-")
-			.Replace("/", "_")
-			.TrimEnd('=');
+		return Base64Url.EncodeToString(bytes);
 	}
 }

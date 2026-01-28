@@ -2,6 +2,8 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using Shouldly;
+
 namespace SeventySix.Domains.Tests.Identity.Validators;
 
 /// <summary>
@@ -21,7 +23,7 @@ public class UserValidationTestDataTests
 	public void TooShortUsernames_ShouldNotBeEmpty()
 	{
 		// Assert
-		Assert.NotEmpty(UserValidationTestData.TooShortUsernames);
+		((IEnumerable<object[]>)UserValidationTestData.TooShortUsernames).ShouldNotBeEmpty();
 	}
 
 	[Theory]
@@ -33,8 +35,7 @@ public class UserValidationTestDataTests
 		string username)
 	{
 		// Assert - Usernames must be < 3 chars to be "too short"
-		Assert.True(
-			username.Length < 3,
+		(username.Length < 3).ShouldBeTrue(
 			$"Username '{username}' should be less than 3 characters");
 	}
 
@@ -46,7 +47,7 @@ public class UserValidationTestDataTests
 	public void InvalidUsernameCharacters_ShouldNotBeEmpty()
 	{
 		// Assert
-		Assert.NotEmpty(UserValidationTestData.InvalidUsernameCharacters);
+		((IEnumerable<object[]>)UserValidationTestData.InvalidUsernameCharacters).ShouldNotBeEmpty();
 	}
 
 	[Theory]
@@ -61,8 +62,7 @@ public class UserValidationTestDataTests
 		bool hasInvalidChar =
 			username.Any(c =>
 			!char.IsLetterOrDigit(c) && c != '_');
-		Assert.True(
-			hasInvalidChar,
+		hasInvalidChar.ShouldBeTrue(
 			$"Username '{username}' should contain invalid characters");
 	}
 
@@ -74,7 +74,7 @@ public class UserValidationTestDataTests
 	public void ValidUsernames_ShouldNotBeEmpty()
 	{
 		// Assert
-		Assert.NotEmpty(UserValidationTestData.ValidUsernames);
+		((IEnumerable<object[]>)UserValidationTestData.ValidUsernames).ShouldNotBeEmpty();
 	}
 
 	[Theory]
@@ -85,10 +85,9 @@ public class UserValidationTestDataTests
 	public void ValidUsernames_ShouldMeetAllRequirements(string username)
 	{
 		// Assert - Must be 3-50 chars and only alphanumeric/underscore
-		Assert.InRange(username.Length, 3, 50);
-		Assert.All(
-			username,
-			c => Assert.True(char.IsLetterOrDigit(c) || c == '_'));
+		username.Length.ShouldBeInRange(3, 50);
+		username.ShouldAllBe(
+			c => char.IsLetterOrDigit(c) || c == '_');
 	}
 
 	#endregion
@@ -99,7 +98,7 @@ public class UserValidationTestDataTests
 	public void InvalidEmails_ShouldNotBeEmpty()
 	{
 		// Assert
-		Assert.NotEmpty(UserValidationTestData.InvalidEmails);
+		((IEnumerable<object[]>)UserValidationTestData.InvalidEmails).ShouldNotBeEmpty();
 	}
 
 	[Theory]
@@ -118,8 +117,7 @@ public class UserValidationTestDataTests
 			|| email.StartsWith('@')
 			|| email.EndsWith('@');
 
-		Assert.True(
-			isObviouslyInvalid,
+		isObviouslyInvalid.ShouldBeTrue(
 			$"Email '{email}' should be obviously invalid");
 	}
 
@@ -131,7 +129,7 @@ public class UserValidationTestDataTests
 	public void ValidEmails_ShouldNotBeEmpty()
 	{
 		// Assert
-		Assert.NotEmpty(UserValidationTestData.ValidEmails);
+		((IEnumerable<object[]>)UserValidationTestData.ValidEmails).ShouldNotBeEmpty();
 	}
 
 	[Theory]
@@ -144,7 +142,7 @@ public class UserValidationTestDataTests
 		// Assert - Basic structural requirement
 		int atCount =
 			email.Count(c => c == '@');
-		Assert.Equal(1, atCount);
+		atCount.ShouldBe(1);
 	}
 
 	[Theory]
@@ -155,8 +153,7 @@ public class UserValidationTestDataTests
 	public void ValidEmails_ShouldNotExceedMaxLength(string email)
 	{
 		// Assert - Max length is 255
-		Assert.True(
-			email.Length <= 255,
+		(email.Length <= 255).ShouldBeTrue(
 			$"Email '{email}' exceeds 255 characters");
 	}
 

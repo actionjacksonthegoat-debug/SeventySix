@@ -4,6 +4,7 @@
 
 using Microsoft.Extensions.Time.Testing;
 using SeventySix.ApiTracking;
+using Shouldly;
 
 namespace SeventySix.Domains.Tests.ApiTracking.Entities;
 
@@ -38,9 +39,9 @@ public class ThirdPartyApiRequestTests
 		request.IncrementCallCount(timeProvider.GetUtcNow().UtcDateTime);
 
 		// Assert
-		Assert.Equal(6, request.CallCount);
-		Assert.NotNull(request.LastCalledAt);
-		Assert.True(request.LastCalledAt >= beforeTimestamp);
+		request.CallCount.ShouldBe(6);
+		request.LastCalledAt.ShouldNotBeNull();
+		request.LastCalledAt.Value.ShouldBeGreaterThanOrEqualTo(beforeTimestamp);
 	}
 
 	[Fact]
@@ -69,10 +70,10 @@ public class ThirdPartyApiRequestTests
 		DateTime? secondCallTime = request.LastCalledAt;
 
 		// Assert
-		Assert.Equal(2, request.CallCount);
-		Assert.NotNull(firstCallTime);
-		Assert.NotNull(secondCallTime);
-		Assert.True(secondCallTime > firstCallTime);
+		request.CallCount.ShouldBe(2);
+		firstCallTime.ShouldNotBeNull();
+		secondCallTime.ShouldNotBeNull();
+		secondCallTime.Value.ShouldBeGreaterThan(firstCallTime.Value);
 	}
 
 	[Fact]
@@ -100,8 +101,8 @@ public class ThirdPartyApiRequestTests
 		request.ResetCallCount();
 
 		// Assert
-		Assert.Equal(0, request.CallCount);
-		Assert.Equal(lastCalledBefore, request.LastCalledAt); // LastCalledAt preserved for history
+		request.CallCount.ShouldBe(0);
+		request.LastCalledAt.ShouldBe(lastCalledBefore); // LastCalledAt preserved for history
 	}
 
 	[Fact]
@@ -121,14 +122,10 @@ public class ThirdPartyApiRequestTests
 			};
 
 		// Assert
-		Assert.Equal("ExternalAPI", request.ApiName);
-		Assert.Equal(
-			"https://api.ExternalAPImap.org",
-			request.BaseUrl);
-		Assert.Equal(10, request.CallCount);
-		Assert.Equal(
-			DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime),
-			request.ResetDate);
+		request.ApiName.ShouldBe("ExternalAPI");
+		request.BaseUrl.ShouldBe("https://api.ExternalAPImap.org");
+		request.CallCount.ShouldBe(10);
+		request.ResetDate.ShouldBe(DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime));
 	}
 
 	[Fact]
@@ -147,7 +144,7 @@ public class ThirdPartyApiRequestTests
 			};
 
 		// Assert
-		Assert.Equal(0, request.CallCount);
+		request.CallCount.ShouldBe(0);
 	}
 
 	[Fact]
@@ -166,7 +163,7 @@ public class ThirdPartyApiRequestTests
 			};
 
 		// Assert
-		Assert.Null(request.LastCalledAt);
+		request.LastCalledAt.ShouldBeNull();
 	}
 
 	[Fact]
@@ -191,7 +188,7 @@ public class ThirdPartyApiRequestTests
 		}
 
 		// Assert
-		Assert.Equal(100, request.CallCount);
-		Assert.NotNull(request.LastCalledAt);
+		request.CallCount.ShouldBe(100);
+		request.LastCalledAt.ShouldNotBeNull();
 	}
 }

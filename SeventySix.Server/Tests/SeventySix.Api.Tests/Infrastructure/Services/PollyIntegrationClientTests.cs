@@ -10,6 +10,7 @@ using SeventySix.Api.Infrastructure;
 using SeventySix.Shared.Interfaces;
 using SeventySix.Shared.Settings;
 using SeventySix.TestUtilities.TestHelpers;
+using Shouldly;
 
 namespace SeventySix.Api.Tests.Infrastructure.Services;
 
@@ -89,8 +90,8 @@ public class PollyIntegrationClientTests : IDisposable
 			cacheKey);
 
 		// Assert
-		Assert.NotNull(result);
-		Assert.Equal("cached", result.Value);
+		result.ShouldNotBeNull();
+		result.Value.ShouldBe("cached");
 		await RateLimiter
 			.DidNotReceive()
 			.CanMakeRequestAsync(
@@ -115,7 +116,7 @@ public class PollyIntegrationClientTests : IDisposable
 		PollyIntegrationClient sut = CreateSut();
 
 		// Act & Assert
-		await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+		await Should.ThrowAsync<InvalidOperationException>(async () =>
 			await sut.GetAsync<TestResponse>(url, apiName));
 	}
 
@@ -149,8 +150,8 @@ public class PollyIntegrationClientTests : IDisposable
 			cacheKey);
 
 		// Assert
-		Assert.NotNull(result);
-		Assert.Equal("success", result.Value);
+		result.ShouldNotBeNull();
+		result.Value.ShouldBe("success");
 		await RateLimiter
 			.Received(1)
 			.TryIncrementRequestCountAsync(
@@ -159,12 +160,10 @@ public class PollyIntegrationClientTests : IDisposable
 				Arg.Any<CancellationToken>());
 
 		// Verify cached
-		Assert.True(Cache.TryGetValue(
+		Cache.TryGetValue(
 			cacheKey,
-			out TestResponse? cached));
-		Assert.Equal(
-			"success",
-			cached?.Value);
+			out TestResponse? cached).ShouldBeTrue();
+		cached?.Value.ShouldBe("success");
 	}
 
 	[Fact]
@@ -174,7 +173,7 @@ public class PollyIntegrationClientTests : IDisposable
 		PollyIntegrationClient sut = CreateSut();
 
 		// Act & Assert
-		await Assert.ThrowsAsync<ArgumentNullException>(async () =>
+		await Should.ThrowAsync<ArgumentNullException>(async () =>
 			await sut.GetAsync<TestResponse>(
 				null!,
 				"TestApi"));
@@ -187,7 +186,7 @@ public class PollyIntegrationClientTests : IDisposable
 		PollyIntegrationClient sut = CreateSut();
 
 		// Act & Assert
-		await Assert.ThrowsAsync<ArgumentNullException>(async () =>
+		await Should.ThrowAsync<ArgumentNullException>(async () =>
 			await sut.GetAsync<TestResponse>(
 				"/test",
 				null!));
@@ -211,7 +210,7 @@ public class PollyIntegrationClientTests : IDisposable
 			await sut.CanMakeRequestAsync(apiName);
 
 		// Assert
-		Assert.True(result);
+		result.ShouldBeTrue();
 		await RateLimiter
 			.Received(1)
 			.CanMakeRequestAsync(
@@ -237,7 +236,7 @@ public class PollyIntegrationClientTests : IDisposable
 			await sut.GetRemainingQuotaAsync(apiName);
 
 		// Assert
-		Assert.Equal(500, result);
+		result.ShouldBe(500);
 		await RateLimiter
 			.Received(1)
 			.GetRemainingQuotaAsync(

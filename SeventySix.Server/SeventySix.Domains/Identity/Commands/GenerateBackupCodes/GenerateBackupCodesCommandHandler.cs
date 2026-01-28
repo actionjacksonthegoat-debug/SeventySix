@@ -42,7 +42,7 @@ public static class GenerateBackupCodesCommandHandler
 		ApplicationUser? user =
 			await userManager.FindByIdAsync(command.UserId.ToString());
 
-		if (user is null || !user.IsActive)
+		if (!user.IsValidForAuthentication())
 		{
 			return BackupCodesResult.Failed(
 				AuthErrorMessages.InvalidCredentials,

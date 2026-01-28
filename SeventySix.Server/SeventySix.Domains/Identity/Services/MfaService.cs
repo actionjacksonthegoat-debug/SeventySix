@@ -6,6 +6,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
+using SeventySix.Shared.Extensions;
 
 namespace SeventySix.Identity;
 
@@ -60,7 +61,9 @@ public sealed class MfaService(
 		string code =
 			GenerateCode();
 		string codeHash =
-			ComputeSha256Hash(code);
+			CryptoExtensions.ComputeSha256Hash(
+				code,
+				useLowercase: true);
 		string challengeToken =
 			Guid.NewGuid().ToString("N");
 
@@ -134,7 +137,9 @@ public sealed class MfaService(
 		}
 
 		string providedHash =
-			ComputeSha256Hash(code);
+			CryptoExtensions.ComputeSha256Hash(
+				code,
+				useLowercase: true);
 
 		// OWASP: Timing-safe comparison prevents timing attacks
 		bool isValid =
@@ -216,7 +221,9 @@ public sealed class MfaService(
 		string newCode =
 			GenerateCode();
 		string newCodeHash =
-			ComputeSha256Hash(newCode);
+			CryptoExtensions.ComputeSha256Hash(
+				newCode,
+				useLowercase: true);
 
 		challenge.CodeHash =
 			newCodeHash;
@@ -235,13 +242,5 @@ public sealed class MfaService(
 			challenge.UserId,
 			user.Email ?? string.Empty,
 			newCode);
-	}
-
-	private static string ComputeSha256Hash(string input)
-	{
-		byte[] bytes =
-			SHA256.HashData(Encoding.UTF8.GetBytes(input));
-
-		return Convert.ToHexString(bytes).ToLowerInvariant();
 	}
 }

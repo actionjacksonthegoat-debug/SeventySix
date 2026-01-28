@@ -188,7 +188,7 @@ public class PollyResiliencePolicyTests
 		}
 
 		// Assert - Circuit should now be open
-		await Assert.ThrowsAnyAsync<Exception>(async () =>
+		await Should.ThrowAsync<Exception>(async () =>
 			await client.GetAsync<dynamic>(
 				"test",
 				"TestApi",
@@ -265,7 +265,7 @@ public class PollyResiliencePolicyTests
 			options);
 
 		// Act & Assert
-		await Assert.ThrowsAnyAsync<Exception>(async () =>
+		await Should.ThrowAsync<Exception>(async () =>
 			await client.GetAsync<dynamic>(
 				"test",
 				"TestApi",

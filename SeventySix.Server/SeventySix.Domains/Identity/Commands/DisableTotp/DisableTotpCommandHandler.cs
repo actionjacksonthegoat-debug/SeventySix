@@ -39,7 +39,7 @@ public static class DisableTotpCommandHandler
 		ApplicationUser? user =
 			await userManager.FindByIdAsync(command.UserId.ToString());
 
-		if (user is null || !user.IsActive)
+		if (!user.IsValidForAuthentication())
 		{
 			return Result.Failure(AuthErrorMessages.InvalidCredentials);
 		}

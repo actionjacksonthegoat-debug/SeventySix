@@ -11,6 +11,7 @@ using SeventySix.ApiTracking;
 using SeventySix.Shared;
 using SeventySix.Shared.Constants;
 using SeventySix.Shared.Interfaces;
+using Shouldly;
 
 namespace SeventySix.Api.Tests.Infrastructure.Services;
 
@@ -112,7 +113,7 @@ public class RateLimitingServiceTests
 		bool result =
 			await sut.CanMakeRequestAsync(apiName);
 
-		Assert.True(result);
+		result.ShouldBeTrue();
 	}
 
 	[Fact]
@@ -147,7 +148,7 @@ public class RateLimitingServiceTests
 		bool result =
 			await sut.CanMakeRequestAsync(apiName);
 
-		Assert.True(result);
+		result.ShouldBeTrue();
 	}
 
 	[Fact]
@@ -182,7 +183,7 @@ public class RateLimitingServiceTests
 		bool result =
 			await sut.CanMakeRequestAsync(apiName);
 
-		Assert.False(result);
+		result.ShouldBeFalse();
 	}
 
 	[Fact]
@@ -214,7 +215,7 @@ public class RateLimitingServiceTests
 		bool result =
 			await sut.TryIncrementRequestCountAsync(apiName, baseUrl);
 
-		Assert.True(result);
+		result.ShouldBeTrue();
 		await Repository
 			.Received(1)
 			.CreateAsync(
@@ -265,8 +266,8 @@ public class RateLimitingServiceTests
 		bool result =
 			await sut.TryIncrementRequestCountAsync(apiName, baseUrl);
 
-		Assert.True(result);
-		Assert.Equal(6, request.CallCount);
+		result.ShouldBeTrue();
+		request.CallCount.ShouldBe(6);
 		await Repository
 			.Received(1)
 			.UpdateAsync(
@@ -307,8 +308,8 @@ public class RateLimitingServiceTests
 		bool result =
 			await sut.TryIncrementRequestCountAsync(apiName, baseUrl);
 
-		Assert.False(result);
-		Assert.Equal(1000, request.CallCount);
+		result.ShouldBeFalse();
+		request.CallCount.ShouldBe(1000);
 		await Repository
 			.DidNotReceive()
 			.UpdateAsync(
@@ -332,7 +333,7 @@ public class RateLimitingServiceTests
 		int count =
 			await sut.GetRequestCountAsync(apiName);
 
-		Assert.Equal(0, count);
+		count.ShouldBe(0);
 	}
 
 	[Fact]
@@ -351,7 +352,7 @@ public class RateLimitingServiceTests
 		int remaining =
 			await sut.GetRemainingQuotaAsync(apiName);
 
-		Assert.Equal(1000, remaining);
+		remaining.ShouldBe(1000);
 	}
 
 	[Fact]
@@ -361,8 +362,8 @@ public class RateLimitingServiceTests
 
 		TimeSpan timeUntilReset = sut.GetTimeUntilReset();
 
-		Assert.True(timeUntilReset.TotalSeconds > 0);
-		Assert.True(timeUntilReset.TotalHours <= 24);
+		(timeUntilReset.TotalSeconds > 0).ShouldBeTrue();
+		(timeUntilReset.TotalHours <= 24).ShouldBeTrue();
 	}
 
 	[Fact]
@@ -415,7 +416,7 @@ public class RateLimitingServiceTests
 			ExternalApiConstants.BrevoEmail,
 			CancellationToken.None);
 
-		Assert.True(canMake);
+		canMake.ShouldBeTrue();
 	}
 
 	[Fact]
@@ -436,6 +437,6 @@ public class RateLimitingServiceTests
 			ExternalApiConstants.BrevoEmail,
 			CancellationToken.None);
 
-		Assert.True(canMake);
+		canMake.ShouldBeTrue();
 	}
 }

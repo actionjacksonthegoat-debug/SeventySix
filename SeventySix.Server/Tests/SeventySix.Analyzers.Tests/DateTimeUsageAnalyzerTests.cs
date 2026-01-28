@@ -2,88 +2,97 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using static SeventySix.Analyzers.Tests.AnalyzerTestHelpers;
+
 namespace SeventySix.Analyzers.Tests;
 
+/// <summary>
+/// Tests for SS004 - DateTime usage analyzer.
+/// Enforces TimeProvider injection over direct DateTime access.
+/// Follows 80/20 rule: critical paths only.
+/// </summary>
 public class DateTimeUsageAnalyzerTests
 {
 	[Fact]
-	public Task Flags_DateTime_UtcNow_MemberAccess()
+	public async Task DateTime_UtcNow_MemberAccess_ReportsDiagnosticAsync()
 	{
-		string source =
-			@"using System;
-namespace N
-{
-	public class C
-	{
-		public void M()
-		{
-			var now = DateTime.UtcNow;
-		}
-	}
-}";
+		const string source = """
+			using System;
+			namespace TestNamespace
+			{
+				public class TestClass
+				{
+					public void TestMethod()
+					{
+						var now = DateTime.UtcNow;
+					}
+				}
+			}
+			""";
 
-		// Expect diagnostic on the member access expression (DateTime.UtcNow)
-		return AnalyzerTestHelpers.VerifyAnalyzerAsync<DateTimeUsageAnalyzer>(
+		await VerifyAnalyzerAsync<DateTimeUsageAnalyzer>(
 			source,
-			AnalyzerTestHelpers.ExpectSS004(8, 14));
+			ExpectSS004(8, 14));
 	}
 
 	[Fact]
-	public Task Flags_New_DateTime_ObjectCreation()
+	public async Task DateTime_ObjectCreation_ReportsDiagnosticAsync()
 	{
-		string source =
-			@"using System;
-namespace N
-{
-	public class C
-	{
-		public void M()
-		{
-			var d = new DateTime(2020, 1, 1);
-		}
-	}
-}";
+		const string source = """
+			using System;
+			namespace TestNamespace
+			{
+				public class TestClass
+				{
+					public void TestMethod()
+					{
+						var dateValue = new DateTime(2020, 1, 1);
+					}
+				}
+			}
+			""";
 
-		return AnalyzerTestHelpers.VerifyAnalyzerAsync<DateTimeUsageAnalyzer>(
+		await VerifyAnalyzerAsync<DateTimeUsageAnalyzer>(
 			source,
-			AnalyzerTestHelpers.ExpectSS004(8, 12));
+			ExpectSS004(8, 20));
 	}
 
 	[Fact]
-	public Task Flags_System_DateTime_QualifiedName()
+	public async Task SystemDateTime_QualifiedName_ReportsDiagnosticAsync()
 	{
-		string source =
-			@"namespace N
-{
-	public class C
-	{
-		System.DateTime dt = System.DateTime.Now;
-	}
-}";
+		const string source = """
+			namespace TestNamespace
+			{
+				public class TestClass
+				{
+					System.DateTime dateField = System.DateTime.Now;
+				}
+			}
+			""";
 
-		return AnalyzerTestHelpers.VerifyAnalyzerAsync<DateTimeUsageAnalyzer>(
+		await VerifyAnalyzerAsync<DateTimeUsageAnalyzer>(
 			source,
-			AnalyzerTestHelpers.ExpectSS004(5, 3),
-			AnalyzerTestHelpers.ExpectSS004(5, 24));
+			ExpectSS004(5, 3),
+			ExpectSS004(5, 31));
 	}
 
 	[Fact]
-	public Task DoesNotFlag_DateTimeOffset()
+	public async Task DateTimeOffset_Usage_NoDiagnosticAsync()
 	{
-		string source =
-			@"using System;
-namespace N
-{
-	public class C
-	{
-		public void M()
-		{
-			var x = DateTimeOffset.Now;
-		}
-	}
-}";
+		const string source = """
+			using System;
+			namespace TestNamespace
+			{
+				public class TestClass
+				{
+					public void TestMethod()
+					{
+						var offsetValue = DateTimeOffset.Now;
+					}
+				}
+			}
+			""";
 
-		return AnalyzerTestHelpers.VerifyNoDiagnosticsAsync<DateTimeUsageAnalyzer>(
-			source);
+		await VerifyNoDiagnosticsAsync<DateTimeUsageAnalyzer>(source);
 	}
 }

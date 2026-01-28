@@ -7,6 +7,7 @@ using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using SeventySix.Shared.Constants;
+using SeventySix.Shared.Extensions;
 
 namespace SeventySix.Identity;
 
@@ -28,11 +29,6 @@ public sealed class TrustedDeviceService(
 	TimeProvider timeProvider)
 	: ITrustedDeviceService
 {
-	/// <summary>
-	/// Token length in bytes (256 bits for strong randomness).
-	/// </summary>
-	private const int TokenLengthBytes = 32;
-
 	/// <inheritdoc/>
 	public async Task<string> CreateTrustedDeviceAsync(
 		long userId,
@@ -46,9 +42,9 @@ public sealed class TrustedDeviceService(
 			cancellationToken);
 
 		string plainToken =
-			GenerateSecureToken();
+			CryptoExtensions.GenerateSecureTokenHex();
 		string tokenHash =
-			ComputeSha256Hash(plainToken);
+			CryptoExtensions.ComputeSha256Hash(plainToken, useLowercase: true);
 		string deviceFingerprint =
 			ComputeDeviceFingerprint(userAgent, ipAddress);
 		string? deviceName =
@@ -89,7 +85,7 @@ public sealed class TrustedDeviceService(
 		}
 
 		string tokenHash =
-			ComputeSha256Hash(token);
+			CryptoExtensions.ComputeSha256Hash(token, useLowercase: true);
 		DateTime now =
 			timeProvider.GetUtcNow().UtcDateTime;
 
@@ -232,38 +228,6 @@ public sealed class TrustedDeviceService(
 	}
 
 	/// <summary>
-	/// Generates a cryptographically secure random token.
-	/// </summary>
-	/// <returns>
-	/// A hex-encoded token.
-	/// </returns>
-	private static string GenerateSecureToken()
-	{
-		byte[] tokenBytes =
-			new byte[TokenLengthBytes];
-		RandomNumberGenerator.Fill(tokenBytes);
-
-		return Convert.ToHexString(tokenBytes).ToLowerInvariant();
-	}
-
-	/// <summary>
-	/// Computes SHA256 hash of the input.
-	/// </summary>
-	/// <param name="input">
-	/// The string to hash.
-	/// </param>
-	/// <returns>
-	/// Lowercase hex-encoded hash.
-	/// </returns>
-	private static string ComputeSha256Hash(string input)
-	{
-		byte[] hashBytes =
-			SHA256.HashData(Encoding.UTF8.GetBytes(input));
-
-		return Convert.ToHexString(hashBytes).ToLowerInvariant();
-	}
-
-	/// <summary>
 	/// Computes a device fingerprint from User-Agent and IP prefix.
 	/// </summary>
 	/// <param name="userAgent">
@@ -286,7 +250,7 @@ public sealed class TrustedDeviceService(
 		string fingerprintData =
 			$"{userAgent}|{ipPrefix}";
 
-		return ComputeSha256Hash(fingerprintData);
+		return CryptoExtensions.ComputeSha256Hash(fingerprintData, useLowercase: true);
 	}
 
 	/// <summary>

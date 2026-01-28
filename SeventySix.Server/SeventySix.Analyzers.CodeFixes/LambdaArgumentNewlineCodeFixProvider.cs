@@ -12,6 +12,7 @@ using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
+using SeventySix.Analyzers;
 
 namespace SeventySix.Analyzers.CodeFixes;
 
@@ -60,7 +61,7 @@ public sealed class LambdaArgumentNewlineCodeFixProvider : CodeFixProvider
 
 		context.RegisterCodeFix(
 			CodeAction.Create(
-				title: "Move lambda to new line",
+				title: CodeFixTitles.MoveLambdaToNewLine,
 				createChangedDocument: cancellationToken => MoveLambdaToNewLineAsync(
 					context.Document,
 					argument,

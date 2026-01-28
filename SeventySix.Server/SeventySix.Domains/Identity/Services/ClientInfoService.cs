@@ -24,6 +24,12 @@ namespace SeventySix.Identity;
 public class ClientInfoService(
 	IHttpContextAccessor httpContextAccessor) : IClientInfoService
 {
+	/// <summary>
+	/// Maximum length for user agent strings before truncation.
+	/// Matches database column constraint.
+	/// </summary>
+	private const int MaxUserAgentLength = 500;
+
 	/// <inheritdoc/>
 	public string? ExtractClientIp()
 	{
@@ -55,9 +61,9 @@ public class ClientInfoService(
 			httpContext.Request.Headers.UserAgent.ToString();
 
 		// Truncate to max storage length if needed
-		if (userAgent is not null && userAgent.Length > 500)
+		if (userAgent is not null && userAgent.Length > MaxUserAgentLength)
 		{
-			return userAgent[..500];
+			return userAgent[..MaxUserAgentLength];
 		}
 
 		return string.IsNullOrWhiteSpace(userAgent) ? null : userAgent;

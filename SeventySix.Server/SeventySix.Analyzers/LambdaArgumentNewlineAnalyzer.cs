@@ -27,7 +27,7 @@ public sealed class LambdaArgumentNewlineAnalyzer : DiagnosticAnalyzer
 		DiagnosticId,
 		"Block lambda should start on new line",
 		"Block lambda argument should start on a new line after '('",
-		"Formatting",
+		DiagnosticCategories.Formatting,
 		DiagnosticSeverity.Warning,
 		isEnabledByDefault: true,
 		description: "Lambda arguments with block bodies should start on their own line after the opening parenthesis for readability.");

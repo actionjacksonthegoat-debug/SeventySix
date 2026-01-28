@@ -18,8 +18,8 @@ public static class ApplicationServicesRegistration
 	/// </summary>
 	/// <remarks>
 	/// Reads configuration sections:
-	/// - "Polly" (via PollyOptions.SECTION_NAME)
-	/// - "OutputCache" (via OutputCacheOptions.SECTION_NAME)
+	/// - "Polly" (via PollyOptions.SectionName)
+	/// - "OutputCache" (via OutputCacheOptions.SectionName)
 	/// </remarks>
 	/// <param name="services">
 	/// The service collection.
@@ -36,19 +36,19 @@ public static class ApplicationServicesRegistration
 	{
 		// Configuration options with validation
 		services.Configure<PollyOptions>(
-			configuration.GetSection(PollyOptions.SECTION_NAME));
+			configuration.GetSection(PollyOptions.SectionName));
 
 		services.Configure<OutputCacheOptions>(
-			configuration.GetSection(OutputCacheOptions.SECTION_NAME));
+			configuration.GetSection(OutputCacheOptions.SectionName));
 
 		services
 			.AddOptions<PollyOptions>()
-			.Bind(configuration.GetSection(PollyOptions.SECTION_NAME))
+			.Bind(configuration.GetSection(PollyOptions.SectionName))
 			.ValidateOnStart();
 
 		services
 			.AddOptions<OutputCacheOptions>()
-			.Bind(configuration.GetSection(OutputCacheOptions.SECTION_NAME))
+			.Bind(configuration.GetSection(OutputCacheOptions.SectionName))
 			.ValidateOnStart();
 
 		// Note: FluentValidation, Repositories, and Business Services

@@ -5,6 +5,7 @@
 using Microsoft.Extensions.Time.Testing;
 using SeventySix.Identity;
 using SeventySix.TestUtilities.Builders;
+using Shouldly;
 
 namespace SeventySix.Domains.Tests.Identity.Extensions;
 
@@ -49,13 +50,13 @@ public class UserExtensionsTests
 		UserDto dto = user.ToDto();
 
 		// Assert
-		Assert.NotNull(dto);
-		Assert.Equal(123, dto.Id);
-		Assert.Equal("john_doe", dto.Username);
-		Assert.Equal("john@example.com", dto.Email);
-		Assert.Equal("John Doe", dto.FullName);
-		Assert.Equal(createDate, dto.CreateDate);
-		Assert.True(dto.IsActive);
+		dto.ShouldNotBeNull();
+		dto.Id.ShouldBe(123);
+		dto.Username.ShouldBe("john_doe");
+		dto.Email.ShouldBe("john@example.com");
+		dto.FullName.ShouldBe("John Doe");
+		dto.CreateDate.ShouldBe(createDate);
+		dto.IsActive.ShouldBeTrue();
 	}
 
 	[Fact]
@@ -76,8 +77,8 @@ public class UserExtensionsTests
 		UserDto dto = user.ToDto();
 
 		// Assert
-		Assert.NotNull(dto);
-		Assert.Null(dto.FullName);
+		dto.ShouldNotBeNull();
+		dto.FullName.ShouldBeNull();
 	}
 
 	[Fact]
@@ -97,8 +98,8 @@ public class UserExtensionsTests
 		UserDto dto = user.ToDto();
 
 		// Assert
-		Assert.NotNull(dto);
-		Assert.False(dto.IsActive);
+		dto.ShouldNotBeNull();
+		dto.IsActive.ShouldBeFalse();
 	}
 
 	[Fact]
@@ -108,7 +109,7 @@ public class UserExtensionsTests
 		ApplicationUser? user = null;
 
 		// Act & Assert
-		Assert.Throws<ArgumentNullException>(() => user!.ToDto());
+		Should.Throw<ArgumentNullException>(() => user!.ToDto());
 	}
 
 	[Fact]
@@ -145,17 +146,11 @@ public class UserExtensionsTests
 			[.. users.ToDto()];
 
 		// Assert
-		Assert.NotNull(dtos);
-		Assert.Equal(3, dtos.Count);
-		Assert.Equal(
-			"user1",
-			dtos[0].Username);
-		Assert.Equal(
-			"user2",
-			dtos[1].Username);
-		Assert.Equal(
-			"user3",
-			dtos[2].Username);
+		dtos.ShouldNotBeNull();
+		dtos.Count.ShouldBe(3);
+		dtos[0].Username.ShouldBe("user1");
+		dtos[1].Username.ShouldBe("user2");
+		dtos[2].Username.ShouldBe("user3");
 	}
 
 	[Fact]
@@ -169,8 +164,8 @@ public class UserExtensionsTests
 			[.. users.ToDto()];
 
 		// Assert
-		Assert.NotNull(dtos);
-		Assert.Empty(dtos);
+		dtos.ShouldNotBeNull();
+		dtos.ShouldBeEmpty();
 	}
 
 	[Fact]
@@ -180,7 +175,7 @@ public class UserExtensionsTests
 		IEnumerable<ApplicationUser>? users = null;
 
 		// Act & Assert
-		Assert.Throws<ArgumentNullException>(() => users!.ToDto());
+		Should.Throw<ArgumentNullException>(() => users!.ToDto());
 	}
 
 	[Fact]
@@ -200,16 +195,14 @@ public class UserExtensionsTests
 		ApplicationUser entity = request.ToEntity();
 
 		// Assert
-		Assert.NotNull(entity);
-		Assert.Equal(0, entity.Id); // Id should not be set (auto-generated)
-		Assert.Equal("new_user", entity.UserName);
-		Assert.Equal("new@example.com", entity.Email);
-		Assert.Equal("New User", entity.FullName);
-		Assert.True(entity.IsActive);
+		entity.ShouldNotBeNull();
+		entity.Id.ShouldBe(0); // Id should not be set (auto-generated)
+		entity.UserName.ShouldBe("new_user");
+		entity.Email.ShouldBe("new@example.com");
+		entity.FullName.ShouldBe("New User");
+		entity.IsActive.ShouldBeTrue();
 		// Note: CreateDate is set by AuditInterceptor on SaveChanges, not during mapping
-		Assert.Equal(
-			default(DateTime),
-			entity.CreateDate);
+		entity.CreateDate.ShouldBe(default(DateTime));
 	}
 
 	[Fact]
@@ -229,10 +222,8 @@ public class UserExtensionsTests
 		ApplicationUser entity = request.ToEntity();
 
 		// Assert
-		Assert.NotNull(entity);
-		Assert.Equal(
-			string.Empty,
-			entity.FullName);
+		entity.ShouldNotBeNull();
+		entity.FullName.ShouldBe(string.Empty);
 	}
 
 	[Fact]
@@ -252,8 +243,8 @@ public class UserExtensionsTests
 		ApplicationUser entity = request.ToEntity();
 
 		// Assert
-		Assert.NotNull(entity);
-		Assert.False(entity.IsActive);
+		entity.ShouldNotBeNull();
+		entity.IsActive.ShouldBeFalse();
 	}
 
 	[Fact]
@@ -272,9 +263,7 @@ public class UserExtensionsTests
 		ApplicationUser entity = request.ToEntity();
 
 		// Assert - CreateDate defaults to MinValue, interceptor sets it on SaveChanges
-		Assert.Equal(
-			default(DateTime),
-			entity.CreateDate);
+		entity.CreateDate.ShouldBe(default(DateTime));
 	}
 
 	[Fact]
@@ -284,7 +273,7 @@ public class UserExtensionsTests
 		CreateUserRequest? request = null;
 
 		// Act & Assert
-		Assert.Throws<ArgumentNullException>(() => request!.ToEntity());
+		Should.Throw<ArgumentNullException>(() => request!.ToEntity());
 	}
 
 	[Fact]
@@ -304,7 +293,7 @@ public class UserExtensionsTests
 
 		// Assert
 		// Id should remain 0 (default) as it will be set by the database
-		Assert.Equal(0, entity.Id);
+		entity.Id.ShouldBe(0);
 	}
 
 	[Theory]
@@ -328,8 +317,8 @@ public class UserExtensionsTests
 		ApplicationUser entity = request.ToEntity();
 
 		// Assert
-		Assert.Equal(username, entity.UserName);
-		Assert.Equal(email, entity.Email);
+		entity.UserName.ShouldBe(username);
+		entity.Email.ShouldBe(email);
 	}
 
 	[Fact]
@@ -355,10 +344,10 @@ public class UserExtensionsTests
 		UserDto dto = user.ToDto();
 
 		// Assert
-		Assert.NotNull(dto);
-		Assert.True(dto.IsDeleted);
-		Assert.Equal(deletedAt, dto.DeletedAt);
-		Assert.Equal("admin", dto.DeletedBy);
+		dto.ShouldNotBeNull();
+		dto.IsDeleted.ShouldBeTrue();
+		dto.DeletedAt.ShouldBe(deletedAt);
+		dto.DeletedBy.ShouldBe("admin");
 	}
 
 	[Fact]
@@ -378,9 +367,9 @@ public class UserExtensionsTests
 		UserDto dto = user.ToDto();
 
 		// Assert
-		Assert.NotNull(dto);
-		Assert.False(dto.IsDeleted);
-		Assert.Null(dto.DeletedAt);
-		Assert.Null(dto.DeletedBy);
+		dto.ShouldNotBeNull();
+		dto.IsDeleted.ShouldBeFalse();
+		dto.DeletedAt.ShouldBeNull();
+		dto.DeletedBy.ShouldBeNull();
 	}
 }

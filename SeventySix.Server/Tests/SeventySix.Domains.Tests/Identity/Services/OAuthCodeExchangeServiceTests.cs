@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using SeventySix.Identity;
 using SeventySix.Shared.Constants;
+using Shouldly;
 using ZiggyCreatures.Caching.Fusion;
 
 namespace SeventySix.Domains.Tests.Identity.Services;
@@ -64,8 +65,8 @@ public class OAuthCodeExchangeServiceTests
 			TestFullName);
 
 		// Assert
-		Assert.NotNull(code);
-		Assert.NotEmpty(code);
+		code.ShouldNotBeNull();
+		code.ShouldNotBeEmpty();
 	}
 
 	/// <summary>
@@ -95,7 +96,7 @@ public class OAuthCodeExchangeServiceTests
 			TestFullName);
 
 		// Assert
-		Assert.NotEqual(code1, code2);
+		code1.ShouldNotBe(code2);
 	}
 
 	/// <summary>
@@ -117,7 +118,7 @@ public class OAuthCodeExchangeServiceTests
 			TestFullName);
 
 		// Assert - Base64url uses only these characters
-		Assert.Matches("^[A-Za-z0-9_-]+$", code);
+		code.ShouldMatch("^[A-Za-z0-9_-]+$");
 	}
 
 	#endregion
@@ -149,12 +150,12 @@ public class OAuthCodeExchangeServiceTests
 			service.ExchangeCode(code);
 
 		// Assert
-		Assert.NotNull(result);
-		Assert.Equal(accessToken, result.AccessToken);
-		Assert.Equal(refreshToken, result.RefreshToken);
-		Assert.Equal(FixedExpiresAt, result.ExpiresAt);
-		Assert.Equal(TestEmail, result.Email);
-		Assert.Equal(TestFullName, result.FullName);
+		result.ShouldNotBeNull();
+		result.AccessToken.ShouldBe(accessToken);
+		result.RefreshToken.ShouldBe(refreshToken);
+		result.ExpiresAt.ShouldBe(FixedExpiresAt);
+		result.Email.ShouldBe(TestEmail);
+		result.FullName.ShouldBe(TestFullName);
 	}
 
 	/// <summary>
@@ -171,7 +172,7 @@ public class OAuthCodeExchangeServiceTests
 			service.ExchangeCode("invalid-code");
 
 		// Assert
-		Assert.Null(result);
+		result.ShouldBeNull();
 	}
 
 	/// <summary>
@@ -199,8 +200,8 @@ public class OAuthCodeExchangeServiceTests
 			service.ExchangeCode(code);
 
 		// Assert
-		Assert.NotNull(firstResult);
-		Assert.Null(secondResult);
+		firstResult.ShouldNotBeNull();
+		secondResult.ShouldBeNull();
 	}
 
 	/// <summary>
@@ -217,7 +218,7 @@ public class OAuthCodeExchangeServiceTests
 			service.ExchangeCode(string.Empty);
 
 		// Assert
-		Assert.Null(result);
+		result.ShouldBeNull();
 	}
 
 	#endregion
@@ -243,7 +244,7 @@ public class OAuthCodeExchangeServiceTests
 			TestFullName);
 
 		// Assert - 32 bytes = 43 base64url characters (no padding)
-		Assert.Equal(43, code.Length);
+		code.Length.ShouldBe(43);
 	}
 
 	/// <summary>
@@ -272,7 +273,7 @@ public class OAuthCodeExchangeServiceTests
 		}
 
 		// Assert - All codes should be unique
-		Assert.Equal(100, codes.Count);
+		codes.Count.ShouldBe(100);
 	}
 
 	#endregion

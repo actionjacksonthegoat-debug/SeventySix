@@ -6,6 +6,7 @@ using System.Net;
 using SeventySix.Api.Tests.Fixtures;
 using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;
+using Shouldly;
 
 namespace SeventySix.Api.Tests.HealthChecks;
 
@@ -32,10 +33,10 @@ public class HealthCheckTests(IdentityHealthApiPostgreSqlFixture fixture)
 			await client.GetAsync("/health");
 
 		// Assert
-		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+		response.StatusCode.ShouldBe(HttpStatusCode.OK);
 
 		string content =
 			await response.Content.ReadAsStringAsync();
-		Assert.Contains("Healthy", content);
+		content.ShouldContain("Healthy");
 	}
 }

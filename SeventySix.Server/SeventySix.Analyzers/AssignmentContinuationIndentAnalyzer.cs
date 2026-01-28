@@ -7,6 +7,8 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
+using SeventySix.Analyzers.Constants;
+using SeventySix.Analyzers.Helpers;
 
 namespace SeventySix.Analyzers;
 
@@ -26,7 +28,7 @@ public sealed class AssignmentContinuationIndentAnalyzer : DiagnosticAnalyzer
 		DiagnosticId,
 		"Assignment continuation indent incorrect",
 		"Continuation line after '=' should be indented one level deeper",
-		"Formatting",
+		DiagnosticCategories.Formatting,
 		DiagnosticSeverity.Warning,
 		isEnabledByDefault: true,
 		description: "When a value starts on a new line after '=', it should be indented one tab deeper than the containing statement."
@@ -199,10 +201,10 @@ public sealed class AssignmentContinuationIndentAnalyzer : DiagnosticAnalyzer
 		}
 
 		// Get indentation of 'new' keyword
-		string newKeywordIndent = GetLeadingWhitespaceFromToken(newKeyword);
+		string newKeywordIndent = SyntaxHelpers.GetLeadingWhitespace(newKeyword);
 
 		// Get indentation of open brace
-		string braceIndent = GetLeadingWhitespaceFromToken(openBrace);
+		string braceIndent = SyntaxHelpers.GetLeadingWhitespace(openBrace);
 
 		// Flag brace if it's at wrong indent (less than 'new' keyword)
 		bool braceNeedsFixing = braceIndent.Length < newKeywordIndent.Length;
@@ -266,17 +268,17 @@ public sealed class AssignmentContinuationIndentAnalyzer : DiagnosticAnalyzer
 		SyntaxToken commaToken = expressions.GetSeparator(0);
 
 		// Check if value starts on a new line after comma
-		if (!HasNewlineAfterToken(commaToken))
+		if (!SyntaxHelpers.HasNewlineAfterToken(commaToken))
 		{
 			return; // Value is on same line as key, no indent check needed
 		}
 
 		// Get the indentation of the value expression
-		string valueIndent = GetLeadingWhitespace(valueExpression);
+		string valueIndent = SyntaxHelpers.GetLeadingWhitespace(valueExpression);
 
 		// Get the expected indentation (same as the key for dictionary entries)
 		ExpressionSyntax keyExpression = expressions[0];
-		string keyIndent = GetLeadingWhitespace(keyExpression);
+		string keyIndent = SyntaxHelpers.GetLeadingWhitespace(keyExpression);
 		string expectedIndent = keyIndent;
 
 		// Check if indentation is correct
@@ -302,17 +304,17 @@ public sealed class AssignmentContinuationIndentAnalyzer : DiagnosticAnalyzer
 	)
 	{
 		// Check if there's a newline after the equals token
-		if (!HasNewlineAfterToken(equalsToken))
+		if (!SyntaxHelpers.HasNewlineAfterToken(equalsToken))
 		{
 			return; // SS001 handles this case
 		}
 
 		// Get the indentation of the value expression
-		string valueIndent = GetLeadingWhitespace(valueExpression);
+		string valueIndent = SyntaxHelpers.GetLeadingWhitespace(valueExpression);
 
 		// Get the expected indentation (statement indent + one tab)
 		string statementIndent = GetStatementIndentation(equalsToken);
-		string expectedIndent = statementIndent + "\t";
+		string expectedIndent = statementIndent + FormattingConstants.Tab;
 
 		// Check if indentation is correct
 		if (valueIndent != expectedIndent)
@@ -330,34 +332,6 @@ public sealed class AssignmentContinuationIndentAnalyzer : DiagnosticAnalyzer
 		}
 	}
 
-	private static bool HasNewlineAfterToken(SyntaxToken token)
-	{
-		foreach (SyntaxTrivia trivia in token.TrailingTrivia)
-		{
-			if (trivia.RawKind == (int)SyntaxKind.EndOfLineTrivia)
-			{
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	private static string GetLeadingWhitespace(SyntaxNode node)
-	{
-		SyntaxToken firstToken = node.GetFirstToken();
-
-		foreach (SyntaxTrivia trivia in firstToken.LeadingTrivia)
-		{
-			if (trivia.RawKind == (int)SyntaxKind.WhitespaceTrivia)
-			{
-				return trivia.ToString();
-			}
-		}
-
-		return string.Empty;
-	}
-
 	private static string GetStatementIndentation(SyntaxToken token)
 	{
 		SyntaxNode? node = token.Parent;
@@ -369,7 +343,7 @@ public sealed class AssignmentContinuationIndentAnalyzer : DiagnosticAnalyzer
 		)
 		{
 			// Get the indentation of the property name (left side of assignment)
-			string propertyIndent = GetLeadingWhitespaceFromToken(
+			string propertyIndent = SyntaxHelpers.GetLeadingWhitespace(
 				assignment.Left.GetFirstToken()
 			);
 
@@ -401,19 +375,6 @@ public sealed class AssignmentContinuationIndentAnalyzer : DiagnosticAnalyzer
 			}
 		}
 
-		return "\t\t";
-	}
-
-	private static string GetLeadingWhitespaceFromToken(SyntaxToken token)
-	{
-		foreach (SyntaxTrivia trivia in token.LeadingTrivia)
-		{
-			if (trivia.RawKind == (int)SyntaxKind.WhitespaceTrivia)
-			{
-				return trivia.ToString();
-			}
-		}
-
-		return string.Empty;
+		return FormattingConstants.DefaultIndent;
 	}
 }

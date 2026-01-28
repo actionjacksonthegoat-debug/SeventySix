@@ -421,26 +421,15 @@ public class EmailService(
 	private static string BuildWelcomeEmailBody(
 		string username,
 		string resetUrl) =>
-		$$"""
-			<!DOCTYPE html>
-			<html>
-			<body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-				<h1>Welcome to SeventySix!</h1>
-				<p>Hello {{username}},</p>
-				<p>Your account has been created. Please set your password to complete registration:</p>
-				<p style="margin: 24px 0;">
-					<a href="{{resetUrl}}"
-				   style="display: inline-block; background: #2196F3; color: white; padding: 12px 24px; border: 1px solid #2196F3; font-weight: 600; text-decoration: none; border-radius: 4px;">
-						Set Your Password
-					</a>
-				</p>
-				<p>This link expires in 24 hours.</p>
-				<p>If you did not request this account, please ignore this email.</p>
-				<hr style="margin: 24px 0; border: none; border-top: 1px solid #eee;">
-				<p style="color: #666; font-size: 12px;">SeventySix Team</p>
-			</body>
-			</html>
-			""";
+		BuildEmailHtml(
+			"Welcome to SeventySix!",
+			$$"""
+			<p>Hello {{username}},</p>
+			<p>Your account has been created. Please set your password to complete registration:</p>
+			{{BuildButtonHtml(resetUrl, "Set Your Password")}}
+			<p>This link expires in 24 hours.</p>
+			<p>If you did not request this account, please ignore this email.</p>
+			""");
 
 	/// <summary>
 	/// Builds HTML body for password reset email.
@@ -457,26 +446,15 @@ public class EmailService(
 	private static string BuildPasswordResetEmailBody(
 		string username,
 		string resetUrl) =>
-		$$"""
-			<!DOCTYPE html>
-			<html>
-			<body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-				<h1>Password Reset Request</h1>
-				<p>Hello {{username}},</p>
-				<p>We received a request to reset your password. Click the button below to set a new password:</p>
-				<p style="margin: 24px 0;">
-					<a href="{{resetUrl}}"
-				   style="display: inline-block; background: #2196F3; color: white; padding: 12px 24px; border: 1px solid #2196F3; font-weight: 600; text-decoration: none; border-radius: 4px;">
-						Reset Password
-					</a>
-				</p>
-				<p>This link expires in 24 hours.</p>
-				<p>If you did not request this password reset, please ignore this email. Your password will remain unchanged.</p>
-				<hr style="margin: 24px 0; border: none; border-top: 1px solid #eee;">
-				<p style="color: #666; font-size: 12px;">SeventySix Team</p>
-			</body>
-			</html>
-			""";
+		BuildEmailHtml(
+			"Password Reset Request",
+			$$"""
+			<p>Hello {{username}},</p>
+			<p>We received a request to reset your password. Click the button below to set a new password:</p>
+			{{BuildButtonHtml(resetUrl, "Reset Password")}}
+			<p>This link expires in 24 hours.</p>
+			<p>If you did not request this password reset, please ignore this email. Your password will remain unchanged.</p>
+			""");
 
 	/// <summary>
 	/// Builds HTML body for email verification email.
@@ -488,26 +466,15 @@ public class EmailService(
 	/// The HTML string for the verification email body.
 	/// </returns>
 	private static string BuildVerificationEmailBody(string verificationUrl) =>
-		$$"""
-			<!DOCTYPE html>
-			<html>
-			<body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-				<h1>Verify Your Email</h1>
-				<p>Thank you for registering with SeventySix!</p>
-				<p>Please click the button below to verify your email address and complete your registration:</p>
-				<p style="margin: 24px 0;">
-					<a href="{{verificationUrl}}"
-				   style="display: inline-block; background: #2196F3; color: white; padding: 12px 24px; border: 1px solid #2196F3; font-weight: 600; text-decoration: none; border-radius: 4px;">
-						Verify Email
-					</a>
-				</p>
-				<p>This link expires in 24 hours.</p>
-				<p>If you did not create an account with SeventySix, please ignore this email.</p>
-				<hr style="margin: 24px 0; border: none; border-top: 1px solid #eee;">
-				<p style="color: #666; font-size: 12px;">SeventySix Team</p>
-			</body>
-			</html>
-			""";
+		BuildEmailHtml(
+			"Verify Your Email",
+			$$"""
+			<p>Thank you for registering with SeventySix!</p>
+			<p>Please click the button below to verify your email address and complete your registration:</p>
+			{{BuildButtonHtml(verificationUrl, "Verify Email")}}
+			<p>This link expires in 24 hours.</p>
+			<p>If you did not create an account with SeventySix, please ignore this email.</p>
+			""");
 
 	/// <summary>
 	/// Builds HTML body for MFA verification code email.
@@ -524,23 +491,68 @@ public class EmailService(
 	private static string BuildMfaCodeEmailBody(
 		string code,
 		int expirationMinutes) =>
+		BuildEmailHtml(
+			"Your Verification Code",
+			$$"""
+			<p>Use the following code to complete your sign-in:</p>
+			<p style="margin: 24px 0; text-align: center;">
+				<span style="display: inline-block; background: #f5f5f5; padding: 16px 32px; font-size: 32px; font-weight: bold; letter-spacing: 8px; font-family: monospace; border-radius: 4px;">
+					{{code}}
+				</span>
+			</p>
+			<p>This code expires in {{expirationMinutes}} minutes.</p>
+			<p><strong>Security tip:</strong> Never share this code with anyone. SeventySix will never ask for your verification code.</p>
+			<p>If you did not attempt to sign in, please secure your account immediately by changing your password.</p>
+			""");
+
+	/// <summary>
+	/// Builds an HTML email body with the shared template structure.
+	/// </summary>
+	/// <param name="title">
+	/// The email title/header displayed in the body.
+	/// </param>
+	/// <param name="bodyContent">
+	/// The HTML content for the email body section.
+	/// </param>
+	/// <returns>
+	/// Complete HTML email string with consistent styling.
+	/// </returns>
+	private static string BuildEmailHtml(
+		string title,
+		string bodyContent) =>
 		$$"""
-			<!DOCTYPE html>
-			<html>
-			<body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-				<h1>Your Verification Code</h1>
-				<p>Use the following code to complete your sign-in:</p>
-				<p style="margin: 24px 0; text-align: center;">
-					<span style="display: inline-block; background: #f5f5f5; padding: 16px 32px; font-size: 32px; font-weight: bold; letter-spacing: 8px; font-family: monospace; border-radius: 4px;">
-						{{code}}
-					</span>
-				</p>
-				<p>This code expires in {{expirationMinutes}} minutes.</p>
-				<p><strong>Security tip:</strong> Never share this code with anyone. SeventySix will never ask for your verification code.</p>
-				<p>If you did not attempt to sign in, please secure your account immediately by changing your password.</p>
-				<hr style="margin: 24px 0; border: none; border-top: 1px solid #eee;">
-				<p style="color: #666; font-size: 12px;">SeventySix Team</p>
-			</body>
-			</html>
-			""";
+		<!DOCTYPE html>
+		<html>
+		<body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+			<h1>{{title}}</h1>
+			{{bodyContent}}
+			<hr style="margin: 24px 0; border: none; border-top: 1px solid #eee;">
+			<p style="color: #666; font-size: 12px;">SeventySix Team</p>
+		</body>
+		</html>
+		""";
+
+	/// <summary>
+	/// Builds an HTML button with consistent styling for email CTAs.
+	/// </summary>
+	/// <param name="url">
+	/// The URL the button links to.
+	/// </param>
+	/// <param name="text">
+	/// The button text.
+	/// </param>
+	/// <returns>
+	/// HTML string containing a styled button paragraph.
+	/// </returns>
+	private static string BuildButtonHtml(
+		string url,
+		string text) =>
+		$$"""
+		<p style="margin: 24px 0;">
+			<a href="{{url}}"
+		   style="display: inline-block; background: #2196F3; color: white; padding: 12px 24px; border: 1px solid #2196F3; font-weight: 600; text-decoration: none; border-radius: 4px;">
+				{{text}}
+			</a>
+		</p>
+		""";
 }

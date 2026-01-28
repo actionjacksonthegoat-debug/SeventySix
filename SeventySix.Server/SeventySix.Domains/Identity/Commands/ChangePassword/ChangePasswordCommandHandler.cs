@@ -56,11 +56,10 @@ public static class ChangePasswordCommandHandler
 	{
 		// Check new password against known breaches (OWASP ASVS V2.1.7)
 		AuthResult? breachError =
-			await ValidatePasswordNotBreachedAsync(
+			await breachCheck.ValidatePasswordNotBreachedAsync(
 				command.Request.NewPassword,
-				breachCheck,
-				"Password change",
 				logger,
+				"Password change",
 				cancellationToken);
 
 		if (breachError is not null)
@@ -245,36 +244,5 @@ public static class ChangePasswordCommandHandler
 					"Failed to update user password change status");
 			}
 		}
-	}
-
-	/// <summary>
-	/// Validates password against known breaches (OWASP ASVS V2.1.7).
-	/// </summary>
-	private static async Task<AuthResult?> ValidatePasswordNotBreachedAsync(
-		string password,
-		BreachCheckDependencies breachCheck,
-		string operationName,
-		ILogger logger,
-		CancellationToken cancellationToken)
-	{
-		BreachCheckResult result =
-			await breachCheck.Service.CheckPasswordAsync(
-				password,
-				cancellationToken);
-
-		if (result.IsBreached && breachCheck.Settings.Value.BreachedPassword.BlockBreachedPasswords)
-		{
-			logger.LogWarning(
-				"{Operation} blocked: password found in {BreachCount} data breaches",
-				operationName,
-				result.BreachCount);
-
-			return AuthResult.Failed(
-				$"This password has been found in {result.BreachCount:N0} data breaches. "
-					+ "Please choose a different password for your security.",
-				AuthErrorCodes.BreachedPassword);
-		}
-
-		return null;
 	}
 }

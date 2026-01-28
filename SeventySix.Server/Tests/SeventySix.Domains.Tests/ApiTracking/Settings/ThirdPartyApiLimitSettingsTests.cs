@@ -53,7 +53,7 @@ public class ThirdPartyApiLimitSettingsTests
 	public void SectionName_IsThirdPartyApiLimits()
 	{
 		// Assert
-		ThirdPartyApiLimitSettings.SECTION_NAME.ShouldBe("ThirdPartyApiLimits");
+		ThirdPartyApiLimitSettings.SectionName.ShouldBe("ThirdPartyApiLimits");
 	}
 
 	[Fact]

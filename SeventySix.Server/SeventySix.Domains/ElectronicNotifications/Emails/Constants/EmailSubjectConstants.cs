@@ -2,7 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-namespace SeventySix.ElectronicNotifications;
+namespace SeventySix.ElectronicNotifications.Emails;
 
 /// <summary>
 /// Constants for email subject lines.

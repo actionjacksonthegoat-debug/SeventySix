@@ -48,7 +48,7 @@ public static class InitiatePasswordResetCommandHandler
 			await userManager.FindByIdAsync(
 				command.UserId.ToString());
 
-		if (user is null || !user.IsActive)
+		if (!user.IsValidForAuthentication())
 		{
 			logger.LogError(
 				"User with ID {UserId} not found or inactive",

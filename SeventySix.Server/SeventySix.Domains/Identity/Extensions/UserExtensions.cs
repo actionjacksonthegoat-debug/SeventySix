@@ -102,6 +102,39 @@ public static class UserExtensions
 			entities.MapToDto(entity => entity.ToDto());
 
 	/// <summary>
+	/// Checks if the user is valid for authentication operations.
+	/// </summary>
+	/// <param name="user">
+	/// The user to validate.
+	/// </param>
+	/// <returns>
+	/// True if user exists and is active; otherwise false.
+	/// </returns>
+	/// <remarks>
+	/// DRY: Consolidates the common `user is not null &amp;&amp; user.IsActive` pattern
+	/// used across Identity domain handlers for authentication validation.
+	/// </remarks>
+	public static bool IsValidForAuthentication(
+		[System.Diagnostics.CodeAnalysis.NotNullWhen(true)] this ApplicationUser? user) =>
+		user is not null && user.IsActive;
+
+	/// <summary>
+	/// Checks if the user DTO is valid for authentication operations.
+	/// </summary>
+	/// <param name="user">
+	/// The user DTO to validate.
+	/// </param>
+	/// <returns>
+	/// True if user exists and is active; otherwise false.
+	/// </returns>
+	/// <remarks>
+	/// Overload for UserDto to support handlers using DTOs from queries.
+	/// </remarks>
+	public static bool IsValidForAuthentication(
+		[System.Diagnostics.CodeAnalysis.NotNullWhen(true)] this UserDto? user) =>
+		user is not null && user.IsActive;
+
+	/// <summary>
 	/// Converts a CreateUserRequest to a domain entity.
 	/// </summary>
 	/// <param name="request">

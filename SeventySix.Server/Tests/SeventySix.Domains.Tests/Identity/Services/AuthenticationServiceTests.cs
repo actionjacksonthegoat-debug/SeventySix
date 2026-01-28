@@ -8,6 +8,7 @@ using NSubstitute;
 using SeventySix.Identity;
 using SeventySix.Identity.Constants;
 using SeventySix.TestUtilities.Builders;
+using Shouldly;
 
 namespace SeventySix.Domains.Tests.Identity.Services;
 
@@ -121,17 +122,13 @@ public class AuthenticationServiceTests
 			CancellationToken.None);
 
 		// Assert
-		Assert.True(result.Success);
-		Assert.Equal(expectedAccessToken, result.AccessToken);
-		Assert.Equal(
-			expectedRefreshToken,
-			result.RefreshToken);
-		Assert.Equal(
-			utcNow.AddMinutes(15),
-			result.ExpiresAt);
-		Assert.Equal(user.Email, result.Email);
-		Assert.Equal(user.FullName, result.FullName);
-		Assert.False(result.RequiresPasswordChange);
+		result.Success.ShouldBeTrue();
+		result.AccessToken.ShouldBe(expectedAccessToken);
+		result.RefreshToken.ShouldBe(expectedRefreshToken);
+		result.ExpiresAt.ShouldBe(utcNow.AddMinutes(15));
+		result.Email.ShouldBe(user.Email);
+		result.FullName.ShouldBe(user.FullName);
+		result.RequiresPasswordChange.ShouldBeFalse();
 
 		await AuthRepository
 			.Received(1)
@@ -242,7 +239,7 @@ public class AuthenticationServiceTests
 			CancellationToken.None);
 
 		// Assert
-		Assert.True(result.RequiresPasswordChange);
+		result.RequiresPasswordChange.ShouldBeTrue();
 	}
 
 	/// <summary>
@@ -298,12 +295,12 @@ public class AuthenticationServiceTests
 			CancellationToken.None);
 
 		// Assert
-		Assert.NotNull(capturedRoles);
+		capturedRoles.ShouldNotBeNull();
 		List<string> roleList =
 			capturedRoles.ToList();
-		Assert.Equal(3, roleList.Count);
-		Assert.Contains(RoleConstants.User, roleList);
-		Assert.Contains(RoleConstants.Admin, roleList);
-		Assert.Contains(RoleConstants.Developer, roleList);
+		roleList.Count.ShouldBe(3);
+		roleList.ShouldContain(RoleConstants.User);
+		roleList.ShouldContain(RoleConstants.Admin);
+		roleList.ShouldContain(RoleConstants.Developer);
 	}
 }

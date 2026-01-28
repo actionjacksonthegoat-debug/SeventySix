@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using SeventySix.Shared.Interfaces;
+using SeventySix.Shared.Persistence;
 using Wolverine;
 
 namespace SeventySix.Registration;
@@ -29,11 +30,11 @@ public static class WolverineHealthCheckRegistration
 		services.AddScoped<IDatabaseHealthCheck>(
 			serviceProvider =>
 			{
-				IMessageBus bus =
+				IMessageBus messageBus =
 					serviceProvider.GetRequiredService<IMessageBus>();
 
-				return new Domains.Infrastructure.WolverineHealthCheck<TQuery>(
-					bus,
+				return new WolverineHealthCheck<TQuery>(
+					messageBus,
 					contextName);
 			});
 

@@ -65,11 +65,10 @@ public static class CompleteRegistrationCommandHandler
 	{
 		// Check password against known breaches (OWASP ASVS V2.1.7)
 		AuthResult? breachError =
-			await ValidatePasswordNotBreachedAsync(
+			await breachCheck.ValidatePasswordNotBreachedAsync(
 				command.Request.Password,
-				breachCheck,
 				logger,
-				cancellationToken);
+				cancellationToken: cancellationToken);
 
 		if (breachError is not null)
 		{
@@ -226,49 +225,5 @@ public static class CompleteRegistrationCommandHandler
 		}
 
 		return existingUser;
-	}
-
-	/// <summary>
-	/// Validates password against known breaches (OWASP ASVS V2.1.7).
-	/// </summary>
-	/// <param name="password">
-	/// The password to validate.
-	/// </param>
-	/// <param name="breachCheck">
-	/// Breach check dependencies.
-	/// </param>
-	/// <param name="logger">
-	/// Logger instance.
-	/// </param>
-	/// <param name="cancellationToken">
-	/// Cancellation token.
-	/// </param>
-	/// <returns>
-	/// An error <see cref="AuthResult"/> if breached; null if safe.
-	/// </returns>
-	private static async Task<AuthResult?> ValidatePasswordNotBreachedAsync(
-		string password,
-		BreachCheckDependencies breachCheck,
-		ILogger logger,
-		CancellationToken cancellationToken)
-	{
-		BreachCheckResult result =
-			await breachCheck.Service.CheckPasswordAsync(
-				password,
-				cancellationToken);
-
-		if (result.IsBreached && breachCheck.Settings.Value.BreachedPassword.BlockBreachedPasswords)
-		{
-			logger.LogWarning(
-				"Operation blocked: password found in {BreachCount} data breaches",
-				result.BreachCount);
-
-			return AuthResult.Failed(
-				$"This password has been found in {result.BreachCount:N0} data breaches. "
-					+ "Please choose a different password for your security.",
-				AuthErrorCodes.BreachedPassword);
-		}
-
-		return null;
 	}
 }

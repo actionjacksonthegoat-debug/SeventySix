@@ -62,7 +62,7 @@ public static class ApiTrackingRegistration
 	{
 		// Configure ThirdPartyApiLimitSettings from appsettings.json
 		services.Configure<ThirdPartyApiLimitSettings>(
-			configuration.GetSection(ThirdPartyApiLimitSettings.SECTION_NAME));
+			configuration.GetSection(ThirdPartyApiLimitSettings.SectionName));
 
 		// Register ApiTrackingDbContext via shared helper
 		services.AddDomainDbContext<ApiTrackingDbContext>(

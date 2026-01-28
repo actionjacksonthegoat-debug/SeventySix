@@ -66,8 +66,9 @@ public static class UserFieldValidationExtensions
 	/// Validation rules:
 	/// - Required (not empty)
 	/// - Maximum length: 255 characters
-	/// - Valid email format (both built-in and regex validation)
-	/// - Cascade mode: Stop on first failure to avoid redundant error messages
+	/// - Valid email format (FluentValidation built-in + no whitespace check)
+	/// Note: FluentValidation's EmailAddress() is intentionally naive (only checks @ position).
+	/// The additional Matches() ensures no whitespace anywhere in the email.
 	/// </remarks>
 	public static IRuleBuilderOptions<T, string> ApplyEmailRules<T>(
 		this IRuleBuilder<T, string> ruleBuilder)
@@ -79,7 +80,7 @@ public static class UserFieldValidationExtensions
 			.WithMessage("Email must not exceed 255 characters")
 			.EmailAddress()
 			.WithMessage("Email must be a valid email address")
-			.Matches(@"^[^\s@]+@[^\s@]+\.[^\s@]+$")
+			.Matches(@"^\S+@\S+$")
 			.WithMessage("Email must be a valid email address");
 	}
 

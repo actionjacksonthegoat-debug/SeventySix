@@ -1,7 +1,7 @@
 using SeventySix.Shared.Interfaces;
 using Wolverine;
 
-namespace SeventySix.Domains.Infrastructure;
+namespace SeventySix.Shared.Persistence;
 
 /// <summary>
 /// Generic health check that executes a Wolverine query to determine database health.

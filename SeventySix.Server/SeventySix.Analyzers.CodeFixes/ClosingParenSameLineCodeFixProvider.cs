@@ -2,7 +2,6 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Composition;
 using System.Threading;
@@ -13,6 +12,8 @@ using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
+using SeventySix.Analyzers;
+using SeventySix.Analyzers.CodeFixes.Helpers;
 
 namespace SeventySix.Analyzers.CodeFixes;
 
@@ -55,7 +56,7 @@ public sealed class ClosingParenSameLineCodeFixProvider : CodeFixProvider
 
 		context.RegisterCodeFix(
 			CodeAction.Create(
-				title: "Move ')' to previous line",
+				title: CodeFixTitles.MoveClosingParenToPreviousLine,
 				createChangedDocument: cancellationToken => MoveCloseParenToSameLineAsync(
 					context.Document,
 					closeParenToken,
@@ -87,11 +88,11 @@ public sealed class ClosingParenSameLineCodeFixProvider : CodeFixProvider
 		}
 
 		// Remove trailing newline/whitespace from previous token
-		SyntaxTriviaList cleanedPreviousTrailing = RemoveTrailingNewlines(
+		SyntaxTriviaList cleanedPreviousTrailing = TriviaHelpers.RemoveWhitespaceAndNewlines(
 			previousToken.TrailingTrivia);
 
 		// Remove leading newline/whitespace from close paren, but keep comments
-		SyntaxTriviaList cleanedCloseParenLeading = RemoveLeadingNewlines(
+		SyntaxTriviaList cleanedCloseParenLeading = TriviaHelpers.RemoveWhitespaceAndNewlines(
 			closeParenToken.LeadingTrivia);
 
 		// Create new tokens
@@ -109,61 +110,5 @@ public sealed class ClosingParenSameLineCodeFixProvider : CodeFixProvider
 					: newCloseParenToken);
 
 		return document.WithSyntaxRoot(newRoot);
-	}
-
-	/// <summary>
-	/// Removes trailing newlines and whitespace, keeping comments.
-	/// </summary>
-	private static SyntaxTriviaList RemoveTrailingNewlines(
-		SyntaxTriviaList trivia)
-	{
-		List<SyntaxTrivia>? kept = null;
-
-		foreach (SyntaxTrivia triviaElement in trivia)
-		{
-			int kind = triviaElement.RawKind;
-
-			// Keep everything except whitespace and end-of-line
-			if (
-				kind
-				is not ((int)SyntaxKind.WhitespaceTrivia)
-					and not ((int)SyntaxKind.EndOfLineTrivia))
-			{
-				kept ??= new List<SyntaxTrivia>();
-				kept.Add(triviaElement);
-			}
-		}
-
-		return kept is null
-			? SyntaxTriviaList.Empty
-			: SyntaxFactory.TriviaList(kept);
-	}
-
-	/// <summary>
-	/// Removes leading newlines and whitespace, keeping comments.
-	/// </summary>
-	private static SyntaxTriviaList RemoveLeadingNewlines(
-		SyntaxTriviaList trivia)
-	{
-		List<SyntaxTrivia>? kept = null;
-
-		foreach (SyntaxTrivia syntaxTrivia in trivia)
-		{
-			int kind = syntaxTrivia.RawKind;
-
-			// Keep everything except whitespace and end-of-line
-			if (
-				kind
-				is not ((int)SyntaxKind.WhitespaceTrivia)
-					and not ((int)SyntaxKind.EndOfLineTrivia))
-			{
-				kept ??= new List<SyntaxTrivia>();
-				kept.Add(syntaxTrivia);
-			}
-		}
-
-		return kept is null
-			? SyntaxTriviaList.Empty
-			: SyntaxFactory.TriviaList(kept);
 	}
 }

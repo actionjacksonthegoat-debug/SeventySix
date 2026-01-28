@@ -232,7 +232,7 @@ public static class LoginCommandHandler
 			await userManager.FindByNameAsync(command.Request.UsernameOrEmail)
 				?? await userManager.FindByEmailAsync(command.Request.UsernameOrEmail);
 
-		if (user is null || !user.IsActive)
+		if (!user.IsValidForAuthentication())
 		{
 			await securityAuditService.LogEventAsync(
 				SecurityEventType.LoginFailed,

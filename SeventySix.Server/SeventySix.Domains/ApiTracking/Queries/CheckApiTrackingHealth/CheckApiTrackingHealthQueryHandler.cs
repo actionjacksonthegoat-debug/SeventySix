@@ -10,13 +10,13 @@ namespace SeventySix.ApiTracking;
 public static class CheckApiTrackingHealthQueryHandler
 {
 	/// <summary>
-	/// Handles the health check query by attempting a simple database operation.
+	/// Handles the health check query by verifying database connectivity.
 	/// </summary>
 	/// <param name="query">
 	/// The health check query.
 	/// </param>
-	/// <param name="repository">
-	/// The repository for accessing API tracking data.
+	/// <param name="context">
+	/// The database context for connectivity check.
 	/// </param>
 	/// <param name="cancellationToken">
 	/// Cancellation token for async operation.
@@ -26,14 +26,12 @@ public static class CheckApiTrackingHealthQueryHandler
 	/// </returns>
 	public static async Task<bool> HandleAsync(
 		CheckApiTrackingHealthQuery query,
-		IThirdPartyApiRequestRepository repository,
+		ApiTrackingDbContext context,
 		CancellationToken cancellationToken)
 	{
 		try
 		{
-			_ =
-				await repository.GetAllAsync(cancellationToken);
-			return true;
+			return await context.Database.CanConnectAsync(cancellationToken);
 		}
 		catch
 		{

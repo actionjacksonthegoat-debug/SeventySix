@@ -21,6 +21,9 @@ public static class GetPendingEmailsQueryHandler
 	/// <param name="dbContext">
 	/// The database context for email queue operations.
 	/// </param>
+	/// <param name="timeProvider">
+	/// Time provider for current UTC time.
+	/// </param>
 	/// <param name="cancellationToken">
 	/// Cancellation token.
 	/// </param>
@@ -30,13 +33,22 @@ public static class GetPendingEmailsQueryHandler
 	public static async Task<IReadOnlyList<EmailQueueEntry>> HandleAsync(
 		GetPendingEmailsQuery query,
 		ElectronicNotificationsDbContext dbContext,
+		TimeProvider timeProvider,
 		CancellationToken cancellationToken)
 	{
+		DateTime now =
+			timeProvider.GetUtcNow().UtcDateTime;
+
+		DateTime retryThreshold =
+			now.AddMinutes(-query.RetryDelayMinutes);
+
 		return await dbContext
 			.EmailQueue
 			.Where(entry =>
 				entry.Status == EmailQueueStatus.Pending
-				|| entry.Status == EmailQueueStatus.Failed)
+				|| (entry.Status == EmailQueueStatus.Failed
+					&& (entry.LastAttemptAt == null
+						|| entry.LastAttemptAt < retryThreshold)))
 			.Where(entry => entry.Attempts < entry.MaxAttempts)
 			.OrderBy(entry => entry.CreateDate)
 			.Take(query.BatchSize)

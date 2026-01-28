@@ -4,6 +4,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using SeventySix.Shared.Extensions;
 using SeventySix.Shared.Interfaces;
 
 namespace SeventySix.Shared.Persistence;
@@ -12,6 +13,14 @@ namespace SeventySix.Shared.Persistence;
 /// Implements database transactions with automatic retry logic for concurrency conflicts.
 /// Provides thread-safe operations using optimistic concurrency control with PostgreSQL.
 /// </summary>
+/// <remarks>
+/// <para>Backoff Configuration:</para>
+/// <list type="bullet">
+/// <item><description><see cref="BaseRetryDelayMs"/>: Starting delay (50ms → 100ms → 200ms → 400ms)</description></item>
+/// <item><description><see cref="MaxRetryDelayMs"/>: Maximum delay cap (2 seconds)</description></item>
+/// <item><description><see cref="JitterPercentage"/>: Random variance (±25%) to prevent thundering herd</description></item>
+/// </list>
+/// </remarks>
 /// <remarks>
 /// Design Patterns:
 /// - Retry Pattern: Automatic retry with exponential backoff
@@ -37,6 +46,23 @@ namespace SeventySix.Shared.Persistence;
 /// </param>
 public class TransactionManager(DbContext context) : ITransactionManager
 {
+	/// <summary>
+	/// Base delay in milliseconds for retry backoff calculation.
+	/// Delay doubles each retry: 50ms → 100ms → 200ms → 400ms.
+	/// </summary>
+	private const int BaseRetryDelayMs = 50;
+
+	/// <summary>
+	/// Maximum delay cap in milliseconds to prevent excessive wait times.
+	/// </summary>
+	private const int MaxRetryDelayMs = 2000;
+
+	/// <summary>
+	/// Jitter percentage (±) applied to delays to prevent thundering herd.
+	/// Value of 25 means ±25% random variance.
+	/// </summary>
+	private const int JitterPercentage = 25;
+
 	/// <inheritdoc/>
 	public async Task<T> ExecuteInTransactionAsync<T>(
 		Func<CancellationToken, Task<T>> operation,
@@ -95,11 +121,11 @@ public class TransactionManager(DbContext context) : ITransactionManager
 				// Clear change tracker to avoid tracking stale entities
 				context.ChangeTracker.Clear();
 			}
-			catch (DbUpdateException exception)
-				when (IsConcurrencyRelated(exception))
+			catch (DbUpdateException dbException)
+				when (dbException.IsConcurrencyRelated())
 			{
 				// Database constraint violation (duplicate key, etc.) - likely race condition
-				lastException = exception;
+				lastException = dbException;
 
 				// Clear change tracker
 				context.ChangeTracker.Clear();
@@ -144,29 +170,6 @@ public class TransactionManager(DbContext context) : ITransactionManager
 	}
 
 	/// <summary>
-	/// Determines if an exception is related to concurrency issues.
-	/// </summary>
-	/// <param name="exception">
-	/// The exception to check.
-	/// </param>
-	/// <returns>
-	/// True if the exception indicates a concurrency conflict.
-	/// </returns>
-	private static bool IsConcurrencyRelated(DbUpdateException exception)
-	{
-		string message =
-			exception.InnerException?.Message ?? exception.Message;
-
-		// PostgreSQL-specific error codes and messages
-		return message.Contains(
-			"duplicate key",
-			StringComparison.OrdinalIgnoreCase)
-			|| message.Contains("23505", StringComparison.Ordinal) // Unique violation
-			|| message.Contains("40001", StringComparison.Ordinal) // Serialization failure
-			|| message.Contains("40P01", StringComparison.Ordinal); // Deadlock detected
-	}
-
-	/// <summary>
 	/// Calculates exponential backoff delay with jitter.
 	/// </summary>
 	/// <param name="retryCount">
@@ -177,21 +180,20 @@ public class TransactionManager(DbContext context) : ITransactionManager
 	/// </returns>
 	private static int CalculateBackoff(int retryCount)
 	{
-		// Base delay: 50ms, 100ms, 200ms, 400ms, etc.
 		double baseDelay =
-			50 * Math.Pow(
+			BaseRetryDelayMs * Math.Pow(
 				2,
 				retryCount - 1);
 
-		// Add jitter (±25%) to prevent thundering herd
 		double jitter =
 			Random.Shared.Next(
-				-25,
-				26) / 100.0;
+				-JitterPercentage,
+				JitterPercentage + 1) / 100.0;
 		int delayMs =
 			(int)(baseDelay * (1 + jitter));
 
-		// Cap at 2 seconds
-		return Math.Min(delayMs, 2000);
+		return Math.Min(
+			delayMs,
+			MaxRetryDelayMs);
 	}
 }

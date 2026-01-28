@@ -24,6 +24,29 @@ public static class CryptoExtensions
 	private const int DefaultTokenSizeBytes = 32;
 
 	/// <summary>
+	/// Generates a cryptographically secure random token as hex string.
+	/// </summary>
+	/// <param name="sizeInBytes">
+	/// Size of random data in bytes. Default: 32.
+	/// </param>
+	/// <returns>
+	/// Lowercase hex-encoded random token.
+	/// </returns>
+	/// <exception cref="ArgumentOutOfRangeException">
+	/// Thrown when sizeInBytes is negative or zero.
+	/// </exception>
+	public static string GenerateSecureTokenHex(
+		int sizeInBytes = DefaultTokenSizeBytes)
+	{
+		ArgumentOutOfRangeException.ThrowIfNegativeOrZero(sizeInBytes);
+
+		byte[] randomBytes =
+			new byte[sizeInBytes];
+		RandomNumberGenerator.Fill(randomBytes);
+		return Convert.ToHexString(randomBytes).ToLowerInvariant();
+	}
+
+	/// <summary>
 	/// Generates a cryptographically secure random token as Base64.
 	/// </summary>
 	/// <param name="sizeInBytes">
@@ -32,9 +55,14 @@ public static class CryptoExtensions
 	/// <returns>
 	/// Base64-encoded random token.
 	/// </returns>
+	/// <exception cref="ArgumentOutOfRangeException">
+	/// Thrown when sizeInBytes is negative or zero.
+	/// </exception>
 	public static string GenerateSecureToken(
 		int sizeInBytes = DefaultTokenSizeBytes)
 	{
+		ArgumentOutOfRangeException.ThrowIfNegativeOrZero(sizeInBytes);
+
 		byte[] randomBytes =
 			new byte[sizeInBytes];
 		RandomNumberGenerator.Fill(randomBytes);
@@ -51,6 +79,9 @@ public static class CryptoExtensions
 	/// <returns>
 	/// Base64URL-encoded code verifier.
 	/// </returns>
+	/// <exception cref="ArgumentOutOfRangeException">
+	/// Thrown when sizeInBytes is negative or zero.
+	/// </exception>
 	/// <remarks>
 	/// PKCE (Proof Key for Code Exchange) requires URL-safe characters.
 	/// See RFC 7636: https://tools.ietf.org/html/rfc7636
@@ -58,6 +89,8 @@ public static class CryptoExtensions
 	public static string GeneratePkceCodeVerifier(
 		int sizeInBytes = DefaultTokenSizeBytes)
 	{
+		ArgumentOutOfRangeException.ThrowIfNegativeOrZero(sizeInBytes);
+
 		byte[] randomBytes =
 			new byte[sizeInBytes];
 		RandomNumberGenerator.Fill(randomBytes);
@@ -68,18 +101,28 @@ public static class CryptoExtensions
 	/// <summary>
 	/// Computes SHA256 hash of the input string.
 	/// </summary>
-	/// <param name="input">
+	/// <param name="inputValue">
 	/// String to hash.
 	/// </param>
+	/// <param name="useLowercase">
+	/// Whether to return lowercase hex (default: false for backwards compatibility).
+	/// </param>
 	/// <returns>
-	/// Hex-encoded SHA256 hash (uppercase).
+	/// Hex-encoded SHA256 hash.
 	/// </returns>
-	public static string ComputeSha256Hash(string input)
+	public static string ComputeSha256Hash(
+		string inputValue,
+		bool useLowercase = false)
 	{
-		byte[] bytes =
-			SHA256.HashData(Encoding.UTF8.GetBytes(input));
+		byte[] hashBytes =
+			SHA256.HashData(Encoding.UTF8.GetBytes(inputValue));
 
-		return Convert.ToHexString(bytes);
+		string hexString =
+			Convert.ToHexString(hashBytes);
+
+		return useLowercase
+			? hexString.ToLowerInvariant()
+			: hexString;
 	}
 
 	/// <summary>

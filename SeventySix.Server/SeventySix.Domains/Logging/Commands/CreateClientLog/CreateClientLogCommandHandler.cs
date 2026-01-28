@@ -3,7 +3,6 @@
 // </copyright>
 
 using System.Diagnostics;
-using System.Text.Json;
 
 namespace SeventySix.Logging;
 
@@ -40,31 +39,7 @@ public static class CreateClientLogCommandHandler
 			Activity.Current?.ParentSpanId.ToString();
 
 		Log log =
-			new()
-			{
-				LogLevel = request.LogLevel,
-				Message = request.Message,
-				ExceptionMessage = request.ExceptionMessage,
-				StackTrace = request.StackTrace,
-				SourceContext = request.SourceContext,
-				RequestPath = request.RequestUrl,
-				RequestMethod = request.RequestMethod,
-				StatusCode = request.StatusCode,
-				CorrelationId =
-					request.CorrelationId ?? traceId,
-				SpanId = spanId,
-				ParentSpanId = parentSpanId,
-				Properties =
-					JsonSerializer.Serialize(
-						new
-						{
-							request.UserAgent,
-							request.ClientTimestamp,
-							request.AdditionalContext,
-						}),
-				MachineName = "Browser",
-				Environment = "Client",
-			};
+			request.ToClientLogEntity(traceId, spanId, parentSpanId);
 
 		await repository.CreateAsync(log, cancellationToken);
 	}

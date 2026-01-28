@@ -4,6 +4,7 @@
 
 using Microsoft.AspNetCore.Http;
 using SeventySix.Api.Middleware;
+using Shouldly;
 
 namespace SeventySix.Api.Tests.Middleware;
 
@@ -22,14 +23,12 @@ public class CorsHeaderHelperTests
 
 		CorsHeaderHelper.AddCorsHeadersIfAllowed(context, allowed);
 
-		Assert.True(
-			context.Response.Headers.ContainsKey("Access-Control-Allow-Origin"));
-		Assert.Equal(
-			"http://localhost:4200",
-			context.Response.Headers.AccessControlAllowOrigin.ToString());
-		Assert.Equal(
-			"true",
-			context.Response.Headers.AccessControlAllowCredentials.ToString());
+		context.Response.Headers.ContainsKey("Access-Control-Allow-Origin")
+			.ShouldBeTrue();
+		context.Response.Headers.AccessControlAllowOrigin.ToString()
+			.ShouldBe("http://localhost:4200");
+		context.Response.Headers.AccessControlAllowCredentials.ToString()
+			.ShouldBe("true");
 	}
 
 	[Fact]
@@ -45,7 +44,7 @@ public class CorsHeaderHelperTests
 
 		CorsHeaderHelper.AddCorsHeadersIfAllowed(context, allowed);
 
-		Assert.False(
-			context.Response.Headers.ContainsKey("Access-Control-Allow-Origin"));
+		context.Response.Headers.ContainsKey("Access-Control-Allow-Origin")
+			.ShouldBeFalse();
 	}
 }

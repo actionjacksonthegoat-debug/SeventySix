@@ -69,6 +69,7 @@ public class EnqueueEmailCommandValidatorTests
 	[InlineData(EmailType.Welcome)]
 	[InlineData(EmailType.PasswordReset)]
 	[InlineData(EmailType.Verification)]
+	[InlineData(EmailType.MfaVerification)]
 	public void EmailType_ShouldNotHaveError_WhenValidTypeAsync(string emailType)
 	{
 		// Arrange

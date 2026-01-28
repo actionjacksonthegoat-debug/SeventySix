@@ -16,7 +16,7 @@ public record PollyOptions
 	/// <summary>
 	/// Configuration section name in appsettings.json.
 	/// </summary>
-	public const string SECTION_NAME = "Polly";
+	public const string SectionName = "Polly";
 
 	/// <summary>
 	/// Number of retry attempts before failing.

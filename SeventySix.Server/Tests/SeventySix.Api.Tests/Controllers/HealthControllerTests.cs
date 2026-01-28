@@ -7,6 +7,7 @@ using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using SeventySix.Api.Controllers;
 using SeventySix.Api.Infrastructure;
+using Shouldly;
 
 namespace SeventySix.Api.Tests.Controllers;
 
@@ -78,11 +79,11 @@ public class HealthControllerTests
 
 		// Assert - Only status and timestamp, no infrastructure details
 		OkObjectResult okResult =
-			Assert.IsType<OkObjectResult>(result.Result);
+			result.Result.ShouldBeOfType<OkObjectResult>();
 		PublicHealthDto returnedStatus =
-			Assert.IsType<PublicHealthDto>(okResult.Value);
-		Assert.Equal("Healthy", returnedStatus.Status);
-		Assert.Equal(checkedAt, returnedStatus.CheckedAt);
+			okResult.Value.ShouldBeOfType<PublicHealthDto>();
+		returnedStatus.Status.ShouldBe("Healthy");
+		returnedStatus.CheckedAt.ShouldBe(checkedAt);
 		await HealthService
 			.Received(1)
 			.GetHealthStatusAsync(Arg.Any<CancellationToken>());
@@ -131,11 +132,11 @@ public class HealthControllerTests
 
 		// Assert - Only status exposed, no degraded component details
 		OkObjectResult okResult =
-			Assert.IsType<OkObjectResult>(result.Result);
+			result.Result.ShouldBeOfType<OkObjectResult>();
 		PublicHealthDto returnedStatus =
-			Assert.IsType<PublicHealthDto>(okResult.Value);
-		Assert.Equal("Degraded", returnedStatus.Status);
-		Assert.Equal(checkedAt, returnedStatus.CheckedAt);
+			okResult.Value.ShouldBeOfType<PublicHealthDto>();
+		returnedStatus.Status.ShouldBe("Degraded");
+		returnedStatus.CheckedAt.ShouldBe(checkedAt);
 	}
 
 	[Fact]
@@ -181,11 +182,11 @@ public class HealthControllerTests
 
 		// Assert - Only status exposed, no failure details
 		OkObjectResult okResult =
-			Assert.IsType<OkObjectResult>(result.Result);
+			result.Result.ShouldBeOfType<OkObjectResult>();
 		PublicHealthDto returnedStatus =
-			Assert.IsType<PublicHealthDto>(okResult.Value);
-		Assert.Equal("Unhealthy", returnedStatus.Status);
-		Assert.Equal(checkedAt, returnedStatus.CheckedAt);
+			okResult.Value.ShouldBeOfType<PublicHealthDto>();
+		returnedStatus.Status.ShouldBe("Unhealthy");
+		returnedStatus.CheckedAt.ShouldBe(checkedAt);
 	}
 
 	[Fact]
@@ -238,21 +239,13 @@ public class HealthControllerTests
 
 		// Assert - Full infrastructure details exposed
 		OkObjectResult okResult =
-			Assert.IsType<OkObjectResult>(result.Result);
+			result.Result.ShouldBeOfType<OkObjectResult>();
 		HealthStatusResponse returnedStatus =
-			Assert.IsType<HealthStatusResponse>(okResult.Value);
-		Assert.Equal(
-			"Healthy",
-			returnedStatus.Status);
-		Assert.True(returnedStatus.Database.IsConnected);
-		Assert.Equal(
-			25.5,
-			returnedStatus.Database.ResponseTimeMs);
-		Assert.Equal(
-			5,
-			returnedStatus.ErrorQueue.QueuedItems);
-		Assert.Equal(
-			45.5,
-			returnedStatus.System.CpuUsagePercent);
+			okResult.Value.ShouldBeOfType<HealthStatusResponse>();
+		returnedStatus.Status.ShouldBe("Healthy");
+		returnedStatus.Database.IsConnected.ShouldBeTrue();
+		returnedStatus.Database.ResponseTimeMs.ShouldBe(25.5);
+		returnedStatus.ErrorQueue.QueuedItems.ShouldBe(5);
+		returnedStatus.System.CpuUsagePercent.ShouldBe(45.5);
 	}
 }
