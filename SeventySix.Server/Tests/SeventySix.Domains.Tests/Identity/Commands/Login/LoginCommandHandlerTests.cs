@@ -2,12 +2,13 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using SeventySix.Identity;
+using SeventySix.TestUtilities.Builders;
+using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.Mocks;
 using Shouldly;
 using Wolverine;
@@ -22,6 +23,7 @@ namespace SeventySix.Domains.Tests.Identity.Commands.Login;
 /// </remarks>
 public class LoginCommandHandlerTests
 {
+	private readonly FakeTimeProvider TimeProvider;
 	private readonly UserManager<ApplicationUser> UserManager;
 	private readonly SignInManager<ApplicationUser> SignInManager;
 	private readonly AuthenticationService AuthenticationService;
@@ -36,10 +38,12 @@ public class LoginCommandHandlerTests
 	/// </summary>
 	public LoginCommandHandlerTests()
 	{
+		TimeProvider =
+			TestDates.CreateDefaultTimeProvider();
 		UserManager =
 			IdentityMockFactory.CreateUserManager();
 		SignInManager =
-			CreateSignInManagerMock(UserManager);
+			IdentityMockFactory.CreateSignInManager(UserManager);
 		AuthenticationService =
 			IdentityMockFactory.CreateAuthenticationService();
 		AltchaService =
@@ -74,15 +78,20 @@ public class LoginCommandHandlerTests
 	{
 		// Arrange
 		ApplicationUser user =
-			CreateTestUser();
+			new UserBuilder(TimeProvider)
+				.WithId(1)
+				.WithUsername("testuser")
+				.WithEmail("test@example.com")
+				.WithRequiresPasswordChange(false)
+				.Build();
 		LoginCommand command =
 			CreateLoginCommand(
 				"testuser",
 				"ValidPass123!");
 
-		SetupUserManagerForSuccess(user);
-		SetupSignInSuccess();
-		SetupAuthResultSuccess(user);
+		IdentityMockFactory.ConfigureUserManagerForSuccess(UserManager, user);
+		IdentityMockFactory.ConfigureSignInManagerForSuccess(SignInManager);
+		IdentityMockFactory.ConfigureAuthServiceForSuccess(AuthenticationService, user);
 
 		// Act
 		AuthResult result =
@@ -111,13 +120,18 @@ public class LoginCommandHandlerTests
 	{
 		// Arrange
 		ApplicationUser user =
-			CreateTestUser();
+			new UserBuilder(TimeProvider)
+				.WithId(1)
+				.WithUsername("testuser")
+				.WithEmail("test@example.com")
+				.WithRequiresPasswordChange(false)
+				.Build();
 		LoginCommand command =
 			CreateLoginCommand(
 				"testuser",
 				"WrongPassword!");
 
-		SetupUserManagerForSuccess(user);
+		IdentityMockFactory.ConfigureUserManagerForSuccess(UserManager, user);
 		SignInManager
 			.CheckPasswordSignInAsync(
 				Arg.Any<ApplicationUser>(),
@@ -152,13 +166,18 @@ public class LoginCommandHandlerTests
 	{
 		// Arrange
 		ApplicationUser user =
-			CreateTestUser();
+			new UserBuilder(TimeProvider)
+				.WithId(1)
+				.WithUsername("testuser")
+				.WithEmail("test@example.com")
+				.WithRequiresPasswordChange(false)
+				.Build();
 		LoginCommand command =
 			CreateLoginCommand(
 				"testuser",
 				"ValidPass123!");
 
-		SetupUserManagerForSuccess(user);
+		IdentityMockFactory.ConfigureUserManagerForSuccess(UserManager, user);
 		SignInManager
 			.CheckPasswordSignInAsync(
 				Arg.Any<ApplicationUser>(),
@@ -231,7 +250,13 @@ public class LoginCommandHandlerTests
 	{
 		// Arrange
 		ApplicationUser user =
-			CreateTestUser(isActive: false);
+			new UserBuilder(TimeProvider)
+				.WithId(1)
+				.WithUsername("testuser")
+				.WithEmail("test@example.com")
+				.WithIsActive(false)
+				.WithRequiresPasswordChange(false)
+				.Build();
 		LoginCommand command =
 			CreateLoginCommand(
 				"testuser",
@@ -260,42 +285,6 @@ public class LoginCommandHandlerTests
 		result.ErrorCode.ShouldBe(AuthErrorCodes.InvalidCredentials);
 	}
 
-	private static SignInManager<ApplicationUser> CreateSignInManagerMock(
-		UserManager<ApplicationUser> userManager)
-	{
-		IHttpContextAccessor httpContextAccessor =
-			Substitute.For<IHttpContextAccessor>();
-		IUserClaimsPrincipalFactory<ApplicationUser> claimsFactory =
-			Substitute.For<IUserClaimsPrincipalFactory<ApplicationUser>>();
-		IOptions<IdentityOptions> optionsAccessor =
-			Substitute.For<IOptions<IdentityOptions>>();
-		optionsAccessor.Value.Returns(new IdentityOptions());
-		ILogger<SignInManager<ApplicationUser>> logger =
-			Substitute.For<ILogger<SignInManager<ApplicationUser>>>();
-
-		SignInManager<ApplicationUser> signInManager =
-			Substitute.For<SignInManager<ApplicationUser>>(
-				userManager,
-				httpContextAccessor,
-				claimsFactory,
-				optionsAccessor,
-				logger,
-				null,
-				null);
-
-		return signInManager;
-	}
-
-	private static ApplicationUser CreateTestUser(bool isActive = true) =>
-		new()
-		{
-			Id = 1,
-			UserName = "testuser",
-			Email = "test@example.com",
-			IsActive = isActive,
-			RequiresPasswordChange = false,
-		};
-
 	private static LoginCommand CreateLoginCommand(
 		string usernameOrEmail,
 		string password) =>
@@ -304,47 +293,4 @@ public class LoginCommandHandlerTests
 				UsernameOrEmail: usernameOrEmail,
 				Password: password),
 			ClientIp: "127.0.0.1");
-
-	private void SetupUserManagerForSuccess(ApplicationUser user)
-	{
-		UserManager
-			.FindByNameAsync(Arg.Any<string>())
-			.Returns(user);
-	}
-
-	private void SetupSignInSuccess()
-	{
-		SignInManager
-			.CheckPasswordSignInAsync(
-				Arg.Any<ApplicationUser>(),
-				Arg.Any<string>(),
-				Arg.Any<bool>())
-			.Returns(SignInResult.Success);
-	}
-
-	private void SetupAuthResultSuccess(ApplicationUser user)
-	{
-		AuthenticationService
-			.GenerateAuthResultAsync(
-				Arg.Any<ApplicationUser>(),
-				Arg.Any<string>(),
-				Arg.Any<bool>(),
-				Arg.Any<bool>(),
-				Arg.Any<CancellationToken>())
-			.Returns(
-				AuthResult.Succeeded(
-					accessToken: "test-access-token",
-					refreshToken: "test-refresh-token",
-					expiresAt: new DateTimeOffset(
-						2025,
-						1,
-						1,
-						0,
-						0,
-						0,
-						TimeSpan.Zero).UtcDateTime,
-					email: user.Email!,
-					fullName: user.FullName,
-					requiresPasswordChange: false));
-	}
 }

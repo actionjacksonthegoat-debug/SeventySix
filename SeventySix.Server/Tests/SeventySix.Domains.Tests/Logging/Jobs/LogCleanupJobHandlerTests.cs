@@ -10,6 +10,7 @@ using NSubstitute.ExceptionExtensions;
 using SeventySix.Logging;
 using SeventySix.Logging.Jobs;
 using SeventySix.Shared.BackgroundJobs;
+using SeventySix.TestUtilities.Constants;
 using Shouldly;
 
 namespace SeventySix.Domains.Tests.Logging.Jobs;
@@ -32,7 +33,7 @@ public class LogCleanupJobHandlerTests
 	public LogCleanupJobHandlerTests()
 	{
 		TimeProvider =
-			new FakeTimeProvider(new DateTimeOffset(2026, 1, 7, 12, 0, 0, TimeSpan.Zero));
+			TestDates.CreateFutureTimeProvider();
 
 		LogRepository =
 			Substitute.For<ILogRepository>();

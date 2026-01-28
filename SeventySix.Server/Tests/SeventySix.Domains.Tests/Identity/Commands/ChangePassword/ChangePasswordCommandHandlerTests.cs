@@ -1,7 +1,10 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using SeventySix.Identity;
+using SeventySix.TestUtilities.Builders;
+using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.Mocks;
 using Shouldly;
 
@@ -13,11 +16,13 @@ public class ChangePasswordCommandHandlerTests
 	private readonly ITokenRepository TokenRepository;
 	private readonly AuthenticationService AuthenticationService;
 	private readonly BreachCheckDependencies BreachCheck;
-	private readonly TimeProvider TimeProvider;
+	private readonly FakeTimeProvider TimeProvider;
 	private readonly ILogger<ChangePasswordCommand> Logger;
 
 	public ChangePasswordCommandHandlerTests()
 	{
+		TimeProvider =
+			TestDates.CreateDefaultTimeProvider();
 		UserManager =
 			IdentityMockFactory.CreateUserManager();
 		TokenRepository =
@@ -50,8 +55,6 @@ public class ChangePasswordCommandHandlerTests
 		BreachCheck =
 			new BreachCheckDependencies(breachedPasswordService, authSettings);
 
-		TimeProvider =
-			Substitute.For<TimeProvider>();
 		Logger =
 			Substitute.For<ILogger<ChangePasswordCommand>>();
 	}
@@ -62,9 +65,13 @@ public class ChangePasswordCommandHandlerTests
 		// Arrange
 		long userId = 123;
 		ApplicationUser user =
-			CreateTestUser(
-				userId,
-				requiresPasswordChange: true);
+			new UserBuilder(TimeProvider)
+				.WithId(userId)
+				.WithUsername("testuser")
+				.WithEmail("test@example.com")
+				.WithIsActive(true)
+				.WithRequiresPasswordChange(true)
+				.Build();
 
 		SetupUserManagerMocks(user);
 		SetupAuthResultMock(user);
@@ -97,21 +104,6 @@ public class ChangePasswordCommandHandlerTests
 			.UpdateAsync(
 				Arg.Is<ApplicationUser>(updatedUser =>
 					!updatedUser.RequiresPasswordChange));
-	}
-
-	private static ApplicationUser CreateTestUser(
-		long userId,
-		bool requiresPasswordChange)
-	{
-		return new()
-		{
-			Id = userId,
-			UserName = "testuser",
-			Email = "test@example.com",
-			IsActive = true,
-			RequiresPasswordChange =
-				requiresPasswordChange,
-		};
 	}
 
 	private void SetupUserManagerMocks(ApplicationUser user)

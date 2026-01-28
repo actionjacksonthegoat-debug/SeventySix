@@ -21,7 +21,7 @@ namespace SeventySix.Identity;
 /// <param name="httpContextAccessor">
 /// The HTTP context accessor for accessing the current request.
 /// </param>
-public class ClientInfoService(
+public sealed class ClientInfoService(
 	IHttpContextAccessor httpContextAccessor) : IClientInfoService
 {
 	/// <summary>

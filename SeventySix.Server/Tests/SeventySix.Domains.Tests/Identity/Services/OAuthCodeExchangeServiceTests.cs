@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using SeventySix.Identity;
 using SeventySix.Shared.Constants;
+using SeventySix.TestUtilities.Constants;
 using Shouldly;
 using ZiggyCreatures.Caching.Fusion;
 
@@ -18,7 +19,7 @@ namespace SeventySix.Domains.Tests.Identity.Services;
 public class OAuthCodeExchangeServiceTests
 {
 	private readonly DateTime FixedExpiresAt =
-		new DateTimeOffset(2025, 11, 28, 12, 15, 0, TimeSpan.Zero).UtcDateTime;
+		TestDates.FutureUtc;
 
 	private const string TestEmail = "test@example.com";
 	private const string? TestFullName = null;

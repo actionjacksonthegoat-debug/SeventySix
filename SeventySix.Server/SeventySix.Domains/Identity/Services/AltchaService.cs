@@ -23,7 +23,7 @@ namespace SeventySix.Identity;
 /// <param name="logger">
 /// Logger instance for diagnostics.
 /// </param>
-public class AltchaService(
+public sealed class AltchaService(
 	Ixnas.AltchaNet.AltchaService altchaLibraryService,
 	IOptions<AltchaSettings> settings,
 	ILogger<AltchaService> logger) : IAltchaService

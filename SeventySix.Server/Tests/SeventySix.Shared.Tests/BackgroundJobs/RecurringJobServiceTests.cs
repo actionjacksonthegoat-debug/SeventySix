@@ -5,6 +5,7 @@
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using SeventySix.Shared.BackgroundJobs;
+using SeventySix.TestUtilities.Constants;
 using Shouldly;
 
 namespace SeventySix.Shared.Tests.BackgroundJobs;
@@ -25,7 +26,7 @@ public class RecurringJobServiceTests
 	public RecurringJobServiceTests()
 	{
 		TimeProvider =
-			new FakeTimeProvider(new DateTimeOffset(2026, 1, 7, 12, 0, 0, TimeSpan.Zero));
+			TestDates.CreateFutureTimeProvider();
 
 		Repository =
 			Substitute.For<IRecurringJobRepository>();

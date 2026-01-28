@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using SeventySix.Identity;
+using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.Mocks;
 using Shouldly;
 
@@ -65,9 +66,7 @@ public class SetPasswordCommandHandlerTests
 		Logger =
 			Substitute.For<ILogger<SetPasswordCommand>>();
 		TimeProvider =
-			new FakeTimeProvider();
-		TimeProvider.SetUtcNow(
-			new DateTimeOffset(2025, 12, 15, 0, 0, 0, TimeSpan.Zero));
+			TestDates.CreateDefaultTimeProvider();
 	}
 
 	[Fact]

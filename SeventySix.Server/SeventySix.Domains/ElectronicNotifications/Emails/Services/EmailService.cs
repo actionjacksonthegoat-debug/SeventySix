@@ -16,9 +16,18 @@ namespace SeventySix.ElectronicNotifications.Emails;
 /// Email service implementation using MailKit.
 /// </summary>
 /// <remarks>
+/// <para>
 /// When Enabled=false, logs email details without sending (development mode).
 /// When Enabled=true, sends via configured SMTP server.
 /// Enforces daily rate limit via IRateLimitingService to prevent exceeding external API quotas.
+/// </para>
+/// <para>
+/// <strong>Template Extraction Threshold:</strong>
+/// Email templates are currently inline HTML strings. Consider extracting to embedded resources
+/// or using a template engine (e.g., Scriban) if templates exceed:
+/// - 10+ different email templates, OR
+/// - 100+ lines per individual template.
+/// </para>
 /// </remarks>
 /// <param name="settings">
 /// Email configuration settings.
@@ -29,7 +38,7 @@ namespace SeventySix.ElectronicNotifications.Emails;
 /// <param name="logger">
 /// Logger for email operations.
 /// </param>
-public class EmailService(
+public sealed class EmailService(
 	IOptions<EmailSettings> settings,
 	IRateLimitingService rateLimitingService,
 	ILogger<EmailService> logger) : IEmailService

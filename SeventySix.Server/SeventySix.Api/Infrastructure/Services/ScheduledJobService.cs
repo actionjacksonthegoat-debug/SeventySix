@@ -32,7 +32,7 @@ namespace SeventySix.Api.Infrastructure;
 /// <param name="timeProvider">
 /// Abstraction for time-related operations.
 /// </param>
-public class ScheduledJobService(
+public sealed class ScheduledJobService(
 	IRecurringJobRepository recurringJobRepository,
 	IOptions<RefreshTokenCleanupSettings> refreshTokenCleanupSettings,
 	IOptions<IpAnonymizationSettings> ipAnonymizationSettings,

@@ -19,7 +19,7 @@ namespace SeventySix.Identity;
 /// - One-time use: code removed from cache after exchange
 /// - Memory-only: codes never distributed (SetSkipDistributedCache)
 /// </remarks>
-public class OAuthCodeExchangeService : IOAuthCodeExchangeService
+public sealed class OAuthCodeExchangeService : IOAuthCodeExchangeService
 {
 	/// <summary>
 	/// Cache key prefix for OAuth codes.

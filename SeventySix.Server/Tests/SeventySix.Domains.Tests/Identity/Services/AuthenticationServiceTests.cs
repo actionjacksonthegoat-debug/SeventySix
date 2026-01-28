@@ -8,6 +8,7 @@ using NSubstitute;
 using SeventySix.Identity;
 using SeventySix.Identity.Constants;
 using SeventySix.TestUtilities.Builders;
+using SeventySix.TestUtilities.Constants;
 using Shouldly;
 
 namespace SeventySix.Domains.Tests.Identity.Services;
@@ -89,7 +90,7 @@ public class AuthenticationServiceTests
 		string expectedRefreshToken = "refresh_token_456";
 		string clientIp = "192.168.1.1";
 		DateTime utcNow =
-			new DateTimeOffset(2025, 12, 9, 10, 0, 0, TimeSpan.Zero).UtcDateTime;
+			TestDates.DefaultUtc;
 
 		UserManager
 			.GetRolesAsync(user)

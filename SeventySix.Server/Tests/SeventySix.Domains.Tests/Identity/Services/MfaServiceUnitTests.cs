@@ -8,6 +8,7 @@ using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using SeventySix.Identity;
 using SeventySix.TestUtilities.Builders;
+using SeventySix.TestUtilities.Constants;
 using Shouldly;
 
 namespace SeventySix.Domains.Tests.Identity.Services;
@@ -19,7 +20,7 @@ namespace SeventySix.Domains.Tests.Identity.Services;
 public class MfaServiceUnitTests
 {
 	private static readonly DateTimeOffset FixedTime =
-		new(2026, 1, 25, 12, 0, 0, TimeSpan.Zero);
+		TestDates.Future;
 
 	private readonly IMfaChallengeRepository ChallengeRepository;
 	private readonly UserManager<ApplicationUser> UserManager;

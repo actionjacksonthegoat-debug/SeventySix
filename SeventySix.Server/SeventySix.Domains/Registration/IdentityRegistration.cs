@@ -167,10 +167,10 @@ public static class IdentityRegistration
 			.AddDefaultTokenProviders();
 
 		// Replace default password hasher with Argon2
-		services.AddSingleton<IPasswordHasher, Argon2PasswordHasher>();
+		services.AddSingleton<IPasswordHasher, Argon2PasswordHasherService>();
 		services.AddScoped<
 			IPasswordHasher<ApplicationUser>,
-			IdentityArgon2PasswordHasher>();
+			IdentityArgon2PasswordHasherService>();
 
 		// Register transaction manager for Identity context
 		services.AddTransactionManagerFor<IdentityDbContext>();

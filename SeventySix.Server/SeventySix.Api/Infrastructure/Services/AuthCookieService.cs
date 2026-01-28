@@ -24,7 +24,7 @@ namespace SeventySix.Api.Infrastructure;
 /// <param name="jwtSettings">
 /// JWT settings including token expiration.
 /// </param>
-public class AuthCookieService(
+public sealed class AuthCookieService(
 	IHttpContextAccessor httpContextAccessor,
 	IOptions<AuthSettings> authSettings,
 	IOptions<JwtSettings> jwtSettings) : IAuthCookieService

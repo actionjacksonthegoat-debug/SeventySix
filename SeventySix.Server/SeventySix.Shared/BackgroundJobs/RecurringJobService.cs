@@ -17,7 +17,7 @@ namespace SeventySix.Shared.BackgroundJobs;
 /// <param name="timeProvider">
 /// Provides current time for scheduling calculations.
 /// </param>
-public class RecurringJobService(
+public sealed class RecurringJobService(
 	IRecurringJobRepository repository,
 	IMessageScheduler scheduler,
 	TimeProvider timeProvider) : IRecurringJobService

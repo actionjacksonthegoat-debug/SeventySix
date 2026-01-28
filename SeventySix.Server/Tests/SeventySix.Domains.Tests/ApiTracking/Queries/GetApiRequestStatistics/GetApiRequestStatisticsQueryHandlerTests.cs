@@ -5,6 +5,7 @@
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using SeventySix.ApiTracking;
+using SeventySix.TestUtilities.Constants;
 using Shouldly;
 
 namespace SeventySix.Domains.Tests.ApiTracking.Queries.GetApiRequestStatistics;
@@ -29,8 +30,7 @@ public class GetApiRequestStatisticsQueryHandlerTests
 		Repository =
 			Substitute.For<IThirdPartyApiRequestRepository>();
 		TimeProvider =
-			new FakeTimeProvider(
-				new DateTimeOffset(2024, 1, 15, 12, 0, 0, TimeSpan.Zero));
+			TestDates.CreateHistoricalTimeProvider();
 	}
 
 	/// <summary>

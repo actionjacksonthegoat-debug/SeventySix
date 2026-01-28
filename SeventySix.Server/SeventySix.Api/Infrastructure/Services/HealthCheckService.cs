@@ -16,7 +16,7 @@ namespace SeventySix.Api.Infrastructure;
 /// external API availability, error queue status, and system resources.
 /// Used by the /health endpoint for monitoring and load balancer checks.
 /// </remarks>
-public class HealthCheckService(
+public sealed class HealthCheckService(
 	IMetricsService metricsService,
 	IEnumerable<IDatabaseHealthCheck> databaseHealthChecks,
 	TimeProvider timeProvider) : IHealthCheckService

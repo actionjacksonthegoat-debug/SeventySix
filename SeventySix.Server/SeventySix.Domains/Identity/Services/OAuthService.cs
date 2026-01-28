@@ -22,7 +22,7 @@ namespace SeventySix.Identity;
 /// - Uses ASP.NET Core Identity for user management
 /// - Supports GitHub OAuth authentication with PKCE
 /// </remarks>
-public class OAuthService(
+public sealed class OAuthService(
 	UserManager<ApplicationUser> userManager,
 	IHttpClientFactory httpClientFactory,
 	IOptions<AuthSettings> authSettings,

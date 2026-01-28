@@ -24,7 +24,7 @@ namespace SeventySix.Identity;
 /// - Creates admin with password requiring change on first login
 /// - Only creates if configured and no admin user exists
 /// </remarks>
-public class AdminSeederService(
+public sealed class AdminSeederService(
 	IServiceScopeFactory scopeFactory,
 	IOptions<AdminSeederSettings> settings,
 	TimeProvider timeProvider,

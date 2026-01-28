@@ -1,4 +1,4 @@
-// <copyright file="IdentityArgon2PasswordHasher.cs" company="SeventySix">
+// <copyright file="IdentityArgon2PasswordHasherService.cs" company="SeventySix">
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
@@ -18,7 +18,7 @@ namespace SeventySix.Identity;
 /// <param name="passwordHasher">
 /// The project-level Argon2 password hasher.
 /// </param>
-public sealed class IdentityArgon2PasswordHasher(IPasswordHasher passwordHasher)
+public sealed class IdentityArgon2PasswordHasherService(IPasswordHasher passwordHasher)
 	: IPasswordHasher<ApplicationUser>
 {
 	/// <inheritdoc/>

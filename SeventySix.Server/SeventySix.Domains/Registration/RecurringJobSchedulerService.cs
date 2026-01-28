@@ -47,7 +47,7 @@ namespace SeventySix.Registration;
 /// <param name="logger">
 /// Logger for diagnostic messages.
 /// </param>
-public class RecurringJobSchedulerService(
+public sealed class RecurringJobSchedulerService(
 	IServiceScopeFactory serviceScopeFactory,
 	IConfiguration configuration,
 	ILogger<RecurringJobSchedulerService> logger) : IHostedService

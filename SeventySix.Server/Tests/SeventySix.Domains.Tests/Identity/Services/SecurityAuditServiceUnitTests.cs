@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using SeventySix.Identity;
+using SeventySix.TestUtilities.Constants;
 using Shouldly;
 
 namespace SeventySix.Domains.Tests.Identity.Services;
@@ -30,9 +31,7 @@ public class SecurityAuditServiceUnitTests
 	public SecurityAuditServiceUnitTests()
 	{
 		TimeProvider =
-			new FakeTimeProvider();
-		TimeProvider.SetUtcNow(
-			new DateTimeOffset(2025, 6, 15, 12, 0, 0, TimeSpan.Zero));
+			TestDates.CreateDefaultTimeProvider();
 	}
 
 	private static IdentityDbContext CreateInMemoryDbContext()

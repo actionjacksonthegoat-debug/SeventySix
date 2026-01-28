@@ -761,17 +761,18 @@ public class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 
 	private async Task<ApplicationUser> CreateTestUserAsync(IdentityDbContext context)
 	{
+		FakeTimeProvider timeProvider =
+			new(FixedTime);
+
+		string uniqueId =
+			Guid.NewGuid().ToString("N");
+
 		ApplicationUser user =
-			new()
-			{
-				UserName =
-					$"testuser_{Guid.NewGuid():N}",
-				Email =
-					$"test_{Guid.NewGuid():N}@example.com",
-				IsActive = true,
-				CreateDate = FixedTime.UtcDateTime,
-				CreatedBy = "Test",
-			};
+			new UserBuilder(timeProvider)
+				.WithUsername($"testuser_{uniqueId}")
+				.WithEmail($"test_{uniqueId}@example.com")
+				.WithIsActive(true)
+				.Build();
 
 		context.Users.Add(user);
 		await context.SaveChangesAsync();

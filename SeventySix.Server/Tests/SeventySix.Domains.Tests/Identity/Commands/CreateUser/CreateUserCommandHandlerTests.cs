@@ -8,6 +8,7 @@ using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using SeventySix.ElectronicNotifications.Emails;
 using SeventySix.Identity;
+using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.Mocks;
 using Shouldly;
 using Wolverine;
@@ -37,15 +38,7 @@ public class CreateUserCommandHandlerTests
 		UserManager =
 			IdentityMockFactory.CreateUserManager();
 		TimeProvider =
-			new FakeTimeProvider(
-				new DateTimeOffset(
-					2023,
-					1,
-					1,
-					0,
-					0,
-					0,
-					TimeSpan.Zero));
+			TestDates.CreateDefaultTimeProvider();
 		Logger =
 			Substitute.For<ILogger>();
 	}
@@ -256,9 +249,9 @@ public class CreateUserCommandHandlerTests
 	[Fact]
 	public async Task HandleAsync_SetsCreateDateFromTimeProviderAsync()
 	{
-		// Arrange - Advance time forward from base time (2023-01-01)
+		// Arrange - Advance time forward from default time
 		DateTimeOffset expectedTime =
-			new(2024, 1, 15, 12, 0, 0, TimeSpan.Zero);
+			TestDates.DaysFromDefault(1);
 		TimeProvider.SetUtcNow(expectedTime);
 
 		CreateUserRequest request =

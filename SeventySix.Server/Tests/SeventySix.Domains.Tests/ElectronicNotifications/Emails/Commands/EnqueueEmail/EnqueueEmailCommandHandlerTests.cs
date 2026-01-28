@@ -7,6 +7,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Time.Testing;
 using SeventySix.ElectronicNotifications;
 using SeventySix.ElectronicNotifications.Emails;
+using SeventySix.TestUtilities.Constants;
 using Shouldly;
 
 namespace SeventySix.Domains.Tests.ElectronicNotifications.Emails.Commands.EnqueueEmail;
@@ -28,9 +29,7 @@ public class EnqueueEmailCommandHandlerTests
 	public EnqueueEmailCommandHandlerTests()
 	{
 		TimeProvider =
-			new FakeTimeProvider();
-		TimeProvider.SetUtcNow(
-			new DateTimeOffset(2026, 1, 3, 12, 0, 0, TimeSpan.Zero));
+			TestDates.CreateFutureTimeProvider();
 
 		Settings =
 			Options.Create(

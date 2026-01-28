@@ -28,7 +28,7 @@ namespace SeventySix.Identity;
 /// <param name="logger">
 /// The logger instance.
 /// </param>
-public class RegistrationService(
+public sealed class RegistrationService(
 	UserManager<ApplicationUser> userManager,
 	AuthenticationService authenticationService,
 	TimeProvider timeProvider,

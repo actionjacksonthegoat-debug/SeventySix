@@ -31,7 +31,7 @@ namespace SeventySix.Identity;
 /// <param name="logger">
 /// Logger for recording breach check outcomes and errors.
 /// </param>
-public class BreachedPasswordService(
+public sealed class BreachedPasswordService(
 	IHttpClientFactory httpClientFactory,
 	IOptions<AuthSettings> authSettings,
 	ILogger<BreachedPasswordService> logger) : IBreachedPasswordService

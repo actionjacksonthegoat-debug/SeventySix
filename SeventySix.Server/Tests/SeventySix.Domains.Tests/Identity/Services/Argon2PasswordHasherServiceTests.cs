@@ -1,4 +1,4 @@
-// <copyright file="Argon2PasswordHasherTests.cs" company="SeventySix">
+// <copyright file="Argon2PasswordHasherServiceTests.cs" company="SeventySix">
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
@@ -9,16 +9,16 @@ using Shouldly;
 namespace SeventySix.Domains.Tests.Identity.Services;
 
 /// <summary>
-/// Tests for <see cref="Argon2PasswordHasher"/>.
+/// Tests for <see cref="Argon2PasswordHasherService"/>.
 /// </summary>
 /// <remarks>
 /// Security-critical tests - 100% coverage required per 80/20 rule.
 /// </remarks>
-public class Argon2PasswordHasherTests
+public class Argon2PasswordHasherServiceTests
 {
-	private readonly Argon2PasswordHasher Hasher;
+	private readonly Argon2PasswordHasherService Hasher;
 
-	public Argon2PasswordHasherTests()
+	public Argon2PasswordHasherServiceTests()
 	{
 		AuthSettings authSettings =
 			new()
@@ -37,7 +37,7 @@ public class Argon2PasswordHasherTests
 			};
 
 		Hasher =
-			new Argon2PasswordHasher(Options.Create(authSettings));
+			new Argon2PasswordHasherService(Options.Create(authSettings));
 	}
 
 	[Fact]

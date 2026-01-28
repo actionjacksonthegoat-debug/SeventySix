@@ -32,7 +32,7 @@ namespace SeventySix.Identity;
 /// <param name="logger">
 /// The logger for error reporting.
 /// </param>
-public class SecurityAuditService(
+public sealed class SecurityAuditService(
 	IdentityDbContext dbContext,
 	IClientInfoService clientInfoService,
 	TimeProvider timeProvider,

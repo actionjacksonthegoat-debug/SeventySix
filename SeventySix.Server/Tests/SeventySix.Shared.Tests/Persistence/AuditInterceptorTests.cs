@@ -8,6 +8,7 @@ using SeventySix.Shared.Constants;
 using SeventySix.Shared.Entities;
 using SeventySix.Shared.Interfaces;
 using SeventySix.Shared.Persistence;
+using SeventySix.TestUtilities.Constants;
 using Shouldly;
 
 namespace SeventySix.Shared.Tests.Persistence;
@@ -36,7 +37,7 @@ public class AuditInterceptorTests : IDisposable
 
 		TimeProvider = new TestTimeProvider();
 		TimeProvider.SetUtcNow(
-			new DateTimeOffset(2024, 1, 15, 10, 30, 0, TimeSpan.Zero));
+			TestDates.Historical);
 
 		Interceptor =
 			new AuditInterceptor(
@@ -135,7 +136,7 @@ public class AuditInterceptorTests : IDisposable
 
 		// Advance time for modification
 		TimeProvider.SetUtcNow(
-			new DateTimeOffset(2024, 1, 16, 12, 0, 0, TimeSpan.Zero));
+			TestDates.Modification);
 
 		// Act
 		entity.Name = "Updated";
@@ -178,7 +179,7 @@ public class AuditInterceptorTests : IDisposable
 
 		// Advance time for modification
 		TimeProvider.SetUtcNow(
-			new DateTimeOffset(2024, 1, 16, 12, 0, 0, TimeSpan.Zero));
+			TestDates.Modification);
 
 		// Act
 		entity.Name = "Updated";
@@ -301,7 +302,7 @@ public class AuditInterceptorTests : IDisposable
 
 		// Advance time for modification
 		TimeProvider.SetUtcNow(
-			new DateTimeOffset(2024, 1, 16, 12, 0, 0, TimeSpan.Zero));
+			TestDates.Modification);
 
 		// Act
 		entity.Name = "Updated";
@@ -324,7 +325,7 @@ public class AuditInterceptorTests : IDisposable
 
 		// Advance time for modification
 		TimeProvider.SetUtcNow(
-			new DateTimeOffset(2024, 1, 16, 12, 0, 0, TimeSpan.Zero));
+			TestDates.Modification);
 
 		// Act
 		entity.Name = "Updated";

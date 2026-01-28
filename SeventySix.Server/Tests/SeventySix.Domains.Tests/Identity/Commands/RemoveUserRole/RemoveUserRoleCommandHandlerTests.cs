@@ -3,10 +3,13 @@
 // </copyright>
 
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using SeventySix.Identity;
 using SeventySix.Identity.Constants;
 using SeventySix.Shared.POCOs;
+using SeventySix.TestUtilities.Builders;
+using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.Mocks;
 using Shouldly;
 
@@ -21,6 +24,7 @@ namespace SeventySix.Domains.Tests.Identity.Commands.RemoveUserRole;
 /// </remarks>
 public class RemoveUserRoleCommandHandlerTests
 {
+	private readonly FakeTimeProvider TimeProvider;
 	private readonly UserManager<ApplicationUser> UserManager;
 
 	/// <summary>
@@ -28,6 +32,8 @@ public class RemoveUserRoleCommandHandlerTests
 	/// </summary>
 	public RemoveUserRoleCommandHandlerTests()
 	{
+		TimeProvider =
+			TestDates.CreateDefaultTimeProvider();
 		UserManager =
 			IdentityMockFactory.CreateUserManager();
 	}
@@ -43,7 +49,12 @@ public class RemoveUserRoleCommandHandlerTests
 		const string RoleName = RoleConstants.Developer;
 
 		ApplicationUser user =
-			CreateTestUser(UserId);
+			new UserBuilder(TimeProvider)
+				.WithId(UserId)
+				.WithUsername($"testuser{UserId}")
+				.WithEmail($"test{UserId}@example.com")
+				.WithIsActive(true)
+				.Build();
 
 		RemoveUserRoleCommand command =
 			new(UserId: UserId, Role: RoleName);
@@ -115,7 +126,12 @@ public class RemoveUserRoleCommandHandlerTests
 		const string RoleName = RoleConstants.Developer;
 
 		ApplicationUser user =
-			CreateTestUser(UserId);
+			new UserBuilder(TimeProvider)
+				.WithId(UserId)
+				.WithUsername($"testuser{UserId}")
+				.WithEmail($"test{UserId}@example.com")
+				.WithIsActive(true)
+				.Build();
 
 		RemoveUserRoleCommand command =
 			new(UserId: UserId, Role: RoleName);
@@ -158,7 +174,12 @@ public class RemoveUserRoleCommandHandlerTests
 		const long LastAdminUserId = 1;
 
 		ApplicationUser lastAdmin =
-			CreateTestUser(LastAdminUserId);
+			new UserBuilder(TimeProvider)
+				.WithId(LastAdminUserId)
+				.WithUsername($"testuser{LastAdminUserId}")
+				.WithEmail($"test{LastAdminUserId}@example.com")
+				.WithIsActive(true)
+				.Build();
 
 		RemoveUserRoleCommand command =
 			new(UserId: LastAdminUserId, Role: RoleConstants.Admin);
@@ -202,10 +223,20 @@ public class RemoveUserRoleCommandHandlerTests
 		const long OtherAdminUserId = 99;
 
 		ApplicationUser adminUser =
-			CreateTestUser(AdminUserId);
+			new UserBuilder(TimeProvider)
+				.WithId(AdminUserId)
+				.WithUsername($"testuser{AdminUserId}")
+				.WithEmail($"test{AdminUserId}@example.com")
+				.WithIsActive(true)
+				.Build();
 
 		ApplicationUser otherAdmin =
-			CreateTestUser(OtherAdminUserId);
+			new UserBuilder(TimeProvider)
+				.WithId(OtherAdminUserId)
+				.WithUsername($"testuser{OtherAdminUserId}")
+				.WithEmail($"test{OtherAdminUserId}@example.com")
+				.WithIsActive(true)
+				.Build();
 
 		RemoveUserRoleCommand command =
 			new(UserId: AdminUserId, Role: RoleConstants.Admin);
@@ -253,7 +284,12 @@ public class RemoveUserRoleCommandHandlerTests
 		const string RoleName = RoleConstants.Developer;
 
 		ApplicationUser user =
-			CreateTestUser(UserId);
+			new UserBuilder(TimeProvider)
+				.WithId(UserId)
+				.WithUsername($"testuser{UserId}")
+				.WithEmail($"test{UserId}@example.com")
+				.WithIsActive(true)
+				.Build();
 
 		RemoveUserRoleCommand command =
 			new(UserId: UserId, Role: RoleName);
@@ -287,13 +323,4 @@ public class RemoveUserRoleCommandHandlerTests
 		result.IsSuccess.ShouldBeFalse();
 		result.Error!.ShouldContain("constraint");
 	}
-
-	private static ApplicationUser CreateTestUser(long userId) =>
-		new()
-		{
-			Id = userId,
-			UserName = $"testuser{userId}",
-			Email = $"test{userId}@example.com",
-			IsActive = true,
-		};
 }

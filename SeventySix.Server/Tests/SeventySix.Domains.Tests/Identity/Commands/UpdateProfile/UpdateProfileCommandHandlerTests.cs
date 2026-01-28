@@ -3,8 +3,11 @@
 // </copyright>
 
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using SeventySix.Identity;
+using SeventySix.TestUtilities.Builders;
+using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.Mocks;
 using Shouldly;
 using Wolverine;
@@ -19,6 +22,7 @@ namespace SeventySix.Domains.Tests.Identity.Commands.UpdateProfile;
 /// </remarks>
 public class UpdateProfileCommandHandlerTests
 {
+	private readonly FakeTimeProvider TimeProvider;
 	private readonly IMessageBus MessageBus;
 	private readonly UserManager<ApplicationUser> UserManager;
 
@@ -27,6 +31,8 @@ public class UpdateProfileCommandHandlerTests
 	/// </summary>
 	public UpdateProfileCommandHandlerTests()
 	{
+		TimeProvider =
+			TestDates.CreateDefaultTimeProvider();
 		MessageBus =
 			Substitute.For<IMessageBus>();
 		UserManager =
@@ -41,7 +47,13 @@ public class UpdateProfileCommandHandlerTests
 	{
 		// Arrange
 		ApplicationUser user =
-			CreateTestUser();
+			new UserBuilder(TimeProvider)
+				.WithId(1)
+				.WithUsername("testuser")
+				.WithEmail("test@example.com")
+				.WithFullName("Test User")
+				.WithIsActive(true)
+				.Build();
 		UpdateProfileCommand command =
 			CreateUpdateCommand(
 				user.Id,
@@ -127,7 +139,13 @@ public class UpdateProfileCommandHandlerTests
 	{
 		// Arrange
 		ApplicationUser user =
-			CreateTestUser();
+			new UserBuilder(TimeProvider)
+				.WithId(1)
+				.WithUsername("testuser")
+				.WithEmail("test@example.com")
+				.WithFullName("Test User")
+				.WithIsActive(true)
+				.Build();
 		UpdateProfileCommand command =
 			CreateUpdateCommand(
 				user.Id,
@@ -155,16 +173,6 @@ public class UpdateProfileCommandHandlerTests
 				UserManager,
 				CancellationToken.None));
 	}
-
-	private static ApplicationUser CreateTestUser() =>
-		new()
-		{
-			Id = 1,
-			UserName = "testuser",
-			Email = "test@example.com",
-			FullName = "Test User",
-			IsActive = true,
-		};
 
 	private static UpdateProfileCommand CreateUpdateCommand(
 		long userId,

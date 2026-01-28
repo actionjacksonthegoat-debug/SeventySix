@@ -3,6 +3,7 @@
 // </copyright>
 
 using NSubstitute;
+using SeventySix.TestUtilities.Constants;
 
 namespace SeventySix.TestUtilities.Builders;
 
@@ -13,12 +14,18 @@ namespace SeventySix.TestUtilities.Builders;
 /// <remarks>
 /// Usage:
 /// <code>
-/// // Default (2025-01-01 12:00:00 UTC)
+/// // Default (uses TestDates.Default)
 /// TimeProvider timeProvider = TestTimeProviderBuilder.CreateDefault();
+///
+/// // Historical time
+/// TimeProvider timeProvider = TestTimeProviderBuilder.CreateHistorical();
+///
+/// // Future time
+/// TimeProvider timeProvider = TestTimeProviderBuilder.CreateFuture();
 ///
 /// // Custom time
 /// TimeProvider timeProvider = new TestTimeProviderBuilder()
-///     .WithUtcNow(new DateTimeOffset(2025, 6, 15, 14, 30, 0, TimeSpan.Zero))
+///     .WithUtcNow(TestDates.Modification)
 ///     .Build();
 /// </code>
 /// </remarks>
@@ -26,16 +33,10 @@ public class TestTimeProviderBuilder
 {
 	/// <summary>
 	/// Default fixed time for deterministic tests.
+	/// References centralized <see cref="TestDates.Default"/> for consistency.
 	/// </summary>
 	public static readonly DateTimeOffset DefaultTime =
-		new(
-		2025,
-		1,
-		1,
-		12,
-		0,
-		0,
-		TimeSpan.Zero);
+		TestDates.Default;
 
 	private DateTimeOffset UtcNow = DefaultTime;
 
@@ -43,10 +44,32 @@ public class TestTimeProviderBuilder
 	/// Creates a TimeProvider mock with default fixed time.
 	/// </summary>
 	/// <returns>
-	/// A TimeProvider mock returning 2025-01-01 12:00:00 UTC.
+	/// A TimeProvider mock returning <see cref="TestDates.Default"/>.
 	/// </returns>
 	public static TimeProvider CreateDefault() =>
 		new TestTimeProviderBuilder().Build();
+
+	/// <summary>
+	/// Creates a TimeProvider mock with historical fixed time.
+	/// </summary>
+	/// <returns>
+	/// A TimeProvider mock returning <see cref="TestDates.Historical"/>.
+	/// </returns>
+	public static TimeProvider CreateHistorical() =>
+		new TestTimeProviderBuilder()
+			.WithUtcNow(TestDates.Historical)
+			.Build();
+
+	/// <summary>
+	/// Creates a TimeProvider mock with future fixed time.
+	/// </summary>
+	/// <returns>
+	/// A TimeProvider mock returning <see cref="TestDates.Future"/>.
+	/// </returns>
+	public static TimeProvider CreateFuture() =>
+		new TestTimeProviderBuilder()
+			.WithUtcNow(TestDates.Future)
+			.Build();
 
 	/// <summary>
 	/// Creates a TimeProvider mock for a specific fixed time.
@@ -58,7 +81,9 @@ public class TestTimeProviderBuilder
 	/// A TimeProvider mock returning the specified time.
 	/// </returns>
 	public static TimeProvider Create(DateTimeOffset fixedTime) =>
-		new TestTimeProviderBuilder().WithUtcNow(fixedTime).Build();
+		new TestTimeProviderBuilder()
+			.WithUtcNow(fixedTime)
+			.Build();
 
 	/// <summary>
 	/// Sets the UTC time the mock will return.

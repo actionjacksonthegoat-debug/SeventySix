@@ -23,7 +23,7 @@ namespace SeventySix.Identity;
 /// - Session limits: oldest token revoked when max sessions exceeded
 /// - PII (email, fullName) is NOT included in JWT for GDPR compliance
 /// </remarks>
-public class TokenService(
+public sealed class TokenService(
 	ITokenRepository tokenRepository,
 	IOptions<JwtSettings> jwtSettings,
 	IOptions<AuthSettings> authSettings,

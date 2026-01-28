@@ -3,9 +3,12 @@
 // </copyright>
 
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using SeventySix.Identity;
 using SeventySix.Identity.Commands.BulkApprovePermissionRequests;
+using SeventySix.TestUtilities.Builders;
+using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.Mocks;
 using Shouldly;
 
@@ -20,6 +23,7 @@ namespace SeventySix.Domains.Tests.Identity.Commands.BulkApprovePermissionReques
 /// </remarks>
 public class BulkApprovePermissionRequestsCommandHandlerTests
 {
+	private readonly FakeTimeProvider TimeProvider;
 	private readonly IPermissionRequestRepository PermissionRequestRepository;
 	private readonly UserManager<ApplicationUser> UserManager;
 
@@ -28,6 +32,8 @@ public class BulkApprovePermissionRequestsCommandHandlerTests
 	/// </summary>
 	public BulkApprovePermissionRequestsCommandHandlerTests()
 	{
+		TimeProvider =
+			TestDates.CreateDefaultTimeProvider();
 		PermissionRequestRepository =
 			Substitute.For<IPermissionRequestRepository>();
 		UserManager =
@@ -50,9 +56,19 @@ public class BulkApprovePermissionRequestsCommandHandlerTests
 			CreateTestRequest(2, 43, "Admin");
 
 		ApplicationUser user1 =
-			CreateTestUser(42);
+			new UserBuilder(TimeProvider)
+				.WithId(42)
+				.WithUsername("testuser42")
+				.WithEmail("test42@example.com")
+				.WithIsActive(true)
+				.Build();
 		ApplicationUser user2 =
-			CreateTestUser(43);
+			new UserBuilder(TimeProvider)
+				.WithId(43)
+				.WithUsername("testuser43")
+				.WithEmail("test43@example.com")
+				.WithIsActive(true)
+				.Build();
 
 		BulkApprovePermissionRequestsCommand command =
 			new(RequestIds: requestIds);
@@ -119,7 +135,12 @@ public class BulkApprovePermissionRequestsCommandHandlerTests
 			CreateTestRequest(2, 99, "Admin"); // User 99 doesn't exist
 
 		ApplicationUser user1 =
-			CreateTestUser(42);
+			new UserBuilder(TimeProvider)
+				.WithId(42)
+				.WithUsername("testuser42")
+				.WithEmail("test42@example.com")
+				.WithIsActive(true)
+				.Build();
 
 		BulkApprovePermissionRequestsCommand command =
 			new(RequestIds: requestIds);
@@ -183,9 +204,19 @@ public class BulkApprovePermissionRequestsCommandHandlerTests
 			CreateTestRequest(2, 43, "Admin");
 
 		ApplicationUser user1 =
-			CreateTestUser(42);
+			new UserBuilder(TimeProvider)
+				.WithId(42)
+				.WithUsername("testuser42")
+				.WithEmail("test42@example.com")
+				.WithIsActive(true)
+				.Build();
 		ApplicationUser user2 =
-			CreateTestUser(43);
+			new UserBuilder(TimeProvider)
+				.WithId(43)
+				.WithUsername("testuser43")
+				.WithEmail("test43@example.com")
+				.WithIsActive(true)
+				.Build();
 
 		BulkApprovePermissionRequestsCommand command =
 			new(RequestIds: requestIds);
@@ -291,14 +322,5 @@ public class BulkApprovePermissionRequestsCommandHandlerTests
 			RequestMessage = "Please grant me access",
 			CreatedBy = $"testuser{userId}",
 			CreateDate = default,
-		};
-
-	private static ApplicationUser CreateTestUser(long userId) =>
-		new()
-		{
-			Id = userId,
-			UserName = $"testuser{userId}",
-			Email = $"test{userId}@example.com",
-			IsActive = true,
 		};
 }

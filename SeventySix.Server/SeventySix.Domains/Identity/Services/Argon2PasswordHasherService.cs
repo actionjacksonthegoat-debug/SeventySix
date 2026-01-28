@@ -1,4 +1,4 @@
-// <copyright file="Argon2PasswordHasher.cs" company="SeventySix">
+// <copyright file="Argon2PasswordHasherService.cs" company="SeventySix">
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
@@ -10,7 +10,7 @@ using Microsoft.Extensions.Options;
 namespace SeventySix.Identity;
 
 /// <summary>
-/// Password hasher using Argon2id algorithm.
+/// Password hashing service using Argon2id algorithm.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -29,7 +29,7 @@ namespace SeventySix.Identity;
 /// Hash Format: $argon2id$v=19$m={memory},t={iterations},p={parallelism}${salt}${hash}
 /// </para>
 /// </remarks>
-public sealed class Argon2PasswordHasher(IOptions<AuthSettings> authSettings)
+public sealed class Argon2PasswordHasherService(IOptions<AuthSettings> authSettings)
 	: IPasswordHasher
 {
 	private const int SaltSize = 16;

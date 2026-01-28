@@ -3,10 +3,12 @@
 // </copyright>
 
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using SeventySix.Identity;
 using SeventySix.Shared.POCOs;
 using SeventySix.TestUtilities.Builders;
+using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.Mocks;
 using Shouldly;
 
@@ -21,7 +23,7 @@ namespace SeventySix.Domains.Tests.Identity.Commands.DeleteUser;
 public class DeleteUserCommandHandlerTests
 {
 	private readonly UserManager<ApplicationUser> UserManager;
-	private readonly TimeProvider TimeProvider;
+	private readonly FakeTimeProvider TimeProvider;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="DeleteUserCommandHandlerTests"/> class.
@@ -31,12 +33,7 @@ public class DeleteUserCommandHandlerTests
 		UserManager =
 			IdentityMockFactory.CreateUserManager();
 		TimeProvider =
-			Substitute.For<TimeProvider>();
-
-		// Setup default time
-		TimeProvider
-			.GetUtcNow()
-			.Returns(TestTimeProviderBuilder.DefaultTime);
+			TestDates.CreateDefaultTimeProvider();
 	}
 
 	/// <summary>
@@ -47,7 +44,12 @@ public class DeleteUserCommandHandlerTests
 	{
 		// Arrange
 		ApplicationUser user =
-			CreateTestUser();
+			new UserBuilder(TimeProvider)
+				.WithId(1)
+				.WithUsername("testuser")
+				.WithEmail("test@example.com")
+				.WithIsActive(true)
+				.Build();
 		DeleteUserCommand command =
 			new(UserId: user.Id, DeletedBy: "admin");
 
@@ -112,7 +114,16 @@ public class DeleteUserCommandHandlerTests
 	{
 		// Arrange
 		ApplicationUser user =
-			CreateTestUser(isDeleted: true);
+			new UserBuilder(TimeProvider)
+				.WithId(1)
+				.WithUsername("testuser")
+				.WithEmail("test@example.com")
+				.WithIsActive(true)
+				.WithDeletedInfo(
+					isDeleted: true,
+					deletedAt: TimeProvider.GetUtcNow().UtcDateTime,
+					deletedBy: "system")
+				.Build();
 		DeleteUserCommand command =
 			new(UserId: user.Id, DeletedBy: "admin");
 
@@ -132,14 +143,4 @@ public class DeleteUserCommandHandlerTests
 		result.IsSuccess.ShouldBeFalse();
 		result.Error!.ShouldContain("already deleted");
 	}
-
-	private static ApplicationUser CreateTestUser(bool isDeleted = false) =>
-		new()
-		{
-			Id = 1,
-			UserName = "testuser",
-			Email = "test@example.com",
-			IsActive = true,
-			IsDeleted = isDeleted,
-		};
 }

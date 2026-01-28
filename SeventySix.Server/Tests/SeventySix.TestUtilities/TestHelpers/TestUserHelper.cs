@@ -5,6 +5,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using SeventySix.Identity;
+using SeventySix.TestUtilities.Constants;
 
 namespace SeventySix.TestUtilities.TestHelpers;
 
@@ -12,7 +13,7 @@ namespace SeventySix.TestUtilities.TestHelpers;
 /// Options for creating test users.
 /// </summary>
 /// <param name="Password">
-/// Optional custom password. Defaults to <see cref="TestUserHelper.TestPassword"/>.
+/// Optional custom password. Defaults to <see cref="TestUserConstants.DefaultPassword"/>.
 /// </param>
 /// <param name="IsActive">
 /// Whether the user should be active. Defaults to true.
@@ -32,8 +33,10 @@ public static class TestUserHelper
 {
 	/// <summary>
 	/// The standard test password used across API integration tests.
+	/// References <see cref="TestUserConstants.DefaultPassword"/> for DRY compliance.
 	/// </summary>
-	public const string TestPassword = "TestPassword123!";
+	public const string TestPassword =
+		TestUserConstants.DefaultPassword;
 
 	/// <summary>
 	/// The standard test password used across unit tests.
