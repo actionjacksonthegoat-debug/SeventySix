@@ -1,9 +1,40 @@
 import { ValidationResult } from "@auth/models";
 import {
+	EMAIL_VALIDATION,
 	PASSWORD_VALIDATION,
 	USERNAME_VALIDATION
 } from "@shared/constants";
-import { isNullOrUndefined } from "@shared/utilities/null-check.utility";
+import { isNullOrUndefined, isNullOrWhitespace } from "@shared/utilities/null-check.utility";
+
+/**
+ * Validates an email address format.
+ *
+ * @param {string | undefined} email
+ * The email address to validate.
+ *
+ * @returns {ValidationResult}
+ * Validation result with error message if invalid.
+ */
+export function validateEmail(email: string | undefined): ValidationResult
+{
+	if (isNullOrWhitespace(email))
+	{
+		return {
+			valid: false,
+			errorMessage: "Email is required."
+		};
+	}
+
+	if (!EMAIL_VALIDATION.PATTERN.test(email!))
+	{
+		return {
+			valid: false,
+			errorMessage: "Please enter a valid email address."
+		};
+	}
+
+	return { valid: true };
+}
 
 /**
  * Validates a username against the auth domain rules.

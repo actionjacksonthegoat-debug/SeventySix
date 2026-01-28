@@ -7,11 +7,11 @@ import {
 	computed,
 	inject,
 	Injectable,
-	PLATFORM_ID,
 	signal
 } from "@angular/core";
 import { toSignal } from "@angular/core/rxjs-interop";
 import { STORAGE_KEYS } from "@shared/constants";
+import { StorageService } from "@shared/services/storage.service";
 import { isNullOrUndefined } from "@shared/utilities/null-check.utility";
 
 /**
@@ -25,15 +25,6 @@ import { isNullOrUndefined } from "@shared/utilities/null-check.utility";
 export class LayoutService
 {
 	/**
-	 * Platform identifier token from Angular DI (used to detect server vs browser).
-	 * @type {Object}
-	 * @private
-	 * @readonly
-	 */
-	private platformId: Object =
-		inject(PLATFORM_ID);
-
-	/**
 	 * Breakpoint observer for responsive breakpoint detection.
 	 * @type {BreakpointObserver}
 	 * @private
@@ -41,6 +32,15 @@ export class LayoutService
 	 */
 	private breakpointObserver: BreakpointObserver =
 		inject(BreakpointObserver);
+
+	/**
+	 * Storage service for SSR-safe storage access.
+	 * @type {StorageService}
+	 * @private
+	 * @readonly
+	 */
+	private storageService: StorageService =
+		inject(StorageService);
 
 	/**
 	 * Session storage key for persisting sidebar expanded state within a browser session.
@@ -291,16 +291,8 @@ export class LayoutService
 	 */
 	private getSessionSidebarState(): boolean
 	{
-		// Check if browser environment
-		if (
-			typeof window === "undefined"
-				|| typeof sessionStorage === "undefined")
-		{
-			return true; // Default to open in SSR
-		}
-
 		const sessionValue: string | null =
-			sessionStorage.getItem(
+			this.storageService.getSessionItem(
 				this.SIDEBAR_SESSION_KEY);
 
 		// If no session value, this is a fresh load - start open
@@ -322,13 +314,6 @@ export class LayoutService
 	 */
 	private saveSessionSidebarState(expanded: boolean): void
 	{
-		if (
-			typeof window === "undefined"
-				|| typeof sessionStorage === "undefined")
-		{
-			return;
-		}
-
-		sessionStorage.setItem(this.SIDEBAR_SESSION_KEY, expanded.toString());
+		this.storageService.setSessionItem(this.SIDEBAR_SESSION_KEY, expanded.toString());
 	}
 }

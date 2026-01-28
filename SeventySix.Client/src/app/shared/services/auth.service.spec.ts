@@ -109,7 +109,7 @@ describe("AuthService",
 					{
 						const mockResponse: AuthResponse =
 							createMockAuthResponse(
-								{ [DOTNET_ROLE_CLAIM]: ["Developer"] });
+								{ [DOTNET_ROLE_CLAIM]: [TEST_ROLE_DEVELOPER] });
 
 						let result: AuthResponse | undefined;
 						service
@@ -296,7 +296,7 @@ describe("AuthService",
 					{
 						const mockResponse: AuthResponse =
 							createMockAuthResponse(
-								{ [DOTNET_ROLE_CLAIM]: ["Developer", "Admin"] });
+								{ [DOTNET_ROLE_CLAIM]: [TEST_ROLE_DEVELOPER, TEST_ROLE_ADMIN] });
 
 						service
 							.login(
@@ -324,7 +324,7 @@ describe("AuthService",
 					{
 						const mockResponse: AuthResponse =
 							createMockAuthResponse(
-								{ [DOTNET_ROLE_CLAIM]: ["Developer"] });
+								{ [DOTNET_ROLE_CLAIM]: [TEST_ROLE_DEVELOPER] });
 
 						service
 							.login(
@@ -354,7 +354,7 @@ describe("AuthService",
 					{
 						const mockResponse: AuthResponse =
 							createMockAuthResponse(
-								{ [DOTNET_ROLE_CLAIM]: ["Developer"] });
+								{ [DOTNET_ROLE_CLAIM]: [TEST_ROLE_DEVELOPER] });
 
 						service
 							.login(

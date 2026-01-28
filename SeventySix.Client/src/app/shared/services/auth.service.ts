@@ -25,9 +25,8 @@ import {
 	LoginRequest,
 	UserProfileDto
 } from "@shared/models";
-import { DateService, StorageService } from "@shared/services";
+import { DateService, StorageService, TokenService } from "@shared/services";
 import {
-	DOTNET_ROLE_CLAIM,
 	JwtClaims,
 	OAuthProvider
 } from "@shared/services/auth.types";
@@ -85,6 +84,15 @@ export class AuthService
 	 */
 	private readonly storageService: StorageService =
 		inject(StorageService);
+
+	/**
+	 * Token service for JWT parsing and validation.
+	 * @type {TokenService}
+	 * @private
+	 * @readonly
+	 */
+	private readonly tokenService: TokenService =
+		inject(TokenService);
 
 	/**
 	 * Base auth API URL.
@@ -565,8 +573,8 @@ export class AuthService
 
 			// Navigate to stored return URL
 			const returnUrl: string =
-				sessionStorage.getItem(STORAGE_KEYS.AUTH_RETURN_URL) ?? "/";
-			sessionStorage.removeItem(STORAGE_KEYS.AUTH_RETURN_URL);
+				this.storageService.getSessionItem(STORAGE_KEYS.AUTH_RETURN_URL) ?? "/";
+			this.storageService.removeSessionItem(STORAGE_KEYS.AUTH_RETURN_URL);
 			this.router.navigateByUrl(returnUrl);
 		}
 
@@ -619,21 +627,12 @@ export class AuthService
 				.getTime();
 
 		const claims: JwtClaims | null =
-			this.parseJwt(token);
+			this.tokenService.parseJwt(token);
 
 		if (claims)
 		{
-			// Handle role claim - .NET uses full ClaimTypes URI, can be string or array
-			const roleClaim: string | string[] | undefined =
-				claims[
-					DOTNET_ROLE_CLAIM
-				] as string | string[] | undefined;
 			const roles: string[] =
-				Array.isArray(roleClaim)
-					? roleClaim
-					: roleClaim
-						? [roleClaim]
-						: [];
+				this.tokenService.extractRoles(token);
 
 			// Email and fullName now come from response body, not JWT claims
 			this.userSignal.set(
@@ -681,52 +680,6 @@ export class AuthService
 	forceLogoutLocally(): void
 	{
 		this.clearAuth();
-	}
-
-	/**
-	 * Parses JWT token to extract claims.
-	 * @param {string} token
-	 * The JWT token string to parse.
-	 * @returns {JwtClaims|null}
-	 * The decoded JWT claims or null when parsing fails or token is invalid.
-	 */
-	private parseJwt(token: string): JwtClaims | null
-	{
-		try
-		{
-			const parts: string[] =
-				token.split(".");
-
-			if (parts.length !== 3)
-			{
-				return null;
-			}
-
-			const base64Url: string =
-				parts[1];
-			const base64: string =
-				base64Url
-					.replace(/-/g, "+")
-					.replace(/_/g, "/");
-			const json: string =
-				decodeURIComponent(
-					atob(base64)
-						.split("")
-						.map(
-							(c: string) =>
-								"%"
-									+ ("00" + c
-										.charCodeAt(0)
-										.toString(16))
-										.slice(-2))
-						.join(""));
-
-			return JSON.parse(json);
-		}
-		catch
-		{
-			return null;
-		}
 	}
 
 	/**

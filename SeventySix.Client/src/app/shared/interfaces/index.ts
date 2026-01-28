@@ -1,1 +1,1 @@
-export type { CanComponentDeactivate } from "./can-component-deactivate.interface";
+// Interfaces barrel export

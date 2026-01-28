@@ -1,11 +1,11 @@
 import { provideZonelessChangeDetection } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideRouter } from "@angular/router";
-import { WindowUtilities } from "@shared/utilities";
+import { WindowService } from "@shared/services";
 import { vi } from "vitest";
 import { ServerErrorPage } from "./server-error";
 
-interface MockWindowUtilities
+interface MockWindowService
 {
 	reload: ReturnType<typeof vi.fn>;
 }
@@ -15,12 +15,12 @@ describe("ServerErrorPage",
 	{
 		let component: ServerErrorPage;
 		let fixture: ComponentFixture<ServerErrorPage>;
-		let mockWindowUtilities: MockWindowUtilities;
+		let mockWindowService: MockWindowService;
 
 		beforeEach(
 			async () =>
 			{
-				mockWindowUtilities =
+				mockWindowService =
 					{
 						reload: vi.fn()
 					};
@@ -31,7 +31,7 @@ describe("ServerErrorPage",
 							providers: [
 								provideZonelessChangeDetection(),
 								provideRouter([]),
-								{ provide: WindowUtilities, useValue: mockWindowUtilities }
+								{ provide: WindowService, useValue: mockWindowService }
 							]
 						})
 					.compileComponents();
@@ -57,7 +57,7 @@ describe("ServerErrorPage",
 				component.reloadPage();
 
 				// Assert
-				expect(mockWindowUtilities.reload)
+				expect(mockWindowService.reload)
 					.toHaveBeenCalled();
 			});
 	});

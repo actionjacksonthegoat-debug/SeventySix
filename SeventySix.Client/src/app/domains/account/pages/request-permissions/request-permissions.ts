@@ -153,28 +153,6 @@ export class RequestPermissionsPage
 			new Set<string>());
 
 	/**
-	 * Pre-computed role selection map for template.
-	 * @type {Signal<Map<string, boolean>>}
-	 */
-	readonly roleSelectionMap: Signal<Map<string, boolean>> =
-		computed(
-			() =>
-			{
-				const selected: Set<string> =
-					this.selectedRoles();
-				const map: Map<string, boolean> =
-					new Map();
-				this
-					.availableRoles()
-					.forEach(
-						(role: AvailableRoleDto) =>
-						{
-							map.set(role.name, selected.has(role.name));
-						});
-				return map;
-			});
-
-	/**
 	 * Reactive form for permission requests.
 	 * @type {FormGroup}
 	 */

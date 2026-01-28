@@ -1,6 +1,6 @@
+import { UserFixtures } from "@admin/testing";
 import { UserDto } from "@admin/users/models";
 import { UserService } from "@admin/users/services/user.service";
-import { createMockUserDto } from "@admin/users/testing";
 import { provideHttpClient, withFetch } from "@angular/common/http";
 import { provideHttpClientTesting } from "@angular/common/http/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
@@ -54,7 +54,7 @@ describe("UserCreatePage",
 					createMockLogger();
 
 				const mockUser: UserDto =
-					createMockUserDto(
+					UserFixtures.createUser(
 						{
 							username: "test",
 							email: "test@test.com"
@@ -566,7 +566,7 @@ describe("UserCreatePage",
 
 						// Mock createMutation to trigger onSuccess with created user
 						const createdUser: UserDto =
-							createMockUserDto(
+							UserFixtures.createUser(
 								{
 									username: "newuser",
 									email: "newuser@test.com",
@@ -615,7 +615,7 @@ describe("UserCreatePage",
 						component.toggleRole("Developer");
 
 						const createdUser: UserDto =
-							createMockUserDto(
+							UserFixtures.createUser(
 								{
 									username: "newuser",
 									email: "newuser@test.com",

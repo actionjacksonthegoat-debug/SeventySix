@@ -1,9 +1,13 @@
+// <copyright file="window.service.ts" company="SeventySix">
+// Copyright (c) SeventySix. All rights reserved.
+// </copyright>
+
 import {
 	Injectable
 } from "@angular/core";
 
 /**
- * Utility service that provides wrappers around global `window`
+ * Service that provides wrappers around global `window`
  * functionality to make usage easier to stub in tests.
  *
  * Provided in the root injector so it can be injected wherever window
@@ -13,7 +17,7 @@ import {
 	{
 		providedIn: "root"
 	})
-export class WindowUtilities
+export class WindowService
 {
 	/**
 	 * Reloads the current page using `window.location.reload()`.

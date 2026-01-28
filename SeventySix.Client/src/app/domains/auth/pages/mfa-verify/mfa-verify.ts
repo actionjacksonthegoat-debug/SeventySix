@@ -10,6 +10,7 @@ import {
 	Component,
 	computed,
 	inject,
+	OnDestroy,
 	OnInit,
 	Signal,
 	signal,
@@ -18,6 +19,7 @@ import {
 import { FormsModule } from "@angular/forms";
 import { MatButtonModule } from "@angular/material/button";
 import { Router } from "@angular/router";
+import { MFA_ERROR_CODE } from "@auth/constants";
 import {
 	AuthResponse,
 	MfaMethod,
@@ -64,7 +66,7 @@ const RESEND_COOLDOWN_SECONDS: number = 60;
  * Component that handles MFA code verification after initial login.
  * Supports email-based MFA, TOTP, and backup code fallback.
  */
-export class MfaVerifyComponent implements OnInit
+export class MfaVerifyComponent implements OnInit, OnDestroy
 {
 	/**
 	 * MFA service for verification operations.
@@ -250,6 +252,14 @@ export class MfaVerifyComponent implements OnInit
 	}
 
 	/**
+	 * Clean up interval on component destruction to prevent memory leaks.
+	 */
+	ngOnDestroy(): void
+	{
+		this.stopCooldown();
+	}
+
+	/**
 	 * Checks if the verify button can be enabled.
 	 * @returns {boolean}
 	 * True when code is valid length and not loading.
@@ -428,29 +438,29 @@ export class MfaVerifyComponent implements OnInit
 
 		switch (errorCode)
 		{
-			case "MFA_INVALID_CODE":
-			case "TOTP_INVALID_CODE":
+			case MFA_ERROR_CODE.INVALID_CODE:
+			case MFA_ERROR_CODE.TOTP_INVALID_CODE:
 				this.notification.error("Invalid verification code. Please try again.");
 				break;
-			case "MFA_CODE_EXPIRED":
+			case MFA_ERROR_CODE.CODE_EXPIRED:
 				this.notification.error("Code has expired. Please request a new code.");
 				break;
-			case "MFA_TOO_MANY_ATTEMPTS":
-			case "TOTP_TOO_MANY_ATTEMPTS":
+			case MFA_ERROR_CODE.TOO_MANY_ATTEMPTS:
+			case MFA_ERROR_CODE.TOTP_TOO_MANY_ATTEMPTS:
 				this.notification.error(
 					"Too many attempts. Please request a new code.");
 				this.mfaService.clearMfaState();
 				this.router.navigate(
 					[APP_ROUTES.AUTH.LOGIN]);
 				break;
-			case "MFA_INVALID_CHALLENGE":
-			case "MFA_CHALLENGE_USED":
+			case MFA_ERROR_CODE.INVALID_CHALLENGE:
+			case MFA_ERROR_CODE.CHALLENGE_USED:
 				this.notification.error("Session expired. Please log in again.");
 				this.mfaService.clearMfaState();
 				this.router.navigate(
 					[APP_ROUTES.AUTH.LOGIN]);
 				break;
-			case "TOTP_NOT_ENABLED":
+			case MFA_ERROR_CODE.TOTP_NOT_ENABLED:
 				this.notification.error("Authenticator app is not set up. Please log in again.");
 				this.mfaService.clearMfaState();
 				this.router.navigate(
@@ -478,13 +488,13 @@ export class MfaVerifyComponent implements OnInit
 
 		switch (errorCode)
 		{
-			case "BACKUP_CODE_INVALID":
+			case MFA_ERROR_CODE.BACKUP_CODE_INVALID:
 				this.notification.error("Invalid backup code. Please try again.");
 				break;
-			case "BACKUP_CODE_ALREADY_USED":
+			case MFA_ERROR_CODE.BACKUP_CODE_ALREADY_USED:
 				this.notification.error("This backup code has already been used.");
 				break;
-			case "NO_BACKUP_CODES_AVAILABLE":
+			case MFA_ERROR_CODE.NO_BACKUP_CODES_AVAILABLE:
 				this.notification.error(
 					"No backup codes available. Please contact support.");
 				break;

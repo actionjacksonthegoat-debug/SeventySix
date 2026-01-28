@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject } from "@angular/core";
 import { RouterLink } from "@angular/router";
 import { CARD_MATERIAL_MODULES } from "@shared/material-bundles";
-import { WindowUtilities } from "@shared/utilities";
+import { WindowService } from "@shared/services";
 
 /**
  * 500 Server Error page.
@@ -18,14 +18,14 @@ import { WindowUtilities } from "@shared/utilities";
 	})
 export class ServerErrorPage
 {
-	private readonly windowUtilities: WindowUtilities =
-		inject(WindowUtilities);
+	private readonly windowService: WindowService =
+		inject(WindowService);
 
 	/**
 	 * Reloads the current page
 	 */
 	reloadPage(): void
 	{
-		this.windowUtilities.reload();
+		this.windowService.reload();
 	}
 }

@@ -1,16 +1,8 @@
 import { LogLevel } from "@shared/constants";
-import { DateService } from "@shared/services";
 import { parseLogLevel } from "@shared/utilities";
 
 // Re-export for consumers
 export { LogLevel, parseLogLevel };
-
-// ============================================================
-// Time Constants
-// ============================================================
-const MILLISECONDS_PER_MINUTE: number = 60_000;
-const MILLISECONDS_PER_HOUR: number = 3_600_000;
-const MILLISECONDS_PER_DAY: number = 86_400_000;
 
 // ============================================================
 // Log Level Mappings
@@ -92,52 +84,6 @@ export function getLogLevelIconName(logLevel: string): string
 	const level: LogLevel =
 		parseLogLevel(logLevel);
 	return LOG_LEVEL_ICONS[level];
-}
-
-// ============================================================
-// Time Utility Functions
-// ============================================================
-
-/**
- * Converts a date to a human-readable relative time string.
- * @param {Date | string} date
- * The date or ISO date string to convert to a relative time.
- * @param {DateService} dateService
- * Service used to obtain the current timestamp for calculations.
- * @returns {string}
- * Human-readable relative time (e.g., '2 days ago', 'just now').
- */
-export function getRelativeTime(
-	date: Date | string,
-	dateService: DateService): string
-{
-	const dateObj: Date =
-		typeof date === "string" ? dateService.parseUTC(date) : date;
-	const diff: number =
-		dateService.nowTimestamp() - dateObj.getTime();
-
-	const days: number =
-		Math.floor(diff / MILLISECONDS_PER_DAY);
-	if (days > 0)
-	{
-		return `${days} day${days > 1 ? "s" : ""} ago`;
-	}
-
-	const hours: number =
-		Math.floor(diff / MILLISECONDS_PER_HOUR);
-	if (hours > 0)
-	{
-		return `${hours} hour${hours > 1 ? "s" : ""} ago`;
-	}
-
-	const minutes: number =
-		Math.floor(diff / MILLISECONDS_PER_MINUTE);
-	if (minutes > 0)
-	{
-		return `${minutes} minute${minutes > 1 ? "s" : ""} ago`;
-	}
-
-	return "just now";
 }
 
 // ============================================================

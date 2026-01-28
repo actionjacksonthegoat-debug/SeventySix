@@ -4,7 +4,6 @@ import {
 	getLogLevelClassName,
 	getLogLevelIconName,
 	getLogLevelName,
-	getRelativeTime,
 	isRootSpanId,
 	LogDto,
 	LogLevel,
@@ -159,9 +158,7 @@ export class LogDetailDialogComponent
 	readonly relativeTime: Signal<string> =
 		computed(
 			(): string =>
-				getRelativeTime(
-					this.log().createDate,
-					this.dateService));
+				this.dateService.formatRelative(this.log().createDate));
 
 	/**
 	 * Formatted JSON properties string for display.

@@ -1,4 +1,5 @@
 import { Injectable } from "@angular/core";
+import { MILLISECONDS } from "@shared/constants";
 import { isNullOrUndefined } from "@shared/utilities/null-check.utility";
 import {
 	addDays as addDaysUtil,
@@ -452,7 +453,7 @@ export class DateService
 		const diffMs: number =
 			new Date()
 				.getTime() - parsedDate.getTime();
-		return Math.floor(diffMs / 3600000);
+		return Math.floor(diffMs / MILLISECONDS.PER_HOUR);
 	}
 
 	/**
@@ -472,6 +473,6 @@ export class DateService
 		const diffMs: number =
 			new Date()
 				.getTime() - parsedDate.getTime();
-		return Math.floor(diffMs / 60000);
+		return Math.floor(diffMs / MILLISECONDS.PER_MINUTE);
 	}
 }

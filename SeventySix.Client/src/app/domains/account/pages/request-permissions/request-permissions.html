@@ -22,7 +22,7 @@
 			<div class="roles-list">
 				@for (role of availableRoles(); track role.name) {
 				<mat-checkbox
-					[checked]="roleSelectionMap().get(role.name)"
+					[checked]="selectedRoles().has(role.name)"
 					(change)="toggleRole(role.name)">
 					<strong>{{ role.name }}</strong>
 					<span class="role-description">{{ role.description }}</span>

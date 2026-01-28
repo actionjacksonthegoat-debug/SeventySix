@@ -1,9 +1,14 @@
 import { AccountService } from "@account/services";
+import { ProfileFixtures } from "@account/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideRouter } from "@angular/router";
 import { ApiService } from "@shared/services/api.service";
-import { createMockApiService, MockApiService } from "@shared/testing";
+import {
+	createMockApiService,
+	createTestQueryClient,
+	MockApiService
+} from "@shared/testing";
 import {
 	provideTanStackQuery,
 	QueryClient
@@ -25,23 +30,10 @@ describe("ProfilePage",
 				mockApiService =
 					createMockApiService();
 				mockApiService.get.mockReturnValue(
-					of(
-						{
-							id: 1,
-							username: "testuser",
-							email: "test@example.com",
-							fullName: "Test User",
-							roles: ["User"],
-							hasPassword: true,
-							linkedProviders: [],
-							lastLoginAt: "2024-01-01T12:00:00Z"
-						}));
+					of(ProfileFixtures.STANDARD_USER));
 
 				queryClient =
-					new QueryClient(
-						{
-							defaultOptions: { queries: { retry: false } }
-						});
+					createTestQueryClient();
 
 				await TestBed
 					.configureTestingModule(

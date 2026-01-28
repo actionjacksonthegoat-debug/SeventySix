@@ -6,3 +6,4 @@
  * Auth domain constants barrel export.
  */
 export * from "./auth-error.constant";
+export * from "./mfa-error.constants";

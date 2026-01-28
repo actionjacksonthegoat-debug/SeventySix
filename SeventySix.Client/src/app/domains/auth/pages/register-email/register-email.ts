@@ -14,6 +14,7 @@ import {
 import { FormsModule } from "@angular/forms";
 import { MatButtonModule } from "@angular/material/button";
 import { RouterLink } from "@angular/router";
+import { validateEmail } from "@auth/utilities";
 import { AuthService } from "@shared/services/auth.service";
 import { NotificationService } from "@shared/services/notification.service";
 
@@ -67,15 +68,14 @@ export class RegisterEmailComponent
 		signal<boolean>(false);
 
 	/**
-	 * Validates email format using simple regex.
+	 * Validates email format using shared validation utility.
+	 *
 	 * @returns {boolean}
 	 * True when `email` appears to be a valid address.
 	 */
 	protected isValidEmail(): boolean
 	{
-		const emailRegex: RegExp =
-			/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-		return emailRegex.test(this.email);
+		return validateEmail(this.email).valid;
 	}
 
 	/**

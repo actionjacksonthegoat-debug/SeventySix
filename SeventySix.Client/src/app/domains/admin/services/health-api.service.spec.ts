@@ -8,6 +8,10 @@ import {
 import { provideZonelessChangeDetection } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
 import { environment } from "@environments/environment";
+import {
+	HEALTH_STATUS_DEGRADED,
+	HEALTH_STATUS_HEALTHY
+} from "@shared/constants";
 import { createTestQueryClient, flushMicrotasks } from "@shared/testing";
 import {
 	provideTanStackQuery,
@@ -75,18 +79,18 @@ describe("HealthApiService",
 					{
 						const mockHealth: HealthStatusResponse =
 							{
-								status: "Healthy",
+								status: HEALTH_STATUS_HEALTHY,
 								checkedAt: "2025-11-12T10:30:00Z",
 								database: {
 									isConnected: true,
 									responseTimeMs: 15.5,
-									status: "Healthy"
+									status: HEALTH_STATUS_HEALTHY
 								},
 								errorQueue: {
 									queuedItems: 0,
 									failedItems: 0,
 									circuitBreakerOpen: false,
-									status: "Healthy"
+									status: HEALTH_STATUS_HEALTHY
 								},
 								system: {
 									cpuUsagePercent: 25.5,
@@ -115,7 +119,7 @@ describe("HealthApiService",
 						expect(health)
 							.toEqual(mockHealth);
 						expect(health?.status)
-							.toBe("Healthy");
+							.toBe(HEALTH_STATUS_HEALTHY);
 						expect(health?.database?.isConnected)
 							.toBe(true);
 					});
@@ -125,18 +129,18 @@ describe("HealthApiService",
 					{
 						const mockHealth: HealthStatusResponse =
 							{
-								status: "Degraded",
+								status: HEALTH_STATUS_DEGRADED,
 								checkedAt: "2025-11-12T10:30:00Z",
 								database: {
 									isConnected: true,
 									responseTimeMs: 500.0,
-									status: "Degraded"
+									status: HEALTH_STATUS_DEGRADED
 								},
 								errorQueue: {
 									queuedItems: 100,
 									failedItems: 5,
 									circuitBreakerOpen: false,
-									status: "Degraded"
+									status: HEALTH_STATUS_DEGRADED
 								},
 								system: {
 									cpuUsagePercent: 85.0,
@@ -161,9 +165,9 @@ describe("HealthApiService",
 						const health: HealthStatusResponse | undefined =
 							query.data();
 						expect(health?.status)
-							.toBe("Degraded");
+							.toBe(HEALTH_STATUS_DEGRADED);
 						expect(health?.database?.status)
-							.toBe("Degraded");
+							.toBe(HEALTH_STATUS_DEGRADED);
 						expect(health?.system?.cpuUsagePercent)
 							.toBeGreaterThan(80);
 					});
@@ -201,18 +205,18 @@ describe("HealthApiService",
 					{
 						const mockDetailedHealth: HealthStatusResponse =
 							{
-								status: "Healthy",
+								status: HEALTH_STATUS_HEALTHY,
 								checkedAt: "2025-11-12T10:30:00Z",
 								database: {
 									isConnected: true,
 									responseTimeMs: 15.5,
-									status: "Healthy"
+									status: HEALTH_STATUS_HEALTHY
 								},
 								errorQueue: {
 									queuedItems: 0,
 									failedItems: 0,
 									circuitBreakerOpen: false,
-									status: "Healthy"
+									status: HEALTH_STATUS_HEALTHY
 								},
 								system: {
 									cpuUsagePercent: 25.5,
@@ -241,7 +245,7 @@ describe("HealthApiService",
 						expect(health)
 							.toEqual(mockDetailedHealth);
 						expect(health?.status)
-							.toBe("Healthy");
+							.toBe(HEALTH_STATUS_HEALTHY);
 						expect(health?.database?.isConnected)
 							.toBe(true);
 						expect(health?.system?.cpuUsagePercent)
@@ -253,18 +257,18 @@ describe("HealthApiService",
 					{
 						const mockDetailedHealth: HealthStatusResponse =
 							{
-								status: "Degraded",
+								status: HEALTH_STATUS_DEGRADED,
 								checkedAt: "2025-11-12T10:30:00Z",
 								database: {
 									isConnected: true,
 									responseTimeMs: 500.0,
-									status: "Degraded"
+									status: HEALTH_STATUS_DEGRADED
 								},
 								errorQueue: {
 									queuedItems: 100,
 									failedItems: 5,
 									circuitBreakerOpen: false,
-									status: "Degraded"
+									status: HEALTH_STATUS_DEGRADED
 								},
 								system: {
 									cpuUsagePercent: 85.0,
@@ -289,9 +293,9 @@ describe("HealthApiService",
 						const health: HealthStatusResponse | undefined =
 							query.data();
 						expect(health?.status)
-							.toBe("Degraded");
+							.toBe(HEALTH_STATUS_DEGRADED);
 						expect(health?.database?.status)
-							.toBe("Degraded");
+							.toBe(HEALTH_STATUS_DEGRADED);
 						expect(health?.system?.cpuUsagePercent)
 							.toBeGreaterThan(80);
 					});
