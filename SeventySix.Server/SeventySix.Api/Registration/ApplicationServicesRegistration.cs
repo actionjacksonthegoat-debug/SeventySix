@@ -18,7 +18,7 @@ public static class ApplicationServicesRegistration
 	/// </summary>
 	/// <remarks>
 	/// Reads configuration sections:
-	/// - "Polly" (via PollyOptions.SectionName)
+	/// - "Resilience" (via ResilienceOptions.SectionName)
 	/// - "OutputCache" (via OutputCacheOptions.SectionName)
 	/// </remarks>
 	/// <param name="services">
@@ -35,15 +35,15 @@ public static class ApplicationServicesRegistration
 		IConfiguration configuration)
 	{
 		// Configuration options with validation
-		services.Configure<PollyOptions>(
-			configuration.GetSection(PollyOptions.SectionName));
+		services.Configure<ResilienceOptions>(
+			configuration.GetSection(ResilienceOptions.SectionName));
 
 		services.Configure<OutputCacheOptions>(
 			configuration.GetSection(OutputCacheOptions.SectionName));
 
 		services
-			.AddOptions<PollyOptions>()
-			.Bind(configuration.GetSection(PollyOptions.SectionName))
+			.AddOptions<ResilienceOptions>()
+			.Bind(configuration.GetSection(ResilienceOptions.SectionName))
 			.ValidateOnStart();
 
 		services

@@ -26,7 +26,7 @@ namespace SeventySix.Identity;
 /// - User list queries that return empty results
 ///
 /// HTTP Mapping:
-/// - Maps to 404 Not Found in GlobalExceptionMiddleware
+/// - Maps to 404 Not Found in GlobalExceptionHandler
 /// - Standard HTTP status for "user not found"
 ///
 /// Usage Example:

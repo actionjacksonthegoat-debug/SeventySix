@@ -27,7 +27,6 @@ public class HealthStatusResponseTests
 		response.Status.ShouldBe(HealthStatusConstants.Healthy);
 		response.CheckedAt.ShouldBe(default(DateTime));
 		response.Database.ShouldNotBeNull();
-		response.ExternalApis.ShouldNotBeNull();
 		response.ErrorQueue.ShouldNotBeNull();
 		response.System.ShouldNotBeNull();
 	}
@@ -50,7 +49,6 @@ public class HealthStatusResponseTests
 				CheckedAt = now,
 				Database =
 					new DatabaseHealthResponse { IsConnected = true },
-				ExternalApis = new ExternalApiHealthResponse(),
 				ErrorQueue = new QueueHealthResponse(),
 				System = new SystemResourcesResponse(),
 			};
@@ -96,84 +94,6 @@ public class HealthStatusResponseTests
 		response.IsConnected.ShouldBeTrue();
 		response.ResponseTimeMs.ShouldBe(25.5);
 		response.Status.ShouldBe(HealthStatusConstants.Healthy);
-	}
-
-	/// <summary>
-	/// Ensures ExternalApiHealthResponse initializes the APIs dictionary as empty.
-	/// </summary>
-	[Fact]
-	public void ExternalApiHealthResponse_Constructor_ShouldInitializeWithEmptyDictionary()
-	{
-		// Arrange & Act
-		ExternalApiHealthResponse response = new();
-
-		// Assert
-		response.Apis.ShouldNotBeNull();
-		response.Apis.ShouldBeEmpty();
-	}
-
-	/// <summary>
-	/// Verifies ExternalApiHealthResponse can contain multiple API statuses.
-	/// </summary>
-	[Fact]
-	public void ExternalApiHealthResponse_Apis_ShouldStoreMultipleApis()
-	{
-		// Arrange
-		FakeTimeProvider timeProvider = new();
-		DateTime now =
-			timeProvider.GetUtcNow().UtcDateTime;
-		ExternalApiHealthResponse response =
-			new()
-			{
-				Apis =
-					new Dictionary<string, ApiHealthStatus>
-					{
-				{
-					"ExternalAPI",
-					new ApiHealthStatus
-					{
-						ApiName = "ExternalAPI",
-						IsAvailable = true,
-						ResponseTimeMs = 150.5,
-						LastChecked = now,
-					}
-				},
-				{
-					"GoogleMaps",
-					new ApiHealthStatus
-					{
-						ApiName = "GoogleMaps",
-						IsAvailable = false,
-						ResponseTimeMs = 0,
-						LastChecked = null,
-					}
-				},
-			},
-			};
-
-		// Assert
-		response.Apis.Count.ShouldBe(2);
-		response.Apis["ExternalAPI"].IsAvailable.ShouldBeTrue();
-		response.Apis["GoogleMaps"].IsAvailable.ShouldBeFalse();
-		response.Apis["ExternalAPI"].ResponseTimeMs.ShouldBe(150.5);
-		response.Apis["ExternalAPI"].LastChecked.ShouldBe(now);
-		response.Apis["GoogleMaps"].LastChecked.ShouldBeNull();
-	}
-
-	/// <summary>
-	/// Ensures ApiHealthStatus constructor initializes default values.
-	/// </summary>
-	[Fact]
-	public void ApiHealthStatus_Constructor_ShouldInitializeWithDefaults()
-	{
-		// Arrange & Act
-		ApiHealthStatus status = new();
-
-		// Assert
-		status.ApiName.ShouldBe(string.Empty);
-		status.IsAvailable.ShouldBeFalse();
-		status.ResponseTimeMs.ShouldBe(0);
-		status.LastChecked.ShouldBeNull();
 	}
 
 	/// <summary>

@@ -14,6 +14,9 @@ public class TransactionManagerForContext<TContext>(TContext context)
 	: ITransactionManager
 		where TContext : DbContext
 {
+	private readonly TransactionManager InnerTransactionManager =
+		new(context);
+
 	/// <summary>
 	/// Executes the provided operation within a database transaction with retry semantics and returns a result.
 	/// </summary>
@@ -35,16 +38,11 @@ public class TransactionManagerForContext<TContext>(TContext context)
 	public Task<T> ExecuteInTransactionAsync<T>(
 		Func<CancellationToken, Task<T>> operation,
 		int maxRetries = 3,
-		CancellationToken cancellationToken = default)
-	{
-		TransactionManager inner =
-			new(context);
-
-		return inner.ExecuteInTransactionAsync(
+		CancellationToken cancellationToken = default) =>
+		InnerTransactionManager.ExecuteInTransactionAsync(
 			operation,
 			maxRetries,
 			cancellationToken);
-	}
 
 	/// <summary>
 	/// Executes the provided non-returning operation within a database transaction with retry semantics.

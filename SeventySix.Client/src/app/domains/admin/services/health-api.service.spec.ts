@@ -82,16 +82,6 @@ describe("HealthApiService",
 									responseTimeMs: 15.5,
 									status: "Healthy"
 								},
-								externalApis: {
-									apis: {
-										ExternalAPI: {
-											apiName: "ExternalAPI",
-											isAvailable: true,
-											responseTimeMs: 120.3,
-											lastChecked: "2025-11-12T10:29:00Z"
-										}
-									}
-								},
 								errorQueue: {
 									queuedItems: 0,
 									failedItems: 0,
@@ -128,9 +118,6 @@ describe("HealthApiService",
 							.toBe("Healthy");
 						expect(health?.database?.isConnected)
 							.toBe(true);
-						expect(health?.externalApis?.apis?.["ExternalAPI"].isAvailable)
-							.toBe(
-								true);
 					});
 
 				it("should handle degraded system status",
@@ -144,9 +131,6 @@ describe("HealthApiService",
 									isConnected: true,
 									responseTimeMs: 500.0,
 									status: "Degraded"
-								},
-								externalApis: {
-									apis: {}
 								},
 								errorQueue: {
 									queuedItems: 100,
@@ -224,16 +208,6 @@ describe("HealthApiService",
 									responseTimeMs: 15.5,
 									status: "Healthy"
 								},
-								externalApis: {
-									apis: {
-										ExternalAPI: {
-											apiName: "ExternalAPI",
-											isAvailable: true,
-											responseTimeMs: 120.3,
-											lastChecked: "2025-11-12T10:29:00Z"
-										}
-									}
-								},
 								errorQueue: {
 									queuedItems: 0,
 									failedItems: 0,
@@ -270,8 +244,6 @@ describe("HealthApiService",
 							.toBe("Healthy");
 						expect(health?.database?.isConnected)
 							.toBe(true);
-						expect(health?.externalApis?.apis?.["ExternalAPI"].isAvailable)
-							.toBe(true);
 						expect(health?.system?.cpuUsagePercent)
 							.toBeLessThan(50);
 					});
@@ -287,16 +259,6 @@ describe("HealthApiService",
 									isConnected: true,
 									responseTimeMs: 500.0,
 									status: "Degraded"
-								},
-								externalApis: {
-									apis: {
-										ExternalAPI: {
-											apiName: "ExternalAPI",
-											isAvailable: false,
-											responseTimeMs: 0,
-											lastChecked: "2025-11-12T10:20:00Z"
-										}
-									}
 								},
 								errorQueue: {
 									queuedItems: 100,
@@ -330,8 +292,6 @@ describe("HealthApiService",
 							.toBe("Degraded");
 						expect(health?.database?.status)
 							.toBe("Degraded");
-						expect(health?.externalApis?.apis?.["ExternalAPI"].isAvailable)
-							.toBe(false);
 						expect(health?.system?.cpuUsagePercent)
 							.toBeGreaterThan(80);
 					});

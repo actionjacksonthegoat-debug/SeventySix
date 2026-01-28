@@ -505,4 +505,92 @@ public class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase
 				string.Empty,
 				DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime)));
 	}
+
+	[Fact]
+	public async Task GetStatisticsAsync_ReturnsAggregatedStatistics_ForTodayOnlyAsync()
+	{
+		// Arrange
+		FakeTimeProvider timeProvider = new();
+		string testId =
+			Guid.NewGuid().ToString("N")[..8];
+		DateTime now =
+			timeProvider.GetUtcNow().UtcDateTime;
+		DateOnly today =
+			DateOnly.FromDateTime(now);
+		DateOnly yesterday =
+			today.AddDays(-1);
+
+		DateTime weatherLastCalled =
+			now.AddMinutes(-5);
+		DateTime mapsLastCalled =
+			now.AddMinutes(-10);
+
+		// Create today's records
+		await Repository.CreateAsync(
+			new ThirdPartyApiRequest
+			{
+				ApiName =
+					$"WeatherApi_{testId}",
+				BaseUrl = "https://api.weather.com",
+				CallCount = 100,
+				LastCalledAt = weatherLastCalled,
+				ResetDate = today,
+			});
+
+		await Repository.CreateAsync(
+			new ThirdPartyApiRequest
+			{
+				ApiName =
+					$"MapsApi_{testId}",
+				BaseUrl = "https://api.maps.com",
+				CallCount = 50,
+				LastCalledAt = mapsLastCalled,
+				ResetDate = today,
+			});
+
+		// Create yesterday's record (should NOT be included)
+		await Repository.CreateAsync(
+			new ThirdPartyApiRequest
+			{
+				ApiName =
+					$"YesterdayApi_{testId}",
+				BaseUrl = "https://api.yesterday.com",
+				CallCount = 999,
+				LastCalledAt =
+					now.AddDays(-1),
+				ResetDate = yesterday,
+			});
+
+		// Act
+		ThirdPartyApiStatisticsDto result =
+			await Repository.GetStatisticsAsync(today);
+
+		// Assert - Statistics should include only today's APIs
+		result.CallsByApi.ShouldContainKey($"WeatherApi_{testId}");
+		result.CallsByApi[$"WeatherApi_{testId}"].ShouldBe(100);
+		result.CallsByApi.ShouldContainKey($"MapsApi_{testId}");
+		result.CallsByApi[$"MapsApi_{testId}"].ShouldBe(50);
+		result.CallsByApi.ShouldNotContainKey($"YesterdayApi_{testId}");
+		result.LastCalledByApi[$"WeatherApi_{testId}"].ShouldBe(weatherLastCalled);
+		result.LastCalledByApi[$"MapsApi_{testId}"].ShouldBe(mapsLastCalled);
+	}
+
+	[Fact]
+	public async Task GetStatisticsAsync_ReturnsEmptyStatistics_WhenNoRecordsForDateAsync()
+	{
+		// Arrange - Query for a date with no records
+		DateOnly farFutureDate =
+			new(2099, 12, 31);
+
+		// Act
+		ThirdPartyApiStatisticsDto result =
+			await Repository.GetStatisticsAsync(farFutureDate);
+
+		// Assert - Verify empty statistics returned
+		result.ShouldNotBeNull();
+		result.TotalCallsToday.ShouldBe(0);
+		result.TotalApisTracked.ShouldBe(0);
+		result.CallsByApi.ShouldBeEmpty();
+		result.LastCalledByApi.ShouldBeEmpty();
+	}
 }

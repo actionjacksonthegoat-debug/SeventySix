@@ -132,4 +132,32 @@ internal class ThirdPartyApiRequestRepository(
 
 		return totalCount;
 	}
+
+	/// <inheritdoc/>
+	public async Task<ThirdPartyApiStatisticsDto> GetStatisticsAsync(
+		DateOnly today,
+		CancellationToken cancellationToken = default)
+	{
+		// Perform aggregation at database level - filter by today's date
+		List<ThirdPartyApiRequest> requests =
+			await GetQueryable()
+				.Where(request => request.ResetDate == today)
+				.ToListAsync(cancellationToken);
+
+		// Build dictionaries from the filtered result (one record per API per day)
+		return new ThirdPartyApiStatisticsDto
+		{
+			TotalCallsToday =
+				requests.Sum(request => request.CallCount),
+			TotalApisTracked = requests.Count,
+			CallsByApi =
+				requests.ToDictionary(
+					request => request.ApiName,
+					request => request.CallCount),
+			LastCalledByApi =
+				requests.ToDictionary(
+					request => request.ApiName,
+					request => request.LastCalledAt),
+		};
+	}
 }

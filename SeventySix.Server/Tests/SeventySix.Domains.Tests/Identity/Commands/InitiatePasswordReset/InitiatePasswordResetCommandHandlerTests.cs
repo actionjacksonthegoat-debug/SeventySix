@@ -8,6 +8,7 @@ using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using SeventySix.ElectronicNotifications.Emails;
 using SeventySix.Identity;
+using SeventySix.Shared.POCOs;
 using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.Mocks;
 using Shouldly;
@@ -45,7 +46,7 @@ public class InitiatePasswordResetCommandHandlerTests
 	/// Tests successful password reset initiation for active user.
 	/// </summary>
 	[Fact]
-	public async Task HandleAsync_ActiveUser_EnqueuesPasswordResetEmailAsync()
+	public async Task HandleAsync_ActiveUser_ReturnsSuccessAndEnqueuesEmailAsync()
 	{
 		// Arrange
 		const long UserId = 42;
@@ -67,14 +68,16 @@ public class InitiatePasswordResetCommandHandlerTests
 			.Returns(ResetToken);
 
 		// Act
-		await InitiatePasswordResetCommandHandler.HandleAsync(
-			command,
-			UserManager,
-			MessageBus,
-			Logger,
-			CancellationToken.None);
+		Result result =
+			await InitiatePasswordResetCommandHandler.HandleAsync(
+				command,
+				UserManager,
+				MessageBus,
+				Logger,
+				CancellationToken.None);
 
 		// Assert
+		result.IsSuccess.ShouldBeTrue();
 		await MessageBus
 			.Received(1)
 			.InvokeAsync(
@@ -88,7 +91,7 @@ public class InitiatePasswordResetCommandHandlerTests
 	/// Tests that new user flag sends welcome email instead of reset email.
 	/// </summary>
 	[Fact]
-	public async Task HandleAsync_NewUser_EnqueuesWelcomeEmailAsync()
+	public async Task HandleAsync_NewUser_ReturnsSuccessAndEnqueuesWelcomeEmailAsync()
 	{
 		// Arrange
 		const long UserId = 42;
@@ -110,14 +113,16 @@ public class InitiatePasswordResetCommandHandlerTests
 			.Returns(ResetToken);
 
 		// Act
-		await InitiatePasswordResetCommandHandler.HandleAsync(
-			command,
-			UserManager,
-			MessageBus,
-			Logger,
-			CancellationToken.None);
+		Result result =
+			await InitiatePasswordResetCommandHandler.HandleAsync(
+				command,
+				UserManager,
+				MessageBus,
+				Logger,
+				CancellationToken.None);
 
 		// Assert
+		result.IsSuccess.ShouldBeTrue();
 		await MessageBus
 			.Received(1)
 			.InvokeAsync(
@@ -127,10 +132,10 @@ public class InitiatePasswordResetCommandHandlerTests
 	}
 
 	/// <summary>
-	/// Tests that user not found throws InvalidOperationException.
+	/// Tests that user not found returns failure result.
 	/// </summary>
 	[Fact]
-	public async Task HandleAsync_UserNotFound_ThrowsInvalidOperationExceptionAsync()
+	public async Task HandleAsync_UserNotFound_ReturnsFailureResultAsync()
 	{
 		// Arrange
 		const long UserId = 999;
@@ -142,24 +147,26 @@ public class InitiatePasswordResetCommandHandlerTests
 			.FindByIdAsync(UserId.ToString())
 			.Returns((ApplicationUser?)null);
 
-		// Act & Assert
-		InvalidOperationException exception =
-			await Should.ThrowAsync<InvalidOperationException>(
-				async () => await InitiatePasswordResetCommandHandler.HandleAsync(
-					command,
-					UserManager,
-					MessageBus,
-					Logger,
-					CancellationToken.None));
+		// Act
+		Result result =
+			await InitiatePasswordResetCommandHandler.HandleAsync(
+				command,
+				UserManager,
+				MessageBus,
+				Logger,
+				CancellationToken.None);
 
-		exception.Message.ShouldContain(UserId.ToString());
+		// Assert
+		result.IsSuccess.ShouldBeFalse();
+		result.Error.ShouldNotBeNull();
+		result.Error.ShouldContain(UserId.ToString());
 	}
 
 	/// <summary>
-	/// Tests that inactive user throws InvalidOperationException.
+	/// Tests that inactive user returns failure result.
 	/// </summary>
 	[Fact]
-	public async Task HandleAsync_InactiveUser_ThrowsInvalidOperationExceptionAsync()
+	public async Task HandleAsync_InactiveUser_ReturnsFailureResultAsync()
 	{
 		// Arrange
 		const long UserId = 42;
@@ -179,14 +186,18 @@ public class InitiatePasswordResetCommandHandlerTests
 			.FindByIdAsync(UserId.ToString())
 			.Returns(inactiveUser);
 
-		// Act & Assert
-		await Should.ThrowAsync<InvalidOperationException>(
-			async () => await InitiatePasswordResetCommandHandler.HandleAsync(
+		// Act
+		Result result =
+			await InitiatePasswordResetCommandHandler.HandleAsync(
 				command,
 				UserManager,
 				MessageBus,
 				Logger,
-				CancellationToken.None));
+				CancellationToken.None);
+
+		// Assert
+		result.IsSuccess.ShouldBeFalse();
+		result.Error.ShouldNotBeNullOrEmpty();
 	}
 
 	private static ApplicationUser CreateActiveUser(long userId, string email)

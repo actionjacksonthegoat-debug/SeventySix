@@ -81,7 +81,6 @@ public class HealthCheckServiceTests
 		result.ShouldNotBeNull();
 		result.Status.ShouldBe(HealthStatusConstants.Healthy);
 		result.Database.ShouldNotBeNull();
-		result.ExternalApis.ShouldNotBeNull();
 		result.ErrorQueue.ShouldNotBeNull();
 		result.System.ShouldNotBeNull();
 		result.CheckedAt.ShouldBeLessThanOrEqualTo(timeProvider.GetUtcNow().UtcDateTime);
@@ -113,22 +112,6 @@ public class HealthCheckServiceTests
 		result.Database.ContextResults["Identity"].ShouldBeTrue();
 		result.Database.ContextResults["Logging"].ShouldBeTrue();
 		result.Database.ContextResults["ApiTracking"].ShouldBeTrue();
-	}
-
-	[Fact]
-	public async Task GetHealthStatusAsync_ExternalApisInitializedAsync()
-	{
-		// Arrange
-		HealthCheckService service = CreateSut();
-
-		// Act
-		HealthStatusResponse result =
-			await service.GetHealthStatusAsync(
-			CancellationToken.None);
-
-		// Assert
-		result.ExternalApis.ShouldNotBeNull();
-		result.ExternalApis.Apis.ShouldNotBeNull();
 	}
 
 	[Fact]

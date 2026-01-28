@@ -310,7 +310,7 @@ export class AuthService
 					tap(
 						(response: AuthResponse) =>
 						{
-							// Refresh always returns token fields (no MFA on refresh)
+						// Refresh always returns token fields (no MFA on refresh)
 							this.setAccessToken(
 								response.accessToken!,
 								response.expiresAt!,

@@ -177,6 +177,10 @@ builder.Services.AddConfiguredOutputCache(
 // Add rate limiting (replaces custom middleware)
 builder.Services.AddConfiguredRateLimiting(builder.Configuration);
 
+// Add exception handler and ProblemDetails support
+builder.Services.AddExceptionHandler<SeventySix.Api.Infrastructure.GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
+
 // Add CORS from configuration
 builder.Services.AddConfiguredCors(builder.Configuration);
 
@@ -243,10 +247,10 @@ app.UseConfiguredForwardedHeaders(builder.Configuration);
 // CORS - Must be early so preflight (OPTIONS) requests are handled
 app.UseCors("AllowedOrigins");
 
-// Global exception handling - Catches all unhandled exceptions
+// Global exception handling - Uses ASP.NET Core 8+ IExceptionHandler pattern
 // Returns consistent ProblemDetails responses (RFC 7807)
 // Must be early to catch exceptions from all subsequent middleware
-app.UseMiddleware<GlobalExceptionMiddleware>();
+app.UseExceptionHandler();
 
 // Security headers middleware - Attribute-aware implementation
 // Reads [SecurityHeaders] attributes from controllers/actions for customization

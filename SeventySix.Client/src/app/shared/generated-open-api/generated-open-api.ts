@@ -3,7 +3,8 @@
  * Do not make direct changes to the file.
  */
 
-export interface paths {
+export interface paths
+{
 	"/api/v1/altcha/challenge": {
 		parameters: {
 			query?: never;
@@ -2121,7 +2122,8 @@ export interface paths {
 	};
 }
 export type webhooks = Record<string, never>;
-export interface components {
+export interface components
+{
 	schemas: {
 		AltchaChallengeDto: {
 			algorithm: string;
@@ -2446,7 +2448,8 @@ export interface components {
 	pathItems: never;
 }
 export type $defs = Record<string, never>;
-export interface operations {
+export interface operations
+{
 	GetPermissionRequests: {
 		parameters: {
 			query?: never;

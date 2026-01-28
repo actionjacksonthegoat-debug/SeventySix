@@ -241,8 +241,9 @@ export class MfaVerifyComponent implements OnInit
 		this.maskedEmail.set(this.mfaState.email);
 
 		// Set MFA method from state (default to email if not specified)
-		if (this.mfaState.mfaMethod !== null
-			&& this.mfaState.mfaMethod !== undefined)
+		if (
+			this.mfaState.mfaMethod !== null
+				&& this.mfaState.mfaMethod !== undefined)
 		{
 			this.mfaMethod.set(this.mfaState.mfaMethod);
 		}

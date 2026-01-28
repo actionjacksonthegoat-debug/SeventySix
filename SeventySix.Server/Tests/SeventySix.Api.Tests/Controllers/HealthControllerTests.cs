@@ -56,8 +56,6 @@ public class HealthControllerTests
 						ResponseTimeMs = 25.5,
 						Status = "Healthy",
 					},
-				ExternalApis =
-					new ExternalApiHealthResponse { Apis = [] },
 				ErrorQueue =
 					new QueueHealthResponse
 					{
@@ -109,8 +107,6 @@ public class HealthControllerTests
 						ResponseTimeMs = 500,
 						Status = "Degraded",
 					},
-				ExternalApis =
-					new ExternalApiHealthResponse { Apis = [] },
 				ErrorQueue =
 					new QueueHealthResponse
 					{
@@ -159,8 +155,6 @@ public class HealthControllerTests
 						ResponseTimeMs = 0,
 						Status = "Unhealthy",
 					},
-				ExternalApis =
-					new ExternalApiHealthResponse { Apis = [] },
 				ErrorQueue =
 					new QueueHealthResponse
 					{
@@ -209,8 +203,6 @@ public class HealthControllerTests
 						ResponseTimeMs = 25.5,
 						Status = "Healthy",
 					},
-				ExternalApis =
-					new ExternalApiHealthResponse { Apis = [] },
 				ErrorQueue =
 					new QueueHealthResponse
 					{

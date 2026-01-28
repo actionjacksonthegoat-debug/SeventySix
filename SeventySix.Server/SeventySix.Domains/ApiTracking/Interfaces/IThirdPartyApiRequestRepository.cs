@@ -114,4 +114,21 @@ public interface IThirdPartyApiRequestRepository
 		DateOnly startDate,
 		DateOnly endDate,
 		CancellationToken cancellationToken = default);
+
+	/// <summary>
+	/// Retrieves aggregated statistics for all third-party API requests for a specific date.
+	/// Performs aggregation at the database level for efficiency.
+	/// </summary>
+	/// <param name="today">
+	/// The date to filter statistics by.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token for async operation.
+	/// </param>
+	/// <returns>
+	/// A <see cref="ThirdPartyApiStatisticsDto"/> containing aggregated metrics.
+	/// </returns>
+	public Task<ThirdPartyApiStatisticsDto> GetStatisticsAsync(
+		DateOnly today,
+		CancellationToken cancellationToken = default);
 }

@@ -34,11 +34,6 @@ public class HealthStatusResponse
 	public DatabaseHealthResponse Database { get; set; } = new();
 
 	/// <summary>
-	/// Gets or sets the external APIs health information.
-	/// </summary>
-	public ExternalApiHealthResponse ExternalApis { get; set; } = new();
-
-	/// <summary>
 	/// Gets or sets the error queue health information.
 	/// </summary>
 	public QueueHealthResponse ErrorQueue { get; set; } = new();

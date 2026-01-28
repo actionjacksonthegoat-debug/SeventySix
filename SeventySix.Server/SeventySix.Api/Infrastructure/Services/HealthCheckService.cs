@@ -28,8 +28,6 @@ public class HealthCheckService(
 		// Run health checks in parallel for better performance
 		Task<DatabaseHealthResponse> databaseHealthTask =
 			CheckDatabaseHealthAsync(cancellationToken);
-		Task<ExternalApiHealthResponse> externalApisHealthTask =
-			CheckExternalApisHealthAsync(cancellationToken);
 		Task<QueueHealthResponse> errorQueueHealthTask =
 			CheckErrorQueueHealthAsync(cancellationToken);
 		Task<SystemResourcesResponse> systemHealthTask =
@@ -37,14 +35,11 @@ public class HealthCheckService(
 
 		await Task.WhenAll(
 			databaseHealthTask,
-			externalApisHealthTask,
 			errorQueueHealthTask,
 			systemHealthTask);
 
 		DatabaseHealthResponse databaseHealth =
 			await databaseHealthTask;
-		ExternalApiHealthResponse externalApisHealth =
-			await externalApisHealthTask;
 		QueueHealthResponse errorQueueHealth =
 			await errorQueueHealthTask;
 		SystemResourcesResponse systemHealth =
@@ -62,7 +57,6 @@ public class HealthCheckService(
 			CheckedAt =
 				timeProvider.GetUtcNow().UtcDateTime,
 			Database = databaseHealth,
-			ExternalApis = externalApisHealth,
 			ErrorQueue = errorQueueHealth,
 			System = systemHealth,
 		};
@@ -104,19 +98,6 @@ public class HealthCheckService(
 				allHealthy ? "Healthy" : "Unhealthy",
 			ContextResults = results,
 		};
-	}
-
-	/// <summary>
-	/// Checks external API health and availability.
-	/// </summary>
-	private static Task<ExternalApiHealthResponse> CheckExternalApisHealthAsync(
-		CancellationToken cancellationToken)
-	{
-		// Placeholder - implement actual external API checks as needed
-		ExternalApiHealthResponse response =
-			new() { Apis = [] };
-
-		return Task.FromResult(response);
 	}
 
 	/// <summary>

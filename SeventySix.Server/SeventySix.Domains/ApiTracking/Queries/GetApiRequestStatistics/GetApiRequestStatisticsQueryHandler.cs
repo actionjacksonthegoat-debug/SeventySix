@@ -18,36 +18,24 @@ public static class GetApiRequestStatisticsQueryHandler
 	/// <param name="repository">
 	/// The repository for accessing API request data.
 	/// </param>
+	/// <param name="timeProvider">
+	/// Time provider for getting today's date.
+	/// </param>
 	/// <param name="cancellationToken">
 	/// Cancellation token for async operation.
 	/// </param>
 	/// <returns>
-	/// Aggregated API request statistics.
+	/// Aggregated API request statistics for today.
 	/// </returns>
 	public static async Task<ThirdPartyApiStatisticsDto> HandleAsync(
 		GetApiRequestStatisticsQuery query,
 		IThirdPartyApiRequestRepository repository,
+		TimeProvider timeProvider,
 		CancellationToken cancellationToken)
 	{
-		IEnumerable<ThirdPartyApiRequest> requests =
-			await repository.GetAllAsync(cancellationToken);
+		DateOnly today =
+			DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);
 
-		List<ThirdPartyApiRequest> requestList =
-			[.. requests];
-
-		return new ThirdPartyApiStatisticsDto
-		{
-			TotalCallsToday =
-				requestList.Sum(request => request.CallCount),
-			TotalApisTracked = requestList.Count,
-			CallsByApi =
-				requestList.ToDictionary(
-					request => request.ApiName,
-					request => request.CallCount),
-			LastCalledByApi =
-				requestList.ToDictionary(
-					request => request.ApiName,
-					request => request.LastCalledAt),
-		};
+		return await repository.GetStatisticsAsync(today, cancellationToken);
 	}
 }

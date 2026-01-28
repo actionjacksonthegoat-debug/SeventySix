@@ -2,8 +2,10 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using Microsoft.AspNetCore.OutputCaching.StackExchangeRedis;
 using SeventySix.Api.Configuration;
 using SeventySix.Shared.Settings;
+using StackExchange.Redis;
 
 namespace SeventySix.Api.Registration;
 
@@ -52,21 +54,22 @@ public static class OutputCacheRegistration
 					.GetSection(CacheSettings.SectionName)
 					.Get<CacheSettings>();
 
+			string instanceName =
+				$"{cacheSettings?.Valkey.InstanceName ?? "SeventySix:"}OutputCache:";
+
 			// Use shared IConnectionMultiplexer (registered in FusionCacheRegistration)
-			services.AddStackExchangeRedisOutputCache(
-				options =>
-				{
-					options.ConnectionMultiplexerFactory =
-						async () =>
-						{
-							IServiceProvider serviceProvider =
-								services.BuildServiceProvider();
-							return await Task.FromResult(
-								serviceProvider.GetRequiredService<StackExchange.Redis.IConnectionMultiplexer>());
-						};
-					options.InstanceName =
-						$"{cacheSettings?.Valkey.InstanceName ?? "SeventySix:"}OutputCache:";
-				});
+			// Configure using OptionsBuilder to get proper DI-resolved IServiceProvider
+			services.AddStackExchangeRedisOutputCache(_ => { });
+
+			services.AddOptions<RedisOutputCacheOptions>()
+				.Configure<IServiceProvider>(
+					(cacheOptions, serviceProvider) =>
+					{
+						cacheOptions.InstanceName = instanceName;
+						cacheOptions.ConnectionMultiplexerFactory =
+							() => Task.FromResult(
+								serviceProvider.GetRequiredService<IConnectionMultiplexer>());
+					});
 		}
 
 		services.AddOutputCache(

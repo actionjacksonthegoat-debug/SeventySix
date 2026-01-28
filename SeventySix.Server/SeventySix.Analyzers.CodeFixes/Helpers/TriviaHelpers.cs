@@ -87,26 +87,4 @@ internal static class TriviaHelpers
 			triviaList,
 			removeWhitespace: false,
 			removeNewlines: true);
-
-	/// <summary>
-	/// Gets the leading whitespace string from a syntax token.
-	/// </summary>
-	/// <param name="token">
-	/// The syntax token to inspect.
-	/// </param>
-	/// <returns>
-	/// The leading whitespace string, or empty if none found.
-	/// </returns>
-	public static string GetLeadingWhitespace(SyntaxToken token)
-	{
-		foreach (SyntaxTrivia trivia in token.LeadingTrivia)
-		{
-			if (trivia.RawKind == (int)SyntaxKind.WhitespaceTrivia)
-			{
-				return trivia.ToString();
-			}
-		}
-
-		return string.Empty;
-	}
 }

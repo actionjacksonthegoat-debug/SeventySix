@@ -15,6 +15,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 using SeventySix.Analyzers;
 using SeventySix.Analyzers.CodeFixes.Helpers;
+using SeventySix.Analyzers.Helpers;
 
 namespace SeventySix.Analyzers.CodeFixes;
 
@@ -128,12 +129,12 @@ public sealed class AssignmentContinuationIndentCodeFixProvider
 				creationParent
 				is ImplicitObjectCreationExpressionSyntax implicitForClose)
 			{
-				return TriviaHelpers.GetLeadingWhitespace(implicitForClose.NewKeyword);
+				return SyntaxHelpers.GetLeadingWhitespace(implicitForClose.NewKeyword);
 			}
 
 			if (creationParent is ObjectCreationExpressionSyntax objectForClose)
 			{
-				return TriviaHelpers.GetLeadingWhitespace(objectForClose.NewKeyword);
+				return SyntaxHelpers.GetLeadingWhitespace(objectForClose.NewKeyword);
 			}
 		}
 
@@ -150,20 +151,20 @@ public sealed class AssignmentContinuationIndentCodeFixProvider
 				is ImplicitObjectCreationExpressionSyntax implicitCreation)
 			{
 				// Brace should match 'new' keyword indent
-				return TriviaHelpers.GetLeadingWhitespace(implicitCreation.NewKeyword);
+				return SyntaxHelpers.GetLeadingWhitespace(implicitCreation.NewKeyword);
 			}
 
 			if (creationParent is ObjectCreationExpressionSyntax objectCreation)
 			{
 				// Brace should match 'new' keyword indent
-				return TriviaHelpers.GetLeadingWhitespace(objectCreation.NewKeyword);
+				return SyntaxHelpers.GetLeadingWhitespace(objectCreation.NewKeyword);
 			}
 
 			// Pattern: Extensions = { ... } where { is direct value of assignment
 			// The brace should be at property indent + 1 tab
 			if (creationParent is AssignmentExpressionSyntax assignmentParent)
 			{
-				string propertyIndent = TriviaHelpers.GetLeadingWhitespace(
+				string propertyIndent = SyntaxHelpers.GetLeadingWhitespace(
 					assignmentParent.Left.GetFirstToken());
 
 				if (!string.IsNullOrEmpty(propertyIndent))
@@ -195,13 +196,13 @@ public sealed class AssignmentContinuationIndentCodeFixProvider
 				is ImplicitObjectCreationExpressionSyntax implicitContent)
 			{
 				// Contents should be new keyword indent + 1 tab
-				return TriviaHelpers.GetLeadingWhitespace(implicitContent.NewKeyword) + "\t";
+				return SyntaxHelpers.GetLeadingWhitespace(implicitContent.NewKeyword) + "\t";
 			}
 
 			if (creationNode is ObjectCreationExpressionSyntax objectContent)
 			{
 				// Contents should be new keyword indent + 1 tab
-				return TriviaHelpers.GetLeadingWhitespace(objectContent.NewKeyword) + "\t";
+				return SyntaxHelpers.GetLeadingWhitespace(objectContent.NewKeyword) + "\t";
 			}
 		}
 
@@ -224,7 +225,7 @@ public sealed class AssignmentContinuationIndentCodeFixProvider
 		{
 			// Get the indentation of the key (first element)
 			// Value should be at SAME level as key in dictionary entries
-			string keyIndent = TriviaHelpers.GetLeadingWhitespace(
+			string keyIndent = SyntaxHelpers.GetLeadingWhitespace(
 				initializer.Expressions[0].GetFirstToken());
 
 			if (!string.IsNullOrEmpty(keyIndent))
@@ -239,7 +240,7 @@ public sealed class AssignmentContinuationIndentCodeFixProvider
 			&& assignment.Parent is InitializerExpressionSyntax)
 		{
 			// Get the indentation of the property name (left side)
-			string propertyIndent = TriviaHelpers.GetLeadingWhitespace(
+			string propertyIndent = SyntaxHelpers.GetLeadingWhitespace(
 				assignment.Left.GetFirstToken());
 
 			if (!string.IsNullOrEmpty(propertyIndent))
@@ -259,7 +260,7 @@ public sealed class AssignmentContinuationIndentCodeFixProvider
 			{
 				if (node is StatementSyntax or MemberDeclarationSyntax)
 				{
-					string statementIndent = TriviaHelpers.GetLeadingWhitespace(
+					string statementIndent = SyntaxHelpers.GetLeadingWhitespace(
 						node.GetFirstToken()
 					);
 
@@ -276,7 +277,7 @@ public sealed class AssignmentContinuationIndentCodeFixProvider
 		}
 
 		// Fallback: count existing indent and add one tab
-		string currentIndent = TriviaHelpers.GetLeadingWhitespace(valueToken);
+		string currentIndent = SyntaxHelpers.GetLeadingWhitespace(valueToken);
 
 		if (!string.IsNullOrEmpty(currentIndent))
 		{

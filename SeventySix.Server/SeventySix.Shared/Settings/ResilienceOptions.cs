@@ -1,22 +1,22 @@
-// <copyright file="PollyOptions.cs" company="SeventySix">
+// <copyright file="ResilienceOptions.cs" company="SeventySix">
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
 namespace SeventySix.Shared.Settings;
 
 /// <summary>
-/// Configuration options for Polly resilience policies.
+/// Configuration options for HTTP resilience policies.
 /// </summary>
 /// <remarks>
 /// Provides configuration for retry, circuit breaker, and timeout policies.
-/// Values are bound from appsettings.json "Polly" section.
+/// Values are bound from appsettings.json "Resilience" section.
 /// </remarks>
-public record PollyOptions
+public record ResilienceOptions
 {
 	/// <summary>
 	/// Configuration section name in appsettings.json.
 	/// </summary>
-	public const string SectionName = "Polly";
+	public const string SectionName = "Resilience";
 
 	/// <summary>
 	/// Number of retry attempts before failing.

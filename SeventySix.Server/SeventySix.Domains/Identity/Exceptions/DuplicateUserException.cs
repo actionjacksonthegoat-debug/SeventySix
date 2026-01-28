@@ -26,7 +26,7 @@ namespace SeventySix.Identity;
 /// - Business rule violations unrelated to uniqueness
 ///
 /// HTTP Mapping:
-/// - Maps to 409 Conflict in GlobalExceptionMiddleware
+/// - Maps to 409 Conflict in GlobalExceptionHandler
 /// - Standard HTTP status for "resource already exists"
 ///
 /// Usage Example:

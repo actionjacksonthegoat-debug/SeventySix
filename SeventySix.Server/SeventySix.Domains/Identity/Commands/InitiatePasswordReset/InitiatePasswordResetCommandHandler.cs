@@ -5,6 +5,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using SeventySix.ElectronicNotifications.Emails;
+using SeventySix.Shared.POCOs;
 using Wolverine;
 
 namespace SeventySix.Identity;
@@ -34,10 +35,9 @@ public static class InitiatePasswordResetCommandHandler
 	/// Cancellation token.
 	/// </param>
 	/// <returns>
-	/// A task that represents the asynchronous operation.
+	/// A Result indicating success or failure with an error message.
 	/// </returns>
-	/// <exception cref="InvalidOperationException">Thrown when user not found or inactive.</exception>
-	public static async Task HandleAsync(
+	public static async Task<Result> HandleAsync(
 		InitiatePasswordResetCommand command,
 		UserManager<ApplicationUser> userManager,
 		IMessageBus messageBus,
@@ -50,10 +50,11 @@ public static class InitiatePasswordResetCommandHandler
 
 		if (!user.IsValidForAuthentication())
 		{
-			logger.LogError(
-				"User with ID {UserId} not found or inactive",
+			logger.LogWarning(
+				"Password reset requested for user ID {UserId} but user not found or inactive",
 				command.UserId);
-			throw new InvalidOperationException(
+
+			return Result.Failure(
 				$"User with ID {command.UserId} not found or inactive");
 		}
 
@@ -90,5 +91,7 @@ public static class InitiatePasswordResetCommandHandler
 				user.Id,
 				templateData),
 			cancellationToken);
+
+		return Result.Success();
 	}
 }

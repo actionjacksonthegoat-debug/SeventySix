@@ -599,9 +599,20 @@ public class UsersController(
 			return NotFound();
 		}
 
-		await messageBus.InvokeAsync(
-			new InitiatePasswordResetCommand(id, IsNewUser: false),
-			cancellationToken);
+		Result result =
+			await messageBus.InvokeAsync<Result>(
+				new InitiatePasswordResetCommand(id, IsNewUser: false),
+				cancellationToken);
+
+		if (!result.IsSuccess)
+		{
+			logger.LogWarning(
+				"Password reset failed for user {UserId}: {Error}",
+				id,
+				result.Error);
+
+			return NotFound();
+		}
 
 		return NoContent();
 	}
