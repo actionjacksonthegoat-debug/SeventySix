@@ -30,14 +30,13 @@ public class TimeProviderUsageTests : SourceCodeArchitectureTest
 	private static readonly HashSet<string> AllowedExceptions =
 		new(StringComparer.OrdinalIgnoreCase)
 		{
-			// This test file itself contains DateTime.UtcNow in regex patterns and documentation
+			// This test file contains DateTime.UtcNow in regex patterns (5 usages)
 			"TimeProviderUsageTests.cs",
-			// Analyzer tests contain DateTime.UtcNow in test code strings being analyzed (not actual usage)
+			// Analyzer test contains DateTime.UtcNow in test code strings (6 usages)
 			"AssignmentContinuationIndentCodeFixTests.cs",
-			// EF Migrations / snapshot and seed/config files are allowed to contain literal DateTime for seeding purposes
-			"SecurityRoleConfiguration.cs",
-			// Allow analyzer sources and analyzer tests that contain intentional DateTime strings for testing purposes
+			// Analyzer source detects DateTime usage patterns (13 usages)
 			"DateTimeUsageAnalyzer.cs",
+			// Analyzer test verifies DateTime detection (3 usages)
 			"DateTimeUsageAnalyzerTests.cs",
 		};
 

@@ -34,11 +34,7 @@ public class GodClassTests
 	/// </summary>
 	private static readonly HashSet<string> AllowedInterfaceExceptions =
 		[
-		// IUserQueryRepository (15 methods): Logical split of read-only CQRS query operations.
-		// Methods are cohesive user query operations - splitting would fragment the query contract
-		// and introduce artificial boundaries. The interface follows ISP by being read-only only.
-		"IUserQueryRepository",
-	];
+		];
 
 	/// <summary>
 	/// Implementation classes allowed to have more methods.

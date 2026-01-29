@@ -17,11 +17,6 @@
 	"baseUrl": "./",
 	"paths": {
 		// ============================================================
-		// INTEGRATION ALIASES (cross-domain features)
-		// ============================================================
-		"@integration/*": ["src/app/integrations/*"],
-
-		// ============================================================
 		// DOMAIN ALIASES (bounded contexts in domains/)
 		// ============================================================
 		"@admin": ["src/app/domains/admin"],

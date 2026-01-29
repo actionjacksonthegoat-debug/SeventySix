@@ -85,4 +85,24 @@ export class CacheCoordinationService
 				queryKey: QueryKeys.account.profile
 			});
 	}
+
+	/**
+	 * Invalidates current user's role-related caches.
+	 * Call when admin changes roles for the currently logged-in user.
+	 * Also invalidated automatically via refetchOnWindowFocus for cross-session changes.
+	 *
+	 * @returns {void}
+	 */
+	invalidateCurrentUserRoles(): void
+	{
+		this.queryClient.invalidateQueries(
+			{
+				queryKey: QueryKeys.account.profile
+			});
+
+		this.queryClient.invalidateQueries(
+			{
+				queryKey: QueryKeys.account.availableRoles
+			});
+	}
 }

@@ -703,8 +703,8 @@ test("code (including tests/specs) should use DateService and approved test help
 
 	// Allowed exceptions with justification - these files implement the Date abstraction or approved test helpers
 	const allowedExceptions = [
-		"date.service.ts", // DateService itself must use Date internally
-		"date.service.spec.ts" // Tests that target DateService itself may use native Date
+		"date.service.ts", // DateService itself must use Date internally (13 usages)
+		"date.service.spec.ts" // Tests that target DateService itself may use native Date (26 usages)
 	];
 
 	for (const file of sourceFiles)
@@ -781,7 +781,6 @@ test("code should not use OR (||) for nullish fallbacks with strings", async () 
 
 	// Allowed exceptions with justification
 	const allowedExceptions = [
-		"architecture-tests.mjs" // This file contains patterns as test subjects
 	];
 
 	for (const file of sourceFiles)
@@ -823,7 +822,7 @@ test("all files should have less than 800 lines", async () =>
 	// Exceptions with documented justification
 	// NOTE: Test files are NOT automatically excepted - apply 80/20 and DRY
 	const allowedExceptions = [
-		"generated-open-api.ts" // Auto-generated from OpenAPI spec
+		"generated-open-api.ts" // Auto-generated from OpenAPI spec (3476 lines)
 	];
 
 	for (const file of sourceFiles)
@@ -861,15 +860,6 @@ test("methods should have less than 50 lines", async () =>
 	// Exception patterns (full method identifier => reason)
 	// NOTE: These are legitimate exceptions with business justification
 	const allowedExceptions = new Map([
-		["permission-request-list.formatter", "Complex table formatting with multiple conditions"],
-		["user-list.formatter", "Complex table column definitions with actions"],
-		["user-detail.onSubmit", "Consolidated form submission handling - split would reduce clarity"],
-		["error-handler.service.if", "Error categorization logic - intentionally consolidated"],
-		["breadcrumb.component.buildBreadcrumbs", "Route traversal and breadcrumb construction"],
-		["data-table.component.constructor", "Complex table initialization with many column types"],
-		["mock-factories.get", "Test utility with comprehensive mock data generation"],
-		["auth.service.error", "False positive - subscribe callback, not a method"],
-		["totp-setup.error", "False positive - subscribe callback, not a method"]
 	]);
 
 	const methodMatches = await findMethodsInFiles(sourceFiles, { skipTests: true });
@@ -955,10 +945,9 @@ test("services should have less than 12 public methods", async () =>
 	// Services with cohesive single-domain responsibilities are exceptions
 	// These have many methods but serve a single purpose (utility patterns)
 	const allowedExceptions = [
-		"date.service.ts", // Date utilities - all methods serve date handling (single domain)
-		"logger.service.ts", // Logging levels - all methods serve logging (single domain)
-		"notification.service.ts", // Toast notifications - all methods serve user feedback (single domain)
-		"user.service.ts" // TanStack Query factory service - thin wrappers with single domain (user CRUD)
+		"date.service.ts", // Date utilities - all methods serve date handling (22 methods, single domain)
+		"logger.service.ts", // Logging levels - all methods serve logging (12 methods, single domain)
+		"notification.service.ts" // Toast notifications - all methods serve user feedback (13 methods, single domain)
 	];
 
 	// TanStack Query callback method names (not public API methods)
@@ -998,7 +987,7 @@ test("components should have less than 12 public methods", async () =>
 
 	// Components with complex UI may need more methods - these are exceptions
 	const allowedExceptions = [
-		"data-table.component.ts" // Complex reusable table with many features
+		"data-table.component.ts" // Complex reusable table with many features (15 methods for filtering, sorting, pagination, search)
 	];
 
 	for (const file of componentFiles)
@@ -1036,7 +1025,6 @@ console.log("\nDomain Boundary Tests");
 // Domain constants for architecture enforcement
 const DOMAINS = ["admin", "game", "commerce", "auth", "account", "home", "physics", "developer"];
 const DOMAINS_DIR = path.join(SRC_DIR, "domains");
-const INTEGRATIONS_DIR = path.join(SRC_DIR, "integrations");
 
 /**
  * Helper: Check if a directory exists
@@ -1153,14 +1141,12 @@ test("generated API should only be imported by models/index.ts files", async () 
 		// Skip the allowed re-export files:
 		// - models/index.ts (shared and domain model barrel exports)
 		// - api.model.ts (shared models that re-export from generated)
-		// - integrations/*/api/index.ts (cross-domain integrations)
 		const relativePath = path.relative(SRC_DIR, file);
 		const normalizedPath = relativePath.split(path.sep).join("/");
 
 		if (
 			normalizedPath.endsWith("models/index.ts")
 			|| normalizedPath.endsWith("api.model.ts")
-			|| normalizedPath.startsWith("integrations/")
 		)
 		{
 			continue;
@@ -1226,7 +1212,7 @@ test("domain route-scoped services should not use providedIn root", async () =>
 	assertEmpty(violations, "Route-scoped services with providedIn: root (use route providers or move to core/)");
 });
 
-test("only integrations can import from multiple domains", async () =>
+test("domains should not import from multiple other domains", async () =>
 {
 	// Skip if domains folder doesn't exist yet (pre-migration)
 	if (!(await directoryExists(DOMAINS_DIR)))
@@ -1245,14 +1231,12 @@ test("only integrations can import from multiple domains", async () =>
 		if (domainImports.length > 1)
 		{
 			violations.push(
-				`${path.relative(SRC_DIR, file)} imports from multiple domains: ${
-					domainImports.join(", ")
-				} (use integrations/)`
+				`${path.relative(SRC_DIR, file)} imports from multiple domains: ${domainImports.join(", ")}`
 			);
 		}
 	}
 
-	assertEmpty(violations, "Domain files importing from multiple domains (use integrations/ for cross-domain)");
+	assertEmpty(violations, "Domain files importing from multiple domains (domains should be isolated)");
 });
 
 test("relative imports should only be used in index.ts barrel files", async () =>

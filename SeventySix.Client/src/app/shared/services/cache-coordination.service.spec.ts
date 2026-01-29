@@ -155,4 +155,41 @@ describe("CacheCoordinationService",
 							.toHaveBeenCalledTimes(2);
 					});
 			});
+
+		describe("invalidateCurrentUserRoles",
+			() =>
+			{
+				it("should invalidate account profile cache",
+					() =>
+					{
+						service.invalidateCurrentUserRoles();
+
+						expect(invalidateSpy)
+							.toHaveBeenCalledWith(
+								{
+									queryKey: QueryKeys.account.profile
+								});
+					});
+
+				it("should invalidate account available roles cache",
+					() =>
+					{
+						service.invalidateCurrentUserRoles();
+
+						expect(invalidateSpy)
+							.toHaveBeenCalledWith(
+								{
+									queryKey: QueryKeys.account.availableRoles
+								});
+					});
+
+				it("should invalidate both caches",
+					() =>
+					{
+						service.invalidateCurrentUserRoles();
+
+						expect(invalidateSpy)
+							.toHaveBeenCalledTimes(2);
+					});
+			});
 	});

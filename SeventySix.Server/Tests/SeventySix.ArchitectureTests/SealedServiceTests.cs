@@ -29,7 +29,7 @@ public class SealedServiceTests
 	/// </summary>
 	private static readonly HashSet<string> ExcludedServices =
 		[
-			// Has virtual methods for NSubstitute mocking
+			// Has virtual methods for NSubstitute mocking in unit tests
 			"AuthenticationService",
 		];
 

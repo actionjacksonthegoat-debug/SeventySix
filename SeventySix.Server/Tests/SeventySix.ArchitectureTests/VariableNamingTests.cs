@@ -24,8 +24,7 @@ public class VariableNamingTests : SourceCodeArchitectureTest
 	// FluentValidation idiomatic pattern - allowed in test files ONLY
 	private static readonly HashSet<string> AllowedInTestsOnly =
 		[
-		"x", // FluentValidation: x => x.Property
-	];
+		];
 
 	[Fact]
 	public void Production_Code_Should_Not_Have_Single_Letter_Lambda_Parameters()

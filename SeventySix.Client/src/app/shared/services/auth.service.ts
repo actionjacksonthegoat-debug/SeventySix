@@ -36,6 +36,8 @@ import {
 	JwtClaims,
 	OAuthProvider
 } from "@shared/services/auth.types";
+import { QueryKeys } from "@shared/utilities/query-keys.utility";
+import { QueryClient } from "@tanstack/angular-query-experimental";
 import {
 	catchError,
 	finalize,
@@ -108,6 +110,16 @@ export class AuthService
 	 */
 	private readonly windowService: WindowService =
 		inject(WindowService);
+
+	/**
+	 * TanStack Query client for cache management.
+	 * Used to clear cached queries on logout to prevent data leakage between users.
+	 * @type {QueryClient}
+	 * @private
+	 * @readonly
+	 */
+	private readonly queryClient: QueryClient =
+		inject(QueryClient);
 
 	/**
 	 * Base auth API URL.
@@ -258,6 +270,7 @@ export class AuthService
 						this.requiresPasswordChangeSignal.set(
 							response.requiresPasswordChange);
 						this.markHasSession();
+						this.invalidatePostLogin();
 					}));
 	}
 
@@ -665,7 +678,8 @@ export class AuthService
 	}
 
 	/**
-	 * Clears authentication state.
+	 * Clears authentication state and all cached query data.
+	 * Prevents data leakage between users on shared devices.
 	 * @returns {void}
 	 */
 	private clearAuth(): void
@@ -675,6 +689,26 @@ export class AuthService
 		this.userSignal.set(null);
 		this.requiresPasswordChangeSignal.set(false);
 		this.clearHasSession();
+
+		// Clear all cached queries to prevent data leakage between users
+		this.queryClient.clear();
+	}
+
+	/**
+	 * Invalidates stale caches after successful login.
+	 * Ensures user sees their own fresh data, not cached data from previous session.
+	 * @returns {void}
+	 */
+	private invalidatePostLogin(): void
+	{
+		this.queryClient.invalidateQueries(
+			{
+				queryKey: QueryKeys.account.all
+			});
+		this.queryClient.invalidateQueries(
+			{
+				queryKey: QueryKeys.permissionRequests.all
+			});
 	}
 
 	/**

@@ -13,9 +13,8 @@ Ask user which domain: admin, sandbox, developer (or shared for cross-cutting)
 
 ## Import Boundaries (CRITICAL)
 
--   Domain imports ONLY from `@shared/*` + own domain (`@{domain}/*`)
--   NEVER import from another domain
--   Cross-domain features → Use `integrations/` folder
+- Domain imports ONLY from `@shared/*` + own domain (`@{domain}/*`)
+- NEVER import from another domain
 
 ## Required Patterns
 
@@ -30,10 +29,10 @@ Ask user which domain: admin, sandbox, developer (or shared for cross-cutting)
 
 ## Formatting Rules
 
--   New line after every `=` with indented value
--   New line before every `.` in chains
--   Lambda params on new line after `(`
--   Each param on new line when 2+ params
+- New line after every `=` with indented value
+- New line before every `.` in chains
+- Lambda params on new line after `(`
+- Each param on new line when 2+ params
 
 ## Template
 
@@ -81,5 +80,5 @@ export class {{Name}}Component {
 
 ## Naming Convention
 
--   Use `*Page` suffix ONLY when a model with same name exists
--   Otherwise use `*Component` suffix
+- Use `*Page` suffix ONLY when a model with same name exists
+- Otherwise use `*Component` suffix

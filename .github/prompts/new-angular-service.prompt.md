@@ -130,4 +130,5 @@ export class {{Name}}Service {
 1. **NEVER** use `providedIn: 'root'` in `@{domain}/services/`
 2. **ALWAYS** register domain services in route `providers` array
 3. **ONLY** `@{domain}/core/` and `@shared/services/` can use `providedIn: 'root'`
-4. **NEVER** import from another domain - use `integrations/` folder for cross-domain features
+4. **NEVER** import from another domain - 
+

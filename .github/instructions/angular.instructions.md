@@ -42,8 +42,6 @@ Each domain imports ONLY `@shared/*` + itself. NEVER another domain.
 | @sandbox   | ✅      | ❌     | ✅       | ❌         |
 | @developer | ✅      | ❌     | ❌       | ✅         |
 
-Cross-domain features → Use `integrations/` folder only.
-
 ## File Organization
 
 | Type            | Location                | Import From             |

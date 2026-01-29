@@ -13,10 +13,15 @@ import { provideRouter } from "@angular/router";
 import { environment } from "@environments/environment";
 import { AuthResponse } from "@shared/models";
 import { DateService } from "@shared/services";
+import { createTestQueryClient } from "@shared/testing";
 import {
 	TEST_ROLE_ADMIN,
 	TEST_ROLE_DEVELOPER
 } from "@testing/constants";
+import {
+	provideTanStackQuery,
+	QueryClient
+} from "@tanstack/angular-query-experimental";
 import { AuthService } from "./auth.service";
 import { createMockAuthResponse } from "./auth.service.test-helpers";
 import { DOTNET_ROLE_CLAIM } from "./auth.types";
@@ -32,13 +37,12 @@ const TEST_LOGIN: { usernameOrEmail: string; password: string; rememberMe: boole
 		rememberMe: false
 	};
 
-/**
- * Creates a fresh TestBed with AuthService for session marker tests.
- * Call AFTER setting localStorage to test initialize() behavior.
- */
-function createFreshTestBed(): { authService: AuthService; httpMock: HttpTestingController; }
+/** Creates a fresh TestBed with AuthService. Call AFTER setting localStorage to test initialize() behavior. */
+function createFreshTestBed(): { authService: AuthService; httpMock: HttpTestingController; queryClient: QueryClient; }
 {
 	TestBed.resetTestingModule();
+	const testQueryClient: QueryClient =
+		createTestQueryClient();
 	TestBed.configureTestingModule(
 		{
 			providers: [
@@ -46,13 +50,15 @@ function createFreshTestBed(): { authService: AuthService; httpMock: HttpTesting
 				provideHttpClient(withInterceptorsFromDi()),
 				provideHttpClientTesting(),
 				provideRouter([]),
+				provideTanStackQuery(testQueryClient),
 				{ provide: PLATFORM_ID, useValue: "browser" },
 				AuthService
 			]
 		});
 	return {
 		authService: TestBed.inject(AuthService),
-		httpMock: TestBed.inject(HttpTestingController)
+		httpMock: TestBed.inject(HttpTestingController),
+		queryClient: testQueryClient
 	};
 }
 
@@ -62,12 +68,15 @@ describe("AuthService",
 	{
 		let service: AuthService;
 		let httpMock: HttpTestingController;
+		let queryClient: QueryClient;
 
 		beforeEach(
 			() =>
 			{
-			// Clear session marker before each test
 				localStorage.removeItem(SESSION_KEY);
+
+				queryClient =
+					createTestQueryClient();
 
 				TestBed.configureTestingModule(
 					{
@@ -76,6 +85,7 @@ describe("AuthService",
 							provideHttpClient(withInterceptorsFromDi()),
 							provideHttpClientTesting(),
 							provideRouter([]),
+							provideTanStackQuery(queryClient),
 							{ provide: PLATFORM_ID, useValue: "browser" },
 							AuthService
 						]
@@ -215,7 +225,6 @@ describe("AuthService",
 				it("should clear user state on logout",
 					() =>
 					{
-						// First login to set state
 						const mockResponse: AuthResponse =
 							createMockAuthResponse();
 
@@ -231,10 +240,8 @@ describe("AuthService",
 						expect(service.isAuthenticated())
 							.toBe(true);
 
-						// Now logout
 						service.logout();
 
-						// Expect logout API call
 						const logoutReq: TestRequest =
 							httpMock.expectOne(
 								`${environment.apiUrl}/auth/logout`);
@@ -245,6 +252,7 @@ describe("AuthService",
 						expect(service.user())
 							.toBeNull();
 					});
+
 			});
 
 		describe("forceLogoutLocally",
@@ -253,7 +261,6 @@ describe("AuthService",
 				it("should clear all local authentication state",
 					() =>
 					{
-						// Arrange - set authenticated state via login
 						const mockResponse: AuthResponse =
 							createMockAuthResponse();
 
@@ -275,10 +282,8 @@ describe("AuthService",
 						expect(localStorage.getItem(SESSION_KEY))
 							.toBe("true");
 
-						// Act
 						service.forceLogoutLocally();
 
-						// Assert
 						expect(service.isAuthenticated())
 							.toBe(false);
 						expect(service.user())
@@ -608,11 +613,7 @@ describe("AuthService",
 		describe("loginWithProvider",
 			() =>
 			{
-				/**
-		 * Note: Cannot directly test loginWithProvider as it sets window.location.href
-		 * which causes a full page reload in Karma tests.
-		 * The functionality is covered by E2E tests instead.
-		 */
+				// Note: Cannot test loginWithProvider directly as it sets window.location.href causing page reload
 				it("should construct correct OAuth URL",
 					() =>
 					{
