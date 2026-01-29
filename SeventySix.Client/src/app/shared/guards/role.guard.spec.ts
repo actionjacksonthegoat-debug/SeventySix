@@ -69,7 +69,7 @@ describe("roleGuard",
 							.toBe(true);
 					});
 
-				it("should redirect unauthenticated user to login",
+				it("should redirect unauthenticated user to login with returnUrl",
 					() =>
 					{
 						authService.isAuthenticated.mockReturnValue(false);
@@ -87,8 +87,9 @@ describe("roleGuard",
 							.toBeInstanceOf(UrlTree);
 						expect(result.toString())
 							.toContain("/auth/login");
-						// Note: canMatch doesn't have access to state.url,
-						// so returnUrl is not included in redirect
+						// returnUrl is included via currentNavigation() signal
+						expect(result.toString())
+							.toContain("returnUrl");
 					});
 			});
 

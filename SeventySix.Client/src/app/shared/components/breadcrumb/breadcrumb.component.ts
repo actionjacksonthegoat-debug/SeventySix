@@ -135,7 +135,7 @@ export class BreadcrumbComponent
 	 * @type {Signal<BreadcrumbItem[]>}
 	 * @private
 	 */
-	private readonly navigationEnd$: Signal<BreadcrumbItem[]> =
+	private readonly navigationEnd: Signal<BreadcrumbItem[]> =
 		toSignal(
 			this.router.events.pipe(
 				filter(
@@ -154,7 +154,7 @@ export class BreadcrumbComponent
 	 */
 	readonly breadcrumbs: Signal<BreadcrumbItem[]> =
 		computed(
-			() => this.navigationEnd$());
+			() => this.navigationEnd());
 
 	/**
 	 * Builds breadcrumb items from current route hierarchy.

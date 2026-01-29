@@ -18,9 +18,9 @@
 		}
 
 		<form
+			[formGroup]="mfaForm"
 			(ngSubmit)="onVerify()"
-			class="mfa-verify-form"
-			#mfaForm="ngForm">
+			class="mfa-verify-form">
 			<div class="form-group">
 				@if (showBackupCodeEntry()) {
 					<label for="code">Backup Code</label>
@@ -31,16 +31,12 @@
 					id="code"
 					type="text"
 					inputmode="numeric"
-					[pattern]="showBackupCodeEntry() ? '[A-Za-z0-9]*' : '[0-9]*'"
+					formControlName="code"
 					[maxlength]="expectedCodeLength()"
-					[(ngModel)]="code"
-					name="code"
-					#codeField="ngModel"
-					required
 					autocomplete="one-time-code"
 					[placeholder]="showBackupCodeEntry() ? 'XXXXXXXX' : '000000'"
 					aria-required="true"
-					[attr.aria-invalid]="codeField.invalid && codeField.touched"
+					[attr.aria-invalid]="mfaForm.get('code')?.invalid && mfaForm.get('code')?.touched"
 					aria-describedby="code-hint"
 				/>
 				@if (showBackupCodeEntry()) {

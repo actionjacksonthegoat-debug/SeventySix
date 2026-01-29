@@ -14,9 +14,33 @@ import { catchError, interval, of } from "rxjs";
 type CircuitState = "closed" | "open";
 
 /**
- * Error queue service with circuit breaker pattern.
- * Queues client-side errors and sends them in batches to the server.
- * Implements localStorage persistence and circuit breaker to prevent error loops.
+ * Batched error queue with circuit breaker and deduplication.
+ *
+ * **PURPOSE:**
+ * Reliably transmits client-side errors to the server in batches while protecting
+ * against cascading failures. Persists queued errors in localStorage to survive
+ * page reloads and implements intelligent deduplication to prevent log spam.
+ *
+ * **USE FOR:**
+ * - Queueing errors for batched transmission via `enqueue()`
+ * - Automatic retry with circuit breaker protection
+ * - Surviving page reloads through localStorage persistence
+ * - Deduplicating rapid-fire identical errors (5-second window)
+ *
+ * **NOT FOR:**
+ * - Direct usage (use `ClientErrorLoggerService` instead)
+ * - Synchronous error logging (batched by interval)
+ * - Critical errors requiring immediate delivery
+ *
+ * **FLOW:**
+ * 1. `ClientErrorLoggerService` calls `enqueue()` with log payload
+ * 2. Service checks deduplication window (5s) and skips duplicates
+ * 3. Adds to in-memory queue and persists to localStorage
+ * 4. Logs to console (1:1 parity with what reaches database)
+ * 5. Every `batchInterval` ms, processes batch of `batchSize` items
+ * 6. On success: removes from queue, resets circuit breaker
+ * 7. On failure: increments failure count, opens circuit after threshold
+ * 8. Circuit auto-resets after `circuitOpenDuration` ms
  */
 @Injectable(
 	{

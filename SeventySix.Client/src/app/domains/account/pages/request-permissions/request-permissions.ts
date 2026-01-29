@@ -29,6 +29,7 @@ import {
 	SkeletonTheme
 } from "@shared/constants";
 import { NotificationService } from "@shared/services";
+import { toggleSetItem } from "@shared/utilities/selection.utility";
 import { NgxSkeletonLoaderModule } from "ngx-skeleton-loader";
 
 @Component(
@@ -173,21 +174,10 @@ export class RequestPermissionsPage
 	 */
 	toggleRole(roleName: string): void
 	{
-		const current: Set<string> =
-			this.selectedRoles();
-		const updated: Set<string> =
-			new Set(current);
-
-		if (updated.has(roleName))
-		{
-			updated.delete(roleName);
-		}
-		else
-		{
-			updated.add(roleName);
-		}
-
-		this.selectedRoles.set(updated);
+		this.selectedRoles.set(
+			toggleSetItem(
+				this.selectedRoles(),
+				roleName));
 	}
 
 	/**

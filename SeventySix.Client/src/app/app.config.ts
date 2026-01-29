@@ -12,7 +12,7 @@ import {
 	provideBrowserGlobalErrorListeners,
 	provideZonelessChangeDetection
 } from "@angular/core";
-import { provideAnimations } from "@angular/platform-browser/animations";
+import { provideAnimationsAsync } from "@angular/platform-browser/animations/async";
 import {
 	provideRouter,
 	withPreloading
@@ -142,7 +142,7 @@ export const appConfig: ApplicationConfig =
 			provideBrowserGlobalErrorListeners(),
 			provideZonelessChangeDetection(),
 			provideRouter(routes, withPreloading(SelectivePreloadingStrategy)),
-			provideAnimations(), // TODO: Consider provideAnimationsAsync() when upgrading to Angular v22+
+			provideAnimationsAsync(),
 			// Global error handler
 			{ provide: ErrorHandler, useClass: ErrorHandlerService },
 			// Application initializers consolidated

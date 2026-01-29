@@ -126,9 +126,12 @@ describe("ChangePasswordComponent",
 					() =>
 					{
 						// Arrange
-						(component as unknown as { currentPassword: string; }).currentPassword = "oldpassword";
-						(component as unknown as { newPassword: string; }).newPassword = "NewPassword1!";
-						(component as unknown as { confirmPassword: string; }).confirmPassword = "DifferentPassword1!";
+						component["changePasswordForm"].patchValue(
+							{
+								currentPassword: "oldpassword",
+								newPassword: "NewPassword1!",
+								confirmPassword: "DifferentPassword1!"
+							});
 
 						// Act
 						(component as unknown as { onSubmit(): void; }).onSubmit();
@@ -139,30 +142,37 @@ describe("ChangePasswordComponent",
 								"Passwords do not match.");
 					});
 
-				it("should show error when password is too short",
+				it("should not call API when password is too short and form is invalid",
 					() =>
 					{
 						// Arrange
-						(component as unknown as { currentPassword: string; }).currentPassword = "oldpassword";
-						(component as unknown as { newPassword: string; }).newPassword = "Short1!";
-						(component as unknown as { confirmPassword: string; }).confirmPassword = "Short1!";
+						component["changePasswordForm"].patchValue(
+							{
+								currentPassword: "oldpassword",
+								newPassword: "Short1!",
+								confirmPassword: "Short1!"
+							});
 
 						// Act
 						(component as unknown as { onSubmit(): void; }).onSubmit();
 
-						// Assert
-						expect(mockNotificationService.error)
-							.toHaveBeenCalledWith(
-								"Password must be at least 8 characters.");
+						// Assert - Form should be marked as touched and no HTTP calls made
+						expect(component["changePasswordForm"].touched)
+							.toBe(true);
+						expect(httpTestingController.match("/api/auth/password/change").length)
+							.toBe(0);
 					});
 
 				it("should call API with correct payload",
 					() =>
 					{
 						// Arrange
-						(component as unknown as { currentPassword: string; }).currentPassword = "oldpassword";
-						(component as unknown as { newPassword: string; }).newPassword = "NewPassword1!";
-						(component as unknown as { confirmPassword: string; }).confirmPassword = "NewPassword1!";
+						component["changePasswordForm"].patchValue(
+							{
+								currentPassword: "oldpassword",
+								newPassword: "NewPassword1!",
+								confirmPassword: "NewPassword1!"
+							});
 
 						// Act
 						(component as unknown as { onSubmit(): void; }).onSubmit();
@@ -190,9 +200,12 @@ describe("ChangePasswordComponent",
 					() =>
 					{
 						// Arrange
-						(component as unknown as { currentPassword: string; }).currentPassword = "oldpassword";
-						(component as unknown as { newPassword: string; }).newPassword = "NewPassword1!";
-						(component as unknown as { confirmPassword: string; }).confirmPassword = "NewPassword1!";
+						component["changePasswordForm"].patchValue(
+							{
+								currentPassword: "oldpassword",
+								newPassword: "NewPassword1!",
+								confirmPassword: "NewPassword1!"
+							});
 
 						// Act
 						(component as unknown as { onSubmit(): void; }).onSubmit();
@@ -222,9 +235,12 @@ describe("ChangePasswordComponent",
 					() =>
 					{
 						// Arrange
-						(component as unknown as { currentPassword: string; }).currentPassword = "oldpassword";
-						(component as unknown as { newPassword: string; }).newPassword = "NewPassword1!";
-						(component as unknown as { confirmPassword: string; }).confirmPassword = "NewPassword1!";
+						component["changePasswordForm"].patchValue(
+							{
+								currentPassword: "oldpassword",
+								newPassword: "NewPassword1!",
+								confirmPassword: "NewPassword1!"
+							});
 
 						// Act
 						(component as unknown as { onSubmit(): void; }).onSubmit();
@@ -247,9 +263,12 @@ describe("ChangePasswordComponent",
 					() =>
 					{
 						// Arrange
-						(component as unknown as { currentPassword: string; }).currentPassword = "oldpassword";
-						(component as unknown as { newPassword: string; }).newPassword = "NewPassword1!";
-						(component as unknown as { confirmPassword: string; }).confirmPassword = "NewPassword1!";
+						component["changePasswordForm"].patchValue(
+							{
+								currentPassword: "oldpassword",
+								newPassword: "NewPassword1!",
+								confirmPassword: "NewPassword1!"
+							});
 
 						// Act
 						(component as unknown as { onSubmit(): void; }).onSubmit();
@@ -271,9 +290,12 @@ describe("ChangePasswordComponent",
 					() =>
 					{
 						// Arrange
-						(component as unknown as { currentPassword: string; }).currentPassword = "oldpassword";
-						(component as unknown as { newPassword: string; }).newPassword = "NewPassword1!";
-						(component as unknown as { confirmPassword: string; }).confirmPassword = "NewPassword1!";
+						component["changePasswordForm"].patchValue(
+							{
+								currentPassword: "oldpassword",
+								newPassword: "NewPassword1!",
+								confirmPassword: "NewPassword1!"
+							});
 
 						// Act
 						(component as unknown as { onSubmit(): void; }).onSubmit();
@@ -293,9 +315,12 @@ describe("ChangePasswordComponent",
 					() =>
 					{
 						// Arrange
-						(component as unknown as { currentPassword: string; }).currentPassword = "oldpassword";
-						(component as unknown as { newPassword: string; }).newPassword = "NewPassword1!";
-						(component as unknown as { confirmPassword: string; }).confirmPassword = "NewPassword1!";
+						component["changePasswordForm"].patchValue(
+							{
+								currentPassword: "oldpassword",
+								newPassword: "NewPassword1!",
+								confirmPassword: "NewPassword1!"
+							});
 
 						// Act
 						(component as unknown as { onSubmit(): void; }).onSubmit();
@@ -340,7 +365,7 @@ describe("ChangePasswordComponent",
 						// Assert
 						const input: HTMLInputElement | null =
 							fixture.nativeElement.querySelector(
-								"input[name=\"currentPassword\"]");
+								"input[formcontrolname=\"currentPassword\"]");
 						expect(input)
 							.toBeTruthy();
 						expect(input?.type)
@@ -357,7 +382,7 @@ describe("ChangePasswordComponent",
 						// Assert
 						const input: HTMLInputElement | null =
 							fixture.nativeElement.querySelector(
-								"input[name=\"newPassword\"]");
+								"input[formcontrolname=\"newPassword\"]");
 						expect(input)
 							.toBeTruthy();
 						expect(input?.type)
@@ -374,7 +399,7 @@ describe("ChangePasswordComponent",
 						// Assert
 						const input: HTMLInputElement | null =
 							fixture.nativeElement.querySelector(
-								"input[name=\"confirmPassword\"]");
+								"input[formcontrolname=\"confirmPassword\"]");
 						expect(input)
 							.toBeTruthy();
 						expect(input?.type)

@@ -2,6 +2,7 @@ import { ApplicationRef, inject, Injectable } from "@angular/core";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { SwUpdate, VersionReadyEvent } from "@angular/service-worker";
 import { LoggerService } from "@shared/services/logger.service";
+import { WindowService } from "@shared/services/window.service";
 import { concat, filter, first, interval } from "rxjs";
 
 /**
@@ -48,6 +49,15 @@ export class SwUpdateService
 		inject(LoggerService);
 
 	/**
+	 * Window service for page reload operations.
+	 * @type {WindowService}
+	 * @private
+	 * @readonly
+	 */
+	private readonly windowService: WindowService =
+		inject(WindowService);
+
+	/**
 	 * Initialize SwUpdateService and register update handlers when enabled.
 	 * @returns {void}
 	 */
@@ -70,18 +80,18 @@ export class SwUpdateService
 	private checkForUpdates(): void
 	{
 		// Wait for app to stabilize, then check for updates every 6 hours
-		const appIsStable$: import("rxjs").Observable<boolean> =
+		const appIsStable: import("rxjs").Observable<boolean> =
 			this.appRef.isStable.pipe(
 				first(
 					(isStable: boolean) => isStable === true));
-		const everySixHours$: import("rxjs").Observable<number> =
+		const everySixHours: import("rxjs").Observable<number> =
 			interval(
 				6 * 60 * 60 * 1000);
-		const everySixHoursOnceAppIsStable$: import("rxjs").Observable<
+		const everySixHoursOnceAppIsStable: import("rxjs").Observable<
 			boolean | number> =
-			concat(appIsStable$, everySixHours$);
+			concat(appIsStable, everySixHours);
 
-		everySixHoursOnceAppIsStable$
+		everySixHoursOnceAppIsStable
 			.pipe(takeUntilDestroyed())
 			.subscribe(
 				async () =>
@@ -148,7 +158,7 @@ export class SwUpdateService
 					// Reload the page
 					this.notifyUnrecoverableState(
 						"An error occurred that requires reloading the page.");
-					window.location.reload();
+					this.windowService.reload();
 				});
 	}
 
@@ -184,7 +194,7 @@ export class SwUpdateService
 		try
 		{
 			await this.swUpdate.activateUpdate();
-			window.location.reload();
+			this.windowService.reload();
 		}
 		catch (error)
 		{
@@ -249,7 +259,7 @@ export class SwUpdateService
 			if (updateFound)
 			{
 				await this.swUpdate.activateUpdate();
-				window.location.reload();
+				this.windowService.reload();
 			}
 		}
 		catch (error)

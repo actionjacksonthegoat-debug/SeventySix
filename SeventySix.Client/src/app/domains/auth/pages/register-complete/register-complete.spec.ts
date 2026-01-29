@@ -99,9 +99,13 @@ describe("RegisterCompleteComponent",
 				setupTestBed(
 					{ token: "valid-token" });
 
-				(component as unknown as { username: string; }).username = "ab"; // too short
-				(component as unknown as { password: string; }).password = "short";
-				(component as unknown as { confirmPassword: string; }).confirmPassword = "short";
+				// Use valid-length inputs that pass form validation but fail custom validation (passwords don't match)
+				component["registerForm"].patchValue(
+					{
+						username: "valid_user",
+						password: "Password123!",
+						confirmPassword: "DifferentPassword!"
+					});
 
 				(component as unknown as { onSubmit(): void; }).onSubmit();
 
@@ -117,9 +121,12 @@ describe("RegisterCompleteComponent",
 					{ token: "valid-token" });
 				mockAuthService.completeRegistration.mockReturnValue(of(undefined));
 
-				(component as unknown as { username: string; }).username = "valid_user";
-				(component as unknown as { password: string; }).password = "ValidPassword123!";
-				(component as unknown as { confirmPassword: string; }).confirmPassword = "ValidPassword123!";
+				component["registerForm"].patchValue(
+					{
+						username: "valid_user",
+						password: "ValidPassword123!",
+						confirmPassword: "ValidPassword123!"
+					});
 
 				(component as unknown as { onSubmit(): void; }).onSubmit();
 				await fixture.whenStable();
@@ -147,9 +154,12 @@ describe("RegisterCompleteComponent",
 						{ status: 400, statusText: "Bad Request", error: { detail: "Username already exists." } });
 				mockAuthService.completeRegistration.mockReturnValue(throwError(() => errorResponse));
 
-				(component as unknown as { username: string; }).username = "valid_user";
-				(component as unknown as { password: string; }).password = "ValidPassword123!";
-				(component as unknown as { confirmPassword: string; }).confirmPassword = "ValidPassword123!";
+				component["registerForm"].patchValue(
+					{
+						username: "valid_user",
+						password: "ValidPassword123!",
+						confirmPassword: "ValidPassword123!"
+					});
 
 				(component as unknown as { onSubmit(): void; }).onSubmit();
 				await fixture.whenStable();

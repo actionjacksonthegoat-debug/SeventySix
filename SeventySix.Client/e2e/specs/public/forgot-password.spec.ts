@@ -115,12 +115,15 @@ test.describe("Forgot Password Flow",
 				test("should show error for invalid email format",
 					async ({ page, authPage }) =>
 					{
-						// Type a partial/incomplete email to test validation
-						// Most email validators require @ and domain
-						await authPage.emailInput.fill("incomplete@");
-						await authPage.submitButton.click();
+						// Use an email without @ which Angular's Validators.email rejects
+						// Note: Angular considers 'user@' valid, so use 'invalid-email'
+						await authPage.emailInput.fill("invalid-email");
 
-						// Form should not navigate away - still on same page
+						// Form should remain invalid, submit button should be disabled
+						await expect(authPage.submitButton)
+							.toBeDisabled();
+
+						// Verify we're still on the same page
 						await expect(page)
 							.toHaveURL(ROUTES.auth.forgotPassword);
 					});

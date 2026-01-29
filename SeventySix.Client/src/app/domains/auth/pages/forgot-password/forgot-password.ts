@@ -6,23 +6,30 @@
 import {
 	ChangeDetectionStrategy,
 	Component,
+	computed,
 	inject,
+	Signal,
 	signal,
 	WritableSignal
 } from "@angular/core";
-import { FormsModule } from "@angular/forms";
+import {
+	FormBuilder,
+	FormGroup,
+	ReactiveFormsModule,
+	Validators
+} from "@angular/forms";
 import { MatButtonModule } from "@angular/material/button";
 import { RouterLink } from "@angular/router";
-import { validateEmail } from "@auth/utilities";
 import { AltchaWidgetComponent } from "@shared/components";
 import { AltchaService, AuthService, NotificationService } from "@shared/services";
+import { getValidationError } from "@shared/utilities";
 
 @Component(
 	{
 		selector: "app-forgot-password",
 		standalone: true,
 		imports: [
-			FormsModule,
+			ReactiveFormsModule,
 			RouterLink,
 			MatButtonModule,
 			AltchaWidgetComponent
@@ -43,6 +50,8 @@ export class ForgotPasswordComponent
 		inject(NotificationService);
 	private readonly altchaService: AltchaService =
 		inject(AltchaService);
+	private readonly formBuilder: FormBuilder =
+		inject(FormBuilder);
 
 	/**
 	 * Whether ALTCHA validation is enabled.
@@ -59,10 +68,31 @@ export class ForgotPasswordComponent
 		this.altchaService.challengeEndpoint;
 
 	/**
-	 * Email address entered by the user to request a password reset.
-	 * @type {string}
+	 * Forgot password form with email field.
+	 * @type {FormGroup}
 	 */
-	protected email: string = "";
+	protected readonly forgotPasswordForm: FormGroup =
+		this.formBuilder.group(
+			{
+				email: [
+					"",
+					[
+						Validators.required,
+						Validators.email
+					]
+				]
+			});
+
+	/**
+	 * Validation error message for email field.
+	 * @type {Signal<string | null>}
+	 */
+	protected readonly emailError: Signal<string | null> =
+		computed(
+			() =>
+				getValidationError(
+					this.forgotPasswordForm.get("email"),
+					"Email"));
 
 	/**
 	 * Loading state while the password reset request is in-flight.
@@ -80,21 +110,11 @@ export class ForgotPasswordComponent
 
 	/**
 	 * ALTCHA verification payload from the widget.
-	 * @type {string | null}
+	 * @type {WritableSignal<string | null>}
 	 * @private
 	 */
-	private altchaPayload: string | null = null;
-
-	/**
-	 * Validates email format using shared validation utility.
-	 *
-	 * @returns {boolean}
-	 * True when `email` is a valid-looking address.
-	 */
-	protected isValidEmail(): boolean
-	{
-		return validateEmail(this.email).valid;
-	}
+	private readonly altchaPayload: WritableSignal<string | null> =
+		signal<string | null>(null);
 
 	/**
 	 * Handles ALTCHA verification completion.
@@ -103,7 +123,7 @@ export class ForgotPasswordComponent
 	 */
 	protected onAltchaVerified(payload: string): void
 	{
-		this.altchaPayload = payload;
+		this.altchaPayload.set(payload);
 	}
 
 	/**
@@ -113,11 +133,11 @@ export class ForgotPasswordComponent
 	 */
 	protected canSubmit(): boolean
 	{
-		const hasEmail: boolean =
-			this.email.trim().length > 0;
+		const formValid: boolean =
+			this.forgotPasswordForm.valid;
 		const hasAltcha: boolean =
-			!this.altchaEnabled || this.altchaPayload !== null;
-		return hasEmail && hasAltcha && !this.isLoading();
+			!this.altchaEnabled || this.altchaPayload() !== null;
+		return formValid && hasAltcha && !this.isLoading();
 	}
 
 	/**
@@ -127,19 +147,13 @@ export class ForgotPasswordComponent
 	 */
 	protected onSubmit(): void
 	{
-		if (!this.email.trim())
+		if (this.forgotPasswordForm.invalid)
 		{
-			this.notification.error("Please enter your email address.");
+			this.forgotPasswordForm.markAllAsTouched();
 			return;
 		}
 
-		if (!this.isValidEmail())
-		{
-			this.notification.error("Please enter a valid email address.");
-			return;
-		}
-
-		if (this.altchaEnabled && !this.altchaPayload)
+		if (this.altchaEnabled && !this.altchaPayload())
 		{
 			this.notification.error("Please complete the verification challenge.");
 			return;
@@ -147,11 +161,14 @@ export class ForgotPasswordComponent
 
 		this.isLoading.set(true);
 
+		const email: string =
+			this.forgotPasswordForm.value.email;
+
 		this
 			.authService
 			.requestPasswordReset(
-				this.email,
-				this.altchaPayload)
+				email,
+				this.altchaPayload())
 			.subscribe(
 				{
 					next: () =>

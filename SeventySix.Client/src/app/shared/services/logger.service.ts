@@ -15,9 +15,21 @@ import { catchError, of } from "rxjs";
 type ConsoleLogLevel = "debug" | "info" | "warn" | "error" | "none";
 
 /**
- * Logger service for application-wide logging.
- * Logs to console based on configured log level, sends to remote endpoint in production.
- * Follows Single Responsibility Principle (SRP).
+ * Application-Level Logging Service
+ *
+ * PURPOSE: General application logging for debugging and monitoring.
+ * USE FOR: Info, debug, warn, error messages during normal operation.
+ * NOT FOR: Capturing unhandled exceptions (use ClientErrorLoggerService).
+ *
+ * FLOW: Console output → Optional remote API logging in production.
+ *
+ * @example
+ * // General application logging
+ * this.logger.info("User logged in", { userId: "123" });
+ * this.logger.error("Payment failed", { orderId, errorCode });
+ *
+ * @see ClientErrorLoggerService - For capturing unhandled exceptions
+ * @see ErrorQueueService - For batching and transmitting captured errors
  */
 @Injectable(
 	{

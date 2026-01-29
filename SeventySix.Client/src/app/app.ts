@@ -1,5 +1,5 @@
 import { DOCUMENT } from "@angular/common";
-import { Component, effect, inject, Renderer2 } from "@angular/core";
+import { ChangeDetectionStrategy, Component, effect, inject, Renderer2 } from "@angular/core";
 import { MatProgressBarModule } from "@angular/material/progress-bar";
 import { MatSidenavModule } from "@angular/material/sidenav";
 import { RouterOutlet } from "@angular/router";
@@ -31,7 +31,8 @@ import {
 			NotificationToastComponent
 		],
 		templateUrl: "./app.html",
-		styleUrl: "./app.scss"
+		styleUrl: "./app.scss",
+		changeDetection: ChangeDetectionStrategy.OnPush
 	})
 export class App
 {

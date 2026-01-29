@@ -24,6 +24,7 @@ import { ApiService } from "@shared/services/api.service";
 import { BaseQueryService } from "@shared/services/base-query.service";
 import { buildHttpParams } from "@shared/utilities/http-params.utility";
 import { QueryKeys } from "@shared/utilities/query-keys.utility";
+import { toggleSetItem } from "@shared/utilities/selection.utility";
 import {
 	CreateMutationResult,
 	injectQuery
@@ -65,7 +66,11 @@ export class LogManagementService extends BaseQueryService<LogQueryRequest>
 
 	/**
 	 * Selected log IDs using a writable signal.
+	 * Selection state is managed in this service (not DataTableSelectionManager)
+	 * because batch delete operations require service-level coordination.
+	 * For new table components, prefer using DataTableSelectionManager.
 	 * @type {WritableSignal<Set<number>>}
+	 * @readonly
 	 */
 	readonly selectedIds: WritableSignal<Set<number>> =
 		signal<Set<number>>(
@@ -188,27 +193,18 @@ export class LogManagementService extends BaseQueryService<LogQueryRequest>
 
 	/**
 	 * Toggle log ID selection.
-	 * @param {number} id
+	 * @param {number} logId
 	 * Log ID to toggle.
 	 * @returns {void}
 	 */
-	toggleSelection(id: number): void
+	toggleSelection(logId: number): void
 	{
-		this.selectedIds.update(
-			(current) =>
-			{
-				const newSet: Set<number> =
-					new Set(current);
-				if (newSet.has(id))
-				{
-					newSet.delete(id);
-				}
-				else
-				{
-					newSet.add(id);
-				}
-				return newSet;
-			});
+		const updatedIds: Set<number> =
+			toggleSetItem(
+				this.selectedIds(),
+				logId);
+
+		this.selectedIds.set(updatedIds);
 	}
 
 	/**

@@ -6,6 +6,12 @@
  * - Access tokens stored in memory only (not localStorage) for XSS protection
  * - Refresh tokens stored in HTTP-only cookies by the server
  * - Token refresh handled transparently by auth interceptor
+ *
+ * Implementation Note:
+ * Auth services use HttpClient directly (not ApiService) because:
+ * 1. Requires withCredentials for HTTP-only cookie refresh tokens
+ * 2. Uses Observable-based patterns for login flows
+ * 3. Has domain-specific error handling via auth-error.utility.ts
  */
 
 import { HttpClient, HttpErrorResponse } from "@angular/common/http";

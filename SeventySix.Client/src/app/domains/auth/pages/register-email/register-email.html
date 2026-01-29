@@ -25,25 +25,32 @@
 		</p>
 
 		<form
+			[formGroup]="registerForm"
 			(ngSubmit)="onSubmit()"
-			class="register-form"
-			#registerForm="ngForm">
+			class="register-form">
 			<div class="form-group required">
 				<label for="email">Email Address</label>
 				<input
 					id="email"
 					type="email"
-					[(ngModel)]="email"
-					name="email"
-					#emailField="ngModel"
-					required
+					formControlName="email"
 					autocomplete="email"
 					placeholder="Enter your email"
+					required
 					aria-required="true"
 					[attr.aria-invalid]="
-							emailField.invalid && emailField.touched
-						"
+						registerForm.get('email')?.invalid &&
+						registerForm.get('email')?.touched
+					"
+					aria-describedby="email-error"
 				/>
+				@if (emailError()) {
+				<span
+					id="email-error"
+					class="error-text">
+					{{ emailError() }}
+				</span>
+				}
 			</div>
 
 			<button
@@ -51,7 +58,7 @@
 				color="primary"
 				type="submit"
 				class="submit-button"
-				[disabled]="isLoading() || !email.trim()"
+				[disabled]="!canSubmit()"
 				[attr.aria-busy]="isLoading()">
 				@if (isLoading()) { Sending... } @else { Continue }
 			</button>

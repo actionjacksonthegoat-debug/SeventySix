@@ -8,12 +8,19 @@ import { HttpErrorResponse } from "@angular/common/http";
 import {
 	ChangeDetectionStrategy,
 	Component,
+	computed,
 	inject,
 	OnInit,
+	Signal,
 	signal,
 	WritableSignal
 } from "@angular/core";
-import { FormsModule } from "@angular/forms";
+import {
+	FormBuilder,
+	FormGroup,
+	ReactiveFormsModule,
+	Validators
+} from "@angular/forms";
 import { MatButtonModule } from "@angular/material/button";
 import { ActivatedRoute, Router, RouterLink } from "@angular/router";
 import { ValidationResult } from "@auth/models";
@@ -25,13 +32,14 @@ import {
 } from "@shared/constants";
 import { AuthErrorResult } from "@shared/models";
 import { AltchaService, AuthService, NotificationService } from "@shared/services";
+import { getValidationError } from "@shared/utilities";
 
 @Component(
 	{
 		selector: "app-register-complete",
 		standalone: true,
 		imports: [
-			FormsModule,
+			ReactiveFormsModule,
 			RouterLink,
 			MatButtonModule,
 			AltchaWidgetComponent
@@ -82,6 +90,13 @@ export class RegisterCompleteComponent implements OnInit
 		inject(AltchaService);
 
 	/**
+	 * Form builder for creating reactive forms.
+	 * @type {FormBuilder}
+	 */
+	private readonly formBuilder: FormBuilder =
+		inject(FormBuilder);
+
+	/**
 	 * Whether ALTCHA validation is enabled.
 	 * @type {boolean}
 	 */
@@ -95,52 +110,70 @@ export class RegisterCompleteComponent implements OnInit
 	protected readonly challengeUrl: string =
 		this.altchaService.challengeEndpoint;
 
-	// Expose validation constants to template
 	/**
-	 * Minimum username length exposed to the template.
-	 * @type {number}
+	 * Registration completion form with username, password, and confirmation fields.
+	 * @type {FormGroup}
 	 */
-	protected readonly USERNAME_MIN_LENGTH: number =
-		USERNAME_VALIDATION.MIN_LENGTH;
+	protected readonly registerForm: FormGroup =
+		this.formBuilder.group(
+			{
+				username: [
+					"",
+					[
+						Validators.required,
+						Validators.minLength(USERNAME_VALIDATION.MIN_LENGTH),
+						Validators.maxLength(USERNAME_VALIDATION.MAX_LENGTH),
+						Validators.pattern(USERNAME_VALIDATION.PATTERN)
+					]
+				],
+				password: [
+					"",
+					[
+						Validators.required,
+						Validators.minLength(PASSWORD_VALIDATION.MIN_LENGTH)
+					]
+				],
+				confirmPassword: [
+					"",
+					[
+						Validators.required,
+						Validators.minLength(PASSWORD_VALIDATION.MIN_LENGTH)
+					]
+				]
+			});
 
 	/**
-	 * Maximum username length exposed to the template.
-	 * @type {number}
+	 * Validation error message for username field.
+	 * @type {Signal<string | null>}
 	 */
-	protected readonly USERNAME_MAX_LENGTH: number =
-		USERNAME_VALIDATION.MAX_LENGTH;
+	protected readonly usernameError: Signal<string | null> =
+		computed(
+			() =>
+				getValidationError(
+					this.registerForm.get("username"),
+					"Username"));
 
 	/**
-	 * Username pattern string used by the template for validation.
-	 * @type {string}
+	 * Validation error message for password field.
+	 * @type {Signal<string | null>}
 	 */
-	protected readonly USERNAME_PATTERN: string =
-		USERNAME_VALIDATION.PATTERN_STRING;
+	protected readonly passwordError: Signal<string | null> =
+		computed(
+			() =>
+				getValidationError(
+					this.registerForm.get("password"),
+					"Password"));
 
 	/**
-	 * Minimum password length exposed to the template.
-	 * @type {number}
+	 * Validation error message for confirm password field.
+	 * @type {Signal<string | null>}
 	 */
-	protected readonly PASSWORD_MIN_LENGTH: number =
-		PASSWORD_VALIDATION.MIN_LENGTH;
-
-	/**
-	 * Username entered by the user during registration completion.
-	 * @type {string}
-	 */
-	protected username: string = "";
-
-	/**
-	 * Password entered by the user.
-	 * @type {string}
-	 */
-	protected password: string = "";
-
-	/**
-	 * Confirmation of the entered password.
-	 * @type {string}
-	 */
-	protected confirmPassword: string = "";
+	protected readonly confirmPasswordError: Signal<string | null> =
+		computed(
+			() =>
+				getValidationError(
+					this.registerForm.get("confirmPassword"),
+					"Confirm password"));
 
 	/**
 	 * Indicates whether the registration completion request is in progress.
@@ -164,10 +197,11 @@ export class RegisterCompleteComponent implements OnInit
 
 	/**
 	 * ALTCHA verification payload from the widget.
-	 * @type {string | null}
+	 * @type {WritableSignal<string | null>}
 	 * @private
 	 */
-	private altchaPayload: string | null = null;
+	private readonly altchaPayload: WritableSignal<string | null> =
+		signal<string | null>(null);
 
 	/**
 	 * Component initialization - validate token and prepare UI state.
@@ -193,7 +227,7 @@ export class RegisterCompleteComponent implements OnInit
 	 */
 	protected onAltchaVerified(payload: string): void
 	{
-		this.altchaPayload = payload;
+		this.altchaPayload.set(payload);
 	}
 
 	/**
@@ -203,13 +237,11 @@ export class RegisterCompleteComponent implements OnInit
 	 */
 	protected canSubmit(): boolean
 	{
-		const hasFields: boolean =
-			this.username.trim().length > 0
-				&& this.password.length > 0
-				&& this.confirmPassword.length > 0;
+		const formValid: boolean =
+			this.registerForm.valid;
 		const hasAltcha: boolean =
-			!this.altchaEnabled || this.altchaPayload !== null;
-		return hasFields && hasAltcha && this.tokenValid() && !this.isLoading();
+			!this.altchaEnabled || this.altchaPayload() !== null;
+		return formValid && hasAltcha && this.tokenValid() && !this.isLoading();
 	}
 
 	/**
@@ -218,12 +250,18 @@ export class RegisterCompleteComponent implements OnInit
 	 */
 	protected onSubmit(): void
 	{
+		if (this.registerForm.invalid)
+		{
+			this.registerForm.markAllAsTouched();
+			return;
+		}
+
 		if (!this.validateForm())
 		{
 			return;
 		}
 
-		if (this.altchaEnabled && !this.altchaPayload)
+		if (this.altchaEnabled && !this.altchaPayload())
 		{
 			this.notification.error("Please complete the verification challenge.");
 			return;
@@ -231,13 +269,16 @@ export class RegisterCompleteComponent implements OnInit
 
 		this.isLoading.set(true);
 
+		const formValue: typeof this.registerForm.value =
+			this.registerForm.value;
+
 		this
 			.authService
 			.completeRegistration(
 				this.token,
-				this.username,
-				this.password,
-				this.altchaPayload)
+				formValue.username,
+				formValue.password,
+				this.altchaPayload())
 			.subscribe(
 				{
 					next: () =>
@@ -269,11 +310,13 @@ export class RegisterCompleteComponent implements OnInit
 	 */
 	private validateForm(): boolean
 	{
+		const formValue: typeof this.registerForm.value =
+			this.registerForm.value;
 		const result: ValidationResult =
 			validateRegistrationForm(
-				this.username,
-				this.password,
-				this.confirmPassword);
+				formValue.username,
+				formValue.password,
+				formValue.confirmPassword);
 		if (!result.valid)
 		{
 			this.notification.error(result.errorMessage!);

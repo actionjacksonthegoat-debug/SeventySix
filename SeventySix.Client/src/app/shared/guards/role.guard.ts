@@ -21,6 +21,7 @@
 import { inject } from "@angular/core";
 import {
 	CanMatchFn,
+	Navigation,
 	Router,
 	UrlTree
 } from "@angular/router";
@@ -44,14 +45,19 @@ export function roleGuard(...requiredRoles: string[]): CanMatchFn
 		const router: Router =
 			inject(Router);
 
-		// Not authenticated - redirect to login
+		// Not authenticated - redirect to login with returnUrl
 		if (!authService.isAuthenticated())
 		{
-			// Note: canMatch doesn't have access to state.url, so we redirect to login
-			// without returnUrl. The login page can use window.location if needed.
+			// Get the target URL from the current navigation
+			const navigation: Navigation | null =
+				router.currentNavigation();
+			const targetUrl: string =
+				navigation?.extractedUrl?.toString() ?? "/";
+
 			const redirectUrl: UrlTree =
 				router.createUrlTree(
-					[APP_ROUTES.AUTH.LOGIN]);
+					[APP_ROUTES.AUTH.LOGIN],
+					{ queryParams: { returnUrl: targetUrl } });
 			return redirectUrl;
 		}
 

@@ -7,12 +7,19 @@ import { HttpErrorResponse } from "@angular/common/http";
 import {
 	ChangeDetectionStrategy,
 	Component,
+	computed,
 	inject,
 	OnInit,
+	Signal,
 	signal,
 	WritableSignal
 } from "@angular/core";
-import { FormsModule } from "@angular/forms";
+import {
+	FormBuilder,
+	FormGroup,
+	ReactiveFormsModule,
+	Validators
+} from "@angular/forms";
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
 import { ActivatedRoute, Router, RouterLink } from "@angular/router";
@@ -21,13 +28,14 @@ import { MfaService } from "@auth/services";
 import { sanitizeRedirectUrl } from "@auth/utilities";
 import { AltchaWidgetComponent } from "@shared/components";
 import { AltchaService, AuthService, NotificationService } from "@shared/services";
+import { getValidationError } from "@shared/utilities";
 
 @Component(
 	{
 		selector: "app-login",
 		standalone: true,
 		imports: [
-			FormsModule,
+			ReactiveFormsModule,
 			RouterLink,
 			MatButtonModule,
 			MatIconModule,
@@ -43,6 +51,13 @@ import { AltchaService, AuthService, NotificationService } from "@shared/service
  */
 export class LoginComponent implements OnInit
 {
+	/**
+	 * Form builder for creating reactive forms.
+	 * @type {FormBuilder}
+	 */
+	private readonly formBuilder: FormBuilder =
+		inject(FormBuilder);
+
 	/**
 	 * Auth service for performing login operations.
 	 * @type {AuthService}
@@ -100,22 +115,44 @@ export class LoginComponent implements OnInit
 		this.altchaService.challengeEndpoint;
 
 	/**
-	 * Username or email entered by the user in the login form.
-	 * @type {string}
+	 * Login form with username/email, password, and remember me fields.
+	 * @type {FormGroup}
 	 */
-	protected usernameOrEmail: string = "";
+	protected readonly loginForm: FormGroup =
+		this.formBuilder.group(
+			{
+				usernameOrEmail: [
+					"",
+					[Validators.required]
+				],
+				password: [
+					"",
+					[Validators.required]
+				],
+				rememberMe: [false]
+			});
 
 	/**
-	 * Password entered by the user.
-	 * @type {string}
+	 * Validation error message for username/email field.
+	 * @type {Signal<string | null>}
 	 */
-	protected password: string = "";
+	protected readonly usernameOrEmailError: Signal<string | null> =
+		computed(
+			() =>
+				getValidationError(
+					this.loginForm.get("usernameOrEmail"),
+					"Username or email"));
 
 	/**
-	 * When true, persist session using "remember me" semantics.
-	 * @type {boolean}
+	 * Validation error message for password field.
+	 * @type {Signal<string | null>}
 	 */
-	protected rememberMe: boolean = false;
+	protected readonly passwordError: Signal<string | null> =
+		computed(
+			() =>
+				getValidationError(
+					this.loginForm.get("password"),
+					"Password"));
 
 	/**
 	 * Loading state used while an authentication request is in-flight.
@@ -132,10 +169,11 @@ export class LoginComponent implements OnInit
 
 	/**
 	 * ALTCHA verification payload from the widget.
-	 * @type {string | null}
+	 * @type {WritableSignal<string | null>}
 	 * @private
 	 */
-	private altchaPayload: string | null = null;
+	private readonly altchaPayload: WritableSignal<string | null> =
+		signal<string | null>(null);
 
 	/**
 	 * Initialize component: determine post-login redirect and redirect if already authenticated.
@@ -161,7 +199,7 @@ export class LoginComponent implements OnInit
 	 */
 	protected onAltchaVerified(payload: string): void
 	{
-		this.altchaPayload = payload;
+		this.altchaPayload.set(payload);
 	}
 
 	/**
@@ -171,11 +209,11 @@ export class LoginComponent implements OnInit
 	 */
 	protected canSubmit(): boolean
 	{
-		const hasCredentials: boolean =
-			this.usernameOrEmail.trim().length > 0 && this.password.length > 0;
+		const formValid: boolean =
+			this.loginForm.valid;
 		const hasAltcha: boolean =
-			!this.altchaEnabled || this.altchaPayload !== null;
-		return hasCredentials && hasAltcha && !this.isLoading();
+			!this.altchaEnabled || this.altchaPayload() !== null;
+		return formValid && hasAltcha && !this.isLoading();
 	}
 
 	/**
@@ -185,13 +223,13 @@ export class LoginComponent implements OnInit
 	 */
 	protected onLocalLogin(): void
 	{
-		if (!this.usernameOrEmail || !this.password)
+		if (this.loginForm.invalid)
 		{
-			this.notification.error("Please enter username and password.");
+			this.loginForm.markAllAsTouched();
 			return;
 		}
 
-		if (this.altchaEnabled && !this.altchaPayload)
+		if (this.altchaEnabled && !this.altchaPayload())
 		{
 			this.notification.error("Please complete the verification challenge.");
 			return;
@@ -199,12 +237,14 @@ export class LoginComponent implements OnInit
 
 		this.isLoading.set(true);
 
+		const formValue: typeof this.loginForm.value =
+			this.loginForm.value;
 		const credentials: LoginRequest =
 			{
-				usernameOrEmail: this.usernameOrEmail,
-				password: this.password,
-				rememberMe: this.rememberMe,
-				altchaPayload: this.altchaPayload
+				usernameOrEmail: formValue.usernameOrEmail,
+				password: formValue.password,
+				rememberMe: formValue.rememberMe,
+				altchaPayload: this.altchaPayload()
 			};
 
 		this

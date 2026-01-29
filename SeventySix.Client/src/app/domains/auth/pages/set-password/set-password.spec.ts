@@ -105,8 +105,11 @@ describe("SetPasswordComponent",
 			{
 				setupTestBed(
 					{ token: validToken });
-				(component as unknown as { newPassword: string; }).newPassword = "Password123!";
-				(component as unknown as { confirmPassword: string; }).confirmPassword = "DifferentPassword123!";
+				component["setPasswordForm"].patchValue(
+					{
+						newPassword: "Password123!",
+						confirmPassword: "DifferentPassword123!"
+					});
 
 				(component as unknown as { onSubmit(): void; }).onSubmit();
 
@@ -122,8 +125,11 @@ describe("SetPasswordComponent",
 				setupTestBed(
 					{ token: validToken });
 				mockAuthService.setPassword.mockReturnValue(of(undefined));
-				(component as unknown as { newPassword: string; }).newPassword = "ValidPassword123!";
-				(component as unknown as { confirmPassword: string; }).confirmPassword = "ValidPassword123!";
+				component["setPasswordForm"].patchValue(
+					{
+						newPassword: "ValidPassword123!",
+						confirmPassword: "ValidPassword123!"
+					});
 
 				(component as unknown as { onSubmit(): void; }).onSubmit();
 
@@ -153,8 +159,11 @@ describe("SetPasswordComponent",
 				mockAuthService.setPassword.mockReturnValue(
 					throwError(
 						() => errorResponse));
-				(component as unknown as { newPassword: string; }).newPassword = "ValidPassword123!";
-				(component as unknown as { confirmPassword: string; }).confirmPassword = "ValidPassword123!";
+				component["setPasswordForm"].patchValue(
+					{
+						newPassword: "ValidPassword123!",
+						confirmPassword: "ValidPassword123!"
+					});
 
 				(component as unknown as { onSubmit(): void; }).onSubmit();
 
@@ -180,8 +189,11 @@ describe("SetPasswordComponent",
 				mockAuthService.setPassword.mockReturnValue(
 					throwError(
 						() => errorResponse));
-				(component as unknown as { newPassword: string; }).newPassword = "ValidPassword123!";
-				(component as unknown as { confirmPassword: string; }).confirmPassword = "ValidPassword123!";
+				component["setPasswordForm"].patchValue(
+					{
+						newPassword: "ValidPassword123!",
+						confirmPassword: "ValidPassword123!"
+					});
 
 				(component as unknown as { onSubmit(): void; }).onSubmit();
 

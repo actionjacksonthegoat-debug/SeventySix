@@ -7,22 +7,29 @@
 import {
 	ChangeDetectionStrategy,
 	Component,
+	computed,
 	inject,
+	Signal,
 	signal,
 	WritableSignal
 } from "@angular/core";
-import { FormsModule } from "@angular/forms";
+import {
+	FormBuilder,
+	FormGroup,
+	ReactiveFormsModule,
+	Validators
+} from "@angular/forms";
 import { MatButtonModule } from "@angular/material/button";
 import { RouterLink } from "@angular/router";
-import { validateEmail } from "@auth/utilities";
 import { AuthService } from "@shared/services/auth.service";
 import { NotificationService } from "@shared/services/notification.service";
+import { getValidationError } from "@shared/utilities";
 
 @Component(
 	{
 		selector: "app-register-email",
 		standalone: true,
-		imports: [FormsModule, RouterLink, MatButtonModule],
+		imports: [ReactiveFormsModule, RouterLink, MatButtonModule],
 		changeDetection: ChangeDetectionStrategy.OnPush,
 		templateUrl: "./register-email.html",
 		styleUrl: "./register-email.scss"
@@ -48,10 +55,38 @@ export class RegisterEmailComponent
 		inject(NotificationService);
 
 	/**
-	 * Email address entered by the user for registration initiation.
-	 * @type {string}
+	 * Form builder for creating reactive forms.
+	 * @type {FormBuilder}
 	 */
-	protected email: string = "";
+	private readonly formBuilder: FormBuilder =
+		inject(FormBuilder);
+
+	/**
+	 * Registration email form with email field.
+	 * @type {FormGroup}
+	 */
+	protected readonly registerForm: FormGroup =
+		this.formBuilder.group(
+			{
+				email: [
+					"",
+					[
+						Validators.required,
+						Validators.email
+					]
+				]
+			});
+
+	/**
+	 * Validation error message for email field.
+	 * @type {Signal<string | null>}
+	 */
+	protected readonly emailError: Signal<string | null> =
+		computed(
+			() =>
+				getValidationError(
+					this.registerForm.get("email"),
+					"Email"));
 
 	/**
 	 * Loading state while the initiation request is in-flight.
@@ -68,14 +103,13 @@ export class RegisterEmailComponent
 		signal<boolean>(false);
 
 	/**
-	 * Validates email format using shared validation utility.
-	 *
+	 * Checks if form can be submitted.
 	 * @returns {boolean}
-	 * True when `email` appears to be a valid address.
+	 * True when form is valid and not loading.
 	 */
-	protected isValidEmail(): boolean
+	protected canSubmit(): boolean
 	{
-		return validateEmail(this.email).valid;
+		return this.registerForm.valid && !this.isLoading();
 	}
 
 	/**
@@ -84,23 +118,20 @@ export class RegisterEmailComponent
 	 */
 	protected onSubmit(): void
 	{
-		if (!this.email.trim())
+		if (this.registerForm.invalid)
 		{
-			this.notification.error("Please enter your email address.");
-			return;
-		}
-
-		if (!this.isValidEmail())
-		{
-			this.notification.error("Please enter a valid email address.");
+			this.registerForm.markAllAsTouched();
 			return;
 		}
 
 		this.isLoading.set(true);
 
+		const email: string =
+			this.registerForm.value.email;
+
 		this
 			.authService
-			.initiateRegistration(this.email)
+			.initiateRegistration(email)
 			.subscribe(
 				{
 					next: () =>

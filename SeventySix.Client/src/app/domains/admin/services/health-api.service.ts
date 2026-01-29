@@ -9,8 +9,7 @@ import { getQueryConfig } from "@shared/utilities/query-config.utility";
 import { QueryKeys } from "@shared/utilities/query-keys.utility";
 import {
 	CreateQueryResult,
-	injectQuery,
-	QueryClient
+	injectQuery
 } from "@tanstack/angular-query-experimental";
 import { lastValueFrom } from "rxjs";
 
@@ -24,20 +23,17 @@ export class HealthApiService
 	/**
 	 * HTTP API service used to request health endpoints.
 	 * @type {ApiService}
+	 * @private
+	 * @readonly
 	 */
 	private readonly apiService: ApiService =
 		inject(ApiService);
 
 	/**
-	 * Query client used to manage server-state queries.
-	 * @type {QueryClient}
-	 */
-	private readonly queryClient: QueryClient =
-		inject(QueryClient);
-
-	/**
 	 * Default query configuration for health queries.
 	 * @type {ReturnType<typeof getQueryConfig>}
+	 * @private
+	 * @readonly
 	 */
 	private readonly queryConfig: ReturnType<typeof getQueryConfig> =
 		getQueryConfig(ADMIN_API_ENDPOINTS.HEALTH);
@@ -45,6 +41,8 @@ export class HealthApiService
 	/**
 	 * API endpoint path for health checks.
 	 * @type {string}
+	 * @private
+	 * @readonly
 	 */
 	private readonly endpoint: string =
 		ADMIN_API_ENDPOINTS.HEALTH;

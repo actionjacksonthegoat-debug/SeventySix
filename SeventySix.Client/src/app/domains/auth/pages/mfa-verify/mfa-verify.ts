@@ -9,14 +9,22 @@ import {
 	ChangeDetectionStrategy,
 	Component,
 	computed,
+	DestroyRef,
+	effect,
+	EffectRef,
 	inject,
-	OnDestroy,
 	OnInit,
 	Signal,
 	signal,
 	WritableSignal
 } from "@angular/core";
-import { FormsModule } from "@angular/forms";
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
+import {
+	FormBuilder,
+	FormGroup,
+	ReactiveFormsModule,
+	Validators
+} from "@angular/forms";
 import { MatButtonModule } from "@angular/material/button";
 import { Router } from "@angular/router";
 import { MFA_CONFIG, MFA_METHOD } from "@auth/constants";
@@ -35,12 +43,17 @@ import {
 import { APP_ROUTES } from "@shared/constants";
 import { VerifyBackupCodeRequest, VerifyTotpRequest } from "@shared/models";
 import { AuthService, NotificationService } from "@shared/services";
+import {
+	interval,
+	Subject
+} from "rxjs";
+import { takeUntil } from "rxjs/operators";
 
 @Component(
 	{
 		selector: "app-mfa-verify",
 		standalone: true,
-		imports: [FormsModule, MatButtonModule],
+		imports: [ReactiveFormsModule, MatButtonModule],
 		changeDetection: ChangeDetectionStrategy.OnPush,
 		templateUrl: "./mfa-verify.html",
 		styleUrl: "./mfa-verify.scss"
@@ -49,7 +62,7 @@ import { AuthService, NotificationService } from "@shared/services";
  * Component that handles MFA code verification after initial login.
  * Supports email-based MFA, TOTP, and backup code fallback.
  */
-export class MfaVerifyComponent implements OnInit, OnDestroy
+export class MfaVerifyComponent implements OnInit
 {
 	/**
 	 * MFA service for verification operations.
@@ -88,18 +101,35 @@ export class MfaVerifyComponent implements OnInit, OnDestroy
 		inject(NotificationService);
 
 	/**
+	 * Form builder for creating reactive forms.
+	 * @type {FormBuilder}
+	 * @private
+	 * @readonly
+	 */
+	private readonly formBuilder: FormBuilder =
+		inject(FormBuilder);
+
+	/**
+	 * MFA verification form with code field.
+	 * @type {FormGroup}
+	 * @protected
+	 * @readonly
+	 */
+	protected readonly mfaForm: FormGroup =
+		this.formBuilder.group(
+			{
+				code: [
+					"",
+					[Validators.required]
+				]
+			});
+
+	/**
 	 * MFA state from login flow.
 	 * @type {MfaState | null}
 	 * @private
 	 */
 	private mfaState: MfaState | null = null;
-
-	/**
-	 * The verification code entered by user.
-	 * @type {string}
-	 * @protected
-	 */
-	protected code: string = "";
 
 	/**
 	 * Loading state during verification.
@@ -202,11 +232,55 @@ export class MfaVerifyComponent implements OnInit, OnDestroy
 					: MFA_CONFIG.codeLength);
 
 	/**
-	 * Cooldown timer interval.
-	 * @type {number | null}
+	 * Effect to update form validation when mode changes.
+	 * @type {EffectRef}
 	 * @private
+	 * @readonly
 	 */
-	private cooldownInterval: number | null = null;
+	private readonly validationEffect: EffectRef =
+		effect(
+			() =>
+			{
+				const codeLength: number =
+					this.expectedCodeLength();
+				const pattern: RegExp =
+					this.showBackupCodeEntry()
+						? /^[A-Za-z0-9]+$/
+						: /^\d+$/;
+
+				this
+					.mfaForm
+					.get("code")
+					?.setValidators(
+						[
+							Validators.required,
+							Validators.minLength(codeLength),
+							Validators.maxLength(codeLength),
+							Validators.pattern(pattern)
+						]);
+				this
+					.mfaForm
+					.get("code")
+					?.updateValueAndValidity();
+			});
+
+	/**
+	 * Subject to stop the cooldown timer.
+	 * @type {Subject<void>}
+	 * @private
+	 * @readonly
+	 */
+	private readonly stopCooldownSubject: Subject<void> =
+		new Subject<void>();
+
+	/**
+	 * Angular destroy reference for automatic cleanup.
+	 * @type {DestroyRef}
+	 * @private
+	 * @readonly
+	 */
+	private readonly destroyRef: DestroyRef =
+		inject(DestroyRef);
 
 	/**
 	 * Initialize component: check MFA state, redirect if invalid.
@@ -235,21 +309,15 @@ export class MfaVerifyComponent implements OnInit, OnDestroy
 	}
 
 	/**
-	 * Clean up interval on component destruction to prevent memory leaks.
-	 */
-	ngOnDestroy(): void
-	{
-		this.stopCooldown();
-	}
-
-	/**
 	 * Checks if the verify button can be enabled.
 	 * @returns {boolean}
 	 * True when code is valid length and not loading.
 	 */
 	protected canVerify(): boolean
 	{
-		return this.code.length === this.expectedCodeLength()
+		const code: string =
+			this.mfaForm.value.code ?? "";
+		return code.length === this.expectedCodeLength()
 			&& !this.isLoading()
 			&& !this.isResending();
 	}
@@ -295,7 +363,7 @@ export class MfaVerifyComponent implements OnInit, OnDestroy
 		const request: VerifyMfaRequest =
 			{
 				challengeToken: this.mfaState.challengeToken,
-				code: this.code
+				code: this.mfaForm.value.code
 			};
 
 		this
@@ -326,7 +394,7 @@ export class MfaVerifyComponent implements OnInit, OnDestroy
 		const request: VerifyTotpRequest =
 			{
 				email: this.mfaState.email,
-				code: this.code
+				code: this.mfaForm.value.code
 			};
 
 		this
@@ -357,7 +425,7 @@ export class MfaVerifyComponent implements OnInit, OnDestroy
 		const request: VerifyBackupCodeRequest =
 			{
 				email: this.mfaState.email,
-				code: this.code
+				code: this.mfaForm.value.code
 			};
 
 		this
@@ -414,7 +482,7 @@ export class MfaVerifyComponent implements OnInit, OnDestroy
 	private handleVerifyError(error: HttpErrorResponse): void
 	{
 		this.isLoading.set(false);
-		this.code = "";
+		this.mfaForm.reset();
 
 		const errorCode: string | undefined =
 			error.error?.errorCode;
@@ -446,7 +514,7 @@ export class MfaVerifyComponent implements OnInit, OnDestroy
 	private handleBackupCodeError(error: HttpErrorResponse): void
 	{
 		this.isLoading.set(false);
-		this.code = "";
+		this.mfaForm.reset();
 
 		const errorCode: string | undefined =
 			error.error?.errorCode;
@@ -529,7 +597,8 @@ export class MfaVerifyComponent implements OnInit, OnDestroy
 	}
 
 	/**
-	 * Starts the resend cooldown timer.
+	 * Starts the resend cooldown timer using RxJS interval.
+	 * Timer automatically stops when cooldown reaches 0 or component is destroyed.
 	 * @private
 	 */
 	private startCooldown(): void
@@ -537,8 +606,11 @@ export class MfaVerifyComponent implements OnInit, OnDestroy
 		this.resendOnCooldown.set(true);
 		this.resendCooldownSeconds.set(MFA_CONFIG.resendCooldownSeconds);
 
-		this.cooldownInterval =
-			window.setInterval(
+		interval(1000)
+			.pipe(
+				takeUntil(this.stopCooldownSubject),
+				takeUntilDestroyed(this.destroyRef))
+			.subscribe(
 				() =>
 				{
 					const remaining: number =
@@ -552,22 +624,16 @@ export class MfaVerifyComponent implements OnInit, OnDestroy
 					{
 						this.resendCooldownSeconds.set(remaining);
 					}
-				},
-				1000);
+				});
 	}
 
 	/**
-	 * Stops the resend cooldown timer.
+	 * Stops the resend cooldown timer by emitting on the stop Subject.
 	 * @private
 	 */
 	private stopCooldown(): void
 	{
-		if (this.cooldownInterval !== null)
-		{
-			clearInterval(this.cooldownInterval);
-			this.cooldownInterval = null;
-		}
-
+		this.stopCooldownSubject.next();
 		this.resendOnCooldown.set(false);
 		this.resendCooldownSeconds.set(0);
 	}
@@ -588,7 +654,7 @@ export class MfaVerifyComponent implements OnInit, OnDestroy
 	protected onUseBackupCode(): void
 	{
 		this.showBackupCodeEntry.set(true);
-		this.code = "";
+		this.mfaForm.reset();
 	}
 
 	/**
@@ -597,6 +663,6 @@ export class MfaVerifyComponent implements OnInit, OnDestroy
 	protected onCancelBackupCode(): void
 	{
 		this.showBackupCodeEntry.set(false);
-		this.code = "";
+		this.mfaForm.reset();
 	}
 }

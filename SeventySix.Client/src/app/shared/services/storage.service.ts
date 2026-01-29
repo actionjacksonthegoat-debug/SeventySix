@@ -12,6 +12,79 @@ import { isNullOrUndefined } from "@shared/utilities/null-check.utility";
 export class StorageService
 {
 	/**
+	 * Executes a storage operation with standardized error handling.
+	 *
+	 * @param {() => T} operation
+	 * The storage operation to execute.
+	 *
+	 * @param {string} errorContext
+	 * Context description for error logging.
+	 *
+	 * @param {T} fallbackValue
+	 * Value to return if operation fails.
+	 *
+	 * @returns {T}
+	 * The operation result or fallback value.
+	 */
+	private executeStorageOperation<T>(
+		operation: () => T,
+		errorContext: string,
+		fallbackValue: T): T
+	{
+		try
+		{
+			return operation();
+		}
+		catch (error: unknown)
+		{
+			console.error(
+				`StorageService: ${errorContext}`,
+				error);
+			return fallbackValue;
+		}
+	}
+
+	/**
+	 * Parses a storage value, attempting JSON parse with string fallback.
+	 *
+	 * @param {string | null} value
+	 * The raw string value from storage.
+	 *
+	 * @returns {T | null}
+	 * The parsed value or null if not present.
+	 */
+	private parseStorageValue<T>(value: string | null): T | null
+	{
+		if (isNullOrUndefined(value))
+		{
+			return null;
+		}
+
+		try
+		{
+			return JSON.parse(value) as T;
+		}
+		catch
+		{
+			return value as T;
+		}
+	}
+
+	/**
+	 * Stringifies a value for storage.
+	 *
+	 * @param {T} value
+	 * The value to stringify.
+	 *
+	 * @returns {string}
+	 * The stringified value.
+	 */
+	private stringifyValue<T>(value: T): string
+	{
+		return typeof value === "string" ? value : JSON.stringify(value);
+	}
+
+	/**
 	 * Get item from localStorage.
 	 * Returns null if item doesn't exist.
 	 * @param {string} key
@@ -21,30 +94,11 @@ export class StorageService
 	 */
 	getItem<T = string>(key: string): T | null
 	{
-		try
-		{
-			const value: string | null =
-				localStorage.getItem(key);
-			if (isNullOrUndefined(value))
-			{
-				return null;
-			}
-
-			// Try to parse as JSON, fallback to string
-			try
-			{
-				return JSON.parse(value) as T;
-			}
-			catch
-			{
-				return value as T;
-			}
-		}
-		catch (error)
-		{
-			console.error(`StorageService: Failed to get "${key}"`, error);
-			return null;
-		}
+		return this.executeStorageOperation(
+			() =>
+				this.parseStorageValue<T>(localStorage.getItem(key)),
+			`Failed to get "${key}"`,
+			null);
 	}
 
 	/**
@@ -59,25 +113,16 @@ export class StorageService
 	 */
 	setItem<T>(key: string, value: T): boolean
 	{
-		try
-		{
-			const stringValue: string =
-				typeof value === "string" ? value : JSON.stringify(value);
-			localStorage.setItem(key, stringValue);
-			return true;
-		}
-		catch (error)
-		{
-			// Handle quota exceeded
-			if (
-				error instanceof DOMException
-					&& error.name === "QuotaExceededError")
+		return this.executeStorageOperation(
+			() =>
 			{
-				console.error("StorageService: Quota exceeded");
-			}
-			console.error(`StorageService: Failed to set "${key}"`, error);
-			return false;
-		}
+				localStorage.setItem(
+					key,
+					this.stringifyValue(value));
+				return true;
+			},
+			`Failed to set "${key}"`,
+			false);
 	}
 
 	/**
@@ -88,14 +133,14 @@ export class StorageService
 	 */
 	removeItem(key: string): void
 	{
-		try
-		{
-			localStorage.removeItem(key);
-		}
-		catch (error)
-		{
-			console.error(`StorageService: Failed to remove "${key}"`, error);
-		}
+		this.executeStorageOperation(
+			() =>
+			{
+				localStorage.removeItem(key);
+				return undefined;
+			},
+			`Failed to remove "${key}"`,
+			undefined);
 	}
 
 	/**
@@ -104,16 +149,14 @@ export class StorageService
 	 */
 	clear(): void
 	{
-		try
-		{
-			localStorage.clear();
-		}
-		catch (error)
-		{
-			console.error(
-				"StorageService: Failed to clear localStorage",
-				error);
-		}
+		this.executeStorageOperation(
+			() =>
+			{
+				localStorage.clear();
+				return undefined;
+			},
+			"Failed to clear localStorage",
+			undefined);
 	}
 
 	// ========================================
@@ -130,32 +173,11 @@ export class StorageService
 	 */
 	getSessionItem<TValue = string>(key: string): TValue | null
 	{
-		try
-		{
-			const value: string | null =
-				sessionStorage.getItem(key);
-			if (isNullOrUndefined(value))
-			{
-				return null;
-			}
-
-			// Try to parse as JSON, fallback to string
-			try
-			{
-				return JSON.parse(value) as TValue;
-			}
-			catch
-			{
-				return value as TValue;
-			}
-		}
-		catch (error)
-		{
-			console.error(
-				`StorageService: Failed to get session "${key}"`,
-				error);
-			return null;
-		}
+		return this.executeStorageOperation(
+			() =>
+				this.parseStorageValue<TValue>(sessionStorage.getItem(key)),
+			`Failed to get session "${key}"`,
+			null);
 	}
 
 	/**
@@ -172,27 +194,16 @@ export class StorageService
 		key: string,
 		value: TValue): boolean
 	{
-		try
-		{
-			const stringValue: string =
-				typeof value === "string" ? value : JSON.stringify(value);
-			sessionStorage.setItem(key, stringValue);
-			return true;
-		}
-		catch (error)
-		{
-			// Handle quota exceeded
-			if (
-				error instanceof DOMException
-					&& error.name === "QuotaExceededError")
+		return this.executeStorageOperation(
+			() =>
 			{
-				console.error("StorageService: Session quota exceeded");
-			}
-			console.error(
-				`StorageService: Failed to set session "${key}"`,
-				error);
-			return false;
-		}
+				sessionStorage.setItem(
+					key,
+					this.stringifyValue(value));
+				return true;
+			},
+			`Failed to set session "${key}"`,
+			false);
 	}
 
 	/**
@@ -203,16 +214,14 @@ export class StorageService
 	 */
 	removeSessionItem(key: string): void
 	{
-		try
-		{
-			sessionStorage.removeItem(key);
-		}
-		catch (error)
-		{
-			console.error(
-				`StorageService: Failed to remove session "${key}"`,
-				error);
-		}
+		this.executeStorageOperation(
+			() =>
+			{
+				sessionStorage.removeItem(key);
+				return undefined;
+			},
+			`Failed to remove session "${key}"`,
+			undefined);
 	}
 
 	/**
@@ -221,15 +230,13 @@ export class StorageService
 	 */
 	clearSession(): void
 	{
-		try
-		{
-			sessionStorage.clear();
-		}
-		catch (error)
-		{
-			console.error(
-				"StorageService: Failed to clear sessionStorage",
-				error);
-		}
+		this.executeStorageOperation(
+			() =>
+			{
+				sessionStorage.clear();
+				return undefined;
+			},
+			"Failed to clear sessionStorage",
+			undefined);
 	}
 }

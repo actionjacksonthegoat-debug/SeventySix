@@ -169,6 +169,14 @@ export default [
 			// Playwright rules plugin
 			playwright: playwrightPlugin
 		},
+		settings: {
+			// Tell playwright plugin about custom test fixtures
+			playwright: {
+				globalAliases: {
+					test: ["unauthenticatedTest"]
+				}
+			}
+		},
 		rules: {
 			// Playwright recommended rules (merged because flat config has no `extends`)
 			...(playwrightRecommended.rules ?? {}),

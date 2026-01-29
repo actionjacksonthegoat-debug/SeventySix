@@ -63,7 +63,7 @@ export class LayoutService
 	 * @type {ReturnType<typeof this.breakpointObserver.observe>}
 	 * @private
 	 */
-	private readonly breakpoints$: ReturnType<typeof this.breakpointObserver.observe> =
+	private readonly breakpoints: ReturnType<typeof this.breakpointObserver.observe> =
 		this.breakpointObserver.observe(
 			[
 				Breakpoints.XSmall, // (max-width: 599.98px)
@@ -77,9 +77,9 @@ export class LayoutService
 	 * Signal representing the current breakpoint state.
 	 * @type {Signal<BreakpointState>}
 	 */
-	readonly breakpoints: Signal<BreakpointState> =
+	readonly breakpointSignal: Signal<BreakpointState> =
 		toSignal(
-			this.breakpoints$,
+			this.breakpoints,
 			{
 				initialValue: { matches: false, breakpoints: {} }
 			});
@@ -208,7 +208,7 @@ export class LayoutService
 			() =>
 			{
 				const breakpointState: { [key: string]: boolean; } =
-					this.breakpoints().breakpoints as {
+					this.breakpointSignal().breakpoints as {
 						[key: string]: boolean;
 					};
 				return breakpointKeys.some(

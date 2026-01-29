@@ -59,6 +59,8 @@ import { isNullOrUndefined, isPresent } from "@shared/utilities/null-check.utili
 | Client | `npm test`         |
 | E2E    | `npm run test:e2e` |
 
+> ⚠️ **CRITICAL**: Test failures MUST be fixed immediately when discovered, regardless of origin. Never skip or defer failing tests. If a test fails, fix it before proceeding—no exceptions.
+
 ---
 
 ## Architecture

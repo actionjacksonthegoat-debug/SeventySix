@@ -13,7 +13,12 @@ import {
 	signal,
 	WritableSignal
 } from "@angular/core";
-import { FormsModule } from "@angular/forms";
+import {
+	FormBuilder,
+	FormGroup,
+	ReactiveFormsModule,
+	Validators
+} from "@angular/forms";
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
 import { Router } from "@angular/router";
@@ -42,7 +47,7 @@ const SETUP_STEP_SUCCESS: number = 3;
 	{
 		selector: "app-totp-setup",
 		standalone: true,
-		imports: [FormsModule, MatButtonModule, MatIconModule],
+		imports: [ReactiveFormsModule, MatButtonModule, MatIconModule],
 		changeDetection: ChangeDetectionStrategy.OnPush,
 		templateUrl: "./totp-setup.html",
 		styleUrl: "./totp-setup.scss"
@@ -88,6 +93,33 @@ export class TotpSetupComponent implements OnInit
 	 */
 	private readonly clipboard: Clipboard =
 		inject(Clipboard);
+
+	/**
+	 * Form builder for creating reactive forms.
+	 * @type {FormBuilder}
+	 * @private
+	 * @readonly
+	 */
+	private readonly formBuilder: FormBuilder =
+		inject(FormBuilder);
+
+	/**
+	 * Verification form with code field.
+	 * @type {FormGroup}
+	 * @protected
+	 * @readonly
+	 */
+	protected readonly verifyForm: FormGroup =
+		this.formBuilder.group(
+			{
+				verificationCode: [
+					"",
+					[
+						Validators.required,
+						Validators.pattern(/^\d{6}$/)
+					]
+				]
+			});
 
 	/**
 	 * Current setup step.
@@ -143,13 +175,6 @@ export class TotpSetupComponent implements OnInit
 	 */
 	protected readonly secretCopied: WritableSignal<boolean> =
 		signal<boolean>(false);
-
-	/**
-	 * Verification code entered by the user.
-	 * @type {string}
-	 * @protected
-	 */
-	protected verificationCode: string = "";
 
 	/**
 	 * Error message from API.
@@ -316,7 +341,7 @@ export class TotpSetupComponent implements OnInit
 	protected onBackToScan(): void
 	{
 		this.currentStep.set(SETUP_STEP_SCAN);
-		this.verificationCode = "";
+		this.verifyForm.reset();
 		this.errorMessage.set("");
 	}
 
@@ -327,8 +352,9 @@ export class TotpSetupComponent implements OnInit
 	 */
 	protected onConfirmSetup(): void
 	{
-		if (this.verificationCode.length !== TOTP_CODE_LENGTH)
+		if (this.verifyForm.invalid)
 		{
+			this.verifyForm.markAllAsTouched();
 			this.errorMessage.set(`Please enter a ${TOTP_CODE_LENGTH}-digit code`);
 			return;
 		}
@@ -336,10 +362,13 @@ export class TotpSetupComponent implements OnInit
 		this.isLoading.set(true);
 		this.errorMessage.set("");
 
+		const verificationCode: string =
+			this.verifyForm.value.verificationCode;
+
 		this
 			.totpService
 			.confirmSetup(
-				{ code: this.verificationCode })
+				{ code: verificationCode })
 			.subscribe(
 				{
 					next: () =>
@@ -398,6 +427,6 @@ export class TotpSetupComponent implements OnInit
 	 */
 	protected isCodeValid(): boolean
 	{
-		return /^\d{6}$/.test(this.verificationCode);
+		return this.verifyForm.valid;
 	}
 }
