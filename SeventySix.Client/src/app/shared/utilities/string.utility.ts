@@ -1,11 +1,20 @@
 /**
  * Capitalizes the first letter of a string.
  *
- * @param word
+ * **Usage Note:** Use this utility for programmatic string transformations
+ * (e.g., converting kebab-case to Title Case). For display-only capitalization
+ * of known text, prefer CSS `text-transform: capitalize` instead.
+ *
+ * @param {string} word
  * The string to capitalize.
  *
- * @returns
+ * @returns {string}
  * The string with the first letter capitalized.
+ *
+ * @example
+ * // Converting kebab-case to Title Case
+ * "user-management".split("-").map(word => capitalize(word)).join(" ")
+ * // Result: "User Management"
  */
 export function capitalize(word: string): string
 {

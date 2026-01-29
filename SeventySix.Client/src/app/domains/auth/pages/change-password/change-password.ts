@@ -1,6 +1,11 @@
 /**
  * Change password page.
  * Handles both required (first login) and voluntary password changes.
+ *
+ * **Design Note:** Uses HttpClient directly (not ApiService) because password
+ * change requires `withCredentials: true` for secure cookie handling.
+ *
+ * @see {@link ApiService} for documentation on when to use HttpClient directly
  */
 
 import { HttpClient, HttpErrorResponse } from "@angular/common/http";

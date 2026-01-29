@@ -20,6 +20,7 @@ import type {
 } from "@shared/models";
 import { DialogService } from "@shared/services/dialog.service";
 import { NotificationService } from "@shared/services/notification.service";
+import { confirmAndMutate } from "@shared/utilities";
 
 /**
  * User list component.
@@ -511,37 +512,19 @@ export class UserList
 	 */
 	private resetUserPassword(user: UserDto): void
 	{
-		this
-			.dialogService
-			.confirm(
-				{
-					title: "Reset Password",
-					message:
-						`Are you sure you want to reset the password for "${user.username}"? They will receive an email with instructions to set a new password.`,
-					confirmText: "Reset Password"
-				})
-			.subscribe(
-				(confirmed: boolean) =>
-				{
-					if (!confirmed)
-					{
-						return;
-					}
-
-					this.resetPasswordMutation.mutate(user.id,
-						{
-							onSuccess: () =>
-							{
-								this.notificationService.success(
-									`Password reset email sent to ${user.email}`);
-							},
-							onError: (error: Error) =>
-							{
-								this.notificationService.error(
-									`Failed to reset password: ${error.message}`);
-							}
-						});
-				});
+		confirmAndMutate(
+			this.dialogService,
+			this.notificationService,
+			{
+				title: "Reset Password",
+				message:
+					`Are you sure you want to reset the password for "${user.username}"? They will receive an email with instructions to set a new password.`,
+				confirmText: "Reset Password"
+			},
+			this.resetPasswordMutation,
+			user.id,
+			`Password reset email sent to ${user.email}`,
+			"Failed to reset password");
 	}
 
 	/**
@@ -597,36 +580,18 @@ export class UserList
 	 */
 	private handleRestoreUser(user: UserDto): void
 	{
-		this
-			.dialogService
-			.confirm(
-				{
-					title: "Restore User",
-					message: `Are you sure you want to restore user "${user.username}"?`,
-					confirmText: "Restore",
-					cancelText: "Cancel"
-				})
-			.subscribe(
-				(confirmed: boolean) =>
-				{
-					if (!confirmed)
-					{
-						return;
-					}
-
-					this.restoreUserMutation.mutate(user.id,
-						{
-							onSuccess: () =>
-							{
-								this.notificationService.success(
-									`User "${user.username}" restored successfully`);
-							},
-							onError: (error: Error) =>
-							{
-								this.notificationService.error(
-									`Failed to restore user: ${error.message}`);
-							}
-						});
-				});
+		confirmAndMutate(
+			this.dialogService,
+			this.notificationService,
+			{
+				title: "Restore User",
+				message: `Are you sure you want to restore user "${user.username}"?`,
+				confirmText: "Restore",
+				cancelText: "Cancel"
+			},
+			this.restoreUserMutation,
+			user.id,
+			`User "${user.username}" restored successfully`,
+			"Failed to restore user");
 	}
 }

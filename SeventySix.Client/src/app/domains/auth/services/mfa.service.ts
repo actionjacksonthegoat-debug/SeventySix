@@ -1,6 +1,13 @@
 /**
  * MFA Service for handling multi-factor authentication flows.
  * Domain-scoped service - must be provided in route providers.
+ *
+ * **Design Note:** This service uses HttpClient directly instead of ApiService
+ * because MFA verification requires `withCredentials: true` for cookie-based
+ * authentication. ApiService is designed for standard API calls that don't
+ * need credential forwarding.
+ *
+ * @see {@link ApiService} for documentation on when to use HttpClient directly
  */
 
 import { HttpClient } from "@angular/common/http";
@@ -22,7 +29,8 @@ import { Observable, tap } from "rxjs";
  * Service for MFA verification operations.
  * Handles code verification, resend, and state management.
  *
- * Note: This is a domain-scoped service provided via route providers.
+ * **Note:** This is a domain-scoped service provided via route providers.
+ * Uses HttpClient directly for `withCredentials` support required by auth flows.
  */
 @Injectable()
 export class MfaService

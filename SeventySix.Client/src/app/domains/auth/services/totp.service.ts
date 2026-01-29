@@ -1,6 +1,11 @@
 /**
  * TOTP Service for authenticator app enrollment operations.
  * Domain-scoped service - must be provided in route providers.
+ *
+ * **Design Note:** Uses HttpClient directly (not ApiService) because TOTP
+ * operations require `withCredentials: true` for secure cookie handling.
+ *
+ * @see {@link ApiService} for documentation on when to use HttpClient directly
  */
 
 import { HttpClient } from "@angular/common/http";
@@ -17,7 +22,8 @@ import { Observable } from "rxjs";
  * Service for TOTP (authenticator app) operations.
  * Handles enrollment, confirmation, and disabling.
  *
- * Note: This is a domain-scoped service provided via route providers.
+ * **Note:** This is a domain-scoped service provided via route providers.
+ * Uses HttpClient directly for `withCredentials` support required by auth flows.
  */
 @Injectable()
 export class TotpService

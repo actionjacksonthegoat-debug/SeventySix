@@ -1,6 +1,11 @@
 /**
  * Backup Codes Service for emergency MFA recovery.
  * Domain-scoped service - must be provided in route providers.
+ *
+ * **Design Note:** Uses HttpClient directly (not ApiService) because backup
+ * code operations require `withCredentials: true` for secure cookie handling.
+ *
+ * @see {@link ApiService} for documentation on when to use HttpClient directly
  */
 
 import { HttpClient } from "@angular/common/http";
@@ -12,7 +17,8 @@ import { Observable } from "rxjs";
  * Service for backup code operations.
  * Handles generation and count retrieval.
  *
- * Note: This is a domain-scoped service provided via route providers.
+ * **Note:** This is a domain-scoped service provided via route providers.
+ * Uses HttpClient directly for `withCredentials` support required by auth flows.
  */
 @Injectable()
 export class BackupCodesService
