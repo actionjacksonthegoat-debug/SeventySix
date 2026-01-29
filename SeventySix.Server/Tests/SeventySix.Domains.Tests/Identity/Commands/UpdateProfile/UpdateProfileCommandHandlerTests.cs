@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using SeventySix.Identity;
+using SeventySix.Shared.Interfaces;
 using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.Mocks;
@@ -25,6 +26,7 @@ public class UpdateProfileCommandHandlerTests
 	private readonly FakeTimeProvider TimeProvider;
 	private readonly IMessageBus MessageBus;
 	private readonly UserManager<ApplicationUser> UserManager;
+	private readonly ICacheInvalidationService CacheInvalidation;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="UpdateProfileCommandHandlerTests"/> class.
@@ -37,6 +39,8 @@ public class UpdateProfileCommandHandlerTests
 			Substitute.For<IMessageBus>();
 		UserManager =
 			IdentityMockFactory.CreateUserManager();
+		CacheInvalidation =
+			Substitute.For<ICacheInvalidationService>();
 	}
 
 	/// <summary>
@@ -90,6 +94,7 @@ public class UpdateProfileCommandHandlerTests
 				command,
 				MessageBus,
 				UserManager,
+				CacheInvalidation,
 				CancellationToken.None);
 
 		// Assert
@@ -125,6 +130,7 @@ public class UpdateProfileCommandHandlerTests
 				command,
 				MessageBus,
 				UserManager,
+				CacheInvalidation,
 				CancellationToken.None);
 
 		// Assert
@@ -171,6 +177,7 @@ public class UpdateProfileCommandHandlerTests
 				command,
 				MessageBus,
 				UserManager,
+				CacheInvalidation,
 				CancellationToken.None));
 	}
 

@@ -5,6 +5,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using SeventySix.Shared.Extensions;
+using SeventySix.Shared.Interfaces;
 using Wolverine;
 
 namespace SeventySix.Identity;
@@ -26,6 +27,9 @@ public static class UpdateProfileCommandHandler
 	/// <param name="userManager">
 	/// Identity <see cref="UserManager{TUser}"/> for user operations.
 	/// </param>
+	/// <param name="cacheInvalidation">
+	/// Cache invalidation service for clearing user cache.
+	/// </param>
 	/// <param name="cancellationToken">
 	/// Cancellation token.
 	/// </param>
@@ -40,6 +44,7 @@ public static class UpdateProfileCommandHandler
 		UpdateProfileCommand command,
 		IMessageBus messageBus,
 		UserManager<ApplicationUser> userManager,
+		ICacheInvalidationService cacheInvalidation,
 		CancellationToken cancellationToken)
 	{
 		ApplicationUser? user =
@@ -50,6 +55,10 @@ public static class UpdateProfileCommandHandler
 		{
 			return null;
 		}
+
+		// Capture previous email for cache invalidation
+		string? previousEmail =
+			user.Email;
 
 		user.Email = command.Request.Email;
 		user.FullName = command.Request.FullName;
@@ -72,6 +81,25 @@ public static class UpdateProfileCommandHandler
 					string.Join(
 						", ",
 						result.Errors.Select(error => error.Description)));
+			}
+
+			// Invalidate cache for old email
+			await cacheInvalidation.InvalidateUserCacheAsync(
+				command.UserId,
+				email: previousEmail);
+
+			// Invalidate cache for new email if changed
+			bool emailChanged =
+				!string.Equals(
+					previousEmail,
+					command.Request.Email,
+					StringComparison.OrdinalIgnoreCase);
+
+			if (emailChanged)
+			{
+				await cacheInvalidation.InvalidateUserCacheAsync(
+					command.UserId,
+					email: command.Request.Email);
 			}
 
 			// Query full profile after successful update

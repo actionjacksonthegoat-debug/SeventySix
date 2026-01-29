@@ -3,6 +3,7 @@
 // </copyright>
 
 using Microsoft.AspNetCore.Identity;
+using SeventySix.Shared.Interfaces;
 using SeventySix.Shared.POCOs;
 
 namespace SeventySix.Identity;
@@ -21,6 +22,9 @@ public static class DeleteUserCommandHandler
 	/// <param name="userManager">
 	/// Identity <see cref="UserManager{TUser}"/> for user operations.
 	/// </param>
+	/// <param name="cacheInvalidation">
+	/// Cache invalidation service for clearing user cache.
+	/// </param>
 	/// <param name="timeProvider">
 	/// Time provider for current time values.
 	/// </param>
@@ -33,6 +37,7 @@ public static class DeleteUserCommandHandler
 	public static async Task<Result> HandleAsync(
 		DeleteUserCommand command,
 		UserManager<ApplicationUser> userManager,
+		ICacheInvalidationService cacheInvalidation,
 		TimeProvider timeProvider,
 		CancellationToken cancellationToken)
 	{
@@ -50,6 +55,12 @@ public static class DeleteUserCommandHandler
 			return Result.Failure($"User {command.UserId} is already deleted");
 		}
 
+		// Capture values for cache invalidation
+		string? userEmail =
+			user.Email;
+		string? userName =
+			user.UserName;
+
 		user.IsDeleted = true;
 		user.DeletedAt =
 			timeProvider.GetUtcNow().UtcDateTime;
@@ -59,12 +70,24 @@ public static class DeleteUserCommandHandler
 		IdentityResult identityResult =
 			await userManager.UpdateAsync(user);
 
-		return identityResult.Succeeded
-			? Result.Success()
-			: Result.Failure(
-				string.Join(
-					", ",
-					identityResult.Errors.Select(
-						error => error.Description)));
+		if (identityResult.Succeeded)
+		{
+			// Invalidate all user cache entries
+			await cacheInvalidation.InvalidateUserCacheAsync(
+				command.UserId,
+				email: userEmail,
+				username: userName);
+
+			await cacheInvalidation.InvalidateUserRolesCacheAsync(command.UserId);
+			await cacheInvalidation.InvalidateAllUsersCacheAsync();
+
+			return Result.Success();
+		}
+
+		return Result.Failure(
+			string.Join(
+				", ",
+				identityResult.Errors.Select(
+					error => error.Description)));
 	}
 }

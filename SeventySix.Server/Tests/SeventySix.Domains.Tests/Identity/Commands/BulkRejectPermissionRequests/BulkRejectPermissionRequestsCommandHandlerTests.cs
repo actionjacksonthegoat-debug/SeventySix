@@ -5,6 +5,7 @@
 using NSubstitute;
 using SeventySix.Identity;
 using SeventySix.Identity.Commands.BulkRejectPermissionRequests;
+using SeventySix.Shared.Interfaces;
 using Shouldly;
 
 namespace SeventySix.Domains.Tests.Identity.Commands.BulkRejectPermissionRequests;
@@ -19,6 +20,7 @@ namespace SeventySix.Domains.Tests.Identity.Commands.BulkRejectPermissionRequest
 public class BulkRejectPermissionRequestsCommandHandlerTests
 {
 	private readonly IPermissionRequestRepository PermissionRequestRepository;
+	private readonly ICacheInvalidationService CacheInvalidation;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="BulkRejectPermissionRequestsCommandHandlerTests"/> class.
@@ -27,6 +29,8 @@ public class BulkRejectPermissionRequestsCommandHandlerTests
 	{
 		PermissionRequestRepository =
 			Substitute.For<IPermissionRequestRepository>();
+		CacheInvalidation =
+			Substitute.For<ICacheInvalidationService>();
 	}
 
 	/// <summary>
@@ -47,6 +51,7 @@ public class BulkRejectPermissionRequestsCommandHandlerTests
 			await BulkRejectPermissionRequestsCommandHandler.HandleAsync(
 				command,
 				PermissionRequestRepository,
+				CacheInvalidation,
 				CancellationToken.None);
 
 		// Assert
@@ -79,6 +84,7 @@ public class BulkRejectPermissionRequestsCommandHandlerTests
 			await BulkRejectPermissionRequestsCommandHandler.HandleAsync(
 				command,
 				PermissionRequestRepository,
+				CacheInvalidation,
 				CancellationToken.None);
 
 		// Assert
@@ -109,6 +115,7 @@ public class BulkRejectPermissionRequestsCommandHandlerTests
 			await BulkRejectPermissionRequestsCommandHandler.HandleAsync(
 				command,
 				PermissionRequestRepository,
+				CacheInvalidation,
 				CancellationToken.None);
 
 		// Assert
@@ -145,6 +152,7 @@ public class BulkRejectPermissionRequestsCommandHandlerTests
 		await BulkRejectPermissionRequestsCommandHandler.HandleAsync(
 			command,
 			PermissionRequestRepository,
+			CacheInvalidation,
 			cancellationToken);
 
 		// Assert - Verify CancellationToken was passed through

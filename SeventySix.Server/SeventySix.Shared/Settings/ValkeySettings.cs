@@ -91,4 +91,35 @@ public record ValkeySettings
 	/// </remarks>
 	public int RetryBaseMs { get; init; } =
 		5000;
+
+	/// <summary>
+	/// Async operation timeout in milliseconds.
+	/// </summary>
+	/// <remarks>
+	/// Time to wait for asynchronous cache operations to complete.
+	/// Should be higher than SyncTimeoutMs.
+	/// Default: 5000ms (5 seconds).
+	/// </remarks>
+	public int AsyncTimeoutMs { get; init; } =
+		5000;
+
+	/// <summary>
+	/// Enable SSL/TLS for Valkey connections.
+	/// </summary>
+	/// <remarks>
+	/// Required for production environments with encrypted connections.
+	/// Default: false for development.
+	/// </remarks>
+	public bool UseSsl { get; init; } =
+		false;
+
+	/// <summary>
+	/// Connection pool size per endpoint.
+	/// </summary>
+	/// <remarks>
+	/// Number of concurrent connections to maintain.
+	/// Default: 1 for development. Increase to 2-4 for high-traffic production.
+	/// </remarks>
+	public int ConnectionPoolSize { get; init; } =
+		1;
 }

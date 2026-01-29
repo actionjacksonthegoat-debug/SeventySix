@@ -98,4 +98,53 @@ public static class IdentityCacheKeys
 	{
 		return $"{PREFIX}:all-users";
 	}
+
+	/// <summary>
+	/// Generates a cache key for user lookup by email.
+	/// </summary>
+	/// <param name="email">
+	/// The email address.
+	/// </param>
+	/// <returns>
+	/// Cache key in format "identity:user:email:{sanitized}".
+	/// </returns>
+	public static string UserByEmail(string email)
+	{
+		string sanitizedEmail =
+			SanitizeKeySegment(email);
+		return $"{PREFIX}:user:email:{sanitizedEmail}";
+	}
+
+	/// <summary>
+	/// Generates a cache key for user lookup by username.
+	/// </summary>
+	/// <param name="username">
+	/// The username.
+	/// </param>
+	/// <returns>
+	/// Cache key in format "identity:user:username:{sanitized}".
+	/// </returns>
+	public static string UserByUsername(string username)
+	{
+		string sanitizedUsername =
+			SanitizeKeySegment(username);
+		return $"{PREFIX}:user:username:{sanitizedUsername}";
+	}
+
+	/// <summary>
+	/// Sanitizes a value for use as a cache key segment.
+	/// </summary>
+	/// <param name="value">
+	/// The value to sanitize.
+	/// </param>
+	/// <returns>
+	/// Sanitized value safe for Redis keys.
+	/// </returns>
+	private static string SanitizeKeySegment(string value)
+	{
+		return value
+			.Replace(":", "_")
+			.Replace(" ", "_")
+			.ToLowerInvariant();
+	}
 }

@@ -7,6 +7,7 @@ using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using SeventySix.Identity;
 using SeventySix.Identity.Constants;
+using SeventySix.Shared.Interfaces;
 using SeventySix.Shared.POCOs;
 using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.Constants;
@@ -26,6 +27,7 @@ public class RemoveUserRoleCommandHandlerTests
 {
 	private readonly FakeTimeProvider TimeProvider;
 	private readonly UserManager<ApplicationUser> UserManager;
+	private readonly ICacheInvalidationService CacheInvalidation;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="RemoveUserRoleCommandHandlerTests"/> class.
@@ -36,6 +38,8 @@ public class RemoveUserRoleCommandHandlerTests
 			TestDates.CreateDefaultTimeProvider();
 		UserManager =
 			IdentityMockFactory.CreateUserManager();
+		CacheInvalidation =
+			Substitute.For<ICacheInvalidationService>();
 	}
 
 	/// <summary>
@@ -76,6 +80,7 @@ public class RemoveUserRoleCommandHandlerTests
 			await RemoveUserRoleCommandHandler.HandleAsync(
 				command,
 				UserManager,
+				CacheInvalidation,
 				CancellationToken.None);
 
 		// Assert
@@ -108,6 +113,7 @@ public class RemoveUserRoleCommandHandlerTests
 			await RemoveUserRoleCommandHandler.HandleAsync(
 				command,
 				UserManager,
+				CacheInvalidation,
 				CancellationToken.None);
 
 		// Assert
@@ -149,6 +155,7 @@ public class RemoveUserRoleCommandHandlerTests
 			await RemoveUserRoleCommandHandler.HandleAsync(
 				command,
 				UserManager,
+				CacheInvalidation,
 				CancellationToken.None);
 
 		// Assert
@@ -202,6 +209,7 @@ public class RemoveUserRoleCommandHandlerTests
 			async () => await RemoveUserRoleCommandHandler.HandleAsync(
 				command,
 				UserManager,
+				CacheInvalidation,
 				CancellationToken.None));
 
 		// Verify RemoveFromRoleAsync was NOT called
@@ -263,6 +271,7 @@ public class RemoveUserRoleCommandHandlerTests
 			await RemoveUserRoleCommandHandler.HandleAsync(
 				command,
 				UserManager,
+				CacheInvalidation,
 				CancellationToken.None);
 
 		// Assert
@@ -317,6 +326,7 @@ public class RemoveUserRoleCommandHandlerTests
 			await RemoveUserRoleCommandHandler.HandleAsync(
 				command,
 				UserManager,
+				CacheInvalidation,
 				CancellationToken.None);
 
 		// Assert

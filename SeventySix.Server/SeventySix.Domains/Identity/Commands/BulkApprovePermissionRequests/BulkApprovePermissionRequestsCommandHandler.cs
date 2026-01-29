@@ -3,6 +3,7 @@
 // </copyright>
 
 using Microsoft.AspNetCore.Identity;
+using SeventySix.Shared.Interfaces;
 
 namespace SeventySix.Identity.Commands.BulkApprovePermissionRequests;
 
@@ -23,6 +24,9 @@ public static class BulkApprovePermissionRequestsCommandHandler
 	/// <param name="userManager">
 	/// Identity <see cref="UserManager{TUser}"/> for role operations.
 	/// </param>
+	/// <param name="cacheInvalidation">
+	/// Cache invalidation service for clearing role and request caches.
+	/// </param>
 	/// <param name="cancellationToken">
 	/// Cancellation token.
 	/// </param>
@@ -33,6 +37,7 @@ public static class BulkApprovePermissionRequestsCommandHandler
 		BulkApprovePermissionRequestsCommand command,
 		IPermissionRequestRepository repository,
 		UserManager<ApplicationUser> userManager,
+		ICacheInvalidationService cacheInvalidation,
 		CancellationToken cancellationToken)
 	{
 		List<long> idList = command.RequestIds.ToList();
@@ -41,6 +46,7 @@ public static class BulkApprovePermissionRequestsCommandHandler
 			await repository.GetByIdsAsync(idList, cancellationToken);
 
 		int approvedCount = 0;
+		List<long> affectedUserIds = [];
 
 		foreach (PermissionRequest request in requests)
 		{
@@ -61,10 +67,19 @@ public static class BulkApprovePermissionRequestsCommandHandler
 			if (result.Succeeded)
 			{
 				approvedCount++;
+				affectedUserIds.Add(request.UserId);
 			}
 		}
 
 		await repository.DeleteRangeAsync(idList, cancellationToken);
+
+		// Invalidate caches for all affected users and permission requests
+		foreach (long userId in affectedUserIds)
+		{
+			await cacheInvalidation.InvalidateUserRolesCacheAsync(userId);
+		}
+
+		await cacheInvalidation.InvalidatePermissionRequestsCacheAsync();
 
 		return approvedCount;
 	}

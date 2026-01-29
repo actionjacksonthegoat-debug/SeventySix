@@ -5,8 +5,11 @@
 using Microsoft.AspNetCore.Identity;
 using NSubstitute;
 using SeventySix.Identity;
+using SeventySix.Shared.Constants;
 using SeventySix.TestUtilities.Mocks;
+using SeventySix.TestUtilities.Testing;
 using Shouldly;
+using ZiggyCreatures.Caching.Fusion;
 
 namespace SeventySix.Domains.Tests.Identity.Queries.GetUserByUsername;
 
@@ -19,6 +22,8 @@ namespace SeventySix.Domains.Tests.Identity.Queries.GetUserByUsername;
 public class GetUserByUsernameQueryHandlerTests
 {
 	private readonly UserManager<ApplicationUser> UserManager;
+	private readonly IFusionCacheProvider CacheProvider;
+	private readonly IFusionCache IdentityCache;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="GetUserByUsernameQueryHandlerTests"/> class.
@@ -27,6 +32,13 @@ public class GetUserByUsernameQueryHandlerTests
 	{
 		UserManager =
 			IdentityMockFactory.CreateUserManager();
+		IdentityCache =
+			TestCacheFactory.CreateIdentityCache();
+		CacheProvider =
+			Substitute.For<IFusionCacheProvider>();
+		CacheProvider
+			.GetCache(CacheNames.Identity)
+			.Returns(IdentityCache);
 	}
 
 	/// <summary>
@@ -59,6 +71,7 @@ public class GetUserByUsernameQueryHandlerTests
 			await GetUserByUsernameQueryHandler.HandleAsync(
 				query,
 				UserManager,
+				CacheProvider,
 				CancellationToken.None);
 
 		// Assert
@@ -88,6 +101,7 @@ public class GetUserByUsernameQueryHandlerTests
 			await GetUserByUsernameQueryHandler.HandleAsync(
 				query,
 				UserManager,
+				CacheProvider,
 				CancellationToken.None);
 
 		// Assert
@@ -95,10 +109,10 @@ public class GetUserByUsernameQueryHandlerTests
 	}
 
 	/// <summary>
-	/// Tests that UserManager method is called with correct username.
+	/// Tests that UserManager method is called with correct username on cache miss.
 	/// </summary>
 	[Fact]
-	public async Task HandleAsync_CallsUserManagerWithCorrectUsernameAsync()
+	public async Task HandleAsync_CacheMiss_CallsUserManagerAsync()
 	{
 		// Arrange
 		const string Username = "testuser";
@@ -114,6 +128,7 @@ public class GetUserByUsernameQueryHandlerTests
 		await GetUserByUsernameQueryHandler.HandleAsync(
 			query,
 			UserManager,
+			CacheProvider,
 			CancellationToken.None);
 
 		// Assert

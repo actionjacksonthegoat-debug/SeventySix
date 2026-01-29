@@ -10,6 +10,7 @@ import {
 } from "@angular/core";
 import { BaseMutationService } from "@shared/services";
 import { ApiService } from "@shared/services/api.service";
+import { CacheCoordinationService } from "@shared/services/cache-coordination.service";
 import { QueryKeys } from "@shared/utilities/query-keys.utility";
 import {
 	CreateMutationResult,
@@ -25,6 +26,16 @@ export class AccountService extends BaseMutationService
 	private readonly apiService: ApiService =
 		inject(ApiService);
 	private readonly endpoint: string = "users/me";
+
+	/**
+	 * Service for coordinating cache invalidation across domain boundaries.
+	 * Used to invalidate admin users cache when account profile is updated.
+	 * @type {CacheCoordinationService}
+	 * @private
+	 * @readonly
+	 */
+	private readonly cacheCoordination: CacheCoordinationService =
+		inject(CacheCoordinationService);
 
 	/**
 	 * Query that loads the current user's profile.
@@ -51,7 +62,12 @@ export class AccountService extends BaseMutationService
 	{
 		return this.createMutation<UpdateProfileRequest, UserProfileDto>(
 			(request) =>
-				this.apiService.put<UserProfileDto>(this.endpoint, request));
+				this.apiService.put<UserProfileDto>(this.endpoint, request),
+			() =>
+			{
+				// Cross-domain: invalidate users cache for admin panel
+				this.cacheCoordination.invalidateAllUserCaches();
+			});
 	}
 
 	/**

@@ -9,6 +9,7 @@ import {
 } from "@angular/core";
 import { BaseMutationService } from "@shared/services";
 import { ApiService } from "@shared/services/api.service";
+import { CacheCoordinationService } from "@shared/services/cache-coordination.service";
 import { QueryKeys } from "@shared/utilities/query-keys.utility";
 import {
 	CreateMutationResult,
@@ -46,6 +47,16 @@ export class PermissionRequestService extends BaseMutationService
 	 * @readonly
 	 */
 	private readonly endpoint: string = "users";
+
+	/**
+	 * Service for coordinating cache invalidation across domain boundaries.
+	 * Used to invalidate account caches when permission requests are approved or rejected.
+	 * @type {CacheCoordinationService}
+	 * @private
+	 * @readonly
+	 */
+	private readonly cacheCoordination: CacheCoordinationService =
+		inject(CacheCoordinationService);
 
 	/** Query for all permission requests (admin). */
 	getAllRequests()
@@ -90,7 +101,12 @@ export class PermissionRequestService extends BaseMutationService
 			(requestId) =>
 				this.apiService.post<void, Record<string, never>>(
 					`${this.endpoint}/permission-requests/${requestId}/approve`,
-					{}));
+					{}),
+			() =>
+			{
+				// Cross-domain: invalidate permission caches
+				this.cacheCoordination.invalidatePermissionCaches();
+			});
 	}
 
 	/** Mutation for rejecting a single request. */
@@ -100,7 +116,12 @@ export class PermissionRequestService extends BaseMutationService
 			(requestId) =>
 				this.apiService.post<void, Record<string, never>>(
 					`${this.endpoint}/permission-requests/${requestId}/reject`,
-					{}));
+					{}),
+			() =>
+			{
+				// Cross-domain: invalidate permission caches
+				this.cacheCoordination.invalidatePermissionCaches();
+			});
 	}
 
 	/** Mutation for bulk approving requests. */
@@ -110,7 +131,12 @@ export class PermissionRequestService extends BaseMutationService
 			(requestIds) =>
 				this.apiService.post<number, number[]>(
 					`${this.endpoint}/permission-requests/bulk/approve`,
-					requestIds));
+					requestIds),
+			() =>
+			{
+				// Cross-domain: invalidate permission caches
+				this.cacheCoordination.invalidatePermissionCaches();
+			});
 	}
 
 	/** Mutation for bulk rejecting requests. */
@@ -120,6 +146,11 @@ export class PermissionRequestService extends BaseMutationService
 			(requestIds) =>
 				this.apiService.post<number, number[]>(
 					`${this.endpoint}/permission-requests/bulk/reject`,
-					requestIds));
+					requestIds),
+			() =>
+			{
+				// Cross-domain: invalidate permission caches
+				this.cacheCoordination.invalidatePermissionCaches();
+			});
 	}
 }

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SeventySix.Shared.Extensions;
+using SeventySix.Shared.Interfaces;
 using Wolverine;
 
 namespace SeventySix.Identity;
@@ -18,12 +19,27 @@ public static class UpdateUserCommandHandler
 	/// <summary>
 	/// Handles user updates with duplicate checks and concurrency handling.
 	/// </summary>
-	/// <param name="request">The update user request.</param>
-	/// <param name="messageBus">Message bus for querying users.</param>
-	/// <param name="userManager">Identity UserManager for user operations.</param>
-	/// <param name="logger">Logger instance.</param>
-	/// <param name="cancellationToken">Cancellation token.</param>
-	/// <returns>The updated user DTO.</returns>
+	/// <param name="request">
+	/// The update user request.
+	/// </param>
+	/// <param name="messageBus">
+	/// Message bus for querying users.
+	/// </param>
+	/// <param name="userManager">
+	/// Identity UserManager for user operations.
+	/// </param>
+	/// <param name="cacheInvalidation">
+	/// Cache invalidation service for clearing user cache.
+	/// </param>
+	/// <param name="logger">
+	/// Logger instance.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// The updated user DTO.
+	/// </returns>
 	/// <remarks>
 	/// Wolverine's UseEntityFrameworkCoreTransactions middleware automatically wraps this handler in a transaction.
 	/// Database unique constraints on UserName and Email provide atomicity - no manual transaction management needed.
@@ -32,6 +48,7 @@ public static class UpdateUserCommandHandler
 		UpdateUserRequest request,
 		IMessageBus messageBus,
 		UserManager<ApplicationUser> userManager,
+		ICacheInvalidationService cacheInvalidation,
 		ILogger logger,
 		CancellationToken cancellationToken)
 	{
@@ -43,6 +60,12 @@ public static class UpdateUserCommandHandler
 		{
 			throw new UserNotFoundException(request.Id);
 		}
+
+		// Capture previous values for cache invalidation
+		string previousEmail =
+			existing.Email ?? string.Empty;
+		string previousUsername =
+			existing.UserName ?? string.Empty;
 
 		existing.UserName = request.Username;
 		existing.Email = request.Email;
@@ -58,6 +81,36 @@ public static class UpdateUserCommandHandler
 			{
 				HandleIdentityErrors(result, request, logger);
 			}
+
+			// Invalidate cache for old values
+			await cacheInvalidation.InvalidateUserCacheAsync(
+				request.Id,
+				email: previousEmail,
+				username: previousUsername);
+
+			// Invalidate cache for new values if changed
+			bool emailChanged =
+				!string.Equals(
+					previousEmail,
+					request.Email,
+					StringComparison.OrdinalIgnoreCase);
+
+			bool usernameChanged =
+				!string.Equals(
+					previousUsername,
+					request.Username,
+					StringComparison.OrdinalIgnoreCase);
+
+			if (emailChanged || usernameChanged)
+			{
+				await cacheInvalidation.InvalidateUserCacheAsync(
+					request.Id,
+					email: emailChanged ? request.Email : null,
+					username: usernameChanged ? request.Username : null);
+			}
+
+			// Invalidate all users list for admin views
+			await cacheInvalidation.InvalidateAllUsersCacheAsync();
 
 			return existing.ToDto();
 		}

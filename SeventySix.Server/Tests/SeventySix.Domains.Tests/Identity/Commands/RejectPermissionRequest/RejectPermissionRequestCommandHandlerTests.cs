@@ -5,6 +5,7 @@
 using NSubstitute;
 using SeventySix.Identity;
 using SeventySix.Identity.Commands.RejectPermissionRequest;
+using SeventySix.Shared.Interfaces;
 using SeventySix.Shared.POCOs;
 using Shouldly;
 
@@ -20,6 +21,7 @@ namespace SeventySix.Domains.Tests.Identity.Commands.RejectPermissionRequest;
 public class RejectPermissionRequestCommandHandlerTests
 {
 	private readonly IPermissionRequestRepository PermissionRequestRepository;
+	private readonly ICacheInvalidationService CacheInvalidation;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="RejectPermissionRequestCommandHandlerTests"/> class.
@@ -28,6 +30,8 @@ public class RejectPermissionRequestCommandHandlerTests
 	{
 		PermissionRequestRepository =
 			Substitute.For<IPermissionRequestRepository>();
+		CacheInvalidation =
+			Substitute.For<ICacheInvalidationService>();
 	}
 
 	/// <summary>
@@ -60,6 +64,7 @@ public class RejectPermissionRequestCommandHandlerTests
 			await RejectPermissionRequestCommandHandler.HandleAsync(
 				command,
 				PermissionRequestRepository,
+				CacheInvalidation,
 				CancellationToken.None);
 
 		// Assert
@@ -94,6 +99,7 @@ public class RejectPermissionRequestCommandHandlerTests
 			await RejectPermissionRequestCommandHandler.HandleAsync(
 				command,
 				PermissionRequestRepository,
+				CacheInvalidation,
 				CancellationToken.None);
 
 		// Assert
@@ -142,6 +148,7 @@ public class RejectPermissionRequestCommandHandlerTests
 		await RejectPermissionRequestCommandHandler.HandleAsync(
 			command,
 			PermissionRequestRepository,
+			CacheInvalidation,
 			cancellationToken);
 
 		// Assert - Verify CancellationToken was passed through

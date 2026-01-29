@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using NSubstitute;
 using SeventySix.Identity;
 using SeventySix.Identity.Constants;
+using SeventySix.Shared.Interfaces;
 using SeventySix.Shared.POCOs;
 using SeventySix.TestUtilities.Mocks;
 using Shouldly;
@@ -23,6 +24,7 @@ public class AddUserRoleCommandHandlerTests
 {
 	private readonly UserManager<ApplicationUser> UserManager;
 	private readonly IPermissionRequestRepository PermissionRequestRepository;
+	private readonly ICacheInvalidationService CacheInvalidation;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="AddUserRoleCommandHandlerTests"/> class.
@@ -33,6 +35,8 @@ public class AddUserRoleCommandHandlerTests
 			IdentityMockFactory.CreateUserManager();
 		PermissionRequestRepository =
 			Substitute.For<IPermissionRequestRepository>();
+		CacheInvalidation =
+			Substitute.For<ICacheInvalidationService>();
 	}
 
 	/// <summary>
@@ -69,6 +73,7 @@ public class AddUserRoleCommandHandlerTests
 				command,
 				UserManager,
 				PermissionRequestRepository,
+				CacheInvalidation,
 				CancellationToken.None);
 
 		// Assert
@@ -106,6 +111,7 @@ public class AddUserRoleCommandHandlerTests
 					command,
 					UserManager,
 					PermissionRequestRepository,
+					CacheInvalidation,
 					CancellationToken.None));
 
 		exception.Message.ShouldContain("Invalid role");
@@ -136,6 +142,7 @@ public class AddUserRoleCommandHandlerTests
 					command,
 					UserManager,
 					PermissionRequestRepository,
+					CacheInvalidation,
 					CancellationToken.None));
 
 		exception.EntityId.ShouldBe(NonExistentUserId);
@@ -171,6 +178,7 @@ public class AddUserRoleCommandHandlerTests
 				command,
 				UserManager,
 				PermissionRequestRepository,
+				CacheInvalidation,
 				CancellationToken.None);
 
 		// Assert
@@ -225,6 +233,7 @@ public class AddUserRoleCommandHandlerTests
 				command,
 				UserManager,
 				PermissionRequestRepository,
+				CacheInvalidation,
 				CancellationToken.None);
 
 		// Assert

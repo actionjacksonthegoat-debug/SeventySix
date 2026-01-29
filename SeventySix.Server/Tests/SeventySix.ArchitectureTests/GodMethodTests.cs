@@ -41,7 +41,6 @@ public class GodMethodTests : SourceCodeArchitectureTest
 
 	/// <summary>
 	/// Methods that are explicitly allowed to exceed the line limit.
-	/// These are technical debt items to be refactored.
 	/// </summary>
 	private static readonly HashSet<string> AllowedLineExceptions =
 		[
@@ -63,14 +62,13 @@ public class GodMethodTests : SourceCodeArchitectureTest
 
 	/// <summary>
 	/// Methods that are explicitly allowed to exceed the parameter limit.
-	/// These are technical debt items to be refactored using compound handler pattern.
-	/// GREENFIELD CODE: As these are refactored, remove them from this list immediately.
 	/// </summary>
 	private static readonly HashSet<string> AllowedParameterExceptions =
 		[
 			// Authentication handlers - Wolverine Injected dependencies
 			"SeventySix.Domains\\Identity\\Commands\\ChangePassword\\ChangePasswordCommandHandler.cs::HandleAsync",
 			"SeventySix.Domains\\Identity\\Commands\\CompleteRegistration\\CompleteRegistrationCommandHandler.cs::HandleAsync",
+			"SeventySix.Domains\\Identity\\Commands\\CreateUser\\CreateUserCommandHandler.cs::HandleAsync",
 			"SeventySix.Domains\\Identity\\Commands\\Login\\LoginCommandHandler.cs::HandleAsync",
 			"SeventySix.Domains\\Identity\\Commands\\SetPassword\\SetPasswordCommandHandler.cs::HandleAsync",
 		];

@@ -5,8 +5,11 @@
 using Microsoft.AspNetCore.Identity;
 using NSubstitute;
 using SeventySix.Identity;
+using SeventySix.Shared.Constants;
 using SeventySix.TestUtilities.Mocks;
+using SeventySix.TestUtilities.Testing;
 using Shouldly;
+using ZiggyCreatures.Caching.Fusion;
 
 namespace SeventySix.Domains.Tests.Identity.Queries.GetUserByEmail;
 
@@ -19,6 +22,8 @@ namespace SeventySix.Domains.Tests.Identity.Queries.GetUserByEmail;
 public class GetUserByEmailQueryHandlerTests
 {
 	private readonly UserManager<ApplicationUser> UserManager;
+	private readonly IFusionCacheProvider CacheProvider;
+	private readonly IFusionCache IdentityCache;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="GetUserByEmailQueryHandlerTests"/> class.
@@ -27,6 +32,13 @@ public class GetUserByEmailQueryHandlerTests
 	{
 		UserManager =
 			IdentityMockFactory.CreateUserManager();
+		IdentityCache =
+			TestCacheFactory.CreateIdentityCache();
+		CacheProvider =
+			Substitute.For<IFusionCacheProvider>();
+		CacheProvider
+			.GetCache(CacheNames.Identity)
+			.Returns(IdentityCache);
 	}
 
 	/// <summary>
@@ -59,6 +71,7 @@ public class GetUserByEmailQueryHandlerTests
 			await GetUserByEmailQueryHandler.HandleAsync(
 				query,
 				UserManager,
+				CacheProvider,
 				CancellationToken.None);
 
 		// Assert
@@ -88,6 +101,7 @@ public class GetUserByEmailQueryHandlerTests
 			await GetUserByEmailQueryHandler.HandleAsync(
 				query,
 				UserManager,
+				CacheProvider,
 				CancellationToken.None);
 
 		// Assert
@@ -95,10 +109,10 @@ public class GetUserByEmailQueryHandlerTests
 	}
 
 	/// <summary>
-	/// Tests that UserManager method is called with correct email.
+	/// Tests that UserManager method is called with correct email on cache miss.
 	/// </summary>
 	[Fact]
-	public async Task HandleAsync_CallsUserManagerWithCorrectEmailAsync()
+	public async Task HandleAsync_CacheMiss_CallsUserManagerAsync()
 	{
 		// Arrange
 		const string Email = "test@example.com";
@@ -114,6 +128,7 @@ public class GetUserByEmailQueryHandlerTests
 		await GetUserByEmailQueryHandler.HandleAsync(
 			query,
 			UserManager,
+			CacheProvider,
 			CancellationToken.None);
 
 		// Assert

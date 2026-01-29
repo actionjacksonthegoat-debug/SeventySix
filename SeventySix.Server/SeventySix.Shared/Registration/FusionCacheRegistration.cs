@@ -81,6 +81,8 @@ public static class FusionCacheRegistration
 							cacheSettings.Valkey.ConnectTimeoutMs,
 						SyncTimeout =
 							cacheSettings.Valkey.SyncTimeoutMs,
+						AsyncTimeout =
+							cacheSettings.Valkey.AsyncTimeoutMs,
 						ConnectRetry =
 							cacheSettings.Valkey.ConnectRetry,
 						KeepAlive =
@@ -88,6 +90,8 @@ public static class FusionCacheRegistration
 						ReconnectRetryPolicy =
 							new ExponentialRetry(cacheSettings.Valkey.RetryBaseMs),
 						AllowAdmin = false,
+						Ssl =
+							cacheSettings.Valkey.UseSsl,
 					};
 
 				// Parse connection string (host:port or host:port,password=xxx)

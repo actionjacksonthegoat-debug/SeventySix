@@ -5,8 +5,11 @@
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using SeventySix.ApiTracking;
+using SeventySix.Shared.Constants;
 using SeventySix.TestUtilities.Constants;
+using SeventySix.TestUtilities.Testing;
 using Shouldly;
+using ZiggyCreatures.Caching.Fusion;
 
 namespace SeventySix.Domains.Tests.ApiTracking.Queries.GetApiRequestStatistics;
 
@@ -21,6 +24,8 @@ public class GetApiRequestStatisticsQueryHandlerTests
 {
 	private readonly IThirdPartyApiRequestRepository Repository;
 	private readonly FakeTimeProvider TimeProvider;
+	private readonly IFusionCacheProvider CacheProvider;
+	private readonly IFusionCache ApiTrackingCache;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="GetApiRequestStatisticsQueryHandlerTests"/> class.
@@ -31,6 +36,13 @@ public class GetApiRequestStatisticsQueryHandlerTests
 			Substitute.For<IThirdPartyApiRequestRepository>();
 		TimeProvider =
 			TestDates.CreateHistoricalTimeProvider();
+		ApiTrackingCache =
+			TestCacheFactory.CreateApiTrackingCache();
+		CacheProvider =
+			Substitute.For<IFusionCacheProvider>();
+		CacheProvider
+			.GetCache(CacheNames.ApiTracking)
+			.Returns(ApiTrackingCache);
 	}
 
 	/// <summary>
@@ -81,6 +93,7 @@ public class GetApiRequestStatisticsQueryHandlerTests
 			await GetApiRequestStatisticsQueryHandler.HandleAsync(
 				query,
 				Repository,
+				CacheProvider,
 				TimeProvider,
 				CancellationToken.None);
 
@@ -123,6 +136,7 @@ public class GetApiRequestStatisticsQueryHandlerTests
 			await GetApiRequestStatisticsQueryHandler.HandleAsync(
 				query,
 				Repository,
+				CacheProvider,
 				TimeProvider,
 				CancellationToken.None);
 

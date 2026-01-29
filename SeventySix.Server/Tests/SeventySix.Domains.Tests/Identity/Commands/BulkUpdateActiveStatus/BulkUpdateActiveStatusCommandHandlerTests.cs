@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using SeventySix.Identity;
+using SeventySix.Shared.Interfaces;
 using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.Mocks;
 using Shouldly;
@@ -21,6 +22,7 @@ namespace SeventySix.Domains.Tests.Identity.Commands.BulkUpdateActiveStatus;
 public class BulkUpdateActiveStatusCommandHandlerTests
 {
 	private readonly UserManager<ApplicationUser> UserManager;
+	private readonly ICacheInvalidationService CacheInvalidation;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="BulkUpdateActiveStatusCommandHandlerTests"/> class.
@@ -29,6 +31,8 @@ public class BulkUpdateActiveStatusCommandHandlerTests
 	{
 		UserManager =
 			IdentityMockFactory.CreateUserManager();
+		CacheInvalidation =
+			Substitute.For<ICacheInvalidationService>();
 	}
 
 	/// <summary>
@@ -64,6 +68,7 @@ public class BulkUpdateActiveStatusCommandHandlerTests
 			await BulkUpdateActiveStatusCommandHandler.HandleAsync(
 				command,
 				UserManager,
+				CacheInvalidation,
 				CancellationToken.None);
 
 		// Assert
@@ -103,6 +108,7 @@ public class BulkUpdateActiveStatusCommandHandlerTests
 			await BulkUpdateActiveStatusCommandHandler.HandleAsync(
 				command,
 				UserManager,
+				CacheInvalidation,
 				CancellationToken.None);
 
 		// Assert
@@ -142,6 +148,7 @@ public class BulkUpdateActiveStatusCommandHandlerTests
 			await BulkUpdateActiveStatusCommandHandler.HandleAsync(
 				command,
 				UserManager,
+				CacheInvalidation,
 				CancellationToken.None);
 
 		// Assert
@@ -181,6 +188,7 @@ public class BulkUpdateActiveStatusCommandHandlerTests
 			await BulkUpdateActiveStatusCommandHandler.HandleAsync(
 				command,
 				UserManager,
+				CacheInvalidation,
 				CancellationToken.None);
 
 		// Assert
@@ -205,6 +213,7 @@ public class BulkUpdateActiveStatusCommandHandlerTests
 			await BulkUpdateActiveStatusCommandHandler.HandleAsync(
 				command,
 				UserManager,
+				CacheInvalidation,
 				CancellationToken.None);
 
 		// Assert

@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SeventySix.ElectronicNotifications.Emails;
 using SeventySix.Shared.Extensions;
+using SeventySix.Shared.Interfaces;
 using Wolverine;
 
 namespace SeventySix.Identity;
@@ -27,6 +28,9 @@ public static class CreateUserCommandHandler
 	/// </param>
 	/// <param name="userManager">
 	/// Identity <see cref="UserManager{TUser}"/> for user operations.
+	/// </param>
+	/// <param name="cacheInvalidation">
+	/// Cache invalidation service for clearing user cache.
 	/// </param>
 	/// <param name="timeProvider">
 	/// Time provider for current time values.
@@ -49,6 +53,7 @@ public static class CreateUserCommandHandler
 		CreateUserRequest request,
 		IMessageBus messageBus,
 		UserManager<ApplicationUser> userManager,
+		ICacheInvalidationService cacheInvalidation,
 		TimeProvider timeProvider,
 		ILogger logger,
 		CancellationToken cancellationToken)
@@ -143,6 +148,9 @@ public static class CreateUserCommandHandler
 				createdUser.Email,
 				createdUser.Id);
 		}
+
+		// Invalidate all users list cache since a new user was created
+		await cacheInvalidation.InvalidateAllUsersCacheAsync();
 
 		return createdUser;
 	}

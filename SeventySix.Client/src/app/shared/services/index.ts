@@ -13,6 +13,7 @@ export * from "./selective-preloading.strategy";
 export * from "./altcha.service";
 export * from "./auth.service";
 export * from "./base-filter.service";
+export * from "./cache-coordination.service";
 export * from "./base-mutation.service";
 export * from "./base-query-client.service";
 export * from "./base-query.service";

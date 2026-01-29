@@ -4,6 +4,7 @@
 
 using Microsoft.AspNetCore.Identity;
 using SeventySix.Identity.Constants;
+using SeventySix.Shared.Interfaces;
 using SeventySix.Shared.POCOs;
 
 namespace SeventySix.Identity;
@@ -25,6 +26,9 @@ public static class AddUserRoleCommandHandler
 	/// <param name="permissionRequestRepository">
 	/// Repository for permission request cleanup.
 	/// </param>
+	/// <param name="cacheInvalidation">
+	/// Cache invalidation service for clearing role cache.
+	/// </param>
 	/// <param name="cancellationToken">
 	/// Cancellation token.
 	/// </param>
@@ -41,6 +45,7 @@ public static class AddUserRoleCommandHandler
 		AddUserRoleCommand command,
 		UserManager<ApplicationUser> userManager,
 		IPermissionRequestRepository permissionRequestRepository,
+		ICacheInvalidationService cacheInvalidation,
 		CancellationToken cancellationToken)
 	{
 		if (!RoleConstants.ValidRoleNames.Contains(command.Role))
@@ -86,6 +91,10 @@ public static class AddUserRoleCommandHandler
 			command.UserId,
 			command.Role,
 			cancellationToken);
+
+		// Invalidate role caches and user profile (roles affect profile display)
+		await cacheInvalidation.InvalidateUserRolesCacheAsync(command.UserId);
+		await cacheInvalidation.InvalidateUserProfileCacheAsync(command.UserId);
 
 		return Result.Success();
 	}

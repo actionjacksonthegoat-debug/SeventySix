@@ -6,6 +6,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
@@ -40,6 +41,7 @@ public class UsersControllerTests
 {
 	private readonly IMessageBus MessageBus;
 	private readonly ILogger<UsersController> Logger;
+	private readonly IOutputCacheStore OutputCacheStore;
 	private readonly UsersController Controller;
 
 	public UsersControllerTests()
@@ -47,8 +49,13 @@ public class UsersControllerTests
 		MessageBus = Substitute.For<IMessageBus>();
 		Logger =
 			Substitute.For<ILogger<UsersController>>();
+		OutputCacheStore =
+			Substitute.For<IOutputCacheStore>();
 		Controller =
-			new UsersController(MessageBus, Logger);
+			new UsersController(
+				MessageBus,
+				Logger,
+				OutputCacheStore);
 	}
 
 	#region Constructor Tests

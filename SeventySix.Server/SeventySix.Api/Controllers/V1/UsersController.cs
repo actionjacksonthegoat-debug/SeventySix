@@ -48,7 +48,8 @@ namespace SeventySix.Api.Controllers;
 [Route(ApiVersionConfig.VersionedRoutePrefix + "/users")]
 public class UsersController(
 	IMessageBus messageBus,
-	ILogger<UsersController> logger) : ControllerBase
+	ILogger<UsersController> logger,
+	IOutputCacheStore outputCacheStore) : ControllerBase
 {
 	#region Current User (/me) Endpoints
 
@@ -220,6 +221,10 @@ public class UsersController(
 					request,
 					cancellationToken);
 
+			await outputCacheStore.EvictByTagAsync(
+				CachePolicyConstants.Users,
+				cancellationToken);
+
 			return CreatedAtRoute(
 				"GetUserById",
 				new { id = user.Id },
@@ -247,6 +252,10 @@ public class UsersController(
 			logger.LogWarning(
 				"User {UserId} created but email rate limited",
 				user.Id);
+
+			await outputCacheStore.EvictByTagAsync(
+				CachePolicyConstants.Users,
+				cancellationToken);
 
 			return AcceptedAtRoute(
 				"GetUserById",
@@ -303,6 +312,10 @@ public class UsersController(
 				request,
 				cancellationToken);
 
+		await outputCacheStore.EvictByTagAsync(
+			CachePolicyConstants.Users,
+			cancellationToken);
+
 		return Ok(user);
 	}
 
@@ -340,7 +353,16 @@ public class UsersController(
 					username),
 				cancellationToken);
 
-		return result.IsSuccess ? NoContent() : NotFound();
+		if (!result.IsSuccess)
+		{
+			return NotFound();
+		}
+
+		await outputCacheStore.EvictByTagAsync(
+			CachePolicyConstants.Users,
+			cancellationToken);
+
+		return NoContent();
 	}
 
 	/// <summary>
@@ -372,7 +394,16 @@ public class UsersController(
 				new RestoreUserCommand(id),
 				cancellationToken);
 
-		return result.IsSuccess ? NoContent() : NotFound();
+		if (!result.IsSuccess)
+		{
+			return NotFound();
+		}
+
+		await outputCacheStore.EvictByTagAsync(
+			CachePolicyConstants.Users,
+			cancellationToken);
+
+		return NoContent();
 	}
 
 	/// <summary>
@@ -519,6 +550,13 @@ public class UsersController(
 					username),
 				cancellationToken);
 
+		if (count > 0)
+		{
+			await outputCacheStore.EvictByTagAsync(
+				CachePolicyConstants.Users,
+				cancellationToken);
+		}
+
 		return Ok(count);
 	}
 
@@ -556,6 +594,13 @@ public class UsersController(
 					false,
 					username),
 				cancellationToken);
+
+		if (count > 0)
+		{
+			await outputCacheStore.EvictByTagAsync(
+				CachePolicyConstants.Users,
+				cancellationToken);
+		}
 
 		return Ok(count);
 	}

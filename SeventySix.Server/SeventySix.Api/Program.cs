@@ -159,6 +159,9 @@ builder.Services.AddElectronicNotificationsDomain(
 	connectionString,
 	builder.Configuration);
 
+// Register cache invalidation service (cross-domain)
+builder.Services.AddCacheServices();
+
 // Register all background jobs (single registration point)
 builder.Services.AddBackgroundJobs(builder.Configuration);
 

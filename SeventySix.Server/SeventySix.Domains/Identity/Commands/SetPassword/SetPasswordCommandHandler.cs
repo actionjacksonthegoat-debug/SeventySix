@@ -4,6 +4,7 @@
 
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
+using SeventySix.Shared.Interfaces;
 using Wolverine;
 
 namespace SeventySix.Identity;
@@ -28,6 +29,9 @@ public static class SetPasswordCommandHandler
 	/// <param name="authenticationService">
 	/// Service to generate authentication results.
 	/// </param>
+	/// <param name="cacheInvalidation">
+	/// Cache invalidation service for clearing user cache.
+	/// </param>
 	/// <param name="breachCheck">
 	/// Compound dependency for breach checking (service + settings).
 	/// </param>
@@ -43,13 +47,18 @@ public static class SetPasswordCommandHandler
 	/// <returns>
 	/// An <see cref="AuthResult"/> indicating success or failure.
 	/// </returns>
-	/// <exception cref="ArgumentException">Thrown when validation fails.</exception>
-	/// <exception cref="InvalidOperationException">Thrown when user not found or inactive.</exception>
+	/// <exception cref="ArgumentException">
+	/// Thrown when validation fails.
+	/// </exception>
+	/// <exception cref="InvalidOperationException">
+	/// Thrown when user not found or inactive.
+	/// </exception>
 	public static async Task<AuthResult> HandleAsync(
 		SetPasswordCommand command,
 		UserManager<ApplicationUser> userManager,
 		ITokenRepository tokenRepository,
 		AuthenticationService authenticationService,
+		ICacheInvalidationService cacheInvalidation,
 		BreachCheckDependencies breachCheck,
 		TimeProvider timeProvider,
 		ILogger<SetPasswordCommand> logger,
@@ -150,6 +159,9 @@ public static class SetPasswordCommandHandler
 			user.RequiresPasswordChange = false;
 			await userManager.UpdateAsync(user);
 		}
+
+		// Invalidate user cache (profile contains hasPassword flag)
+		await cacheInvalidation.InvalidateUserPasswordCacheAsync(user.Id);
 
 		return await authenticationService.GenerateAuthResultAsync(
 			user,

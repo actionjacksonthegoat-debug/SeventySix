@@ -35,6 +35,34 @@ public static class TestCacheFactory
 			duration ?? DefaultDuration);
 
 	/// <summary>
+	/// Creates an in-memory FusionCache instance for the ApiTracking domain.
+	/// </summary>
+	/// <param name="duration">
+	/// Optional cache duration. Defaults to 1 minute.
+	/// </param>
+	/// <returns>
+	/// A memory-only FusionCache instance.
+	/// </returns>
+	public static IFusionCache CreateApiTrackingCache(TimeSpan? duration = null) =>
+		CreateInMemoryCache(
+			CacheNames.ApiTracking,
+			duration ?? DefaultDuration);
+
+	/// <summary>
+	/// Creates an in-memory FusionCache instance for the Logging domain.
+	/// </summary>
+	/// <param name="duration">
+	/// Optional cache duration. Defaults to 1 minute.
+	/// </param>
+	/// <returns>
+	/// A memory-only FusionCache instance.
+	/// </returns>
+	public static IFusionCache CreateLoggingCache(TimeSpan? duration = null) =>
+		CreateInMemoryCache(
+			CacheNames.Logging,
+			duration ?? DefaultDuration);
+
+	/// <summary>
 	/// Creates an in-memory FusionCache instance for the specified cache name.
 	/// </summary>
 	/// <param name="cacheName">

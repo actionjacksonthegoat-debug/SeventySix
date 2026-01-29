@@ -6,8 +6,11 @@ using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using SeventySix.Identity;
 using SeventySix.Identity.Queries.GetAllPermissionRequests;
+using SeventySix.Shared.Constants;
 using SeventySix.TestUtilities.Builders;
+using SeventySix.TestUtilities.Testing;
 using Shouldly;
+using ZiggyCreatures.Caching.Fusion;
 
 namespace SeventySix.Domains.Tests.Identity.Queries.GetAllPermissionRequests;
 
@@ -23,6 +26,8 @@ public class GetAllPermissionRequestsQueryHandlerTests
 		new(TestTimeProviderBuilder.DefaultTime);
 
 	private readonly IPermissionRequestRepository Repository;
+	private readonly IFusionCacheProvider CacheProvider;
+	private readonly IFusionCache IdentityCache;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="GetAllPermissionRequestsQueryHandlerTests"/> class.
@@ -31,6 +36,13 @@ public class GetAllPermissionRequestsQueryHandlerTests
 	{
 		Repository =
 			Substitute.For<IPermissionRequestRepository>();
+		CacheProvider =
+			Substitute.For<IFusionCacheProvider>();
+		IdentityCache =
+			TestCacheFactory.CreateIdentityCache();
+		CacheProvider
+			.GetCache(CacheNames.Identity)
+			.Returns(IdentityCache);
 	}
 
 	/// <summary>
@@ -52,6 +64,7 @@ public class GetAllPermissionRequestsQueryHandlerTests
 			await GetAllPermissionRequestsQueryHandler.HandleAsync(
 				query,
 				Repository,
+				CacheProvider,
 				CancellationToken.None);
 
 		// Assert
@@ -83,6 +96,7 @@ public class GetAllPermissionRequestsQueryHandlerTests
 			await GetAllPermissionRequestsQueryHandler.HandleAsync(
 				query,
 				Repository,
+				CacheProvider,
 				CancellationToken.None);
 
 		// Assert
@@ -113,6 +127,7 @@ public class GetAllPermissionRequestsQueryHandlerTests
 		await GetAllPermissionRequestsQueryHandler.HandleAsync(
 			query,
 			Repository,
+			CacheProvider,
 			cancellationTokenSource.Token);
 
 		// Assert

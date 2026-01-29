@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using SeventySix.Identity;
+using SeventySix.Shared.Interfaces;
 using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.Mocks;
 using Shouldly;
@@ -25,6 +26,7 @@ public class UpdateUserCommandHandlerTests
 {
 	private readonly UserManager<ApplicationUser> UserManager;
 	private readonly IMessageBus MessageBus;
+	private readonly ICacheInvalidationService CacheInvalidation;
 	private readonly ILogger Logger;
 
 	/// <summary>
@@ -36,6 +38,8 @@ public class UpdateUserCommandHandlerTests
 			IdentityMockFactory.CreateUserManager();
 		MessageBus =
 			Substitute.For<IMessageBus>();
+		CacheInvalidation =
+			Substitute.For<ICacheInvalidationService>();
 		Logger =
 			Substitute.For<ILogger>();
 	}
@@ -78,6 +82,7 @@ public class UpdateUserCommandHandlerTests
 				request,
 				MessageBus,
 				UserManager,
+				CacheInvalidation,
 				Logger,
 				CancellationToken.None);
 
@@ -114,6 +119,7 @@ public class UpdateUserCommandHandlerTests
 				request,
 				MessageBus,
 				UserManager,
+				CacheInvalidation,
 				Logger,
 				CancellationToken.None));
 	}
@@ -157,6 +163,7 @@ public class UpdateUserCommandHandlerTests
 				request,
 				MessageBus,
 				UserManager,
+				CacheInvalidation,
 				Logger,
 				CancellationToken.None));
 	}
@@ -200,6 +207,7 @@ public class UpdateUserCommandHandlerTests
 				request,
 				MessageBus,
 				UserManager,
+				CacheInvalidation,
 				Logger,
 				CancellationToken.None));
 	}
@@ -248,6 +256,7 @@ public class UpdateUserCommandHandlerTests
 					request,
 					MessageBus,
 					UserManager,
+					CacheInvalidation,
 					Logger,
 					CancellationToken.None));
 
@@ -294,6 +303,7 @@ public class UpdateUserCommandHandlerTests
 			request,
 			MessageBus,
 			UserManager,
+			CacheInvalidation,
 			Logger,
 			CancellationToken.None);
 

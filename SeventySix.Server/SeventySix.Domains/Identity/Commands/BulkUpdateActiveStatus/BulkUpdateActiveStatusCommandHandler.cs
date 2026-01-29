@@ -3,6 +3,7 @@
 // </copyright>
 
 using Microsoft.AspNetCore.Identity;
+using SeventySix.Shared.Interfaces;
 
 namespace SeventySix.Identity;
 
@@ -20,6 +21,9 @@ public static class BulkUpdateActiveStatusCommandHandler
 	/// <param name="userManager">
 	/// Identity <see cref="UserManager{TUser}"/> for user operations.
 	/// </param>
+	/// <param name="cacheInvalidation">
+	/// Cache invalidation service for clearing user cache.
+	/// </param>
 	/// <param name="cancellationToken">
 	/// Cancellation token.
 	/// </param>
@@ -29,9 +33,11 @@ public static class BulkUpdateActiveStatusCommandHandler
 	public static async Task<long> HandleAsync(
 		BulkUpdateActiveStatusCommand command,
 		UserManager<ApplicationUser> userManager,
+		ICacheInvalidationService cacheInvalidation,
 		CancellationToken cancellationToken)
 	{
 		long updatedCount = 0;
+		List<long> updatedUserIds = [];
 
 		foreach (long userId in command.UserIds)
 		{
@@ -52,7 +58,14 @@ public static class BulkUpdateActiveStatusCommandHandler
 			if (result.Succeeded)
 			{
 				updatedCount++;
+				updatedUserIds.Add(userId);
 			}
+		}
+
+		// Invalidate cache for all affected users
+		if (updatedUserIds.Count > 0)
+		{
+			await cacheInvalidation.InvalidateBulkUsersCacheAsync(updatedUserIds);
 		}
 
 		return updatedCount;

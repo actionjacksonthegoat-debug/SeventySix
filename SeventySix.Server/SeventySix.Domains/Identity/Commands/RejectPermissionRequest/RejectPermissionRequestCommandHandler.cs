@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using SeventySix.Shared.Interfaces;
 using SeventySix.Shared.POCOs;
 
 namespace SeventySix.Identity.Commands.RejectPermissionRequest;
@@ -20,6 +21,9 @@ public static class RejectPermissionRequestCommandHandler
 	/// <param name="repository">
 	/// The permission request repository.
 	/// </param>
+	/// <param name="cacheInvalidation">
+	/// Cache invalidation service for clearing request cache.
+	/// </param>
 	/// <param name="cancellationToken">
 	/// Cancellation token.
 	/// </param>
@@ -29,6 +33,7 @@ public static class RejectPermissionRequestCommandHandler
 	public static async Task<Result> HandleAsync(
 		RejectPermissionRequestCommand command,
 		IPermissionRequestRepository repository,
+		ICacheInvalidationService cacheInvalidation,
 		CancellationToken cancellationToken)
 	{
 		PermissionRequest? request =
@@ -45,6 +50,9 @@ public static class RejectPermissionRequestCommandHandler
 		await repository.DeleteAsync(
 			command.RequestId,
 			cancellationToken);
+
+		// Invalidate permission requests cache
+		await cacheInvalidation.InvalidatePermissionRequestsCacheAsync();
 
 		return Result.Success();
 	}
