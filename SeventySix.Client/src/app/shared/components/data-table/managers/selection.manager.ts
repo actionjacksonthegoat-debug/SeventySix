@@ -117,9 +117,10 @@ export class DataTableSelectionManager<TRow extends { id: number; }>
 		}
 		else
 		{
-			data.forEach(
-				(row: TRow) =>
-					this.selection.select(row));
+			for (const row of data)
+			{
+				this.selection.select(row);
+			}
 		}
 	}
 

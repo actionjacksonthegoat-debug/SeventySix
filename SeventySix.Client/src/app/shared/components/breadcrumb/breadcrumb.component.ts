@@ -11,6 +11,7 @@ import { MatIconModule } from "@angular/material/icon";
 import { ActivatedRoute, NavigationEnd, Router, UrlSegment, UrlSegmentGroup, UrlTree } from "@angular/router";
 import { RouterLink } from "@angular/router";
 import { BreadcrumbItem } from "@shared/models";
+import { capitalize } from "@shared/utilities";
 import { filter, map, startWith } from "rxjs/operators";
 
 @Component(
@@ -405,11 +406,7 @@ export class BreadcrumbComponent
 		// Convert kebab-case to Title Case
 		return cleaned
 			.split("-")
-			.map(
-				(word) =>
-					word
-						.charAt(0)
-						.toUpperCase() + word.slice(1))
+			.map((word) => capitalize(word))
 			.join(" ");
 	}
 }

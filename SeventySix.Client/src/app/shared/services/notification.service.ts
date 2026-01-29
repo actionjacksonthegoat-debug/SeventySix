@@ -1,3 +1,4 @@
+import { Clipboard } from "@angular/cdk/clipboard";
 import {
 	DestroyRef,
 	inject,
@@ -6,43 +7,13 @@ import {
 	signal,
 	WritableSignal
 } from "@angular/core";
-import { NotificationLevel } from "@shared/constants";
+import {
+	NOTIFICATION_CONFIG,
+	NOTIFICATION_DURATION,
+	NotificationLevel
+} from "@shared/constants";
 import { Notification } from "@shared/models";
-
-/**
- * Notification system configuration.
- * Private to NotificationService - implementation detail.
- *
- * @type {Readonly<{ maxVisible: number; }>}
- * @property {number} maxVisible - Maximum number of concurrently visible notifications.
- */
-const NOTIFICATION_CONFIG: Readonly<{
-	maxVisible: number;
-}> =
-	{
-		maxVisible: 5
-	} as const;
-
-/**
- * Notification duration constants (milliseconds).
- * Private to NotificationService - external code should not need to know about timing.
- *
- * @type {Readonly<{ success: number; error: number; warning: number; info: number; concurrencyError: number; }>}
- */
-const NOTIFICATION_DURATION: Readonly<{
-	success: number;
-	error: number;
-	warning: number;
-	info: number;
-	concurrencyError: number;
-}> =
-	{
-		success: 3000,
-		error: 5000,
-		warning: 7000,
-		info: 5000,
-		concurrencyError: 10000
-	} as const;
+import { LoggerService } from "@shared/services/logger.service";
 
 /**
  * Notification service for displaying user-facing messages.
@@ -63,6 +34,24 @@ export class NotificationService
 	 */
 	private readonly destroyRef: DestroyRef =
 		inject(DestroyRef);
+
+	/**
+	 * Logger service for diagnostic output.
+	 * @type {LoggerService}
+	 * @private
+	 * @readonly
+	 */
+	private readonly logger: LoggerService =
+		inject(LoggerService);
+
+	/**
+	 * Clipboard service for copy operations.
+	 * @type {Clipboard}
+	 * @private
+	 * @readonly
+	 */
+	private readonly clipboard: Clipboard =
+		inject(Clipboard);
 
 	/**
 	 * Current notifications list signal.
@@ -97,8 +86,10 @@ export class NotificationService
 		this.destroyRef.onDestroy(
 			() =>
 			{
-				this.dismissTimers.forEach(
-					(timer) => clearTimeout(timer));
+				for (const timer of this.dismissTimers.values())
+				{
+					clearTimeout(timer);
+				}
 				this.dismissTimers.clear();
 			});
 	}
@@ -313,8 +304,10 @@ export class NotificationService
 	 */
 	clearAll(): void
 	{
-		this.dismissTimers.forEach(
-			(timer) => clearTimeout(timer));
+		for (const timer of this.dismissTimers.values())
+		{
+			clearTimeout(timer);
+		}
 		this.dismissTimers.clear();
 		this.notifications.set([]);
 	}
@@ -349,32 +342,33 @@ export class NotificationService
 	 * Copies notification data to the clipboard and logs to console.
 	 * @param {Notification} notification
 	 * The notification object containing data to copy.
-	 * @returns {Promise<boolean>}
-	 * Promise resolving to true if copy succeeded, false otherwise.
+	 * @returns {boolean}
+	 * True if copy succeeded, false otherwise.
 	 */
-	async copyToClipboard(notification: Notification): Promise<boolean>
+	copyToClipboard(notification: Notification): boolean
 	{
 		if (!notification.copyData)
 		{
 			return false;
 		}
 
-		try
-		{
-			await navigator.clipboard.writeText(notification.copyData);
+		const success: boolean =
+			this.clipboard.copy(notification.copyData);
 
-			// eslint-disable-next-line no-console
-			console.info(
-				"Notification copied to clipboard:",
-				notification.copyData);
-
-			return true;
-		}
-		catch (error)
+		if (success)
 		{
-			console.error("Failed to copy error details to clipboard:", error);
-			return false;
+			this.logger.debug(
+				"Notification copied to clipboard",
+				{ copyData: notification.copyData });
 		}
+		else
+		{
+			this.logger.error(
+				"Failed to copy error details to clipboard",
+				new Error("Clipboard copy failed"));
+		}
+
+		return success;
 	}
 
 	/**

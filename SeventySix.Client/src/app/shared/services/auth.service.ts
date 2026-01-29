@@ -25,7 +25,7 @@ import {
 	LoginRequest,
 	UserProfileDto
 } from "@shared/models";
-import { DateService, StorageService, TokenService } from "@shared/services";
+import { DateService, StorageService, TokenService, WindowService } from "@shared/services";
 import {
 	JwtClaims,
 	OAuthProvider
@@ -93,6 +93,15 @@ export class AuthService
 	 */
 	private readonly tokenService: TokenService =
 		inject(TokenService);
+
+	/**
+	 * Window service for SSR-safe window operations.
+	 * @type {WindowService}
+	 * @private
+	 * @readonly
+	 */
+	private readonly windowService: WindowService =
+		inject(WindowService);
 
 	/**
 	 * Base auth API URL.
@@ -268,8 +277,8 @@ export class AuthService
 			STORAGE_KEYS.AUTH_RETURN_URL,
 			validatedUrl);
 
-		window.location.href =
-			`${this.authUrl}/oauth/${provider}`;
+		this.windowService.navigateTo(
+			`${this.authUrl}/oauth/${provider}`);
 	}
 
 	/**
@@ -538,7 +547,7 @@ export class AuthService
 	private handleOAuthCallback(): boolean
 	{
 		const hash: string =
-			window.location.hash;
+			this.windowService.getHash();
 
 		if (!hash.includes("access_token="))
 		{
@@ -566,10 +575,10 @@ export class AuthService
 				fullName);
 
 			// Clean URL fragment
-			window.history.replaceState(
+			this.windowService.replaceState(
 				null,
 				"",
-				window.location.pathname + window.location.search);
+				this.windowService.getPathname() + this.windowService.getSearch());
 
 			// Navigate to stored return URL
 			const returnUrl: string =

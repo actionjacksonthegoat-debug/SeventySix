@@ -5,8 +5,7 @@ import { DateService } from "@shared/services/date.service";
 /**
  * Default buffer time in seconds before token expiration.
  */
-const DEFAULT_EXPIRY_BUFFER_SECONDS: number =
-	60;
+const DEFAULT_EXPIRY_BUFFER_SECONDS: number = 60;
 
 /**
  * Service for parsing and validating JWT tokens.
@@ -60,8 +59,10 @@ export class TokenService
 						.split("")
 						.map(
 							(character: string): string =>
-								"%" + ("00" + character.charCodeAt(0)
-									.toString(16)).slice(-2))
+								"%" + ("00" + character
+									.charCodeAt(0)
+									.toString(16))
+									.slice(-2))
 						.join(""));
 
 			return JSON.parse(jsonPayload) as JwtClaims;

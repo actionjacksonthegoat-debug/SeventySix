@@ -20,7 +20,7 @@ export const MFA_ERROR_CODE: Readonly<{
 	NO_BACKUP_CODES_AVAILABLE: "NO_BACKUP_CODES_AVAILABLE";
 }> =
 	{
-		/** Invalid MFA verification code. */
+	/** Invalid MFA verification code. */
 		INVALID_CODE: "MFA_INVALID_CODE",
 		/** Invalid TOTP verification code. */
 		TOTP_INVALID_CODE: "TOTP_INVALID_CODE",
@@ -47,5 +47,4 @@ export const MFA_ERROR_CODE: Readonly<{
 /**
  * MFA error code type for type-safe comparisons.
  */
-export type MfaErrorCode =
-	typeof MFA_ERROR_CODE[keyof typeof MFA_ERROR_CODE];
+export type MfaErrorCode = typeof MFA_ERROR_CODE[keyof typeof MFA_ERROR_CODE];

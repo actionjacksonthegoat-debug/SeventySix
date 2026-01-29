@@ -161,8 +161,11 @@ export function createMockDialog(): MockDialog
 	};
 }
 
-/** Mock MatDialogRef interface for testing. */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+/**
+ * Mock MatDialogRef interface for testing.
+ * @template T - The type of data passed to the dialog (unused in mock but required for type compatibility).
+ */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- T parameter is documented for API compatibility with real MatDialogRef<T>
 export interface MockDialogRef<T>
 {
 	close: Mock;

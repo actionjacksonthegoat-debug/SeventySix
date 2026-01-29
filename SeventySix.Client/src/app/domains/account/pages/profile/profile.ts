@@ -227,16 +227,16 @@ export class ProfilePage
 	/**
 	 * Populate the reactive form from the given profile DTO and mark it pristine.
 	 *
-	 * @param {UserProfileDto} UserProfileDto
+	 * @param {UserProfileDto} userProfile
 	 * Source profile data used to patch the form fields.
 	 * @returns {void}
 	 */
-	private populateForm(UserProfileDto: UserProfileDto): void
+	private populateForm(userProfile: UserProfileDto): void
 	{
 		this.profileForm.patchValue(
 			{
-				email: UserProfileDto.email,
-				fullName: UserProfileDto.fullName || ""
+				email: userProfile.email,
+				fullName: userProfile.fullName ?? ""
 			});
 		this.profileForm.markAsPristine();
 	}

@@ -37,9 +37,10 @@ export function extractValidationErrors(
 	{
 		if (Array.isArray(messages))
 		{
-			messages.forEach(
-				(message: string) =>
-					errors.push(`${field}: ${message}`));
+			for (const message of messages)
+			{
+				errors.push(`${field}: ${message}`);
+			}
 		}
 	}
 
@@ -184,19 +185,19 @@ export function convertToAppError(
 	// Not found errors
 	if (error.status === HTTP_STATUS.NOT_FOUND)
 	{
-		return new NotFoundError(error.error?.title || "Resource not found");
+		return new NotFoundError(error.error?.title ?? "Resource not found");
 	}
 
 	// Unauthorized errors
 	if (error.status === HTTP_STATUS.UNAUTHORIZED || error.status === HTTP_STATUS.FORBIDDEN)
 	{
 		return new UnauthorizedError(
-			error.error?.title || "Unauthorized access");
+			error.error?.title ?? "Unauthorized access");
 	}
 
 	// Generic HTTP errors
 	return new HttpError(
-		error.error?.title || error.message || "HTTP request failed",
+		error.error?.title ?? error.message ?? "HTTP request failed",
 		error.status,
 		url,
 		method);

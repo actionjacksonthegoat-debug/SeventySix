@@ -104,4 +104,49 @@ export class WindowService
 	{
 		window.scrollTo(0, 0);
 	}
+
+	/**
+	 * Gets the hash portion of the current URL.
+	 *
+	 * @returns
+	 * The hash string including the '#' character.
+	 */
+	getHash(): string
+	{
+		return window.location.hash;
+	}
+
+	/**
+	 * Gets the search/query portion of the current URL.
+	 *
+	 * @returns
+	 * The search string including the '?' character.
+	 */
+	getSearch(): string
+	{
+		return window.location.search;
+	}
+
+	/**
+	 * Replaces the current history state without navigation.
+	 *
+	 * @param data
+	 * State object to associate with the new history entry.
+	 *
+	 * @param unused
+	 * Unused parameter (required by History API).
+	 *
+	 * @param url
+	 * The new URL to display.
+	 */
+	replaceState(
+		data: unknown,
+		unused: string,
+		url: string): void
+	{
+		window.history.replaceState(
+			data,
+			unused,
+			url);
+	}
 }

@@ -353,14 +353,14 @@ export class ErrorQueueService
 		const parts: string[] =
 			[
 				error.message,
-				error.exceptionMessage || "",
-				error.statusCode?.toString() || "",
-				error.requestUrl || ""
+				error.exceptionMessage ?? "",
+				error.statusCode?.toString() ?? "",
+				error.requestUrl ?? ""
 			];
 
 		// Include first 100 chars of stack trace for uniqueness
 		const stackPreview: string =
-			error.stackTrace?.substring(0, 100) || "";
+			error.stackTrace?.substring(0, 100) ?? "";
 		return `${parts.join("|")}|${stackPreview}`;
 	}
 

@@ -14,7 +14,8 @@ export const HOME_ROUTES: Routes =
 			path: "",
 			loadComponent: () =>
 				import("./pages/home/home.component").then(
-					(m) => m.HomeComponent),
-			title: "SeventySix - Home"
+					(module) => module.HomeComponent),
+			title: "SeventySix - Home",
+			data: { breadcrumb: "Home" }
 		}
 	];

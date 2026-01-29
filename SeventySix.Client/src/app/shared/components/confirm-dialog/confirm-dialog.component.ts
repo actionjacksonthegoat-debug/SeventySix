@@ -27,16 +27,16 @@ import { ConfirmDialogData } from "@shared/models";
 		</mat-dialog-content>
 		<mat-dialog-actions align="end">
 			<button mat-button type="button" (click)="onCancel()">
-				{{ data.cancelText || "Cancel" }}
+				{{ data.cancelText ?? "Cancel" }}
 			</button>
 			<button
 				mat-raised-button
 				type="button"
-				[color]="data.confirmColor || 'primary'"
+				[color]="data.confirmColor ?? 'primary'"
 				(click)="onConfirm()"
 				cdkFocusInitial
 			>
-				{{ data.confirmText || "Confirm" }}
+				{{ data.confirmText ?? "Confirm" }}
 			</button>
 		</mat-dialog-actions>
 	`,

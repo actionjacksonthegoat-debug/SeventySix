@@ -1,14 +1,10 @@
-import { inject } from "@angular/core";
+import { BaseQueryClientService } from "@shared/services/base-query-client.service";
 import {
 	createMutation as createMutationFactory,
 	createOptimisticMutation as createOptimisticMutationFactory,
 	OptimisticMutationConfig
 } from "@shared/utilities/mutation-factory.utility";
-import { getQueryConfig } from "@shared/utilities/query-config.utility";
-import {
-	CreateMutationResult,
-	QueryClient
-} from "@tanstack/angular-query-experimental";
+import { CreateMutationResult } from "@tanstack/angular-query-experimental";
 import { Observable } from "rxjs";
 
 // Re-export for backward compatibility with existing imports
@@ -19,46 +15,14 @@ export type { OptimisticMutationConfig } from "@shared/utilities/mutation-factor
  * Use when service needs createMutation() but doesn't manage paginated filters.
  * For services needing both mutations AND filter state, use BaseQueryService instead.
  */
-export abstract class BaseMutationService
+export abstract class BaseMutationService extends BaseQueryClientService
 {
-	/**
-	 * Query client for cache invalidation (DI).
-	 * @type {QueryClient}
-	 * @protected
-	 * @readonly
-	 */
-	protected readonly queryClient: QueryClient =
-		inject(QueryClient);
-
-	/**
-	 * Query key prefix for cache operations (must be overridden by subclasses).
-	 * @type {string}
-	 * @protected
-	 * @abstract
-	 */
-	protected abstract readonly queryKeyPrefix: string;
-
-	/**
-	 * Query configuration (staleTime, gcTime, etc.).
-	 * @type {ReturnType<typeof getQueryConfig>}
-	 * @protected
-	 */
-	protected get queryConfig(): ReturnType<typeof getQueryConfig>
-	{
-		return getQueryConfig(this.queryKeyPrefix);
-	}
-
-	/**
-	 * Invalidate all queries for this entity type.
-	 * @returns {void}
-	 */
-	protected invalidateAll(): void
-	{
-		this.queryClient.invalidateQueries(
-			{
-				queryKey: [this.queryKeyPrefix]
-			});
-	}
+	// Inherits from BaseQueryClientService:
+	// - queryClient: QueryClient
+	// - abstract queryKeyPrefix: string
+	// - queryConfig getter
+	// - invalidateAll()
+	// - invalidateSingle(entityId)
 
 	/**
 	 * Creates a mutation with automatic query invalidation (DRY factory pattern).

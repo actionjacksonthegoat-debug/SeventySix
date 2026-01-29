@@ -12,6 +12,7 @@ import {
 } from "@angular/common/http";
 import { inject } from "@angular/core";
 import {
+	AUTH_PUBLIC_PATHS,
 	HTTP_BEARER_PREFIX,
 	HTTP_HEADER_AUTHORIZATION
 } from "@shared/constants";
@@ -77,19 +78,14 @@ export const authInterceptor: HttpInterceptorFn =
 /**
  * Checks if the URL is a public auth endpoint that shouldn't have auth header.
  * change-password is NOT public - it requires authentication.
+ * @param {string} url
+ * The request URL to check.
+ * @returns {boolean}
+ * True if the URL is a public auth endpoint.
  */
 function isPublicAuthEndpoint(url: string): boolean
 {
-	const publicAuthPaths: string[] =
-		[
-			"/auth/login",
-			"/auth/refresh",
-			"/auth/logout",
-			"/auth/oauth/github",
-			"/auth/oauth/github/callback"
-		];
-
-	return publicAuthPaths.some(
+	return AUTH_PUBLIC_PATHS.some(
 		(path: string) => url.includes(path));
 }
 

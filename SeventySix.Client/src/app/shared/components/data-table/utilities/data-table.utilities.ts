@@ -177,16 +177,13 @@ export class DataTableUtilities
 			const visibility: Map<string, boolean> =
 				new Map<string, boolean>();
 
-			Object
-				.entries(preferences)
-				.forEach(
-					([key, value]) =>
-					{
-						if (typeof value === "boolean")
-						{
-							visibility.set(key, value);
-						}
-					});
+			for (const [columnKey, isVisible] of Object.entries(preferences))
+			{
+				if (typeof isVisible === "boolean")
+				{
+					visibility.set(columnKey, isVisible);
+				}
+			}
 
 			return visibility;
 		}
@@ -206,11 +203,10 @@ export class DataTableUtilities
 	static serializeColumnPreferences(visibility: Map<string, boolean>): string
 	{
 		const preferences: Record<string, boolean> = {};
-		visibility.forEach(
-			(value, key) =>
-			{
-				preferences[key] = value;
-			});
+		for (const [columnKey, isVisible] of visibility.entries())
+		{
+			preferences[columnKey] = isVisible;
+		}
 		return JSON.stringify(preferences);
 	}
 

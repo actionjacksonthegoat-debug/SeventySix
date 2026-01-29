@@ -200,14 +200,11 @@ export class ApiService
 	 */
 	addHeaders(headers: Record<string, string>): void
 	{
-		Object
-			.entries(headers)
-			.forEach(
-				([key, value]) =>
-				{
-					this.defaultHeaders =
-						this.defaultHeaders.set(key, value);
-				});
+		for (const [headerKey, headerValue] of Object.entries(headers))
+		{
+			this.defaultHeaders =
+				this.defaultHeaders.set(headerKey, headerValue);
+		}
 	}
 
 	/**

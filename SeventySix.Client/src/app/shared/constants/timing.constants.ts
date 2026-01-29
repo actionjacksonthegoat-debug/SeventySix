@@ -52,7 +52,7 @@ export const MILLISECONDS: Readonly<{
 	PER_WEEK: 604_800_000;
 }> =
 	{
-		/** Milliseconds in one second (1,000). */
+	/** Milliseconds in one second (1,000). */
 		PER_SECOND: 1_000,
 		/** Milliseconds in one minute (60,000). */
 		PER_MINUTE: 60_000,

@@ -288,14 +288,14 @@ export class ErrorHandlerService implements ErrorHandler
 
 		if (error instanceof NotFoundError)
 		{
-			return error.message || "The requested resource was not found.";
+			return error.message ?? "The requested resource was not found.";
 		}
 
 		if (error instanceof UnauthorizedError)
 		{
 			return (
 				error.message
-					|| "You are not authorized to perform this action.");
+					?? "You are not authorized to perform this action.");
 		}
 
 		if (error instanceof NetworkError)
@@ -326,12 +326,12 @@ export class ErrorHandlerService implements ErrorHandler
 			{
 				0: "Unable to connect to the server. Check your connection.",
 				400: error.error?.title
-					|| "Invalid request. Please check your input.",
+					?? "Invalid request. Please check your input.",
 				401: "Your session has expired. Please log in again.",
 				403: "You do not have permission to perform this action.",
-				404: error.error?.title || "The requested resource was not found.",
+				404: error.error?.title ?? "The requested resource was not found.",
 				422: error.error?.title
-					|| "Validation failed. Please check your input.",
+					?? "Validation failed. Please check your input.",
 				429: "Too many requests. Please try again later.",
 				500: "Server error. Please try again later.",
 				502: "Server error. Please try again later.",

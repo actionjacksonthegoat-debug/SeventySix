@@ -97,7 +97,7 @@ export class ApiStatisticsTableComponent
 			{
 				const queryError: Error | null =
 					this.apiDataQuery.error();
-				return queryError ? queryError.message || "Failed to load API data" : null;
+				return queryError ? queryError.message ?? "Failed to load API data" : null;
 			});
 
 	/**

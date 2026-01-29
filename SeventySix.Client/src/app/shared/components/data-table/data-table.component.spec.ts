@@ -636,7 +636,7 @@ describe("DataTableComponent",
 				function getHeightStyle(element: HTMLElement): string
 				{
 					const directStyle: string =
-						element.style.height || element.style.minHeight || "";
+						element.style.height ?? element.style.minHeight ?? "";
 					if (directStyle)
 					{
 						return directStyle;

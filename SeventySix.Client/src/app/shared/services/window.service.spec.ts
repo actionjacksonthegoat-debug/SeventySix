@@ -2,8 +2,8 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-import { TestBed } from "@angular/core/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
+import { TestBed } from "@angular/core/testing";
 import { WindowService } from "./window.service";
 
 describe("WindowService",
@@ -16,8 +16,7 @@ describe("WindowService",
 			{
 				TestBed.configureTestingModule(
 					{
-						providers:
-						[
+						providers: [
 							provideZonelessChangeDetection(),
 							WindowService
 						]
@@ -62,8 +61,7 @@ describe("WindowService",
 				it("should set window.location.href to the provided URL",
 					() =>
 					{
-						const testUrl: string =
-							"https://example.com";
+						const testUrl: string = "https://example.com";
 						Object.defineProperty(
 							window,
 							"location",
@@ -85,8 +83,7 @@ describe("WindowService",
 				it("should return window.location.href",
 					() =>
 					{
-						const testUrl: string =
-							"https://test.example.com/path";
+						const testUrl: string = "https://test.example.com/path";
 						Object.defineProperty(
 							window,
 							"location",
@@ -109,8 +106,7 @@ describe("WindowService",
 				it("should return window.location.pathname",
 					() =>
 					{
-						const testPath: string =
-							"/test/path";
+						const testPath: string = "/test/path";
 						Object.defineProperty(
 							window,
 							"location",
@@ -133,8 +129,7 @@ describe("WindowService",
 				it("should return window.innerHeight",
 					() =>
 					{
-						const testHeight: number =
-							768;
+						const testHeight: number = 768;
 						Object.defineProperty(
 							window,
 							"innerHeight",
@@ -157,8 +152,7 @@ describe("WindowService",
 				it("should return window.innerWidth",
 					() =>
 					{
-						const testWidth: number =
-							1024;
+						const testWidth: number = 1024;
 						Object.defineProperty(
 							window,
 							"innerWidth",
@@ -195,6 +189,85 @@ describe("WindowService",
 
 						expect(scrollToSpy)
 							.toHaveBeenCalledWith(0, 0);
+					});
+			});
+
+		describe("getHash",
+			() =>
+			{
+				it("should return window.location.hash",
+					() =>
+					{
+						const testHash: string = "#access_token=abc123";
+						Object.defineProperty(
+							window,
+							"location",
+							{
+								value: { hash: testHash },
+								writable: true
+							});
+
+						const result: string =
+							service.getHash();
+
+						expect(result)
+							.toBe(testHash);
+					});
+			});
+
+		describe("getSearch",
+			() =>
+			{
+				it("should return window.location.search",
+					() =>
+					{
+						const testSearch: string = "?param=value&other=123";
+						Object.defineProperty(
+							window,
+							"location",
+							{
+								value: { search: testSearch },
+								writable: true
+							});
+
+						const result: string =
+							service.getSearch();
+
+						expect(result)
+							.toBe(testSearch);
+					});
+			});
+
+		describe("replaceState",
+			() =>
+			{
+				it("should call window.history.replaceState with provided arguments",
+					() =>
+					{
+						const replaceStateSpy: ReturnType<typeof vi.fn> =
+							vi.fn();
+						Object.defineProperty(
+							window,
+							"history",
+							{
+								value: { replaceState: replaceStateSpy },
+								writable: true
+							});
+
+						const testData: { key: string; } =
+							{ key: "value" };
+						const testUrl: string = "/new/path";
+
+						service.replaceState(
+							testData,
+							"",
+							testUrl);
+
+						expect(replaceStateSpy)
+							.toHaveBeenCalledWith(
+								testData,
+								"",
+								testUrl);
 					});
 			});
 	});

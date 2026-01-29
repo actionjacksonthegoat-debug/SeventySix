@@ -733,6 +733,82 @@ test("code (including tests/specs) should use DateService and approved test help
 });
 
 // ============================================================================
+// NULL COERCION TESTS
+// ============================================================================
+
+console.log("\nNull Coercion Tests");
+
+test("code should not use double-bang (!!) for boolean coercion", async () =>
+{
+	const sourceFiles = await getFiles(SRC_DIR, ".ts");
+	const violations = [];
+
+	// Pattern: !! followed by any identifier, property access, or method call
+	// Uses negative lookbehind to exclude matches inside string literals
+	const doubleBangPattern = /!!\s*[a-zA-Z_$]/g;
+
+	for (const file of sourceFiles)
+	{
+		const relativePath = path.relative(SRC_DIR, file);
+		const content = await fs.readFile(file, "utf-8");
+
+		// Remove string literals before matching to avoid false positives
+		const contentWithoutStrings = content
+			.replace(/`[^`]*`/gs, "``") // Template literals
+			.replace(/"[^"]*"/g, '""') // Double-quoted strings
+			.replace(/'[^']*'/g, "''"); // Single-quoted strings
+
+		const matches = contentWithoutStrings.match(doubleBangPattern);
+
+		if (matches && matches.length > 0)
+		{
+			violations.push(
+				`${relativePath}: ${matches.length} double-bang (!!) usage(s) - use isPresent() from @shared/utilities/null-check.utility instead`
+			);
+		}
+	}
+
+	assertEmpty(violations, "Double-bang (!!) boolean coercion found (use isPresent() instead)");
+});
+
+test("code should not use OR (||) for nullish fallbacks with strings", async () =>
+{
+	const sourceFiles = await getFiles(SRC_DIR, ".ts");
+	const violations = [];
+
+	// Pattern: || followed by a string literal (single or double quoted)
+	const orStringFallbackPattern = /\|\|\s*["'`][^"'`]*["'`]/g;
+
+	// Allowed exceptions with justification
+	const allowedExceptions = [
+		"architecture-tests.mjs" // This file contains patterns as test subjects
+	];
+
+	for (const file of sourceFiles)
+	{
+		const fileName = path.basename(file);
+		const relativePath = path.relative(SRC_DIR, file);
+
+		if (allowedExceptions.includes(fileName))
+		{
+			continue;
+		}
+
+		const content = await fs.readFile(file, "utf-8");
+		const matches = content.match(orStringFallbackPattern);
+
+		if (matches && matches.length > 0)
+		{
+			violations.push(
+				`${relativePath}: ${matches.length} OR string fallback(s) - use nullish coalescing (??) instead of ||`
+			);
+		}
+	}
+
+	assertEmpty(violations, "OR (||) string fallback found (use ?? instead)");
+});
+
+// ============================================================================
 // FILE STRUCTURE TESTS
 // ============================================================================
 

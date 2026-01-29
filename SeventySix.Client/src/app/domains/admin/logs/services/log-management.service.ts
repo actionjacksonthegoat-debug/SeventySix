@@ -90,13 +90,15 @@ export class LogManagementService extends BaseQueryService<LogQueryRequest>
 
 	constructor()
 	{
-		// Initialize with 24-hour date range as default
+		// Calculate default date range before calling super
 		const dateService: DateService =
-			new DateService();
+			inject(DateService);
 		const now: Date =
 			dateService.parseUTC(dateService.now());
 		const startDate: Date =
 			dateService.addHours(now, -24);
+
+		// Initialize with 24-hour date range as default
 		super(
 			{
 				page: 1,

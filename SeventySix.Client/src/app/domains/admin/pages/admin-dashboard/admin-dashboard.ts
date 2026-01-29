@@ -88,7 +88,7 @@ export class AdminDashboardPage
 	openJaeger(): void
 	{
 		const baseUrl: string =
-			environment.observability.jaegerUrl || "http://localhost:16686";
+			environment.observability.jaegerUrl ?? "http://localhost:16686";
 		// Open to search view with SeventySix.Api service pre-selected
 		window.open(`${baseUrl}/search?service=SeventySix.Api`, "_blank");
 	}
@@ -103,7 +103,7 @@ export class AdminDashboardPage
 	openPrometheus(): void
 	{
 		const baseUrl: string =
-			environment.observability.prometheusUrl || "http://localhost:9090";
+			environment.observability.prometheusUrl ?? "http://localhost:9090";
 		// Open to targets view to see scrape endpoint health
 		window.open(`${baseUrl}/targets`, "_blank");
 	}
@@ -118,7 +118,7 @@ export class AdminDashboardPage
 	openGrafana(): void
 	{
 		const baseUrl: string =
-			environment.observability.grafanaUrl || "http://localhost:3000";
+			environment.observability.grafanaUrl ?? "http://localhost:3000";
 		// Open to dashboards list view
 		window.open(`${baseUrl}/dashboards`, "_blank");
 	}

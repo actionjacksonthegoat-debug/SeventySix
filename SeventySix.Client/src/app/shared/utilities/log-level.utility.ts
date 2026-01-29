@@ -2,10 +2,28 @@ import { LOG_LEVEL_STRINGS, LogLevel } from "@shared/constants";
 import { NotificationLevel } from "@shared/constants";
 
 /**
+ * Maps string log level names to LogLevel enum values.
+ * Used for bidirectional conversion between API strings and enum values.
+ */
+const LOG_LEVEL_MAP: ReadonlyMap<string, LogLevel> =
+	new Map(
+		[
+			["verbose", LogLevel.Verbose],
+			["debug", LogLevel.Debug],
+			["information", LogLevel.Information],
+			["warning", LogLevel.Warning],
+			["error", LogLevel.Error],
+			["fatal", LogLevel.Fatal],
+			["critical", LogLevel.Critical]
+		]);
+
+/**
  * Converts LogLevel enum to API-compatible string.
- * @param {LogLevel} level
+ *
+ * @param level
  * The LogLevel enum value to convert.
- * @returns {string}
+ *
+ * @returns
  * String matching server LogLevelConstants.
  */
 export function logLevelToString(level: LogLevel): string
@@ -26,9 +44,11 @@ export function logLevelToString(level: LogLevel): string
 /**
  * Converts LogLevel to NotificationLevel for UI display.
  * Rule: Error, Fatal, Critical → NotificationLevel.Error
- * @param {LogLevel} level
+ *
+ * @param level
  * The LogLevel enum value to convert.
- * @returns {NotificationLevel}
+ *
+ * @returns
  * Appropriate NotificationLevel for UI display.
  */
 export function logLevelToNotificationLevel(level: LogLevel): NotificationLevel
@@ -47,30 +67,16 @@ export function logLevelToNotificationLevel(level: LogLevel): NotificationLevel
 /**
  * Parses string log level from API to LogLevel enum.
  * Handles case-insensitive matching.
- * @param {string} logLevel
+ *
+ * @param logLevel
  * The string log level value received from API.
- * @returns {LogLevel}
+ *
+ * @returns
  * The corresponding LogLevel enum value.
  */
 export function parseLogLevel(logLevel: string): LogLevel
 {
-	switch (logLevel?.toLowerCase())
-	{
-		case "verbose":
-			return LogLevel.Verbose;
-		case "debug":
-			return LogLevel.Debug;
-		case "information":
-			return LogLevel.Information;
-		case "warning":
-			return LogLevel.Warning;
-		case "error":
-			return LogLevel.Error;
-		case "fatal":
-			return LogLevel.Fatal;
-		case "critical":
-			return LogLevel.Critical;
-		default:
-			return LogLevel.Information;
-	}
+	const normalizedLevel: string =
+		logLevel?.toLowerCase() ?? "";
+	return LOG_LEVEL_MAP.get(normalizedLevel) ?? LogLevel.Information;
 }

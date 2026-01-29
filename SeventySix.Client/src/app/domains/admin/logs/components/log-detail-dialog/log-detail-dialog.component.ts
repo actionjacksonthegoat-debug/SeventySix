@@ -33,6 +33,7 @@ import { MatIconModule } from "@angular/material/icon";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { environment } from "@environments/environment";
 import { DateService } from "@shared/services";
+import { isNullOrEmpty } from "@shared/utilities/null-check.utility";
 
 /** Dialog component for displaying detailed log information. */
 @Component(
@@ -194,7 +195,7 @@ export class LogDetailDialogComponent
 	readonly hasCorrelationId: Signal<boolean> =
 		computed(
 			(): boolean =>
-				!!this.log().correlationId);
+				!isNullOrEmpty(this.log().correlationId));
 
 	/**
 	 * True when the log level is Error or Fatal.
@@ -299,7 +300,7 @@ export class LogDetailDialogComponent
 		}
 
 		const jaegerUrl: string =
-			environment.observability.jaegerUrl || "http://localhost:16686";
+			environment.observability.jaegerUrl ?? "http://localhost:16686";
 		const url: string =
 			`${jaegerUrl}/trace/${log.correlationId}`;
 		window.open(url, "_blank");

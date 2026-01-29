@@ -52,3 +52,16 @@ export const APP_ROUTES: Readonly<{
 			FORBIDDEN: "/error/403"
 		}
 	} as const;
+
+/**
+ * Public authentication paths that bypass auth header injection.
+ * These endpoints handle their own authentication flow.
+ */
+export const AUTH_PUBLIC_PATHS: readonly string[] =
+	[
+		"/auth/login",
+		"/auth/refresh",
+		"/auth/logout",
+		"/auth/oauth/github",
+		"/auth/oauth/github/callback"
+	] as const;

@@ -1,5 +1,5 @@
-import { TestBed } from "@angular/core/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
+import { TestBed } from "@angular/core/testing";
 import { DateService, TokenService } from "@shared/services";
 import { DOTNET_ROLE_CLAIM, JwtClaims } from "@shared/services/auth.types";
 
@@ -45,8 +45,7 @@ function createTestToken(
 			.replace(/\+/g, "-")
 			.replace(/\//g, "_")
 			.replace(/=+$/, "");
-	const signature: string =
-		"mock-signature";
+	const signature: string = "mock-signature";
 
 	return `${headerBase64}.${payloadBase64}.${signature}`;
 }

@@ -23,8 +23,7 @@ const NOTIFICATION_ICONS: ReadonlyMap<NotificationLevel, string> =
  * Default icon when notification level is unknown.
  * @type {string}
  */
-const DEFAULT_ICON: string =
-	"lightbulb";
+const DEFAULT_ICON: string = "lightbulb";
 
 /**
  * Toast notification component that displays notifications from NotificationService.

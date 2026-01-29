@@ -101,7 +101,7 @@ export class LogFixtures
 							.fromMillis(
 								dateService.nowTimestamp() - i * 60000)
 							.toISOString(),
-						logLevel: logLevel || "Information",
+						logLevel: logLevel ?? "Information",
 						message: `Test log message ${i + 1}`
 					}));
 	}

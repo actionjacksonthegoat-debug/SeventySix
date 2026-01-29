@@ -3,6 +3,7 @@
  * Displays QR code, manual entry option, and verification code input.
  */
 
+import { Clipboard } from "@angular/cdk/clipboard";
 import { HttpErrorResponse } from "@angular/common/http";
 import {
 	ChangeDetectionStrategy,
@@ -16,10 +17,12 @@ import { FormsModule } from "@angular/forms";
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
 import { Router } from "@angular/router";
+import { CLIPBOARD_RESET_DELAY_MS, QR_CODE_CONFIG } from "@auth/constants";
 import { TotpService } from "@auth/services";
 import { APP_ROUTES } from "@shared/constants";
 import { TotpSetupResponse } from "@shared/models";
 import { NotificationService } from "@shared/services";
+import { copyWithFeedback } from "@shared/utilities";
 import * as QRCode from "qrcode";
 
 /**
@@ -76,6 +79,15 @@ export class TotpSetupComponent implements OnInit
 	 */
 	private readonly notification: NotificationService =
 		inject(NotificationService);
+
+	/**
+	 * Clipboard service for copy operations.
+	 * @type {Clipboard}
+	 * @private
+	 * @readonly
+	 */
+	private readonly clipboard: Clipboard =
+		inject(Clipboard);
 
 	/**
 	 * Current setup step.
@@ -209,11 +221,11 @@ export class TotpSetupComponent implements OnInit
 			.toDataURL(
 				uri,
 				{
-					width: 200,
-					margin: 2,
+					width: QR_CODE_CONFIG.width,
+					margin: QR_CODE_CONFIG.margin,
 					color: {
-						dark: "#000000",
-						light: "#FFFFFF"
+						dark: QR_CODE_CONFIG.colors.dark,
+						light: QR_CODE_CONFIG.colors.light
 					}
 				})
 			.then(
@@ -263,23 +275,23 @@ export class TotpSetupComponent implements OnInit
 
 	/**
 	 * Copies the TOTP secret to clipboard.
-	 * @returns {Promise<void>}
+	 * @returns {void}
 	 * @protected
 	 */
-	protected async onCopySecret(): Promise<void>
+	protected onCopySecret(): void
 	{
-		try
-		{
-			await navigator.clipboard.writeText(this.secret());
-			this.secretCopied.set(true);
-			this.notification.success("Secret copied to clipboard");
+		const success: boolean =
+			copyWithFeedback(
+				this.clipboard,
+				this.secret(),
+				this.secretCopied,
+				CLIPBOARD_RESET_DELAY_MS);
 
-			// Reset copied state after 3 seconds
-			setTimeout(
-				() => this.secretCopied.set(false),
-				3000);
+		if (success)
+		{
+			this.notification.success("Secret copied to clipboard");
 		}
-		catch
+		else
 		{
 			this.notification.error("Failed to copy to clipboard");
 		}

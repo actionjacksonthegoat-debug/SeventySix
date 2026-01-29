@@ -11,8 +11,7 @@ import {
 } from "@shared/components/layout";
 import {
 	LayoutService,
-	LoadingService,
-	ThemeService
+	LoadingService
 } from "@shared/services";
 
 /**
@@ -36,14 +35,6 @@ import {
 	})
 export class App
 {
-	/**
-	 * Theme service used to toggle brightness and color schemes.
-	 * @type {ThemeService}
-	 * @protected
-	 * @readonly
-	 */
-	protected readonly themeService: ThemeService =
-		inject(ThemeService);
 	/**
 	 * Layout service for sidebar state and responsive helpers.
 	 * @type {LayoutService}

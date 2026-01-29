@@ -19,7 +19,7 @@ import {
 import { FormsModule } from "@angular/forms";
 import { MatButtonModule } from "@angular/material/button";
 import { Router } from "@angular/router";
-import { MFA_ERROR_CODE } from "@auth/constants";
+import { MFA_CONFIG, MFA_METHOD } from "@auth/constants";
 import {
 	AuthResponse,
 	MfaMethod,
@@ -27,31 +27,14 @@ import {
 	VerifyMfaRequest
 } from "@auth/models";
 import { MfaService } from "@auth/services";
+import {
+	getBackupCodeErrorMessage,
+	getMfaErrorMessage,
+	requiresLoginRedirect
+} from "@auth/utilities";
 import { APP_ROUTES } from "@shared/constants";
 import { VerifyBackupCodeRequest, VerifyTotpRequest } from "@shared/models";
 import { AuthService, NotificationService } from "@shared/services";
-
-/**
- * MFA method enum values.
- * Email = 0, Totp = 1
- */
-const MFA_METHOD_EMAIL: number = 0;
-const MFA_METHOD_TOTP: number = 1;
-
-/**
- * MFA code length.
- */
-const MFA_CODE_LENGTH: number = 6;
-
-/**
- * Backup code length.
- */
-const BACKUP_CODE_LENGTH: number = 8;
-
-/**
- * Resend cooldown in seconds.
- */
-const RESEND_COOLDOWN_SECONDS: number = 60;
 
 @Component(
 	{
@@ -170,7 +153,7 @@ export class MfaVerifyComponent implements OnInit, OnDestroy
 	 * @readonly
 	 */
 	protected readonly mfaMethod: WritableSignal<MfaMethod> =
-		signal<MfaMethod>(MFA_METHOD_EMAIL);
+		signal<MfaMethod>(MFA_METHOD.email);
 
 	/**
 	 * Whether showing backup code entry mode.
@@ -190,7 +173,7 @@ export class MfaVerifyComponent implements OnInit, OnDestroy
 	protected readonly isEmailMode: Signal<boolean> =
 		computed(
 			() =>
-				this.mfaMethod() === MFA_METHOD_EMAIL
+				this.mfaMethod() === MFA_METHOD.email
 					&& !this.showBackupCodeEntry());
 
 	/**
@@ -202,7 +185,7 @@ export class MfaVerifyComponent implements OnInit, OnDestroy
 	protected readonly isTotpMode: Signal<boolean> =
 		computed(
 			() =>
-				this.mfaMethod() === MFA_METHOD_TOTP
+				this.mfaMethod() === MFA_METHOD.totp
 					&& !this.showBackupCodeEntry());
 
 	/**
@@ -215,8 +198,8 @@ export class MfaVerifyComponent implements OnInit, OnDestroy
 		computed(
 			() =>
 				this.showBackupCodeEntry()
-					? BACKUP_CODE_LENGTH
-					: MFA_CODE_LENGTH);
+					? MFA_CONFIG.backupCodeLength
+					: MFA_CONFIG.codeLength);
 
 	/**
 	 * Cooldown timer interval.
@@ -436,39 +419,21 @@ export class MfaVerifyComponent implements OnInit, OnDestroy
 		const errorCode: string | undefined =
 			error.error?.errorCode;
 
-		switch (errorCode)
+		const fallbackMessage: string =
+			error.error?.detail ?? "Verification failed. Please try again.";
+
+		const errorMessage: string =
+			getMfaErrorMessage(
+				errorCode,
+				fallbackMessage);
+
+		this.notification.error(errorMessage);
+
+		if (requiresLoginRedirect(errorCode))
 		{
-			case MFA_ERROR_CODE.INVALID_CODE:
-			case MFA_ERROR_CODE.TOTP_INVALID_CODE:
-				this.notification.error("Invalid verification code. Please try again.");
-				break;
-			case MFA_ERROR_CODE.CODE_EXPIRED:
-				this.notification.error("Code has expired. Please request a new code.");
-				break;
-			case MFA_ERROR_CODE.TOO_MANY_ATTEMPTS:
-			case MFA_ERROR_CODE.TOTP_TOO_MANY_ATTEMPTS:
-				this.notification.error(
-					"Too many attempts. Please request a new code.");
-				this.mfaService.clearMfaState();
-				this.router.navigate(
-					[APP_ROUTES.AUTH.LOGIN]);
-				break;
-			case MFA_ERROR_CODE.INVALID_CHALLENGE:
-			case MFA_ERROR_CODE.CHALLENGE_USED:
-				this.notification.error("Session expired. Please log in again.");
-				this.mfaService.clearMfaState();
-				this.router.navigate(
-					[APP_ROUTES.AUTH.LOGIN]);
-				break;
-			case MFA_ERROR_CODE.TOTP_NOT_ENABLED:
-				this.notification.error("Authenticator app is not set up. Please log in again.");
-				this.mfaService.clearMfaState();
-				this.router.navigate(
-					[APP_ROUTES.AUTH.LOGIN]);
-				break;
-			default:
-				this.notification.error(
-					error.error?.detail ?? "Verification failed. Please try again.");
+			this.mfaService.clearMfaState();
+			this.router.navigate(
+				[APP_ROUTES.AUTH.LOGIN]);
 		}
 	}
 
@@ -486,22 +451,15 @@ export class MfaVerifyComponent implements OnInit, OnDestroy
 		const errorCode: string | undefined =
 			error.error?.errorCode;
 
-		switch (errorCode)
-		{
-			case MFA_ERROR_CODE.BACKUP_CODE_INVALID:
-				this.notification.error("Invalid backup code. Please try again.");
-				break;
-			case MFA_ERROR_CODE.BACKUP_CODE_ALREADY_USED:
-				this.notification.error("This backup code has already been used.");
-				break;
-			case MFA_ERROR_CODE.NO_BACKUP_CODES_AVAILABLE:
-				this.notification.error(
-					"No backup codes available. Please contact support.");
-				break;
-			default:
-				this.notification.error(
-					error.error?.detail ?? "Verification failed. Please try again.");
-		}
+		const fallbackMessage: string =
+			error.error?.detail ?? "Verification failed. Please try again.";
+
+		const errorMessage: string =
+			getBackupCodeErrorMessage(
+				errorCode,
+				fallbackMessage);
+
+		this.notification.error(errorMessage);
 	}
 
 	/**
@@ -577,7 +535,7 @@ export class MfaVerifyComponent implements OnInit, OnDestroy
 	private startCooldown(): void
 	{
 		this.resendOnCooldown.set(true);
-		this.resendCooldownSeconds.set(RESEND_COOLDOWN_SECONDS);
+		this.resendCooldownSeconds.set(MFA_CONFIG.resendCooldownSeconds);
 
 		this.cooldownInterval =
 			window.setInterval(
