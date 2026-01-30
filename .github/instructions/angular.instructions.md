@@ -21,6 +21,19 @@ applyTo: "**/SeventySix.Client/src/**/*.ts"
 | Templates        | `computed()` signals     | Method calls in templates      |
 | Cleanup          | `takeUntilDestroyed()`   | Manual subscription cleanup    |
 
+## Accessibility (WCAG AA)
+
+| Element               | Required                                       | Forbidden                  |
+| --------------------- | ---------------------------------------------- | -------------------------- |
+| Decorative `mat-icon` | `aria-hidden="true"`                           | Icon without aria-hidden   |
+| Icon-only button      | `aria-label` on button                         | `matTooltip` as only label |
+| Toggle button         | `[attr.aria-expanded]`, `[attr.aria-controls]` | Toggle without state       |
+| `mat-spinner`         | `aria-label="Loading"`                         | Spinner without label      |
+| `mat-progress-bar`    | `aria-label`                                   | Progress without label     |
+| Form error            | `aria-live="assertive" role="alert"`           | Silent error               |
+
+See `.github/instructions/accessibility.instructions.md` for complete patterns.
+
 ## Service Scoping (CRITICAL)
 
 | Type           | Location             | Injectable              |

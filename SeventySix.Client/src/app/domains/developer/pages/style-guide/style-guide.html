@@ -10,7 +10,7 @@
 				mat-raised-button
 				(click)="themeService.toggleBrightness()"
 				aria-label="Toggle theme brightness">
-				<mat-icon>{{ themeService.isDark() ? "light_mode" : "dark_mode" }}</mat-icon>
+				<mat-icon aria-hidden="true">{{ themeService.isDark() ? "light_mode" : "dark_mode" }}</mat-icon>
 				{{ themeService.isDark() ? "Light" : "Dark" }} Mode
 			</button>
 			<mat-form-field appearance="outline">
@@ -684,13 +684,14 @@
 								<p class="mat-body-2">
 									Spinner (Indeterminate)
 								</p>
-								<mat-spinner diameter="40"></mat-spinner>
+								<mat-spinner diameter="40" aria-label="Loading"></mat-spinner>
 							</div>
 							<div class="progress-item">
 								<p class="mat-body-2">Spinner (Determinate)</p>
 								<mat-spinner
 									diameter="40"
-									[value]="65"></mat-spinner>
+									[value]="65"
+									aria-label="Loading 65 percent"></mat-spinner>
 							</div>
 							<div class="progress-item progress-bar-item">
 								<p class="mat-body-2">
@@ -1286,19 +1287,19 @@
 									color="primary"
 									disabled
 									class="saving-button">
-									<mat-spinner diameter="20"></mat-spinner>
+									<mat-spinner diameter="20" aria-label="Saving"></mat-spinner>
 									Saving...
 								</button>
 							</div>
 
 							<div class="spinner-example">
 								<span class="mat-label-large">Standalone Spinner</span>
-								<mat-spinner diameter="40"></mat-spinner>
+								<mat-spinner diameter="40" aria-label="Loading"></mat-spinner>
 							</div>
 
 							<div class="spinner-example">
 								<span class="mat-label-large">Small Spinner (Actions)</span>
-								<mat-spinner diameter="24"></mat-spinner>
+								<mat-spinner diameter="24" aria-label="Loading"></mat-spinner>
 							</div>
 						</div>
 					</mat-card-content>

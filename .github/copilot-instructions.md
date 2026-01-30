@@ -61,6 +61,20 @@ import { isNullOrUndefined, isPresent } from "@shared/utilities/null-check.utili
 
 > ⚠️ **CRITICAL**: Test failures MUST be fixed immediately when discovered, regardless of origin. Never skip or defer failing tests. If a test fails, fix it before proceeding—no exceptions.
 
+### 6. Accessibility = WCAG AA Compliance (Client)
+
+| ❌ NEVER                          | ✅ ALWAYS                                      |
+| --------------------------------- | ---------------------------------------------- |
+| `<mat-icon>save</mat-icon>` alone | `<mat-icon aria-hidden="true">save</mat-icon>` |
+| Icon button without label         | `aria-label="Save"` on button                  |
+| `matTooltip` as only label        | `aria-label` + optional `matTooltip`           |
+| Toggle without state              | `[attr.aria-expanded]="isOpen()"`              |
+| Spinner without label             | `aria-label="Loading"`                         |
+
+**Rule**: All decorative icons MUST have `aria-hidden="true"`. Icon-only buttons MUST have `aria-label`.
+
+See `.github/instructions/accessibility.instructions.md` for full patterns.
+
 ---
 
 ## Architecture

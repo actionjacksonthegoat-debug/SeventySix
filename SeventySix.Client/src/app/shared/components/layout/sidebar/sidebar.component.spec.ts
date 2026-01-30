@@ -283,4 +283,66 @@ describe("SidebarComponent",
 							.toContain("Management");
 					});
 			});
+
+		describe("accessibility",
+			() =>
+			{
+				it("should have navigation landmark with aria-label",
+					() =>
+					{
+						const nav: HTMLElement | null =
+							fixture.nativeElement.querySelector("nav");
+
+						expect(nav?.getAttribute("aria-label"))
+							.toBe("Main navigation");
+					});
+
+				it("should have aria-label on close button",
+					() =>
+					{
+						const closeButton: HTMLButtonElement | null =
+							fixture.nativeElement.querySelector(".close-sidebar-btn");
+
+						expect(closeButton?.getAttribute("aria-label"))
+							.toBe("Close navigation menu");
+					});
+
+				it("should have aria-hidden on close button icon",
+					() =>
+					{
+						const icon: HTMLElement | null =
+							fixture.nativeElement.querySelector(".close-sidebar-btn mat-icon");
+
+						expect(icon?.getAttribute("aria-hidden"))
+							.toBe("true");
+					});
+
+				it("should have section headings with ids",
+					() =>
+					{
+						const headings: NodeListOf<HTMLElement> =
+							fixture.nativeElement.querySelectorAll(".nav-section-title");
+
+						headings.forEach(
+							(heading: HTMLElement, index: number) =>
+							{
+								expect(heading.getAttribute("id"))
+									.toBe(`nav-section-${index}`);
+							});
+					});
+
+				it("should have nav lists with aria-labelledby",
+					() =>
+					{
+						const navLists: NodeListOf<HTMLElement> =
+							fixture.nativeElement.querySelectorAll("mat-nav-list");
+
+						navLists.forEach(
+							(navList: HTMLElement, index: number) =>
+							{
+								expect(navList.getAttribute("aria-labelledby"))
+									.toBe(`nav-section-${index}`);
+							});
+					});
+			});
 	});

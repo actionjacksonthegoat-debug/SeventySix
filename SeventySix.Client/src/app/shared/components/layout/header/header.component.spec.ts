@@ -241,4 +241,58 @@ describe("HeaderComponent",
 								["/account/profile"]);
 					});
 			});
+
+		describe("accessibility",
+			() =>
+			{
+				it("should have role banner on toolbar",
+					() =>
+					{
+						const toolbar: HTMLElement | null =
+							fixture.nativeElement.querySelector("mat-toolbar");
+
+						expect(toolbar?.getAttribute("role"))
+							.toBe("banner");
+					});
+
+				it("should have aria-label on menu toggle button",
+					() =>
+					{
+						const menuButton: HTMLButtonElement | null =
+							fixture.nativeElement.querySelector(".menu-toggle");
+
+						expect(menuButton?.getAttribute("aria-label"))
+							.toBe("Toggle navigation menu");
+					});
+
+				it("should have aria-hidden on decorative icons",
+					() =>
+					{
+						const icons: NodeListOf<HTMLElement> =
+							fixture.nativeElement.querySelectorAll("mat-icon");
+
+						icons.forEach(
+							(icon: HTMLElement) =>
+							{
+								expect(icon.getAttribute("aria-hidden"))
+									.toBe("true");
+							});
+					});
+
+				it("should have aria-label on theme toggle buttons",
+					() =>
+					{
+						const brightnessButton: HTMLButtonElement | null =
+							fixture.nativeElement.querySelector(
+								"[aria-label='Toggle brightness']");
+						const colorSchemeButton: HTMLButtonElement | null =
+							fixture.nativeElement.querySelector(
+								"[aria-label='Toggle color scheme']");
+
+						expect(brightnessButton)
+							.toBeTruthy();
+						expect(colorSchemeButton)
+							.toBeTruthy();
+					});
+			});
 	});

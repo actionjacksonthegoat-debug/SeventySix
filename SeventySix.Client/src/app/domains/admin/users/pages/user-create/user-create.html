@@ -360,7 +360,7 @@
 						(click)="onSubmit()"
 						[disabled]="isSaving()">
 						@if (isSaving()) {
-						<mat-spinner diameter="20"></mat-spinner>
+						<mat-spinner diameter="20" aria-label="Creating user"></mat-spinner>
 						} @else {
 						<ng-container>
 							<mat-icon aria-hidden="true">check</mat-icon>

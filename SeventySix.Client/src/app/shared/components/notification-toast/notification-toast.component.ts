@@ -70,7 +70,7 @@ const DEFAULT_ICON: string = "lightbulb";
 									matTooltip="Copy error details"
 									aria-label="Copy error details"
 								>
-									<mat-icon>content_copy</mat-icon>
+									<mat-icon aria-hidden="true">content_copy</mat-icon>
 								</button>
 							}
 							<button
@@ -79,7 +79,7 @@ const DEFAULT_ICON: string = "lightbulb";
 								matTooltip="Dismiss"
 								aria-label="Dismiss"
 							>
-								<mat-icon>close</mat-icon>
+								<mat-icon aria-hidden="true">close</mat-icon>
 							</button>
 						</div>
 					</div>
