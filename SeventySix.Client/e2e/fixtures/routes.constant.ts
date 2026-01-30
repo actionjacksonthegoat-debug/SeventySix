@@ -27,6 +27,7 @@ export const ROUTES =
 			{
 				dashboard: "/admin/dashboard",
 				users: "/admin/users",
+				userCreate: "/admin/users/create",
 				logs: "/admin/logs",
 				permissionRequests: "/admin/permission-requests"
 			},
@@ -77,6 +78,35 @@ export const ROUTE_GROUPS =
 			[
 				ROUTES.account.root,
 				ROUTES.account.permissions
+			] as const,
+
+		/**
+		 * Account pages for authenticated accessibility testing.
+		 */
+		accountAccessibilityPages:
+			[
+				{ path: ROUTES.account.root, name: "Profile" },
+				{ path: ROUTES.account.permissions, name: "Request Permissions" }
+			] as const,
+
+		/**
+		 * Admin pages for authenticated accessibility testing.
+		 */
+		adminAccessibilityPages:
+			[
+				{ path: ROUTES.admin.dashboard, name: "Admin Dashboard" },
+				{ path: ROUTES.admin.users, name: "User Management" },
+				{ path: ROUTES.admin.logs, name: "Log Management" },
+				{ path: ROUTES.admin.permissionRequests, name: "Permission Requests" }
+			] as const,
+
+		/**
+		 * Developer pages for authenticated accessibility testing.
+		 */
+		developerAccessibilityPages:
+			[
+				{ path: ROUTES.developer.styleGuide, name: "Style Guide" },
+				{ path: ROUTES.developer.architectureGuide, name: "Architecture Guide" }
 			] as const
 	} as const;
 

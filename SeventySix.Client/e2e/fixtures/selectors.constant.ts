@@ -93,5 +93,102 @@ export const SELECTORS =
 				banner: "[role='banner']",
 				main: "main, [role='main']",
 				navigation: "[role='navigation']"
+			},
+
+		/**
+		 * User management page selectors.
+		 */
+		userManagement:
+			{
+				createUserButton: "button:has-text('Create User')",
+				pageHeader: "app-page-header",
+				userList: "app-user-list",
+				dataTable: "app-data-table"
+			},
+
+		/**
+		 * Log management page selectors.
+		 */
+		logManagement:
+			{
+				pageHeader: "app-page-header",
+				logList: "app-log-list",
+				dataTable: "app-data-table"
+			},
+
+		/**
+		 * Permission requests page selectors.
+		 */
+		permissionRequests:
+			{
+				pageHeader: "app-page-header",
+				dataTable: "app-data-table"
+			},
+
+		/**
+		 * Profile page selectors.
+		 */
+		profile:
+			{
+				profileCard: "mat-card",
+				emailInput: "input[formcontrolname='email']",
+				fullNameInput: "input[formcontrolname='fullName']",
+				saveButton: "button[type='submit']",
+				requestPermissionsLink: "a[routerlink='permissions']"
+			},
+
+		/**
+		 * Request permissions page selectors.
+		 */
+		requestPermissions:
+			{
+				roleCheckbox: "mat-checkbox",
+				messageTextarea: "textarea[formcontrolname='requestMessage']",
+				submitButton: "button[type='submit']",
+				noRolesMessage: ".no-roles"
+			},
+
+		/**
+		 * Developer pages selectors.
+		 */
+		developer:
+			{
+				styleGuideHeader: ".style-guide-header h1",
+				architectureGuideHeader: ".architecture-guide-container h1",
+				themeToggle: "button[aria-label='Toggle theme brightness']"
+			},
+
+		/**
+		 * Sandbox page selectors.
+		 */
+		sandbox:
+			{
+				container: ".sandbox-container",
+				sandboxCard: ".sandbox-card",
+				sandboxTitle: ".sandbox-card mat-card-title h1"
+			},
+
+		/**
+		 * Error page selectors.
+		 */
+		errorPage:
+			{
+				container: ".error-page",
+				errorTitle: "#error-title",
+				homeButton: "button:has-text('Go to Home')"
+			},
+
+		/**
+		 * Data table selectors (shared component).
+		 */
+		dataTable:
+			{
+				table: "table",
+				headerRow: "tr.mat-mdc-header-row",
+				dataRow: "tr.mat-mdc-row",
+				emptyState: ".empty-state",
+				loadingSpinner: "mat-spinner",
+				searchInput: "input[placeholder*='Search']",
+				refreshButton: "button[aria-label*='Refresh']"
 			}
 	} as const;

@@ -143,3 +143,17 @@ readonly clicked = output<void>();               // Signal outputs
 | `{ duration: 5000 }` | `{ duration: SNACKBAR_DURATION.error }` |
 | `"Developer"` inline | `RoleConstants.Developer`               |
 | Repeated literal 2x+ | Extract to constant                     |
+
+---
+
+## E2E Testing (Quick Reference)
+
+| Rule       | Pattern                                              |
+| ---------- | ---------------------------------------------------- |
+| Imports    | Always from `../../fixtures` barrel                  |
+| Selectors  | Use `data-testid` attributes, add to `SELECTORS`     |
+| Waits      | `waitForLoadState("load")`, never `waitForTimeout()` |
+| Assertions | Assert final state, not transitions                  |
+| Test Data  | Use unique prefixes (`e2e_`, `Date.now()`)           |
+
+See `.github/instructions/e2e.instructions.md` for full patterns.

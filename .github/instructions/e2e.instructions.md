@@ -70,6 +70,50 @@ expect(criticalViolations).toHaveLength(0);
 2. Export via `fixtures/index.ts`
 3. Use `data-testid` for selectors
 
+## Anti-Flake Rules (CRITICAL)
+
+| ❌ NEVER | ✅ ALWAYS |
+|----------|-----------|
+| `page.waitForTimeout(1000)` | `page.waitForLoadState("load")` |
+| `page.locator(".row:nth-child(2)")` | `page.locator("[data-testid='user-row']")` |
+| `await page.waitForNavigation()` | `await expect(page).toHaveURL(/pattern/)` |
+| Hardcoded strings | `PAGE_TEXT.headings.title` |
+| Test order dependencies | Each test fully independent |
+
+## Page Object Pattern
+
+```typescript
+export class UserManagementPageHelper
+{
+    readonly page: Page;
+    readonly dataTable: Locator;
+    readonly createButton: Locator;
+
+    constructor(page: Page)
+    {
+        this.page = page;
+        this.dataTable = page.locator(SELECTORS.userManagement.dataTable);
+        this.createButton = page.locator(SELECTORS.userManagement.createButton);
+    }
+
+    async waitForTableLoad(): Promise<void>
+    {
+        await this.page.waitForLoadState("load");
+        await expect(this.dataTable).toBeVisible();
+    }
+}
+```
+
+## Test Isolation
+
+```typescript
+// ✅ Unique test data
+const uniqueEmail = `e2e_test_${Date.now()}@test.local`;
+
+// ✅ Filter by test prefix
+await page.locator("[data-testid='search']").fill("e2e_");
+```
+
 
 ````
 
