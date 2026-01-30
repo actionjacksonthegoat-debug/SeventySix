@@ -6,6 +6,7 @@ using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SeventySix.Shared.BackgroundJobs;
+using SeventySix.Shared.Contracts.Emails;
 using Wolverine;
 
 namespace SeventySix.ElectronicNotifications.Emails.Jobs;
@@ -206,7 +207,7 @@ public class EmailQueueProcessJobHandler(
 	{
 		switch (emailType)
 		{
-			case EmailType.Welcome:
+			case EmailTypeConstants.Welcome:
 				await emailService.SendWelcomeEmailAsync(
 					recipientEmail,
 					templateData.GetValueOrDefault("username", "User"),
@@ -214,7 +215,7 @@ public class EmailQueueProcessJobHandler(
 					cancellationToken);
 				break;
 
-			case EmailType.PasswordReset:
+			case EmailTypeConstants.PasswordReset:
 				await emailService.SendPasswordResetEmailAsync(
 					recipientEmail,
 					templateData.GetValueOrDefault("username", "User"),
@@ -222,14 +223,14 @@ public class EmailQueueProcessJobHandler(
 					cancellationToken);
 				break;
 
-			case EmailType.Verification:
+			case EmailTypeConstants.Verification:
 				await emailService.SendVerificationEmailAsync(
 					recipientEmail,
 					templateData.GetValueOrDefault("verificationToken", ""),
 					cancellationToken);
 				break;
 
-			case EmailType.MfaVerification:
+			case EmailTypeConstants.MfaVerification:
 				int expirationMinutes =
 					int.TryParse(
 						templateData.GetValueOrDefault("expirationMinutes", "5"),

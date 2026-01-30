@@ -18,6 +18,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\SeventySix.Domains\SeventySix.Domains.csproj" />
+		<ProjectReference Include="..\..\SeventySix.Domains.Identity\SeventySix.Domains.Identity.csproj" />
 		<ProjectReference Include="..\..\SeventySix.Api\SeventySix.Api.csproj" />
 	</ItemGroup>
 </Project>

@@ -4,6 +4,7 @@
 
 using FluentValidation.TestHelper;
 using SeventySix.ElectronicNotifications.Emails;
+using SeventySix.Shared.Contracts.Emails;
 
 namespace SeventySix.Domains.Tests.ElectronicNotifications.Emails.Commands.EnqueueEmail;
 
@@ -66,10 +67,10 @@ public class EnqueueEmailCommandValidatorTests
 	}
 
 	[Theory]
-	[InlineData(EmailType.Welcome)]
-	[InlineData(EmailType.PasswordReset)]
-	[InlineData(EmailType.Verification)]
-	[InlineData(EmailType.MfaVerification)]
+	[InlineData(EmailTypeConstants.Welcome)]
+	[InlineData(EmailTypeConstants.PasswordReset)]
+	[InlineData(EmailTypeConstants.Verification)]
+	[InlineData(EmailTypeConstants.MfaVerification)]
 	public void EmailType_ShouldNotHaveError_WhenValidTypeAsync(string emailType)
 	{
 		// Arrange
@@ -96,7 +97,7 @@ public class EnqueueEmailCommandValidatorTests
 		// Arrange
 		EnqueueEmailCommand command =
 			new(
-				EmailType: EmailType.Welcome,
+				EmailType: EmailTypeConstants.Welcome,
 				RecipientEmail: string.Empty,
 				RecipientUserId: 1,
 				TemplateData: new Dictionary<string, string> { ["name"] = "Test" });
@@ -121,7 +122,7 @@ public class EnqueueEmailCommandValidatorTests
 		// Arrange
 		EnqueueEmailCommand command =
 			new(
-				EmailType: EmailType.Welcome,
+				EmailType: EmailTypeConstants.Welcome,
 				RecipientEmail: invalidEmail,
 				RecipientUserId: 1,
 				TemplateData: new Dictionary<string, string> { ["name"] = "Test" });
@@ -143,7 +144,7 @@ public class EnqueueEmailCommandValidatorTests
 		// Arrange
 		EnqueueEmailCommand command =
 			new(
-				EmailType: EmailType.Welcome,
+				EmailType: EmailTypeConstants.Welcome,
 				RecipientEmail: "test@example.com",
 				RecipientUserId: 1,
 				TemplateData: null!);
@@ -165,7 +166,7 @@ public class EnqueueEmailCommandValidatorTests
 		// Arrange
 		EnqueueEmailCommand command =
 			new(
-				EmailType: EmailType.Welcome,
+				EmailType: EmailTypeConstants.Welcome,
 				RecipientEmail: "test@example.com",
 				RecipientUserId: 1,
 				TemplateData: new Dictionary<string, string> { ["username"] = "Test User" });
@@ -184,7 +185,7 @@ public class EnqueueEmailCommandValidatorTests
 		// Arrange
 		EnqueueEmailCommand command =
 			new(
-				EmailType: EmailType.Welcome,
+				EmailType: EmailTypeConstants.Welcome,
 				RecipientEmail: "test@example.com",
 				RecipientUserId: null,
 				TemplateData: new Dictionary<string, string> { ["username"] = "Test User" });

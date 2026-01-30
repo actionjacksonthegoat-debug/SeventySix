@@ -15,13 +15,13 @@ import { AuthResponse } from "@shared/models";
 import { DateService } from "@shared/services";
 import { createTestQueryClient } from "@shared/testing";
 import {
-	TEST_ROLE_ADMIN,
-	TEST_ROLE_DEVELOPER
-} from "@testing/constants";
-import {
 	provideTanStackQuery,
 	QueryClient
 } from "@tanstack/angular-query-experimental";
+import {
+	TEST_ROLE_ADMIN,
+	TEST_ROLE_DEVELOPER
+} from "@testing/constants";
 import { AuthService } from "./auth.service";
 import { createMockAuthResponse } from "./auth.service.test-helpers";
 import { DOTNET_ROLE_CLAIM } from "./auth.types";
@@ -252,7 +252,6 @@ describe("AuthService",
 						expect(service.user())
 							.toBeNull();
 					});
-
 			});
 
 		describe("forceLogoutLocally",

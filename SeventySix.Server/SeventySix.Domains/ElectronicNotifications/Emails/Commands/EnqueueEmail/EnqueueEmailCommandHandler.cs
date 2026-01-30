@@ -5,12 +5,16 @@
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using SeventySix.Shared.Contracts.Emails;
 
 namespace SeventySix.ElectronicNotifications.Emails;
 
 /// <summary>
 /// Handler for <see cref="EnqueueEmailCommand"/>.
 /// </summary>
+/// <remarks>
+/// Handles the shared email contract from any bounded context.
+/// </remarks>
 public static class EnqueueEmailCommandHandler
 {
 	/// <summary>

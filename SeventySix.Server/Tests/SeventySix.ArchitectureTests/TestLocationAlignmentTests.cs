@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using SeventySix.ElectronicNotifications;
 using SeventySix.Identity;
 using Shouldly;
 using Xunit;
@@ -19,8 +20,11 @@ namespace SeventySix.ArchitectureTests;
 /// </summary>
 public class TestLocationAlignmentTests : SourceCodeArchitectureTest
 {
-	private static readonly Assembly DomainsAssembly =
+	private static readonly Assembly IdentityAssembly =
 		typeof(ApplicationUser).Assembly;
+
+	private static readonly Assembly DomainsAssembly =
+		typeof(ElectronicNotificationsDbContext).Assembly;
 
 	/// <summary>
 	/// Verifies that all command handlers have corresponding test files.
@@ -30,22 +34,17 @@ public class TestLocationAlignmentTests : SourceCodeArchitectureTest
 	[Fact]
 	public void All_CommandHandlers_Should_Have_Corresponding_Tests()
 	{
-		// Arrange
+		// Arrange - Get handlers from both domain assemblies
 		Type[] commandHandlerTypes =
 			DomainsAssembly
 				.GetTypes()
+				.Concat(IdentityAssembly.GetTypes())
 				.Where(type =>
 					type.Name.EndsWith("Handler")
 					&& type.Namespace?.Contains("Commands") == true
 					&& !type.IsAbstract
 					&& !type.IsInterface)
 				.ToArray();
-
-		string testsDirectory =
-			Path.Combine(
-				SolutionRoot,
-				"Tests",
-				"SeventySix.Domains.Tests");
 
 		List<string> missingTests = [];
 
@@ -63,31 +62,65 @@ public class TestLocationAlignmentTests : SourceCodeArchitectureTest
 				continue;
 			}
 
+			// Determine the correct test project based on handler namespace
+			bool isIdentityHandler =
+				handlerType.Namespace?.StartsWith("SeventySix.Identity") == true;
+
+			string testProjectName =
+				isIdentityHandler
+					? "SeventySix.Domains.Identity.Tests"
+					: "SeventySix.Domains.Tests";
+
+			string testsDirectory =
+				Path.Combine(
+					SolutionRoot,
+					"Tests",
+					testProjectName);
+
 			string commandName =
 				handlerType.Name.Replace(
 					"Handler",
 					string.Empty);
 
+			// For Identity, the test project structure doesn't have an "Identity" subfolder
+			string testDomainFolder =
+				isIdentityHandler ? string.Empty : domainFolder;
+
 			string expectedTestPath =
-				Path.Combine(
-					testsDirectory,
-					domainFolder,
-					"Commands",
-					commandName,
-					expectedTestName);
+				string.IsNullOrEmpty(testDomainFolder)
+					? Path.Combine(
+						testsDirectory,
+						"Commands",
+						commandName,
+						expectedTestName)
+					: Path.Combine(
+						testsDirectory,
+						testDomainFolder,
+						"Commands",
+						commandName,
+						expectedTestName);
 
 			// Also check without the command subfolder
 			string alternativeTestPath =
-				Path.Combine(
-					testsDirectory,
-					domainFolder,
-					"Commands",
-					expectedTestName);
+				string.IsNullOrEmpty(testDomainFolder)
+					? Path.Combine(
+						testsDirectory,
+						"Commands",
+						expectedTestName)
+					: Path.Combine(
+						testsDirectory,
+						testDomainFolder,
+						"Commands",
+						expectedTestName);
 
 			if (!File.Exists(expectedTestPath) && !File.Exists(alternativeTestPath))
 			{
-				missingTests.Add(
-					$"{domainFolder}/Commands/{commandName}/{expectedTestName}");
+				string displayPath =
+					string.IsNullOrEmpty(testDomainFolder)
+						? $"Commands/{commandName}/{expectedTestName}"
+						: $"{testDomainFolder}/Commands/{commandName}/{expectedTestName}";
+
+				missingTests.Add(displayPath);
 			}
 		}
 
@@ -107,22 +140,17 @@ public class TestLocationAlignmentTests : SourceCodeArchitectureTest
 	[Fact]
 	public void All_QueryHandlers_Should_Have_Corresponding_Tests()
 	{
-		// Arrange
+		// Arrange - Get handlers from both domain assemblies
 		Type[] queryHandlerTypes =
 			DomainsAssembly
 				.GetTypes()
+				.Concat(IdentityAssembly.GetTypes())
 				.Where(type =>
 					type.Name.EndsWith("Handler")
 					&& type.Namespace?.Contains("Queries") == true
 					&& !type.IsAbstract
 					&& !type.IsInterface)
 				.ToArray();
-
-		string testsDirectory =
-			Path.Combine(
-				SolutionRoot,
-				"Tests",
-				"SeventySix.Domains.Tests");
 
 		List<string> missingTests = [];
 
@@ -140,31 +168,65 @@ public class TestLocationAlignmentTests : SourceCodeArchitectureTest
 				continue;
 			}
 
+			// Determine the correct test project based on handler namespace
+			bool isIdentityHandler =
+				handlerType.Namespace?.StartsWith("SeventySix.Identity") == true;
+
+			string testProjectName =
+				isIdentityHandler
+					? "SeventySix.Domains.Identity.Tests"
+					: "SeventySix.Domains.Tests";
+
+			string testsDirectory =
+				Path.Combine(
+					SolutionRoot,
+					"Tests",
+					testProjectName);
+
 			string queryName =
 				handlerType.Name.Replace(
 					"Handler",
 					string.Empty);
 
+			// For Identity, the test project structure doesn't have an "Identity" subfolder
+			string testDomainFolder =
+				isIdentityHandler ? string.Empty : domainFolder;
+
 			string expectedTestPath =
-				Path.Combine(
-					testsDirectory,
-					domainFolder,
-					"Queries",
-					queryName,
-					expectedTestName);
+				string.IsNullOrEmpty(testDomainFolder)
+					? Path.Combine(
+						testsDirectory,
+						"Queries",
+						queryName,
+						expectedTestName)
+					: Path.Combine(
+						testsDirectory,
+						testDomainFolder,
+						"Queries",
+						queryName,
+						expectedTestName);
 
 			// Also check without the query subfolder
 			string alternativeTestPath =
-				Path.Combine(
-					testsDirectory,
-					domainFolder,
-					"Queries",
-					expectedTestName);
+				string.IsNullOrEmpty(testDomainFolder)
+					? Path.Combine(
+						testsDirectory,
+						"Queries",
+						expectedTestName)
+					: Path.Combine(
+						testsDirectory,
+						testDomainFolder,
+						"Queries",
+						expectedTestName);
 
 			if (!File.Exists(expectedTestPath) && !File.Exists(alternativeTestPath))
 			{
-				missingTests.Add(
-					$"{domainFolder}/Queries/{queryName}/{expectedTestName}");
+				string displayPath =
+					string.IsNullOrEmpty(testDomainFolder)
+						? $"Queries/{queryName}/{expectedTestName}"
+						: $"{testDomainFolder}/Queries/{queryName}/{expectedTestName}";
+
+				missingTests.Add(displayPath);
 			}
 		}
 
@@ -184,22 +246,17 @@ public class TestLocationAlignmentTests : SourceCodeArchitectureTest
 	[Fact]
 	public void All_JobHandlers_Should_Have_Corresponding_Tests()
 	{
-		// Arrange
+		// Arrange - Get handlers from both domain assemblies
 		Type[] jobHandlerTypes =
 			DomainsAssembly
 				.GetTypes()
+				.Concat(IdentityAssembly.GetTypes())
 				.Where(type =>
 					type.Name.EndsWith("Handler")
 					&& type.Namespace?.Contains("Jobs") == true
 					&& !type.IsAbstract
 					&& !type.IsInterface)
 				.ToArray();
-
-		string testsDirectory =
-			Path.Combine(
-				SolutionRoot,
-				"Tests",
-				"SeventySix.Domains.Tests");
 
 		List<string> missingTests = [];
 
@@ -217,16 +274,38 @@ public class TestLocationAlignmentTests : SourceCodeArchitectureTest
 				continue;
 			}
 
+			// Determine the correct test project based on handler namespace
+			bool isIdentityHandler =
+				handlerType.Namespace?.StartsWith("SeventySix.Identity") == true;
+
+			string testProjectName =
+				isIdentityHandler
+					? "SeventySix.Domains.Identity.Tests"
+					: "SeventySix.Domains.Tests";
+
+			// For Identity, the test project structure doesn't have an "Identity" subfolder
+			// so we need to strip the "Identity\" prefix from the relative path
+			string testRelativePath =
+				isIdentityHandler && relativePath.StartsWith("Identity\\")
+					? relativePath["Identity\\".Length..]
+					: relativePath;
+
+			string testsDirectory =
+				Path.Combine(
+					SolutionRoot,
+					"Tests",
+					testProjectName);
+
 			string expectedTestPath =
 				Path.Combine(
 					testsDirectory,
-					relativePath,
+					testRelativePath,
 					expectedTestName);
 
 			if (!File.Exists(expectedTestPath))
 			{
 				missingTests.Add(
-					$"{relativePath}/{expectedTestName}");
+					$"{testRelativePath}/{expectedTestName}");
 			}
 		}
 

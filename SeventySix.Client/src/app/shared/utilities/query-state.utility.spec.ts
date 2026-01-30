@@ -1,4 +1,4 @@
-import { signal, Signal } from "@angular/core";
+import { Signal, signal } from "@angular/core";
 import {
 	isEmptyResult,
 	isInitialLoading,

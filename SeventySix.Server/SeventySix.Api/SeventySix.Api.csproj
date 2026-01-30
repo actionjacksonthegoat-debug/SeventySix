@@ -81,6 +81,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\SeventySix.Domains\SeventySix.Domains.csproj" />
+		<ProjectReference Include="..\SeventySix.Domains.Identity\SeventySix.Domains.Identity.csproj" />
 		<!-- Add codefixes assembly as analyzer so format/dotnet-format can discover code fixes -->
 		<ProjectReference
 			Include="..\SeventySix.Analyzers.CodeFixes\SeventySix.Analyzers.CodeFixes.csproj"

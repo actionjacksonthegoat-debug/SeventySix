@@ -154,9 +154,13 @@ test.describe("Admin Routes - WCAG Accessibility",
 						await adminPage.goto(ROUTES.admin.dashboard);
 						await adminPage.waitForLoadState("load");
 
-						// Verify banner (header) landmark exists
+						// Wait for banner landmark to be attached to DOM
 						const banner =
 							adminPage.locator(SELECTORS.accessibility.banner);
+
+						await banner.first()
+							.waitFor({ state: "attached", timeout: 10000 });
+
 						const bannerCount =
 							await banner.count();
 

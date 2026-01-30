@@ -29,6 +29,7 @@ using SeventySix.Api.Extensions;
 using SeventySix.Api.Middleware;
 using SeventySix.Api.Registration;
 using SeventySix.Api.Utilities;
+using SeventySix.Identity.Registration;
 using SeventySix.Registration;
 using SeventySix.Shared.Constants;
 using SeventySix.Shared.Registration;
@@ -112,6 +113,9 @@ builder.Host.UseWolverine(
 	{
 		// Auto-discover handlers from SeventySix assembly
 		options.Discovery.IncludeAssembly(typeof(SeventySix.Logging.Log).Assembly);
+
+		// Auto-discover handlers from SeventySix.Identity assembly
+		options.Discovery.IncludeAssembly(typeof(SeventySix.Identity.Registration.IdentityRegistration).Assembly);
 
 		// Use FluentValidation for command validation
 		options.UseFluentValidation();

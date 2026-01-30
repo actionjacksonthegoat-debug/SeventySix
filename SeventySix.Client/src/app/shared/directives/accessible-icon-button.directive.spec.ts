@@ -1,9 +1,9 @@
 import { Component } from "@angular/core";
+import { provideZonelessChangeDetection } from "@angular/core";
 import {
 	ComponentFixture,
 	TestBed
 } from "@angular/core/testing";
-import { provideZonelessChangeDetection } from "@angular/core";
 import { AccessibleIconButtonDirective } from "./accessible-icon-button.directive";
 
 @Component(

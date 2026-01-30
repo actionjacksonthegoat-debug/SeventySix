@@ -5,8 +5,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SeventySix.ElectronicNotifications.Emails;
-using SeventySix.Identity;
-using SeventySix.Identity.Settings;
 using SeventySix.Logging;
 using SeventySix.Logging.Jobs;
 using SeventySix.Shared.BackgroundJobs;
@@ -24,12 +22,16 @@ namespace SeventySix.Registration;
 ///
 /// <para><strong>Background Jobs Inventory:</strong></para>
 /// <list type="bullet">
-///   <item><see cref="Identity.Jobs.RefreshTokenCleanupJob"/> - Periodic cleanup of expired refresh tokens (Identity)</item>
-///   <item><see cref="Identity.Jobs.IpAnonymizationJob"/> - Periodic anonymization of old IP addresses for GDPR compliance (Identity)</item>
-///   <item><see cref="AdminSeederService"/> - One-time admin user seeding at startup (Identity)</item>
 ///   <item><see cref="ElectronicNotifications.Emails.Jobs.EmailQueueProcessJob"/> - Periodic processing of email queue (ElectronicNotifications)</item>
 ///   <item><see cref="Logging.Jobs.LogCleanupJob"/> - Periodic cleanup of old log files and database entries (Logging)</item>
 ///   <item><see cref="Logging.Jobs.DatabaseMaintenanceJob"/> - Nightly PostgreSQL VACUUM ANALYZE for all schemas (Logging)</item>
+/// </list>
+///
+/// <para><strong>Note:</strong> Identity background jobs are registered via <c>IdentityRegistration.AddIdentityDomain()</c>:</para>
+/// <list type="bullet">
+///   <item>RefreshTokenCleanupJob - Periodic cleanup of expired refresh tokens</item>
+///   <item>IpAnonymizationJob - Periodic anonymization of old IP addresses for GDPR compliance</item>
+///   <item>AdminSeederService - One-time admin user seeding at startup</item>
 /// </list>
 ///
 /// <para><strong>Usage in Program.cs:</strong></para>
@@ -60,10 +62,8 @@ public static class BackgroundJobRegistration
 		services.AddScoped<IRecurringJobRepository, RecurringJobRepository>();
 
 		// Always register settings (needed for ScheduledJobService health status calculation)
-		services.Configure<RefreshTokenCleanupSettings>(
-			configuration.GetSection(RefreshTokenCleanupSettings.SectionName));
-		services.Configure<IpAnonymizationSettings>(
-			configuration.GetSection(IpAnonymizationSettings.SectionName));
+		// Note: Identity-related settings (RefreshTokenCleanup, IpAnonymization) are registered
+		// via IdentityRegistration.AddIdentityDomain()
 		services.Configure<LogCleanupSettings>(
 			configuration.GetSection(LogCleanupSettings.SectionName));
 		services.Configure<DatabaseMaintenanceSettings>(
@@ -86,10 +86,8 @@ public static class BackgroundJobRegistration
 		// Database maintenance service
 		services.AddScoped<IDatabaseMaintenanceService, DatabaseMaintenanceService>();
 
-		// AdminSeederService - One-time admin user seeding at startup (remains as IHostedService)
-		services.Configure<AdminSeederSettings>(
-			configuration.GetSection(AdminSeederSettings.SectionName));
-		services.AddHostedService<AdminSeederService>();
+		// Note: AdminSeederService (one-time admin user seeding) is registered
+		// via IdentityRegistration.AddIdentityDomain()
 
 		// Recurring job scheduler - schedules all jobs on startup
 		services.AddHostedService<RecurringJobSchedulerService>();

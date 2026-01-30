@@ -21,8 +21,17 @@ public class BoundedContextTests
 	/// </summary>
 	private static readonly string[] ServiceOnlyContexts =
 		[
-		"ElectronicNotifications",
-	];
+			"ElectronicNotifications",
+		];
+
+	/// <summary>
+	/// Bounded contexts that are isolated in their own assemblies.
+	/// These should NOT depend on SeventySix.Domains at all.
+	/// </summary>
+	private static readonly (string ContextName, Assembly Assembly)[] IsolatedContexts =
+		[
+			("Identity", typeof(Identity.ApplicationUser).Assembly),
+		];
 
 	/// <summary>
 	/// Allowed cross-context dependencies.
@@ -32,15 +41,16 @@ public class BoundedContextTests
 	private static readonly Dictionary<string, string[]> AllowedDependencies =
 		new()
 		{
-			["Identity"] =
-				["ElectronicNotifications"]
+			// Identity is now isolated - NO cross-domain dependencies allowed
+			// It uses shared contracts for email communication
 		};
 
 	[Fact]
 	public void Bounded_Contexts_Should_Not_Reference_Each_Other()
 	{
+		// Get bounded contexts from the main Domains assembly (excludes Identity)
 		Assembly domainAssembly =
-			typeof(SeventySix.Identity.ApplicationUser).Assembly;
+			typeof(Logging.Log).Assembly;
 
 		string[] boundedContextNames =
 			GetBoundedContextNames(domainAssembly);
@@ -49,6 +59,93 @@ public class BoundedContextTests
 			FindCircularDependencyViolations(boundedContextNames);
 
 		circularDependencyViolations.ShouldBeEmpty();
+	}
+
+	[Fact]
+	public void Identity_Domain_Should_Not_Reference_Other_Domains()
+	{
+		// Identity is now in its own assembly and should not depend on any other domain
+		Assembly identityAssembly =
+			typeof(Identity.ApplicationUser).Assembly;
+
+		// Verify Identity doesn't depend on other bounded contexts
+		string[] otherDomains =
+			["Logging", "ApiTracking", "ElectronicNotifications"];
+
+		List<string> violations = [];
+
+		foreach (string domainName in otherDomains)
+		{
+			TestResult architectureTestResult =
+				Types
+				.InAssembly(identityAssembly)
+				.ShouldNot()
+				.HaveDependencyOn($"SeventySix.{domainName}")
+				.GetResult();
+
+			if (!architectureTestResult.IsSuccessful)
+			{
+				string failingTypes =
+					string.Join(
+						", ",
+						architectureTestResult.FailingTypeNames ?? []);
+
+				violations.Add(
+					$"Identity should not depend on {domainName}. " +
+					$"Violating types: {failingTypes}");
+			}
+		}
+
+		violations.ShouldBeEmpty();
+	}
+
+	[Fact]
+	public void Identity_Domain_Should_Not_Reference_SeventySix_Domains()
+	{
+		// Identity is in its own assembly and should NOT depend on SeventySix.Domains
+		Assembly identityAssembly =
+			typeof(Identity.ApplicationUser).Assembly;
+
+		// Get all namespaces from SeventySix.Domains assembly that Identity should not reference
+		Assembly domainsAssembly =
+			typeof(Logging.Log).Assembly;
+
+		string[] domainsNamespaces =
+			domainsAssembly
+			.GetTypes()
+			.Select(type => type.Namespace)
+			.Where(namespaceName =>
+				namespaceName != null
+				&& !namespaceName.Contains("Shared"))
+			.Distinct()
+			.Select(namespaceName => namespaceName!)
+			.ToArray();
+
+		List<string> violations = [];
+
+		foreach (string namespaceName in domainsNamespaces)
+		{
+			TestResult architectureTestResult =
+				Types
+				.InAssembly(identityAssembly)
+				.ShouldNot()
+				.HaveDependencyOn(namespaceName!)
+				.GetResult();
+
+			if (!architectureTestResult.IsSuccessful)
+			{
+				string failingTypes =
+					string.Join(
+						", ",
+						architectureTestResult.FailingTypeNames ?? []);
+
+				violations.Add(
+					$"Identity should not depend on {namespaceName}. " +
+					$"Violating types: {failingTypes}");
+			}
+		}
+
+		violations.ShouldBeEmpty();
 	}
 
 	/// <summary>
@@ -139,8 +236,9 @@ public class BoundedContextTests
 	[Fact]
 	public void Bounded_Contexts_Should_Have_Own_DbContext()
 	{
+		// Check main Domains assembly
 		Assembly domainAssembly =
-			typeof(SeventySix.Identity.ApplicationUser).Assembly;
+			typeof(Logging.Log).Assembly;
 
 		string[] boundedContextNames =
 			GetBoundedContextNames(domainAssembly);
@@ -170,6 +268,26 @@ public class BoundedContextTests
 		}
 
 		contextsWithoutDbContext.ShouldBeEmpty();
+	}
+
+	/// <summary>
+	/// Verifies that Identity bounded context has its own DbContext.
+	/// </summary>
+	[Fact]
+	public void Identity_Domain_Should_Have_Own_DbContext()
+	{
+		Assembly identityAssembly =
+			typeof(Identity.ApplicationUser).Assembly;
+
+		Type? dbContextType =
+			identityAssembly
+			.GetTypes()
+			.FirstOrDefault(type =>
+				type.Namespace == "SeventySix.Identity"
+				&& type.Name.EndsWith("DbContext")
+				&& InheritsFromDbContext(type));
+
+		dbContextType.ShouldNotBeNull();
 	}
 
 	/// <summary>

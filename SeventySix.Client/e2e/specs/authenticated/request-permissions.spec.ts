@@ -78,6 +78,13 @@ test.describe("Request Permissions Page",
 				test("should display message textarea for request reason",
 					async ({ userPage }: { userPage: Page }) =>
 					{
+						// Wait for content to load (either roles list or no-roles message)
+						const rolesListOrNoRoles =
+							userPage.locator(".roles-list, .no-roles");
+
+						await rolesListOrNoRoles.first()
+							.waitFor({ state: "visible", timeout: 10000 });
+
 						const messageTextarea =
 							userPage.locator(SELECTORS.requestPermissions.messageTextarea);
 
@@ -103,6 +110,13 @@ test.describe("Request Permissions Page",
 				test("should display either role checkboxes or no-roles message",
 					async ({ userPage }: { userPage: Page }) =>
 					{
+						// Wait for content to load (either roles list or no-roles message)
+						const rolesListOrNoRoles =
+							userPage.locator(".roles-list, .no-roles");
+
+						await rolesListOrNoRoles.first()
+							.waitFor({ state: "visible", timeout: 10000 });
+
 						const roleCheckboxes =
 							userPage.locator(SELECTORS.requestPermissions.roleCheckbox);
 						const noRolesMessage =

@@ -43,5 +43,6 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\SeventySix.Domains\SeventySix.Domains.csproj" />
+		<ProjectReference Include="..\..\SeventySix.Domains.Identity\SeventySix.Domains.Identity.csproj" />
 	</ItemGroup>
 </Project>

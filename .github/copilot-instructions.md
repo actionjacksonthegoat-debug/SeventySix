@@ -51,7 +51,7 @@ import { isNullOrUndefined, isPresent } from "@shared/utilities/null-check.utili
 | Chains         | New line BEFORE `.`                |
 | Binary ops     | `\|\|`, `??` on LEFT of new line   |
 
-### 5. Tests MUST Pass
+### 5. Tests MUST Pass (GATE CONDITION)
 
 | Suite  | Command            |
 | ------ | ------------------ |
@@ -59,7 +59,9 @@ import { isNullOrUndefined, isPresent } from "@shared/utilities/null-check.utili
 | Client | `npm test`         |
 | E2E    | `npm run test:e2e` |
 
-> ⚠️ **CRITICAL**: Test failures MUST be fixed immediately when discovered, regardless of origin. Never skip or defer failing tests. If a test fails, fix it before proceeding—no exceptions.
+> ⚠️ **CRITICAL**: ALL three test suites MUST pass before ANY implementation plan is considered complete.
+> Test failures MUST be fixed immediately when discovered, regardless of origin.
+> Never skip or defer failing tests—fix before proceeding.
 
 ### 6. Accessibility = WCAG AA Compliance (Client)
 

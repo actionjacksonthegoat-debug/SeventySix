@@ -131,7 +131,7 @@ describe("mutation-dialog.utility",
 						mutation.mutate.mockImplementation(
 							(
 								_input: unknown,
-								callbacks: { onSuccess?: () => void }) =>
+								callbacks: { onSuccess?: () => void; }) =>
 							{
 								callbacks.onSuccess?.();
 							});
@@ -158,7 +158,7 @@ describe("mutation-dialog.utility",
 						mutation.mutate.mockImplementation(
 							(
 								_input: unknown,
-								callbacks: { onError?: (error: Error) => void }) =>
+								callbacks: { onError?: (error: Error) => void; }) =>
 							{
 								callbacks.onError?.(testError);
 							});
@@ -179,7 +179,7 @@ describe("mutation-dialog.utility",
 				it("should pass correct input to mutation",
 					() =>
 					{
-						const complexInput: { userId: number; action: string } =
+						const complexInput: { userId: number; action: string; } =
 							{
 								userId: 42,
 								action: "reset"
