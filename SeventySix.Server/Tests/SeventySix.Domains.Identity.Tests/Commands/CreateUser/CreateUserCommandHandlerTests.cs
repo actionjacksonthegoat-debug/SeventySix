@@ -8,7 +8,6 @@ using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using SeventySix.Identity;
 using SeventySix.Shared.Contracts.Emails;
-using SeventySix.Shared.Interfaces;
 using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.Mocks;
 using Shouldly;
@@ -26,7 +25,7 @@ public class CreateUserCommandHandlerTests
 {
 	private readonly IMessageBus MessageBus;
 	private readonly UserManager<ApplicationUser> UserManager;
-	private readonly ICacheInvalidationService CacheInvalidation;
+	private readonly IIdentityCacheService IdentityCache;
 	private readonly FakeTimeProvider TimeProvider;
 	private readonly ILogger Logger;
 
@@ -39,8 +38,8 @@ public class CreateUserCommandHandlerTests
 			Substitute.For<IMessageBus>();
 		UserManager =
 			IdentityMockFactory.CreateUserManager();
-		CacheInvalidation =
-			Substitute.For<ICacheInvalidationService>();
+		IdentityCache =
+			Substitute.For<IIdentityCacheService>();
 		TimeProvider =
 			TestDates.CreateDefaultTimeProvider();
 		Logger =
@@ -91,7 +90,7 @@ public class CreateUserCommandHandlerTests
 				request,
 				MessageBus,
 				UserManager,
-				CacheInvalidation,
+				IdentityCache,
 				TimeProvider,
 				Logger,
 				CancellationToken.None);
@@ -138,7 +137,7 @@ public class CreateUserCommandHandlerTests
 				request,
 				MessageBus,
 				UserManager,
-				CacheInvalidation,
+				IdentityCache,
 				TimeProvider,
 				Logger,
 				CancellationToken.None));
@@ -172,7 +171,7 @@ public class CreateUserCommandHandlerTests
 				request,
 				MessageBus,
 				UserManager,
-				CacheInvalidation,
+				IdentityCache,
 				TimeProvider,
 				Logger,
 				CancellationToken.None));
@@ -206,7 +205,7 @@ public class CreateUserCommandHandlerTests
 				request,
 				MessageBus,
 				UserManager,
-				CacheInvalidation,
+				IdentityCache,
 				TimeProvider,
 				Logger,
 				CancellationToken.None));
@@ -242,7 +241,7 @@ public class CreateUserCommandHandlerTests
 				request,
 				MessageBus,
 				UserManager,
-				CacheInvalidation,
+				IdentityCache,
 				TimeProvider,
 				Logger,
 				CancellationToken.None);
@@ -292,7 +291,7 @@ public class CreateUserCommandHandlerTests
 			request,
 			MessageBus,
 			UserManager,
-			CacheInvalidation,
+			IdentityCache,
 			TimeProvider,
 			Logger,
 			CancellationToken.None);

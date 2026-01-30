@@ -1,19 +1,17 @@
-// <copyright file="ICacheInvalidationService.cs" company="SeventySix">
+// <copyright file="IIdentityCacheService.cs" company="SeventySix">
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-namespace SeventySix.Shared.Interfaces;
+namespace SeventySix.Identity;
 
 /// <summary>
-/// Centralized service for FusionCache invalidation across domains.
+/// Cache operations specific to Identity bounded context.
 /// </summary>
 /// <remarks>
-/// Provides consistent cache invalidation patterns:
-/// - Single-key removal for specific entities
-/// - Multi-key removal for related cache entries
-/// - Domain-isolated invalidation via named caches
+/// Encapsulates all Identity cache key knowledge within the bounded context.
+/// Handlers use this service to invalidate cache without knowing key patterns.
 /// </remarks>
-public interface ICacheInvalidationService
+public interface IIdentityCacheService
 {
 	/// <summary>
 	/// Invalidates all cache entries for a specific user.
@@ -30,7 +28,7 @@ public interface ICacheInvalidationService
 	/// <returns>
 	/// A task representing the async operation.
 	/// </returns>
-	public Task InvalidateUserCacheAsync(
+	public Task InvalidateUserAsync(
 		long userId,
 		string? email = null,
 		string? username = null);
@@ -44,34 +42,7 @@ public interface ICacheInvalidationService
 	/// <returns>
 	/// A task representing the async operation.
 	/// </returns>
-	public Task InvalidateUserRolesCacheAsync(long userId);
-
-	/// <summary>
-	/// Invalidates daily statistics cache.
-	/// </summary>
-	/// <param name="date">
-	/// The date to invalidate.
-	/// </param>
-	/// <returns>
-	/// A task representing the async operation.
-	/// </returns>
-	public Task InvalidateApiStatisticsCacheAsync(DateOnly date);
-
-	/// <summary>
-	/// Invalidates permission requests list cache.
-	/// </summary>
-	/// <returns>
-	/// A task representing the async operation.
-	/// </returns>
-	public Task InvalidatePermissionRequestsCacheAsync();
-
-	/// <summary>
-	/// Invalidates all users list cache.
-	/// </summary>
-	/// <returns>
-	/// A task representing the async operation.
-	/// </returns>
-	public Task InvalidateAllUsersCacheAsync();
+	public Task InvalidateUserRolesAsync(long userId);
 
 	/// <summary>
 	/// Invalidates cache for user profile changes only.
@@ -82,10 +53,26 @@ public interface ICacheInvalidationService
 	/// <returns>
 	/// A task representing the async operation.
 	/// </returns>
-	public Task InvalidateUserProfileCacheAsync(long userId);
+	public Task InvalidateUserProfileAsync(long userId);
 
 	/// <summary>
-	/// Invalidates cache for password changes (user profile contains hasPassword flag).
+	/// Invalidates all users list cache.
+	/// </summary>
+	/// <returns>
+	/// A task representing the async operation.
+	/// </returns>
+	public Task InvalidateAllUsersAsync();
+
+	/// <summary>
+	/// Invalidates permission requests list cache.
+	/// </summary>
+	/// <returns>
+	/// A task representing the async operation.
+	/// </returns>
+	public Task InvalidatePermissionRequestsAsync();
+
+	/// <summary>
+	/// Invalidates cache for password changes.
 	/// </summary>
 	/// <param name="userId">
 	/// The user ID whose password changed.
@@ -93,7 +80,7 @@ public interface ICacheInvalidationService
 	/// <returns>
 	/// A task representing the async operation.
 	/// </returns>
-	public Task InvalidateUserPasswordCacheAsync(long userId);
+	public Task InvalidateUserPasswordAsync(long userId);
 
 	/// <summary>
 	/// Invalidates cache for multiple users (bulk operations).
@@ -104,5 +91,5 @@ public interface ICacheInvalidationService
 	/// <returns>
 	/// A task representing the async operation.
 	/// </returns>
-	public Task InvalidateBulkUsersCacheAsync(IEnumerable<long> userIds);
+	public Task InvalidateBulkUsersAsync(IEnumerable<long> userIds);
 }

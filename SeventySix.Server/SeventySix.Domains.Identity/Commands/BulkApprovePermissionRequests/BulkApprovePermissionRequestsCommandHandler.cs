@@ -3,7 +3,6 @@
 // </copyright>
 
 using Microsoft.AspNetCore.Identity;
-using SeventySix.Shared.Interfaces;
 
 namespace SeventySix.Identity.Commands.BulkApprovePermissionRequests;
 
@@ -24,8 +23,8 @@ public static class BulkApprovePermissionRequestsCommandHandler
 	/// <param name="userManager">
 	/// Identity <see cref="UserManager{TUser}"/> for role operations.
 	/// </param>
-	/// <param name="cacheInvalidation">
-	/// Cache invalidation service for clearing role and request caches.
+	/// <param name="identityCache">
+	/// Identity cache service for clearing role and request caches.
 	/// </param>
 	/// <param name="cancellationToken">
 	/// Cancellation token.
@@ -37,7 +36,7 @@ public static class BulkApprovePermissionRequestsCommandHandler
 		BulkApprovePermissionRequestsCommand command,
 		IPermissionRequestRepository repository,
 		UserManager<ApplicationUser> userManager,
-		ICacheInvalidationService cacheInvalidation,
+		IIdentityCacheService identityCache,
 		CancellationToken cancellationToken)
 	{
 		List<long> idList = command.RequestIds.ToList();
@@ -76,10 +75,10 @@ public static class BulkApprovePermissionRequestsCommandHandler
 		// Invalidate caches for all affected users and permission requests
 		foreach (long userId in affectedUserIds)
 		{
-			await cacheInvalidation.InvalidateUserRolesCacheAsync(userId);
+			await identityCache.InvalidateUserRolesAsync(userId);
 		}
 
-		await cacheInvalidation.InvalidatePermissionRequestsCacheAsync();
+		await identityCache.InvalidatePermissionRequestsAsync();
 
 		return approvedCount;
 	}

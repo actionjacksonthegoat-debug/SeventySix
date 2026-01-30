@@ -4,7 +4,6 @@
 
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
-using SeventySix.Shared.Interfaces;
 using Wolverine;
 
 namespace SeventySix.Identity;
@@ -29,8 +28,8 @@ public static class ChangePasswordCommandHandler
 	/// <param name="authenticationService">
 	/// Service used to generate authentication results.
 	/// </param>
-	/// <param name="cacheInvalidation">
-	/// Cache invalidation service for clearing user cache.
+	/// <param name="identityCache">
+	/// Identity cache service for clearing user cache.
 	/// </param>
 	/// <param name="breachCheck">
 	/// Compound dependency for breach checking (service + settings).
@@ -55,7 +54,7 @@ public static class ChangePasswordCommandHandler
 		UserManager<ApplicationUser> userManager,
 		ITokenRepository tokenRepository,
 		AuthenticationService authenticationService,
-		ICacheInvalidationService cacheInvalidation,
+		IIdentityCacheService identityCache,
 		BreachCheckDependencies breachCheck,
 		TimeProvider timeProvider,
 		ILogger<ChangePasswordCommand> logger,
@@ -100,7 +99,7 @@ public static class ChangePasswordCommandHandler
 			cancellationToken);
 
 		// Invalidate user cache (profile contains hasPassword flag)
-		await cacheInvalidation.InvalidateUserPasswordCacheAsync(command.UserId);
+		await identityCache.InvalidateUserPasswordAsync(command.UserId);
 
 		return await authenticationService.GenerateAuthResultAsync(
 			user,

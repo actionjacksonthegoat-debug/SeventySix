@@ -3,7 +3,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using SeventySix.Identity;
-using SeventySix.Shared.Interfaces;
 using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.Mocks;
@@ -16,7 +15,7 @@ public class ChangePasswordCommandHandlerTests
 	private readonly UserManager<ApplicationUser> UserManager;
 	private readonly ITokenRepository TokenRepository;
 	private readonly AuthenticationService AuthenticationService;
-	private readonly ICacheInvalidationService CacheInvalidation;
+	private readonly IIdentityCacheService IdentityCache;
 	private readonly BreachCheckDependencies BreachCheck;
 	private readonly FakeTimeProvider TimeProvider;
 	private readonly ILogger<ChangePasswordCommand> Logger;
@@ -31,8 +30,8 @@ public class ChangePasswordCommandHandlerTests
 			Substitute.For<ITokenRepository>();
 		AuthenticationService =
 			IdentityMockFactory.CreateAuthenticationService();
-		CacheInvalidation =
-			Substitute.For<ICacheInvalidationService>();
+		IdentityCache =
+			Substitute.For<IIdentityCacheService>();
 
 		// Mock breached password service to return "not breached" by default
 		IBreachedPasswordService breachedPasswordService =
@@ -90,7 +89,7 @@ public class ChangePasswordCommandHandlerTests
 				UserManager,
 				TokenRepository,
 				AuthenticationService,
-				CacheInvalidation,
+				IdentityCache,
 				BreachCheck,
 				TimeProvider,
 				Logger,

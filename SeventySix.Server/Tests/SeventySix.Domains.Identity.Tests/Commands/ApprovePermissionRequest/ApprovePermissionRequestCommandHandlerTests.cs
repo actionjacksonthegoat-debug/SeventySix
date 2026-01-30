@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Identity;
 using NSubstitute;
 using SeventySix.Identity;
 using SeventySix.Identity.Commands.ApprovePermissionRequest;
-using SeventySix.Shared.Interfaces;
 using SeventySix.Shared.POCOs;
 using SeventySix.TestUtilities.Mocks;
 using Shouldly;
@@ -24,7 +23,7 @@ public class ApprovePermissionRequestCommandHandlerTests
 {
 	private readonly IPermissionRequestRepository PermissionRequestRepository;
 	private readonly UserManager<ApplicationUser> UserManager;
-	private readonly ICacheInvalidationService CacheInvalidation;
+	private readonly IIdentityCacheService IdentityCache;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="ApprovePermissionRequestCommandHandlerTests"/> class.
@@ -35,8 +34,8 @@ public class ApprovePermissionRequestCommandHandlerTests
 			Substitute.For<IPermissionRequestRepository>();
 		UserManager =
 			IdentityMockFactory.CreateUserManager();
-		CacheInvalidation =
-			Substitute.For<ICacheInvalidationService>();
+		IdentityCache =
+			Substitute.For<IIdentityCacheService>();
 	}
 
 	/// <summary>
@@ -85,7 +84,7 @@ public class ApprovePermissionRequestCommandHandlerTests
 				command,
 				PermissionRequestRepository,
 				UserManager,
-				CacheInvalidation,
+				IdentityCache,
 				CancellationToken.None);
 
 		// Assert
@@ -127,7 +126,7 @@ public class ApprovePermissionRequestCommandHandlerTests
 				command,
 				PermissionRequestRepository,
 				UserManager,
-				CacheInvalidation,
+				IdentityCache,
 				CancellationToken.None);
 
 		// Assert
@@ -170,7 +169,7 @@ public class ApprovePermissionRequestCommandHandlerTests
 				command,
 				PermissionRequestRepository,
 				UserManager,
-				CacheInvalidation,
+				IdentityCache,
 				CancellationToken.None);
 
 		// Assert
@@ -230,7 +229,7 @@ public class ApprovePermissionRequestCommandHandlerTests
 				command,
 				PermissionRequestRepository,
 				UserManager,
-				CacheInvalidation,
+				IdentityCache,
 				CancellationToken.None);
 
 		// Assert

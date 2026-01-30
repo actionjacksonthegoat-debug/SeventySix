@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SeventySix.Shared.Extensions;
-using SeventySix.Shared.Interfaces;
 using Wolverine;
 
 namespace SeventySix.Identity;
@@ -28,8 +27,8 @@ public static class UpdateUserCommandHandler
 	/// <param name="userManager">
 	/// Identity UserManager for user operations.
 	/// </param>
-	/// <param name="cacheInvalidation">
-	/// Cache invalidation service for clearing user cache.
+	/// <param name="identityCache">
+	/// Identity cache service for clearing user cache.
 	/// </param>
 	/// <param name="logger">
 	/// Logger instance.
@@ -48,7 +47,7 @@ public static class UpdateUserCommandHandler
 		UpdateUserRequest request,
 		IMessageBus messageBus,
 		UserManager<ApplicationUser> userManager,
-		ICacheInvalidationService cacheInvalidation,
+		IIdentityCacheService identityCache,
 		ILogger logger,
 		CancellationToken cancellationToken)
 	{
@@ -83,7 +82,7 @@ public static class UpdateUserCommandHandler
 			}
 
 			// Invalidate cache for old values
-			await cacheInvalidation.InvalidateUserCacheAsync(
+			await identityCache.InvalidateUserAsync(
 				request.Id,
 				email: previousEmail,
 				username: previousUsername);
@@ -103,14 +102,14 @@ public static class UpdateUserCommandHandler
 
 			if (emailChanged || usernameChanged)
 			{
-				await cacheInvalidation.InvalidateUserCacheAsync(
+				await identityCache.InvalidateUserAsync(
 					request.Id,
 					email: emailChanged ? request.Email : null,
 					username: usernameChanged ? request.Username : null);
 			}
 
 			// Invalidate all users list for admin views
-			await cacheInvalidation.InvalidateAllUsersCacheAsync();
+			await identityCache.InvalidateAllUsersAsync();
 
 			return existing.ToDto();
 		}

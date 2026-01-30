@@ -5,7 +5,6 @@
 using NSubstitute;
 using SeventySix.Identity;
 using SeventySix.Identity.Commands.BulkRejectPermissionRequests;
-using SeventySix.Shared.Interfaces;
 using Shouldly;
 
 namespace SeventySix.Identity.Tests.Commands.BulkRejectPermissionRequests;
@@ -20,7 +19,7 @@ namespace SeventySix.Identity.Tests.Commands.BulkRejectPermissionRequests;
 public class BulkRejectPermissionRequestsCommandHandlerTests
 {
 	private readonly IPermissionRequestRepository PermissionRequestRepository;
-	private readonly ICacheInvalidationService CacheInvalidation;
+	private readonly IIdentityCacheService IdentityCache;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="BulkRejectPermissionRequestsCommandHandlerTests"/> class.
@@ -29,8 +28,8 @@ public class BulkRejectPermissionRequestsCommandHandlerTests
 	{
 		PermissionRequestRepository =
 			Substitute.For<IPermissionRequestRepository>();
-		CacheInvalidation =
-			Substitute.For<ICacheInvalidationService>();
+		IdentityCache =
+			Substitute.For<IIdentityCacheService>();
 	}
 
 	/// <summary>
@@ -51,7 +50,7 @@ public class BulkRejectPermissionRequestsCommandHandlerTests
 			await BulkRejectPermissionRequestsCommandHandler.HandleAsync(
 				command,
 				PermissionRequestRepository,
-				CacheInvalidation,
+				IdentityCache,
 				CancellationToken.None);
 
 		// Assert
@@ -84,7 +83,7 @@ public class BulkRejectPermissionRequestsCommandHandlerTests
 			await BulkRejectPermissionRequestsCommandHandler.HandleAsync(
 				command,
 				PermissionRequestRepository,
-				CacheInvalidation,
+				IdentityCache,
 				CancellationToken.None);
 
 		// Assert
@@ -115,7 +114,7 @@ public class BulkRejectPermissionRequestsCommandHandlerTests
 			await BulkRejectPermissionRequestsCommandHandler.HandleAsync(
 				command,
 				PermissionRequestRepository,
-				CacheInvalidation,
+				IdentityCache,
 				CancellationToken.None);
 
 		// Assert
@@ -152,7 +151,7 @@ public class BulkRejectPermissionRequestsCommandHandlerTests
 		await BulkRejectPermissionRequestsCommandHandler.HandleAsync(
 			command,
 			PermissionRequestRepository,
-			CacheInvalidation,
+			IdentityCache,
 			cancellationToken);
 
 		// Assert - Verify CancellationToken was passed through

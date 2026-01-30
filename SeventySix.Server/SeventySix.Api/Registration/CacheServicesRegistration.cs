@@ -14,7 +14,7 @@ namespace SeventySix.Api.Registration;
 public static class CacheServicesRegistration
 {
 	/// <summary>
-	/// Adds cache invalidation service to the service collection.
+	/// Adds cache provider service to the service collection.
 	/// </summary>
 	/// <param name="services">
 	/// The service collection.
@@ -25,7 +25,7 @@ public static class CacheServicesRegistration
 	public static IServiceCollection AddCacheServices(
 		this IServiceCollection services)
 	{
-		services.AddScoped<ICacheInvalidationService, CacheInvalidationService>();
+		services.AddScoped<ICacheProvider, FusionCacheProvider>();
 
 		return services;
 	}

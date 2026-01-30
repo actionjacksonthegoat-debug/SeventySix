@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using SeventySix.Identity;
-using SeventySix.Shared.Interfaces;
 using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.Mocks;
 using Shouldly;
@@ -22,7 +21,7 @@ namespace SeventySix.Identity.Tests.Commands.BulkUpdateActiveStatus;
 public class BulkUpdateActiveStatusCommandHandlerTests
 {
 	private readonly UserManager<ApplicationUser> UserManager;
-	private readonly ICacheInvalidationService CacheInvalidation;
+	private readonly IIdentityCacheService IdentityCache;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="BulkUpdateActiveStatusCommandHandlerTests"/> class.
@@ -31,8 +30,8 @@ public class BulkUpdateActiveStatusCommandHandlerTests
 	{
 		UserManager =
 			IdentityMockFactory.CreateUserManager();
-		CacheInvalidation =
-			Substitute.For<ICacheInvalidationService>();
+		IdentityCache =
+			Substitute.For<IIdentityCacheService>();
 	}
 
 	/// <summary>
@@ -68,7 +67,7 @@ public class BulkUpdateActiveStatusCommandHandlerTests
 			await BulkUpdateActiveStatusCommandHandler.HandleAsync(
 				command,
 				UserManager,
-				CacheInvalidation,
+				IdentityCache,
 				CancellationToken.None);
 
 		// Assert
@@ -108,7 +107,7 @@ public class BulkUpdateActiveStatusCommandHandlerTests
 			await BulkUpdateActiveStatusCommandHandler.HandleAsync(
 				command,
 				UserManager,
-				CacheInvalidation,
+				IdentityCache,
 				CancellationToken.None);
 
 		// Assert
@@ -148,7 +147,7 @@ public class BulkUpdateActiveStatusCommandHandlerTests
 			await BulkUpdateActiveStatusCommandHandler.HandleAsync(
 				command,
 				UserManager,
-				CacheInvalidation,
+				IdentityCache,
 				CancellationToken.None);
 
 		// Assert
@@ -188,7 +187,7 @@ public class BulkUpdateActiveStatusCommandHandlerTests
 			await BulkUpdateActiveStatusCommandHandler.HandleAsync(
 				command,
 				UserManager,
-				CacheInvalidation,
+				IdentityCache,
 				CancellationToken.None);
 
 		// Assert
@@ -213,7 +212,7 @@ public class BulkUpdateActiveStatusCommandHandlerTests
 			await BulkUpdateActiveStatusCommandHandler.HandleAsync(
 				command,
 				UserManager,
-				CacheInvalidation,
+				IdentityCache,
 				CancellationToken.None);
 
 		// Assert

@@ -4,7 +4,6 @@
 
 using Microsoft.AspNetCore.Identity;
 using SeventySix.Identity.Constants;
-using SeventySix.Shared.Interfaces;
 using SeventySix.Shared.POCOs;
 
 namespace SeventySix.Identity;
@@ -28,8 +27,8 @@ public static class RemoveUserRoleCommandHandler
 	/// <param name="userManager">
 	/// The ASP.NET Identity user manager.
 	/// </param>
-	/// <param name="cacheInvalidation">
-	/// Cache invalidation service for clearing role cache.
+	/// <param name="identityCache">
+	/// Identity cache service for clearing role cache.
 	/// </param>
 	/// <param name="cancellationToken">
 	/// Cancellation token for async operation.
@@ -43,7 +42,7 @@ public static class RemoveUserRoleCommandHandler
 	public static async Task<Result> HandleAsync(
 		RemoveUserRoleCommand command,
 		UserManager<ApplicationUser> userManager,
-		ICacheInvalidationService cacheInvalidation,
+		IIdentityCacheService identityCache,
 		CancellationToken cancellationToken)
 	{
 		ApplicationUser? user =
@@ -88,7 +87,7 @@ public static class RemoveUserRoleCommandHandler
 		if (identityResult.Succeeded)
 		{
 			// Invalidate role caches
-			await cacheInvalidation.InvalidateUserRolesCacheAsync(command.UserId);
+			await identityCache.InvalidateUserRolesAsync(command.UserId);
 
 			return Result.Success();
 		}

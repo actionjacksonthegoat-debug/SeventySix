@@ -7,7 +7,6 @@ using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using SeventySix.Identity;
 using SeventySix.Identity.Commands.BulkApprovePermissionRequests;
-using SeventySix.Shared.Interfaces;
 using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.Mocks;
@@ -27,7 +26,7 @@ public class BulkApprovePermissionRequestsCommandHandlerTests
 	private readonly FakeTimeProvider TimeProvider;
 	private readonly IPermissionRequestRepository PermissionRequestRepository;
 	private readonly UserManager<ApplicationUser> UserManager;
-	private readonly ICacheInvalidationService CacheInvalidation;
+	private readonly IIdentityCacheService IdentityCache;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="BulkApprovePermissionRequestsCommandHandlerTests"/> class.
@@ -40,8 +39,8 @@ public class BulkApprovePermissionRequestsCommandHandlerTests
 			Substitute.For<IPermissionRequestRepository>();
 		UserManager =
 			IdentityMockFactory.CreateUserManager();
-		CacheInvalidation =
-			Substitute.For<ICacheInvalidationService>();
+		IdentityCache =
+			Substitute.For<IIdentityCacheService>();
 	}
 
 	/// <summary>
@@ -103,7 +102,7 @@ public class BulkApprovePermissionRequestsCommandHandlerTests
 				command,
 				PermissionRequestRepository,
 				UserManager,
-				CacheInvalidation,
+				IdentityCache,
 				CancellationToken.None);
 
 		// Assert
@@ -176,7 +175,7 @@ public class BulkApprovePermissionRequestsCommandHandlerTests
 				command,
 				PermissionRequestRepository,
 				UserManager,
-				CacheInvalidation,
+				IdentityCache,
 				CancellationToken.None);
 
 		// Assert - Only 1 approved (user 99 was skipped)
@@ -262,7 +261,7 @@ public class BulkApprovePermissionRequestsCommandHandlerTests
 				command,
 				PermissionRequestRepository,
 				UserManager,
-				CacheInvalidation,
+				IdentityCache,
 				CancellationToken.None);
 
 		// Assert - Only 1 approved (second failed)
@@ -300,7 +299,7 @@ public class BulkApprovePermissionRequestsCommandHandlerTests
 				command,
 				PermissionRequestRepository,
 				UserManager,
-				CacheInvalidation,
+				IdentityCache,
 				CancellationToken.None);
 
 		// Assert

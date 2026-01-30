@@ -3,7 +3,6 @@
 // </copyright>
 
 using Microsoft.AspNetCore.Identity;
-using SeventySix.Shared.Interfaces;
 using SeventySix.Shared.POCOs;
 
 namespace SeventySix.Identity;
@@ -22,8 +21,8 @@ public static class RestoreUserCommandHandler
 	/// <param name="userManager">
 	/// Identity <see cref="UserManager{TUser}"/> for user operations.
 	/// </param>
-	/// <param name="cacheInvalidation">
-	/// Cache invalidation service for clearing user cache.
+	/// <param name="identityCache">
+	/// Identity cache service for clearing user cache.
 	/// </param>
 	/// <param name="cancellationToken">
 	/// Cancellation token.
@@ -34,7 +33,7 @@ public static class RestoreUserCommandHandler
 	public static async Task<Result> HandleAsync(
 		RestoreUserCommand command,
 		UserManager<ApplicationUser> userManager,
-		ICacheInvalidationService cacheInvalidation,
+		IIdentityCacheService identityCache,
 		CancellationToken cancellationToken)
 	{
 		ApplicationUser? user =
@@ -68,12 +67,12 @@ public static class RestoreUserCommandHandler
 		if (identityResult.Succeeded)
 		{
 			// Invalidate all user cache entries
-			await cacheInvalidation.InvalidateUserCacheAsync(
+			await identityCache.InvalidateUserAsync(
 				command.UserId,
 				email: userEmail,
 				username: userName);
 
-			await cacheInvalidation.InvalidateAllUsersCacheAsync();
+			await identityCache.InvalidateAllUsersAsync();
 
 			return Result.Success();
 		}

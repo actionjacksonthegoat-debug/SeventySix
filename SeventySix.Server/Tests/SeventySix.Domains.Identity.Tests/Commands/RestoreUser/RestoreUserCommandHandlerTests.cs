@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using SeventySix.Identity;
-using SeventySix.Shared.Interfaces;
 using SeventySix.Shared.POCOs;
 using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.Mocks;
@@ -27,7 +26,7 @@ public class RestoreUserCommandHandlerTests
 		new(TestTimeProviderBuilder.DefaultTime);
 
 	private readonly UserManager<ApplicationUser> UserManager;
-	private readonly ICacheInvalidationService CacheInvalidation;
+	private readonly IIdentityCacheService IdentityCache;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="RestoreUserCommandHandlerTests"/> class.
@@ -36,8 +35,8 @@ public class RestoreUserCommandHandlerTests
 	{
 		UserManager =
 			IdentityMockFactory.CreateUserManager();
-		CacheInvalidation =
-			Substitute.For<ICacheInvalidationService>();
+		IdentityCache =
+			Substitute.For<IIdentityCacheService>();
 	}
 
 	/// <summary>
@@ -68,7 +67,7 @@ public class RestoreUserCommandHandlerTests
 			await RestoreUserCommandHandler.HandleAsync(
 				command,
 				UserManager,
-				CacheInvalidation,
+				IdentityCache,
 				CancellationToken.None);
 
 		// Assert
@@ -104,7 +103,7 @@ public class RestoreUserCommandHandlerTests
 			await RestoreUserCommandHandler.HandleAsync(
 				command,
 				UserManager,
-				CacheInvalidation,
+				IdentityCache,
 				CancellationToken.None);
 
 		// Assert
@@ -140,7 +139,7 @@ public class RestoreUserCommandHandlerTests
 			await RestoreUserCommandHandler.HandleAsync(
 				command,
 				UserManager,
-				CacheInvalidation,
+				IdentityCache,
 				CancellationToken.None);
 
 		// Assert
@@ -183,7 +182,7 @@ public class RestoreUserCommandHandlerTests
 			await RestoreUserCommandHandler.HandleAsync(
 				command,
 				UserManager,
-				CacheInvalidation,
+				IdentityCache,
 				CancellationToken.None);
 
 		// Assert

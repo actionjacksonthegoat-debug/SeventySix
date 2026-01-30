@@ -74,6 +74,9 @@ public static class ApiTrackingRegistration
 			IThirdPartyApiRequestRepository,
 			ThirdPartyApiRequestRepository>();
 
+		// Register ApiTracking-specific cache service
+		services.AddScoped<IApiTrackingCacheService, ApiTrackingCacheService>();
+
 		// Register transaction manager for ApiTracking context
 		services.AddTransactionManagerFor<ApiTrackingDbContext>();
 

@@ -3,7 +3,6 @@
 // </copyright>
 
 using Microsoft.AspNetCore.Identity;
-using SeventySix.Shared.Interfaces;
 using SeventySix.Shared.POCOs;
 
 namespace SeventySix.Identity.Commands.ApprovePermissionRequest;
@@ -25,8 +24,8 @@ public static class ApprovePermissionRequestCommandHandler
 	/// <param name="userManager">
 	/// Identity <see cref="UserManager{TUser}"/> for role operations.
 	/// </param>
-	/// <param name="cacheInvalidation">
-	/// Cache invalidation service for clearing role and request caches.
+	/// <param name="identityCache">
+	/// Identity cache service for clearing role and request caches.
 	/// </param>
 	/// <param name="cancellationToken">
 	/// Cancellation token.
@@ -38,7 +37,7 @@ public static class ApprovePermissionRequestCommandHandler
 		ApprovePermissionRequestCommand command,
 		IPermissionRequestRepository repository,
 		UserManager<ApplicationUser> userManager,
-		ICacheInvalidationService cacheInvalidation,
+		IIdentityCacheService identityCache,
 		CancellationToken cancellationToken)
 	{
 		PermissionRequest? request =
@@ -81,8 +80,8 @@ public static class ApprovePermissionRequestCommandHandler
 			cancellationToken);
 
 		// Invalidate caches for roles and permission requests
-		await cacheInvalidation.InvalidateUserRolesCacheAsync(request.UserId);
-		await cacheInvalidation.InvalidatePermissionRequestsCacheAsync();
+		await identityCache.InvalidateUserRolesAsync(request.UserId);
+		await identityCache.InvalidatePermissionRequestsAsync();
 
 		return Result.Success();
 	}

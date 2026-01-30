@@ -5,7 +5,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using SeventySix.Shared.Extensions;
-using SeventySix.Shared.Interfaces;
 using Wolverine;
 
 namespace SeventySix.Identity;
@@ -27,8 +26,8 @@ public static class UpdateProfileCommandHandler
 	/// <param name="userManager">
 	/// Identity <see cref="UserManager{TUser}"/> for user operations.
 	/// </param>
-	/// <param name="cacheInvalidation">
-	/// Cache invalidation service for clearing user cache.
+	/// <param name="identityCache">
+	/// Identity cache service for clearing user cache.
 	/// </param>
 	/// <param name="cancellationToken">
 	/// Cancellation token.
@@ -44,7 +43,7 @@ public static class UpdateProfileCommandHandler
 		UpdateProfileCommand command,
 		IMessageBus messageBus,
 		UserManager<ApplicationUser> userManager,
-		ICacheInvalidationService cacheInvalidation,
+		IIdentityCacheService identityCache,
 		CancellationToken cancellationToken)
 	{
 		ApplicationUser? user =
@@ -84,7 +83,7 @@ public static class UpdateProfileCommandHandler
 			}
 
 			// Invalidate cache for old email
-			await cacheInvalidation.InvalidateUserCacheAsync(
+			await identityCache.InvalidateUserAsync(
 				command.UserId,
 				email: previousEmail);
 
@@ -97,7 +96,7 @@ public static class UpdateProfileCommandHandler
 
 			if (emailChanged)
 			{
-				await cacheInvalidation.InvalidateUserCacheAsync(
+				await identityCache.InvalidateUserAsync(
 					command.UserId,
 					email: command.Request.Email);
 			}

@@ -210,6 +210,9 @@ public static class IdentityRegistration
 		IServiceCollection services,
 		IConfiguration configuration)
 	{
+		// Register Identity-specific cache service
+		services.AddScoped<IIdentityCacheService, IdentityCacheService>();
+
 		// Client info service for IP/UserAgent extraction (used by SecurityAuditService)
 		services.AddScoped<IClientInfoService, ClientInfoService>();
 

@@ -3,7 +3,6 @@
 // </copyright>
 
 using Microsoft.AspNetCore.Identity;
-using SeventySix.Shared.Interfaces;
 using SeventySix.Shared.POCOs;
 
 namespace SeventySix.Identity;
@@ -22,8 +21,8 @@ public static class DeleteUserCommandHandler
 	/// <param name="userManager">
 	/// Identity <see cref="UserManager{TUser}"/> for user operations.
 	/// </param>
-	/// <param name="cacheInvalidation">
-	/// Cache invalidation service for clearing user cache.
+	/// <param name="identityCache">
+	/// Identity cache service for clearing user cache.
 	/// </param>
 	/// <param name="timeProvider">
 	/// Time provider for current time values.
@@ -37,7 +36,7 @@ public static class DeleteUserCommandHandler
 	public static async Task<Result> HandleAsync(
 		DeleteUserCommand command,
 		UserManager<ApplicationUser> userManager,
-		ICacheInvalidationService cacheInvalidation,
+		IIdentityCacheService identityCache,
 		TimeProvider timeProvider,
 		CancellationToken cancellationToken)
 	{
@@ -73,13 +72,13 @@ public static class DeleteUserCommandHandler
 		if (identityResult.Succeeded)
 		{
 			// Invalidate all user cache entries
-			await cacheInvalidation.InvalidateUserCacheAsync(
+			await identityCache.InvalidateUserAsync(
 				command.UserId,
 				email: userEmail,
 				username: userName);
 
-			await cacheInvalidation.InvalidateUserRolesCacheAsync(command.UserId);
-			await cacheInvalidation.InvalidateAllUsersCacheAsync();
+			await identityCache.InvalidateUserRolesAsync(command.UserId);
+			await identityCache.InvalidateAllUsersAsync();
 
 			return Result.Success();
 		}

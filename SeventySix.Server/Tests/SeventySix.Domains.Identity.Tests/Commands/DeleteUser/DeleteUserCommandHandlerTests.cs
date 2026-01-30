@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using SeventySix.Identity;
-using SeventySix.Shared.Interfaces;
 using SeventySix.Shared.POCOs;
 using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.Constants;
@@ -24,7 +23,7 @@ namespace SeventySix.Identity.Tests.Commands.DeleteUser;
 public class DeleteUserCommandHandlerTests
 {
 	private readonly UserManager<ApplicationUser> UserManager;
-	private readonly ICacheInvalidationService CacheInvalidation;
+	private readonly IIdentityCacheService IdentityCache;
 	private readonly FakeTimeProvider TimeProvider;
 
 	/// <summary>
@@ -34,8 +33,8 @@ public class DeleteUserCommandHandlerTests
 	{
 		UserManager =
 			IdentityMockFactory.CreateUserManager();
-		CacheInvalidation =
-			Substitute.For<ICacheInvalidationService>();
+		IdentityCache =
+			Substitute.For<IIdentityCacheService>();
 		TimeProvider =
 			TestDates.CreateDefaultTimeProvider();
 	}
@@ -69,7 +68,7 @@ public class DeleteUserCommandHandlerTests
 			await DeleteUserCommandHandler.HandleAsync(
 				command,
 				UserManager,
-				CacheInvalidation,
+				IdentityCache,
 				TimeProvider,
 				CancellationToken.None);
 
@@ -103,7 +102,7 @@ public class DeleteUserCommandHandlerTests
 			await DeleteUserCommandHandler.HandleAsync(
 				command,
 				UserManager,
-				CacheInvalidation,
+				IdentityCache,
 				TimeProvider,
 				CancellationToken.None);
 
@@ -142,7 +141,7 @@ public class DeleteUserCommandHandlerTests
 			await DeleteUserCommandHandler.HandleAsync(
 				command,
 				UserManager,
-				CacheInvalidation,
+				IdentityCache,
 				TimeProvider,
 				CancellationToken.None);
 
