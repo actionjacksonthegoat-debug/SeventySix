@@ -10,8 +10,6 @@
 #   - GITHUB_CLIENT_ID/SECRET: GitHub OAuth credentials
 #   - EMAIL_*: Brevo SMTP credentials for email functionality
 
-version: '3.8'
-
 services:
   # Valkey - Open Source Redis-Compatible Cache (BSD licensed, Linux Foundation)
   valkey:
@@ -57,6 +55,34 @@ services:
         limits:
           cpus: '0.25'
           memory: 64M
+
+  # OpenTelemetry Collector - Receives telemetry from API, exports to Prometheus/Jaeger
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.123.0
+    container_name: seventysix-otel-collector-prod
+    command: ["--config=/etc/otel-collector.yaml"]
+    volumes:
+      - ./observability/otel-collector.yaml:/etc/otel-collector.yaml:ro
+    ports:
+      - "4317:4317"   # OTLP gRPC receiver
+      - "4318:4318"   # OTLP HTTP receiver
+      - "8889:8889"   # Prometheus metrics export
+    depends_on:
+      - jaeger
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:13133/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - seventysix-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
 
   # PostgreSQL Database - Persistent storage for production
   database:
@@ -121,17 +147,22 @@ services:
       - Email__FromAddress=${EMAIL_FROM_ADDRESS:?EMAIL_FROM_ADDRESS must be set in .env}
       # ALTCHA (Proof-of-Work) - enabled by default, uses self-hosted verification
       - Altcha__Enabled=true
-      # CORS
-      - Cors__AllowedOrigins__0=http://localhost:8080
-      - Cors__AllowedOrigins__1=http://localhost:4200
+      # CORS - Use HTTPS for all external origins
+      - Cors__AllowedOrigins__0=https://localhost:8080
+      - Cors__AllowedOrigins__1=https://localhost:4200
       # Valkey Cache Connection
       - Cache__Valkey__ConnectionString=valkey:6379
+      # OpenTelemetry - send to collector
+      - OpenTelemetry__OtlpEndpoint=http://otel-collector:4317
+      - OpenTelemetry__Enabled=true
     volumes:
       - dataprotection_keys:/app/keys
     depends_on:
       database:
         condition: service_healthy
       valkey:
+        condition: service_healthy
+      otel-collector:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
@@ -210,13 +241,12 @@ services:
           memory: 512M
 
   # Jaeger - Distributed tracing
+  # Note: Receives traces from otel-collector, NOT directly from API
   jaeger:
     image: jaegertracing/all-in-one:1.62.0
     container_name: seventysix-jaeger-prod
     ports:
-      - "16686:16686"
-      - "4317:4317"
-      - "4318:4318"
+      - "16686:16686"  # Jaeger UI only - OTLP ports handled by otel-collector
     environment:
       - COLLECTOR_OTLP_ENABLED=true
     healthcheck:

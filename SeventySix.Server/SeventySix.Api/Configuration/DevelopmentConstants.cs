@@ -13,5 +13,5 @@ public static class DevelopmentConstants
 	/// <summary>
 	/// Default client application origin for development.
 	/// </summary>
-	public const string DefaultClientOrigin = "http://localhost:4200";
+	public const string DefaultClientOrigin = "https://localhost:4200";
 }

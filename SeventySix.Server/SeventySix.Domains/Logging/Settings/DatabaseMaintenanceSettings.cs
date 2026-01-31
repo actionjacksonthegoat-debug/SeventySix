@@ -30,4 +30,16 @@ public record DatabaseMaintenanceSettings
 	/// Allows app to fully start and settle before maintenance begins.
 	/// </summary>
 	public int InitialDelayMinutes { get; init; } = 60;
+
+	/// <summary>
+	/// Gets the preferred UTC hour for maintenance (0-23).
+	/// Default: 8 (3:10 AM EST when combined with minute).
+	/// </summary>
+	public int PreferredStartHourUtc { get; init; } = 8;
+
+	/// <summary>
+	/// Gets the preferred UTC minute for maintenance (0-59).
+	/// Default: 10.
+	/// </summary>
+	public int PreferredStartMinuteUtc { get; init; } = 10;
 }

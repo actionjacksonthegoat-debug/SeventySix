@@ -1,5 +1,6 @@
 import { provideZonelessChangeDetection } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
+import { environment } from "@environments/environment";
 import { GrafanaDashboardEmbedComponent } from "./grafana-dashboard-embed.component";
 
 describe("GrafanaDashboardEmbedComponent",
@@ -46,7 +47,7 @@ describe("GrafanaDashboardEmbedComponent",
 						.toString();
 
 				expect(url)
-					.toContain("http://localhost:3000/d/test-dashboard");
+					.toContain(`${environment.observability.grafanaUrl}/d/test-dashboard`);
 				expect(url)
 					.toContain("refresh=30s");
 				expect(url)

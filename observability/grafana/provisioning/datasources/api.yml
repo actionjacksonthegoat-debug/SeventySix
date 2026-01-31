@@ -3,11 +3,12 @@ datasources:
     - name: SeventySix-API
       type: grafana-infinity-datasource
       access: proxy
-      url: http://seventysix-api-dev:8080
+      # Uses Docker service name for DNS resolution
+      # Dev: seventysix-api, Prod: api (if needed, configure via Grafana UI)
+      url: http://seventysix-api:8080
       isDefault: false
       editable: true
       jsonData:
           httpMethod: GET
           apiKeyConfigured: false
           authType: none
-

@@ -1,7 +1,7 @@
 <Solution>
 	<Folder Name="/Solution Items/">
-		<File Path="docker-compose.yml" />
-		<File Path="docker-compose.override.yml" />
+		<File Path="../docker-compose.yml" />
+		<File Path="../docker-compose.override.yml" />
 	</Folder>
 	<Project Path="SeventySix.Analyzers/SeventySix.Analyzers.csproj" />
 	<Project Path="SeventySix.Shared/SeventySix.Shared.csproj" />

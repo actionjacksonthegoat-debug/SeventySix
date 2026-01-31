@@ -55,11 +55,17 @@ public sealed class IdentityJobSchedulerContributor(
 				.Get<RefreshTokenCleanupSettings>()
 			?? new();
 
+		TimeOnly preferredTimeUtc =
+			new(
+				settings.PreferredStartHourUtc,
+				settings.PreferredStartMinuteUtc);
+
 		TimeSpan interval =
 			TimeSpan.FromHours(settings.IntervalHours);
 
-		await recurringJobService.EnsureScheduledAsync<RefreshTokenCleanupJob>(
+		await recurringJobService.EnsureScheduledAtPreferredTimeAsync<RefreshTokenCleanupJob>(
 			nameof(RefreshTokenCleanupJob),
+			preferredTimeUtc,
 			interval,
 			cancellationToken);
 	}
@@ -86,11 +92,17 @@ public sealed class IdentityJobSchedulerContributor(
 				.Get<IpAnonymizationSettings>()
 			?? new();
 
+		TimeOnly preferredTimeUtc =
+			new(
+				settings.PreferredStartHourUtc,
+				settings.PreferredStartMinuteUtc);
+
 		TimeSpan interval =
 			TimeSpan.FromDays(settings.IntervalDays);
 
-		await recurringJobService.EnsureScheduledAsync<IpAnonymizationJob>(
+		await recurringJobService.EnsureScheduledAtPreferredTimeAsync<IpAnonymizationJob>(
 			nameof(IpAnonymizationJob),
+			preferredTimeUtc,
 			interval,
 			cancellationToken);
 	}

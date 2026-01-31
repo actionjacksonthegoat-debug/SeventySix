@@ -48,31 +48,36 @@ public class AttributeBasedSecurityHeadersMiddleware(
 	// Production CSP: Strict policy without unsafe-eval
 	// - script-src 'self': No inline scripts or eval needed for Angular AOT builds
 	// - style-src 'unsafe-inline': Required for Angular style bindings ([style.x])
-	// - frame-src: Allows Grafana dashboard embeds
+	// - frame-src: Allows Grafana dashboard embeds via HTTPS proxy
+	// - upgrade-insecure-requests: Auto-upgrade any accidental HTTP to HTTPS
 	private const string ProductionCsp =
 		"default-src 'self'; "
 		+ "script-src 'self'; "
 		+ "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
 		+ "font-src 'self' https://fonts.gstatic.com; "
 		+ "img-src 'self' data: https:; "
-		+ "connect-src 'self'; "
-		+ "frame-src 'self' http://localhost:3000; "
+		+ "connect-src 'self' wss:; "
+		+ "frame-src 'self' https://localhost:3443; "
 		+ "frame-ancestors 'none'; "
 		+ "base-uri 'self'; "
-		+ "form-action 'self'";
+		+ "form-action 'self'; "
+		+ "upgrade-insecure-requests";
 
 	// Development CSP: Relaxed for debugging, hot reload, etc.
+	// frame-src allows Grafana iframe embedding via HTTPS proxy
+	// upgrade-insecure-requests auto-upgrades any accidental HTTP requests
 	private const string DevelopmentCsp =
 		"default-src 'self'; "
 		+ "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
 		+ "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
 		+ "font-src 'self' https://fonts.gstatic.com; "
 		+ "img-src 'self' data: https:; "
-		+ "connect-src 'self' ws: wss:; "
-		+ "frame-src 'self' http://localhost:3000; "
+		+ "connect-src 'self' wss: https://localhost:7074 https://localhost:4319; "
+		+ "frame-src 'self' https://localhost:3443; "
 		+ "frame-ancestors 'none'; "
 		+ "base-uri 'self'; "
-		+ "form-action 'self'";
+		+ "form-action 'self'; "
+		+ "upgrade-insecure-requests";
 
 	/// <summary>
 	/// Invokes the security headers middleware.

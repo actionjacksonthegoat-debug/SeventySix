@@ -299,10 +299,10 @@ export class LogDetailDialogComponent
 			return;
 		}
 
-		const jaegerUrl: string =
-			environment.observability.jaegerUrl ?? "http://localhost:16686";
-		const url: string =
-			`${jaegerUrl}/trace/${log.correlationId}`;
-		window.open(url, "_blank");
+		const jaegerBaseUrl: string =
+			environment.observability.jaegerUrl;
+		const traceUrl: string =
+			`${jaegerBaseUrl}/trace/${log.correlationId}`;
+		window.open(traceUrl, "_blank");
 	}
 }

@@ -77,5 +77,48 @@ public class CorsMiddlewareBehaviorTests : IDisposable
 			.ShouldBeTrue();
 	}
 
+	/// <summary>
+	/// Verifies CORS preflight allows Cache-Control and Pragma headers.
+	/// These headers are required for force-refresh operations from the client.
+	/// </summary>
+	[Fact]
+	public async Task Preflight_AllowsCacheControlAndPragmaHeaders_Async()
+	{
+		using HttpClient client = Factory.CreateClient();
+
+		// CORS preflight requesting Cache-Control and Pragma headers
+		HttpRequestMessage preflight =
+			new(HttpMethod.Options, "/api/v1/logs");
+		preflight.Headers.Add("Origin", "http://localhost:4200");
+		preflight.Headers.Add("Access-Control-Request-Method", "GET");
+		preflight.Headers.Add(
+			"Access-Control-Request-Headers",
+			"Cache-Control, Pragma");
+
+		HttpResponseMessage preflightResponse =
+			await client.SendAsync(
+				preflight);
+
+		// Preflight should succeed
+		preflightResponse.StatusCode.ShouldBe(HttpStatusCode.NoContent);
+
+		// Access-Control-Allow-Headers should include our requested headers
+		bool hasAllowedHeaders =
+			preflightResponse.Headers.TryGetValues(
+				"Access-Control-Allow-Headers",
+				out IEnumerable<string>? allowedHeaders);
+
+		hasAllowedHeaders.ShouldBeTrue();
+
+		string allowedHeadersValue =
+			string.Join(
+				",",
+				allowedHeaders!)
+				.ToLowerInvariant();
+
+		allowedHeadersValue.ShouldContain("cache-control");
+		allowedHeadersValue.ShouldContain("pragma");
+	}
+
 	public void Dispose() => Factory.Dispose();
 }

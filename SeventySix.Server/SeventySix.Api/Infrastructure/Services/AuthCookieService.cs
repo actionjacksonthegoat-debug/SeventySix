@@ -41,6 +41,11 @@ public sealed class AuthCookieService(
 				"HttpContext is not available.");
 
 	/// <inheritdoc/>
+	/// <remarks>
+	/// SameSite cookie policy defaults to Strict for CSRF protection.
+	/// Can be configured to Lax via SameSiteLax setting if needed for
+	/// specific cross-site scenarios, but Strict is recommended.
+	/// </remarks>
 	public void SetRefreshTokenCookie(string refreshToken)
 	{
 		SameSiteMode sameSite =

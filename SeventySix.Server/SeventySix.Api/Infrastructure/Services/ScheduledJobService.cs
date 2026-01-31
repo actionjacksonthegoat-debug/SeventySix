@@ -149,8 +149,11 @@ public sealed class ScheduledJobService(
 		string formattedInterval =
 			FormatIntervalForDisplay(interval);
 
+		// Handle jobs that are scheduled but haven't run yet
 		DateTimeOffset? lastExecutedAt =
-			execution?.LastExecutedAt;
+			execution?.LastExecutedAt == DateTimeOffset.MinValue
+				? null
+				: execution?.LastExecutedAt;
 
 		DateTimeOffset? nextScheduledAt =
 			execution?.NextScheduledAt;
@@ -191,11 +194,22 @@ public sealed class ScheduledJobService(
 			return HealthStatusConstants.Unknown;
 		}
 
-		DateTimeOffset now =
+		// Job is scheduled but hasn't run yet - consider healthy if scheduled in future
+		if (execution.LastExecutedAt == DateTimeOffset.MinValue)
+		{
+			DateTimeOffset now =
+				timeProvider.GetUtcNow();
+
+			return execution.NextScheduledAt.HasValue && execution.NextScheduledAt.Value > now
+				? HealthStatusConstants.Healthy
+				: HealthStatusConstants.Unknown;
+		}
+
+		DateTimeOffset now2 =
 			timeProvider.GetUtcNow();
 
 		TimeSpan timeSinceLastExecution =
-			now - execution.LastExecutedAt;
+			now2 - execution.LastExecutedAt;
 
 		TimeSpan maximumAllowedInterval =
 			expectedInterval * (1 + GracePeriodMultiplier);

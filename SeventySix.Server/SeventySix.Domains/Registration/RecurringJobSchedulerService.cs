@@ -269,17 +269,24 @@ public sealed class RecurringJobSchedulerService(
 			return;
 		}
 
+		TimeOnly preferredTimeUtc =
+			new(
+				settings.PreferredStartHourUtc,
+				settings.PreferredStartMinuteUtc);
+
 		TimeSpan interval =
 			TimeSpan.FromHours(settings.IntervalHours);
 
-		await recurringJobService.EnsureScheduledAsync<LogCleanupJob>(
+		await recurringJobService.EnsureScheduledAtPreferredTimeAsync<LogCleanupJob>(
 			nameof(LogCleanupJob),
+			preferredTimeUtc,
 			interval,
 			cancellationToken);
 
 		logger.LogInformation(
-			"Scheduled {JobName} with interval {Interval}",
+			"Scheduled {JobName} at {PreferredTime:HH:mm} UTC with interval {Interval}",
 			nameof(LogCleanupJob),
+			preferredTimeUtc,
 			interval);
 	}
 
@@ -313,17 +320,24 @@ public sealed class RecurringJobSchedulerService(
 			return;
 		}
 
+		TimeOnly preferredTimeUtc =
+			new(
+				settings.PreferredStartHourUtc,
+				settings.PreferredStartMinuteUtc);
+
 		TimeSpan interval =
 			TimeSpan.FromHours(settings.IntervalHours);
 
-		await recurringJobService.EnsureScheduledAsync<DatabaseMaintenanceJob>(
+		await recurringJobService.EnsureScheduledAtPreferredTimeAsync<DatabaseMaintenanceJob>(
 			nameof(DatabaseMaintenanceJob),
+			preferredTimeUtc,
 			interval,
 			cancellationToken);
 
 		logger.LogInformation(
-			"Scheduled {JobName} with interval {Interval}",
+			"Scheduled {JobName} at {PreferredTime:HH:mm} UTC with interval {Interval}",
 			nameof(DatabaseMaintenanceJob),
+			preferredTimeUtc,
 			interval);
 	}
 }

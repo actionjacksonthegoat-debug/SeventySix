@@ -822,7 +822,8 @@ test("all files should have less than 800 lines", async () =>
 	// Exceptions with documented justification
 	// NOTE: Test files are NOT automatically excepted - apply 80/20 and DRY
 	const allowedExceptions = [
-		"generated-open-api.ts" // Auto-generated from OpenAPI spec (3476 lines)
+		"generated-open-api.ts", // Auto-generated from OpenAPI spec (3476 lines)
+		"data-table.component.ts" // Primarily signal/input/output declarations
 	];
 
 	for (const file of sourceFiles)

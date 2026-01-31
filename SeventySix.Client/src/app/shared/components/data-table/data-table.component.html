@@ -121,40 +121,17 @@
 
 					<!-- Date Range Menu -->
 					<mat-menu #dateRangeMenu="matMenu">
-						<button
-							mat-menu-item
-							(click)="onDateRangeChange('1h')"
-							[class.active-range]="selectedDateRange() === '1h'"
-						>
-							<mat-icon aria-hidden="true">schedule</mat-icon>
-							<span>1 Hour</span>
-						</button>
-						<button
-							mat-menu-item
-							(click)="onDateRangeChange('24h')"
-							[class.active-range]="selectedDateRange() === '24h'"
-						>
-							<mat-icon aria-hidden="true">today</mat-icon>
-							<span>24 Hours</span>
-						</button>
-						<button
-							mat-menu-item
-							(click)="onDateRangeChange('7d')"
-							[class.active-range]="selectedDateRange() === '7d'"
-						>
-							<mat-icon aria-hidden="true">date_range</mat-icon>
-							<span>7 Days</span>
-						</button>
-						<button
-							mat-menu-item
-							(click)="onDateRangeChange('30d')"
-							[class.active-range]="selectedDateRange() === '30d'"
-						>
-							<mat-icon aria-hidden="true"
-								>calendar_month</mat-icon
+						@for (option of dateRangeOptions; track option.key)
+						{
+							<button
+								mat-menu-item
+								(click)="onDateRangeChange(option.key)"
+								[class.active-range]="selectedDateRange() === option.key"
 							>
-							<span>30 Days</span>
-						</button>
+								<mat-icon aria-hidden="true">{{ option.icon }}</mat-icon>
+								<span>{{ option.label }}</span>
+							</button>
+						}
 					</mat-menu>
 
 					<!-- Result Count Chip -->

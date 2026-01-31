@@ -18,7 +18,8 @@ export const APP_ROUTES: Readonly<{
 		BACKUP_CODES: "/auth/backup-codes";
 	};
 	ACCOUNT: {
-		PROFILE: "/account/profile";
+		PROFILE: "/account";
+		PERMISSIONS: "/account/permissions";
 		SETTINGS: "/account/settings";
 	};
 	ERROR: {
@@ -42,7 +43,8 @@ export const APP_ROUTES: Readonly<{
 		},
 		/** Account management routes. */
 		ACCOUNT: {
-			PROFILE: "/account/profile",
+			PROFILE: "/account",
+			PERMISSIONS: "/account/permissions",
 			SETTINGS: "/account/settings"
 		},
 		/** Error page routes. */

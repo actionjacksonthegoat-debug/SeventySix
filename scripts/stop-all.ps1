@@ -45,7 +45,7 @@ if (-not $dockerAvailable)
 & (Join-Path $PSScriptRoot "stop-api.ps1")
 
 # Stop all Docker containers
-Push-Location (Join-Path $PSScriptRoot "..\SeventySix.Server")
+Push-Location (Join-Path $PSScriptRoot "..")
 
 try
 {

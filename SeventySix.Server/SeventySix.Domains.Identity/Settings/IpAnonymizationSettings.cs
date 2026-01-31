@@ -26,4 +26,16 @@ public record IpAnonymizationSettings
 	/// Default is 90 days per GDPR data retention best practices.
 	/// </summary>
 	public int RetentionDays { get; init; } = 90;
+
+	/// <summary>
+	/// Gets the preferred UTC hour for anonymization (0-23).
+	/// Default: 7 (2:30 AM EST when combined with minute).
+	/// </summary>
+	public int PreferredStartHourUtc { get; init; } = 7;
+
+	/// <summary>
+	/// Gets the preferred UTC minute for anonymization (0-59).
+	/// Default: 30.
+	/// </summary>
+	public int PreferredStartMinuteUtc { get; init; } = 30;
 }

@@ -40,7 +40,7 @@ import {
 	TableColumn
 } from "@shared/models";
 import { DateService } from "@shared/services";
-import { DataTableUtilities } from "@shared/utilities";
+import { DataTableUtilities, DateRangeKey, DateRangeOption } from "@shared/utilities";
 import { NgxSkeletonLoaderModule } from "ngx-skeleton-loader";
 
 /**
@@ -69,6 +69,21 @@ import { NgxSkeletonLoaderModule } from "ngx-skeleton-loader";
 	})
 export class DataTableComponent<T extends { id: number; }>
 {
+	/**
+	 * Default date range for filtering.
+	 * @type {DateRangeKey}
+	 * @private
+	 */
+	private static readonly DEFAULT_DATE_RANGE: DateRangeKey = "24h";
+
+	/**
+	 * Date range options for template iteration.
+	 * Derived from DataTableUtilities.DATE_RANGE_CONFIG for DRY.
+	 * @type {readonly DateRangeOption[]}
+	 */
+	readonly dateRangeOptions: readonly DateRangeOption[] =
+		DataTableUtilities.getDateRangeOptions();
+
 	/**
 	 * Skeleton theme for table cell placeholders.
 	 * @type {SkeletonTheme}
@@ -222,6 +237,13 @@ export class DataTableComponent<T extends { id: number; }>
 		input<boolean>(false);
 
 	/**
+	 * Default date range selection.
+	 * @type {InputSignal<string>}
+	 */
+	readonly defaultDateRange: InputSignal<string> =
+		input<string>(DataTableComponent.DEFAULT_DATE_RANGE);
+
+	/**
 	 * Page size options.
 	 * @type {InputSignal<number[]>}
 	 */
@@ -373,11 +395,11 @@ export class DataTableComponent<T extends { id: number; }>
 		signal(new Set());
 
 	/**
-	 * Selected date range.
+	 * Selected date range (initialized from defaultDateRange input).
 	 * @type {WritableSignal<string>}
 	 */
 	readonly selectedDateRange: WritableSignal<string> =
-		signal("24h");
+		signal(DataTableComponent.DEFAULT_DATE_RANGE);
 
 	/**
 	 * Computed date range icon (memoized for template performance).
@@ -470,8 +492,26 @@ export class DataTableComponent<T extends { id: number; }>
 	 */
 	private initialDateRangeEmitted: boolean = false;
 
+	/**
+	 * Track whether default date range has been applied.
+	 * @type {boolean}
+	 * @private
+	 */
+	private defaultDateRangeApplied: boolean = false;
+
 	constructor()
 	{
+		effect(
+			() =>
+			{
+				const defaultRange: string =
+					this.defaultDateRange();
+				if (!this.defaultDateRangeApplied && defaultRange !== DataTableComponent.DEFAULT_DATE_RANGE)
+				{
+					this.defaultDateRangeApplied = true;
+					this.selectedDateRange.set(defaultRange);
+				}
+			});
 		effect(
 			() => this.initializeFirstQuickFilter());
 		effect(

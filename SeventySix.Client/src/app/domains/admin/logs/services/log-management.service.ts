@@ -101,9 +101,9 @@ export class LogManagementService extends BaseQueryService<LogQueryRequest>
 		const now: Date =
 			dateService.parseUTC(dateService.now());
 		const startDate: Date =
-			dateService.addHours(now, -24);
+			dateService.addDays(now, -7);
 
-		// Initialize with 24-hour date range as default
+		// Initialize with 7-day date range as default
 		super(
 			{
 				page: 1,

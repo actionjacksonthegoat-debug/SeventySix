@@ -32,4 +32,16 @@ public record RefreshTokenCleanupSettings
 	/// Default is 24 hours.
 	/// </summary>
 	public int UsedTokenRetentionHours { get; set; } = 24;
+
+	/// <summary>
+	/// Gets the preferred UTC hour for cleanup (0-23).
+	/// Default: 8 (3:20 AM EST when combined with minute).
+	/// </summary>
+	public int PreferredStartHourUtc { get; init; } = 8;
+
+	/// <summary>
+	/// Gets the preferred UTC minute for cleanup (0-59).
+	/// Default: 20.
+	/// </summary>
+	public int PreferredStartMinuteUtc { get; init; } = 20;
 }

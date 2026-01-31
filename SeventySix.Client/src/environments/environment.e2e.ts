@@ -105,7 +105,7 @@ export const environment: Environment =
 			enabled: false,
 			serviceName: "SeventySix.Client.E2E",
 			serviceVersion: "1.0.0-e2e",
-			otlpEndpoint: "http://localhost:4318/v1/traces",
+			otlpEndpoint: "https://localhost:4319/v1/traces",
 			sampleRate: 0
 		},
 		auth: {

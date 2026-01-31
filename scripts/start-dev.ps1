@@ -19,17 +19,29 @@ Write-Host "  SeventySix Development Startup" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 
+# Check SSL certificate exists before starting
+$certificatePath =
+"$PSScriptRoot\..\SeventySix.Client\ssl\dev-certificate.crt"
+
+if (-not (Test-Path $certificatePath)) {
+	Write-Host "SSL certificate not found. Generating..." -ForegroundColor Yellow
+	& "$PSScriptRoot\generate-dev-ssl-cert.ps1"
+
+	if (-not (Test-Path $certificatePath)) {
+		Write-Host "Failed to generate SSL certificate!" -ForegroundColor Red
+		exit 1
+	}
+}
+
 # Clean up orphaned processes before starting (prevents port conflicts)
-if (-not $SkipCleanup)
-{
+if (-not $SkipCleanup) {
 	& (Join-Path $PSScriptRoot "cleanup-ports.ps1")
 }
 
 # Start Docker Desktop if not running
 $dockerProcess =
-	Get-Process 'Docker Desktop' -ErrorAction SilentlyContinue
-if (-not $dockerProcess)
-{
+Get-Process 'Docker Desktop' -ErrorAction SilentlyContinue
+if (-not $dockerProcess) {
 	Write-Host "Starting Docker Desktop..." -ForegroundColor Yellow
 	Start-Process 'C:\Program Files\Docker\Docker\Docker Desktop.exe'
 	Start-Sleep -Seconds 10
@@ -37,9 +49,9 @@ if (-not $dockerProcess)
 
 # Build and start API container
 Write-Host "Building and starting API container..." -ForegroundColor Yellow
-Push-Location "$PSScriptRoot\..\SeventySix.Server"
+Push-Location "$PSScriptRoot\.."
 docker compose build seventysix-api
-docker compose --env-file ../.env up -d --force-recreate
+docker compose up -d --force-recreate
 Pop-Location
 
 # Wait for API to be healthy
@@ -53,52 +65,53 @@ public static extern IntPtr GetConsoleWindow();
 [DllImport("user32.dll")]
 public static extern bool SetForegroundWindow(IntPtr hWnd);
 '@ -ErrorAction SilentlyContinue
-try
-{
+try {
 	$consoleHandle = [Console.Win32]::GetConsoleWindow()
 	[Console.Win32]::SetForegroundWindow($consoleHandle) | Out-Null
 	[Console]::Title = 'SeventySix API'
 }
-catch
-{
+catch {
 	# If platform doesn't support bringing window to front, ignore
 }
 # Check if Angular client is already running on port 4200
 $clientPortInUse =
-	Get-NetTCPConnection -LocalPort 4200 -State Listen -ErrorAction SilentlyContinue
+Get-NetTCPConnection -LocalPort 4200 -State Listen -ErrorAction SilentlyContinue
 
 # Verify the port is actually responding (extra safety check)
 $clientResponding = $false
-if ($clientPortInUse)
-{
-	try
-	{
+if ($clientPortInUse) {
+	try {
 		$response =
-			Invoke-WebRequest -Uri "http://localhost:4200" -TimeoutSec 2 -UseBasicParsing -ErrorAction SilentlyContinue
+		Invoke-WebRequest -Uri "http://localhost:4200" -TimeoutSec 2 -UseBasicParsing -ErrorAction SilentlyContinue
 		$clientResponding = ($response.StatusCode -eq 200)
 	}
-	catch
-	{
+	catch {
 		$clientResponding = $false
 	}
 }
 
 $clientPath =
-	"$PSScriptRoot\..\SeventySix.Client"
+"$PSScriptRoot\..\SeventySix.Client"
 
-if ($clientPortInUse -and $clientResponding)
-{
+if ($clientPortInUse -and $clientResponding) {
 	Write-Host ""
 	Write-Host "========================================" -ForegroundColor Yellow
 	Write-Host "  Client Already Running" -ForegroundColor Yellow
 	Write-Host "========================================" -ForegroundColor Yellow
 	Write-Host "  Port 4200 is responding - client is active." -ForegroundColor Yellow
-	Write-Host "  API:    https://localhost:7074" -ForegroundColor Cyan
-	Write-Host "  Client: http://localhost:4200" -ForegroundColor Cyan
+	Write-Host ""
+	Write-Host "  Application:" -ForegroundColor White
+	Write-Host "    API:        https://localhost:7074" -ForegroundColor Cyan
+	Write-Host "    Client:     https://localhost:4200" -ForegroundColor Cyan
+	Write-Host ""
+	Write-Host "  Observability (via HTTPS proxy):" -ForegroundColor White
+	Write-Host "    Grafana:    https://localhost:3443" -ForegroundColor Cyan
+	Write-Host "    Jaeger:     https://localhost:16687" -ForegroundColor Cyan
+	Write-Host "    Prometheus: https://localhost:9091" -ForegroundColor Cyan
+	Write-Host "    pgAdmin:    https://localhost:5051" -ForegroundColor Cyan
 	Write-Host "========================================" -ForegroundColor Yellow
 }
-else
-{
+else {
 	# Launch Angular client in NEW PowerShell window BEFORE streaming logs
 	Write-Host "Launching Angular client in new window..." -ForegroundColor Yellow
 
@@ -114,11 +127,20 @@ Write-Host ""
 Write-Host "========================================" -ForegroundColor Green
 Write-Host "  Streaming API Logs (Ctrl+C to stop)" -ForegroundColor Green
 Write-Host "========================================" -ForegroundColor Green
-Write-Host "  API:    https://localhost:7074" -ForegroundColor Cyan
-Write-Host "  Client: http://localhost:4200" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "  Application:" -ForegroundColor White
+Write-Host "    API:        https://localhost:7074" -ForegroundColor Cyan
+Write-Host "    Client:     https://localhost:4200" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "  Observability (via HTTPS proxy):" -ForegroundColor White
+Write-Host "    Grafana:    https://localhost:3443" -ForegroundColor Cyan
+Write-Host "    Jaeger:     https://localhost:16687" -ForegroundColor Cyan
+Write-Host "    Prometheus: https://localhost:9091" -ForegroundColor Cyan
+Write-Host "    pgAdmin:    https://localhost:5051" -ForegroundColor Cyan
+Write-Host ""
 Write-Host "========================================" -ForegroundColor Green
 Write-Host ""
 
-Push-Location "$PSScriptRoot\..\SeventySix.Server"
+Push-Location "$PSScriptRoot\.."
 docker compose logs -f seventysix-api
 Pop-Location

@@ -53,7 +53,7 @@ services:
     ports:
       - "9090:9090"
     volumes:
-      - ../observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus_data:/prometheus
     networks:
       - seventysix-network
@@ -66,4 +66,4 @@ services:
 
 volumes:
   prometheus_data:
-    name: seventysix_prometheus_dev_data
+    name: seventysix_prometheus_data

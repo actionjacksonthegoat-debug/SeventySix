@@ -1,5 +1,6 @@
 import { ComponentFixture } from "@angular/core/testing";
 import { provideRouter, Router } from "@angular/router";
+import { APP_ROUTES } from "@shared/constants/routes.constants";
 import { AuthService } from "@shared/services/auth.service";
 import { LayoutService } from "@shared/services/layout.service";
 import { ThemeService } from "@shared/services/theme.service";
@@ -238,7 +239,7 @@ describe("HeaderComponent",
 
 						expect(router.navigate)
 							.toHaveBeenCalledWith(
-								["/account/profile"]);
+								[APP_ROUTES.ACCOUNT.PROFILE]);
 					});
 			});
 

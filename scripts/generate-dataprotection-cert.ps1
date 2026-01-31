@@ -56,7 +56,7 @@ if (Test-Path $resolvedOutputPath)
 {
 	Write-Host "Certificate already exists at: $resolvedOutputPath" -ForegroundColor Yellow
 	$overwriteResponse =
-	Read-Host "Overwrite? (y/N)"
+	Read-Host "Overwrite? (y/n)"
 
 	if ($overwriteResponse -ne "y")
 	{

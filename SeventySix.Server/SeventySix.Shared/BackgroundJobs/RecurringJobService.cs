@@ -94,4 +94,79 @@ public sealed class RecurringJobService(
 			nextScheduledAt,
 			cancellationToken);
 	}
+
+	/// <inheritdoc />
+	public async Task EnsureScheduledAtPreferredTimeAsync<TJob>(
+		string jobName,
+		TimeOnly preferredTimeUtc,
+		TimeSpan interval,
+		CancellationToken cancellationToken = default)
+		where TJob : class, new()
+	{
+		DateTimeOffset currentTime =
+			timeProvider.GetUtcNow();
+
+		RecurringJobExecution? lastExecution =
+			await repository.GetLastExecutionAsync(
+				jobName,
+				cancellationToken);
+
+		DateTimeOffset nextPreferredTime =
+			CalculateNextPreferredTime(
+				currentTime,
+				preferredTimeUtc);
+
+		// Create or update execution record with scheduled time
+		// This ensures NextScheduledAt is always populated, even before first run
+		RecurringJobExecution execution =
+			new()
+			{
+				JobName = jobName,
+				LastExecutedAt = lastExecution?.LastExecutedAt ?? DateTimeOffset.MinValue,
+				NextScheduledAt = nextPreferredTime,
+				LastExecutedBy = lastExecution?.LastExecutedBy ?? "Not yet run"
+			};
+
+		await repository.UpsertExecutionAsync(
+			execution,
+			cancellationToken);
+
+		await scheduler.ScheduleAsync(
+			new TJob(),
+			nextPreferredTime,
+			cancellationToken);
+	}
+
+	/// <summary>
+	/// Calculates the next occurrence of the preferred UTC time.
+	/// If the preferred time has already passed today, returns tomorrow at that time.
+	/// </summary>
+	/// <param name="currentTime">
+	/// Current UTC time.
+	/// </param>
+	/// <param name="preferredTimeUtc">
+	/// Target time (hour and minute).
+	/// </param>
+	/// <returns>
+	/// The next occurrence of the preferred time.
+	/// </returns>
+	internal static DateTimeOffset CalculateNextPreferredTime(
+		DateTimeOffset currentTime,
+		TimeOnly preferredTimeUtc)
+	{
+		DateTimeOffset todayAtPreferredTime =
+			new(
+				currentTime.Year,
+				currentTime.Month,
+				currentTime.Day,
+				preferredTimeUtc.Hour,
+				preferredTimeUtc.Minute,
+				0,
+				TimeSpan.Zero);
+
+		// If preferred time already passed today, schedule for tomorrow
+		return currentTime.TimeOfDay >= preferredTimeUtc.ToTimeSpan()
+			? todayAtPreferredTime.AddDays(1)
+			: todayAtPreferredTime;
+	}
 }

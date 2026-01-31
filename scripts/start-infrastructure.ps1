@@ -86,24 +86,51 @@ if (-not (Test-Path $envFilePath))
 	exit 1
 }
 
-# Change to server directory
-Push-Location (Join-Path $PSScriptRoot "..\SeventySix.Server")
+# Check SSL certificate exists for nginx-proxy
+$certificatePath =
+	Join-Path $PSScriptRoot "..\SeventySix.Client\ssl\dev-certificate.crt"
+
+if (-not (Test-Path $certificatePath))
+{
+	Write-Host "SSL certificate not found. Generating..." -ForegroundColor Yellow
+	& (Join-Path $PSScriptRoot "generate-dev-ssl-cert.ps1")
+
+	if (-not (Test-Path $certificatePath))
+	{
+		Write-Host "Failed to generate SSL certificate!" -ForegroundColor Red
+		exit 1
+	}
+}
+
+# Change to repository root directory
+Push-Location (Join-Path $PSScriptRoot "..")
 
 try
 {
-	# Infrastructure services (not the API)
-	$services = @("postgres", "valkey", "redis-exporter", "otel-collector", "jaeger", "prometheus", "grafana", "pgadmin")
+	# Infrastructure services including HTTPS proxy (not the API)
+	$infrastructureServices =
+		@(
+			"postgres",
+			"valkey",
+			"redis-exporter",
+			"otel-collector",
+			"jaeger",
+			"prometheus",
+			"grafana",
+			"pgadmin",
+			"nginx-proxy"
+		)
 
-	Write-Host "Starting services: $($services -join ', ')" -ForegroundColor Cyan
+	Write-Host "Starting services: $($infrastructureServices -join ', ')" -ForegroundColor Cyan
 	Write-Host ""
 
 	if ($Attached)
 	{
-		docker compose --env-file ../.env up $services
+		docker compose up $infrastructureServices
 	}
 	else
 	{
-		docker compose --env-file ../.env up -d $services
+		docker compose up -d $infrastructureServices
 
 		Write-Host ""
 		Write-Host "Infrastructure services started!" -ForegroundColor Green
@@ -111,11 +138,13 @@ try
 		Write-Host "Services available at:" -ForegroundColor Cyan
 		Write-Host "  PostgreSQL:       localhost:5433" -ForegroundColor White
 		Write-Host "  Valkey:           localhost:6379" -ForegroundColor White
-		Write-Host "  pgAdmin:          http://localhost:5050" -ForegroundColor White
 		Write-Host "  OTel Collector:   localhost:4317 (OTLP gRPC)" -ForegroundColor White
-		Write-Host "  Jaeger UI:        http://localhost:16686" -ForegroundColor White
-		Write-Host "  Prometheus:       http://localhost:9090" -ForegroundColor White
-		Write-Host "  Grafana:          http://localhost:3000" -ForegroundColor White
+		Write-Host ""
+		Write-Host "Observability (via HTTPS proxy):" -ForegroundColor Cyan
+		Write-Host "  pgAdmin:          https://localhost:5051" -ForegroundColor White
+		Write-Host "  Jaeger UI:        https://localhost:16687" -ForegroundColor White
+		Write-Host "  Prometheus:       https://localhost:9091" -ForegroundColor White
+		Write-Host "  Grafana:          https://localhost:3443" -ForegroundColor White
 		Write-Host ""
 
 		# Start client in new PowerShell window if not already running

@@ -1,6 +1,10 @@
 # OpenTelemetry Collector Configuration for SeventySix
 # Receives OTLP telemetry from API and exports to Jaeger (traces) and Prometheus (metrics)
 
+extensions:
+    health_check:
+        endpoint: 0.0.0.0:13133
+
 receivers:
     otlp:
         protocols:
@@ -16,9 +20,9 @@ processors:
 
 exporters:
     # Prometheus metrics export - scraped by Prometheus
+    # Note: No namespace prefix - metrics already have job label for identification
     prometheus:
         endpoint: "0.0.0.0:8889"
-        namespace: seventysix
 
     # Jaeger traces via OTLP
     otlp/jaeger:
@@ -27,6 +31,7 @@ exporters:
             insecure: true
 
 service:
+    extensions: [health_check]
     pipelines:
         traces:
             receivers: [otlp]
@@ -36,4 +41,3 @@ service:
             receivers: [otlp]
             processors: [batch]
             exporters: [prometheus]
-

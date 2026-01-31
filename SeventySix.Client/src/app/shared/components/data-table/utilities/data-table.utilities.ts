@@ -26,6 +26,20 @@ export interface DateRangeConfig
  * @type {"1h" | "24h" | "7d" | "30d"}
  */
 export type DateRangeKey = "1h" | "24h" | "7d" | "30d";
+
+/**
+ * Date range option for template iteration.
+ * Extends DateRangeConfig with the key for binding.
+ */
+export interface DateRangeOption extends DateRangeConfig
+{
+	/**
+	 * Date range key (e.g., '1h', '24h', '7d', '30d').
+	 * @type {DateRangeKey}
+	 */
+	key: DateRangeKey;
+}
+
 /**
  * Static utility functions for DataTableComponent.
  * Stateless helpers that simplify component logic and improve readability.
@@ -103,6 +117,23 @@ export class DataTableUtilities
 		const config: DateRangeConfig | undefined =
 			DataTableUtilities.DATE_RANGE_CONFIG[range as DateRangeKey];
 		return config?.label ?? "24 Hours";
+	}
+
+	/**
+	 * Gets date range options as an array for template iteration.
+	 * @returns {readonly DateRangeOption[]}
+	 * Array of date range options with key, icon, and label.
+	 */
+	static getDateRangeOptions(): readonly DateRangeOption[]
+	{
+		return Object.entries(DataTableUtilities.DATE_RANGE_CONFIG)
+			.map(
+				([key, config]: [string, DateRangeConfig]): DateRangeOption =>
+					({
+						key: key as DateRangeKey,
+						icon: config.icon,
+						label: config.label
+					}));
 	}
 
 	/**
