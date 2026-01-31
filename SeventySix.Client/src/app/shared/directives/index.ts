@@ -2,5 +2,5 @@
  * Shared directives barrel export
  */
 
-export * from "./site-layout-changed.directive";
+export * from "./accessible-icon-button.directive";
 export * from "./table-height.directive";

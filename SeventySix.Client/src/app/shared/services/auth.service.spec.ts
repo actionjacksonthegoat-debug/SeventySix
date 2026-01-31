@@ -13,6 +13,11 @@ import { provideRouter } from "@angular/router";
 import { environment } from "@environments/environment";
 import { AuthResponse } from "@shared/models";
 import { DateService } from "@shared/services";
+import { createTestQueryClient } from "@shared/testing";
+import {
+	provideTanStackQuery,
+	QueryClient
+} from "@tanstack/angular-query-experimental";
 import {
 	TEST_ROLE_ADMIN,
 	TEST_ROLE_DEVELOPER
@@ -32,13 +37,12 @@ const TEST_LOGIN: { usernameOrEmail: string; password: string; rememberMe: boole
 		rememberMe: false
 	};
 
-/**
- * Creates a fresh TestBed with AuthService for session marker tests.
- * Call AFTER setting localStorage to test initialize() behavior.
- */
-function createFreshTestBed(): { authService: AuthService; httpMock: HttpTestingController; }
+/** Creates a fresh TestBed with AuthService. Call AFTER setting localStorage to test initialize() behavior. */
+function createFreshTestBed(): { authService: AuthService; httpMock: HttpTestingController; queryClient: QueryClient; }
 {
 	TestBed.resetTestingModule();
+	const testQueryClient: QueryClient =
+		createTestQueryClient();
 	TestBed.configureTestingModule(
 		{
 			providers: [
@@ -46,13 +50,15 @@ function createFreshTestBed(): { authService: AuthService; httpMock: HttpTesting
 				provideHttpClient(withInterceptorsFromDi()),
 				provideHttpClientTesting(),
 				provideRouter([]),
+				provideTanStackQuery(testQueryClient),
 				{ provide: PLATFORM_ID, useValue: "browser" },
 				AuthService
 			]
 		});
 	return {
 		authService: TestBed.inject(AuthService),
-		httpMock: TestBed.inject(HttpTestingController)
+		httpMock: TestBed.inject(HttpTestingController),
+		queryClient: testQueryClient
 	};
 }
 
@@ -62,12 +68,15 @@ describe("AuthService",
 	{
 		let service: AuthService;
 		let httpMock: HttpTestingController;
+		let queryClient: QueryClient;
 
 		beforeEach(
 			() =>
 			{
-			// Clear session marker before each test
 				localStorage.removeItem(SESSION_KEY);
+
+				queryClient =
+					createTestQueryClient();
 
 				TestBed.configureTestingModule(
 					{
@@ -76,6 +85,7 @@ describe("AuthService",
 							provideHttpClient(withInterceptorsFromDi()),
 							provideHttpClientTesting(),
 							provideRouter([]),
+							provideTanStackQuery(queryClient),
 							{ provide: PLATFORM_ID, useValue: "browser" },
 							AuthService
 						]
@@ -109,7 +119,7 @@ describe("AuthService",
 					{
 						const mockResponse: AuthResponse =
 							createMockAuthResponse(
-								{ [DOTNET_ROLE_CLAIM]: ["Developer"] });
+								{ [DOTNET_ROLE_CLAIM]: [TEST_ROLE_DEVELOPER] });
 
 						let result: AuthResponse | undefined;
 						service
@@ -215,7 +225,6 @@ describe("AuthService",
 				it("should clear user state on logout",
 					() =>
 					{
-						// First login to set state
 						const mockResponse: AuthResponse =
 							createMockAuthResponse();
 
@@ -231,10 +240,8 @@ describe("AuthService",
 						expect(service.isAuthenticated())
 							.toBe(true);
 
-						// Now logout
 						service.logout();
 
-						// Expect logout API call
 						const logoutReq: TestRequest =
 							httpMock.expectOne(
 								`${environment.apiUrl}/auth/logout`);
@@ -253,7 +260,6 @@ describe("AuthService",
 				it("should clear all local authentication state",
 					() =>
 					{
-						// Arrange - set authenticated state via login
 						const mockResponse: AuthResponse =
 							createMockAuthResponse();
 
@@ -275,10 +281,8 @@ describe("AuthService",
 						expect(localStorage.getItem(SESSION_KEY))
 							.toBe("true");
 
-						// Act
 						service.forceLogoutLocally();
 
-						// Assert
 						expect(service.isAuthenticated())
 							.toBe(false);
 						expect(service.user())
@@ -296,7 +300,7 @@ describe("AuthService",
 					{
 						const mockResponse: AuthResponse =
 							createMockAuthResponse(
-								{ [DOTNET_ROLE_CLAIM]: ["Developer", "Admin"] });
+								{ [DOTNET_ROLE_CLAIM]: [TEST_ROLE_DEVELOPER, TEST_ROLE_ADMIN] });
 
 						service
 							.login(
@@ -324,7 +328,7 @@ describe("AuthService",
 					{
 						const mockResponse: AuthResponse =
 							createMockAuthResponse(
-								{ [DOTNET_ROLE_CLAIM]: ["Developer"] });
+								{ [DOTNET_ROLE_CLAIM]: [TEST_ROLE_DEVELOPER] });
 
 						service
 							.login(
@@ -354,7 +358,7 @@ describe("AuthService",
 					{
 						const mockResponse: AuthResponse =
 							createMockAuthResponse(
-								{ [DOTNET_ROLE_CLAIM]: ["Developer"] });
+								{ [DOTNET_ROLE_CLAIM]: [TEST_ROLE_DEVELOPER] });
 
 						service
 							.login(
@@ -608,20 +612,16 @@ describe("AuthService",
 		describe("loginWithProvider",
 			() =>
 			{
-				/**
-		 * Note: Cannot directly test loginWithProvider as it sets window.location.href
-		 * which causes a full page reload in Karma tests.
-		 * The functionality is covered by E2E tests instead.
-		 */
+				// Note: Cannot test loginWithProvider directly as it sets window.location.href causing page reload
 				it("should construct correct OAuth URL",
 					() =>
 					{
 						// Test that the URL would be correct without triggering redirect
 						const expectedUrl: string =
-							`${environment.apiUrl}/auth/github`;
+							`${environment.apiUrl}/auth/oauth/github`;
 
 						expect(expectedUrl)
-							.toContain("/auth/github");
+							.toContain("/auth/oauth/github");
 					});
 			});
 
@@ -780,7 +780,7 @@ describe("AuthService",
 
 						const req: TestRequest =
 							httpMock.expectOne(
-								`${environment.apiUrl}/auth/set-password`);
+								`${environment.apiUrl}/auth/password/set`);
 						expect(req.request.method)
 							.toBe("POST");
 						expect(req.request.body)

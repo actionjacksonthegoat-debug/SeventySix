@@ -7,12 +7,19 @@ import { HttpErrorResponse } from "@angular/common/http";
 import {
 	ChangeDetectionStrategy,
 	Component,
+	computed,
 	inject,
 	OnInit,
+	Signal,
 	signal,
 	WritableSignal
 } from "@angular/core";
-import { FormsModule } from "@angular/forms";
+import {
+	FormBuilder,
+	FormGroup,
+	ReactiveFormsModule,
+	Validators
+} from "@angular/forms";
 import { MatButtonModule } from "@angular/material/button";
 import { ActivatedRoute, Router } from "@angular/router";
 import { ValidationResult } from "@auth/models";
@@ -23,12 +30,13 @@ import { PASSWORD_VALIDATION } from "@shared/constants/validation.constants";
 import { AuthErrorResult } from "@shared/models";
 import { AuthService } from "@shared/services/auth.service";
 import { NotificationService } from "@shared/services/notification.service";
+import { getValidationError } from "@shared/utilities";
 
 @Component(
 	{
 		selector: "app-set-password",
 		standalone: true,
-		imports: [FormsModule, MatButtonModule],
+		imports: [ReactiveFormsModule, MatButtonModule],
 		changeDetection: ChangeDetectionStrategy.OnPush,
 		templateUrl: "./set-password.html",
 		styleUrl: "./set-password.scss"
@@ -68,6 +76,13 @@ export class SetPasswordComponent implements OnInit
 		inject(NotificationService);
 
 	/**
+	 * Form builder for creating reactive forms.
+	 * @type {FormBuilder}
+	 */
+	private readonly formBuilder: FormBuilder =
+		inject(FormBuilder);
+
+	/**
 	 * Minimum password length enforced by validation rules.
 	 * @type {number}
 	 */
@@ -75,16 +90,49 @@ export class SetPasswordComponent implements OnInit
 		PASSWORD_VALIDATION.MIN_LENGTH;
 
 	/**
-	 * New password entered by the user.
-	 * @type {string}
+	 * Set password form with new password and confirmation fields.
+	 * @type {FormGroup}
 	 */
-	protected newPassword: string = "";
+	protected readonly setPasswordForm: FormGroup =
+		this.formBuilder.group(
+			{
+				newPassword: [
+					"",
+					[
+						Validators.required,
+						Validators.minLength(PASSWORD_VALIDATION.MIN_LENGTH)
+					]
+				],
+				confirmPassword: [
+					"",
+					[
+						Validators.required,
+						Validators.minLength(PASSWORD_VALIDATION.MIN_LENGTH)
+					]
+				]
+			});
 
 	/**
-	 * Confirmation of the new password.
-	 * @type {string}
+	 * Validation error message for new password field.
+	 * @type {Signal<string | null>}
 	 */
-	protected confirmPassword: string = "";
+	protected readonly newPasswordError: Signal<string | null> =
+		computed(
+			() =>
+				getValidationError(
+					this.setPasswordForm.get("newPassword"),
+					"New password"));
+
+	/**
+	 * Validation error message for confirm password field.
+	 * @type {Signal<string | null>}
+	 */
+	protected readonly confirmPasswordError: Signal<string | null> =
+		computed(
+			() =>
+				getValidationError(
+					this.setPasswordForm.get("confirmPassword"),
+					"Confirm password"));
 
 	/**
 	 * Loading state while the set-password request is being processed.
@@ -124,40 +172,66 @@ export class SetPasswordComponent implements OnInit
 	}
 
 	/**
+	 * Validates the form inputs before submission.
+	 * @returns {boolean} True if validation passes, false otherwise.
+	 */
+	private validateForm(): boolean
+	{
+		if (!this.token)
+		{
+			this.notification.error("Invalid password reset token.");
+			return false;
+		}
+
+		if (this.setPasswordForm.invalid)
+		{
+			this.setPasswordForm.markAllAsTouched();
+			return false;
+		}
+
+		const formValue: typeof this.setPasswordForm.value =
+			this.setPasswordForm.value;
+
+		const passwordsMatch: ValidationResult =
+			validatePasswordsMatch(
+				formValue.newPassword,
+				formValue.confirmPassword);
+		if (!passwordsMatch.valid)
+		{
+			this.notification.error(passwordsMatch.errorMessage!);
+			return false;
+		}
+
+		const passwordResult: ValidationResult =
+			validatePassword(formValue.newPassword);
+		if (!passwordResult.valid)
+		{
+			this.notification.error(passwordResult.errorMessage!);
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
 	 * Submit the new password after validating the token and inputs.
 	 * @returns {void}
 	 */
 	protected onSubmit(): void
 	{
-		if (!this.token)
+		if (!this.validateForm())
 		{
-			this.notification.error("Invalid password reset token.");
-			return;
-		}
-
-		const passwordsMatch: ValidationResult =
-			validatePasswordsMatch(
-				this.newPassword,
-				this.confirmPassword);
-		if (!passwordsMatch.valid)
-		{
-			this.notification.error(passwordsMatch.errorMessage!);
-			return;
-		}
-
-		const passwordResult: ValidationResult =
-			validatePassword(this.newPassword);
-		if (!passwordResult.valid)
-		{
-			this.notification.error(passwordResult.errorMessage!);
 			return;
 		}
 
 		this.isLoading.set(true);
 
+		const formValue: typeof this.setPasswordForm.value =
+			this.setPasswordForm.value;
+
 		this
 			.authService
-			.setPassword(this.token, this.newPassword)
+			.setPassword(this.token!, formValue.newPassword)
 			.subscribe(
 				{
 					next: () =>

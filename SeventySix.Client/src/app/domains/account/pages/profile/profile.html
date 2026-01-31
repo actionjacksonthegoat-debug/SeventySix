@@ -60,7 +60,7 @@
 								profileForm.pristine ||
 								isSaving()">
 						@if (isSaving()) {
-						<mat-spinner diameter="20"></mat-spinner>
+						<mat-spinner diameter="20" aria-label="Saving"></mat-spinner>
 						} @else { Save Changes }
 					</button>
 					@if (hasAvailableRoles()) {

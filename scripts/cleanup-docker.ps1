@@ -20,10 +20,12 @@ Write-Host "Current Docker disk usage:" -ForegroundColor Yellow
 docker system df
 Write-Host ""
 
-if (-not $Force) {
+if (-not $Force)
+{
 	$confirmation =
-		Read-Host "Proceed with cleanup? (y/N)"
-	if ($confirmation -ne 'y') {
+		Read-Host "Proceed with cleanup? (y/n)"
+	if ($confirmation -ne 'y')
+	{
 		Write-Host "Cleanup cancelled." -ForegroundColor Yellow
 		exit 0
 	}
@@ -49,9 +51,33 @@ Write-Host ""
 Write-Host "Removing build cache (keeping 2GB)..." -ForegroundColor Yellow
 docker builder prune -f --keep-storage 2GB
 
-if ($IncludeVolumes) {
+if ($IncludeVolumes)
+{
 	Write-Host ""
-	Write-Host "WARNING: Removing unused volumes (data loss possible)..." -ForegroundColor Red
+	Write-Host "WARNING: Removing SeventySix volumes (data loss possible)..." -ForegroundColor Red
+
+	# First, stop all SeventySix containers to release volume locks
+	Write-Host "Stopping SeventySix containers..." -ForegroundColor Yellow
+	Push-Location "$PSScriptRoot\.."
+	$ErrorActionPreference = "SilentlyContinue"
+	docker compose down --remove-orphans 2>&1 | Out-Null
+	$ErrorActionPreference = "Stop"
+	Pop-Location
+
+	# Remove all seventysix_* volumes explicitly (handles both old 'seventysixserver' and new 'seventysix' projects)
+	Write-Host "Removing SeventySix volumes..." -ForegroundColor Yellow
+	$volumes =
+		docker volume ls --format "{{.Name}}" | Where-Object { $_ -match "^seventysix" }
+
+	foreach ($volume in $volumes)
+	{
+		Write-Host "  Removing: $volume" -ForegroundColor DarkYellow
+		$ErrorActionPreference = "SilentlyContinue"
+		docker volume rm $volume --force 2>&1 | Out-Null
+		$ErrorActionPreference = "Stop"
+	}
+
+	# Also run standard prune for any remaining unused volumes
 	docker volume prune -f
 }
 

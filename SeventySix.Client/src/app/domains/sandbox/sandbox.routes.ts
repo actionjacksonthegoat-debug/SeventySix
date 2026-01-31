@@ -16,6 +16,7 @@ export const SANDBOX_ROUTES: Routes =
 				import("./pages/sandbox-landing/sandbox-landing").then(
 					(module) =>
 						module.SandboxLandingComponent),
-			title: "Sandbox - SeventySix"
+			title: "Sandbox - SeventySix",
+			data: { breadcrumb: "Landing" }
 		}
 	];

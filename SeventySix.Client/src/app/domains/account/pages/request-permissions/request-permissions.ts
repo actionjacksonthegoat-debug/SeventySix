@@ -29,6 +29,7 @@ import {
 	SkeletonTheme
 } from "@shared/constants";
 import { NotificationService } from "@shared/services";
+import { toggleSetItem } from "@shared/utilities/selection.utility";
 import { NgxSkeletonLoaderModule } from "ngx-skeleton-loader";
 
 @Component(
@@ -153,28 +154,6 @@ export class RequestPermissionsPage
 			new Set<string>());
 
 	/**
-	 * Pre-computed role selection map for template.
-	 * @type {Signal<Map<string, boolean>>}
-	 */
-	readonly roleSelectionMap: Signal<Map<string, boolean>> =
-		computed(
-			() =>
-			{
-				const selected: Set<string> =
-					this.selectedRoles();
-				const map: Map<string, boolean> =
-					new Map();
-				this
-					.availableRoles()
-					.forEach(
-						(role: AvailableRoleDto) =>
-						{
-							map.set(role.name, selected.has(role.name));
-						});
-				return map;
-			});
-
-	/**
 	 * Reactive form for permission requests.
 	 * @type {FormGroup}
 	 */
@@ -195,21 +174,10 @@ export class RequestPermissionsPage
 	 */
 	toggleRole(roleName: string): void
 	{
-		const current: Set<string> =
-			this.selectedRoles();
-		const updated: Set<string> =
-			new Set(current);
-
-		if (updated.has(roleName))
-		{
-			updated.delete(roleName);
-		}
-		else
-		{
-			updated.add(roleName);
-		}
-
-		this.selectedRoles.set(updated);
+		this.selectedRoles.set(
+			toggleSetItem(
+				this.selectedRoles(),
+				roleName));
 	}
 
 	/**

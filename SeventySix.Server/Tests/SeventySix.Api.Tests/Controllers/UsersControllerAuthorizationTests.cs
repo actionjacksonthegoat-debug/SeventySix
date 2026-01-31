@@ -36,13 +36,6 @@ public class UsersControllerAuthorizationTests(
 	#region Unauthenticated Access Tests (401)
 
 	/// <summary>
-	/// Tests that GET /api/v1/users returns 401 without authentication.
-	/// </summary>
-	[Fact]
-	public Task GetAllAsync_WithoutAuth_ReturnsUnauthorizedAsync() =>
-		AuthHelper.AssertUnauthorizedAsync(HttpMethod.Get, Endpoint);
-
-	/// <summary>
 	/// Tests that GET /api/v1/users/{id} returns 401 without authentication.
 	/// </summary>
 	[Fact]
@@ -92,16 +85,6 @@ public class UsersControllerAuthorizationTests(
 	#region Developer Role Access Tests (403)
 
 	/// <summary>
-	/// Tests that GET /api/v1/users returns 403 for Developer role.
-	/// </summary>
-	[Fact]
-	public Task GetAllAsync_WithDeveloperRole_ReturnsForbiddenAsync() =>
-		AuthHelper.AssertForbiddenForRoleAsync(
-			TestRoleConstants.Developer,
-			HttpMethod.Get,
-			Endpoint);
-
-	/// <summary>
 	/// Tests that DELETE /api/v1/users/{id} returns 403 for Developer role.
 	/// </summary>
 	[Fact]
@@ -114,17 +97,6 @@ public class UsersControllerAuthorizationTests(
 	#endregion
 
 	#region User Role Access Tests (403)
-
-	/// <summary>
-	/// Tests that GET /api/v1/users returns 403 for User role.
-	/// This endpoint is Admin-only.
-	/// </summary>
-	[Fact]
-	public Task GetAllAsync_WithUserRole_ReturnsForbiddenAsync() =>
-		AuthHelper.AssertForbiddenForRoleAsync(
-			TestRoleConstants.User,
-			HttpMethod.Get,
-			Endpoint);
 
 	/// <summary>
 	/// Tests that DELETE /api/v1/users/{id} returns 403 for User role.
@@ -140,16 +112,6 @@ public class UsersControllerAuthorizationTests(
 	#endregion
 
 	#region Admin Role Access Tests (200)
-
-	/// <summary>
-	/// Tests that GET /api/v1/users returns 200 for Admin role.
-	/// </summary>
-	[Fact]
-	public Task GetAllAsync_WithAdminRole_ReturnsOkAsync() =>
-		AuthHelper.AssertAuthorizedForRoleAsync(
-			TestRoleConstants.Admin,
-			HttpMethod.Get,
-			Endpoint);
 
 	/// <summary>
 	/// Tests that GET /api/v1/users/{id} returns 404 for Admin role (auth passed, resource not found).

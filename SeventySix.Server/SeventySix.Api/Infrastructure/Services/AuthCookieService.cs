@@ -24,7 +24,7 @@ namespace SeventySix.Api.Infrastructure;
 /// <param name="jwtSettings">
 /// JWT settings including token expiration.
 /// </param>
-public class AuthCookieService(
+public sealed class AuthCookieService(
 	IHttpContextAccessor httpContextAccessor,
 	IOptions<AuthSettings> authSettings,
 	IOptions<JwtSettings> jwtSettings) : IAuthCookieService
@@ -41,6 +41,11 @@ public class AuthCookieService(
 				"HttpContext is not available.");
 
 	/// <inheritdoc/>
+	/// <remarks>
+	/// SameSite cookie policy defaults to Strict for CSRF protection.
+	/// Can be configured to Lax via SameSiteLax setting if needed for
+	/// specific cross-site scenarios, but Strict is recommended.
+	/// </remarks>
 	public void SetRefreshTokenCookie(string refreshToken)
 	{
 		SameSiteMode sameSite =

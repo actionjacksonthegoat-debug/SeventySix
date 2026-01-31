@@ -12,9 +12,31 @@ import {
 import { logLevelToString } from "@shared/utilities/log-level.utility";
 
 /**
- * Client error logger service.
- * Centralizes client-side error logging with automatic context extraction.
- * Never throws errors - always falls back to console logging.
+ * Client-side error logging service with automatic context extraction.
+ *
+ * **PURPOSE:**
+ * Provides a centralized, fail-safe API for logging client-side errors with rich context.
+ * Automatically extracts source context from stack traces and enriches logs with
+ * HTTP request details, user agent, and timestamps.
+ *
+ * **USE FOR:**
+ * - Logging caught exceptions with `logError()` or `logClientError()`
+ * - Logging HTTP failures with `logHttpError()` for full request/response context
+ * - Logging warnings with `logWarning()` for non-critical issues
+ * - Logging informational messages with `logInfo()` for operational visibility
+ *
+ * **NOT FOR:**
+ * - Console-only logging (use `LoggerService` instead)
+ * - Server-side logging (handled by backend Serilog)
+ * - Debug logging that should not reach the server
+ *
+ * **FLOW:**
+ * 1. Service receives error/message via `log*()` methods
+ * 2. Extracts source context from stack trace (Component.method pattern)
+ * 3. Builds `CreateLogRequest` with timestamp, user agent, and context
+ * 4. Prepends "[Client]" prefix for server-side filtering
+ * 5. Enqueues via `ErrorQueueService` for batched transmission
+ * 6. On any failure, falls back to console.error (never throws)
  */
 @Injectable(
 	{

@@ -32,16 +32,7 @@ public class GodFileTests : SourceCodeArchitectureTest
 	/// </summary>
 	private static readonly HashSet<string> AllowedExceptions =
 		[
-		// AuthController - handles 11 authentication endpoints (login, logout, register,
-		// OAuth, password reset, etc.) - splitting would fragment cohesive auth logic
-		"AuthController.cs",
-		// AuthControllerTests - comprehensive integration tests for 11 auth features
-		// Cannot split without losing test cohesion and fixture sharing benefits
-		"AuthControllerTests.cs",
-		// UserRepositoryTests - comprehensive repository integration tests covering CRUD,
-		// queries, pagination, soft delete, bulk ops - shares PostgreSQL fixture
-		"UserRepositoryTests.cs",
-	];
+		];
 
 	[Fact]
 	public void All_Files_Should_Be_Under_800_Lines()

@@ -16,10 +16,10 @@ export const environment: Environment =
 			circuitBreakerTimeout: 30000 // 30 seconds
 		},
 		observability: {
-		// Observability stack URLs (Jaeger + Prometheus + Grafana)
-			jaegerUrl: "http://localhost:16686", // Jaeger UI for distributed tracing
-			prometheusUrl: "http://localhost:9090", // Prometheus for metrics
-			grafanaUrl: "http://localhost:3000", // Grafana for metrics visualization
+			// Observability stack URLs (via HTTPS nginx-proxy)
+			jaegerUrl: "https://localhost:16687", // Jaeger UI for distributed tracing
+			prometheusUrl: "https://localhost:9091", // Prometheus for metrics
+			grafanaUrl: "https://localhost:3443", // Grafana for metrics visualization
 			dashboards: {
 				systemOverview: "seventysix-system-overview",
 				apiEndpoints: "seventysix-api-endpoints",
@@ -48,8 +48,8 @@ export const environment: Environment =
 					retry: 2
 				},
 				health: {
-					staleTime: 10000, // 10s
-					gcTime: 60000, // 1min
+					staleTime: 60_000, // 1min
+					gcTime: 300_000, // 5min
 					retry: 1
 				},
 				thirdpartyrequests: {
@@ -104,7 +104,7 @@ export const environment: Environment =
 			enabled: true,
 			serviceName: "SeventySix.Client",
 			serviceVersion: "1.0.0",
-			otlpEndpoint: "http://localhost:4318/v1/traces",
+			otlpEndpoint: "https://localhost:4319/v1/traces",
 			sampleRate: 0.1 // 10% sampling for production
 		},
 		auth: {

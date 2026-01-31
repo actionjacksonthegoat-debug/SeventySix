@@ -6,7 +6,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Time.Testing;
 using SeventySix.ElectronicNotifications;
 using SeventySix.ElectronicNotifications.Emails;
+using SeventySix.Shared.Contracts.Emails;
 using SeventySix.Shared.POCOs;
+using SeventySix.TestUtilities.Constants;
 using Shouldly;
 
 namespace SeventySix.Domains.Tests.ElectronicNotifications.Emails.Commands;
@@ -27,9 +29,7 @@ public class MarkEmailSentCommandHandlerTests
 	public MarkEmailSentCommandHandlerTests()
 	{
 		TimeProvider =
-			new FakeTimeProvider();
-		TimeProvider.SetUtcNow(
-			new DateTimeOffset(2026, 1, 1, 00, 00, 0, TimeSpan.Zero));
+			TestDates.CreateFutureTimeProvider();
 	}
 
 	private static ElectronicNotificationsDbContext CreateInMemoryDbContext()
@@ -55,7 +55,7 @@ public class MarkEmailSentCommandHandlerTests
 		EmailQueueEntry entry =
 			new()
 			{
-				EmailType = EmailType.Welcome,
+				EmailType = EmailTypeConstants.Welcome,
 				RecipientEmail = "test@example.com",
 				TemplateData = "{}",
 				Status =

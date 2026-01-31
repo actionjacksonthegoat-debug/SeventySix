@@ -17,6 +17,7 @@ import { HttpContext, HttpParams } from "@angular/common/http";
 import { inject, Injectable } from "@angular/core";
 import { ApiService } from "@shared/services/api.service";
 import { BaseQueryService } from "@shared/services/base-query.service";
+import { CacheCoordinationService } from "@shared/services/cache-coordination.service";
 import { buildHttpParams } from "@shared/utilities/http-params.utility";
 import { QueryKeys } from "@shared/utilities/query-keys.utility";
 import {
@@ -57,6 +58,16 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 	 */
 	private readonly endpoint: typeof ADMIN_API_ENDPOINTS.USERS =
 		ADMIN_API_ENDPOINTS.USERS;
+
+	/**
+	 * Service for coordinating cache invalidation across domain boundaries.
+	 * Used to invalidate account caches when admin updates user data.
+	 * @type {CacheCoordinationService}
+	 * @private
+	 * @readonly
+	 */
+	private readonly cacheCoordination: CacheCoordinationService =
+		inject(CacheCoordinationService);
 
 	constructor()
 	{
@@ -137,10 +148,12 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 			UserDto>(
 			(variables) =>
 				this.apiService.put<UserDto>(`${this.endpoint}/${variables.userId}`, variables.user),
-			(result, variables) =>
+			(_result, variables) =>
 			{
 				this.invalidateSingle(variables.userId);
 				this.invalidateAll();
+				// Cross-domain: invalidate account cache for affected user
+				this.cacheCoordination.invalidateUserAccountCache(variables.userId);
 			});
 	}
 
@@ -230,7 +243,12 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 	{
 		return this.createMutation<number[], number>(
 			(userIds) =>
-				this.apiService.post<number, number[]>(`${this.endpoint}/bulk/activate`, userIds));
+				this.apiService.post<number, number[]>(`${this.endpoint}/bulk/activate`, userIds),
+			() =>
+			{
+				// Cross-domain: invalidate all user caches since multiple users affected
+				this.cacheCoordination.invalidateAllUserCaches();
+			});
 	}
 
 	/**
@@ -242,7 +260,12 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 	{
 		return this.createMutation<number[], number>(
 			(userIds) =>
-				this.apiService.post<number, number[]>(`${this.endpoint}/bulk/deactivate`, userIds));
+				this.apiService.post<number, number[]>(`${this.endpoint}/bulk/deactivate`, userIds),
+			() =>
+			{
+				// Cross-domain: invalidate all user caches since multiple users affected
+				this.cacheCoordination.invalidateAllUserCaches();
+			});
 	}
 
 	/**
@@ -327,6 +350,8 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 					{
 						queryKey: QueryKeys.users.adminCount
 					});
+				// Cross-domain: invalidate account cache for affected user
+				this.cacheCoordination.invalidateUserAccountCache(variables.userId);
 			});
 	}
 
@@ -357,6 +382,8 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 					{
 						queryKey: QueryKeys.users.adminCount
 					});
+				// Cross-domain: invalidate account cache for affected user
+				this.cacheCoordination.invalidateUserAccountCache(variables.userId);
 			});
 	}
 

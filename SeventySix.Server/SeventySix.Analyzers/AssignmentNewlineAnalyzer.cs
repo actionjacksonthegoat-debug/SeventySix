@@ -7,6 +7,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
+using SeventySix.Analyzers.Helpers;
 
 namespace SeventySix.Analyzers;
 
@@ -23,15 +24,37 @@ public sealed class AssignmentNewlineAnalyzer : DiagnosticAnalyzer
 	/// </summary>
 	public const string DiagnosticId = "SS001";
 
+	/// <summary>
+	/// Maximum character length for a simple identifier to stay on same line.
+	/// </summary>
+	/// <remarks>
+	/// This threshold balances readability with practicality. Identifiers
+	/// longer than 20 characters typically benefit from newline formatting
+	/// to prevent horizontal scrolling.
+	/// </remarks>
 	private const int MaxSimpleIdentifierLength = 20;
+
+	/// <summary>
+	/// Maximum character length for a simple member access (e.g., obj.Property) to stay on same line.
+	/// </summary>
+	/// <remarks>
+	/// Slightly longer than identifiers because member access includes the dot.
+	/// </remarks>
 	private const int MaxSimpleMemberAccessLength = 25;
+
+	/// <summary>
+	/// Maximum character length for a simple method invocation to stay on same line.
+	/// </summary>
+	/// <remarks>
+	/// Longer than member access to accommodate parentheses and short arguments.
+	/// </remarks>
 	private const int MaxSimpleInvocationLength = 30;
 
 	private static readonly DiagnosticDescriptor Rule = new(
 		DiagnosticId,
 		"Assignment value should be on new line",
 		"Complex assignment value should start on a new line after '='",
-		"Formatting",
+		DiagnosticCategories.Formatting,
 		DiagnosticSeverity.Warning,
 		isEnabledByDefault: true,
 		description: "For readability, complex expressions assigned to variables should start on a new line after the = operator."
@@ -87,7 +110,7 @@ public sealed class AssignmentNewlineAnalyzer : DiagnosticAnalyzer
 
 			SyntaxToken equalsToken = initializer.EqualsToken;
 
-			if (!HasNewlineAfterToken(equalsToken))
+			if (!SyntaxHelpers.HasNewlineAfterToken(equalsToken))
 			{
 				context.ReportDiagnostic(
 					Diagnostic.Create(Rule, equalsToken.GetLocation())
@@ -118,7 +141,7 @@ public sealed class AssignmentNewlineAnalyzer : DiagnosticAnalyzer
 
 		SyntaxToken operatorToken = assignment.OperatorToken;
 
-		if (!HasNewlineAfterToken(operatorToken))
+		if (!SyntaxHelpers.HasNewlineAfterToken(operatorToken))
 		{
 			context.ReportDiagnostic(
 				Diagnostic.Create(Rule, operatorToken.GetLocation())
@@ -255,24 +278,6 @@ public sealed class AssignmentNewlineAnalyzer : DiagnosticAnalyzer
 		foreach (SyntaxNode descendant in node.DescendantNodes())
 		{
 			if (descendant is ArgumentListSyntax)
-			{
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	/// <summary>
-	/// Checks for newline in trailing trivia using RawKind for fastest comparison.
-	/// </summary>
-	private static bool HasNewlineAfterToken(SyntaxToken token)
-	{
-		SyntaxTriviaList trailingTrivia = token.TrailingTrivia;
-
-		foreach (SyntaxTrivia trivia in trailingTrivia)
-		{
-			if (trivia.RawKind == (int)SyntaxKind.EndOfLineTrivia)
 			{
 				return true;
 			}

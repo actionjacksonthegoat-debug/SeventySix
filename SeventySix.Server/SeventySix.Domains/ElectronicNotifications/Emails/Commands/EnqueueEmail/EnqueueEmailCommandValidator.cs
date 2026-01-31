@@ -3,6 +3,7 @@
 // </copyright>
 
 using FluentValidation;
+using SeventySix.Shared.Contracts.Emails;
 
 namespace SeventySix.ElectronicNotifications.Emails;
 
@@ -10,6 +11,9 @@ namespace SeventySix.ElectronicNotifications.Emails;
 /// FluentValidation validator for EnqueueEmailCommand.
 /// Validates email enqueue requests for injection prevention.
 /// </summary>
+/// <remarks>
+/// Validates the shared email contract from any bounded context.
+/// </remarks>
 public class EnqueueEmailCommandValidator : AbstractValidator<EnqueueEmailCommand>
 {
 	/// <summary>
@@ -17,9 +21,10 @@ public class EnqueueEmailCommandValidator : AbstractValidator<EnqueueEmailComman
 	/// </summary>
 	private static readonly HashSet<string> ValidEmailTypes =
 		[
-			EmailType.Welcome,
-			EmailType.PasswordReset,
-			EmailType.Verification,
+			EmailTypeConstants.Welcome,
+			EmailTypeConstants.PasswordReset,
+			EmailTypeConstants.Verification,
+			EmailTypeConstants.MfaVerification,
 		];
 
 	/// <summary>

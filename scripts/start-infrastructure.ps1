@@ -22,7 +22,8 @@ Write-Host ""
 & (Join-Path $PSScriptRoot "cleanup-ports.ps1")
 
 # Ensure Docker Desktop is running
-if (-not (Get-Process 'Docker Desktop' -ErrorAction SilentlyContinue)) {
+if (-not (Get-Process 'Docker Desktop' -ErrorAction SilentlyContinue))
+{
 	Write-Host "Starting Docker Desktop..." -ForegroundColor Yellow
 	Start-Process 'C:\Program Files\Docker\Docker\Docker Desktop.exe'
 	Write-Host "Waiting for Docker to initialize..." -ForegroundColor Yellow
@@ -35,27 +36,33 @@ $maxWaitSeconds = 60
 $waitedSeconds = 0
 $dockerReady = $false
 
-while (-not $dockerReady -and $waitedSeconds -lt $maxWaitSeconds) {
-	try {
+while (-not $dockerReady -and $waitedSeconds -lt $maxWaitSeconds)
+{
+	try
+	{
 		$dockerVersion =
 		docker version --format "{{.Server.Version}}" 2>$null
-		if ($dockerVersion) {
+		if ($dockerVersion)
+		{
 			$dockerReady = $true
 			Write-Host "  Docker daemon ready (v$dockerVersion)" -ForegroundColor Green
 		}
 	}
-	catch {
+	catch
+	{
 		# Docker not ready yet
 	}
 
-	if (-not $dockerReady) {
+	if (-not $dockerReady)
+	{
 		Start-Sleep -Seconds 2
 		$waitedSeconds += 2
 		Write-Host "  Waiting for Docker daemon... ($waitedSeconds/$maxWaitSeconds seconds)" -ForegroundColor DarkGray
 	}
 }
 
-if (-not $dockerReady) {
+if (-not $dockerReady)
+{
 	Write-Host ""
 	Write-Host "ERROR: Docker daemon did not start within $maxWaitSeconds seconds" -ForegroundColor Red
 	Write-Host "  Please start Docker Desktop manually and try again" -ForegroundColor Yellow
@@ -69,7 +76,8 @@ Write-Host "Ensuring API ports are free for debugging..." -ForegroundColor Yello
 
 # Verify .env file exists
 $envFilePath = Join-Path $PSScriptRoot "..\.env"
-if (-not (Test-Path $envFilePath)) {
+if (-not (Test-Path $envFilePath))
+{
 	Write-Host ""
 	Write-Host "ERROR: .env file not found!" -ForegroundColor Red
 	Write-Host "Please copy .env.example to .env and configure your values:" -ForegroundColor Yellow
@@ -78,21 +86,51 @@ if (-not (Test-Path $envFilePath)) {
 	exit 1
 }
 
-# Change to server directory
-Push-Location (Join-Path $PSScriptRoot "..\SeventySix.Server")
+# Check SSL certificate exists for nginx-proxy
+$certificatePath =
+	Join-Path $PSScriptRoot "..\SeventySix.Client\ssl\dev-certificate.crt"
 
-try {
-	# Infrastructure services (not the API)
-	$services = @("postgres", "valkey", "redis-exporter", "otel-collector", "jaeger", "prometheus", "grafana", "pgadmin")
+if (-not (Test-Path $certificatePath))
+{
+	Write-Host "SSL certificate not found. Generating..." -ForegroundColor Yellow
+	& (Join-Path $PSScriptRoot "generate-dev-ssl-cert.ps1")
 
-	Write-Host "Starting services: $($services -join ', ')" -ForegroundColor Cyan
+	if (-not (Test-Path $certificatePath))
+	{
+		Write-Host "Failed to generate SSL certificate!" -ForegroundColor Red
+		exit 1
+	}
+}
+
+# Change to repository root directory
+Push-Location (Join-Path $PSScriptRoot "..")
+
+try
+{
+	# Infrastructure services including HTTPS proxy (not the API)
+	$infrastructureServices =
+		@(
+			"postgres",
+			"valkey",
+			"redis-exporter",
+			"otel-collector",
+			"jaeger",
+			"prometheus",
+			"grafana",
+			"pgadmin",
+			"nginx-proxy"
+		)
+
+	Write-Host "Starting services: $($infrastructureServices -join ', ')" -ForegroundColor Cyan
 	Write-Host ""
 
-	if ($Attached) {
-		docker compose --env-file ../.env up $services
+	if ($Attached)
+	{
+		docker compose up $infrastructureServices
 	}
-	else {
-		docker compose --env-file ../.env up -d $services
+	else
+	{
+		docker compose up -d $infrastructureServices
 
 		Write-Host ""
 		Write-Host "Infrastructure services started!" -ForegroundColor Green
@@ -100,29 +138,35 @@ try {
 		Write-Host "Services available at:" -ForegroundColor Cyan
 		Write-Host "  PostgreSQL:       localhost:5433" -ForegroundColor White
 		Write-Host "  Valkey:           localhost:6379" -ForegroundColor White
-		Write-Host "  pgAdmin:          http://localhost:5050" -ForegroundColor White
 		Write-Host "  OTel Collector:   localhost:4317 (OTLP gRPC)" -ForegroundColor White
-		Write-Host "  Jaeger UI:        http://localhost:16686" -ForegroundColor White
-		Write-Host "  Prometheus:       http://localhost:9090" -ForegroundColor White
-		Write-Host "  Grafana:          http://localhost:3000" -ForegroundColor White
+		Write-Host ""
+		Write-Host "Observability (via HTTPS proxy):" -ForegroundColor Cyan
+		Write-Host "  pgAdmin:          https://localhost:5051" -ForegroundColor White
+		Write-Host "  Jaeger UI:        https://localhost:16687" -ForegroundColor White
+		Write-Host "  Prometheus:       https://localhost:9091" -ForegroundColor White
+		Write-Host "  Grafana:          https://localhost:3443" -ForegroundColor White
 		Write-Host ""
 
 		# Start client in new PowerShell window if not already running
 		$clientPort = 4200
 		$clientRunning = $false
-		try {
+		try
+		{
 			$tcpConnection =
 			Get-NetTCPConnection -LocalPort $clientPort -ErrorAction SilentlyContinue
-			if ($tcpConnection) {
+			if ($tcpConnection)
+			{
 				$clientRunning = $true
 				Write-Host "Angular client already running on port $clientPort" -ForegroundColor Green
 			}
 		}
-		catch {
+		catch
+		{
 			# Port not in use
 		}
 
-		if (-not $clientRunning) {
+		if (-not $clientRunning)
+		{
 			Write-Host "Starting Angular client in new window..." -ForegroundColor Cyan
 			$clientPath =
 			Join-Path $PSScriptRoot "..\SeventySix.Client"
@@ -143,6 +187,7 @@ try {
 		Write-Host ""
 	}
 }
-finally {
+finally
+{
 	Pop-Location
 }

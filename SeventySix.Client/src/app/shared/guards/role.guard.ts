@@ -4,46 +4,61 @@
  *
  * Roles are ADDITIVE - user with Developer + Admin can access both.
  *
+ * Now supports both canActivate and canMatch. Prefer canMatch for protected
+ * routes to prevent lazy module download before authorization check.
+ *
  * @example
  * // Auth only (any logged-in user)
- * canActivate: [roleGuard()]
+ * canMatch: [roleGuard()]
  *
  * // Admin only
- * canActivate: [roleGuard("Admin")]
+ * canMatch: [roleGuard("Admin")]
  *
  * // Developer OR Admin (additive)
- * canActivate: [roleGuard("Developer", "Admin")]
+ * canMatch: [roleGuard("Developer", "Admin")]
  */
 
 import { inject } from "@angular/core";
-import { CanActivateFn, Router } from "@angular/router";
+import {
+	CanMatchFn,
+	Navigation,
+	Router,
+	UrlTree
+} from "@angular/router";
 import { APP_ROUTES } from "@shared/constants";
 import { AuthService } from "@shared/services/auth.service";
 
 /**
- * Creates an Angular CanActivate guard that enforces authentication and optional role requirements.
+ * Creates an Angular CanMatch guard that enforces authentication and optional role requirements.
+ * canMatch runs BEFORE lazy loading modules, saving bandwidth for unauthorized users.
  * @param {string[]} requiredRoles
  * Roles required for access. If empty, only authentication is required.
- * @returns {CanActivateFn}
- * A function suitable for use in route `canActivate` that returns `true` to allow, or a `UrlTree` to redirect.
+ * @returns {CanMatchFn}
+ * A function suitable for use in route `canMatch` that returns `true` to allow, or a `UrlTree` to redirect.
  */
-export function roleGuard(...requiredRoles: string[]): CanActivateFn
+export function roleGuard(...requiredRoles: string[]): CanMatchFn
 {
-	return (route, state) =>
+	return () =>
 	{
 		const authService: AuthService =
 			inject(AuthService);
 		const router: Router =
 			inject(Router);
 
-		// Not authenticated - redirect to login
+		// Not authenticated - redirect to login with returnUrl
 		if (!authService.isAuthenticated())
 		{
-			return router.createUrlTree(
-				[APP_ROUTES.AUTH.LOGIN],
-				{
-					queryParams: { returnUrl: state.url }
-				});
+			// Get the target URL from the current navigation
+			const navigation: Navigation | null =
+				router.currentNavigation();
+			const targetUrl: string =
+				navigation?.extractedUrl?.toString() ?? "/";
+
+			const redirectUrl: UrlTree =
+				router.createUrlTree(
+					[APP_ROUTES.AUTH.LOGIN],
+					{ queryParams: { returnUrl: targetUrl } });
+			return redirectUrl;
 		}
 
 		// No roles required - just needs auth
@@ -54,8 +69,7 @@ export function roleGuard(...requiredRoles: string[]): CanActivateFn
 
 		// Check if user has ANY of the required roles (additive)
 		const hasRequiredRole: boolean =
-			authService.hasAnyRole(
-				...requiredRoles);
+			authService.hasAnyRole(...requiredRoles);
 
 		if (hasRequiredRole)
 		{
@@ -63,7 +77,9 @@ export function roleGuard(...requiredRoles: string[]): CanActivateFn
 		}
 
 		// Has auth but wrong role - redirect to home
-		return router.createUrlTree(
-			["/"]);
+		const homeUrl: UrlTree =
+			router.createUrlTree(
+				["/"]);
+		return homeUrl;
 	};
 }

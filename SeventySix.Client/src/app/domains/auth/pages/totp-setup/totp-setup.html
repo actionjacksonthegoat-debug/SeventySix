@@ -94,17 +94,16 @@
 			Enter the 6-digit code from your authenticator app to confirm setup.
 		</p>
 
-		<form (ngSubmit)="onConfirmSetup()">
+		<form
+			[formGroup]="verifyForm"
+			(ngSubmit)="onConfirmSetup()">
 			<div class="form-group">
 				<label for="verificationCode">Verification Code</label>
 				<input
 					type="text"
 					id="verificationCode"
-					name="verificationCode"
-					[(ngModel)]="verificationCode"
-					[disabled]="isLoading()"
+					formControlName="verificationCode"
 					maxlength="6"
-					pattern="[0-9]*"
 					inputmode="numeric"
 					autocomplete="one-time-code"
 					placeholder="000000"

@@ -17,7 +17,7 @@ public class OutputCacheOptions
 	/// <summary>
 	/// Configuration section name.
 	/// </summary>
-	public const string SECTION_NAME = "Cache:OutputCache";
+	public const string SectionName = "Cache:OutputCache";
 
 	/// <summary>
 	/// Gets or sets the cache policies.

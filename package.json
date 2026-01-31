@@ -16,6 +16,7 @@
 		"stop": "powershell -ExecutionPolicy Bypass -File scripts/stop-all.ps1",
 		"stop:api": "powershell -ExecutionPolicy Bypass -File scripts/stop-api.ps1",
 		"clean:docker": "powershell -ExecutionPolicy Bypass -File scripts/cleanup-docker.ps1",
-		"clean:docker:full": "powershell -ExecutionPolicy Bypass -File scripts/cleanup-docker.ps1 -IncludeVolumes"
+		"clean:docker:full": "powershell -ExecutionPolicy Bypass -File scripts/cleanup-docker.ps1 -IncludeVolumes",
+		"db:reset": "powershell -ExecutionPolicy Bypass -File scripts/reset-database.ps1 -Environment dev"
 	}
 }

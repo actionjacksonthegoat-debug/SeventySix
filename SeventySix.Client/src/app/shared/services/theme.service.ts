@@ -9,6 +9,7 @@ import {
 	signal,
 	WritableSignal
 } from "@angular/core";
+import { STORAGE_KEYS } from "@shared/constants";
 import { ColorScheme } from "@shared/models/color-scheme.model";
 import { ThemeBrightness } from "@shared/models/theme.model";
 import { StorageService } from "@shared/services/storage.service";
@@ -40,22 +41,6 @@ export class ThemeService
 	 */
 	private readonly storage: StorageService =
 		inject(StorageService);
-
-	/**
-	 * Storage key for theme brightness.
-	 * @type {string}
-	 * @private
-	 * @readonly
-	 */
-	private readonly BRIGHTNESS_STORAGE_KEY: string = "seventysix-theme-brightness";
-
-	/**
-	 * Storage key for color scheme.
-	 * @type {string}
-	 * @private
-	 * @readonly
-	 */
-	private readonly SCHEME_STORAGE_KEY: string = "seventysix-color-scheme";
 
 	/**
 	 * Current theme brightness (light/dark).
@@ -98,6 +83,19 @@ export class ThemeService
 			{
 				this.applyTheme(this.brightness(), this.colorScheme());
 			});
+	}
+
+	/**
+	 * Initialize theme on application startup.
+	 * Called by APP_INITIALIZER to ensure theme is applied before render.
+	 * Theme is automatically applied via effect() in constructor - this method
+	 * exists for explicit initialization contract and future extensibility.
+	 * @returns {void}
+	 */
+	initialize(): void
+	{
+		// Theme is applied via effect() in constructor on signal read.
+		// This explicit method satisfies the APP_INITIALIZER contract.
 	}
 
 	/**
@@ -153,7 +151,7 @@ export class ThemeService
 	{
 		const saved: string | null =
 			this.storage.getItem<string>(
-				this.BRIGHTNESS_STORAGE_KEY);
+				STORAGE_KEYS.THEME_BRIGHTNESS);
 		return saved === "dark" || saved === "light" ? saved : "light";
 	}
 
@@ -166,7 +164,7 @@ export class ThemeService
 	{
 		const savedScheme: string | null =
 			this.storage.getItem<string>(
-				this.SCHEME_STORAGE_KEY);
+				STORAGE_KEYS.THEME_COLOR_SCHEME);
 		// Default to cyan-orange unless user explicitly chose blue
 		return savedScheme === "blue" ? "blue" : "cyan-orange";
 	}
@@ -201,8 +199,8 @@ export class ThemeService
 		html.classList.add(`${scheme}-scheme`);
 
 		// Save to storage
-		this.storage.setItem(this.BRIGHTNESS_STORAGE_KEY, brightness);
-		this.storage.setItem(this.SCHEME_STORAGE_KEY, scheme);
+		this.storage.setItem(STORAGE_KEYS.THEME_BRIGHTNESS, brightness);
+		this.storage.setItem(STORAGE_KEYS.THEME_COLOR_SCHEME, scheme);
 	}
 
 	/**

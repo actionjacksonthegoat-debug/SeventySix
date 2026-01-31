@@ -62,7 +62,7 @@ public static class ApiTrackingRegistration
 	{
 		// Configure ThirdPartyApiLimitSettings from appsettings.json
 		services.Configure<ThirdPartyApiLimitSettings>(
-			configuration.GetSection(ThirdPartyApiLimitSettings.SECTION_NAME));
+			configuration.GetSection(ThirdPartyApiLimitSettings.SectionName));
 
 		// Register ApiTrackingDbContext via shared helper
 		services.AddDomainDbContext<ApiTrackingDbContext>(
@@ -73,6 +73,9 @@ public static class ApiTrackingRegistration
 		services.AddScoped<
 			IThirdPartyApiRequestRepository,
 			ThirdPartyApiRequestRepository>();
+
+		// Register ApiTracking-specific cache service
+		services.AddScoped<IApiTrackingCacheService, ApiTrackingCacheService>();
 
 		// Register transaction manager for ApiTracking context
 		services.AddTransactionManagerFor<ApiTrackingDbContext>();

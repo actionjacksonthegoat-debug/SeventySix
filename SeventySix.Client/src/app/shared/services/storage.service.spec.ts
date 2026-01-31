@@ -271,7 +271,8 @@ describe("StorageService",
 							.toBe(false);
 						expect(consoleErrorSpy)
 							.toHaveBeenCalledWith(
-								"StorageService: Quota exceeded");
+								"StorageService: Failed to set \"test-key\"",
+								quotaError);
 					});
 
 				it("should return false on other storage errors",

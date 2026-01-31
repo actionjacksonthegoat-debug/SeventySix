@@ -68,13 +68,13 @@ describe("UserDetailPage",
 			};
 
 		/**
-		 * Creates a fresh component instance with optional mock overrides.
-		 * Use this instead of calling TestBed.createComponent directly.
-		 * @param {Partial<MockUserService>} [mockOverrides]
-		 * Optional overrides for mock service methods.
-		 * @returns {{ fixture: ComponentFixture<UserDetailPage>; component: UserDetailPage; }}
-		 * The fixture and component instance.
-		 */
+	 * Creates a fresh component instance with optional mock overrides.
+	 * Use this instead of calling TestBed.createComponent directly.
+	 * @param {Partial<MockUserService>} [mockOverrides]
+	 * Optional overrides for mock service methods.
+	 * @returns {{ fixture: ComponentFixture<UserDetailPage>; component: UserDetailPage; }}
+	 * The fixture and component instance.
+	 */
 		function createComponent(
 			mockOverrides?: Partial<MockUserService>): { fixture: ComponentFixture<UserDetailPage>; component: UserDetailPage; }
 		{

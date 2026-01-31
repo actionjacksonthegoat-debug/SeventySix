@@ -90,10 +90,10 @@ public abstract class BaseRepository<TEntity, TContext>(
 	/// </returns>
 	/// <exception cref="DbUpdateConcurrencyException">Rethrown after logging.</exception>
 	/// <exception cref="DbUpdateException">Rethrown after logging.</exception>
-	/// <exception cref="Exception">Rethrown after logging.</exception>
 	/// <remarks>
 	/// This is the Template Method that provides consistent error handling.
 	/// All repository operations should use this method to ensure uniform logging.
+	/// Unexpected exceptions are allowed to propagate with full stack traces for debugging.
 	/// </remarks>
 	protected async Task<T> ExecuteWithErrorHandlingAsync<T>(
 		Func<Task<T>> operation,
@@ -122,15 +122,6 @@ public abstract class BaseRepository<TEntity, TContext>(
 				entityIdentifier);
 			throw;
 		}
-		catch (Exception exception)
-		{
-			logger.LogError(
-				exception,
-				"Unexpected error {Operation}: {Entity}",
-				operationName,
-				entityIdentifier);
-			throw;
-		}
 	}
 
 	/// <summary>
@@ -146,7 +137,6 @@ public abstract class BaseRepository<TEntity, TContext>(
 	/// The created entity.
 	/// </returns>
 	/// <exception cref="DbUpdateException">If a database constraint is violated.</exception>
-	/// <exception cref="Exception">If an unexpected error occurs.</exception>
 	/// <remarks>
 	/// Uses ExecuteWithErrorHandlingAsync for consistent error handling.
 	/// Derived classes can override GetEntityIdentifier to customize logging.
@@ -182,7 +172,6 @@ public abstract class BaseRepository<TEntity, TContext>(
 	/// </returns>
 	/// <exception cref="DbUpdateConcurrencyException">If a concurrency conflict occurs.</exception>
 	/// <exception cref="DbUpdateException">If a database constraint is violated.</exception>
-	/// <exception cref="Exception">If an unexpected error occurs.</exception>
 	/// <remarks>
 	/// Handles entity tracking to avoid conflicts:
 	/// - If entity is already tracked: Updates properties using SetValues

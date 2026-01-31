@@ -26,6 +26,20 @@ export interface DateRangeConfig
  * @type {"1h" | "24h" | "7d" | "30d"}
  */
 export type DateRangeKey = "1h" | "24h" | "7d" | "30d";
+
+/**
+ * Date range option for template iteration.
+ * Extends DateRangeConfig with the key for binding.
+ */
+export interface DateRangeOption extends DateRangeConfig
+{
+	/**
+	 * Date range key (e.g., '1h', '24h', '7d', '30d').
+	 * @type {DateRangeKey}
+	 */
+	key: DateRangeKey;
+}
+
 /**
  * Static utility functions for DataTableComponent.
  * Stateless helpers that simplify component logic and improve readability.
@@ -106,6 +120,23 @@ export class DataTableUtilities
 	}
 
 	/**
+	 * Gets date range options as an array for template iteration.
+	 * @returns {readonly DateRangeOption[]}
+	 * Array of date range options with key, icon, and label.
+	 */
+	static getDateRangeOptions(): readonly DateRangeOption[]
+	{
+		return Object.entries(DataTableUtilities.DATE_RANGE_CONFIG)
+			.map(
+				([key, config]: [string, DateRangeConfig]): DateRangeOption =>
+					({
+						key: key as DateRangeKey,
+						icon: config.icon,
+						label: config.label
+					}));
+	}
+
+	/**
 	 * Calculates date range event from range key and current time.
 	 * @param {string} range
 	 * The date range key to calculate.
@@ -177,16 +208,13 @@ export class DataTableUtilities
 			const visibility: Map<string, boolean> =
 				new Map<string, boolean>();
 
-			Object
-				.entries(preferences)
-				.forEach(
-					([key, value]) =>
-					{
-						if (typeof value === "boolean")
-						{
-							visibility.set(key, value);
-						}
-					});
+			for (const [columnKey, isVisible] of Object.entries(preferences))
+			{
+				if (typeof isVisible === "boolean")
+				{
+					visibility.set(columnKey, isVisible);
+				}
+			}
 
 			return visibility;
 		}
@@ -206,11 +234,10 @@ export class DataTableUtilities
 	static serializeColumnPreferences(visibility: Map<string, boolean>): string
 	{
 		const preferences: Record<string, boolean> = {};
-		visibility.forEach(
-			(value, key) =>
-			{
-				preferences[key] = value;
-			});
+		for (const [columnKey, isVisible] of visibility.entries())
+		{
+			preferences[columnKey] = isVisible;
+		}
 		return JSON.stringify(preferences);
 	}
 

@@ -6,6 +6,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
@@ -13,6 +14,7 @@ using SeventySix.Api.Controllers;
 using SeventySix.Identity;
 using SeventySix.Shared.POCOs;
 using SeventySix.TestUtilities.Builders;
+using Shouldly;
 using Wolverine;
 
 namespace SeventySix.Api.Tests.Controllers;
@@ -39,6 +41,7 @@ public class UsersControllerTests
 {
 	private readonly IMessageBus MessageBus;
 	private readonly ILogger<UsersController> Logger;
+	private readonly IOutputCacheStore OutputCacheStore;
 	private readonly UsersController Controller;
 
 	public UsersControllerTests()
@@ -46,8 +49,13 @@ public class UsersControllerTests
 		MessageBus = Substitute.For<IMessageBus>();
 		Logger =
 			Substitute.For<ILogger<UsersController>>();
+		OutputCacheStore =
+			Substitute.For<IOutputCacheStore>();
 		Controller =
-			new UsersController(MessageBus, Logger);
+			new UsersController(
+				MessageBus,
+				Logger,
+				OutputCacheStore);
 	}
 
 	#region Constructor Tests
@@ -55,83 +63,6 @@ public class UsersControllerTests
 	// Note: UsersController uses primary constructor syntax which relies on
 	// dependency injection to provide non-null dependencies.
 	// ArgumentNullException tests are not applicable with this pattern.
-
-	#endregion
-
-	#region GetAllAsync Tests
-
-	[Fact]
-	public async Task GetAllAsync_ShouldReturnOkWithUsers_WhenUsersExistAsync()
-	{
-		// Arrange
-		FakeTimeProvider timeProvider = new();
-		List<UserDto> users =
-			[
-			new UserDtoBuilder(timeProvider)
-				.WithId(1)
-				.WithUsername("user1")
-				.WithEmail("user1@example.com")
-				.WithIsActive(true)
-				.Build(),
-			new UserDtoBuilder(timeProvider)
-				.WithId(2)
-				.WithUsername("user2")
-				.WithEmail("user2@example.com")
-				.WithIsActive(false)
-				.Build(),
-		];
-
-		MessageBus
-			.InvokeAsync<IEnumerable<UserDto>>(
-				Arg.Any<GetAllUsersQuery>(),
-				Arg.Any<CancellationToken>())
-			.Returns(users);
-
-		// Act
-		ActionResult<IEnumerable<UserDto>> result =
-			await Controller.GetAllAsync(CancellationToken.None);
-
-		// Assert
-		OkObjectResult okResult =
-			Assert.IsType<OkObjectResult>(result.Result);
-		IEnumerable<UserDto> returnedUsers =
-			Assert.IsAssignableFrom<
-			IEnumerable<UserDto>
-		>(okResult.Value);
-		Assert.Equal(
-			2,
-			returnedUsers.Count());
-
-		await MessageBus
-			.Received(1)
-			.InvokeAsync<IEnumerable<UserDto>>(
-				Arg.Any<GetAllUsersQuery>(),
-				Arg.Any<CancellationToken>());
-	}
-
-	[Fact]
-	public async Task GetAllAsync_ShouldReturnOkWithEmptyList_WhenNoUsersExistAsync()
-	{
-		// Arrange
-		MessageBus
-			.InvokeAsync<IEnumerable<UserDto>>(
-				Arg.Any<GetAllUsersQuery>(),
-				Arg.Any<CancellationToken>())
-			.Returns([]);
-
-		// Act
-		ActionResult<IEnumerable<UserDto>> result =
-			await Controller.GetAllAsync(CancellationToken.None);
-
-		// Assert
-		OkObjectResult okResult =
-			Assert.IsType<OkObjectResult>(result.Result);
-		IEnumerable<UserDto> returnedUsers =
-			Assert.IsAssignableFrom<
-			IEnumerable<UserDto>
-		>(okResult.Value);
-		Assert.Empty(returnedUsers);
-	}
 
 	#endregion
 
@@ -167,11 +98,11 @@ public class UsersControllerTests
 
 		// Assert
 		OkObjectResult okResult =
-			Assert.IsType<OkObjectResult>(result.Result);
+			result.Result.ShouldBeOfType<OkObjectResult>();
 		UserDto returnedUser =
-			Assert.IsType<UserDto>(okResult.Value);
-		Assert.Equal(123, returnedUser.Id);
-		Assert.Equal("john_doe", returnedUser.Username);
+			okResult.Value.ShouldBeOfType<UserDto>();
+		returnedUser.Id.ShouldBe(123);
+		returnedUser.Username.ShouldBe("john_doe");
 	}
 
 	[Fact]
@@ -191,7 +122,7 @@ public class UsersControllerTests
 			CancellationToken.None);
 
 		// Assert
-		Assert.IsType<NotFoundResult>(result.Result);
+		result.Result.ShouldBeOfType<NotFoundResult>();
 	}
 
 	#endregion
@@ -237,20 +168,18 @@ public class UsersControllerTests
 
 		// Assert
 		CreatedAtRouteResult createdResult =
-			Assert.IsType<CreatedAtRouteResult>(result.Result);
-		Assert.Equal("GetUserById", createdResult.RouteName);
-		Assert.Equal(
-			456L,
-			long.TryParse(
-				createdResult.RouteValues!["id"]?.ToString(),
-				out long id)
-				? id
-				: 0L);
+			result.Result.ShouldBeOfType<CreatedAtRouteResult>();
+		createdResult.RouteName.ShouldBe("GetUserById");
+		(long.TryParse(
+			createdResult.RouteValues!["id"]?.ToString(),
+			out long id)
+			? id
+			: 0L).ShouldBe(456L);
 
 		UserDto returnedUser =
-			Assert.IsType<UserDto>(createdResult.Value);
-		Assert.Equal(456L, returnedUser.Id);
-		Assert.Equal("new_user", returnedUser.Username);
+			createdResult.Value.ShouldBeOfType<UserDto>();
+		returnedUser.Id.ShouldBe(456L);
+		returnedUser.Username.ShouldBe("new_user");
 	}
 
 	[Fact]
@@ -340,12 +269,12 @@ public class UsersControllerTests
 			CancellationToken.None);
 		// Assert
 		OkObjectResult okResult =
-			Assert.IsType<OkObjectResult>(result.Result);
+			result.Result.ShouldBeOfType<OkObjectResult>();
 		UserDto returnedUser =
-			Assert.IsType<UserDto>(okResult.Value);
-		Assert.Equal(1, returnedUser.Id);
-		Assert.Equal("updateduser", returnedUser.Username);
-		Assert.NotNull(returnedUser.ModifyDate);
+			okResult.Value.ShouldBeOfType<UserDto>();
+		returnedUser.Id.ShouldBe(1);
+		returnedUser.Username.ShouldBe("updateduser");
+		returnedUser.ModifyDate.ShouldNotBeNull();
 	}
 
 	[Fact]
@@ -370,12 +299,11 @@ public class UsersControllerTests
 
 		// Assert
 		BadRequestObjectResult badRequestResult =
-			Assert.IsType<BadRequestObjectResult>(result.Result);
+			result.Result.ShouldBeOfType<BadRequestObjectResult>();
 		ProblemDetails problemDetails =
-			Assert.IsType<ProblemDetails>(badRequestResult.Value);
-		Assert.Equal(
-			"ID in URL does not match ID in request body",
-			problemDetails.Detail);
+			badRequestResult.Value.ShouldBeOfType<ProblemDetails>();
+		problemDetails.Detail.ShouldBe(
+			"ID in URL does not match ID in request body");
 
 		await MessageBus
 			.DidNotReceive()
@@ -408,7 +336,7 @@ public class UsersControllerTests
 			CancellationToken.None);
 
 		// Assert
-		Assert.IsType<NoContentResult>(result);
+		result.ShouldBeOfType<NoContentResult>();
 	}
 
 	[Fact]
@@ -431,7 +359,7 @@ public class UsersControllerTests
 			CancellationToken.None);
 
 		// Assert
-		Assert.IsType<NotFoundResult>(result);
+		result.ShouldBeOfType<NotFoundResult>();
 	}
 
 	#endregion
@@ -458,7 +386,7 @@ public class UsersControllerTests
 			CancellationToken.None);
 
 		// Assert
-		Assert.IsType<NoContentResult>(result);
+		result.ShouldBeOfType<NoContentResult>();
 	}
 
 	[Fact]
@@ -481,7 +409,7 @@ public class UsersControllerTests
 			CancellationToken.None);
 
 		// Assert
-		Assert.IsType<NotFoundResult>(result);
+		result.ShouldBeOfType<NotFoundResult>();
 	}
 
 	#endregion
@@ -542,17 +470,15 @@ public class UsersControllerTests
 
 		// Assert
 		OkObjectResult okResult =
-			Assert.IsType<OkObjectResult>(result.Result);
+			result.Result.ShouldBeOfType<OkObjectResult>();
 		PagedResult<UserDto> returnedResult =
-			Assert.IsType<
+			okResult.Value.ShouldBeOfType<
 			PagedResult<UserDto>
-		>(okResult.Value);
-		Assert.Equal(
-			2,
-			returnedResult.Items.Count());
-		Assert.Equal(1, returnedResult.Page);
-		Assert.Equal(10, returnedResult.PageSize);
-		Assert.Equal(2, returnedResult.TotalCount);
+		>();
+		returnedResult.Items.Count().ShouldBe(2);
+		returnedResult.Page.ShouldBe(1);
+		returnedResult.PageSize.ShouldBe(10);
+		returnedResult.TotalCount.ShouldBe(2);
 	}
 
 	#endregion
@@ -588,10 +514,10 @@ public class UsersControllerTests
 
 		// Assert
 		OkObjectResult okResult =
-			Assert.IsType<OkObjectResult>(result.Result);
+			result.Result.ShouldBeOfType<OkObjectResult>();
 		UserDto returnedUser =
-			Assert.IsType<UserDto>(okResult.Value);
-		Assert.Equal("testuser", returnedUser.Username);
+			okResult.Value.ShouldBeOfType<UserDto>();
+		returnedUser.Username.ShouldBe("testuser");
 	}
 
 	[Fact]
@@ -611,7 +537,7 @@ public class UsersControllerTests
 			CancellationToken.None);
 
 		// Assert
-		Assert.IsType<NotFoundResult>(result.Result);
+		result.Result.ShouldBeOfType<NotFoundResult>();
 	}
 
 	#endregion
@@ -638,11 +564,11 @@ public class UsersControllerTests
 
 		// Assert
 		OkObjectResult okResult =
-			Assert.IsType<OkObjectResult>(result.Result);
-		Assert.NotNull(okResult.Value);
+			result.Result.ShouldBeOfType<OkObjectResult>();
+		okResult.Value.ShouldNotBeNull();
 		bool exists =
 			(bool)okResult.Value;
-		Assert.True(exists);
+		exists.ShouldBeTrue();
 	}
 
 	[Fact]
@@ -665,11 +591,11 @@ public class UsersControllerTests
 
 		// Assert
 		OkObjectResult okResult =
-			Assert.IsType<OkObjectResult>(result.Result);
-		Assert.NotNull(okResult.Value);
+			result.Result.ShouldBeOfType<OkObjectResult>();
+		okResult.Value.ShouldNotBeNull();
 		bool exists =
 			(bool)okResult.Value;
-		Assert.False(exists);
+		exists.ShouldBeFalse();
 	}
 
 	#endregion
@@ -701,10 +627,10 @@ public class UsersControllerTests
 
 		// Assert
 		OkObjectResult okResult =
-			Assert.IsType<OkObjectResult>(result.Result);
+			result.Result.ShouldBeOfType<OkObjectResult>();
 		int count =
-			Assert.IsType<int>(okResult.Value);
-		Assert.Equal(3, count);
+			okResult.Value.ShouldBeOfType<int>();
+		count.ShouldBe(3);
 	}
 
 	[Fact]
@@ -732,10 +658,10 @@ public class UsersControllerTests
 
 		// Assert
 		OkObjectResult okResult =
-			Assert.IsType<OkObjectResult>(result.Result);
+			result.Result.ShouldBeOfType<OkObjectResult>();
 		int count =
-			Assert.IsType<int>(okResult.Value);
-		Assert.Equal(3, count);
+			okResult.Value.ShouldBeOfType<int>();
+		count.ShouldBe(3);
 	}
 
 	#endregion

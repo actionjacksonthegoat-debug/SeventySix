@@ -13,6 +13,12 @@
 		<NoWarn>$(NoWarn);RS2008</NoWarn>
 	</PropertyGroup>
 
+	<!-- Allow CodeFixes project to access internal helpers -->
+	<ItemGroup>
+		<InternalsVisibleTo Include="SeventySix.Analyzers.CodeFixes" />
+		<InternalsVisibleTo Include="SeventySix.Analyzers.Tests" />
+	</ItemGroup>
+
 	<ItemGroup>
 		<PackageReference
 			Include="Microsoft.CodeAnalysis.CSharp"

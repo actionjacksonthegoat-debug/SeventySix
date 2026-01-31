@@ -323,7 +323,7 @@ public static class WebApplicationExtensions
 					+ "  2. Run: npm run start:dependencies\n"
 					+ "  3. Wait for 'Dependencies ready' message\n"
 					+ "  4. Then start debugging in Visual Studio\n\n"
-					+ "Alternatively, run: cd SeventySix.Server && docker compose up -d postgres";
+					+ "Alternatively, run: docker compose up -d postgres";
 
 			logger.LogCritical(message);
 

@@ -16,6 +16,11 @@ import { TestBed } from "@angular/core/testing";
 import { provideRouter } from "@angular/router";
 import { environment } from "@environments/environment";
 import { AuthResponse } from "@shared/models";
+import { createTestQueryClient } from "@shared/testing";
+import {
+	provideTanStackQuery,
+	QueryClient
+} from "@tanstack/angular-query-experimental";
 import { AuthService } from "./auth.service";
 import { createMockAuthResponse } from "./auth.service.test-helpers";
 
@@ -37,6 +42,7 @@ describe("Token Storage Security",
 	{
 		let service: AuthService;
 		let httpMock: HttpTestingController;
+		let queryClient: QueryClient;
 
 		/** Session marker key used by AuthService */
 		const SESSION_KEY: string = "auth_has_session";
@@ -44,9 +50,11 @@ describe("Token Storage Security",
 		beforeEach(
 			() =>
 			{
-			// Clear all storage before each test
 				localStorage.clear();
 				sessionStorage.clear();
+
+				queryClient =
+					createTestQueryClient();
 
 				TestBed.configureTestingModule(
 					{
@@ -55,6 +63,7 @@ describe("Token Storage Security",
 							provideHttpClient(withInterceptorsFromDi()),
 							provideHttpClientTesting(),
 							provideRouter([]),
+							provideTanStackQuery(queryClient),
 							{ provide: PLATFORM_ID, useValue: "browser" },
 							AuthService
 						]

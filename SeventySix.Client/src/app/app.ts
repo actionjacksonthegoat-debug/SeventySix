@@ -1,5 +1,5 @@
 import { DOCUMENT } from "@angular/common";
-import { Component, effect, inject, Renderer2 } from "@angular/core";
+import { ChangeDetectionStrategy, Component, effect, inject, Renderer2 } from "@angular/core";
 import { MatProgressBarModule } from "@angular/material/progress-bar";
 import { MatSidenavModule } from "@angular/material/sidenav";
 import { RouterOutlet } from "@angular/router";
@@ -11,8 +11,7 @@ import {
 } from "@shared/components/layout";
 import {
 	LayoutService,
-	LoadingService,
-	ThemeService
+	LoadingService
 } from "@shared/services";
 
 /**
@@ -32,18 +31,11 @@ import {
 			NotificationToastComponent
 		],
 		templateUrl: "./app.html",
-		styleUrl: "./app.scss"
+		styleUrl: "./app.scss",
+		changeDetection: ChangeDetectionStrategy.OnPush
 	})
 export class App
 {
-	/**
-	 * Theme service used to toggle brightness and color schemes.
-	 * @type {ThemeService}
-	 * @protected
-	 * @readonly
-	 */
-	protected readonly themeService: ThemeService =
-		inject(ThemeService);
 	/**
 	 * Layout service for sidebar state and responsive helpers.
 	 * @type {LayoutService}

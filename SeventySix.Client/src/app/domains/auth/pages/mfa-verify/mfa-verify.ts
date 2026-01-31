@@ -9,15 +9,25 @@ import {
 	ChangeDetectionStrategy,
 	Component,
 	computed,
+	DestroyRef,
+	effect,
+	EffectRef,
 	inject,
 	OnInit,
 	Signal,
 	signal,
 	WritableSignal
 } from "@angular/core";
-import { FormsModule } from "@angular/forms";
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
+import {
+	FormBuilder,
+	FormGroup,
+	ReactiveFormsModule,
+	Validators
+} from "@angular/forms";
 import { MatButtonModule } from "@angular/material/button";
 import { Router } from "@angular/router";
+import { MFA_CONFIG, MFA_METHOD } from "@auth/constants";
 import {
 	AuthResponse,
 	MfaMethod,
@@ -25,37 +35,25 @@ import {
 	VerifyMfaRequest
 } from "@auth/models";
 import { MfaService } from "@auth/services";
+import {
+	getBackupCodeErrorMessage,
+	getMfaErrorMessage,
+	requiresLoginRedirect
+} from "@auth/utilities";
 import { APP_ROUTES } from "@shared/constants";
 import { VerifyBackupCodeRequest, VerifyTotpRequest } from "@shared/models";
 import { AuthService, NotificationService } from "@shared/services";
-
-/**
- * MFA method enum values.
- * Email = 0, Totp = 1
- */
-const MFA_METHOD_EMAIL: number = 0;
-const MFA_METHOD_TOTP: number = 1;
-
-/**
- * MFA code length.
- */
-const MFA_CODE_LENGTH: number = 6;
-
-/**
- * Backup code length.
- */
-const BACKUP_CODE_LENGTH: number = 8;
-
-/**
- * Resend cooldown in seconds.
- */
-const RESEND_COOLDOWN_SECONDS: number = 60;
+import {
+	interval,
+	Subject
+} from "rxjs";
+import { takeUntil } from "rxjs/operators";
 
 @Component(
 	{
 		selector: "app-mfa-verify",
 		standalone: true,
-		imports: [FormsModule, MatButtonModule],
+		imports: [ReactiveFormsModule, MatButtonModule],
 		changeDetection: ChangeDetectionStrategy.OnPush,
 		templateUrl: "./mfa-verify.html",
 		styleUrl: "./mfa-verify.scss"
@@ -103,18 +101,35 @@ export class MfaVerifyComponent implements OnInit
 		inject(NotificationService);
 
 	/**
+	 * Form builder for creating reactive forms.
+	 * @type {FormBuilder}
+	 * @private
+	 * @readonly
+	 */
+	private readonly formBuilder: FormBuilder =
+		inject(FormBuilder);
+
+	/**
+	 * MFA verification form with code field.
+	 * @type {FormGroup}
+	 * @protected
+	 * @readonly
+	 */
+	protected readonly mfaForm: FormGroup =
+		this.formBuilder.group(
+			{
+				code: [
+					"",
+					[Validators.required]
+				]
+			});
+
+	/**
 	 * MFA state from login flow.
 	 * @type {MfaState | null}
 	 * @private
 	 */
 	private mfaState: MfaState | null = null;
-
-	/**
-	 * The verification code entered by user.
-	 * @type {string}
-	 * @protected
-	 */
-	protected code: string = "";
 
 	/**
 	 * Loading state during verification.
@@ -168,7 +183,7 @@ export class MfaVerifyComponent implements OnInit
 	 * @readonly
 	 */
 	protected readonly mfaMethod: WritableSignal<MfaMethod> =
-		signal<MfaMethod>(MFA_METHOD_EMAIL);
+		signal<MfaMethod>(MFA_METHOD.email);
 
 	/**
 	 * Whether showing backup code entry mode.
@@ -188,7 +203,7 @@ export class MfaVerifyComponent implements OnInit
 	protected readonly isEmailMode: Signal<boolean> =
 		computed(
 			() =>
-				this.mfaMethod() === MFA_METHOD_EMAIL
+				this.mfaMethod() === MFA_METHOD.email
 					&& !this.showBackupCodeEntry());
 
 	/**
@@ -200,7 +215,7 @@ export class MfaVerifyComponent implements OnInit
 	protected readonly isTotpMode: Signal<boolean> =
 		computed(
 			() =>
-				this.mfaMethod() === MFA_METHOD_TOTP
+				this.mfaMethod() === MFA_METHOD.totp
 					&& !this.showBackupCodeEntry());
 
 	/**
@@ -213,15 +228,59 @@ export class MfaVerifyComponent implements OnInit
 		computed(
 			() =>
 				this.showBackupCodeEntry()
-					? BACKUP_CODE_LENGTH
-					: MFA_CODE_LENGTH);
+					? MFA_CONFIG.backupCodeLength
+					: MFA_CONFIG.codeLength);
 
 	/**
-	 * Cooldown timer interval.
-	 * @type {number | null}
+	 * Effect to update form validation when mode changes.
+	 * @type {EffectRef}
 	 * @private
+	 * @readonly
 	 */
-	private cooldownInterval: number | null = null;
+	private readonly validationEffect: EffectRef =
+		effect(
+			() =>
+			{
+				const codeLength: number =
+					this.expectedCodeLength();
+				const pattern: RegExp =
+					this.showBackupCodeEntry()
+						? /^[A-Za-z0-9]+$/
+						: /^\d+$/;
+
+				this
+					.mfaForm
+					.get("code")
+					?.setValidators(
+						[
+							Validators.required,
+							Validators.minLength(codeLength),
+							Validators.maxLength(codeLength),
+							Validators.pattern(pattern)
+						]);
+				this
+					.mfaForm
+					.get("code")
+					?.updateValueAndValidity();
+			});
+
+	/**
+	 * Subject to stop the cooldown timer.
+	 * @type {Subject<void>}
+	 * @private
+	 * @readonly
+	 */
+	private readonly stopCooldownSubject: Subject<void> =
+		new Subject<void>();
+
+	/**
+	 * Angular destroy reference for automatic cleanup.
+	 * @type {DestroyRef}
+	 * @private
+	 * @readonly
+	 */
+	private readonly destroyRef: DestroyRef =
+		inject(DestroyRef);
 
 	/**
 	 * Initialize component: check MFA state, redirect if invalid.
@@ -241,8 +300,9 @@ export class MfaVerifyComponent implements OnInit
 		this.maskedEmail.set(this.mfaState.email);
 
 		// Set MFA method from state (default to email if not specified)
-		if (this.mfaState.mfaMethod !== null
-			&& this.mfaState.mfaMethod !== undefined)
+		if (
+			this.mfaState.mfaMethod !== null
+				&& this.mfaState.mfaMethod !== undefined)
 		{
 			this.mfaMethod.set(this.mfaState.mfaMethod);
 		}
@@ -255,7 +315,9 @@ export class MfaVerifyComponent implements OnInit
 	 */
 	protected canVerify(): boolean
 	{
-		return this.code.length === this.expectedCodeLength()
+		const code: string =
+			this.mfaForm.value.code ?? "";
+		return code.length === this.expectedCodeLength()
 			&& !this.isLoading()
 			&& !this.isResending();
 	}
@@ -301,7 +363,7 @@ export class MfaVerifyComponent implements OnInit
 		const request: VerifyMfaRequest =
 			{
 				challengeToken: this.mfaState.challengeToken,
-				code: this.code
+				code: this.mfaForm.value.code
 			};
 
 		this
@@ -332,7 +394,7 @@ export class MfaVerifyComponent implements OnInit
 		const request: VerifyTotpRequest =
 			{
 				email: this.mfaState.email,
-				code: this.code
+				code: this.mfaForm.value.code
 			};
 
 		this
@@ -363,7 +425,7 @@ export class MfaVerifyComponent implements OnInit
 		const request: VerifyBackupCodeRequest =
 			{
 				email: this.mfaState.email,
-				code: this.code
+				code: this.mfaForm.value.code
 			};
 
 		this
@@ -420,44 +482,26 @@ export class MfaVerifyComponent implements OnInit
 	private handleVerifyError(error: HttpErrorResponse): void
 	{
 		this.isLoading.set(false);
-		this.code = "";
+		this.mfaForm.reset();
 
 		const errorCode: string | undefined =
 			error.error?.errorCode;
 
-		switch (errorCode)
+		const fallbackMessage: string =
+			error.error?.detail ?? "Verification failed. Please try again.";
+
+		const errorMessage: string =
+			getMfaErrorMessage(
+				errorCode,
+				fallbackMessage);
+
+		this.notification.error(errorMessage);
+
+		if (requiresLoginRedirect(errorCode))
 		{
-			case "MFA_INVALID_CODE":
-			case "TOTP_INVALID_CODE":
-				this.notification.error("Invalid verification code. Please try again.");
-				break;
-			case "MFA_CODE_EXPIRED":
-				this.notification.error("Code has expired. Please request a new code.");
-				break;
-			case "MFA_TOO_MANY_ATTEMPTS":
-			case "TOTP_TOO_MANY_ATTEMPTS":
-				this.notification.error(
-					"Too many attempts. Please request a new code.");
-				this.mfaService.clearMfaState();
-				this.router.navigate(
-					[APP_ROUTES.AUTH.LOGIN]);
-				break;
-			case "MFA_INVALID_CHALLENGE":
-			case "MFA_CHALLENGE_USED":
-				this.notification.error("Session expired. Please log in again.");
-				this.mfaService.clearMfaState();
-				this.router.navigate(
-					[APP_ROUTES.AUTH.LOGIN]);
-				break;
-			case "TOTP_NOT_ENABLED":
-				this.notification.error("Authenticator app is not set up. Please log in again.");
-				this.mfaService.clearMfaState();
-				this.router.navigate(
-					[APP_ROUTES.AUTH.LOGIN]);
-				break;
-			default:
-				this.notification.error(
-					error.error?.detail ?? "Verification failed. Please try again.");
+			this.mfaService.clearMfaState();
+			this.router.navigate(
+				[APP_ROUTES.AUTH.LOGIN]);
 		}
 	}
 
@@ -470,27 +514,20 @@ export class MfaVerifyComponent implements OnInit
 	private handleBackupCodeError(error: HttpErrorResponse): void
 	{
 		this.isLoading.set(false);
-		this.code = "";
+		this.mfaForm.reset();
 
 		const errorCode: string | undefined =
 			error.error?.errorCode;
 
-		switch (errorCode)
-		{
-			case "BACKUP_CODE_INVALID":
-				this.notification.error("Invalid backup code. Please try again.");
-				break;
-			case "BACKUP_CODE_ALREADY_USED":
-				this.notification.error("This backup code has already been used.");
-				break;
-			case "NO_BACKUP_CODES_AVAILABLE":
-				this.notification.error(
-					"No backup codes available. Please contact support.");
-				break;
-			default:
-				this.notification.error(
-					error.error?.detail ?? "Verification failed. Please try again.");
-		}
+		const fallbackMessage: string =
+			error.error?.detail ?? "Verification failed. Please try again.";
+
+		const errorMessage: string =
+			getBackupCodeErrorMessage(
+				errorCode,
+				fallbackMessage);
+
+		this.notification.error(errorMessage);
 	}
 
 	/**
@@ -560,16 +597,20 @@ export class MfaVerifyComponent implements OnInit
 	}
 
 	/**
-	 * Starts the resend cooldown timer.
+	 * Starts the resend cooldown timer using RxJS interval.
+	 * Timer automatically stops when cooldown reaches 0 or component is destroyed.
 	 * @private
 	 */
 	private startCooldown(): void
 	{
 		this.resendOnCooldown.set(true);
-		this.resendCooldownSeconds.set(RESEND_COOLDOWN_SECONDS);
+		this.resendCooldownSeconds.set(MFA_CONFIG.resendCooldownSeconds);
 
-		this.cooldownInterval =
-			window.setInterval(
+		interval(1000)
+			.pipe(
+				takeUntil(this.stopCooldownSubject),
+				takeUntilDestroyed(this.destroyRef))
+			.subscribe(
 				() =>
 				{
 					const remaining: number =
@@ -583,22 +624,16 @@ export class MfaVerifyComponent implements OnInit
 					{
 						this.resendCooldownSeconds.set(remaining);
 					}
-				},
-				1000);
+				});
 	}
 
 	/**
-	 * Stops the resend cooldown timer.
+	 * Stops the resend cooldown timer by emitting on the stop Subject.
 	 * @private
 	 */
 	private stopCooldown(): void
 	{
-		if (this.cooldownInterval !== null)
-		{
-			clearInterval(this.cooldownInterval);
-			this.cooldownInterval = null;
-		}
-
+		this.stopCooldownSubject.next();
 		this.resendOnCooldown.set(false);
 		this.resendCooldownSeconds.set(0);
 	}
@@ -619,7 +654,7 @@ export class MfaVerifyComponent implements OnInit
 	protected onUseBackupCode(): void
 	{
 		this.showBackupCodeEntry.set(true);
-		this.code = "";
+		this.mfaForm.reset();
 	}
 
 	/**
@@ -628,6 +663,6 @@ export class MfaVerifyComponent implements OnInit
 	protected onCancelBackupCode(): void
 	{
 		this.showBackupCodeEntry.set(false);
-		this.code = "";
+		this.mfaForm.reset();
 	}
 }

@@ -15,15 +15,6 @@ namespace SeventySix.Api.Extensions;
 /// </summary>
 public static class SerilogExtensions
 {
-	private const string ConsoleOutputTemplate =
-		"[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj} {Properties:j}{NewLine}{Exception}";
-
-	private const string FileOutputTemplate =
-		"{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {SourceContext} {Message:lj} {Properties:j}{NewLine}{Exception}";
-
-	private const string LogFilePath = "logs/seventysix-.txt";
-	private const int RetainedFileCount = 30;
-
 	/// <summary>
 	/// Configures base Serilog settings (enrichers, console, file sinks).
 	/// Use before app.Build() when database sink is not yet available.
@@ -146,40 +137,6 @@ public static class SerilogExtensions
 			.WithThreadId()
 			.Enrich
 			.WithExceptionDetails();
-	}
-
-	/// <summary>
-	/// Configures the console sink for Serilog with the standard output template.
-	/// </summary>
-	/// <param name="config">
-	/// The logger configuration to modify.
-	/// </param>
-	/// <returns>
-	/// The logger configuration with console sink configured.
-	/// </returns>
-	private static LoggerConfiguration ConfigureConsoleSink(
-		this LoggerConfiguration config)
-	{
-		return config.WriteTo.Console(outputTemplate: ConsoleOutputTemplate);
-	}
-
-	/// <summary>
-	/// Configures the file sink for Serilog with rolling files and retention.
-	/// </summary>
-	/// <param name="config">
-	/// The logger configuration to modify.
-	/// </param>
-	/// <returns>
-	/// The logger configuration with file sink configured.
-	/// </returns>
-	private static LoggerConfiguration ConfigureFileSink(
-		this LoggerConfiguration config)
-	{
-		return config.WriteTo.File(
-			path: LogFilePath,
-			rollingInterval: RollingInterval.Day,
-			retainedFileCountLimit: RetainedFileCount,
-			outputTemplate: FileOutputTemplate);
 	}
 
 	/// <summary>

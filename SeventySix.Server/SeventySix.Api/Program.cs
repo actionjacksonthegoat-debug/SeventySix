@@ -29,6 +29,7 @@ using SeventySix.Api.Extensions;
 using SeventySix.Api.Middleware;
 using SeventySix.Api.Registration;
 using SeventySix.Api.Utilities;
+using SeventySix.Identity.Registration;
 using SeventySix.Registration;
 using SeventySix.Shared.Constants;
 using SeventySix.Shared.Registration;
@@ -113,6 +114,9 @@ builder.Host.UseWolverine(
 		// Auto-discover handlers from SeventySix assembly
 		options.Discovery.IncludeAssembly(typeof(SeventySix.Logging.Log).Assembly);
 
+		// Auto-discover handlers from SeventySix.Identity assembly
+		options.Discovery.IncludeAssembly(typeof(SeventySix.Identity.Registration.IdentityRegistration).Assembly);
+
 		// Use FluentValidation for command validation
 		options.UseFluentValidation();
 	},
@@ -159,6 +163,9 @@ builder.Services.AddElectronicNotificationsDomain(
 	connectionString,
 	builder.Configuration);
 
+// Register cache invalidation service (cross-domain)
+builder.Services.AddCacheServices();
+
 // Register all background jobs (single registration point)
 builder.Services.AddBackgroundJobs(builder.Configuration);
 
@@ -176,6 +183,10 @@ builder.Services.AddConfiguredOutputCache(
 
 // Add rate limiting (replaces custom middleware)
 builder.Services.AddConfiguredRateLimiting(builder.Configuration);
+
+// Add exception handler and ProblemDetails support
+builder.Services.AddExceptionHandler<SeventySix.Api.Infrastructure.GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
 
 // Add CORS from configuration
 builder.Services.AddConfiguredCors(builder.Configuration);
@@ -243,10 +254,10 @@ app.UseConfiguredForwardedHeaders(builder.Configuration);
 // CORS - Must be early so preflight (OPTIONS) requests are handled
 app.UseCors("AllowedOrigins");
 
-// Global exception handling - Catches all unhandled exceptions
+// Global exception handling - Uses ASP.NET Core 8+ IExceptionHandler pattern
 // Returns consistent ProblemDetails responses (RFC 7807)
 // Must be early to catch exceptions from all subsequent middleware
-app.UseMiddleware<GlobalExceptionMiddleware>();
+app.UseExceptionHandler();
 
 // Security headers middleware - Attribute-aware implementation
 // Reads [SecurityHeaders] attributes from controllers/actions for customization

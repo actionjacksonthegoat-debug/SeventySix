@@ -4,7 +4,6 @@ import {
 	getLogLevelClassName,
 	getLogLevelIconName,
 	getLogLevelName,
-	getRelativeTime,
 	isRootSpanId,
 	LogDto,
 	LogLevel,
@@ -34,6 +33,7 @@ import { MatIconModule } from "@angular/material/icon";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { environment } from "@environments/environment";
 import { DateService } from "@shared/services";
+import { isNullOrEmpty } from "@shared/utilities/null-check.utility";
 
 /** Dialog component for displaying detailed log information. */
 @Component(
@@ -159,9 +159,7 @@ export class LogDetailDialogComponent
 	readonly relativeTime: Signal<string> =
 		computed(
 			(): string =>
-				getRelativeTime(
-					this.log().createDate,
-					this.dateService));
+				this.dateService.formatRelative(this.log().createDate));
 
 	/**
 	 * Formatted JSON properties string for display.
@@ -197,7 +195,7 @@ export class LogDetailDialogComponent
 	readonly hasCorrelationId: Signal<boolean> =
 		computed(
 			(): boolean =>
-				!!this.log().correlationId);
+				!isNullOrEmpty(this.log().correlationId));
 
 	/**
 	 * True when the log level is Error or Fatal.
@@ -301,10 +299,10 @@ export class LogDetailDialogComponent
 			return;
 		}
 
-		const jaegerUrl: string =
-			environment.observability.jaegerUrl || "http://localhost:16686";
-		const url: string =
-			`${jaegerUrl}/trace/${log.correlationId}`;
-		window.open(url, "_blank");
+		const jaegerBaseUrl: string =
+			environment.observability.jaegerUrl;
+		const traceUrl: string =
+			`${jaegerBaseUrl}/trace/${log.correlationId}`;
+		window.open(traceUrl, "_blank");
 	}
 }

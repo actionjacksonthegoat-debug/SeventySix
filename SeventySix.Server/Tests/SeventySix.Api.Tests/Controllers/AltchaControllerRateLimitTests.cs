@@ -11,6 +11,7 @@ using SeventySix.Identity;
 using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.Mocks;
 using SeventySix.TestUtilities.TestBases;
+using Shouldly;
 
 namespace SeventySix.Api.Tests.Controllers;
 
@@ -94,14 +95,12 @@ public class AltchaControllerRateLimitTests(IdentityAuthApiPostgreSqlFixture fix
 		int rateLimitedCount =
 			responses.Count(response => response.StatusCode == HttpStatusCode.TooManyRequests);
 
-		Assert.True(
-			successCount >= 1,
+		(successCount >= 1).ShouldBeTrue(
 			$"Expected at least 1 successful response, but got {successCount}. "
 			+ $"Status codes: {string.Join(
 				", ",
 				responses.Select(response => response.StatusCode))}");
-		Assert.True(
-			rateLimitedCount >= 1,
+		(rateLimitedCount >= 1).ShouldBeTrue(
 			$"Expected at least 1 rate-limited response, but got {rateLimitedCount}. "
 			+ $"Status codes: {string.Join(
 				", ",
@@ -132,7 +131,7 @@ public class AltchaControllerRateLimitTests(IdentityAuthApiPostgreSqlFixture fix
 		}
 
 		// Assert
-		Assert.NotNull(rateLimitedResponse);
-		Assert.True(rateLimitedResponse.Headers.Contains("Retry-After"));
+		rateLimitedResponse.ShouldNotBeNull();
+		rateLimitedResponse.Headers.Contains("Retry-After").ShouldBeTrue();
 	}
 }

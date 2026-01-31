@@ -25,13 +25,18 @@ public sealed class MultiArgumentNewlineAnalyzer : DiagnosticAnalyzer
 	/// <summary>
 	/// Maximum total length of simple arguments that can stay on one line.
 	/// </summary>
+	/// <remarks>
+	/// When the combined length of all arguments is under this threshold,
+	/// the arguments may remain on one line for brevity. This prevents
+	/// overly strict formatting for simple calls like <c>Math.Max(a, b)</c>.
+	/// </remarks>
 	private const int SimpleArgumentsThreshold = 40;
 
 	private static readonly DiagnosticDescriptor Rule = new(
 		DiagnosticId,
 		"Multiple arguments should be on separate lines",
 		"Method call with 2+ arguments should have each argument on a separate line",
-		"Formatting",
+		DiagnosticCategories.Formatting,
 		DiagnosticSeverity.Warning,
 		isEnabledByDefault: true,
 		description: "When a method call has two or more arguments, each argument should be on its own line for readability.");

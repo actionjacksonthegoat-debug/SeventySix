@@ -123,7 +123,7 @@ export class UserDetailPage
 	 * @private
 	 */
 	private readonly userId: string =
-		this.route.snapshot.paramMap.get("id") || "";
+		this.route.snapshot.paramMap.get("id") ?? "";
 
 	/**
 	 * TanStack Query used to load the user by ID.
@@ -407,7 +407,7 @@ export class UserDetailPage
 			{
 				username: user.username,
 				email: user.email,
-				fullName: user.fullName || "",
+				fullName: user.fullName ?? "",
 				isActive: user.isActive
 			});
 

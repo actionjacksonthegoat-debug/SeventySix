@@ -1,6 +1,11 @@
 /**
  * TOTP Service for authenticator app enrollment operations.
  * Domain-scoped service - must be provided in route providers.
+ *
+ * **Design Note:** Uses HttpClient directly (not ApiService) because TOTP
+ * operations require `withCredentials: true` for secure cookie handling.
+ *
+ * @see {@link ApiService} for documentation on when to use HttpClient directly
  */
 
 import { HttpClient } from "@angular/common/http";
@@ -17,7 +22,8 @@ import { Observable } from "rxjs";
  * Service for TOTP (authenticator app) operations.
  * Handles enrollment, confirmation, and disabling.
  *
- * Note: This is a domain-scoped service provided via route providers.
+ * **Note:** This is a domain-scoped service provided via route providers.
+ * Uses HttpClient directly for `withCredentials` support required by auth flows.
  */
 @Injectable()
 export class TotpService
@@ -32,13 +38,13 @@ export class TotpService
 		inject(HttpClient);
 
 	/**
-	 * Base auth API URL.
+	 * Base MFA TOTP API URL.
 	 * @type {string}
 	 * @private
 	 * @readonly
 	 */
-	private readonly authUrl: string =
-		`${environment.apiUrl}/auth`;
+	private readonly mfaUrl: string =
+		`${environment.apiUrl}/auth/mfa`;
 
 	/**
 	 * Initiates TOTP enrollment.
@@ -50,7 +56,7 @@ export class TotpService
 		return this
 			.httpClient
 			.post<TotpSetupResponse>(
-				`${this.authUrl}/totp/setup`,
+				`${this.mfaUrl}/totp/setup`,
 				{},
 				{ withCredentials: true });
 	}
@@ -67,7 +73,7 @@ export class TotpService
 		return this
 			.httpClient
 			.post<void>(
-				`${this.authUrl}/totp/confirm`,
+				`${this.mfaUrl}/totp/confirm`,
 				request,
 				{ withCredentials: true });
 	}
@@ -84,7 +90,7 @@ export class TotpService
 		return this
 			.httpClient
 			.post<void>(
-				`${this.authUrl}/totp/disable`,
+				`${this.mfaUrl}/totp/disable`,
 				request,
 				{ withCredentials: true });
 	}

@@ -19,18 +19,6 @@ export type HealthStatusResponse = components["schemas"]["HealthStatusResponse"]
 export type DatabaseHealthResponse = components["schemas"]["DatabaseHealthResponse"];
 
 /**
- * External API health response for downstream services.
- * Mirrors the generated `ExternalApiHealthResponse` schema.
- */
-export type ExternalApiHealthResponse = components["schemas"]["ExternalApiHealthResponse"];
-
-/**
- * Aggregate API health status (e.g., Up/Down/Degraded).
- * Mirrors the generated `ApiHealthStatus` schema.
- */
-export type ApiHealthStatus = components["schemas"]["ApiHealthStatus"];
-
-/**
  * Queue health response for message queue systems.
  * Mirrors the generated `QueueHealthResponse` schema.
  */

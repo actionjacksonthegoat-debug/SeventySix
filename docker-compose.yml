@@ -1,0 +1,283 @@
+# Docker Compose for SeventySix Development Environment
+# Simple, effective setup for local development with persistent PostgreSQL data
+#
+# Environment Variables (from .env in repository root - auto-loaded):
+#   - DB_NAME: Database name (defaults to seventysix)
+#   - DB_USER: Database username (defaults to postgres)
+#   - DB_PASSWORD: PostgreSQL password (defaults to TestPassword)
+#   - JWT_SECRET_KEY: 64-char secret for JWT token signing
+#   - GITHUB_CLIENT_ID/SECRET: GitHub OAuth credentials
+#   - EMAIL_*: Brevo SMTP credentials for email functionality
+#
+# Setup: Copy .env.example to .env and update with your values
+
+services:
+  # Valkey - Open Source Redis-Compatible Cache (BSD licensed, Linux Foundation)
+  valkey:
+    image: valkey/valkey:9.0-alpine
+    container_name: seventysix-valkey-dev
+    ports:
+      - "6379:6379"
+    volumes:
+      - valkey_data:/data
+    command: valkey-server --save 60 1 --loglevel warning
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - seventysix-network
+    restart: unless-stopped
+
+  # PostgreSQL Database - Persistent storage for development
+  postgres:
+    image: postgres:18-alpine
+    container_name: seventysix-postgres-dev
+    environment:
+      POSTGRES_DB: ${DB_NAME:-seventysix}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-TestPassword}
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - seventysix-network
+    restart: unless-stopped
+
+  # pgAdmin - PostgreSQL web UI
+  pgadmin:
+    image: dpage/pgadmin4:9.11
+    container_name: seventysix-pgadmin-dev
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin@example.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-pgadmin}
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - seventysix-network
+    restart: unless-stopped
+
+  # .NET API - Containerized for testing full stack
+  seventysix-api:
+    build:
+      context: ./SeventySix.Server
+      dockerfile: SeventySix.Api/Dockerfile
+    container_name: seventysix-api-dev
+    ports:
+      - "7074:8081"  # HTTPS - single development port
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTPS_PORTS=8081
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=password
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
+      # Database connection via component variables (secrets from .env)
+      # Note: API container connects to postgres:5432 via Docker internal network
+      - Database__Host=postgres
+      - Database__Port=5432
+      - Database__Name=${DB_NAME:-seventysix}
+      - Database__User=${DB_USER:-postgres}
+      - Database__Password=${DB_PASSWORD:?DB_PASSWORD must be set in .env}
+      # JWT Authentication
+      - Jwt__SecretKey=${JWT_SECRET_KEY:?JWT_SECRET_KEY must be set in .env}
+      # GitHub OAuth
+      - Auth__OAuth__Providers__0__ClientId=${GITHUB_CLIENT_ID:-}
+      - Auth__OAuth__Providers__0__ClientSecret=${GITHUB_CLIENT_SECRET:-}
+      # Cache - Use Docker service name for Valkey connection
+      - Cache__Valkey__ConnectionString=valkey:6379
+      # OpenTelemetry - otel-collector is the single ingestion point for traces AND metrics
+      - OpenTelemetry__OtlpEndpoint=http://otel-collector:4317
+      # Email SMTP credentials (mapped to ASP.NET Core hierarchical config)
+      # Defaults to empty string to avoid warnings when not configured
+      - Email__SmtpUsername=${EMAIL_SMTP_USERNAME:-}
+      - Email__SmtpPassword=${EMAIL_SMTP_PASSWORD:-}
+      - Email__FromAddress=${EMAIL_FROM_ADDRESS:-}
+      # Admin Seeding
+      - AdminSeeder__Email=${ADMIN_EMAIL:-}
+      - AdminSeeder__InitialPassword=${ADMIN_PASSWORD:-}
+    volumes:
+      - ~/.aspnet/https:/https:ro
+      - dataprotection_keys:/app/keys
+      - ./SeventySix.Server/SeventySix.Api/keys/dataprotection.pfx:/app/keys/dataprotection.pfx:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      valkey:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fk", "https://localhost:8081/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    restart: "no"
+    networks:
+      - seventysix-network
+
+  # Prometheus - Metrics collection
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    container_name: seventysix-prometheus-dev
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=7d"
+      - "--storage.tsdb.retention.size=1GB"
+    networks:
+      - seventysix-network
+    restart: unless-stopped
+
+  # Jaeger - Distributed tracing
+  # Note: Receives traces from otel-collector, NOT directly from API
+  # The otel-collector is the single ingestion point for all telemetry
+  jaeger:
+    image: jaegertracing/all-in-one:1.62.0
+    container_name: seventysix-jaeger-dev
+    ports:
+      - "16686:16686"   # Jaeger UI only - OTLP ports handled by otel-collector
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    networks:
+      - seventysix-network
+    restart: unless-stopped
+
+  # OpenTelemetry Collector - Telemetry routing (REQUIRED for metrics)
+  # Receives OTLP from API, exports traces to Jaeger and metrics to Prometheus format
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.123.0
+    container_name: seventysix-otel-collector-dev
+    command: ["--config=/etc/otel-collector.yaml"]
+    volumes:
+      - ./observability/otel-collector.yaml:/etc/otel-collector.yaml:ro
+    ports:
+      - "4317:4317"   # OTLP gRPC - single ingestion point
+      - "4318:4318"   # OTLP HTTP
+      - "8889:8889"   # Prometheus metrics export
+    depends_on:
+      - jaeger
+    networks:
+      - seventysix-network
+    restart: unless-stopped
+
+  # Redis Exporter - Prometheus metrics for Valkey monitoring
+  redis-exporter:
+    image: oliver006/redis_exporter:latest
+    container_name: seventysix-redis-exporter-dev
+    environment:
+      REDIS_ADDR: "valkey:6379"
+    ports:
+      - "9121:9121"
+    depends_on:
+      valkey:
+        condition: service_healthy
+    networks:
+      - seventysix-network
+    restart: unless-stopped
+
+  # Grafana - Metrics visualization
+  grafana:
+    image: grafana/grafana:11.4.0
+    container_name: seventysix-grafana-dev
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
+      - GF_USERS_DEFAULT_THEME=dark
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
+      - GF_SECURITY_ALLOW_EMBEDDING=true
+      - GF_SECURITY_COOKIE_SAMESITE=none
+      - GF_ANALYTICS_REPORTING_ENABLED=false
+      - GF_INSTALL_PLUGINS=yesoreyeram-infinity-datasource
+      # Reverse proxy configuration for HTTPS access via nginx-proxy
+      - GF_SERVER_ROOT_URL=https://localhost:3443/
+      - GF_SERVER_SERVE_FROM_SUB_PATH=false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      - prometheus
+    networks:
+      - seventysix-network
+    restart: unless-stopped
+
+  # ============================================================================
+  # HTTPS Reverse Proxy for Observability Tools (Development Only)
+  # ============================================================================
+  # Provides HTTPS termination for browser access to observability services.
+  # Eliminates mixed content warnings when embedding Grafana in Angular app.
+  #
+  # Internal Docker communication remains HTTP (required, not exposed externally).
+  # Only browser-facing endpoints get HTTPS via this proxy.
+  #
+  # Port Mapping:
+  #   - 3443  → Grafana (https://localhost:3443)
+  #   - 16687 → Jaeger  (https://localhost:16687)
+  #   - 9091  → Prometheus (https://localhost:9091)
+  #   - 5051  → pgAdmin (https://localhost:5051)
+  #   - 4319  → OTEL Collector (https://localhost:4319) - Browser telemetry
+  # ============================================================================
+  nginx-proxy:
+    image: nginx:alpine
+    container_name: seventysix-nginx-proxy-dev
+    ports:
+      - "3443:3443"      # Grafana HTTPS
+      - "16687:16687"    # Jaeger HTTPS
+      - "9091:9091"      # Prometheus HTTPS
+      - "5051:5051"      # pgAdmin HTTPS
+      - "4319:4319"      # OTEL Collector HTTPS (browser telemetry)
+    volumes:
+      - ./SeventySix.Client/ssl/dev-certificate.crt:/etc/nginx/ssl/server.crt:ro
+      - ./SeventySix.Client/ssl/dev-certificate.key:/etc/nginx/ssl/server.key:ro
+      - ./nginx-proxy.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - grafana
+      - jaeger
+      - prometheus
+      - pgadmin
+      - otel-collector
+    networks:
+      - seventysix-network
+    restart: unless-stopped
+
+# Named volumes for persistent data across container restarts
+volumes:
+  valkey_data:
+    driver: local
+    name: seventysix_valkey_dev_data
+  postgres_data:
+    driver: local
+    name: seventysix_postgres_data
+  prometheus_data:
+    driver: local
+    name: seventysix_prometheus_data
+  grafana_data:
+    driver: local
+    name: seventysix_grafana_data
+  pgadmin_data:
+    driver: local
+    name: seventysix_pgadmin_data
+  dataprotection_keys:
+    driver: local
+    name: seventysix_dataprotection_keys
+
+networks:
+  seventysix-network:
+    driver: bridge

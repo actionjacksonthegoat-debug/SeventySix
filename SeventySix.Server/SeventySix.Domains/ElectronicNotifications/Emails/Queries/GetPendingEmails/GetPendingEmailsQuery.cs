@@ -10,4 +10,9 @@ namespace SeventySix.ElectronicNotifications.Emails;
 /// <param name="BatchSize">
 /// Maximum number of emails to retrieve.
 /// </param>
-public record GetPendingEmailsQuery(int BatchSize);
+/// <param name="RetryDelayMinutes">
+/// Minimum minutes to wait before retrying a failed email.
+/// </param>
+public record GetPendingEmailsQuery(
+	int BatchSize,
+	int RetryDelayMinutes = 5);

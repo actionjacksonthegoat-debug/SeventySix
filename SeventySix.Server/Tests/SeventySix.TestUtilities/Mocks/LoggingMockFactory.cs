@@ -48,39 +48,4 @@ public static class LoggingMockFactory
 
 		return repository;
 	}
-
-	/// <summary>
-	/// Creates a mock <see cref="ILogService"/> with default empty returns.
-	/// </summary>
-	/// <returns>
-	/// A configured NSubstitute mock for ILogService.
-	/// </returns>
-	public static ILogService CreateLogService()
-	{
-		ILogService service =
-			Substitute.For<ILogService>();
-
-		// Default: return empty paged result
-		service
-			.GetPagedLogsAsync(
-				Arg.Any<LogQueryRequest>(),
-				Arg.Any<CancellationToken>())
-			.Returns(
-				new PagedResult<LogDto>
-				{
-					Items = [],
-					TotalCount = 0,
-					Page = 1,
-					PageSize = 10,
-				});
-
-		// Default: return true for delete by ID
-		service
-			.DeleteLogByIdAsync(
-				Arg.Any<long>(),
-				Arg.Any<CancellationToken>())
-			.Returns(true);
-
-		return service;
-	}
 }

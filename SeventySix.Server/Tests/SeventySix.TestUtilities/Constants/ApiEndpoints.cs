@@ -28,15 +28,6 @@ public static class ApiEndpoints
 		/// <summary>Current user endpoint.</summary>
 		public const string Me = "/api/v1/auth/me";
 
-		/// <summary>Change password endpoint.</summary>
-		public const string ChangePassword = "/api/v1/auth/change-password";
-
-		/// <summary>GitHub OAuth start endpoint.</summary>
-		public const string GitHub = "/api/v1/auth/github";
-
-		/// <summary>GitHub OAuth callback endpoint.</summary>
-		public const string GitHubCallback = "/api/v1/auth/github/callback";
-
 		/// <summary>OAuth code exchange endpoint.</summary>
 		public const string OAuthExchange = "/api/v1/auth/oauth/exchange";
 
@@ -49,21 +40,75 @@ public static class ApiEndpoints
 		/// <summary>Legacy register endpoint.</summary>
 		public const string Register = "/api/v1/auth/register";
 
-		/// <summary>
-		/// Builds GitHub callback URL with query parameters.
-		/// </summary>
-		/// <param name="code">
-		/// OAuth code.
-		/// </param>
-		/// <param name="state">
-		/// OAuth state.
-		/// </param>
-		/// <returns>
-		/// Full callback URL with query string.
-		/// </returns>
-		public static string GitHubCallbackWithParams(
-			string code,
-			string state) => $"{GitHubCallback}?code={code}&state={state}";
+		/// <summary>MFA endpoints.</summary>
+		public static class Mfa
+		{
+			/// <summary>MFA verify endpoint.</summary>
+			public const string Verify = "/api/v1/auth/mfa/verify";
+
+			/// <summary>MFA resend endpoint.</summary>
+			public const string Resend = "/api/v1/auth/mfa/resend";
+
+			/// <summary>TOTP verify endpoint.</summary>
+			public const string VerifyTotp = "/api/v1/auth/mfa/verify-totp";
+
+			/// <summary>Backup code verify endpoint.</summary>
+			public const string VerifyBackup = "/api/v1/auth/mfa/verify-backup";
+
+			/// <summary>TOTP setup endpoint.</summary>
+			public const string TotpSetup = "/api/v1/auth/mfa/totp/setup";
+
+			/// <summary>TOTP confirm endpoint.</summary>
+			public const string TotpConfirm = "/api/v1/auth/mfa/totp/confirm";
+
+			/// <summary>TOTP disable endpoint.</summary>
+			public const string TotpDisable = "/api/v1/auth/mfa/totp/disable";
+
+			/// <summary>Generate backup codes endpoint.</summary>
+			public const string BackupCodes = "/api/v1/auth/mfa/backup-codes";
+
+			/// <summary>Remaining backup codes endpoint.</summary>
+			public const string BackupCodesRemaining = "/api/v1/auth/mfa/backup-codes/remaining";
+		}
+
+		/// <summary>Password management endpoints.</summary>
+		public static class Password
+		{
+			/// <summary>Change password endpoint.</summary>
+			public const string Change = "/api/v1/auth/password/change";
+
+			/// <summary>Forgot password endpoint.</summary>
+			public const string Forgot = "/api/v1/auth/password/forgot";
+
+			/// <summary>Set password endpoint.</summary>
+			public const string Set = "/api/v1/auth/password/set";
+		}
+
+		/// <summary>OAuth provider endpoints.</summary>
+		public static class OAuth
+		{
+			/// <summary>GitHub OAuth start endpoint.</summary>
+			public const string GitHub = "/api/v1/auth/oauth/github";
+
+			/// <summary>GitHub OAuth callback endpoint.</summary>
+			public const string GitHubCallback = "/api/v1/auth/oauth/github/callback";
+
+			/// <summary>
+			/// Builds GitHub callback URL with query parameters.
+			/// </summary>
+			/// <param name="code">
+			/// OAuth code.
+			/// </param>
+			/// <param name="state">
+			/// OAuth state.
+			/// </param>
+			/// <returns>
+			/// Full callback URL with query string.
+			/// </returns>
+			public static string GitHubCallbackWithParams(
+				string code,
+				string state) => $"{GitHubCallback}?code={code}&state={state}";
+		}
 	}
 
 	/// <summary>User management endpoints.</summary>

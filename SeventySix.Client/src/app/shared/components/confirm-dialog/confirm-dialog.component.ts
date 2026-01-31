@@ -1,4 +1,4 @@
-import { Component, inject } from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject } from "@angular/core";
 import { MatButtonModule } from "@angular/material/button";
 import {
 	MAT_DIALOG_DATA,
@@ -12,6 +12,7 @@ import { ConfirmDialogData } from "@shared/models";
 	{
 		selector: "app-confirm-dialog",
 		imports: [MatDialogModule, MatButtonModule, MatIconModule],
+		changeDetection: ChangeDetectionStrategy.OnPush,
 		template: `
 		<h2 mat-dialog-title>
 			@if (data.icon) {
@@ -25,16 +26,17 @@ import { ConfirmDialogData } from "@shared/models";
 			<p>{{ data.message }}</p>
 		</mat-dialog-content>
 		<mat-dialog-actions align="end">
-			<button mat-button (click)="onCancel()">
-				{{ data.cancelText || "Cancel" }}
+			<button mat-button type="button" (click)="onCancel()">
+				{{ data.cancelText ?? "Cancel" }}
 			</button>
 			<button
 				mat-raised-button
-				[color]="data.confirmColor || 'primary'"
+				type="button"
+				[color]="data.confirmColor ?? 'primary'"
 				(click)="onConfirm()"
 				cdkFocusInitial
 			>
-				{{ data.confirmText || "Confirm" }}
+				{{ data.confirmText ?? "Confirm" }}
 			</button>
 		</mat-dialog-actions>
 	`,

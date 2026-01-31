@@ -34,4 +34,16 @@ public static class HttpHeaderConstants
 	/// Set by JwtBearerEvents when SecurityTokenExpiredException occurs.
 	/// </summary>
 	public const string TokenExpired = "X-Token-Expired";
+
+	/// <summary>
+	/// Cache-Control header name for cache directives.
+	/// Used by clients to request cache bypass on force-refresh operations.
+	/// </summary>
+	public const string CacheControl = "Cache-Control";
+
+	/// <summary>
+	/// Pragma header name for HTTP/1.0 cache control.
+	/// Legacy header used alongside Cache-Control for backwards compatibility.
+	/// </summary>
+	public const string Pragma = "Pragma";
 }

@@ -42,7 +42,7 @@ public class UserRolesController(IMessageBus messageBus) : ControllerBase
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 	public async Task<ActionResult<IEnumerable<string>>> GetUserRolesAsync(
-		int id,
+		long id,
 		CancellationToken cancellationToken)
 	{
 		UserDto? user =
@@ -90,7 +90,7 @@ public class UserRolesController(IMessageBus messageBus) : ControllerBase
 	[ProducesResponseType(StatusCodes.Status409Conflict)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 	public async Task<IActionResult> AddUserRoleAsync(
-		int id,
+		long id,
 		string role,
 		CancellationToken cancellationToken)
 	{
@@ -160,7 +160,7 @@ public class UserRolesController(IMessageBus messageBus) : ControllerBase
 	[ProducesResponseType(StatusCodes.Status409Conflict)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 	public async Task<IActionResult> RemoveUserRoleAsync(
-		int id,
+		long id,
 		string role,
 		CancellationToken cancellationToken)
 	{

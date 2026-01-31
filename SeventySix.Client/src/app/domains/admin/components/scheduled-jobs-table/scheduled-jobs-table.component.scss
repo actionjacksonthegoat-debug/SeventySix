@@ -108,6 +108,8 @@
 		display: flex;
 		align-items: center;
 		gap: vars.$spacing-xs;
+		padding: vars.$spacing-xs vars.$spacing-sm;
+		border-radius: vars.$border-radius-sm;
 
 		mat-icon {
 			font-size: vars.$icon-size-md;
@@ -117,22 +119,25 @@
 	}
 
 	.status-healthy {
-		color: var(--mat-sys-tertiary);
+		background-color: var(--color-success-surface);
+		color: var(--color-success);
 
 		mat-icon {
-			color: var(--mat-sys-tertiary);
+			color: var(--color-success);
 		}
 	}
 
 	.status-degraded {
-		color: var(--mat-sys-error);
+		background-color: var(--color-warning-surface);
+		color: var(--color-warning);
 
 		mat-icon {
-			color: var(--mat-sys-error);
+			color: var(--color-warning);
 		}
 	}
 
 	.status-unknown {
+		background-color: var(--mat-sys-surface-variant);
 		color: var(--mat-sys-on-surface-variant);
 
 		mat-icon {

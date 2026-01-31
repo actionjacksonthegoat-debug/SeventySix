@@ -12,7 +12,7 @@
 import { provideZonelessChangeDetection } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
 import { SwUpdate, VersionReadyEvent } from "@angular/service-worker";
-import { LoggerService, SwUpdateService } from "@shared/services";
+import { LoggerService, SwUpdateService, WindowService } from "@shared/services";
 import { createMockLogger, type MockLoggerService } from "@testing/mock-factories";
 import { Subject } from "rxjs";
 import { type Mock, vi } from "vitest";
@@ -30,6 +30,14 @@ export interface MockSwUpdate
 }
 
 /**
+ * Mock WindowService interface for testing page reload operations.
+ */
+export interface MockWindowService
+{
+	reload: Mock<() => void>;
+}
+
+/**
  * SwUpdate test context containing all dependencies and utilities.
  */
 export interface SwUpdateTestContext
@@ -40,6 +48,8 @@ export interface SwUpdateTestContext
 	swUpdateSpy: MockSwUpdate;
 	/** Mock logger for verifying log calls */
 	loggerSpy: MockLoggerService;
+	/** Mock window service for verifying reload calls */
+	windowServiceSpy: MockWindowService;
 	/** Subject to emit version updates during tests */
 	versionUpdatesSubject: Subject<VersionReadyEvent>;
 	/** Subject to emit unrecoverable errors during tests */
@@ -103,6 +113,11 @@ export function createSwUpdateTestContext(
 	const loggerSpy: MockLoggerService =
 		createMockLogger();
 
+	const windowServiceSpy: MockWindowService =
+		{
+			reload: vi.fn()
+		};
+
 	TestBed.resetTestingModule();
 	TestBed.configureTestingModule(
 		{
@@ -110,7 +125,8 @@ export function createSwUpdateTestContext(
 				provideZonelessChangeDetection(),
 				SwUpdateService,
 				{ provide: SwUpdate, useValue: swUpdateSpy },
-				{ provide: LoggerService, useValue: loggerSpy }
+				{ provide: LoggerService, useValue: loggerSpy },
+				{ provide: WindowService, useValue: windowServiceSpy }
 			]
 		});
 
@@ -121,6 +137,7 @@ export function createSwUpdateTestContext(
 		service,
 		swUpdateSpy,
 		loggerSpy,
+		windowServiceSpy,
 		versionUpdatesSubject,
 		unrecoverableSubject
 	};

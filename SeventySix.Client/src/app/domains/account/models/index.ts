@@ -13,12 +13,15 @@ export type UpdateProfileRequest = components["schemas"]["UpdateProfileRequest"]
  */
 export type UserProfileDto = components["schemas"]["UserProfileDto"];
 
-// Re-export cross-domain permission types from integration
+// Permission-related types from generated OpenAPI
 /**
- * Permission-related types re-exported from the account-admin integration.
- * Includes `AvailableRoleDto` and `CreatePermissionRequestDto`.
+ * Data transfer object representing a role available for request.
+ * Mirrors the `AvailableRoleDto` schema from the generated OpenAPI types.
  */
-export type {
-	AvailableRoleDto,
-	CreatePermissionRequestDto
-} from "@integration/account-admin";
+export type AvailableRoleDto = components["schemas"]["AvailableRoleDto"];
+
+/**
+ * Request payload used to create a permission request.
+ * Mirrors the `CreatePermissionRequestDto` schema from the generated OpenAPI types.
+ */
+export type CreatePermissionRequestDto = components["schemas"]["CreatePermissionRequestDto"];

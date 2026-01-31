@@ -64,29 +64,3 @@ export const NETWORK_ERROR_MESSAGES: Readonly<{
 		SERVER_ERROR: "An unexpected server error occurred. Please try again later.",
 		SERVICE_UNAVAILABLE: "Service is temporarily unavailable. Please try again later."
 	} as const;
-
-/**
- * Form validation error messages (dynamic with field names).
- * Use for runtime validation messages in forms.
- * @type {Readonly<object>}
- */
-export const FORM_VALIDATION_MESSAGES: Readonly<{
-	REQUIRED_FIELD: (fieldName: string) => string;
-	INVALID_FORMAT: (fieldName: string) => string;
-	MIN_LENGTH: (fieldName: string, minLength: number) => string;
-	MAX_LENGTH: (fieldName: string, maxLength: number) => string;
-}> =
-	{
-		REQUIRED_FIELD: (fieldName: string): string =>
-			`${fieldName} is required`,
-		INVALID_FORMAT: (fieldName: string): string =>
-			`${fieldName} has an invalid format`,
-		MIN_LENGTH: (
-			fieldName: string,
-			minLength: number): string =>
-			`${fieldName} must be at least ${minLength} characters`,
-		MAX_LENGTH: (
-			fieldName: string,
-			maxLength: number): string =>
-			`${fieldName} cannot exceed ${maxLength} characters`
-	} as const;

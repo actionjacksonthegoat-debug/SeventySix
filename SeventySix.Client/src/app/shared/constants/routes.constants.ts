@@ -18,7 +18,8 @@ export const APP_ROUTES: Readonly<{
 		BACKUP_CODES: "/auth/backup-codes";
 	};
 	ACCOUNT: {
-		PROFILE: "/account/profile";
+		PROFILE: "/account";
+		PERMISSIONS: "/account/permissions";
 		SETTINGS: "/account/settings";
 	};
 	ERROR: {
@@ -42,7 +43,8 @@ export const APP_ROUTES: Readonly<{
 		},
 		/** Account management routes. */
 		ACCOUNT: {
-			PROFILE: "/account/profile",
+			PROFILE: "/account",
+			PERMISSIONS: "/account/permissions",
 			SETTINGS: "/account/settings"
 		},
 		/** Error page routes. */
@@ -52,3 +54,16 @@ export const APP_ROUTES: Readonly<{
 			FORBIDDEN: "/error/403"
 		}
 	} as const;
+
+/**
+ * Public authentication paths that bypass auth header injection.
+ * These endpoints handle their own authentication flow.
+ */
+export const AUTH_PUBLIC_PATHS: readonly string[] =
+	[
+		"/auth/login",
+		"/auth/refresh",
+		"/auth/logout",
+		"/auth/oauth/github",
+		"/auth/oauth/github/callback"
+	] as const;

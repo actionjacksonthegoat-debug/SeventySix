@@ -8,7 +8,8 @@ import { roleGuard } from "@shared/guards/role.guard";
 /**
  * Application route configuration.
  * Defines public, authenticated, admin, and developer routes and their lazy-loading behavior.
- * Use `roleGuard()` to secure routes where necessary.
+ * Use `roleGuard()` with `canMatch` to secure routes - this prevents lazy module download
+ * until authorization is verified, saving bandwidth for unauthorized users.
  */
 export const routes: Routes =
 	[
@@ -32,48 +33,54 @@ export const routes: Routes =
 				breadcrumb: "Sandbox"
 			}
 		},
-		// Auth routes (login, change-password - public)
+		// Auth routes (login, change-password - public) - preloaded for fast access
 		{
 			path: "auth",
 			loadChildren: () =>
 				import("./domains/auth/auth.routes").then(
 					(module) => module.AUTH_ROUTES),
-			data: { breadcrumb: "Authentication" }
+			data: {
+				preload: true,
+				breadcrumb: "Authentication"
+			}
 		},
 
 		// ══════════════════════════════════════════════════════════════
 		// USER ROUTES (Any Authenticated User - Own Account Only)
+		// canMatch prevents module download until auth verified
 		// ══════════════════════════════════════════════════════════════
 		{
 			path: "account",
 			loadChildren: () =>
 				import("./domains/account/account.routes").then(
 					(module) => module.ACCOUNT_ROUTES),
-			canActivate: [roleGuard()],
+			canMatch: [roleGuard()],
 			data: { breadcrumb: "Account" }
 		},
 
 		// ══════════════════════════════════════════════════════════════
 		// ADMIN ROUTES (Admin Only)
+		// canMatch prevents module download until role verified
 		// ══════════════════════════════════════════════════════════════
 		{
 			path: "admin",
 			loadChildren: () =>
 				import("./domains/admin/admin.routes").then(
 					(module) => module.ADMIN_ROUTES),
-			canActivate: [roleGuard(ROLE_ADMIN)],
+			canMatch: [roleGuard(ROLE_ADMIN)],
 			data: { breadcrumb: "Admin" }
 		},
 
 		// ══════════════════════════════════════════════════════════════
 		// DEVELOPER ROUTES (Developer OR Admin)
+		// canMatch prevents module download until role verified
 		// ══════════════════════════════════════════════════════════════
 		{
 			path: "developer",
 			loadChildren: () =>
 				import("./domains/developer/developer.routes").then(
 					(module) => module.DEVELOPER_ROUTES),
-			canActivate: [roleGuard(ROLE_DEVELOPER, ROLE_ADMIN)],
+			canMatch: [roleGuard(ROLE_DEVELOPER, ROLE_ADMIN)],
 			data: { breadcrumb: "Developer" }
 		},
 

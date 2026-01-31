@@ -23,7 +23,8 @@ $portsToClean = @(4200, 7074, 5086)
 # Process names we're allowed to kill (safety - don't kill system processes)
 $allowedProcessNames = @("node", "dotnet", "ng")
 
-if (-not $Quiet) {
+if (-not $Quiet)
+{
 	Write-Host ""
 	Write-Host "========================================" -ForegroundColor Cyan
 	Write-Host "  Port Cleanup" -ForegroundColor Cyan
@@ -33,8 +34,10 @@ if (-not $Quiet) {
 
 $killedAny = $false
 
-foreach ($port in $portsToClean) {
-	try {
+foreach ($port in $portsToClean)
+{
+	try
+	{
 		# Find processes listening on this port (exclude Docker - those are handled separately)
 		$connections =
 			Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue |
@@ -43,40 +46,50 @@ foreach ($port in $portsToClean) {
 				$proc -and $proc.ProcessName -notmatch "docker|com\.docker"
 			}
 
-		foreach ($conn in $connections) {
+		foreach ($conn in $connections)
+		{
 			$proc = Get-Process -Id $conn.OwningProcess -ErrorAction SilentlyContinue
-			if ($proc) {
+			if ($proc)
+			{
 				$procName = $proc.ProcessName.ToLower()
 
 				# Safety check - only kill known development processes
 				$isAllowed = $allowedProcessNames | Where-Object { $procName -like "*$_*" }
 
-				if ($isAllowed) {
-					if (-not $Quiet) {
+				if ($isAllowed)
+				{
+					if (-not $Quiet)
+					{
 						Write-Host "Killing $($proc.ProcessName) (PID: $($proc.Id)) on port $port" -ForegroundColor Yellow
 					}
 					Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
 					$killedAny = $true
 				}
-				else {
-					if (-not $Quiet) {
+				else
+				{
+					if (-not $Quiet)
+					{
 						Write-Host "Skipping $($proc.ProcessName) on port $port (not in allowed list)" -ForegroundColor DarkGray
 					}
 				}
 			}
 		}
 	}
-	catch {
+	catch
+	{
 		# Port not in use or access denied - that's fine
 	}
 }
 
-if (-not $Quiet) {
-	if ($killedAny) {
+if (-not $Quiet)
+{
+	if ($killedAny)
+	{
 		Write-Host ""
 		Write-Host "Port cleanup complete" -ForegroundColor Green
 	}
-	else {
+	else
+	{
 		Write-Host "No processes to clean up" -ForegroundColor DarkGray
 	}
 	Write-Host ""

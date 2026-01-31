@@ -1,10 +1,29 @@
-import { Component, inject } from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject } from "@angular/core";
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { NotificationLevel } from "@shared/constants";
 import { Notification } from "@shared/models";
 import { NotificationService } from "@shared/services";
+
+/**
+ * Map of notification levels to their corresponding Material icons.
+ * @type {ReadonlyMap<NotificationLevel, string>}
+ */
+const NOTIFICATION_ICONS: ReadonlyMap<NotificationLevel, string> =
+	new Map<NotificationLevel, string>(
+		[
+			[NotificationLevel.Error, "cancel"],
+			[NotificationLevel.Warning, "warning"],
+			[NotificationLevel.Info, "lightbulb"],
+			[NotificationLevel.Success, "check_circle"]
+		]);
+
+/**
+ * Default icon when notification level is unknown.
+ * @type {string}
+ */
+const DEFAULT_ICON: string = "lightbulb";
 
 /**
  * Toast notification component that displays notifications from NotificationService.
@@ -14,6 +33,7 @@ import { NotificationService } from "@shared/services";
 	{
 		selector: "app-notification-toast",
 		imports: [MatIconModule, MatButtonModule, MatTooltipModule],
+		changeDetection: ChangeDetectionStrategy.OnPush,
 		template: `
 		<div class="toast-container" role="region" aria-label="Notifications">
 			@for (
@@ -50,7 +70,7 @@ import { NotificationService } from "@shared/services";
 									matTooltip="Copy error details"
 									aria-label="Copy error details"
 								>
-									<mat-icon>content_copy</mat-icon>
+									<mat-icon aria-hidden="true">content_copy</mat-icon>
 								</button>
 							}
 							<button
@@ -59,7 +79,7 @@ import { NotificationService } from "@shared/services";
 								matTooltip="Dismiss"
 								aria-label="Dismiss"
 							>
-								<mat-icon>close</mat-icon>
+								<mat-icon aria-hidden="true">close</mat-icon>
 							</button>
 						</div>
 					</div>
@@ -105,19 +125,7 @@ export class NotificationToastComponent
 	 */
 	getIcon(level: NotificationLevel): string
 	{
-		switch (level)
-		{
-			case NotificationLevel.Error:
-				return "cancel";
-			case NotificationLevel.Warning:
-				return "warning";
-			case NotificationLevel.Info:
-				return "lightbulb";
-			case NotificationLevel.Success:
-				return "check_circle";
-			default:
-				return "lightbulb";
-		}
+		return NOTIFICATION_ICONS.get(level) ?? DEFAULT_ICON;
 	}
 
 	/**

@@ -7,6 +7,7 @@ using NSubstitute;
 using SeventySix.Api.Infrastructure;
 using SeventySix.Shared.Constants;
 using SeventySix.Shared.Interfaces;
+using Shouldly;
 
 namespace SeventySix.Api.Tests.Infrastructure.Services;
 
@@ -77,18 +78,13 @@ public class HealthCheckServiceTests
 			CancellationToken.None);
 
 		// Assert
-		Assert.NotNull(result);
-		Assert.Equal(
-			HealthStatusConstants.Healthy,
-			result.Status);
-		Assert.NotNull(result.Database);
-		Assert.NotNull(result.ExternalApis);
-		Assert.NotNull(result.ErrorQueue);
-		Assert.NotNull(result.System);
-		Assert.True(result.CheckedAt <= timeProvider.GetUtcNow().UtcDateTime);
-		Assert.True(
-			result.CheckedAt
-				> timeProvider.GetUtcNow().UtcDateTime.AddSeconds(-5));
+		result.ShouldNotBeNull();
+		result.Status.ShouldBe(HealthStatusConstants.Healthy);
+		result.Database.ShouldNotBeNull();
+		result.ErrorQueue.ShouldNotBeNull();
+		result.System.ShouldNotBeNull();
+		result.CheckedAt.ShouldBeLessThanOrEqualTo(timeProvider.GetUtcNow().UtcDateTime);
+		result.CheckedAt.ShouldBeGreaterThan(timeProvider.GetUtcNow().UtcDateTime.AddSeconds(-5));
 	}
 
 	[Fact]
@@ -103,37 +99,19 @@ public class HealthCheckServiceTests
 			CancellationToken.None);
 
 		// Assert
-		Assert.True(result.Database.IsConnected);
-		Assert.Equal(
-			HealthStatusConstants.Healthy,
-			result.Database.Status);
-		Assert.True(result.Database.ResponseTimeMs >= 0);
+		result.Database.IsConnected.ShouldBeTrue();
+		result.Database.Status.ShouldBe(HealthStatusConstants.Healthy);
+		result.Database.ResponseTimeMs.ShouldBeGreaterThanOrEqualTo(0);
 
 		// Verify all bounded contexts are checked
-		Assert.NotNull(result.Database.ContextResults);
-		Assert.Equal(3, result.Database.ContextResults.Count);
-		Assert.True(result.Database.ContextResults.ContainsKey("Identity"));
-		Assert.True(result.Database.ContextResults.ContainsKey("Logging"));
-		Assert.True(result.Database.ContextResults.ContainsKey("ApiTracking"));
-		Assert.True(result.Database.ContextResults["Identity"]);
-		Assert.True(result.Database.ContextResults["Logging"]);
-		Assert.True(result.Database.ContextResults["ApiTracking"]);
-	}
-
-	[Fact]
-	public async Task GetHealthStatusAsync_ExternalApisInitializedAsync()
-	{
-		// Arrange
-		HealthCheckService service = CreateSut();
-
-		// Act
-		HealthStatusResponse result =
-			await service.GetHealthStatusAsync(
-			CancellationToken.None);
-
-		// Assert
-		Assert.NotNull(result.ExternalApis);
-		Assert.NotNull(result.ExternalApis.Apis);
+		result.Database.ContextResults.ShouldNotBeNull();
+		result.Database.ContextResults.Count.ShouldBe(3);
+		result.Database.ContextResults.ContainsKey("Identity").ShouldBeTrue();
+		result.Database.ContextResults.ContainsKey("Logging").ShouldBeTrue();
+		result.Database.ContextResults.ContainsKey("ApiTracking").ShouldBeTrue();
+		result.Database.ContextResults["Identity"].ShouldBeTrue();
+		result.Database.ContextResults["Logging"].ShouldBeTrue();
+		result.Database.ContextResults["ApiTracking"].ShouldBeTrue();
 	}
 
 	[Fact]
@@ -148,13 +126,11 @@ public class HealthCheckServiceTests
 			CancellationToken.None);
 
 		// Assert
-		Assert.NotNull(result.ErrorQueue);
-		Assert.Equal(
-			HealthStatusConstants.Healthy,
-			result.ErrorQueue.Status);
-		Assert.False(result.ErrorQueue.CircuitBreakerOpen);
-		Assert.True(result.ErrorQueue.QueuedItems >= 0);
-		Assert.True(result.ErrorQueue.FailedItems >= 0);
+		result.ErrorQueue.ShouldNotBeNull();
+		result.ErrorQueue.Status.ShouldBe(HealthStatusConstants.Healthy);
+		result.ErrorQueue.CircuitBreakerOpen.ShouldBeFalse();
+		result.ErrorQueue.QueuedItems.ShouldBeGreaterThanOrEqualTo(0);
+		result.ErrorQueue.FailedItems.ShouldBeGreaterThanOrEqualTo(0);
 	}
 
 	[Fact]
@@ -169,12 +145,12 @@ public class HealthCheckServiceTests
 			CancellationToken.None);
 
 		// Assert
-		Assert.NotNull(result.System);
-		Assert.True(result.System.CpuUsagePercent >= 0);
-		Assert.True(result.System.CpuUsagePercent <= 100);
-		Assert.True(result.System.MemoryUsedMb >= 0);
-		Assert.True(result.System.MemoryTotalMb >= result.System.MemoryUsedMb);
-		Assert.True(result.System.DiskUsagePercent >= 0);
-		Assert.True(result.System.DiskUsagePercent <= 100);
+		result.System.ShouldNotBeNull();
+		result.System.CpuUsagePercent.ShouldBeGreaterThanOrEqualTo(0);
+		result.System.CpuUsagePercent.ShouldBeLessThanOrEqualTo(100);
+		result.System.MemoryUsedMb.ShouldBeGreaterThanOrEqualTo(0);
+		result.System.MemoryTotalMb.ShouldBeGreaterThanOrEqualTo(result.System.MemoryUsedMb);
+		result.System.DiskUsagePercent.ShouldBeGreaterThanOrEqualTo(0);
+		result.System.DiskUsagePercent.ShouldBeLessThanOrEqualTo(100);
 	}
 }

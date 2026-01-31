@@ -203,5 +203,89 @@ export const PAGE_TEXT =
 					{
 						jaegerTracing: "Jaeger Tracing"
 					}
+			},
+
+		/**
+		 * User management text.
+		 */
+		userManagement:
+			{
+				title: "User Management",
+				subtitle: "Manage user accounts and permissions",
+				createUser: "Create User"
+			},
+
+		/**
+		 * Log management text.
+		 */
+		logManagement:
+			{
+				title: "Log Management",
+				subtitle: "View and manage application logs"
+			},
+
+		/**
+		 * Permission requests text.
+		 */
+		permissionRequests:
+			{
+				title: "Permission Requests",
+				subtitle: "Review and manage user permission requests"
+			},
+
+		/**
+		 * Profile page text.
+		 */
+		profile:
+			{
+				saveChanges: "Save Changes",
+				requestPermissions: "Request Permissions"
+			},
+
+		/**
+		 * Request permissions page text.
+		 */
+		requestPermissions:
+			{
+				title: "Request Permissions",
+				subtitle: "Select roles you need access to",
+				submitRequest: "Submit Request",
+				noRolesAvailable: "No additional roles available"
+			},
+
+		/**
+		 * Developer pages text.
+		 */
+		developer:
+			{
+				styleGuide:
+					{
+						title: "Style Guide",
+						description: "Material Design 3 components and design tokens"
+					},
+				architectureGuide:
+					{
+						title: "Architecture Guide",
+						description: "architecture patterns and conventions"
+					}
+			},
+
+		/**
+		 * Sandbox page text.
+		 */
+		sandbox:
+			{
+				title: "Sandbox",
+				description: "experimentation area for testing new features"
+			},
+
+		/**
+		 * Error page text.
+		 */
+		errorPage:
+			{
+				notFoundTitle: "404 - Page Not Found",
+				notFoundDescription: "The page you're looking for doesn't exist",
+				goToHome: "Go to Home"
 			}
 	} as const;

@@ -44,5 +44,8 @@ export {
 export {
 	AuthPageHelper,
 	HomePageHelper,
-	AdminDashboardPageHelper
+	AdminDashboardPageHelper,
+	UserManagementPageHelper,
+	ProfilePageHelper,
+	RequestPermissionsPageHelper
 } from "./pages";

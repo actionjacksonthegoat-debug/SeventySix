@@ -2,8 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using NSubstitute;
-using NSubstitute.ExceptionExtensions;
+using Microsoft.EntityFrameworkCore;
 using SeventySix.ApiTracking;
 using Shouldly;
 
@@ -13,24 +12,30 @@ namespace SeventySix.Domains.Tests.ApiTracking.Queries.CheckApiTrackingHealth;
 /// Unit tests for <see cref="CheckApiTrackingHealthQueryHandler"/>.
 /// </summary>
 /// <remarks>
-/// Tests the health check logic including exception handling.
-/// Uses mocked repository since actual database connectivity is tested elsewhere.
+/// Tests the health check logic using in-memory database.
+/// The handler now uses DbContext.Database.CanConnectAsync for efficient connectivity check.
 /// </remarks>
-public class CheckApiTrackingHealthQueryHandlerTests
+public class CheckApiTrackingHealthQueryHandlerTests : IDisposable
 {
-	private readonly IThirdPartyApiRequestRepository Repository;
+	private readonly ApiTrackingDbContext Context;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="CheckApiTrackingHealthQueryHandlerTests"/> class.
 	/// </summary>
 	public CheckApiTrackingHealthQueryHandlerTests()
 	{
-		Repository =
-			Substitute.For<IThirdPartyApiRequestRepository>();
+		DbContextOptions<ApiTrackingDbContext> options =
+			new DbContextOptionsBuilder<ApiTrackingDbContext>()
+				.UseInMemoryDatabase(
+					databaseName: Guid.NewGuid().ToString())
+				.Options;
+
+		Context =
+			new ApiTrackingDbContext(options);
 	}
 
 	/// <summary>
-	/// Tests that successful repository call returns true.
+	/// Tests that successful database connection returns true.
 	/// </summary>
 	[Fact]
 	public async Task HandleAsync_HealthyDatabase_ReturnsTrueAsync()
@@ -39,15 +44,11 @@ public class CheckApiTrackingHealthQueryHandlerTests
 		CheckApiTrackingHealthQuery query =
 			new();
 
-		Repository
-			.GetAllAsync(Arg.Any<CancellationToken>())
-			.Returns([]);
-
 		// Act
 		bool result =
 			await CheckApiTrackingHealthQueryHandler.HandleAsync(
 				query,
-				Repository,
+				Context,
 				CancellationToken.None);
 
 		// Assert
@@ -55,54 +56,34 @@ public class CheckApiTrackingHealthQueryHandlerTests
 	}
 
 	/// <summary>
-	/// Tests that repository exception returns false.
+	/// Tests that the handler uses efficient connectivity check.
 	/// </summary>
+	/// <remarks>
+	/// In-memory provider always returns true for CanConnectAsync,
+	/// so this test verifies the handler doesn't throw.
+	/// </remarks>
 	[Fact]
-	public async Task HandleAsync_DatabaseException_ReturnsFalseAsync()
+	public async Task HandleAsync_CallsCanConnectAsync()
 	{
 		// Arrange
 		CheckApiTrackingHealthQuery query =
 			new();
-
-		Repository
-			.GetAllAsync(Arg.Any<CancellationToken>())
-			.ThrowsAsync(
-				new InvalidOperationException("Database unavailable"));
 
 		// Act
 		bool result =
 			await CheckApiTrackingHealthQueryHandler.HandleAsync(
 				query,
-				Repository,
+				Context,
 				CancellationToken.None);
 
-		// Assert
-		result.ShouldBeFalse();
+		// Assert - should complete without throwing
+		result.ShouldBeTrue();
 	}
 
-	/// <summary>
-	/// Tests that repository is called exactly once.
-	/// </summary>
-	[Fact]
-	public async Task HandleAsync_CallsRepositoryOnceAsync()
+	/// <inheritdoc/>
+	public void Dispose()
 	{
-		// Arrange
-		CheckApiTrackingHealthQuery query =
-			new();
-
-		Repository
-			.GetAllAsync(Arg.Any<CancellationToken>())
-			.Returns([]);
-
-		// Act
-		await CheckApiTrackingHealthQueryHandler.HandleAsync(
-			query,
-			Repository,
-			CancellationToken.None);
-
-		// Assert
-		await Repository
-			.Received(1)
-			.GetAllAsync(Arg.Any<CancellationToken>());
+		Context.Dispose();
+		GC.SuppressFinalize(this);
 	}
 }

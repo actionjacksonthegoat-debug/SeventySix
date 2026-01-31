@@ -21,9 +21,9 @@ export const environment: Environment =
 			circuitBreakerTimeout: 1000 // Faster timeout (1s instead of 30s)
 		},
 		observability: {
-			jaegerUrl: "http://localhost:16686",
-			prometheusUrl: "http://localhost:9090",
-			grafanaUrl: "http://localhost:3000",
+			jaegerUrl: "https://localhost:16687",
+			prometheusUrl: "https://localhost:9091",
+			grafanaUrl: "https://localhost:3443",
 			enabled: false, // Disabled in tests
 			dashboards: {
 				systemOverview: "seventysix-system-overview",

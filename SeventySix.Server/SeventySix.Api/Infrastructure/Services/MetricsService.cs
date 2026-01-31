@@ -14,7 +14,7 @@ namespace SeventySix.Api.Infrastructure;
 /// Uses OpenTelemetry instrumentation for Prometheus export.
 /// Metrics are exposed via the /metrics endpoint for scraping.
 /// </remarks>
-public class MetricsService : IMetricsService
+public sealed class MetricsService : IMetricsService
 {
 	private static readonly Meter ApplicationMeter =
 		new(

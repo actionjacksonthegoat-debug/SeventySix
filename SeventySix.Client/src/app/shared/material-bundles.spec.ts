@@ -88,7 +88,7 @@ describe("Material Bundles",
 				const moduleNames: string[] =
 					FORM_MATERIAL_MODULES.map(
 						(module: Type<unknown>) =>
-							module.name || "");
+							module.name ?? "");
 
 				// Should include core form modules
 				expect(moduleNames.some(
@@ -110,7 +110,7 @@ describe("Material Bundles",
 				const moduleNames: string[] =
 					TABLE_MATERIAL_MODULES.map(
 						(module: Type<unknown>) =>
-							module.name || "");
+							module.name ?? "");
 
 				// Should include core table modules
 				expect(moduleNames.some(

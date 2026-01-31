@@ -32,14 +32,6 @@ public static class GetAllApiRequestsQueryHandler
 		IEnumerable<ThirdPartyApiRequest> requests =
 			await repository.GetAllAsync(cancellationToken);
 
-		return requests.Select(request => new ThirdPartyApiRequestDto
-		{
-			Id = request.Id,
-			ApiName = request.ApiName,
-			BaseUrl = request.BaseUrl,
-			CallCount = request.CallCount,
-			LastCalledAt = request.LastCalledAt,
-			ResetDate = request.ResetDate,
-		});
+		return requests.Select(request => request.ToDto());
 	}
 }

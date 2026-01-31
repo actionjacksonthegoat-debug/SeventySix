@@ -23,34 +23,36 @@
 		</p>
 
 		<form
+			[formGroup]="registerForm"
 			(ngSubmit)="onSubmit()"
-			class="register-form"
-			#registerForm="ngForm">
+			class="register-form">
 			<div class="form-group required">
 				<label for="username">Username</label>
 				<input
 					id="username"
 					type="text"
-					[(ngModel)]="username"
-					name="username"
-					#usernameField="ngModel"
-					required
+					formControlName="username"
 					autocomplete="username"
 					placeholder="Choose a username"
-					[minlength]="USERNAME_MIN_LENGTH"
-					[maxlength]="USERNAME_MAX_LENGTH"
-					[pattern]="USERNAME_PATTERN"
 					aria-required="true"
 					[attr.aria-invalid]="
-							usernameField.invalid && usernameField.touched
-						"
-					aria-describedby="username-hint"
+						registerForm.get('username')?.invalid &&
+						registerForm.get('username')?.touched
+					"
+					aria-describedby="username-hint username-error"
 				/>
 				<span
 					id="username-hint"
 					class="hint">
 					Letters, numbers, and underscores only
 				</span>
+				@if (usernameError()) {
+				<span
+					id="username-error"
+					class="error-text">
+					{{ usernameError() }}
+				</span>
+				}
 			</div>
 
 			<div class="form-group required">
@@ -58,24 +60,28 @@
 				<input
 					id="password"
 					type="password"
-					[(ngModel)]="password"
-					name="password"
-					#passwordField="ngModel"
-					required
+					formControlName="password"
 					autocomplete="new-password"
 					placeholder="Create a password"
-					[minlength]="PASSWORD_MIN_LENGTH"
 					aria-required="true"
 					[attr.aria-invalid]="
-							passwordField.invalid && passwordField.touched
-						"
-					aria-describedby="password-hint"
+						registerForm.get('password')?.invalid &&
+						registerForm.get('password')?.touched
+					"
+					aria-describedby="password-hint password-error"
 				/>
 				<span
 					id="password-hint"
 					class="hint">
 					At least 8 characters with uppercase, lowercase, digit, and special character
 				</span>
+				@if (passwordError()) {
+				<span
+					id="password-error"
+					class="error-text">
+					{{ passwordError() }}
+				</span>
+				}
 			</div>
 
 			<div class="form-group required">
@@ -83,18 +89,23 @@
 				<input
 					id="confirmPassword"
 					type="password"
-					[(ngModel)]="confirmPassword"
-					name="confirmPassword"
-					#confirmPasswordField="ngModel"
-					required
+					formControlName="confirmPassword"
 					autocomplete="new-password"
 					placeholder="Confirm your password"
 					aria-required="true"
 					[attr.aria-invalid]="
-							confirmPasswordField.invalid &&
-							confirmPasswordField.touched
-						"
+						registerForm.get('confirmPassword')?.invalid &&
+						registerForm.get('confirmPassword')?.touched
+					"
+					aria-describedby="confirmPassword-error"
 				/>
+				@if (confirmPasswordError()) {
+				<span
+					id="confirmPassword-error"
+					class="error-text">
+					{{ confirmPasswordError() }}
+				</span>
+				}
 			</div>
 
 			@if (altchaEnabled) {

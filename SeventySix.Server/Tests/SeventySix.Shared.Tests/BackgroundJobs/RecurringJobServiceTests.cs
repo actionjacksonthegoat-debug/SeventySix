@@ -5,6 +5,7 @@
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using SeventySix.Shared.BackgroundJobs;
+using SeventySix.TestUtilities.Constants;
 using Shouldly;
 
 namespace SeventySix.Shared.Tests.BackgroundJobs;
@@ -25,7 +26,7 @@ public class RecurringJobServiceTests
 	public RecurringJobServiceTests()
 	{
 		TimeProvider =
-			new FakeTimeProvider(new DateTimeOffset(2026, 1, 7, 12, 0, 0, TimeSpan.Zero));
+			TestDates.CreateFutureTimeProvider();
 
 		Repository =
 			Substitute.For<IRecurringJobRepository>();
@@ -222,6 +223,75 @@ public class RecurringJobServiceTests
 				Arg.Is<RecurringJobExecution>(execution =>
 					execution.LastExecutedBy == Environment.MachineName),
 				Arg.Any<CancellationToken>());
+	}
+
+	/// <summary>
+	/// CalculateNextPreferredTime returns same day when before preferred time.
+	/// </summary>
+	[Fact]
+	public void CalculateNextPreferredTime_BeforePreferredTime_ReturnsSameDay()
+	{
+		// Arrange - 6:00 AM UTC, preferred time is 8:10 UTC
+		DateTimeOffset currentTime =
+			new(2026, 1, 30, 6, 0, 0, TimeSpan.Zero);
+
+		TimeOnly preferredTimeUtc =
+			new(8, 10);
+
+		// Act
+		DateTimeOffset result =
+			RecurringJobService.CalculateNextPreferredTime(
+				currentTime,
+				preferredTimeUtc);
+
+		// Assert
+		result.ShouldBe(new DateTimeOffset(2026, 1, 30, 8, 10, 0, TimeSpan.Zero));
+	}
+
+	/// <summary>
+	/// CalculateNextPreferredTime returns next day when after preferred time.
+	/// </summary>
+	[Fact]
+	public void CalculateNextPreferredTime_AfterPreferredTime_ReturnsNextDay()
+	{
+		// Arrange - 10:00 AM UTC, preferred time is 8:10 UTC
+		DateTimeOffset currentTime =
+			new(2026, 1, 30, 10, 0, 0, TimeSpan.Zero);
+
+		TimeOnly preferredTimeUtc =
+			new(8, 10);
+
+		// Act
+		DateTimeOffset result =
+			RecurringJobService.CalculateNextPreferredTime(
+				currentTime,
+				preferredTimeUtc);
+
+		// Assert
+		result.ShouldBe(new DateTimeOffset(2026, 1, 31, 8, 10, 0, TimeSpan.Zero));
+	}
+
+	/// <summary>
+	/// CalculateNextPreferredTime returns next day when exactly at preferred time.
+	/// </summary>
+	[Fact]
+	public void CalculateNextPreferredTime_ExactlyAtPreferredTime_ReturnsNextDay()
+	{
+		// Arrange - 8:10 AM UTC, preferred time is 8:10 UTC
+		DateTimeOffset currentTime =
+			new(2026, 1, 30, 8, 10, 0, TimeSpan.Zero);
+
+		TimeOnly preferredTimeUtc =
+			new(8, 10);
+
+		// Act
+		DateTimeOffset result =
+			RecurringJobService.CalculateNextPreferredTime(
+				currentTime,
+				preferredTimeUtc);
+
+		// Assert - time has passed, schedule for tomorrow
+		result.ShouldBe(new DateTimeOffset(2026, 1, 31, 8, 10, 0, TimeSpan.Zero));
 	}
 
 	/// <summary>

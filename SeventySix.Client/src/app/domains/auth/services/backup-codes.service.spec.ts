@@ -23,7 +23,7 @@ describe("BackupCodesService",
 		let service: BackupCodesService;
 		let httpTestingController: HttpTestingController;
 		const baseUrl: string =
-			`${environment.apiUrl}/auth`;
+			`${environment.apiUrl}/auth/mfa`;
 
 		beforeEach(
 			() =>

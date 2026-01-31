@@ -131,7 +131,7 @@ export class WebVitalsService
 	private logMetric(name: string, metric: Metric): void
 	{
 		const rating: "good" | "needs-improvement" | "poor" =
-			metric.rating || "good";
+			metric.rating ?? "good";
 
 		// Only log warning for poor metrics
 		if (rating === "poor")
@@ -196,6 +196,6 @@ export class WebVitalsService
 				TTFB: "800ms (good) / 1800ms (poor)"
 			};
 
-		return thresholds[name] || "unknown";
+		return thresholds[name] ?? "unknown";
 	}
 }

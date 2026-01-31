@@ -12,7 +12,7 @@ namespace SeventySix.Logging.Jobs;
 /// <param name="loggingDbContext">
 /// Database context for executing maintenance commands.
 /// </param>
-public class DatabaseMaintenanceService(LoggingDbContext loggingDbContext) : IDatabaseMaintenanceService
+public sealed class DatabaseMaintenanceService(LoggingDbContext loggingDbContext) : IDatabaseMaintenanceService
 {
 	/// <inheritdoc/>
 	public async Task ExecuteVacuumAnalyzeAsync(CancellationToken cancellationToken)

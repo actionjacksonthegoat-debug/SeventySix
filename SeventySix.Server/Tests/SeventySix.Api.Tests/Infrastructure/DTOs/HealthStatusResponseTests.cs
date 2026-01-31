@@ -5,6 +5,7 @@
 using Microsoft.Extensions.Time.Testing;
 using SeventySix.Api.Infrastructure;
 using SeventySix.Shared.Constants;
+using Shouldly;
 
 namespace SeventySix.Api.Tests.Infrastructure.DTOs;
 
@@ -23,16 +24,11 @@ public class HealthStatusResponseTests
 		HealthStatusResponse response = new();
 
 		// Assert
-		Assert.Equal(
-			HealthStatusConstants.Healthy,
-			response.Status);
-		Assert.Equal(
-			default(DateTime),
-			response.CheckedAt);
-		Assert.NotNull(response.Database);
-		Assert.NotNull(response.ExternalApis);
-		Assert.NotNull(response.ErrorQueue);
-		Assert.NotNull(response.System);
+		response.Status.ShouldBe(HealthStatusConstants.Healthy);
+		response.CheckedAt.ShouldBe(default(DateTime));
+		response.Database.ShouldNotBeNull();
+		response.ErrorQueue.ShouldNotBeNull();
+		response.System.ShouldNotBeNull();
 	}
 
 	/// <summary>
@@ -53,17 +49,14 @@ public class HealthStatusResponseTests
 				CheckedAt = now,
 				Database =
 					new DatabaseHealthResponse { IsConnected = true },
-				ExternalApis = new ExternalApiHealthResponse(),
 				ErrorQueue = new QueueHealthResponse(),
 				System = new SystemResourcesResponse(),
 			};
 
 		// Assert
-		Assert.Equal(
-			HealthStatusConstants.Degraded,
-			response.Status);
-		Assert.Equal(now, response.CheckedAt);
-		Assert.True(response.Database.IsConnected);
+		response.Status.ShouldBe(HealthStatusConstants.Degraded);
+		response.CheckedAt.ShouldBe(now);
+		response.Database.IsConnected.ShouldBeTrue();
 	}
 
 	/// <summary>
@@ -76,11 +69,9 @@ public class HealthStatusResponseTests
 		DatabaseHealthResponse response = new();
 
 		// Assert
-		Assert.False(response.IsConnected);
-		Assert.Equal(0, response.ResponseTimeMs);
-		Assert.Equal(
-			HealthStatusConstants.Healthy,
-			response.Status);
+		response.IsConnected.ShouldBeFalse();
+		response.ResponseTimeMs.ShouldBe(0);
+		response.Status.ShouldBe(HealthStatusConstants.Healthy);
 	}
 
 	/// <summary>
@@ -100,95 +91,9 @@ public class HealthStatusResponseTests
 			};
 
 		// Assert
-		Assert.True(response.IsConnected);
-		Assert.Equal(25.5, response.ResponseTimeMs);
-		Assert.Equal(
-			HealthStatusConstants.Healthy,
-			response.Status);
-	}
-
-	/// <summary>
-	/// Ensures ExternalApiHealthResponse initializes the APIs dictionary as empty.
-	/// </summary>
-	[Fact]
-	public void ExternalApiHealthResponse_Constructor_ShouldInitializeWithEmptyDictionary()
-	{
-		// Arrange & Act
-		ExternalApiHealthResponse response = new();
-
-		// Assert
-		Assert.NotNull(response.Apis);
-		Assert.Empty(response.Apis);
-	}
-
-	/// <summary>
-	/// Verifies ExternalApiHealthResponse can contain multiple API statuses.
-	/// </summary>
-	[Fact]
-	public void ExternalApiHealthResponse_Apis_ShouldStoreMultipleApis()
-	{
-		// Arrange
-		FakeTimeProvider timeProvider = new();
-		DateTime now =
-			timeProvider.GetUtcNow().UtcDateTime;
-		ExternalApiHealthResponse response =
-			new()
-			{
-				Apis =
-					new Dictionary<string, ApiHealthStatus>
-					{
-				{
-					"ExternalAPI",
-					new ApiHealthStatus
-					{
-						ApiName = "ExternalAPI",
-						IsAvailable = true,
-						ResponseTimeMs = 150.5,
-						LastChecked = now,
-					}
-				},
-				{
-					"GoogleMaps",
-					new ApiHealthStatus
-					{
-						ApiName = "GoogleMaps",
-						IsAvailable = false,
-						ResponseTimeMs = 0,
-						LastChecked = null,
-					}
-				},
-			},
-			};
-
-		// Assert
-		Assert.Equal(2, response.Apis.Count);
-		Assert.True(response.Apis["ExternalAPI"].IsAvailable);
-		Assert.False(response.Apis["GoogleMaps"].IsAvailable);
-		Assert.Equal(
-			150.5,
-			response.Apis["ExternalAPI"].ResponseTimeMs);
-		Assert.Equal(
-			now,
-			response.Apis["ExternalAPI"].LastChecked);
-		Assert.Null(response.Apis["GoogleMaps"].LastChecked);
-	}
-
-	/// <summary>
-	/// Ensures ApiHealthStatus constructor initializes default values.
-	/// </summary>
-	[Fact]
-	public void ApiHealthStatus_Constructor_ShouldInitializeWithDefaults()
-	{
-		// Arrange & Act
-		ApiHealthStatus status = new();
-
-		// Assert
-		Assert.Equal(
-			string.Empty,
-			status.ApiName);
-		Assert.False(status.IsAvailable);
-		Assert.Equal(0, status.ResponseTimeMs);
-		Assert.Null(status.LastChecked);
+		response.IsConnected.ShouldBeTrue();
+		response.ResponseTimeMs.ShouldBe(25.5);
+		response.Status.ShouldBe(HealthStatusConstants.Healthy);
 	}
 
 	/// <summary>
@@ -201,12 +106,10 @@ public class HealthStatusResponseTests
 		QueueHealthResponse response = new();
 
 		// Assert
-		Assert.Equal(0, response.QueuedItems);
-		Assert.Equal(0, response.FailedItems);
-		Assert.False(response.CircuitBreakerOpen);
-		Assert.Equal(
-			HealthStatusConstants.Healthy,
-			response.Status);
+		response.QueuedItems.ShouldBe(0);
+		response.FailedItems.ShouldBe(0);
+		response.CircuitBreakerOpen.ShouldBeFalse();
+		response.Status.ShouldBe(HealthStatusConstants.Healthy);
 	}
 
 	/// <summary>
@@ -227,12 +130,10 @@ public class HealthStatusResponseTests
 			};
 
 		// Assert
-		Assert.Equal(5, response.QueuedItems);
-		Assert.Equal(2, response.FailedItems);
-		Assert.True(response.CircuitBreakerOpen);
-		Assert.Equal(
-			HealthStatusConstants.Degraded,
-			response.Status);
+		response.QueuedItems.ShouldBe(5);
+		response.FailedItems.ShouldBe(2);
+		response.CircuitBreakerOpen.ShouldBeTrue();
+		response.Status.ShouldBe(HealthStatusConstants.Degraded);
 	}
 
 	/// <summary>
@@ -245,10 +146,10 @@ public class HealthStatusResponseTests
 		SystemResourcesResponse response = new();
 
 		// Assert
-		Assert.Equal(0, response.CpuUsagePercent);
-		Assert.Equal(0, response.MemoryUsedMb);
-		Assert.Equal(0, response.MemoryTotalMb);
-		Assert.Equal(0, response.DiskUsagePercent);
+		response.CpuUsagePercent.ShouldBe(0);
+		response.MemoryUsedMb.ShouldBe(0);
+		response.MemoryTotalMb.ShouldBe(0);
+		response.DiskUsagePercent.ShouldBe(0);
 	}
 
 	/// <summary>
@@ -268,9 +169,9 @@ public class HealthStatusResponseTests
 			};
 
 		// Assert
-		Assert.Equal(45.5, response.CpuUsagePercent);
-		Assert.Equal(2048, response.MemoryUsedMb);
-		Assert.Equal(8192, response.MemoryTotalMb);
-		Assert.Equal(67.3, response.DiskUsagePercent);
+		response.CpuUsagePercent.ShouldBe(45.5);
+		response.MemoryUsedMb.ShouldBe(2048);
+		response.MemoryTotalMb.ShouldBe(8192);
+		response.DiskUsagePercent.ShouldBe(67.3);
 	}
 }

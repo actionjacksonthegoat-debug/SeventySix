@@ -28,7 +28,7 @@ describe("TotpService",
 		let service: TotpService;
 		let httpTestingController: HttpTestingController;
 		const baseUrl: string =
-			`${environment.apiUrl}/auth`;
+			`${environment.apiUrl}/auth/mfa`;
 
 		beforeEach(
 			() =>

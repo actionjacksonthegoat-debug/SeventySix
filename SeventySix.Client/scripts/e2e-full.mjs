@@ -10,7 +10,7 @@
 import { spawnSync } from "child_process";
 
 const DOCKER_COMPOSE_FILE =
-	"../docker-compose.e2e.yml";
+	"docker-compose.e2e.yml";
 
 /**
  * Runs a shell command synchronously and returns the exit code.

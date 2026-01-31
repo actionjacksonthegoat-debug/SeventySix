@@ -47,13 +47,13 @@ public class CreateClientLogBatchCommandHandlerTests
 		// Assert
 		await Repository
 			.DidNotReceive()
-			.CreateAsync(
-				Arg.Any<Log>(),
+			.CreateBatchAsync(
+				Arg.Any<IEnumerable<Log>>(),
 				Arg.Any<CancellationToken>());
 	}
 
 	/// <summary>
-	/// Tests that each request creates a corresponding log entry.
+	/// Tests that multiple requests create all logs in single batch call.
 	/// </summary>
 	[Fact]
 	public async Task HandleAsync_MultipleRequests_CreatesAllLogsAsync()
@@ -78,15 +78,15 @@ public class CreateClientLogBatchCommandHandlerTests
 				},
 			];
 
-		List<Log> capturedLogs =
-			[];
+		IEnumerable<Log>? capturedLogs =
+			null;
 
 		Repository
-			.CreateAsync(
-				Arg.Do<Log>(log => capturedLogs.Add(log)),
+			.CreateBatchAsync(
+				Arg.Do<IEnumerable<Log>>(
+					logs => capturedLogs = logs.ToList()),
 				Arg.Any<CancellationToken>())
-			.Returns(
-				callInfo => Task.FromResult(callInfo.Arg<Log>()));
+			.Returns(Task.CompletedTask);
 
 		// Act
 		await CreateClientLogBatchCommandHandler.HandleAsync(
@@ -95,24 +95,27 @@ public class CreateClientLogBatchCommandHandlerTests
 			CancellationToken.None);
 
 		// Assert
-		capturedLogs.Count.ShouldBe(3);
-		capturedLogs[0].Message.ShouldBe("First error");
-		capturedLogs[0].LogLevel.ShouldBe("Error");
-		capturedLogs[1].Message.ShouldBe("Second warning");
-		capturedLogs[1].LogLevel.ShouldBe("Warning");
-		capturedLogs[2].Message.ShouldBe("Third info");
-		capturedLogs[2].LogLevel.ShouldBe("Information");
+		capturedLogs.ShouldNotBeNull();
+		List<Log> logsList =
+			capturedLogs.ToList();
+		logsList.Count.ShouldBe(3);
+		logsList[0].Message.ShouldBe("First error");
+		logsList[0].LogLevel.ShouldBe("Error");
+		logsList[1].Message.ShouldBe("Second warning");
+		logsList[1].LogLevel.ShouldBe("Warning");
+		logsList[2].Message.ShouldBe("Third info");
+		logsList[2].LogLevel.ShouldBe("Information");
 
-		// Verify repository called for each
+		// Verify repository called once with batch
 		await Repository
-			.Received(3)
-			.CreateAsync(
-				Arg.Any<Log>(),
+			.Received(1)
+			.CreateBatchAsync(
+				Arg.Any<IEnumerable<Log>>(),
 				Arg.Any<CancellationToken>());
 	}
 
 	/// <summary>
-	/// Tests that single request creates exactly one log.
+	/// Tests that single request creates exactly one log via batch call.
 	/// </summary>
 	[Fact]
 	public async Task HandleAsync_SingleRequest_CreatesOneLogAsync()
@@ -127,12 +130,15 @@ public class CreateClientLogBatchCommandHandlerTests
 				},
 			];
 
+		IEnumerable<Log>? capturedLogs =
+			null;
+
 		Repository
-			.CreateAsync(
-				Arg.Any<Log>(),
+			.CreateBatchAsync(
+				Arg.Do<IEnumerable<Log>>(
+					logs => capturedLogs = logs.ToList()),
 				Arg.Any<CancellationToken>())
-			.Returns(
-				callInfo => Task.FromResult(callInfo.Arg<Log>()));
+			.Returns(Task.CompletedTask);
 
 		// Act
 		await CreateClientLogBatchCommandHandler.HandleAsync(
@@ -141,10 +147,13 @@ public class CreateClientLogBatchCommandHandlerTests
 			CancellationToken.None);
 
 		// Assert
+		capturedLogs.ShouldNotBeNull();
+		capturedLogs.Count().ShouldBe(1);
+
 		await Repository
 			.Received(1)
-			.CreateAsync(
-				Arg.Any<Log>(),
+			.CreateBatchAsync(
+				Arg.Any<IEnumerable<Log>>(),
 				Arg.Any<CancellationToken>());
 	}
 
@@ -161,15 +170,15 @@ public class CreateClientLogBatchCommandHandlerTests
 				new() { LogLevel = "Warning", Message = "Two" },
 			];
 
-		List<Log> capturedLogs =
-			[];
+		IEnumerable<Log>? capturedLogs =
+			null;
 
 		Repository
-			.CreateAsync(
-				Arg.Do<Log>(log => capturedLogs.Add(log)),
+			.CreateBatchAsync(
+				Arg.Do<IEnumerable<Log>>(
+					logs => capturedLogs = logs.ToList()),
 				Arg.Any<CancellationToken>())
-			.Returns(
-				callInfo => Task.FromResult(callInfo.Arg<Log>()));
+			.Returns(Task.CompletedTask);
 
 		// Act
 		await CreateClientLogBatchCommandHandler.HandleAsync(
@@ -178,6 +187,7 @@ public class CreateClientLogBatchCommandHandlerTests
 			CancellationToken.None);
 
 		// Assert
+		capturedLogs.ShouldNotBeNull();
 		foreach (Log log in capturedLogs)
 		{
 			log.MachineName.ShouldBe("Browser");

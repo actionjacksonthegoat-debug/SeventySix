@@ -48,7 +48,8 @@ namespace SeventySix.Api.Controllers;
 [Route(ApiVersionConfig.VersionedRoutePrefix + "/users")]
 public class UsersController(
 	IMessageBus messageBus,
-	ILogger<UsersController> logger) : ControllerBase
+	ILogger<UsersController> logger,
+	IOutputCacheStore outputCacheStore) : ControllerBase
 {
 	#region Current User (/me) Endpoints
 
@@ -121,44 +122,6 @@ public class UsersController(
 				cancellationToken);
 
 		return Ok(adminCount);
-	}
-
-	/// <summary>
-	/// Gets all users.
-	/// </summary>
-	/// <param name="cancellationToken">
-	/// Cancellation token for async operation.
-	/// </param>
-	/// <returns>
-	/// A list of all users.
-	/// </returns>
-	/// <response code="200">Returns the list of users.</response>
-	/// <response code="500">If an unexpected error occurs.</response>
-	/// <remarks>
-	/// Sample request:
-	///
-	///     GET /api/user
-	///
-	/// Response is cached for 60 seconds to improve performance.
-	/// </remarks>
-	[HttpGet(Name = "GetUsers")]
-	[Authorize(Policy = PolicyConstants.AdminOnly)]
-	[ProducesResponseType(
-		typeof(IEnumerable<UserDto>),
-		StatusCodes.Status200OK
-	)]
-	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
-	[OutputCache(PolicyName = CachePolicyConstants.Users)]
-	public async Task<ActionResult<IEnumerable<UserDto>>> GetAllAsync(
-		CancellationToken cancellationToken)
-	{
-		IEnumerable<UserDto> users =
-			await messageBus.InvokeAsync<
-				IEnumerable<UserDto>>(
-					new GetAllUsersQuery(),
-					cancellationToken);
-
-		return Ok(users);
 	}
 
 	/// <summary>
@@ -258,6 +221,10 @@ public class UsersController(
 					request,
 					cancellationToken);
 
+			await outputCacheStore.EvictByTagAsync(
+				CachePolicyConstants.Users,
+				cancellationToken);
+
 			return CreatedAtRoute(
 				"GetUserById",
 				new { id = user.Id },
@@ -285,6 +252,10 @@ public class UsersController(
 			logger.LogWarning(
 				"User {UserId} created but email rate limited",
 				user.Id);
+
+			await outputCacheStore.EvictByTagAsync(
+				CachePolicyConstants.Users,
+				cancellationToken);
 
 			return AcceptedAtRoute(
 				"GetUserById",
@@ -341,6 +312,10 @@ public class UsersController(
 				request,
 				cancellationToken);
 
+		await outputCacheStore.EvictByTagAsync(
+			CachePolicyConstants.Users,
+			cancellationToken);
+
 		return Ok(user);
 	}
 
@@ -378,7 +353,16 @@ public class UsersController(
 					username),
 				cancellationToken);
 
-		return result.IsSuccess ? NoContent() : NotFound();
+		if (!result.IsSuccess)
+		{
+			return NotFound();
+		}
+
+		await outputCacheStore.EvictByTagAsync(
+			CachePolicyConstants.Users,
+			cancellationToken);
+
+		return NoContent();
 	}
 
 	/// <summary>
@@ -410,7 +394,16 @@ public class UsersController(
 				new RestoreUserCommand(id),
 				cancellationToken);
 
-		return result.IsSuccess ? NoContent() : NotFound();
+		if (!result.IsSuccess)
+		{
+			return NotFound();
+		}
+
+		await outputCacheStore.EvictByTagAsync(
+			CachePolicyConstants.Users,
+			cancellationToken);
+
+		return NoContent();
 	}
 
 	/// <summary>
@@ -557,6 +550,13 @@ public class UsersController(
 					username),
 				cancellationToken);
 
+		if (count > 0)
+		{
+			await outputCacheStore.EvictByTagAsync(
+				CachePolicyConstants.Users,
+				cancellationToken);
+		}
+
 		return Ok(count);
 	}
 
@@ -594,6 +594,13 @@ public class UsersController(
 					false,
 					username),
 				cancellationToken);
+
+		if (count > 0)
+		{
+			await outputCacheStore.EvictByTagAsync(
+				CachePolicyConstants.Users,
+				cancellationToken);
+		}
 
 		return Ok(count);
 	}
@@ -637,9 +644,20 @@ public class UsersController(
 			return NotFound();
 		}
 
-		await messageBus.InvokeAsync(
-			new InitiatePasswordResetCommand(id, IsNewUser: false),
-			cancellationToken);
+		Result result =
+			await messageBus.InvokeAsync<Result>(
+				new InitiatePasswordResetCommand(id, IsNewUser: false),
+				cancellationToken);
+
+		if (!result.IsSuccess)
+		{
+			logger.LogWarning(
+				"Password reset failed for user {UserId}: {Error}",
+				id,
+				result.Error);
+
+			return NotFound();
+		}
 
 		return NoContent();
 	}

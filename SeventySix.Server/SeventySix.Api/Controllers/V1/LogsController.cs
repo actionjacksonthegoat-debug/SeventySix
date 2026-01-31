@@ -87,7 +87,9 @@ public class LogsController(
 			return NotFound();
 		}
 
-		await outputCacheStore.EvictByTagAsync("logs", cancellationToken);
+		await outputCacheStore.EvictByTagAsync(
+			CachePolicyConstants.Logs,
+			cancellationToken);
 
 		return NoContent();
 	}
@@ -127,7 +129,9 @@ public class LogsController(
 				new DeleteLogsBatchCommand(ids),
 				cancellationToken);
 
-		await outputCacheStore.EvictByTagAsync("logs", cancellationToken);
+		await outputCacheStore.EvictByTagAsync(
+			CachePolicyConstants.Logs,
+			cancellationToken);
 
 		return Ok(deletedCount);
 	}
@@ -167,7 +171,9 @@ public class LogsController(
 				new DeleteLogsOlderThanCommand(cutoffDate.Value),
 				cancellationToken);
 
-		await outputCacheStore.EvictByTagAsync("logs", cancellationToken);
+		await outputCacheStore.EvictByTagAsync(
+			CachePolicyConstants.Logs,
+			cancellationToken);
 
 		return Ok(deletedCount);
 	}

@@ -186,6 +186,55 @@ public class SecurityHeadersTests : IDisposable
 		response.Headers.Contains(SecurityHeaderConstants.Names.XssProtection).ShouldBeTrue();
 	}
 
+	/// <summary>
+	/// Tests that CSP includes upgrade-insecure-requests directive.
+	/// Automatically upgrades HTTP requests to HTTPS (prevents mixed content).
+	/// </summary>
+	[Fact]
+	public async Task Csp_ContainsUpgradeInsecureRequestsDirectiveAsync()
+	{
+		// Arrange
+		using HttpClient httpClient =
+			Factory.CreateClient();
+
+		// Act
+		HttpResponseMessage response =
+			await httpClient.GetAsync(ApiEndpoints.Health.Base);
+
+		// Assert
+		response.Headers.TryGetValues(
+			SecurityHeaderConstants.Names.ContentSecurityPolicy,
+			out IEnumerable<string>? cspValues).ShouldBeTrue();
+		cspValues.ShouldNotBeNull();
+		cspValues.First().ShouldContain("upgrade-insecure-requests");
+	}
+
+	/// <summary>
+	/// Tests that CSP does not allow insecure WebSocket connections.
+	/// Only wss: (secure WebSocket) should be permitted, not ws:.
+	/// </summary>
+	[Fact]
+	public async Task Csp_DoesNotAllowInsecureWebSocketAsync()
+	{
+		// Arrange
+		using HttpClient httpClient =
+			Factory.CreateClient();
+
+		// Act
+		HttpResponseMessage response =
+			await httpClient.GetAsync(ApiEndpoints.Health.Base);
+
+		// Assert
+		response.Headers.TryGetValues(
+			SecurityHeaderConstants.Names.ContentSecurityPolicy,
+			out IEnumerable<string>? cspValues).ShouldBeTrue();
+		cspValues.ShouldNotBeNull();
+		string cspHeader =
+			cspValues.First();
+		cspHeader.ShouldNotContain("ws:");
+		cspHeader.ShouldContain("wss:");
+	}
+
 	/// <inheritdoc/>
 	public void Dispose() =>
 		Factory.Dispose();

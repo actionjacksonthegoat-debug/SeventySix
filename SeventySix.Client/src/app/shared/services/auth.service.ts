@@ -6,6 +6,12 @@
  * - Access tokens stored in memory only (not localStorage) for XSS protection
  * - Refresh tokens stored in HTTP-only cookies by the server
  * - Token refresh handled transparently by auth interceptor
+ *
+ * Implementation Note:
+ * Auth services use HttpClient directly (not ApiService) because:
+ * 1. Requires withCredentials for HTTP-only cookie refresh tokens
+ * 2. Uses Observable-based patterns for login flows
+ * 3. Has domain-specific error handling via auth-error.utility.ts
  */
 
 import { HttpClient, HttpErrorResponse } from "@angular/common/http";
@@ -25,12 +31,13 @@ import {
 	LoginRequest,
 	UserProfileDto
 } from "@shared/models";
-import { DateService, StorageService } from "@shared/services";
+import { DateService, StorageService, TokenService, WindowService } from "@shared/services";
 import {
-	DOTNET_ROLE_CLAIM,
 	JwtClaims,
 	OAuthProvider
 } from "@shared/services/auth.types";
+import { QueryKeys } from "@shared/utilities/query-keys.utility";
+import { QueryClient } from "@tanstack/angular-query-experimental";
 import {
 	catchError,
 	finalize,
@@ -85,6 +92,34 @@ export class AuthService
 	 */
 	private readonly storageService: StorageService =
 		inject(StorageService);
+
+	/**
+	 * Token service for JWT parsing and validation.
+	 * @type {TokenService}
+	 * @private
+	 * @readonly
+	 */
+	private readonly tokenService: TokenService =
+		inject(TokenService);
+
+	/**
+	 * Window service for SSR-safe window operations.
+	 * @type {WindowService}
+	 * @private
+	 * @readonly
+	 */
+	private readonly windowService: WindowService =
+		inject(WindowService);
+
+	/**
+	 * TanStack Query client for cache management.
+	 * Used to clear cached queries on logout to prevent data leakage between users.
+	 * @type {QueryClient}
+	 * @private
+	 * @readonly
+	 */
+	private readonly queryClient: QueryClient =
+		inject(QueryClient);
 
 	/**
 	 * Base auth API URL.
@@ -235,6 +270,7 @@ export class AuthService
 						this.requiresPasswordChangeSignal.set(
 							response.requiresPasswordChange);
 						this.markHasSession();
+						this.invalidatePostLogin();
 					}));
 	}
 
@@ -260,8 +296,8 @@ export class AuthService
 			STORAGE_KEYS.AUTH_RETURN_URL,
 			validatedUrl);
 
-		window.location.href =
-			`${this.authUrl}/${provider}`;
+		this.windowService.navigateTo(
+			`${this.authUrl}/oauth/${provider}`);
 	}
 
 	/**
@@ -310,7 +346,7 @@ export class AuthService
 					tap(
 						(response: AuthResponse) =>
 						{
-							// Refresh always returns token fields (no MFA on refresh)
+						// Refresh always returns token fields (no MFA on refresh)
 							this.setAccessToken(
 								response.accessToken!,
 								response.expiresAt!,
@@ -383,7 +419,7 @@ export class AuthService
 	 */
 	setPassword(token: string, newPassword: string): Observable<void>
 	{
-		return this.httpClient.post<void>(`${this.authUrl}/set-password`,
+		return this.httpClient.post<void>(`${this.authUrl}/password/set`,
 			{
 				token,
 				newPassword
@@ -404,7 +440,7 @@ export class AuthService
 		email: string,
 		altchaPayload: string | null = null): Observable<void>
 	{
-		return this.httpClient.post<void>(`${this.authUrl}/forgot-password`,
+		return this.httpClient.post<void>(`${this.authUrl}/password/forgot`,
 			{
 				email,
 				altchaPayload
@@ -530,7 +566,7 @@ export class AuthService
 	private handleOAuthCallback(): boolean
 	{
 		const hash: string =
-			window.location.hash;
+			this.windowService.getHash();
 
 		if (!hash.includes("access_token="))
 		{
@@ -558,15 +594,15 @@ export class AuthService
 				fullName);
 
 			// Clean URL fragment
-			window.history.replaceState(
+			this.windowService.replaceState(
 				null,
 				"",
-				window.location.pathname + window.location.search);
+				this.windowService.getPathname() + this.windowService.getSearch());
 
 			// Navigate to stored return URL
 			const returnUrl: string =
-				sessionStorage.getItem(STORAGE_KEYS.AUTH_RETURN_URL) ?? "/";
-			sessionStorage.removeItem(STORAGE_KEYS.AUTH_RETURN_URL);
+				this.storageService.getSessionItem(STORAGE_KEYS.AUTH_RETURN_URL) ?? "/";
+			this.storageService.removeSessionItem(STORAGE_KEYS.AUTH_RETURN_URL);
 			this.router.navigateByUrl(returnUrl);
 		}
 
@@ -619,21 +655,12 @@ export class AuthService
 				.getTime();
 
 		const claims: JwtClaims | null =
-			this.parseJwt(token);
+			this.tokenService.parseJwt(token);
 
 		if (claims)
 		{
-			// Handle role claim - .NET uses full ClaimTypes URI, can be string or array
-			const roleClaim: string | string[] | undefined =
-				claims[
-					DOTNET_ROLE_CLAIM
-				] as string | string[] | undefined;
 			const roles: string[] =
-				Array.isArray(roleClaim)
-					? roleClaim
-					: roleClaim
-						? [roleClaim]
-						: [];
+				this.tokenService.extractRoles(token);
 
 			// Email and fullName now come from response body, not JWT claims
 			this.userSignal.set(
@@ -651,7 +678,8 @@ export class AuthService
 	}
 
 	/**
-	 * Clears authentication state.
+	 * Clears authentication state and all cached query data.
+	 * Prevents data leakage between users on shared devices.
 	 * @returns {void}
 	 */
 	private clearAuth(): void
@@ -661,6 +689,26 @@ export class AuthService
 		this.userSignal.set(null);
 		this.requiresPasswordChangeSignal.set(false);
 		this.clearHasSession();
+
+		// Clear all cached queries to prevent data leakage between users
+		this.queryClient.clear();
+	}
+
+	/**
+	 * Invalidates stale caches after successful login.
+	 * Ensures user sees their own fresh data, not cached data from previous session.
+	 * @returns {void}
+	 */
+	private invalidatePostLogin(): void
+	{
+		this.queryClient.invalidateQueries(
+			{
+				queryKey: QueryKeys.account.all
+			});
+		this.queryClient.invalidateQueries(
+			{
+				queryKey: QueryKeys.permissionRequests.all
+			});
 	}
 
 	/**
@@ -681,52 +729,6 @@ export class AuthService
 	forceLogoutLocally(): void
 	{
 		this.clearAuth();
-	}
-
-	/**
-	 * Parses JWT token to extract claims.
-	 * @param {string} token
-	 * The JWT token string to parse.
-	 * @returns {JwtClaims|null}
-	 * The decoded JWT claims or null when parsing fails or token is invalid.
-	 */
-	private parseJwt(token: string): JwtClaims | null
-	{
-		try
-		{
-			const parts: string[] =
-				token.split(".");
-
-			if (parts.length !== 3)
-			{
-				return null;
-			}
-
-			const base64Url: string =
-				parts[1];
-			const base64: string =
-				base64Url
-					.replace(/-/g, "+")
-					.replace(/_/g, "/");
-			const json: string =
-				decodeURIComponent(
-					atob(base64)
-						.split("")
-						.map(
-							(c: string) =>
-								"%"
-									+ ("00" + c
-										.charCodeAt(0)
-										.toString(16))
-										.slice(-2))
-						.join(""));
-
-			return JSON.parse(json);
-		}
-		catch
-		{
-			return null;
-		}
 	}
 
 	/**

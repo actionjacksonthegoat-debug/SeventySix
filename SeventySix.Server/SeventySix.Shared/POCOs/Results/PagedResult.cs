@@ -7,7 +7,10 @@ namespace SeventySix.Shared.POCOs;
 /// <summary>
 /// Paged result for queries.
 /// </summary>
-public class PagedResult<T>
+/// <typeparam name="T">
+/// The type of items in the paged result.
+/// </typeparam>
+public record PagedResult<T>
 {
 	/// <summary>
 	/// The items for the current page.

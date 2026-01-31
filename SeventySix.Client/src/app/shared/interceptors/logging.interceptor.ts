@@ -7,7 +7,7 @@ import { HttpInterceptorFn } from "@angular/common/http";
 import { inject } from "@angular/core";
 import { environment } from "@environments/environment";
 import { DateService } from "@shared/services";
-import { finalize, tap } from "rxjs";
+import { tap } from "rxjs";
 
 /**
  * Intercepts HTTP requests/responses for logging
@@ -61,10 +61,5 @@ export const loggingInterceptor: HttpInterceptorFn =
 								`🔴 HTTP Error: ${req.method} ${req.url} (${duration}ms)`,
 								error);
 						}
-					}),
-				finalize(
-					() =>
-					{
-					// Cleanup if needed
 					}));
 	};

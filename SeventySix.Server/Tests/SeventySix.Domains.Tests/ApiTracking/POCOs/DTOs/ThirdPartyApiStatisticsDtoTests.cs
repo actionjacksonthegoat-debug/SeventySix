@@ -4,6 +4,7 @@
 
 using Microsoft.Extensions.Time.Testing;
 using SeventySix.ApiTracking;
+using Shouldly;
 
 namespace SeventySix.Domains.Tests.ApiTracking.POCOs.DTOs;
 
@@ -19,12 +20,12 @@ public class ThirdPartyApiStatisticsDtoTests
 		ThirdPartyApiStatisticsDto dto = new();
 
 		// Assert
-		Assert.Equal(0, dto.TotalCallsToday);
-		Assert.Equal(0, dto.TotalApisTracked);
-		Assert.NotNull(dto.CallsByApi);
-		Assert.Empty(dto.CallsByApi);
-		Assert.NotNull(dto.LastCalledByApi);
-		Assert.Empty(dto.LastCalledByApi);
+		dto.TotalCallsToday.ShouldBe(0);
+		dto.TotalApisTracked.ShouldBe(0);
+		dto.CallsByApi.ShouldNotBeNull();
+		dto.CallsByApi.ShouldBeEmpty();
+		dto.LastCalledByApi.ShouldNotBeNull();
+		dto.LastCalledByApi.ShouldBeEmpty();
 	}
 
 	[Fact]
@@ -57,22 +58,14 @@ public class ThirdPartyApiStatisticsDtoTests
 			};
 
 		// Assert
-		Assert.Equal(225, dto.TotalCallsToday);
-		Assert.Equal(2, dto.TotalApisTracked);
-		Assert.Equal(2, dto.CallsByApi.Count);
-		Assert.Equal(
-			150,
-			dto.CallsByApi["ExternalAPI"]);
-		Assert.Equal(
-			75,
-			dto.CallsByApi["GoogleMaps"]);
-		Assert.Equal(2, dto.LastCalledByApi.Count);
-		Assert.Equal(
-			now,
-			dto.LastCalledByApi["ExternalAPI"]);
-		Assert.Equal(
-			now.AddMinutes(-30),
-			dto.LastCalledByApi["GoogleMaps"]);
+		dto.TotalCallsToday.ShouldBe(225);
+		dto.TotalApisTracked.ShouldBe(2);
+		dto.CallsByApi.Count.ShouldBe(2);
+		dto.CallsByApi["ExternalAPI"].ShouldBe(150);
+		dto.CallsByApi["GoogleMaps"].ShouldBe(75);
+		dto.LastCalledByApi.Count.ShouldBe(2);
+		dto.LastCalledByApi["ExternalAPI"].ShouldBe(now);
+		dto.LastCalledByApi["GoogleMaps"].ShouldBe(now.AddMinutes(-30));
 	}
 
 	[Fact]
@@ -94,7 +87,7 @@ public class ThirdPartyApiStatisticsDtoTests
 			};
 
 		// Assert
-		Assert.NotNull(dto.LastCalledByApi["Api1"]);
-		Assert.Null(dto.LastCalledByApi["Api2"]);
+		dto.LastCalledByApi["Api1"].ShouldNotBeNull();
+		dto.LastCalledByApi["Api2"].ShouldBeNull();
 	}
 }

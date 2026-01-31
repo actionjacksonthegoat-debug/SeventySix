@@ -2,7 +2,6 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using System.Net.Http.Json;
 using SeventySix.Api.Tests.Fixtures;
 using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;
@@ -76,33 +75,6 @@ public sealed class AuthControllerAuthorizationTests(
 			TestRoleConstants.Admin,
 			HttpMethod.Get,
 			ApiEndpoints.Auth.Me);
-
-	// ============================================
-	// POST /api/v1/auth/change-password - [Authorize] endpoint
-	// ============================================
-
-	/// <summary>
-	/// Tests that POST /api/v1/auth/change-password returns 401 without authentication.
-	/// </summary>
-	[Fact]
-	public Task ChangePassword_WithoutAuth_ReturnsUnauthorizedAsync() =>
-		AuthHelper.AssertUnauthorizedAsync(
-			HttpMethod.Post,
-			ApiEndpoints.Auth.ChangePassword);
-
-	/// <summary>
-	/// Tests that POST /api/v1/auth/change-password returns 400 (validation error)
-	/// for authenticated User role (endpoint is accessible, request body is invalid).
-	/// This confirms the endpoint requires auth but allows all authenticated users.
-	/// </summary>
-	[Fact]
-	public Task ChangePassword_WithUserRole_IsAccessibleAsync() =>
-		AuthHelper.AssertStatusCodeForRoleAsync(
-			TestRoleConstants.User,
-			HttpMethod.Post,
-			ApiEndpoints.Auth.ChangePassword,
-			System.Net.HttpStatusCode.BadRequest,
-			JsonContent.Create(new { })); // Empty JSON to get validation error, not 415
 
 	// ============================================
 	// POST /api/v1/auth/logout - Cookie-based, no [Authorize]

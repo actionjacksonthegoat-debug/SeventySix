@@ -12,7 +12,7 @@ import {
 	provideBrowserGlobalErrorListeners,
 	provideZonelessChangeDetection
 } from "@angular/core";
-import { provideAnimations } from "@angular/platform-browser/animations";
+import { provideAnimationsAsync } from "@angular/platform-browser/animations/async";
 import {
 	provideRouter,
 	withPreloading
@@ -44,13 +44,16 @@ import {
 import { routes } from "./app.routes";
 
 /**
- * Initialize theme service on app startup
- * This ensures the theme is applied before the app renders
+ * Initialize theme service on app startup.
+ * Ensures the theme is applied before the app renders.
+ * @returns {Promise<void>}
+ * Resolves when theme initialization is complete.
  */
-function initializeTheme()
+function initializeTheme(): Promise<void>
 {
-	inject(ThemeService);
-	// Theme service constructor handles initialization
+	const themeService: ThemeService =
+		inject(ThemeService);
+	themeService.initialize();
 	return Promise.resolve();
 }
 
@@ -139,7 +142,7 @@ export const appConfig: ApplicationConfig =
 			provideBrowserGlobalErrorListeners(),
 			provideZonelessChangeDetection(),
 			provideRouter(routes, withPreloading(SelectivePreloadingStrategy)),
-			provideAnimations(), // Fix in Angular V22
+			provideAnimationsAsync(),
 			// Global error handler
 			{ provide: ErrorHandler, useClass: ErrorHandlerService },
 			// Application initializers consolidated

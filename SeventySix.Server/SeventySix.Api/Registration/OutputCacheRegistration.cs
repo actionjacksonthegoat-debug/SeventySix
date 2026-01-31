@@ -2,8 +2,10 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using Microsoft.AspNetCore.OutputCaching.StackExchangeRedis;
 using SeventySix.Api.Configuration;
 using SeventySix.Shared.Settings;
+using StackExchange.Redis;
 
 namespace SeventySix.Api.Registration;
 
@@ -17,7 +19,7 @@ public static class OutputCacheRegistration
 	/// Automatically discovers and registers all policies defined in appsettings.json.
 	/// </summary>
 	/// <remarks>
-	/// Reads configuration section: OutputCacheOptions.SECTION_NAME (policies and defaults).
+	/// Reads configuration section: OutputCacheOptions.SectionName (policies and defaults).
 	/// Uses Valkey (Redis-compatible) for distributed output caching across nodes.
 	/// In Test environment, uses in-memory cache (no Valkey dependency).
 	/// </remarks>
@@ -49,24 +51,25 @@ public static class OutputCacheRegistration
 		{
 			CacheSettings? cacheSettings =
 				configuration
-					.GetSection(CacheSettings.SECTION_NAME)
+					.GetSection(CacheSettings.SectionName)
 					.Get<CacheSettings>();
 
+			string instanceName =
+				$"{cacheSettings?.Valkey.InstanceName ?? "SeventySix:"}OutputCache:";
+
 			// Use shared IConnectionMultiplexer (registered in FusionCacheRegistration)
-			services.AddStackExchangeRedisOutputCache(
-				options =>
-				{
-					options.ConnectionMultiplexerFactory =
-						async () =>
-						{
-							IServiceProvider serviceProvider =
-								services.BuildServiceProvider();
-							return await Task.FromResult(
-								serviceProvider.GetRequiredService<StackExchange.Redis.IConnectionMultiplexer>());
-						};
-					options.InstanceName =
-						$"{cacheSettings?.Valkey.InstanceName ?? "SeventySix:"}OutputCache:";
-				});
+			// Configure using OptionsBuilder to get proper DI-resolved IServiceProvider
+			services.AddStackExchangeRedisOutputCache(_ => { });
+
+			services.AddOptions<RedisOutputCacheOptions>()
+				.Configure<IServiceProvider>(
+					(cacheOptions, serviceProvider) =>
+					{
+						cacheOptions.InstanceName = instanceName;
+						cacheOptions.ConnectionMultiplexerFactory =
+							() => Task.FromResult(
+								serviceProvider.GetRequiredService<IConnectionMultiplexer>());
+					});
 		}
 
 		services.AddOutputCache(
@@ -74,7 +77,7 @@ public static class OutputCacheRegistration
 			{
 				OutputCacheOptions? cacheConfig =
 					configuration
-						.GetSection(OutputCacheOptions.SECTION_NAME)
+						.GetSection(OutputCacheOptions.SectionName)
 						.Get<OutputCacheOptions>();
 
 				if (cacheConfig?.Policies == null)

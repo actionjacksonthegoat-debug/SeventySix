@@ -1,9 +1,9 @@
 using NSubstitute;
-using SeventySix.Domains.Infrastructure;
+using SeventySix.Shared.Persistence;
 using Shouldly;
 using Wolverine;
 
-namespace SeventySix.Shared.Tests.Infrastructure;
+namespace SeventySix.Shared.Tests.Persistence;
 
 public class DummyQuery;
 

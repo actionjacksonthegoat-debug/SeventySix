@@ -5,6 +5,7 @@
 using System.Net;
 using Microsoft.Extensions.Configuration;
 using SeventySix.TestUtilities.TestBases;
+using Shouldly;
 
 namespace SeventySix.Api.Tests.Middleware;
 
@@ -57,11 +58,9 @@ public class CorsMiddlewareBehaviorTests : IDisposable
 		HttpResponseMessage preflightResponse =
 			await client.SendAsync(
 				preflight);
-		Assert.Equal(
-			HttpStatusCode.NoContent,
-			preflightResponse.StatusCode);
-		Assert.True(
-			preflightResponse.Headers.Contains("Access-Control-Allow-Origin"));
+		preflightResponse.StatusCode.ShouldBe(HttpStatusCode.NoContent);
+		preflightResponse.Headers.Contains("Access-Control-Allow-Origin")
+			.ShouldBeTrue();
 
 		// 2) Error response includes CORS headers
 		HttpRequestMessage errorRequest =
@@ -73,11 +72,52 @@ public class CorsMiddlewareBehaviorTests : IDisposable
 		HttpResponseMessage errorResponse =
 			await client.SendAsync(
 				errorRequest);
-		Assert.Equal(
-			HttpStatusCode.NotFound,
-			errorResponse.StatusCode);
-		Assert.True(
-			errorResponse.Headers.Contains("Access-Control-Allow-Origin"));
+		errorResponse.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+		errorResponse.Headers.Contains("Access-Control-Allow-Origin")
+			.ShouldBeTrue();
+	}
+
+	/// <summary>
+	/// Verifies CORS preflight allows Cache-Control and Pragma headers.
+	/// These headers are required for force-refresh operations from the client.
+	/// </summary>
+	[Fact]
+	public async Task Preflight_AllowsCacheControlAndPragmaHeaders_Async()
+	{
+		using HttpClient client = Factory.CreateClient();
+
+		// CORS preflight requesting Cache-Control and Pragma headers
+		HttpRequestMessage preflight =
+			new(HttpMethod.Options, "/api/v1/logs");
+		preflight.Headers.Add("Origin", "http://localhost:4200");
+		preflight.Headers.Add("Access-Control-Request-Method", "GET");
+		preflight.Headers.Add(
+			"Access-Control-Request-Headers",
+			"Cache-Control, Pragma");
+
+		HttpResponseMessage preflightResponse =
+			await client.SendAsync(
+				preflight);
+
+		// Preflight should succeed
+		preflightResponse.StatusCode.ShouldBe(HttpStatusCode.NoContent);
+
+		// Access-Control-Allow-Headers should include our requested headers
+		bool hasAllowedHeaders =
+			preflightResponse.Headers.TryGetValues(
+				"Access-Control-Allow-Headers",
+				out IEnumerable<string>? allowedHeaders);
+
+		hasAllowedHeaders.ShouldBeTrue();
+
+		string allowedHeadersValue =
+			string.Join(
+				",",
+				allowedHeaders!)
+				.ToLowerInvariant();
+
+		allowedHeadersValue.ShouldContain("cache-control");
+		allowedHeadersValue.ShouldContain("pragma");
 	}
 
 	public void Dispose() => Factory.Dispose();

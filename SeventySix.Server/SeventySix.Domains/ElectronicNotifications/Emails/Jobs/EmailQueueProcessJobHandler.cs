@@ -6,6 +6,7 @@ using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SeventySix.Shared.BackgroundJobs;
+using SeventySix.Shared.Contracts.Emails;
 using Wolverine;
 
 namespace SeventySix.ElectronicNotifications.Emails.Jobs;
@@ -72,7 +73,9 @@ public class EmailQueueProcessJobHandler(
 		{
 			IReadOnlyList<EmailQueueEntry> pendingEmails =
 				await messageBus.InvokeAsync<IReadOnlyList<EmailQueueEntry>>(
-					new GetPendingEmailsQuery(queueConfig.BatchSize),
+					new GetPendingEmailsQuery(
+						queueConfig.BatchSize,
+						queueConfig.RetryDelayMinutes),
 					cancellationToken);
 
 			if (pendingEmails.Count > 0)
@@ -204,7 +207,7 @@ public class EmailQueueProcessJobHandler(
 	{
 		switch (emailType)
 		{
-			case EmailType.Welcome:
+			case EmailTypeConstants.Welcome:
 				await emailService.SendWelcomeEmailAsync(
 					recipientEmail,
 					templateData.GetValueOrDefault("username", "User"),
@@ -212,7 +215,7 @@ public class EmailQueueProcessJobHandler(
 					cancellationToken);
 				break;
 
-			case EmailType.PasswordReset:
+			case EmailTypeConstants.PasswordReset:
 				await emailService.SendPasswordResetEmailAsync(
 					recipientEmail,
 					templateData.GetValueOrDefault("username", "User"),
@@ -220,21 +223,25 @@ public class EmailQueueProcessJobHandler(
 					cancellationToken);
 				break;
 
-			case EmailType.Verification:
+			case EmailTypeConstants.Verification:
 				await emailService.SendVerificationEmailAsync(
 					recipientEmail,
 					templateData.GetValueOrDefault("verificationToken", ""),
 					cancellationToken);
 				break;
 
-			case EmailType.MfaVerification:
+			case EmailTypeConstants.MfaVerification:
+				int expirationMinutes =
+					int.TryParse(
+						templateData.GetValueOrDefault("expirationMinutes", "5"),
+						out int minutes)
+						? minutes
+						: 5;
+
 				await emailService.SendMfaCodeEmailAsync(
 					recipientEmail,
 					templateData.GetValueOrDefault("code", ""),
-					int.Parse(
-						templateData.GetValueOrDefault(
-							"expirationMinutes",
-							"5")),
+					expirationMinutes,
 					cancellationToken);
 				break;
 

@@ -69,7 +69,9 @@ public static class CorsRegistration
 									HttpHeaderConstants.Authorization,
 									HttpHeaderConstants.ContentType,
 									HttpHeaderConstants.Accept,
-									HttpHeaderConstants.XRequestedWith)
+									HttpHeaderConstants.XRequestedWith,
+									HttpHeaderConstants.CacheControl,
+									HttpHeaderConstants.Pragma)
 								.AllowCredentials();
 					});
 			});

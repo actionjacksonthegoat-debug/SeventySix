@@ -13,7 +13,7 @@ namespace SeventySix.Shared.Exceptions;
 /// It provides a semantic meaning that's more specific than returning null.
 ///
 /// HTTP Mapping:
-/// - Maps to 404 Not Found in GlobalExceptionMiddleware
+/// - Maps to 404 Not Found in GlobalExceptionHandler
 /// </remarks>
 public class EntityNotFoundException : DomainException
 {

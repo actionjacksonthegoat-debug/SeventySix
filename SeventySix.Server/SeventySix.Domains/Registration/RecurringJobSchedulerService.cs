@@ -8,8 +8,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SeventySix.ElectronicNotifications.Emails;
 using SeventySix.ElectronicNotifications.Emails.Jobs;
-using SeventySix.Identity.Jobs;
-using SeventySix.Identity.Settings;
 using SeventySix.Logging;
 using SeventySix.Logging.Jobs;
 using SeventySix.Shared.BackgroundJobs;
@@ -47,7 +45,7 @@ namespace SeventySix.Registration;
 /// <param name="logger">
 /// Logger for diagnostic messages.
 /// </param>
-public class RecurringJobSchedulerService(
+public sealed class RecurringJobSchedulerService(
 	IServiceScopeFactory serviceScopeFactory,
 	IConfiguration configuration,
 	ILogger<RecurringJobSchedulerService> logger) : IHostedService
@@ -166,14 +164,17 @@ public class RecurringJobSchedulerService(
 		IRecurringJobService recurringJobService =
 			scope.ServiceProvider.GetRequiredService<IRecurringJobService>();
 
-		// Schedule Identity domain jobs
-		await ScheduleRefreshTokenCleanupJobAsync(
-			recurringJobService,
-			cancellationToken);
+		// Schedule jobs from all bounded context contributors
+		// Each domain registers its own IJobSchedulerContributor implementation
+		IEnumerable<IJobSchedulerContributor> contributors =
+			scope.ServiceProvider.GetServices<IJobSchedulerContributor>();
 
-		await ScheduleIpAnonymizationJobAsync(
-			recurringJobService,
-			cancellationToken);
+		foreach (IJobSchedulerContributor contributor in contributors)
+		{
+			await contributor.ScheduleJobsAsync(
+				recurringJobService,
+				cancellationToken);
+		}
 
 		// Schedule ElectronicNotifications domain jobs
 		await ScheduleEmailQueueProcessJobAsync(
@@ -188,78 +189,6 @@ public class RecurringJobSchedulerService(
 		await ScheduleDatabaseMaintenanceJobAsync(
 			recurringJobService,
 			cancellationToken);
-	}
-
-	/// <summary>
-	/// Schedules the refresh token cleanup job.
-	/// </summary>
-	/// <param name="recurringJobService">
-	/// The recurring job service for scheduling.
-	/// </param>
-	/// <param name="cancellationToken">
-	/// The cancellation token.
-	/// </param>
-	/// <returns>
-	/// A task representing the asynchronous operation.
-	/// </returns>
-	private async Task ScheduleRefreshTokenCleanupJobAsync(
-		IRecurringJobService recurringJobService,
-		CancellationToken cancellationToken)
-	{
-		RefreshTokenCleanupSettings settings =
-			configuration
-				.GetSection(RefreshTokenCleanupSettings.SectionName)
-				.Get<RefreshTokenCleanupSettings>()
-			?? new();
-
-		TimeSpan interval =
-			TimeSpan.FromHours(settings.IntervalHours);
-
-		await recurringJobService.EnsureScheduledAsync<RefreshTokenCleanupJob>(
-			nameof(RefreshTokenCleanupJob),
-			interval,
-			cancellationToken);
-
-		logger.LogInformation(
-			"Scheduled {JobName} with interval {Interval}",
-			nameof(RefreshTokenCleanupJob),
-			interval);
-	}
-
-	/// <summary>
-	/// Schedules the IP anonymization job for GDPR compliance.
-	/// </summary>
-	/// <param name="recurringJobService">
-	/// The recurring job service for scheduling.
-	/// </param>
-	/// <param name="cancellationToken">
-	/// The cancellation token.
-	/// </param>
-	/// <returns>
-	/// A task representing the asynchronous operation.
-	/// </returns>
-	private async Task ScheduleIpAnonymizationJobAsync(
-		IRecurringJobService recurringJobService,
-		CancellationToken cancellationToken)
-	{
-		IpAnonymizationSettings settings =
-			configuration
-				.GetSection(IpAnonymizationSettings.SectionName)
-				.Get<IpAnonymizationSettings>()
-			?? new();
-
-		TimeSpan interval =
-			TimeSpan.FromDays(settings.IntervalDays);
-
-		await recurringJobService.EnsureScheduledAsync<IpAnonymizationJob>(
-			nameof(IpAnonymizationJob),
-			interval,
-			cancellationToken);
-
-		logger.LogInformation(
-			"Scheduled {JobName} with interval {Interval}",
-			nameof(IpAnonymizationJob),
-			interval);
 	}
 
 	/// <summary>
@@ -340,17 +269,24 @@ public class RecurringJobSchedulerService(
 			return;
 		}
 
+		TimeOnly preferredTimeUtc =
+			new(
+				settings.PreferredStartHourUtc,
+				settings.PreferredStartMinuteUtc);
+
 		TimeSpan interval =
 			TimeSpan.FromHours(settings.IntervalHours);
 
-		await recurringJobService.EnsureScheduledAsync<LogCleanupJob>(
+		await recurringJobService.EnsureScheduledAtPreferredTimeAsync<LogCleanupJob>(
 			nameof(LogCleanupJob),
+			preferredTimeUtc,
 			interval,
 			cancellationToken);
 
 		logger.LogInformation(
-			"Scheduled {JobName} with interval {Interval}",
+			"Scheduled {JobName} at {PreferredTime:HH:mm} UTC with interval {Interval}",
 			nameof(LogCleanupJob),
+			preferredTimeUtc,
 			interval);
 	}
 
@@ -384,17 +320,24 @@ public class RecurringJobSchedulerService(
 			return;
 		}
 
+		TimeOnly preferredTimeUtc =
+			new(
+				settings.PreferredStartHourUtc,
+				settings.PreferredStartMinuteUtc);
+
 		TimeSpan interval =
 			TimeSpan.FromHours(settings.IntervalHours);
 
-		await recurringJobService.EnsureScheduledAsync<DatabaseMaintenanceJob>(
+		await recurringJobService.EnsureScheduledAtPreferredTimeAsync<DatabaseMaintenanceJob>(
 			nameof(DatabaseMaintenanceJob),
+			preferredTimeUtc,
 			interval,
 			cancellationToken);
 
 		logger.LogInformation(
-			"Scheduled {JobName} with interval {Interval}",
+			"Scheduled {JobName} at {PreferredTime:HH:mm} UTC with interval {Interval}",
 			nameof(DatabaseMaintenanceJob),
+			preferredTimeUtc,
 			interval);
 	}
 }

@@ -131,37 +131,43 @@ describe("LoginComponent",
 		describe("onLocalLogin",
 			() =>
 			{
-				it("should show error when username is empty",
+				it("should not call service when username is empty and form is invalid",
 					() =>
 					{
 						// Arrange
-						(component as unknown as { usernameOrEmail: string; }).usernameOrEmail = "";
-						(component as unknown as { password: string; }).password = "password123";
+						component["loginForm"].patchValue(
+							{
+								usernameOrEmail: "",
+								password: "password123",
+								rememberMe: false
+							});
 
 						// Act
 						(component as unknown as { onLocalLogin(): void; }).onLocalLogin();
 
 						// Assert
-						expect(mockNotificationService.error)
-							.toHaveBeenCalledWith(
-								"Please enter username and password.");
+						expect(component["loginForm"].touched)
+							.toBe(true);
 						expect(mockAuthService.login).not.toHaveBeenCalled();
 					});
 
-				it("should show error when password is empty",
+				it("should not call service when password is empty and form is invalid",
 					() =>
 					{
 						// Arrange
-						(component as unknown as { usernameOrEmail: string; }).usernameOrEmail = "testuser";
-						(component as unknown as { password: string; }).password = "";
+						component["loginForm"].patchValue(
+							{
+								usernameOrEmail: "testuser",
+								password: "",
+								rememberMe: false
+							});
 
 						// Act
 						(component as unknown as { onLocalLogin(): void; }).onLocalLogin();
 
 						// Assert
-						expect(mockNotificationService.error)
-							.toHaveBeenCalledWith(
-								"Please enter username and password.");
+						expect(component["loginForm"].touched)
+							.toBe(true);
 						expect(mockAuthService.login).not.toHaveBeenCalled();
 					});
 
@@ -170,9 +176,12 @@ describe("LoginComponent",
 					{
 						// Arrange
 						mockAuthService.login.mockReturnValue(of(mockAuthResponse));
-						(component as unknown as { usernameOrEmail: string; }).usernameOrEmail = "testuser";
-						(component as unknown as { password: string; }).password = "password123";
-						(component as unknown as { rememberMe: boolean; }).rememberMe = false;
+						component["loginForm"].patchValue(
+							{
+								usernameOrEmail: "testuser",
+								password: "password123",
+								rememberMe: false
+							});
 
 						// Act
 						(component as unknown as { onLocalLogin(): void; }).onLocalLogin();
@@ -193,8 +202,12 @@ describe("LoginComponent",
 					{
 						// Arrange
 						mockAuthService.login.mockReturnValue(of(mockAuthResponse));
-						(component as unknown as { usernameOrEmail: string; }).usernameOrEmail = "testuser";
-						(component as unknown as { password: string; }).password = "password123";
+						component["loginForm"].patchValue(
+							{
+								usernameOrEmail: "testuser",
+								password: "password123",
+								rememberMe: false
+							});
 
 						// Act
 						(component as unknown as { onLocalLogin(): void; }).onLocalLogin();
@@ -209,9 +222,12 @@ describe("LoginComponent",
 					{
 						// Arrange
 						mockAuthService.login.mockReturnValue(of(mockAuthResponse));
-						(component as unknown as { usernameOrEmail: string; }).usernameOrEmail = "testuser";
-						(component as unknown as { password: string; }).password = "password123";
-						(component as unknown as { rememberMe: boolean; }).rememberMe = true;
+						component["loginForm"].patchValue(
+							{
+								usernameOrEmail: "testuser",
+								password: "password123",
+								rememberMe: true
+							});
 
 						// Act
 						(component as unknown as { onLocalLogin(): void; }).onLocalLogin();
@@ -238,8 +254,12 @@ describe("LoginComponent",
 							};
 						mockAuthService.login.mockReturnValue(
 							of(responseWithPasswordChange));
-						(component as unknown as { usernameOrEmail: string; }).usernameOrEmail = "testuser";
-						(component as unknown as { password: string; }).password = "password123";
+						component["loginForm"].patchValue(
+							{
+								usernameOrEmail: "testuser",
+								password: "password123",
+								rememberMe: false
+							});
 
 						// Act
 						(component as unknown as { onLocalLogin(): void; }).onLocalLogin();
@@ -267,8 +287,12 @@ describe("LoginComponent",
 						mockAuthService.login.mockReturnValue(
 							throwError(
 								() => errorResponse));
-						(component as unknown as { usernameOrEmail: string; }).usernameOrEmail = "testuser";
-						(component as unknown as { password: string; }).password = "wrongpassword";
+						component["loginForm"].patchValue(
+							{
+								usernameOrEmail: "testuser",
+								password: "wrongpassword",
+								rememberMe: false
+							});
 
 						// Act
 						(component as unknown as { onLocalLogin(): void; }).onLocalLogin();
@@ -296,8 +320,12 @@ describe("LoginComponent",
 						mockAuthService.login.mockReturnValue(
 							throwError(
 								() => errorResponse));
-						(component as unknown as { usernameOrEmail: string; }).usernameOrEmail = "testuser";
-						(component as unknown as { password: string; }).password = "password";
+						component["loginForm"].patchValue(
+							{
+								usernameOrEmail: "testuser",
+								password: "password",
+								rememberMe: false
+							});
 
 						// Act
 						(component as unknown as { onLocalLogin(): void; }).onLocalLogin();
@@ -325,8 +353,12 @@ describe("LoginComponent",
 						mockAuthService.login.mockReturnValue(
 							throwError(
 								() => errorResponse));
-						(component as unknown as { usernameOrEmail: string; }).usernameOrEmail = "testuser";
-						(component as unknown as { password: string; }).password = "password";
+						component["loginForm"].patchValue(
+							{
+								usernameOrEmail: "testuser",
+								password: "password",
+								rememberMe: false
+							});
 
 						// Act
 						(component as unknown as { onLocalLogin(): void; }).onLocalLogin();
@@ -354,8 +386,12 @@ describe("LoginComponent",
 						mockAuthService.login.mockReturnValue(
 							throwError(
 								() => errorResponse));
-						(component as unknown as { usernameOrEmail: string; }).usernameOrEmail = "testuser";
-						(component as unknown as { password: string; }).password = "password";
+						component["loginForm"].patchValue(
+							{
+								usernameOrEmail: "testuser",
+								password: "password",
+								rememberMe: false
+							});
 
 						// Act
 						(component as unknown as { onLocalLogin(): void; }).onLocalLogin();
@@ -383,8 +419,12 @@ describe("LoginComponent",
 						mockAuthService.login.mockReturnValue(
 							throwError(
 								() => errorResponse));
-						(component as unknown as { usernameOrEmail: string; }).usernameOrEmail = "testuser";
-						(component as unknown as { password: string; }).password = "password";
+						component["loginForm"].patchValue(
+							{
+								usernameOrEmail: "testuser",
+								password: "password",
+								rememberMe: false
+							});
 
 						// Act
 						(component as unknown as { onLocalLogin(): void; }).onLocalLogin();
@@ -403,8 +443,12 @@ describe("LoginComponent",
 					{
 						// Arrange
 						mockAuthService.login.mockReturnValue(of(mockAuthResponse));
-						(component as unknown as { usernameOrEmail: string; }).usernameOrEmail = "testuser";
-						(component as unknown as { password: string; }).password = "password123";
+						component["loginForm"].patchValue(
+							{
+								usernameOrEmail: "testuser",
+								password: "password123",
+								rememberMe: false
+							});
 
 						// Act
 						(component as unknown as { onLocalLogin(): void; }).onLocalLogin();
@@ -428,8 +472,12 @@ describe("LoginComponent",
 						mockAuthService.login.mockReturnValue(
 							throwError(
 								() => errorResponse));
-						(component as unknown as { usernameOrEmail: string; }).usernameOrEmail = "testuser";
-						(component as unknown as { password: string; }).password = "wrongpassword";
+						component["loginForm"].patchValue(
+							{
+								usernameOrEmail: "testuser",
+								password: "wrongpassword",
+								rememberMe: false
+							});
 
 						// Act
 						(component as unknown as { onLocalLogin(): void; }).onLocalLogin();
@@ -495,7 +543,7 @@ describe("LoginComponent",
 						// Assert
 						const usernameInput: HTMLInputElement | null =
 							fixture.nativeElement.querySelector(
-								"input[name=\"usernameOrEmail\"]");
+								"input[formcontrolname=\"usernameOrEmail\"]");
 						expect(usernameInput)
 							.toBeTruthy();
 					});
@@ -510,7 +558,7 @@ describe("LoginComponent",
 						// Assert
 						const passwordInput: HTMLInputElement | null =
 							fixture.nativeElement.querySelector(
-								"input[name=\"password\"]");
+								"input[formcontrolname=\"password\"]");
 						expect(passwordInput)
 							.toBeTruthy();
 					});

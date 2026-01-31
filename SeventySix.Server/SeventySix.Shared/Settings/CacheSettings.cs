@@ -17,7 +17,7 @@ public record CacheSettings
 	/// <summary>
 	/// Configuration section name in appsettings.json.
 	/// </summary>
-	public const string SECTION_NAME = "Cache";
+	public const string SectionName = "Cache";
 
 	/// <summary>
 	/// Valkey connection settings.

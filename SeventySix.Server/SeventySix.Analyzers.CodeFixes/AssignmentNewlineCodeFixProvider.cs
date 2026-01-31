@@ -2,7 +2,6 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Composition;
 using System.Threading;
@@ -13,6 +12,8 @@ using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
+using SeventySix.Analyzers;
+using SeventySix.Analyzers.CodeFixes.Helpers;
 
 namespace SeventySix.Analyzers.CodeFixes;
 
@@ -54,7 +55,7 @@ public sealed class AssignmentNewlineCodeFixProvider : CodeFixProvider
 
 		context.RegisterCodeFix(
 			CodeAction.Create(
-				title: "Add newline after '='",
+				title: CodeFixTitles.AddNewlineAfterAssignment,
 				createChangedDocument: ct => AddNewlineAfterEqualsAsync(
 					context.Document,
 					equalsToken,
@@ -92,8 +93,8 @@ public sealed class AssignmentNewlineCodeFixProvider : CodeFixProvider
 
 		// Get and clean next token's leading trivia
 		SyntaxToken nextToken = equalsToken.GetNextToken();
-		SyntaxTriviaList cleanedLeading = RemoveWhitespaceTrivia(
-			nextToken.LeadingTrivia);
+		SyntaxTriviaList cleanedLeading =
+			TriviaHelpers.RemoveWhitespaceAndNewlines(nextToken.LeadingTrivia);
 		SyntaxToken newNextToken = nextToken.WithLeadingTrivia(cleanedLeading);
 
 		// Replace both tokens efficiently
@@ -153,28 +154,5 @@ public sealed class AssignmentNewlineCodeFixProvider : CodeFixProvider
 		}
 
 		return "\t\t"; // Default fallback
-	}
-
-	private static SyntaxTriviaList RemoveWhitespaceTrivia(
-		SyntaxTriviaList trivia)
-	{
-		List<SyntaxTrivia>? kept = null;
-
-		foreach (SyntaxTrivia t in trivia)
-		{
-			int kind = t.RawKind;
-
-			if (kind is not ((int)SyntaxKind.WhitespaceTrivia)
-				and not ((int)SyntaxKind.EndOfLineTrivia))
-			{
-				kept ??= [];
-
-				kept.Add(t);
-			}
-		}
-
-		return kept is null
-			? SyntaxTriviaList.Empty
-			: SyntaxFactory.TriviaList(kept);
 	}
 }

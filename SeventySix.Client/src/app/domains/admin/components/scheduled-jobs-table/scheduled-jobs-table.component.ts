@@ -105,7 +105,7 @@ export class ScheduledJobsTableComponent
 				const queryError: Error | null =
 					this.jobsQuery.error();
 				return queryError
-					? queryError.message || "Failed to load scheduled job data"
+					? queryError.message ?? "Failed to load scheduled job data"
 					: null;
 			});
 

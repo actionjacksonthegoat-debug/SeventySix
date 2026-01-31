@@ -4,7 +4,6 @@ import {
 	getLogLevelClassName,
 	getLogLevelIconName,
 	getLogLevelName,
-	getRelativeTime,
 	isRootSpanId,
 	LogDto
 } from "@admin/logs/models";
@@ -12,7 +11,6 @@ import { Clipboard } from "@angular/cdk/clipboard";
 import { provideZonelessChangeDetection } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material/dialog";
-import { DateService } from "@shared/services";
 import { flushMicrotasks } from "@shared/testing";
 import { vi } from "vitest";
 import { LogDetailDialogComponent } from "./log-detail-dialog.component";
@@ -35,7 +33,6 @@ describe("LogDetailDialogComponent",
 
 		let mockDialogRef: MockDialogRef;
 		let mockClipboard: MockClipboard;
-		let dateService: DateService;
 
 		const mockLog: LogDto =
 			{
@@ -68,8 +65,6 @@ describe("LogDetailDialogComponent",
 					{ close: vi.fn() };
 				mockClipboard =
 					{ copy: vi.fn() };
-				dateService =
-					new DateService();
 
 				await TestBed
 					.configureTestingModule(
@@ -144,34 +139,6 @@ describe("LogDetailDialogComponent",
 					.toBe("level-warning");
 				expect(getLogLevelClassName("Fatal"))
 					.toBe("level-fatal");
-			});
-
-		it("should format relative time correctly via utility",
-			() =>
-			{
-				const now: Date =
-					dateService.nowDate();
-				const twoMinutesAgo: Date =
-					dateService.fromMillis(now.getTime() - 2 * 60 * 1000);
-				const twoHoursAgo: Date =
-					dateService.addHours(now, -2);
-				const twoDaysAgo: Date =
-					dateService.addDays(now, -2);
-				expect(getRelativeTime(twoMinutesAgo, dateService))
-					.toBe("2 minutes ago");
-				expect(getRelativeTime(twoHoursAgo, dateService))
-					.toBe("2 hours ago");
-				expect(getRelativeTime(twoDaysAgo, dateService))
-					.toBe("2 days ago");
-			});
-
-		it("should format relative time as 'just now' for recent logs via utility",
-			() =>
-			{
-				const now: Date =
-					dateService.nowDate();
-				expect(getRelativeTime(now, dateService))
-					.toBe("just now");
 			});
 
 		it("should count stack frames via utility",
@@ -462,78 +429,8 @@ describe("LogDetailDialogComponent",
 					});
 			});
 
-		describe("getRelativeTime utility",
-			() =>
-			{
-				it("should return days ago when difference is in days",
-					() =>
-					{
-						const now: Date =
-							dateService.nowDate();
-						const threeDaysAgo: Date =
-							dateService.fromMillis(
-								now.getTime() - 3 * 24 * 60 * 60 * 1000);
-						expect(getRelativeTime(threeDaysAgo, dateService))
-							.toBe("3 days ago");
-					});
-
-				it("should return singular day when difference is 1 day",
-					() =>
-					{
-						const now: Date =
-							dateService.nowDate();
-						const oneDayAgo: Date =
-							dateService.fromMillis(
-								now.getTime() - 1 * 24 * 60 * 60 * 1000);
-						expect(getRelativeTime(oneDayAgo, dateService))
-							.toBe("1 day ago");
-					});
-
-				it("should return hours ago when difference is in hours",
-					() =>
-					{
-						const now: Date =
-							dateService.nowDate();
-						const threeHoursAgo: Date =
-							dateService.addHours(now, -3);
-						expect(getRelativeTime(threeHoursAgo, dateService))
-							.toBe("3 hours ago");
-					});
-
-				it("should return singular hour when difference is 1 hour",
-					() =>
-					{
-						const now: Date =
-							dateService.nowDate();
-						const oneHourAgo: Date =
-							dateService.addHours(now, -1);
-						expect(getRelativeTime(oneHourAgo, dateService))
-							.toBe("1 hour ago");
-					});
-
-				it("should return minutes ago when difference is in minutes",
-					() =>
-					{
-						const now: Date =
-							dateService.nowDate();
-						const fiveMinutesAgo: Date =
-							dateService.fromMillis(
-								now.getTime() - 5 * 60 * 1000);
-						expect(getRelativeTime(fiveMinutesAgo, dateService))
-							.toBe("5 minutes ago");
-					});
-
-				it("should return singular minute when difference is 1 minute",
-					() =>
-					{
-						const now: Date =
-							dateService.nowDate();
-						const oneMinuteAgo: Date =
-							dateService.fromMillis(now.getTime() - 1 * 60 * 1000);
-						expect(getRelativeTime(oneMinuteAgo, dateService))
-							.toBe("1 minute ago");
-					});
-			});
+		// NOTE: getRelativeTime tests removed - functionality now delegated to DateService.formatRelative()
+		// DateService.formatRelative() is already tested in date.service.spec.ts
 
 		describe("countStackFrames utility",
 			() =>

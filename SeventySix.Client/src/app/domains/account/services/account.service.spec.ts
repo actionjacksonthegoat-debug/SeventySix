@@ -54,7 +54,7 @@ describe("AccountService",
 					.toBeTruthy();
 			});
 
-		it("should invalidate account queries on updateProfile success",
+		it("should invalidate user caches on updateProfile success",
 			async () =>
 			{
 				mockApiService.put.mockReturnValue(of({}));
@@ -80,10 +80,16 @@ describe("AccountService",
 								email: "test@example.com",
 								fullName: "Test User"
 							}));
+				// Cross-domain: invalidates users cache for admin panel and account profile
 				expect(invalidateSpy)
 					.toHaveBeenCalledWith(
 						{
-							queryKey: QueryKeys.account.all
+							queryKey: QueryKeys.users.all
+						});
+				expect(invalidateSpy)
+					.toHaveBeenCalledWith(
+						{
+							queryKey: QueryKeys.account.profile
 						});
 			});
 

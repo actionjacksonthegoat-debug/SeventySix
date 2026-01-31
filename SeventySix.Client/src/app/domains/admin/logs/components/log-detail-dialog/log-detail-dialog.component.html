@@ -80,14 +80,16 @@
 			<section class="detail-section error-section">
 				<div class="section-header">
 					<h3 class="section-title">
-						<mat-icon class="section-icon error-icon">error</mat-icon>
+						<mat-icon class="section-icon error-icon" aria-hidden="true">error</mat-icon>
 						Exception Details
 					</h3>
 					<button
 						mat-icon-button
 						(click)="toggleException()"
-						[matTooltip]='exceptionCollapsed() ? "Expand" : "Collapse"'>
-						<mat-icon>{{ exceptionCollapsed() ? "expand_more" : "expand_less" }}</mat-icon>
+						[matTooltip]='exceptionCollapsed() ? "Expand" : "Collapse"'
+						[attr.aria-label]='exceptionCollapsed() ? "Expand exception details" : "Collapse exception details"'
+						[attr.aria-expanded]="!exceptionCollapsed()">
+						<mat-icon aria-hidden="true">{{ exceptionCollapsed() ? "expand_more" : "expand_less" }}</mat-icon>
 					</button>
 				</div>
 				@if (!exceptionCollapsed()) {
@@ -129,14 +131,16 @@
 			<section class="detail-section stack-section">
 				<div class="section-header">
 					<h3 class="section-title">
-						<mat-icon class="section-icon stack-icon">code</mat-icon>
+						<mat-icon class="section-icon stack-icon" aria-hidden="true">code</mat-icon>
 						Stack Trace
 					</h3>
 					<button
 						mat-icon-button
 						(click)="toggleStackTrace()"
-						[matTooltip]='stackTraceCollapsed() ? "Expand" : "Collapse"'>
-						<mat-icon>{{
+						[matTooltip]='stackTraceCollapsed() ? "Expand" : "Collapse"'
+						[attr.aria-label]='stackTraceCollapsed() ? "Expand stack trace" : "Collapse stack trace"'
+						[attr.aria-expanded]="!stackTraceCollapsed()">
+						<mat-icon aria-hidden="true">{{
 								stackTraceCollapsed()
 								? "expand_more"
 								: "expand_less"
@@ -235,8 +239,10 @@
 					<button
 						mat-icon-button
 						(click)="toggleProperties()"
+						[attr.aria-expanded]="!propertiesCollapsed()"
+						[attr.aria-label]="propertiesCollapsed() ? 'Expand properties' : 'Collapse properties'"
 						[matTooltip]='propertiesCollapsed() ? "Expand" : "Collapse"'>
-						<mat-icon>{{
+						<mat-icon aria-hidden="true">{{
 								propertiesCollapsed()
 								? "expand_more"
 								: "expand_less"

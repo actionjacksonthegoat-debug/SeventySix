@@ -87,10 +87,10 @@ export class AdminDashboardPage
 	 */
 	openJaeger(): void
 	{
-		const baseUrl: string =
-			environment.observability.jaegerUrl || "http://localhost:16686";
+		const jaegerUrl: string =
+			environment.observability.jaegerUrl;
 		// Open to search view with SeventySix.Api service pre-selected
-		window.open(`${baseUrl}/search?service=SeventySix.Api`, "_blank");
+		window.open(`${jaegerUrl}/search?service=SeventySix.Api`, "_blank");
 	}
 
 	/**
@@ -102,10 +102,10 @@ export class AdminDashboardPage
 	 */
 	openPrometheus(): void
 	{
-		const baseUrl: string =
-			environment.observability.prometheusUrl || "http://localhost:9090";
+		const prometheusUrl: string =
+			environment.observability.prometheusUrl;
 		// Open to targets view to see scrape endpoint health
-		window.open(`${baseUrl}/targets`, "_blank");
+		window.open(`${prometheusUrl}/targets`, "_blank");
 	}
 
 	/**
@@ -117,10 +117,10 @@ export class AdminDashboardPage
 	 */
 	openGrafana(): void
 	{
-		const baseUrl: string =
-			environment.observability.grafanaUrl || "http://localhost:3000";
+		const grafanaUrl: string =
+			environment.observability.grafanaUrl;
 		// Open to dashboards list view
-		window.open(`${baseUrl}/dashboards`, "_blank");
+		window.open(`${grafanaUrl}/dashboards`, "_blank");
 	}
 
 	/**

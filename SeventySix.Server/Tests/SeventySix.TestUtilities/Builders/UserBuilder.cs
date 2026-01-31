@@ -50,6 +50,7 @@ public class UserBuilder
 	private string? Preferences = null;
 	private DateTime? LastLoginAt = null;
 	private string? LastLoginIp = null;
+	private bool RequiresPasswordChange = false;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="UserBuilder"/> class.
@@ -259,6 +260,22 @@ public class UserBuilder
 	}
 
 	/// <summary>
+	/// Sets the requires password change flag.
+	/// </summary>
+	/// <param name="requiresPasswordChange">
+	/// Whether the user must change their password.
+	/// </param>
+	/// <returns>
+	/// The builder instance for method chaining.
+	/// </returns>
+	public UserBuilder WithRequiresPasswordChange(bool requiresPasswordChange)
+	{
+		RequiresPasswordChange =
+			requiresPasswordChange;
+		return this;
+	}
+
+	/// <summary>
 	/// Builds the ApplicationUser entity with the configured values.
 	/// </summary>
 	/// <returns>
@@ -286,6 +303,7 @@ public class UserBuilder
 				Preferences = Preferences,
 				LastLoginAt = LastLoginAt,
 				LastLoginIp = LastLoginIp,
+				RequiresPasswordChange = RequiresPasswordChange,
 			};
 
 		if (UserId.HasValue)

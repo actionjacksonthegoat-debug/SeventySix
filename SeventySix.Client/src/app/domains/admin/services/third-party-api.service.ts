@@ -66,31 +66,6 @@ export class ThirdPartyApiService
 	}
 
 	/**
-	 * Retrieves requests filtered by API name.
-	 * @param {string} apiName
-	 * The name of the third-party API to filter by.
-	 * @returns {CreateQueryResult<ThirdPartyApiRequestDto[], Error>}
-	 * CreateQueryResult with filtered list of requests.
-	 */
-	getByApiName(
-		apiName: string): CreateQueryResult<ThirdPartyApiRequestDto[], Error>
-	{
-		return injectQuery(
-			() => ({
-				queryKey: QueryKeys.thirdPartyApi.byName(apiName),
-				queryFn: () =>
-				{
-					const encodedName: string =
-						encodeURIComponent(apiName);
-					return lastValueFrom(
-						this.apiService.get<ThirdPartyApiRequestDto[]>(
-							`${this.endpoint}/${encodedName}`));
-				},
-				...this.queryConfig
-			}));
-	}
-
-	/**
 	 * Retrieves aggregated statistics for third-party API usage.
 	 * @returns {CreateQueryResult<ThirdPartyApiStatisticsDto, Error>}
 	 * CreateQueryResult with aggregated statistics.

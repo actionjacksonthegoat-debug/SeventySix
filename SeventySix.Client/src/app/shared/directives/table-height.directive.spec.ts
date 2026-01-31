@@ -147,7 +147,7 @@ describe("TableHeightDirective",
 				function getMinHeightStyle(element: HTMLElement): string
 				{
 					const directStyle: string =
-						element.style.minHeight || "";
+						element.style.minHeight ?? "";
 					if (directStyle)
 					{
 						return directStyle;
@@ -164,7 +164,7 @@ describe("TableHeightDirective",
 						}
 					}
 					const height: string =
-						element.style.height || "";
+						element.style.height ?? "";
 					if (height)
 					{
 						return height;

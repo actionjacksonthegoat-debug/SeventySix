@@ -17,7 +17,7 @@ namespace SeventySix.Api.Infrastructure;
 /// Scoped service that tracks API calls per day or month based on configuration.
 /// Uses PostgreSQL for persistence across application restarts and horizontal scaling.
 /// </remarks>
-public class RateLimitingService(
+public sealed class RateLimitingService(
 	ILogger<RateLimitingService> logger,
 	IThirdPartyApiRequestRepository repository,
 	ITransactionManager transactionManager,
@@ -343,8 +343,8 @@ public class RateLimitingService(
 	/// </returns>
 	private TimeSpan GetTimeUntilReset(LimitInterval interval)
 	{
-		DateTime utcNow =
-			timeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset utcNow =
+			timeProvider.GetUtcNow();
 
 		return interval switch
 		{
@@ -362,10 +362,18 @@ public class RateLimitingService(
 	/// <returns>
 	/// Time remaining until midnight.
 	/// </returns>
-	private static TimeSpan GetTimeUntilDailyReset(DateTime utcNow)
+	private static TimeSpan GetTimeUntilDailyReset(DateTimeOffset utcNow)
 	{
-		DateTime nextMidnight =
-			utcNow.Date.AddDays(1);
+		DateTimeOffset nextMidnight =
+			new DateTimeOffset(
+				utcNow.Year,
+				utcNow.Month,
+				utcNow.Day,
+				0,
+				0,
+				0,
+				TimeSpan.Zero)
+				.AddDays(1);
 
 		return nextMidnight - utcNow;
 	}
@@ -379,21 +387,18 @@ public class RateLimitingService(
 	/// <returns>
 	/// Time remaining until 1st of next month.
 	/// </returns>
-	private static TimeSpan GetTimeUntilMonthlyReset(DateTime utcNow)
+	private static TimeSpan GetTimeUntilMonthlyReset(DateTimeOffset utcNow)
 	{
-		// Constructing a specific date (not getting current time)
-#pragma warning disable SS004 // Avoid direct DateTime usage
-		DateTime firstOfNextMonth =
-			new DateTime(
+		DateTimeOffset firstOfNextMonth =
+			new DateTimeOffset(
 				utcNow.Year,
 				utcNow.Month,
 				1,
 				0,
 				0,
 				0,
-				DateTimeKind.Utc)
+				TimeSpan.Zero)
 				.AddMonths(1);
-#pragma warning restore SS004
 
 		return firstOfNextMonth - utcNow;
 	}

@@ -7,6 +7,8 @@ using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Time.Testing;
 using SeventySix.ElectronicNotifications;
 using SeventySix.ElectronicNotifications.Emails;
+using SeventySix.Shared.Contracts.Emails;
+using SeventySix.TestUtilities.Constants;
 using Shouldly;
 
 namespace SeventySix.Domains.Tests.ElectronicNotifications.Emails.Commands.EnqueueEmail;
@@ -28,9 +30,7 @@ public class EnqueueEmailCommandHandlerTests
 	public EnqueueEmailCommandHandlerTests()
 	{
 		TimeProvider =
-			new FakeTimeProvider();
-		TimeProvider.SetUtcNow(
-			new DateTimeOffset(2026, 1, 3, 12, 0, 0, TimeSpan.Zero));
+			TestDates.CreateFutureTimeProvider();
 
 		Settings =
 			Options.Create(
@@ -71,7 +71,7 @@ public class EnqueueEmailCommandHandlerTests
 
 		EnqueueEmailCommand command =
 			new(
-				EmailType.Welcome,
+				EmailTypeConstants.Welcome,
 				"test@example.com",
 				1,
 				templateData);
@@ -91,7 +91,7 @@ public class EnqueueEmailCommandHandlerTests
 		EmailQueueEntry? entry =
 			await dbContext.EmailQueue.FindAsync(entryId);
 		entry.ShouldNotBeNull();
-		entry.EmailType.ShouldBe(EmailType.Welcome);
+		entry.EmailType.ShouldBe(EmailTypeConstants.Welcome);
 		entry.RecipientEmail.ShouldBe("test@example.com");
 		entry.RecipientUserId.ShouldBe(1);
 		entry.Status.ShouldBe(EmailQueueStatus.Pending);
@@ -120,7 +120,7 @@ public class EnqueueEmailCommandHandlerTests
 
 		EnqueueEmailCommand command =
 			new(
-				EmailType.Welcome,
+				EmailTypeConstants.Welcome,
 				"test@example.com",
 				1,
 				templateData,
@@ -167,14 +167,14 @@ public class EnqueueEmailCommandHandlerTests
 
 		EnqueueEmailCommand welcomeCommand =
 			new(
-				EmailType.Welcome,
+				EmailTypeConstants.Welcome,
 				"test@example.com",
 				1,
 				templateData);
 
 		EnqueueEmailCommand resetCommand =
 			new(
-				EmailType.PasswordReset,
+				EmailTypeConstants.PasswordReset,
 				"test@example.com",
 				1,
 				templateData);
@@ -216,7 +216,7 @@ public class EnqueueEmailCommandHandlerTests
 
 		EnqueueEmailCommand command =
 			new(
-				EmailType.Verification,
+				EmailTypeConstants.Verification,
 				"test@example.com",
 				1,
 				[]);

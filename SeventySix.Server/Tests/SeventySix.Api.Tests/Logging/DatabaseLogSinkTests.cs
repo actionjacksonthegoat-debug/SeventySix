@@ -11,6 +11,7 @@ using SeventySix.Api.Tests.Fixtures;
 using SeventySix.Logging;
 using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;
+using Shouldly;
 
 namespace SeventySix.Api.Tests.Logging;
 
@@ -144,12 +145,12 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 		(IEnumerable<Log> logs, int _) =
 			await LogRepository!.GetPagedAsync(
 			request);
-		Assert.Single(logs);
+		logs.ShouldHaveSingleItem();
 		Log log = logs.First();
-		Assert.Equal("Warning", log.LogLevel);
-		Assert.Equal("Test warning message", log.Message);
-		Assert.Equal("Test", log.Environment);
-		Assert.Equal("TestMachine", log.MachineName);
+		log.LogLevel.ShouldBe("Warning");
+		log.Message.ShouldBe("Test warning message");
+		log.Environment.ShouldBe("Test");
+		log.MachineName.ShouldBe("TestMachine");
 	}
 
 	/// <summary>
@@ -185,10 +186,10 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 		(IEnumerable<Log> logs, int _) =
 			await LogRepository!.GetPagedAsync(
 			request);
-		Assert.Single(logs);
+		logs.ShouldHaveSingleItem();
 		Log log = logs.First();
-		Assert.Equal("Error", log.LogLevel);
-		Assert.Equal("Test error message", log.Message);
+		log.LogLevel.ShouldBe("Error");
+		log.Message.ShouldBe("Test error message");
 	}
 
 	/// <summary>
@@ -224,7 +225,7 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 		(IEnumerable<Log> logs, int _) =
 			await LogRepository!.GetPagedAsync(
 			request);
-		Assert.Empty(logs); // Information level should not be persisted
+		logs.ShouldBeEmpty(); // Information level should not be persisted
 	}
 
 	/// <summary>
@@ -270,12 +271,10 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 		(IEnumerable<Log> logs, int _) =
 			await LogRepository!.GetPagedAsync(
 			request);
-		Assert.Single(logs);
+		logs.ShouldHaveSingleItem();
 		Log log = logs.First();
-		Assert.Equal(
-			"Test exception message",
-			log.ExceptionMessage);
-		Assert.NotNull(log.StackTrace); // Should have stack trace
+		log.ExceptionMessage.ShouldBe("Test exception message");
+		log.StackTrace.ShouldNotBeNull(); // Should have stack trace
 	}
 
 	/// <summary>
@@ -332,12 +331,10 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 		(IEnumerable<Log> logs, int _) =
 			await LogRepository!.GetPagedAsync(
 			request);
-		Assert.Single(logs);
+		logs.ShouldHaveSingleItem();
 		Log log = logs.First();
-		Assert.Equal("Outer exception", log.ExceptionMessage);
-		Assert.Equal(
-			"Inner exception",
-			log.BaseExceptionMessage);
+		log.ExceptionMessage.ShouldBe("Outer exception");
+		log.BaseExceptionMessage.ShouldBe("Inner exception");
 	}
 
 	/// <summary>

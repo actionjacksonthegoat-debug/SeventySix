@@ -11,6 +11,7 @@ using SeventySix.Identity.Settings;
 using SeventySix.Logging;
 using SeventySix.Shared.BackgroundJobs;
 using SeventySix.Shared.Constants;
+using SeventySix.TestUtilities.Constants;
 using Shouldly;
 
 namespace SeventySix.Api.Tests.Infrastructure.Services;
@@ -49,15 +50,7 @@ public class ScheduledJobServiceTests
 				new EmailQueueSettings { ProcessingIntervalSeconds = 30 });
 
 		TimeProviderFake =
-			new FakeTimeProvider(
-				new DateTimeOffset(
-					2024,
-					1,
-					15,
-					12,
-					0,
-					0,
-					TimeSpan.Zero));
+			TestDates.CreateHistoricalTimeProvider();
 	}
 
 	private ScheduledJobService CreateSut()

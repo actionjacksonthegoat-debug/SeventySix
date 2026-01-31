@@ -19,7 +19,8 @@ export const ACCOUNT_ROUTES: Routes =
 					loadComponent: () =>
 						import("./pages/profile/profile").then(
 							(module) => module.ProfilePage),
-					title: "My Profile - SeventySix"
+					title: "My Profile - SeventySix",
+					data: { breadcrumb: "Profile" }
 				},
 				{
 					path: "permissions",
@@ -27,7 +28,8 @@ export const ACCOUNT_ROUTES: Routes =
 						import("./pages/request-permissions/request-permissions").then(
 							(module) =>
 								module.RequestPermissionsPage),
-					title: "Request Permissions - SeventySix"
+					title: "Request Permissions - SeventySix",
+					data: { breadcrumb: "Request Permissions" }
 				}
 			]
 		}

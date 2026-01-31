@@ -15,6 +15,7 @@ using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;
 using SeventySix.TestUtilities.TestHelpers;
+using Shouldly;
 
 namespace SeventySix.Api.Tests.Controllers;
 
@@ -105,14 +106,14 @@ public class LogsControllerTests(LoggingApiPostgreSqlFixture fixture)
 			ApiEndpoints.Logs.Base);
 
 		// Assert
-		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+		response.StatusCode.ShouldBe(HttpStatusCode.OK);
 
 		PagedResult<LogDto>? pagedResponse =
 			await response.Content.ReadFromJsonAsync<PagedResult<LogDto>>();
-		Assert.NotNull(pagedResponse);
-		Assert.NotNull(pagedResponse.Items);
-		Assert.True(
-			pagedResponse.Items.Count >= 2,
+		pagedResponse.ShouldNotBeNull();
+		pagedResponse.Items.ShouldNotBeNull();
+		pagedResponse.Items.Count.ShouldBeGreaterThanOrEqualTo(
+			2,
 			"Should return at least the 2 seeded logs");
 	}
 
@@ -128,9 +129,7 @@ public class LogsControllerTests(LoggingApiPostgreSqlFixture fixture)
 			$"{ApiEndpoints.Logs.Base}?pageSize=200");
 
 		// Assert
-		Assert.Equal(
-			HttpStatusCode.BadRequest,
-			response.StatusCode);
+		response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
 	}
 
 	/// <summary>
@@ -150,12 +149,12 @@ public class LogsControllerTests(LoggingApiPostgreSqlFixture fixture)
 			ApiEndpoints.Logs.CleanupWithDate(cutoffDate));
 
 		// Assert
-		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+		response.StatusCode.ShouldBe(HttpStatusCode.OK);
 
 		int deletedCount =
 			await response.Content.ReadFromJsonAsync<int>();
-		Assert.True(
-			deletedCount >= 1,
+		deletedCount.ShouldBeGreaterThanOrEqualTo(
+			1,
 			"Should delete at least the 31-day-old log");
 	}
 
@@ -171,9 +170,7 @@ public class LogsControllerTests(LoggingApiPostgreSqlFixture fixture)
 			ApiEndpoints.Logs.Cleanup);
 
 		// Assert
-		Assert.Equal(
-			HttpStatusCode.BadRequest,
-			response.StatusCode);
+		response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
 	}
 
 	/// <summary>
@@ -198,9 +195,7 @@ public class LogsControllerTests(LoggingApiPostgreSqlFixture fixture)
 			request);
 
 		// Assert
-		Assert.Equal(
-			HttpStatusCode.NoContent,
-			response.StatusCode);
+		response.StatusCode.ShouldBe(HttpStatusCode.NoContent);
 	}
 
 	/// <summary>
@@ -231,9 +226,7 @@ public class LogsControllerTests(LoggingApiPostgreSqlFixture fixture)
 			requests);
 
 		// Assert
-		Assert.Equal(
-			HttpStatusCode.NoContent,
-			response.StatusCode);
+		response.StatusCode.ShouldBe(HttpStatusCode.NoContent);
 	}
 
 	/// <summary>
@@ -272,9 +265,7 @@ public class LogsControllerTests(LoggingApiPostgreSqlFixture fixture)
 			$"/api/v1/logs/{logId}");
 
 		// Assert
-		Assert.Equal(
-			HttpStatusCode.NoContent,
-			response.StatusCode);
+		response.StatusCode.ShouldBe(HttpStatusCode.NoContent);
 	}
 
 	/// <summary>
@@ -289,9 +280,7 @@ public class LogsControllerTests(LoggingApiPostgreSqlFixture fixture)
 			"/api/v1/logs/999999999");
 
 		// Assert
-		Assert.Equal(
-			HttpStatusCode.NotFound,
-			response.StatusCode);
+		response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
 	}
 
 	/// <summary>
@@ -347,11 +336,11 @@ public class LogsControllerTests(LoggingApiPostgreSqlFixture fixture)
 			await Client!.SendAsync(deleteRequest);
 
 		// Assert
-		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+		response.StatusCode.ShouldBe(HttpStatusCode.OK);
 
 		int deletedCount =
 			await response.Content.ReadFromJsonAsync<int>();
-		Assert.Equal(2, deletedCount);
+		deletedCount.ShouldBe(2);
 	}
 
 	/// <summary>
@@ -376,9 +365,7 @@ public class LogsControllerTests(LoggingApiPostgreSqlFixture fixture)
 			await Client!.SendAsync(deleteRequest);
 
 		// Assert
-		Assert.Equal(
-			HttpStatusCode.BadRequest,
-			response.StatusCode);
+		response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
 	}
 
 	private async Task AuthenticateAsAdminAsync()

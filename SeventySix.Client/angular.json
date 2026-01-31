@@ -98,6 +98,11 @@
 				},
 				"serve": {
 					"builder": "@angular/build:dev-server",
+					"options": {
+						"ssl": true,
+						"sslCert": "ssl/dev-certificate.crt",
+						"sslKey": "ssl/dev-certificate.key"
+					},
 					"configurations": {
 						"production": {
 							"buildTarget": "SeventySix.Client:build:production"
@@ -109,7 +114,8 @@
 							"buildTarget": "SeventySix.Client:build:development"
 						},
 						"e2e": {
-							"buildTarget": "SeventySix.Client:build:e2e"
+							"buildTarget": "SeventySix.Client:build:e2e",
+							"ssl": false
 						}
 					},
 					"defaultConfiguration": "development"

@@ -63,4 +63,33 @@ public interface IRecurringJobService
 		TimeSpan interval,
 		CancellationToken cancellationToken = default)
 		where TJob : class, new();
+
+	/// <summary>
+	/// Ensures a job is scheduled to run at a preferred UTC time, then repeats at interval.
+	/// Ideal for daily/weekly maintenance jobs that should run during off-peak hours.
+	/// </summary>
+	/// <typeparam name="TJob">
+	/// The job message type.
+	/// </typeparam>
+	/// <param name="jobName">
+	/// Unique identifier for the job.
+	/// </param>
+	/// <param name="preferredTimeUtc">
+	/// The preferred UTC time (hour and minute) for the job to run.
+	/// </param>
+	/// <param name="interval">
+	/// Time between subsequent runs.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// A task representing the async operation.
+	/// </returns>
+	public Task EnsureScheduledAtPreferredTimeAsync<TJob>(
+		string jobName,
+		TimeOnly preferredTimeUtc,
+		TimeSpan interval,
+		CancellationToken cancellationToken = default)
+		where TJob : class, new();
 }

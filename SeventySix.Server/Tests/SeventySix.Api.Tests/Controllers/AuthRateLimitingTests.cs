@@ -8,6 +8,7 @@ using SeventySix.Api.Tests.Fixtures;
 using SeventySix.Identity;
 using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;
+using Shouldly;
 
 namespace SeventySix.Api.Tests.Controllers;
 
@@ -91,12 +92,10 @@ public class AuthRateLimitingTests(IdentityAuthApiPostgreSqlFixture fixture)
 		}
 
 		// Assert - First 5 should be 401 (invalid creds), 6th should be 429
-		Assert.Equal(
-			5,
-			responses.Count(r => r.StatusCode == HttpStatusCode.Unauthorized));
-		Assert.Single(
-			responses,
-			r => r.StatusCode == HttpStatusCode.TooManyRequests);
+		responses.Count(response => response.StatusCode == HttpStatusCode.Unauthorized)
+			.ShouldBe(5);
+		responses.ShouldContain(
+			response => response.StatusCode == HttpStatusCode.TooManyRequests);
 	}
 
 	/// <summary>
@@ -128,7 +127,7 @@ public class AuthRateLimitingTests(IdentityAuthApiPostgreSqlFixture fixture)
 		}
 
 		// Assert
-		Assert.NotNull(rateLimitedResponse);
-		Assert.True(rateLimitedResponse.Headers.Contains("Retry-After"));
+		rateLimitedResponse.ShouldNotBeNull();
+		rateLimitedResponse.Headers.Contains("Retry-After").ShouldBeTrue();
 	}
 }

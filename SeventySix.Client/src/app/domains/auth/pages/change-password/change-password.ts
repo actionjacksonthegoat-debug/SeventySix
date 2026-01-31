@@ -1,18 +1,30 @@
 /**
  * Change password page.
  * Handles both required (first login) and voluntary password changes.
+ *
+ * **Design Note:** Uses HttpClient directly (not ApiService) because password
+ * change requires `withCredentials: true` for secure cookie handling.
+ *
+ * @see {@link ApiService} for documentation on when to use HttpClient directly
  */
 
 import { HttpClient, HttpErrorResponse } from "@angular/common/http";
 import {
 	ChangeDetectionStrategy,
 	Component,
+	computed,
 	inject,
 	OnInit,
+	Signal,
 	signal,
 	WritableSignal
 } from "@angular/core";
-import { FormsModule } from "@angular/forms";
+import {
+	FormBuilder,
+	FormGroup,
+	ReactiveFormsModule,
+	Validators
+} from "@angular/forms";
 import { MatButtonModule } from "@angular/material/button";
 import { ActivatedRoute, Router } from "@angular/router";
 import { ValidationResult } from "@auth/models";
@@ -28,6 +40,7 @@ import { PASSWORD_VALIDATION } from "@shared/constants/validation.constants";
 import { AuthErrorResult } from "@shared/models";
 import { AuthService } from "@shared/services/auth.service";
 import { NotificationService } from "@shared/services/notification.service";
+import { getValidationError } from "@shared/utilities";
 
 interface ChangePasswordRequest
 {
@@ -39,7 +52,7 @@ interface ChangePasswordRequest
 	{
 		selector: "app-change-password",
 		standalone: true,
-		imports: [FormsModule, MatButtonModule],
+		imports: [ReactiveFormsModule, MatButtonModule],
 		changeDetection: ChangeDetectionStrategy.OnPush,
 		templateUrl: "./change-password.html",
 		styleUrl: "./change-password.scss"
@@ -86,6 +99,13 @@ export class ChangePasswordComponent implements OnInit
 		inject(NotificationService);
 
 	/**
+	 * Form builder for creating reactive forms.
+	 * @type {FormBuilder}
+	 */
+	private readonly formBuilder: FormBuilder =
+		inject(FormBuilder);
+
+	/**
 	 * Minimum password length enforced by validation rules.
 	 * @type {number}
 	 */
@@ -93,22 +113,64 @@ export class ChangePasswordComponent implements OnInit
 		PASSWORD_VALIDATION.MIN_LENGTH;
 
 	/**
-	 * Current (existing) password entered by the user when required.
-	 * @type {string}
+	 * Change password form with current password, new password, and confirmation fields.
+	 * @type {FormGroup}
 	 */
-	protected currentPassword: string = "";
+	protected readonly changePasswordForm: FormGroup =
+		this.formBuilder.group(
+			{
+				currentPassword: [
+					"",
+					[Validators.required]
+				],
+				newPassword: [
+					"",
+					[
+						Validators.required,
+						Validators.minLength(PASSWORD_VALIDATION.MIN_LENGTH)
+					]
+				],
+				confirmPassword: [
+					"",
+					[
+						Validators.required,
+						Validators.minLength(PASSWORD_VALIDATION.MIN_LENGTH)
+					]
+				]
+			});
 
 	/**
-	 * New password to set for the account.
-	 * @type {string}
+	 * Validation error message for current password field.
+	 * @type {Signal<string | null>}
 	 */
-	protected newPassword: string = "";
+	protected readonly currentPasswordError: Signal<string | null> =
+		computed(
+			() =>
+				getValidationError(
+					this.changePasswordForm.get("currentPassword"),
+					"Current password"));
 
 	/**
-	 * Confirmation of the new password (must match `newPassword`).
-	 * @type {string}
+	 * Validation error message for new password field.
+	 * @type {Signal<string | null>}
 	 */
-	protected confirmPassword: string = "";
+	protected readonly newPasswordError: Signal<string | null> =
+		computed(
+			() =>
+				getValidationError(
+					this.changePasswordForm.get("newPassword"),
+					"New password"));
+
+	/**
+	 * Validation error message for confirm password field.
+	 * @type {Signal<string | null>}
+	 */
+	protected readonly confirmPasswordError: Signal<string | null> =
+		computed(
+			() =>
+				getValidationError(
+					this.changePasswordForm.get("confirmPassword"),
+					"Confirm password"));
 
 	/**
 	 * Loading state while the change password request is in-flight.
@@ -156,39 +218,66 @@ export class ChangePasswordComponent implements OnInit
 	}
 
 	/**
+	 * Validates the form inputs before submission.
+	 * @returns {boolean} True if validation passes, false otherwise.
+	 */
+	private validateForm(): boolean
+	{
+		if (this.changePasswordForm.invalid)
+		{
+			this.changePasswordForm.markAllAsTouched();
+			return false;
+		}
+
+		const formValue: typeof this.changePasswordForm.value =
+			this.changePasswordForm.value;
+
+		const passwordsMatch: ValidationResult =
+			validatePasswordsMatch(
+				formValue.newPassword,
+				formValue.confirmPassword);
+		if (!passwordsMatch.valid)
+		{
+			this.notification.error(passwordsMatch.errorMessage!);
+			return false;
+		}
+
+		const passwordResult: ValidationResult =
+			validatePassword(formValue.newPassword);
+		if (!passwordResult.valid)
+		{
+			this.notification.error(passwordResult.errorMessage!);
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
 	 * Submit the change password request after validating inputs.
 	 * Shows notifications and redirects on success.
 	 * @returns {void}
 	 */
 	protected onSubmit(): void
 	{
-		const passwordsMatch: ValidationResult =
-			validatePasswordsMatch(this.newPassword, this.confirmPassword);
-		if (!passwordsMatch.valid)
+		if (!this.validateForm())
 		{
-			this.notification.error(passwordsMatch.errorMessage!);
-			return;
-		}
-
-		const passwordResult: ValidationResult =
-			validatePassword(this.newPassword);
-		if (!passwordResult.valid)
-		{
-			this.notification.error(passwordResult.errorMessage!);
 			return;
 		}
 
 		this.isLoading.set(true);
 
+		const formValue: typeof this.changePasswordForm.value =
+			this.changePasswordForm.value;
 		const request: ChangePasswordRequest =
 			{
-				currentPassword: this.currentPassword,
-				newPassword: this.newPassword
+				currentPassword: formValue.currentPassword,
+				newPassword: formValue.newPassword
 			};
 
 		this
 			.http
-			.post<void>(`${environment.apiUrl}/auth/change-password`, request,
+			.post<void>(`${environment.apiUrl}/auth/password/change`, request,
 				{
 					withCredentials: true
 				})

@@ -11,6 +11,7 @@ import { MatIconModule } from "@angular/material/icon";
 import { ActivatedRoute, NavigationEnd, Router, UrlSegment, UrlSegmentGroup, UrlTree } from "@angular/router";
 import { RouterLink } from "@angular/router";
 import { BreadcrumbItem } from "@shared/models";
+import { capitalize } from "@shared/utilities";
 import { filter, map, startWith } from "rxjs/operators";
 
 @Component(
@@ -134,7 +135,7 @@ export class BreadcrumbComponent
 	 * @type {Signal<BreadcrumbItem[]>}
 	 * @private
 	 */
-	private readonly navigationEnd$: Signal<BreadcrumbItem[]> =
+	private readonly navigationEnd: Signal<BreadcrumbItem[]> =
 		toSignal(
 			this.router.events.pipe(
 				filter(
@@ -153,7 +154,7 @@ export class BreadcrumbComponent
 	 */
 	readonly breadcrumbs: Signal<BreadcrumbItem[]> =
 		computed(
-			() => this.navigationEnd$());
+			() => this.navigationEnd());
 
 	/**
 	 * Builds breadcrumb items from current route hierarchy.
@@ -405,11 +406,7 @@ export class BreadcrumbComponent
 		// Convert kebab-case to Title Case
 		return cleaned
 			.split("-")
-			.map(
-				(word) =>
-					word
-						.charAt(0)
-						.toUpperCase() + word.slice(1))
+			.map((word) => capitalize(word))
 			.join(" ");
 	}
 }

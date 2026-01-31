@@ -44,6 +44,20 @@ internal class LogRepository(
 	}
 
 	/// <inheritdoc/>
+	/// <remarks>
+	/// Batch insert: Uses AddRange for efficient single-roundtrip database operation.
+	/// </remarks>
+	public async Task CreateBatchAsync(
+		IEnumerable<Log> entities,
+		CancellationToken cancellationToken = default)
+	{
+		ArgumentNullException.ThrowIfNull(entities);
+
+		context.Logs.AddRange(entities);
+		await context.SaveChangesAsync(cancellationToken);
+	}
+
+	/// <inheritdoc/>
 	public async Task<(IEnumerable<Log> Logs, int TotalCount)> GetPagedAsync(
 		LogQueryRequest request,
 		CancellationToken cancellationToken = default)
@@ -142,7 +156,7 @@ internal class LogRepository(
 	{
 		string sortProperty =
 			string.IsNullOrWhiteSpace(request.SortBy)
-			? "CreateDate"
+			? nameof(Log.CreateDate)
 			: request.SortBy;
 
 		query =

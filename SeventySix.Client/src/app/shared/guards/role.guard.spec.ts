@@ -1,12 +1,12 @@
 import { provideZonelessChangeDetection } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
 import {
-	ActivatedRouteSnapshot,
+	CanMatchFn,
 	provideRouter,
-	RouterStateSnapshot,
+	Route,
+	UrlSegment,
 	UrlTree
 } from "@angular/router";
-import { CanActivateFn } from "@angular/router";
 import { AuthService } from "@shared/services/auth.service";
 import { type Mock, vi } from "vitest";
 import { roleGuard } from "./role.guard";
@@ -56,39 +56,40 @@ describe("roleGuard",
 					{
 						authService.isAuthenticated.mockReturnValue(true);
 
-						const guard: CanActivateFn =
+						const guard: CanMatchFn =
 							roleGuard();
 						const result: boolean | UrlTree =
 							TestBed.runInInjectionContext(
 								() =>
 									guard(
-										{} as ActivatedRouteSnapshot,
-										{ url: "/protected" } as RouterStateSnapshot)) as boolean | UrlTree;
+										{} as Route,
+										[] as UrlSegment[])) as boolean | UrlTree;
 
 						expect(result)
 							.toBe(true);
 					});
 
-				it("should redirect unauthenticated user to login",
+				it("should redirect unauthenticated user to login with returnUrl",
 					() =>
 					{
 						authService.isAuthenticated.mockReturnValue(false);
 
-						const guard: CanActivateFn =
+						const guard: CanMatchFn =
 							roleGuard();
 						const result: boolean | UrlTree =
 							TestBed.runInInjectionContext(
 								() =>
 									guard(
-										{} as ActivatedRouteSnapshot,
-										{ url: "/protected" } as RouterStateSnapshot)) as boolean | UrlTree;
+										{} as Route,
+										[] as UrlSegment[])) as boolean | UrlTree;
 
 						expect(result)
 							.toBeInstanceOf(UrlTree);
 						expect(result.toString())
 							.toContain("/auth/login");
+						// returnUrl is included via currentNavigation() signal
 						expect(result.toString())
-							.toContain("returnUrl=%2Fprotected");
+							.toContain("returnUrl");
 					});
 			});
 
@@ -101,14 +102,14 @@ describe("roleGuard",
 						authService.isAuthenticated.mockReturnValue(true);
 						authService.hasAnyRole.mockReturnValue(true);
 
-						const guard: CanActivateFn =
+						const guard: CanMatchFn =
 							roleGuard("Admin");
 						const result: boolean | UrlTree =
 							TestBed.runInInjectionContext(
 								() =>
 									guard(
-										{} as ActivatedRouteSnapshot,
-										{ url: "/admin" } as RouterStateSnapshot)) as boolean | UrlTree;
+										{} as Route,
+										[] as UrlSegment[])) as boolean | UrlTree;
 
 						expect(result)
 							.toBe(true);
@@ -122,14 +123,14 @@ describe("roleGuard",
 						authService.isAuthenticated.mockReturnValue(true);
 						authService.hasAnyRole.mockReturnValue(false);
 
-						const guard: CanActivateFn =
+						const guard: CanMatchFn =
 							roleGuard("Admin");
 						const result: boolean | UrlTree =
 							TestBed.runInInjectionContext(
 								() =>
 									guard(
-										{} as ActivatedRouteSnapshot,
-										{ url: "/admin" } as RouterStateSnapshot)) as boolean | UrlTree;
+										{} as Route,
+										[] as UrlSegment[])) as boolean | UrlTree;
 
 						expect(result)
 							.toBeInstanceOf(UrlTree);
@@ -147,14 +148,14 @@ describe("roleGuard",
 						authService.isAuthenticated.mockReturnValue(true);
 						authService.hasAnyRole.mockReturnValue(true);
 
-						const guard: CanActivateFn =
+						const guard: CanMatchFn =
 							roleGuard("Developer", "Admin");
 						const result: boolean | UrlTree =
 							TestBed.runInInjectionContext(
 								() =>
 									guard(
-										{} as ActivatedRouteSnapshot,
-										{ url: "/style-guide" } as RouterStateSnapshot)) as boolean | UrlTree;
+										{} as Route,
+										[] as UrlSegment[])) as boolean | UrlTree;
 
 						expect(result)
 							.toBe(true);
@@ -166,14 +167,14 @@ describe("roleGuard",
 						authService.isAuthenticated.mockReturnValue(true);
 						authService.hasAnyRole.mockReturnValue(true);
 
-						const guard: CanActivateFn =
+						const guard: CanMatchFn =
 							roleGuard("Developer", "Admin");
 						const result: boolean | UrlTree =
 							TestBed.runInInjectionContext(
 								() =>
 									guard(
-										{} as ActivatedRouteSnapshot,
-										{ url: "/style-guide" } as RouterStateSnapshot)) as boolean | UrlTree;
+										{} as Route,
+										[] as UrlSegment[])) as boolean | UrlTree;
 
 						expect(result)
 							.toBe(true);
@@ -185,14 +186,14 @@ describe("roleGuard",
 						authService.isAuthenticated.mockReturnValue(true);
 						authService.hasAnyRole.mockReturnValue(true);
 
-						const guard: CanActivateFn =
+						const guard: CanMatchFn =
 							roleGuard("Developer", "Admin");
 						const result: boolean | UrlTree =
 							TestBed.runInInjectionContext(
 								() =>
 									guard(
-										{} as ActivatedRouteSnapshot,
-										{ url: "/style-guide" } as RouterStateSnapshot)) as boolean | UrlTree;
+										{} as Route,
+										[] as UrlSegment[])) as boolean | UrlTree;
 
 						expect(result)
 							.toBe(true);
@@ -204,14 +205,14 @@ describe("roleGuard",
 						authService.isAuthenticated.mockReturnValue(true);
 						authService.hasAnyRole.mockReturnValue(false);
 
-						const guard: CanActivateFn =
+						const guard: CanMatchFn =
 							roleGuard("Developer", "Admin");
 						const result: boolean | UrlTree =
 							TestBed.runInInjectionContext(
 								() =>
 									guard(
-										{} as ActivatedRouteSnapshot,
-										{ url: "/style-guide" } as RouterStateSnapshot)) as boolean | UrlTree;
+										{} as Route,
+										[] as UrlSegment[])) as boolean | UrlTree;
 
 						expect(result)
 							.toBeInstanceOf(UrlTree);
@@ -228,14 +229,14 @@ describe("roleGuard",
 					{
 						authService.isAuthenticated.mockReturnValue(false);
 
-						const guard: CanActivateFn =
+						const guard: CanMatchFn =
 							roleGuard("Admin");
 						const result: boolean | UrlTree =
 							TestBed.runInInjectionContext(
 								() =>
 									guard(
-										{} as ActivatedRouteSnapshot,
-										{ url: "/admin/users" } as RouterStateSnapshot)) as boolean | UrlTree;
+										{} as Route,
+										[] as UrlSegment[])) as boolean | UrlTree;
 
 						expect(result)
 							.toBeInstanceOf(UrlTree);

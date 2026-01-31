@@ -45,18 +45,21 @@ $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($OutputP
 $outputDirectory =
 Split-Path -Parent $resolvedOutputPath
 
-if (-not (Test-Path $outputDirectory)) {
+if (-not (Test-Path $outputDirectory))
+{
 	New-Item -ItemType Directory -Path $outputDirectory -Force | Out-Null
 	Write-Host "Created directory: $outputDirectory" -ForegroundColor Green
 }
 
 # Check if certificate already exists
-if (Test-Path $resolvedOutputPath) {
+if (Test-Path $resolvedOutputPath)
+{
 	Write-Host "Certificate already exists at: $resolvedOutputPath" -ForegroundColor Yellow
 	$overwriteResponse =
-	Read-Host "Overwrite? (y/N)"
+	Read-Host "Overwrite? (y/n)"
 
-	if ($overwriteResponse -ne "y") {
+	if ($overwriteResponse -ne "y")
+	{
 		Write-Host "Aborted." -ForegroundColor Yellow
 		exit 0
 	}
@@ -77,25 +80,32 @@ New-SelfSignedCertificate `
 	-CertStoreLocation "Cert:\CurrentUser\My"
 
 # Resolve password to a SecureString (accepts SecureString, plain string, or env vars)
-if ($Password -is [System.Security.SecureString]) {
+if ($Password -is [System.Security.SecureString])
+{
 	$securePassword = $Password
 }
-elseif ($Password -is [string] -and $Password.Length -gt 0) {
+elseif ($Password -is [string] -and $Password.Length -gt 0)
+{
 	$securePassword = ConvertTo-SecureString -String $Password -Force -AsPlainText
 }
-elseif ($env:DATA_PROTECTION_CERTIFICATE_PASSWORD_SECURE) {
-	try {
+elseif ($env:DATA_PROTECTION_CERTIFICATE_PASSWORD_SECURE)
+{
+	try
+	{
 		$securePassword = ConvertTo-SecureString -String $env:DATA_PROTECTION_CERTIFICATE_PASSWORD_SECURE
 	}
- catch {
+	catch
+	{
 		Write-Host "Failed to parse DATA_PROTECTION_CERTIFICATE_PASSWORD_SECURE from environment." -ForegroundColor Yellow
 		$securePassword = $null
 	}
 }
-elseif ($env:DATA_PROTECTION_CERTIFICATE_PASSWORD) {
+elseif ($env:DATA_PROTECTION_CERTIFICATE_PASSWORD)
+{
 	$securePassword = ConvertTo-SecureString -String $env:DATA_PROTECTION_CERTIFICATE_PASSWORD -Force -AsPlainText
 }
-else {
+else
+{
 	# Fallback default (development)
 	$securePassword = ConvertTo-SecureString -String "DevCertPassword123!" -Force -AsPlainText
 }

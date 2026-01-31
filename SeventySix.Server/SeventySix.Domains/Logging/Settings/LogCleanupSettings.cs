@@ -46,4 +46,16 @@ public record LogCleanupSettings
 	/// Gets the log file pattern for matching. Default: "seventysix-*.txt".
 	/// </summary>
 	public string LogFilePattern { get; init; } = "seventysix-*.txt";
+
+	/// <summary>
+	/// Gets the preferred UTC hour for job execution (0-23).
+	/// Default: 8 (3:00 AM EST).
+	/// </summary>
+	public int PreferredStartHourUtc { get; init; } = 8;
+
+	/// <summary>
+	/// Gets the preferred UTC minute for job execution (0-59).
+	/// Default: 0.
+	/// </summary>
+	public int PreferredStartMinuteUtc { get; init; } = 0;
 }

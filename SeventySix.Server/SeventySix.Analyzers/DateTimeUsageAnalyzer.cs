@@ -16,13 +16,16 @@ namespace SeventySix.Analyzers;
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class DateTimeUsageAnalyzer : DiagnosticAnalyzer
 {
+	/// <summary>
+	/// Diagnostic ID for this analyzer.
+	/// </summary>
 	public const string DiagnosticId = "SS004";
 
 	private static readonly DiagnosticDescriptor Rule = new(
 		DiagnosticId,
 		"Avoid DateTime.* usage",
 		"Avoid direct DateTime usage (UtcNow/Now/new DateTime/System.DateTime). Inject TimeProvider instead for testability.",
-		"Design",
+		DiagnosticCategories.Design,
 		DiagnosticSeverity.Warning,
 		isEnabledByDefault: true,
 		description: "Using DateTime.UtcNow/Now or creating DateTime instances prevents testable time abstraction. Use TimeProvider instead.");

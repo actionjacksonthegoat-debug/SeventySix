@@ -1,9 +1,14 @@
 import { AccountService } from "@account/services";
+import { AvailableRoleFixtures } from "@account/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideRouter, Routes } from "@angular/router";
 import { ApiService } from "@shared/services/api.service";
-import { createMockApiService, MockApiService } from "@shared/testing";
+import {
+	createMockApiService,
+	createTestQueryClient,
+	MockApiService
+} from "@shared/testing";
 import {
 	provideTanStackQuery,
 	QueryClient
@@ -30,17 +35,10 @@ describe("RequestPermissionsPage",
 				mockApiService =
 					createMockApiService();
 				mockApiService.get.mockReturnValue(
-					of(
-						[
-							{ name: "Admin", description: "Administrator access" },
-							{ name: "Developer", description: "Developer access" }
-						]));
+					of(AvailableRoleFixtures.getAll()));
 
 				queryClient =
-					new QueryClient(
-						{
-							defaultOptions: { queries: { retry: false } }
-						});
+					createTestQueryClient();
 
 				await TestBed
 					.configureTestingModule(

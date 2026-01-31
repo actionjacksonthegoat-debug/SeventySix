@@ -1,7 +1,10 @@
+import { Clipboard } from "@angular/cdk/clipboard";
+import { TestBed } from "@angular/core/testing";
 import { vi } from "vitest";
 
 import { NotificationLevel } from "@shared/constants";
 import { Notification } from "@shared/models";
+import { LoggerService } from "@shared/services/logger.service";
 import { setupSimpleServiceTest } from "@shared/testing";
 import { NotificationService } from "./notification.service";
 
@@ -510,130 +513,121 @@ describe("NotificationService",
 							.toBeUndefined();
 					});
 			});
+	});
 
-		describe("copyToClipboard",
+describe("NotificationService copyToClipboard",
+	() =>
+	{
+		let service: NotificationService;
+		let clipboardMock: { copy: ReturnType<typeof vi.fn>; };
+
+		beforeEach(
 			() =>
 			{
-				let clipboardSpy: ReturnType<typeof vi.fn>;
-
-				beforeEach(
-					() =>
+			// Mock CDK Clipboard
+				clipboardMock =
 					{
-						// Mock navigator.clipboard
-						clipboardSpy =
-							vi
-								.fn()
-								.mockResolvedValue(undefined);
-						Object.defineProperty(navigator, "clipboard",
-							{
-								value: {
-									writeText: clipboardSpy
-								},
-								configurable: true
-							});
-					});
+						copy: vi
+							.fn()
+							.mockReturnValue(true)
+					};
+				service =
+					setupSimpleServiceTest(
+						NotificationService,
+						[{ provide: Clipboard, useValue: clipboardMock }]);
+			});
 
-				it("should copy notification data to clipboard",
-					async () =>
-					{
-						vi
-							.spyOn(console, "info")
-							.mockImplementation(
-								() =>
-								{});
-						const copyData: string = "Error details to copy";
-						service.errorWithDetails("Error", undefined, copyData);
-						const notification: Notification =
-							service.readonlyNotifications()[0];
+		it("should copy notification data to clipboard",
+			() =>
+			{
+				vi
+					.spyOn(console, "info")
+					.mockImplementation(
+						() =>
+						{});
+				const copyData: string = "Error details to copy";
+				service.errorWithDetails("Error", undefined, copyData);
+				const notification: Notification =
+					service.readonlyNotifications()[0];
 
-						const result: boolean =
-							await service.copyToClipboard(notification);
+				const result: boolean =
+					service.copyToClipboard(notification);
 
-						expect(result)
-							.toBe(true);
-						expect(clipboardSpy)
-							.toHaveBeenCalledWith(copyData);
-					});
+				expect(result)
+					.toBe(true);
+				expect(clipboardMock.copy)
+					.toHaveBeenCalledWith(copyData);
+			});
 
-				it("should return false if notification has no copy data",
-					async () =>
-					{
-						service.error("Error without copy data");
-						const notification: Notification =
-							service.readonlyNotifications()[0];
+		it("should return false if notification has no copy data",
+			() =>
+			{
+				service.error("Error without copy data");
+				const notification: Notification =
+					service.readonlyNotifications()[0];
 
-						const result: boolean =
-							await service.copyToClipboard(notification);
+				const result: boolean =
+					service.copyToClipboard(notification);
 
-						expect(result)
-							.toBe(false);
-						expect(clipboardSpy).not.toHaveBeenCalled();
-					});
+				expect(result)
+					.toBe(false);
+				expect(clipboardMock.copy).not.toHaveBeenCalled();
+			});
 
-				it("should return false and log error if clipboard write fails",
-					async () =>
-					{
-						const consoleErrorSpy: ReturnType<typeof vi.spyOn> =
-							vi
-								.spyOn(console, "error")
-								.mockImplementation(
-									() =>
-									{});
-						clipboardSpy.mockRejectedValue(new Error("Clipboard error"));
+		it("should return false and log error if clipboard copy fails",
+			() =>
+			{
+				const logger: LoggerService =
+					TestBed.inject(LoggerService);
+				const loggerErrorSpy: ReturnType<typeof vi.spyOn> =
+					vi.spyOn(logger, "error");
+				clipboardMock.copy.mockReturnValue(false);
 
-						service.errorWithDetails("Error", undefined, "Copy data");
-						const notification: Notification =
-							service.readonlyNotifications()[0];
+				service.errorWithDetails("Error", undefined, "Copy data");
+				const notification: Notification =
+					service.readonlyNotifications()[0];
 
-						const result: boolean =
-							await service.copyToClipboard(notification);
+				const result: boolean =
+					service.copyToClipboard(notification);
 
-						expect(result)
-							.toBe(false);
-						expect(consoleErrorSpy)
-							.toHaveBeenCalled();
-					});
+				expect(result)
+					.toBe(false);
+				expect(loggerErrorSpy)
+					.toHaveBeenCalled();
+			});
 
-				it("should copy successfully and return true",
-					async () =>
-					{
-						vi
-							.spyOn(console, "info")
-							.mockImplementation(
-								() =>
-								{});
-						service.errorWithDetails("Error", undefined, "Copy data");
-						const notification: Notification =
-							service.readonlyNotifications()[0];
+		it("should copy successfully and return true",
+			() =>
+			{
+				service.errorWithDetails("Error", undefined, "Copy data");
+				const notification: Notification =
+					service.readonlyNotifications()[0];
 
-						const result: boolean =
-							await service.copyToClipboard(notification);
+				const result: boolean =
+					service.copyToClipboard(notification);
 
-						expect(result)
-							.toBe(true);
-					});
+				expect(result)
+					.toBe(true);
+			});
 
-				it("should log copy data to console.info when copying",
-					async () =>
-					{
-						const consoleInfoSpy: ReturnType<typeof vi.spyOn> =
-							vi
-								.spyOn(console, "info")
-								.mockImplementation(
-									() =>
-									{});
-						const copyData: string = "Error details to copy";
+		it("should log copy data to LoggerService.debug when copying",
+			() =>
+			{
+				const logger: LoggerService =
+					TestBed.inject(LoggerService);
+				const loggerDebugSpy: ReturnType<typeof vi.spyOn> =
+					vi.spyOn(logger, "debug");
+				const copyData: string = "Error details to copy";
 
-						service.errorWithDetails("Error", undefined, copyData);
-						const notification: Notification =
-							service.readonlyNotifications()[0];
+				service.errorWithDetails("Error", undefined, copyData);
+				const notification: Notification =
+					service.readonlyNotifications()[0];
 
-						await service.copyToClipboard(notification);
+				service.copyToClipboard(notification);
 
-						expect(consoleInfoSpy)
-							.toHaveBeenCalledWith(
-								"Notification copied to clipboard:",
-								copyData);
-					});
+				expect(loggerDebugSpy)
+					.toHaveBeenCalledWith(
+						"Notification copied to clipboard",
+						{ copyData });
 			});
 	});

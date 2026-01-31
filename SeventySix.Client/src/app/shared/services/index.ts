@@ -14,8 +14,9 @@ export * from "./altcha.service";
 export * from "./auth.service";
 export * from "./base-filter.service";
 export * from "./base-mutation.service";
+export * from "./base-query-client.service";
 export * from "./base-query.service";
-export * from "./base-readonly.service";
+export * from "./cache-coordination.service";
 export * from "./client-error-logger.service";
 export * from "./date.service";
 export * from "./dialog.service";
@@ -25,13 +26,13 @@ export * from "./layout.service";
 export * from "./loading.service";
 export * from "./logger.service";
 export * from "./notification.service";
-export * from "./performance-monitor.service";
-export * from "./sanitization.service";
 export * from "./storage.service";
 export * from "./sw-update.service";
 export * from "./telemetry.service";
 export * from "./theme.service";
+export * from "./token.service";
 export * from "./web-vitals.service";
+export * from "./window.service";
 
 // DO NOT export feature services here
 // Import directly from feature folders when needed:

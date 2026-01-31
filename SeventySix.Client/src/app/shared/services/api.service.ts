@@ -18,8 +18,34 @@ import { catchError, Observable, throwError, timeout } from "rxjs";
  * Low-level HTTP wrapper for API communication.
  * Provides consistent headers, error handling, and logging.
  *
- * NOTE: Request deduplication and caching are handled by TanStack Query
+ * **NOTE:** Request deduplication and caching are handled by TanStack Query
  * at the service layer. This service should remain a thin HTTP wrapper.
+ *
+ * ## When to Use HttpClient Directly vs ApiService
+ *
+ * **Use ApiService (this service) for:**
+ * - Standard API calls that don't require `withCredentials`
+ * - Requests benefiting from centralized error handling and logging
+ * - All domain service layer calls via BaseQueryService/BaseMutationService
+ *
+ * **Use HttpClient directly for:**
+ * - Authentication flows requiring `withCredentials: true` (cookies/credentials)
+ * - External API calls not going through the application's API
+ * - Special cases requiring custom headers not provided by ApiService
+ *
+ * @example
+ * // Standard API call via query service (uses ApiService internally)
+ * class UserQueryService extends BaseQueryService<User>
+ * {
+ *     protected endpoint = "users";
+ * }
+ *
+ * @example
+ * // Auth flow requiring withCredentials (uses HttpClient directly)
+ * this.httpClient.post<AuthResponse>(url, request, { withCredentials: true })
+ *
+ * @see {@link MfaService} for example of HttpClient direct usage
+ * @see {@link BaseQueryService} for standard query pattern using ApiService
  */
 @Injectable(
 	{
@@ -200,14 +226,11 @@ export class ApiService
 	 */
 	addHeaders(headers: Record<string, string>): void
 	{
-		Object
-			.entries(headers)
-			.forEach(
-				([key, value]) =>
-				{
-					this.defaultHeaders =
-						this.defaultHeaders.set(key, value);
-				});
+		for (const [headerKey, headerValue] of Object.entries(headers))
+		{
+			this.defaultHeaders =
+				this.defaultHeaders.set(headerKey, headerValue);
+		}
 	}
 
 	/**

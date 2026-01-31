@@ -4,6 +4,7 @@
 
 using Microsoft.Extensions.Time.Testing;
 using SeventySix.ApiTracking;
+using Shouldly;
 
 namespace SeventySix.Domains.Tests.ApiTracking.POCOs.DTOs;
 
@@ -19,18 +20,12 @@ public class ThirdPartyApiRequestDtoTests
 		ThirdPartyApiRequestDto dto = new();
 
 		// Assert
-		Assert.Equal(0, dto.Id);
-		Assert.Equal(
-			string.Empty,
-			dto.ApiName);
-		Assert.Equal(
-			string.Empty,
-			dto.BaseUrl);
-		Assert.Equal(0, dto.CallCount);
-		Assert.Null(dto.LastCalledAt);
-		Assert.Equal(
-			default(DateOnly),
-			dto.ResetDate);
+		dto.Id.ShouldBe(0);
+		dto.ApiName.ShouldBe(string.Empty);
+		dto.BaseUrl.ShouldBe(string.Empty);
+		dto.CallCount.ShouldBe(0);
+		dto.LastCalledAt.ShouldBeNull();
+		dto.ResetDate.ShouldBe(default(DateOnly));
 	}
 
 	[Fact]
@@ -54,14 +49,13 @@ public class ThirdPartyApiRequestDtoTests
 			};
 
 		// Assert
-		Assert.Equal(42, dto.Id);
-		Assert.Equal("ExternalAPI", dto.ApiName);
-		Assert.Equal(
-			"https://api.ExternalAPImap.org",
-			dto.BaseUrl);
-		Assert.Equal(150, dto.CallCount);
-		Assert.Equal(now, dto.LastCalledAt);
-		Assert.Equal(resetDate, dto.ResetDate);
+		dto.Id.ShouldBe(42);
+		dto.ApiName.ShouldBe("ExternalAPI");
+		dto.BaseUrl.ShouldBe(
+			"https://api.ExternalAPImap.org");
+		dto.CallCount.ShouldBe(150);
+		dto.LastCalledAt.ShouldBe(now);
+		dto.ResetDate.ShouldBe(resetDate);
 	}
 
 	[Fact]
@@ -77,6 +71,6 @@ public class ThirdPartyApiRequestDtoTests
 			};
 
 		// Assert
-		Assert.Null(dto.LastCalledAt);
+		dto.LastCalledAt.ShouldBeNull();
 	}
 }

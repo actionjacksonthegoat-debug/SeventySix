@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using System.Text.Json;
 using SeventySix.Shared.Extensions;
 
 namespace SeventySix.Logging;
@@ -56,4 +57,61 @@ public static class LogExtensions
 	/// </returns>
 	public static IEnumerable<LogDto> ToDto(this IEnumerable<Log> entities) =>
 		entities.MapToDto(logEntry => logEntry.ToDto());
+
+	/// <summary>
+	/// Converts a client log request to a Log entity.
+	/// </summary>
+	/// <param name="request">
+	/// The create log request.
+	/// </param>
+	/// <param name="traceId">
+	/// The trace identifier from the current activity.
+	/// </param>
+	/// <param name="spanId">
+	/// The span identifier from the current activity.
+	/// </param>
+	/// <param name="parentSpanId">
+	/// The parent span identifier from the current activity.
+	/// </param>
+	/// <returns>
+	/// A new Log entity populated from the request.
+	/// </returns>
+	/// <remarks>
+	/// DRY: Consolidates client log creation logic used in
+	/// CreateClientLogCommandHandler and CreateClientLogBatchCommandHandler.
+	/// </remarks>
+	public static Log ToClientLogEntity(
+		this CreateLogRequest request,
+		string? traceId,
+		string? spanId,
+		string? parentSpanId)
+	{
+		ArgumentNullException.ThrowIfNull(request);
+
+		return new Log
+		{
+			LogLevel = request.LogLevel,
+			Message = request.Message,
+			ExceptionMessage = request.ExceptionMessage,
+			StackTrace = request.StackTrace,
+			SourceContext = request.SourceContext,
+			RequestPath = request.RequestUrl,
+			RequestMethod = request.RequestMethod,
+			StatusCode = request.StatusCode,
+			CorrelationId =
+				request.CorrelationId ?? traceId,
+			SpanId = spanId,
+			ParentSpanId = parentSpanId,
+			Properties =
+				JsonSerializer.Serialize(
+					new
+					{
+						request.UserAgent,
+						request.ClientTimestamp,
+						request.AdditionalContext,
+					}),
+			MachineName = "Browser",
+			Environment = "Client",
+		};
+	}
 }

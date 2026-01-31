@@ -4,6 +4,7 @@
 
 using Microsoft.AspNetCore.Http;
 using SeventySix.Api.Middleware;
+using Shouldly;
 
 namespace SeventySix.Api.Tests.Middleware;
 
@@ -26,10 +27,9 @@ public class CorsRateLimitTests
 		context.Response.StatusCode =
 			StatusCodes.Status429TooManyRequests;
 
-		Assert.Equal(
-			StatusCodes.Status429TooManyRequests,
-			context.Response.StatusCode);
-		Assert.True(
-			context.Response.Headers.ContainsKey("Access-Control-Allow-Origin"));
+		context.Response.StatusCode.ShouldBe(
+			StatusCodes.Status429TooManyRequests);
+		context.Response.Headers.ContainsKey("Access-Control-Allow-Origin")
+			.ShouldBeTrue();
 	}
 }

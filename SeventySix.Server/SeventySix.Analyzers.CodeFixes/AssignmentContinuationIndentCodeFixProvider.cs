@@ -13,6 +13,9 @@ using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
+using SeventySix.Analyzers;
+using SeventySix.Analyzers.CodeFixes.Helpers;
+using SeventySix.Analyzers.Helpers;
 
 namespace SeventySix.Analyzers.CodeFixes;
 
@@ -55,7 +58,7 @@ public sealed class AssignmentContinuationIndentCodeFixProvider
 
 		context.RegisterCodeFix(
 			CodeAction.Create(
-				title: "Fix continuation indent",
+				title: CodeFixTitles.FixContinuationIndent,
 				createChangedDocument: ct => FixContinuationIndentAsync(
 					context.Document,
 					valueToken,
@@ -126,12 +129,12 @@ public sealed class AssignmentContinuationIndentCodeFixProvider
 				creationParent
 				is ImplicitObjectCreationExpressionSyntax implicitForClose)
 			{
-				return GetLeadingWhitespace(implicitForClose.NewKeyword);
+				return SyntaxHelpers.GetLeadingWhitespace(implicitForClose.NewKeyword);
 			}
 
 			if (creationParent is ObjectCreationExpressionSyntax objectForClose)
 			{
-				return GetLeadingWhitespace(objectForClose.NewKeyword);
+				return SyntaxHelpers.GetLeadingWhitespace(objectForClose.NewKeyword);
 			}
 		}
 
@@ -148,20 +151,20 @@ public sealed class AssignmentContinuationIndentCodeFixProvider
 				is ImplicitObjectCreationExpressionSyntax implicitCreation)
 			{
 				// Brace should match 'new' keyword indent
-				return GetLeadingWhitespace(implicitCreation.NewKeyword);
+				return SyntaxHelpers.GetLeadingWhitespace(implicitCreation.NewKeyword);
 			}
 
 			if (creationParent is ObjectCreationExpressionSyntax objectCreation)
 			{
 				// Brace should match 'new' keyword indent
-				return GetLeadingWhitespace(objectCreation.NewKeyword);
+				return SyntaxHelpers.GetLeadingWhitespace(objectCreation.NewKeyword);
 			}
 
 			// Pattern: Extensions = { ... } where { is direct value of assignment
 			// The brace should be at property indent + 1 tab
 			if (creationParent is AssignmentExpressionSyntax assignmentParent)
 			{
-				string propertyIndent = GetLeadingWhitespace(
+				string propertyIndent = SyntaxHelpers.GetLeadingWhitespace(
 					assignmentParent.Left.GetFirstToken());
 
 				if (!string.IsNullOrEmpty(propertyIndent))
@@ -193,13 +196,13 @@ public sealed class AssignmentContinuationIndentCodeFixProvider
 				is ImplicitObjectCreationExpressionSyntax implicitContent)
 			{
 				// Contents should be new keyword indent + 1 tab
-				return GetLeadingWhitespace(implicitContent.NewKeyword) + "\t";
+				return SyntaxHelpers.GetLeadingWhitespace(implicitContent.NewKeyword) + "\t";
 			}
 
 			if (creationNode is ObjectCreationExpressionSyntax objectContent)
 			{
 				// Contents should be new keyword indent + 1 tab
-				return GetLeadingWhitespace(objectContent.NewKeyword) + "\t";
+				return SyntaxHelpers.GetLeadingWhitespace(objectContent.NewKeyword) + "\t";
 			}
 		}
 
@@ -222,7 +225,7 @@ public sealed class AssignmentContinuationIndentCodeFixProvider
 		{
 			// Get the indentation of the key (first element)
 			// Value should be at SAME level as key in dictionary entries
-			string keyIndent = GetLeadingWhitespace(
+			string keyIndent = SyntaxHelpers.GetLeadingWhitespace(
 				initializer.Expressions[0].GetFirstToken());
 
 			if (!string.IsNullOrEmpty(keyIndent))
@@ -237,7 +240,7 @@ public sealed class AssignmentContinuationIndentCodeFixProvider
 			&& assignment.Parent is InitializerExpressionSyntax)
 		{
 			// Get the indentation of the property name (left side)
-			string propertyIndent = GetLeadingWhitespace(
+			string propertyIndent = SyntaxHelpers.GetLeadingWhitespace(
 				assignment.Left.GetFirstToken());
 
 			if (!string.IsNullOrEmpty(propertyIndent))
@@ -257,7 +260,7 @@ public sealed class AssignmentContinuationIndentCodeFixProvider
 			{
 				if (node is StatementSyntax or MemberDeclarationSyntax)
 				{
-					string statementIndent = GetLeadingWhitespace(
+					string statementIndent = SyntaxHelpers.GetLeadingWhitespace(
 						node.GetFirstToken()
 					);
 
@@ -274,7 +277,7 @@ public sealed class AssignmentContinuationIndentCodeFixProvider
 		}
 
 		// Fallback: count existing indent and add one tab
-		string currentIndent = GetLeadingWhitespace(valueToken);
+		string currentIndent = SyntaxHelpers.GetLeadingWhitespace(valueToken);
 
 		if (!string.IsNullOrEmpty(currentIndent))
 		{
@@ -311,18 +314,5 @@ public sealed class AssignmentContinuationIndentCodeFixProvider
 		}
 
 		return default;
-	}
-
-	private static string GetLeadingWhitespace(SyntaxToken token)
-	{
-		foreach (SyntaxTrivia trivia in token.LeadingTrivia)
-		{
-			if (trivia.RawKind == (int)SyntaxKind.WhitespaceTrivia)
-			{
-				return trivia.ToString();
-			}
-		}
-
-		return string.Empty;
 	}
 }

@@ -17,8 +17,10 @@ export const STORAGE_KEYS: Readonly<{
 	ERROR_QUEUE: "error-queue";
 	/** Layout: sidebar collapsed state in sessionStorage. */
 	SIDEBAR_SESSION: "seventysix-sidebar-session";
+	/** Theme: brightness preference in localStorage. */
+	THEME_BRIGHTNESS: "seventysix-theme-brightness";
 	/** Theme: color scheme preference in localStorage. */
-	THEME_COLOR_SCHEME: "theme-color-scheme";
+	THEME_COLOR_SCHEME: "seventysix-color-scheme";
 }> =
 	{
 		AUTH_HAS_SESSION: "auth_has_session",
@@ -26,5 +28,6 @@ export const STORAGE_KEYS: Readonly<{
 		AUTH_MFA_STATE: "auth_mfa_state",
 		ERROR_QUEUE: "error-queue",
 		SIDEBAR_SESSION: "seventysix-sidebar-session",
-		THEME_COLOR_SCHEME: "theme-color-scheme"
+		THEME_BRIGHTNESS: "seventysix-theme-brightness",
+		THEME_COLOR_SCHEME: "seventysix-color-scheme"
 	} as const;

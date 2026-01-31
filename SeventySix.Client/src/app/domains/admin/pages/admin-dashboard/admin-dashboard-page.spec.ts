@@ -13,6 +13,7 @@ import {
 	createMockNotificationService,
 	createMockQueryResult
 } from "@shared/testing";
+import { environment } from "@environments/environment";
 import { vi } from "vitest";
 import { AdminDashboardPage } from "./admin-dashboard";
 
@@ -166,7 +167,7 @@ describe("AdminDashboardPage",
 
 				expect(window.open)
 					.toHaveBeenCalledWith(
-						"http://localhost:16686/search?service=SeventySix.Api",
+						`${environment.observability.jaegerUrl}/search?service=SeventySix.Api`,
 						"_blank");
 			});
 
@@ -180,7 +181,7 @@ describe("AdminDashboardPage",
 
 				expect(window.open)
 					.toHaveBeenCalledWith(
-						"http://localhost:9090/targets",
+						`${environment.observability.prometheusUrl}/targets`,
 						"_blank");
 			});
 
@@ -194,7 +195,7 @@ describe("AdminDashboardPage",
 
 				expect(window.open)
 					.toHaveBeenCalledWith(
-						"http://localhost:3000/dashboards",
+						`${environment.observability.grafanaUrl}/dashboards`,
 						"_blank");
 			});
 

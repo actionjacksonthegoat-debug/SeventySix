@@ -86,7 +86,8 @@ describe("ForgotPasswordComponent",
 			{
 				// Arrange
 				authServiceSpy.requestPasswordReset.mockReturnValue(of(undefined));
-				component["email"] = "test@example.com";
+				component["forgotPasswordForm"].patchValue(
+					{ email: "test@example.com" });
 
 				// Act
 				component["onSubmit"]();
@@ -104,7 +105,8 @@ describe("ForgotPasswordComponent",
 			() =>
 			{
 				// Arrange
-				component["email"] = "";
+				component["forgotPasswordForm"].patchValue(
+					{ email: "" });
 				fixture.detectChanges();
 
 				// Act
@@ -123,7 +125,8 @@ describe("ForgotPasswordComponent",
 			() =>
 			{
 				// Arrange
-				component["email"] = "test@example.com";
+				component["forgotPasswordForm"].patchValue(
+					{ email: "test@example.com" });
 				fixture.detectChanges();
 
 				// Act
@@ -143,7 +146,8 @@ describe("ForgotPasswordComponent",
 			{
 				// Arrange
 				authServiceSpy.requestPasswordReset.mockReturnValue(of(undefined));
-				component["email"] = "user@example.com";
+				component["forgotPasswordForm"].patchValue(
+					{ email: "user@example.com" });
 
 				// Act
 				component["onSubmit"]();
@@ -163,7 +167,8 @@ describe("ForgotPasswordComponent",
 				authServiceSpy.requestPasswordReset.mockReturnValue(
 					throwError(
 						() => new Error("Network error")));
-				component["email"] = "test@example.com";
+				component["forgotPasswordForm"].patchValue(
+					{ email: "test@example.com" });
 
 				// Act
 				component["onSubmit"]();
@@ -181,7 +186,9 @@ describe("ForgotPasswordComponent",
 			() =>
 			{
 				// Arrange
-				component["email"] = "invalid-email";
+				component["forgotPasswordForm"].patchValue(
+					{ email: "invalid-email" });
+				component["forgotPasswordForm"].markAllAsTouched();
 				fixture.detectChanges();
 
 				// Act
@@ -189,8 +196,5 @@ describe("ForgotPasswordComponent",
 
 				// Assert
 				expect(authServiceSpy.requestPasswordReset).not.toHaveBeenCalled();
-				expect(notificationSpy.error)
-					.toHaveBeenCalledWith(
-						"Please enter a valid email address.");
 			});
 	});

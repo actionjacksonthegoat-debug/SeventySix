@@ -5,6 +5,7 @@ import { environment } from "@environments/environment";
 import { LogLevel } from "@shared/constants";
 import { CreateLogRequest, LogEntry } from "@shared/models";
 import { DateService } from "@shared/services/date.service";
+import { WindowService } from "@shared/services/window.service";
 import { logLevelToString } from "@shared/utilities";
 import { catchError, of } from "rxjs";
 
@@ -14,9 +15,21 @@ import { catchError, of } from "rxjs";
 type ConsoleLogLevel = "debug" | "info" | "warn" | "error" | "none";
 
 /**
- * Logger service for application-wide logging.
- * Logs to console based on configured log level, sends to remote endpoint in production.
- * Follows Single Responsibility Principle (SRP).
+ * Application-Level Logging Service
+ *
+ * PURPOSE: General application logging for debugging and monitoring.
+ * USE FOR: Info, debug, warn, error messages during normal operation.
+ * NOT FOR: Capturing unhandled exceptions (use ClientErrorLoggerService).
+ *
+ * FLOW: Console output → Optional remote API logging in production.
+ *
+ * @example
+ * // General application logging
+ * this.logger.info("User logged in", { userId: "123" });
+ * this.logger.error("Payment failed", { orderId, errorCode });
+ *
+ * @see ClientErrorLoggerService - For capturing unhandled exceptions
+ * @see ErrorQueueService - For batching and transmitting captured errors
  */
 @Injectable(
 	{
@@ -50,6 +63,15 @@ export class LoggerService
 	 */
 	private readonly dateService: DateService =
 		inject(DateService);
+
+	/**
+	 * WindowService for SSR-safe window operations.
+	 * @type {WindowService}
+	 * @private
+	 * @readonly
+	 */
+	private readonly windowService: WindowService =
+		inject(WindowService);
 
 	/**
 	 * Whether the app is running in dev mode.
@@ -363,9 +385,9 @@ export class LoggerService
 		const logLevelString: string =
 			logLevelToString(entry.level);
 
-		// Get current route URL
+		// Get current route URL (fallback to window pathname via service)
 		const currentUrl: string =
-			this.router.url || window.location.pathname;
+			this.router.url ?? this.windowService.getPathname();
 
 		// Prepare client log request matching backend DTO
 		const payload: CreateLogRequest =

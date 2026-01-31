@@ -1,16 +1,18 @@
 <Solution>
 	<Folder Name="/Solution Items/">
-		<File Path="docker-compose.yml" />
-		<File Path="docker-compose.override.yml" />
+		<File Path="../docker-compose.yml" />
+		<File Path="../docker-compose.override.yml" />
 	</Folder>
 	<Project Path="SeventySix.Analyzers/SeventySix.Analyzers.csproj" />
 	<Project Path="SeventySix.Shared/SeventySix.Shared.csproj" />
+	<Project Path="SeventySix.Domains.Identity/SeventySix.Domains.Identity.csproj" />
 	<Project Path="SeventySix.Domains/SeventySix.Domains.csproj" />
 	<Project Path="SeventySix.Api/SeventySix.Api.csproj" />
 	<Folder Name="/Tests/">
 		<Project Path="Tests/SeventySix.Analyzers.Tests/SeventySix.Analyzers.Tests.csproj" />
 		<Project Path="Tests/SeventySix.Api.Tests/SeventySix.Api.Tests.csproj" />
 		<Project Path="Tests/SeventySix.ArchitectureTests/SeventySix.ArchitectureTests.csproj" />
+		<Project Path="Tests/SeventySix.Domains.Identity.Tests/SeventySix.Domains.Identity.Tests.csproj" />
 		<Project Path="Tests/SeventySix.Domains.Tests/SeventySix.Domains.Tests.csproj" />
 		<Project Path="Tests/SeventySix.Shared.Tests/SeventySix.Shared.Tests.csproj" />
 		<Project Path="Tests/SeventySix.TestUtilities/SeventySix.TestUtilities.csproj" />
