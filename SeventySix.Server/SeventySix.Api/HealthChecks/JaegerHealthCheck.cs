@@ -4,6 +4,7 @@
 
 using System.Net.Sockets;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using SeventySix.Shared.Constants;
 
 namespace SeventySix.Api.HealthChecks;
 
@@ -46,7 +47,8 @@ public class JaegerHealthCheck(
 		{
 			string otlpEndpoint =
 				configuration.GetValue<string>("OpenTelemetry:OtlpEndpoint")
-				?? "http://localhost:4317";
+				?? throw new InvalidOperationException(
+					"OpenTelemetry:OtlpEndpoint must be configured in appsettings.json");
 
 			Uri uri =
 				new Uri(otlpEndpoint);
@@ -61,7 +63,7 @@ public class JaegerHealthCheck(
 					.AsTask();
 			Task timeoutTask =
 				Task.Delay(
-					TimeSpan.FromSeconds(3),
+					TimeSpan.FromSeconds(TimeoutConstants.HealthCheck.JaegerSeconds),
 					cancellationToken);
 
 			Task completedTask =

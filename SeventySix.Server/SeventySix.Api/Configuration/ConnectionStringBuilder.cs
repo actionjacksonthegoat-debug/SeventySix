@@ -2,6 +2,9 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using SeventySix.Shared.Constants;
+using SeventySix.Shared.Exceptions;
+
 namespace SeventySix.Api.Configuration;
 
 /// <summary>
@@ -34,23 +37,24 @@ public static class ConnectionStringBuilder
 		IConfiguration configuration)
 	{
 		string host =
-			configuration["Database:Host"] ?? "localhost";
+			configuration[ConfigurationSectionConstants.Database.Host]
+			?? throw new RequiredConfigurationException(ConfigurationSectionConstants.Database.Host);
 
 		string port =
-			configuration["Database:Port"] ?? "5432";
+			configuration[ConfigurationSectionConstants.Database.Port]
+			?? throw new RequiredConfigurationException(ConfigurationSectionConstants.Database.Port);
 
 		string database =
-			configuration["Database:Name"] ?? "seventysix";
+			configuration[ConfigurationSectionConstants.Database.Name]
+			?? throw new RequiredConfigurationException(ConfigurationSectionConstants.Database.Name);
 
 		string username =
-			configuration["Database:User"] ?? "postgres";
+			configuration[ConfigurationSectionConstants.Database.User]
+			?? throw new RequiredConfigurationException(ConfigurationSectionConstants.Database.User);
 
 		string password =
-			configuration["Database:Password"]
-			?? throw new InvalidOperationException(
-				"Database password must be set via DB_PASSWORD environment variable. "
-					+ "For local development, ensure .env file exists at repository root "
-					+ "with DB_PASSWORD set.");
+			configuration[ConfigurationSectionConstants.Database.Password]
+			?? throw new RequiredConfigurationException(ConfigurationSectionConstants.Database.Password);
 
 		return $"Host={host};Port={port};Database={database};Username={username};"
 			+ $"Password={password};Pooling=true;Minimum Pool Size=5;Maximum Pool Size=100;"

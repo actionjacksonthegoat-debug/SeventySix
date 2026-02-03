@@ -4,6 +4,8 @@
 
 using Microsoft.Extensions.Configuration;
 using SeventySix.Api.Configuration;
+using SeventySix.Shared.Constants;
+using SeventySix.Shared.Exceptions;
 using Shouldly;
 
 namespace SeventySix.Api.Tests.Configuration;
@@ -78,7 +80,7 @@ public sealed class ConnectionStringBuilderTests
 	}
 
 	[Fact]
-	public void BuildPostgresConnectionString_WithDefaults_UsesDefaultHostAndPort()
+	public void BuildPostgresConnectionString_MissingHost_ThrowsRequiredConfigurationException()
 	{
 		// Arrange
 		IConfiguration configuration =
@@ -86,38 +88,44 @@ public sealed class ConnectionStringBuilderTests
 				.AddInMemoryCollection(
 					new Dictionary<string, string?>
 					{
-						["Database:Password"] = "requiredpassword",
+						["Database:Port"] = "5432",
+						["Database:Name"] = "mydb",
+						["Database:User"] = "myuser",
+						["Database:Password"] = "mypassword",
 					})
 				.Build();
 
-		// Act
-		string result =
-			ConnectionStringBuilder.BuildPostgresConnectionString(
-				configuration);
+		// Act & Assert
+		RequiredConfigurationException exception =
+			Should.Throw<RequiredConfigurationException>(() =>
+				ConnectionStringBuilder.BuildPostgresConnectionString(
+					configuration));
 
-		// Assert
-		result.ShouldContain("Host=localhost");
-		result.ShouldContain("Port=5432");
-		result.ShouldContain("Database=seventysix");
-		result.ShouldContain("Username=postgres");
+		exception.SettingName.ShouldBe(ConfigurationSectionConstants.Database.Host);
 	}
 
 	[Fact]
-	public void BuildPostgresConnectionString_WithoutPassword_ThrowsInvalidOperationException()
+	public void BuildPostgresConnectionString_MissingPassword_ThrowsRequiredConfigurationException()
 	{
 		// Arrange
 		IConfiguration configuration =
 			new ConfigurationBuilder()
 				.AddInMemoryCollection(
-					new Dictionary<string, string?> { ["Database:Host"] = "myhost" })
+					new Dictionary<string, string?>
+					{
+						["Database:Host"] = "myhost",
+						["Database:Port"] = "5432",
+						["Database:Name"] = "mydb",
+						["Database:User"] = "myuser",
+					})
 				.Build();
 
 		// Act & Assert
-		InvalidOperationException exception =
-			Should.Throw<InvalidOperationException>(() =>
+		RequiredConfigurationException exception =
+			Should.Throw<RequiredConfigurationException>(() =>
 				ConnectionStringBuilder.BuildPostgresConnectionString(
 					configuration));
 
-		exception.Message.ShouldContain("DB_PASSWORD");
+		exception.SettingName.ShouldBe(ConfigurationSectionConstants.Database.Password);
 	}
 }

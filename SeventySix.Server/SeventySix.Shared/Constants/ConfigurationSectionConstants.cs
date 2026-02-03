@@ -11,6 +11,37 @@ namespace SeventySix.Shared.Constants;
 public static class ConfigurationSectionConstants
 {
 	/// <summary>
+	/// Database configuration section.
+	/// </summary>
+	public static class Database
+	{
+		/// <summary>
+		/// Database host setting.
+		/// </summary>
+		public const string Host = "Database:Host";
+
+		/// <summary>
+		/// Database port setting.
+		/// </summary>
+		public const string Port = "Database:Port";
+
+		/// <summary>
+		/// Database name setting.
+		/// </summary>
+		public const string Name = "Database:Name";
+
+		/// <summary>
+		/// Database user setting.
+		/// </summary>
+		public const string User = "Database:User";
+
+		/// <summary>
+		/// Database password setting.
+		/// </summary>
+		public const string Password = "Database:Password";
+	}
+
+	/// <summary>
 	/// JWT settings section.
 	/// </summary>
 	public const string Jwt = "Jwt";
@@ -44,6 +75,17 @@ public static class ConfigurationSectionConstants
 	/// Cache settings section.
 	/// </summary>
 	public const string Cache = "Cache";
+
+	/// <summary>
+	/// Background jobs settings section.
+	/// </summary>
+	public static class BackgroundJobs
+	{
+		/// <summary>
+		/// Background jobs enabled setting.
+		/// </summary>
+		public const string Enabled = "BackgroundJobs:Enabled";
+	}
 
 	/// <summary>
 	/// CORS settings section.

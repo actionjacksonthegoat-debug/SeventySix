@@ -2,7 +2,10 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using FluentValidation;
 using SeventySix.Api.Configuration;
+using SeventySix.Shared.Constants;
+using SeventySix.Shared.Registration;
 using SeventySix.Shared.Settings;
 
 namespace SeventySix.Api.Registration;
@@ -20,6 +23,8 @@ public static class ApplicationServicesRegistration
 	/// Reads configuration sections:
 	/// - "Resilience" (via ResilienceOptions.SectionName)
 	/// - "OutputCache" (via OutputCacheOptions.SectionName)
+	/// - "RateLimiting" (via ConfigurationSectionConstants.RateLimiting)
+	/// - "RequestLimits" (via ConfigurationSectionConstants.RequestLimits)
 	/// </remarks>
 	/// <param name="services">
 	/// The service collection.
@@ -34,7 +39,12 @@ public static class ApplicationServicesRegistration
 		this IServiceCollection services,
 		IConfiguration configuration)
 	{
-		// Configuration options with validation
+		// Register FluentValidation validators for settings
+		services.AddSingleton<IValidator<RateLimitingSettings>, RateLimitingSettingsValidator>();
+		services.AddSingleton<IValidator<RequestLimitsSettings>, RequestLimitsSettingsValidator>();
+		services.AddSingleton<IValidator<ResilienceOptions>, ResilienceOptionsValidator>();
+
+		// Configuration options with FluentValidation
 		services.Configure<ResilienceOptions>(
 			configuration.GetSection(ResilienceOptions.SectionName));
 
@@ -44,11 +54,24 @@ public static class ApplicationServicesRegistration
 		services
 			.AddOptions<ResilienceOptions>()
 			.Bind(configuration.GetSection(ResilienceOptions.SectionName))
+			.ValidateWithFluentValidation()
 			.ValidateOnStart();
 
 		services
 			.AddOptions<OutputCacheOptions>()
 			.Bind(configuration.GetSection(OutputCacheOptions.SectionName))
+			.ValidateOnStart();
+
+		services
+			.AddOptions<RateLimitingSettings>()
+			.BindConfiguration(ConfigurationSectionConstants.RateLimiting)
+			.ValidateWithFluentValidation()
+			.ValidateOnStart();
+
+		services
+			.AddOptions<RequestLimitsSettings>()
+			.BindConfiguration(ConfigurationSectionConstants.RequestLimits)
+			.ValidateWithFluentValidation()
 			.ValidateOnStart();
 
 		// Note: FluentValidation, Repositories, and Business Services

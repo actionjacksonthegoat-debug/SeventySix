@@ -140,8 +140,7 @@ public sealed class AdminSeederService(
 			{
 				UserName = settings.Value.Username,
 				Email = settings.Value.Email,
-				FullName =
-					settings.Value.FullName ?? "System Administrator",
+				FullName = settings.Value.FullName,
 				IsActive = true,
 				CreateDate = now,
 				CreatedBy =

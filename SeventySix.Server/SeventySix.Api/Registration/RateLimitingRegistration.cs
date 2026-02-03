@@ -61,19 +61,15 @@ public static class RateLimitingRegistration
 	{
 		RateLimitingSettings globalSettings =
 			configuration.GetSection(ConfigurationSectionConstants.RateLimiting).Get<RateLimitingSettings>()
-			?? new RateLimitingSettings();
+			?? throw new InvalidOperationException(
+				$"{ConfigurationSectionConstants.RateLimiting} configuration section is required");
 
 		AuthRateLimitSettings authSettings =
 			configuration
 				.GetSection(ConfigurationSectionConstants.AuthNested.RateLimit)
 				.Get<AuthRateLimitSettings>()
-			?? new AuthRateLimitSettings();
-
-		HealthRateLimitSettings healthSettings =
-			configuration
-				.GetSection("RateLimiting:Health")
-				.Get<HealthRateLimitSettings>()
-			?? new HealthRateLimitSettings();
+			?? throw new InvalidOperationException(
+				$"{ConfigurationSectionConstants.AuthNested.RateLimit} configuration section is required");
 
 		if (!globalSettings.Enabled)
 		{
@@ -84,10 +80,19 @@ public static class RateLimitingRegistration
 			services,
 			globalSettings,
 			authSettings,
-			healthSettings,
 			configuration);
 	}
 
+	/// <summary>
+	/// Configures rate limiting with all policies disabled (no-op limiters).
+	/// Used when rate limiting is disabled via configuration.
+	/// </summary>
+	/// <param name="services">
+	/// The service collection.
+	/// </param>
+	/// <returns>
+	/// The service collection for chaining.
+	/// </returns>
 	private static IServiceCollection AddDisabledRateLimiting(
 		IServiceCollection services)
 	{
@@ -127,11 +132,29 @@ public static class RateLimitingRegistration
 		return services;
 	}
 
+	/// <summary>
+	/// Configures rate limiting with all policies enabled.
+	/// Sets up global limiter, auth-specific policies, and rejection handling.
+	/// </summary>
+	/// <param name="services">
+	/// The service collection.
+	/// </param>
+	/// <param name="globalSettings">
+	/// The global rate limiting settings.
+	/// </param>
+	/// <param name="authSettings">
+	/// The authentication-specific rate limiting settings.
+	/// </param>
+	/// <param name="configuration">
+	/// The application configuration for CORS origins.
+	/// </param>
+	/// <returns>
+	/// The service collection for chaining.
+	/// </returns>
 	private static IServiceCollection AddEnabledRateLimiting(
 		IServiceCollection services,
 		RateLimitingSettings globalSettings,
 		AuthRateLimitSettings authSettings,
-		HealthRateLimitSettings healthSettings,
 		IConfiguration configuration)
 	{
 		string[] allowedOrigins =
@@ -147,7 +170,7 @@ public static class RateLimitingRegistration
 			options =>
 			{
 				options.GlobalLimiter =
-					CreateGlobalLimiter(globalSettings, healthSettings);
+					CreateGlobalLimiter(globalSettings);
 				AddAuthPolicies(options, authSettings);
 
 				Func<
@@ -170,9 +193,18 @@ public static class RateLimitingRegistration
 		return services;
 	}
 
+	/// <summary>
+	/// Creates the global rate limiter partitioned by client IP address.
+	/// Includes special handling for health endpoints and CORS preflight requests.
+	/// </summary>
+	/// <param name="settings">
+	/// The rate limiting settings containing global and health endpoint limits.
+	/// </param>
+	/// <returns>
+	/// A partitioned rate limiter for HTTP contexts.
+	/// </returns>
 	private static PartitionedRateLimiter<HttpContext> CreateGlobalLimiter(
-		RateLimitingSettings settings,
-		HealthRateLimitSettings healthSettings) =>
+		RateLimitingSettings settings) =>
 		PartitionedRateLimiter.Create<HttpContext, string>(
 			context =>
 			{
@@ -193,9 +225,9 @@ public static class RateLimitingRegistration
 						factory: _ =>
 							new FixedWindowRateLimiterOptions
 							{
-								PermitLimit = healthSettings.PermitLimit,
+								PermitLimit = settings.Health.PermitLimit,
 								Window =
-									TimeSpan.FromSeconds(healthSettings.WindowSeconds),
+									TimeSpan.FromSeconds(settings.Health.WindowSeconds),
 								QueueProcessingOrder =
 									QueueProcessingOrder.OldestFirst,
 								QueueLimit = 0,
@@ -217,6 +249,16 @@ public static class RateLimitingRegistration
 						});
 			});
 
+	/// <summary>
+	/// Adds authentication-specific rate limiting policies.
+	/// Configures stricter limits for login, registration, and token refresh endpoints.
+	/// </summary>
+	/// <param name="options">
+	/// The rate limiter options to configure.
+	/// </param>
+	/// <param name="settings">
+	/// The authentication rate limiting settings.
+	/// </param>
 	private static void AddAuthPolicies(
 		RateLimiterOptions options,
 		AuthRateLimitSettings settings)
@@ -272,6 +314,22 @@ public static class RateLimitingRegistration
 					TimeSpan.FromMinutes(1)));
 	}
 
+	/// <summary>
+	/// Creates a fixed window rate limiter for authentication endpoints.
+	/// Partitions by client IP address with configurable limits and window duration.
+	/// </summary>
+	/// <param name="context">
+	/// The HTTP context containing the client IP address.
+	/// </param>
+	/// <param name="permitLimit">
+	/// The maximum number of requests allowed per window.
+	/// </param>
+	/// <param name="window">
+	/// The duration of the rate limiting window.
+	/// </param>
+	/// <returns>
+	/// A rate limit partition configured for the specified limits.
+	/// </returns>
 	private static RateLimitPartition<string> CreateAuthLimiter(
 		HttpContext context,
 		int permitLimit,
@@ -288,6 +346,16 @@ public static class RateLimitingRegistration
 				QueueLimit = 0,
 			});
 
+	/// <summary>
+	/// Creates the handler for rate limit rejection responses.
+	/// Returns a 429 Too Many Requests response with RFC 7807 problem details.
+	/// </summary>
+	/// <param name="settings">
+	/// The rate limiting settings containing the retry-after value.
+	/// </param>
+	/// <returns>
+	/// A function that handles rate limit rejections.
+	/// </returns>
 	private static Func<
 		OnRejectedContext,
 		CancellationToken,

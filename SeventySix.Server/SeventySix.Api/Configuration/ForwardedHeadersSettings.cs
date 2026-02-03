@@ -6,6 +6,7 @@ namespace SeventySix.Api.Configuration;
 
 /// <summary>
 /// Configuration for trusted proxy handling with ForwardedHeadersMiddleware.
+/// Numeric values MUST be configured in appsettings.json.
 /// </summary>
 /// <remarks>
 /// <para><b>Security Impact:</b></para>
@@ -42,7 +43,7 @@ public record ForwardedHeadersSettings
 
 	/// <summary>
 	/// Gets or sets the limit on number of proxy hops to process.
-	/// Default: 1 (single reverse proxy like nginx or Azure App Gateway).
+	/// Must be configured in appsettings.json.
 	/// </summary>
-	public int ForwardLimit { get; set; } = 1;
+	public int ForwardLimit { get; set; }
 }

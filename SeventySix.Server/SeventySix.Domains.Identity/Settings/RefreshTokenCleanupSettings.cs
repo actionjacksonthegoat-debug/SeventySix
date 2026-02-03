@@ -6,6 +6,7 @@ namespace SeventySix.Identity.Settings;
 
 /// <summary>
 /// Configuration settings for the refresh token cleanup background job.
+/// All values MUST be configured in appsettings.json.
 /// </summary>
 public record RefreshTokenCleanupSettings
 {
@@ -16,32 +17,32 @@ public record RefreshTokenCleanupSettings
 
 	/// <summary>
 	/// Gets or sets the interval in hours between cleanup runs.
-	/// Default is 24 hours (once per day).
+	/// Must be configured in appsettings.json.
 	/// </summary>
-	public int IntervalHours { get; set; } = 24;
+	public int IntervalHours { get; set; }
 
 	/// <summary>
 	/// Gets or sets the number of days to retain expired tokens before deletion.
-	/// Default is 7 days.
+	/// Must be configured in appsettings.json.
 	/// </summary>
-	public int RetentionDays { get; set; } = 7;
+	public int RetentionDays { get; set; }
 
 	/// <summary>
 	/// Gets or sets the number of hours to retain used tokens before deletion.
 	/// Applies to PasswordResetToken and EmailVerificationToken entities.
-	/// Default is 24 hours.
+	/// Must be configured in appsettings.json.
 	/// </summary>
-	public int UsedTokenRetentionHours { get; set; } = 24;
+	public int UsedTokenRetentionHours { get; set; }
 
 	/// <summary>
 	/// Gets the preferred UTC hour for cleanup (0-23).
-	/// Default: 8 (3:20 AM EST when combined with minute).
+	/// Must be configured in appsettings.json.
 	/// </summary>
-	public int PreferredStartHourUtc { get; init; } = 8;
+	public int PreferredStartHourUtc { get; init; }
 
 	/// <summary>
 	/// Gets the preferred UTC minute for cleanup (0-59).
-	/// Default: 20.
+	/// Must be configured in appsettings.json.
 	/// </summary>
-	public int PreferredStartMinuteUtc { get; init; } = 20;
+	public int PreferredStartMinuteUtc { get; init; }
 }

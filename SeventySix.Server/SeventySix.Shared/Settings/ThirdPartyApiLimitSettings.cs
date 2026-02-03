@@ -9,6 +9,7 @@ namespace SeventySix.Shared;
 /// <summary>
 /// Configuration for third-party API rate limits.
 /// Bound from appsettings.json "ThirdPartyApiLimits" section.
+/// All limit values MUST be configured in appsettings.json.
 /// </summary>
 public record ThirdPartyApiLimitSettings
 {
@@ -19,19 +20,21 @@ public record ThirdPartyApiLimitSettings
 
 	/// <summary>
 	/// Gets the default daily limit when API-specific limit not configured.
+	/// Must be configured in appsettings.json.
 	/// </summary>
-	public int DefaultDailyLimit { get; init; } = 1000;
+	public int DefaultDailyLimit { get; init; }
 
 	/// <summary>
 	/// Gets the default monthly limit when API-specific limit not configured.
+	/// Must be configured in appsettings.json.
 	/// </summary>
-	public int DefaultMonthlyLimit { get; init; } = 30000;
+	public int DefaultMonthlyLimit { get; init; }
 
 	/// <summary>
 	/// Gets a value indicating whether rate limiting is enabled globally.
 	/// When false, rate limiting checks are bypassed (development mode).
 	/// </summary>
-	public bool Enabled { get; init; } = true;
+	public bool Enabled { get; init; }
 
 	/// <summary>
 	/// Gets the per-API limit configurations.
@@ -116,9 +119,8 @@ public record ThirdPartyApiLimit
 {
 	/// <summary>
 	/// Gets the interval type for this limit (Daily or Monthly).
-	/// Default is Daily for backward compatibility.
 	/// </summary>
-	public LimitInterval Interval { get; init; } = LimitInterval.Daily;
+	public LimitInterval Interval { get; init; }
 
 	/// <summary>
 	/// Gets the daily request limit for this API.
@@ -136,5 +138,5 @@ public record ThirdPartyApiLimit
 	/// Gets a value indicating whether rate limiting is enabled for this API.
 	/// Useful for temporarily disabling limits during testing.
 	/// </summary>
-	public bool Enabled { get; init; } = true;
+	public bool Enabled { get; init; }
 }

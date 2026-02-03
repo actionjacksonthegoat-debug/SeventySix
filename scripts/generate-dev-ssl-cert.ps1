@@ -1,24 +1,34 @@
 # generate-dev-ssl-cert.ps1
-# Generates a unified self-signed SSL certificate for local development.
+# Generates a unified self-signed SSL certificate for local development and E2E testing.
 #
-# This certificate covers ALL development services:
+# SINGLE CERTIFICATE COVERS ALL ENVIRONMENTS:
+# ============================================================================
+#
+# Location: SeventySix.Client\ssl\
+#
+# Development:
 #   - Angular client (https://localhost:4200)
 #   - .NET API (https://localhost:7074)
-#   - Grafana (https://localhost:3443 via nginx-proxy)
-#   - Jaeger (https://localhost:16687 via nginx-proxy)
-#   - Prometheus (https://localhost:9091 via nginx-proxy)
-#   - pgAdmin (https://localhost:5051 via nginx-proxy)
-#   - OTEL Collector (https://localhost:4319 via nginx-proxy)
+#   - Observability services (Grafana, Jaeger, Prometheus, pgAdmin, OTEL)
+#
+# E2E Testing (Docker):
+#   - Angular client (https://localhost:4201)
+#   - .NET API (https://localhost:7174)
+#   - Both containers mount the same certificate directory
 #
 # ============================================================================
-# CERTIFICATE TRUST COMMANDS (Run PowerShell as Administrator)
+# USAGE
 # ============================================================================
 #
-# GENERATE CERTIFICATE:
-#   .\scripts\generate-dev-ssl-cert.ps1
-#   .\scripts\generate-dev-ssl-cert.ps1 -Force  # Regenerate existing
+#   .\scripts\generate-dev-ssl-cert.ps1           # Generate if missing
+#   .\scripts\generate-dev-ssl-cert.ps1 -Force    # Regenerate certificate
+#   .\scripts\generate-dev-ssl-cert.ps1 -SkipTrust # Skip trust prompt
 #
-# TRUST CERTIFICATE (Required once after generation):
+# ============================================================================
+# MANUAL TRUST COMMANDS (if automated trust fails)
+# ============================================================================
+#
+# TRUST CERTIFICATE (Run PowerShell as Administrator):
 #   Import-Certificate -FilePath "C:\SeventySix\SeventySix.Client\ssl\dev-certificate.crt" -CertStoreLocation Cert:\LocalMachine\Root
 #
 # VERIFY TRUST:
@@ -27,156 +37,458 @@
 # REMOVE TRUST (if needed):
 #   Get-ChildItem Cert:\LocalMachine\Root | Where-Object { $_.Subject -like "*SeventySix*" } | Remove-Item
 #
-# GUI ALTERNATIVE:
-#   1. Double-click dev-certificate.crt
-#   2. Click "Install Certificate..."
-#   3. Select "Local Machine" → Next
-#   4. Select "Place all certificates in the following store"
-#   5. Browse → "Trusted Root Certification Authorities" → OK
-#   6. Next → Finish
-#
 # ============================================================================
-# IMPORTANT: These certificates are for DEVELOPMENT ONLY.
+# IMPORTANT: These certificates are for DEVELOPMENT AND E2E TESTING ONLY.
 # Production environments MUST use real certificates from a trusted CA.
 # ============================================================================
 
 param(
-	[string]$OutputDir = "$PSScriptRoot\..\SeventySix.Client\ssl",
-	[switch]$Force
+	[switch]$Force,
+	[switch]$SkipTrust
 )
 
-Write-Host ""
-Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "  Development SSL Certificate Generator" -ForegroundColor Cyan
-Write-Host "========================================" -ForegroundColor Cyan
-Write-Host ""
+# ============================================================================
+# CONFIGURATION
+# ============================================================================
 
-# Resolve the output directory path
-$resolvedOutputDir = [System.IO.Path]::GetFullPath($OutputDir)
-$certificatePath = Join-Path $resolvedOutputDir "dev-certificate.crt"
-$privateKeyPath = Join-Path $resolvedOutputDir "dev-certificate.key"
-$pfxBundlePath = Join-Path $resolvedOutputDir "dev-certificate.pfx"
+$scriptRootDirectory = $PSScriptRoot
+$projectRootDirectory = [System.IO.Path]::GetFullPath("$scriptRootDirectory\..")
 
-# Create output directory if it doesn't exist
-if (-not (Test-Path $resolvedOutputDir)) {
-	New-Item -ItemType Directory -Path $resolvedOutputDir -Force | Out-Null
-	Write-Host "Created directory: $resolvedOutputDir" -ForegroundColor Gray
-}
+# Single certificate configuration (used for both dev and E2E)
+$certificateConfigurations = @(
+	@{
+		Name            = "Development & E2E"
+		OutputDirectory = "$projectRootDirectory\SeventySix.Client\ssl"
+		CertificateName = "dev-certificate"
+		FriendlyName    = "SeventySix Development Certificate"
+		Password        = "dev-ssl-password"
+		DnsNames        = @(
+			"localhost",
+			"127.0.0.1",
+			"::1",
+			"grafana.localhost",
+			"jaeger.localhost",
+			"prometheus.localhost",
+			"pgadmin.localhost",
+			"api-e2e",       # Docker service name for internal E2E communication
+			"client-e2e"     # Docker service name for internal E2E communication
+		)
+	}
+)
 
-# Check if certificates already exist
-if ((Test-Path $certificatePath) -and -not $Force) {
-	Write-Host "Certificate already exists at: $certificatePath" -ForegroundColor Yellow
-	Write-Host "Use -Force to regenerate." -ForegroundColor Yellow
-	Write-Host ""
-	exit 0
-}
+# ============================================================================
+# FUNCTIONS
+# ============================================================================
 
-# Generate self-signed certificate using .NET
-Write-Host "Generating SSL certificate for localhost..." -ForegroundColor Cyan
+function Find-OpenSslExecutable {
+	<#
+	.SYNOPSIS
+	Locates the OpenSSL executable from PATH or Git installation.
 
-try {
-	# Create certificate with Subject Alternative Names for all development services
-	# Includes localhost variants and observability service hostnames
-	$developmentCertificate = New-SelfSignedCertificate `
-		-Subject "CN=localhost" `
-		-DnsName "localhost", "127.0.0.1", "::1", "grafana.localhost", "jaeger.localhost", "prometheus.localhost", "pgadmin.localhost" `
-		-KeyAlgorithm RSA `
-		-KeyLength 2048 `
-		-NotBefore (Get-Date) `
-		-NotAfter (Get-Date).AddYears(2) `
-		-CertStoreLocation "Cert:\CurrentUser\My" `
-		-FriendlyName "SeventySix Development Certificate" `
-		-HashAlgorithm SHA256 `
-		-KeyUsage DigitalSignature, KeyEncipherment `
-		-TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.1") `
-		-KeyExportPolicy Exportable
+	.OUTPUTS
+	The path to the OpenSSL executable, or $null if not found.
+	#>
 
-	Write-Host "Certificate generated with thumbprint: $($developmentCertificate.Thumbprint)" -ForegroundColor Gray
+	$opensslCommand = Get-Command openssl -ErrorAction SilentlyContinue
 
-	# Export to PFX (contains both certificate and private key)
-	$pfxPassword = ConvertTo-SecureString -String "dev-ssl-password" -Force -AsPlainText
-	Export-PfxCertificate `
-		-Cert $developmentCertificate `
-		-FilePath $pfxBundlePath `
-		-Password $pfxPassword | Out-Null
+	if ($opensslCommand) {
+		return $opensslCommand.Source
+	}
 
-	# Use OpenSSL to extract PEM files from PFX (if available)
-	# Check system PATH first, then Git's bundled OpenSSL
-	$opensslPath = Get-Command openssl -ErrorAction SilentlyContinue
+	# Try Git's bundled OpenSSL as fallback
+	$gitCommand = Get-Command git -ErrorAction SilentlyContinue
 
-	if (-not $opensslPath) {
-		# Try Git's bundled OpenSSL
-		$gitPath = Get-Command git -ErrorAction SilentlyContinue
-		if ($gitPath) {
-			$gitDir = Split-Path (Split-Path $gitPath.Source)
-			$gitOpenssl = Join-Path $gitDir "usr\bin\openssl.exe"
-			if (Test-Path $gitOpenssl) {
-				$opensslPath = @{ Source = $gitOpenssl }
-				Write-Host "Using Git's bundled OpenSSL..." -ForegroundColor Gray
-			}
+	if ($gitCommand) {
+		$gitDirectory = Split-Path (Split-Path $gitCommand.Source)
+		$gitOpenSslPath = Join-Path $gitDirectory "usr\bin\openssl.exe"
+
+		if (Test-Path $gitOpenSslPath) {
+			Write-Host "  Using Git's bundled OpenSSL" -ForegroundColor Gray
+			return $gitOpenSslPath
 		}
 	}
 
-	if ($opensslPath) {
-		Write-Host "Extracting PEM files from PFX..." -ForegroundColor Gray
-		$opensslExecutable = $opensslPath.Source
+	return $null
+}
 
-		# Extract certificate and convert to clean PEM
-		& $opensslExecutable pkcs12 -in $pfxBundlePath -clcerts -nokeys -out $certificatePath -passin pass:dev-ssl-password 2>$null
-		& $opensslExecutable x509 -in $certificatePath -out $certificatePath 2>$null
+function Test-CertificateExists {
+	<#
+	.SYNOPSIS
+	Checks if a certificate already exists at the specified location.
 
-		# Extract private key and convert to clean PEM
-		& $opensslExecutable pkcs12 -in $pfxBundlePath -nocerts -nodes -out $privateKeyPath -passin pass:dev-ssl-password 2>$null
-		& $opensslExecutable rsa -in $privateKeyPath -out $privateKeyPath 2>$null
+	.PARAMETER OutputDirectory
+	The directory to check for certificate files.
 
+	.PARAMETER CertificateName
+	The base name of the certificate files (without extension).
+
+	.OUTPUTS
+	$true if the certificate exists, $false otherwise.
+	#>
+	param(
+		[string]$OutputDirectory,
+		[string]$CertificateName
+	)
+
+	$pfxPath = Join-Path $OutputDirectory "$CertificateName.pfx"
+	return Test-Path $pfxPath
+}
+
+function Test-CertificateAlreadyTrusted {
+	<#
+	.SYNOPSIS
+	Checks if a certificate is already trusted in the Windows certificate store.
+
+	.PARAMETER CertificatePath
+	The path to the certificate file to check.
+
+	.OUTPUTS
+	$true if the certificate is already trusted, $false otherwise.
+	#>
+	param(
+		[string]$CertificatePath
+	)
+
+	if (-not (Test-Path $CertificatePath)) {
+		return $false
+	}
+
+	try {
+		$certificateToCheck = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2($CertificatePath)
+		$thumbprint = $certificateToCheck.Thumbprint
+		$certificateToCheck.Dispose()
+
+		$trustedCertificate = Get-ChildItem -Path "Cert:\LocalMachine\Root" -ErrorAction SilentlyContinue |
+		Where-Object { $_.Thumbprint -eq $thumbprint }
+
+		return $null -ne $trustedCertificate
+	}
+	catch {
+		return $false
+	}
+}
+
+function New-SslCertificateFiles {
+	<#
+	.SYNOPSIS
+	Generates SSL certificate files for a given configuration.
+
+	.PARAMETER Configuration
+	A hashtable containing certificate configuration (Name, OutputDirectory, CertificateName, FriendlyName, Password, DnsNames).
+
+	.OUTPUTS
+	The path to the generated certificate (.crt) file, or $null on failure.
+	#>
+	param(
+		[hashtable]$Configuration
+	)
+
+	$environmentName = $Configuration.Name
+	$outputDirectory = $Configuration.OutputDirectory
+	$certificateName = $Configuration.CertificateName
+	$friendlyName = $Configuration.FriendlyName
+	$pfxPassword = $Configuration.Password
+	$dnsNames = $Configuration.DnsNames
+
+	$certificatePath = Join-Path $outputDirectory "$certificateName.crt"
+	$privateKeyPath = Join-Path $outputDirectory "$certificateName.key"
+	$pfxBundlePath = Join-Path $outputDirectory "$certificateName.pfx"
+
+	Write-Host ""
+	Write-Host "Generating $environmentName certificate..." -ForegroundColor Cyan
+
+	# Create output directory if it doesn't exist
+	if (-not (Test-Path $outputDirectory)) {
+		New-Item -ItemType Directory -Path $outputDirectory -Force | Out-Null
+		Write-Host "  Created directory: $outputDirectory" -ForegroundColor Gray
+	}
+
+	try {
+		# Create certificate with Subject Alternative Names
+		$generatedCertificate = New-SelfSignedCertificate `
+			-Subject "CN=localhost" `
+			-DnsName $dnsNames `
+			-KeyAlgorithm RSA `
+			-KeyLength 2048 `
+			-NotBefore (Get-Date) `
+			-NotAfter (Get-Date).AddYears(2) `
+			-CertStoreLocation "Cert:\CurrentUser\My" `
+			-FriendlyName $friendlyName `
+			-HashAlgorithm SHA256 `
+			-KeyUsage DigitalSignature, KeyEncipherment `
+			-TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.1") `
+			-KeyExportPolicy Exportable
+
+		Write-Host "  Thumbprint: $($generatedCertificate.Thumbprint)" -ForegroundColor Gray
+
+		# Export to PFX (contains both certificate and private key)
+		$securePassword = ConvertTo-SecureString -String $pfxPassword -Force -AsPlainText
+		Export-PfxCertificate `
+			-Cert $generatedCertificate `
+			-FilePath $pfxBundlePath `
+			-Password $securePassword | Out-Null
+
+		# Extract PEM files using OpenSSL if available
+		$opensslExecutable = Find-OpenSslExecutable
+
+		if ($opensslExecutable) {
+			# Extract certificate to PEM format
+			& $opensslExecutable pkcs12 -in $pfxBundlePath -clcerts -nokeys -out $certificatePath -passin "pass:$pfxPassword" 2>$null
+			& $opensslExecutable x509 -in $certificatePath -out $certificatePath 2>$null
+
+			# Extract private key to PEM format
+			& $opensslExecutable pkcs12 -in $pfxBundlePath -nocerts -nodes -out $privateKeyPath -passin "pass:$pfxPassword" 2>$null
+			& $opensslExecutable rsa -in $privateKeyPath -out $privateKeyPath 2>$null
+
+			Write-Host "  Created: $certificateName.crt, $certificateName.key, $certificateName.pfx" -ForegroundColor Green
+		}
+		else {
+			# Fallback: Export certificate (public key) to CRT format using .NET
+			$certificateBytes = $generatedCertificate.Export([System.Security.Cryptography.X509Certificates.X509ContentType]::Cert)
+			$certificateBase64 = [System.Convert]::ToBase64String($certificateBytes, [System.Base64FormattingOptions]::InsertLineBreaks)
+			$certificatePem = "-----BEGIN CERTIFICATE-----`n$certificateBase64`n-----END CERTIFICATE-----"
+			[System.IO.File]::WriteAllText($certificatePath, $certificatePem)
+
+			Write-Host "  Created: $certificateName.crt, $certificateName.pfx (no .key - OpenSSL not found)" -ForegroundColor Yellow
+		}
+
+		# Clean up from certificate store (we have the files now)
+		Remove-Item -Path "Cert:\CurrentUser\My\$($generatedCertificate.Thumbprint)" -Force
+
+		return $certificatePath
+	}
+	catch {
+		Write-Host "  Failed: $_" -ForegroundColor Red
+		return $null
+	}
+}
+
+function Install-TrustedCertificate {
+	<#
+	.SYNOPSIS
+	Installs a certificate into the Windows Trusted Root Certification Authorities store.
+
+	.PARAMETER CertificatePath
+	The path to the certificate file to trust.
+
+	.PARAMETER CertificateName
+	A friendly name for display purposes.
+
+	.OUTPUTS
+	$true if successful, $false otherwise.
+	#>
+	param(
+		[string]$CertificatePath,
+		[string]$CertificateName
+	)
+
+	if (-not (Test-Path $CertificatePath)) {
+		Write-Host "  Certificate not found: $CertificatePath" -ForegroundColor Red
+		return $false
+	}
+
+	try {
+		Import-Certificate -FilePath $CertificatePath -CertStoreLocation "Cert:\LocalMachine\Root" | Out-Null
+		Write-Host "  Trusted: $CertificateName" -ForegroundColor Green
+		return $true
+	}
+	catch {
+		Write-Host "  Failed to trust $CertificateName : $_" -ForegroundColor Red
+		return $false
+	}
+}
+
+function Test-AdministratorPrivileges {
+	<#
+	.SYNOPSIS
+	Checks if the current PowerShell session is running with Administrator privileges.
+
+	.OUTPUTS
+	$true if running as Administrator, $false otherwise.
+	#>
+	$currentIdentity = [Security.Principal.WindowsIdentity]::GetCurrent()
+	$currentPrincipal = New-Object Security.Principal.WindowsPrincipal($currentIdentity)
+	return $currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+}
+
+# ============================================================================
+# MAIN SCRIPT
+# ============================================================================
+
+Write-Host ""
+Write-Host "========================================" -ForegroundColor Cyan
+Write-Host "  SSL Certificate Generator" -ForegroundColor Cyan
+Write-Host "  (Development + E2E Testing)" -ForegroundColor Cyan
+Write-Host "========================================" -ForegroundColor Cyan
+
+# Track generated certificates for trust step
+$generatedCertificatePaths = @()
+$certificatesGenerated = $false
+$certificatesSkipped = 0
+
+foreach ($configuration in $certificateConfigurations) {
+	$environmentName = $configuration.Name
+	$outputDirectory = $configuration.OutputDirectory
+	$certificateName = $configuration.CertificateName
+
+	# Check if certificate already exists
+	if ((Test-CertificateExists -OutputDirectory $outputDirectory -CertificateName $certificateName) -and -not $Force) {
+		$existingPfxPath = Join-Path $outputDirectory "$certificateName.pfx"
 		Write-Host ""
-		Write-Host "Certificate generated successfully!" -ForegroundColor Green
-		Write-Host ""
-		Write-Host "Files created:" -ForegroundColor White
-		Write-Host "  Certificate: $certificatePath" -ForegroundColor Gray
-		Write-Host "  Private Key: $privateKeyPath" -ForegroundColor Gray
-		Write-Host "  PFX Bundle:  $pfxBundlePath" -ForegroundColor Gray
+		Write-Host "$environmentName certificate already exists" -ForegroundColor Yellow
+		Write-Host "  Location: $existingPfxPath" -ForegroundColor Gray
+
+		# Still track for trust verification
+		$existingCrtPath = Join-Path $outputDirectory "$certificateName.crt"
+		if (Test-Path $existingCrtPath) {
+			$generatedCertificatePaths += @{
+				Path = $existingCrtPath
+				Name = $environmentName
+			}
+		}
+
+		$certificatesSkipped++
+		continue
+	}
+
+	# Generate the certificate
+	$certificatePath = New-SslCertificateFiles -Configuration $configuration
+
+	if ($certificatePath) {
+		$generatedCertificatePaths += @{
+			Path = $certificatePath
+			Name = $environmentName
+		}
+		$certificatesGenerated = $true
+	}
+}
+
+# ============================================================================
+# CERTIFICATE TRUST
+# ============================================================================
+
+Write-Host ""
+Write-Host "----------------------------------------" -ForegroundColor Gray
+
+# Check which certificates need to be trusted
+$certificatesToTrust = @()
+
+foreach ($certificateInfo in $generatedCertificatePaths) {
+	if (-not (Test-CertificateAlreadyTrusted -CertificatePath $certificateInfo.Path)) {
+		$certificatesToTrust += $certificateInfo
 	}
 	else {
-		# Fallback: Export certificate (public key) to CRT format using .NET
-		$certificateBytes = $developmentCertificate.Export([System.Security.Cryptography.X509Certificates.X509ContentType]::Cert)
-		$certificateBase64 = [System.Convert]::ToBase64String($certificateBytes, [System.Base64FormattingOptions]::InsertLineBreaks)
-		$certificatePem = "-----BEGIN CERTIFICATE-----`n$certificateBase64`n-----END CERTIFICATE-----"
-		[System.IO.File]::WriteAllText($certificatePath, $certificatePem)
+		Write-Host "$($certificateInfo.Name) certificate is already trusted" -ForegroundColor Green
+	}
+}
 
-		Write-Host ""
-		Write-Host "Certificate generated (OpenSSL not found for key extraction)." -ForegroundColor Yellow
-		Write-Host ""
-		Write-Host "Files created:" -ForegroundColor White
-		Write-Host "  Certificate: $certificatePath" -ForegroundColor Gray
-		Write-Host "  PFX Bundle:  $pfxBundlePath" -ForegroundColor Gray
-		Write-Host ""
-		Write-Host "To extract the private key, install OpenSSL and run:" -ForegroundColor Yellow
-		Write-Host "  openssl pkcs12 -in `"$pfxBundlePath`" -nocerts -nodes -out `"$privateKeyPath`" -passin pass:dev-ssl-password" -ForegroundColor White
-		Write-Host ""
-		Write-Host "Or install OpenSSL via:" -ForegroundColor Yellow
-		Write-Host "  winget install OpenSSL.Light" -ForegroundColor White
-		Write-Host "  # or" -ForegroundColor Gray
-		Write-Host "  choco install openssl.light" -ForegroundColor White
+if ($certificatesToTrust.Count -eq 0) {
+	Write-Host ""
+	Write-Host "All certificates are already trusted." -ForegroundColor Green
+}
+elseif ($SkipTrust) {
+	Write-Host ""
+	Write-Host "Trust step skipped (-SkipTrust flag)" -ForegroundColor Yellow
+	Write-Host ""
+	Write-Host "To trust certificates manually, run as Administrator:" -ForegroundColor Yellow
+
+	foreach ($certificateInfo in $certificatesToTrust) {
+		Write-Host "  Import-Certificate -FilePath `"$($certificateInfo.Path)`" -CertStoreLocation Cert:\LocalMachine\Root" -ForegroundColor White
+	}
+}
+else {
+	# Prompt user to trust certificates
+	Write-Host ""
+	Write-Host "CERTIFICATE TRUST" -ForegroundColor Cyan
+	Write-Host ""
+	Write-Host "To eliminate browser security warnings, certificates must be added to" -ForegroundColor White
+	Write-Host "the Windows Trusted Root Certification Authorities store." -ForegroundColor White
+	Write-Host ""
+	Write-Host "Certificates to trust:" -ForegroundColor White
+
+	foreach ($certificateInfo in $certificatesToTrust) {
+		Write-Host "  - $($certificateInfo.Name): $($certificateInfo.Path)" -ForegroundColor Gray
 	}
 
-	# Clean up from certificate store (we have the files now)
-	Remove-Item -Path "Cert:\CurrentUser\My\$($developmentCertificate.Thumbprint)" -Force
+	Write-Host ""
 
-	Write-Host ""
-	Write-Host "To trust this certificate (removes browser warnings):" -ForegroundColor Yellow
-	Write-Host "  1. Double-click the .crt file (or .pfx)" -ForegroundColor White
-	Write-Host "  2. Click 'Install Certificate...'" -ForegroundColor White
-	Write-Host "  3. Select 'Local Machine' and click Next" -ForegroundColor White
-	Write-Host "  4. Select 'Place all certificates in the following store'" -ForegroundColor White
-	Write-Host "  5. Click Browse and select 'Trusted Root Certification Authorities'" -ForegroundColor White
-	Write-Host "  6. Click Next, then Finish" -ForegroundColor White
-	Write-Host ""
-	Write-Host "Or run this PowerShell command as Administrator:" -ForegroundColor Yellow
-	Write-Host "  Import-Certificate -FilePath `"$certificatePath`" -CertStoreLocation Cert:\LocalMachine\Root" -ForegroundColor White
-	Write-Host ""
+	$userResponse = Read-Host "Add these certificates to Trusted Root store? (y/n)"
+
+	if ($userResponse -eq 'y' -or $userResponse -eq 'Y') {
+		Write-Host ""
+
+		# Check if running as Administrator
+		if (Test-AdministratorPrivileges) {
+			Write-Host "Installing certificates as trusted roots..." -ForegroundColor Cyan
+
+			foreach ($certificateInfo in $certificatesToTrust) {
+				Install-TrustedCertificate -CertificatePath $certificateInfo.Path -CertificateName $certificateInfo.Name | Out-Null
+			}
+		}
+		else {
+			Write-Host "Administrator privileges required to trust certificates." -ForegroundColor Yellow
+			Write-Host "Attempting to elevate..." -ForegroundColor Gray
+
+			# Build the commands to run elevated
+			$trustCommands = $certificatesToTrust | ForEach-Object {
+				"Import-Certificate -FilePath '$($_.Path)' -CertStoreLocation 'Cert:\LocalMachine\Root'"
+			}
+
+			$elevatedScript = $trustCommands -join "; "
+
+			try {
+				Start-Process powershell.exe -Verb RunAs -ArgumentList "-NoProfile", "-Command", $elevatedScript -Wait
+				Write-Host ""
+				Write-Host "Certificate trust completed (check elevated window for any errors)." -ForegroundColor Green
+			}
+			catch {
+				Write-Host ""
+				Write-Host "Failed to elevate. Please run these commands manually as Administrator:" -ForegroundColor Red
+
+				foreach ($certificateInfo in $certificatesToTrust) {
+					Write-Host "  Import-Certificate -FilePath `"$($certificateInfo.Path)`" -CertStoreLocation Cert:\LocalMachine\Root" -ForegroundColor White
+				}
+			}
+		}
+	}
+	else {
+		Write-Host ""
+		Write-Host "Trust skipped. To trust later, run as Administrator:" -ForegroundColor Yellow
+
+		foreach ($certificateInfo in $certificatesToTrust) {
+			Write-Host "  Import-Certificate -FilePath `"$($certificateInfo.Path)`" -CertStoreLocation Cert:\LocalMachine\Root" -ForegroundColor White
+		}
+	}
 }
-catch {
-	Write-Host "Failed to generate certificate: $_" -ForegroundColor Red
-	exit 1
+
+# ============================================================================
+# SUMMARY
+# ============================================================================
+
+Write-Host ""
+Write-Host "========================================" -ForegroundColor Cyan
+Write-Host "  Summary" -ForegroundColor Cyan
+Write-Host "========================================" -ForegroundColor Cyan
+Write-Host ""
+
+if ($certificatesGenerated) {
+	Write-Host "Certificates generated successfully!" -ForegroundColor Green
 }
+elseif ($certificatesSkipped -eq $certificateConfigurations.Count) {
+	Write-Host "All certificates already exist." -ForegroundColor Green
+	Write-Host "Use -Force to regenerate." -ForegroundColor Gray
+}
+
+Write-Host ""
+Write-Host "Locations:" -ForegroundColor White
+
+foreach ($configuration in $certificateConfigurations) {
+	$pfxPath = Join-Path $configuration.OutputDirectory "$($configuration.CertificateName).pfx"
+	Write-Host "  $($configuration.Name): $pfxPath" -ForegroundColor Gray
+}
+
+Write-Host ""
+Write-Host "Next steps:" -ForegroundColor White
+Write-Host "  - Development: Run 'npm start' or 'dotnet run'" -ForegroundColor Gray
+Write-Host "  - E2E Tests:   Run 'npm run test:e2e'" -ForegroundColor Gray
+Write-Host ""

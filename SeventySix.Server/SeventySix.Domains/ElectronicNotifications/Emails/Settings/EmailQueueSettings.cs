@@ -6,6 +6,7 @@ namespace SeventySix.ElectronicNotifications.Emails;
 
 /// <summary>
 /// Configuration settings for the email queue processor.
+/// All values MUST be configured in appsettings.json.
 /// </summary>
 /// <remarks>
 /// Bound from appsettings.json section "Email:Queue".
@@ -20,30 +21,35 @@ public record EmailQueueSettings
 	/// <summary>
 	/// Gets whether queue processing is enabled.
 	/// </summary>
-	public bool Enabled { get; init; } = true;
+	public bool Enabled { get; init; }
 
 	/// <summary>
 	/// Gets the interval in seconds between queue processing runs.
+	/// Must be configured in appsettings.json.
 	/// </summary>
-	public int ProcessingIntervalSeconds { get; init; } = 30;
+	public int ProcessingIntervalSeconds { get; init; }
 
 	/// <summary>
 	/// Gets the maximum number of emails to process per batch.
+	/// Must be configured in appsettings.json.
 	/// </summary>
-	public int BatchSize { get; init; } = 50;
+	public int BatchSize { get; init; }
 
 	/// <summary>
 	/// Gets the maximum number of send attempts before dead-lettering.
+	/// Must be configured in appsettings.json.
 	/// </summary>
-	public int MaxAttempts { get; init; } = 3;
+	public int MaxAttempts { get; init; }
 
 	/// <summary>
 	/// Gets the delay in minutes before retrying a failed email.
+	/// Must be configured in appsettings.json.
 	/// </summary>
-	public int RetryDelayMinutes { get; init; } = 5;
+	public int RetryDelayMinutes { get; init; }
 
 	/// <summary>
 	/// Gets the hours after which failed emails are marked as dead letter.
+	/// Must be configured in appsettings.json.
 	/// </summary>
-	public int DeadLetterAfterHours { get; init; } = 24;
+	public int DeadLetterAfterHours { get; init; }
 }

@@ -389,9 +389,9 @@ public static class IdentityRegistration
 		services.AddScoped<IJobSchedulerContributor, IdentityJobSchedulerContributor>();
 
 		// Skip AdminSeederService if background jobs are disabled
-		bool backgroundJobsEnabled =
-			configuration.GetValue<bool?>("BackgroundJobs:Enabled") ?? true;
-		if (!backgroundJobsEnabled)
+		bool isBackgroundJobsEnabled =
+			configuration.GetValue<bool>(ConfigurationSectionConstants.BackgroundJobs.Enabled);
+		if (!isBackgroundJobsEnabled)
 		{
 			return;
 		}

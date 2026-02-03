@@ -61,8 +61,8 @@ export default defineConfig({
 	},
 
 	use: {
-		baseURL: "http://localhost:4200",
-		ignoreHTTPSErrors: true, // Allow self-signed certs for E2E API calls
+		baseURL: "https://localhost:4201",
+		ignoreHTTPSErrors: true, // Allow self-signed certs for E2E
 		trace: "on-first-retry",
 		screenshot: "only-on-failure",
 		video: "retain-on-failure"
@@ -107,7 +107,8 @@ export default defineConfig({
 	webServer: [
 		{
 			command: "npm run start -- --configuration e2e",
-			url: "http://localhost:4200",
+			url: "https://localhost:4201",
+			ignoreHTTPSErrors: true,
 			reuseExistingServer: true,
 			timeout: 120000
 		}

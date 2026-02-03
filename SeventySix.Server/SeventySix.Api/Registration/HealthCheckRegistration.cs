@@ -32,9 +32,9 @@ public static class HealthCheckExtensions
 		IConfiguration configuration)
 	{
 		// Skip health checks in Test environment for performance
-		bool enabled =
-			configuration.GetValue<bool?>("HealthChecks:Enabled") ?? true;
-		if (!enabled)
+		bool isHealthChecksEnabled =
+			configuration.GetValue<bool>("HealthChecks:Enabled");
+		if (!isHealthChecksEnabled)
 		{
 			// Add minimal health checks service (required by some middleware)
 			services.AddHealthChecks();

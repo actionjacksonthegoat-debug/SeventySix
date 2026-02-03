@@ -32,26 +32,34 @@ public static class DesignTimeConnectionStringProvider
 	{
 		LoadEnvFile();
 
-		string host =
-			Environment.GetEnvironmentVariable("DB_HOST") ?? "localhost";
+		string databaseHost =
+			Environment.GetEnvironmentVariable("DB_HOST")
+			?? throw new InvalidOperationException(
+				"DB_HOST must be set in .env file for design-time operations.");
 
-		string port =
-			Environment.GetEnvironmentVariable("DB_PORT") ?? "5432";
+		string databasePort =
+			Environment.GetEnvironmentVariable("DB_PORT")
+			?? throw new InvalidOperationException(
+				"DB_PORT must be set in .env file for design-time operations.");
 
-		string database =
-			Environment.GetEnvironmentVariable("DB_NAME") ?? "seventysix";
+		string databaseName =
+			Environment.GetEnvironmentVariable("DB_NAME")
+			?? throw new InvalidOperationException(
+				"DB_NAME must be set in .env file for design-time operations.");
 
-		string username =
-			Environment.GetEnvironmentVariable("DB_USER") ?? "postgres";
+		string databaseUser =
+			Environment.GetEnvironmentVariable("DB_USER")
+			?? throw new InvalidOperationException(
+				"DB_USER must be set in .env file for design-time operations.");
 
-		string password =
+		string databasePassword =
 			Environment.GetEnvironmentVariable("DB_PASSWORD")
 			?? throw new InvalidOperationException(
 				"DB_PASSWORD must be set in .env file for design-time operations. "
 					+ "Ensure .env file exists at repository root with DB_PASSWORD set.");
 
-		return $"Host={host};Port={port};Database={database};Username={username};"
-			+ $"Password={password};Pooling=true;Minimum Pool Size=5;Maximum Pool Size=100;"
+		return $"Host={databaseHost};Port={databasePort};Database={databaseName};Username={databaseUser};"
+			+ $"Password={databasePassword};Pooling=true;Minimum Pool Size=5;Maximum Pool Size=100;"
 			+ "Connection Lifetime=0;";
 	}
 

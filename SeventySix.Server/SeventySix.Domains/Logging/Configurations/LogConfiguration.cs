@@ -4,6 +4,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using SeventySix.Shared.Constants;
 
 namespace SeventySix.Logging;
 
@@ -45,28 +46,28 @@ public class LogConfiguration : IEntityTypeConfiguration<Log>
 			.IsRequired();
 
 		// LogLevel - Required, max length 20
-		builder.Property(logEntry => logEntry.LogLevel).IsRequired().HasMaxLength(20);
+		builder.Property(logEntry => logEntry.LogLevel).IsRequired().HasMaxLength(ValidationConstants.LogLevelMaxLength);
 
 		// Message - Required, max length 4000
-		builder.Property(logEntry => logEntry.Message).IsRequired().HasMaxLength(4000);
+		builder.Property(logEntry => logEntry.Message).IsRequired().HasMaxLength(ValidationConstants.MessageMaxLength);
 
 		// ExceptionMessage - Optional, max length 2000
-		builder.Property(logEntry => logEntry.ExceptionMessage).HasMaxLength(2000);
+		builder.Property(logEntry => logEntry.ExceptionMessage).HasMaxLength(ValidationConstants.ExceptionMessageMaxLength);
 
 		// BaseExceptionMessage - Optional, max length 2000
-		builder.Property(logEntry => logEntry.BaseExceptionMessage).HasMaxLength(2000);
+		builder.Property(logEntry => logEntry.BaseExceptionMessage).HasMaxLength(ValidationConstants.ExceptionMessageMaxLength);
 
 		// StackTrace - Optional, unlimited text
 		builder.Property(logEntry => logEntry.StackTrace).HasColumnType("text");
 
 		// SourceContext - Optional, max length 500
-		builder.Property(logEntry => logEntry.SourceContext).HasMaxLength(500);
+		builder.Property(logEntry => logEntry.SourceContext).HasMaxLength(ValidationConstants.LongTextMaxLength);
 
 		// RequestMethod - Optional, max length 10
-		builder.Property(logEntry => logEntry.RequestMethod).HasMaxLength(10);
+		builder.Property(logEntry => logEntry.RequestMethod).HasMaxLength(ValidationConstants.RequestMethodMaxLength);
 
 		// RequestPath - Optional, max length 2000
-		builder.Property(logEntry => logEntry.RequestPath).HasMaxLength(2000);
+		builder.Property(logEntry => logEntry.RequestPath).HasMaxLength(ValidationConstants.RequestPathMaxLength);
 
 		// StatusCode - Optional
 		builder.Property(logEntry => logEntry.StatusCode);
@@ -89,16 +90,16 @@ public class LogConfiguration : IEntityTypeConfiguration<Log>
 			.HasColumnType("timestamp with time zone");
 
 		// MachineName - Optional, max length 100
-		builder.Property(logEntry => logEntry.MachineName).HasMaxLength(100);
+		builder.Property(logEntry => logEntry.MachineName).HasMaxLength(ValidationConstants.MachineNameMaxLength);
 
 		// Environment - Optional, max length 50
-		builder.Property(logEntry => logEntry.Environment).HasMaxLength(50);
+		builder.Property(logEntry => logEntry.Environment).HasMaxLength(ValidationConstants.EnvironmentMaxLength);
 
 		// Tracing fields - OpenTelemetry standard lengths
 		// TraceId: 32 hex chars, SpanId: 16 hex chars
-		builder.Property(logEntry => logEntry.CorrelationId).HasMaxLength(32);
-		builder.Property(logEntry => logEntry.SpanId).HasMaxLength(16);
-		builder.Property(logEntry => logEntry.ParentSpanId).HasMaxLength(16);
+		builder.Property(logEntry => logEntry.CorrelationId).HasMaxLength(ValidationConstants.CorrelationIdMaxLength);
+		builder.Property(logEntry => logEntry.SpanId).HasMaxLength(ValidationConstants.SpanIdMaxLength);
+		builder.Property(logEntry => logEntry.ParentSpanId).HasMaxLength(ValidationConstants.SpanIdMaxLength);
 
 		// Indexes for common queries
 		builder

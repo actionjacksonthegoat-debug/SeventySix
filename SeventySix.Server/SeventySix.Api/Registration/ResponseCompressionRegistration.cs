@@ -33,10 +33,9 @@ public static class ResponseCompressionRegistration
 		IConfiguration configuration)
 	{
 		// Skip response compression in Test environment for performance
-		bool enabled =
-			configuration.GetValue<bool?>("ResponseCompression:Enabled")
-			?? true;
-		if (!enabled)
+		bool isResponseCompressionEnabled =
+			configuration.GetValue<bool>("ResponseCompression:Enabled");
+		if (!isResponseCompressionEnabled)
 		{
 			return services;
 		}

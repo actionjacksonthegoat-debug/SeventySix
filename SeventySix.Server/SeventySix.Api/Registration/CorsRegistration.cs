@@ -2,8 +2,8 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using Microsoft.Extensions.Logging;
 using SeventySix.Shared.Constants;
+using SeventySix.Shared.Exceptions;
 
 namespace SeventySix.Api.Registration;
 
@@ -18,16 +18,11 @@ public static class CorsRegistration
 	public const string PolicyName = "AllowedOrigins";
 
 	/// <summary>
-	/// Default allowed origin for development.
-	/// </summary>
-	private const string DefaultDevelopmentOrigin = "http://localhost:4200";
-
-	/// <summary>
 	/// Adds CORS policies from configuration with security validation.
 	/// </summary>
 	/// <remarks>
 	/// Reads configuration key: "Cors:AllowedOrigins".
-	/// Defaults to localhost for development when not configured.
+	/// Throws RequiredConfigurationException if not configured.
 	/// Logs warning if wildcard (*) is detected in origins.
 	/// </remarks>
 	/// <param name="services">
@@ -43,9 +38,13 @@ public static class CorsRegistration
 		this IServiceCollection services,
 		IConfiguration configuration)
 	{
-		string[] allowedOrigins =
-			configuration.GetSection(ConfigurationSectionConstants.Cors.AllowedOrigins).Get<string[]>()
-			?? [DefaultDevelopmentOrigin];
+		string[]? allowedOrigins =
+			configuration.GetSection(ConfigurationSectionConstants.Cors.AllowedOrigins).Get<string[]>();
+
+		if (allowedOrigins is not { Length: > 0 })
+		{
+			throw new RequiredConfigurationException("Cors:AllowedOrigins");
+		}
 
 		ValidateOrigins(allowedOrigins);
 
@@ -95,12 +94,6 @@ public static class CorsRegistration
 			throw new InvalidOperationException(
 				"CORS wildcard (*) origin is not allowed. " +
 				"Configure specific origins in Cors:AllowedOrigins.");
-		}
-
-		if (origins.Length == 0)
-		{
-			throw new InvalidOperationException(
-				"At least one CORS origin must be configured in Cors:AllowedOrigins.");
 		}
 	}
 }

@@ -17,39 +17,6 @@ public class ThirdPartyApiLimitSettingsTests
 	#region ThirdPartyApiLimitSettings Tests
 
 	[Fact]
-	public void Constructor_SetsDefaultDailyLimitTo1000()
-	{
-		// Arrange & Act
-		ThirdPartyApiLimitSettings settings =
-			new();
-
-		// Assert
-		settings.DefaultDailyLimit.ShouldBe(1000);
-	}
-
-	[Fact]
-	public void Constructor_SetsDefaultMonthlyLimitTo30000()
-	{
-		// Arrange & Act
-		ThirdPartyApiLimitSettings settings =
-			new();
-
-		// Assert
-		settings.DefaultMonthlyLimit.ShouldBe(30000);
-	}
-
-	[Fact]
-	public void Constructor_SetsEnabledToTrue()
-	{
-		// Arrange & Act
-		ThirdPartyApiLimitSettings settings =
-			new();
-
-		// Assert
-		settings.Enabled.ShouldBeTrue();
-	}
-
-	[Fact]
 	public void SectionName_IsThirdPartyApiLimits()
 	{
 		// Assert
@@ -347,17 +314,6 @@ public class ThirdPartyApiLimitSettingsTests
 
 		// Assert
 		limit.Interval.ShouldBe(LimitInterval.Monthly);
-	}
-
-	[Fact]
-	public void ThirdPartyApiLimit_DefaultEnabled_IsTrue()
-	{
-		// Arrange & Act
-		ThirdPartyApiLimit limit =
-			new();
-
-		// Assert
-		limit.Enabled.ShouldBeTrue();
 	}
 
 	#endregion

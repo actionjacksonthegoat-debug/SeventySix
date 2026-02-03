@@ -4,6 +4,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using SeventySix.Shared.Constants;
 
 namespace SeventySix.Identity;
 
@@ -56,20 +57,20 @@ public class SecurityEventConfiguration : IEntityTypeConfiguration<SecurityEvent
 
 		builder
 			.Property(securityEvent => securityEvent.Username)
-			.HasMaxLength(100);
+			.HasMaxLength(ValidationConstants.UsernameMaxLength);
 
 		// IPv6 max length is 45 characters
 		builder
 			.Property(securityEvent => securityEvent.IpAddress)
-			.HasMaxLength(45);
+			.HasMaxLength(ValidationConstants.IpAddressMaxLength);
 
 		builder
 			.Property(securityEvent => securityEvent.UserAgent)
-			.HasMaxLength(500);
+			.HasMaxLength(ValidationConstants.LongTextMaxLength);
 
 		builder
 			.Property(securityEvent => securityEvent.Details)
-			.HasMaxLength(2000);
+			.HasMaxLength(ValidationConstants.ExceptionMessageMaxLength);
 
 		builder
 			.Property(securityEvent => securityEvent.CreateDate)

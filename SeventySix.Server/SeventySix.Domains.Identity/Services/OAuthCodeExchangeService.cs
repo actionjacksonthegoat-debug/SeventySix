@@ -27,11 +27,6 @@ public sealed class OAuthCodeExchangeService : IOAuthCodeExchangeService
 	private const string CacheKeyPrefix = "oauth_code_";
 
 	/// <summary>
-	/// Code expiration time in seconds.
-	/// </summary>
-	private const int CodeExpirationSeconds = 60;
-
-	/// <summary>
 	/// The identity domain cache.
 	/// </summary>
 	private readonly IFusionCache IdentityCache;
@@ -74,7 +69,7 @@ public sealed class OAuthCodeExchangeService : IOAuthCodeExchangeService
 			options =>
 			{
 				options.Duration =
-					TimeSpan.FromSeconds(CodeExpirationSeconds);
+					TimeSpan.FromSeconds(TimeoutConstants.OAuth.CodeExchangeTtlSeconds);
 				options.SkipDistributedCacheWrite =
 					true;
 				options.SkipBackplaneNotifications =

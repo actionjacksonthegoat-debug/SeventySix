@@ -48,23 +48,26 @@ public record AuthSettings
 
 /// <summary>
 /// Account lockout configuration for brute-force protection.
+/// All numeric values MUST be configured in appsettings.json.
 /// </summary>
 public record LockoutSettings
 {
 	/// <summary>
-	/// Gets max failed login attempts before lockout. Default: 5.
+	/// Gets max failed login attempts before lockout.
+	/// Must be configured in appsettings.json.
 	/// </summary>
-	public int MaxFailedAttempts { get; init; } = 5;
+	public int MaxFailedAttempts { get; init; }
 
 	/// <summary>
-	/// Gets lockout duration in minutes. Default: 15.
+	/// Gets lockout duration in minutes.
+	/// Must be configured in appsettings.json.
 	/// </summary>
-	public int LockoutDurationMinutes { get; init; } = 15;
+	public int LockoutDurationMinutes { get; init; }
 
 	/// <summary>
-	/// Gets whether account lockout is enabled. Default: true.
+	/// Gets whether account lockout is enabled.
 	/// </summary>
-	public bool Enabled { get; init; } = true;
+	public bool Enabled { get; init; }
 }
 
 /// <summary>
@@ -131,108 +134,113 @@ public record OAuthProviderSettings
 
 /// <summary>
 /// Rate limiting configuration for auth endpoints.
+/// All values MUST be configured in appsettings.json.
 /// </summary>
 public record AuthRateLimitSettings
 {
 	/// <summary>
-	/// Gets max login attempts per minute. Default: 5.
+	/// Gets max login attempts per minute.
 	/// </summary>
-	public int LoginAttemptsPerMinute { get; init; } = 5;
+	public int LoginAttemptsPerMinute { get; init; }
 
 	/// <summary>
-	/// Gets max register attempts per hour. Default: 3.
+	/// Gets max register attempts per hour.
 	/// </summary>
-	public int RegisterAttemptsPerHour { get; init; } = 3;
+	public int RegisterAttemptsPerHour { get; init; }
 
 	/// <summary>
-	/// Gets max token refresh per minute. Default: 10.
+	/// Gets max token refresh per minute.
 	/// </summary>
-	public int TokenRefreshPerMinute { get; init; } = 10;
+	public int TokenRefreshPerMinute { get; init; }
 
 	/// <summary>
-	/// Gets max ALTCHA challenge requests per minute. Default: 10.
+	/// Gets max ALTCHA challenge requests per minute.
 	/// </summary>
-	public int AltchaChallengePerMinute { get; init; } = 10;
+	public int AltchaChallengePerMinute { get; init; }
 
 	/// <summary>
-	/// Gets max client log submissions per minute. Default: 30.
+	/// Gets max client log submissions per minute.
 	/// </summary>
-	public int ClientLogsPerMinute { get; init; } = 30;
+	public int ClientLogsPerMinute { get; init; }
 
 	/// <summary>
-	/// Gets max MFA verification attempts per minute. Default: 5.
+	/// Gets max MFA verification attempts per minute.
 	/// </summary>
-	public int MfaVerifyPerMinute { get; init; } = 5;
+	public int MfaVerifyPerMinute { get; init; }
 
 	/// <summary>
-	/// Gets max MFA code resend requests per minute. Default: 3.
+	/// Gets max MFA code resend requests per minute.
 	/// </summary>
-	public int MfaResendPerMinute { get; init; } = 3;
+	public int MfaResendPerMinute { get; init; }
 }
 
 /// <summary>
 /// Cookie configuration for authentication.
+/// Cookie names use string defaults as they are conventional identifiers.
 /// </summary>
 public record AuthCookieSettings
 {
 	/// <summary>
 	/// Gets refresh token cookie name.
 	/// </summary>
-	public string RefreshTokenCookieName { get; init; } = "X-Refresh-Token";
+	public string RefreshTokenCookieName { get; init; } =
+		string.Empty;
 
 	/// <summary>
 	/// Gets OAuth state cookie name.
 	/// </summary>
-	public string OAuthStateCookieName { get; init; } = "X-OAuth-State";
+	public string OAuthStateCookieName { get; init; } =
+		string.Empty;
 
 	/// <summary>
 	/// Gets OAuth code verifier cookie name for PKCE.
 	/// </summary>
 	public string OAuthCodeVerifierCookieName { get; init; } =
-		"X-OAuth-CodeVerifier";
+		string.Empty;
 
 	/// <summary>
 	/// Gets a value indicating whether to use secure cookies.
 	/// </summary>
-	public bool SecureCookie { get; init; } = true;
+	public bool SecureCookie { get; init; }
 
 	/// <summary>
 	/// Gets a value indicating whether to use SameSite=Lax for cookies.
 	/// Set to true for E2E testing where client and API are on different ports.
-	/// Default is false (uses Strict for production security).
 	/// </summary>
-	public bool SameSiteLax { get; init; } = false;
+	public bool SameSiteLax { get; init; }
 }
 
 /// <summary>
 /// Password hashing configuration.
+/// Numeric values MUST be configured in appsettings.json.
 /// </summary>
 public record PasswordSettings
 {
 	/// <summary>
-	/// Gets minimum password length. Default: 8.
+	/// Gets minimum password length.
+	/// Must be configured in appsettings.json.
 	/// </summary>
-	public int MinLength { get; init; } = 8;
+	public int MinLength { get; init; }
 
 	/// <summary>
 	/// Gets a value indicating whether uppercase is required.
 	/// </summary>
-	public bool RequireUppercase { get; init; } = true;
+	public bool RequireUppercase { get; init; }
 
 	/// <summary>
 	/// Gets a value indicating whether lowercase is required.
 	/// </summary>
-	public bool RequireLowercase { get; init; } = true;
+	public bool RequireLowercase { get; init; }
 
 	/// <summary>
 	/// Gets a value indicating whether digit is required.
 	/// </summary>
-	public bool RequireDigit { get; init; } = true;
+	public bool RequireDigit { get; init; }
 
 	/// <summary>
 	/// Gets a value indicating whether special char is required.
 	/// </summary>
-	public bool RequireSpecialChar { get; init; } = false;
+	public bool RequireSpecialChar { get; init; }
 
 	/// <summary>
 	/// Gets Argon2id hashing configuration.
@@ -242,6 +250,7 @@ public record PasswordSettings
 
 /// <summary>
 /// Argon2id password hashing configuration.
+/// All values MUST be configured in appsettings.json.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -251,38 +260,29 @@ public record PasswordSettings
 /// - Parallelism: Match available CPU cores (4 is a good default)
 /// </para>
 /// <para>
-/// These defaults provide ~100ms hash time on modern hardware,
+/// These values provide ~100ms hash time on modern hardware,
 /// balancing security and user experience.
 /// </para>
 /// </remarks>
 public record Argon2Settings
 {
 	/// <summary>
-	/// Gets memory size in KB. Default: 65536 (64 MB).
+	/// Gets memory size in KB.
+	/// OWASP minimum: 19456 KB (19 MB). Recommended: 65536 KB (64 MB).
 	/// </summary>
-	/// <remarks>
-	/// Higher values increase GPU attack resistance.
-	/// OWASP minimum: 19456 KB (19 MB).
-	/// </remarks>
-	public int MemorySize { get; init; } = 65536;
+	public int MemorySize { get; init; }
 
 	/// <summary>
-	/// Gets number of iterations. Default: 3.
+	/// Gets number of iterations.
+	/// OWASP minimum: 2. Recommended: 3.
 	/// </summary>
-	/// <remarks>
-	/// Higher values increase computation time linearly.
-	/// OWASP minimum: 2.
-	/// </remarks>
-	public int Iterations { get; init; } = 3;
+	public int Iterations { get; init; }
 
 	/// <summary>
-	/// Gets degree of parallelism (threads). Default: 4.
+	/// Gets degree of parallelism (threads).
+	/// Should match available CPU cores.
 	/// </summary>
-	/// <remarks>
-	/// Should match available CPU cores for optimal performance.
-	/// Higher values may not improve security if hardware limited.
-	/// </remarks>
-	public int DegreeOfParallelism { get; init; } = 4;
+	public int DegreeOfParallelism { get; init; }
 }
 
 /// <summary>
@@ -292,17 +292,18 @@ public record Argon2Settings
 public record TokenSettings
 {
 	/// <summary>
-	/// Gets max active refresh tokens per user. Default: 5.
+	/// Gets max active refresh tokens per user.
 	/// When exceeded, oldest token is automatically revoked.
+	/// Must be configured in appsettings.json.
 	/// </summary>
-	public int MaxActiveSessionsPerUser { get; init; } = 5;
+	public int MaxActiveSessionsPerUser { get; init; }
 
 	/// <summary>
 	/// Gets a value indicating whether to disable token rotation on refresh.
-	/// Default: false. When true, the old refresh token is NOT revoked during rotation.
+	/// When true, the old refresh token is NOT revoked during rotation.
 	/// WARNING: Only enable for E2E testing where the same token must work across contexts.
 	/// </summary>
-	public bool DisableRotation { get; init; } = false;
+	public bool DisableRotation { get; init; }
 }
 
 /// <summary>
@@ -324,27 +325,26 @@ public record BreachedPasswordSettings
 {
 	/// <summary>
 	/// Gets a value indicating whether breach checking is enabled.
-	/// Default: true (OWASP recommended).
 	/// </summary>
-	public bool Enabled { get; init; } = true;
+	public bool Enabled { get; init; }
 
 	/// <summary>
 	/// Gets the minimum breach count to consider a password compromised.
-	/// Default: 1 (any breach triggers warning).
 	/// Set higher (e.g., 10) to allow commonly weak but rarely breached passwords.
+	/// Must be configured in appsettings.json.
 	/// </summary>
-	public int MinBreachCount { get; init; } = 1;
+	public int MinBreachCount { get; init; }
 
 	/// <summary>
 	/// Gets a value indicating whether to block breached passwords.
 	/// When false, only logs a warning but allows registration.
-	/// Default: true (block).
 	/// </summary>
-	public bool BlockBreachedPasswords { get; init; } = true;
+	public bool BlockBreachedPasswords { get; init; }
 
 	/// <summary>
 	/// Gets the API timeout in milliseconds.
-	/// Default: 3000 (3 seconds). Fail open if API is slow/unavailable.
+	/// Fail open if API is slow/unavailable.
+	/// Must be configured in appsettings.json.
 	/// </summary>
-	public int ApiTimeoutMs { get; init; } = 3000;
+	public int ApiTimeoutMs { get; init; }
 }

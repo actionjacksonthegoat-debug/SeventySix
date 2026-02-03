@@ -126,14 +126,14 @@ export class DataTableUtilities
 	 */
 	static getDateRangeOptions(): readonly DateRangeOption[]
 	{
-		return Object.entries(DataTableUtilities.DATE_RANGE_CONFIG)
+		return Object
+			.entries(DataTableUtilities.DATE_RANGE_CONFIG)
 			.map(
-				([key, config]: [string, DateRangeConfig]): DateRangeOption =>
-					({
-						key: key as DateRangeKey,
-						icon: config.icon,
-						label: config.label
-					}));
+				([key, config]: [string, DateRangeConfig]): DateRangeOption => ({
+					key: key as DateRangeKey,
+					icon: config.icon,
+					label: config.label
+				}));
 	}
 
 	/**
