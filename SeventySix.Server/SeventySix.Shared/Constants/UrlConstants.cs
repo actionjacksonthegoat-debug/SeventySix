@@ -27,18 +27,19 @@ public static class UrlConstants
 	}
 
 	/// <summary>
-	/// Localhost URL patterns.
+	/// URL format patterns for building URLs from configuration values.
+	/// Host and port values must come from configuration, not hardcoded.
 	/// </summary>
-	public static class Localhost
+	public static class UrlPatterns
 	{
 		/// <summary>
-		/// HTTPS localhost base format. Use: string.Format(HttpsBase, port).
+		/// HTTPS URL format. Usage: string.Format(HttpsFormat, host, port).
 		/// </summary>
-		public const string HttpsBase = "https://localhost:{0}";
+		public const string HttpsFormat = "https://{0}:{1}";
 
 		/// <summary>
-		/// HTTP localhost base format. Use: string.Format(HttpBase, port).
+		/// HTTP URL format. Usage: string.Format(HttpFormat, host, port).
 		/// </summary>
-		public const string HttpBase = "http://localhost:{0}";
+		public const string HttpFormat = "http://{0}:{1}";
 	}
 }

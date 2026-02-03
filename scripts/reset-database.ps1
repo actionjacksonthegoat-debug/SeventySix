@@ -6,6 +6,8 @@
 	Stops containers, removes database volume, and restarts with fresh migrations.
 	Supports both development and E2E environments.
 
+	WARNING: This is a USER-ONLY command. AI assistants (Copilot, etc.) must NEVER execute this script.
+
 .PARAMETER Environment
 	Target environment: 'dev' (default) or 'e2e'
 
@@ -25,6 +27,23 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+# =============================================================================
+# GUARDRAIL: Block automated/non-interactive execution
+# =============================================================================
+# This script destroys data and must only be run by a human user interactively.
+# AI assistants, CI/CD pipelines, and automated tools are blocked.
+$isInteractive =
+[Environment]::UserInteractive -and
+-not [Console]::IsInputRedirected -and
+-not [Console]::IsOutputRedirected
+
+if (-not $isInteractive) {
+	Write-Host "`n[BLOCKED] This script requires interactive execution by a human user." -ForegroundColor Red
+	Write-Host "AI assistants and automated tools are not permitted to run db:reset." -ForegroundColor Red
+	Write-Host "Please run this command manually in a terminal.`n" -ForegroundColor Yellow
+	exit 1
+}
+
 $composeFile =
 switch ($Environment) {
 	"dev" { "docker-compose.yml" }
@@ -43,13 +62,55 @@ Write-Host "Compose File: $composeFile" -ForegroundColor Yellow
 Write-Host "Volume: $volumeName" -ForegroundColor Yellow
 
 if (-not $SkipConfirmation) {
-	$confirmation =
-	Read-Host "`nThis will DELETE all database data. Continue? (y/n)"
+	# Stage 1: Initial warning (Yellow)
+	Write-Host ""
+	Write-Host "========================================" -ForegroundColor Yellow
+	Write-Host "  WARNING: DESTRUCTIVE OPERATION" -ForegroundColor Yellow
+	Write-Host "========================================" -ForegroundColor Yellow
+	Write-Host ""
+	Write-Host "This will permanently delete:" -ForegroundColor Yellow
+	Write-Host "  - All database tables" -ForegroundColor White
+	Write-Host "  - All user data" -ForegroundColor White
+	Write-Host "  - All application data" -ForegroundColor White
+	Write-Host ""
 
-	if ($confirmation -ne "y") {
-		Write-Host "Aborted." -ForegroundColor Red
+	$firstConfirmation =
+		Read-Host "Type 'yes' to continue or anything else to abort"
+
+	if ($firstConfirmation -ne "yes") {
+		Write-Host ""
+		Write-Host "Aborted. No changes were made." -ForegroundColor Green
 		exit 0
 	}
+
+	# Stage 2: DANGER confirmation (Red ASCII art)
+	Write-Host ""
+	Write-Host "========================================" -ForegroundColor Red
+	Write-Host "  ██████╗  █████╗ ███╗   ██╗ ██████╗ ███████╗██████╗ " -ForegroundColor Red
+	Write-Host "  ██╔══██╗██╔══██╗████╗  ██║██╔════╝ ██╔════╝██╔══██╗" -ForegroundColor Red
+	Write-Host "  ██║  ██║███████║██╔██╗ ██║██║  ███╗█████╗  ██████╔╝" -ForegroundColor Red
+	Write-Host "  ██║  ██║██╔══██║██║╚██╗██║██║   ██║██╔══╝  ██╔══██╗" -ForegroundColor Red
+	Write-Host "  ██████╔╝██║  ██║██║ ╚████║╚██████╔╝███████╗██║  ██║" -ForegroundColor Red
+	Write-Host "  ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═══╝ ╚═════╝ ╚══════╝╚═╝  ╚═╝" -ForegroundColor Red
+	Write-Host "========================================" -ForegroundColor Red
+	Write-Host ""
+	Write-Host "  THIS ACTION CANNOT BE UNDONE!" -ForegroundColor Red
+	Write-Host ""
+	Write-Host "  You are about to PERMANENTLY DESTROY:" -ForegroundColor White
+	Write-Host "    Volume: $volumeName" -ForegroundColor Magenta
+	Write-Host ""
+
+	$finalConfirmation =
+		Read-Host "Type 'DESTROY' in all caps to confirm"
+
+	if ($finalConfirmation -ne "DESTROY") {
+		Write-Host ""
+		Write-Host "Aborted. Database is unchanged." -ForegroundColor Green
+		exit 0
+	}
+
+	Write-Host ""
+	Write-Host "Proceeding with database reset..." -ForegroundColor Yellow
 }
 
 Write-Host "`n[1/4] Stopping containers..." -ForegroundColor Green

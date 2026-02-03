@@ -199,6 +199,34 @@ describe("AdminDashboardPage",
 						"_blank");
 			});
 
+		it("should open pgAdmin in new tab",
+			() =>
+			{
+				createComponent();
+				vi.spyOn(window, "open");
+
+				component.openPgAdmin();
+
+				expect(window.open)
+					.toHaveBeenCalledWith(
+						environment.observability.pgAdminUrl,
+						"_blank");
+			});
+
+		it("should open RedisInsight in new tab",
+			() =>
+			{
+				createComponent();
+				vi.spyOn(window, "open");
+
+				component.openRedisInsight();
+
+				expect(window.open)
+					.toHaveBeenCalledWith(
+						environment.observability.redisInsightUrl,
+						"_blank");
+			});
+
 		it("should send info log and show notification",
 			() =>
 			{

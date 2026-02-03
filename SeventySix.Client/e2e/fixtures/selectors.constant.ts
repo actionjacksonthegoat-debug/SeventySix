@@ -76,11 +76,14 @@ export const SELECTORS =
 				toolbarIcon: ".admin-dashboard app-page-header mat-icon",
 				grafanaEmbed: "app-grafana-dashboard-embed",
 				apiStatsTable: "app-api-statistics-table",
-				observabilityCard: "mat-card-title:has-text('Observability Tools')",
+				observabilityCard: "[data-testid='observability-card']",
+				dataCard: "[data-testid='data-card']",
 				observabilityButtons: ".observability-links button",
 				jaegerButton: "button:has-text('Jaeger Tracing')",
 				prometheusButton: "button:has-text('Prometheus Metrics')",
-				grafanaButton: "button:has-text('Grafana Full View')"
+				grafanaButton: "button:has-text('Grafana Full View')",
+				pgAdminButton: "[data-testid='pgadmin-button']",
+				redisInsightButton: "[data-testid='redisinsight-button']"
 			},
 
 		/**

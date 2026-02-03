@@ -55,6 +55,8 @@ $scriptRootDirectory = $PSScriptRoot
 $projectRootDirectory = [System.IO.Path]::GetFullPath("$scriptRootDirectory\..")
 
 # Single certificate configuration (used for both dev and E2E)
+# NOTE: Includes localhost and observability service subdomains for nginx-proxy HTTPS.
+# The Angular dev server will list all SANs but only localhost addresses are usable locally.
 $certificateConfigurations = @(
 	@{
 		Name            = "Development & E2E"
@@ -70,8 +72,7 @@ $certificateConfigurations = @(
 			"jaeger.localhost",
 			"prometheus.localhost",
 			"pgadmin.localhost",
-			"api-e2e",       # Docker service name for internal E2E communication
-			"client-e2e"     # Docker service name for internal E2E communication
+			"redisinsight.localhost"
 		)
 	}
 )
@@ -298,6 +299,62 @@ function Install-TrustedCertificate {
 	}
 }
 
+function Remove-OldSeventySixCertificates {
+	<#
+	.SYNOPSIS
+	Removes all existing SeventySix development certificates from the Trusted Root store.
+	This prevents certificate accumulation and ensures clean state.
+
+	.PARAMETER NewThumbprint
+	Optional. The thumbprint of the new certificate to keep (don't remove this one).
+
+	.OUTPUTS
+	The count of certificates removed.
+	#>
+	param(
+		[string]$NewThumbprint = ""
+	)
+
+	$removedCount = 0
+
+	try {
+		# Find ALL localhost self-signed certificates that look like dev certificates
+		# These are characterized by:
+		# - Subject = CN=localhost
+		# - Self-signed (issuer == subject)
+		# - Typically have short validity periods (1-5 years)
+		$existingCerts = Get-ChildItem -Path "Cert:\LocalMachine\Root" -ErrorAction SilentlyContinue |
+		Where-Object {
+			# Match SeventySix certificates by name
+			$_.Subject -like "*SeventySix*" -or
+			$_.FriendlyName -like "*SeventySix*" -or
+			# Match any localhost dev certificates (self-signed)
+			($_.Subject -eq "CN=localhost" -and $_.Issuer -eq "CN=localhost")
+		} |
+		Where-Object {
+			# Don't remove the new certificate we just generated
+			$_.Thumbprint -ne $NewThumbprint
+		}
+
+		foreach ($cert in $existingCerts) {
+			try {
+				$displayName = if ($cert.FriendlyName) { $cert.FriendlyName } else { $cert.Subject }
+				Remove-Item -Path "Cert:\LocalMachine\Root\$($cert.Thumbprint)" -Force
+				$removedCount++
+				Write-Host "  Removed: $($cert.Thumbprint.Substring(0, 8))... ($displayName)" -ForegroundColor Gray
+			}
+			catch {
+				Write-Host "  Failed to remove: $($cert.Thumbprint.Substring(0, 8))..." -ForegroundColor Yellow
+			}
+		}
+	}
+	catch {
+		# Silently ignore if we can't enumerate (non-admin)
+	}
+
+	return $removedCount
+}
+
 function Test-AdministratorPrivileges {
 	<#
 	.SYNOPSIS
@@ -404,6 +461,10 @@ else {
 	Write-Host "To eliminate browser security warnings, certificates must be added to" -ForegroundColor White
 	Write-Host "the Windows Trusted Root Certification Authorities store." -ForegroundColor White
 	Write-Host ""
+	Write-Host "This will:" -ForegroundColor White
+	Write-Host "  1. Remove any existing SeventySix dev certificates (prevents duplicates)" -ForegroundColor Gray
+	Write-Host "  2. Add the new certificate to Trusted Root store" -ForegroundColor Gray
+	Write-Host ""
 	Write-Host "Certificates to trust:" -ForegroundColor White
 
 	foreach ($certificateInfo in $certificatesToTrust) {
@@ -412,42 +473,122 @@ else {
 
 	Write-Host ""
 
-	$userResponse = Read-Host "Add these certificates to Trusted Root store? (y/n)"
+	$userResponse = Read-Host "Clean up old certs and trust new certificate? (y/n)"
 
 	if ($userResponse -eq 'y' -or $userResponse -eq 'Y') {
 		Write-Host ""
 
+		# Get the thumbprint of the new certificate to avoid removing it
+		$newCertPath = $certificatesToTrust[0].Path
+		$newCert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2($newCertPath)
+		$newThumbprint = $newCert.Thumbprint
+		$newCert.Dispose()
+
 		# Check if running as Administrator
 		if (Test-AdministratorPrivileges) {
-			Write-Host "Installing certificates as trusted roots..." -ForegroundColor Cyan
+			Write-Host "Cleaning up old localhost dev certificates..." -ForegroundColor Cyan
+			$removedCount = Remove-OldSeventySixCertificates -NewThumbprint $newThumbprint
+			if ($removedCount -gt 0) {
+				Write-Host "  Removed $removedCount old certificate(s)" -ForegroundColor Green
+			}
+			else {
+				Write-Host "  No old certificates found" -ForegroundColor Gray
+			}
+
+			Write-Host ""
+			Write-Host "Installing new certificate as trusted root..." -ForegroundColor Cyan
 
 			foreach ($certificateInfo in $certificatesToTrust) {
 				Install-TrustedCertificate -CertificatePath $certificateInfo.Path -CertificateName $certificateInfo.Name | Out-Null
 			}
-		}
-		else {
-			Write-Host "Administrator privileges required to trust certificates." -ForegroundColor Yellow
-			Write-Host "Attempting to elevate..." -ForegroundColor Gray
 
-			# Build the commands to run elevated
-			$trustCommands = $certificatesToTrust | ForEach-Object {
-				"Import-Certificate -FilePath '$($_.Path)' -CertStoreLocation 'Cert:\LocalMachine\Root'"
+			# Verify trust
+			Write-Host ""
+			Write-Host "Verifying certificate trust..." -ForegroundColor Cyan
+			$allTrusted = $true
+			foreach ($certificateInfo in $certificatesToTrust) {
+				if (Test-CertificateAlreadyTrusted -CertificatePath $certificateInfo.Path) {
+					Write-Host "  [OK] $($certificateInfo.Name) is trusted" -ForegroundColor Green
+				}
+				else {
+					Write-Host "  [FAIL] $($certificateInfo.Name) is NOT trusted" -ForegroundColor Red
+					$allTrusted = $false
+				}
 			}
 
-			$elevatedScript = $trustCommands -join "; "
+			if ($allTrusted) {
+				Write-Host ""
+				Write-Host "SUCCESS: Certificate is trusted. Close and reopen your browser to apply." -ForegroundColor Green
+			}
+		}
+		else {
+			Write-Host "Administrator privileges required. Elevating..." -ForegroundColor Yellow
+			Write-Host ""
+
+			# Build a script block that will run elevated
+			$certPaths = ($certificatesToTrust | ForEach-Object { $_.Path }) -join "','"
+
+			$elevatedScript = @"
+Write-Host 'Cleaning up old localhost dev certificates...' -ForegroundColor Cyan
+`$newThumbprint = '$newThumbprint'
+`$removed = 0
+Get-ChildItem -Path 'Cert:\LocalMachine\Root' -ErrorAction SilentlyContinue | Where-Object {
+    (`$_.Subject -like '*SeventySix*' -or
+     `$_.FriendlyName -like '*SeventySix*' -or
+     (`$_.Subject -eq 'CN=localhost' -and `$_.Issuer -eq 'CN=localhost')) -and
+    `$_.Thumbprint -ne `$newThumbprint
+} | ForEach-Object {
+    try {
+        `$displayName = if (`$_.FriendlyName) { `$_.FriendlyName } else { `$_.Subject }
+        Remove-Item -Path "Cert:\LocalMachine\Root\`$(`$_.Thumbprint)" -Force
+        `$removed++
+        Write-Host "  Removed: `$(`$_.Thumbprint.Substring(0, 8))... (`$displayName)" -ForegroundColor Gray
+    } catch { }
+}
+if (`$removed -gt 0) {
+    Write-Host "  Removed `$removed old certificate(s)" -ForegroundColor Green
+} else {
+    Write-Host '  No old certificates found' -ForegroundColor Gray
+}
+Write-Host ''
+Write-Host 'Installing new certificate...' -ForegroundColor Cyan
+@('$certPaths') | ForEach-Object {
+    Import-Certificate -FilePath `$_ -CertStoreLocation 'Cert:\LocalMachine\Root' | Out-Null
+    Write-Host "  Trusted: `$_" -ForegroundColor Green
+}
+Write-Host ''
+Write-Host 'Done! Close this window and reopen your browser.' -ForegroundColor Green
+Write-Host ''
+Read-Host 'Press Enter to close'
+"@
 
 			try {
 				Start-Process powershell.exe -Verb RunAs -ArgumentList "-NoProfile", "-Command", $elevatedScript -Wait
+
+				# Verify trust after elevation
+				Start-Sleep -Seconds 1
 				Write-Host ""
-				Write-Host "Certificate trust completed (check elevated window for any errors)." -ForegroundColor Green
+				Write-Host "Verifying certificate trust..." -ForegroundColor Cyan
+				$allTrusted = $true
+				foreach ($certificateInfo in $certificatesToTrust) {
+					if (Test-CertificateAlreadyTrusted -CertificatePath $certificateInfo.Path) {
+						Write-Host "  [OK] $($certificateInfo.Name) is trusted" -ForegroundColor Green
+					}
+					else {
+						Write-Host "  [FAIL] $($certificateInfo.Name) is NOT trusted" -ForegroundColor Red
+						$allTrusted = $false
+					}
+				}
+
+				if ($allTrusted) {
+					Write-Host ""
+					Write-Host "SUCCESS: Certificate is trusted. Close and reopen your browser to apply." -ForegroundColor Green
+				}
 			}
 			catch {
 				Write-Host ""
-				Write-Host "Failed to elevate. Please run these commands manually as Administrator:" -ForegroundColor Red
-
-				foreach ($certificateInfo in $certificatesToTrust) {
-					Write-Host "  Import-Certificate -FilePath `"$($certificateInfo.Path)`" -CertStoreLocation Cert:\LocalMachine\Root" -ForegroundColor White
-				}
+				Write-Host "Failed to elevate. Please run this command manually as Administrator:" -ForegroundColor Red
+				Write-Host "  .\scripts\generate-dev-ssl-cert.ps1 -Force" -ForegroundColor White
 			}
 		}
 	}

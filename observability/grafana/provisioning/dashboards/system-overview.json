@@ -330,7 +330,7 @@
 			},
 			"targets": [
 				{
-					"expr": "rate(dotnet_gc_collections_total{job=\"seventysix-api\",environment=\"local\"}[1m])",
+					"expr": "rate(dotnet_gc_collections_total{job=\"seventysix-api\"}[1m])",
 					"legendFormat": "{{gc_heap_generation}} Collections/sec",
 					"refId": "A"
 				}
@@ -418,7 +418,7 @@
 			},
 			"targets": [
 				{
-					"expr": "rate(dotnet_process_cpu_time_seconds_total{job=\"seventysix-api\",environment=\"local\"}[1m]) * 100",
+					"expr": "rate(dotnet_process_cpu_time_seconds_total{job=\"seventysix-api\"}[1m]) * 100",
 					"legendFormat": "{{cpu_mode}} CPU %",
 					"refId": "A"
 				}
@@ -474,7 +474,7 @@
 			},
 			"targets": [
 				{
-					"expr": "dotnet_thread_pool_queue_length_total{job=\"seventysix-api\",environment=\"local\"}",
+					"expr": "dotnet_thread_pool_queue_length_total{job=\"seventysix-api\"}",
 					"legendFormat": "Queue Length",
 					"refId": "A"
 				}

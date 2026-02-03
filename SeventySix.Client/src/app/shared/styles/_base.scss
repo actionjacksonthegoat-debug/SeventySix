@@ -344,7 +344,7 @@ mat-icon {
 
 // Card headers with icons - common pattern in admin dashboard
 .mat-mdc-card-header,
-.mat-mdc-card-title {
+	.mat-mdc-card-title {
 	display: flex;
 	align-items: center;
 	gap: vars.$spacing-sm;

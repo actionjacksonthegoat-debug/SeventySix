@@ -41,6 +41,9 @@ test.describe("Home Page",
 				test("should display feature cards",
 					async ({ homePage }) =>
 					{
+						// Wait for at least one card to be visible before counting
+						await homePage.featureCards.first().waitFor({ state: "visible" });
+
 						const cardCount: number =
 							await homePage.getCardCount();
 

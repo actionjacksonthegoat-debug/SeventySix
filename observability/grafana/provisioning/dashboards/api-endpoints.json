@@ -347,8 +347,8 @@
 			}
 		},
 		{
-			"id": 10,
-			"title": "/api/v1/users - Performance Metrics",
+			"id": 5,
+			"title": "/api/v1/auth/login - Performance Metrics",
 			"type": "timeseries",
 			"datasource": {
 				"type": "prometheus",
@@ -362,22 +362,22 @@
 			},
 			"targets": [
 				{
-					"expr": "histogram_quantile(0.50, sum by(le) (rate(http_server_request_duration_seconds_bucket{job=\"seventysix-api\",http_route=\"api/v1/users\"}[1m]))) * 1000",
+					"expr": "histogram_quantile(0.50, sum by(le) (rate(http_server_request_duration_seconds_bucket{job=\"seventysix-api\",http_route=\"api/v1/auth/login\"}[1m]))) * 1000",
 					"legendFormat": "p50 (median)",
 					"refId": "A"
 				},
 				{
-					"expr": "histogram_quantile(0.95, sum by(le) (rate(http_server_request_duration_seconds_bucket{job=\"seventysix-api\",http_route=\"api/v1/users\"}[1m]))) * 1000",
+					"expr": "histogram_quantile(0.95, sum by(le) (rate(http_server_request_duration_seconds_bucket{job=\"seventysix-api\",http_route=\"api/v1/auth/login\"}[1m]))) * 1000",
 					"legendFormat": "p95",
 					"refId": "B"
 				},
 				{
-					"expr": "histogram_quantile(0.99, sum by(le) (rate(http_server_request_duration_seconds_bucket{job=\"seventysix-api\",http_route=\"api/v1/users\"}[1m]))) * 1000",
+					"expr": "histogram_quantile(0.99, sum by(le) (rate(http_server_request_duration_seconds_bucket{job=\"seventysix-api\",http_route=\"api/v1/auth/login\"}[1m]))) * 1000",
 					"legendFormat": "p99",
 					"refId": "C"
 				},
 				{
-					"expr": "rate(http_server_request_duration_seconds_count{job=\"seventysix-api\",http_route=\"api/v1/users\"}[1m])",
+					"expr": "rate(http_server_request_duration_seconds_count{job=\"seventysix-api\",http_route=\"api/v1/auth/login\"}[1m])",
 					"legendFormat": "Request Rate",
 					"refId": "D"
 				}
@@ -435,8 +435,8 @@
 			}
 		},
 		{
-			"id": 11,
-			"title": "/api/v1/logs - Performance Metrics",
+			"id": 6,
+			"title": "/api/v1/auth/refresh - Performance Metrics",
 			"type": "timeseries",
 			"datasource": {
 				"type": "prometheus",
@@ -447,6 +447,270 @@
 				"w": 12,
 				"x": 12,
 				"y": 16
+			},
+			"targets": [
+				{
+					"expr": "histogram_quantile(0.50, sum by(le) (rate(http_server_request_duration_seconds_bucket{job=\"seventysix-api\",http_route=\"api/v1/auth/refresh\"}[1m]))) * 1000",
+					"legendFormat": "p50 (median)",
+					"refId": "A"
+				},
+				{
+					"expr": "histogram_quantile(0.95, sum by(le) (rate(http_server_request_duration_seconds_bucket{job=\"seventysix-api\",http_route=\"api/v1/auth/refresh\"}[1m]))) * 1000",
+					"legendFormat": "p95",
+					"refId": "B"
+				},
+				{
+					"expr": "histogram_quantile(0.99, sum by(le) (rate(http_server_request_duration_seconds_bucket{job=\"seventysix-api\",http_route=\"api/v1/auth/refresh\"}[1m]))) * 1000",
+					"legendFormat": "p99",
+					"refId": "C"
+				},
+				{
+					"expr": "rate(http_server_request_duration_seconds_count{job=\"seventysix-api\",http_route=\"api/v1/auth/refresh\"}[1m])",
+					"legendFormat": "Request Rate",
+					"refId": "D"
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"color": {
+						"mode": "palette-classic"
+					},
+					"custom": {
+						"drawStyle": "line",
+						"lineInterpolation": "smooth",
+						"lineWidth": 2,
+						"fillOpacity": 15,
+						"gradientMode": "opacity",
+						"showPoints": "never",
+						"stacking": {
+							"mode": "none"
+						},
+						"axisPlacement": "auto"
+					},
+					"unit": "ms",
+					"min": 0
+				},
+				"overrides": [
+					{
+						"matcher": {
+							"id": "byName",
+							"options": "Request Rate"
+						},
+						"properties": [
+							{
+								"id": "unit",
+								"value": "reqps"
+							},
+							{
+								"id": "custom.axisPlacement",
+								"value": "right"
+							}
+						]
+					}
+				]
+			},
+			"options": {
+				"tooltip": {
+					"mode": "multi",
+					"sort": "none"
+				},
+				"legend": {
+					"displayMode": "table",
+					"placement": "bottom",
+					"showLegend": true,
+					"calcs": ["mean", "max", "lastNotNull"]
+				}
+			}
+		},
+		{
+			"id": 7,
+			"title": "/api/v1/users/paged - Performance Metrics",
+			"type": "timeseries",
+			"datasource": {
+				"type": "prometheus",
+				"uid": "PBFA97CFB590B2093"
+			},
+			"gridPos": {
+				"h": 8,
+				"w": 12,
+				"x": 0,
+				"y": 24
+			},
+			"targets": [
+				{
+					"expr": "histogram_quantile(0.50, sum by(le) (rate(http_server_request_duration_seconds_bucket{job=\"seventysix-api\",http_route=\"api/v1/users/paged\"}[1m]))) * 1000",
+					"legendFormat": "p50 (median)",
+					"refId": "A"
+				},
+				{
+					"expr": "histogram_quantile(0.95, sum by(le) (rate(http_server_request_duration_seconds_bucket{job=\"seventysix-api\",http_route=\"api/v1/users/paged\"}[1m]))) * 1000",
+					"legendFormat": "p95",
+					"refId": "B"
+				},
+				{
+					"expr": "histogram_quantile(0.99, sum by(le) (rate(http_server_request_duration_seconds_bucket{job=\"seventysix-api\",http_route=\"api/v1/users/paged\"}[1m]))) * 1000",
+					"legendFormat": "p99",
+					"refId": "C"
+				},
+				{
+					"expr": "rate(http_server_request_duration_seconds_count{job=\"seventysix-api\",http_route=\"api/v1/users/paged\"}[1m])",
+					"legendFormat": "Request Rate",
+					"refId": "D"
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"color": {
+						"mode": "palette-classic"
+					},
+					"custom": {
+						"drawStyle": "line",
+						"lineInterpolation": "smooth",
+						"lineWidth": 2,
+						"fillOpacity": 15,
+						"gradientMode": "opacity",
+						"showPoints": "never",
+						"stacking": {
+							"mode": "none"
+						},
+						"axisPlacement": "auto"
+					},
+					"unit": "ms",
+					"min": 0
+				},
+				"overrides": [
+					{
+						"matcher": {
+							"id": "byName",
+							"options": "Request Rate"
+						},
+						"properties": [
+							{
+								"id": "unit",
+								"value": "reqps"
+							},
+							{
+								"id": "custom.axisPlacement",
+								"value": "right"
+							}
+						]
+					}
+				]
+			},
+			"options": {
+				"tooltip": {
+					"mode": "multi",
+					"sort": "none"
+				},
+				"legend": {
+					"displayMode": "table",
+					"placement": "bottom",
+					"showLegend": true,
+					"calcs": ["mean", "max", "lastNotNull"]
+				}
+			}
+		},
+		{
+			"id": 8,
+			"title": "/api/v1/users/permission-requests - Performance Metrics",
+			"type": "timeseries",
+			"datasource": {
+				"type": "prometheus",
+				"uid": "PBFA97CFB590B2093"
+			},
+			"gridPos": {
+				"h": 8,
+				"w": 12,
+				"x": 12,
+				"y": 24
+			},
+			"targets": [
+				{
+					"expr": "histogram_quantile(0.50, sum by(le) (rate(http_server_request_duration_seconds_bucket{job=\"seventysix-api\",http_route=\"api/v1/users/permission-requests\"}[1m]))) * 1000",
+					"legendFormat": "p50 (median)",
+					"refId": "A"
+				},
+				{
+					"expr": "histogram_quantile(0.95, sum by(le) (rate(http_server_request_duration_seconds_bucket{job=\"seventysix-api\",http_route=\"api/v1/users/permission-requests\"}[1m]))) * 1000",
+					"legendFormat": "p95",
+					"refId": "B"
+				},
+				{
+					"expr": "histogram_quantile(0.99, sum by(le) (rate(http_server_request_duration_seconds_bucket{job=\"seventysix-api\",http_route=\"api/v1/users/permission-requests\"}[1m]))) * 1000",
+					"legendFormat": "p99",
+					"refId": "C"
+				},
+				{
+					"expr": "rate(http_server_request_duration_seconds_count{job=\"seventysix-api\",http_route=\"api/v1/users/permission-requests\"}[1m])",
+					"legendFormat": "Request Rate",
+					"refId": "D"
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"color": {
+						"mode": "palette-classic"
+					},
+					"custom": {
+						"drawStyle": "line",
+						"lineInterpolation": "smooth",
+						"lineWidth": 2,
+						"fillOpacity": 15,
+						"gradientMode": "opacity",
+						"showPoints": "never",
+						"stacking": {
+							"mode": "none"
+						},
+						"axisPlacement": "auto"
+					},
+					"unit": "ms",
+					"min": 0
+				},
+				"overrides": [
+					{
+						"matcher": {
+							"id": "byName",
+							"options": "Request Rate"
+						},
+						"properties": [
+							{
+								"id": "unit",
+								"value": "reqps"
+							},
+							{
+								"id": "custom.axisPlacement",
+								"value": "right"
+							}
+						]
+					}
+				]
+			},
+			"options": {
+				"tooltip": {
+					"mode": "multi",
+					"sort": "none"
+				},
+				"legend": {
+					"displayMode": "table",
+					"placement": "bottom",
+					"showLegend": true,
+					"calcs": ["mean", "max", "lastNotNull"]
+				}
+			}
+		},
+		{
+			"id": 9,
+			"title": "/api/v1/logs - Performance Metrics",
+			"type": "timeseries",
+			"datasource": {
+				"type": "prometheus",
+				"uid": "PBFA97CFB590B2093"
+			},
+			"gridPos": {
+				"h": 8,
+				"w": 12,
+				"x": 0,
+				"y": 32
 			},
 			"targets": [
 				{
@@ -523,8 +787,96 @@
 			}
 		},
 		{
-			"id": 14,
-			"title": "/api/v1/thirdpartyrequests - Performance Metrics",
+			"id": 10,
+			"title": "/api/v1/logs/client - Performance Metrics",
+			"type": "timeseries",
+			"datasource": {
+				"type": "prometheus",
+				"uid": "PBFA97CFB590B2093"
+			},
+			"gridPos": {
+				"h": 8,
+				"w": 12,
+				"x": 12,
+				"y": 32
+			},
+			"targets": [
+				{
+					"expr": "histogram_quantile(0.50, sum by(le) (rate(http_server_request_duration_seconds_bucket{job=\"seventysix-api\",http_route=\"api/v1/logs/client\"}[1m]))) * 1000",
+					"legendFormat": "p50 (median)",
+					"refId": "A"
+				},
+				{
+					"expr": "histogram_quantile(0.95, sum by(le) (rate(http_server_request_duration_seconds_bucket{job=\"seventysix-api\",http_route=\"api/v1/logs/client\"}[1m]))) * 1000",
+					"legendFormat": "p95",
+					"refId": "B"
+				},
+				{
+					"expr": "histogram_quantile(0.99, sum by(le) (rate(http_server_request_duration_seconds_bucket{job=\"seventysix-api\",http_route=\"api/v1/logs/client\"}[1m]))) * 1000",
+					"legendFormat": "p99",
+					"refId": "C"
+				},
+				{
+					"expr": "rate(http_server_request_duration_seconds_count{job=\"seventysix-api\",http_route=\"api/v1/logs/client\"}[1m])",
+					"legendFormat": "Request Rate",
+					"refId": "D"
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"color": {
+						"mode": "palette-classic"
+					},
+					"custom": {
+						"drawStyle": "line",
+						"lineInterpolation": "smooth",
+						"lineWidth": 2,
+						"fillOpacity": 15,
+						"gradientMode": "opacity",
+						"showPoints": "never",
+						"stacking": {
+							"mode": "none"
+						},
+						"axisPlacement": "auto"
+					},
+					"unit": "ms",
+					"min": 0
+				},
+				"overrides": [
+					{
+						"matcher": {
+							"id": "byName",
+							"options": "Request Rate"
+						},
+						"properties": [
+							{
+								"id": "unit",
+								"value": "reqps"
+							},
+							{
+								"id": "custom.axisPlacement",
+								"value": "right"
+							}
+						]
+					}
+				]
+			},
+			"options": {
+				"tooltip": {
+					"mode": "multi",
+					"sort": "none"
+				},
+				"legend": {
+					"displayMode": "table",
+					"placement": "bottom",
+					"showLegend": true,
+					"calcs": ["mean", "max", "lastNotNull"]
+				}
+			}
+		},
+		{
+			"id": 11,
+			"title": "/api/v1/logs/client/batch - Performance Metrics",
 			"type": "timeseries",
 			"datasource": {
 				"type": "prometheus",
@@ -534,6 +886,94 @@
 				"h": 8,
 				"w": 12,
 				"x": 0,
+				"y": 40
+			},
+			"targets": [
+				{
+					"expr": "histogram_quantile(0.50, sum by(le) (rate(http_server_request_duration_seconds_bucket{job=\"seventysix-api\",http_route=\"api/v1/logs/client/batch\"}[1m]))) * 1000",
+					"legendFormat": "p50 (median)",
+					"refId": "A"
+				},
+				{
+					"expr": "histogram_quantile(0.95, sum by(le) (rate(http_server_request_duration_seconds_bucket{job=\"seventysix-api\",http_route=\"api/v1/logs/client/batch\"}[1m]))) * 1000",
+					"legendFormat": "p95",
+					"refId": "B"
+				},
+				{
+					"expr": "histogram_quantile(0.99, sum by(le) (rate(http_server_request_duration_seconds_bucket{job=\"seventysix-api\",http_route=\"api/v1/logs/client/batch\"}[1m]))) * 1000",
+					"legendFormat": "p99",
+					"refId": "C"
+				},
+				{
+					"expr": "rate(http_server_request_duration_seconds_count{job=\"seventysix-api\",http_route=\"api/v1/logs/client/batch\"}[1m])",
+					"legendFormat": "Request Rate",
+					"refId": "D"
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"color": {
+						"mode": "palette-classic"
+					},
+					"custom": {
+						"drawStyle": "line",
+						"lineInterpolation": "smooth",
+						"lineWidth": 2,
+						"fillOpacity": 15,
+						"gradientMode": "opacity",
+						"showPoints": "never",
+						"stacking": {
+							"mode": "none"
+						},
+						"axisPlacement": "auto"
+					},
+					"unit": "ms",
+					"min": 0
+				},
+				"overrides": [
+					{
+						"matcher": {
+							"id": "byName",
+							"options": "Request Rate"
+						},
+						"properties": [
+							{
+								"id": "unit",
+								"value": "reqps"
+							},
+							{
+								"id": "custom.axisPlacement",
+								"value": "right"
+							}
+						]
+					}
+				]
+			},
+			"options": {
+				"tooltip": {
+					"mode": "multi",
+					"sort": "none"
+				},
+				"legend": {
+					"displayMode": "table",
+					"placement": "bottom",
+					"showLegend": true,
+					"calcs": ["mean", "max", "lastNotNull"]
+				}
+			}
+		},
+		{
+			"id": 12,
+			"title": "/api/v1/thirdpartyrequests - Performance Metrics",
+			"type": "timeseries",
+			"datasource": {
+				"type": "prometheus",
+				"uid": "PBFA97CFB590B2093"
+			},
+			"gridPos": {
+				"h": 8,
+				"w": 12,
+				"x": 12,
 				"y": 40
 			},
 			"targets": [
@@ -611,96 +1051,8 @@
 			}
 		},
 		{
-			"id": 15,
-			"title": "/api/v1/health - Performance Metrics",
-			"type": "timeseries",
-			"datasource": {
-				"type": "prometheus",
-				"uid": "PBFA97CFB590B2093"
-			},
-			"gridPos": {
-				"h": 8,
-				"w": 12,
-				"x": 12,
-				"y": 40
-			},
-			"targets": [
-				{
-					"expr": "histogram_quantile(0.50, sum by(le) (rate(http_server_request_duration_seconds_bucket{job=\"seventysix-api\",http_route=\"api/v1/health\"}[1m]))) * 1000",
-					"legendFormat": "p50 (median)",
-					"refId": "A"
-				},
-				{
-					"expr": "histogram_quantile(0.95, sum by(le) (rate(http_server_request_duration_seconds_bucket{job=\"seventysix-api\",http_route=\"api/v1/health\"}[1m]))) * 1000",
-					"legendFormat": "p95",
-					"refId": "B"
-				},
-				{
-					"expr": "histogram_quantile(0.99, sum by(le) (rate(http_server_request_duration_seconds_bucket{job=\"seventysix-api\",http_route=\"api/v1/health\"}[1m]))) * 1000",
-					"legendFormat": "p99",
-					"refId": "C"
-				},
-				{
-					"expr": "rate(http_server_request_duration_seconds_count{job=\"seventysix-api\",http_route=\"api/v1/health\"}[1m])",
-					"legendFormat": "Request Rate",
-					"refId": "D"
-				}
-			],
-			"fieldConfig": {
-				"defaults": {
-					"color": {
-						"mode": "palette-classic"
-					},
-					"custom": {
-						"drawStyle": "line",
-						"lineInterpolation": "smooth",
-						"lineWidth": 2,
-						"fillOpacity": 15,
-						"gradientMode": "opacity",
-						"showPoints": "never",
-						"stacking": {
-							"mode": "none"
-						},
-						"axisPlacement": "auto"
-					},
-					"unit": "ms",
-					"min": 0
-				},
-				"overrides": [
-					{
-						"matcher": {
-							"id": "byName",
-							"options": "Request Rate"
-						},
-						"properties": [
-							{
-								"id": "unit",
-								"value": "reqps"
-							},
-							{
-								"id": "custom.axisPlacement",
-								"value": "right"
-							}
-						]
-					}
-				]
-			},
-			"options": {
-				"tooltip": {
-					"mode": "multi",
-					"sort": "none"
-				},
-				"legend": {
-					"displayMode": "table",
-					"placement": "bottom",
-					"showLegend": true,
-					"calcs": ["mean", "max", "lastNotNull"]
-				}
-			}
-		},
-		{
-			"id": 17,
-			"title": "/api/v1/logs/client/batch - Performance Metrics",
+			"id": 13,
+			"title": "/health - Performance Metrics",
 			"type": "timeseries",
 			"datasource": {
 				"type": "prometheus",
@@ -710,26 +1062,26 @@
 				"h": 8,
 				"w": 12,
 				"x": 0,
-				"y": 32
+				"y": 48
 			},
 			"targets": [
 				{
-					"expr": "histogram_quantile(0.50, sum by(le) (rate(http_server_request_duration_seconds_bucket{job=\"seventysix-api\",http_route=\"api/v1/logs/client/batch\"}[1m]))) * 1000",
+					"expr": "histogram_quantile(0.50, sum by(le) (rate(http_server_request_duration_seconds_bucket{job=\"seventysix-api\",http_route=\"/health\"}[1m]))) * 1000",
 					"legendFormat": "p50 (median)",
 					"refId": "A"
 				},
 				{
-					"expr": "histogram_quantile(0.95, sum by(le) (rate(http_server_request_duration_seconds_bucket{job=\"seventysix-api\",http_route=\"api/v1/logs/client/batch\"}[1m]))) * 1000",
+					"expr": "histogram_quantile(0.95, sum by(le) (rate(http_server_request_duration_seconds_bucket{job=\"seventysix-api\",http_route=\"/health\"}[1m]))) * 1000",
 					"legendFormat": "p95",
 					"refId": "B"
 				},
 				{
-					"expr": "histogram_quantile(0.99, sum by(le) (rate(http_server_request_duration_seconds_bucket{job=\"seventysix-api\",http_route=\"api/v1/logs/client/batch\"}[1m]))) * 1000",
+					"expr": "histogram_quantile(0.99, sum by(le) (rate(http_server_request_duration_seconds_bucket{job=\"seventysix-api\",http_route=\"/health\"}[1m]))) * 1000",
 					"legendFormat": "p99",
 					"refId": "C"
 				},
 				{
-					"expr": "rate(http_server_request_duration_seconds_count{job=\"seventysix-api\",http_route=\"api/v1/logs/client/batch\"}[1m])",
+					"expr": "rate(http_server_request_duration_seconds_count{job=\"seventysix-api\",http_route=\"/health\"}[1m])",
 					"legendFormat": "Request Rate",
 					"refId": "D"
 				}
@@ -787,8 +1139,8 @@
 			}
 		},
 		{
-			"id": 18,
-			"title": "/api/v1/logs/count - Performance Metrics",
+			"id": 14,
+			"title": "/api/v1/health/scheduled-jobs - Performance Metrics",
 			"type": "timeseries",
 			"datasource": {
 				"type": "prometheus",
@@ -798,26 +1150,26 @@
 				"h": 8,
 				"w": 12,
 				"x": 12,
-				"y": 32
+				"y": 48
 			},
 			"targets": [
 				{
-					"expr": "histogram_quantile(0.50, sum by(le) (rate(http_server_request_duration_seconds_bucket{job=\"seventysix-api\",http_route=\"api/v1/logs/count\"}[1m]))) * 1000",
+					"expr": "histogram_quantile(0.50, sum by(le) (rate(http_server_request_duration_seconds_bucket{job=\"seventysix-api\",http_route=\"api/v1/health/scheduled-jobs\"}[1m]))) * 1000",
 					"legendFormat": "p50 (median)",
 					"refId": "A"
 				},
 				{
-					"expr": "histogram_quantile(0.95, sum by(le) (rate(http_server_request_duration_seconds_bucket{job=\"seventysix-api\",http_route=\"api/v1/logs/count\"}[1m]))) * 1000",
+					"expr": "histogram_quantile(0.95, sum by(le) (rate(http_server_request_duration_seconds_bucket{job=\"seventysix-api\",http_route=\"api/v1/health/scheduled-jobs\"}[1m]))) * 1000",
 					"legendFormat": "p95",
 					"refId": "B"
 				},
 				{
-					"expr": "histogram_quantile(0.99, sum by(le) (rate(http_server_request_duration_seconds_bucket{job=\"seventysix-api\",http_route=\"api/v1/logs/count\"}[1m]))) * 1000",
+					"expr": "histogram_quantile(0.99, sum by(le) (rate(http_server_request_duration_seconds_bucket{job=\"seventysix-api\",http_route=\"api/v1/health/scheduled-jobs\"}[1m]))) * 1000",
 					"legendFormat": "p99",
 					"refId": "C"
 				},
 				{
-					"expr": "rate(http_server_request_duration_seconds_count{job=\"seventysix-api\",http_route=\"api/v1/logs/count\"}[1m])",
+					"expr": "rate(http_server_request_duration_seconds_count{job=\"seventysix-api\",http_route=\"api/v1/health/scheduled-jobs\"}[1m])",
 					"legendFormat": "Request Rate",
 					"refId": "D"
 				}
@@ -876,5 +1228,5 @@
 		}
 	],
 	"schemaVersion": 38,
-	"version": 3
+	"version": 4
 }

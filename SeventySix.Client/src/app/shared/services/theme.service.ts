@@ -143,7 +143,7 @@ export class ThemeService
 	}
 
 	/**
-	 * Get initial brightness from localStorage or default to light.
+	 * Get initial brightness from localStorage or default to dark.
 	 * @returns {ThemeBrightness}
 	 * The initial brightness value ('light' or 'dark').
 	 */
@@ -152,7 +152,7 @@ export class ThemeService
 		const saved: string | null =
 			this.storage.getItem<string>(
 				STORAGE_KEYS.THEME_BRIGHTNESS);
-		return saved === "dark" || saved === "light" ? saved : "light";
+		return saved === "dark" || saved === "light" ? saved : "dark";
 	}
 
 	/**

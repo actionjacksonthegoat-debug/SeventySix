@@ -318,7 +318,7 @@
 		"from": "now-1h",
 		"to": "now"
 	},
-	"title": "SeventySix Valkey Cache Dashboard",
+	"title": "SeventySix Valkey",
 	"uid": "seventysix-valkey",
 	"version": 1,
 	"weekStart": ""

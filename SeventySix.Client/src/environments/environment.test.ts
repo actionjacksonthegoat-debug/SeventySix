@@ -24,6 +24,8 @@ export const environment: Environment =
 			jaegerUrl: "https://localhost:16687",
 			prometheusUrl: "https://localhost:9091",
 			grafanaUrl: "https://localhost:3443",
+			pgAdminUrl: "https://localhost:5051",
+			redisInsightUrl: "https://localhost:5541",
 			enabled: false, // Disabled in tests
 			dashboards: {
 				systemOverview: "seventysix-system-overview",

@@ -23,6 +23,8 @@ export const environment: Environment =
 			jaegerUrl: "http://localhost:16686",
 			prometheusUrl: "http://localhost:9090",
 			grafanaUrl: "http://localhost:3000",
+			pgAdminUrl: "http://localhost:5050",
+			redisInsightUrl: "http://localhost:5540",
 			dashboards: {
 				systemOverview: "seventysix-system-overview",
 				apiEndpoints: "seventysix-api-endpoints",

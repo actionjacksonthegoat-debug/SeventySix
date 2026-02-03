@@ -84,8 +84,10 @@
 						</mat-card-content>
 					</mat-card>
 
-					<!-- Observability Quick Links -->
-					<mat-card>
+					<!-- Observability Row -->
+					<mat-card
+						class="observability-card"
+						data-testid="observability-card">
 						<mat-card-header>
 							<mat-card-title>
 								<mat-icon aria-hidden="true">visibility</mat-icon>
@@ -95,25 +97,57 @@
 						<mat-card-content>
 							<div class="observability-links">
 								<button
-									mat-raised-button
-									color="accent"
+									mat-stroked-button
+									aria-label="Open Jaeger distributed tracing"
 									(click)="openJaeger()">
 									<mat-icon aria-hidden="true">bug_report</mat-icon>
 									Jaeger Tracing
 								</button>
 								<button
-									mat-raised-button
-									color="accent"
+									mat-stroked-button
+									aria-label="Open Prometheus metrics"
 									(click)="openPrometheus()">
 									<mat-icon aria-hidden="true">analytics</mat-icon>
 									Prometheus Metrics
 								</button>
 								<button
-									mat-raised-button
-									color="accent"
+									mat-stroked-button
+									aria-label="Open Grafana dashboards"
 									(click)="openGrafana()">
 									<mat-icon aria-hidden="true">open_in_new</mat-icon>
 									Grafana Full View
+								</button>
+							</div>
+						</mat-card-content>
+					</mat-card>
+
+					<!-- Data Tools Row -->
+					<mat-card
+						class="data-card"
+						data-testid="data-card">
+						<mat-card-header>
+							<mat-card-title>
+								<mat-icon aria-hidden="true">storage</mat-icon>
+								Data Tools
+							</mat-card-title>
+						</mat-card-header>
+						<mat-card-content>
+							<div class="data-links">
+								<button
+									mat-stroked-button
+									data-testid="pgadmin-button"
+									aria-label="Open pgAdmin PostgreSQL Manager"
+									(click)="openPgAdmin()">
+									<mat-icon aria-hidden="true">table_chart</mat-icon>
+									pgAdmin
+								</button>
+								<button
+									mat-stroked-button
+									data-testid="redisinsight-button"
+									aria-label="Open RedisInsight Valkey Explorer"
+									(click)="openRedisInsight()">
+									<mat-icon aria-hidden="true">memory</mat-icon>
+									RedisInsight
 								</button>
 							</div>
 						</mat-card-content>

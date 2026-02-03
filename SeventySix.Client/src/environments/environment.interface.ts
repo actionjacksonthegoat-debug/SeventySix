@@ -47,6 +47,8 @@ export interface ObservabilityConfig
 	jaegerUrl: string;
 	prometheusUrl: string;
 	grafanaUrl: string;
+	pgAdminUrl: string;
+	redisInsightUrl: string;
 	/** Optional - used in test environment to disable observability. */
 	enabled?: boolean;
 	dashboards: {

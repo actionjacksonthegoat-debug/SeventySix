@@ -5,6 +5,20 @@
 
 ---
 
+## 🚨 FORBIDDEN COMMANDS (NEVER EXECUTE)
+
+> **ABSOLUTE PROHIBITION**: The following commands are **USER-ONLY** and must **NEVER** be executed by Copilot under any circumstances.
+
+| Command                                 | Reason                                 |
+| --------------------------------------- | -------------------------------------- |
+| `npm run db:reset`                      | Destroys all database data - USER ONLY |
+| `db:reset`                              | Alias - same prohibition               |
+| Any command containing `reset-database` | PowerShell script - USER ONLY          |
+
+**NO EXCEPTIONS. NO WORKAROUNDS. If a task requires database reset, STOP and ask the user to run it manually.**
+
+---
+
 ## ⚠️ CRITICAL RULES (NEVER VIOLATE)
 
 ### 1. IDE Warnings = MUST FIX (No Suppressions)
@@ -62,6 +76,10 @@ import { isNullOrUndefined, isPresent } from "@shared/utilities/null-check.utili
 > ⚠️ **CRITICAL**: ALL three test suites MUST pass before ANY implementation plan is considered complete.
 > Test failures MUST be fixed immediately when discovered, regardless of origin.
 > Never skip or defer failing tests—fix before proceeding.
+
+> 🚫 **NEVER** claim "done" or "complete" without actually running ALL test suites.
+> Saying "tests will pass when infrastructure is running" is NOT acceptable.
+> You MUST execute `npm run test:e2e` and see `[PASS] All E2E tests passed!` before marking complete.
 
 ### 6. Accessibility = WCAG AA Compliance (Client)
 

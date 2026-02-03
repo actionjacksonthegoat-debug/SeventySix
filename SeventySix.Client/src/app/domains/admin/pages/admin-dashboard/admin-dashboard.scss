@@ -75,6 +75,13 @@
 		margin-top: vars.$spacing-lg;
 	}
 
+	.data-links {
+		display: flex;
+		gap: vars.$spacing-md;
+		flex-wrap: wrap;
+		margin-top: vars.$spacing-lg;
+	}
+
 	// Responsive breakpoints
 	@media #{vars.$breakpoint-mobile} {
 		mat-toolbar {

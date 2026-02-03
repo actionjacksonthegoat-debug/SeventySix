@@ -49,6 +49,16 @@ public static class PortConstants
 		/// Jaeger HTTPS proxy port.
 		/// </summary>
 		public const int Jaeger = 16687;
+
+		/// <summary>
+		/// pgAdmin HTTPS proxy port.
+		/// </summary>
+		public const int PgAdmin = 5051;
+
+		/// <summary>
+		/// RedisInsight HTTPS proxy port for Valkey cache visualization.
+		/// </summary>
+		public const int RedisInsight = 5541;
 	}
 
 	/// <summary>
