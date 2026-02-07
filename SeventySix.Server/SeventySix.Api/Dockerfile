@@ -33,9 +33,7 @@ FROM base AS final
 WORKDIR /app
 
 # Install required packages:
-# - wget: For healthcheck endpoint verification (uses GnuTLS, avoids
-#         pulling in libgssapi-krb5-2 which causes SIGSEGV/exit 139 crashes
-#         due to native library conflicts with the .NET runtime)
+# - wget: For healthcheck endpoint verification (uses GnuTLS)
 USER root
 RUN apt-get update && apt-get install -y --no-install-recommends wget && rm -rf /var/lib/apt/lists/*
 
