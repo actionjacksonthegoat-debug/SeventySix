@@ -24,12 +24,18 @@ public class DataProtectionRegistrationTests
 	public void AddConfiguredDataProtection_WithMissingCertificate_InProduction_ThrowsInvalidOperationException()
 	{
 		// Arrange
+		string tempKeysDirectory =
+			Path.Combine(
+				Path.GetTempPath(),
+				$"dp-test-{Guid.NewGuid():N}");
+
 		Dictionary<string, string?> configurationValues =
 			new()
 			{
 				["DataProtection:UseCertificate"] = "true",
 				["DataProtection:CertificatePath"] = "C:\\nonexistent\\cert.pfx",
 				["DataProtection:AllowUnprotectedKeysInDevelopment"] = "false",
+				["DataProtection:KeysDirectory"] = tempKeysDirectory
 			};
 
 		IConfiguration configuration =
@@ -106,10 +112,16 @@ public class DataProtectionRegistrationTests
 	public void AddConfiguredDataProtection_WithNoCertificateConfigured_ValidationPassesAsync()
 	{
 		// Arrange
+		string tempKeysDirectory =
+			Path.Combine(
+				Path.GetTempPath(),
+				$"dp-test-{Guid.NewGuid():N}");
+
 		Dictionary<string, string?> configurationValues =
 			new()
 			{
 				["DataProtection:UseCertificate"] = "false",
+				["DataProtection:KeysDirectory"] = tempKeysDirectory,
 			};
 
 		IConfiguration configuration =
