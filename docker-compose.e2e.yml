@@ -65,6 +65,11 @@ services:
             context: ./SeventySix.Server
             dockerfile: SeventySix.Api/Dockerfile
         container_name: seventysix-api-e2e
+        # Disable seccomp filtering - GitHub Actions' default seccomp profile blocks
+        # certain syscalls used by .NET's native OpenSSL interop for HTTPS, causing
+        # SIGSEGV (exit code 139). This is safe for E2E tests and does not affect production.
+        security_opt:
+            - seccomp:unconfined
         ports:
             - "7174:8081" # HTTPS - E2E isolated port (dev: 7074)
         environment:
@@ -128,8 +133,11 @@ services:
             - OpenTelemetry__Enabled=false
             - Altcha__Enabled=false
             - RateLimiting__Enabled=false
-            # Runtime stability - prevents SIGSEGV from diagnostic port socket creation
+            # Runtime stability - prevents SIGSEGV on CI runners (GitHub Actions)
+            # DOTNET_EnableDiagnostics=0: prevents diagnostic port socket creation crash
+            # DOTNET_SYSTEM_GLOBALIZATION_INVARIANT: prevents ICU native library SIGSEGV
             - DOTNET_EnableDiagnostics=0
+            - DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=true
             - ResponseCompression__Enabled=false
             - Logging__Cleanup__Enabled=false
             - ThirdPartyApiLimits__Enabled=false
