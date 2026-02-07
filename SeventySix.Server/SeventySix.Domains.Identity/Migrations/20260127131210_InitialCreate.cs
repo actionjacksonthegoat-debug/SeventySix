@@ -26,13 +26,17 @@ namespace SeventySix.Domains.Identity.Migrations
 				columns: table => new
 				{
 					Id = table.Column<long>(type: "bigint", nullable: false)
-						.Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+						.Annotation(
+							"Npgsql:ValueGenerationStrategy",
+							NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
 					Challenge = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: false),
 					ExpiryUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
 				},
 				constraints: table =>
 				{
-					table.PrimaryKey("PK_AltchaChallenges", x => x.Id);
+					table.PrimaryKey(
+						"PK_AltchaChallenges",
+						x => x.Id);
 				});
 
 			migrationBuilder.CreateTable(
@@ -41,7 +45,9 @@ namespace SeventySix.Domains.Identity.Migrations
 				columns: table => new
 				{
 					Id = table.Column<long>(type: "bigint", nullable: false)
-						.Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+						.Annotation(
+							"Npgsql:ValueGenerationStrategy",
+							NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
 					Description = table.Column<string>(type: "text", nullable: true),
 					IsActive = table.Column<bool>(type: "boolean", nullable: false),
 					CreateDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -51,7 +57,9 @@ namespace SeventySix.Domains.Identity.Migrations
 				},
 				constraints: table =>
 				{
-					table.PrimaryKey("PK_Roles", x => x.Id);
+					table.PrimaryKey(
+						"PK_Roles",
+						x => x.Id);
 				});
 
 			migrationBuilder.CreateTable(
@@ -60,7 +68,9 @@ namespace SeventySix.Domains.Identity.Migrations
 				columns: table => new
 				{
 					Id = table.Column<long>(type: "bigint", nullable: false)
-						.Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+						.Annotation(
+							"Npgsql:ValueGenerationStrategy",
+							NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
 					EventType = table.Column<int>(type: "integer", nullable: false),
 					UserId = table.Column<long>(type: "bigint", nullable: true),
 					Username = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
@@ -72,7 +82,9 @@ namespace SeventySix.Domains.Identity.Migrations
 				},
 				constraints: table =>
 				{
-					table.PrimaryKey("PK_SecurityEvents", x => x.Id);
+					table.PrimaryKey(
+						"PK_SecurityEvents",
+						x => x.Id);
 				});
 
 			migrationBuilder.CreateTable(
@@ -81,7 +93,9 @@ namespace SeventySix.Domains.Identity.Migrations
 				columns: table => new
 				{
 					Id = table.Column<long>(type: "bigint", nullable: false)
-						.Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+						.Annotation(
+							"Npgsql:ValueGenerationStrategy",
+							NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
 					FullName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
 					CreateDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
 					CreatedBy = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
@@ -116,7 +130,9 @@ namespace SeventySix.Domains.Identity.Migrations
 				},
 				constraints: table =>
 				{
-					table.PrimaryKey("PK_Users", x => x.Id);
+					table.PrimaryKey(
+						"PK_Users",
+						x => x.Id);
 				});
 
 			migrationBuilder.CreateTable(
@@ -125,14 +141,18 @@ namespace SeventySix.Domains.Identity.Migrations
 				columns: table => new
 				{
 					Id = table.Column<int>(type: "integer", nullable: false)
-						.Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+						.Annotation(
+							"Npgsql:ValueGenerationStrategy",
+							NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
 					RoleId = table.Column<long>(type: "bigint", nullable: false),
 					ClaimType = table.Column<string>(type: "text", nullable: true),
 					ClaimValue = table.Column<string>(type: "text", nullable: true)
 				},
 				constraints: table =>
 				{
-					table.PrimaryKey("PK_RoleClaims", x => x.Id);
+					table.PrimaryKey(
+						"PK_RoleClaims",
+						x => x.Id);
 					table.ForeignKey(
 						name: "FK_RoleClaims_Roles_RoleId",
 						column: x => x.RoleId,
@@ -148,7 +168,9 @@ namespace SeventySix.Domains.Identity.Migrations
 				columns: table => new
 				{
 					Id = table.Column<long>(type: "bigint", nullable: false)
-						.Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+						.Annotation(
+							"Npgsql:ValueGenerationStrategy",
+							NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
 					UserId = table.Column<long>(type: "bigint", nullable: false),
 					CodeHash = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
 					IsUsed = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
@@ -158,7 +180,9 @@ namespace SeventySix.Domains.Identity.Migrations
 				},
 				constraints: table =>
 				{
-					table.PrimaryKey("PK_BackupCodes", x => x.Id);
+					table.PrimaryKey(
+						"PK_BackupCodes",
+						x => x.Id);
 					table.ForeignKey(
 						name: "FK_BackupCodes_Users_UserId",
 						column: x => x.UserId,
@@ -180,7 +204,9 @@ namespace SeventySix.Domains.Identity.Migrations
 				},
 				constraints: table =>
 				{
-					table.PrimaryKey("PK_ExternalLogins", x => new { x.LoginProvider, x.ProviderKey });
+					table.PrimaryKey(
+						"PK_ExternalLogins",
+						x => new { x.LoginProvider, x.ProviderKey });
 					table.ForeignKey(
 						name: "FK_ExternalLogins_Users_UserId",
 						column: x => x.UserId,
@@ -196,7 +222,9 @@ namespace SeventySix.Domains.Identity.Migrations
 				columns: table => new
 				{
 					Id = table.Column<long>(type: "bigint", nullable: false)
-						.Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+						.Annotation(
+							"Npgsql:ValueGenerationStrategy",
+							NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
 					Token = table.Column<string>(type: "character varying(32)", maxLength: 32, nullable: false),
 					UserId = table.Column<long>(type: "bigint", nullable: false),
 					CodeHash = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
@@ -209,7 +237,9 @@ namespace SeventySix.Domains.Identity.Migrations
 				},
 				constraints: table =>
 				{
-					table.PrimaryKey("PK_MfaChallenges", x => x.Id);
+					table.PrimaryKey(
+						"PK_MfaChallenges",
+						x => x.Id);
 					table.ForeignKey(
 						name: "FK_MfaChallenges_Users_UserId",
 						column: x => x.UserId,
@@ -225,7 +255,9 @@ namespace SeventySix.Domains.Identity.Migrations
 				columns: table => new
 				{
 					Id = table.Column<long>(type: "bigint", nullable: false)
-						.Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+						.Annotation(
+							"Npgsql:ValueGenerationStrategy",
+							NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
 					UserId = table.Column<long>(type: "bigint", nullable: false),
 					RequestedRoleId = table.Column<long>(type: "bigint", nullable: false),
 					RequestMessage = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
@@ -234,7 +266,9 @@ namespace SeventySix.Domains.Identity.Migrations
 				},
 				constraints: table =>
 				{
-					table.PrimaryKey("PK_PermissionRequests", x => x.Id);
+					table.PrimaryKey(
+						"PK_PermissionRequests",
+						x => x.Id);
 					table.ForeignKey(
 						name: "FK_PermissionRequests_Roles_RequestedRoleId",
 						column: x => x.RequestedRoleId,
@@ -257,20 +291,27 @@ namespace SeventySix.Domains.Identity.Migrations
 				columns: table => new
 				{
 					Id = table.Column<long>(type: "bigint", nullable: false)
-						.Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+						.Annotation(
+							"Npgsql:ValueGenerationStrategy",
+							NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
 					TokenHash = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
 					FamilyId = table.Column<Guid>(type: "uuid", nullable: false),
 					UserId = table.Column<long>(type: "bigint", nullable: false),
 					ExpiresAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
 					SessionStartedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-					CreateDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()"),
+					CreateDate = table.Column<DateTime>(
+						type: "timestamp with time zone",
+						nullable: false,
+						defaultValueSql: "NOW()"),
 					IsRevoked = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
 					RevokedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
 					CreatedByIp = table.Column<string>(type: "character varying(45)", maxLength: 45, nullable: true)
 				},
 				constraints: table =>
 				{
-					table.PrimaryKey("PK_RefreshTokens", x => x.Id);
+					table.PrimaryKey(
+						"PK_RefreshTokens",
+						x => x.Id);
 					table.ForeignKey(
 						name: "FK_RefreshTokens_Users_UserId",
 						column: x => x.UserId,
@@ -286,7 +327,9 @@ namespace SeventySix.Domains.Identity.Migrations
 				columns: table => new
 				{
 					Id = table.Column<long>(type: "bigint", nullable: false)
-						.Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+						.Annotation(
+							"Npgsql:ValueGenerationStrategy",
+							NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
 					UserId = table.Column<long>(type: "bigint", nullable: false),
 					TokenHash = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
 					DeviceFingerprint = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
@@ -301,7 +344,9 @@ namespace SeventySix.Domains.Identity.Migrations
 				},
 				constraints: table =>
 				{
-					table.PrimaryKey("PK_TrustedDevices", x => x.Id);
+					table.PrimaryKey(
+						"PK_TrustedDevices",
+						x => x.Id);
 					table.ForeignKey(
 						name: "FK_TrustedDevices_Users_UserId",
 						column: x => x.UserId,
@@ -317,14 +362,18 @@ namespace SeventySix.Domains.Identity.Migrations
 				columns: table => new
 				{
 					Id = table.Column<int>(type: "integer", nullable: false)
-						.Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+						.Annotation(
+							"Npgsql:ValueGenerationStrategy",
+							NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
 					UserId = table.Column<long>(type: "bigint", nullable: false),
 					ClaimType = table.Column<string>(type: "text", nullable: true),
 					ClaimValue = table.Column<string>(type: "text", nullable: true)
 				},
 				constraints: table =>
 				{
-					table.PrimaryKey("PK_UserClaims", x => x.Id);
+					table.PrimaryKey(
+						"PK_UserClaims",
+						x => x.Id);
 					table.ForeignKey(
 						name: "FK_UserClaims_Users_UserId",
 						column: x => x.UserId,
@@ -344,7 +393,9 @@ namespace SeventySix.Domains.Identity.Migrations
 				},
 				constraints: table =>
 				{
-					table.PrimaryKey("PK_UserRoles", x => new { x.UserId, x.RoleId });
+					table.PrimaryKey(
+						"PK_UserRoles",
+						x => new { x.UserId, x.RoleId });
 					table.ForeignKey(
 						name: "FK_UserRoles_Roles_RoleId",
 						column: x => x.RoleId,
@@ -373,7 +424,9 @@ namespace SeventySix.Domains.Identity.Migrations
 				},
 				constraints: table =>
 				{
-					table.PrimaryKey("PK_UserTokens", x => new { x.UserId, x.LoginProvider, x.Name });
+					table.PrimaryKey(
+						"PK_UserTokens",
+						x => new { x.UserId, x.LoginProvider, x.Name });
 					table.ForeignKey(
 						name: "FK_UserTokens_Users_UserId",
 						column: x => x.UserId,

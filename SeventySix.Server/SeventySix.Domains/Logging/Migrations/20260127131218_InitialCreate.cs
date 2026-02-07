@@ -21,7 +21,9 @@ namespace SeventySix.Domains.Logging.Migrations
 				columns: table => new
 				{
 					Id = table.Column<long>(type: "bigint", nullable: false)
-						.Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+						.Annotation(
+							"Npgsql:ValueGenerationStrategy",
+							NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
 					LogLevel = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
 					Message = table.Column<string>(type: "character varying(4000)", maxLength: 4000, nullable: false),
 					ExceptionMessage = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: true),
@@ -33,7 +35,10 @@ namespace SeventySix.Domains.Logging.Migrations
 					StatusCode = table.Column<int>(type: "integer", nullable: true),
 					DurationMs = table.Column<long>(type: "bigint", nullable: true),
 					Properties = table.Column<string>(type: "text", nullable: true),
-					CreateDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()"),
+					CreateDate = table.Column<DateTime>(
+						type: "timestamp with time zone",
+						nullable: false,
+						defaultValueSql: "NOW()"),
 					MachineName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
 					Environment = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
 					CorrelationId = table.Column<string>(type: "character varying(32)", maxLength: 32, nullable: true),
@@ -42,7 +47,9 @@ namespace SeventySix.Domains.Logging.Migrations
 				},
 				constraints: table =>
 				{
-					table.PrimaryKey("PK_Logs", x => x.Id);
+					table.PrimaryKey(
+						"PK_Logs",
+						x => x.Id);
 				});
 
 			migrationBuilder.CreateTable(
@@ -57,7 +64,9 @@ namespace SeventySix.Domains.Logging.Migrations
 				},
 				constraints: table =>
 				{
-					table.PrimaryKey("PK_recurring_job_executions", x => x.JobName);
+					table.PrimaryKey(
+						"PK_recurring_job_executions",
+						x => x.JobName);
 				});
 
 			migrationBuilder.CreateIndex(

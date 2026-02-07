@@ -7,6 +7,11 @@ on:
         branches: [master]
     workflow_dispatch:
 
+permissions:
+    contents: read
+    checks: write
+    pull-requests: write
+
 jobs:
     client-build:
         name: Client Build & Test
