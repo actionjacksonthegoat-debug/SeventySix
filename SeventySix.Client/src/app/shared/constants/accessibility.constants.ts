@@ -41,7 +41,7 @@ export const ARIA_LABELS: Readonly<{
 	toggleColorScheme: "Toggle color scheme";
 }> =
 	{
-		// Navigation
+	// Navigation
 		closeMenu: "Close navigation menu",
 		toggleMenu: "Toggle navigation menu",
 		mainNavigation: "Main navigation",
@@ -61,8 +61,7 @@ export const ARIA_LABELS: Readonly<{
 		// Toggle states
 		expand: "Expand",
 		collapse: "Collapse",
-		expandSection: (section: string) =>
-			`Expand ${section}`,
+		expandSection: (section: string) => `Expand ${section}`,
 		collapseSection: (section: string) =>
 			`Collapse ${section}`,
 
@@ -113,32 +112,29 @@ export const ARIA_ROLES: Readonly<{
 	};
 }> =
 	{
-		landmarks:
-			{
-				banner: "banner",
-				main: "main",
-				navigation: "navigation",
-				contentinfo: "contentinfo",
-				complementary: "complementary",
-				region: "region"
-			},
+		landmarks: {
+			banner: "banner",
+			main: "main",
+			navigation: "navigation",
+			contentinfo: "contentinfo",
+			complementary: "complementary",
+			region: "region"
+		},
 
-		widgets:
-			{
-				alert: "alert",
-				dialog: "dialog",
-				progressbar: "progressbar",
-				tabpanel: "tabpanel",
-				tablist: "tablist",
-				tab: "tab"
-			},
+		widgets: {
+			alert: "alert",
+			dialog: "dialog",
+			progressbar: "progressbar",
+			tabpanel: "tabpanel",
+			tablist: "tablist",
+			tab: "tab"
+		},
 
-		liveRegions:
-			{
-				polite: "polite",
-				assertive: "assertive",
-				off: "off"
-			}
+		liveRegions: {
+			polite: "polite",
+			assertive: "assertive",
+			off: "off"
+		}
 	} as const;
 
 /**

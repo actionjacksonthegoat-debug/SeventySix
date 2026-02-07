@@ -7,9 +7,6 @@
 
 		<!-- Enable EditorConfig support -->
 		<EnableEditorConfigSupport>true</EnableEditorConfigSupport>
-		<TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-		<WarningsAsErrors />
-		<WarningsNotAsErrors />
 	</PropertyGroup>
 
 	<ItemGroup>

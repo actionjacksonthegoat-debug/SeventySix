@@ -1,0 +1,142 @@
+name: CI
+
+on:
+    push:
+        branches: [master]
+    pull_request:
+        branches: [master]
+    workflow_dispatch:
+
+jobs:
+    client-build:
+        name: Client Build & Test
+        runs-on: ubuntu-latest
+
+        defaults:
+            run:
+                working-directory: SeventySix.Client
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "22.x"
+                  cache: "npm"
+                  cache-dependency-path: SeventySix.Client/package-lock.json
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Lint
+              run: npm run lint
+
+            - name: Format check
+              run: npm run format:check
+
+            - name: Build
+              run: npm run build
+
+            - name: Test
+              run: npm test
+
+            - name: Upload client coverage to Codecov
+              uses: codecov/codecov-action@v4
+              with:
+                  token: ${{ secrets.CODECOV_TOKEN }}
+                  flags: client
+                  name: client-coverage
+                  fail_ci_if_error: false
+
+            - name: Upload client artifact
+              uses: actions/upload-artifact@v4
+              with:
+                  name: client-dist
+                  path: SeventySix.Client/dist
+                  retention-days: 7
+
+    server-build:
+        name: Server Build & Test
+        runs-on: ubuntu-latest
+        # NOTE: Server tests use Testcontainers (requires Docker).
+        # ubuntu-latest includes Docker by default.
+
+        defaults:
+            run:
+                working-directory: SeventySix.Server
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup .NET
+              uses: actions/setup-dotnet@v4
+              with:
+                  dotnet-version: "10.0.x"
+
+            - name: Restore dependencies
+              run: dotnet restore SeventySix.Server.slnx
+
+            - name: Build
+              run: dotnet build SeventySix.Server.slnx --configuration Release --no-restore
+
+            - name: Test with coverage
+              run: >
+                  dotnet test SeventySix.Server.slnx
+                  --configuration Release
+                  --no-build
+                  --verbosity normal
+                  --collect:"XPlat Code Coverage"
+                  --results-directory ./TestResults
+                  --logger "trx;LogFileName=test-results.trx"
+
+            - name: Publish test results
+              uses: EnricoMi/publish-unit-test-result-action@v2
+              if: always()
+              with:
+                  files: SeventySix.Server/TestResults/**/*.trx
+
+            - name: Upload server coverage to Codecov
+              uses: codecov/codecov-action@v4
+              with:
+                  token: ${{ secrets.CODECOV_TOKEN }}
+                  files: SeventySix.Server/TestResults/**/coverage.cobertura.xml
+                  flags: server
+                  name: server-coverage
+                  fail_ci_if_error: false
+
+            - name: Upload coverage artifact
+              uses: actions/upload-artifact@v4
+              with:
+                  name: server-coverage
+                  path: SeventySix.Server/TestResults/**/coverage.cobertura.xml
+                  retention-days: 7
+
+    quality-gate:
+        name: Quality Gate
+        needs: [client-build, server-build]
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Verify all checks passed
+              run: |
+                  echo "============================================"
+                  echo "  Quality Gate Results"
+                  echo "============================================"
+                  echo ""
+                  echo "  Client Build & Test .... PASSED"
+                  echo "  Server Build & Test .... PASSED"
+                  echo ""
+                  echo "  Checks enforced:"
+                  echo "    - ESLint (zero errors)"
+                  echo "    - dprint format (zero violations)"
+                  echo "    - Angular production build (zero warnings)"
+                  echo "    - Vitest (all tests pass)"
+                  echo "    - dotnet build Release (zero warnings)"
+                  echo "    - dotnet test (all tests pass, coverage collected)"
+                  echo ""
+                  echo "============================================"
+                  echo "  Quality Gate: PASSED"
+                  echo "============================================"

@@ -75,9 +75,8 @@ export function toggleSetItem<T>(
 export function toggleArrayItem<T>(
 	sourceArray: readonly T[],
 	targetItem: T,
-	comparator: (existingItem: T, itemToFind: T) => boolean =
-		(existingItem, itemToFind): boolean =>
-			existingItem === itemToFind): T[]
+	comparator: (existingItem: T, itemToFind: T) => boolean = (existingItem, itemToFind): boolean =>
+		existingItem === itemToFind): T[]
 {
 	const existingIndex: number =
 		sourceArray.findIndex(

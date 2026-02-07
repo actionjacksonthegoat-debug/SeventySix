@@ -1,4 +1,8 @@
 <Project>
+	<PropertyGroup>
+		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+	</PropertyGroup>
+
 	<!--
 		Reference custom analyzers (SS001, SS002, SS003, SS006) and codefixes for all projects.
 		Also force Microsoft.CodeAnalysis.* versions to 5.0.0 for consistency with WolverineFx.

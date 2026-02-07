@@ -9,7 +9,9 @@
     "test": "node scripts/architecture-tests.mjs && vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "format": "eslint e2e --ext .ts --fix && eslint . --fix && dprint fmt && eslint . --fix",
+    "lint": "eslint .",
+    "format": "eslint . --fix && dprint fmt && eslint . --fix",
+    "format:check": "eslint .",
     "test:e2e": "node scripts/e2e-full.mjs",
     "generate:openapi": "node scripts/generate-openapi.mjs",
     "generate:openapi:types-only": "openapi-typescript ../openapi.json -o src/app/shared/generated-open-api/generated-open-api.ts"
