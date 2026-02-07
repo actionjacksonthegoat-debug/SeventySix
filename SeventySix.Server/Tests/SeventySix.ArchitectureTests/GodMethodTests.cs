@@ -45,19 +45,19 @@ public class GodMethodTests : SourceCodeArchitectureTest
 	private static readonly HashSet<string> AllowedLineExceptions =
 		[
 			// Architecture test self-detection - method parser incorrectly counts helper methods (159 lines)
-			"Tests\\SeventySix.ArchitectureTests\\GodMethodTests.cs::FindOpeningBrace",
+			"Tests/SeventySix.ArchitectureTests/GodMethodTests.cs::FindOpeningBrace",
 			// Roslyn analyzers - complex AST traversal is inherently long (88 lines)
-			"SeventySix.Analyzers\\AssignmentContinuationIndentAnalyzer.cs::AnalyzeObjectCreationInitializerBrace",
+			"SeventySix.Analyzers/AssignmentContinuationIndentAnalyzer.cs::AnalyzeObjectCreationInitializerBrace",
 			// Roslyn code fix - indent calculation requires many cases (144 lines)
-			"SeventySix.Analyzers.CodeFixes\\AssignmentContinuationIndentCodeFixProvider.cs::CalculateExpectedIndent",
+			"SeventySix.Analyzers.CodeFixes/AssignmentContinuationIndentCodeFixProvider.cs::CalculateExpectedIndent",
 			// Analyzer test - large code string test cases are unavoidable (443 lines)
-			"Tests\\SeventySix.Analyzers.Tests\\AssignmentContinuationIndentCodeFixTests.cs::ExtensionsInitializer_WrongIndent_FixesToCorrectIndentAsync",
+			"Tests/SeventySix.Analyzers.Tests/AssignmentContinuationIndentCodeFixTests.cs::ExtensionsInitializer_WrongIndent_FixesToCorrectIndentAsync",
 			// Analyzer test - nested dictionary test case (82 lines)
-			"Tests\\SeventySix.Analyzers.Tests\\AssignmentContinuationIndentCodeFixTests.cs::NestedDictionary_OuterBraceWrong_InnerNotFlaggedAsync",
+			"Tests/SeventySix.Analyzers.Tests/AssignmentContinuationIndentCodeFixTests.cs::NestedDictionary_OuterBraceWrong_InnerNotFlaggedAsync",
 			// Wolverine CQRS handler - OWASP ASVS V2.1.7 breach checking (83 lines)
-			"SeventySix.Domains.Identity\\Commands\\SetPassword\\SetPasswordCommandHandler.cs::HandleAsync",
+			"SeventySix.Domains.Identity/Commands/SetPassword/SetPasswordCommandHandler.cs::HandleAsync",
 			// Integration test - extensive mock configuration (88 lines)
-			"Tests\\SeventySix.Domains.Identity.Tests\\Commands\\CompleteRegistration\\CompleteRegistrationCommandHandlerTests.cs::HandleAsync_ShouldCompleteRegistration_WhenCombinedTokenIsValid_RefactoredAsync",
+			"Tests/SeventySix.Domains.Identity.Tests/Commands/CompleteRegistration/CompleteRegistrationCommandHandlerTests.cs::HandleAsync_ShouldCompleteRegistration_WhenCombinedTokenIsValid_RefactoredAsync",
 		];
 
 	/// <summary>
@@ -66,11 +66,11 @@ public class GodMethodTests : SourceCodeArchitectureTest
 	private static readonly HashSet<string> AllowedParameterExceptions =
 		[
 			// Wolverine injected dependencies - authentication handlers require many services
-			"SeventySix.Domains.Identity\\Commands\\ChangePassword\\ChangePasswordCommandHandler.cs::HandleAsync", // 9 params
-			"SeventySix.Domains.Identity\\Commands\\CompleteRegistration\\CompleteRegistrationCommandHandler.cs::HandleAsync", // 7 params
-			"SeventySix.Domains.Identity\\Commands\\CreateUser\\CreateUserCommandHandler.cs::HandleAsync", // 7 params
-			"SeventySix.Domains.Identity\\Commands\\Login\\LoginCommandHandler.cs::HandleAsync", // 10 params
-			"SeventySix.Domains.Identity\\Commands\\SetPassword\\SetPasswordCommandHandler.cs::HandleAsync", // 9 params
+			"SeventySix.Domains.Identity/Commands/ChangePassword/ChangePasswordCommandHandler.cs::HandleAsync", // 9 params
+			"SeventySix.Domains.Identity/Commands/CompleteRegistration/CompleteRegistrationCommandHandler.cs::HandleAsync", // 7 params
+			"SeventySix.Domains.Identity/Commands/CreateUser/CreateUserCommandHandler.cs::HandleAsync", // 7 params
+			"SeventySix.Domains.Identity/Commands/Login/LoginCommandHandler.cs::HandleAsync", // 10 params
+			"SeventySix.Domains.Identity/Commands/SetPassword/SetPasswordCommandHandler.cs::HandleAsync", // 9 params
 		];
 
 	[Fact]

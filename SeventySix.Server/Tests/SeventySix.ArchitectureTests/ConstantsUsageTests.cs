@@ -87,8 +87,8 @@ public class ConstantsUsageTests : SourceCodeArchitectureTest
 	{
 		// Arrange
 		IEnumerable<string> testFiles =
-			GetSourceFiles("*.cs")
-			.Where(f => f.Contains("\\Tests\\") && f.EndsWith("Tests.cs"))
+			GetAllSourceFiles()
+			.Where(file => file.Contains("/Tests/") && file.EndsWith("Tests.cs"))
 			.ToList();
 
 		// Match: "/api/something" or "/auth/something"

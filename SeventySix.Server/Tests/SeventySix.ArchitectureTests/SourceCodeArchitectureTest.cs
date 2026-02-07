@@ -12,6 +12,7 @@ namespace SeventySix.ArchitectureTests;
 /// <summary>
 /// Base class for architecture tests that scan source files.
 /// Provides common file scanning utilities following DRY principle.
+/// All paths are normalized to forward slashes for cross-platform CI compatibility.
 /// </summary>
 public abstract class SourceCodeArchitectureTest
 {
@@ -29,8 +30,21 @@ public abstract class SourceCodeArchitectureTest
 			".."));
 
 	/// <summary>
+	/// Normalizes a file path to use forward slashes for consistent cross-platform comparisons.
+	/// Windows accepts forward slashes in all file APIs, and Linux uses them natively.
+	/// </summary>
+	/// <param name="path">
+	/// The file path to normalize.
+	/// </param>
+	/// <returns>
+	/// Path with all backslashes replaced by forward slashes.
+	/// </returns>
+	protected static string NormalizePath(string path) =>
+		path.Replace('\\', '/');
+
+	/// <summary>
 	/// Gets source files matching the specified pattern.
-	/// Excludes bin, obj, and test directories.
+	/// Excludes bin, obj, test, and migration directories.
 	/// </summary>
 	/// <param name="pattern">
 	/// File search pattern (e.g., "*.cs").
@@ -39,7 +53,7 @@ public abstract class SourceCodeArchitectureTest
 	/// Additional path to exclude (optional).
 	/// </param>
 	/// <returns>
-	/// Enumerable of matching file paths.
+	/// Enumerable of matching file paths (normalized to forward slashes).
 	/// </returns>
 	protected static IEnumerable<string> GetSourceFiles(
 		string pattern,
@@ -51,13 +65,16 @@ public abstract class SourceCodeArchitectureTest
 			pattern,
 			SearchOption.AllDirectories);
 
-		return files.Where(file =>
-			!file.Contains("\\bin\\")
-			&& !file.Contains("\\obj\\")
-			&& !file.Contains("\\Tests\\")
-			&& !file.Contains("\\Migrations\\")
-			&& (
-				string.IsNullOrEmpty(excludePath) || !file.Contains(excludePath)));
+		return files
+			.Select(NormalizePath)
+			.Where(file =>
+				!file.Contains("/bin/")
+				&& !file.Contains("/obj/")
+				&& !file.Contains("/Tests/")
+				&& !file.Contains("/Migrations/")
+				&& (
+					string.IsNullOrEmpty(excludePath)
+					|| !file.Contains(excludePath)));
 	}
 
 	/// <summary>
@@ -74,22 +91,24 @@ public abstract class SourceCodeArchitectureTest
 
 	/// <summary>
 	/// Gets relative path from solution root for cleaner error messages.
+	/// Normalized to forward slashes for cross-platform consistency.
 	/// </summary>
 	/// <param name="fullPath">
 	/// Full file path.
 	/// </param>
 	/// <returns>
-	/// Relative path from solution root.
+	/// Relative path from solution root using forward slashes.
 	/// </returns>
 	protected static string GetRelativePath(string fullPath) =>
-		Path.GetRelativePath(SolutionRoot, fullPath);
+		NormalizePath(
+			Path.GetRelativePath(SolutionRoot, fullPath));
 
 	/// <summary>
 	/// Gets all C# source files including tests.
 	/// Excludes bin, obj, and Migrations folders.
 	/// </summary>
 	/// <returns>
-	/// Enumerable of all .cs file paths.
+	/// Enumerable of all .cs file paths (normalized to forward slashes).
 	/// </returns>
 	protected static IEnumerable<string> GetAllSourceFiles()
 	{
@@ -99,9 +118,11 @@ public abstract class SourceCodeArchitectureTest
 			"*.cs",
 			SearchOption.AllDirectories);
 
-		return allFiles.Where(filePath =>
-			!filePath.Contains("\\bin\\")
-			&& !filePath.Contains("\\obj\\")
-			&& !filePath.Contains("\\Migrations\\"));
+		return allFiles
+			.Select(NormalizePath)
+			.Where(filePath =>
+				!filePath.Contains("/bin/")
+				&& !filePath.Contains("/obj/")
+				&& !filePath.Contains("/Migrations/"));
 	}
 }

@@ -19,8 +19,8 @@ public class IdTypeTests : SourceCodeArchitectureTest
 		IEnumerable<string> entityFiles =
 			[..GetSourceFiles("*.cs")
 				.Where(file =>
-					(file.Contains("\\Models\\")
-						|| file.Contains("\\Entities\\"))
+					(file.Contains("/Models/")
+						|| file.Contains("/Entities/"))
 						&& !file.Contains("Dto")
 						&& !file.Contains("Request")
 						&& !file.Contains("Response")
@@ -57,8 +57,8 @@ public class IdTypeTests : SourceCodeArchitectureTest
 		IEnumerable<string> entityFiles =
 			[..GetSourceFiles("*.cs")
 				.Where(file =>
-					(file.Contains("\\Models\\")
-						|| file.Contains("\\Entities\\"))
+					(file.Contains("/Models/")
+						|| file.Contains("/Entities/"))
 					&& !file.Contains("Dto")
 					&& !file.Contains("Request")
 					&& !file.Contains("Response")

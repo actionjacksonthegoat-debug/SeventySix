@@ -238,6 +238,13 @@ public static class ApiEndpoints
 		public const string ScheduledJobs = "/api/v1/health/scheduled-jobs";
 	}
 
+	/// <summary>Altcha challenge endpoints.</summary>
+	public static class Altcha
+	{
+		/// <summary>Challenge generation endpoint.</summary>
+		public const string Challenge = "/api/v1/altcha/challenge";
+	}
+
 	/// <summary>Permission request endpoints (admin).</summary>
 	public static class PermissionRequests
 	{

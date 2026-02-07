@@ -460,7 +460,7 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 				LogLevel = "Warning",
 				Message = "Test warning 1",
 				SourceContext = "SeventySix.Services.HealthCheckService",
-				RequestPath = "/api/health",
+			RequestPath = ApiEndpoints.Health.Base,
 				StatusCode = 200,
 				DurationMs = 75,
 				CreateDate =

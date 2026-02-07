@@ -37,7 +37,7 @@ public class LoggingStandardsTests : SourceCodeArchitectureTest
 		foreach (string file in csFiles)
 		{
 			// Allow LogDebug in development-only files (WebApplicationExtensions for dev middleware)
-			if (file.Contains("\\Extensions\\WebApplicationExtensions.cs"))
+			if (file.Contains("/Extensions/WebApplicationExtensions.cs"))
 			{
 				continue;
 			}
@@ -79,9 +79,9 @@ public class LoggingStandardsTests : SourceCodeArchitectureTest
 				|| file.EndsWith("JobHandler.cs");
 
 			bool isStartupConfig =
-				file.Contains("\\Extensions\\WebApplicationExtensions.cs")
-				|| file.Contains("\\Extensions\\ServiceCollectionExtensions.cs")
-				|| file.Contains("\\Configuration\\StartupValidator.cs")
+				file.Contains("/Extensions/WebApplicationExtensions.cs")
+				|| file.Contains("/Extensions/ServiceCollectionExtensions.cs")
+				|| file.Contains("/Configuration/StartupValidator.cs")
 				|| file.Contains("Program.cs");
 
 			string content =

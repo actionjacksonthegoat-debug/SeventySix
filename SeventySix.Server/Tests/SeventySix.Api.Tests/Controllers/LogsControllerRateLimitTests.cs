@@ -79,7 +79,7 @@ public class LogsControllerRateLimitTests(LoggingApiPostgreSqlFixture fixture)
 		{
 			HttpResponseMessage response =
 				await HttpClient!.PostAsJsonAsync(
-					"/api/v1/logs/client",
+					ApiEndpoints.Logs.Client,
 					logRequest);
 			responses.Add(response);
 		}
@@ -114,7 +114,7 @@ public class LogsControllerRateLimitTests(LoggingApiPostgreSqlFixture fixture)
 		{
 			HttpResponseMessage response =
 				await HttpClient!.PostAsJsonAsync(
-					"/api/v1/logs/client/batch",
+					ApiEndpoints.Logs.ClientBatch,
 					batchRequest);
 			responses.Add(response);
 		}
@@ -147,7 +147,7 @@ public class LogsControllerRateLimitTests(LoggingApiPostgreSqlFixture fixture)
 		{
 			HttpResponseMessage response =
 				await HttpClient!.PostAsJsonAsync(
-					"/api/v1/logs/client",
+					ApiEndpoints.Logs.Client,
 					logRequest);
 
 			if (response.StatusCode == HttpStatusCode.TooManyRequests)

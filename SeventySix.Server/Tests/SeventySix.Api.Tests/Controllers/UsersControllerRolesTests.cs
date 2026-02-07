@@ -19,7 +19,7 @@ public class UsersControllerRolesTests(IdentityUsersApiPostgreSqlFixture fixture
 	: ApiPostgreSqlTestBase<Program>(fixture),
 		IAsyncLifetime
 {
-	private const string BaseEndpoint = "/api/v1/users";
+	private const string BaseEndpoint = ApiEndpoints.Users.Base;
 	private AuthorizationTestHelper AuthHelper =
 		null!;
 

@@ -24,11 +24,11 @@ public class AuditFieldTests : SourceCodeArchitectureTest
 		// Arrange
 		IEnumerable<string> entityFiles =
 			GetSourceFiles("*.cs")
-			.Where(f =>
-				f.Contains("\\Models\\")
-				&& !f.Contains("Dto")
-				&& !f.Contains("Request")
-				&& !f.Contains("Response"))
+			.Where(file =>
+				file.Contains("/Models/")
+				&& !file.Contains("Dto")
+				&& !file.Contains("Request")
+				&& !file.Contains("Response"))
 			.ToList();
 
 		// Match: public int CreatedBy or public int ModifiedBy
@@ -75,11 +75,11 @@ public class AuditFieldTests : SourceCodeArchitectureTest
 		// Arrange
 		IEnumerable<string> entityFiles =
 			GetSourceFiles("*.cs")
-			.Where(f =>
-				f.Contains("\\Models\\")
-				&& !f.Contains("Dto")
-				&& !f.Contains("Request")
-				&& !f.Contains("Response"))
+			.Where(file =>
+				file.Contains("/Models/")
+				&& !file.Contains("Dto")
+				&& !file.Contains("Request")
+				&& !file.Contains("Response"))
 			.ToList();
 
 		// Check for inconsistent patterns like CreatedDate vs CreateDate
