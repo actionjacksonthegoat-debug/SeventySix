@@ -38,6 +38,11 @@ jobs:
                       -inkey SeventySix.Client/ssl/dev-certificate.key \
                       -in SeventySix.Client/ssl/dev-certificate.crt \
                       -password pass:dev-ssl-password
+                  # Make certs readable by the .NET container user (UID 1654).
+                  # openssl creates .key/.pfx with 600 (owner-only) permissions,
+                  # but the container runs as a different UID than the runner.
+                  chmod 644 SeventySix.Client/ssl/dev-certificate.key \
+                            SeventySix.Client/ssl/dev-certificate.pfx
 
             - name: Build E2E containers
               run: docker compose -f docker-compose.e2e.yml build --no-cache api-e2e client-e2e
