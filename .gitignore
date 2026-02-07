@@ -130,6 +130,7 @@ ipch/
 
 # Visual Studio Trace Files
 *.e2e
+!**/Dockerfile.e2e
 
 # TFS 2012 Local Workspace
 $tf/
@@ -269,6 +270,7 @@ Generated_Code/
 # because we have git ;-)
 _UpgradeReport_Files/
 Backup*/
+!**/backup-codes/
 UpgradeLog*.XML
 UpgradeLog*.htm
 ServiceFabricBackup/

@@ -1,0 +1,236 @@
+@use "variables" as vars;
+
+.backup-codes-container {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	min-height: 100%;
+	padding: vars.$spacing-lg;
+	background: var(--mat-app-background-color);
+}
+
+.backup-codes-card {
+	width: 100%;
+	max-width: 32rem;
+	padding: vars.$spacing-2xl;
+	background: var(--mat-sys-surface);
+	border-radius: 1rem;
+	box-shadow: var(--mat-sys-level2);
+
+	h1 {
+		margin: 0 0 vars.$spacing-sm;
+		font-size: 1.5rem;
+		font-weight: 500;
+		text-align: center;
+		color: var(--mat-sys-on-surface);
+	}
+}
+
+.subtitle {
+	margin: 0 0 vars.$spacing-xl;
+	text-align: center;
+	color: var(--mat-sys-on-surface-variant);
+	line-height: 1.5;
+}
+
+// Loading state
+.loading-state {
+	text-align: center;
+
+	p {
+		color: var(--mat-sys-on-surface-variant);
+		margin-bottom: vars.$spacing-xl;
+	}
+}
+
+.spinner {
+	width: 3rem;
+	height: 3rem;
+	margin: 0 auto;
+	border: 3px solid var(--mat-sys-surface-variant);
+	border-top-color: var(--mat-sys-primary);
+	border-radius: 50%;
+	animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+// Warning box
+.warning-box {
+	display: flex;
+	gap: vars.$spacing-md;
+	background: var(--mat-sys-error-container);
+	border-radius: 0.5rem;
+	padding: vars.$spacing-lg;
+	margin-bottom: vars.$spacing-xl;
+}
+
+.warning-icon {
+	flex-shrink: 0;
+	color: var(--mat-sys-on-error-container);
+}
+
+.warning-content {
+	color: var(--mat-sys-on-error-container);
+
+	strong {
+		display: block;
+		margin-bottom: vars.$spacing-sm;
+	}
+
+	ul {
+		margin: 0;
+		padding-left: vars.$spacing-lg;
+	}
+
+	li {
+		margin-bottom: vars.$spacing-xs;
+		line-height: 1.4;
+
+		&:last-child {
+			margin-bottom: 0;
+		}
+	}
+}
+
+.error-message {
+	margin: 0 0 vars.$spacing-lg;
+	padding: vars.$spacing-sm vars.$spacing-md;
+	background: var(--mat-sys-error-container);
+	border-radius: 0.5rem;
+	color: var(--mat-sys-on-error-container);
+	font-size: 0.875rem;
+}
+
+// Codes grid
+.codes-grid {
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	gap: vars.$spacing-sm;
+	margin-bottom: vars.$spacing-lg;
+}
+
+.code-item {
+	display: flex;
+	align-items: center;
+	gap: vars.$spacing-sm;
+	padding: vars.$spacing-sm vars.$spacing-md;
+	background: var(--mat-sys-surface-variant);
+	border-radius: 0.25rem;
+}
+
+.code-number {
+	color: var(--mat-sys-on-surface-variant);
+	font-size: 0.75rem;
+	min-width: 1.5rem;
+}
+
+.code-value {
+	font-family: "Roboto Mono", monospace;
+	font-size: 0.9rem;
+	letter-spacing: 0.05rem;
+	color: var(--mat-sys-on-surface);
+}
+
+// Code actions
+.code-actions {
+	display: flex;
+	justify-content: center;
+	gap: vars.$spacing-sm;
+	margin-bottom: vars.$spacing-lg;
+	flex-wrap: wrap;
+
+	button {
+		display: flex;
+		align-items: center;
+		gap: vars.$spacing-xs;
+
+		&.copied {
+			color: var(--mat-sys-primary);
+		}
+	}
+
+	mat-icon {
+		font-size: 1.125rem;
+		width: 1.125rem;
+		height: 1.125rem;
+	}
+}
+
+// Important notice
+.important-notice {
+	display: flex;
+	gap: vars.$spacing-sm;
+	align-items: flex-start;
+	background: var(--mat-sys-tertiary-container);
+	border-radius: 0.5rem;
+	padding: vars.$spacing-md;
+	margin-bottom: vars.$spacing-xl;
+
+	mat-icon {
+		flex-shrink: 0;
+		color: var(--mat-sys-on-tertiary-container);
+	}
+
+	p {
+		margin: 0;
+		color: var(--mat-sys-on-tertiary-container);
+		font-size: 0.875rem;
+		line-height: 1.4;
+	}
+}
+
+// Action buttons
+.action-buttons {
+	display: flex;
+	justify-content: flex-end;
+	gap: vars.$spacing-md;
+}
+
+// Success state
+.success-state {
+	text-align: center;
+}
+
+.success-icon {
+	font-size: 4rem;
+	width: 4rem;
+	height: 4rem;
+	color: var(--mat-sys-primary);
+	margin-bottom: vars.$spacing-md;
+}
+
+.next-steps {
+	background: var(--mat-sys-surface-variant);
+	border-radius: 0.5rem;
+	padding: vars.$spacing-md;
+	margin-bottom: vars.$spacing-xl;
+	text-align: left;
+
+	p {
+		margin: 0;
+		color: var(--mat-sys-on-surface-variant);
+		font-size: 0.875rem;
+		line-height: 1.5;
+	}
+}
+
+// Responsive
+@media (max-width: 480px) {
+	.codes-grid {
+		grid-template-columns: 1fr;
+	}
+
+	.code-actions {
+		flex-direction: column;
+		align-items: stretch;
+
+		button {
+			justify-content: center;
+		}
+	}
+}
