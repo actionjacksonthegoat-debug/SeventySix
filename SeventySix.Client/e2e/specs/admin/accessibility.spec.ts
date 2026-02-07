@@ -26,10 +26,10 @@ test.describe("Admin Routes - WCAG Accessibility",
 	{
 		const adminPages =
 			[
-				{ path: ROUTES.admin.dashboard, name: "Dashboard" },
-				{ path: ROUTES.admin.users, name: "Users" },
-				{ path: ROUTES.admin.logs, name: "Logs" },
-				{ path: ROUTES.admin.permissionRequests, name: "Permission Requests" }
+				{ path: ROUTES.admin.dashboard, name: "Dashboard", waitFor: SELECTORS.adminDashboard.pageHeader },
+				{ path: ROUTES.admin.users, name: "Users", waitFor: SELECTORS.userManagement.dataTable },
+				{ path: ROUTES.admin.logs, name: "Logs", waitFor: SELECTORS.logManagement.dataTable },
+				{ path: ROUTES.admin.permissionRequests, name: "Permission Requests", waitFor: SELECTORS.permissionRequests.dataTable }
 			];
 
 		for (const pageInfo of adminPages)
@@ -39,6 +39,12 @@ test.describe("Admin Routes - WCAG Accessibility",
 				{
 					await adminPage.goto(pageInfo.path);
 					await adminPage.waitForLoadState("load");
+
+					// Wait for page content to fully render before accessibility scan.
+					// Required for zoneless Angular where bindings (e.g., aria-label)
+					// may not be applied when the load event fires.
+					await expect(adminPage.locator(pageInfo.waitFor))
+						.toBeVisible();
 
 					const axeResults =
 						await new AxeBuilder(

@@ -33,12 +33,11 @@ FROM base AS final
 WORKDIR /app
 
 # Install required packages:
-# - curl: For healthcheck endpoint verification
-# Note: libgssapi-krb5-2 is NOT installed here to avoid native library
-# conflicts with the .NET runtime on CI. Npgsql handles password-based
-# PostgreSQL auth without it. Production Dockerfile installs it if needed.
+# - wget: For healthcheck endpoint verification (uses GnuTLS, avoids
+#         pulling in libgssapi-krb5-2 which causes SIGSEGV/exit 139 crashes
+#         due to native library conflicts with the .NET runtime)
 USER root
-RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends wget && rm -rf /var/lib/apt/lists/*
 
 # Create data protection keys directory with proper ownership
 # This directory should be mounted as a Docker volume for key persistence
