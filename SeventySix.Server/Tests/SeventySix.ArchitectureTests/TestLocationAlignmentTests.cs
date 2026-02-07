@@ -286,8 +286,8 @@ public class TestLocationAlignmentTests : SourceCodeArchitectureTest
 			// For Identity, the test project structure doesn't have an "Identity" subfolder
 			// so we need to strip the "Identity\" prefix from the relative path
 			string testRelativePath =
-				isIdentityHandler && relativePath.StartsWith("Identity\\")
-					? relativePath["Identity\\".Length..]
+				isIdentityHandler && relativePath.StartsWith("Identity/")
+					? relativePath["Identity/".Length..]
 					: relativePath;
 
 			string testsDirectory =
@@ -439,7 +439,7 @@ public class TestLocationAlignmentTests : SourceCodeArchitectureTest
 		string relativePath =
 			typeNamespace[prefix.Length..];
 
-		// Convert dots to path separators
-		return relativePath.Replace('.', Path.DirectorySeparatorChar);
+		// Convert dots to forward slashes for cross-platform consistency
+		return relativePath.Replace('.', '/');
 	}
 }

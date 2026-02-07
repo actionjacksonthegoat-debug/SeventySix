@@ -25,11 +25,11 @@ public class NamingConventionTests : SourceCodeArchitectureTest
 		// Arrange
 		IEnumerable<string> entityFiles =
 			GetSourceFiles("*.cs")
-			.Where(f =>
-				f.Contains("\\Models\\")
-				&& !f.Contains("Dto")
-				&& !f.Contains("Request")
-				&& !f.Contains("Response"))
+			.Where(file =>
+				file.Contains("/Models/")
+				&& !file.Contains("Dto")
+				&& !file.Contains("Request")
+				&& !file.Contains("Response"))
 			.ToList();
 
 		// Match: public int PropertyName { get; set; }

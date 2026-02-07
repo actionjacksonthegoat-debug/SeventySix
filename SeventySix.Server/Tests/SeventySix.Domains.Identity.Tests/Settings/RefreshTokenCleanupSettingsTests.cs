@@ -9,30 +9,10 @@ namespace SeventySix.Identity.Tests.Settings;
 
 /// <summary>
 /// Unit tests for RefreshTokenCleanupSettings.
-/// Focus: Default values and configuration binding.
+/// Focus: Configuration binding and section name.
 /// </summary>
 public class RefreshTokenCleanupSettingsTests
 {
-	[Fact]
-	public void Constructor_SetsDefaultIntervalHours_To24()
-	{
-		// Arrange & Act
-		RefreshTokenCleanupSettings settings = new();
-
-		// Assert
-		settings.IntervalHours.ShouldBe(24);
-	}
-
-	[Fact]
-	public void Constructor_SetsDefaultRetentionDays_To7()
-	{
-		// Arrange & Act
-		RefreshTokenCleanupSettings settings = new();
-
-		// Assert
-		settings.RetentionDays.ShouldBe(7);
-	}
-
 	[Fact]
 	public void SectionName_IsRefreshTokenCleanup()
 	{

@@ -2,13 +2,13 @@ import { Environment } from "./environment.interface";
 
 /**
  * E2E Test Environment Configuration
- * Uses Docker container API on HTTP port 5086
+ * Uses Docker container API on HTTPS port 7174
  */
 export const environment: Environment =
 	{
 		production: false,
 		version: "1.0.0-e2e",
-		apiUrl: "http://localhost:5086/api/v1", // Docker E2E API container (HTTP, isolated from dev)
+		apiUrl: "https://localhost:7174/api/v1", // Docker E2E API container (HTTPS, isolated from dev)
 		logging: {
 			enableRemoteLogging: false,
 			consoleLogLevel: "debug",
@@ -23,6 +23,8 @@ export const environment: Environment =
 			jaegerUrl: "http://localhost:16686",
 			prometheusUrl: "http://localhost:9090",
 			grafanaUrl: "http://localhost:3000",
+			pgAdminUrl: "http://localhost:5050",
+			redisInsightUrl: "http://localhost:5540",
 			dashboards: {
 				systemOverview: "seventysix-system-overview",
 				apiEndpoints: "seventysix-api-endpoints",

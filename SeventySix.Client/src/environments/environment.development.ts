@@ -16,10 +16,12 @@ export const environment: Environment =
 			circuitBreakerTimeout: 30000 // 30 seconds
 		},
 		observability: {
-			// Observability stack URLs (via HTTPS nginx-proxy)
+		// Observability stack URLs (via HTTPS nginx-proxy)
 			jaegerUrl: "https://localhost:16687", // Jaeger UI for distributed tracing
 			prometheusUrl: "https://localhost:9091", // Prometheus for metrics
 			grafanaUrl: "https://localhost:3443", // Grafana for metrics visualization
+			pgAdminUrl: "https://localhost:5051", // pgAdmin for PostgreSQL management
+			redisInsightUrl: "https://localhost:5541", // RedisInsight for Valkey management
 			dashboards: {
 				systemOverview: "seventysix-system-overview",
 				apiEndpoints: "seventysix-api-endpoints",

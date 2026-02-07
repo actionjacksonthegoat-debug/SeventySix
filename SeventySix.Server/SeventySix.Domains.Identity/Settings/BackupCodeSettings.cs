@@ -6,6 +6,7 @@ namespace SeventySix.Identity;
 
 /// <summary>
 /// Backup code configuration settings bound from appsettings.json.
+/// All values MUST be configured in appsettings.json.
 /// </summary>
 public record BackupCodeSettings
 {
@@ -15,12 +16,14 @@ public record BackupCodeSettings
 	public const string SectionName = "BackupCodes";
 
 	/// <summary>
-	/// Gets the number of backup codes to generate. Default: 10.
+	/// Gets the number of backup codes to generate.
+	/// Must be configured in appsettings.json.
 	/// </summary>
-	public int CodeCount { get; init; } = 10;
+	public int CodeCount { get; init; }
 
 	/// <summary>
-	/// Gets the backup code length. Default: 8.
+	/// Gets the backup code length.
+	/// Must be configured in appsettings.json.
 	/// </summary>
-	public int CodeLength { get; init; } = 8;
+	public int CodeLength { get; init; }
 }

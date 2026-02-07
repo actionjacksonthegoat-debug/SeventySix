@@ -11,6 +11,7 @@ namespace SeventySix.Shared.Settings;
 /// Provides centralized cache configuration bound from appsettings.json "Cache" section.
 /// Supports graceful degradation when Valkey is unavailable via fail-safe settings.
 /// Named caches allow per-domain TTL and fail-safe configuration.
+/// All durations MUST be configured in appsettings.json.
 /// </remarks>
 public record CacheSettings
 {
@@ -28,29 +29,36 @@ public record CacheSettings
 	/// <summary>
 	/// Default cache entry duration for unspecified caches.
 	/// </summary>
-	public TimeSpan DefaultDuration { get; init; } =
-		TimeSpan.FromMinutes(5);
+	/// <remarks>
+	/// Must be configured in appsettings.json.
+	/// </remarks>
+	public TimeSpan DefaultDuration { get; init; }
 
 	/// <summary>
 	/// Maximum duration to serve stale data during backend failures.
 	/// </summary>
-	public TimeSpan FailSafeMaxDuration { get; init; } =
-		TimeSpan.FromHours(1);
+	/// <remarks>
+	/// Must be configured in appsettings.json.
+	/// </remarks>
+	public TimeSpan FailSafeMaxDuration { get; init; }
 
 	/// <summary>
 	/// Throttle duration for background refresh attempts.
 	/// </summary>
-	public TimeSpan FailSafeThrottleDuration { get; init; } =
-		TimeSpan.FromSeconds(30);
+	/// <remarks>
+	/// Must be configured in appsettings.json.
+	/// </remarks>
+	public TimeSpan FailSafeThrottleDuration { get; init; }
 
 	/// <summary>
 	/// Default key prefix for the default cache.
 	/// </summary>
 	/// <remarks>
 	/// Prevents key collisions when using named caches. Convention: "cachename:".
+	/// Must be configured in appsettings.json.
 	/// </remarks>
 	public string DefaultKeyPrefix { get; init; } =
-		"default:";
+		string.Empty;
 
 	/// <summary>
 	/// Identity domain cache settings (short TTL for security-sensitive data).
@@ -60,17 +68,7 @@ public record CacheSettings
 	/// Shorter TTL ensures security changes propagate quickly.
 	/// </remarks>
 	public NamedCacheSettings Identity { get; init; } =
-		new()
-		{
-			Duration =
-				TimeSpan.FromMinutes(1),
-			FailSafeMaxDuration =
-				TimeSpan.FromMinutes(5),
-			FailSafeThrottleDuration =
-				TimeSpan.FromSeconds(10),
-			KeyPrefix =
-				"identity:",
-		};
+		new();
 
 	/// <summary>
 	/// Logging domain cache settings (longer TTL, read-heavy).
@@ -80,17 +78,7 @@ public record CacheSettings
 	/// Longer TTL acceptable since logs are append-only.
 	/// </remarks>
 	public NamedCacheSettings Logging { get; init; } =
-		new()
-		{
-			Duration =
-				TimeSpan.FromMinutes(5),
-			FailSafeMaxDuration =
-				TimeSpan.FromHours(1),
-			FailSafeThrottleDuration =
-				TimeSpan.FromSeconds(30),
-			KeyPrefix =
-				"logging:",
-		};
+		new();
 
 	/// <summary>
 	/// API tracking domain cache settings.
@@ -100,15 +88,5 @@ public record CacheSettings
 	/// Moderate TTL balances freshness with performance.
 	/// </remarks>
 	public NamedCacheSettings ApiTracking { get; init; } =
-		new()
-		{
-			Duration =
-				TimeSpan.FromMinutes(5),
-			FailSafeMaxDuration =
-				TimeSpan.FromHours(1),
-			FailSafeThrottleDuration =
-				TimeSpan.FromSeconds(30),
-			KeyPrefix =
-				"apitracking:",
-		};
+		new();
 }

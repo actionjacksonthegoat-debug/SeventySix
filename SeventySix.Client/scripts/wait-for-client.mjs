@@ -5,9 +5,13 @@
 /**
  * Waits for the E2E Angular client to be healthy before running tests.
  * Polls the root URL until ready or timeout.
+ *
+ * NOTE: This script expects NODE_EXTRA_CA_CERTS to be set to the certificate path
+ * for proper SSL validation. This is set by e2e-full.mjs.
  */
 
-const CLIENT_URL = "http://localhost:4200";
+// Use HTTPS on port 4201 for E2E client (isolated from dev port 4200)
+const CLIENT_URL = "https://localhost:4201";
 const MAX_POLL_ATTEMPTS = 30;
 const POLL_DELAY_MS = 2000;
 

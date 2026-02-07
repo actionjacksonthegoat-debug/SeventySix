@@ -7,6 +7,7 @@ namespace SeventySix.Identity.Settings;
 /// <summary>
 /// Configuration settings for the IP address anonymization background job.
 /// Implements GDPR Article 4 compliance for IP address retention.
+/// All values MUST be configured in appsettings.json.
 /// </summary>
 public record IpAnonymizationSettings
 {
@@ -17,25 +18,26 @@ public record IpAnonymizationSettings
 
 	/// <summary>
 	/// Gets or sets the interval in days between anonymization runs.
-	/// Default is 7 days (weekly).
+	/// Must be configured in appsettings.json.
 	/// </summary>
-	public int IntervalDays { get; init; } = 7;
+	public int IntervalDays { get; init; }
 
 	/// <summary>
 	/// Gets or sets the number of days to retain IP addresses before anonymization.
-	/// Default is 90 days per GDPR data retention best practices.
+	/// GDPR data retention best practices suggest 90 days.
+	/// Must be configured in appsettings.json.
 	/// </summary>
-	public int RetentionDays { get; init; } = 90;
+	public int RetentionDays { get; init; }
 
 	/// <summary>
 	/// Gets the preferred UTC hour for anonymization (0-23).
-	/// Default: 7 (2:30 AM EST when combined with minute).
+	/// Must be configured in appsettings.json.
 	/// </summary>
-	public int PreferredStartHourUtc { get; init; } = 7;
+	public int PreferredStartHourUtc { get; init; }
 
 	/// <summary>
 	/// Gets the preferred UTC minute for anonymization (0-59).
-	/// Default: 30.
+	/// Must be configured in appsettings.json.
 	/// </summary>
-	public int PreferredStartMinuteUtc { get; init; } = 30;
+	public int PreferredStartMinuteUtc { get; init; }
 }

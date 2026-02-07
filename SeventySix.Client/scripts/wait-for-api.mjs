@@ -5,10 +5,13 @@
 /**
  * Waits for the E2E API to be healthy before running tests.
  * Polls the health endpoint until ready or timeout.
+ *
+ * NOTE: This script expects NODE_EXTRA_CA_CERTS to be set to the certificate path
+ * for proper SSL validation. This is set by e2e-full.mjs.
  */
 
-// Use HTTP on port 5086 for E2E API (isolated from dev HTTPS port 7074)
-const API_HEALTH_URL = "http://localhost:5086/health";
+// Use HTTPS on port 7174 for E2E API (isolated from dev HTTPS port 7074)
+const API_HEALTH_URL = "https://localhost:7174/health";
 const MAX_POLL_ATTEMPTS = 30;
 const POLL_DELAY_MS = 2000;
 

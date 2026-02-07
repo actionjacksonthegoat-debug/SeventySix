@@ -6,6 +6,7 @@ namespace SeventySix.Identity.Settings;
 
 /// <summary>
 /// Configuration settings for admin user seeding.
+/// All values MUST be configured in appsettings.json.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -27,22 +28,28 @@ public record AdminSeederSettings
 	/// <summary>
 	/// Gets or sets whether admin seeding is enabled.
 	/// </summary>
-	public bool Enabled { get; set; } = true;
+	public bool Enabled { get; set; }
 
 	/// <summary>
 	/// Gets or sets the admin username.
+	/// Must be configured in appsettings.json.
 	/// </summary>
-	public string Username { get; set; } = "admin";
+	public string Username { get; set; } =
+		string.Empty;
 
 	/// <summary>
 	/// Gets or sets the admin email.
+	/// Must be configured in appsettings.json.
 	/// </summary>
-	public string Email { get; set; } = "admin@seventysix.local";
+	public string Email { get; set; } =
+		string.Empty;
 
 	/// <summary>
 	/// Gets or sets the admin full name.
+	/// Must be configured in appsettings.json when Enabled=true.
 	/// </summary>
-	public string? FullName { get; set; } = "System Administrator";
+	public string FullName { get; set; } =
+		string.Empty;
 
 	/// <summary>
 	/// Gets or sets the initial password. Required when Enabled is true.

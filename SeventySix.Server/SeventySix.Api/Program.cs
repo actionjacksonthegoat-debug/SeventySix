@@ -267,11 +267,10 @@ app.UseMiddleware<AttributeBasedSecurityHeadersMiddleware>();
 app.UseRateLimiter();
 
 // Enable response compression
-bool responseCompressionEnabled =
-			builder.Configuration.GetValue<bool?>("ResponseCompression:Enabled")
-				?? true;
+bool isResponseCompressionEnabled =
+			builder.Configuration.GetValue<bool>("ResponseCompression:Enabled");
 
-if (responseCompressionEnabled)
+if (isResponseCompressionEnabled)
 {
 	app.UseResponseCompression();
 }

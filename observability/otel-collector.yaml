@@ -20,7 +20,8 @@ processors:
 
 exporters:
     # Prometheus metrics export - scraped by Prometheus
-    # Note: No namespace prefix - metrics already have job label for identification
+    # Note: Do NOT add const_labels here - they conflict with metric labels from .NET SDK
+    # The job label is added by Prometheus scrape config instead
     prometheus:
         endpoint: "0.0.0.0:8889"
 

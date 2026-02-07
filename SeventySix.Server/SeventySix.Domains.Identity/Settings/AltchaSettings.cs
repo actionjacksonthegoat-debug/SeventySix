@@ -7,6 +7,7 @@ namespace SeventySix.Identity;
 /// <summary>
 /// ALTCHA Proof-of-Work captcha configuration settings.
 /// Bound from appsettings.json "Altcha" section.
+/// All values MUST be configured in appsettings.json.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -29,7 +30,7 @@ public record AltchaSettings
 	/// Gets a value indicating whether ALTCHA validation is enabled.
 	/// When false, validation is skipped (useful for development/testing).
 	/// </summary>
-	public bool Enabled { get; init; } = true;
+	public bool Enabled { get; init; }
 
 	/// <summary>
 	/// Gets the base64-encoded HMAC key (64 bytes) for signing challenges.
@@ -41,20 +42,20 @@ public record AltchaSettings
 	/// <summary>
 	/// Gets the minimum complexity for PoW challenges.
 	/// Higher values = more computational work for clients.
-	/// Default: 50000 (ALTCHA recommended minimum).
+	/// Must be configured in appsettings.json.
 	/// </summary>
-	public int ComplexityMin { get; init; } = 50000;
+	public int ComplexityMin { get; init; }
 
 	/// <summary>
 	/// Gets the maximum complexity for PoW challenges.
-	/// Default: 100000 (ALTCHA recommended maximum).
+	/// Must be configured in appsettings.json.
 	/// </summary>
-	public int ComplexityMax { get; init; } = 100000;
+	public int ComplexityMax { get; init; }
 
 	/// <summary>
 	/// Gets the challenge expiry duration in seconds.
 	/// Challenges older than this are rejected.
-	/// Default: 120 seconds (2 minutes).
+	/// Must be configured in appsettings.json.
 	/// </summary>
-	public int ExpirySeconds { get; init; } = 120;
+	public int ExpirySeconds { get; init; }
 }

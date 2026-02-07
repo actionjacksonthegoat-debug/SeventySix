@@ -581,16 +581,3 @@ dotnet_diagnostic.RCS0052.severity = warning
 
 # RCS0053: Fix formatting of a list (proper indentation for multi-line lists)
 dotnet_diagnostic.RCS0053.severity = warning
-
-# ========================================
-# EF CORE MIGRATIONS - Disable formatting rules for auto-generated files
-# ========================================
-[**/Migrations/*.cs]
-# Disable formatting rules for EF Core migrations (auto-generated code)
-dotnet_diagnostic.RCS0053.severity = none
-dotnet_diagnostic.RCS0054.severity = none
-dotnet_diagnostic.RCS0052.severity = none
-dotnet_diagnostic.SS001.severity = none
-dotnet_diagnostic.SS002.severity = none
-dotnet_diagnostic.SS003.severity = none
-dotnet_diagnostic.SS006.severity = none

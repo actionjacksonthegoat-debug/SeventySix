@@ -4,6 +4,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using SeventySix.Shared.Constants;
 
 namespace SeventySix.Identity;
 
@@ -22,24 +23,24 @@ public class ApplicationUserConfiguration : IEntityTypeConfiguration<Application
 	{
 		builder
 			.Property(user => user.FullName)
-			.HasMaxLength(100);
+			.HasMaxLength(ValidationConstants.DisplayNameMaxLength);
 
 		builder
 			.Property(user => user.CreatedBy)
-			.HasMaxLength(100)
+			.HasMaxLength(ValidationConstants.UsernameMaxLength)
 			.IsRequired();
 
 		builder
 			.Property(user => user.ModifiedBy)
-			.HasMaxLength(100);
+			.HasMaxLength(ValidationConstants.UsernameMaxLength);
 
 		builder
 			.Property(user => user.DeletedBy)
-			.HasMaxLength(100);
+			.HasMaxLength(ValidationConstants.UsernameMaxLength);
 
 		builder
 			.Property(user => user.LastLoginIp)
-			.HasMaxLength(45);
+			.HasMaxLength(ValidationConstants.IpAddressMaxLength);
 
 		builder
 			.Property(user => user.RequiresPasswordChange)
@@ -50,7 +51,7 @@ public class ApplicationUserConfiguration : IEntityTypeConfiguration<Application
 		// TOTP fields
 		builder
 			.Property(user => user.TotpSecret)
-			.HasMaxLength(64)
+			.HasMaxLength(ValidationConstants.TokenHashMaxLength)
 			.IsRequired(false);
 
 		builder

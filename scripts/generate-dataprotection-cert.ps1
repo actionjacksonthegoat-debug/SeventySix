@@ -106,8 +106,9 @@ elseif ($env:DATA_PROTECTION_CERTIFICATE_PASSWORD)
 }
 else
 {
-	# Fallback default (development)
-	$securePassword = ConvertTo-SecureString -String "DevCertPassword123!" -Force -AsPlainText
+	# No hardcoded fallback - password MUST come from .env or -Password parameter
+	Write-Host "ERROR: No password provided. Use -Password parameter or set DATA_PROTECTION_CERTIFICATE_PASSWORD in .env" -ForegroundColor Red
+	exit 1
 }
 
 Export-PfxCertificate `

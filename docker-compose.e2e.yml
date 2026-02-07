@@ -1,6 +1,14 @@
 # docker-compose.e2e.yml
 # E2E Test Environment for SeventySix
 # Usage: docker compose -f docker-compose.e2e.yml up -d
+#
+# IMPORTANT: Run ./scripts/generate-dev-ssl-cert.ps1 first to generate SSL certificates
+#
+# Port Allocation (isolated from development, all HTTPS):
+# - API: 7174 HTTPS (dev: 7074)
+# - Client: 4201 HTTPS (dev: 4200)
+# - PostgreSQL: 5434 (dev: 5433)
+# - Valkey: 6380 (dev: 6379)
 
 services:
     # PostgreSQL - Test Database
@@ -11,6 +19,7 @@ services:
             POSTGRES_DB: seventysix_e2e
             POSTGRES_USER: postgres
             POSTGRES_PASSWORD: E2E_Test_Password_123
+            PGDATA: /var/lib/postgresql/data
         ports:
             - "5434:5432"
         volumes:
@@ -50,25 +59,35 @@ services:
         networks:
             - e2e-network
 
-    # .NET API - Test Environment
+    # .NET API - Test Environment (HTTPS)
     api-e2e:
         build:
             context: ./SeventySix.Server
             dockerfile: SeventySix.Api/Dockerfile
         container_name: seventysix-api-e2e
         ports:
-            - "5086:8080"  # HTTP - E2E isolated port (distinct from dev port 7074)
+            - "7174:8081" # HTTPS - E2E isolated port (dev: 7074)
         environment:
-            - ASPNETCORE_ENVIRONMENT=Test
-            - ASPNETCORE_HTTP_PORTS=8080
-            # Database
+            # Core Environment - Using E2E-specific appsettings
+            - ASPNETCORE_ENVIRONMENT=E2E
+            - ASPNETCORE_HTTPS_PORTS=8081
+            - ASPNETCORE_Kestrel__Certificates__Default__Password=dev-ssl-password
+            - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/dev-certificate.pfx
+            # Database (E2E isolated)
             - Database__Host=postgres-e2e
             - Database__Port=5432
             - Database__Name=seventysix_e2e
             - Database__User=postgres
             - Database__Password=E2E_Test_Password_123
-            # Cache
+            - Database__Maintenance__Enabled=false
+            # Cache (E2E isolated)
+            - Cache__Valkey__Enabled=true
+            - Cache__Valkey__UseSsl=false
             - Cache__Valkey__ConnectionString=valkey-e2e:6379
+            - Cache__OutputCache__Policies__users__Enabled=false
+            - Cache__OutputCache__Policies__logs__Enabled=false
+            - Cache__OutputCache__Policies__health__Enabled=false
+            - Cache__OutputCache__Policies__thirdpartyrequests__Enabled=false
             # Email (MailDev)
             - Email__Enabled=true
             - Email__UseSsl=false
@@ -77,31 +96,49 @@ services:
             - Email__SmtpUsername=
             - Email__SmtpPassword=
             - Email__FromAddress=noreply@test.local
-            - Email__ClientBaseUrl=http://localhost:4200
-            # Email Queue - fast processing for E2E tests
+            - Email__ClientBaseUrl=https://localhost:4201
+            - Email__Queue__Enabled=true
             - Email__Queue__ProcessingIntervalSeconds=5
             - Email__Queue__BatchSize=10
             # JWT (test secret - minimum 64 chars for security)
             - Jwt__SecretKey=E2E_Test_JWT_Secret_Key_That_Is_At_Least_64_Characters_Long_For_Security
-            # Auth - HTTP mode for E2E (same protocol as Angular client)
-            - Auth__Cookie__SecureCookie=false
-            # Auth - use SameSite=Lax for cross-port cookie sharing in E2E
-            - Auth__Cookie__SameSiteLax=true
             # Seeders
             - AdminSeeder__Enabled=true
             - AdminSeeder__InitialPassword=SecureE2ETestPassword123!
             - E2ESeeder__Enabled=true
-            # Background Jobs - enable for E2E email queue processing
+            # Background Jobs
             - BackgroundJobs__Enabled=true
-            # Disable production features
-            - OpenTelemetry__Enabled=false
-            - HealthChecks__Enabled=true
-            # Disable ALTCHA for E2E testing
-            - Altcha__Enabled=false
-            # Disable rate limiting for E2E testing
-            - RateLimiting__Enabled=false
-            # Disable token rotation for E2E testing (allows same token across test contexts)
+            # MFA (disabled for E2E)
+            - Mfa__Enabled=false
+            - Mfa__RequiredForAllUsers=false
+            # Security
+            - Security__EnforceHttps=true
+            - Security__HstsIncludeSubdomains=false
+            - Security__AllowHttpForHealthChecks=false
+            - Security__AllowHttpForMetrics=false
+            - Security__AllowHttpForOpenApi=false
+            # Auth
+            - Auth__Lockout__Enabled=true
+            - Auth__Cookie__SecureCookie=true
+            - Auth__Cookie__SameSiteLax=true
             - Auth__Token__DisableRotation=true
+            - Auth__BreachedPassword__Enabled=false
+            - Auth__BreachedPassword__BlockBreachedPasswords=false
+            # Disabled for E2E (fast tests)
+            - OpenTelemetry__Enabled=false
+            - Altcha__Enabled=false
+            - RateLimiting__Enabled=false
+            # Runtime stability - prevents SIGSEGV from diagnostic port socket creation
+            - DOTNET_EnableDiagnostics=0
+            - ResponseCompression__Enabled=false
+            - Logging__Cleanup__Enabled=false
+            - ThirdPartyApiLimits__Enabled=false
+            # Health
+            - HealthChecks__Enabled=true
+            # CORS
+            - Cors__AllowedOrigins__0=https://localhost:4201
+        volumes:
+            - ./SeventySix.Client/ssl:/https:ro
         depends_on:
             postgres-e2e:
                 condition: service_healthy
@@ -110,7 +147,7 @@ services:
             maildev:
                 condition: service_started
         healthcheck:
-            test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+            test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "--no-check-certificate", "https://localhost:8081/health"]
             interval: 10s
             timeout: 5s
             retries: 10
@@ -118,19 +155,21 @@ services:
         networks:
             - e2e-network
 
-    # Angular Client - E2E Build (uses e2e configuration with correct API URL)
+    # Angular Client - E2E Build (HTTPS, uses e2e configuration with correct API URL)
     client-e2e:
         build:
             context: ./SeventySix.Client
             dockerfile: Dockerfile.e2e
         container_name: seventysix-client-e2e
         ports:
-            - "4200:8080"
+            - "4201:8443" # HTTPS - E2E isolated port (dev: 4200)
+        volumes:
+            - ./SeventySix.Client/ssl:/etc/nginx/ssl:ro
         depends_on:
             api-e2e:
                 condition: service_healthy
         healthcheck:
-            test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/"]
+            test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "--no-check-certificate", "https://localhost:8443/"]
             interval: 10s
             timeout: 5s
             retries: 5

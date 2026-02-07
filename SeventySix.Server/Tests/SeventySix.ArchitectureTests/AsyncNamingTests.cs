@@ -48,7 +48,7 @@ public class AsyncNamingTests : SourceCodeArchitectureTest
 				ReadFileContent(file);
 
 			// Skip interfaces and test files
-			if (content.Contains("interface I") || file.Contains("\\Tests\\"))
+			if (content.Contains("interface I") || file.Contains("/Tests/"))
 			{
 				continue;
 			}

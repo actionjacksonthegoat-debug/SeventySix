@@ -6,6 +6,7 @@ namespace SeventySix.Identity;
 
 /// <summary>
 /// TOTP (Time-based One-Time Password) configuration settings.
+/// All values MUST be configured in appsettings.json.
 /// </summary>
 public record TotpSettings
 {
@@ -16,19 +17,21 @@ public record TotpSettings
 
 	/// <summary>
 	/// Gets the issuer name displayed in authenticator apps.
+	/// Must be configured in appsettings.json.
 	/// </summary>
-	public string IssuerName { get; init; } = "SeventySix";
+	public string IssuerName { get; init; } =
+		string.Empty;
 
 	/// <summary>
-	/// Gets the number of time steps to allow for clock drift. Default: 1.
+	/// Gets the number of time steps to allow for clock drift.
+	/// OWASP recommends 1 step (30 seconds) for clock synchronization issues.
+	/// Must be configured in appsettings.json.
 	/// </summary>
-	/// <remarks>
-	/// OWASP recommends allowing 1 step (30 seconds) for clock synchronization issues.
-	/// </remarks>
-	public int AllowedTimeStepDrift { get; init; } = 1;
+	public int AllowedTimeStepDrift { get; init; }
 
 	/// <summary>
-	/// Gets the time step in seconds. Default: 30 (RFC 6238 standard).
+	/// Gets the time step in seconds (RFC 6238 standard: 30).
+	/// Must be configured in appsettings.json.
 	/// </summary>
-	public int TimeStepSeconds { get; init; } = 30;
+	public int TimeStepSeconds { get; init; }
 }

@@ -7,13 +7,13 @@ import { provideHttpClient } from "@angular/common/http";
 import { provideHttpClientTesting } from "@angular/common/http/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
+import { environment } from "@environments/environment";
 import { LoggerService, NotificationService } from "@shared/services";
 import {
 	createMockLogger,
 	createMockNotificationService,
 	createMockQueryResult
 } from "@shared/testing";
-import { environment } from "@environments/environment";
 import { vi } from "vitest";
 import { AdminDashboardPage } from "./admin-dashboard";
 
@@ -196,6 +196,34 @@ describe("AdminDashboardPage",
 				expect(window.open)
 					.toHaveBeenCalledWith(
 						`${environment.observability.grafanaUrl}/dashboards`,
+						"_blank");
+			});
+
+		it("should open pgAdmin in new tab",
+			() =>
+			{
+				createComponent();
+				vi.spyOn(window, "open");
+
+				component.openPgAdmin();
+
+				expect(window.open)
+					.toHaveBeenCalledWith(
+						environment.observability.pgAdminUrl,
+						"_blank");
+			});
+
+		it("should open RedisInsight in new tab",
+			() =>
+			{
+				createComponent();
+				vi.spyOn(window, "open");
+
+				component.openRedisInsight();
+
+				expect(window.open)
+					.toHaveBeenCalledWith(
+						environment.observability.redisInsightUrl,
 						"_blank");
 			});
 

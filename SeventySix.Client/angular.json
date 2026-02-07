@@ -115,7 +115,7 @@
 						},
 						"e2e": {
 							"buildTarget": "SeventySix.Client:build:e2e",
-							"ssl": false
+							"port": 4201
 						}
 					},
 					"defaultConfiguration": "development"

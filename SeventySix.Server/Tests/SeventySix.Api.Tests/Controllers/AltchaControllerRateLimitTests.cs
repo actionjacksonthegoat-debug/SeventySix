@@ -85,7 +85,7 @@ public class AltchaControllerRateLimitTests(IdentityAuthApiPostgreSqlFixture fix
 		for (int requestIndex = 0; requestIndex <= rateLimit; requestIndex++)
 		{
 			HttpResponseMessage response =
-				await HttpClient!.GetAsync("/api/v1/altcha/challenge");
+				await HttpClient!.GetAsync(ApiEndpoints.Altcha.Challenge);
 			responses.Add(response);
 		}
 
@@ -121,7 +121,7 @@ public class AltchaControllerRateLimitTests(IdentityAuthApiPostgreSqlFixture fix
 		for (int requestIndex = 0; requestIndex <= rateLimit; requestIndex++)
 		{
 			HttpResponseMessage response =
-				await HttpClient!.GetAsync("/api/v1/altcha/challenge");
+				await HttpClient!.GetAsync(ApiEndpoints.Altcha.Challenge);
 
 			if (response.StatusCode == HttpStatusCode.TooManyRequests)
 			{

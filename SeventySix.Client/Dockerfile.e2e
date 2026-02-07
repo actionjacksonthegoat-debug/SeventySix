@@ -1,0 +1,56 @@
+# E2E Test Dockerfile for SeventySix Client
+# Builds with e2e configuration to use correct API URL
+# Serves over HTTPS to match production environment
+
+# Stage 1: Build
+FROM node:22-alpine AS build
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install all dependencies (including dev dependencies needed for build)
+RUN npm ci && \
+	npm cache clean --force
+
+# Copy source files
+COPY . .
+
+# Build the application with E2E configuration
+RUN npm run build -- --configuration e2e
+
+# Stage 2: Runtime with Nginx (HTTPS)
+FROM nginx:alpine AS final
+
+# Copy custom nginx configuration for E2E (HTTPS enabled)
+COPY nginx-e2e.conf /etc/nginx/nginx.conf
+
+# Copy built application from build stage
+COPY --from=build /app/dist/SeventySix.Client /usr/share/nginx/html
+
+# Create SSL directory for certificate mount
+RUN mkdir -p /etc/nginx/ssl
+
+# Create a non-root user
+RUN addgroup -g 1001 -S appuser && \
+	adduser -S -u 1001 -G appuser appuser && \
+	chown -R appuser:appuser /usr/share/nginx/html && \
+	chown -R appuser:appuser /var/cache/nginx && \
+	chown -R appuser:appuser /var/log/nginx && \
+	chown -R appuser:appuser /etc/nginx/conf.d && \
+	chown -R appuser:appuser /etc/nginx/ssl && \
+	touch /var/run/nginx.pid && \
+	chown -R appuser:appuser /var/run/nginx.pid
+
+# Switch to non-root user
+USER appuser
+
+# Expose HTTPS port
+EXPOSE 8443
+
+# Health check via HTTPS
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+	CMD wget --quiet --tries=1 --spider --no-check-certificate https://localhost:8443/ || exit 1
+
+# Start Nginx
+CMD ["nginx", "-g", "daemon off;"]

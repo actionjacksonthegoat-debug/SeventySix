@@ -5,6 +5,19 @@ applyTo: "**/SeventySix.Server/Tests/**/*.cs"
 
 # Server Testing Instructions
 
+## ⚠️ MANDATORY TEST EXECUTION (CRITICAL)
+
+> **ALL tests MUST be executed and pass before claiming implementation is complete.**
+>
+> | Suite  | Command            | Must See                            |
+> | ------ | ------------------ | ----------------------------------- |
+> | Server | `dotnet test`      | "Test summary: total: X, failed: 0" |
+> | Client | `npm test`         | "X passed (X)"                      |
+> | E2E    | `npm run test:e2e` | "[PASS] All E2E tests passed!"      |
+>
+> **NEVER** say "done" or "complete" without actually running these commands.
+> **NEVER** say "tests will pass when X is running" - that is unacceptable.
+
 ## Test File Structure
 
 ```

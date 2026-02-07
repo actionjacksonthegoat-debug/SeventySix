@@ -14,7 +14,10 @@ ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["SeventySix.Api/SeventySix.Api.csproj", "SeventySix.Api/"]
 COPY ["SeventySix.Domains/SeventySix.Domains.csproj", "SeventySix.Domains/"]
+COPY ["SeventySix.Domains.Identity/SeventySix.Domains.Identity.csproj", "SeventySix.Domains.Identity/"]
 COPY ["SeventySix.Shared/SeventySix.Shared.csproj", "SeventySix.Shared/"]
+COPY ["SeventySix.Analyzers/SeventySix.Analyzers.csproj", "SeventySix.Analyzers/"]
+COPY ["SeventySix.Analyzers.CodeFixes/SeventySix.Analyzers.CodeFixes.csproj", "SeventySix.Analyzers.CodeFixes/"]
 RUN dotnet restore "./SeventySix.Api/SeventySix.Api.csproj"
 COPY . .
 WORKDIR "/src/SeventySix.Api"
@@ -30,10 +33,9 @@ FROM base AS final
 WORKDIR /app
 
 # Install required packages:
-# - libgssapi-krb5-2: GSS-API Kerberos library for Npgsql authentication
-# - curl: For healthcheck endpoint verification
+# - wget: For healthcheck endpoint verification (uses GnuTLS)
 USER root
-RUN apt-get update && apt-get install -y libgssapi-krb5-2 curl && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends wget && rm -rf /var/lib/apt/lists/*
 
 # Create data protection keys directory with proper ownership
 # This directory should be mounted as a Docker volume for key persistence

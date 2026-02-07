@@ -118,6 +118,7 @@ try
 			"prometheus",
 			"grafana",
 			"pgadmin",
+			"redisinsight",
 			"nginx-proxy"
 		)
 
@@ -142,6 +143,7 @@ try
 		Write-Host ""
 		Write-Host "Observability (via HTTPS proxy):" -ForegroundColor Cyan
 		Write-Host "  pgAdmin:          https://localhost:5051" -ForegroundColor White
+		Write-Host "  RedisInsight:     https://localhost:5541" -ForegroundColor White
 		Write-Host "  Jaeger UI:        https://localhost:16687" -ForegroundColor White
 		Write-Host "  Prometheus:       https://localhost:9091" -ForegroundColor White
 		Write-Host "  Grafana:          https://localhost:3443" -ForegroundColor White

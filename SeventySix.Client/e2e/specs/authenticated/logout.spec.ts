@@ -71,10 +71,12 @@ test.describe("Logout Flow",
 
 						// Reload to verify session is cleared
 						await freshUserPage.goto(ROUTES.home);
+						await freshUserPage.waitForLoadState("load");
 
 						// User menu should no longer be visible
+						// Uses API timeout since auth state resolution requires server validation
 						await expect(freshUserPage.locator(SELECTORS.layout.userMenuButton))
-							.toBeHidden({ timeout: TIMEOUTS.element });
+							.toBeHidden({ timeout: TIMEOUTS.api });
 					});
 
 				test("should redirect to home after logout",
@@ -211,10 +213,12 @@ test.describe("Logout Flow",
 
 						// Refresh to ensure clean state
 						await freshUserPage.goto(ROUTES.home);
+						await freshUserPage.waitForLoadState("load");
 
 						// User menu button should not be visible for anonymous users
+						// Uses API timeout since auth state resolution requires server validation
 						await expect(freshUserPage.locator(SELECTORS.layout.userMenuButton))
-							.toBeHidden({ timeout: TIMEOUTS.element });
+							.toBeHidden({ timeout: TIMEOUTS.api });
 					});
 			});
 	});

@@ -29,24 +29,4 @@ public static class JwtConstants
 	/// Maximum allowed refresh token lifetime in days.
 	/// </summary>
 	public const int MaxRefreshTokenLifetimeDays = 90;
-
-	/// <summary>
-	/// Default access token expiration in minutes.
-	/// </summary>
-	public const int DefaultAccessTokenExpirationMinutes = 15;
-
-	/// <summary>
-	/// Default refresh token expiration in days.
-	/// </summary>
-	public const int DefaultRefreshTokenExpirationDays = 1;
-
-	/// <summary>
-	/// Default refresh token expiration with "Remember Me" in days.
-	/// </summary>
-	public const int DefaultRefreshTokenRememberMeExpirationDays = 14;
-
-	/// <summary>
-	/// Default absolute session timeout in days.
-	/// </summary>
-	public const int DefaultAbsoluteSessionTimeoutDays = 30;
 }

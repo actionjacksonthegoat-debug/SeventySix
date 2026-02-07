@@ -41,7 +41,8 @@ public class JwtSettingsValidatorTests
 		string? issuer = null,
 		string? audience = null,
 		int? accessTokenMinutes = null,
-		int? refreshTokenDays = null) =>
+		int? refreshTokenDays = null,
+		int? clockSkewMinutes = null) =>
 		new()
 		{
 			SecretKey =
@@ -54,6 +55,8 @@ public class JwtSettingsValidatorTests
 				accessTokenMinutes ?? 15,
 			RefreshTokenExpirationDays =
 				refreshTokenDays ?? 7,
+			ClockSkewMinutes =
+				clockSkewMinutes ?? 1,
 		};
 
 	#region SecretKey Validation Tests
@@ -364,6 +367,7 @@ public class JwtSettingsValidatorTests
 				Audience = string.Empty,
 				AccessTokenExpirationMinutes = 0,
 				RefreshTokenExpirationDays = 0,
+				ClockSkewMinutes = -1,
 			};
 
 		// Act
@@ -378,6 +382,51 @@ public class JwtSettingsValidatorTests
 		result.ShouldHaveValidationErrorFor(s =>
 			s.AccessTokenExpirationMinutes);
 		result.ShouldHaveValidationErrorFor(s => s.RefreshTokenExpirationDays);
+		result.ShouldHaveValidationErrorFor(s => s.ClockSkewMinutes);
+	}
+
+	#endregion
+
+	#region ClockSkewMinutes Validation Tests
+
+	[Theory]
+	[InlineData(0)]
+	[InlineData(1)]
+	[InlineData(5)]
+	public void Validate_ReturnsSuccess_WhenClockSkewMinutesValid(
+		int clockSkewMinutes)
+	{
+		// Arrange
+		JwtSettings settings =
+			CreateValidSettings(clockSkewMinutes: clockSkewMinutes);
+
+		// Act
+		TestValidationResult<JwtSettings> result =
+			Validator.TestValidate(settings);
+
+		// Assert
+		result.ShouldNotHaveValidationErrorFor(settings => settings.ClockSkewMinutes);
+	}
+
+	[Theory]
+	[InlineData(-1)]
+	[InlineData(6)]
+	[InlineData(10)]
+	public void Validate_ReturnsFailure_WhenClockSkewMinutesOutOfRange(
+		int clockSkewMinutes)
+	{
+		// Arrange
+		JwtSettings settings =
+			CreateValidSettings(clockSkewMinutes: clockSkewMinutes);
+
+		// Act
+		TestValidationResult<JwtSettings> result =
+			Validator.TestValidate(settings);
+
+		// Assert
+		result
+			.ShouldHaveValidationErrorFor(settings => settings.ClockSkewMinutes)
+			.WithErrorMessage("ClockSkewMinutes must be between 0 and 5");
 	}
 
 	#endregion

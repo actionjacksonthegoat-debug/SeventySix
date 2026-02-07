@@ -7,6 +7,7 @@ namespace SeventySix.Api.Configuration;
 /// <summary>
 /// Centralized security settings for HTTPS enforcement and security policies.
 /// This is the single source of truth for all HTTPS-related configuration.
+/// All values MUST be configured in appsettings.json.
 /// </summary>
 /// <remarks>
 /// <para><b>Design Philosophy:</b></para>
@@ -33,48 +34,44 @@ public record SecuritySettings
 	/// <summary>
 	/// Gets or sets a value indicating whether HTTPS redirection is enforced globally.
 	/// When true, all HTTP requests are redirected to HTTPS except for explicitly allowed endpoints.
-	/// Default: true (Production), false (Development).
+	/// Must be configured in appsettings.json.
 	/// </summary>
-	public bool EnforceHttps { get; set; } = true;
+	public bool EnforceHttps { get; set; }
 
 	/// <summary>
 	/// Gets or sets the HTTPS port used for redirections.
 	/// This port is used when redirecting HTTP requests to HTTPS.
-	/// Default: 7074.
+	/// Must be configured in appsettings.json.
 	/// </summary>
-	public int HttpsPort { get; set; } = 7074;
+	public int HttpsPort { get; set; }
 
 	/// <summary>
 	/// Gets or sets the HSTS (HTTP Strict Transport Security) max-age in seconds.
 	/// Tells browsers to only access the site via HTTPS for this duration.
-	/// Default: 31536000 (1 year).
+	/// Must be configured in appsettings.json.
 	/// </summary>
-	public int HstsMaxAgeSeconds { get; set; } = 31536000;
+	public int HstsMaxAgeSeconds { get; set; }
 
 	/// <summary>
 	/// Gets or sets a value indicating whether HSTS should apply to subdomains.
-	/// Default: true.
 	/// </summary>
-	public bool HstsIncludeSubdomains { get; set; } = true;
+	public bool HstsIncludeSubdomains { get; set; }
 
 	/// <summary>
 	/// Gets or sets a value indicating whether /health endpoint can be accessed via HTTP.
 	/// Useful for container health checks and load balancers.
-	/// Default: false (Production), true (Development).
 	/// </summary>
-	public bool AllowHttpForHealthChecks { get; set; } = false;
+	public bool AllowHttpForHealthChecks { get; set; }
 
 	/// <summary>
 	/// Gets or sets a value indicating whether /metrics endpoint can be accessed via HTTP.
 	/// Prometheus scrapers often don't support HTTPS with custom certificates.
-	/// Default: true (allows HTTP for Prometheus scraping).
 	/// </summary>
-	public bool AllowHttpForMetrics { get; set; } = true;
+	public bool AllowHttpForMetrics { get; set; }
 
 	/// <summary>
 	/// Gets or sets a value indicating whether OpenAPI/Swagger endpoints can be accessed via HTTP.
 	/// Useful for development and testing environments.
-	/// Default: false (Production), true (Development).
 	/// </summary>
-	public bool AllowHttpForOpenApi { get; set; } = false;
+	public bool AllowHttpForOpenApi { get; set; }
 }

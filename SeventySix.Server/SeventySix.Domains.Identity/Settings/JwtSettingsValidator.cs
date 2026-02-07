@@ -90,6 +90,10 @@ public class JwtSettingsValidator : AbstractValidator<JwtSettings>
 			.InclusiveBetween(1, MaxRefreshTokenExpirationDays)
 			.WithMessage(
 				$"RefreshTokenExpirationDays must be between 1 and {MaxRefreshTokenExpirationDays}");
+
+		RuleFor(settings => settings.ClockSkewMinutes)
+			.InclusiveBetween(0, 5)
+			.WithMessage("ClockSkewMinutes must be between 0 and 5");
 	}
 
 	/// <summary>

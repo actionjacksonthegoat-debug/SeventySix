@@ -8,9 +8,17 @@
  */
 
 import { spawnSync } from "child_process";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 const DOCKER_COMPOSE_FILE =
-	"docker-compose.e2e.yml";
+	"../docker-compose.e2e.yml";
+
+// Certificate path for proper SSL validation (matches dev environment)
+const scriptDirectory =
+	path.dirname(fileURLToPath(import.meta.url));
+const SSL_CERTIFICATE_PATH =
+	path.resolve(scriptDirectory, "..", "ssl", "dev-certificate.crt");
 
 /**
  * Runs a shell command synchronously and returns the exit code.
@@ -36,7 +44,11 @@ function runCommand(
 				commandWithArgs,
 				{
 					stdio: "inherit",
-					shell: true
+					shell: true,
+					env: {
+						...process.env,
+						NODE_EXTRA_CA_CERTS: SSL_CERTIFICATE_PATH
+					}
 				});
 
 		if (result.error)

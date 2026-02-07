@@ -86,7 +86,7 @@ public class AuthRateLimitingTests(IdentityAuthApiPostgreSqlFixture fixture)
 		{
 			HttpResponseMessage response =
 				await Client!.PostAsJsonAsync(
-				"/api/v1/auth/login",
+				ApiEndpoints.Auth.Login,
 				request);
 			responses.Add(response);
 		}
@@ -116,7 +116,7 @@ public class AuthRateLimitingTests(IdentityAuthApiPostgreSqlFixture fixture)
 		{
 			HttpResponseMessage response =
 				await Client!.PostAsJsonAsync(
-				"/api/v1/auth/login",
+				ApiEndpoints.Auth.Login,
 				request);
 
 			if (response.StatusCode == HttpStatusCode.TooManyRequests)

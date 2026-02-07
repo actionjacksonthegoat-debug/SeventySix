@@ -6,6 +6,7 @@ namespace SeventySix.Identity;
 
 /// <summary>
 /// Trusted device (Remember This Device) configuration settings.
+/// Numeric values MUST be configured in appsettings.json.
 /// </summary>
 public record TrustedDeviceSettings
 {
@@ -15,20 +16,22 @@ public record TrustedDeviceSettings
 	public const string SectionName = "TrustedDevices";
 
 	/// <summary>
-	/// Gets the trusted device token lifetime in days. Default: 30.
-	/// </summary>
-	/// <remarks>
+	/// Gets the trusted device token lifetime in days.
 	/// OWASP ASVS V3.3.1 recommends maximum 30 days for device trust.
-	/// </remarks>
-	public int TokenLifetimeDays { get; init; } = 30;
+	/// Must be configured in appsettings.json.
+	/// </summary>
+	public int TokenLifetimeDays { get; init; }
 
 	/// <summary>
-	/// Gets the maximum trusted devices per user. Default: 5.
+	/// Gets the maximum trusted devices per user.
+	/// Must be configured in appsettings.json.
 	/// </summary>
-	public int MaxDevicesPerUser { get; init; } = 5;
+	public int MaxDevicesPerUser { get; init; }
 
 	/// <summary>
 	/// Gets the cookie name for trusted device token.
+	/// Must be configured in appsettings.json.
 	/// </summary>
-	public string CookieName { get; init; } = "__TD";
+	public string CookieName { get; init; } =
+		string.Empty;
 }

@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using SeventySix.Identity.Jobs;
 using SeventySix.Identity.Settings;
 using SeventySix.Shared.BackgroundJobs;
+using SeventySix.Shared.Exceptions;
 
 namespace SeventySix.Identity.Registration;
 
@@ -53,7 +54,7 @@ public sealed class IdentityJobSchedulerContributor(
 			configuration
 				.GetSection(RefreshTokenCleanupSettings.SectionName)
 				.Get<RefreshTokenCleanupSettings>()
-			?? new();
+			?? throw new RequiredConfigurationException(RefreshTokenCleanupSettings.SectionName);
 
 		TimeOnly preferredTimeUtc =
 			new(
@@ -90,7 +91,7 @@ public sealed class IdentityJobSchedulerContributor(
 			configuration
 				.GetSection(IpAnonymizationSettings.SectionName)
 				.Get<IpAnonymizationSettings>()
-			?? new();
+			?? throw new RequiredConfigurationException(IpAnonymizationSettings.SectionName);
 
 		TimeOnly preferredTimeUtc =
 			new(

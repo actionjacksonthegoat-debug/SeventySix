@@ -47,11 +47,17 @@ if (-not $dockerProcess) {
 	Start-Sleep -Seconds 10
 }
 
-# Build and start API container
+# Start ALL infrastructure services first (without force-recreate to preserve data)
+Write-Host "Starting infrastructure services..." -ForegroundColor Yellow
+Push-Location "$PSScriptRoot\.."
+docker compose up -d postgres valkey redis-exporter otel-collector jaeger prometheus grafana pgadmin redisinsight nginx-proxy
+Pop-Location
+
+# Build and start API container (only force-recreate the API to pick up code changes)
 Write-Host "Building and starting API container..." -ForegroundColor Yellow
 Push-Location "$PSScriptRoot\.."
 docker compose build seventysix-api
-docker compose up -d --force-recreate
+docker compose up -d --force-recreate seventysix-api
 Pop-Location
 
 # Wait for API to be healthy
@@ -101,24 +107,24 @@ if ($clientPortInUse -and $clientResponding) {
 	Write-Host "  Port 4200 is responding - client is active." -ForegroundColor Yellow
 	Write-Host ""
 	Write-Host "  Application:" -ForegroundColor White
-	Write-Host "    API:        https://localhost:7074" -ForegroundColor Cyan
-	Write-Host "    Client:     https://localhost:4200" -ForegroundColor Cyan
+	Write-Host "    API:          https://localhost:7074" -ForegroundColor Cyan
+	Write-Host "    Client:       https://localhost:4200" -ForegroundColor Cyan
 	Write-Host ""
 	Write-Host "  Observability (via HTTPS proxy):" -ForegroundColor White
-	Write-Host "    Grafana:    https://localhost:3443" -ForegroundColor Cyan
-	Write-Host "    Jaeger:     https://localhost:16687" -ForegroundColor Cyan
-	Write-Host "    Prometheus: https://localhost:9091" -ForegroundColor Cyan
-	Write-Host "    pgAdmin:    https://localhost:5051" -ForegroundColor Cyan
+	Write-Host "    Grafana:      https://localhost:3443" -ForegroundColor Cyan
+	Write-Host "    Jaeger:       https://localhost:16687" -ForegroundColor Cyan
+	Write-Host "    Prometheus:   https://localhost:9091" -ForegroundColor Cyan
+	Write-Host "    pgAdmin:      https://localhost:5051" -ForegroundColor Cyan
+	Write-Host "    RedisInsight: https://localhost:5541" -ForegroundColor Cyan
 	Write-Host "========================================" -ForegroundColor Yellow
 }
 else {
-	# Launch Angular client in NEW PowerShell window BEFORE streaming logs
+	# Launch Angular client in NEW Command Prompt window BEFORE streaming logs
 	Write-Host "Launching Angular client in new window..." -ForegroundColor Yellow
 
-	Start-Process powershell -ArgumentList @(
-		"-NoExit",
-		"-Command",
-		"Set-Location '$clientPath'; npm start"
+	Start-Process cmd -ArgumentList @(
+		"/k",
+		"cd /d `"$clientPath`" && npm start"
 	) -WindowStyle Normal
 }
 
@@ -129,14 +135,15 @@ Write-Host "  Streaming API Logs (Ctrl+C to stop)" -ForegroundColor Green
 Write-Host "========================================" -ForegroundColor Green
 Write-Host ""
 Write-Host "  Application:" -ForegroundColor White
-Write-Host "    API:        https://localhost:7074" -ForegroundColor Cyan
-Write-Host "    Client:     https://localhost:4200" -ForegroundColor Cyan
+Write-Host "    API:          https://localhost:7074" -ForegroundColor Cyan
+Write-Host "    Client:       https://localhost:4200" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "  Observability (via HTTPS proxy):" -ForegroundColor White
-Write-Host "    Grafana:    https://localhost:3443" -ForegroundColor Cyan
-Write-Host "    Jaeger:     https://localhost:16687" -ForegroundColor Cyan
-Write-Host "    Prometheus: https://localhost:9091" -ForegroundColor Cyan
-Write-Host "    pgAdmin:    https://localhost:5051" -ForegroundColor Cyan
+Write-Host "    Grafana:      https://localhost:3443" -ForegroundColor Cyan
+Write-Host "    Jaeger:       https://localhost:16687" -ForegroundColor Cyan
+Write-Host "    Prometheus:   https://localhost:9091" -ForegroundColor Cyan
+Write-Host "    pgAdmin:      https://localhost:5051" -ForegroundColor Cyan
+Write-Host "    RedisInsight: https://localhost:5541" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "========================================" -ForegroundColor Green
 Write-Host ""

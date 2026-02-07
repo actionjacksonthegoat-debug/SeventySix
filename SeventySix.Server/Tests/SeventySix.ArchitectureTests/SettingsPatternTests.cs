@@ -84,14 +84,11 @@ public class SettingsPatternTests : SourceCodeArchitectureTest
 			// 1. SeventySix.Api/Configuration/ (API-only settings)
 			// 2. SeventySix/{Context}/Settings/ (bounded context settings)
 			bool isInSettingsFolder =
-				relativePath.Contains("\\Settings\\")
-				|| relativePath.Contains("/Settings/");
+				relativePath.Contains("/Settings/");
 
 			bool isInApiConfiguration =
 				relativePath.Contains("SeventySix.Api")
-				&& (
-					relativePath.Contains("\\Configuration\\")
-					|| relativePath.Contains("/Configuration/"));
+				&& relativePath.Contains("/Configuration/");
 
 			if (!isInSettingsFolder && !isInApiConfiguration)
 			{

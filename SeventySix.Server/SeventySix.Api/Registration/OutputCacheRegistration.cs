@@ -54,8 +54,14 @@ public static class OutputCacheRegistration
 					.GetSection(CacheSettings.SectionName)
 					.Get<CacheSettings>();
 
-			string instanceName =
-				$"{cacheSettings?.Valkey.InstanceName ?? "SeventySix:"}OutputCache:";
+			if (cacheSettings is null)
+			{
+				throw new InvalidOperationException(
+					$"Cache settings must be configured in appsettings.json section '{CacheSettings.SectionName}'");
+			}
+
+			string outputCacheInstanceName =
+				$"{cacheSettings.Valkey.InstanceName}OutputCache:";
 
 			// Use shared IConnectionMultiplexer (registered in FusionCacheRegistration)
 			// Configure using OptionsBuilder to get proper DI-resolved IServiceProvider
@@ -65,7 +71,8 @@ public static class OutputCacheRegistration
 				.Configure<IServiceProvider>(
 					(cacheOptions, serviceProvider) =>
 					{
-						cacheOptions.InstanceName = instanceName;
+						cacheOptions.InstanceName =
+							outputCacheInstanceName;
 						cacheOptions.ConnectionMultiplexerFactory =
 							() => Task.FromResult(
 								serviceProvider.GetRequiredService<IConnectionMultiplexer>());

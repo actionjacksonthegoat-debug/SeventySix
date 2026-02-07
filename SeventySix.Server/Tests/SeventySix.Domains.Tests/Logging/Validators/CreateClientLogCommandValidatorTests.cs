@@ -6,6 +6,7 @@ using FluentValidation.TestHelper;
 using Microsoft.Extensions.Time.Testing;
 using SeventySix.Logging;
 using SeventySix.Logging.Commands.CreateClientLog;
+using SeventySix.TestUtilities.Constants;
 
 namespace SeventySix.Domains.Tests.Logging.Validators;
 
@@ -141,7 +142,7 @@ public class CreateClientLogCommandValidatorTests
 				ExceptionMessage = "Test exception",
 				StackTrace = "at TestComponent.method()",
 				SourceContext = "TestComponent",
-				RequestUrl = "/api/test",
+				RequestUrl = ApiEndpoints.Logs.Client,
 				RequestMethod = "POST",
 				StatusCode = 500,
 				UserAgent = "Mozilla/5.0",

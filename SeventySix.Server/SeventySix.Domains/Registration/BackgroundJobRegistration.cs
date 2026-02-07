@@ -8,6 +8,7 @@ using SeventySix.ElectronicNotifications.Emails;
 using SeventySix.Logging;
 using SeventySix.Logging.Jobs;
 using SeventySix.Shared.BackgroundJobs;
+using SeventySix.Shared.Constants;
 
 namespace SeventySix.Registration;
 
@@ -72,9 +73,9 @@ public static class BackgroundJobRegistration
 			configuration.GetSection(EmailQueueSettings.SectionName));
 
 		// Skip background job execution if disabled (e.g., in Test environment)
-		bool enabled =
-			configuration.GetValue<bool?>("BackgroundJobs:Enabled") ?? true;
-		if (!enabled)
+		bool isBackgroundJobsEnabled =
+			configuration.GetValue<bool>(ConfigurationSectionConstants.BackgroundJobs.Enabled);
+		if (!isBackgroundJobsEnabled)
 		{
 			return services;
 		}

@@ -33,11 +33,11 @@ describe("ThemeService",
 					.toBeTruthy();
 			});
 
-		it("should initialize with light theme",
+		it("should initialize with dark theme",
 			() =>
 			{
 				expect(service.brightness())
-					.toBe("light");
+					.toBe("dark");
 			});
 
 		it("should initialize with cyan-orange scheme",

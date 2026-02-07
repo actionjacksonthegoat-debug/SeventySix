@@ -5,6 +5,7 @@
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using SeventySix.Shared.Exceptions;
 using ZiggyCreatures.Caching.Fusion.OpenTelemetry;
 
 namespace SeventySix.Api.Registration;
@@ -42,24 +43,24 @@ public static class OpenTelemetryExtensions
 		string environment)
 	{
 		// Skip OpenTelemetry in Test environment for performance
-		bool enabled =
-			configuration.GetValue<bool?>("OpenTelemetry:Enabled") ?? true;
-		if (!enabled)
+		bool isOpenTelemetryEnabled =
+			configuration.GetValue<bool>("OpenTelemetry:Enabled");
+		if (!isOpenTelemetryEnabled)
 		{
 			return services;
 		}
 
 		string serviceName =
 			configuration.GetValue<string>("OpenTelemetry:ServiceName")
-			?? "SeventySix.Api";
+			?? throw new RequiredConfigurationException("OpenTelemetry:ServiceName");
 
 		string serviceVersion =
 			configuration.GetValue<string>("OpenTelemetry:ServiceVersion")
-			?? "1.0.0";
+			?? throw new RequiredConfigurationException("OpenTelemetry:ServiceVersion");
 
 		string otlpEndpoint =
 			configuration.GetValue<string>("OpenTelemetry:OtlpEndpoint")
-			?? "http://localhost:4317";
+			?? throw new RequiredConfigurationException("OpenTelemetry:OtlpEndpoint");
 
 		Uri otlpEndpointUri =
 			new(otlpEndpoint);

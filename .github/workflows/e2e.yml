@@ -1,0 +1,154 @@
+name: E2E Tests
+
+on:
+    push:
+        branches: [master]
+    pull_request:
+        branches: [master]
+    workflow_dispatch:
+
+jobs:
+    e2e-tests:
+        name: E2E Tests
+        runs-on: ubuntu-latest
+        timeout-minutes: 30
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "22.x"
+                  cache: "npm"
+                  cache-dependency-path: SeventySix.Client/package-lock.json
+
+            - name: Generate self-signed SSL certificate
+              run: |
+                  mkdir -p SeventySix.Client/ssl
+                  openssl req -x509 -nodes -days 1 \
+                      -newkey rsa:2048 \
+                      -keyout SeventySix.Client/ssl/dev-certificate.key \
+                      -out SeventySix.Client/ssl/dev-certificate.crt \
+                      -subj "/CN=localhost" \
+                      -addext "subjectAltName=DNS:localhost,IP:127.0.0.1"
+                  openssl pkcs12 -export \
+                      -out SeventySix.Client/ssl/dev-certificate.pfx \
+                      -inkey SeventySix.Client/ssl/dev-certificate.key \
+                      -in SeventySix.Client/ssl/dev-certificate.crt \
+                      -password pass:dev-ssl-password
+                  # Make certs readable by the .NET container user (UID 1654).
+                  # openssl creates .key/.pfx with 600 (owner-only) permissions,
+                  # but the container runs as a different UID than the runner.
+                  chmod 644 SeventySix.Client/ssl/dev-certificate.key \
+                            SeventySix.Client/ssl/dev-certificate.pfx
+
+            - name: Build E2E containers
+              run: docker compose -f docker-compose.e2e.yml build --no-cache api-e2e client-e2e
+
+            - name: Start E2E containers
+              id: start-containers
+              continue-on-error: true
+              run: docker compose -f docker-compose.e2e.yml up -d
+
+            - name: Capture crash diagnostics
+              if: steps.start-containers.outcome == 'failure'
+              run: |
+                  echo "============================================================"
+                  echo "API CONTAINER CRASH DIAGNOSTICS"
+                  echo "============================================================"
+                  echo ""
+                  echo "--- Container status (all) ---"
+                  docker compose -f docker-compose.e2e.yml ps -a
+                  echo ""
+                  echo "--- API container logs ---"
+                  docker logs seventysix-api-e2e 2>&1 || echo "(no logs from docker logs)"
+                  echo ""
+                  echo "--- API container inspect (State) ---"
+                  docker inspect seventysix-api-e2e --format='ExitCode={{.State.ExitCode}} OOMKilled={{.State.OOMKilled}} Error={{.State.Error}}' 2>&1 || true
+                  echo ""
+                  echo "--- Test: Can .NET runtime start at all? ---"
+                  docker run --rm seventysix-api-e2e dotnet --info 2>&1 || echo "(dotnet --info failed with exit code $?)"
+                  echo ""
+                  echo "--- Test: Can .NET runtime start with SSL volume? ---"
+                  docker run --rm -v $(pwd)/SeventySix.Client/ssl:/https:ro seventysix-api-e2e dotnet --info 2>&1 || echo "(dotnet --info with SSL volume failed with exit code $?)"
+                  echo ""
+                  echo "--- Test: List /app contents ---"
+                  docker run --rm seventysix-api-e2e ls -la /app/ 2>&1 || true
+                  echo ""
+                  echo "--- Test: Check SSL certificate files ---"
+                  ls -la SeventySix.Client/ssl/ 2>&1 || true
+                  echo ""
+                  echo "--- Host environment info ---"
+                  echo "Docker version:" && docker --version
+                  echo "Kernel:" && uname -a
+                  echo "OpenSSL:" && openssl version
+                  echo ""
+                  echo "============================================================"
+                  echo "END CRASH DIAGNOSTICS — Fix based on the logs above"
+                  echo "============================================================"
+                  exit 1
+
+            - name: Wait for services to be healthy
+              run: |
+                  echo "Waiting for API health check..."
+                  timeout 120 bash -c \
+                      'until docker compose -f docker-compose.e2e.yml ps api-e2e \
+                      | grep -q healthy; do sleep 5; done' \
+                  || {
+                      echo "=== API container failed to become healthy ==="
+                      echo "--- Container status ---"
+                      docker compose -f docker-compose.e2e.yml ps -a
+                      echo "--- API container logs ---"
+                      docker logs seventysix-api-e2e 2>&1 || true
+                      echo "--- API container inspect ---"
+                      docker inspect seventysix-api-e2e --format='ExitCode={{.State.ExitCode}} OOMKilled={{.State.OOMKilled}} Error={{.State.Error}}' 2>&1 || true
+                      exit 1
+                  }
+                  echo "Waiting for Client health check..."
+                  timeout 60 bash -c \
+                      'until docker compose -f docker-compose.e2e.yml ps client-e2e \
+                      | grep -q healthy; do sleep 5; done' \
+                  || {
+                      echo "=== Client container failed to become healthy ==="
+                      echo "--- Container status ---"
+                      docker compose -f docker-compose.e2e.yml ps -a
+                      echo "--- Client container logs ---"
+                      docker logs seventysix-client-e2e 2>&1 || true
+                      exit 1
+                  }
+                  echo "All services healthy"
+
+            - name: Install dependencies and Playwright
+              working-directory: SeventySix.Client
+              run: |
+                  npm ci
+                  npx playwright install --with-deps chromium
+
+            - name: Run E2E tests
+              working-directory: SeventySix.Client
+              env:
+                  CI: true
+                  NODE_EXTRA_CA_CERTS: ssl/dev-certificate.crt
+              run: npx playwright test
+
+            - name: Teardown containers
+              if: always()
+              run: docker compose -f docker-compose.e2e.yml down -v --remove-orphans
+
+            - name: Upload Playwright report
+              uses: actions/upload-artifact@v4
+              if: always()
+              with:
+                  name: playwright-report
+                  path: SeventySix.Client/playwright-report
+                  retention-days: 7
+
+            - name: Upload test results
+              uses: actions/upload-artifact@v4
+              if: always()
+              with:
+                  name: e2e-test-results
+                  path: SeventySix.Client/test-results
+                  retention-days: 7

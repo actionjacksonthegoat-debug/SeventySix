@@ -31,10 +31,10 @@ public static class E2ESeederRegistration
 		services.Configure<E2ESeederOptions>(
 			configuration.GetSection("E2ESeeder"));
 
-		bool enabled =
-			configuration.GetValue<bool?>("E2ESeeder:Enabled") ?? false;
+		bool isE2ESeederEnabled =
+			configuration.GetValue<bool>("E2ESeeder:Enabled");
 
-		if (enabled)
+		if (isE2ESeederEnabled)
 		{
 			services.AddHostedService<E2ETestSeeder>();
 		}

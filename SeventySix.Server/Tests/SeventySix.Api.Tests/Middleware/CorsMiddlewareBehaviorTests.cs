@@ -4,6 +4,7 @@
 
 using System.Net;
 using Microsoft.Extensions.Configuration;
+using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;
 using Shouldly;
 
@@ -51,7 +52,9 @@ public class CorsMiddlewareBehaviorTests : IDisposable
 
 		// 1) Preflight OPTIONS returns 204 and CORS headers
 		HttpRequestMessage preflight =
-			new(HttpMethod.Options, "/api/v1/logs");
+			new(
+				HttpMethod.Options,
+				ApiEndpoints.Logs.Base);
 		preflight.Headers.Add("Origin", "http://localhost:4200");
 		preflight.Headers.Add("Access-Control-Request-Method", "GET");
 
@@ -88,7 +91,9 @@ public class CorsMiddlewareBehaviorTests : IDisposable
 
 		// CORS preflight requesting Cache-Control and Pragma headers
 		HttpRequestMessage preflight =
-			new(HttpMethod.Options, "/api/v1/logs");
+			new(
+				HttpMethod.Options,
+				ApiEndpoints.Logs.Base);
 		preflight.Headers.Add("Origin", "http://localhost:4200");
 		preflight.Headers.Add("Access-Control-Request-Method", "GET");
 		preflight.Headers.Add(

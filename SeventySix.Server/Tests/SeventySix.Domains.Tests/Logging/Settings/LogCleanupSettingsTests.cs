@@ -11,21 +11,6 @@ namespace SeventySix.Domains.Tests.Logging.Settings;
 public class LogCleanupSettingsTests
 {
 	[Fact]
-	public void Constructor_WithDefaults_HasCorrectValues()
-	{
-		// Arrange & Act
-		LogCleanupSettings settings = new();
-
-		// Assert
-		settings.Enabled.ShouldBeTrue();
-		settings.IntervalHours.ShouldBe(24);
-		settings.RetentionDays.ShouldBe(7);
-		settings.InitialDelayMinutes.ShouldBe(5);
-		settings.LogDirectory.ShouldBe("logs");
-		settings.LogFilePattern.ShouldBe("seventysix-*.txt");
-	}
-
-	[Fact]
 	public void SectionName_HasCorrectValue()
 	{
 		// Assert
@@ -33,13 +18,13 @@ public class LogCleanupSettingsTests
 	}
 
 	[Fact]
-	public void Constructor_WithCustomValues_OverridesDefaults()
+	public void Constructor_WithCustomValues_SetsAllProperties()
 	{
 		// Arrange & Act
 		LogCleanupSettings settings =
 			new()
 			{
-				Enabled = false,
+				Enabled = true,
 				IntervalHours = 12,
 				RetentionDays = 14,
 				InitialDelayMinutes = 10,
@@ -48,7 +33,7 @@ public class LogCleanupSettingsTests
 			};
 
 		// Assert
-		settings.Enabled.ShouldBeFalse();
+		settings.Enabled.ShouldBeTrue();
 		settings.IntervalHours.ShouldBe(12);
 		settings.RetentionDays.ShouldBe(14);
 		settings.InitialDelayMinutes.ShouldBe(10);

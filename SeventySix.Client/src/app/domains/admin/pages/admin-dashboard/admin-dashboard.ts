@@ -124,6 +124,32 @@ export class AdminDashboardPage
 	}
 
 	/**
+	 * Opens pgAdmin PostgreSQL management UI in a new browser tab.
+	 * @remarks
+	 * Provides database administration capabilities for development.
+	 * @returns {void}
+	 */
+	openPgAdmin(): void
+	{
+		const pgAdminUrl: string =
+			environment.observability.pgAdminUrl;
+		window.open(pgAdminUrl, "_blank");
+	}
+
+	/**
+	 * Opens RedisInsight Valkey cache visualization in a new browser tab.
+	 * @remarks
+	 * Provides cache data exploration and management for Valkey.
+	 * @returns {void}
+	 */
+	openRedisInsight(): void
+	{
+		const redisInsightUrl: string =
+			environment.observability.redisInsightUrl;
+		window.open(redisInsightUrl, "_blank");
+	}
+
+	/**
 	 * Sends a test Info log and shows notification.
 	 * Uses forceInfo to bypass environment log level filtering.
 	 * @returns {void}

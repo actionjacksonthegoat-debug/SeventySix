@@ -249,8 +249,8 @@ async function findMethodsInFiles(
 		: /^\s+(?:private|protected|public)\s+(?:readonly\s+)?(?:async\s+)?(\w+)\s*(?:<[^>]*>)?\s*\([^)]*\)\s*(?::\s*[^{]+)?\s*\{/gm;
 
 	const arrowFunctionPattern = includeParameters
-		? /^\s+(?:readonly\s+)?(\w+)\s*[=:]\s*(?:async\s*)?\(([^)]*)\)\s*(?::\s*[^{]+)?\s*=>\s*\{/gm
-		: /^\s+(?:readonly\s+)?(\w+)\s*[=:]\s*(?:async\s*)?\([^)]*\)\s*(?::\s*[^{]+)?\s*=>\s*\{/gm;
+		? /^\s+(?:readonly\s+)?(\w+)\s*=\s*(?:async\s*)?\(([^)]*)\)\s*(?::\s*[^{]+)?\s*=>\s*\{/gm
+		: /^\s+(?:readonly\s+)?(\w+)\s*=\s*(?:async\s*)?\([^)]*\)\s*(?::\s*[^{]+)?\s*=>\s*\{/gm;
 
 	const standardMethodPattern = includeParameters
 		? /^\s+(?:async\s+)?(\w+)\s*\(([^)]*)\)\s*:\s*[^{]+\s*\{/gm
@@ -284,7 +284,9 @@ async function findMethodsInFiles(
 			}
 		}
 
-		const content = await fs.readFile(file, "utf-8");
+		// Normalize line endings for cross-platform consistency (Windows CRLF → LF)
+		const content =
+			(await fs.readFile(file, "utf-8")).replaceAll("\r", "");
 		const lines = content.split("\n");
 
 		// Collect all matches from all patterns

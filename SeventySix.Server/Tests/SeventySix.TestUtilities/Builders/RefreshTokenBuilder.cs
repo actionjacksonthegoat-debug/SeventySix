@@ -4,7 +4,6 @@
 
 using System.Security.Cryptography;
 using SeventySix.Identity;
-using SeventySix.Identity.Constants;
 
 namespace SeventySix.TestUtilities.Builders;
 
@@ -25,6 +24,16 @@ namespace SeventySix.TestUtilities.Builders;
 /// </remarks>
 public class RefreshTokenBuilder
 {
+	/// <summary>
+	/// Test-only default expiration for standard refresh tokens (in days).
+	/// </summary>
+	private const int TestRefreshTokenExpirationDays = 1;
+
+	/// <summary>
+	/// Test-only default expiration for "Remember Me" refresh tokens (in days).
+	/// </summary>
+	private const int TestRefreshTokenRememberMeExpirationDays = 14;
+
 	private readonly TimeProvider TimeProvider;
 	private long UserId = 1;
 	private string PlainToken =
@@ -197,8 +206,8 @@ public class RefreshTokenBuilder
 
 		int expirationDays =
 			RememberMe
-				? JwtConstants.DefaultRefreshTokenRememberMeExpirationDays
-				: JwtConstants.DefaultRefreshTokenExpirationDays;
+				? TestRefreshTokenRememberMeExpirationDays
+				: TestRefreshTokenExpirationDays;
 
 		DateTime expiresAt =
 			CustomExpiresAt ?? now.AddDays(expirationDays);

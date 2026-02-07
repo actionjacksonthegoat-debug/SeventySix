@@ -4,6 +4,7 @@
 
 using NSubstitute;
 using SeventySix.Logging;
+using SeventySix.TestUtilities.Constants;
 using Shouldly;
 
 namespace SeventySix.Domains.Tests.Logging.Commands.CreateClientLog;
@@ -43,7 +44,7 @@ public class CreateClientLogCommandHandlerTests
 				ExceptionMessage = "Test exception",
 				StackTrace = "at TestClass.Method()",
 				SourceContext = "TestComponent",
-				RequestUrl = "/api/test",
+				RequestUrl = ApiEndpoints.Logs.Client,
 				RequestMethod = "POST",
 				StatusCode = 500,
 				CorrelationId = "corr-123",
@@ -76,7 +77,7 @@ public class CreateClientLogCommandHandlerTests
 		capturedLog.ExceptionMessage.ShouldBe("Test exception");
 		capturedLog.StackTrace.ShouldBe("at TestClass.Method()");
 		capturedLog.SourceContext.ShouldBe("TestComponent");
-		capturedLog.RequestPath.ShouldBe("/api/test");
+		capturedLog.RequestPath.ShouldBe(ApiEndpoints.Logs.Client);
 		capturedLog.RequestMethod.ShouldBe("POST");
 		capturedLog.StatusCode.ShouldBe(500);
 		capturedLog.CorrelationId.ShouldBe("corr-123");

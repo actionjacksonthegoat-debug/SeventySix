@@ -91,7 +91,7 @@ public static class AuthenticationExtensions
 								new SymmetricSecurityKey(
 									Encoding.UTF8.GetBytes(jwtSettings.SecretKey)),
 							ClockSkew =
-								TimeSpan.FromMinutes(1),
+								TimeSpan.FromMinutes(jwtSettings.ClockSkewMinutes),
 							// Explicit algorithm validation (defense-in-depth against alg:none attacks)
 							ValidAlgorithms =
 								[SecurityAlgorithms.HmacSha256],

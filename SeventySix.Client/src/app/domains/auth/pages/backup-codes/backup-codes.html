@@ -1,0 +1,158 @@
+<div class="backup-codes-container">
+	<div class="backup-codes-card">
+		<!-- Loading State -->
+		@if (currentStep() === STEP_LOADING) {
+		<div class="loading-state">
+			<h1>Generating Backup Codes</h1>
+			<p>Please wait while we generate your codes...</p>
+			<div
+				class="spinner"
+				aria-label="Loading"></div>
+		</div>
+		}
+
+		<!-- Step 1: Warning -->
+		@if (currentStep() === STEP_WARNING) {
+		<h1>Generate Backup Codes</h1>
+		<p class="subtitle">
+			Backup codes allow you to access your account if you lose access to
+			your authenticator app.
+		</p>
+
+		<div class="warning-box">
+			<mat-icon class="warning-icon" aria-hidden="true">warning</mat-icon>
+			<div class="warning-content">
+				<strong>Important</strong>
+				<ul>
+					<li>Each code can only be used once</li>
+					<li>Store them in a safe, secure location</li>
+					<li>
+						Generating new codes will invalidate any existing codes
+					</li>
+					<li>You will receive {{ CODE_COUNT }} backup codes</li>
+				</ul>
+			</div>
+		</div>
+
+		@if (errorMessage()) {
+		<p
+			class="error-message"
+			role="alert">
+			{{ errorMessage() }}
+		</p>
+		}
+
+		<div class="action-buttons">
+			<button
+				mat-button
+				type="button"
+				(click)="onCancel()">
+				Cancel
+			</button>
+			<button
+				mat-flat-button
+				type="button"
+				(click)="onGenerateCodes()"
+				[disabled]="isLoading()">
+				Generate Codes
+			</button>
+		</div>
+		}
+
+		<!-- Step 2: Display Codes -->
+		@if (currentStep() === STEP_CODES) {
+		<h1>Save Your Backup Codes</h1>
+		<p class="subtitle">
+			Save these codes somewhere safe. You'll need them if you lose access
+			to your authenticator app.
+		</p>
+
+		<div
+			class="codes-grid"
+			role="list"
+			aria-label="Backup codes">
+			@for (code of codes(); track code; let index = $index) {
+			<div
+				class="code-item"
+				role="listitem">
+				<span class="code-number">{{ index + 1 }}.</span>
+				<code class="code-value">{{ code }}</code>
+			</div>
+			}
+		</div>
+
+		<div class="code-actions">
+			<button
+				mat-button
+				type="button"
+				(click)="onCopyCodes()"
+				[class.copied]="codesCopied()">
+				<mat-icon aria-hidden="true">{{
+					codesCopied() ? "check" : "content_copy"
+				}}</mat-icon>
+				{{ codesCopied() ? "Copied!" : "Copy All" }}
+			</button>
+			<button
+				mat-button
+				type="button"
+				(click)="onPrintCodes()">
+				<mat-icon aria-hidden="true">print</mat-icon>
+				Print
+			</button>
+			<button
+				mat-button
+				type="button"
+				(click)="onDownloadCodes()">
+				<mat-icon aria-hidden="true">download</mat-icon>
+				Download
+			</button>
+		</div>
+
+		<div class="important-notice">
+			<mat-icon aria-hidden="true">info</mat-icon>
+			<p>
+				<strong>This is the only time these codes will be shown.</strong>
+				Make sure you save them before continuing.
+			</p>
+		</div>
+
+		<div class="action-buttons">
+			<button
+				mat-flat-button
+				type="button"
+				(click)="onAcknowledgeSaved()">
+				I've Saved My Codes
+			</button>
+		</div>
+		}
+
+		<!-- Step 3: Confirmation -->
+		@if (currentStep() === STEP_CONFIRM) {
+		<div class="success-state">
+			<mat-icon class="success-icon">check_circle</mat-icon>
+			<h1>Backup Codes Saved</h1>
+			<p class="subtitle">
+				Your backup codes are ready. You can use them to sign in if you
+				ever lose access to your authenticator app.
+			</p>
+
+			<div class="next-steps">
+				<p>
+					Remember: Each code can only be used once. After using a
+					code, it will be invalidated. When you run low on codes, you
+					can generate a new set from your security settings.
+				</p>
+			</div>
+
+			<div class="action-buttons">
+				<button
+					mat-flat-button
+					type="button"
+					(click)="onFinish()">
+					Done
+				</button>
+			</div>
+		</div>
+		}
+	</div>
+</div>

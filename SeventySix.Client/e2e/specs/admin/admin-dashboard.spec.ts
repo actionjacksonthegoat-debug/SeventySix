@@ -136,6 +136,13 @@ test.describe("Admin Dashboard",
 							.toBeVisible();
 					});
 
+				test("should display Data Tools card",
+					async ({ adminDashboardPage }) =>
+					{
+						await expect(adminDashboardPage.dataCard)
+							.toBeVisible();
+					});
+
 				test("should display Jaeger Tracing button",
 					async ({ adminDashboardPage }) =>
 					{
@@ -157,14 +164,35 @@ test.describe("Admin Dashboard",
 							.toBeVisible();
 					});
 
-				test("should have three observability buttons",
+				test("should display pgAdmin button",
 					async ({ adminDashboardPage }) =>
 					{
+						await expect(adminDashboardPage.pgAdminButton)
+							.toBeVisible();
+					});
+
+				test("should display RedisInsight button",
+					async ({ adminDashboardPage }) =>
+					{
+						await expect(adminDashboardPage.redisInsightButton)
+							.toBeVisible();
+					});
+
+				test("should have three observability buttons and two data buttons",
+					async ({ adminDashboardPage }) =>
+					{
+						// Observability buttons (3)
 						await expect(adminDashboardPage.jaegerButton)
 							.toBeVisible();
 						await expect(adminDashboardPage.prometheusButton)
 							.toBeVisible();
 						await expect(adminDashboardPage.grafanaButton)
+							.toBeVisible();
+
+						// Data buttons (2) - now in separate card
+						await expect(adminDashboardPage.pgAdminButton)
+							.toBeVisible();
+						await expect(adminDashboardPage.redisInsightButton)
 							.toBeVisible();
 					});
 			});

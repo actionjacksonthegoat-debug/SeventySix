@@ -37,12 +37,12 @@ public class EntityConfigurationTests : SourceCodeArchitectureTest
 		// Arrange
 		IEnumerable<string> entityFiles =
 			GetSourceFiles("*.cs")
-			.Where(f =>
-				f.Contains("\\Models\\")
-				&& !f.Contains("Dto")
-				&& !f.Contains("Request")
-				&& !f.Contains("Response")
-				&& !f.EndsWith("Settings.cs"));
+			.Where(file =>
+				file.Contains("/Models/")
+				&& !file.Contains("Dto")
+				&& !file.Contains("Request")
+				&& !file.Contains("Response")
+				&& !file.EndsWith("Settings.cs"));
 
 		List<string> violations = [];
 
@@ -74,14 +74,14 @@ public class EntityConfigurationTests : SourceCodeArchitectureTest
 		// Arrange
 		IEnumerable<string> entityFiles =
 			GetSourceFiles("*.cs")
-			.Where(f =>
-				f.Contains("\\Models\\")
-				&& !f.Contains("Dto")
-				&& !f.Contains("Request")
-				&& !f.Contains("Response")
-				&& !f.Contains("Result")
-				&& !f.Contains("OAuth")
-				&& !f.EndsWith("Settings.cs"))
+			.Where(file =>
+				file.Contains("/Models/")
+				&& !file.Contains("Dto")
+				&& !file.Contains("Request")
+				&& !file.Contains("Response")
+				&& !file.Contains("Result")
+				&& !file.Contains("OAuth")
+				&& !file.EndsWith("Settings.cs"))
 			.ToList();
 
 		List<string> violations = [];
@@ -109,8 +109,8 @@ public class EntityConfigurationTests : SourceCodeArchitectureTest
 			string expectedConfigFile =
 				entityFile
 				.Replace(
-					"\\Models\\",
-					"\\Data\\Configurations\\")
+					"/Models/",
+					"/Data/Configurations/")
 				.Replace(
 					$"{entityName}.cs",
 					$"{entityName}Configuration.cs");

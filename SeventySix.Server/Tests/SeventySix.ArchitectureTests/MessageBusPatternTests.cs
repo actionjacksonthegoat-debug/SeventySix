@@ -58,7 +58,7 @@ public partial class MessageBusPatternTests : SourceCodeArchitectureTest
 		IEnumerable<string> controllerFiles =
 			GetSourceFiles("*.cs")
 				.Where(filePath =>
-					filePath.Contains("\\Controllers\\"));
+					filePath.Contains("/Controllers/"));
 
 		List<string> violations = [];
 
@@ -106,7 +106,7 @@ public partial class MessageBusPatternTests : SourceCodeArchitectureTest
 		IEnumerable<string> controllerFiles =
 			GetSourceFiles("*.cs")
 				.Where(filePath =>
-					filePath.Contains("\\Controllers\\"));
+					filePath.Contains("/Controllers/"));
 
 		List<string> violations = [];
 

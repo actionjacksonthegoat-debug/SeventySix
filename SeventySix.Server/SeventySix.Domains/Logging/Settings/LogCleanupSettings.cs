@@ -6,7 +6,7 @@ namespace SeventySix.Logging;
 
 /// <summary>
 /// Configuration for log cleanup background service.
-/// Follows TokenCleanupSettings pattern from Identity bounded context.
+/// All values MUST be configured in appsettings.json.
 /// </summary>
 public record LogCleanupSettings
 {
@@ -16,46 +16,53 @@ public record LogCleanupSettings
 	public const string SectionName = "Logging:Cleanup";
 
 	/// <summary>
-	/// Gets whether cleanup is enabled. Default: true.
+	/// Gets whether cleanup is enabled.
 	/// </summary>
-	public bool Enabled { get; init; } = true;
+	public bool Enabled { get; init; }
 
 	/// <summary>
-	/// Gets cleanup interval in hours. Default: 24 (daily).
+	/// Gets cleanup interval in hours.
+	/// Must be configured in appsettings.json.
 	/// </summary>
-	public int IntervalHours { get; init; } = 24;
+	public int IntervalHours { get; init; }
 
 	/// <summary>
-	/// Gets retention period in days. Default: 7.
+	/// Gets retention period in days.
 	/// Logs (both database and files) older than this are deleted.
+	/// Must be configured in appsettings.json.
 	/// </summary>
-	public int RetentionDays { get; init; } = 7;
+	public int RetentionDays { get; init; }
 
 	/// <summary>
-	/// Gets initial delay in minutes before first cleanup. Default: 5.
+	/// Gets initial delay in minutes before first cleanup.
 	/// Allows app to fully start before cleanup begins.
+	/// Must be configured in appsettings.json.
 	/// </summary>
-	public int InitialDelayMinutes { get; init; } = 5;
+	public int InitialDelayMinutes { get; init; }
 
 	/// <summary>
-	/// Gets the log file directory relative to app base. Default: "logs".
+	/// Gets the log file directory relative to app base.
+	/// Must be configured in appsettings.json.
 	/// </summary>
-	public string LogDirectory { get; init; } = "logs";
+	public string LogDirectory { get; init; } =
+		string.Empty;
 
 	/// <summary>
-	/// Gets the log file pattern for matching. Default: "seventysix-*.txt".
+	/// Gets the log file pattern for matching.
+	/// Must be configured in appsettings.json.
 	/// </summary>
-	public string LogFilePattern { get; init; } = "seventysix-*.txt";
+	public string LogFilePattern { get; init; } =
+		string.Empty;
 
 	/// <summary>
 	/// Gets the preferred UTC hour for job execution (0-23).
-	/// Default: 8 (3:00 AM EST).
+	/// Must be configured in appsettings.json.
 	/// </summary>
-	public int PreferredStartHourUtc { get; init; } = 8;
+	public int PreferredStartHourUtc { get; init; }
 
 	/// <summary>
 	/// Gets the preferred UTC minute for job execution (0-59).
-	/// Default: 0.
+	/// Must be configured in appsettings.json.
 	/// </summary>
-	public int PreferredStartMinuteUtc { get; init; } = 0;
+	public int PreferredStartMinuteUtc { get; init; }
 }

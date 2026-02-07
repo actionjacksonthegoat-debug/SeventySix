@@ -19,9 +19,12 @@ export class AdminDashboardPageHelper
 	readonly grafanaEmbed: Locator;
 	readonly apiStatsTable: Locator;
 	readonly observabilityCard: Locator;
+	readonly dataCard: Locator;
 	readonly jaegerButton: Locator;
 	readonly prometheusButton: Locator;
 	readonly grafanaButton: Locator;
+	readonly pgAdminButton: Locator;
+	readonly redisInsightButton: Locator;
 
 	/**
 	 * Creates admin dashboard page helper.
@@ -38,9 +41,12 @@ export class AdminDashboardPageHelper
 		this.grafanaEmbed = page.locator(SELECTORS.adminDashboard.grafanaEmbed);
 		this.apiStatsTable = page.locator(SELECTORS.adminDashboard.apiStatsTable);
 		this.observabilityCard = page.locator(SELECTORS.adminDashboard.observabilityCard);
+		this.dataCard = page.locator(SELECTORS.adminDashboard.dataCard);
 		this.jaegerButton = page.locator(SELECTORS.adminDashboard.jaegerButton);
 		this.prometheusButton = page.locator(SELECTORS.adminDashboard.prometheusButton);
 		this.grafanaButton = page.locator(SELECTORS.adminDashboard.grafanaButton);
+		this.pgAdminButton = page.locator(SELECTORS.adminDashboard.pgAdminButton);
+		this.redisInsightButton = page.locator(SELECTORS.adminDashboard.redisInsightButton);
 	}
 
 	/**

@@ -44,8 +44,11 @@ public class LogCleanupJobHandlerTests
 		Settings =
 			Options.Create(new LogCleanupSettings
 			{
+				Enabled = true,
 				IntervalHours = 24,
-				RetentionDays = 30
+				RetentionDays = 30,
+				LogDirectory = "non-existent-test-directory",
+				LogFilePattern = "*.nonexistent"
 			});
 
 		Handler =
@@ -121,8 +124,11 @@ public class LogCleanupJobHandlerTests
 		IOptions<LogCleanupSettings> customSettings =
 			Options.Create(new LogCleanupSettings
 			{
+				Enabled = true,
 				IntervalHours = 48,
-				RetentionDays = 60
+				RetentionDays = 60,
+				LogDirectory = "non-existent-test-directory",
+				LogFilePattern = "*.nonexistent"
 			});
 
 		LogCleanupJobHandler customHandler =

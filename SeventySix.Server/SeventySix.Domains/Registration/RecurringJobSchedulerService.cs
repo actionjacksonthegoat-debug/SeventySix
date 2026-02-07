@@ -12,6 +12,7 @@ using SeventySix.Logging;
 using SeventySix.Logging.Jobs;
 using SeventySix.Shared.BackgroundJobs;
 using SeventySix.Shared.Constants;
+using SeventySix.Shared.Exceptions;
 
 namespace SeventySix.Registration;
 
@@ -72,10 +73,10 @@ public sealed class RecurringJobSchedulerService(
 	/// </returns>
 	public async Task StartAsync(CancellationToken cancellationToken)
 	{
-		bool backgroundJobsEnabled =
-			configuration.GetValue<bool?>("BackgroundJobs:Enabled") ?? true;
+		bool isBackgroundJobsEnabled =
+			configuration.GetValue<bool>(ConfigurationSectionConstants.BackgroundJobs.Enabled);
 
-		if (!backgroundJobsEnabled)
+		if (!isBackgroundJobsEnabled)
 		{
 			logger.LogInformation("Background jobs are disabled");
 			return;
@@ -208,13 +209,14 @@ public sealed class RecurringJobSchedulerService(
 		CancellationToken cancellationToken)
 	{
 		EmailSettings emailSettings =
-			configuration.GetSection(ConfigurationSectionConstants.Email).Get<EmailSettings>() ?? new();
+			configuration.GetSection(ConfigurationSectionConstants.Email).Get<EmailSettings>()
+			?? throw new RequiredConfigurationException(ConfigurationSectionConstants.Email);
 
 		EmailQueueSettings queueSettings =
 			configuration
 				.GetSection(EmailQueueSettings.SectionName)
 				.Get<EmailQueueSettings>()
-			?? new();
+			?? throw new RequiredConfigurationException(EmailQueueSettings.SectionName);
 
 		if (!emailSettings.Enabled || !queueSettings.Enabled)
 		{
@@ -259,7 +261,7 @@ public sealed class RecurringJobSchedulerService(
 			configuration
 				.GetSection(LogCleanupSettings.SectionName)
 				.Get<LogCleanupSettings>()
-			?? new();
+			?? throw new RequiredConfigurationException(LogCleanupSettings.SectionName);
 
 		if (!settings.Enabled)
 		{
@@ -310,7 +312,7 @@ public sealed class RecurringJobSchedulerService(
 			configuration
 				.GetSection(DatabaseMaintenanceSettings.SectionName)
 				.Get<DatabaseMaintenanceSettings>()
-			?? new();
+			?? throw new RequiredConfigurationException(DatabaseMaintenanceSettings.SectionName);
 
 		if (!settings.Enabled)
 		{

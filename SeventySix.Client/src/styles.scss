@@ -161,11 +161,6 @@ html:not(.light-theme):not(.dark-theme) {
 	}
 }
 
-// Ensure Material cards have proper spacing
-.mat-mdc-card {
-	margin-bottom: vars.$spacing-md;
-}
-
 // =============================================================================
 // MATERIAL CHIPS - GLOBAL CUSTOMIZATION
 // =============================================================================

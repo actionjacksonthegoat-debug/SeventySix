@@ -38,6 +38,7 @@ services:
       POSTGRES_DB: ${DB_NAME:-seventysix}
       POSTGRES_USER: ${DB_USER:-postgres}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-TestPassword}
+      PGDATA: /var/lib/postgresql/data
     ports:
       - "5433:5432"
     volumes:
@@ -58,12 +59,38 @@ services:
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin@example.com}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-pgadmin}
+      # Proxy configuration for HTTPS access via nginx-proxy
+      PGADMIN_CONFIG_PROXY_X_HOST_COUNT: "1"
+      PGADMIN_CONFIG_PROXY_X_PREFIX_COUNT: "1"
+      PGADMIN_CONFIG_PROXY_X_FOR_COUNT: "1"
+      PGADMIN_CONFIG_PROXY_X_PROTO_COUNT: "1"
+      # Tell pgAdmin it's behind HTTPS proxy
+      SCRIPT_NAME: "/"
+      # Disable protections that conflict with HTTPS reverse proxy
+      PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION: "False"
+      PGADMIN_CONFIG_WTF_CSRF_SSL_STRICT: "False"
     ports:
       - "5050:80"
     volumes:
       - pgadmin_data:/var/lib/pgadmin
     depends_on:
       postgres:
+        condition: service_healthy
+    networks:
+      - seventysix-network
+    restart: unless-stopped
+
+  # RedisInsight - Valkey/Redis compatible GUI for cache visualization
+  # Access via HTTPS proxy at https://localhost:5541
+  redisinsight:
+    image: redis/redisinsight:2.68
+    container_name: seventysix-redisinsight-dev
+    ports:
+      - "5540:5540"
+    volumes:
+      - redisinsight_data:/data
+    depends_on:
+      valkey:
         condition: service_healthy
     networks:
       - seventysix-network
@@ -232,6 +259,7 @@ services:
   #   - 16687 → Jaeger  (https://localhost:16687)
   #   - 9091  → Prometheus (https://localhost:9091)
   #   - 5051  → pgAdmin (https://localhost:5051)
+  #   - 5541  → RedisInsight (https://localhost:5541)
   #   - 4319  → OTEL Collector (https://localhost:4319) - Browser telemetry
   # ============================================================================
   nginx-proxy:
@@ -242,6 +270,7 @@ services:
       - "16687:16687"    # Jaeger HTTPS
       - "9091:9091"      # Prometheus HTTPS
       - "5051:5051"      # pgAdmin HTTPS
+      - "5541:5541"      # RedisInsight HTTPS
       - "4319:4319"      # OTEL Collector HTTPS (browser telemetry)
     volumes:
       - ./SeventySix.Client/ssl/dev-certificate.crt:/etc/nginx/ssl/server.crt:ro
@@ -252,6 +281,7 @@ services:
       - jaeger
       - prometheus
       - pgadmin
+      - redisinsight
       - otel-collector
     networks:
       - seventysix-network
@@ -274,6 +304,9 @@ volumes:
   pgadmin_data:
     driver: local
     name: seventysix_pgadmin_data
+  redisinsight_data:
+    driver: local
+    name: seventysix_redisinsight_data
   dataprotection_keys:
     driver: local
     name: seventysix_dataprotection_keys
