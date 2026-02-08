@@ -84,8 +84,8 @@ expect(criticalViolations).toHaveLength(0);
 
 | Rule | Pattern |
 |------|---------|
-| Retries | `retries: process.env.CI ? 2 : 0` |
-| Workers | `workers: process.env.CI ? 2 : undefined` |
+| Retries | `retries: process.env.CI ? 1 : 0` |
+| Workers | `workers: process.env.CI ? 4 : undefined` |
 | Platform-specific paths | Guard with `process.platform` check |
 | SSL certificates | Tests use self-signed certs; CI generates via `openssl` |
 

@@ -234,6 +234,12 @@ test.describe("Forgot Password Flow",
 		test.describe("Email Delivery (with MailDev)",
 			() =>
 			{
+				test.beforeAll(
+					async () =>
+					{
+						await EmailTestHelper.waitUntilReady(TIMEOUTS.email);
+					});
+
 				test(
 					"should send password reset email for existing user",
 					async ({ page, authPage }) =>

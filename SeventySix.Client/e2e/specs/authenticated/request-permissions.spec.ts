@@ -4,7 +4,8 @@ import {
 	expect,
 	ROUTES,
 	SELECTORS,
-	PAGE_TEXT
+	PAGE_TEXT,
+	TIMEOUTS
 } from "../../fixtures";
 
 /**
@@ -83,7 +84,7 @@ test.describe("Request Permissions Page",
 							userPage.locator(".roles-list, .no-roles");
 
 						await rolesListOrNoRoles.first()
-							.waitFor({ state: "visible", timeout: 10000 });
+							.waitFor({ state: "visible", timeout: TIMEOUTS.api });
 
 						const messageTextarea =
 							userPage.locator(SELECTORS.requestPermissions.messageTextarea);
@@ -115,7 +116,7 @@ test.describe("Request Permissions Page",
 							userPage.locator(".roles-list, .no-roles");
 
 						await rolesListOrNoRoles.first()
-							.waitFor({ state: "visible", timeout: 10000 });
+							.waitFor({ state: "visible", timeout: TIMEOUTS.api });
 
 						const roleCheckboxes =
 							userPage.locator(SELECTORS.requestPermissions.roleCheckbox);

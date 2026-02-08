@@ -47,6 +47,45 @@ export class EmailTestHelper
 	private static readonly MAILDEV_API_URL: string = "http://localhost:1080";
 
 	/**
+	 * Polls MailDev until it responds or the timeout expires.
+	 * Use in `beforeAll` to ensure MailDev is ready before email tests run.
+	 * @param timeoutMs
+	 * Maximum time to wait in milliseconds.
+	 * @throws
+	 * Error if MailDev does not respond within the timeout.
+	 */
+	static async waitUntilReady(timeoutMs: number = 15000): Promise<void>
+	{
+		const pollingIntervalMs: number = 500;
+		const startTime: number =
+			Date.now();
+
+		while (Date.now() - startTime < timeoutMs)
+		{
+			try
+			{
+				const response: Response =
+					await fetch(`${this.MAILDEV_API_URL}/email`);
+
+				if (response.ok)
+				{
+					return;
+				}
+			}
+			catch
+			{
+				// MailDev not ready yet — retry
+			}
+
+			await new Promise(
+				(resolve) => setTimeout(resolve, pollingIntervalMs));
+		}
+
+		throw new Error(
+			`MailDev did not become available within ${timeoutMs}ms at ${this.MAILDEV_API_URL}`);
+	}
+
+	/**
 	 * Gets all captured emails.
 	 * @returns
 	 * Array of captured emails.

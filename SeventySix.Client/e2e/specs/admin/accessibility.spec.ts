@@ -4,7 +4,8 @@ import {
 	expect,
 	ROUTES,
 	ROUTE_GROUPS,
-	SELECTORS
+	SELECTORS,
+	TIMEOUTS
 } from "../../fixtures";
 import AxeBuilder from "@axe-core/playwright";
 import type { Result } from "axe-core";
@@ -165,7 +166,7 @@ test.describe("Admin Routes - WCAG Accessibility",
 							adminPage.locator(SELECTORS.accessibility.banner);
 
 						await banner.first()
-							.waitFor({ state: "attached", timeout: 10000 });
+							.waitFor({ state: "attached", timeout: TIMEOUTS.api });
 
 						const bannerCount =
 							await banner.count();
