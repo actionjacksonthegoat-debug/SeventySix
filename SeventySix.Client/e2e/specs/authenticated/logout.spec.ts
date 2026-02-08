@@ -62,21 +62,19 @@ test.describe("Logout Flow",
 						await freshUserPage.locator(SELECTORS.layout.userMenuButton).click();
 						await freshUserPage.locator(SELECTORS.layout.logoutButton).click();
 
-						// Wait for navigation to complete - logout should redirect
-						await freshUserPage.waitForURL(
-							(url) =>
-								url.pathname === ROUTES.home
-								|| url.pathname === ROUTES.auth.login,
-							{ timeout: TIMEOUTS.api });
-
-						// Reload to verify session is cleared
-						await freshUserPage.goto(ROUTES.home);
-						await freshUserPage.waitForLoadState("load");
-
-						// User menu should no longer be visible
-						// Uses navigation timeout since this involves page load + auth state resolution
+						// Wait for logout to fully complete (clearAuth runs after async POST)
+						// This ensures the session marker is cleared before we reload
 						await expect(freshUserPage.locator(SELECTORS.layout.userMenuButton))
 							.toBeHidden({ timeout: TIMEOUTS.navigation });
+
+						// Reload to verify session is also cleared server-side
+						await freshUserPage.goto(ROUTES.home);
+						await freshUserPage.waitForLoadState("domcontentloaded");
+
+						// Wait for Angular to bootstrap and resolve auth state
+						// Uses auth timeout since APP_INITIALIZER makes a refresh API call
+						await expect(freshUserPage.locator(SELECTORS.layout.userMenuButton))
+							.toBeHidden({ timeout: TIMEOUTS.auth });
 					});
 
 				test("should redirect to home after logout",
@@ -204,21 +202,17 @@ test.describe("Logout Flow",
 						await freshUserPage.locator(SELECTORS.layout.userMenuButton).click();
 						await freshUserPage.locator(SELECTORS.layout.logoutButton).click();
 
-						// Wait for logout to complete
-						await freshUserPage.waitForURL(
-							(url) =>
-								url.pathname === ROUTES.home
-								|| url.pathname.includes(ROUTES.auth.login),
-							{ timeout: TIMEOUTS.api });
-
-						// Refresh to ensure clean state
-						await freshUserPage.goto(ROUTES.home);
-						await freshUserPage.waitForLoadState("load");
-
-						// User menu button should not be visible for anonymous users
-						// Uses navigation timeout since this involves page load + auth state resolution
+						// Wait for logout to fully complete (clearAuth runs after async POST)
 						await expect(freshUserPage.locator(SELECTORS.layout.userMenuButton))
 							.toBeHidden({ timeout: TIMEOUTS.navigation });
+
+						// Reload to verify session is also cleared server-side
+						await freshUserPage.goto(ROUTES.home);
+						await freshUserPage.waitForLoadState("domcontentloaded");
+
+						// Wait for Angular to bootstrap and resolve auth state
+						await expect(freshUserPage.locator(SELECTORS.layout.userMenuButton))
+							.toBeHidden({ timeout: TIMEOUTS.auth });
 					});
 			});
 	});
