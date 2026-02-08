@@ -2,13 +2,14 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using FluentValidation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using SeventySix.ElectronicNotifications.Emails;
 using SeventySix.Logging;
 using SeventySix.Logging.Jobs;
 using SeventySix.Shared.BackgroundJobs;
 using SeventySix.Shared.Constants;
+using SeventySix.Shared.Registration;
 
 namespace SeventySix.Registration;
 
@@ -65,12 +66,21 @@ public static class BackgroundJobRegistration
 		// Always register settings (needed for ScheduledJobService health status calculation)
 		// Note: Identity-related settings (RefreshTokenCleanup, IpAnonymization) are registered
 		// via IdentityRegistration.AddIdentityDomain()
-		services.Configure<LogCleanupSettings>(
-			configuration.GetSection(LogCleanupSettings.SectionName));
-		services.Configure<DatabaseMaintenanceSettings>(
-			configuration.GetSection(DatabaseMaintenanceSettings.SectionName));
-		services.Configure<EmailQueueSettings>(
-			configuration.GetSection(EmailQueueSettings.SectionName));
+		// Note: EmailQueueSettings is registered via ElectronicNotificationsRegistration (single registration point)
+		services.AddSingleton<IValidator<LogCleanupSettings>, LogCleanupSettingsValidator>();
+		services.AddSingleton<IValidator<DatabaseMaintenanceSettings>, DatabaseMaintenanceSettingsValidator>();
+
+		services
+			.AddOptions<LogCleanupSettings>()
+			.Bind(configuration.GetSection(LogCleanupSettings.SectionName))
+			.ValidateWithFluentValidation()
+			.ValidateOnStart();
+
+		services
+			.AddOptions<DatabaseMaintenanceSettings>()
+			.Bind(configuration.GetSection(DatabaseMaintenanceSettings.SectionName))
+			.ValidateWithFluentValidation()
+			.ValidateOnStart();
 
 		// Skip background job execution if disabled (e.g., in Test environment)
 		bool isBackgroundJobsEnabled =

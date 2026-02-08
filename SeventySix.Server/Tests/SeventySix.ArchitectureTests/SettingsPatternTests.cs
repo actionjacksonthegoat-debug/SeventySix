@@ -3,6 +3,8 @@
 // </copyright>
 
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 using Shouldly;
 using Xunit;
@@ -99,5 +101,89 @@ public class SettingsPatternTests : SourceCodeArchitectureTest
 
 		// Assert
 		violations.ShouldBeEmpty();
+	}
+
+	/// <summary>
+	/// Excluded records that intentionally do not need validators (YAGNI).
+	/// </summary>
+	private static readonly HashSet<string> ExcludedFromValidation =
+		[
+		// Sub-settings validated as part of parent composite validators
+		"LockoutSettings",
+		"PasswordSettings",
+		"Argon2Settings",
+		"AuthRateLimitSettings",
+		"AuthCookieSettings",
+		"TokenSettings",
+		"BreachedPasswordSettings",
+		"OAuthSettings",
+		"OAuthProviderSettings",
+		// Simple boolean toggles or marker records
+		"E2ESeederOptions",
+		// Named cache entries validated by CacheSettingsValidator
+		"NamedCacheSettings",
+		// Sub-settings without independent registration
+		"ValkeySettings",
+		// Request limits validated at registration level
+		"RequestLimitsSettings",
+	];
+
+	[Fact]
+	public void EverySettingsRecord_ShouldHaveValidator()
+	{
+		// Arrange: Find all *Settings/*Options records across all source assemblies
+		IEnumerable<string> settingsFiles =
+			GetSourceFiles("*Settings.cs")
+				.Concat(GetSourceFiles("*Options.cs"));
+
+		Regex recordPattern =
+			new(
+			@"public\s+record\s+(\w+(?:Settings|Options))\b",
+			RegexOptions.Compiled);
+
+		List<string> settingsWithoutValidators = [];
+
+		// Act
+		foreach (string settingsFile in settingsFiles)
+		{
+			string content =
+				ReadFileContent(settingsFile);
+
+			MatchCollection matches =
+				recordPattern.Matches(content);
+
+			foreach (Match match in matches)
+			{
+				string settingsName =
+					match.Groups[1].Value;
+
+				if (ExcludedFromValidation.Contains(settingsName))
+				{
+					continue;
+				}
+
+				// Look for a corresponding validator file in the same directory
+				string directory =
+					Path.GetDirectoryName(settingsFile)!;
+
+				string validatorFileName =
+					$"{settingsName}Validator.cs";
+
+				bool validatorExists =
+					File.Exists(Path.Combine(directory, validatorFileName));
+
+				if (!validatorExists)
+				{
+					string relativePath =
+						GetRelativePath(settingsFile);
+
+					settingsWithoutValidators.Add(
+						$"{relativePath}: {settingsName} (missing {validatorFileName})");
+				}
+			}
+		}
+
+		// Assert
+		settingsWithoutValidators.ShouldBeEmpty();
 	}
 }

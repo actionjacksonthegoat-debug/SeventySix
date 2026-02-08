@@ -12,7 +12,7 @@ namespace SeventySix.Identity;
 /// <remarks>
 /// <para>
 /// HMAC key is a 64-byte secret used to sign and verify challenges.
-/// Must be stored securely in .env file and mapped via environment variables.
+/// Must be stored securely in User Secrets and mapped via configuration.
 /// </para>
 /// <para>
 /// NEVER commit actual key values to appsettings.json or source control.
@@ -34,7 +34,7 @@ public record AltchaSettings
 
 	/// <summary>
 	/// Gets the base64-encoded HMAC key (64 bytes) for signing challenges.
-	/// Stored in .env as ALTCHA_HMAC_KEY.
+	/// Stored in User Secrets as Altcha:HmacKeyBase64.
 	/// Generate using: <c>Convert.ToBase64String(RandomNumberGenerator.GetBytes(64))</c>
 	/// </summary>
 	public string HmacKeyBase64 { get; init; } = string.Empty;

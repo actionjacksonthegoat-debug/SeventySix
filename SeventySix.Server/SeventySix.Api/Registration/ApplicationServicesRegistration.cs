@@ -23,8 +23,8 @@ public static class ApplicationServicesRegistration
 	/// Reads configuration sections:
 	/// - "Resilience" (via ResilienceOptions.SectionName)
 	/// - "OutputCache" (via OutputCacheOptions.SectionName)
-	/// - "RateLimiting" (via ConfigurationSectionConstants.RateLimiting)
-	/// - "RequestLimits" (via ConfigurationSectionConstants.RequestLimits)
+	/// - "RateLimiting" (via RateLimitingSettings.SectionName)
+	/// - "RequestLimits" (via RequestLimitsSettings.SectionName)
 	/// </remarks>
 	/// <param name="services">
 	/// The service collection.
@@ -43,14 +43,9 @@ public static class ApplicationServicesRegistration
 		services.AddSingleton<IValidator<RateLimitingSettings>, RateLimitingSettingsValidator>();
 		services.AddSingleton<IValidator<RequestLimitsSettings>, RequestLimitsSettingsValidator>();
 		services.AddSingleton<IValidator<ResilienceOptions>, ResilienceOptionsValidator>();
+		services.AddSingleton<IValidator<OutputCacheOptions>, OutputCacheOptionsValidator>();
 
-		// Configuration options with FluentValidation
-		services.Configure<ResilienceOptions>(
-			configuration.GetSection(ResilienceOptions.SectionName));
-
-		services.Configure<OutputCacheOptions>(
-			configuration.GetSection(OutputCacheOptions.SectionName));
-
+		// Configuration options with FluentValidation + ValidateOnStart
 		services
 			.AddOptions<ResilienceOptions>()
 			.Bind(configuration.GetSection(ResilienceOptions.SectionName))
@@ -60,17 +55,18 @@ public static class ApplicationServicesRegistration
 		services
 			.AddOptions<OutputCacheOptions>()
 			.Bind(configuration.GetSection(OutputCacheOptions.SectionName))
+			.ValidateWithFluentValidation()
 			.ValidateOnStart();
 
 		services
 			.AddOptions<RateLimitingSettings>()
-			.BindConfiguration(ConfigurationSectionConstants.RateLimiting)
+			.BindConfiguration(RateLimitingSettings.SectionName)
 			.ValidateWithFluentValidation()
 			.ValidateOnStart();
 
 		services
 			.AddOptions<RequestLimitsSettings>()
-			.BindConfiguration(ConfigurationSectionConstants.RequestLimits)
+			.BindConfiguration(RequestLimitsSettings.SectionName)
 			.ValidateWithFluentValidation()
 			.ValidateOnStart();
 

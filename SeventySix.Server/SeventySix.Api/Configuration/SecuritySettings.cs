@@ -32,6 +32,11 @@ namespace SeventySix.Api.Configuration;
 public record SecuritySettings
 {
 	/// <summary>
+	/// Configuration section name for binding.
+	/// </summary>
+	public const string SectionName = "Security";
+
+	/// <summary>
 	/// Gets or sets a value indicating whether HTTPS redirection is enforced globally.
 	/// When true, all HTTP requests are redirected to HTTPS except for explicitly allowed endpoints.
 	/// Must be configured in appsettings.json.

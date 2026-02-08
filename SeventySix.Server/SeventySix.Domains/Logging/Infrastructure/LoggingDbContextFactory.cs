@@ -16,7 +16,7 @@ namespace SeventySix.Logging;
 /// <remarks>
 /// This factory is ONLY used for EF Core tooling (dotnet ef commands).
 /// Runtime context instances are created via dependency injection in Program.cs.
-/// Connection string is loaded from the .env file at repository root.
+/// Connection string is loaded from appsettings.json and User Secrets.
 /// </remarks>
 public class LoggingDbContextFactory
 	: IDesignTimeDbContextFactory<LoggingDbContext>
@@ -35,7 +35,7 @@ public class LoggingDbContextFactory
 		DbContextOptionsBuilder<LoggingDbContext> optionsBuilder =
 			new();
 
-		// Load connection string from .env file (single source of truth)
+		// Load connection string from appsettings.json and User Secrets
 		string connectionString =
 			DesignTimeConnectionStringProvider.GetConnectionString();
 

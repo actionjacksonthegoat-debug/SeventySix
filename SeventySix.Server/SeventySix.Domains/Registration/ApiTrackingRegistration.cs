@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using FluentValidation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SeventySix.ApiTracking;
@@ -60,9 +61,14 @@ public static class ApiTrackingRegistration
 		string connectionString,
 		IConfiguration configuration)
 	{
-		// Configure ThirdPartyApiLimitSettings from appsettings.json
-		services.Configure<ThirdPartyApiLimitSettings>(
-			configuration.GetSection(ThirdPartyApiLimitSettings.SectionName));
+		// Configure ThirdPartyApiLimitSettings with FluentValidation + ValidateOnStart
+		services.AddSingleton<IValidator<ThirdPartyApiLimitSettings>, ThirdPartyApiLimitSettingsValidator>();
+
+		services
+			.AddOptions<ThirdPartyApiLimitSettings>()
+			.Bind(configuration.GetSection(ThirdPartyApiLimitSettings.SectionName))
+			.ValidateWithFluentValidation()
+			.ValidateOnStart();
 
 		// Register ApiTrackingDbContext via shared helper
 		services.AddDomainDbContext<ApiTrackingDbContext>(

@@ -11,6 +11,11 @@ namespace SeventySix.Identity;
 public record AuthSettings
 {
 	/// <summary>
+	/// Configuration section name for binding.
+	/// </summary>
+	public const string SectionName = "Auth";
+
+	/// <summary>
 	/// Gets OAuth provider configurations.
 	/// </summary>
 	public OAuthSettings OAuth { get; init; } = new();

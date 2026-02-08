@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using FluentValidation;
 using Microsoft.Extensions.Caching.StackExchangeRedis;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -54,6 +55,15 @@ public static class FusionCacheRegistration
 
 		services.Configure<CacheSettings>(
 			configuration.GetSection(CacheSettings.SectionName));
+
+		// Register CacheSettings validator and enable ValidateOnStart
+		services.AddSingleton<IValidator<CacheSettings>, CacheSettingsValidator>();
+
+		services
+			.AddOptions<CacheSettings>()
+			.Bind(configuration.GetSection(CacheSettings.SectionName))
+			.ValidateWithFluentValidation()
+			.ValidateOnStart();
 
 		// Skip Valkey in Test environment - use memory-only cache for fast tests
 		if (string.Equals(

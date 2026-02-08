@@ -12,6 +12,11 @@ namespace SeventySix.Identity;
 public record JwtSettings
 {
 	/// <summary>
+	/// Configuration section name for binding.
+	/// </summary>
+	public const string SectionName = "Jwt";
+
+	/// <summary>
 	/// Gets the secret key for signing tokens.
 	/// </summary>
 	public string SecretKey { get; init; } = string.Empty;

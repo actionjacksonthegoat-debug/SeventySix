@@ -16,6 +16,11 @@ namespace SeventySix.ElectronicNotifications.Emails;
 public record EmailSettings
 {
 	/// <summary>
+	/// Configuration section name for binding.
+	/// </summary>
+	public const string SectionName = "Email";
+
+	/// <summary>
 	/// Gets the SMTP server hostname.
 	/// </summary>
 	/// <remarks>

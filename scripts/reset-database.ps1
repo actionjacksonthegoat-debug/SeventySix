@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
 	Resets the SeventySix database to a clean state.
 

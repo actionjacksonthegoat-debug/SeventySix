@@ -300,8 +300,8 @@ public static class WebApplicationExtensions
 			throw new StartupFailedException(
 				StartupFailedReason.Configuration,
 				$"Database connection string could not be built: {exception.Message} "
-					+ "Ensure .env file exists at repository root with DB_PASSWORD set, "
-					+ "or configure Database:Password in user secrets.");
+					+ "Configure Database settings in User Secrets: "
+					+ "dotnet user-secrets set \"Database:Password\" \"your-password\" --project SeventySix.Api");
 		}
 
 		PostgresConnectionInfo connectionInfo =

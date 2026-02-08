@@ -209,8 +209,8 @@ public sealed class RecurringJobSchedulerService(
 		CancellationToken cancellationToken)
 	{
 		EmailSettings emailSettings =
-			configuration.GetSection(ConfigurationSectionConstants.Email).Get<EmailSettings>()
-			?? throw new RequiredConfigurationException(ConfigurationSectionConstants.Email);
+			configuration.GetSection(EmailSettings.SectionName).Get<EmailSettings>()
+			?? throw new RequiredConfigurationException(EmailSettings.SectionName);
 
 		EmailQueueSettings queueSettings =
 			configuration

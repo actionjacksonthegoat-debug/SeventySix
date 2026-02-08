@@ -19,7 +19,8 @@ namespace SeventySix.Api.Configuration;
 public static class StartupValidator
 {
 	/// <summary>
-	/// List of configuration keys that must have non-placeholder values in production.
+	/// Configuration keys that must have non-placeholder values.
+	/// Validated as warnings in non-Production, errors in Production.
 	/// </summary>
 	private static readonly string[] RequiredSecrets =
 		[
@@ -30,7 +31,7 @@ public static class StartupValidator
 		"Email:SmtpUsername",
 		"Email:SmtpPassword",
 		"Email:FromAddress",
-		"Altcha:HmacKeyBase64"
+		"Altcha:HmacKeyBase64",
 	];
 
 	/// <summary>
@@ -62,15 +63,6 @@ public static class StartupValidator
 		ArgumentNullException.ThrowIfNull(environment);
 		ArgumentNullException.ThrowIfNull(logger);
 
-		// Only enforce strict validation in production
-		if (!environment.IsProduction())
-		{
-			logger.LogInformation(
-				"Skipping startup configuration validation in {Environment} environment",
-				environment.EnvironmentName);
-			return;
-		}
-
 		List<string> missingSettings = [];
 		List<string> placeholderSettings = [];
 
@@ -91,6 +83,30 @@ public static class StartupValidator
 			}
 		}
 
+		// Non-Production: warn about missing secrets without failing startup
+		if (!environment.IsProduction())
+		{
+			List<string> allMissing =
+				[.. missingSettings, .. placeholderSettings];
+
+			if (allMissing.Count > 0)
+			{
+				logger.LogWarning(
+					"Configuration keys not set: {MissingKeys}. "
+						+ "Set via User Secrets: 'npm run secrets:set -- -Key \"{{Key}}\" -Value \"{{Value}}\"'",
+					string.Join(", ", allMissing));
+			}
+			else
+			{
+				logger.LogInformation(
+					"Startup configuration validation passed for {Count} required settings",
+					RequiredSecrets.Length);
+			}
+
+			return;
+		}
+
+		// Production: strict validation — fail fast on missing or placeholder values
 		if (missingSettings.Count > 0 || placeholderSettings.Count > 0)
 		{
 			LogValidationErrors(
@@ -99,9 +115,9 @@ public static class StartupValidator
 				placeholderSettings);
 
 			throw new InvalidOperationException(
-				$"Configuration validation failed. Missing: [{string.Join(", ", missingSettings)}]. " +
-				$"Placeholder values: [{string.Join(", ", placeholderSettings)}]. " +
-				"See logs for details.");
+				$"Configuration validation failed. Missing: [{string.Join(", ", missingSettings)}]. "
+				+ $"Placeholder values: [{string.Join(", ", placeholderSettings)}]. "
+				+ "See logs for details.");
 		}
 
 		logger.LogInformation(
@@ -141,7 +157,8 @@ public static class StartupValidator
 		}
 
 		logger.LogError(
-			"Ensure all required secrets are configured via environment variables or .env file. " +
-			"See .env.example for the complete list of required variables.");
+			"Ensure all required secrets are configured via User Secrets (Development), "
+			+ "appsettings.{{Environment}}.json (Test/E2E), or environment variables (Production). "
+			+ "Run 'npm run secrets:init' to initialize Development secrets.");
 	}
 }

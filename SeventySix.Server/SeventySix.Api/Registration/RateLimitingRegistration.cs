@@ -60,16 +60,16 @@ public static class RateLimitingRegistration
 		IConfiguration configuration)
 	{
 		RateLimitingSettings globalSettings =
-			configuration.GetSection(ConfigurationSectionConstants.RateLimiting).Get<RateLimitingSettings>()
+			configuration.GetSection(RateLimitingSettings.SectionName).Get<RateLimitingSettings>()
 			?? throw new InvalidOperationException(
-				$"{ConfigurationSectionConstants.RateLimiting} configuration section is required");
+				$"{RateLimitingSettings.SectionName} configuration section is required");
 
 		AuthRateLimitSettings authSettings =
 			configuration
-				.GetSection(ConfigurationSectionConstants.AuthNested.RateLimit)
+				.GetSection($"{AuthSettings.SectionName}:RateLimit")
 				.Get<AuthRateLimitSettings>()
 			?? throw new InvalidOperationException(
-				$"{ConfigurationSectionConstants.AuthNested.RateLimit} configuration section is required");
+				$"{AuthSettings.SectionName}:RateLimit configuration section is required");
 
 		if (!globalSettings.Enabled)
 		{

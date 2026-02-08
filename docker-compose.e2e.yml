@@ -88,7 +88,7 @@ services:
             - Cache__OutputCache__Policies__logs__Enabled=false
             - Cache__OutputCache__Policies__health__Enabled=false
             - Cache__OutputCache__Policies__thirdpartyrequests__Enabled=false
-            # Email (MailDev)
+            # Email (MailDev — no auth required, empty credentials skip SMTP authentication)
             - Email__Enabled=true
             - Email__UseSsl=false
             - Email__SmtpHost=maildev
@@ -101,7 +101,7 @@ services:
             - Email__Queue__ProcessingIntervalSeconds=5
             - Email__Queue__BatchSize=10
             # JWT (test secret - minimum 64 chars for security)
-            - Jwt__SecretKey=E2E_Test_JWT_Secret_Key_That_Is_At_Least_64_Characters_Long_For_Security
+            - Jwt__SecretKey=nR4tY6uH9bE3dF5gA1cZ0iL8oS2wX4nM7qJ6kR9pT3uV5yBxK7mQ2pWvN8jzD2fH4j
             # Seeders
             - AdminSeeder__Enabled=true
             - AdminSeeder__InitialPassword=SecureE2ETestPassword123!
@@ -127,7 +127,11 @@ services:
             # Disabled for E2E (fast tests)
             - OpenTelemetry__Enabled=false
             - Altcha__Enabled=false
+            - Altcha__HmacKeyBase64=ZTJlLXRlc3QtaG1hYy1rZXktdGhhdC1pcy1hdC1sZWFzdC0zMi1ieXRlcw==
             - RateLimiting__Enabled=false
+            # OAuth (E2E placeholder values — OAuth flow not tested in E2E)
+            - Auth__OAuth__Providers__0__ClientId=e2e-github-client-id
+            - Auth__OAuth__Providers__0__ClientSecret=e2e-github-client-secret
             # Runtime stability - prevents SIGSEGV from diagnostic port socket creation
             - DOTNET_EnableDiagnostics=0
             - ResponseCompression__Enabled=false

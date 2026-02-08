@@ -2,13 +2,9 @@
 # Handles both clean deployments and existing data scenarios
 # Automatic migrations ensure database is always up-to-date
 #
-# Environment Variables (from .env at repository root):
-#   - DB_NAME: Database name (defaults to seventysix)
-#   - DB_USER: Database username (defaults to postgres)
-#   - DB_PASSWORD: PostgreSQL password
-#   - JWT_SECRET_KEY: 64-char secret for JWT token signing
-#   - GITHUB_CLIENT_ID/SECRET: GitHub OAuth credentials
-#   - EMAIL_*: Brevo SMTP credentials for email functionality
+# Secrets are injected via environment variables from the deployment platform
+# (GitHub Actions Secrets, Docker Swarm secrets, Kubernetes secrets, etc.).
+# No .env file is used. All ${VAR:?...} references must be set externally.
 
 services:
   # Valkey - Open Source Redis-Compatible Cache (BSD licensed, Linux Foundation)
@@ -88,12 +84,10 @@ services:
   database:
     image: postgres:18-alpine
     container_name: seventysix-postgres-prod
-    env_file:
-      - .env
     environment:
       POSTGRES_DB: ${DB_NAME:-seventysix}
       POSTGRES_USER: ${DB_USER:-postgres}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set in .env}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set}
       PGDATA: /var/lib/postgresql/data/pgdata
     ports:
       - "5433:5432"
@@ -123,8 +117,6 @@ services:
       context: ./SeventySix.Server
       dockerfile: Dockerfile.production
     container_name: seventysix-api-prod
-    env_file:
-      - .env
     ports:
       - "5085:8080"
     environment:
@@ -135,18 +127,31 @@ services:
       - Database__Port=5432
       - Database__Name=${DB_NAME:-seventysix}
       - Database__User=${DB_USER:-postgres}
-      - Database__Password=${DB_PASSWORD:?DB_PASSWORD must be set in .env}
+      - Database__Password=${DB_PASSWORD:?DB_PASSWORD must be set}
+      # Migration entrypoint uses $DB_HOST, $DB_NAME, $DB_USER, $DB_PASSWORD for psql
+      - DB_HOST=database
+      - DB_NAME=${DB_NAME:-seventysix}
+      - DB_USER=${DB_USER:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:?DB_PASSWORD must be set}
       # JWT Authentication
-      - Jwt__SecretKey=${JWT_SECRET_KEY:?JWT_SECRET_KEY must be set in .env}
+      - Jwt__SecretKey=${JWT_SECRET_KEY:?JWT_SECRET_KEY must be set}
       # GitHub OAuth
-      - Auth__OAuth__Providers__0__ClientId=${GITHUB_CLIENT_ID:?GITHUB_CLIENT_ID must be set in .env}
-      - Auth__OAuth__Providers__0__ClientSecret=${GITHUB_CLIENT_SECRET:?GITHUB_CLIENT_SECRET must be set in .env}
+      - Auth__OAuth__Providers__0__ClientId=${GITHUB_CLIENT_ID:?GITHUB_CLIENT_ID must be set}
+      - Auth__OAuth__Providers__0__ClientSecret=${GITHUB_CLIENT_SECRET:?GITHUB_CLIENT_SECRET must be set}
       # Email Configuration
-      - Email__SmtpUsername=${EMAIL_SMTP_USERNAME:?EMAIL_SMTP_USERNAME must be set in .env}
-      - Email__SmtpPassword=${EMAIL_SMTP_PASSWORD:?EMAIL_SMTP_PASSWORD must be set in .env}
-      - Email__FromAddress=${EMAIL_FROM_ADDRESS:?EMAIL_FROM_ADDRESS must be set in .env}
+      - Email__SmtpUsername=${EMAIL_SMTP_USERNAME:?EMAIL_SMTP_USERNAME must be set}
+      - Email__SmtpPassword=${EMAIL_SMTP_PASSWORD:?EMAIL_SMTP_PASSWORD must be set}
+      - Email__FromAddress=${EMAIL_FROM_ADDRESS:?EMAIL_FROM_ADDRESS must be set}
       # ALTCHA (Proof-of-Work) - enabled by default, uses self-hosted verification
       - Altcha__Enabled=true
+      - Altcha__HmacKeyBase64=${ALTCHA_HMAC_KEY:?ALTCHA_HMAC_KEY must be set}
+      # Admin Seeding
+      - AdminSeeder__Email=${ADMIN_EMAIL:-admin@seventysix.local}
+      - AdminSeeder__InitialPassword=${ADMIN_PASSWORD:?ADMIN_PASSWORD must be set}
+      # Data Protection
+      - DataProtection__UseCertificate=${DATA_PROTECTION_USE_CERTIFICATE:-true}
+      - DataProtection__CertificatePath=${DATA_PROTECTION_CERTIFICATE_PATH:-/app/keys/dataprotection.pfx}
+      - DataProtection__CertificatePassword=${DATA_PROTECTION_CERTIFICATE_PASSWORD:?DATA_PROTECTION_CERTIFICATE_PASSWORD must be set}
       # CORS - Use HTTPS for all external origins
       - Cors__AllowedOrigins__0=https://localhost:8080
       - Cors__AllowedOrigins__1=https://localhost:4200
@@ -272,7 +277,7 @@ services:
       - "3000:3000"
     environment:
       - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
-      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:?GRAFANA_ADMIN_PASSWORD must be set in .env}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:?GRAFANA_ADMIN_PASSWORD must be set}
       - GF_USERS_DEFAULT_THEME=dark
       - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer

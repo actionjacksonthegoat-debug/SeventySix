@@ -12,8 +12,8 @@ namespace SeventySix.Api.Configuration;
 /// </summary>
 /// <remarks>
 /// Provides a single source of truth for connection string construction.
-/// Builds from Database:* configuration values which are mapped from
-/// DB_* environment variables via <see cref="EnvironmentVariableMappingExtensions"/>.
+/// Builds from Database:* configuration values provided via User Secrets
+/// (Development), appsettings (Test/E2E), or environment variables (Production).
 /// </remarks>
 public static class ConnectionStringBuilder
 {
@@ -22,7 +22,8 @@ public static class ConnectionStringBuilder
 	/// </summary>
 	/// <remarks>
 	/// Builds from Database:Host, Database:Port, Database:Name, Database:User, Database:Password.
-	/// These values are mapped from DB_* environment variables loaded from the .env file.
+	/// These values are provided via User Secrets (Development), appsettings (Test/E2E),
+	/// or environment variables (Production).
 	/// </remarks>
 	/// <param name="configuration">
 	/// The application configuration.

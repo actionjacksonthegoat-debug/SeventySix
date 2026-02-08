@@ -380,6 +380,9 @@ FodyWeavers.xsd
 # User-specific configuration files with sensitive data
 appsettings.*.local.json
 **/appsettings.Production.json
+
+# Not used in this project — secrets are loaded as shell env vars from user-secrets.
+# Kept in gitignore as a safety net.
 .env
 .env.local
 .env.production

@@ -154,7 +154,7 @@ public class DataProtectionRegistrationTests
 	}
 
 	[Fact]
-	public void AddConfiguredDataProtection_WithMissingCertificate_InDevelopment_FallbackDisabled_ValidationFailsAsync()
+	public void AddConfiguredDataProtection_WithMissingCertificate_InDevelopment_FallbackDisabled_ThrowsInvalidOperationException()
 	{
 		// Arrange
 		Dictionary<string, string?> configurationValues =
@@ -179,23 +179,14 @@ public class DataProtectionRegistrationTests
 		environment.EnvironmentName =
 			Environments.Development;
 
-		// Act
-		services.AddConfiguredDataProtection(
-			configuration,
-			environment);
+		// Act & Assert - Fail-fast: throws when certificate is required but fallback is disabled
+		InvalidOperationException exception =
+			Should.Throw<InvalidOperationException>(
+				() => services.AddConfiguredDataProtection(
+					configuration,
+					environment));
 
-		ServiceProvider provider =
-			services.BuildServiceProvider();
-
-		// Assert - Should throw even in development when fallback is disabled
-		Should.Throw<OptionsValidationException>(
-			() =>
-			{
-				IOptions<AppDataProtectionOptions> dataProtectionOptions =
-					provider.GetRequiredService<
-						IOptions<AppDataProtectionOptions>>();
-				_ =
-					dataProtectionOptions.Value;
-			});
+		exception.Message.ShouldContain(
+			"Data Protection certificate is required but could not be loaded");
 	}
 }

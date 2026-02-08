@@ -10,13 +10,16 @@ namespace SeventySix.Api.Configuration;
 /// in Docker environments.
 /// </para>
 /// <para>
-/// Configuration is loaded from the <c>DataProtection</c> section in appsettings
-/// and can be overridden via environment variables mapped by
-/// <see cref="EnvironmentVariableMappingExtensions"/>.
+/// Configuration is loaded from the <c>DataProtection</c> section in appsettings.
 /// </para>
 /// </remarks>
 public record AppDataProtectionOptions
 {
+	/// <summary>
+	/// Configuration section name for binding.
+	/// </summary>
+	public const string SectionName = "DataProtection";
+
 	/// <summary>
 	/// Directory path where data protection keys are stored.
 	/// </summary>
@@ -59,7 +62,7 @@ public record AppDataProtectionOptions
 	/// Password for the certificate file at <see cref="CertificatePath"/>.
 	/// </summary>
 	/// <remarks>
-	/// Should be stored in .env file, never in appsettings.json.
+	/// Should be stored in User Secrets (Development) or environment variables (Production).
 	/// </remarks>
 	public string? CertificatePassword { get; init; }
 
