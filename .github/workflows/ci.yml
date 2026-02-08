@@ -119,9 +119,75 @@ jobs:
                   path: SeventySix.Server/TestResults/**/coverage.cobertura.xml
                   retention-days: 7
 
+    e2e:
+        name: E2E Tests
+        needs: [client-build, server-build]
+        runs-on: ubuntu-latest
+        # NOTE: E2E tests use Docker Compose for infrastructure (database, cache, API, client).
+        # ubuntu-latest includes Docker and Docker Compose by default.
+        # Playwright runs on the host against Dockerized services.
+
+        defaults:
+            run:
+                working-directory: SeventySix.Client
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "22.x"
+                  cache: "npm"
+                  cache-dependency-path: SeventySix.Client/package-lock.json
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Generate SSL certificate
+              run: |
+                  mkdir -p ssl
+                  openssl req -x509 -newkey rsa:2048 \
+                      -keyout ssl/dev-certificate.key \
+                      -out ssl/dev-certificate.crt \
+                      -days 365 -nodes \
+                      -subj "/CN=localhost/O=SeventySix" \
+                      -addext "subjectAltName=DNS:localhost,IP:127.0.0.1,IP:::1"
+                  openssl pkcs12 -export \
+                      -out ssl/dev-certificate.pfx \
+                      -inkey ssl/dev-certificate.key \
+                      -in ssl/dev-certificate.crt \
+                      -passout pass:dev-ssl-password
+
+            - name: Install Playwright browsers
+              run: npx playwright install --with-deps chromium
+
+            - name: Run E2E tests
+              run: npm run test:e2e
+              env:
+                  CI: true
+                  NODE_EXTRA_CA_CERTS: ssl/dev-certificate.crt
+
+            - name: Upload Playwright report
+              uses: actions/upload-artifact@v4
+              if: always()
+              with:
+                  name: playwright-report
+                  path: SeventySix.Client/playwright-report/
+                  retention-days: 7
+
+            - name: Upload test results
+              uses: actions/upload-artifact@v4
+              if: always()
+              with:
+                  name: e2e-test-results
+                  path: SeventySix.Client/test-results/
+                  retention-days: 7
+
     quality-gate:
         name: Quality Gate
-        needs: [client-build, server-build]
+        needs: [client-build, server-build, e2e]
         runs-on: ubuntu-latest
 
         steps:
@@ -133,6 +199,7 @@ jobs:
                   echo ""
                   echo "  Client Build & Test .... PASSED"
                   echo "  Server Build & Test .... PASSED"
+                  echo "  E2E Tests .............. PASSED"
                   echo ""
                   echo "  Checks enforced:"
                   echo "    - ESLint (zero errors)"
@@ -141,6 +208,7 @@ jobs:
                   echo "    - Vitest (all tests pass)"
                   echo "    - dotnet build Release (zero warnings)"
                   echo "    - dotnet test (all tests pass, coverage collected)"
+                  echo "    - Playwright E2E (all tests pass)"
                   echo ""
                   echo "============================================"
                   echo "  Quality Gate: PASSED"

@@ -73,3 +73,13 @@ Import direction: `Shared ← Domains ← Api` (never reverse)
 - Multiple entities: Consolidated `SaveChangesAsync`
 - Read-then-write: `TransactionManager`
 
+## Cross-Platform (Windows + Linux)
+
+| ❌ NEVER                              | ✅ ALWAYS                                   |
+| ------------------------------------- | ------------------------------------------- |
+| `"folder\\file.txt"` hardcoded paths  | `Path.Combine("folder", "file.txt")`        |
+| `Environment.SpecialFolder.Windows`   | `Path.GetTempPath()`, portable APIs         |
+| `/bin/bash` or `cmd.exe` assumptions  | Cross-platform alternatives                 |
+| Case-insensitive filename assumptions | Consistent casing (Linux is case-sensitive) |
+
+**Rule**: CI runs on `ubuntu-latest`. All server code MUST build and run on Linux.

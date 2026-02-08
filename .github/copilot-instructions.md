@@ -166,6 +166,25 @@ readonly clicked = output<void>();               // Signal outputs
 
 ---
 
+## Cross-Platform Compatibility (CRITICAL)
+
+> All code MUST work on both **Windows** and **Linux** (CI runs on `ubuntu-latest`).
+
+| Area             | ❌ NEVER                                    | ✅ ALWAYS                                                              |
+| ---------------- | ------------------------------------------- | ---------------------------------------------------------------------- |
+| File paths (C#)  | `"folder\\file.txt"`, string concatenation  | `Path.Combine("folder", "file.txt")`                                   |
+| File paths (TS)  | `"folder\\file.ts"`, hardcoded `\\`         | `path.join("folder", "file.ts")` or `/` separator                      |
+| Line endings     | Assume `\r\n`                               | Use `.gitattributes`, `.editorconfig` for normalization                |
+| Shell scripts    | PowerShell-only (`.ps1`) for CI/automation  | Dual support: `.ps1` + shell fallback, or cross-platform JS            |
+| Case sensitivity | `"MyFile.ts"` vs `"myfile.ts"` interchanged | Consistent casing everywhere (Linux is case-sensitive)                 |
+| Temp paths       | `C:\Temp\...`                               | `Path.GetTempPath()` (C#), `os.tmpdir()` (Node.js)                     |
+| Path separators  | `Path.DirectorySeparatorChar` assumptions   | `Path.Combine` (C#), `path.join` (Node.js)                             |
+| Environment vars | `%VAR%` (CMD-only)                          | `process.env.VAR` (Node.js), `Environment.GetEnvironmentVariable` (C#) |
+
+**Rule**: Before merging, verify the code would work on Linux—CI will catch failures.
+
+---
+
 ## E2E Testing (Quick Reference)
 
 | Rule       | Pattern                                              |

@@ -92,3 +92,13 @@ TestBed.configureTestingModule({
 **Forbidden**: `fakeAsync`, `tick`, `NgZone`
 **Use instead**: `TestBed.flushEffects()`, `jasmine.clock().tick()`
 
+## Cross-Platform (Windows + Linux)
+
+| ❌ NEVER                            | ✅ ALWAYS                                         |
+| ----------------------------------- | ------------------------------------------------- |
+| `"folder\\file.ts"` hardcoded `\\`  | `path.join("folder", "file.ts")` or `/` separator |
+| Case-insensitive import assumptions | Consistent casing (Linux is case-sensitive)       |
+| `process.platform` without fallback | Conditional with both Windows + Linux paths       |
+| PowerShell-only CI scripts          | Cross-platform Node.js scripts or dual support    |
+
+**Rule**: CI runs on `ubuntu-latest`. All build/test scripts MUST work on Linux.

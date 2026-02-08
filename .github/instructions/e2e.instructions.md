@@ -79,6 +79,19 @@ expect(criticalViolations).toHaveLength(0);
 | `await page.waitForNavigation()` | `await expect(page).toHaveURL(/pattern/)` |
 | Hardcoded strings | `PAGE_TEXT.headings.title` |
 | Test order dependencies | Each test fully independent |
+| `TIMEOUTS.api` after full navigation | `TIMEOUTS.navigation` for post-navigation + auth checks |
+
+## CI Compatibility (CRITICAL)
+
+| Rule | Pattern |
+|------|---------|
+| Retries | `retries: process.env.CI ? 2 : 0` |
+| Workers | `workers: process.env.CI ? 2 : undefined` |
+| Post-navigation asserts | Use `TIMEOUTS.navigation` (15s), not `TIMEOUTS.api` (10s) |
+| Platform-specific paths | Guard with `process.platform` check |
+| SSL certificates | Tests use self-signed certs; CI generates via `openssl` |
+
+**Rule**: E2E tests run on `ubuntu-latest` in CI. Never assume Windows-only tools.
 
 ## Page Object Pattern
 
