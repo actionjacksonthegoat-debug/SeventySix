@@ -169,6 +169,25 @@ jobs:
                   CI: true
                   NODE_EXTRA_CA_CERTS: ssl/dev-certificate.crt
 
+            - name: Show failed test summary
+              if: failure()
+              run: |
+                  echo "============================================"
+                  echo "  Failed E2E Test Summary"
+                  echo "============================================"
+                  if [ -d "test-results" ]; then
+                      echo ""
+                      echo "Failed test traces:"
+                      find test-results -name "*.zip" -o -name "*.png" -o -name "*.webm" | head -50
+                      echo ""
+                  fi
+                  if [ -f "playwright-report/index.html" ]; then
+                      echo "Playwright HTML report available in artifacts."
+                  else
+                      echo "No Playwright report generated — failure likely occurred during setup."
+                  fi
+                  echo "============================================"
+
             - name: Upload Playwright report
               uses: actions/upload-artifact@v4
               if: always()

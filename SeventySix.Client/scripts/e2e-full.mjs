@@ -166,6 +166,44 @@ function teardown()
 }
 
 /**
+ * Dumps diagnostic information from all E2E containers.
+ * Called on setup or test failure BEFORE teardown so containers are still available.
+ * @param phase
+ * The phase that failed ("Setup" or "Tests").
+ */
+function dumpDiagnostics(phase)
+{
+	console.log(`\n${"!".repeat(60)}`);
+	console.log(`  DIAGNOSTIC DUMP — ${phase} failed`);
+	console.log(`${"!".repeat(60)}\n`);
+
+	// Container status
+	runCommand(
+		`docker compose -f ${DOCKER_COMPOSE_FILE} ps -a`,
+		"Container Status");
+
+	// Individual container logs (most useful → least useful order)
+	const containers =
+		["seventysix-api-e2e", "seventysix-client-e2e", "seventysix-postgres-e2e", "seventysix-valkey-e2e", "seventysix-maildev-e2e"];
+
+	for (const container of containers)
+	{
+		runCommand(
+			`docker logs ${container} --tail 200 2>&1 || true`,
+			`Logs: ${container}`);
+	}
+
+	// Docker events (recent container lifecycle events)
+	runCommand(
+		`docker events --since 5m --until 0s --filter type=container --format "{{.Time}} {{.Action}} {{.Actor.Attributes.name}}" 2>&1 || true`,
+		"Recent Docker Events");
+
+	console.log(`\n${"!".repeat(60)}`);
+	console.log("  END DIAGNOSTIC DUMP");
+	console.log(`${"!".repeat(60)}\n`);
+}
+
+/**
  * Main execution flow for E2E tests.
  * Always runs teardown regardless of setup or test failures.
  */
@@ -185,6 +223,8 @@ function main()
 		console.error("\n[FAIL] Setup failed - skipping tests\n");
 		testExitCode =
 			setupExitCode;
+
+		dumpDiagnostics("Setup");
 	}
 	else
 	{
@@ -199,6 +239,8 @@ function main()
 		else
 		{
 			console.error(`\n[FAIL] E2E tests failed with exit code: ${testExitCode}\n`);
+
+			dumpDiagnostics("Tests");
 		}
 	}
 
