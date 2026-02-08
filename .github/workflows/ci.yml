@@ -159,6 +159,8 @@ jobs:
                       -inkey ssl/dev-certificate.key \
                       -in ssl/dev-certificate.crt \
                       -passout pass:dev-ssl-password
+                  # Make cert files readable by Docker container's non-root user (APP_UID 1654)
+                  chmod 644 ssl/dev-certificate.pfx ssl/dev-certificate.crt ssl/dev-certificate.key
 
             - name: Install Playwright browsers
               run: npx playwright install --with-deps chromium
