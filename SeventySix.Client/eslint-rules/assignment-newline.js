@@ -36,7 +36,7 @@ export default {
 		schema: []
 	},
 	create(context) {
-		const sourceCode = context.sourceCode || context.getSourceCode();
+		const sourceCode = context.sourceCode;
 
 		/**
 		 * Check if the right-hand side is a simple value that should be kept on same line

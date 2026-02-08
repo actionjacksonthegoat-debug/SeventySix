@@ -24,8 +24,7 @@ $portsToClean = @(4200, 7074, 5086)
 # Include 'cmd' since Angular is launched via `cmd /k npm start`
 $allowedProcessNames = @("node", "dotnet", "ng", "cmd")
 
-if (-not $Quiet)
-{
+if (-not $Quiet) {
 	Write-Host ""
 	Write-Host "========================================" -ForegroundColor Cyan
 	Write-Host "  Port Cleanup" -ForegroundColor Cyan
@@ -35,49 +34,40 @@ if (-not $Quiet)
 
 $killedAny = $false
 
-foreach ($port in $portsToClean)
-{
-	try
-	{
+foreach ($port in $portsToClean) {
+	try {
 		# Find processes listening on this port (exclude Docker - those are handled separately)
 		$connections =
-			Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue |
-			Where-Object {
-				$proc = Get-Process -Id $_.OwningProcess -ErrorAction SilentlyContinue
-				$proc -and $proc.ProcessName -notmatch "docker|com\.docker"
-			}
+		Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue |
+		Where-Object {
+			$proc = Get-Process -Id $_.OwningProcess -ErrorAction SilentlyContinue
+			$proc -and $proc.ProcessName -notmatch "docker|com\.docker"
+		}
 
-		foreach ($conn in $connections)
-		{
+		foreach ($conn in $connections) {
 			$proc = Get-Process -Id $conn.OwningProcess -ErrorAction SilentlyContinue
-			if ($proc)
-			{
+			if ($proc) {
 				$procName = $proc.ProcessName.ToLower()
 
 				# Safety check - only kill known development processes
 				$isAllowed = $allowedProcessNames | Where-Object { $procName -like "*$_*" }
 
-				if ($isAllowed)
-				{
-					if (-not $Quiet)
-					{
+				if ($isAllowed) {
+					if (-not $Quiet) {
 						Write-Host "Killing $($proc.ProcessName) (PID: $($proc.Id)) on port $port" -ForegroundColor Yellow
 					}
 					Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
 					$killedAny = $true
 				}
-				else
-				{
-					if (-not $Quiet)
-					{
+				else {
+					if (-not $Quiet) {
 						Write-Host "Skipping $($proc.ProcessName) on port $port (not in allowed list)" -ForegroundColor DarkGray
 					}
 				}
 			}
 		}
 	}
-	catch
-	{
+	catch {
 		# Port not in use or access denied - that's fine
 	}
 }
@@ -85,17 +75,15 @@ foreach ($port in $portsToClean)
 # Kill orphaned PowerShell windows running Angular client
 # These are spawned by start-dev.ps1 and may remain open after Node is killed
 $angularTerminals =
-	Get-Process powershell -ErrorAction SilentlyContinue |
-	Where-Object {
-		$commandLine =
-			(Get-CimInstance Win32_Process -Filter "ProcessId = $($_.Id)" -ErrorAction SilentlyContinue).CommandLine
-		$commandLine -and ($commandLine -match "npm\s+start" -or $commandLine -match "ng\s+serve")
-	}
+Get-Process powershell -ErrorAction SilentlyContinue |
+Where-Object {
+	$commandLine =
+	(Get-CimInstance Win32_Process -Filter "ProcessId = $($_.Id)" -ErrorAction SilentlyContinue).CommandLine
+	$commandLine -and ($commandLine -match "npm\s+start" -or $commandLine -match "ng\s+serve")
+}
 
-foreach ($terminal in $angularTerminals)
-{
-	if (-not $Quiet)
-	{
+foreach ($terminal in $angularTerminals) {
+	if (-not $Quiet) {
 		Write-Host "Killing Angular PowerShell terminal (PID: $($terminal.Id))" -ForegroundColor Yellow
 	}
 	Stop-Process -Id $terminal.Id -Force -ErrorAction SilentlyContinue
@@ -104,33 +92,30 @@ foreach ($terminal in $angularTerminals)
 
 # Kill orphaned cmd.exe windows running Angular client (spawned by start-dev.ps1)
 # The script uses `cmd /k npm start` which creates a cmd.exe process
+# Only match `npm start` — DO NOT match "SeventySix.Client" alone, as that
+# would also kill the cmd.exe wrapper npm uses for E2E test scripts.
 $angularCmdTerminals =
-	Get-Process cmd -ErrorAction SilentlyContinue |
-	Where-Object {
-		$commandLine =
-			(Get-CimInstance Win32_Process -Filter "ProcessId = $($_.Id)" -ErrorAction SilentlyContinue).CommandLine
-		$commandLine -and ($commandLine -match "npm\s+start" -or $commandLine -match "SeventySix\.Client")
-	}
+Get-Process cmd -ErrorAction SilentlyContinue |
+Where-Object {
+	$commandLine =
+	(Get-CimInstance Win32_Process -Filter "ProcessId = $($_.Id)" -ErrorAction SilentlyContinue).CommandLine
+	$commandLine -and ($commandLine -match "npm\s+start" -or $commandLine -match "ng\s+serve")
+}
 
-foreach ($cmdTerminal in $angularCmdTerminals)
-{
-	if (-not $Quiet)
-	{
+foreach ($cmdTerminal in $angularCmdTerminals) {
+	if (-not $Quiet) {
 		Write-Host "Killing Angular cmd terminal (PID: $($cmdTerminal.Id))" -ForegroundColor Yellow
 	}
 	Stop-Process -Id $cmdTerminal.Id -Force -ErrorAction SilentlyContinue
 	$killedAny = $true
 }
 
-if (-not $Quiet)
-{
-	if ($killedAny)
-	{
+if (-not $Quiet) {
+	if ($killedAny) {
 		Write-Host ""
 		Write-Host "Port cleanup complete" -ForegroundColor Green
 	}
-	else
-	{
+	else {
 		Write-Host "No processes to clean up" -ForegroundColor DarkGray
 	}
 	Write-Host ""

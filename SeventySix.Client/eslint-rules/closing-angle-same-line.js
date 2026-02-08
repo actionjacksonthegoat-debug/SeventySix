@@ -27,7 +27,7 @@ export default {
 
 	create(context)
 	{
-		const sourceCode = context.sourceCode || context.getSourceCode();
+		const sourceCode = context.sourceCode;
 
 		/**
 		 * Check if there's unwanted whitespace/newline before closing angle bracket

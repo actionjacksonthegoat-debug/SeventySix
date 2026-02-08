@@ -95,9 +95,9 @@ jobs:
                   --verbosity normal
                   --collect:"XPlat Code Coverage"
                   --results-directory ./TestResults
-                  --logger "trx;LogFileName=test-results.trx"
+                  --logger "trx"
 
-            - name: Publish test results
+            - name: Publish server test results
               uses: EnricoMi/publish-unit-test-result-action@v2
               if: always()
               with:
@@ -204,6 +204,7 @@ jobs:
               with:
                   name: e2e-test-results
                   path: SeventySix.Client/test-results/
+                  if-no-files-found: ignore
                   retention-days: 7
 
     quality-gate:

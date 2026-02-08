@@ -264,8 +264,12 @@ function main()
 	console.log(`  Teardown: ${teardownExitCode === 0 ? "[PASS]" : "[WARN] Issues"}`);
 	console.log("=".repeat(60) + "\n");
 
-	// Exit with test exit code (or setup code if setup failed)
-	process.exit(testExitCode);
+	// Set exit code and let Node.js exit naturally after the event loop drains.
+	// Using process.exitCode instead of process.exit() ensures all stdio pipes
+	// (especially Docker's stderr output) are fully flushed before termination,
+	// preventing npm from misinterpreting a broken pipe as a script failure.
+	process.exitCode =
+		testExitCode;
 }
 
 main();

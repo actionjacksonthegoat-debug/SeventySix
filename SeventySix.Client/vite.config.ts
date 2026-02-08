@@ -2,6 +2,7 @@
 import path from "node:path";
 import { defineConfig } from "vite";
 import angular from "@analogjs/vite-plugin-angular";
+import tsconfigPaths from "vite-tsconfig-paths";
 
 const srcRoot: string =
 	path.resolve(__dirname, "src");
@@ -20,57 +21,15 @@ export default defineConfig(({ mode }) => {
 
 	return {
 	plugins: [
+		tsconfigPaths({ root: __dirname }),
 		angular({ tsconfig: tsconfigPath }),
 	],
 	resolve: {
 		alias: [
 			{
+				// Dynamic environment file swap (mode-dependent — cannot be in tsconfig)
 				find: /^@environments\/environment$/,
 				replacement: path.join(srcRoot, envFile),
-			},
-			{
-				find: /^@shared(\/.*)?$/,
-				replacement: `${srcRoot}/app/shared$1`,
-			},
-			{
-				find: /^@testing(\/.*)?$/,
-				replacement: `${srcRoot}/app/shared/testing$1`,
-			},
-			{
-				find: /^@admin(\/.*)?$/,
-				replacement: `${srcRoot}/app/domains/admin$1`,
-			},
-			{
-				find: /^@sandbox(\/.*)?$/,
-				replacement: `${srcRoot}/app/domains/sandbox$1`,
-			},
-			{
-				find: /^@auth(\/.*)?$/,
-				replacement: `${srcRoot}/app/domains/auth$1`,
-			},
-			{
-				find: /^@account(\/.*)?$/,
-				replacement: `${srcRoot}/app/domains/account$1`,
-			},
-			{
-				find: /^@home(\/.*)?$/,
-				replacement: `${srcRoot}/app/domains/home$1`,
-			},
-			{
-				find: /^@developer(\/.*)?$/,
-				replacement: `${srcRoot}/app/domains/developer$1`,
-			},
-			{
-				find: /^@integration(\/.*)?$/,
-				replacement: `${srcRoot}/app/integrations$1`,
-			},
-			{
-				find: /^@environments(\/.*)?$/,
-				replacement: `${srcRoot}/environments$1`,
-			},
-			{
-				find: /^@assets(\/.*)?$/,
-				replacement: `${srcRoot}/app/assets$1`,
 			},
 		],
 	},

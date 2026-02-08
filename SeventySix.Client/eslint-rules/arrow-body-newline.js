@@ -38,7 +38,7 @@ export default {
 
 	create(context)
 	{
-		const sourceCode = context.sourceCode || context.getSourceCode();
+		const sourceCode = context.sourceCode;
 		const options = context.options[0] || {};
 		const maxLength = options.maxLength || 40;
 
