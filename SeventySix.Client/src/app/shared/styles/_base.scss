@@ -184,7 +184,7 @@ html.light-theme {
 }
 
 // Link styles (for non-Material links)
-a:not([mat-button]):not([mat-raised-button]):not([mat-flat-button]):not([mat-stroked-button]) {
+a:not([mat-button]):not([mat-stroked-button]) {
 	color: var(--mat-sys-primary);
 	text-decoration: none;
 	transition: color vars.$transition-duration-normal ease;
@@ -255,9 +255,7 @@ pre {
 
 // Button horizontal padding
 .mat-mdc-button,
-.mat-mdc-raised-button,
-.mat-mdc-outlined-button,
-.mat-mdc-unelevated-button {
+.mat-mdc-outlined-button {
 	padding-left: vars.$spacing-lg; // 16px
 	padding-right: vars.$spacing-lg; // 16px
 }
@@ -311,12 +309,8 @@ mat-icon {
 
 // Buttons with icons - ensure icon aligns with button text
 .mat-mdc-button,
-.mat-mdc-raised-button,
 .mat-mdc-outlined-button,
-.mat-mdc-unelevated-button,
-.mat-mdc-icon-button,
-.mat-mdc-fab,
-.mat-mdc-mini-fab {
+.mat-mdc-icon-button {
 	mat-icon {
 		display: inline-flex;
 		align-items: center;
@@ -407,11 +401,5 @@ select[aria-invalid="true"] {
 		animation-iteration-count: 1 !important;
 		transition-duration: 0.01ms !important;
 		scroll-behavior: auto !important;
-	}
-
-	// Disable Material ripple effect
-	.mat-mdc-button-ripple,
-	.mat-mdc-focus-indicator {
-		display: none !important;
 	}
 }

@@ -25,6 +25,7 @@
 			<img
 				[src]="qrCodeDataUrl()"
 				alt="TOTP QR Code"
+				data-testid="qr-code-image"
 				class="qr-code"
 			/>
 			} @else {
@@ -44,7 +45,9 @@
 			<div class="manual-entry">
 				<p class="manual-label">Enter this key in your app:</p>
 				<div class="secret-display">
-					<code class="secret-code">{{ secret() }}</code>
+					<code
+						class="secret-code"
+						data-testid="secret-code">{{ secret() }}</code>
 					<button
 						type="button"
 						mat-icon-button
@@ -52,7 +55,7 @@
 						[attr.aria-label]="
 							secretCopied() ? 'Copied' : 'Copy to clipboard'
 						">
-						<mat-icon>{{
+						<mat-icon aria-hidden="true">{{
 							secretCopied() ? "check" : "content_copy"
 						}}</mat-icon>
 					</button>
@@ -79,7 +82,7 @@
 				Cancel
 			</button>
 			<button
-				mat-flat-button
+				mat-stroked-button
 				type="button"
 				(click)="onProceedToVerify()">
 				I've scanned the code
@@ -121,7 +124,8 @@
 			@if (errorMessage()) {
 			<p
 				class="error-message"
-				role="alert">
+				role="alert"
+				aria-live="assertive">
 				{{ errorMessage() }}
 			</p>
 			}
@@ -135,7 +139,7 @@
 					Back
 				</button>
 				<button
-					mat-flat-button
+					mat-stroked-button
 					type="submit"
 					[disabled]="isLoading() || !isCodeValid()"
 					[attr.aria-busy]="isLoading()">
@@ -152,7 +156,9 @@
 		<!-- Step 3: Success -->
 		@if (currentStep() === STEP_SUCCESS) {
 		<div class="success-state">
-			<mat-icon class="success-icon">check_circle</mat-icon>
+			<mat-icon
+				class="success-icon"
+				aria-hidden="true">check_circle</mat-icon>
 			<h1>Authenticator Enabled!</h1>
 			<p class="subtitle">
 				Your account is now protected with two-factor authentication using
@@ -168,7 +174,7 @@
 
 			<div class="action-buttons stacked">
 				<button
-					mat-flat-button
+					mat-stroked-button
 					type="button"
 					(click)="onSetupBackupCodes()">
 					Set Up Backup Codes

@@ -58,4 +58,9 @@ public static class MfaErrorCodes
 	/// No backup codes are available for the user.
 	/// </summary>
 	public const string NoBackupCodes = "MFA_NO_BACKUP_CODES";
+
+	/// <summary>
+	/// TOTP enrollment setup failed (e.g. database update error).
+	/// </summary>
+	public const string TotpSetupFailed = "MFA_TOTP_SETUP_FAILED";
 }

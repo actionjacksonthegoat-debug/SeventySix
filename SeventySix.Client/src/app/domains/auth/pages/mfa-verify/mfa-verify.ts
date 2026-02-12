@@ -26,6 +26,7 @@ import {
 	Validators
 } from "@angular/forms";
 import { MatButtonModule } from "@angular/material/button";
+import { MatCheckboxModule } from "@angular/material/checkbox";
 import { Router } from "@angular/router";
 import { MFA_CONFIG, MFA_METHOD } from "@auth/constants";
 import {
@@ -43,6 +44,7 @@ import {
 import { APP_ROUTES } from "@shared/constants";
 import { VerifyBackupCodeRequest, VerifyTotpRequest } from "@shared/models";
 import { AuthService, NotificationService } from "@shared/services";
+import { isNullOrUndefined } from "@shared/utilities/null-check.utility";
 import {
 	interval,
 	Subject
@@ -53,7 +55,7 @@ import { takeUntil } from "rxjs/operators";
 	{
 		selector: "app-mfa-verify",
 		standalone: true,
-		imports: [ReactiveFormsModule, MatButtonModule],
+		imports: [ReactiveFormsModule, MatButtonModule, MatCheckboxModule],
 		changeDetection: ChangeDetectionStrategy.OnPush,
 		templateUrl: "./mfa-verify.html",
 		styleUrl: "./mfa-verify.scss"
@@ -195,6 +197,15 @@ export class MfaVerifyComponent implements OnInit
 		signal<boolean>(false);
 
 	/**
+	 * Whether the user wants to trust this device for future logins.
+	 * @type {WritableSignal<boolean>}
+	 * @protected
+	 * @readonly
+	 */
+	protected readonly trustDevice: WritableSignal<boolean> =
+		signal<boolean>(false);
+
+	/**
 	 * Computed: Whether current method is email-based MFA.
 	 * @type {Signal<boolean>}
 	 * @protected
@@ -290,14 +301,14 @@ export class MfaVerifyComponent implements OnInit
 		this.mfaState =
 			this.mfaService.getMfaState();
 
-		if (!this.mfaState)
+		if (isNullOrUndefined(this.mfaState))
 		{
 			this.router.navigate(
 				[APP_ROUTES.AUTH.LOGIN]);
 			return;
 		}
 
-		this.maskedEmail.set(this.mfaState.email);
+		this.maskedEmail.set(this.maskEmail(this.mfaState.email));
 
 		// Set MFA method from state (default to email if not specified)
 		if (
@@ -328,7 +339,7 @@ export class MfaVerifyComponent implements OnInit
 	 */
 	protected onVerify(): void
 	{
-		if (!this.mfaState || !this.canVerify())
+		if (isNullOrUndefined(this.mfaState) || !this.canVerify())
 		{
 			return;
 		}
@@ -353,7 +364,7 @@ export class MfaVerifyComponent implements OnInit
 	 */
 	private verifyEmailMfa(): void
 	{
-		if (!this.mfaState)
+		if (isNullOrUndefined(this.mfaState))
 		{
 			return;
 		}
@@ -363,12 +374,15 @@ export class MfaVerifyComponent implements OnInit
 		const request: VerifyMfaRequest =
 			{
 				challengeToken: this.mfaState.challengeToken,
-				code: this.mfaForm.value.code
+				code: this.mfaForm.value.code,
+				trustDevice: this.trustDevice()
 			};
 
 		this
 			.mfaService
 			.verifyMfa(request)
+			.pipe(
+				takeUntilDestroyed(this.destroyRef))
 			.subscribe(
 				{
 					next: (response: AuthResponse) =>
@@ -384,7 +398,7 @@ export class MfaVerifyComponent implements OnInit
 	 */
 	private verifyTotp(): void
 	{
-		if (!this.mfaState)
+		if (isNullOrUndefined(this.mfaState))
 		{
 			return;
 		}
@@ -393,13 +407,16 @@ export class MfaVerifyComponent implements OnInit
 
 		const request: VerifyTotpRequest =
 			{
-				email: this.mfaState.email,
-				code: this.mfaForm.value.code
+				challengeToken: this.mfaState.challengeToken,
+				code: this.mfaForm.value.code,
+				trustDevice: this.trustDevice()
 			};
 
 		this
 			.mfaService
 			.verifyTotp(request)
+			.pipe(
+				takeUntilDestroyed(this.destroyRef))
 			.subscribe(
 				{
 					next: (response: AuthResponse) =>
@@ -415,7 +432,7 @@ export class MfaVerifyComponent implements OnInit
 	 */
 	private verifyBackupCode(): void
 	{
-		if (!this.mfaState)
+		if (isNullOrUndefined(this.mfaState))
 		{
 			return;
 		}
@@ -424,13 +441,16 @@ export class MfaVerifyComponent implements OnInit
 
 		const request: VerifyBackupCodeRequest =
 			{
-				email: this.mfaState.email,
-				code: this.mfaForm.value.code
+				challengeToken: this.mfaState.challengeToken,
+				code: this.mfaForm.value.code,
+				trustDevice: this.trustDevice()
 			};
 
 		this
 			.mfaService
 			.verifyBackupCode(request)
+			.pipe(
+				takeUntilDestroyed(this.destroyRef))
 			.subscribe(
 				{
 					next: (response: AuthResponse) =>
@@ -535,7 +555,7 @@ export class MfaVerifyComponent implements OnInit
 	 */
 	protected onResendCode(): void
 	{
-		if (!this.mfaState || this.resendOnCooldown() || this.isResending())
+		if (isNullOrUndefined(this.mfaState) || this.resendOnCooldown() || this.isResending())
 		{
 			return;
 		}
@@ -546,6 +566,8 @@ export class MfaVerifyComponent implements OnInit
 			.mfaService
 			.resendMfaCode(
 				{ challengeToken: this.mfaState.challengeToken })
+			.pipe(
+				takeUntilDestroyed(this.destroyRef))
 			.subscribe(
 				{
 					next: () => this.handleResendSuccess(),
@@ -664,5 +686,27 @@ export class MfaVerifyComponent implements OnInit
 	{
 		this.showBackupCodeEntry.set(false);
 		this.mfaForm.reset();
+	}
+
+	/**
+	 * Masks an email for display (e.g., "test@example.com" → "t***t@example.com").
+	 *
+	 * @param {string} email
+	 * The email address to mask.
+	 *
+	 * @returns {string}
+	 * The masked email.
+	 */
+	private maskEmail(email: string): string
+	{
+		const atIndex: number =
+			email.indexOf("@");
+
+		if (atIndex <= 1)
+		{
+			return email;
+		}
+
+		return `${email[0]}***${email.slice(atIndex - 1)}`;
 	}
 }

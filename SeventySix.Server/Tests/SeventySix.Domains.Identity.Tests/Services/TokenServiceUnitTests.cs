@@ -167,6 +167,45 @@ public class TokenServiceUnitTests
 			$"Expected expiry around {expectedExpiry}, got {jwt.ValidTo}");
 	}
 
+	[Fact]
+	public void GenerateAccessToken_RequiresPasswordChange_IncludesClaimAsync()
+	{
+		string token =
+			Service.GenerateAccessToken(
+				userId: 1L,
+				username: "testuser",
+				roles: [],
+				requiresPasswordChange: true);
+
+		JwtSecurityTokenHandler handler = new();
+		JwtSecurityToken jwt =
+			handler.ReadJwtToken(token);
+
+		Claim? passwordChangeClaim =
+			jwt.Claims.FirstOrDefault(
+				claim => claim.Type == CustomClaimTypes.RequiresPasswordChange);
+
+		passwordChangeClaim.ShouldNotBeNull();
+		passwordChangeClaim.Value.ShouldBe("true");
+	}
+
+	[Fact]
+	public void GenerateAccessToken_NoPasswordChangeRequired_ExcludesClaimAsync()
+	{
+		string token =
+			GenerateTestAccessToken();
+
+		JwtSecurityTokenHandler handler = new();
+		JwtSecurityToken jwt =
+			handler.ReadJwtToken(token);
+
+		Claim? passwordChangeClaim =
+			jwt.Claims.FirstOrDefault(
+				claim => claim.Type == CustomClaimTypes.RequiresPasswordChange);
+
+		passwordChangeClaim.ShouldBeNull();
+	}
+
 	#endregion
 
 	#region Helper Methods

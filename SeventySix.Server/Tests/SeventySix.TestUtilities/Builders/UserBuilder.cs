@@ -51,6 +51,9 @@ public class UserBuilder
 	private DateTime? LastLoginAt = null;
 	private string? LastLoginIp = null;
 	private bool RequiresPasswordChange = false;
+	private bool MfaEnabled = false;
+	private string? TotpSecret = null;
+	private DateTime? TotpEnrolledAt = null;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="UserBuilder"/> class.
@@ -276,6 +279,51 @@ public class UserBuilder
 	}
 
 	/// <summary>
+	/// Sets the MFA enabled flag.
+	/// </summary>
+	/// <param name="mfaEnabled">
+	/// Whether MFA is enabled for this user.
+	/// </param>
+	/// <returns>
+	/// The builder instance for method chaining.
+	/// </returns>
+	public UserBuilder WithMfaEnabled(bool mfaEnabled)
+	{
+		MfaEnabled = mfaEnabled;
+		return this;
+	}
+
+	/// <summary>
+	/// Sets the TOTP secret for authenticator enrollment.
+	/// </summary>
+	/// <param name="totpSecret">
+	/// The base32-encoded TOTP secret.
+	/// </param>
+	/// <returns>
+	/// The builder instance for method chaining.
+	/// </returns>
+	public UserBuilder WithTotpSecret(string? totpSecret)
+	{
+		TotpSecret = totpSecret;
+		return this;
+	}
+
+	/// <summary>
+	/// Sets the TOTP enrolled date.
+	/// </summary>
+	/// <param name="totpEnrolledAt">
+	/// The date TOTP was confirmed.
+	/// </param>
+	/// <returns>
+	/// The builder instance for method chaining.
+	/// </returns>
+	public UserBuilder WithTotpEnrolledAt(DateTime? totpEnrolledAt)
+	{
+		TotpEnrolledAt = totpEnrolledAt;
+		return this;
+	}
+
+	/// <summary>
 	/// Builds the ApplicationUser entity with the configured values.
 	/// </summary>
 	/// <returns>
@@ -304,6 +352,9 @@ public class UserBuilder
 				LastLoginAt = LastLoginAt,
 				LastLoginIp = LastLoginIp,
 				RequiresPasswordChange = RequiresPasswordChange,
+				MfaEnabled = MfaEnabled,
+				TotpSecret = TotpSecret,
+				TotpEnrolledAt = TotpEnrolledAt,
 			};
 
 		if (UserId.HasValue)

@@ -9,12 +9,14 @@ import {
 	ChangeDetectionStrategy,
 	Component,
 	computed,
+	DestroyRef,
 	inject,
 	OnInit,
 	Signal,
 	signal,
 	WritableSignal
 } from "@angular/core";
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import {
 	FormBuilder,
 	FormGroup,
@@ -25,14 +27,14 @@ import { MatButtonModule } from "@angular/material/button";
 import { ActivatedRoute, Router, RouterLink } from "@angular/router";
 import { ValidationResult } from "@auth/models";
 import { mapAuthError, validateRegistrationForm } from "@auth/utilities";
-import { AltchaWidgetComponent } from "@shared/components";
 import {
 	PASSWORD_VALIDATION,
 	USERNAME_VALIDATION
 } from "@shared/constants";
 import { AuthErrorResult } from "@shared/models";
-import { AltchaService, AuthService, NotificationService } from "@shared/services";
+import { AuthService, NotificationService } from "@shared/services";
 import { getValidationError } from "@shared/utilities";
+import { isNullOrUndefined } from "@shared/utilities/null-check.utility";
 
 @Component(
 	{
@@ -41,8 +43,7 @@ import { getValidationError } from "@shared/utilities";
 		imports: [
 			ReactiveFormsModule,
 			RouterLink,
-			MatButtonModule,
-			AltchaWidgetComponent
+			MatButtonModule
 		],
 		changeDetection: ChangeDetectionStrategy.OnPush,
 		templateUrl: "./register-complete.html",
@@ -54,6 +55,15 @@ import { getValidationError } from "@shared/utilities";
  */
 export class RegisterCompleteComponent implements OnInit
 {
+	/**
+	 * Angular destroy reference for automatic subscription cleanup.
+	 * @type {DestroyRef}
+	 * @private
+	 * @readonly
+	 */
+	private readonly destroyRef: DestroyRef =
+		inject(DestroyRef);
+
 	/**
 	 * Auth service used to validate tokens and complete registration.
 	 * @type {AuthService}
@@ -83,32 +93,11 @@ export class RegisterCompleteComponent implements OnInit
 		inject(NotificationService);
 
 	/**
-	 * ALTCHA service for bot protection.
-	 * @type {AltchaService}
-	 */
-	private readonly altchaService: AltchaService =
-		inject(AltchaService);
-
-	/**
 	 * Form builder for creating reactive forms.
 	 * @type {FormBuilder}
 	 */
 	private readonly formBuilder: FormBuilder =
 		inject(FormBuilder);
-
-	/**
-	 * Whether ALTCHA validation is enabled.
-	 * @type {boolean}
-	 */
-	protected readonly altchaEnabled: boolean =
-		this.altchaService.enabled;
-
-	/**
-	 * ALTCHA challenge endpoint URL.
-	 * @type {string}
-	 */
-	protected readonly challengeUrl: string =
-		this.altchaService.challengeEndpoint;
 
 	/**
 	 * Registration completion form with username, password, and confirmation fields.
@@ -196,14 +185,6 @@ export class RegisterCompleteComponent implements OnInit
 	private token: string = "";
 
 	/**
-	 * ALTCHA verification payload from the widget.
-	 * @type {WritableSignal<string | null>}
-	 * @private
-	 */
-	private readonly altchaPayload: WritableSignal<string | null> =
-		signal<string | null>(null);
-
-	/**
 	 * Component initialization - validate token and prepare UI state.
 	 * @returns {void}
 	 */
@@ -212,22 +193,12 @@ export class RegisterCompleteComponent implements OnInit
 		this.token =
 			this.route.snapshot.queryParams["token"] ?? "";
 
-		if (!this.token)
+		if (isNullOrUndefined(this.token) || this.token === "")
 		{
 			this.tokenValid.set(false);
 			this.notification.error(
 				"Invalid registration link. Please request a new one.");
 		}
-	}
-
-	/**
-	 * Handles ALTCHA verification completion.
-	 * @param {string} payload
-	 * The ALTCHA verification payload.
-	 */
-	protected onAltchaVerified(payload: string): void
-	{
-		this.altchaPayload.set(payload);
 	}
 
 	/**
@@ -237,11 +208,7 @@ export class RegisterCompleteComponent implements OnInit
 	 */
 	protected canSubmit(): boolean
 	{
-		const formValid: boolean =
-			this.registerForm.valid;
-		const hasAltcha: boolean =
-			!this.altchaEnabled || this.altchaPayload() !== null;
-		return formValid && hasAltcha && this.tokenValid() && !this.isLoading();
+		return this.registerForm.valid && this.tokenValid() && !this.isLoading();
 	}
 
 	/**
@@ -261,12 +228,6 @@ export class RegisterCompleteComponent implements OnInit
 			return;
 		}
 
-		if (this.altchaEnabled && !this.altchaPayload())
-		{
-			this.notification.error("Please complete the verification challenge.");
-			return;
-		}
-
 		this.isLoading.set(true);
 
 		const formValue: typeof this.registerForm.value =
@@ -277,8 +238,9 @@ export class RegisterCompleteComponent implements OnInit
 			.completeRegistration(
 				this.token,
 				formValue.username,
-				formValue.password,
-				this.altchaPayload())
+				formValue.password)
+			.pipe(
+				takeUntilDestroyed(this.destroyRef))
 			.subscribe(
 				{
 					next: () =>

@@ -4,28 +4,48 @@
 
 using FluentValidation;
 using SeventySix.Identity.Extensions;
+using Wolverine;
 
 namespace SeventySix.Identity.Commands.UpdateProfile;
 
 /// <summary>
-/// FluentValidation validator for <see cref="UpdateProfileRequest"/>.
+/// FluentValidation validator for <see cref="UpdateProfileCommand"/>.
+/// Validates against the command (not request) to access UserId for email uniqueness checks.
 /// </summary>
 /// <remarks>
 /// Validation Rules:
-/// - Email: Required, valid email format, max 255 characters
+/// - Email: Required, valid email format, max 255 characters, unique (excluding current user)
 /// - FullName: Optional, max 100 characters if provided
 /// </remarks>
 public class UpdateProfileCommandValidator
-	: AbstractValidator<UpdateProfileRequest>
+	: AbstractValidator<UpdateProfileCommand>
 {
 	/// <summary>
 	/// Initializes a new instance of the <see cref="UpdateProfileCommandValidator"/> class.
 	/// </summary>
-	public UpdateProfileCommandValidator()
+	///
+	/// <param name="messageBus">
+	/// The Wolverine message bus for CQRS queries.
+	/// </param>
+	public UpdateProfileCommandValidator(IMessageBus messageBus)
 	{
-		RuleFor(request => request.Email).ApplyEmailRules();
+		RuleFor(command => command.Request.Email)
+			.ApplyEmailRules()
+			.MustAsync(
+				async (command, email, cancellationToken) =>
+				{
+					bool emailExists =
+						await messageBus.InvokeAsync<bool>(
+							new CheckEmailExistsQuery(
+								email,
+								command.UserId),
+							cancellationToken);
 
-		RuleFor(request => request.FullName)
+					return !emailExists;
+				})
+			.WithMessage("Email address is already registered.");
+
+		RuleFor(command => command.Request.FullName)
 			.ApplyFullNameRules(required: false);
 	}
 }

@@ -13,6 +13,10 @@ namespace SeventySix.Identity;
 /// <param name="Code">
 /// The 6-digit verification code.
 /// </param>
+/// <param name="TrustDevice">
+/// Whether to trust this device and skip MFA on future logins.
+/// </param>
 public record VerifyMfaRequest(
 	string ChallengeToken,
-	string Code);
+	string Code,
+	bool TrustDevice = false);

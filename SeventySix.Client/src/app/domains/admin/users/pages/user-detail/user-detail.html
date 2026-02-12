@@ -14,9 +14,10 @@
 				Cancel
 			</button>
 			<button
-				mat-raised-button
+				mat-stroked-button
 				color="primary"
 				type="submit"
+				data-testid="save-changes-button"
 				(click)="onSubmit()"
 				[disabled]="
 					isSaving() || userForm.invalid || !hasUnsavedChanges()
@@ -51,7 +52,7 @@
 					</mat-icon>
 					<p class="mat-body-1">{{ error() }}</p>
 					<button
-						mat-raised-button
+						mat-stroked-button
 						type="button"
 						(click)="onCancel()">
 						<mat-icon aria-hidden="true">

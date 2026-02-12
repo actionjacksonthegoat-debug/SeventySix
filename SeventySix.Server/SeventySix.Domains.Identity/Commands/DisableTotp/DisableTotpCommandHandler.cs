@@ -67,9 +67,11 @@ public static class DisableTotpCommandHandler
 			return Result.Failure("Invalid password");
 		}
 
-		// Clear TOTP settings
+		// Clear TOTP settings and disable per-user MFA
+		// (TOTP enrollment is the only path that enables per-user MFA)
 		user.TotpSecret = null;
 		user.TotpEnrolledAt = null;
+		user.MfaEnabled = false;
 
 		IdentityResult updateResult =
 			await userManager.UpdateAsync(user);

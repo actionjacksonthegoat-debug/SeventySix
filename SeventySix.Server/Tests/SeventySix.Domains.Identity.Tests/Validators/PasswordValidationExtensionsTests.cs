@@ -5,6 +5,7 @@
 using FluentValidation;
 using FluentValidation.TestHelper;
 using SeventySix.Identity.Extensions;
+using SeventySix.Identity.Settings;
 
 namespace SeventySix.Identity.Tests.Validators;
 
@@ -23,7 +24,18 @@ namespace SeventySix.Identity.Tests.Validators;
 /// </remarks>
 public class PasswordValidationExtensionsTests
 {
-	private readonly TestPasswordValidator Validator = new();
+	private static readonly PasswordSettings TestPasswordSettings =
+		new()
+		{
+			MinLength = 8,
+			RequireUppercase = true,
+			RequireLowercase = true,
+			RequireDigit = true,
+			RequireSpecialChar = false,
+		};
+
+	private readonly TestPasswordValidator Validator =
+		new(TestPasswordSettings);
 
 	[Fact]
 	public void Password_ShouldNotHaveError_WhenValid()
@@ -211,9 +223,10 @@ public class PasswordValidationExtensionsTests
 	private sealed class TestPasswordValidator
 		: AbstractValidator<TestPasswordRequest>
 	{
-		public TestPasswordValidator()
+		public TestPasswordValidator(PasswordSettings passwordSettings)
 		{
-			RuleFor(x => x.Password).ApplyPasswordRules();
+			RuleFor(request => request.Password)
+				.ApplyPasswordRules(passwordSettings);
 		}
 	}
 }

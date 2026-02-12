@@ -24,6 +24,7 @@ namespace SeventySix.Identity.Tests.Commands.InitiateRegistration;
 public class InitiateRegistrationCommandHandlerTests
 {
 	private readonly UserManager<ApplicationUser> UserManager;
+	private readonly IAltchaService AltchaService;
 	private readonly IMessageBus MessageBus;
 	private readonly FakeTimeProvider TimeProvider;
 
@@ -34,10 +35,15 @@ public class InitiateRegistrationCommandHandlerTests
 	{
 		UserManager =
 			IdentityMockFactory.CreateUserManager();
+		AltchaService =
+			Substitute.For<IAltchaService>();
 		MessageBus =
 			Substitute.For<IMessageBus>();
 		TimeProvider =
 			new FakeTimeProvider(TestTimeProviderBuilder.DefaultTime);
+
+		// Default: ALTCHA disabled for most tests
+		AltchaService.IsEnabled.Returns(false);
 	}
 
 	/// <summary>
@@ -62,6 +68,7 @@ public class InitiateRegistrationCommandHandlerTests
 		// Act
 		await InitiateRegistrationCommandHandler.HandleAsync(
 			request,
+			AltchaService,
 			UserManager,
 			MessageBus,
 			TimeProvider,
@@ -107,6 +114,7 @@ public class InitiateRegistrationCommandHandlerTests
 		// Act
 		await InitiateRegistrationCommandHandler.HandleAsync(
 			request,
+			AltchaService,
 			UserManager,
 			MessageBus,
 			TimeProvider,
@@ -151,6 +159,7 @@ public class InitiateRegistrationCommandHandlerTests
 		// Act
 		await InitiateRegistrationCommandHandler.HandleAsync(
 			request,
+			AltchaService,
 			UserManager,
 			MessageBus,
 			TimeProvider,
@@ -194,6 +203,7 @@ public class InitiateRegistrationCommandHandlerTests
 		// Act
 		await InitiateRegistrationCommandHandler.HandleAsync(
 			request,
+			AltchaService,
 			UserManager,
 			MessageBus,
 			TimeProvider,

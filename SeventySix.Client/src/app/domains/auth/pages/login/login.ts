@@ -8,12 +8,14 @@ import {
 	ChangeDetectionStrategy,
 	Component,
 	computed,
+	DestroyRef,
 	inject,
 	OnInit,
 	Signal,
 	signal,
 	WritableSignal
 } from "@angular/core";
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import {
 	FormBuilder,
 	FormGroup,
@@ -57,6 +59,15 @@ export class LoginComponent implements OnInit
 	 */
 	private readonly formBuilder: FormBuilder =
 		inject(FormBuilder);
+
+	/**
+	 * Angular destroy reference for automatic subscription cleanup.
+	 * @type {DestroyRef}
+	 * @private
+	 * @readonly
+	 */
+	private readonly destroyRef: DestroyRef =
+		inject(DestroyRef);
 
 	/**
 	 * Auth service for performing login operations.
@@ -250,6 +261,8 @@ export class LoginComponent implements OnInit
 		this
 			.authService
 			.login(credentials)
+			.pipe(
+				takeUntilDestroyed(this.destroyRef))
 			.subscribe(
 				{
 					next: (response: AuthResponse) =>
@@ -268,13 +281,15 @@ export class LoginComponent implements OnInit
 	 */
 	private handleLoginSuccess(response: AuthResponse): void
 	{
-		if (response.requiresMfa && response.mfaChallengeToken)
+		if (response.requiresMfa)
 		{
 			const mfaState: MfaState =
 				{
-					challengeToken: response.mfaChallengeToken,
+					challengeToken: response.mfaChallengeToken ?? "",
 					email: response.email ?? "",
-					returnUrl: this.returnUrl
+					returnUrl: this.returnUrl,
+					mfaMethod: response.mfaMethod,
+					availableMfaMethods: response.availableMfaMethods
 				};
 			this.mfaService.setMfaState(mfaState);
 			this.router.navigate(

@@ -49,6 +49,18 @@ export const AUTH_ERROR_MESSAGES: Readonly<{
 	} as const;
 
 /**
+ * Server-side authentication error codes.
+ * Used to match specific error responses from the API.
+ * @type {Readonly<object>}
+ */
+export const AUTH_ERROR_CODES: Readonly<{
+	PASSWORD_CHANGE_REQUIRED: "PASSWORD_CHANGE_REQUIRED";
+}> =
+	{
+		PASSWORD_CHANGE_REQUIRED: "PASSWORD_CHANGE_REQUIRED"
+	} as const;
+
+/**
  * Network error messages.
  * @type {Readonly<object>}
  */

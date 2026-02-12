@@ -14,7 +14,12 @@ export const ROUTES =
 			{
 				login: "/auth/login",
 				register: "/auth/register",
-				forgotPassword: "/auth/forgot-password"
+				forgotPassword: "/auth/forgot-password",
+				changePassword: "/auth/change-password",
+				setPassword: "/auth/set-password",
+				mfaVerify: "/auth/mfa/verify",
+				totpSetup: "/auth/totp-setup",
+				backupCodes: "/auth/backup-codes"
 			},
 
 		account:

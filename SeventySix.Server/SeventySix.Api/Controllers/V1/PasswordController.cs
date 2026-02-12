@@ -5,6 +5,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using SeventySix.Api.Attributes;
 using SeventySix.Api.Configuration;
 using SeventySix.Api.Extensions;
 using SeventySix.Api.Infrastructure;
@@ -51,6 +52,7 @@ public class PasswordController(
 	/// <response code="401">Not authenticated.</response>
 	[HttpPost("change")]
 	[Authorize]
+	[AllowWithPendingPasswordChange]
 	[ProducesResponseType(StatusCodes.Status204NoContent)]
 	[ProducesResponseType(
 		typeof(ProblemDetails),

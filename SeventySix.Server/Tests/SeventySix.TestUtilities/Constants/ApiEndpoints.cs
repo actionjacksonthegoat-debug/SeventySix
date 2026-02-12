@@ -84,6 +84,28 @@ public static class ApiEndpoints
 			public const string Set = "/api/v1/auth/password/set";
 		}
 
+		/// <summary>Trusted device management endpoints.</summary>
+		public static class TrustedDevices
+		{
+			/// <summary>List trusted devices endpoint.</summary>
+			public const string List = "/api/v1/auth/trusted-devices";
+
+			/// <summary>Revoke all trusted devices endpoint.</summary>
+			public const string RevokeAll = "/api/v1/auth/trusted-devices";
+
+			/// <summary>
+			/// Builds the revoke device endpoint for a specific device.
+			/// </summary>
+			/// <param name="deviceId">
+			/// The device ID.
+			/// </param>
+			/// <returns>
+			/// The formatted endpoint URL.
+			/// </returns>
+			public static string Revoke(long deviceId) =>
+				$"/api/v1/auth/trusted-devices/{deviceId}";
+		}
+
 		/// <summary>OAuth provider endpoints.</summary>
 		public static class OAuth
 		{

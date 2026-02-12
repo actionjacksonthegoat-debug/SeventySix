@@ -33,8 +33,8 @@ public static class CheckEmailExistsQueryHandler
 				.Users
 				.AsNoTracking()
 				.Where(user =>
-					user.Email != null
-					&& user.Email.ToLower() == query.Email.ToLower());
+					user.NormalizedEmail != null
+					&& user.NormalizedEmail == query.Email.ToUpperInvariant());
 
 		if (query.ExcludeUserId.HasValue)
 		{

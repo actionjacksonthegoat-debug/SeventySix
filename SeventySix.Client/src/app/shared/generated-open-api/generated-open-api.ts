@@ -1912,6 +1912,139 @@ export interface paths
 		patch?: never;
 		trace?: never;
 	};
+	"/api/v1/auth/trusted-devices": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path?: never;
+				cookie?: never;
+			};
+			requestBody?: never;
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"text/plain": components["schemas"]["TrustedDeviceDto"][];
+						"application/json": components["schemas"]["TrustedDeviceDto"][];
+						"text/json": components["schemas"]["TrustedDeviceDto"][];
+					};
+				};
+				/** @description Unauthorized */
+				401: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"text/plain": components["schemas"]["ProblemDetails"];
+						"application/json": components["schemas"]["ProblemDetails"];
+						"text/json": components["schemas"]["ProblemDetails"];
+					};
+				};
+			};
+		};
+		put?: never;
+		post?: never;
+		delete: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path?: never;
+				cookie?: never;
+			};
+			requestBody?: never;
+			responses: {
+				/** @description No Content */
+				204: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content?: never;
+				};
+				/** @description Unauthorized */
+				401: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"text/plain": components["schemas"]["ProblemDetails"];
+						"application/json": components["schemas"]["ProblemDetails"];
+						"text/json": components["schemas"]["ProblemDetails"];
+					};
+				};
+			};
+		};
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/api/v1/auth/trusted-devices/{deviceId}": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post?: never;
+		delete: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path: {
+					deviceId: number;
+				};
+				cookie?: never;
+			};
+			requestBody?: never;
+			responses: {
+				/** @description No Content */
+				204: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content?: never;
+				};
+				/** @description Unauthorized */
+				401: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"text/plain": components["schemas"]["ProblemDetails"];
+						"application/json": components["schemas"]["ProblemDetails"];
+						"text/json": components["schemas"]["ProblemDetails"];
+					};
+				};
+				/** @description Not Found */
+				404: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"text/plain": components["schemas"]["ProblemDetails"];
+						"application/json": components["schemas"]["ProblemDetails"];
+						"text/json": components["schemas"]["ProblemDetails"];
+					};
+				};
+			};
+		};
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	"/api/v1/users/{id}/roles": {
 		parameters: {
 			query?: never;
@@ -2133,14 +2266,6 @@ export interface components
 			salt: string;
 			signature: string;
 		};
-		ApiHealthStatus: {
-			apiName?: string;
-			isAvailable?: boolean;
-			/** Format: double */
-			responseTimeMs?: number | string;
-			/** Format: date-time */
-			lastChecked?: null | string;
-		};
 		AuthResponse: {
 			accessToken: null | string;
 			/** Format: date-time */
@@ -2209,11 +2334,6 @@ export interface components
 		DisableTotpRequest: {
 			password: string;
 		};
-		ExternalApiHealthResponse: {
-			apis?: {
-				[key: string]: components["schemas"]["ApiHealthStatus"];
-			};
-		};
 		ForgotPasswordRequest: {
 			email: string;
 			altchaPayload?: null | string;
@@ -2223,12 +2343,12 @@ export interface components
 			/** Format: date-time */
 			checkedAt?: string;
 			database?: components["schemas"]["DatabaseHealthResponse"];
-			externalApis?: components["schemas"]["ExternalApiHealthResponse"];
 			errorQueue?: components["schemas"]["QueueHealthResponse"];
 			system?: components["schemas"]["SystemResourcesResponse"];
 		};
 		InitiateRegistrationRequest: {
 			email: string;
+			altchaPayload?: null | string;
 		};
 		LogDto: {
 			/** Format: int64 */
@@ -2384,6 +2504,18 @@ export interface components
 			secret: string;
 			qrCodeUri: string;
 		};
+		TrustedDeviceDto: {
+			/** Format: int64 */
+			id: number | string;
+			deviceName: null | string;
+			/** Format: date-time */
+			createdAt: string;
+			/** Format: date-time */
+			lastUsedAt: null | string;
+			/** Format: date-time */
+			expiresAt: string;
+			isCurrentDevice: boolean;
+		};
 		UpdateProfileRequest: {
 			email: string;
 			fullName: null | string;
@@ -2429,16 +2561,22 @@ export interface components
 			lastLoginAt: null | string;
 		};
 		VerifyBackupCodeRequest: {
-			email: string;
+			challengeToken: string;
 			code: string;
+			/** @default false */
+			trustDevice: boolean;
 		};
 		VerifyMfaRequest: {
 			challengeToken: string;
 			code: string;
+			/** @default false */
+			trustDevice: boolean;
 		};
 		VerifyTotpRequest: {
-			email: string;
+			challengeToken: string;
 			code: string;
+			/** @default false */
+			trustDevice: boolean;
 		};
 	};
 	responses: never;

@@ -143,7 +143,11 @@ builder.Services.AddFusionCacheWithValkey(
 	builder.Environment.EnvironmentName);
 
 // Add MVC controllers to the service container
-builder.Services.AddControllers();
+builder.Services.AddControllers(
+	options =>
+	{
+		options.Filters.Add<SeventySix.Api.Filters.RequiresPasswordChangeFilter>();
+	});
 
 // Add all application services using extension methods
 // This includes: repositories, business logic services, validators, HTTP clients, and configuration

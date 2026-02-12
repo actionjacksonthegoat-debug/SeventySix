@@ -9,6 +9,7 @@ import { PageHeaderComponent } from "@shared/components";
 import { CARD_MATERIAL_MODULES } from "@shared/material-bundles";
 import { LoggerService } from "@shared/services/logger.service";
 import { NotificationService } from "@shared/services/notification.service";
+import { isPresent } from "@shared/utilities/null-check.utility";
 
 /**
  * Admin Dashboard page.
@@ -36,6 +37,15 @@ import { NotificationService } from "@shared/services/notification.service";
 	})
 export class AdminDashboardPage
 {
+	/**
+	 * Whether the application is running in production mode.
+	 * Used to hide dev-only UI sections (data tools, log validations).
+	 * @type {boolean}
+	 * @readonly
+	 */
+	readonly isProduction: boolean =
+		environment.production;
+
 	/**
 	 * Notification service used to display user-facing messages.
 	 * @type {NotificationService}
@@ -125,28 +135,42 @@ export class AdminDashboardPage
 
 	/**
 	 * Opens pgAdmin PostgreSQL management UI in a new browser tab.
+	 * Only available in development (URL is undefined in production).
 	 * @remarks
 	 * Provides database administration capabilities for development.
 	 * @returns {void}
 	 */
 	openPgAdmin(): void
 	{
-		const pgAdminUrl: string =
+		const pgAdminUrl: string | undefined =
 			environment.observability.pgAdminUrl;
-		window.open(pgAdminUrl, "_blank");
+
+		if (isPresent(pgAdminUrl))
+		{
+			window.open(
+				pgAdminUrl,
+				"_blank");
+		}
 	}
 
 	/**
 	 * Opens RedisInsight Valkey cache visualization in a new browser tab.
+	 * Only available in development (URL is undefined in production).
 	 * @remarks
 	 * Provides cache data exploration and management for Valkey.
 	 * @returns {void}
 	 */
 	openRedisInsight(): void
 	{
-		const redisInsightUrl: string =
+		const redisInsightUrl: string | undefined =
 			environment.observability.redisInsightUrl;
-		window.open(redisInsightUrl, "_blank");
+
+		if (isPresent(redisInsightUrl))
+		{
+			window.open(
+				redisInsightUrl,
+				"_blank");
+		}
 	}
 
 	/**

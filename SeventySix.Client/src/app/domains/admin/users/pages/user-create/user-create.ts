@@ -244,15 +244,22 @@ export class UserCreatePage
 			});
 
 	/**
-	 * Computed signal returning the merged form data for submission.
-	 * @type {Signal<Partial<UserDto>>}
+	 * Returns the merged form data from all steps for review and submission.
+	 *
+	 * <p>This is a method (not a computed signal) because FormGroup.value is
+	 * not a signal — a computed() would cache the initial empty values and
+	 * never re-evaluate in Zoneless mode.</p>
+	 *
+	 * @returns
+	 * The aggregated form data.
 	 */
-	readonly formData: Signal<Partial<UserDto>> =
-		computed(
-			() => ({
-				...this.basicInfoForm.value,
-				...this.accountDetailsForm.value
-			}));
+	formData(): Partial<UserDto>
+	{
+		return {
+			...this.basicInfoForm.value,
+			...this.accountDetailsForm.value
+		};
+	}
 
 	// Validation error signals
 	/**

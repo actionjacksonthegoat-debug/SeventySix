@@ -178,6 +178,9 @@ public static class IdentityRegistration
 			IPasswordHasher<ApplicationUser>,
 			IdentityArgon2PasswordHasherService>();
 
+		// Register password settings for FluentValidation validators (DRY)
+		services.AddSingleton(passwordSettings);
+
 		// Register transaction manager for Identity context
 		services.AddTransactionManagerFor<IdentityDbContext>();
 	}
@@ -224,12 +227,16 @@ public static class IdentityRegistration
 		services.AddScoped<AuthenticationService>();
 		services.AddScoped<IMfaService, MfaService>();
 		services.AddScoped<ITotpService, TotpService>();
+		services.AddScoped<TotpSecretProtector>();
 
 		// Register password hasher for BackupCode (required for BackupCodeService)
 		services.AddScoped<IPasswordHasher<BackupCode>, PasswordHasher<BackupCode>>();
 		services.AddScoped<IBackupCodeService, BackupCodeService>();
 
 		services.AddScoped<ITrustedDeviceService, TrustedDeviceService>();
+
+		// MFA brute-force protection — singleton to persist attempt counts across requests
+		services.AddSingleton<IMfaAttemptTracker, MfaAttemptTracker>();
 
 		// Configure MFA-related settings with FluentValidation + ValidateOnStart
 		services.AddSingleton<IValidator<MfaSettings>, MfaSettingsValidator>();
@@ -407,6 +414,7 @@ public static class IdentityRegistration
 		services.AddSingleton<IValidator<RefreshTokenCleanupSettings>, RefreshTokenCleanupSettingsValidator>();
 		services.AddSingleton<IValidator<IpAnonymizationSettings>, IpAnonymizationSettingsValidator>();
 		services.AddSingleton<IValidator<AdminSeederSettings>, AdminSeederSettingsValidator>();
+		services.AddSingleton<IValidator<OrphanedRegistrationCleanupSettings>, OrphanedRegistrationCleanupSettingsValidator>();
 
 		services
 			.AddOptions<RefreshTokenCleanupSettings>()
@@ -423,6 +431,12 @@ public static class IdentityRegistration
 		services
 			.AddOptions<AdminSeederSettings>()
 			.Bind(configuration.GetSection(AdminSeederSettings.SectionName))
+			.ValidateWithFluentValidation()
+			.ValidateOnStart();
+
+		services
+			.AddOptions<OrphanedRegistrationCleanupSettings>()
+			.Bind(configuration.GetSection(OrphanedRegistrationCleanupSettings.SectionName))
 			.ValidateWithFluentValidation()
 			.ValidateOnStart();
 

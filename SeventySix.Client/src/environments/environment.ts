@@ -4,7 +4,9 @@ export const environment: Environment =
 	{
 		production: true,
 		version: "1.0.0",
-		apiUrl: "https://localhost:7074/api/v1", // API v1 for production
+		// Production: baked at build time. For deployment behind a reverse proxy,
+		// change to "/api/v1" (relative) and add a proxy_pass rule in nginx.conf.
+		apiUrl: "https://localhost:7074/api/v1",
 		logging: {
 			enableRemoteLogging: true,
 			consoleLogLevel: "warn", // Only show warnings and errors in console
@@ -20,8 +22,7 @@ export const environment: Environment =
 			jaegerUrl: "https://localhost:16687", // Jaeger UI for distributed tracing
 			prometheusUrl: "https://localhost:9091", // Prometheus for metrics
 			grafanaUrl: "https://localhost:3443", // Grafana for metrics visualization
-			pgAdminUrl: "https://localhost:5051", // pgAdmin for PostgreSQL management
-			redisInsightUrl: "https://localhost:5541", // RedisInsight for Valkey cache
+			// pgAdminUrl and redisInsightUrl omitted — services not deployed in production
 			dashboards: {
 				systemOverview: "seventysix-system-overview",
 				apiEndpoints: "seventysix-api-endpoints",

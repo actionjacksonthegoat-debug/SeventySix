@@ -296,7 +296,8 @@ public class AuthControllerTests(IdentityAuthApiPostgreSqlFixture fixture)
 			"test-refresh-token",
 			expiresAt,
 			"oauth@example.com",
-			null);
+			null,
+			false);
 
 		// Act
 		HttpResponseMessage response =
@@ -313,6 +314,7 @@ public class AuthControllerTests(IdentityAuthApiPostgreSqlFixture fixture)
 		authResponse.ShouldNotBeNull();
 		authResponse.AccessToken.ShouldBe("test-access-token");
 		authResponse.Email.ShouldBe("oauth@example.com");
+		authResponse.RequiresPasswordChange.ShouldBeFalse();
 	}
 
 	/// <summary>
@@ -357,7 +359,8 @@ public class AuthControllerTests(IdentityAuthApiPostgreSqlFixture fixture)
 			"test-refresh-token",
 			timeProvider.GetUtcNow().UtcDateTime.AddMinutes(15),
 			"oauth@example.com",
-			null);
+			null,
+			false);
 
 		// Act - First call should succeed
 		HttpResponseMessage firstResponse =
@@ -396,7 +399,8 @@ public class AuthControllerTests(IdentityAuthApiPostgreSqlFixture fixture)
 			"test-refresh-token",
 			timeProvider.GetUtcNow().UtcDateTime.AddMinutes(15),
 			"oauth@example.com",
-			null);
+			null,
+			false);
 
 		// Act
 		HttpResponseMessage response =

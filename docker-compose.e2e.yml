@@ -108,8 +108,8 @@ services:
             - E2ESeeder__Enabled=true
             # Background Jobs
             - BackgroundJobs__Enabled=true
-            # MFA (disabled for E2E)
-            - Mfa__Enabled=false
+            # MFA (enabled for E2E — required for MFA login tests)
+            - Mfa__Enabled=true
             - Mfa__RequiredForAllUsers=false
             # Security
             - Security__EnforceHttps=true

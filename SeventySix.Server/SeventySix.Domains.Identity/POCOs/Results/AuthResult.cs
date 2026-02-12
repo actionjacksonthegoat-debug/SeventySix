@@ -33,7 +33,7 @@ namespace SeventySix.Identity;
 /// Whether MFA verification is required to complete authentication.
 /// </param>
 /// <param name="MfaChallengeToken">
-/// Temporary token identifying the MFA challenge (null if MFA not required or TOTP).
+/// Temporary token identifying the MFA challenge (proof of password authentication).
 /// </param>
 /// <param name="MfaMethod">
 /// The MFA method required for verification (null if MFA not required).
@@ -46,6 +46,9 @@ namespace SeventySix.Identity;
 /// </param>
 /// <param name="ErrorCode">
 /// Error code for client handling.
+/// </param>
+/// <param name="TrustedDeviceToken">
+/// Trusted device token to set as a cookie (null when not applicable).
 /// </param>
 public record AuthResult(
 	bool Success,
@@ -60,7 +63,8 @@ public record AuthResult(
 	MfaMethod? MfaMethod = null,
 	IReadOnlyList<MfaMethod>? AvailableMfaMethods = null,
 	string? Error = null,
-	string? ErrorCode = null)
+	string? ErrorCode = null,
+	string? TrustedDeviceToken = null)
 {
 	/// <summary>
 	/// Creates a successful result without tokens (e.g., password change).
@@ -114,10 +118,10 @@ public record AuthResult(
 	/// Creates a result requiring MFA verification.
 	/// </summary>
 	/// <param name="challengeToken">
-	/// Temporary token to identify the MFA challenge (null for TOTP).
+	/// Temporary token to identify the MFA challenge (proof of password authentication).
 	/// </param>
 	/// <param name="email">
-	/// User's email (will be masked for display).
+	/// User's email (passed through for display masking on the client).
 	/// </param>
 	/// <param name="mfaMethod">
 	/// The preferred MFA method for verification.
@@ -139,7 +143,7 @@ public record AuthResult(
 			MfaChallengeToken: challengeToken,
 			MfaMethod: mfaMethod,
 			AvailableMfaMethods: availableMethods ?? [mfaMethod],
-			Email: MaskEmail(email));
+			Email: email);
 
 	/// <summary>
 	/// Creates a failed authentication result.
@@ -160,28 +164,6 @@ public record AuthResult(
 			Success: false,
 			Error: error,
 			ErrorCode: errorCode);
-
-	/// <summary>
-	/// Masks an email address for display (e.g., "j***@example.com").
-	/// </summary>
-	/// <param name="email">
-	/// The email address to mask.
-	/// </param>
-	/// <returns>
-	/// Masked email address.
-	/// </returns>
-	private static string MaskEmail(string email)
-	{
-		int atIndex =
-			email.IndexOf('@');
-
-		if (atIndex <= 1)
-		{
-			return email;
-		}
-
-		return $"{email[0]}***{email[(atIndex - 1)..]}";
-	}
 }
 
 /// <summary>
@@ -248,6 +230,7 @@ public static class AuthErrorCodes
 	/// Password found in known data breaches (OWASP ASVS V2.1.7).
 	/// </summary>
 	public const string BreachedPassword = "BREACHED_PASSWORD";
+	public const string PasswordChangeRequired = "PASSWORD_CHANGE_REQUIRED";
 }
 
 /// <summary>
@@ -274,4 +257,9 @@ public static class AuthErrorMessages
 	/// Invalid or expired token message.
 	/// </summary>
 	public const string InvalidToken = "Invalid or expired token";
+
+	/// <summary>
+	/// Too many failed attempts message.
+	/// </summary>
+	public const string TooManyAttempts = "Too many failed attempts. Please try again later.";
 }

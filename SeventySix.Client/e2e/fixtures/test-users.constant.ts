@@ -21,12 +21,17 @@ export interface TestUser
 	/**
 	 * User's role in the system.
 	 */
-	readonly role: "User" | "Admin" | "Developer";
+	readonly role: "User" | "Admin" | "Developer" | "MfaUser";
 
 	/**
 	 * Email address for the test user.
 	 */
 	readonly email: string;
+
+	/**
+	 * Whether MFA is enabled for this user.
+	 */
+	readonly mfaEnabled?: boolean;
 }
 
 /**
@@ -52,8 +57,70 @@ export const TEST_USERS: readonly TestUser[] =
 			password: "E2E_Developer_Password_123!",
 			role: "Developer",
 			email: "e2e_developer@test.local"
+		},
+		{
+			username: "e2e_mfa_user",
+			password: "E2E_Mfa_Password_123!",
+			role: "MfaUser",
+			email: "e2e_mfa_user@test.local",
+			mfaEnabled: true
 		}
 	] as const;
+
+/**
+ * Test user with forced password change flag.
+ * Seeded with RequiresPasswordChange = true for forced password change E2E tests.
+ */
+export const FORCE_PASSWORD_CHANGE_USER: TestUser =
+	{
+		username: "e2e_force_pw",
+		password: "E2E_ForcePw_Password_123!",
+		role: "User",
+		email: "e2e_force_pw@test.local"
+	} as const;
+
+/**
+ * Dedicated test user for password change flow E2E tests.
+ * Separate from other users to avoid breaking shared auth state.
+ */
+export const PASSWORD_CHANGE_USER: TestUser =
+	{
+		username: "e2e_pw_change",
+		password: "E2E_PwChange_Password_123!",
+		role: "User",
+		email: "e2e_pw_change@test.local"
+	} as const;
+
+/**
+ * Dedicated test user for TOTP enrollment E2E tests.
+ * Isolated so TOTP enable/disable doesn't affect shared auth state.
+ */
+export const TOTP_ENROLL_USER: TestUser =
+	{
+		username: "e2e_totp_enroll",
+		password: "E2E_TotpEnroll_Password_123!",
+		role: "User",
+		email: "e2e_totp_enroll@test.local"
+	} as const;
+
+/**
+ * Dedicated test user for forgot-password reset E2E tests.
+ * Isolated from password-change user to prevent parallel security stamp conflicts.
+ */
+export const FORGOT_PASSWORD_USER: TestUser =
+	{
+		username: "e2e_forgot_pw",
+		password: "E2E_ForgotPw_Password_123!",
+		role: "User",
+		email: "e2e_forgot_pw@test.local"
+	} as const;
+
+/**
+ * Known backup codes for the MFA test user.
+ * Must match E2ESeederConstants.MfaBackupCodes in the server seeder.
+ */
+export const MFA_BACKUP_CODES: readonly string[] =
+	["E2EBAK01", "E2EBAK02", "E2EBAK03", "E2EBAK04", "E2EBAK05"] as const;
 
 /**
  * Gets test user by role.

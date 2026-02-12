@@ -1,11 +1,8 @@
 {
-	"devDependencies": {
-		"@types/node": "^22.10.5"
-	},
 	"scripts": {
 		"format": "npm run format:server && npm run format:client",
 		"format:server": "cd SeventySix.Server && dotnet build SeventySix.Analyzers.CodeFixes --configuration Release --no-incremental && dotnet build SeventySix.Analyzers --configuration Release --no-incremental && dotnet build && dotnet format analyzers --severity warn && dotnet format && dotnet format",
-		"format:client": "cd SeventySix.Client && npx eslint \"src/**/*.ts\" --fix && npx dprint fmt && npx eslint \"src/**/*.ts\" --fix",
+		"format:client": "cd SeventySix.Client && npm run format",
 		"test": "npm run test:server && npm run test:client",
 		"test:server": "powershell -Command \"if (-not (Get-Process 'Docker Desktop' -ErrorAction SilentlyContinue)) { Start-Process 'C:\\Program Files\\Docker\\Docker\\Docker Desktop.exe'; Start-Sleep -Seconds 10 }\" && cd SeventySix.Server && dotnet build && dotnet test",
 		"test:client": "cd SeventySix.Client && npm test",

@@ -47,6 +47,9 @@ public static class LoginCommandHandler
 	/// <param name="mfaSettings">
 	/// MFA configuration settings.
 	/// </param>
+	/// <param name="trustedDeviceService">
+	/// Service for trusted device validation and MFA bypass.
+	/// </param>
 	/// <param name="messageBus">
 	/// Message bus for enqueueing emails.
 	/// </param>
@@ -65,6 +68,7 @@ public static class LoginCommandHandler
 		ISecurityAuditService securityAuditService,
 		IMfaService mfaService,
 		IOptions<MfaSettings> mfaSettings,
+		ITrustedDeviceService trustedDeviceService,
 		IMessageBus messageBus,
 		CancellationToken cancellationToken)
 	{
@@ -100,28 +104,33 @@ public static class LoginCommandHandler
 
 		if (mfaRequired)
 		{
+			// Check if device is trusted (skip MFA)
+			AuthResult? trustedDeviceResult =
+				await TryBypassMfaViaTrustedDeviceAsync(
+					command,
+					user!,
+					authenticationService,
+					securityAuditService,
+					trustedDeviceService,
+					cancellationToken);
+
+			if (trustedDeviceResult is not null)
+			{
+				return trustedDeviceResult;
+			}
+
 			// Determine available MFA methods based on user enrollment
 			bool hasTotpEnrolled =
 				!string.IsNullOrEmpty(user!.TotpSecret);
 
 			if (hasTotpEnrolled)
 			{
-				// User has TOTP enrolled - prefer TOTP (no email sent)
-				await securityAuditService.LogEventAsync(
-					SecurityEventType.MfaChallengeInitiated,
+				return await InitiateTotpChallengeAsync(
 					user,
-					success: true,
-					details: "TOTP",
+					command.ClientIp,
+					mfaService,
+					securityAuditService,
 					cancellationToken);
-
-				List<MfaMethod> availableMethods =
-					[MfaMethod.Totp, MfaMethod.Email, MfaMethod.BackupCode];
-
-				return AuthResult.MfaRequired(
-					challengeToken: null,
-					email: user.Email!,
-					mfaMethod: MfaMethod.Totp,
-					availableMethods: availableMethods);
 			}
 
 			// Fall back to email-based MFA
@@ -353,6 +362,106 @@ public static class LoginCommandHandler
 			challengeToken,
 			user.Email!,
 			mfaMethod: MfaMethod.Email,
+			availableMethods: availableMethods);
+	}
+
+	/// <summary>
+	/// Checks if the login request has a trusted device token and validates it.
+	/// Returns a successful auth result if the device is trusted (bypasses MFA).
+	/// </summary>
+	/// <param name="command">
+	/// The login command with trusted device token.
+	/// </param>
+	/// <param name="user">
+	/// The authenticated user.
+	/// </param>
+	/// <param name="authenticationService">
+	/// Service to generate auth tokens.
+	/// </param>
+	/// <param name="securityAuditService">
+	/// Security audit service.
+	/// </param>
+	/// <param name="trustedDeviceService">
+	/// Trusted device validation service.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// AuthResult if MFA was bypassed; null if MFA is still required.
+	/// </returns>
+	private static async Task<AuthResult?> TryBypassMfaViaTrustedDeviceAsync(
+		LoginCommand command,
+		ApplicationUser user,
+		AuthenticationService authenticationService,
+		ISecurityAuditService securityAuditService,
+		ITrustedDeviceService trustedDeviceService,
+		CancellationToken cancellationToken)
+	{
+		if (string.IsNullOrEmpty(command.TrustedDeviceToken))
+		{
+			return null;
+		}
+
+		bool isTrusted =
+			await trustedDeviceService.ValidateTrustedDeviceAsync(
+				user.Id,
+				command.TrustedDeviceToken,
+				command.UserAgent ?? string.Empty,
+				command.ClientIp,
+				cancellationToken);
+
+		if (!isTrusted)
+		{
+			return null;
+		}
+
+		await securityAuditService.LogEventAsync(
+			SecurityEventType.LoginSuccess,
+			user,
+			success: true,
+			details: "MFA bypassed via trusted device",
+			cancellationToken);
+
+		return await authenticationService.GenerateAuthResultAsync(
+			user,
+			command.ClientIp,
+			user.RequiresPasswordChange,
+			command.Request.RememberMe,
+			cancellationToken);
+	}
+
+	/// <summary>
+	/// Creates a TOTP challenge token and returns an MFA-required result.
+	/// The challenge token serves as proof-of-password for subsequent TOTP verification.
+	/// </summary>
+	private static async Task<AuthResult> InitiateTotpChallengeAsync(
+		ApplicationUser user,
+		string? clientIp,
+		IMfaService mfaService,
+		ISecurityAuditService securityAuditService,
+		CancellationToken cancellationToken)
+	{
+		(string totpChallengeToken, string _) =
+			await mfaService.CreateChallengeAsync(
+				user.Id,
+				clientIp,
+				cancellationToken);
+
+		await securityAuditService.LogEventAsync(
+			SecurityEventType.MfaChallengeInitiated,
+			user,
+			success: true,
+			details: "TOTP",
+			cancellationToken);
+
+		List<MfaMethod> availableMethods =
+			[MfaMethod.Totp, MfaMethod.Email, MfaMethod.BackupCode];
+
+		return AuthResult.MfaRequired(
+			challengeToken: totpChallengeToken,
+			email: user.Email!,
+			mfaMethod: MfaMethod.Totp,
 			availableMethods: availableMethods);
 	}
 }

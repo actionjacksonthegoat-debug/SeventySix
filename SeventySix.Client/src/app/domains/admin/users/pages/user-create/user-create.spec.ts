@@ -477,15 +477,35 @@ describe("UserCreatePage",
 							.toBe(
 								"Failed to create user. Please try again.");
 					});
-				it("should have formData as a computed signal",
+				it("should return merged form data from both form groups",
 					() =>
 					{
-						// Verify formData is a function (computed signal)
 						expect(typeof component.formData)
 							.toBe("function");
-						// Verify it returns an object
-						expect(component.formData())
-							.toEqual(expect.any(Object));
+
+						component.basicInfoForm.patchValue(
+							{
+								username: "testuser",
+								email: "test@example.com"
+							});
+						component.accountDetailsForm.patchValue(
+							{
+								fullName: "Test User",
+								isActive: true
+							});
+
+						const result: ReturnType<typeof component.formData> =
+							component.formData();
+
+						expect(result)
+							.toEqual(
+								expect.objectContaining(
+									{
+										username: "testuser",
+										email: "test@example.com",
+										fullName: "Test User",
+										isActive: true
+									}));
 					});
 			});
 

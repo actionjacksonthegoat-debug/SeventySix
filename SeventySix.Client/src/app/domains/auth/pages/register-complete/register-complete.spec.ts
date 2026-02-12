@@ -3,13 +3,10 @@ import { provideZonelessChangeDetection } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideRouter, Router } from "@angular/router";
 import { ActivatedRoute } from "@angular/router";
-import { AltchaService } from "@shared/services";
 import { AuthService } from "@shared/services/auth.service";
 import { NotificationService } from "@shared/services/notification.service";
 import {
-	createMockAltchaService,
-	createMockNotificationService,
-	MockAltchaService
+	createMockNotificationService
 } from "@shared/testing";
 import { of, throwError } from "rxjs";
 import { vi } from "vitest";
@@ -27,7 +24,6 @@ describe("RegisterCompleteComponent",
 		let fixture: ComponentFixture<RegisterCompleteComponent>;
 		let mockAuthService: MockAuthService;
 		let mockNotificationService: ReturnType<typeof createMockNotificationService>;
-		let mockAltchaService: MockAltchaService;
 		let router: Router;
 
 		function setupTestBed(queryParams: Record<string, string> = {})
@@ -42,10 +38,6 @@ describe("RegisterCompleteComponent",
 						{
 							provide: NotificationService,
 							useValue: mockNotificationService
-						},
-						{
-							provide: AltchaService,
-							useValue: mockAltchaService
 						},
 						{ provide: ActivatedRoute, useValue: { snapshot: { queryParams } } }
 					]
@@ -68,8 +60,6 @@ describe("RegisterCompleteComponent",
 					{ completeRegistration: vi.fn() };
 				mockNotificationService =
 					createMockNotificationService();
-				mockAltchaService =
-					createMockAltchaService(false);
 			});
 
 		it("should create",
@@ -135,8 +125,7 @@ describe("RegisterCompleteComponent",
 					.toHaveBeenCalledWith(
 						"valid-token",
 						"valid_user",
-						"ValidPassword123!",
-						null);
+						"ValidPassword123!");
 				expect(mockNotificationService.success)
 					.toHaveBeenCalledWith("Account created successfully!");
 				expect(router.navigate)

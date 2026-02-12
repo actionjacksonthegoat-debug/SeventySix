@@ -17,6 +17,10 @@ public class InitiateRegistrationCommandValidator
 	/// </summary>
 	public InitiateRegistrationCommandValidator()
 	{
+		// NOTE: Email existence is NOT validated here intentionally.
+		// The handler silently returns for existing emails (anti-enumeration pattern).
+		// See OWASP Testing Guide v4.0 — OTG-IDENT-002.
+
 		RuleFor(request => request.Email)
 			.NotEmpty()
 			.WithMessage("Email is required.")

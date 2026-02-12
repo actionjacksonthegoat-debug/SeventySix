@@ -333,8 +333,8 @@ namespace SeventySix.Domains.Identity.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("TotpSecret")
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)");
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)");
 
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("boolean");

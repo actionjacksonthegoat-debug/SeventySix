@@ -4,10 +4,12 @@ import {
 	expect,
 	EmailTestHelper,
 	getTestUserByRole,
+	FORGOT_PASSWORD_USER,
 	SELECTORS,
 	ROUTES,
 	PAGE_TEXT,
-	TIMEOUTS
+	TIMEOUTS,
+	E2E_CONFIG
 } from "../../fixtures";
 
 /**
@@ -19,6 +21,7 @@ import {
  * - Form validation
  * - Successful submission (always shows confirmation for security)
  * - Email delivery via MailDev
+ * - Full end-to-end: request reset → MailDev → set password → login with new password → restore
  */
 test.describe("Forgot Password Flow",
 	() =>
@@ -308,6 +311,164 @@ test.describe("Forgot Password Flow",
 
 						expect(emailFound)
 							.toBeFalsy();
+					});
+			});
+
+		test.describe("Full Password Reset End-to-End",
+			() =>
+			{
+				test.beforeAll(
+					async () =>
+					{
+						await EmailTestHelper.waitUntilReady(TIMEOUTS.email);
+					});
+
+				test("should complete full password reset via email link",
+					async ({ page, authPage }) =>
+					{
+						test.slow();
+
+						// Use dedicated forgot-password user to avoid security
+						// stamp conflicts with parallel tests.
+						const testUser =
+							FORGOT_PASSWORD_USER;
+						const newPassword =
+							"E2E_TempReset_Password_123!";
+
+						// Clear emails for clean state
+						await EmailTestHelper.clearAllEmails();
+
+						// Step 1: Request password reset
+						await page.goto(ROUTES.auth.forgotPassword);
+						await authPage.submitEmail(testUser.email);
+
+						await expect(page.locator(SELECTORS.layout.pageHeading))
+							.toHaveText(
+								PAGE_TEXT.confirmation.checkYourEmail,
+								{ timeout: TIMEOUTS.api });
+
+						// Step 2: Get reset email from MailDev
+						const resetEmail =
+							await EmailTestHelper.waitForEmail(
+								testUser.email,
+								{ timeout: TIMEOUTS.email });
+
+						const resetLink: string | null =
+							EmailTestHelper.extractLinkFromEmail(
+								resetEmail,
+								/href="([^"]*set-password[^"]*)"/);
+
+						expect(resetLink)
+							.toBeTruthy();
+
+						// Step 3: Navigate to set-password via reset link
+						const clientLink: string =
+							resetLink!.replace(
+								E2E_CONFIG.apiBaseUrl,
+								E2E_CONFIG.clientBaseUrl);
+
+						await page.goto(clientLink);
+						await page.waitForLoadState("load");
+
+						// Step 4: Set new password
+						await expect(page.locator("h1"))
+							.toHaveText(
+								PAGE_TEXT.headings.setNewPassword,
+								{ timeout: TIMEOUTS.navigation });
+
+						const newPasswordInput =
+							page.locator(SELECTORS.setPassword.newPasswordInput);
+						const confirmPasswordInput =
+							page.locator(SELECTORS.setPassword.confirmPasswordInput);
+
+						await newPasswordInput.waitFor(
+							{ state: "visible", timeout: TIMEOUTS.element });
+
+						await newPasswordInput.fill(newPassword);
+						await confirmPasswordInput.fill(newPassword);
+
+						await page
+							.locator(SELECTORS.form.submitButton)
+							.click();
+
+						// Step 5: Should redirect to login after password set
+						await page.waitForURL(
+							(url) => url.pathname.includes(ROUTES.auth.login),
+							{ timeout: TIMEOUTS.navigation });
+
+						// Step 6: Login with new password
+						await authPage.login(testUser.email, newPassword);
+
+						await page.waitForURL(
+							ROUTES.home,
+							{ timeout: TIMEOUTS.navigation });
+
+						await expect(page.locator(SELECTORS.layout.userMenuButton))
+							.toBeVisible({ timeout: TIMEOUTS.element });
+
+						// Step 7: Cleanup — restore original password via API
+						// Logout first
+						await page.locator(SELECTORS.layout.userMenuButton).click();
+						await page.locator(SELECTORS.layout.logoutButton).click();
+
+						await expect(page.locator(SELECTORS.layout.userMenuButton))
+							.toBeHidden({ timeout: TIMEOUTS.navigation });
+
+						// Reset back: request another reset email
+						await EmailTestHelper.clearAllEmails();
+						await page.goto(ROUTES.auth.forgotPassword);
+						await authPage.submitEmail(testUser.email);
+
+						await expect(page.locator(SELECTORS.layout.pageHeading))
+							.toHaveText(
+								PAGE_TEXT.confirmation.checkYourEmail,
+								{ timeout: TIMEOUTS.api });
+
+						const restoreEmail =
+							await EmailTestHelper.waitForEmail(
+								testUser.email,
+								{ timeout: TIMEOUTS.email });
+
+						const restoreLink: string | null =
+							EmailTestHelper.extractLinkFromEmail(
+								restoreEmail,
+								/href="([^"]*set-password[^"]*)"/);
+
+						expect(restoreLink)
+							.toBeTruthy();
+
+						const restoreClientLink: string =
+							restoreLink!.replace(
+								E2E_CONFIG.apiBaseUrl,
+								E2E_CONFIG.clientBaseUrl);
+
+						await page.goto(restoreClientLink);
+						await page.waitForLoadState("load");
+
+						await expect(page.locator("h1"))
+							.toHaveText(
+								PAGE_TEXT.headings.setNewPassword,
+								{ timeout: TIMEOUTS.navigation });
+
+						const restoreNewInput =
+							page.locator(SELECTORS.setPassword.newPasswordInput);
+						const restoreConfirmInput =
+							page.locator(SELECTORS.setPassword.confirmPasswordInput);
+
+						await restoreNewInput.waitFor(
+							{ state: "visible", timeout: TIMEOUTS.element });
+
+						await restoreNewInput.fill(testUser.password);
+						await restoreConfirmInput.fill(testUser.password);
+
+						await page
+							.locator(SELECTORS.form.submitButton)
+							.click();
+
+						// Verify redirect to login after restore
+						await page.waitForURL(
+							(url) => url.pathname.includes(ROUTES.auth.login),
+							{ timeout: TIMEOUTS.navigation });
 					});
 			});
 	});

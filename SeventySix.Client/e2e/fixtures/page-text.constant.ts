@@ -19,7 +19,20 @@ export const PAGE_TEXT =
 				forgotPassword: "Forgot Password",
 				checkYourEmail: "Check Your Email",
 				welcome: "Welcome to SeventySix",
-				adminDashboard: "Admin Dashboard"
+				adminDashboard: "Admin Dashboard",
+				changePassword: "Change Password",
+				setNewPassword: "Set New Password",
+				invalidLink: "Invalid Link",
+				createNewUser: "Create New User",
+				verifyYourIdentity: "Verify Your Identity",
+				authenticatorCode: "Authenticator Code",
+				useBackupCode: "Use Backup Code",
+				setUpAuthenticatorApp: "Set Up Authenticator App",
+				verifySetup: "Verify Setup",
+				authenticatorEnabled: "Authenticator Enabled!",
+				generateBackupCodes: "Generate Backup Codes",
+				saveYourBackupCodes: "Save Your Backup Codes",
+				backupCodesSaved: "Backup Codes Saved"
 			},
 
 		/**
@@ -30,7 +43,13 @@ export const PAGE_TEXT =
 				continueWithGithub: /Continue with GitHub/,
 				sendResetLink: /Send Reset Link|Sending/,
 				continue: /Continue|Sending/,
-				logout: "Logout"
+				logout: "Logout",
+				verify: /Verify|Verifying/,
+				changePassword: /Change Password|Changing/,
+				setPassword: /Set Password|Setting Password/,
+				createUser: /Create User/,
+				generateCodes: "Generate Codes",
+				savedMyCodes: "I've Saved My Codes"
 			},
 
 		/**
@@ -113,7 +132,16 @@ export const PAGE_TEXT =
 		 */
 		confirmation:
 			{
-				checkYourEmail: "Check Your Email"
+				checkYourEmail: "Check Your Email",
+				passwordChanged: "Password changed successfully"
+			},
+
+		/**
+		 * Change password page text.
+		 */
+		changePassword:
+			{
+				requiredNotice: "You must change your password before continuing."
 			},
 
 		/**

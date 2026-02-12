@@ -189,7 +189,7 @@ function dumpDiagnostics(phase)
 	for (const container of containers)
 	{
 		runCommand(
-			`docker logs ${container} --tail 200 2>&1 || true`,
+			`docker logs ${container} --tail 25 2>&1 || true`,
 			`Logs: ${container}`);
 	}
 
@@ -239,8 +239,7 @@ function main()
 		else
 		{
 			console.error(`\n[FAIL] E2E tests failed with exit code: ${testExitCode}\n`);
-
-			dumpDiagnostics("Tests");
+			console.log("Run 'npx playwright show-report' for detailed failure info.\n");
 		}
 	}
 

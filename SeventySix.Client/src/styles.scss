@@ -120,13 +120,29 @@ html:not(.light-theme):not(.dark-theme) {
 
 // Ensure Material buttons have visible focus indicators
 .mat-mdc-button:focus-visible,
-.mat-mdc-raised-button:focus-visible,
 .mat-mdc-outlined-button:focus-visible,
-.mat-mdc-fab:focus-visible,
-.mat-mdc-mini-fab:focus-visible,
 .mat-mdc-icon-button:focus-visible {
 	outline: 2px solid var(--mat-sys-primary);
 	outline-offset: 2px;
+}
+
+// =============================================================================
+// BUTTON RIPPLE & HOVER STATE LAYER
+// =============================================================================
+// Increase ripple/hover visibility using MD3 design tokens.
+// Values reference --mat-sys-* tokens so they adapt to any theme automatically.
+// Reduced motion: already handled in _base.scss (display: none on ripple layer).
+
+html {
+	// Ripple ink-spread color on click (MD3 default ~12%, bumped to 16%)
+	--mat-text-button-ripple-color: color-mix(in srgb, var(--mat-sys-on-surface) 16%, transparent);
+	--mat-outlined-button-ripple-color: color-mix(in srgb, var(--mat-sys-primary) 16%, transparent);
+	--mat-icon-button-ripple-color: color-mix(in srgb, var(--mat-sys-on-surface) 16%, transparent);
+
+	// Hover state layer opacity (MD3 default ~4%, bumped to 8%)
+	--mat-text-button-hover-state-layer-opacity: 0.08;
+	--mat-outlined-button-hover-state-layer-opacity: 0.08;
+	--mat-icon-button-hover-state-layer-opacity: 0.08;
 }
 
 // =============================================================================

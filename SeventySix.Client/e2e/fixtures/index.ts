@@ -20,8 +20,17 @@ export { unauthenticatedTest } from "./unauthenticated.fixture";
 export { EmailTestHelper } from "./email.fixture";
 export type { MailDevEmail } from "./email.fixture";
 
+// TOTP helper
+export { generateTotpCode, generateTotpCodeFromSecret } from "./helpers/totp.helper";
+
+// Login helper
+export { loginAsUser } from "./helpers/login.helper";
+
+// Accessibility helper
+export { expectAccessible } from "./helpers/accessibility.helper";
+
 // Test users
-export { TEST_USERS, getTestUserByRole } from "./test-users.constant";
+export { TEST_USERS, getTestUserByRole, MFA_BACKUP_CODES, FORCE_PASSWORD_CHANGE_USER, PASSWORD_CHANGE_USER, TOTP_ENROLL_USER, FORGOT_PASSWORD_USER } from "./test-users.constant";
 export type { TestUser } from "./test-users.constant";
 
 // Constants
@@ -43,6 +52,7 @@ export {
 // Page helpers
 export {
 	AuthPageHelper,
+	ChangePasswordPageHelper,
 	HomePageHelper,
 	AdminDashboardPageHelper,
 	UserManagementPageHelper,

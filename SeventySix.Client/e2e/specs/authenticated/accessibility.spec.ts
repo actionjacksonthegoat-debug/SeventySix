@@ -3,7 +3,8 @@ import {
 	test,
 	expect,
 	ROUTES,
-	SELECTORS
+	SELECTORS,
+	expectAccessible
 } from "../../fixtures";
 import AxeBuilder from "@axe-core/playwright";
 import type { Result } from "axe-core";
@@ -31,48 +32,14 @@ test.describe("Authenticated Routes - WCAG Accessibility",
 
 		for (const pageInfo of authenticatedPages)
 		{
+			// eslint-disable-next-line playwright/expect-expect -- assertions inside expectAccessible
 			test(`should have no critical accessibility violations on ${pageInfo.name} page`,
 				async ({ userPage }: { userPage: Page }) =>
 				{
 					await userPage.goto(pageInfo.path);
 					await userPage.waitForLoadState("load");
 
-					const axeResults =
-						await new AxeBuilder(
-							{ page: userPage })
-							.withTags(["wcag2a", "wcag2aa", "wcag21aa"])
-							.analyze();
-
-					const criticalViolations: Result[] =
-						axeResults.violations.filter(
-							(violation: Result) =>
-								violation.impact === "critical"
-								|| violation.impact === "serious");
-
-					// eslint-disable-next-line playwright/no-conditional-in-test
-					if (criticalViolations.length > 0)
-					{
-						console.log(
-							`Accessibility violations on ${pageInfo.name}:`,
-							JSON.stringify(
-								criticalViolations.map(
-									(violation: Result) =>
-									(
-										{
-											id: violation.id,
-											impact: violation.impact,
-											description: violation.description,
-											nodes: violation.nodes.map(
-												(node) => node.html).slice(0, 3)
-										})),
-								null,
-								2));
-					}
-
-					expect(
-						criticalViolations,
-						`Found ${criticalViolations.length} critical/serious violations on ${pageInfo.name}`)
-						.toHaveLength(0);
+					await expectAccessible(userPage, pageInfo.name);
 				});
 		}
 

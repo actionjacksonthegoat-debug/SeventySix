@@ -32,6 +32,9 @@ public interface IOAuthCodeExchangeService
 	/// <param name="fullName">
 	/// User's full name (optional).
 	/// </param>
+	/// <param name="requiresPasswordChange">
+	/// Whether user must change password.
+	/// </param>
 	/// <returns>
 	/// A one-time authorization code (60 seconds TTL).
 	/// </returns>
@@ -40,7 +43,8 @@ public interface IOAuthCodeExchangeService
 		string refreshToken,
 		DateTime expiresAt,
 		string email,
-		string? fullName);
+		string? fullName,
+		bool requiresPasswordChange);
 
 	/// <summary>
 	/// Exchanges a one-time code for tokens.

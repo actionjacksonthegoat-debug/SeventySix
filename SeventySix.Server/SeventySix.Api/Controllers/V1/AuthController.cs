@@ -5,6 +5,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using SeventySix.Api.Attributes;
 using SeventySix.Api.Configuration;
 using SeventySix.Api.Extensions;
 using SeventySix.Api.Infrastructure;
@@ -72,10 +73,18 @@ public class AuthController(
 		CancellationToken cancellationToken)
 	{
 		string? clientIp = GetClientIpAddress();
+		string? trustedDeviceToken =
+			CookieService.GetTrustedDeviceToken();
+		string? userAgent =
+			Request.Headers.UserAgent.ToString();
 
 		AuthResult result =
 			await messageBus.InvokeAsync<AuthResult>(
-				new LoginCommand(request, clientIp),
+				new LoginCommand(
+					request,
+					clientIp,
+					trustedDeviceToken,
+					userAgent),
 				cancellationToken);
 
 		if (result.RequiresMfa)
@@ -210,6 +219,7 @@ public class AuthController(
 	/// <response code="404">User not found.</response>
 	[HttpGet("me")]
 	[Authorize]
+	[AllowWithPendingPasswordChange]
 	[ProducesResponseType(typeof(UserProfileDto), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]

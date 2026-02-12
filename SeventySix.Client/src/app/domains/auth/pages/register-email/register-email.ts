@@ -8,11 +8,13 @@ import {
 	ChangeDetectionStrategy,
 	Component,
 	computed,
+	DestroyRef,
 	inject,
 	Signal,
 	signal,
 	WritableSignal
 } from "@angular/core";
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import {
 	FormBuilder,
 	FormGroup,
@@ -21,6 +23,8 @@ import {
 } from "@angular/forms";
 import { MatButtonModule } from "@angular/material/button";
 import { RouterLink } from "@angular/router";
+import { AltchaWidgetComponent } from "@shared/components";
+import { AltchaService } from "@shared/services/altcha.service";
 import { AuthService } from "@shared/services/auth.service";
 import { NotificationService } from "@shared/services/notification.service";
 import { getValidationError } from "@shared/utilities";
@@ -29,7 +33,7 @@ import { getValidationError } from "@shared/utilities";
 	{
 		selector: "app-register-email",
 		standalone: true,
-		imports: [ReactiveFormsModule, RouterLink, MatButtonModule],
+		imports: [ReactiveFormsModule, RouterLink, MatButtonModule, AltchaWidgetComponent],
 		changeDetection: ChangeDetectionStrategy.OnPush,
 		templateUrl: "./register-email.html",
 		styleUrl: "./register-email.scss"
@@ -41,11 +45,46 @@ import { getValidationError } from "@shared/utilities";
 export class RegisterEmailComponent
 {
 	/**
+	 * Destroy reference for automatic subscription cleanup.
+	 * @type {DestroyRef}
+	 */
+	private readonly destroyRef: DestroyRef =
+		inject(DestroyRef);
+
+	/**
 	 * Auth service used to initiate the registration flow.
 	 * @type {AuthService}
 	 */
 	private readonly authService: AuthService =
 		inject(AuthService);
+
+	/**
+	 * Altcha service for Proof-of-Work captcha configuration.
+	 * @type {AltchaService}
+	 */
+	private readonly altchaService: AltchaService =
+		inject(AltchaService);
+
+	/**
+	 * Whether ALTCHA verification is enabled.
+	 * @type {boolean}
+	 */
+	protected readonly altchaEnabled: boolean =
+		this.altchaService.enabled;
+
+	/**
+	 * Challenge endpoint URL for the ALTCHA widget.
+	 * @type {string}
+	 */
+	protected readonly challengeUrl: string =
+		this.altchaService.challengeEndpoint;
+
+	/**
+	 * ALTCHA verification payload from the widget.
+	 * @type {WritableSignal<string | null>}
+	 */
+	private readonly altchaPayload: WritableSignal<string | null> =
+		signal<string | null>(null);
 
 	/**
 	 * Notification service used to show success or error messages.
@@ -109,7 +148,20 @@ export class RegisterEmailComponent
 	 */
 	protected canSubmit(): boolean
 	{
-		return this.registerForm.valid && !this.isLoading();
+		const hasAltcha: boolean =
+			!this.altchaEnabled || this.altchaPayload() !== null;
+
+		return this.registerForm.valid && !this.isLoading() && hasAltcha;
+	}
+
+	/**
+	 * Handles ALTCHA widget verification completion.
+	 * @param {string} payload
+	 * The ALTCHA payload from the widget.
+	 */
+	protected onAltchaVerified(payload: string): void
+	{
+		this.altchaPayload.set(payload);
 	}
 
 	/**
@@ -124,6 +176,13 @@ export class RegisterEmailComponent
 			return;
 		}
 
+		if (this.altchaEnabled && !this.altchaPayload())
+		{
+			this.notification.error(
+				"Please complete the verification challenge.");
+			return;
+		}
+
 		this.isLoading.set(true);
 
 		const email: string =
@@ -131,7 +190,11 @@ export class RegisterEmailComponent
 
 		this
 			.authService
-			.initiateRegistration(email)
+			.initiateRegistration(
+				email,
+				this.altchaPayload())
+			.pipe(
+				takeUntilDestroyed(this.destroyRef))
 			.subscribe(
 				{
 					next: () =>

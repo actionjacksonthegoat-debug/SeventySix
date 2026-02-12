@@ -214,5 +214,32 @@ test.describe("Logout Flow",
 						await expect(freshUserPage.locator(SELECTORS.layout.userMenuButton))
 							.toBeHidden({ timeout: TIMEOUTS.auth });
 					});
+
+				test("should redirect to login when session cookie is cleared",
+					async ({ freshUserPage }: { freshUserPage: Page }) =>
+					{
+						await freshUserPage.goto(ROUTES.home);
+
+						// Verify initially authenticated
+						await expect(freshUserPage.locator(SELECTORS.layout.userMenuButton))
+							.toBeVisible({ timeout: TIMEOUTS.auth });
+
+						// Clear all cookies (simulates session expiry)
+						await freshUserPage.context().clearCookies();
+
+						// Navigate to a protected route
+						await freshUserPage.goto(ROUTES.account.root);
+
+						// Should redirect to login since refresh cookie is gone
+						await freshUserPage.waitForURL(
+							(url) =>
+								url.pathname.includes(ROUTES.auth.login)
+								|| url.pathname === ROUTES.home,
+							{ timeout: TIMEOUTS.api });
+
+						// Verify user menu is not visible (unauthenticated)
+						await expect(freshUserPage.locator(SELECTORS.layout.userMenuButton))
+							.toBeHidden({ timeout: TIMEOUTS.auth });
+					});
 			});
 	});

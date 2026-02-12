@@ -167,31 +167,15 @@ public abstract class AuthControllerBase(
 	/// <param name="oauthCodeExchange">
 	/// OAuth code exchange service.
 	/// </param>
-	/// <param name="accessToken">
-	/// The JWT access token.
-	/// </param>
-	/// <param name="refreshToken">
-	/// The refresh token.
-	/// </param>
-	/// <param name="expiresAt">
-	/// Token expiration time.
-	/// </param>
-	/// <param name="email">
-	/// User's email address.
-	/// </param>
-	/// <param name="fullName">
-	/// User's full name (optional).
+	/// <param name="validatedResult">
+	/// The validated authentication result containing tokens and user info.
 	/// </param>
 	/// <returns>
 	/// HTML content result.
 	/// </returns>
 	protected ContentResult CreateOAuthSuccessResponse(
 		IOAuthCodeExchangeService oauthCodeExchange,
-		string accessToken,
-		string refreshToken,
-		DateTime expiresAt,
-		string email,
-		string? fullName)
+		ValidatedAuthResult validatedResult)
 	{
 		string origin =
 			CookieService.GetAllowedOrigin();
@@ -199,11 +183,12 @@ public abstract class AuthControllerBase(
 		// Store tokens and get one-time code (60 second TTL)
 		string code =
 			oauthCodeExchange.StoreTokens(
-				accessToken,
-				refreshToken,
-				expiresAt,
-				email,
-				fullName);
+				validatedResult.AccessToken,
+				validatedResult.RefreshToken,
+				validatedResult.ExpiresAt,
+				validatedResult.Email,
+				validatedResult.FullName,
+				validatedResult.RequiresPasswordChange);
 
 		string html =
 			$$"""

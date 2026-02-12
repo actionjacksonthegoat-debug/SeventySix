@@ -17,6 +17,7 @@
 import { HttpClient, HttpErrorResponse } from "@angular/common/http";
 import {
 	computed,
+	DestroyRef,
 	inject,
 	Injectable,
 	Signal,
@@ -57,147 +58,59 @@ import {
 	})
 export class AuthService
 {
-	/**
-	 * HTTP client for API calls.
-	 * @type {HttpClient}
-	 * @private
-	 * @readonly
-	 */
 	private readonly httpClient: HttpClient =
 		inject(HttpClient);
 
-	/**
-	 * Angular Router for navigation.
-	 * @type {Router}
-	 * @private
-	 * @readonly
-	 */
 	private readonly router: Router =
 		inject(Router);
 
-	/**
-	 * Date service for timestamp/formatting utilities.
-	 * @type {DateService}
-	 * @private
-	 * @readonly
-	 */
 	private readonly dateService: DateService =
 		inject(DateService);
 
-	/**
-	 * Storage service for SSR-safe localStorage access.
-	 * @type {StorageService}
-	 * @private
-	 * @readonly
-	 */
 	private readonly storageService: StorageService =
 		inject(StorageService);
 
-	/**
-	 * Token service for JWT parsing and validation.
-	 * @type {TokenService}
-	 * @private
-	 * @readonly
-	 */
 	private readonly tokenService: TokenService =
 		inject(TokenService);
 
-	/**
-	 * Window service for SSR-safe window operations.
-	 * @type {WindowService}
-	 * @private
-	 * @readonly
-	 */
 	private readonly windowService: WindowService =
 		inject(WindowService);
 
-	/**
-	 * TanStack Query client for cache management.
-	 * Used to clear cached queries on logout to prevent data leakage between users.
-	 * @type {QueryClient}
-	 * @private
-	 * @readonly
-	 */
+	/** Clears cached queries on logout to prevent data leakage between users. */
 	private readonly queryClient: QueryClient =
 		inject(QueryClient);
 
-	/**
-	 * Base auth API URL.
-	 * @type {string}
-	 * @private
-	 * @readonly
-	 */
+	private readonly destroyRef: DestroyRef =
+		inject(DestroyRef);
+
 	private readonly authUrl: string =
 		`${environment.apiUrl}/auth`;
 
-	/**
-	 * Access token stored in memory only for XSS protection.
-	 * @type {string | null}
-	 * @private
-	 */
+	/** Access token stored in memory only for XSS protection. */
 	private accessToken: string | null = null;
 
-	/**
-	 * Token expiration timestamp (epoch millis).
-	 * @type {number}
-	 * @private
-	 */
 	private tokenExpiresAt: number = 0;
 
-	/**
-	 * Tracks if initialization has already been attempted.
-	 * @type {boolean}
-	 * @private
-	 */
 	private initialized: boolean = false;
 
-	/**
-	 * In-flight refresh request observable for single-flight pattern.
-	 * Prevents concurrent refresh requests from exhausting rate limits.
-	 * @type {Observable<AuthResponse | null> | null}
-	 * @private
-	 */
+	/** In-flight refresh observable for single-flight pattern. */
 	private refreshInProgress: Observable<AuthResponse | null> | null = null;
 
-	/**
-	 * Current authenticated user signal.
-	 * @type {WritableSignal<UserProfileDto | null>}
-	 * @private
-	 * @readonly
-	 */
 	private readonly userSignal: WritableSignal<UserProfileDto | null> =
 		signal<UserProfileDto | null>(null);
 
-	/**
-	 * Whether user must change password before using the app.
-	 * @type {WritableSignal<boolean>}
-	 * @private
-	 * @readonly
-	 */
 	private readonly requiresPasswordChangeSignal: WritableSignal<boolean> =
 		signal<boolean>(false);
 
-	/**
-	 * Read-only user state.
-	 * @type {Signal<UserProfileDto | null>}
-	 * @readonly
-	 */
+	/** Read-only user state. */
 	readonly user: Signal<UserProfileDto | null> =
 		this.userSignal.asReadonly();
 
-	/**
-	 * Read-only password change requirement state.
-	 * @type {Signal<boolean>}
-	 * @readonly
-	 */
+	/** Read-only password change requirement state. */
 	readonly requiresPasswordChange: Signal<boolean> =
 		this.requiresPasswordChangeSignal.asReadonly();
 
-	/**
-	 * Computed authentication state.
-	 * @type {Signal<boolean>}
-	 * @readonly
-	 */
+	/** Computed authentication state. */
 	readonly isAuthenticated: Signal<boolean> =
 		computed(
 			() => this.userSignal() !== null);
@@ -216,6 +129,8 @@ export class AuthService
 			return of(null);
 		}
 		this.initialized = true;
+
+		this.initializeCrossTabLogout();
 
 		// Handle OAuth callback if present
 		if (this.handleOAuthCallback())
@@ -452,41 +367,48 @@ export class AuthService
 	 * Always shows success to prevent email enumeration.
 	 * @param {string} email
 	 * The email address to register.
+	 * @param {string | null} altchaPayload
+	 * The ALTCHA payload for bot protection (null when disabled).
 	 * @returns {Observable<void>}
 	 * Observable that completes when the request is accepted.
 	 */
-	initiateRegistration(email: string): Observable<void>
+	initiateRegistration(
+		email: string,
+		altchaPayload: string | null = null): Observable<void>
 	{
-		return this.httpClient.post<void>(`${this.authUrl}/register/initiate`,
+		return this.httpClient.post<void>(
+			`${this.authUrl}/register/initiate`,
 			{
-				email
+				email,
+				altchaPayload
 			});
 	}
 
 	/**
 	 * Completes self-registration after email verification.
+	 *
 	 * @param {string} token
 	 * The verification token from the email link.
+	 *
 	 * @param {string} username
 	 * The desired username.
+	 *
 	 * @param {string} password
 	 * The desired password.
-	 * @param {string | null} altchaPayload
-	 * The ALTCHA payload for bot protection (null when disabled).
+	 *
 	 * @returns {Observable<AuthResponse>}
 	 * Observable that resolves to authentication response on success.
 	 */
 	completeRegistration(
 		token: string,
 		username: string,
-		password: string,
-		altchaPayload: string | null): Observable<AuthResponse>
+		password: string): Observable<AuthResponse>
 	{
 		return this
 			.httpClient
 			.post<AuthResponse>(
 				`${this.authUrl}/register/complete`,
-				{ token, username, password, altchaPayload },
+				{ token, username, password },
 				{ withCredentials: true })
 			.pipe(
 				tap(
@@ -584,6 +506,8 @@ export class AuthService
 			params.get("email");
 		const fullName: string | null =
 			params.get("full_name");
+		const requiresPasswordChange: string | null =
+			params.get("requires_password_change");
 
 		if (token && expiresAt && email)
 		{
@@ -592,6 +516,11 @@ export class AuthService
 				expiresAt,
 				email,
 				fullName);
+
+			if (requiresPasswordChange === "true")
+			{
+				this.requiresPasswordChangeSignal.set(true);
+			}
 
 			// Clean URL fragment
 			this.windowService.replaceState(
@@ -626,6 +555,7 @@ export class AuthService
 		this.requiresPasswordChangeSignal.set(
 			response.requiresPasswordChange);
 		this.markHasSession();
+		this.invalidatePostLogin();
 	}
 
 	/**
@@ -712,6 +642,16 @@ export class AuthService
 	}
 
 	/**
+	 * Marks the user as requiring a password change.
+	 * Called when the server returns 403 PASSWORD_CHANGE_REQUIRED.
+	 * @returns {void}
+	 */
+	markPasswordChangeRequired(): void
+	{
+		this.requiresPasswordChangeSignal.set(true);
+	}
+
+	/**
 	 * Clears the password change requirement (call after successful password change).
 	 * @returns {void}
 	 */
@@ -764,5 +704,39 @@ export class AuthService
 	private clearHasSession(): void
 	{
 		this.storageService.removeItem(STORAGE_KEYS.AUTH_HAS_SESSION);
+	}
+
+	/**
+	 * Listens for cross-tab logout via StorageEvent.
+	 * When another tab removes the session marker, forces local logout and navigates home.
+	 * StorageEvent only fires in non-originating tabs, so no circular trigger risk.
+	 * @returns {void}
+	 */
+	private initializeCrossTabLogout(): void
+	{
+		if (typeof window === "undefined")
+		{
+			return;
+		}
+
+		const storageHandler: (storageEvent: StorageEvent) => void =
+			(storageEvent: StorageEvent): void =>
+			{
+				if (
+					storageEvent.key === STORAGE_KEYS.AUTH_HAS_SESSION
+						&& storageEvent.newValue === null)
+				{
+					this.forceLogoutLocally();
+					this.router.navigateByUrl("/");
+				}
+			};
+
+		window.addEventListener("storage", storageHandler);
+
+		this.destroyRef.onDestroy(
+			() =>
+			{
+				window.removeEventListener("storage", storageHandler);
+			});
 	}
 }

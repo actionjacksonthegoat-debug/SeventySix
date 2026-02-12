@@ -243,4 +243,60 @@ public sealed class MfaService(
 			user.Email ?? string.Empty,
 			newCode);
 	}
+
+	/// <inheritdoc/>
+	public async Task<MfaChallengeValidationResult> ValidateChallengeTokenAsync(
+		string challengeToken,
+		CancellationToken cancellationToken)
+	{
+		MfaChallenge? challenge =
+			await challengeRepository.GetByTokenAsync(
+				challengeToken,
+				cancellationToken);
+
+		if (challenge is null)
+		{
+			return MfaChallengeValidationResult.Failed(
+				"Invalid or expired challenge",
+				MfaErrorCodes.InvalidChallenge);
+		}
+
+		if (challenge.IsUsed)
+		{
+			return MfaChallengeValidationResult.Failed(
+				"Challenge has already been used",
+				MfaErrorCodes.ChallengeUsed);
+		}
+
+		DateTime now =
+			timeProvider.GetUtcNow().UtcDateTime;
+
+		if (challenge.ExpiresAt < now)
+		{
+			return MfaChallengeValidationResult.Failed(
+				"Verification challenge has expired",
+				MfaErrorCodes.CodeExpired);
+		}
+
+		return MfaChallengeValidationResult.Succeeded(challenge.UserId);
+	}
+
+	/// <inheritdoc/>
+	public async Task ConsumeChallengeAsync(
+		string challengeToken,
+		CancellationToken cancellationToken)
+	{
+		MfaChallenge? challenge =
+			await challengeRepository.GetByTokenAsync(
+				challengeToken,
+				cancellationToken);
+
+		if (challenge is not null)
+		{
+			challenge.IsUsed = true;
+			await challengeRepository.UpdateAsync(
+				challenge,
+				cancellationToken);
+		}
+	}
 }

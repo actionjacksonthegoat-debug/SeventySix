@@ -100,7 +100,8 @@ public class AuthenticationServiceTests
 			.GenerateAccessToken(
 				user.Id,
 				user.UserName!,
-				Arg.Any<IEnumerable<string>>())
+				Arg.Any<IEnumerable<string>>(),
+				Arg.Any<bool>())
 			.Returns(expectedAccessToken);
 
 		TokenService
@@ -163,7 +164,8 @@ public class AuthenticationServiceTests
 			.GenerateAccessToken(
 				Arg.Any<long>(),
 				Arg.Any<string>(),
-				Arg.Any<IEnumerable<string>>())
+				Arg.Any<IEnumerable<string>>(),
+				Arg.Any<bool>())
 			.Returns("token");
 
 		TokenService
@@ -217,7 +219,8 @@ public class AuthenticationServiceTests
 			.GenerateAccessToken(
 				Arg.Any<long>(),
 				Arg.Any<string>(),
-				Arg.Any<IEnumerable<string>>())
+				Arg.Any<IEnumerable<string>>(),
+				Arg.Any<bool>())
 			.Returns("token");
 
 		TokenService
@@ -274,7 +277,8 @@ public class AuthenticationServiceTests
 			.GenerateAccessToken(
 				Arg.Any<long>(),
 				Arg.Any<string>(),
-				Arg.Do<IEnumerable<string>>(roleList => capturedRoles = roleList))
+				Arg.Do<IEnumerable<string>>(roleList => capturedRoles = roleList),
+				Arg.Any<bool>())
 			.Returns("token");
 
 		TokenService

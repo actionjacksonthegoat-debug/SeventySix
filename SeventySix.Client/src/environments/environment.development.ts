@@ -88,6 +88,6 @@ export const environment: Environment =
 			tokenRefreshBufferSeconds: 60 // Refresh 60 seconds before expiry
 		},
 		altcha: {
-			enabled: false // Disabled in development
+			enabled: true
 		}
 	};

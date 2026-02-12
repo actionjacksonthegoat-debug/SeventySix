@@ -4,6 +4,7 @@
 
 using FluentValidation;
 using SeventySix.Identity.Extensions;
+using SeventySix.Identity.Settings;
 
 namespace SeventySix.Identity.Commands.ChangePassword;
 
@@ -12,7 +13,7 @@ namespace SeventySix.Identity.Commands.ChangePassword;
 /// </summary>
 /// <remarks>
 /// Validation Rules:
-/// - NewPassword: Required, min 8 characters, complexity requirements
+/// - NewPassword: Required, min length from config, complexity requirements
 /// - CurrentPassword: Optional (only required if user has existing password)
 /// </remarks>
 public class ChangePasswordCommandValidator
@@ -21,8 +22,13 @@ public class ChangePasswordCommandValidator
 	/// <summary>
 	/// Initializes a new instance of the <see cref="ChangePasswordCommandValidator"/> class.
 	/// </summary>
-	public ChangePasswordCommandValidator()
+	///
+	/// <param name="passwordSettings">
+	/// The password configuration settings.
+	/// </param>
+	public ChangePasswordCommandValidator(PasswordSettings passwordSettings)
 	{
-		RuleFor(request => request.NewPassword).ApplyPasswordRules();
+		RuleFor(request => request.NewPassword)
+			.ApplyPasswordRules(passwordSettings);
 	}
 }

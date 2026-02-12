@@ -141,17 +141,24 @@ public class OAuthController(
 		// This ensures the cookie is set on the main domain, not the popup
 		return CreateOAuthSuccessResponse(
 			oAuthCodeExchange,
-			validatedResult.AccessToken,
-			validatedResult.RefreshToken,
-			validatedResult.ExpiresAt,
-			validatedResult.Email,
-			validatedResult.FullName);
+			validatedResult);
 	}
 
 	/// <summary>
 	/// Exchanges an OAuth authorization code for tokens.
 	/// The code is a one-time use token from the OAuth callback.
 	/// </summary>
+	/// <remarks>
+	/// The current OAuth flow uses a fragment-based approach:
+	/// 1. Popup receives OAuth callback with tokens
+	/// 2. Popup stores an exchange code (not the actual tokens) in-memory
+	/// 3. Parent window retrieves the code via postMessage (same-origin)
+	/// 4. Parent calls this endpoint to exchange the code for real tokens
+	///
+	/// This endpoint is scaffolded for future PKCE authorization code exchange.
+	/// The fragment approach is acceptable because the token is cleaned
+	/// immediately and communication is same-origin via postMessage.
+	/// </remarks>
 	/// <param name="request">
 	/// The authorization code.
 	/// </param>
@@ -196,6 +203,6 @@ public class OAuthController(
 				ExpiresAt: result.ExpiresAt,
 				Email: result.Email,
 				FullName: result.FullName,
-				RequiresPasswordChange: false));
+				RequiresPasswordChange: result.RequiresPasswordChange));
 	}
 }

@@ -7,11 +7,13 @@ import {
 	ChangeDetectionStrategy,
 	Component,
 	computed,
+	DestroyRef,
 	inject,
 	Signal,
 	signal,
 	WritableSignal
 } from "@angular/core";
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import {
 	FormBuilder,
 	FormGroup,
@@ -46,6 +48,8 @@ export class ForgotPasswordComponent
 {
 	private readonly authService: AuthService =
 		inject(AuthService);
+	private readonly destroyRef: DestroyRef =
+		inject(DestroyRef);
 	private readonly notification: NotificationService =
 		inject(NotificationService);
 	private readonly altchaService: AltchaService =
@@ -169,6 +173,8 @@ export class ForgotPasswordComponent
 			.requestPasswordReset(
 				email,
 				this.altchaPayload())
+			.pipe(
+				takeUntilDestroyed(this.destroyRef))
 			.subscribe(
 				{
 					next: () =>

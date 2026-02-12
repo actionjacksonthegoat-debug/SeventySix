@@ -26,8 +26,9 @@
  * - Class Structure (2 tests): Services/components with 12+ methods violate SRP
  * - Date Handling (1 test): Use DateService not native Date constructors
  * - Domain Boundary (6 tests): Bounded context isolation, shared independence, API imports, relative imports
+ * - Button Variants (1 test): No mat-raised-button, mat-flat-button, or mat-fab in templates
  *
- * Total: 27 architecture guardrails
+ * Total: 28 architecture guardrails
  * Complemented by ESLint rules in eslint.config.js for real-time feedback
  */
 
@@ -948,6 +949,7 @@ test("services should have less than 12 public methods", async () =>
 	// Services with cohesive single-domain responsibilities are exceptions
 	// These have many methods but serve a single purpose (utility patterns)
 	const allowedExceptions = [
+		"auth.service.ts", // Authentication - all methods serve auth lifecycle (12 methods, single domain)
 		"date.service.ts", // Date utilities - all methods serve date handling (22 methods, single domain)
 		"logger.service.ts", // Logging levels - all methods serve logging (12 methods, single domain)
 		"notification.service.ts" // Toast notifications - all methods serve user feedback (13 methods, single domain)
@@ -1485,6 +1487,53 @@ test("Files should have single primary export (with approved exceptions)", async
 	assertEmpty(
 		violations,
 		"Files should export only one primary item"
+	);
+});
+
+// ============================================================================
+// BUTTON VARIANT ENFORCEMENT
+// ============================================================================
+
+console.log("\nButton Variant Tests");
+
+test("Templates must not use mat-raised-button, mat-flat-button, or mat-fab", async () =>
+{
+	const htmlFiles =
+		await getFiles(SRC_DIR, ".html");
+	const tsFiles =
+		(await getFiles(SRC_DIR, ".ts")).filter(
+			(file) => !file.endsWith(".spec.ts")
+		);
+	const allFiles =
+		[...htmlFiles, ...tsFiles];
+
+	const forbiddenPattern =
+		/\bmat-raised-button\b|\bmat-flat-button\b|\bmat-fab\b/;
+	const violations = [];
+
+	for (const file of allFiles)
+	{
+		const content =
+			await fs.readFile(file, "utf-8");
+		const lines =
+			content.split("\n");
+
+		for (let index = 0; index < lines.length; index++)
+		{
+			if (forbiddenPattern.test(lines[index]))
+			{
+				const relativePath =
+					path.relative(SRC_DIR, file).replace(/\\/g, "/");
+				violations.push(
+					`${relativePath}:${index + 1} — ${lines[index].trim()}`
+				);
+			}
+		}
+	}
+
+	assertEmpty(
+		violations,
+		"Use mat-stroked-button, mat-button, or mat-icon-button only (no mat-raised-button, mat-flat-button, or mat-fab)"
 	);
 });
 

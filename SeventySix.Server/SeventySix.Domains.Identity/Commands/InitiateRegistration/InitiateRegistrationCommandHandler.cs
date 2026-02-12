@@ -16,6 +16,7 @@ namespace SeventySix.Identity;
 /// Uses ASP.NET Core Identity's token providers for email verification.
 /// Creates a temporary unconfirmed user and enqueues verification email via the email queue.
 /// Follows the same queue-based pattern as password reset for consistency.
+/// Includes ALTCHA Proof-of-Work validation when enabled.
 /// </remarks>
 public static class InitiateRegistrationCommandHandler
 {
@@ -24,6 +25,9 @@ public static class InitiateRegistrationCommandHandler
 	/// </summary>
 	/// <param name="request">
 	/// The initiate registration request.
+	/// </param>
+	/// <param name="altchaService">
+	/// Service for ALTCHA Proof-of-Work validation.
 	/// </param>
 	/// <param name="userManager">
 	/// Identity <see cref="UserManager{TUser}"/> for user operations.
@@ -46,11 +50,27 @@ public static class InitiateRegistrationCommandHandler
 	/// </remarks>
 	public static async Task HandleAsync(
 		InitiateRegistrationRequest request,
+		IAltchaService altchaService,
 		UserManager<ApplicationUser> userManager,
 		IMessageBus messageBus,
 		TimeProvider timeProvider,
 		CancellationToken cancellationToken)
 	{
+		// Validate ALTCHA if enabled
+		// Silent failure to prevent enumeration attacks
+		if (altchaService.IsEnabled)
+		{
+			AltchaValidationResult altchaResult =
+				await altchaService.ValidateAsync(
+					request.AltchaPayload ?? string.Empty,
+					cancellationToken);
+
+			if (!altchaResult.Success)
+			{
+				return;
+			}
+		}
+
 		string email =
 			request.Email;
 

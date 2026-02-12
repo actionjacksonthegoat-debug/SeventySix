@@ -72,4 +72,39 @@ public interface IMfaService
 	public Task<MfaChallengeRefreshResult> RefreshChallengeAsync(
 		string challengeToken,
 		CancellationToken cancellationToken);
+
+	/// <summary>
+	/// Validates an MFA challenge token without verifying the MFA code.
+	/// Used by TOTP and backup code flows to confirm prior password authentication.
+	/// Does NOT mark the challenge as consumed.
+	/// </summary>
+	/// <param name="challengeToken">
+	/// The challenge token issued during login.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// Validation result containing the user ID if valid.
+	/// </returns>
+	public Task<MfaChallengeValidationResult> ValidateChallengeTokenAsync(
+		string challengeToken,
+		CancellationToken cancellationToken);
+
+	/// <summary>
+	/// Marks an MFA challenge as consumed (one-time use).
+	/// Called after successful TOTP or backup code verification.
+	/// </summary>
+	/// <param name="challengeToken">
+	/// The challenge token to consume.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// Task representing the async operation.
+	/// </returns>
+	public Task ConsumeChallengeAsync(
+		string challengeToken,
+		CancellationToken cancellationToken);
 }

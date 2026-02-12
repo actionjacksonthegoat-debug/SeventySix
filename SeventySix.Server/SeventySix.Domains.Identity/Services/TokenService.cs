@@ -34,7 +34,8 @@ public sealed class TokenService(
 	public string GenerateAccessToken(
 		long userId,
 		string username,
-		IEnumerable<string> roles)
+		IEnumerable<string> roles,
+		bool requiresPasswordChange = false)
 	{
 		List<Claim> claims =
 			[
@@ -57,6 +58,14 @@ public sealed class TokenService(
 		foreach (string role in roles)
 		{
 			claims.Add(new Claim(ClaimTypes.Role, role));
+		}
+
+		if (requiresPasswordChange)
+		{
+			claims.Add(
+				new Claim(
+					CustomClaimTypes.RequiresPasswordChange,
+					"true"));
 		}
 
 		SymmetricSecurityKey key =

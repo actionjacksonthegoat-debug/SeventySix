@@ -51,7 +51,7 @@ public class ApplicationUserConfiguration : IEntityTypeConfiguration<Application
 		// TOTP fields
 		builder
 			.Property(user => user.TotpSecret)
-			.HasMaxLength(ValidationConstants.TokenHashMaxLength)
+			.HasMaxLength(ValidationConstants.EncryptedTotpSecretMaxLength)
 			.IsRequired(false);
 
 		builder

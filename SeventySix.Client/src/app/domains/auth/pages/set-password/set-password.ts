@@ -8,12 +8,14 @@ import {
 	ChangeDetectionStrategy,
 	Component,
 	computed,
+	DestroyRef,
 	inject,
 	OnInit,
 	Signal,
 	signal,
 	WritableSignal
 } from "@angular/core";
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import {
 	FormBuilder,
 	FormGroup,
@@ -31,6 +33,7 @@ import { AuthErrorResult } from "@shared/models";
 import { AuthService } from "@shared/services/auth.service";
 import { NotificationService } from "@shared/services/notification.service";
 import { getValidationError } from "@shared/utilities";
+import { isNullOrUndefined } from "@shared/utilities/null-check.utility";
 
 @Component(
 	{
@@ -47,6 +50,15 @@ import { getValidationError } from "@shared/utilities";
  */
 export class SetPasswordComponent implements OnInit
 {
+	/**
+	 * Angular destroy reference for automatic subscription cleanup.
+	 * @type {DestroyRef}
+	 * @private
+	 * @readonly
+	 */
+	private readonly destroyRef: DestroyRef =
+		inject(DestroyRef);
+
 	/**
 	 * Auth service used to validate tokens and set the new password.
 	 * @type {AuthService}
@@ -163,7 +175,7 @@ export class SetPasswordComponent implements OnInit
 		this.token =
 			this.route.snapshot.queryParams["token"] ?? "";
 
-		if (!this.token)
+		if (isNullOrUndefined(this.token) || this.token === "")
 		{
 			this.tokenValid.set(false);
 			this.notification.error(
@@ -177,7 +189,7 @@ export class SetPasswordComponent implements OnInit
 	 */
 	private validateForm(): boolean
 	{
-		if (!this.token)
+		if (isNullOrUndefined(this.token) || this.token === "")
 		{
 			this.notification.error("Invalid password reset token.");
 			return false;
@@ -232,6 +244,8 @@ export class SetPasswordComponent implements OnInit
 		this
 			.authService
 			.setPassword(this.token!, formValue.newPassword)
+			.pipe(
+				takeUntilDestroyed(this.destroyRef))
 			.subscribe(
 				{
 					next: () =>

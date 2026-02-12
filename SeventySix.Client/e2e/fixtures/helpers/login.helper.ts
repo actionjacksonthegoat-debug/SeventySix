@@ -1,0 +1,53 @@
+// <copyright file="login.helper.ts" company="SeventySix">
+// Copyright (c) SeventySix. All rights reserved.
+// </copyright>
+
+import type { Page } from "@playwright/test";
+import { SELECTORS } from "../selectors.constant";
+import { ROUTES } from "../routes.constant";
+import { TIMEOUTS } from "../timeouts.constant";
+import type { TestUser } from "../test-users.constant";
+
+/**
+ * Performs a full login flow: navigates to login page,
+ * fills credentials, submits, and waits for expected URL.
+ *
+ * @param page
+ * The Playwright page instance.
+ *
+ * @param user
+ * The test user credentials.
+ *
+ * @param options
+ * Optional overrides for wait behavior.
+ */
+export async function loginAsUser(
+	page: Page,
+	user: TestUser,
+	options?: {
+		expectedUrl?: string | RegExp;
+		timeout?: number;
+	}): Promise<void>
+{
+	await page.goto(ROUTES.auth.login);
+	await page.waitForLoadState("load");
+
+	await page
+		.locator(SELECTORS.form.usernameInput)
+		.fill(user.username);
+	await page
+		.locator(SELECTORS.form.passwordInput)
+		.fill(user.password);
+	await page
+		.locator(SELECTORS.form.submitButton)
+		.click();
+
+	const expectedUrl: string | RegExp =
+		options?.expectedUrl ?? ROUTES.home;
+	const timeout: number =
+		options?.timeout ?? TIMEOUTS.auth;
+
+	await page.waitForURL(
+		expectedUrl,
+		{ timeout });
+}

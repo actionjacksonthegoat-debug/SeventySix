@@ -13,4 +13,14 @@ namespace SeventySix.Identity;
 /// <param name="ClientIp">
 /// Client IP for token tracking.
 /// </param>
-public record LoginCommand(LoginRequest Request, string? ClientIp);
+/// <param name="TrustedDeviceToken">
+/// Trusted device cookie token (null if not present).
+/// </param>
+/// <param name="UserAgent">
+/// Browser User-Agent header for device fingerprinting.
+/// </param>
+public record LoginCommand(
+	LoginRequest Request,
+	string? ClientIp,
+	string? TrustedDeviceToken = null,
+	string? UserAgent = null);

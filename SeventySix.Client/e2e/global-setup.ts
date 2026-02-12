@@ -30,8 +30,14 @@ async function globalSetup(config: FullConfig): Promise<void>
 		await chromium.launch();
 
 	// Authenticate each test role in parallel — each uses its own context and auth file
+	// MFA-enabled users are excluded because they require MFA verification after login
+	// and cannot complete the standard login → home redirect flow.
+	const nonMfaUsers =
+		TEST_USERS.filter(
+			(testUser) => !testUser.mfaEnabled);
+
 	await Promise.all(
-		TEST_USERS.map(
+		nonMfaUsers.map(
 			async (testUser) =>
 			{
 				const browserContext: BrowserContext =

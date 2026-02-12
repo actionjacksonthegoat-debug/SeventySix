@@ -12,7 +12,7 @@
 			</p>
 			<a
 				routerLink="/auth/login"
-				mat-flat-button
+				mat-stroked-button
 				color="primary"
 				class="submit-button">
 				Return to Sign In
@@ -53,8 +53,18 @@
 				}
 			</div>
 
+			@if (altchaEnabled) {
+			<div class="form-group">
+				<app-altcha-widget
+					[challengeUrl]="challengeUrl"
+					[hideFooter]="true"
+					(verified)="onAltchaVerified($event)">
+				</app-altcha-widget>
+			</div>
+			}
+
 			<button
-				mat-flat-button
+				mat-stroked-button
 				color="primary"
 				type="submit"
 				class="submit-button"

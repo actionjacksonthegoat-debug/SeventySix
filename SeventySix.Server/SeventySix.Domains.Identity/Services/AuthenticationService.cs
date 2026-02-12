@@ -82,7 +82,8 @@ public class AuthenticationService(
 			tokenService.GenerateAccessToken(
 				user.Id,
 				user.UserName ?? string.Empty,
-				[.. roles]);
+				[.. roles],
+				requiresPasswordChange);
 
 		string refreshToken =
 			await tokenService.GenerateRefreshTokenAsync(

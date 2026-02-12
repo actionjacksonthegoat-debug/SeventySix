@@ -5,6 +5,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Options;
 using SeventySix.Api.Configuration;
 using SeventySix.Api.Extensions;
 using SeventySix.Api.Infrastructure;
@@ -23,6 +24,9 @@ namespace SeventySix.Api.Controllers;
 /// <param name="cookieService">
 /// Service for authentication cookie management.
 /// </param>
+/// <param name="trustedDeviceSettings">
+/// Trusted device configuration for cookie lifetime.
+/// </param>
 /// <param name="logger">
 /// Logger for MFA operations.
 /// </param>
@@ -31,6 +35,7 @@ namespace SeventySix.Api.Controllers;
 public class MfaController(
 	IMessageBus messageBus,
 	IAuthCookieService cookieService,
+	IOptions<TrustedDeviceSettings> trustedDeviceSettings,
 	ILogger<MfaController> logger) : AuthControllerBase(cookieService, logger)
 {
 	/// <summary>
@@ -62,10 +67,15 @@ public class MfaController(
 		CancellationToken cancellationToken)
 	{
 		string? clientIp = GetClientIpAddress();
+		string? userAgent =
+			Request.Headers.UserAgent.ToString();
 
 		AuthResult result =
 			await messageBus.InvokeAsync<AuthResult>(
-				new VerifyMfaCommand(request, clientIp),
+				new VerifyMfaCommand(
+					request,
+					clientIp,
+					userAgent),
 				cancellationToken);
 
 		if (!result.Success)
@@ -77,6 +87,7 @@ public class MfaController(
 			ValidateSuccessfulAuthResult(result);
 
 		CookieService.SetRefreshTokenCookie(validatedResult.RefreshToken);
+		SetTrustedDeviceCookieIfPresent(result);
 
 		return Ok(CreateAuthResponse(validatedResult));
 	}
@@ -139,7 +150,7 @@ public class MfaController(
 	/// Verifies a TOTP code during MFA authentication.
 	/// </summary>
 	/// <param name="request">
-	/// The verification request containing email and TOTP code.
+	/// The verification request containing challenge token and TOTP code.
 	/// </param>
 	/// <param name="cancellationToken">
 	/// Cancellation token.
@@ -164,10 +175,15 @@ public class MfaController(
 		CancellationToken cancellationToken)
 	{
 		string? clientIp = GetClientIpAddress();
+		string? userAgent =
+			Request.Headers.UserAgent.ToString();
 
 		AuthResult result =
 			await messageBus.InvokeAsync<AuthResult>(
-				new VerifyTotpCodeCommand(request, clientIp),
+				new VerifyTotpCodeCommand(
+					request,
+					clientIp,
+					userAgent),
 				cancellationToken);
 
 		if (!result.Success)
@@ -179,6 +195,7 @@ public class MfaController(
 			ValidateSuccessfulAuthResult(result);
 
 		CookieService.SetRefreshTokenCookie(validatedResult.RefreshToken);
+		SetTrustedDeviceCookieIfPresent(result);
 
 		return Ok(CreateAuthResponse(validatedResult));
 	}
@@ -187,7 +204,7 @@ public class MfaController(
 	/// Verifies a backup code during MFA authentication.
 	/// </summary>
 	/// <param name="request">
-	/// The verification request containing email and backup code.
+	/// The verification request containing challenge token and backup code.
 	/// </param>
 	/// <param name="cancellationToken">
 	/// Cancellation token.
@@ -212,10 +229,15 @@ public class MfaController(
 		CancellationToken cancellationToken)
 	{
 		string? clientIp = GetClientIpAddress();
+		string? userAgent =
+			Request.Headers.UserAgent.ToString();
 
 		AuthResult result =
 			await messageBus.InvokeAsync<AuthResult>(
-				new VerifyBackupCodeCommand(request, clientIp),
+				new VerifyBackupCodeCommand(
+					request,
+					clientIp,
+					userAgent),
 				cancellationToken);
 
 		if (!result.Success)
@@ -227,6 +249,7 @@ public class MfaController(
 			ValidateSuccessfulAuthResult(result);
 
 		CookieService.SetRefreshTokenCookie(validatedResult.RefreshToken);
+		SetTrustedDeviceCookieIfPresent(result);
 
 		return Ok(CreateAuthResponse(validatedResult));
 	}
@@ -495,5 +518,21 @@ public class MfaController(
 				cancellationToken);
 
 		return Ok(remaining);
+	}
+
+	/// <summary>
+	/// Sets the trusted device cookie when the auth result contains a device token.
+	/// </summary>
+	/// <param name="result">
+	/// The auth result to check for a trusted device token.
+	/// </param>
+	private void SetTrustedDeviceCookieIfPresent(AuthResult result)
+	{
+		if (result.TrustedDeviceToken is not null)
+		{
+			CookieService.SetTrustedDeviceCookie(
+				result.TrustedDeviceToken,
+				trustedDeviceSettings.Value.TokenLifetimeDays);
+		}
 	}
 }

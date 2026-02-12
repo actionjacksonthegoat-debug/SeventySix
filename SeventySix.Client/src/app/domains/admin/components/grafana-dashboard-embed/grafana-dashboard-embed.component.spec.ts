@@ -1,6 +1,8 @@
-import { provideZonelessChangeDetection } from "@angular/core";
+import { provideZonelessChangeDetection, signal, WritableSignal } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { environment } from "@environments/environment";
+import { ThemeBrightness } from "@shared/models/theme.model";
+import { ThemeService } from "@shared/services";
 import { GrafanaDashboardEmbedComponent } from "./grafana-dashboard-embed.component";
 
 describe("GrafanaDashboardEmbedComponent",
@@ -8,15 +10,30 @@ describe("GrafanaDashboardEmbedComponent",
 	{
 		let component: GrafanaDashboardEmbedComponent;
 		let fixture: ComponentFixture<GrafanaDashboardEmbedComponent>;
+		const mockBrightness: WritableSignal<ThemeBrightness> =
+			signal<ThemeBrightness>("dark");
+
+		const mockThemeService: Partial<ThemeService> =
+			{
+				brightness: mockBrightness
+			};
 
 		beforeEach(
 			async () =>
 			{
+				mockBrightness.set("dark");
+
 				await TestBed
 					.configureTestingModule(
 						{
 							imports: [GrafanaDashboardEmbedComponent],
-							providers: [provideZonelessChangeDetection()]
+							providers: [
+								provideZonelessChangeDetection(),
+								{
+									provide: ThemeService,
+									useValue: mockThemeService
+								}
+							]
 						})
 					.compileComponents();
 
@@ -73,7 +90,7 @@ describe("GrafanaDashboardEmbedComponent",
 		it("should use custom theme",
 			() =>
 			{
-				fixture.componentRef.setInput("theme", "light");
+				mockBrightness.set("light");
 				fixture.detectChanges();
 
 				const url: string =
@@ -81,6 +98,25 @@ describe("GrafanaDashboardEmbedComponent",
 						.sanitizedUrl()
 						.toString();
 				expect(url)
+					.toContain("theme=light");
+			});
+
+		it("should reactively update theme when brightness changes",
+			() =>
+			{
+				expect(
+					component
+						.sanitizedUrl()
+						.toString())
+					.toContain("theme=dark");
+
+				mockBrightness.set("light");
+				fixture.detectChanges();
+
+				expect(
+					component
+						.sanitizedUrl()
+						.toString())
 					.toContain("theme=light");
 			});
 

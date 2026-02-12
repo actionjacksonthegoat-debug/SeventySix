@@ -8,11 +8,13 @@ import { HttpErrorResponse } from "@angular/common/http";
 import {
 	ChangeDetectionStrategy,
 	Component,
+	DestroyRef,
 	inject,
 	OnInit,
 	signal,
 	WritableSignal
 } from "@angular/core";
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
 import { Router } from "@angular/router";
@@ -20,6 +22,8 @@ import { CLIPBOARD_RESET_DELAY_MS } from "@auth/constants";
 import { BackupCodesService } from "@auth/services";
 import { APP_ROUTES } from "@shared/constants";
 import { DateService, NotificationService } from "@shared/services";
+import { copyWithFeedback } from "@shared/utilities";
+import { isNullOrUndefined } from "@shared/utilities/null-check.utility";
 
 /**
  * Number of backup codes to generate.
@@ -57,6 +61,15 @@ export class BackupCodesComponent implements OnInit
 	 */
 	private readonly backupCodesService: BackupCodesService =
 		inject(BackupCodesService);
+
+	/**
+	 * Angular destroy reference for automatic subscription cleanup.
+	 * @type {DestroyRef}
+	 * @private
+	 * @readonly
+	 */
+	private readonly destroyRef: DestroyRef =
+		inject(DestroyRef);
 
 	/**
 	 * Clipboard service for copy operations.
@@ -181,6 +194,8 @@ export class BackupCodesComponent implements OnInit
 		this
 			.backupCodesService
 			.generate()
+			.pipe(
+				takeUntilDestroyed(this.destroyRef))
 			.subscribe(
 				{
 					next: (codes: string[]) =>
@@ -229,17 +244,15 @@ export class BackupCodesComponent implements OnInit
 		const codesText: string =
 			this.formatCodesForCopy();
 		const success: boolean =
-			this.clipboard.copy(codesText);
+			copyWithFeedback(
+				this.clipboard,
+				codesText,
+				this.codesCopied,
+				CLIPBOARD_RESET_DELAY_MS);
 
 		if (success)
 		{
-			this.codesCopied.set(true);
 			this.notification.success("Backup codes copied to clipboard");
-
-			// Reset copied state after delay
-			setTimeout(
-				() => this.codesCopied.set(false),
-				CLIPBOARD_RESET_DELAY_MS);
 		}
 		else
 		{
@@ -284,7 +297,7 @@ export class BackupCodesComponent implements OnInit
 		const printWindow: Window | null =
 			window.open("", "_blank");
 
-		if (!printWindow)
+		if (isNullOrUndefined(printWindow))
 		{
 			this.notification.error("Could not open print window. Please allow pop-ups.");
 			return;

@@ -55,8 +55,12 @@
 
 .toast-header {
 	display: flex;
-	align-items: center;
+	align-items: flex-start;
 	gap: vars.$spacing-sm;
+
+	> mat-icon:first-child {
+		margin-top: vars.$spacing-xs; // Aligns icon with first text line
+	}
 }
 
 .toast-message {
@@ -66,8 +70,9 @@
 
 .toast-actions {
 	display: flex;
-	align-items: center;
+	align-items: flex-start;
 	gap: vars.$spacing-xs;
+	flex-shrink: 0;
 }
 
 .action-button {

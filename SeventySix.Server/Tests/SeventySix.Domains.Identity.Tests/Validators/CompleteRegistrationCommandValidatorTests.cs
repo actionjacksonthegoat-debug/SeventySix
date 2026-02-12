@@ -5,6 +5,7 @@
 using FluentValidation.Results;
 using SeventySix.Identity;
 using SeventySix.Identity.Commands.CompleteRegistration;
+using SeventySix.Identity.Settings;
 using Shouldly;
 
 namespace SeventySix.Identity.Tests.Validators;
@@ -14,7 +15,18 @@ namespace SeventySix.Identity.Tests.Validators;
 /// </summary>
 public class CompleteRegistrationCommandValidatorTests
 {
-	private readonly CompleteRegistrationCommandValidator Validator = new();
+	private static readonly PasswordSettings TestPasswordSettings =
+		new()
+		{
+			MinLength = 8,
+			RequireUppercase = true,
+			RequireLowercase = true,
+			RequireDigit = true,
+			RequireSpecialChar = false,
+		};
+
+	private readonly CompleteRegistrationCommandValidator Validator =
+		new(TestPasswordSettings);
 
 	[Fact]
 	public async Task ValidateAsync_ReturnsValid_WhenAllFieldsValidAsync()

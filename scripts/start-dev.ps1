@@ -33,6 +33,20 @@ if (-not (Test-Path $certificatePath)) {
 	}
 }
 
+# Check DataProtection certificate exists before starting
+$dataProtectionCertPath =
+"$PSScriptRoot\..\SeventySix.Server\SeventySix.Api\keys\dataprotection.pfx"
+
+if (-not (Test-Path $dataProtectionCertPath)) {
+	Write-Host "DataProtection certificate not found. Generating..." -ForegroundColor Yellow
+	& "$PSScriptRoot\generate-dataprotection-cert.ps1"
+
+	if (-not (Test-Path $dataProtectionCertPath)) {
+		Write-Host "Failed to generate DataProtection certificate!" -ForegroundColor Red
+		exit 1
+	}
+}
+
 # Clean up orphaned processes before starting (prevents port conflicts)
 if (-not $SkipCleanup) {
 	& (Join-Path $PSScriptRoot "cleanup-ports.ps1")

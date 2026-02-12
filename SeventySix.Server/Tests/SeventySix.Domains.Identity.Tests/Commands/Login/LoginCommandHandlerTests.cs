@@ -31,6 +31,7 @@ public class LoginCommandHandlerTests
 	private readonly ISecurityAuditService SecurityAuditService;
 	private readonly IMfaService MfaService;
 	private readonly IOptions<MfaSettings> MfaSettings;
+	private readonly ITrustedDeviceService TrustedDeviceService;
 	private readonly IMessageBus MessageBus;
 
 	/// <summary>
@@ -63,6 +64,8 @@ public class LoginCommandHandlerTests
 					MaxAttempts = 5,
 					ResendCooldownSeconds = 60
 				});
+		TrustedDeviceService =
+			Substitute.For<ITrustedDeviceService>();
 		MessageBus =
 			Substitute.For<IMessageBus>();
 
@@ -104,6 +107,7 @@ public class LoginCommandHandlerTests
 				SecurityAuditService,
 				MfaService,
 				MfaSettings,
+				TrustedDeviceService,
 				MessageBus,
 				CancellationToken.None);
 
@@ -150,6 +154,7 @@ public class LoginCommandHandlerTests
 				SecurityAuditService,
 				MfaService,
 				MfaSettings,
+				TrustedDeviceService,
 				MessageBus,
 				CancellationToken.None);
 
@@ -196,6 +201,7 @@ public class LoginCommandHandlerTests
 				SecurityAuditService,
 				MfaService,
 				MfaSettings,
+				TrustedDeviceService,
 				MessageBus,
 				CancellationToken.None);
 
@@ -234,6 +240,7 @@ public class LoginCommandHandlerTests
 				SecurityAuditService,
 				MfaService,
 				MfaSettings,
+				TrustedDeviceService,
 				MessageBus,
 				CancellationToken.None);
 
@@ -277,12 +284,122 @@ public class LoginCommandHandlerTests
 				SecurityAuditService,
 				MfaService,
 				MfaSettings,
+				TrustedDeviceService,
 				MessageBus,
 				CancellationToken.None);
 
 		// Assert
 		result.Success.ShouldBeFalse();
 		result.ErrorCode.ShouldBe(AuthErrorCodes.InvalidCredentials);
+	}
+
+	/// <summary>
+	/// Tests login failure when ALTCHA is enabled and validation fails.
+	/// </summary>
+	[Fact]
+	public async Task HandleAsync_AltchaEnabledAndValidationFails_ReturnsInvalidCredentialsAsync()
+	{
+		// Arrange
+		AltchaService.IsEnabled.Returns(true);
+		AltchaService
+			.ValidateAsync(
+				Arg.Any<string>(),
+				Arg.Any<CancellationToken>())
+			.Returns(new AltchaValidationResult
+			{
+				Success = false,
+				ErrorCode = "INVALID_PAYLOAD"
+			});
+
+		LoginCommand command =
+			CreateLoginCommand(
+				"testuser",
+				"ValidPass123!");
+
+		// Act
+		AuthResult result =
+			await LoginCommandHandler.HandleAsync(
+				command,
+				UserManager,
+				SignInManager,
+				AuthenticationService,
+				AltchaService,
+				SecurityAuditService,
+				MfaService,
+				MfaSettings,
+				TrustedDeviceService,
+				MessageBus,
+				CancellationToken.None);
+
+		// Assert — returns generic InvalidCredentials (no enumeration)
+		result.Success.ShouldBeFalse();
+		result.ErrorCode.ShouldBe(AuthErrorCodes.InvalidCredentials);
+	}
+
+	/// <summary>
+	/// Tests that MFA is required when MFA is enabled globally and user has email-based MFA.
+	/// </summary>
+	[Fact]
+	public async Task HandleAsync_MfaEnabledForAllUsers_ReturnsMfaRequiredAsync()
+	{
+		// Arrange
+		IOptions<MfaSettings> mfaSettings =
+			Options.Create(
+				new MfaSettings
+				{
+					Enabled = true,
+					RequiredForAllUsers = true,
+					CodeLength = 6,
+					CodeExpirationMinutes = 5,
+					MaxAttempts = 5,
+					ResendCooldownSeconds = 60
+				});
+
+		ApplicationUser user =
+			new UserBuilder(TimeProvider)
+				.WithId(10)
+				.WithUsername("mfauser")
+				.WithEmail("mfa@example.com")
+				.WithRequiresPasswordChange(false)
+				.Build();
+
+		LoginCommand command =
+			CreateLoginCommand(
+				"mfauser",
+				"ValidPass123!");
+
+		IdentityMockFactory.ConfigureUserManagerForSuccess(UserManager, user);
+		IdentityMockFactory.ConfigureSignInManagerForSuccess(SignInManager);
+
+		string challengeToken = "mfa-challenge-token-123";
+		string mfaCode = "123456";
+		MfaService
+			.CreateChallengeAsync(
+				user.Id,
+				Arg.Any<string?>(),
+				Arg.Any<CancellationToken>())
+			.Returns((challengeToken, mfaCode));
+
+		// Act
+		AuthResult result =
+			await LoginCommandHandler.HandleAsync(
+				command,
+				UserManager,
+				SignInManager,
+				AuthenticationService,
+				AltchaService,
+				SecurityAuditService,
+				MfaService,
+				mfaSettings,
+				TrustedDeviceService,
+				MessageBus,
+				CancellationToken.None);
+
+		// Assert
+		result.Success.ShouldBeFalse();
+		result.RequiresMfa.ShouldBeTrue();
+		result.MfaChallengeToken.ShouldBe(challengeToken);
+		result.MfaMethod.ShouldBe(MfaMethod.Email);
 	}
 
 	private static LoginCommand CreateLoginCommand(

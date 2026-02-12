@@ -13,6 +13,10 @@ namespace SeventySix.Identity;
 /// <param name="ClientIp">
 /// Client IP for token creation.
 /// </param>
+/// <param name="UserAgent">
+/// Browser User-Agent header for device fingerprinting.
+/// </param>
 public record VerifyMfaCommand(
 	VerifyMfaRequest Request,
-	string? ClientIp);
+	string? ClientIp,
+	string? UserAgent = null);

@@ -25,6 +25,10 @@ public interface ITokenService
 	/// <param name="roles">
 	/// The user's roles.
 	/// </param>
+	/// <param name="requiresPasswordChange">
+	/// Whether the user must change their password before accessing the application.
+	/// When true, a <c>requires_password_change</c> claim is added to the JWT.
+	/// </param>
 	/// <returns>
 	/// The JWT access token string.
 	/// </returns>
@@ -35,7 +39,8 @@ public interface ITokenService
 	public string GenerateAccessToken(
 		long userId,
 		string username,
-		IEnumerable<string> roles);
+		IEnumerable<string> roles,
+		bool requiresPasswordChange = false);
 
 	/// <summary>
 	/// Generates a new refresh token and stores it.

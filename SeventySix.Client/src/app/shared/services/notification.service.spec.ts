@@ -539,11 +539,13 @@ describe("NotificationService copyToClipboard",
 				// Suppress console output from LoggerService during passing tests
 				const logger: LoggerService =
 					TestBed.inject(LoggerService);
-				vi.spyOn(logger, "debug")
+				vi
+					.spyOn(logger, "debug")
 					.mockImplementation(
 						() =>
 						{});
-				vi.spyOn(logger, "error")
+				vi
+					.spyOn(logger, "error")
 					.mockImplementation(
 						() =>
 						{});

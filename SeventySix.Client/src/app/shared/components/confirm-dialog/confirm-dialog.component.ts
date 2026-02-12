@@ -30,7 +30,7 @@ import { ConfirmDialogData } from "@shared/models";
 				{{ data.cancelText ?? "Cancel" }}
 			</button>
 			<button
-				mat-raised-button
+				mat-stroked-button
 				type="button"
 				[color]="data.confirmColor ?? 'primary'"
 				(click)="onConfirm()"

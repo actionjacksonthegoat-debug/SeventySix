@@ -305,6 +305,45 @@ services:
           cpus: "0.5"
           memory: 256M
 
+  # Fail2Ban - Intrusion prevention (bans IPs after repeated violations)
+  fail2ban:
+    image: crazymax/fail2ban:latest
+    container_name: seventysix-fail2ban-prod
+    network_mode: host
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    volumes:
+      - ./fail2ban/jail.d:/etc/fail2ban/jail.d:ro
+      - ./fail2ban/filter.d:/etc/fail2ban/filter.d:ro
+      - geoip_data:/usr/share/GeoIP:ro
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 64M
+
+  # GeoIP Updater - Downloads MaxMind GeoLite2-Country database for Fail2Ban
+  geoipupdate:
+    image: ghcr.io/maxmind/geoipupdate:latest
+    container_name: seventysix-geoipupdate-prod
+    environment:
+      GEOIPUPDATE_ACCOUNT_ID: "${MAXMIND_ACCOUNT_ID:?MAXMIND_ACCOUNT_ID must be set}"
+      GEOIPUPDATE_LICENSE_KEY: "${MAXMIND_LICENSE_KEY:?MAXMIND_LICENSE_KEY must be set}"
+      GEOIPUPDATE_EDITION_IDS: "GeoLite2-Country"
+      GEOIPUPDATE_FREQUENCY: "24"
+    volumes:
+      - geoip_data:/usr/share/GeoIP
+    restart: unless-stopped
+    networks:
+      - seventysix-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 64M
+
 # Named volumes for data persistence across container lifecycle
 # Data survives: docker-compose down, docker-compose up, container restarts
 volumes:
@@ -323,6 +362,9 @@ volumes:
   dataprotection_keys:
     driver: local
     name: seventysix_dataprotection_prod_keys
+  geoip_data:
+    driver: local
+    name: seventysix_geoip_prod_data
 
 networks:
   seventysix-network:

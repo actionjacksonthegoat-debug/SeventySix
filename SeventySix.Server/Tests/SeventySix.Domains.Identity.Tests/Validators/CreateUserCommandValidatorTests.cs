@@ -3,8 +3,10 @@
 // </copyright>
 
 using FluentValidation.TestHelper;
+using NSubstitute;
 using SeventySix.Identity;
 using SeventySix.Identity.Commands.CreateUser;
+using Wolverine;
 
 namespace SeventySix.Identity.Tests.Validators;
 
@@ -16,17 +18,35 @@ namespace SeventySix.Identity.Tests.Validators;
 /// Coverage Focus:
 /// - Username validation (required, length, format)
 /// - Email validation (required, format, length)
+/// - Email uniqueness (async via CheckEmailExistsQuery)
 /// - FullName validation (optional, length)
 /// - IsActive validation (no rules, just acceptance)
 /// </remarks>
 public class CreateUserCommandValidatorTests
 {
-	private readonly CreateUserCommandValidator Validator = new();
+	private readonly IMessageBus MessageBus;
+	private readonly CreateUserCommandValidator Validator;
+
+	public CreateUserCommandValidatorTests()
+	{
+		MessageBus =
+			Substitute.For<IMessageBus>();
+
+		// Default: email does not exist (valid)
+		MessageBus
+			.InvokeAsync<bool>(
+				Arg.Any<CheckEmailExistsQuery>(),
+				Arg.Any<CancellationToken>())
+			.Returns(false);
+
+		Validator =
+			new CreateUserCommandValidator(MessageBus);
+	}
 
 	#region Username Validation Tests
 
 	[Fact]
-	public void Username_ShouldHaveError_WhenEmpty()
+	public async Task Username_ShouldHaveError_WhenEmptyAsync()
 	{
 		// Arrange
 		CreateUserRequest request =
@@ -39,8 +59,7 @@ public class CreateUserCommandValidatorTests
 
 		// Act
 		TestValidationResult<CreateUserRequest> result =
-			Validator.TestValidate(
-			request);
+			await Validator.TestValidateAsync(request);
 
 		// Assert
 		result
@@ -49,7 +68,7 @@ public class CreateUserCommandValidatorTests
 	}
 
 	[Fact]
-	public void Username_ShouldHaveError_WhenNull()
+	public async Task Username_ShouldHaveError_WhenNullAsync()
 	{
 		// Arrange
 		CreateUserRequest request =
@@ -63,8 +82,7 @@ public class CreateUserCommandValidatorTests
 
 		// Act
 		TestValidationResult<CreateUserRequest> result =
-			Validator.TestValidate(
-			request);
+			await Validator.TestValidateAsync(request);
 
 		// Assert
 		result.ShouldHaveValidationErrorFor(x => x.Username);
@@ -75,7 +93,7 @@ public class CreateUserCommandValidatorTests
 		nameof(UserValidationTestData.TooShortUsernames),
 		MemberType = typeof(UserValidationTestData)
 	)]
-	public void Username_ShouldHaveError_WhenTooShort(string username)
+	public async Task Username_ShouldHaveError_WhenTooShortAsync(string username)
 	{
 		// Arrange
 		CreateUserRequest request =
@@ -88,8 +106,7 @@ public class CreateUserCommandValidatorTests
 
 		// Act
 		TestValidationResult<CreateUserRequest> result =
-			Validator.TestValidate(
-			request);
+			await Validator.TestValidateAsync(request);
 
 		// Assert
 		result
@@ -98,7 +115,7 @@ public class CreateUserCommandValidatorTests
 	}
 
 	[Fact]
-	public void Username_ShouldHaveError_WhenTooLong()
+	public async Task Username_ShouldHaveError_WhenTooLongAsync()
 	{
 		// Arrange
 		CreateUserRequest request =
@@ -112,8 +129,7 @@ public class CreateUserCommandValidatorTests
 
 		// Act
 		TestValidationResult<CreateUserRequest> result =
-			Validator.TestValidate(
-			request);
+			await Validator.TestValidateAsync(request);
 
 		// Assert
 		result
@@ -126,7 +142,7 @@ public class CreateUserCommandValidatorTests
 		nameof(UserValidationTestData.InvalidUsernameCharacters),
 		MemberType = typeof(UserValidationTestData)
 	)]
-	public void Username_ShouldHaveError_WhenContainsInvalidCharacters(
+	public async Task Username_ShouldHaveError_WhenContainsInvalidCharactersAsync(
 		string username)
 	{
 		// Arrange
@@ -140,8 +156,7 @@ public class CreateUserCommandValidatorTests
 
 		// Act
 		TestValidationResult<CreateUserRequest> result =
-			Validator.TestValidate(
-			request);
+			await Validator.TestValidateAsync(request);
 
 		// Assert
 		result
@@ -155,7 +170,7 @@ public class CreateUserCommandValidatorTests
 		nameof(UserValidationTestData.ValidUsernames),
 		MemberType = typeof(UserValidationTestData)
 	)]
-	public void Username_ShouldNotHaveError_WhenValid(string username)
+	public async Task Username_ShouldNotHaveError_WhenValidAsync(string username)
 	{
 		// Arrange
 		CreateUserRequest request =
@@ -168,15 +183,14 @@ public class CreateUserCommandValidatorTests
 
 		// Act
 		TestValidationResult<CreateUserRequest> result =
-			Validator.TestValidate(
-			request);
+			await Validator.TestValidateAsync(request);
 
 		// Assert
 		result.ShouldNotHaveValidationErrorFor(x => x.Username);
 	}
 
 	[Fact]
-	public void Username_ShouldNotHaveError_WhenMaxLength()
+	public async Task Username_ShouldNotHaveError_WhenMaxLengthAsync()
 	{
 		// Arrange
 		CreateUserRequest request =
@@ -190,8 +204,7 @@ public class CreateUserCommandValidatorTests
 
 		// Act
 		TestValidationResult<CreateUserRequest> result =
-			Validator.TestValidate(
-			request);
+			await Validator.TestValidateAsync(request);
 
 		// Assert
 		result.ShouldNotHaveValidationErrorFor(x => x.Username);
@@ -202,7 +215,7 @@ public class CreateUserCommandValidatorTests
 	#region Email Validation Tests
 
 	[Fact]
-	public void Email_ShouldHaveError_WhenEmpty()
+	public async Task Email_ShouldHaveError_WhenEmptyAsync()
 	{
 		// Arrange
 		CreateUserRequest request =
@@ -215,8 +228,7 @@ public class CreateUserCommandValidatorTests
 
 		// Act
 		TestValidationResult<CreateUserRequest> result =
-			Validator.TestValidate(
-			request);
+			await Validator.TestValidateAsync(request);
 
 		// Assert
 		result
@@ -225,7 +237,7 @@ public class CreateUserCommandValidatorTests
 	}
 
 	[Fact]
-	public void Email_ShouldHaveError_WhenNull()
+	public async Task Email_ShouldHaveError_WhenNullAsync()
 	{
 		// Arrange
 		CreateUserRequest request =
@@ -239,8 +251,7 @@ public class CreateUserCommandValidatorTests
 
 		// Act
 		TestValidationResult<CreateUserRequest> result =
-			Validator.TestValidate(
-			request);
+			await Validator.TestValidateAsync(request);
 
 		// Assert
 		result.ShouldHaveValidationErrorFor(x => x.Email);
@@ -251,7 +262,7 @@ public class CreateUserCommandValidatorTests
 		nameof(UserValidationTestData.InvalidEmails),
 		MemberType = typeof(UserValidationTestData)
 	)]
-	public void Email_ShouldHaveError_WhenInvalidFormat(string email)
+	public async Task Email_ShouldHaveError_WhenInvalidFormatAsync(string email)
 	{
 		// Arrange
 		CreateUserRequest request =
@@ -264,8 +275,7 @@ public class CreateUserCommandValidatorTests
 
 		// Act
 		TestValidationResult<CreateUserRequest> result =
-			Validator.TestValidate(
-			request);
+			await Validator.TestValidateAsync(request);
 
 		// Assert
 		result
@@ -274,7 +284,7 @@ public class CreateUserCommandValidatorTests
 	}
 
 	[Fact]
-	public void Email_ShouldHaveError_WhenTooLong()
+	public async Task Email_ShouldHaveError_WhenTooLongAsync()
 	{
 		// Arrange
 		string longEmail =
@@ -289,8 +299,7 @@ public class CreateUserCommandValidatorTests
 
 		// Act
 		TestValidationResult<CreateUserRequest> result =
-			Validator.TestValidate(
-			request);
+			await Validator.TestValidateAsync(request);
 
 		// Assert
 		result
@@ -303,7 +312,7 @@ public class CreateUserCommandValidatorTests
 		nameof(UserValidationTestData.ValidEmails),
 		MemberType = typeof(UserValidationTestData)
 	)]
-	public void Email_ShouldNotHaveError_WhenValid(string email)
+	public async Task Email_ShouldNotHaveError_WhenValidAsync(string email)
 	{
 		// Arrange
 		CreateUserRequest request =
@@ -316,15 +325,14 @@ public class CreateUserCommandValidatorTests
 
 		// Act
 		TestValidationResult<CreateUserRequest> result =
-			Validator.TestValidate(
-			request);
+			await Validator.TestValidateAsync(request);
 
 		// Assert
 		result.ShouldNotHaveValidationErrorFor(x => x.Email);
 	}
 
 	[Fact]
-	public void Email_ShouldNotHaveError_WhenMaxLength()
+	public async Task Email_ShouldNotHaveError_WhenMaxLengthAsync()
 	{
 		// Arrange
 		string email =
@@ -339,8 +347,7 @@ public class CreateUserCommandValidatorTests
 
 		// Act
 		TestValidationResult<CreateUserRequest> result =
-			Validator.TestValidate(
-			request);
+			await Validator.TestValidateAsync(request);
 
 		// Assert
 		result.ShouldNotHaveValidationErrorFor(x => x.Email);
@@ -351,7 +358,7 @@ public class CreateUserCommandValidatorTests
 	#region FullName Validation Tests
 
 	[Fact]
-	public void FullName_ShouldHaveError_WhenEmpty()
+	public async Task FullName_ShouldHaveError_WhenEmptyAsync()
 	{
 		// Arrange
 		CreateUserRequest request =
@@ -364,8 +371,7 @@ public class CreateUserCommandValidatorTests
 
 		// Act
 		TestValidationResult<CreateUserRequest> result =
-			Validator.TestValidate(
-			request);
+			await Validator.TestValidateAsync(request);
 
 		// Assert
 		result
@@ -374,7 +380,7 @@ public class CreateUserCommandValidatorTests
 	}
 
 	[Fact]
-	public void FullName_ShouldHaveError_WhenWhitespace()
+	public async Task FullName_ShouldHaveError_WhenWhitespaceAsync()
 	{
 		// Arrange
 		CreateUserRequest request =
@@ -387,8 +393,7 @@ public class CreateUserCommandValidatorTests
 
 		// Act
 		TestValidationResult<CreateUserRequest> result =
-			Validator.TestValidate(
-			request);
+			await Validator.TestValidateAsync(request);
 
 		// Assert
 		result
@@ -397,7 +402,7 @@ public class CreateUserCommandValidatorTests
 	}
 
 	[Fact]
-	public void FullName_ShouldHaveError_WhenTooLong()
+	public async Task FullName_ShouldHaveError_WhenTooLongAsync()
 	{
 		// Arrange
 		CreateUserRequest request =
@@ -411,8 +416,7 @@ public class CreateUserCommandValidatorTests
 
 		// Act
 		TestValidationResult<CreateUserRequest> result =
-			Validator.TestValidate(
-			request);
+			await Validator.TestValidateAsync(request);
 
 		// Assert
 		result
@@ -425,7 +429,7 @@ public class CreateUserCommandValidatorTests
 	[InlineData("Jane Smith")]
 	[InlineData("A")]
 	[InlineData("John Jacob Jingleheimer Schmidt")]
-	public void FullName_ShouldNotHaveError_WhenValid(string fullName)
+	public async Task FullName_ShouldNotHaveError_WhenValidAsync(string fullName)
 	{
 		// Arrange
 		CreateUserRequest request =
@@ -438,15 +442,14 @@ public class CreateUserCommandValidatorTests
 
 		// Act
 		TestValidationResult<CreateUserRequest> result =
-			Validator.TestValidate(
-			request);
+			await Validator.TestValidateAsync(request);
 
 		// Assert
 		result.ShouldNotHaveValidationErrorFor(x => x.FullName);
 	}
 
 	[Fact]
-	public void FullName_ShouldNotHaveError_WhenMaxLength()
+	public async Task FullName_ShouldNotHaveError_WhenMaxLengthAsync()
 	{
 		// Arrange
 		CreateUserRequest request =
@@ -460,8 +463,7 @@ public class CreateUserCommandValidatorTests
 
 		// Act
 		TestValidationResult<CreateUserRequest> result =
-			Validator.TestValidate(
-			request);
+			await Validator.TestValidateAsync(request);
 
 		// Assert
 		result.ShouldNotHaveValidationErrorFor(x => x.FullName);
@@ -474,7 +476,7 @@ public class CreateUserCommandValidatorTests
 	[Theory]
 	[InlineData(true)]
 	[InlineData(false)]
-	public void IsActive_ShouldNotHaveError_ForAnyValue(bool isActive)
+	public async Task IsActive_ShouldNotHaveError_ForAnyValueAsync(bool isActive)
 	{
 		// Arrange
 		CreateUserRequest request =
@@ -488,8 +490,7 @@ public class CreateUserCommandValidatorTests
 
 		// Act
 		TestValidationResult<CreateUserRequest> result =
-			Validator.TestValidate(
-			request);
+			await Validator.TestValidateAsync(request);
 
 		// Assert
 		result.ShouldNotHaveValidationErrorFor(x => x.IsActive);
@@ -500,7 +501,7 @@ public class CreateUserCommandValidatorTests
 	#region Complete Request Validation Tests
 
 	[Fact]
-	public void Validator_ShouldPass_WhenAllFieldsValid()
+	public async Task Validator_ShouldPass_WhenAllFieldsValidAsync()
 	{
 		// Arrange
 		CreateUserRequest request =
@@ -514,15 +515,14 @@ public class CreateUserCommandValidatorTests
 
 		// Act
 		TestValidationResult<CreateUserRequest> result =
-			Validator.TestValidate(
-			request);
+			await Validator.TestValidateAsync(request);
 
 		// Assert
 		result.ShouldNotHaveAnyValidationErrors();
 	}
 
 	[Fact]
-	public void Validator_ShouldPass_WhenOnlyRequiredFieldsProvided()
+	public async Task Validator_ShouldPass_WhenOnlyRequiredFieldsProvidedAsync()
 	{
 		// Arrange
 		CreateUserRequest request =
@@ -535,15 +535,14 @@ public class CreateUserCommandValidatorTests
 
 		// Act
 		TestValidationResult<CreateUserRequest> result =
-			Validator.TestValidate(
-			request);
+			await Validator.TestValidateAsync(request);
 
 		// Assert
 		result.ShouldNotHaveAnyValidationErrors();
 	}
 
 	[Fact]
-	public void Validator_ShouldFail_WhenMultipleFieldsInvalid()
+	public async Task Validator_ShouldFail_WhenMultipleFieldsInvalidAsync()
 	{
 		// Arrange
 		CreateUserRequest request =
@@ -557,13 +556,64 @@ public class CreateUserCommandValidatorTests
 
 		// Act
 		TestValidationResult<CreateUserRequest> result =
-			Validator.TestValidate(
-			request);
+			await Validator.TestValidateAsync(request);
 
 		// Assert
 		result.ShouldHaveValidationErrorFor(x => x.Username);
 		result.ShouldHaveValidationErrorFor(x => x.Email);
 		result.ShouldHaveValidationErrorFor(x => x.FullName);
+	}
+
+	#endregion
+
+	#region Email Uniqueness Tests
+
+	[Fact]
+	public async Task Email_ShouldHaveError_WhenAlreadyRegisteredAsync()
+	{
+		// Arrange
+		MessageBus
+			.InvokeAsync<bool>(
+				Arg.Any<CheckEmailExistsQuery>(),
+				Arg.Any<CancellationToken>())
+			.Returns(true);
+
+		CreateUserRequest request =
+			new()
+			{
+				Username = "testuser",
+				Email = "existing@example.com",
+				FullName = "Test User",
+			};
+
+		// Act
+		TestValidationResult<CreateUserRequest> result =
+			await Validator.TestValidateAsync(request);
+
+		// Assert
+		result
+			.ShouldHaveValidationErrorFor(user => user.Email)
+			.WithErrorMessage("Email address is already registered.");
+	}
+
+	[Fact]
+	public async Task Email_ShouldNotHaveError_WhenUniqueAsync()
+	{
+		// Arrange (default mock returns false = email doesn't exist)
+		CreateUserRequest request =
+			new()
+			{
+				Username = "testuser",
+				Email = "unique@example.com",
+				FullName = "Test User",
+			};
+
+		// Act
+		TestValidationResult<CreateUserRequest> result =
+			await Validator.TestValidateAsync(request);
+
+		// Assert
+		result.ShouldNotHaveAnyValidationErrors();
 	}
 
 	#endregion

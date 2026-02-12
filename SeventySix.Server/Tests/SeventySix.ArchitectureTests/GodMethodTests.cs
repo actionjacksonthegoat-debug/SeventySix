@@ -69,8 +69,12 @@ public class GodMethodTests : SourceCodeArchitectureTest
 			"SeventySix.Domains.Identity/Commands/ChangePassword/ChangePasswordCommandHandler.cs::HandleAsync", // 9 params
 			"SeventySix.Domains.Identity/Commands/CompleteRegistration/CompleteRegistrationCommandHandler.cs::HandleAsync", // 7 params
 			"SeventySix.Domains.Identity/Commands/CreateUser/CreateUserCommandHandler.cs::HandleAsync", // 7 params
-			"SeventySix.Domains.Identity/Commands/Login/LoginCommandHandler.cs::HandleAsync", // 10 params
+			"SeventySix.Domains.Identity/Commands/Login/LoginCommandHandler.cs::HandleAsync", // 11 params
 			"SeventySix.Domains.Identity/Commands/SetPassword/SetPasswordCommandHandler.cs::HandleAsync", // 9 params
+			"SeventySix.Domains.Identity/Commands/VerifyBackupCode/VerifyBackupCodeCommandHandler.cs::HandleAsync", // 7 params
+			"SeventySix.Domains.Identity/Commands/VerifyMfa/VerifyMfaCommandHandler.cs::HandleAsync", // 7 params
+			"SeventySix.Domains.Identity/Commands/VerifyTotpCode/VerifyTotpCodeCommandHandler.cs::HandleAsync", // 7 params
+			"SeventySix.Domains.Identity/Commands/ConfirmTotpEnrollment/ConfirmTotpEnrollmentCommandHandler.cs::HandleAsync", // 7 params
 		];
 
 	[Fact]

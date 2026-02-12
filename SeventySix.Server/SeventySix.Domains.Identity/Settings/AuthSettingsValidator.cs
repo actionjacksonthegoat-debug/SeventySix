@@ -34,6 +34,13 @@ public sealed class AuthSettingsValidator : AbstractValidator<AuthSettings>
 
 		RuleFor(auth => auth.BreachedPassword)
 			.SetValidator(new BreachedPasswordSettingsValidator());
+
+		RuleFor(auth => auth.Token.DisableRotation)
+			.Equal(false)
+			.When(
+				auth =>
+					Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production")
+			.WithMessage("Token rotation must NOT be disabled in production.");
 	}
 }
 

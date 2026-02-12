@@ -49,7 +49,8 @@ public sealed class OAuthCodeExchangeService : IOAuthCodeExchangeService
 		string refreshToken,
 		DateTime expiresAt,
 		string email,
-		string? fullName)
+		string? fullName,
+		bool requiresPasswordChange)
 	{
 		string code =
 			GenerateSecureCode();
@@ -60,7 +61,8 @@ public sealed class OAuthCodeExchangeService : IOAuthCodeExchangeService
 				refreshToken,
 				expiresAt,
 				email,
-				fullName);
+				fullName,
+				requiresPasswordChange);
 
 		// Memory-only for OAuth codes: short-lived, security-sensitive
 		IdentityCache.Set(

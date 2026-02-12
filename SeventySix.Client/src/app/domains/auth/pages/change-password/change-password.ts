@@ -13,12 +13,14 @@ import {
 	ChangeDetectionStrategy,
 	Component,
 	computed,
+	DestroyRef,
 	inject,
 	OnInit,
 	Signal,
 	signal,
 	WritableSignal
 } from "@angular/core";
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import {
 	FormBuilder,
 	FormGroup,
@@ -63,6 +65,15 @@ interface ChangePasswordRequest
  */
 export class ChangePasswordComponent implements OnInit
 {
+	/**
+	 * Angular destroy reference for automatic subscription cleanup.
+	 * @type {DestroyRef}
+	 * @private
+	 * @readonly
+	 */
+	private readonly destroyRef: DestroyRef =
+		inject(DestroyRef);
+
 	/**
 	 * HTTP client used to call the change-password API endpoint.
 	 * @type {HttpClient}
@@ -281,6 +292,8 @@ export class ChangePasswordComponent implements OnInit
 				{
 					withCredentials: true
 				})
+			.pipe(
+				takeUntilDestroyed(this.destroyRef))
 			.subscribe(
 				{
 					next: () =>

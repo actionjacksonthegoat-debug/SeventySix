@@ -2,7 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-import { test as base, Page, BrowserContext, Browser } from "@playwright/test";
+import { test as base, Page, BrowserContext, Browser, expect } from "@playwright/test";
 import { TEST_USERS, SELECTORS, ROUTES, TIMEOUTS, E2E_CONFIG } from "./index";
 import type { TestUser } from "./test-users.constant";
 
@@ -73,7 +73,26 @@ async function performFreshLogin(
 	await page
 		.locator(SELECTORS.form.submitButton)
 		.click();
-	await page.waitForURL(ROUTES.home, { timeout: TIMEOUTS.globalSetup });
+
+	// Wait for either home (success) or MFA verify (TOTP enabled on shared user)
+	await page.waitForURL(
+		(url) =>
+			url.pathname === ROUTES.home
+			|| url.pathname.includes("/mfa/"),
+		{ timeout: TIMEOUTS.globalSetup });
+
+	// If redirected to MFA, the user has TOTP enabled (likely from a parallel test).
+	// Fail fast with a clear message instead of timing out.
+	const currentPath: string =
+		new URL(page.url()).pathname;
+
+	if (currentPath.includes("/mfa/"))
+	{
+		throw new Error(
+			`Fresh login for ${testUser.username} was redirected to MFA verify. `
+			+ "Another test likely enabled TOTP on this shared user. "
+			+ "Retry should succeed after TOTP cleanup completes.");
+	}
 
 	// Wait for the app to be fully interactive (user menu visible means auth complete)
 	await page

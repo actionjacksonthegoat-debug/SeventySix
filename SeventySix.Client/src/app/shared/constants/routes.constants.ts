@@ -11,8 +11,8 @@ export const APP_ROUTES: Readonly<{
 	AUTH: {
 		LOGIN: "/auth/login";
 		REGISTER: "/auth/register";
+		CHANGE_PASSWORD: "/auth/change-password";
 		FORGOT_PASSWORD: "/auth/forgot-password";
-		RESET_PASSWORD: "/auth/reset-password";
 		MFA_VERIFY: "/auth/mfa/verify";
 		TOTP_SETUP: "/auth/totp-setup";
 		BACKUP_CODES: "/auth/backup-codes";
@@ -35,8 +35,8 @@ export const APP_ROUTES: Readonly<{
 		AUTH: {
 			LOGIN: "/auth/login",
 			REGISTER: "/auth/register",
+			CHANGE_PASSWORD: "/auth/change-password",
 			FORGOT_PASSWORD: "/auth/forgot-password",
-			RESET_PASSWORD: "/auth/reset-password",
 			MFA_VERIFY: "/auth/mfa/verify",
 			TOTP_SETUP: "/auth/totp-setup",
 			BACKUP_CODES: "/auth/backup-codes"
@@ -65,5 +65,14 @@ export const AUTH_PUBLIC_PATHS: readonly string[] =
 		"/auth/refresh",
 		"/auth/logout",
 		"/auth/oauth/github",
-		"/auth/oauth/github/callback"
+		"/auth/oauth/github/callback",
+		"/auth/oauth/exchange",
+		"/auth/register/initiate",
+		"/auth/register/complete",
+		"/auth/password/forgot",
+		"/auth/password/set",
+		"/auth/mfa/verify",
+		"/auth/mfa/verify-totp",
+		"/auth/mfa/verify-backup",
+		"/auth/mfa/resend"
 	] as const;

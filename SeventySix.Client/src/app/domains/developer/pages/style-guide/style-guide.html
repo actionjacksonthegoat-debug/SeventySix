@@ -7,7 +7,7 @@
 		</p>
 		<div class="theme-controls">
 			<button
-				mat-raised-button
+				mat-stroked-button
 				(click)="themeService.toggleBrightness()"
 				aria-label="Toggle theme brightness">
 				<mat-icon aria-hidden="true">{{ themeService.isDark() ? "light_mode" : "dark_mode" }}</mat-icon>
@@ -235,72 +235,13 @@
 			<div class="tab-content">
 				<h2>Button Variants</h2>
 				<p class="mat-body-1">
-					Material Design 3 button styles for different emphasis levels.
+					Three button styles are used in SeventySix. All other variants
+					(filled, flat, FAB) are prohibited by architecture tests.
 				</p>
 
 				<mat-card class="button-card">
 					<mat-card-header>
-						<mat-card-title>Filled Buttons (High Emphasis)</mat-card-title>
-					</mat-card-header>
-					<mat-card-content>
-						<div class="button-group">
-							<button
-								mat-raised-button
-								color="primary">
-								Primary
-							</button>
-							<button
-								mat-raised-button
-								color="accent">
-								Accent
-							</button>
-							<button
-								mat-raised-button
-								color="warn">
-								Warn
-							</button>
-							<button
-								mat-raised-button
-								disabled>
-								Disabled
-							</button>
-						</div>
-					</mat-card-content>
-				</mat-card>
-
-				<mat-card class="button-card">
-					<mat-card-header>
-						<mat-card-title>Flat Buttons (Medium Emphasis)</mat-card-title>
-					</mat-card-header>
-					<mat-card-content>
-						<div class="button-group">
-							<button
-								mat-flat-button
-								color="primary">
-								Primary
-							</button>
-							<button
-								mat-flat-button
-								color="accent">
-								Accent
-							</button>
-							<button
-								mat-flat-button
-								color="warn">
-								Warn
-							</button>
-							<button
-								mat-flat-button
-								disabled>
-								Disabled
-							</button>
-						</div>
-					</mat-card-content>
-				</mat-card>
-
-				<mat-card class="button-card">
-					<mat-card-header>
-						<mat-card-title>Stroked Buttons (Medium Emphasis)</mat-card-title>
+						<mat-card-title>Action Buttons (Standard)</mat-card-title>
 					</mat-card-header>
 					<mat-card-content>
 						<div class="button-group">
@@ -384,40 +325,6 @@
 							</button>
 							<button
 								mat-icon-button
-								disabled
-								aria-label="Disabled">
-								<mat-icon>block</mat-icon>
-							</button>
-						</div>
-					</mat-card-content>
-				</mat-card>
-
-				<mat-card class="button-card">
-					<mat-card-header>
-						<mat-card-title>FAB Buttons</mat-card-title>
-					</mat-card-header>
-					<mat-card-content>
-						<div class="button-group">
-							<button
-								mat-fab
-								color="primary"
-								aria-label="Add">
-								<mat-icon>add</mat-icon>
-							</button>
-							<button
-								mat-fab
-								color="accent"
-								aria-label="Edit">
-								<mat-icon>edit</mat-icon>
-							</button>
-							<button
-								mat-fab
-								color="warn"
-								aria-label="Delete">
-								<mat-icon>delete</mat-icon>
-							</button>
-							<button
-								mat-fab
 								disabled
 								aria-label="Disabled">
 								<mat-icon>block</mat-icon>
@@ -647,7 +554,7 @@
 					<mat-card-content>
 						<div class="button-group">
 							<button
-								mat-raised-button
+								mat-stroked-button
 								color="primary"
 								(click)="
 									showSnackbar('This is a success message!')
@@ -665,7 +572,7 @@
 					<mat-card-content>
 						<div class="button-group">
 							<button
-								mat-raised-button
+								mat-stroked-button
 								color="primary"
 								(click)="showDialog()">
 								Show Dialog
@@ -743,25 +650,25 @@
 					<mat-card-content>
 						<div class="button-group">
 							<button
-								mat-raised-button
+								mat-stroked-button
 								matTooltip="Tooltip above"
 								matTooltipPosition="above">
 								Above
 							</button>
 							<button
-								mat-raised-button
+								mat-stroked-button
 								matTooltip="Tooltip below"
 								matTooltipPosition="below">
 								Below
 							</button>
 							<button
-								mat-raised-button
+								mat-stroked-button
 								matTooltip="Tooltip left"
 								matTooltipPosition="left">
 								Left
 							</button>
 							<button
-								mat-raised-button
+								mat-stroked-button
 								matTooltip="Tooltip right"
 								matTooltipPosition="right">
 								Right
@@ -891,6 +798,13 @@
 				<p class="mat-body-1">
 					Use <strong>Skeleton Loaders</strong> for data fetching (read operations) and
 					<strong>Spinners</strong> for user actions (write operations like save, submit, delete).
+				</p>
+				<p class="mat-body-2">
+					<strong>Reduced motion:</strong> Skeleton and spinner animations are
+					automatically suppressed for users with
+					<code>prefers-reduced-motion: reduce</code> enabled
+					(WCAG 2.3.3 compliance). This is handled globally in
+					<code>_base.scss</code>.
 				</p>
 
 				<!-- Skeletons vs Spinners Comparison -->
@@ -1283,7 +1197,7 @@
 							<div class="spinner-example">
 								<span class="mat-label-large">Button with Spinner</span>
 								<button
-									mat-raised-button
+									mat-stroked-button
 									color="primary"
 									disabled
 									class="saving-button">

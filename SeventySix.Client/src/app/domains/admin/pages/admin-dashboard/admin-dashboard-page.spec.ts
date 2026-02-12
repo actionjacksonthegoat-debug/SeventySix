@@ -108,6 +108,15 @@ describe("AdminDashboardPage",
 					.toBeTruthy();
 			});
 
+		it("should expose isProduction as false in non-production environment",
+			() =>
+			{
+				createComponent();
+
+				expect(component.isProduction)
+					.toBe(false);
+			});
+
 		it("should render page header",
 			() =>
 			{

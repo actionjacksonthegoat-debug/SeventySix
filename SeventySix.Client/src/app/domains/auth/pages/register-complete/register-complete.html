@@ -10,7 +10,7 @@
 			</p>
 			<a
 				routerLink="/auth/register"
-				mat-flat-button
+				mat-stroked-button
 				color="primary"
 				class="submit-button">
 				Request New Link
@@ -30,6 +30,7 @@
 				<label for="username">Username</label>
 				<input
 					id="username"
+					data-testid="register-complete-username"
 					type="text"
 					formControlName="username"
 					autocomplete="username"
@@ -59,6 +60,7 @@
 				<label for="password">Password</label>
 				<input
 					id="password"
+					data-testid="register-complete-password"
 					type="password"
 					formControlName="password"
 					autocomplete="new-password"
@@ -88,6 +90,7 @@
 				<label for="confirmPassword">Confirm Password</label>
 				<input
 					id="confirmPassword"
+					data-testid="register-complete-confirm-password"
 					type="password"
 					formControlName="confirmPassword"
 					autocomplete="new-password"
@@ -108,21 +111,12 @@
 				}
 			</div>
 
-			@if (altchaEnabled) {
-			<div class="form-group">
-				<app-altcha-widget
-					[challengeUrl]="challengeUrl"
-					[hideFooter]="true"
-					(verified)="onAltchaVerified($event)">
-				</app-altcha-widget>
-			</div>
-			}
-
 			<button
-				mat-flat-button
+				mat-stroked-button
 				color="primary"
 				type="submit"
 				class="submit-button"
+				data-testid="register-complete-submit"
 				[disabled]="!canSubmit()"
 				[attr.aria-busy]="isLoading()">
 				@if (isLoading()) { Creating Account... } @else { Create Account }

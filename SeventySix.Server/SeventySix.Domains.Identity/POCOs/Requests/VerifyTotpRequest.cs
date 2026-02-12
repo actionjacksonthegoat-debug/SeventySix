@@ -7,12 +7,16 @@ namespace SeventySix.Identity;
 /// <summary>
 /// Request to verify TOTP code during MFA.
 /// </summary>
-/// <param name="Email">
-/// The user's email to identify the MFA session.
+/// <param name="ChallengeToken">
+/// The MFA challenge token issued during login (proof of password authentication).
 /// </param>
 /// <param name="Code">
 /// The 6-digit TOTP code from authenticator app.
 /// </param>
+/// <param name="TrustDevice">
+/// Whether to trust this device and skip MFA on future logins.
+/// </param>
 public record VerifyTotpRequest(
-	string Email,
-	string Code);
+	string ChallengeToken,
+	string Code,
+	bool TrustDevice = false);

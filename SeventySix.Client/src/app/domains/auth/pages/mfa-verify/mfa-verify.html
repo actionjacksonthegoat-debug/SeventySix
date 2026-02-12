@@ -30,7 +30,7 @@
 				<input
 					id="code"
 					type="text"
-					inputmode="numeric"
+					[attr.inputmode]="showBackupCodeEntry() ? 'text' : 'numeric'"
 					formControlName="code"
 					[maxlength]="expectedCodeLength()"
 					autocomplete="one-time-code"
@@ -61,7 +61,7 @@
 			</div>
 
 			<button
-				mat-flat-button
+				mat-stroked-button
 				color="primary"
 				type="submit"
 				class="submit-button"
@@ -69,6 +69,16 @@
 				[attr.aria-busy]="isLoading()">
 				@if (isLoading()) { Verifying... } @else { Verify }
 			</button>
+
+			<div class="trust-device-section">
+				<mat-checkbox
+					data-testid="trust-device-checkbox"
+					[checked]="trustDevice()"
+					(change)="trustDevice.set($event.checked)"
+					aria-label="Trust this device for future logins">
+					Trust this device for 30 days
+				</mat-checkbox>
+			</div>
 		</form>
 
 		@if (isEmailMode()) {
@@ -77,6 +87,7 @@
 				<button
 					mat-button
 					type="button"
+					data-testid="resend-code-button"
 					(click)="onResendCode()"
 					[disabled]="resendOnCooldown() || isResending()"
 					class="resend-button">
@@ -97,6 +108,7 @@
 				<button
 					mat-button
 					type="button"
+					data-testid="use-backup-code-button"
 					(click)="onUseBackupCode()"
 					class="backup-button">
 					Use a Backup Code
@@ -120,6 +132,7 @@
 			<button
 				mat-button
 				type="button"
+				data-testid="back-to-login-button"
 				(click)="onBackToLogin()"
 				class="back-button">
 				Back to Login

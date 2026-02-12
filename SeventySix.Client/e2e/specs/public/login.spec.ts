@@ -79,6 +79,13 @@ test.describe("Login Page",
 						await expect(page.getByLabel(PAGE_TEXT.labels.rememberMe))
 							.toBeVisible();
 					});
+
+				test("should not render ALTCHA widget when disabled",
+					async ({ page }) =>
+					{
+						await expect(page.locator("altcha-widget"))
+							.toBeHidden();
+					});
 			});
 
 		test.describe("Validation",
@@ -132,7 +139,12 @@ test.describe("Login Page",
 		test.describe("Successful Login",
 			() =>
 			{
-				TEST_USERS.forEach(
+				// MFA-enabled users are excluded — they redirect to MFA verify, not home.
+				// MFA login flow is tested in mfa-login.spec.ts.
+				TEST_USERS
+					.filter(
+						(testUser) => !testUser.mfaEnabled)
+					.forEach(
 					(testUser) =>
 					{
 						test(`should login as ${testUser.role} and redirect to home`,
@@ -367,6 +379,38 @@ test.describe("Login Page",
 
 						await expect(page)
 							.toHaveURL(/\/account/);
+					});
+			});
+
+		test.describe("Security: Repeated Failed Login Attempts",
+			() =>
+			{
+				test("should show error notification on each failed attempt",
+					async ({ page, authPage }) =>
+					{
+						const invalidPassword =
+							"WrongPassword_Repeated_123!";
+						const attemptCount = 3;
+
+						for (let attempt = 1; attempt <= attemptCount; attempt++)
+						{
+							await page.goto(ROUTES.auth.login);
+
+							await authPage.login("e2e_user", invalidPassword);
+
+							// Each attempt should show error notification
+							const snackbar: Locator =
+								page.locator(SELECTORS.notification.snackbar);
+							const errorMessage: Locator =
+								page.locator("[role='alert'], .error-message, mat-error");
+
+							await expect(snackbar.or(errorMessage))
+								.toBeVisible({ timeout: TIMEOUTS.api });
+
+							// Should stay on login page
+							await expect(page)
+								.toHaveURL(ROUTES.auth.login);
+						}
 					});
 			});
 	});

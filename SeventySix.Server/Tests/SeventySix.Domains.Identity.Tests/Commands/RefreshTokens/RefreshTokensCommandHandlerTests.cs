@@ -199,4 +199,164 @@ public class RefreshTokensCommandHandlerTests
 		// Assert
 		result.RequiresPasswordChange.ShouldBeTrue();
 	}
+
+	/// <summary>
+	/// Tests that token reuse returns TokenReuse error code (replay attack detection).
+	/// </summary>
+	[Fact]
+	public async Task HandleAsync_TokenReuseDetected_ReturnsTokenReuseErrorAsync()
+	{
+		// Arrange
+		string reuseRefreshToken = "reused-refresh-token";
+		string clientIpAddress = "127.0.0.1";
+
+		ITokenService tokenService =
+			Substitute.For<ITokenService>();
+
+		UserManager<ApplicationUser> userManager =
+			IdentityMockFactory.CreateUserManager();
+
+		AuthenticationService authenticationService =
+			IdentityMockFactory.CreateAuthenticationService();
+
+		ApplicationUser user =
+			new()
+			{
+				Id = 300,
+				UserName = "victimuser",
+				Email = "victim@example.com",
+				IsActive = true,
+				RequiresPasswordChange = false
+			};
+
+		tokenService
+			.ValidateRefreshTokenAsync(
+				reuseRefreshToken,
+				Arg.Any<CancellationToken>())
+			.Returns(user.Id);
+
+		userManager
+			.FindByIdAsync(user.Id.ToString())
+			.Returns(user);
+
+		// Token rotation returns null → reuse detected
+		tokenService
+			.RotateRefreshTokenAsync(
+				reuseRefreshToken,
+				clientIpAddress,
+				Arg.Any<CancellationToken>())
+			.Returns((string?)null);
+
+		RefreshTokensCommand command =
+			new(reuseRefreshToken, clientIpAddress);
+
+		// Act
+		AuthResult result =
+			await RefreshTokensCommandHandler.HandleAsync(
+				command,
+				tokenService,
+				userManager,
+				authenticationService,
+				SecurityAuditService,
+				CancellationToken.None);
+
+		// Assert
+		result.Success.ShouldBeFalse();
+		result.ErrorCode.ShouldBe(AuthErrorCodes.TokenReuse);
+	}
+
+	/// <summary>
+	/// Tests the happy path: valid refresh token is rotated and new tokens are returned.
+	/// </summary>
+	[Fact]
+	public async Task HandleAsync_ValidRefreshToken_RotatesAndReturnsNewTokensAsync()
+	{
+		// Arrange
+		string oldRefreshToken = "old-refresh-token";
+		string newRefreshToken = "new-rotated-token";
+		string clientIpAddress = "127.0.0.1";
+
+		ITokenService tokenService =
+			Substitute.For<ITokenService>();
+
+		UserManager<ApplicationUser> userManager =
+			IdentityMockFactory.CreateUserManager();
+
+		AuthenticationService authenticationService =
+			IdentityMockFactory.CreateAuthenticationService();
+
+		ApplicationUser user =
+			new()
+			{
+				Id = 400,
+				UserName = "happyuser",
+				Email = "happy@example.com",
+				IsActive = true,
+				RequiresPasswordChange = false
+			};
+
+		tokenService
+			.ValidateRefreshTokenAsync(
+				oldRefreshToken,
+				Arg.Any<CancellationToken>())
+			.Returns(user.Id);
+
+		userManager
+			.FindByIdAsync(user.Id.ToString())
+			.Returns(user);
+
+		tokenService
+			.RotateRefreshTokenAsync(
+				oldRefreshToken,
+				clientIpAddress,
+				Arg.Any<CancellationToken>())
+			.Returns(newRefreshToken);
+
+		TimeProvider timeProvider =
+			Substitute.For<TimeProvider>();
+		DateTime now =
+			timeProvider.GetUtcNow().UtcDateTime;
+
+		AuthResult expectedAuthResult =
+			AuthResult.Succeeded(
+				"new-access-token",
+				"placeholder-refresh",
+				now.AddMinutes(15),
+				user.Email,
+				null,
+				false);
+
+		authenticationService
+			.GenerateAuthResultAsync(
+				user,
+				clientIpAddress,
+				false,
+				false,
+				Arg.Any<CancellationToken>())
+			.Returns(Task.FromResult(expectedAuthResult));
+
+		RefreshTokensCommand command =
+			new(oldRefreshToken, clientIpAddress);
+
+		// Act
+		AuthResult result =
+			await RefreshTokensCommandHandler.HandleAsync(
+				command,
+				tokenService,
+				userManager,
+				authenticationService,
+				SecurityAuditService,
+				CancellationToken.None);
+
+		// Assert
+		result.Success.ShouldBeTrue();
+		result.RefreshToken.ShouldBe(newRefreshToken);
+		result.AccessToken.ShouldNotBeNullOrWhiteSpace();
+
+		await tokenService.Received(1)
+			.RotateRefreshTokenAsync(
+				oldRefreshToken,
+				clientIpAddress,
+				Arg.Any<CancellationToken>());
+	}
 }

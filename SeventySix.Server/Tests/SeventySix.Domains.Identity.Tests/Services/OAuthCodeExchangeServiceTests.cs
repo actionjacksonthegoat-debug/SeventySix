@@ -63,7 +63,8 @@ public class OAuthCodeExchangeServiceTests
 			"refresh-token",
 			FixedExpiresAt,
 			TestEmail,
-			TestFullName);
+			TestFullName,
+			false);
 
 		// Assert
 		code.ShouldNotBeNull();
@@ -86,7 +87,8 @@ public class OAuthCodeExchangeServiceTests
 			"refresh-token-1",
 			FixedExpiresAt,
 			TestEmail,
-			TestFullName);
+			TestFullName,
+			false);
 
 		string code2 =
 			service.StoreTokens(
@@ -94,7 +96,8 @@ public class OAuthCodeExchangeServiceTests
 			"refresh-token-2",
 			FixedExpiresAt,
 			TestEmail,
-			TestFullName);
+			TestFullName,
+			false);
 
 		// Assert
 		code1.ShouldNotBe(code2);
@@ -116,7 +119,8 @@ public class OAuthCodeExchangeServiceTests
 			"refresh-token",
 			FixedExpiresAt,
 			TestEmail,
-			TestFullName);
+			TestFullName,
+			false);
 
 		// Assert - Base64url uses only these characters
 		code.ShouldMatch("^[A-Za-z0-9_-]+$");
@@ -144,7 +148,8 @@ public class OAuthCodeExchangeServiceTests
 			refreshToken,
 			FixedExpiresAt,
 			TestEmail,
-			TestFullName);
+			TestFullName,
+			false);
 
 		// Act
 		OAuthCodeExchangeResult? result =
@@ -157,6 +162,7 @@ public class OAuthCodeExchangeServiceTests
 		result.ExpiresAt.ShouldBe(FixedExpiresAt);
 		result.Email.ShouldBe(TestEmail);
 		result.FullName.ShouldBe(TestFullName);
+		result.RequiresPasswordChange.ShouldBeFalse();
 	}
 
 	/// <summary>
@@ -191,7 +197,8 @@ public class OAuthCodeExchangeServiceTests
 			"refresh-token",
 			FixedExpiresAt,
 			TestEmail,
-			TestFullName);
+			TestFullName,
+			false);
 
 		// Act
 		OAuthCodeExchangeResult? firstResult =
@@ -242,7 +249,8 @@ public class OAuthCodeExchangeServiceTests
 			"refresh-token",
 			FixedExpiresAt,
 			TestEmail,
-			TestFullName);
+			TestFullName,
+			false);
 
 		// Assert - 32 bytes = 43 base64url characters (no padding)
 		code.Length.ShouldBe(43);
@@ -268,7 +276,8 @@ public class OAuthCodeExchangeServiceTests
 				$"refresh-token-{index}",
 				FixedExpiresAt,
 				TestEmail,
-				TestFullName);
+				TestFullName,
+				false);
 
 			codes.Add(code);
 		}

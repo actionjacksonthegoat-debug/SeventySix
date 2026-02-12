@@ -34,11 +34,98 @@ export const SELECTORS =
 			},
 
 		/**
+		 * MFA verify page selectors.
+		 */
+		mfaVerify:
+			{
+				codeInput: "#code",
+				trustDeviceCheckbox: "[data-testid='trust-device-checkbox']",
+				resendCodeButton: "[data-testid='resend-code-button']",
+				useBackupCodeButton: "[data-testid='use-backup-code-button']",
+				backToLoginButton: "[data-testid='back-to-login-button']"
+			},
+
+		/**
+		 * Change password page selectors.
+		 */
+		changePassword:
+			{
+				currentPasswordInput: "[data-testid='current-password-input']",
+				newPasswordInput: "[data-testid='new-password-input']",
+				confirmPasswordInput: "[data-testid='confirm-password-input']",
+				submitButton: "[data-testid='change-password-submit']",
+				requiredNotice: "[data-testid='required-notice']"
+			},
+
+		/**
+		 * Set password page selectors.
+		 */
+		setPassword:
+			{
+				newPasswordInput: "#newPassword",
+				confirmPasswordInput: "#confirmPassword",
+				invalidLinkSection: "[data-testid='invalid-link-section']"
+			},
+
+		/**
+		 * TOTP setup page selectors.
+		 */
+		totpSetup:
+			{
+				qrCodeImage: "[data-testid='qr-code-image']",
+				secretCode: "[data-testid='secret-code']",
+				verificationCodeInput: "#verificationCode"
+			},
+
+		/**
+		 * Backup codes page selectors.
+		 */
+		backupCodes:
+			{
+				codesGrid: "[data-testid='codes-grid']",
+				codeItem: ".code-item"
+			},
+
+		/**
+		 * Register complete page selectors.
+		 */
+		registerComplete:
+			{
+				usernameInput: "[data-testid='register-complete-username']",
+				passwordInput: "[data-testid='register-complete-password']",
+				confirmPasswordInput: "[data-testid='register-complete-confirm-password']",
+				submitButton: "[data-testid='register-complete-submit']"
+			},
+
+		/**
+		 * User create page selectors.
+		 */
+		userCreate:
+			{
+				createUserButton: "[data-testid='create-user-button']",
+				usernameInput: "input[formcontrolname='username']",
+				emailInput: "input[formcontrolname='email']",
+				fullNameInput: "input[formcontrolname='fullName']",
+				saveErrorBanner: "[data-testid='save-error-banner']"
+			},
+
+		/**
+		 * User detail page selectors.
+		 */
+		userDetail:
+			{
+				saveChangesButton: "[data-testid='save-changes-button']",
+				usernameInput: "input[formcontrolname='username']",
+				emailInput: "input[formcontrolname='email']",
+				fullNameInput: "input[formcontrolname='fullName']"
+			},
+
+		/**
 		 * Notification selectors.
 		 */
 		notification:
 			{
-				snackbar: "simple-snack-bar"
+				snackbar: ".toast"
 			},
 
 		/**

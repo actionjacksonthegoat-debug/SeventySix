@@ -4,6 +4,7 @@
 
 using FluentValidation;
 using SeventySix.Identity.Extensions;
+using SeventySix.Identity.Settings;
 
 namespace SeventySix.Identity.Commands.CompleteRegistration;
 
@@ -16,7 +17,11 @@ public class CompleteRegistrationCommandValidator
 	/// <summary>
 	/// Initializes a new instance of the <see cref="CompleteRegistrationCommandValidator"/> class.
 	/// </summary>
-	public CompleteRegistrationCommandValidator()
+	///
+	/// <param name="passwordSettings">
+	/// The password configuration settings.
+	/// </param>
+	public CompleteRegistrationCommandValidator(PasswordSettings passwordSettings)
 	{
 		RuleFor(request => request.Token)
 			.NotEmpty()
@@ -24,6 +29,7 @@ public class CompleteRegistrationCommandValidator
 
 		RuleFor(request => request.Username).ApplyUsernameRules();
 
-		RuleFor(request => request.Password).ApplyPasswordRules();
+		RuleFor(request => request.Password)
+			.ApplyPasswordRules(passwordSettings);
 	}
 }

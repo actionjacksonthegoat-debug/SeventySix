@@ -3,7 +3,10 @@ import {
 	ROLE_ADMIN,
 	ROLE_DEVELOPER
 } from "@shared/constants/role.constants";
-import { roleGuard } from "@shared/guards/role.guard";
+import {
+	passwordChangeGuard,
+	roleGuard
+} from "@shared/guards";
 
 /**
  * Application route configuration.
@@ -54,7 +57,7 @@ export const routes: Routes =
 			loadChildren: () =>
 				import("./domains/account/account.routes").then(
 					(module) => module.ACCOUNT_ROUTES),
-			canMatch: [roleGuard()],
+			canMatch: [passwordChangeGuard(), roleGuard()],
 			data: { breadcrumb: "Account" }
 		},
 
@@ -67,7 +70,7 @@ export const routes: Routes =
 			loadChildren: () =>
 				import("./domains/admin/admin.routes").then(
 					(module) => module.ADMIN_ROUTES),
-			canMatch: [roleGuard(ROLE_ADMIN)],
+			canMatch: [passwordChangeGuard(), roleGuard(ROLE_ADMIN)],
 			data: { breadcrumb: "Admin" }
 		},
 
@@ -80,7 +83,7 @@ export const routes: Routes =
 			loadChildren: () =>
 				import("./domains/developer/developer.routes").then(
 					(module) => module.DEVELOPER_ROUTES),
-			canMatch: [roleGuard(ROLE_DEVELOPER, ROLE_ADMIN)],
+			canMatch: [passwordChangeGuard(), roleGuard(ROLE_DEVELOPER, ROLE_ADMIN)],
 			data: { breadcrumb: "Developer" }
 		},
 

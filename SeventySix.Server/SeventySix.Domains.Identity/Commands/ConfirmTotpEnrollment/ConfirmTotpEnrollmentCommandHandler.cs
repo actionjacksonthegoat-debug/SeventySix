@@ -39,6 +39,7 @@ public static class ConfirmTotpEnrollmentCommandHandler
 	public static async Task<Result> HandleAsync(
 		ConfirmTotpEnrollmentCommand command,
 		ITotpService totpService,
+		TotpSecretProtector totpSecretProtector,
 		UserManager<ApplicationUser> userManager,
 		ISecurityAuditService securityAuditService,
 		TimeProvider timeProvider,
@@ -64,7 +65,7 @@ public static class ConfirmTotpEnrollmentCommandHandler
 
 		bool isValidCode =
 			totpService.VerifyCode(
-				user.TotpSecret,
+				totpSecretProtector.Unprotect(user.TotpSecret),
 				command.Request.Code);
 
 		if (!isValidCode)

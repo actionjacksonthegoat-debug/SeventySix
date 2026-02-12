@@ -145,19 +145,56 @@ public sealed class BackupCodeService(
 		const string allowedChars =
 			"23456789ABCDEFGHJKMNPQRSTUVWXYZ";
 
-		Span<byte> randomBytes =
-			stackalloc byte[length];
-		RandomNumberGenerator.Fill(randomBytes);
-
 		Span<char> result =
 			stackalloc char[length];
 
 		for (int index = 0; index < length; index++)
 		{
 			result[index] =
-				allowedChars[randomBytes[index] % allowedChars.Length];
+				GetUnbiasedRandomChar(allowedChars);
 		}
 
 		return new string(result);
+	}
+
+	/// <summary>
+	/// Generates a single unbiased random character from the allowed set
+	/// using rejection sampling to eliminate modulo bias.
+	/// </summary>
+	///
+	/// <remarks>
+	/// Without rejection sampling, <c>randomByte % allowedChars.Length</c>
+	/// causes bias because <c>256 % 30 = 16</c>, making the first 16
+	/// characters slightly more probable than the remaining 14.
+	/// </remarks>
+	///
+	/// <param name="allowedCharacters">
+	/// The set of allowed characters.
+	/// </param>
+	///
+	/// <returns>
+	/// A uniformly random character from the allowed set.
+	/// </returns>
+	private static char GetUnbiasedRandomChar(
+		ReadOnlySpan<char> allowedCharacters)
+	{
+		int uniformRange =
+			byte.MaxValue + 1
+			- ((byte.MaxValue + 1) % allowedCharacters.Length);
+
+		Span<byte> randomBuffer =
+			stackalloc byte[1];
+
+		int randomValue;
+
+		do
+		{
+			RandomNumberGenerator.Fill(randomBuffer);
+			randomValue =
+				randomBuffer[0];
+		}
+		while (randomValue >= uniformRange);
+
+		return allowedCharacters[randomValue % allowedCharacters.Length];
 	}
 }

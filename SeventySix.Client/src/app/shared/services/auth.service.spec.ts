@@ -37,6 +37,23 @@ const TEST_LOGIN: { usernameOrEmail: string; password: string; rememberMe: boole
 		rememberMe: false
 	};
 
+/** Logs in and flushes the HTTP request. Returns the flushed response. */
+function loginAndFlush(
+	svc: AuthService,
+	mock: HttpTestingController,
+	response?: AuthResponse): AuthResponse
+{
+	const mockResponse: AuthResponse =
+		response ?? createMockAuthResponse();
+	svc
+		.login(TEST_LOGIN)
+		.subscribe();
+	const req: TestRequest =
+		mock.expectOne(`${environment.apiUrl}/auth/login`);
+	req.flush(mockResponse);
+	return mockResponse;
+}
+
 /** Creates a fresh TestBed with AuthService. Call AFTER setting localStorage to test initialize() behavior. */
 function createFreshTestBed(): { authService: AuthService; httpMock: HttpTestingController; queryClient: QueryClient; }
 {
@@ -225,17 +242,7 @@ describe("AuthService",
 				it("should clear user state on logout",
 					() =>
 					{
-						const mockResponse: AuthResponse =
-							createMockAuthResponse();
-
-						service
-							.login(TEST_LOGIN)
-							.subscribe();
-
-						const loginReq: TestRequest =
-							httpMock.expectOne(
-								`${environment.apiUrl}/auth/login`);
-						loginReq.flush(mockResponse);
+						loginAndFlush(service, httpMock);
 
 						expect(service.isAuthenticated())
 							.toBe(true);
@@ -260,21 +267,7 @@ describe("AuthService",
 				it("should clear all local authentication state",
 					() =>
 					{
-						const mockResponse: AuthResponse =
-							createMockAuthResponse();
-
-						service
-							.login(
-								{
-									usernameOrEmail: "testuser",
-									password: "Password123",
-									rememberMe: false
-								})
-							.subscribe();
-
-						const req: TestRequest =
-							httpMock.expectOne(`${environment.apiUrl}/auth/login`);
-						req.flush(mockResponse);
+						loginAndFlush(service, httpMock);
 
 						expect(service.isAuthenticated())
 							.toBe(true);
@@ -298,22 +291,11 @@ describe("AuthService",
 				it("should correctly check user role",
 					() =>
 					{
-						const mockResponse: AuthResponse =
+						loginAndFlush(
+							service,
+							httpMock,
 							createMockAuthResponse(
-								{ [DOTNET_ROLE_CLAIM]: [TEST_ROLE_DEVELOPER, TEST_ROLE_ADMIN] });
-
-						service
-							.login(
-								{
-									usernameOrEmail: "testuser",
-									password: "Password123",
-									rememberMe: false
-								})
-							.subscribe();
-
-						const req: TestRequest =
-							httpMock.expectOne(`${environment.apiUrl}/auth/login`);
-						req.flush(mockResponse);
+								{ [DOTNET_ROLE_CLAIM]: [TEST_ROLE_DEVELOPER, TEST_ROLE_ADMIN] }));
 
 						expect(service.hasRole(TEST_ROLE_DEVELOPER))
 							.toBe(true);
@@ -326,22 +308,11 @@ describe("AuthService",
 				it("should handle single role as string",
 					() =>
 					{
-						const mockResponse: AuthResponse =
+						loginAndFlush(
+							service,
+							httpMock,
 							createMockAuthResponse(
-								{ [DOTNET_ROLE_CLAIM]: [TEST_ROLE_DEVELOPER] });
-
-						service
-							.login(
-								{
-									usernameOrEmail: "testuser",
-									password: "Password123",
-									rememberMe: false
-								})
-							.subscribe();
-
-						const req: TestRequest =
-							httpMock.expectOne(`${environment.apiUrl}/auth/login`);
-						req.flush(mockResponse);
+								{ [DOTNET_ROLE_CLAIM]: [TEST_ROLE_DEVELOPER] }));
 
 						expect(service.hasRole(TEST_ROLE_DEVELOPER))
 							.toBe(true);
@@ -356,22 +327,11 @@ describe("AuthService",
 				it("should return true if user has any of the specified roles",
 					() =>
 					{
-						const mockResponse: AuthResponse =
+						loginAndFlush(
+							service,
+							httpMock,
 							createMockAuthResponse(
-								{ [DOTNET_ROLE_CLAIM]: [TEST_ROLE_DEVELOPER] });
-
-						service
-							.login(
-								{
-									usernameOrEmail: "testuser",
-									password: "Password123",
-									rememberMe: false
-								})
-							.subscribe();
-
-						const req: TestRequest =
-							httpMock.expectOne(`${environment.apiUrl}/auth/login`);
-						req.flush(mockResponse);
+								{ [DOTNET_ROLE_CLAIM]: [TEST_ROLE_DEVELOPER] }));
 
 						expect(service.hasAnyRole(TEST_ROLE_DEVELOPER, TEST_ROLE_ADMIN))
 							.toBe(true);
@@ -386,28 +346,12 @@ describe("AuthService",
 				it("should set fullName from response body",
 					() =>
 					{
-						const mockResponse: AuthResponse =
+						loginAndFlush(
+							service,
+							httpMock,
 							createMockAuthResponse(
-								{
-									unique_name: "johndoe"
-								},
-								{
-									email: "john@example.com",
-									fullName: "John Doe"
-								});
-
-						service
-							.login(
-								{
-									usernameOrEmail: "johndoe",
-									password: "Password123",
-									rememberMe: false
-								})
-							.subscribe();
-
-						const req: TestRequest =
-							httpMock.expectOne(`${environment.apiUrl}/auth/login`);
-						req.flush(mockResponse);
+								{ unique_name: "johndoe" },
+								{ email: "john@example.com", fullName: "John Doe" }));
 
 						expect(service.user()?.fullName)
 							.toBe("John Doe");
@@ -416,28 +360,12 @@ describe("AuthService",
 				it("should set fullName to null when fullName is null in response",
 					() =>
 					{
-						const mockResponse: AuthResponse =
+						loginAndFlush(
+							service,
+							httpMock,
 							createMockAuthResponse(
-								{
-									unique_name: "johndoe"
-								},
-								{
-									email: "john@example.com",
-									fullName: null
-								});
-
-						service
-							.login(
-								{
-									usernameOrEmail: "johndoe",
-									password: "Password123",
-									rememberMe: false
-								})
-							.subscribe();
-
-						const req: TestRequest =
-							httpMock.expectOne(`${environment.apiUrl}/auth/login`);
-						req.flush(mockResponse);
+								{ unique_name: "johndoe" },
+								{ email: "john@example.com", fullName: null }));
 
 						expect(service.user()?.fullName)
 							.toBeNull();
@@ -446,28 +374,12 @@ describe("AuthService",
 				it("should set email from response body",
 					() =>
 					{
-						const mockResponse: AuthResponse =
+						loginAndFlush(
+							service,
+							httpMock,
 							createMockAuthResponse(
-								{
-									unique_name: "johndoe"
-								},
-								{
-									email: "john@example.com",
-									fullName: "John Doe"
-								});
-
-						service
-							.login(
-								{
-									usernameOrEmail: "johndoe",
-									password: "Password123",
-									rememberMe: false
-								})
-							.subscribe();
-
-						const req: TestRequest =
-							httpMock.expectOne(`${environment.apiUrl}/auth/login`);
-						req.flush(mockResponse);
+								{ unique_name: "johndoe" },
+								{ email: "john@example.com", fullName: "John Doe" }));
 
 						expect(service.user()?.email)
 							.toBe("john@example.com");
@@ -545,27 +457,17 @@ describe("AuthService",
 					{
 						const dateService: DateService =
 							new DateService();
-						const mockResponse: AuthResponse =
+
+						loginAndFlush(
+							service,
+							httpMock,
 							createMockAuthResponse(
 								{ exp: String(Math.floor(dateService.nowTimestamp() / 1000) + 3600) },
 								{
 									expiresAt: dateService
 										.fromMillis(dateService.nowTimestamp() + 3600000)
 										.toISOString()
-								});
-
-						service
-							.login(
-								{
-									usernameOrEmail: "testuser",
-									password: "Password123",
-									rememberMe: false
-								})
-							.subscribe();
-
-						const req: TestRequest =
-							httpMock.expectOne(`${environment.apiUrl}/auth/login`);
-						req.flush(mockResponse);
+								}));
 
 						expect(service.isTokenExpired())
 							.toBe(false);
@@ -586,20 +488,7 @@ describe("AuthService",
 					() =>
 					{
 						const mockResponse: AuthResponse =
-							createMockAuthResponse();
-
-						service
-							.login(
-								{
-									usernameOrEmail: "testuser",
-									password: "Password123",
-									rememberMe: false
-								})
-							.subscribe();
-
-						const req: TestRequest =
-							httpMock.expectOne(`${environment.apiUrl}/auth/login`);
-						req.flush(mockResponse);
+							loginAndFlush(service, httpMock);
 
 						const token: string | null =
 							service.getAccessToken();
@@ -706,21 +595,7 @@ describe("AuthService",
 				it("should set session marker on login",
 					() =>
 					{
-						const mockResponse: AuthResponse =
-							createMockAuthResponse();
-
-						service
-							.login(
-								{
-									usernameOrEmail: "testuser",
-									password: "Password123",
-									rememberMe: false
-								})
-							.subscribe();
-
-						const req: TestRequest =
-							httpMock.expectOne(`${environment.apiUrl}/auth/login`);
-						req.flush(mockResponse);
+						loginAndFlush(service, httpMock);
 
 						expect(localStorage.getItem(SESSION_KEY))
 							.toBe("true");
@@ -731,22 +606,7 @@ describe("AuthService",
 					{
 						localStorage.setItem(SESSION_KEY, "true");
 
-						// Login first
-						const mockResponse: AuthResponse =
-							createMockAuthResponse();
-						service
-							.login(
-								{
-									usernameOrEmail: "testuser",
-									password: "Password123",
-									rememberMe: false
-								})
-							.subscribe();
-
-						const loginReq: TestRequest =
-							httpMock.expectOne(
-								`${environment.apiUrl}/auth/login`);
-						loginReq.flush(mockResponse);
+						loginAndFlush(service, httpMock);
 
 						// Logout
 						service.logout();
@@ -792,6 +652,81 @@ describe("AuthService",
 						req.flush(null);
 
 						expect(completed)
+							.toBe(true);
+					});
+			});
+
+		describe("cross-tab logout",
+			() =>
+			{
+				it("should call forceLogoutLocally when auth_has_session removed in another tab",
+					() =>
+					{
+						service
+							.initialize()
+							.subscribe();
+						loginAndFlush(service, httpMock);
+
+						expect(service.isAuthenticated())
+							.toBe(true);
+
+						// Simulate StorageEvent from another tab (session marker removed)
+						const storageEvent: StorageEvent =
+							new StorageEvent(
+								"storage",
+								{
+									key: SESSION_KEY,
+									newValue: null,
+									oldValue: "true"
+								});
+						window.dispatchEvent(storageEvent);
+
+						expect(service.isAuthenticated())
+							.toBe(false);
+					});
+
+				it("should not trigger logout for unrelated storage events",
+					() =>
+					{
+						service
+							.initialize()
+							.subscribe();
+						loginAndFlush(service, httpMock);
+
+						// Simulate unrelated storage event
+						const storageEvent: StorageEvent =
+							new StorageEvent(
+								"storage",
+								{
+									key: "unrelated_key",
+									newValue: null
+								});
+						window.dispatchEvent(storageEvent);
+
+						expect(service.isAuthenticated())
+							.toBe(true);
+					});
+
+				it("should not trigger logout when new value is set",
+					() =>
+					{
+						service
+							.initialize()
+							.subscribe();
+						loginAndFlush(service, httpMock);
+
+						// Simulate session marker being SET (not removed)
+						const storageEvent: StorageEvent =
+							new StorageEvent(
+								"storage",
+								{
+									key: SESSION_KEY,
+									newValue: "true",
+									oldValue: null
+								});
+						window.dispatchEvent(storageEvent);
+
+						expect(service.isAuthenticated())
 							.toBe(true);
 					});
 			});

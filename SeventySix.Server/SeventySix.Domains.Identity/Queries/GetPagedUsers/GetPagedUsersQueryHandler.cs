@@ -21,16 +21,19 @@ public static class GetPagedUsersQueryHandler
 		if (!string.IsNullOrWhiteSpace(query.Request.SearchTerm))
 		{
 			string searchTerm =
-				query.Request.SearchTerm.ToLowerInvariant();
+				query.Request.SearchTerm;
 
 			usersQuery =
 				usersQuery.Where(user =>
-					(user.UserName != null
-						&& user.UserName.ToLower().Contains(searchTerm))
-					|| (user.Email != null
-						&& user.Email.ToLower().Contains(searchTerm))
-					|| (user.FullName != null
-						&& user.FullName.ToLower().Contains(searchTerm)));
+					EF.Functions.ILike(
+						user.UserName!,
+						$"%{searchTerm}%")
+					|| EF.Functions.ILike(
+						user.Email!,
+						$"%{searchTerm}%")
+					|| EF.Functions.ILike(
+						user.FullName!,
+						$"%{searchTerm}%"));
 		}
 
 		// Get total count before pagination

@@ -24,10 +24,14 @@ namespace SeventySix.Api.Infrastructure;
 /// <param name="jwtSettings">
 /// JWT settings including token expiration.
 /// </param>
+/// <param name="trustedDeviceSettings">
+/// Trusted device settings including cookie name.
+/// </param>
 public sealed class AuthCookieService(
 	IHttpContextAccessor httpContextAccessor,
 	IOptions<AuthSettings> authSettings,
-	IOptions<JwtSettings> jwtSettings) : IAuthCookieService
+	IOptions<JwtSettings> jwtSettings,
+	IOptions<TrustedDeviceSettings> trustedDeviceSettings) : IAuthCookieService
 {
 	/// <summary>
 	/// Gets the current HttpContext.
@@ -110,6 +114,24 @@ public sealed class AuthCookieService(
 
 		return $"{callbackUri.Scheme}://{callbackUri.Authority}";
 	}
+
+	/// <inheritdoc/>
+	public void SetTrustedDeviceCookie(
+		string token,
+		int lifetimeDays) =>
+		SetSecureCookie(
+			trustedDeviceSettings.Value.CookieName,
+			token,
+			TimeSpan.FromDays(lifetimeDays));
+
+	/// <inheritdoc/>
+	public string? GetTrustedDeviceToken() =>
+		HttpContext.Request.Cookies[
+			trustedDeviceSettings.Value.CookieName];
+
+	/// <inheritdoc/>
+	public void ClearTrustedDeviceCookie() =>
+		DeleteCookie(trustedDeviceSettings.Value.CookieName);
 
 	/// <summary>
 	/// Sets an HTTP-only secure cookie with the specified settings.
