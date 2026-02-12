@@ -103,7 +103,9 @@ public class AuthController(
 		ValidatedAuthResult validatedResult =
 			ValidateSuccessfulAuthResult(result);
 
-		CookieService.SetRefreshTokenCookie(validatedResult.RefreshToken);
+		CookieService.SetRefreshTokenCookie(
+			validatedResult.RefreshToken,
+			result.RememberMe);
 
 		return Ok(CreateAuthResponse(validatedResult));
 	}
@@ -167,7 +169,9 @@ public class AuthController(
 		ValidatedAuthResult validatedResult =
 			ValidateSuccessfulAuthResult(result);
 
-		CookieService.SetRefreshTokenCookie(validatedResult.RefreshToken);
+		CookieService.SetRefreshTokenCookie(
+			validatedResult.RefreshToken,
+			result.RememberMe);
 
 		return Ok(CreateAuthResponse(validatedResult));
 	}

@@ -86,7 +86,7 @@ public static class RefreshTokensCommandHandler
 				AuthErrorCodes.AccountInactive);
 		}
 
-		string? newRefreshToken =
+		(string? newRefreshToken, bool rememberMe) =
 			await tokenService.RotateRefreshTokenAsync(
 				command.RefreshToken,
 				command.ClientIp,
@@ -111,14 +111,12 @@ public static class RefreshTokensCommandHandler
 		bool requiresPasswordChange =
 			user.RequiresPasswordChange;
 
-		// Generate new tokens using authentication service
-		// Note: We replace the refresh token with the rotated one
-		AuthResult result =
-			await authenticationService.GenerateAuthResultAsync(
+		// Generate access token only — no orphaned refresh token created
+		AuthResult accessTokenResult =
+			await authenticationService.GenerateAccessTokenResultAsync(
 				user,
-				command.ClientIp,
 				requiresPasswordChange,
-				rememberMe: false, // Refresh doesn't change remember-me preference
+				rememberMe,
 				cancellationToken);
 
 		// Log successful token refresh
@@ -131,11 +129,12 @@ public static class RefreshTokensCommandHandler
 
 		// Replace with rotated refresh token
 		return AuthResult.Succeeded(
-			result.AccessToken!,
+			accessTokenResult.AccessToken!,
 			newRefreshToken,
-			result.ExpiresAt!.Value,
-			result.Email!,
-			result.FullName,
-			requiresPasswordChange);
+			accessTokenResult.ExpiresAt!.Value,
+			accessTokenResult.Email!,
+			accessTokenResult.FullName,
+			requiresPasswordChange,
+			rememberMe);
 	}
 }

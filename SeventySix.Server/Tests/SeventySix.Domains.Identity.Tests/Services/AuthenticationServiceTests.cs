@@ -308,4 +308,76 @@ public class AuthenticationServiceTests
 		roleList.ShouldContain(RoleConstants.Admin);
 		roleList.ShouldContain(RoleConstants.Developer);
 	}
+
+	/// <summary>
+	/// Verifies GenerateAccessTokenResultAsync returns access token without creating a refresh token.
+	/// </summary>
+	[Fact]
+	public async Task GenerateAccessTokenResultAsync_WithValidUser_ReturnsAccessTokenOnlyAsync()
+	{
+		// Arrange
+		ApplicationUser user =
+			new()
+			{
+				Id = 5,
+				UserName = "accessonlyuser",
+				Email = "accessonly@example.com",
+				FullName = "Access Only",
+			};
+
+		IList<string> roles =
+			[RoleConstants.User];
+		string expectedAccessToken = "access_token_only";
+		DateTime utcNow =
+			TestDates.DefaultUtc;
+
+		UserManager
+			.GetRolesAsync(user)
+			.Returns(roles);
+
+		TokenService
+			.GenerateAccessToken(
+				user.Id,
+				user.UserName!,
+				Arg.Any<IEnumerable<string>>(),
+				Arg.Any<bool>())
+			.Returns(expectedAccessToken);
+
+		TimeProvider.GetUtcNow().Returns(new DateTimeOffset(utcNow));
+
+		// Act
+		AuthResult result =
+			await ServiceUnderTest.GenerateAccessTokenResultAsync(
+				user,
+				requiresPasswordChange: false,
+				rememberMe: true,
+				CancellationToken.None);
+
+		// Assert
+		result.Success.ShouldBeTrue();
+		result.AccessToken.ShouldBe(expectedAccessToken);
+		result.RefreshToken.ShouldBe(string.Empty);
+		result.ExpiresAt.ShouldBe(utcNow.AddMinutes(15));
+		result.Email.ShouldBe(user.Email);
+		result.FullName.ShouldBe(user.FullName);
+		result.RememberMe.ShouldBeTrue();
+
+		// Verify NO refresh token was generated
+		await TokenService
+			.DidNotReceive()
+			.GenerateRefreshTokenAsync(
+				Arg.Any<long>(),
+				Arg.Any<string?>(),
+				Arg.Any<bool>(),
+				Arg.Any<CancellationToken>());
+
+		// Verify last login was NOT updated (access-token-only path)
+		await AuthRepository
+			.DidNotReceive()
+			.UpdateLastLoginAsync(
+				Arg.Any<long>(),
+				Arg.Any<DateTime>(),
+				Arg.Any<string?>(),
+				Arg.Any<CancellationToken>());
+	}
 }

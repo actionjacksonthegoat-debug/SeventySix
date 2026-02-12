@@ -95,6 +95,19 @@ import { isNullOrUndefined, isPresent } from "@shared/utilities/null-check.utili
 
 See `.github/instructions/accessibility.instructions.md` for full patterns.
 
+### 7. TypeScript Methods = Explicit Return Types (REQUIRED)
+
+| ❌ NEVER             | ✅ ALWAYS                            |
+| -------------------- | ------------------------------------ |
+| `ngOnInit() {`       | `ngOnInit(): void {`                 |
+| `getUser() {`        | `getUser(): Observable<UserDto> {`   |
+| `isValid() {`        | `isValid(): boolean {`               |
+| `async loadData() {` | `async loadData(): Promise<void> {`  |
+| `transform(value) {` | `transform(value: string): string {` |
+
+**Exception**: Inline arrow callbacks where the return type is inferred from a typed context
+(e.g., `.subscribe(() => { ... })`, `.pipe(map(item => item.name))`)
+
 ---
 
 ## Architecture
@@ -124,6 +137,9 @@ private readonly service = inject(UserService);  // inject() only
 readonly name = input.required<string>();        // Signal inputs
 readonly clicked = output<void>();               // Signal outputs
 @if (condition) { } @for (item of items; track item.id) { }  // Control flow
+ngOnInit(): void { }                        // Lifecycle hooks MUST have : void
+getData(): Observable<UserDto[]> { }        // Service methods MUST have return type
+isActive(): boolean { }                     // Computed methods MUST have return type
 ```
 
 ---

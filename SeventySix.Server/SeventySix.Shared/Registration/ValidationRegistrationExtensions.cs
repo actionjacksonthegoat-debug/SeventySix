@@ -90,7 +90,7 @@ public static class ValidationRegistrationExtensions
 				typeof(IValidator<>).MakeGenericType(
 					candidate);
 
-			services.AddSingleton(
+			services.AddScoped(
 				validatorForCommand,
 				serviceProvider =>
 				{

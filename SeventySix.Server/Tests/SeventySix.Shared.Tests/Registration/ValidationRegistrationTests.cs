@@ -25,8 +25,8 @@ public class ValidationRegistrationTests
 		ServiceCollection services =
 			new();
 
-		// Add our request validator explicitly (simulating it existing in the assembly)
-		services.AddSingleton<IValidator<TestRequest>, TestRequestValidator>();
+		// Add our request validator as Scoped (matching FluentValidation's default lifetime)
+		services.AddScoped<IValidator<TestRequest>, TestRequestValidator>();
 
 		// Use the current marker (this test assembly contains types but not the domain ones)
 		services.AddDomainValidatorsFromAssemblyContaining<ValidationRegistrationTests>();
@@ -34,8 +34,11 @@ public class ValidationRegistrationTests
 		ServiceProvider provider =
 			services.BuildServiceProvider();
 
+		using IServiceScope scope =
+			provider.CreateScope();
+
 		IValidator<TestCommand>? commandValidator =
-			provider.GetService<
+			scope.ServiceProvider.GetService<
 				IValidator<TestCommand>>();
 
 		commandValidator.ShouldNotBeNull();

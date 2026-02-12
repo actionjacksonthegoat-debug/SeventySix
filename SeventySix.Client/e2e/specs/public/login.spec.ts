@@ -209,6 +209,74 @@ test.describe("Login Page",
 						await expect(rememberMe)
 							.toBeChecked();
 					});
+
+				test("should set persistent cookie when remember me is checked",
+					async ({ page, authPage, context }) =>
+					{
+						const testUser =
+							getTestUserByRole("User");
+
+						await authPage.checkRememberMe();
+						await authPage.login(
+							testUser.email,
+							testUser.password);
+
+						await page.waitForURL(
+							ROUTES.home,
+							{ timeout: TIMEOUTS.navigation });
+
+						const cookies =
+							await context.cookies();
+						const refreshCookie =
+							cookies.find(
+								(cookie) => cookie.name === "X-Refresh-Token");
+
+						expect(refreshCookie)
+							.toBeDefined();
+
+						// RememberMe cookie should expire in ~14 days (> 1 day)
+						const expiresInSeconds: number =
+							refreshCookie!.expires - Date.now() / 1000;
+						const expiresInDays: number =
+							expiresInSeconds / 86400;
+
+						expect(expiresInDays)
+							.toBeGreaterThan(1);
+					});
+
+				test("should set short-lived cookie when remember me is unchecked",
+					async ({ page, authPage, context }) =>
+					{
+						const testUser =
+							getTestUserByRole("User");
+
+						// Leave rememberMe unchecked (default)
+						await authPage.login(
+							testUser.email,
+							testUser.password);
+
+						await page.waitForURL(
+							ROUTES.home,
+							{ timeout: TIMEOUTS.navigation });
+
+						const cookies =
+							await context.cookies();
+						const refreshCookie =
+							cookies.find(
+								(cookie) => cookie.name === "X-Refresh-Token");
+
+						expect(refreshCookie)
+							.toBeDefined();
+
+						// Standard cookie should expire in ~1 day (≤ 2 days as safety margin)
+						const expiresInSeconds: number =
+							refreshCookie!.expires - Date.now() / 1000;
+						const expiresInDays: number =
+							expiresInSeconds / 86400;
+
+						expect(expiresInDays)
+							.toBeLessThanOrEqual(2);
+					});
 			});
 
 		test.describe("Loading State",

@@ -50,6 +50,10 @@ namespace SeventySix.Identity;
 /// <param name="TrustedDeviceToken">
 /// Trusted device token to set as a cookie (null when not applicable).
 /// </param>
+/// <param name="RememberMe">
+/// Whether the user selected the "Remember Me" option during authentication.
+/// Used by cookie service to set appropriate cookie expiration.
+/// </param>
 public record AuthResult(
 	bool Success,
 	string? AccessToken = null,
@@ -64,7 +68,8 @@ public record AuthResult(
 	IReadOnlyList<MfaMethod>? AvailableMfaMethods = null,
 	string? Error = null,
 	string? ErrorCode = null,
-	string? TrustedDeviceToken = null)
+	string? TrustedDeviceToken = null,
+	bool RememberMe = false)
 {
 	/// <summary>
 	/// Creates a successful result without tokens (e.g., password change).
@@ -95,6 +100,9 @@ public record AuthResult(
 	/// <param name="requiresPasswordChange">
 	/// Whether user must change password.
 	/// </param>
+	/// <param name="rememberMe">
+	/// Whether the user selected "Remember Me" during authentication.
+	/// </param>
 	/// <returns>
 	/// Success result with tokens.
 	/// </returns>
@@ -104,7 +112,8 @@ public record AuthResult(
 		DateTime expiresAt,
 		string email,
 		string? fullName,
-		bool requiresPasswordChange = false) =>
+		bool requiresPasswordChange = false,
+		bool rememberMe = false) =>
 		new(
 			Success: true,
 			AccessToken: accessToken,
@@ -112,7 +121,8 @@ public record AuthResult(
 			ExpiresAt: expiresAt,
 			Email: email,
 			FullName: fullName,
-			RequiresPasswordChange: requiresPasswordChange);
+			RequiresPasswordChange: requiresPasswordChange,
+			RememberMe: rememberMe);
 
 	/// <summary>
 	/// Creates a result requiring MFA verification.

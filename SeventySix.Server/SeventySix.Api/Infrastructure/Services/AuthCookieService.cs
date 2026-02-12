@@ -50,17 +50,24 @@ public sealed class AuthCookieService(
 	/// Can be configured to Lax via SameSiteLax setting if needed for
 	/// specific cross-site scenarios, but Strict is recommended.
 	/// </remarks>
-	public void SetRefreshTokenCookie(string refreshToken)
+	public void SetRefreshTokenCookie(
+		string refreshToken,
+		bool rememberMe = false)
 	{
 		SameSiteMode sameSite =
 			authSettings.Value.Cookie.SameSiteLax
 				? SameSiteMode.Lax
 				: SameSiteMode.Strict;
 
+		int expirationDays =
+			rememberMe
+				? jwtSettings.Value.RefreshTokenRememberMeExpirationDays
+				: jwtSettings.Value.RefreshTokenExpirationDays;
+
 		SetSecureCookie(
 			authSettings.Value.Cookie.RefreshTokenCookieName,
 			refreshToken,
-			TimeSpan.FromDays(jwtSettings.Value.RefreshTokenExpirationDays),
+			TimeSpan.FromDays(expirationDays),
 			sameSite);
 	}
 

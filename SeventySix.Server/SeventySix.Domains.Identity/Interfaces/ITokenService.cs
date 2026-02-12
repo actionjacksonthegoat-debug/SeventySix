@@ -112,11 +112,12 @@ public interface ITokenService
 	/// Cancellation token.
 	/// </param>
 	/// <returns>
-	/// New plaintext refresh token if successful, null if:
+	/// Tuple of (new plaintext refresh token, rememberMe flag inferred from token lifetime).
+	/// Token is null if:
 	/// - Token not found or expired
 	/// - Token already revoked (reuse attack detected - entire family revoked)
 	/// </returns>
-	public Task<string?> RotateRefreshTokenAsync(
+	public Task<(string? Token, bool RememberMe)> RotateRefreshTokenAsync(
 		string refreshToken,
 		string? clientIp,
 		CancellationToken cancellationToken = default);

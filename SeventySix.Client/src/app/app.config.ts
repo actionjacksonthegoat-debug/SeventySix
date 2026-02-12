@@ -33,6 +33,7 @@ import {
 	errorInterceptor,
 	loggingInterceptor
 } from "@shared/interceptors";
+import { AuthResponse } from "@shared/models";
 import {
 	AuthService,
 	ErrorHandlerService,
@@ -41,6 +42,7 @@ import {
 	ThemeService,
 	WebVitalsService
 } from "@shared/services";
+import { Observable } from "rxjs";
 import { routes } from "./app.routes";
 
 /**
@@ -61,7 +63,7 @@ function initializeTheme(): Promise<void>
  * Initialize OpenTelemetry on app startup
  * This ensures tracing is active before any HTTP requests
  */
-function initializeTelemetry()
+function initializeTelemetry(): Promise<void>
 {
 	const telemetryService: TelemetryService =
 		inject(TelemetryService);
@@ -73,7 +75,7 @@ function initializeTelemetry()
  * Initialize Web Vitals monitoring on app startup
  * The WebVitalsService constructor handles initialization automatically
  */
-function initializeWebVitals()
+function initializeWebVitals(): Promise<void>
 {
 	inject(WebVitalsService);
 	// Web vitals service constructor handles initialization
@@ -84,7 +86,7 @@ function initializeWebVitals()
  * Initialize auth service on app startup
  * Handles OAuth callback processing and restores auth state
  */
-function initializeAuth()
+function initializeAuth(): Observable<AuthResponse | null>
 {
 	const authService: AuthService =
 		inject(AuthService);

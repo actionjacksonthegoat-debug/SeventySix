@@ -71,8 +71,8 @@ switch ($Action) {
 		dotnet user-secrets set "AdminSeeder:Email" "admin@seventysix.local" --project $projectPath
 		dotnet user-secrets set "AdminSeeder:InitialPassword" "SeventySixAdmin76!" --project $projectPath
 
-		# Altcha — Generate a base64-encoded 32-byte HMAC key
-		$altchaBytes = New-Object byte[] 32
+		# Altcha — Generate a base64-encoded 64-byte HMAC key (required by Ixnas.AltchaNet SHA-256)
+		$altchaBytes = New-Object byte[] 64
 		$cryptoProvider = New-Object System.Security.Cryptography.RNGCryptoServiceProvider
 		$cryptoProvider.GetBytes($altchaBytes)
 		$cryptoProvider.Dispose()

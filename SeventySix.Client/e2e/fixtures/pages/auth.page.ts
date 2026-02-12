@@ -21,6 +21,7 @@ export class AuthPageHelper
 	readonly githubButton: Locator;
 	readonly forgotPasswordLink: Locator;
 	readonly signInLink: Locator;
+	readonly rememberMeCheckbox: Locator;
 
 	/**
 	 * Creates auth page helper.
@@ -39,6 +40,7 @@ export class AuthPageHelper
 		this.githubButton = page.locator(SELECTORS.auth.githubButton);
 		this.forgotPasswordLink = page.locator(SELECTORS.auth.forgotPasswordLink);
 		this.signInLink = page.locator(SELECTORS.auth.signInLink);
+		this.rememberMeCheckbox = page.locator(SELECTORS.form.rememberMeCheckbox);
 	}
 
 	/**
@@ -89,5 +91,13 @@ export class AuthPageHelper
 	{
 		await this.usernameInput.fill(username);
 		await this.passwordInput.fill(password);
+	}
+
+	/**
+	 * Checks the Remember Me checkbox.
+	 */
+	async checkRememberMe(): Promise<void>
+	{
+		await this.rememberMeCheckbox.check();
 	}
 }

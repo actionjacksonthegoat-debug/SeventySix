@@ -168,7 +168,9 @@ public class PasswordController(
 			return HandleFailedAuthResult(result, "Set Password");
 		}
 
-		CookieService.SetRefreshTokenCookie(result.RefreshToken!);
+		CookieService.SetRefreshTokenCookie(
+			result.RefreshToken!,
+			rememberMe: false);
 
 		return Ok(
 			new AuthResponse(

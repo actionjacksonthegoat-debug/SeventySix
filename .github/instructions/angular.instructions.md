@@ -18,6 +18,7 @@ applyTo: "**/SeventySix.Client/src/**/*.ts"
 | Host bindings    | `host: {}`               | `@HostBinding`                 |
 | Classes          | `[class.x]`              | `ngClass`                      |
 | Styles           | `[style.x]`              | `ngStyle`                      |
+| Return types     | Explicit on all methods  | Implicit return types          |
 | Templates        | `computed()` signals     | Method calls in templates      |
 | Cleanup          | `takeUntilDestroyed()`   | Manual subscription cleanup    |
 

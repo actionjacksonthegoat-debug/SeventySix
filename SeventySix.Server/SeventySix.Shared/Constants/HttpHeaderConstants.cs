@@ -46,4 +46,16 @@ public static class HttpHeaderConstants
 	/// Legacy header used alongside Cache-Control for backwards compatibility.
 	/// </summary>
 	public const string Pragma = "Pragma";
+
+	/// <summary>
+	/// W3C Trace Context traceparent header for distributed tracing.
+	/// Used by OpenTelemetry and other tracing systems to propagate trace context.
+	/// </summary>
+	public const string TraceParent = "traceparent";
+
+	/// <summary>
+	/// W3C Trace Context tracestate header for distributed tracing.
+	/// Optional vendor-specific trace state information for OpenTelemetry and tracing systems.
+	/// </summary>
+	public const string TraceState = "tracestate";
 }

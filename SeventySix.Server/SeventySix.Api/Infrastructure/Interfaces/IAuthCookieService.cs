@@ -21,7 +21,13 @@ public interface IAuthCookieService
 	/// <param name="refreshToken">
 	/// The refresh token value.
 	/// </param>
-	public void SetRefreshTokenCookie(string refreshToken);
+	/// <param name="rememberMe">
+	/// When true, uses extended cookie expiration (RememberMe days).
+	/// When false, uses standard short-lived expiration.
+	/// </param>
+	public void SetRefreshTokenCookie(
+		string refreshToken,
+		bool rememberMe = false);
 
 	/// <summary>
 	/// Gets the refresh token from the request cookies.

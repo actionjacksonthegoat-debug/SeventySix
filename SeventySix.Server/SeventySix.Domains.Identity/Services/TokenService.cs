@@ -112,7 +112,7 @@ public sealed class TokenService(
 	}
 
 	/// <inheritdoc/>
-	public async Task<string?> RotateRefreshTokenAsync(
+	public async Task<(string? Token, bool RememberMe)> RotateRefreshTokenAsync(
 		string refreshToken,
 		string? clientIp,
 		CancellationToken cancellationToken = default)
@@ -132,13 +132,13 @@ public sealed class TokenService(
 		// Token not found
 		if (existingToken == null)
 		{
-			return null;
+			return (null, false);
 		}
 
 		// Token expired
 		if (existingToken.ExpiresAt <= now)
 		{
-			return null;
+			return (null, false);
 		}
 
 		// Check absolute session timeout (30 days from session start)
@@ -159,7 +159,7 @@ public sealed class TokenService(
 				now,
 				cancellationToken);
 
-			return null;
+			return (null, false);
 		}
 
 		// REUSE ATTACK DETECTED: Token already revoked but attacker trying to use it
@@ -177,7 +177,7 @@ public sealed class TokenService(
 				now,
 				cancellationToken);
 
-			return null;
+			return (null, false);
 		}
 
 		// Calculate rememberMe from token expiration to preserve original setting
@@ -199,13 +199,16 @@ public sealed class TokenService(
 		}
 
 		// Generate new token inheriting the family and session start
-		return await GenerateRefreshTokenInternalAsync(
-			existingToken.UserId,
-			clientIp,
-			rememberMe,
-			existingToken.FamilyId,
-			existingToken.SessionStartedAt,
-			cancellationToken);
+		string newToken =
+			await GenerateRefreshTokenInternalAsync(
+				existingToken.UserId,
+				clientIp,
+				rememberMe,
+				existingToken.FamilyId,
+				existingToken.SessionStartedAt,
+				cancellationToken);
+
+		return (newToken, rememberMe);
 	}
 
 	/// <summary>

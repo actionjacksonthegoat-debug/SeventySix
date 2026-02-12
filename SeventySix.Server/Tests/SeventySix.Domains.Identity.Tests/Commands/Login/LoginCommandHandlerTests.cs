@@ -337,6 +337,72 @@ public class LoginCommandHandlerTests
 	}
 
 	/// <summary>
+	/// Proves the MFA enforcement bug: when RequiredForAllUsers is false and user has not
+	/// enrolled in MFA, the login succeeds without any MFA challenge — even though Mfa:Enabled is true.
+	/// </summary>
+	[Fact]
+	public async Task HandleAsync_RequiredForAllUsersFalse_UserWithoutMfa_SkipsMfaChallengeAsync()
+	{
+		// Arrange — Enabled=true but RequiredForAllUsers=false (the buggy config)
+		IOptions<MfaSettings> mfaSettings =
+			Options.Create(
+				new MfaSettings
+				{
+					Enabled = true,
+					RequiredForAllUsers = false,
+					CodeLength = 6,
+					CodeExpirationMinutes = 5,
+					MaxAttempts = 5,
+					ResendCooldownSeconds = 60
+				});
+
+		ApplicationUser user =
+			new UserBuilder(TimeProvider)
+				.WithId(20)
+				.WithUsername("newuser")
+				.WithEmail("newuser@example.com")
+				.WithRequiresPasswordChange(false)
+				.Build();
+
+		// user.MfaEnabled defaults to false — simulates a newly registered user
+		LoginCommand command =
+			CreateLoginCommand(
+				"newuser",
+				"ValidPass123!");
+
+		IdentityMockFactory.ConfigureUserManagerForSuccess(UserManager, user);
+		IdentityMockFactory.ConfigureSignInManagerForSuccess(SignInManager);
+		IdentityMockFactory.ConfigureAuthServiceForSuccess(AuthenticationService, user);
+
+		// Act
+		AuthResult result =
+			await LoginCommandHandler.HandleAsync(
+				command,
+				UserManager,
+				SignInManager,
+				AuthenticationService,
+				AltchaService,
+				SecurityAuditService,
+				MfaService,
+				mfaSettings,
+				TrustedDeviceService,
+				MessageBus,
+				CancellationToken.None);
+
+		// Assert — MFA is SKIPPED (this proves the bug: new users bypass MFA)
+		result.Success.ShouldBeTrue();
+		result.RequiresMfa.ShouldBeFalse();
+
+		// MFA service should never be called
+		await MfaService
+			.DidNotReceive()
+			.CreateChallengeAsync(
+				Arg.Any<long>(),
+				Arg.Any<string?>(),
+				Arg.Any<CancellationToken>());
+	}
+
+	/// <summary>
 	/// Tests that MFA is required when MFA is enabled globally and user has email-based MFA.
 	/// </summary>
 	[Fact]

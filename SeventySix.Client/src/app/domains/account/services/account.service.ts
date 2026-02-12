@@ -14,6 +14,7 @@ import { CacheCoordinationService } from "@shared/services/cache-coordination.se
 import { QueryKeys } from "@shared/utilities/query-keys.utility";
 import {
 	CreateMutationResult,
+	CreateQueryResult,
 	injectQuery
 } from "@tanstack/angular-query-experimental";
 import { lastValueFrom } from "rxjs";
@@ -42,7 +43,7 @@ export class AccountService extends BaseMutationService
 	 * @returns {ReturnType<typeof injectQuery>}
 	 * Query object with data, isLoading, and error.
 	 */
-	getProfile()
+	getProfile(): CreateQueryResult<UserProfileDto>
 	{
 		return injectQuery(
 			() => ({
@@ -75,7 +76,7 @@ export class AccountService extends BaseMutationService
 	 * @returns {ReturnType<typeof injectQuery>}
 	 * Query object with roles data and loading state.
 	 */
-	getAvailableRoles()
+	getAvailableRoles(): CreateQueryResult<AvailableRoleDto[]>
 	{
 		return injectQuery(
 			() => ({

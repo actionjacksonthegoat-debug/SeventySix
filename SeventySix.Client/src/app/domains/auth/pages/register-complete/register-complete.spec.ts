@@ -26,7 +26,7 @@ describe("RegisterCompleteComponent",
 		let mockNotificationService: ReturnType<typeof createMockNotificationService>;
 		let router: Router;
 
-		function setupTestBed(queryParams: Record<string, string> = {})
+		function setupTestBed(queryParams: Record<string, string> = {}): void
 		{
 			TestBed.configureTestingModule(
 				{

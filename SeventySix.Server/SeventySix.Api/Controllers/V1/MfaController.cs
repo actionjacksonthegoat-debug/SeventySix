@@ -86,7 +86,10 @@ public class MfaController(
 		ValidatedAuthResult validatedResult =
 			ValidateSuccessfulAuthResult(result);
 
-		CookieService.SetRefreshTokenCookie(validatedResult.RefreshToken);
+		CookieService.SetRefreshTokenCookie(
+			validatedResult.RefreshToken,
+			rememberMe: false);
+
 		SetTrustedDeviceCookieIfPresent(result);
 
 		return Ok(CreateAuthResponse(validatedResult));
@@ -194,7 +197,10 @@ public class MfaController(
 		ValidatedAuthResult validatedResult =
 			ValidateSuccessfulAuthResult(result);
 
-		CookieService.SetRefreshTokenCookie(validatedResult.RefreshToken);
+		CookieService.SetRefreshTokenCookie(
+			validatedResult.RefreshToken,
+			rememberMe: false);
+
 		SetTrustedDeviceCookieIfPresent(result);
 
 		return Ok(CreateAuthResponse(validatedResult));
@@ -248,7 +254,10 @@ public class MfaController(
 		ValidatedAuthResult validatedResult =
 			ValidateSuccessfulAuthResult(result);
 
-		CookieService.SetRefreshTokenCookie(validatedResult.RefreshToken);
+		CookieService.SetRefreshTokenCookie(
+			validatedResult.RefreshToken,
+			rememberMe: false);
+
 		SetTrustedDeviceCookieIfPresent(result);
 
 		return Ok(CreateAuthResponse(validatedResult));

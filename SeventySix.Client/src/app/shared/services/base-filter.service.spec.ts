@@ -1,5 +1,5 @@
 import { HttpContext } from "@angular/common/http";
-import { Signal } from "@angular/core";
+import { Signal, WritableSignal } from "@angular/core";
 import { FORCE_REFRESH } from "@shared/interceptors/cache-bypass.interceptor";
 import { BaseQueryRequest } from "@shared/models";
 import { DateService } from "@shared/services";
@@ -25,7 +25,7 @@ class TestFilterService extends BaseFilterService<BaseQueryRequest>
 	}
 
 	// Expose protected members for testing
-	getFilterSignal()
+	getFilterSignal(): WritableSignal<BaseQueryRequest>
 	{
 		return this.filter;
 	}

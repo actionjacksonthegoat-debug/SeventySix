@@ -115,7 +115,9 @@ public class RegistrationController(
 			return HandleFailedAuthResult(result, "Registration Completion");
 		}
 
-		CookieService.SetRefreshTokenCookie(result.RefreshToken!);
+		CookieService.SetRefreshTokenCookie(
+			result.RefreshToken!,
+			rememberMe: false);
 
 		return Ok(
 			new AuthResponse(

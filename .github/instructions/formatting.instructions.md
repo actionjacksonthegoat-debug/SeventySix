@@ -79,3 +79,16 @@ const isValid: boolean = isPresent(value) && value.length > 0;
 | `"Developer"` inline | `RoleConstants.Developer`               |
 | Repeated literal 2x+ | Extract to constant                     |
 
+## Method Return Types (REQUIRED)
+
+All TypeScript method and function declarations MUST have explicit return types.
+
+| Context           | ❌ NEVER         | ✅ ALWAYS                             |
+| ----------------- | ---------------- | ------------------------------------- |
+| Lifecycle hooks   | `ngOnInit() {`   | `ngOnInit(): void {`                  |
+| Service methods   | `getUsers() {`   | `getUsers(): Observable<UserDto[]> {` |
+| Boolean accessors | `canSubmit() {`  | `canSubmit(): boolean {`              |
+| Async methods     | `async save() {` | `async save(): Promise<void> {`       |
+| Void handlers     | `onClick() {`    | `onClick(): void {`                   |
+
+**Exception**: Inline arrow callbacks where return type is inferred from typed context.
