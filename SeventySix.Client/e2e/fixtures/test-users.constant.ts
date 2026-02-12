@@ -116,6 +116,42 @@ export const FORGOT_PASSWORD_USER: TestUser =
 	} as const;
 
 /**
+ * Dedicated test user for account lockout E2E tests.
+ * Isolated so failed login attempts don't affect other tests' shared users.
+ */
+export const LOCKOUT_USER: TestUser =
+	{
+		username: "e2e_lockout",
+		password: "E2E_Lockout_Password_123!",
+		role: "User",
+		email: "e2e_lockout@test.local"
+	} as const;
+
+/**
+ * Dedicated test user for concurrent session E2E tests.
+ * Isolated so multi-context login doesn't conflict with shared auth state.
+ */
+export const CONCURRENT_USER: TestUser =
+	{
+		username: "e2e_concurrent",
+		password: "E2E_Concurrent_Password_123!",
+		role: "User",
+		email: "e2e_concurrent@test.local"
+	} as const;
+
+/**
+ * Dedicated test user for cross-tab logout E2E tests.
+ * Isolated so logout in one context doesn't affect other parallel tests.
+ */
+export const CROSSTAB_USER: TestUser =
+	{
+		username: "e2e_crosstab",
+		password: "E2E_CrossTab_Password_123!",
+		role: "User",
+		email: "e2e_crosstab@test.local"
+	} as const;
+
+/**
  * Known backup codes for the MFA test user.
  * Must match E2ESeederConstants.MfaBackupCodes in the server seeder.
  */

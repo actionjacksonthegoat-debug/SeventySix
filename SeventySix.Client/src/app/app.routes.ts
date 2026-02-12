@@ -27,6 +27,7 @@ export const routes: Routes =
 			data: { preload: true }
 		},
 		{
+			// Intentionally public — future landing/demo page (no auth guard needed)
 			path: "sandbox",
 			loadChildren: () =>
 				import("./domains/sandbox/sandbox.routes").then(
@@ -85,6 +86,24 @@ export const routes: Routes =
 					(module) => module.DEVELOPER_ROUTES),
 			canMatch: [passwordChangeGuard(), roleGuard(ROLE_DEVELOPER, ROLE_ADMIN)],
 			data: { breadcrumb: "Developer" }
+		},
+
+		// ══════════════════════════════════════════════════════════════
+		// ERROR PAGES
+		// ══════════════════════════════════════════════════════════════
+		{
+			path: "error/401",
+			loadComponent: () =>
+				import("@shared/pages/unauthorized/unauthorized").then(
+					(module) => module.UnauthorizedPage),
+			title: "Unauthorized"
+		},
+		{
+			path: "error/403",
+			loadComponent: () =>
+				import("@shared/pages/forbidden/forbidden").then(
+					(module) => module.ForbiddenPage),
+			title: "Forbidden"
 		},
 
 		// Fallback

@@ -4,6 +4,7 @@ import {
 	expect,
 	getTestUserByRole,
 	TEST_USERS,
+	LOCKOUT_USER,
 	SELECTORS,
 	ROUTES,
 	PAGE_TEXT,
@@ -450,23 +451,32 @@ test.describe("Login Page",
 					});
 			});
 
-		test.describe("Security: Repeated Failed Login Attempts",
+		test.describe("Security: Account Lockout",
 			() =>
 			{
-				test("should show error notification on each failed attempt",
+				/**
+				 * P0: Tests that the server locks out an account after too many
+				 * failed login attempts. Uses a dedicated `e2e_lockout` user so
+				 * rate-limit and lockout side-effects never cascade to other tests.
+				 */
+				test("should lockout account after repeated failed attempts",
 					async ({ page, authPage }) =>
 					{
-						const invalidPassword =
-							"WrongPassword_Repeated_123!";
-						const attemptCount = 3;
+						// Mark slow — 6 sequential login attempts against Docker
+						test.slow();
 
-						for (let attempt = 1; attempt <= attemptCount; attempt++)
+						const failedAttempts = 6;
+						const wrongPassword = "Wrong_Password_Lockout_123!";
+
+						for (let attempt = 1; attempt <= failedAttempts; attempt++)
 						{
 							await page.goto(ROUTES.auth.login);
 
-							await authPage.login("e2e_user", invalidPassword);
+							await authPage.login(
+								LOCKOUT_USER.username,
+								wrongPassword);
 
-							// Each attempt should show error notification
+							// Each attempt should show an error and stay on login
 							const snackbar: Locator =
 								page.locator(SELECTORS.notification.snackbar);
 							const errorMessage: Locator =
@@ -475,10 +485,28 @@ test.describe("Login Page",
 							await expect(snackbar.or(errorMessage))
 								.toBeVisible({ timeout: TIMEOUTS.api });
 
-							// Should stay on login page
 							await expect(page)
 								.toHaveURL(ROUTES.auth.login);
 						}
+
+						// After lockout threshold, even the correct password should fail
+						await page.goto(ROUTES.auth.login);
+
+						await authPage.login(
+							LOCKOUT_USER.username,
+							LOCKOUT_USER.password);
+
+						const snackbar: Locator =
+							page.locator(SELECTORS.notification.snackbar);
+						const errorMessage: Locator =
+							page.locator("[role='alert'], .error-message, mat-error");
+
+						await expect(snackbar.or(errorMessage))
+							.toBeVisible({ timeout: TIMEOUTS.api });
+
+						// Should remain on login page (login blocked)
+						await expect(page)
+							.toHaveURL(ROUTES.auth.login);
 					});
 			});
 	});

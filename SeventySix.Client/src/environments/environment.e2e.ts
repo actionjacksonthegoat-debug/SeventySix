@@ -72,12 +72,6 @@ export const environment: Environment =
 				}
 			}
 		},
-		dashboard: {
-			health: {
-				autoRefreshEnabled: false,
-				refreshIntervalSeconds: 60
-			}
-		},
 		ui: {
 			tables: {
 				defaultPageSize: 50,
@@ -90,15 +84,7 @@ export const environment: Environment =
 			}
 		},
 		http: {
-			defaultTimeout: 30000,
-			uploadTimeout: 120000
-		},
-		dateTime: {
-			defaultDisplayFormat: "yyyy-MM-dd HH:mm:ss",
-			inputFormat: "yyyy-MM-dd",
-			timeFormat: "HH:mm:ss",
-			relativeTimeThreshold: 86400000,
-			timezoneMode: "local"
+			defaultTimeout: 30000
 		},
 		testing: {
 			runIntegrationTests: false

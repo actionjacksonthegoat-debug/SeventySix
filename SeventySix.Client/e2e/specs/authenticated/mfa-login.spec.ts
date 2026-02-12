@@ -2,7 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-import { Page, BrowserContext } from "@playwright/test";
+import { Page } from "@playwright/test";
 import {
 	unauthenticatedTest,
 	expect,
@@ -12,8 +12,7 @@ import {
 	TIMEOUTS,
 	getTestUserByRole,
 	generateTotpCode,
-	MFA_BACKUP_CODES,
-	E2E_CONFIG
+	MFA_BACKUP_CODES
 } from "../../fixtures";
 import type { TestUser } from "../../fixtures";
 
@@ -173,5 +172,74 @@ unauthenticatedTest.describe("MFA Login",
 
 				await expect(unauthenticatedPage)
 					.toHaveURL(new RegExp(ROUTES.auth.login.replace(/\//g, "\\/")));
+			});
+
+		unauthenticatedTest("should bypass MFA on subsequent login when trust device is checked",
+			async ({ unauthenticatedPage }) =>
+			{
+				// Step 1: Login and complete MFA with "Trust Device" checked
+				await loginAsMfaUser(unauthenticatedPage);
+
+				// Check trust device (mat-checkbox requires click, not check)
+				await unauthenticatedPage
+					.locator(SELECTORS.mfaVerify.trustDeviceCheckbox)
+					.click();
+
+				// Enter valid TOTP code
+				const totpCode: string =
+					generateTotpCode();
+
+				await unauthenticatedPage
+					.locator(SELECTORS.mfaVerify.codeInput)
+					.fill(totpCode);
+				await unauthenticatedPage
+					.locator(SELECTORS.form.submitButton)
+					.click();
+
+				// Wait for successful login
+				await unauthenticatedPage.waitForURL(
+					ROUTES.home,
+					{ timeout: TIMEOUTS.navigation });
+
+				await expect(unauthenticatedPage
+					.locator(SELECTORS.layout.userMenuButton))
+					.toBeVisible({ timeout: TIMEOUTS.auth });
+
+				// Step 2: Logout
+				await unauthenticatedPage
+					.locator(SELECTORS.layout.userMenuButton)
+					.click();
+				await unauthenticatedPage
+					.locator(SELECTORS.layout.logoutButton)
+					.click();
+
+				await expect(unauthenticatedPage
+					.locator(SELECTORS.layout.userMenuButton))
+					.toBeHidden({ timeout: TIMEOUTS.navigation });
+
+				// Step 3: Login again — MFA should be bypassed due to trusted device
+				await unauthenticatedPage.goto(ROUTES.auth.login);
+				await unauthenticatedPage
+					.locator(SELECTORS.form.usernameInput)
+					.waitFor({ state: "visible", timeout: TIMEOUTS.globalSetup });
+
+				await unauthenticatedPage
+					.locator(SELECTORS.form.usernameInput)
+					.fill(mfaUser.username);
+				await unauthenticatedPage
+					.locator(SELECTORS.form.passwordInput)
+					.fill(mfaUser.password);
+				await unauthenticatedPage
+					.locator(SELECTORS.form.submitButton)
+					.click();
+
+				// Should go directly to home (no MFA verify page)
+				await unauthenticatedPage.waitForURL(
+					ROUTES.home,
+					{ timeout: TIMEOUTS.navigation });
+
+				await expect(unauthenticatedPage
+					.locator(SELECTORS.layout.userMenuButton))
+					.toBeVisible({ timeout: TIMEOUTS.auth });
 			});
 	});

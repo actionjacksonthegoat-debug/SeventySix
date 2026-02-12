@@ -315,5 +315,24 @@ export const PAGE_TEXT =
 				notFoundTitle: "404 - Page Not Found",
 				notFoundDescription: "The page you're looking for doesn't exist",
 				goToHome: "Go to Home"
+			},
+
+		/**
+		 * Registration completion text.
+		 */
+		registerComplete:
+			{
+				heading: "Complete Registration",
+				linkExpired: "Link Expired",
+				passwordHint: "At least 8 characters with uppercase, lowercase, digit, and special character"
+			},
+
+		/**
+		 * Set password / password reset text.
+		 */
+		setPassword:
+			{
+				invalidLink: "Invalid Link",
+				linkExpired: "invalid or has expired"
 			}
 	} as const;

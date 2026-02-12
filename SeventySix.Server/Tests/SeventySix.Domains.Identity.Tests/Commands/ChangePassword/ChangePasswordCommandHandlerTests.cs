@@ -148,6 +148,79 @@ public class ChangePasswordCommandHandlerTests
 			.Returns(Task.FromResult(expectedResult));
 	}
 
+	/// <summary>
+	/// Verifies that a breached password is rejected before any other operations.
+	/// The handler should return an <see cref="AuthResult"/> with
+	/// <see cref="AuthErrorCodes.BreachedPassword"/> when HIBP detects a compromised password.
+	/// </summary>
+	[Fact]
+	public async Task HandleAsync_BreachedPassword_ReturnsErrorAsync()
+	{
+		// Arrange
+		long userId = 456;
+		ApplicationUser user =
+			new UserBuilder(TimeProvider)
+				.WithId(userId)
+				.WithUsername("breachuser")
+				.WithEmail("breach@example.com")
+				.WithIsActive(true)
+				.Build();
+
+		SetupUserManagerMocks(user);
+
+		// Override breach check to report the password as breached
+		IBreachedPasswordService breachedService =
+			Substitute.For<IBreachedPasswordService>();
+		breachedService
+			.CheckPasswordAsync(
+				Arg.Any<string>(),
+				Arg.Any<CancellationToken>())
+			.Returns(BreachCheckResult.Breached(3_861_493));
+
+		Microsoft.Extensions.Options.IOptions<AuthSettings> breachSettings =
+			Microsoft.Extensions.Options.Options.Create(
+				new AuthSettings
+				{
+					BreachedPassword = new BreachedPasswordSettings
+					{
+						Enabled = true,
+						BlockBreachedPasswords = true,
+					},
+				});
+
+		BreachCheckDependencies breachedCheck =
+			new(breachedService, breachSettings);
+
+		ChangePasswordCommand command =
+			CreateCommand(userId);
+
+		// Act
+		AuthResult result =
+			await ChangePasswordCommandHandler.HandleAsync(
+				command,
+				UserManager,
+				TokenRepository,
+				AuthenticationService,
+				IdentityCache,
+				breachedCheck,
+				TimeProvider,
+				Logger,
+				CancellationToken.None);
+
+		// Assert — handler should reject early without changing the password
+		result.Success.ShouldBeFalse();
+		result.ErrorCode.ShouldBe(AuthErrorCodes.BreachedPassword);
+		result.Error.ShouldNotBeNullOrWhiteSpace();
+
+		// Verify password was never actually changed
+		await UserManager
+			.DidNotReceive()
+			.ChangePasswordAsync(
+				Arg.Any<ApplicationUser>(),
+				Arg.Any<string>(),
+				Arg.Any<string>());
+	}
+
 	private static ChangePasswordCommand CreateCommand(long userId)
 	{
 		ChangePasswordRequest request =

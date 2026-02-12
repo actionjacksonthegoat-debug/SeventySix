@@ -7,7 +7,7 @@
  * Based on Material Design density scale -1 (compact mode).
  * Measurements reflect actual rendered heights in the application.
  */
-export const TABLE_COMPONENT_HEIGHTS: Readonly<{
+const TABLE_COMPONENT_HEIGHTS: Readonly<{
 	/** Search toolbar height: mat-form-field at density -1 (48px) + padding (12px top/bottom). */
 	SEARCH_TOOLBAR: 72;
 	/** Filter chips toolbar height: chips at density -1 (24px) + padding (12px top/bottom). */

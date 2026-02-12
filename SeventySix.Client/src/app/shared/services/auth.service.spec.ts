@@ -117,6 +117,12 @@ describe("AuthService",
 		afterEach(
 			() =>
 			{
+				// Flush any pending profile fetch requests from invalidatePostLogin()
+				httpMock
+					.match(`${environment.apiUrl}/auth/me`)
+					.forEach(
+						(request: TestRequest) =>
+							request.flush(null));
 				httpMock.verify();
 				localStorage.removeItem(SESSION_KEY);
 			});

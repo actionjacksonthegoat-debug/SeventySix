@@ -50,12 +50,6 @@ export const environment: Environment =
 				permissionrequests: { staleTime: 0, gcTime: 0, retry: 0 }
 			}
 		},
-		dashboard: {
-			health: {
-				autoRefreshEnabled: false, // Disabled in tests
-				refreshIntervalSeconds: 60
-			}
-		},
 		ui: {
 			tables: {
 				defaultPageSize: 50,
@@ -68,18 +62,10 @@ export const environment: Environment =
 			}
 		},
 		http: {
-			defaultTimeout: 5000, // 5 seconds - shorter for tests
-			uploadTimeout: 10000 // 10 seconds - shorter for tests
+			defaultTimeout: 5000 // 5 seconds - shorter for tests
 		},
 		testing: {
 			runIntegrationTests: false // Integration tests disabled by default
-		},
-		dateTime: {
-			defaultDisplayFormat: "yyyy-MM-dd HH:mm:ss",
-			inputFormat: "yyyy-MM-dd",
-			timeFormat: "HH:mm:ss",
-			relativeTimeThreshold: 86400000, // 24 hours in milliseconds
-			timezoneMode: "local"
 		},
 		telemetry: {
 			enabled: false, // Disabled in tests

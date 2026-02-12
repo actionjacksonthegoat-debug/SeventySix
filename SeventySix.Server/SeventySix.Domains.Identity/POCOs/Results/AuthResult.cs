@@ -240,7 +240,46 @@ public static class AuthErrorCodes
 	/// Password found in known data breaches (OWASP ASVS V2.1.7).
 	/// </summary>
 	public const string BreachedPassword = "BREACHED_PASSWORD";
+
+	/// <summary>
+	/// User must change their password.
+	/// </summary>
 	public const string PasswordChangeRequired = "PASSWORD_CHANGE_REQUIRED";
+
+	/// <summary>
+	/// Weak admin password detected during seeding.
+	/// </summary>
+	public const string WeakAdminPassword = "WEAK_ADMIN_PASSWORD";
+
+	/// <summary>
+	/// Registration process failed.
+	/// </summary>
+	public const string RegistrationFailed = "REGISTRATION_FAILED";
+
+	/// <summary>
+	/// Invalid refresh token family (potential token reuse attack).
+	/// </summary>
+	public const string InvalidTokenFamily = "INVALID_TOKEN_FAMILY";
+
+	/// <summary>
+	/// ALTCHA verification failed.
+	/// </summary>
+	public const string AltchaFailed = "ALTCHA_FAILED";
+
+	/// <summary>
+	/// Email not confirmed.
+	/// </summary>
+	public const string EmailNotConfirmed = "EMAIL_NOT_CONFIRMED";
+
+	/// <summary>
+	/// Password reset token expired or invalid.
+	/// </summary>
+	public const string InvalidPasswordResetToken = "INVALID_PASSWORD_RESET_TOKEN";
+
+	/// <summary>
+	/// Email verification token expired or invalid.
+	/// </summary>
+	public const string InvalidEmailVerificationToken = "INVALID_EMAIL_VERIFICATION_TOKEN";
 }
 
 /// <summary>

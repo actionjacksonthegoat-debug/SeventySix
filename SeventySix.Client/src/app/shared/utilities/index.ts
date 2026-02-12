@@ -6,7 +6,6 @@ export * from "./log-level.utility";
 export * from "./mutation-dialog.utility";
 export * from "./mutation-factory.utility";
 export * from "./null-check.utility";
-export * from "./prefetch.utility";
 export * from "./query-config.utility";
 export * from "./query-keys.utility";
 export * from "./query-state.utility";

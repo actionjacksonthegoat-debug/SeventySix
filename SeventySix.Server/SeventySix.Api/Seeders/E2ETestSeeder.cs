@@ -95,6 +95,24 @@ public class E2ETestSeeder(
 			[RoleConstants.User]);
 
 		await CreateMfaTestUserAsync();
+
+		await CreateTestUserAsync(
+			"e2e_lockout",
+			"e2e_lockout@test.local",
+			"E2E_Lockout_Password_123!",
+			[RoleConstants.User]);
+
+		await CreateTestUserAsync(
+			"e2e_concurrent",
+			"e2e_concurrent@test.local",
+			"E2E_Concurrent_Password_123!",
+			[RoleConstants.User]);
+
+		await CreateTestUserAsync(
+			"e2e_crosstab",
+			"e2e_crosstab@test.local",
+			"E2E_CrossTab_Password_123!",
+			[RoleConstants.User]);
 	}
 
 	/// <summary>

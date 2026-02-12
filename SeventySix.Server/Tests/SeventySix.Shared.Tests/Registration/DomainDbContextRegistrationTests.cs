@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
-using SeventySix.Registration;
+using SeventySix.Shared.Registration;
 using SeventySix.Shared.Interfaces;
 using SeventySix.Shared.Persistence;
 using Shouldly;

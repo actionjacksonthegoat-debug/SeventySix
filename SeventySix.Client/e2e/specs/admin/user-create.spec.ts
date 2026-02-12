@@ -173,6 +173,93 @@ test.describe("User Create",
 					{ timeout: TIMEOUTS.navigation });
 			});
 
+		test("should create user and verify user appears in user list",
+			async ({ adminPage }) =>
+			{
+				const timestamp: number =
+					Date.now();
+				const testUsername =
+					`e2e_verify_${timestamp}`;
+				const testEmail =
+					`e2e_verify_${timestamp}@test.local`;
+
+				// Wait for the form to render
+				await expect(adminPage
+					.locator(SELECTORS.userCreate.usernameInput))
+					.toBeVisible({ timeout: TIMEOUTS.element });
+
+				// Register response listener BEFORE filling
+				const usernameCheckResponse =
+					adminPage.waitForResponse(
+						(response) =>
+							response.url().includes("/check/username/"));
+
+				// Step 1: Basic Information
+				await adminPage
+					.locator(SELECTORS.userCreate.usernameInput)
+					.fill(testUsername);
+				await adminPage
+					.locator(SELECTORS.userCreate.emailInput)
+					.fill(testEmail);
+
+				await usernameCheckResponse;
+
+				await expect(adminPage
+					.locator(SELECTORS.userCreate.usernameInput))
+					.toHaveClass(/ng-valid/, { timeout: TIMEOUTS.api });
+
+				const nextButton = () =>
+					adminPage.getByRole("button", { name: "Next" });
+				const fullNameInput =
+					adminPage.locator(SELECTORS.userCreate.fullNameInput);
+
+				await nextButton().click();
+
+				// Step 2: Account Details
+				await fullNameInput
+					.waitFor({ state: "visible", timeout: TIMEOUTS.api });
+				await fullNameInput
+					.fill(`Verify User ${timestamp}`);
+				await nextButton().click();
+
+				// Step 3: Roles (skip)
+				await expect(adminPage
+					.getByRole("listbox", { name: "Role selection" }))
+					.toBeVisible({ timeout: TIMEOUTS.api });
+				await nextButton().click();
+
+				// Step 4: Review & Submit
+				await expect(adminPage
+					.locator(SELECTORS.userCreate.createUserButton))
+					.toBeVisible({ timeout: TIMEOUTS.navigation });
+
+				await adminPage
+					.locator(SELECTORS.userCreate.createUserButton)
+					.click();
+
+				// Should navigate to user list after creation
+				await adminPage.waitForURL(
+					`**${ROUTES.admin.users}`,
+					{ timeout: TIMEOUTS.navigation });
+
+				// Verify the created user appears in the user list
+				// Use the data table search to find by username prefix
+				const searchInput =
+					adminPage.locator(SELECTORS.dataTable.searchInput);
+
+				// eslint-disable-next-line playwright/no-conditional-in-test -- search may not be visible
+				if (await searchInput.isVisible({ timeout: TIMEOUTS.element }))
+				{
+					await searchInput.fill(testUsername);
+					await adminPage.waitForLoadState("load");
+				}
+
+				// Verify the username appears in the table
+				await expect(adminPage.locator(
+					`text=${testUsername}`))
+					.toBeVisible({ timeout: TIMEOUTS.api });
+			});
+
 		test("should show error when creating user with duplicate email",
 			async ({ adminPage }) =>
 			{

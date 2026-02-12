@@ -343,4 +343,83 @@ test.describe("Registration Flow",
 							{ timeout: TIMEOUTS.navigation });
 					});
 			});
+
+		test.describe("Password Policy Enforcement",
+			() =>
+			{
+				test("should reject weak password on registration completion",
+					async ({ page }) =>
+					{
+						// Navigate to register-complete with a token (token is validated on submit)
+						await page.goto(
+							`${ROUTES.auth.register}/complete?token=test-token-value&email=policy_test@test.local`);
+						await page.waitForLoadState("load");
+
+						const usernameInput =
+							page.locator(SELECTORS.registerComplete.usernameInput);
+						const passwordInput =
+							page.locator(SELECTORS.registerComplete.passwordInput);
+						const confirmPasswordInput =
+							page.locator(SELECTORS.registerComplete.confirmPasswordInput);
+						const submitButton =
+							page.locator(SELECTORS.registerComplete.submitButton);
+
+						// Fill valid username
+						await usernameInput.fill("policy_test_user");
+
+						// Try a password that's too short (< 8 chars)
+						await passwordInput.fill("Abc1!");
+						await confirmPasswordInput.fill("Abc1!");
+
+						// Submit should remain disabled — client-side validation prevents submission
+						await expect(submitButton)
+							.toBeDisabled();
+					});
+
+				test("should disable submit when username is too short",
+					async ({ page }) =>
+					{
+						await page.goto(
+							`${ROUTES.auth.register}/complete?token=test-token-value&email=policy_test@test.local`);
+						await page.waitForLoadState("load");
+
+						await page
+							.locator(SELECTORS.registerComplete.usernameInput)
+							.fill("ab");
+
+						await page
+							.locator(SELECTORS.registerComplete.passwordInput)
+							.fill("V@lid_P4ssw0rd!");
+						await page
+							.locator(SELECTORS.registerComplete.confirmPasswordInput)
+							.fill("V@lid_P4ssw0rd!");
+
+						await expect(page.locator(SELECTORS.registerComplete.submitButton))
+							.toBeDisabled();
+					});
+
+				test("should accept password meeting all policy requirements",
+					async ({ page }) =>
+					{
+						await page.goto(
+							`${ROUTES.auth.register}/complete?token=test-token-value&email=policy_test@test.local`);
+						await page.waitForLoadState("load");
+
+						await page
+							.locator(SELECTORS.registerComplete.usernameInput)
+							.fill("policy_test_user");
+
+						// Strong password: uppercase, lowercase, digit, special char, 8+ chars
+						await page
+							.locator(SELECTORS.registerComplete.passwordInput)
+							.fill("StrongP@ss123!");
+						await page
+							.locator(SELECTORS.registerComplete.confirmPasswordInput)
+							.fill("StrongP@ss123!");
+
+						// Submit should be enabled with a valid policy-compliant password
+						await expect(page.locator(SELECTORS.registerComplete.submitButton))
+							.toBeEnabled();
+					});
+			});
 	});

@@ -69,4 +69,38 @@ unauthenticatedTest.describe("Set Password",
 					.locator(SELECTORS.setPassword.confirmPasswordInput))
 					.toBeVisible({ timeout: TIMEOUTS.element });
 			});
+
+		unauthenticatedTest("should show error when submitting with expired or invalid token",
+			async ({ unauthenticatedPage }) =>
+			{
+				// Navigate with a fabricated expired token
+				await unauthenticatedPage.goto(
+					`${ROUTES.auth.setPassword}?token=expired-fabricated-token-123&email=test@test.local`);
+				await unauthenticatedPage.waitForLoadState("load");
+
+				// Fill in valid password fields
+				await unauthenticatedPage
+					.locator(SELECTORS.setPassword.newPasswordInput)
+					.fill("NewStrongP@ss123!");
+				await unauthenticatedPage
+					.locator(SELECTORS.setPassword.confirmPasswordInput)
+					.fill("NewStrongP@ss123!");
+
+				// Submit the form
+				await unauthenticatedPage
+					.locator(SELECTORS.form.submitButton)
+					.click();
+
+				// Server should reject the invalid token
+				// The page should show the invalid link section or an error
+				const invalidSection =
+					unauthenticatedPage.locator(SELECTORS.setPassword.invalidLinkSection);
+				const snackbar =
+					unauthenticatedPage.locator(SELECTORS.notification.snackbar);
+				const errorAlert =
+					unauthenticatedPage.locator("[role='alert']");
+
+				await expect(invalidSection.or(snackbar).or(errorAlert))
+					.toBeVisible({ timeout: TIMEOUTS.api });
+			});
 	});

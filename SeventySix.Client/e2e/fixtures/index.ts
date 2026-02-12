@@ -30,7 +30,7 @@ export { loginAsUser } from "./helpers/login.helper";
 export { expectAccessible } from "./helpers/accessibility.helper";
 
 // Test users
-export { TEST_USERS, getTestUserByRole, MFA_BACKUP_CODES, FORCE_PASSWORD_CHANGE_USER, PASSWORD_CHANGE_USER, TOTP_ENROLL_USER, FORGOT_PASSWORD_USER } from "./test-users.constant";
+export { TEST_USERS, getTestUserByRole, MFA_BACKUP_CODES, FORCE_PASSWORD_CHANGE_USER, PASSWORD_CHANGE_USER, TOTP_ENROLL_USER, FORGOT_PASSWORD_USER, LOCKOUT_USER, CONCURRENT_USER, CROSSTAB_USER } from "./test-users.constant";
 export type { TestUser } from "./test-users.constant";
 
 // Constants

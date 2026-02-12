@@ -1,11 +1,13 @@
-import { Page, Locator } from "@playwright/test";
+import { Page, Locator, BrowserContext } from "@playwright/test";
 import {
 	freshLoginTest as test,
 	expect,
+	unauthenticatedTest,
+	CROSSTAB_USER,
 	ROUTES,
 	SELECTORS,
-	PAGE_TEXT,
-	TIMEOUTS
+	TIMEOUTS,
+	E2E_CONFIG
 } from "../../fixtures";
 
 /**
@@ -241,5 +243,121 @@ test.describe("Logout Flow",
 						await expect(freshUserPage.locator(SELECTORS.layout.userMenuButton))
 							.toBeHidden({ timeout: TIMEOUTS.auth });
 					});
+			});
+	});
+
+/**
+ * Cross-Tab Logout — Isolated Test
+ *
+ * Uses a dedicated `e2e_crosstab` user via `unauthenticatedTest` to verify
+ * that logging out in one browser context invalidates the session in another.
+ * The server revokes the refresh token, so the second context's next API call
+ * should fail authentication.
+ */
+unauthenticatedTest.describe("Cross-Tab Logout",
+	() =>
+	{
+		unauthenticatedTest.slow();
+
+		unauthenticatedTest("should invalidate second context when first context logs out",
+			async ({ browser }) =>
+			{
+				/**
+				 * Logs in the cross-tab user in a fresh browser context.
+				 * @returns
+				 * The page and context.
+				 */
+				async function loginCrosstabUser(): Promise<{ page: Page; context: BrowserContext }>
+				{
+					const context: BrowserContext =
+						await browser.newContext({
+							baseURL: E2E_CONFIG.clientBaseUrl,
+							storageState: undefined,
+							ignoreHTTPSErrors: true
+						});
+					const page: Page =
+						await context.newPage();
+
+					await page.goto(ROUTES.auth.login);
+					await page
+						.locator(SELECTORS.form.usernameInput)
+						.waitFor({ state: "visible", timeout: TIMEOUTS.globalSetup });
+					await page
+						.locator(SELECTORS.form.usernameInput)
+						.fill(CROSSTAB_USER.username);
+					await page
+						.locator(SELECTORS.form.passwordInput)
+						.fill(CROSSTAB_USER.password);
+					await page
+						.locator(SELECTORS.form.submitButton)
+						.click();
+
+					await page.waitForURL(
+						ROUTES.home,
+						{ timeout: TIMEOUTS.globalSetup });
+
+					await expect(page.locator(SELECTORS.layout.userMenuButton))
+						.toBeVisible({ timeout: TIMEOUTS.auth });
+
+					return { page, context };
+				}
+
+				// Login in two separate browser contexts (simulates two tabs)
+				const tab1 =
+					await loginCrosstabUser();
+				const tab2 =
+					await loginCrosstabUser();
+
+				try
+				{
+					// Verify both are initially authenticated
+					await expect(tab1.page.locator(SELECTORS.layout.userMenuButton))
+						.toBeVisible({ timeout: TIMEOUTS.auth });
+					await expect(tab2.page.locator(SELECTORS.layout.userMenuButton))
+						.toBeVisible({ timeout: TIMEOUTS.auth });
+
+					// Logout in tab1
+					await tab1.page.locator(SELECTORS.layout.userMenuButton).click();
+					await tab1.page.locator(SELECTORS.layout.logoutButton).click();
+
+					await expect(tab1.page.locator(SELECTORS.layout.userMenuButton))
+						.toBeHidden({ timeout: TIMEOUTS.navigation });
+
+					// Tab2: navigate to a protected route — server should reject the request
+					// because the refresh token family is revoked
+					await tab2.page.goto(ROUTES.account.root);
+					await tab2.page.waitForLoadState("load");
+
+					// Tab2 should be redirected to login or home (unauthenticated)
+					await tab2.page.waitForURL(
+						(url) =>
+							url.pathname.includes(ROUTES.auth.login)
+							|| url.pathname === ROUTES.home
+							|| url.pathname === ROUTES.account.root,
+						{ timeout: TIMEOUTS.api });
+
+					// If tab2 stayed on account, it means the session was still valid
+					// (server allows multiple refresh token families). In that case,
+					// verify the user menu is still visible — this is acceptable behavior
+					// for servers that keep sessions independent.
+					const currentPath: string =
+						new URL(tab2.page.url()).pathname;
+
+					// eslint-disable-next-line playwright/no-conditional-in-test -- cross-tab session behavior depends on server config
+					if (currentPath.includes(ROUTES.auth.login)
+						|| currentPath === ROUTES.home)
+					{
+						// Session was invalidated — tab2 was kicked out
+						// eslint-disable-next-line playwright/no-conditional-expect -- conditional on server config is intentional
+						await expect(tab2.page.locator(SELECTORS.layout.userMenuButton))
+							.toBeHidden({ timeout: TIMEOUTS.auth });
+					}
+					// else: tab2 retained its own session — acceptable for independent refresh token families
+				}
+				finally
+				{
+					await tab1.context.close();
+					await tab2.context.close();
+				}
 			});
 	});

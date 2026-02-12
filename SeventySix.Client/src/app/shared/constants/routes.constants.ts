@@ -20,7 +20,6 @@ export const APP_ROUTES: Readonly<{
 	ACCOUNT: {
 		PROFILE: "/account";
 		PERMISSIONS: "/account/permissions";
-		SETTINGS: "/account/settings";
 	};
 	ERROR: {
 		NOT_FOUND: "/error/404";
@@ -44,8 +43,7 @@ export const APP_ROUTES: Readonly<{
 		/** Account management routes. */
 		ACCOUNT: {
 			PROFILE: "/account",
-			PERMISSIONS: "/account/permissions",
-			SETTINGS: "/account/settings"
+			PERMISSIONS: "/account/permissions"
 		},
 		/** Error page routes. */
 		ERROR: {
@@ -66,7 +64,6 @@ export const AUTH_PUBLIC_PATHS: readonly string[] =
 		"/auth/logout",
 		"/auth/oauth/github",
 		"/auth/oauth/github/callback",
-		"/auth/oauth/exchange",
 		"/auth/register/initiate",
 		"/auth/register/complete",
 		"/auth/password/forgot",

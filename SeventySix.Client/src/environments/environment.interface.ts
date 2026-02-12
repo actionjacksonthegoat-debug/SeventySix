@@ -77,17 +77,6 @@ export interface CacheConfig
 }
 
 /**
- * Dashboard configuration settings.
- */
-export interface DashboardConfig
-{
-	health: {
-		autoRefreshEnabled: boolean;
-		refreshIntervalSeconds: number;
-	};
-}
-
-/**
  * UI configuration for tables and performance.
  */
 export interface UiConfig
@@ -110,20 +99,6 @@ export interface HttpConfig
 {
 	/** Default request timeout in milliseconds. */
 	defaultTimeout: number;
-	/** Extended timeout for file upload operations in milliseconds. */
-	uploadTimeout: number;
-}
-
-/**
- * Date/time formatting configuration.
- */
-export interface DateTimeConfig
-{
-	defaultDisplayFormat: string;
-	inputFormat: string;
-	timeFormat: string;
-	relativeTimeThreshold: number;
-	timezoneMode: "utc" | "local";
 }
 
 /**
@@ -176,10 +151,8 @@ export interface Environment
 	logging: LoggingConfig;
 	observability: ObservabilityConfig;
 	cache: CacheConfig;
-	dashboard: DashboardConfig;
 	ui: UiConfig;
 	http: HttpConfig;
-	dateTime: DateTimeConfig;
 	testing: TestingConfig;
 	telemetry: TelemetryConfig;
 	auth: AuthConfig;

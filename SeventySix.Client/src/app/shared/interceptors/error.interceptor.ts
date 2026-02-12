@@ -53,6 +53,14 @@ export const errorInterceptor: HttpInterceptorFn =
 							return EMPTY;
 						}
 
+						// Handle other 403 responses — navigate to forbidden page
+						if (error.status === HTTP_STATUS.FORBIDDEN)
+						{
+							router.navigate(
+								[APP_ROUTES.ERROR.FORBIDDEN]);
+							return EMPTY;
+						}
+
 						// Handle 401 on protected routes - redirect to login
 						// Don't check isAuthenticated() because auth may have been cleared
 						// by failed token refresh before we get here

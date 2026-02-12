@@ -1,7 +1,7 @@
 using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.Extensions.DependencyInjection;
-using SeventySix.Registration;
+using SeventySix.Shared.Registration;
 using Shouldly;
 using Xunit;
 
