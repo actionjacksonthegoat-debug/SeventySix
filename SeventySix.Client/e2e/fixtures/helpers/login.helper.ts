@@ -6,6 +6,7 @@ import type { Page } from "@playwright/test";
 import { SELECTORS } from "../selectors.constant";
 import { ROUTES } from "../routes.constant";
 import { TIMEOUTS } from "../timeouts.constant";
+import { solveAltchaChallenge } from "./altcha.helper";
 import type { TestUser } from "../test-users.constant";
 
 /**
@@ -38,6 +39,9 @@ export async function loginAsUser(
 	await page
 		.locator(SELECTORS.form.passwordInput)
 		.fill(user.password);
+
+	await solveAltchaChallenge(page);
+
 	await page
 		.locator(SELECTORS.form.submitButton)
 		.click();

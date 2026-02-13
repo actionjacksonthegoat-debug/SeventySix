@@ -225,7 +225,6 @@ jobs:
                   echo ""
                   echo "  Checks enforced:"
                   echo "    - ESLint (zero errors)"
-                  echo "    - dprint format (zero violations)"
                   echo "    - Angular production build (zero warnings)"
                   echo "    - Vitest (all tests pass)"
                   echo "    - dotnet build Release (zero warnings)"

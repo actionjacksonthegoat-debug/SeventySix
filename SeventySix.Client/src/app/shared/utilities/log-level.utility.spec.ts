@@ -1,7 +1,5 @@
 import { LOG_LEVEL_STRINGS, LogLevel, VALID_LOG_LEVELS } from "@shared/constants";
-import { NotificationLevel } from "@shared/constants";
 import {
-	logLevelToNotificationLevel,
 	logLevelToString,
 	parseLogLevel
 } from "./log-level.utility";
@@ -60,39 +58,6 @@ describe("log-level.utility",
 							.toBe(LOG_LEVEL_STRINGS.Fatal);
 						expect(logLevelToString(LogLevel.Critical))
 							.toBe(LOG_LEVEL_STRINGS.Critical);
-					});
-			});
-
-		describe("logLevelToNotificationLevel",
-			() =>
-			{
-				it("should map Error+ levels to NotificationLevel.Error",
-					() =>
-					{
-						expect(logLevelToNotificationLevel(LogLevel.Error))
-							.toBe(NotificationLevel.Error);
-						expect(logLevelToNotificationLevel(LogLevel.Fatal))
-							.toBe(NotificationLevel.Error);
-						expect(logLevelToNotificationLevel(LogLevel.Critical))
-							.toBe(NotificationLevel.Error);
-					});
-
-				it("should map Warning to NotificationLevel.Warning",
-					() =>
-					{
-						expect(logLevelToNotificationLevel(LogLevel.Warning))
-							.toBe(NotificationLevel.Warning);
-					});
-
-				it("should map Info/Debug/Verbose to NotificationLevel.Info",
-					() =>
-					{
-						expect(logLevelToNotificationLevel(LogLevel.Information))
-							.toBe(NotificationLevel.Info);
-						expect(logLevelToNotificationLevel(LogLevel.Debug))
-							.toBe(NotificationLevel.Info);
-						expect(logLevelToNotificationLevel(LogLevel.Verbose))
-							.toBe(NotificationLevel.Info);
 					});
 			});
 

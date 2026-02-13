@@ -133,6 +133,22 @@ public sealed class AuthRateLimitSettingsValidator : AbstractValidator<AuthRateL
 		RuleFor(rateLimit => rateLimit.TokenRefreshPerMinute)
 			.GreaterThan(0)
 			.WithMessage("Auth:RateLimit:TokenRefreshPerMinute must be greater than 0");
+
+		RuleFor(rateLimit => rateLimit.AltchaChallengePerMinute)
+			.GreaterThan(0)
+			.WithMessage("Auth:RateLimit:AltchaChallengePerMinute must be greater than 0");
+
+		RuleFor(rateLimit => rateLimit.ClientLogsPerMinute)
+			.GreaterThan(0)
+			.WithMessage("Auth:RateLimit:ClientLogsPerMinute must be greater than 0");
+
+		RuleFor(rateLimit => rateLimit.MfaVerifyPerMinute)
+			.GreaterThan(0)
+			.WithMessage("Auth:RateLimit:MfaVerifyPerMinute must be greater than 0");
+
+		RuleFor(rateLimit => rateLimit.MfaResendPerMinute)
+			.GreaterThan(0)
+			.WithMessage("Auth:RateLimit:MfaResendPerMinute must be greater than 0");
 	}
 }
 

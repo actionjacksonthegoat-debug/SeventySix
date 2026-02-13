@@ -1,6 +1,7 @@
 import { inject, Injectable } from "@angular/core";
 import { DOTNET_ROLE_CLAIM, JwtClaims } from "@shared/services/auth.types";
 import { DateService } from "@shared/services/date.service";
+import { isNullOrEmpty, isNullOrUndefined } from "@shared/utilities/null-check.utility";
 
 /**
  * Default buffer time in seconds before token expiration.
@@ -31,7 +32,7 @@ export class TokenService
 	 */
 	parseJwt(token: string): JwtClaims | null
 	{
-		if (!token)
+		if (isNullOrEmpty(token))
 		{
 			return null;
 		}
@@ -93,7 +94,7 @@ export class TokenService
 		const claims: JwtClaims | null =
 			this.parseJwt(token);
 
-		if (!claims?.exp)
+		if (isNullOrUndefined(claims?.exp))
 		{
 			return true;
 		}
@@ -122,7 +123,7 @@ export class TokenService
 		const claims: JwtClaims | null =
 			this.parseJwt(token);
 
-		if (!claims?.exp)
+		if (isNullOrUndefined(claims?.exp))
 		{
 			return null;
 		}
@@ -144,7 +145,7 @@ export class TokenService
 		const claims: JwtClaims | null =
 			this.parseJwt(token);
 
-		if (!claims)
+		if (isNullOrUndefined(claims))
 		{
 			return [];
 		}
@@ -152,7 +153,7 @@ export class TokenService
 		const roleClaim: string | number | string[] | undefined =
 			claims[DOTNET_ROLE_CLAIM];
 
-		if (!roleClaim)
+		if (isNullOrUndefined(roleClaim))
 		{
 			return [];
 		}

@@ -1,5 +1,4 @@
 import { LOG_LEVEL_STRINGS, LogLevel } from "@shared/constants";
-import { NotificationLevel } from "@shared/constants";
 
 /**
  * Maps string log level names to LogLevel enum values.
@@ -39,29 +38,6 @@ export function logLevelToString(level: LogLevel): string
 			[LogLevel.Critical]: LOG_LEVEL_STRINGS.Critical
 		};
 	return mapping[level];
-}
-
-/**
- * Converts LogLevel to NotificationLevel for UI display.
- * Rule: Error, Fatal, Critical → NotificationLevel.Error
- *
- * @param level
- * The LogLevel enum value to convert.
- *
- * @returns
- * Appropriate NotificationLevel for UI display.
- */
-export function logLevelToNotificationLevel(level: LogLevel): NotificationLevel
-{
-	if (level >= LogLevel.Error)
-	{
-		return NotificationLevel.Error;
-	}
-	if (level === LogLevel.Warning)
-	{
-		return NotificationLevel.Warning;
-	}
-	return NotificationLevel.Info;
 }
 
 /**

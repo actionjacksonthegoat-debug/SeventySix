@@ -5,6 +5,7 @@ import {
 	getTestUserByRole,
 	TEST_USERS,
 	LOCKOUT_USER,
+	solveAltchaChallenge,
 	SELECTORS,
 	ROUTES,
 	PAGE_TEXT,
@@ -81,11 +82,20 @@ test.describe("Login Page",
 							.toBeVisible();
 					});
 
-				test("should not render ALTCHA widget when disabled",
+				test("should render ALTCHA widget",
 					async ({ page }) =>
 					{
-						await expect(page.locator("altcha-widget"))
-							.toBeHidden();
+						await expect(page.locator(SELECTORS.altcha.widget))
+							.toBeVisible({ timeout: TIMEOUTS.api });
+					});
+
+				test("should solve ALTCHA challenge",
+					async ({ page }) =>
+					{
+						await expect(page.locator(SELECTORS.altcha.widget))
+							.toBeVisible({ timeout: TIMEOUTS.api });
+
+						await solveAltchaChallenge(page);
 					});
 			});
 
@@ -290,6 +300,7 @@ test.describe("Login Page",
 							getTestUserByRole("User");
 
 						await authPage.fillLoginForm(testUser.email, testUser.password);
+						await solveAltchaChallenge(page);
 
 						// Verify button has proper aria attribute when loading
 						await authPage.submitButton.click();

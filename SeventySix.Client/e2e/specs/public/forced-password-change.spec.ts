@@ -34,6 +34,7 @@ test.describe("Forced Password Change",
 		// Serial mode: the lifecycle test clears the RequiresPasswordChange flag
 		// which would break parallel tests that depend on the flag being set.
 		test.describe.configure({ mode: "serial" });
+
 		/**
 		 * Logs in with the forced password change user and waits for redirect
 		 * to the change-password page.
@@ -46,7 +47,10 @@ test.describe("Forced Password Change",
 			await loginAsUser(
 				page,
 				FORCE_PASSWORD_CHANGE_USER,
-				{ expectedUrl: /change-password/ });
+				{
+					expectedUrl: /change-password/,
+					timeout: TIMEOUTS.navigation
+				});
 		}
 
 		test("should redirect to change password after login",

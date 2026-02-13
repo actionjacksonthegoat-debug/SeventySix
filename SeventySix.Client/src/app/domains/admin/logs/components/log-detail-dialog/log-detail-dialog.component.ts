@@ -287,7 +287,7 @@ export class LogDetailDialogComponent
 		const log: LogDto =
 			this.log();
 
-		if (!log.correlationId)
+		if (isNullOrEmpty(log.correlationId))
 		{
 			alert(
 				"No trace ID available for this error.\n\n"

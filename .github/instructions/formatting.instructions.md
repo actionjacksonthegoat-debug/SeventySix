@@ -5,6 +5,8 @@ applyTo: "**/*.{ts,cs}"
 
 # Formatting Instructions
 
+> **ESLint** is the enforced lint gate for CI and completion status. **dprint** is a local-only formatting tool — not enforced in CI or GitHub Actions.
+
 ## Variable Naming (CRITICAL - 3+ Characters)
 
 | Context        | ❌ NEVER                | ✅ ALWAYS                              |

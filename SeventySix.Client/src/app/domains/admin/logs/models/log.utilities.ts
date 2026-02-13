@@ -1,5 +1,6 @@
 import { LogLevel } from "@shared/constants";
 import { parseLogLevel } from "@shared/utilities";
+import { isNullOrEmpty } from "@shared/utilities/null-check.utility";
 
 // Re-export for consumers
 export { LogLevel, parseLogLevel };
@@ -117,7 +118,7 @@ export function truncateText(text: string, maxLength: number): string
  */
 export function formatJsonProperties(properties: string | null): string
 {
-	if (!properties)
+	if (isNullOrEmpty(properties))
 	{
 		return "";
 	}
@@ -146,7 +147,7 @@ export function formatJsonProperties(properties: string | null): string
  */
 export function countStackFrames(stackTrace: string | null): number
 {
-	if (!stackTrace)
+	if (isNullOrEmpty(stackTrace))
 	{
 		return 0;
 	}
@@ -174,7 +175,7 @@ export function countStackFrames(stackTrace: string | null): number
  */
 export function isRootSpanId(parentSpanId: string | null): boolean
 {
-	if (!parentSpanId)
+	if (isNullOrEmpty(parentSpanId))
 	{
 		return false;
 	}

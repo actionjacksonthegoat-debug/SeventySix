@@ -58,6 +58,8 @@ import { isNullOrUndefined, isPresent } from "@shared/utilities/null-check.utili
 
 ### 4. Code Formatting
 
+> **ESLint** is the enforced lint gate for CI and completion status. **dprint** is a local formatting tool only — not enforced in CI or GitHub Actions.
+
 | Rule           | Pattern                            |
 | -------------- | ---------------------------------- |
 | 2+ params      | Each on new line                   |

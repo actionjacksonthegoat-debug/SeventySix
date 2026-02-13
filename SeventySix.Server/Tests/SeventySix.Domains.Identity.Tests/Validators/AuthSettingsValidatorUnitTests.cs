@@ -90,6 +90,78 @@ public sealed class AuthSettingsValidatorUnitTests
 	}
 
 	[Fact]
+	public void Validate_ZeroAltchaChallengePerMinute_FailsValidation()
+	{
+		// Arrange
+		AuthSettings settings =
+			CreateValidSettings() with
+			{
+				RateLimit = CreateValidRateLimitSettings() with { AltchaChallengePerMinute = 0 },
+			};
+
+		// Act
+		TestValidationResult<AuthSettings> result =
+			Validator.TestValidate(settings);
+
+		// Assert
+		result.IsValid.ShouldBeFalse();
+	}
+
+	[Fact]
+	public void Validate_ZeroClientLogsPerMinute_FailsValidation()
+	{
+		// Arrange
+		AuthSettings settings =
+			CreateValidSettings() with
+			{
+				RateLimit = CreateValidRateLimitSettings() with { ClientLogsPerMinute = 0 },
+			};
+
+		// Act
+		TestValidationResult<AuthSettings> result =
+			Validator.TestValidate(settings);
+
+		// Assert
+		result.IsValid.ShouldBeFalse();
+	}
+
+	[Fact]
+	public void Validate_ZeroMfaVerifyPerMinute_FailsValidation()
+	{
+		// Arrange
+		AuthSettings settings =
+			CreateValidSettings() with
+			{
+				RateLimit = CreateValidRateLimitSettings() with { MfaVerifyPerMinute = 0 },
+			};
+
+		// Act
+		TestValidationResult<AuthSettings> result =
+			Validator.TestValidate(settings);
+
+		// Assert
+		result.IsValid.ShouldBeFalse();
+	}
+
+	[Fact]
+	public void Validate_ZeroMfaResendPerMinute_FailsValidation()
+	{
+		// Arrange
+		AuthSettings settings =
+			CreateValidSettings() with
+			{
+				RateLimit = CreateValidRateLimitSettings() with { MfaResendPerMinute = 0 },
+			};
+
+		// Act
+		TestValidationResult<AuthSettings> result =
+			Validator.TestValidate(settings);
+
+		// Assert
+		result.IsValid.ShouldBeFalse();
+	}
+
+	[Fact]
 	public void Validate_DisableRotationTrueInProduction_ReturnsError()
 	{
 		// Arrange

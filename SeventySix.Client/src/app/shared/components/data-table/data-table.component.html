@@ -429,6 +429,15 @@
 				</cdk-virtual-scroll-viewport>
 			</div>
 
+			<!-- Empty State (shown when no data and not loading) -->
+			@if (!isLoading() && data().length === 0 && !error())
+			{
+				<div class="empty-state" data-testid="data-table-empty-state" role="status">
+					<mat-icon aria-hidden="true">inbox</mat-icon>
+					<p>No data available</p>
+				</div>
+			}
+
 			<!-- Paginator -->
 			<mat-paginator
 				[length]="totalCount()"

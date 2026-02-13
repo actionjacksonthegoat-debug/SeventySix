@@ -10,6 +10,7 @@ import {
 	extractStatusCode
 } from "@shared/utilities/http-error.utility";
 import { logLevelToString } from "@shared/utilities/log-level.utility";
+import { isNullOrUndefined } from "@shared/utilities/null-check.utility";
 
 /**
  * Client-side error logging service with automatic context extraction.
@@ -274,7 +275,7 @@ export class ClientErrorLoggerService
 	 */
 	private extractSourceContext(error?: Error | unknown): string
 	{
-		if (!error || !(error instanceof Error) || !error.stack)
+		if (isNullOrUndefined(error) || !(error instanceof Error) || isNullOrUndefined(error.stack))
 		{
 			return "Client";
 		}

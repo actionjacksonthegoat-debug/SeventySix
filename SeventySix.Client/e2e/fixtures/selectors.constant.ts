@@ -280,5 +280,13 @@ export const SELECTORS =
 				loadingSpinner: "mat-spinner",
 				searchInput: "input[placeholder*='Search']",
 				refreshButton: "button[aria-label*='Refresh']"
+			},
+
+		/**
+		 * Altcha proof-of-work widget selectors.
+		 */
+		altcha:
+			{
+				widget: "altcha-widget"
 			}
 	} as const;

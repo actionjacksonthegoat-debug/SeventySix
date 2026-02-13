@@ -402,3 +402,10 @@ ngx-skeleton-loader .skeleton-loader {
 		) !important;
 	}
 }
+
+// Fix ALTCHA widget accessibility: branding link has aria-hidden="true" but
+// remains focusable, violating WCAG 4.1.2 (aria-hidden-focus). Since the widget
+// uses light DOM and hidefooter is set, hide the link entirely.
+altcha-widget .altcha-logo[aria-hidden="true"] {
+	display: none !important;
+}

@@ -1,5 +1,6 @@
 import { DateRangeEvent } from "@shared/models";
 import { DateService } from "@shared/services";
+import { isNullOrUndefined } from "@shared/utilities/null-check.utility";
 
 /**
  * Date range configuration for table filters.
@@ -155,7 +156,7 @@ export class DataTableUtilities
 		const rangeMs: number | undefined =
 			DataTableUtilities.DATE_RANGE_MS[range as DateRangeKey];
 
-		if (!rangeMs)
+		if (isNullOrUndefined(rangeMs))
 		{
 			return null;
 		}

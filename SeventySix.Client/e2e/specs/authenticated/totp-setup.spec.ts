@@ -6,6 +6,7 @@ import {
 	test,
 	expect,
 	unauthenticatedTest,
+	solveAltchaChallenge,
 	TOTP_ENROLL_USER,
 	generateTotpCodeFromSecret,
 	SELECTORS,
@@ -140,6 +141,9 @@ unauthenticatedTest.describe("TOTP Enrollment",
 				await unauthenticatedPage
 					.locator(SELECTORS.form.passwordInput)
 					.fill(testUser.password);
+
+				await solveAltchaChallenge(unauthenticatedPage);
+
 				await unauthenticatedPage
 					.locator(SELECTORS.form.submitButton)
 					.click();

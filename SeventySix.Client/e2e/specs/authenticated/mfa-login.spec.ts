@@ -6,6 +6,7 @@ import { Page } from "@playwright/test";
 import {
 	unauthenticatedTest,
 	expect,
+	solveAltchaChallenge,
 	SELECTORS,
 	ROUTES,
 	PAGE_TEXT,
@@ -51,6 +52,9 @@ unauthenticatedTest.describe("MFA Login",
 			await page
 				.locator(SELECTORS.form.passwordInput)
 				.fill(mfaUser.password);
+
+			await solveAltchaChallenge(page);
+
 			await page
 				.locator(SELECTORS.form.submitButton)
 				.click();
@@ -229,6 +233,9 @@ unauthenticatedTest.describe("MFA Login",
 				await unauthenticatedPage
 					.locator(SELECTORS.form.passwordInput)
 					.fill(mfaUser.password);
+
+				await solveAltchaChallenge(unauthenticatedPage);
+
 				await unauthenticatedPage
 					.locator(SELECTORS.form.submitButton)
 					.click();

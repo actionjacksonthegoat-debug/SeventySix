@@ -4,6 +4,7 @@
 
 import { Page, Locator } from "@playwright/test";
 import { SELECTORS } from "../selectors.constant";
+import { solveAltchaChallenge } from "../helpers/altcha.helper";
 
 /**
  * Auth page helper for login form interactions.
@@ -56,6 +57,7 @@ export class AuthPageHelper
 	{
 		await this.usernameInput.fill(username);
 		await this.passwordInput.fill(password);
+		await solveAltchaChallenge(this.page);
 		await this.submitButton.click();
 	}
 
@@ -67,6 +69,7 @@ export class AuthPageHelper
 	async submitEmail(email: string): Promise<void>
 	{
 		await this.emailInput.fill(email);
+		await solveAltchaChallenge(this.page);
 		await this.submitButton.click();
 	}
 

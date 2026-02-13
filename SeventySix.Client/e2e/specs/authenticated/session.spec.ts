@@ -7,6 +7,7 @@ import {
 	test,
 	expect,
 	unauthenticatedTest,
+	solveAltchaChallenge,
 	CONCURRENT_USER,
 	SELECTORS,
 	ROUTES,
@@ -113,6 +114,9 @@ unauthenticatedTest.describe("Concurrent Sessions",
 					await page
 						.locator(SELECTORS.form.passwordInput)
 						.fill(CONCURRENT_USER.password);
+
+					await solveAltchaChallenge(page);
+
 					await page
 						.locator(SELECTORS.form.submitButton)
 						.click();

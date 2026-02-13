@@ -11,6 +11,7 @@ import {
 } from "@shared/models";
 import { DateService } from "@shared/services";
 import { DataTableUtilities } from "@shared/utilities";
+import { isNullOrUndefined } from "@shared/utilities/null-check.utility";
 
 /**
  * Configuration for filter manager.
@@ -241,7 +242,7 @@ export class DataTableFilterManager<T>
 	{
 		this.selectedDateRangeState.set(range);
 
-		if (!this.dateService)
+		if (isNullOrUndefined(this.dateService))
 		{
 			return null;
 		}

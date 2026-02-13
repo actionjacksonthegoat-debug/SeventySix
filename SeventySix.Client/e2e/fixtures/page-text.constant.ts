@@ -267,7 +267,8 @@ export const PAGE_TEXT =
 		profile:
 			{
 				saveChanges: "Save Changes",
-				requestPermissions: "Request Permissions"
+				requestPermissions: "Request Permissions",
+				profileUpdated: "Profile updated"
 			},
 
 		/**

@@ -69,4 +69,70 @@ test.describe("User Detail",
 					.locator(SELECTORS.userDetail.saveChangesButton))
 					.toBeDisabled({ timeout: TIMEOUTS.api });
 			});
+
+		test("should enable save button when full name is modified",
+			async ({ adminPage }) =>
+			{
+				const fullNameInput =
+					adminPage.locator(SELECTORS.userDetail.fullNameInput);
+				const saveButton =
+					adminPage.locator(SELECTORS.userDetail.saveChangesButton);
+
+				await expect(fullNameInput)
+					.toBeVisible({ timeout: TIMEOUTS.api });
+
+				const originalFullName: string =
+					await fullNameInput.inputValue();
+
+				await fullNameInput.fill(`E2E Admin Edit ${Date.now()}`);
+
+				await expect(saveButton)
+					.toBeEnabled();
+
+				// Revert to avoid persisting test data
+				await fullNameInput.fill(originalFullName);
+			});
+
+		test("should save user changes and show success notification",
+			async ({ adminPage }) =>
+			{
+				const fullNameInput =
+					adminPage.locator(SELECTORS.userDetail.fullNameInput);
+				const saveButton =
+					adminPage.locator(SELECTORS.userDetail.saveChangesButton);
+
+				await expect(fullNameInput)
+					.toBeVisible({ timeout: TIMEOUTS.api });
+
+				const originalFullName: string =
+					await fullNameInput.inputValue();
+
+				const updatedFullName =
+					`E2E Updated ${Date.now()}`;
+
+				try
+				{
+					await fullNameInput.fill(updatedFullName);
+					await saveButton.click();
+
+					// Verify success notification
+					const notification =
+						adminPage.locator(SELECTORS.notification.snackbar);
+					await expect(notification)
+						.toContainText(
+							"User updated successfully",
+							{ timeout: TIMEOUTS.api });
+
+					// Save button should become disabled again (form pristine)
+					await expect(saveButton)
+						.toBeDisabled({ timeout: TIMEOUTS.api });
+				}
+				finally
+				{
+					// Restore original value
+					await fullNameInput.fill(originalFullName);
+					await saveButton.click();
+					await adminPage.waitForLoadState("load");
+				}
+			});
 	});

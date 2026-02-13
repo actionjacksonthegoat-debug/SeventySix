@@ -38,7 +38,7 @@ import {
 	OAuthProvider
 } from "@shared/services/auth.types";
 import { QueryKeys } from "@shared/utilities/query-keys.utility";
-import { isPresent } from "@shared/utilities/null-check.utility";
+import { isNullOrEmpty, isPresent } from "@shared/utilities/null-check.utility";
 import { QueryClient } from "@tanstack/angular-query-experimental";
 import {
 	catchError,
@@ -442,7 +442,7 @@ export class AuthService
 	 */
 	isTokenExpired(): boolean
 	{
-		if (!this.accessToken)
+		if (isNullOrEmpty(this.accessToken))
 		{
 			return true;
 		}

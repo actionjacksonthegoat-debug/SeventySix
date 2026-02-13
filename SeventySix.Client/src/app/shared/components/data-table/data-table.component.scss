@@ -165,3 +165,25 @@
 		background-color: var(--color-pressed);
 	}
 }
+
+.empty-state {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: 48px 16px;
+	color: var(--mat-sys-on-surface-variant);
+	gap: 8px;
+
+	mat-icon {
+		font-size: 48px;
+		width: 48px;
+		height: 48px;
+		opacity: 0.5;
+	}
+
+	p {
+		margin: 0;
+		font-size: 14px;
+	}
+}

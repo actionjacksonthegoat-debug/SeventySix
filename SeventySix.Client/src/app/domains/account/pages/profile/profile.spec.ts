@@ -9,6 +9,7 @@ import {
 	createTestQueryClient,
 	MockApiService
 } from "@shared/testing";
+import { QueryKeys } from "@shared/utilities/query-keys.utility";
 import {
 	provideTanStackQuery,
 	QueryClient
@@ -98,5 +99,27 @@ describe("ProfilePage",
 							email: "new@example.com",
 							fullName: "New Name"
 						});
+			});
+
+		it("should not overwrite dirty form on query refetch",
+			async () =>
+			{
+				// Simulate user editing the form (makes it dirty)
+				component.profileForm.patchValue(
+					{ fullName: "Unsaved Edit" });
+				component.profileForm.markAsDirty();
+
+				// Simulate a background refetch updating the profile signal
+				queryClient.setQueryData(
+					QueryKeys.account.profile,
+					{ ...ProfileFixtures.STANDARD_USER, fullName: "Server Value" });
+				await fixture.whenStable();
+				fixture.detectChanges();
+
+				// Form should retain the user's unsaved edit
+				expect(component.profileForm.get("fullName")?.value)
+					.toBe("Unsaved Edit");
+				expect(component.profileForm.dirty)
+					.toBe(true);
 			});
 	});

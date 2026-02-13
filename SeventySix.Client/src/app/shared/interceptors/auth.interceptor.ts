@@ -17,6 +17,7 @@ import {
 	HTTP_HEADER_AUTHORIZATION
 } from "@shared/constants";
 import { AuthService } from "@shared/services/auth.service";
+import { isNullOrUndefined } from "@shared/utilities/null-check.utility";
 import { catchError, switchMap, take, throwError } from "rxjs";
 
 export const authInterceptor: HttpInterceptorFn =
@@ -38,7 +39,7 @@ export const authInterceptor: HttpInterceptorFn =
 			authService.getAccessToken();
 
 		// No token - proceed without auth header (guest access)
-		if (!token)
+		if (isNullOrUndefined(token))
 		{
 			return next(req);
 		}
@@ -55,7 +56,7 @@ export const authInterceptor: HttpInterceptorFn =
 						{
 						// If refresh failed (returned null), let the request proceed without token
 						// The server will return 401 which triggers login redirect
-							if (!response)
+							if (isNullOrUndefined(response))
 							{
 								return next(req);
 							}
@@ -93,7 +94,7 @@ function addAuthHeader(
 	req: HttpRequest<unknown>,
 	token: string | null): HttpRequest<unknown>
 {
-	if (!token)
+	if (isNullOrUndefined(token))
 	{
 		return req;
 	}

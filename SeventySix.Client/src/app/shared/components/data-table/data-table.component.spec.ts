@@ -750,4 +750,47 @@ describe("DataTableComponent",
 							.toBeLessThan(0);
 					});
 			});
+
+		describe("Empty State",
+			() =>
+			{
+				async function queryEmptyState(
+					overrides: Record<string, unknown> = {}): Promise<HTMLElement | null>
+				{
+					builder.withInputs(fixture,
+						{ ...defaultInputs, isLoading: false, data: [], totalCount: 0, ...overrides });
+					fixture.detectChanges();
+					await fixture.whenStable();
+					fixture.detectChanges();
+
+					return fixture.nativeElement.querySelector(".empty-state");
+				}
+
+				it("should display accessible empty state with icon when not loading and data is empty",
+					async (): Promise<void> =>
+					{
+						const emptyState: HTMLElement | null =
+							await queryEmptyState();
+
+						expect(emptyState).not.toBeNull();
+						expect(emptyState?.textContent)
+							.toContain("No data available");
+						expect(emptyState?.querySelector("mat-icon")?.textContent?.trim())
+							.toBe("inbox");
+						expect(emptyState?.getAttribute("role"))
+							.toBe("status");
+					});
+
+				it.each(
+					[
+						{ scenario: "when loading", overrides: { isLoading: true } },
+						{ scenario: "when data exists", overrides: { data: mockData } },
+						{ scenario: "when error exists", overrides: { error: "Something went wrong" } }
+					])("should not display empty state $scenario",
+					async ({ overrides }: { overrides: Record<string, unknown> }): Promise<void> =>
+					{
+						expect(await queryEmptyState(overrides))
+							.toBeNull();
+					});
+			});
 	});

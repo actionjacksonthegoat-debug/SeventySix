@@ -26,6 +26,9 @@ export { generateTotpCode, generateTotpCodeFromSecret } from "./helpers/totp.hel
 // Login helper
 export { loginAsUser } from "./helpers/login.helper";
 
+// Altcha helper
+export { solveAltchaChallenge } from "./helpers/altcha.helper";
+
 // Accessibility helper
 export { expectAccessible } from "./helpers/accessibility.helper";
 
@@ -43,10 +46,7 @@ export { E2E_CONFIG } from "./config.constant";
 // Assertion helpers
 export {
 	expectNoAccessDenied,
-	expectNoApplicationErrors,
-	captureConsoleErrors,
-	expectNoConsoleErrors,
-	expectNavigatedTo
+	expectNoApplicationErrors
 } from "./assertions.helper";
 
 // Page helpers
@@ -55,7 +55,4 @@ export {
 	ChangePasswordPageHelper,
 	HomePageHelper,
 	AdminDashboardPageHelper,
-	UserManagementPageHelper,
-	ProfilePageHelper,
-	RequestPermissionsPageHelper
 } from "./pages";

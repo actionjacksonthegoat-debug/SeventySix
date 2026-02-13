@@ -4,6 +4,7 @@
 
 import { chromium, FullConfig, Browser, BrowserContext, Page } from "@playwright/test";
 import { TEST_USERS, SELECTORS, ROUTES, TIMEOUTS, E2E_CONFIG } from "./fixtures";
+import { solveAltchaChallenge } from "./fixtures/helpers/altcha.helper";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -58,6 +59,10 @@ async function globalSetup(config: FullConfig): Promise<void>
 				await page
 					.locator(SELECTORS.form.passwordInput)
 					.fill(testUser.password);
+
+				await solveAltchaChallenge(
+					page,
+					{ initTimeout: TIMEOUTS.globalSetup });
 
 				// Submit and wait for redirect
 				await page

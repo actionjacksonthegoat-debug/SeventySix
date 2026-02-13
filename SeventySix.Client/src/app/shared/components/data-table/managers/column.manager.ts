@@ -1,6 +1,7 @@
 import { computed, Signal, signal, WritableSignal } from "@angular/core";
 import { DisplayColumnOptions, TableColumn } from "@shared/models";
 import { DataTableUtilities } from "@shared/utilities";
+import { isNullOrEmpty, isPresent } from "@shared/utilities/null-check.utility";
 
 /**
  * Manages column visibility state for DataTableComponent.
@@ -157,7 +158,7 @@ export class DataTableColumnManager<T>
 	 */
 	loadPreferences(storageKey: string | null): void
 	{
-		if (!storageKey)
+		if (isNullOrEmpty(storageKey))
 		{
 			return;
 		}
@@ -165,11 +166,11 @@ export class DataTableColumnManager<T>
 		const stored: string | null =
 			localStorage.getItem(storageKey);
 
-		if (stored)
+		if (isPresent(stored))
 		{
 			const visibility: Map<string, boolean> | null =
 				DataTableUtilities.parseColumnPreferences(stored);
-			if (visibility)
+			if (isPresent(visibility))
 			{
 				this.columnVisibility.set(visibility);
 			}
@@ -184,7 +185,7 @@ export class DataTableColumnManager<T>
 	 */
 	savePreferences(storageKey: string | null): void
 	{
-		if (!storageKey)
+		if (isNullOrEmpty(storageKey))
 		{
 			return;
 		}

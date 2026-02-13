@@ -3,6 +3,7 @@ import {
 	freshLoginTest as test,
 	expect,
 	unauthenticatedTest,
+	solveAltchaChallenge,
 	CROSSTAB_USER,
 	ROUTES,
 	SELECTORS,
@@ -288,6 +289,9 @@ unauthenticatedTest.describe("Cross-Tab Logout",
 					await page
 						.locator(SELECTORS.form.passwordInput)
 						.fill(CROSSTAB_USER.password);
+
+					await solveAltchaChallenge(page);
+
 					await page
 						.locator(SELECTORS.form.submitButton)
 						.click();

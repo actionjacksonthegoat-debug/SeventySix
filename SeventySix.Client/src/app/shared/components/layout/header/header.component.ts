@@ -20,6 +20,7 @@ import {
 	LayoutService,
 	ThemeService
 } from "@shared/services";
+import { isNullOrUndefined } from "@shared/utilities/null-check.utility";
 
 @Component(
 	{
@@ -96,7 +97,7 @@ export class HeaderComponent
 			{
 				const user: UserProfileDto | null =
 					this.authService.user();
-				if (!user)
+				if (isNullOrUndefined(user))
 				{
 					return "";
 				}

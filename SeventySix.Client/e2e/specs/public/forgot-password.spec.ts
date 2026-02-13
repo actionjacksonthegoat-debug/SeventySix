@@ -5,6 +5,7 @@ import {
 	EmailTestHelper,
 	getTestUserByRole,
 	FORGOT_PASSWORD_USER,
+	solveAltchaChallenge,
 	SELECTORS,
 	ROUTES,
 	PAGE_TEXT,
@@ -86,6 +87,22 @@ test.describe("Forgot Password Flow",
 						await expect(page.getByLabel(PAGE_TEXT.labels.emailAddress))
 							.toBeVisible();
 					});
+
+				test("should render ALTCHA widget",
+					async ({ page }) =>
+					{
+						await expect(page.locator(SELECTORS.altcha.widget))
+							.toBeVisible({ timeout: TIMEOUTS.api });
+					});
+
+				test("should solve ALTCHA challenge",
+					async ({ page }) =>
+					{
+						await expect(page.locator(SELECTORS.altcha.widget))
+							.toBeVisible({ timeout: TIMEOUTS.api });
+
+						await solveAltchaChallenge(page);
+					});
 			});
 
 		test.describe("Validation",
@@ -110,6 +127,7 @@ test.describe("Forgot Password Flow",
 							page.locator(SELECTORS.form.submitButton);
 
 						await emailInput.fill("test@example.com");
+						await solveAltchaChallenge(page);
 
 						await expect(submitButton)
 							.toBeEnabled();

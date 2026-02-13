@@ -5,6 +5,8 @@ import {
 	ROUTES,
 	SELECTORS,
 	PAGE_TEXT,
+	TIMEOUTS,
+	E2E_CONFIG,
 	createRouteRegex
 } from "../../fixtures";
 
@@ -15,7 +17,9 @@ import {
  * Tests the user profile functionality including:
  * - Page structure and content
  * - Profile form display
+ * - Save and persistence
  * - Navigation to permissions
+ * - Validation
  */
 test.describe("Profile Page",
 	() =>
@@ -106,7 +110,10 @@ test.describe("Profile Page",
 						const saveButton =
 							userPage.locator(SELECTORS.profile.saveButton);
 
-						// Modify the form
+						// Wait for profile data to populate before modifying
+						await expect(userPage.locator(SELECTORS.profile.emailInput))
+							.toHaveValue(/.+/, { timeout: TIMEOUTS.api });
+
 						await fullNameInput.fill("Test User Modified");
 
 						await expect(saveButton)
@@ -117,27 +124,169 @@ test.describe("Profile Page",
 		test.describe("Navigation",
 			() =>
 			{
-				test("should display request permissions link",
-					async ({ userPage }: { userPage: Page }) =>
-					{
-						const permissionsLink =
-							userPage.locator(SELECTORS.profile.requestPermissionsLink);
-
-						// Link visibility depends on whether user has available roles
-						// Just verify the page loads without errors
-						await expect(userPage.locator("body"))
-							.toBeVisible();
-					});
-
 				test("should navigate to permissions page when clicking link",
 					async ({ userPage }: { userPage: Page }) =>
 					{
-						// Navigate directly to permissions page to test it exists
 						await userPage.goto(ROUTES.account.permissions);
 						await userPage.waitForLoadState("load");
 
 						await expect(userPage)
 							.toHaveURL(createRouteRegex(ROUTES.account.permissions));
+					});
+			});
+
+		test.describe("Save and Persist",
+			() =>
+			{
+				// Save tests modify shared user state — run serially to avoid data races
+				test.describe.configure({ mode: "serial" });
+
+				test("should save profile changes and persist after reload",
+					async ({ userPage }: { userPage: Page }) =>
+					{
+						const fullNameInput =
+							userPage.locator(SELECTORS.profile.fullNameInput);
+						const saveButton =
+							userPage.locator(SELECTORS.profile.saveButton);
+
+						// Wait for form population (email always non-empty for seeded users)
+						await expect(userPage.locator(SELECTORS.profile.emailInput))
+							.toHaveValue(/.+/, { timeout: TIMEOUTS.api });
+
+						const originalFullName: string =
+							await fullNameInput.inputValue();
+						const originalEmail: string =
+							await userPage.locator(SELECTORS.profile.emailInput).inputValue();
+						const uniqueFullName =
+							`E2E Profile ${Date.now()}`;
+
+						try
+						{
+							await fullNameInput.fill(uniqueFullName);
+							await expect(saveButton)
+								.toBeEnabled({ timeout: TIMEOUTS.api });
+
+							const [putResponse] =
+								await Promise.all(
+									[
+										userPage.waitForResponse(
+											(response) =>
+												response.url().includes("/users/me")
+												&& response.request().method() === "PUT"
+												&& response.status() === 200),
+										saveButton.click()
+									]);
+
+							// Reload and verify persistence
+							await userPage.reload();
+							await userPage.waitForLoadState("load");
+
+							await expect(fullNameInput)
+								.toHaveValue(uniqueFullName, { timeout: TIMEOUTS.api });
+						}
+						finally
+						{
+							// Restore via direct API call
+							await userPage.request.put(
+								`${E2E_CONFIG.apiBaseUrl}/api/v1/users/me`,
+								{
+									data: {
+										email: originalEmail,
+										fullName: originalFullName || undefined
+									}
+								});
+						}
+					});
+
+				test("should disable save button after successful save",
+					async ({ userPage }: { userPage: Page }) =>
+					{
+						const fullNameInput =
+							userPage.locator(SELECTORS.profile.fullNameInput);
+						const saveButton =
+							userPage.locator(SELECTORS.profile.saveButton);
+
+						await expect(userPage.locator(SELECTORS.profile.emailInput))
+							.toHaveValue(/.+/, { timeout: TIMEOUTS.api });
+
+						const originalFullName: string =
+							await fullNameInput.inputValue();
+						const originalEmail: string =
+							await userPage.locator(SELECTORS.profile.emailInput).inputValue();
+						const uniqueFullName =
+							`E2E Pristine ${Date.now()}`;
+
+						try
+						{
+							await fullNameInput.fill(uniqueFullName);
+							await expect(saveButton)
+								.toBeEnabled({ timeout: TIMEOUTS.api });
+
+							const [putResponse] =
+								await Promise.all(
+									[
+										userPage.waitForResponse(
+											(response) =>
+												response.url().includes("/users/me")
+												&& response.request().method() === "PUT"
+												&& response.status() === 200),
+										saveButton.click()
+									]);
+
+							await expect(saveButton)
+								.toBeDisabled({ timeout: TIMEOUTS.navigation });
+						}
+						finally
+						{
+							// Restore via direct API call
+							await userPage.request.put(
+								`${E2E_CONFIG.apiBaseUrl}/api/v1/users/me`,
+								{
+									data: {
+										email: originalEmail,
+										fullName: originalFullName || undefined
+									}
+								});
+						}
+					});
+			});
+
+		test.describe("Validation",
+			() =>
+			{
+				test("should show validation error for invalid email",
+					async ({ userPage }: { userPage: Page }) =>
+					{
+						const emailInput =
+							userPage.locator(SELECTORS.profile.emailInput);
+						const saveButton =
+							userPage.locator(SELECTORS.profile.saveButton);
+
+						await emailInput.fill("not-an-email");
+						await emailInput.blur();
+
+						await expect(saveButton)
+							.toBeDisabled();
+
+						const errorMessage =
+							userPage.locator("mat-error");
+						await expect(errorMessage)
+							.toBeVisible({ timeout: TIMEOUTS.element });
+					});
+
+				test("should show validation error for empty required email",
+					async ({ userPage }: { userPage: Page }) =>
+					{
+						const emailInput =
+							userPage.locator(SELECTORS.profile.emailInput);
+						const saveButton =
+							userPage.locator(SELECTORS.profile.saveButton);
+
+						await emailInput.fill("");
+						await emailInput.blur();
+
+						await expect(saveButton)
+							.toBeDisabled();
 					});
 			});
 	});

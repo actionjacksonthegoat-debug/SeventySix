@@ -29,6 +29,12 @@ namespace SeventySix.Api.Infrastructure;
 /// <param name="emailQueueSettings">
 /// Configuration settings for the email queue processor.
 /// </param>
+/// <param name="orphanedRegistrationCleanupSettings">
+/// Configuration settings for the orphaned registration cleanup job.
+/// </param>
+/// <param name="databaseMaintenanceSettings">
+/// Configuration settings for the database maintenance job.
+/// </param>
 /// <param name="timeProvider">
 /// Abstraction for time-related operations.
 /// </param>
@@ -38,6 +44,8 @@ public sealed class ScheduledJobService(
 	IOptions<IpAnonymizationSettings> ipAnonymizationSettings,
 	IOptions<LogCleanupSettings> logCleanupSettings,
 	IOptions<EmailQueueSettings> emailQueueSettings,
+	IOptions<OrphanedRegistrationCleanupSettings> orphanedRegistrationCleanupSettings,
+	IOptions<DatabaseMaintenanceSettings> databaseMaintenanceSettings,
 	TimeProvider timeProvider) : IScheduledJobService
 {
 	/// <summary>
@@ -78,6 +86,18 @@ public sealed class ScheduledJobService(
 					TimeSpan.FromSeconds(
 						emailQueueSettings.Value.ProcessingIntervalSeconds)
 				),
+			["OrphanedRegistrationCleanupJob"] =
+				(
+					"Orphaned Registration Cleanup",
+					TimeSpan.FromHours(
+						orphanedRegistrationCleanupSettings.Value.IntervalHours)
+				),
+			["DatabaseMaintenanceJob"] =
+				(
+					"Database Maintenance",
+					TimeSpan.FromHours(
+						databaseMaintenanceSettings.Value.IntervalHours)
+				)
 		};
 
 	/// <inheritdoc />

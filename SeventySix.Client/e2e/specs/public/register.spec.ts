@@ -3,6 +3,7 @@ import {
 	test,
 	expect,
 	EmailTestHelper,
+	solveAltchaChallenge,
 	SELECTORS,
 	ROUTES,
 	PAGE_TEXT,
@@ -86,11 +87,20 @@ test.describe("Registration Flow",
 									.toBeVisible();
 							});
 
-						test("should not render ALTCHA widget when disabled",
+						test("should render ALTCHA widget",
 							async ({ page }) =>
 							{
-								await expect(page.locator("altcha-widget"))
-									.toBeHidden();
+								await expect(page.locator(SELECTORS.altcha.widget))
+									.toBeVisible({ timeout: TIMEOUTS.api });
+							});
+
+						test("should solve ALTCHA challenge",
+							async ({ page }) =>
+							{
+								await expect(page.locator(SELECTORS.altcha.widget))
+									.toBeVisible({ timeout: TIMEOUTS.api });
+
+								await solveAltchaChallenge(page);
 							});
 					});
 
@@ -116,6 +126,7 @@ test.describe("Registration Flow",
 									page.locator(SELECTORS.form.submitButton);
 
 								await emailInput.fill("test@example.com");
+								await solveAltchaChallenge(page);
 
 								await expect(submitButton)
 									.toBeEnabled();

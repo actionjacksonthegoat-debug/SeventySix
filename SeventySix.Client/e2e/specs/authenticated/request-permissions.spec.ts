@@ -16,6 +16,7 @@ import {
  * - Page structure and content
  * - Role selection
  * - Form behavior
+ * - Submission workflow
  */
 test.describe("Request Permissions Page",
 	() =>
@@ -79,58 +80,116 @@ test.describe("Request Permissions Page",
 				test("should display message textarea for request reason",
 					async ({ userPage }: { userPage: Page }) =>
 					{
-						// Wait for content to load (either roles list or no-roles message)
-						const rolesListOrNoRoles =
-							userPage.locator(".roles-list, .no-roles");
+						// Wait for roles to load
+						const roleCheckbox =
+							userPage.locator(SELECTORS.requestPermissions.roleCheckbox).first();
 
-						await rolesListOrNoRoles.first()
-							.waitFor({ state: "visible", timeout: TIMEOUTS.api });
+						await expect(roleCheckbox)
+							.toBeVisible({ timeout: TIMEOUTS.api });
 
 						const messageTextarea =
 							userPage.locator(SELECTORS.requestPermissions.messageTextarea);
 
-						// Textarea should be visible when roles are available
-						// or the form should show no-roles message
-						const noRolesMessage =
-							userPage.locator(SELECTORS.requestPermissions.noRolesMessage);
-
-						const hasTextarea =
-							await messageTextarea.isVisible();
-						const hasNoRolesMessage =
-							await noRolesMessage.isVisible();
-
-						// One of these must be true
-						expect(hasTextarea || hasNoRolesMessage)
-							.toBe(true);
+						await expect(messageTextarea)
+							.toBeVisible();
 					});
 			});
 
 		test.describe("Role Selection",
 			() =>
 			{
-				test("should display either role checkboxes or no-roles message",
+				test("should display role checkboxes for available roles",
 					async ({ userPage }: { userPage: Page }) =>
 					{
-						// Wait for content to load (either roles list or no-roles message)
-						const rolesListOrNoRoles =
-							userPage.locator(".roles-list, .no-roles");
-
-						await rolesListOrNoRoles.first()
-							.waitFor({ state: "visible", timeout: TIMEOUTS.api });
-
+						// e2e_user has only User role, so Developer/Admin should be requestable
 						const roleCheckboxes =
 							userPage.locator(SELECTORS.requestPermissions.roleCheckbox);
-						const noRolesMessage =
-							userPage.locator(SELECTORS.requestPermissions.noRolesMessage);
+
+						await expect(roleCheckboxes.first())
+							.toBeVisible({ timeout: TIMEOUTS.api });
 
 						const roleCount =
 							await roleCheckboxes.count();
-						const hasNoRolesMessage =
-							await noRolesMessage.isVisible();
 
-						// Either we have roles to select, or we see the no-roles message
-						expect(roleCount > 0 || hasNoRolesMessage)
-							.toBe(true);
+						expect(roleCount)
+							.toBeGreaterThan(0);
+					});
+
+				test("should enable submit button when a role is selected",
+					async ({ userPage }: { userPage: Page }) =>
+					{
+						// e2e_user has only User role, so Developer/Admin should be available
+						const roleCheckbox =
+							userPage.locator(SELECTORS.requestPermissions.roleCheckbox).first();
+
+						await expect(roleCheckbox)
+							.toBeVisible({ timeout: TIMEOUTS.api });
+
+						const submitButton =
+							userPage.locator(SELECTORS.requestPermissions.submitButton);
+
+						// Initially disabled
+						await expect(submitButton)
+							.toBeDisabled();
+
+						// Click the internal input to reliably trigger (change) event
+						await roleCheckbox.locator("input").check();
+
+						// Now enabled
+						await expect(submitButton)
+							.toBeEnabled();
+					});
+			});
+
+		test.describe("Submission",
+			() =>
+			{
+				test("should submit request and show success notification",
+					async ({ userPage }: { userPage: Page }) =>
+					{
+						test.slow();
+
+						// e2e_user has only User role, so Developer/Admin should be available
+						const roleCheckbox =
+							userPage.locator(SELECTORS.requestPermissions.roleCheckbox).first();
+
+						await expect(roleCheckbox)
+							.toBeVisible({ timeout: TIMEOUTS.api });
+
+						// Click the internal input to reliably trigger (change) event
+						await roleCheckbox.locator("input").check();
+
+						// Fill in an optional message
+						const messageTextarea =
+							userPage.locator(SELECTORS.requestPermissions.messageTextarea);
+
+						await expect(messageTextarea)
+							.toBeVisible();
+						await messageTextarea.fill(`E2E request test ${Date.now()}`);
+
+						// Submit
+						const submitButton =
+							userPage.locator(SELECTORS.requestPermissions.submitButton);
+						await expect(submitButton)
+							.toBeEnabled();
+
+						// Set up notification listener before click
+						const notification =
+							userPage.locator(SELECTORS.notification.snackbar);
+						const notificationPromise =
+							expect(notification)
+								.toContainText(
+									"Permission request submitted",
+									{ timeout: TIMEOUTS.api });
+
+						await submitButton.click();
+
+						// Verify success notification
+						await notificationPromise;
+
+						// Should navigate back to account page after submission
+						await expect(userPage)
+							.toHaveURL(/\/account/, { timeout: TIMEOUTS.navigation });
 					});
 			});
 	});

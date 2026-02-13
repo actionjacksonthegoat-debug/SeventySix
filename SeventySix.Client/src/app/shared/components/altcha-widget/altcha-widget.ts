@@ -15,6 +15,7 @@ import {
 } from "@angular/core";
 import { ALTCHA_STRINGS } from "@shared/constants";
 import { AltchaWidgetState } from "@shared/models";
+import { isNullOrUndefined } from "@shared/utilities/null-check.utility";
 
 /**
  * Angular component wrapper for the ALTCHA proof-of-work widget.
@@ -108,7 +109,7 @@ export class AltchaWidgetComponent implements OnInit, OnDestroy
 			{
 				const element: HTMLElement | undefined =
 					this.widgetRef()?.nativeElement;
-				if (!element)
+				if (isNullOrUndefined(element))
 				{
 					return;
 				}

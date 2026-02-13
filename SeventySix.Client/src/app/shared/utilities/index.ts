@@ -8,7 +8,6 @@ export * from "./mutation-factory.utility";
 export * from "./null-check.utility";
 export * from "./query-config.utility";
 export * from "./query-keys.utility";
-export * from "./query-state.utility";
 export * from "./selection.utility";
 export * from "./string.utility";
 export * from "./validation-error.utilities";

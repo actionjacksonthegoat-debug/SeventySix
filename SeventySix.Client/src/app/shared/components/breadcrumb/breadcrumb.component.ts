@@ -12,6 +12,7 @@ import { ActivatedRoute, NavigationEnd, Router, UrlSegment, UrlSegmentGroup, Url
 import { RouterLink } from "@angular/router";
 import { BreadcrumbItem } from "@shared/models";
 import { capitalize } from "@shared/utilities";
+import { isNullOrEmpty } from "@shared/utilities/null-check.utility";
 import { filter, map, startWith } from "rxjs/operators";
 
 @Component(
@@ -318,7 +319,7 @@ export class BreadcrumbComponent
 					i);
 
 			// Skip empty labels
-			if (!label)
+			if (isNullOrEmpty(label))
 			{
 				continue;
 			}

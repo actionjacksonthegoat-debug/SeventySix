@@ -2,13 +2,14 @@ import { Environment } from "./environment.interface";
 
 /**
  * E2E Test Environment Configuration
- * Uses Docker container API on HTTPS port 7174
+ * API calls are proxied through nginx (same-origin) to the Docker API container.
+ * This eliminates cross-origin requests and Docker Desktop port-mapping latency.
  */
 export const environment: Environment =
 	{
 		production: false,
 		version: "1.0.0-e2e",
-		apiUrl: "https://localhost:7174/api/v1", // Docker E2E API container (HTTPS, isolated from dev)
+		apiUrl: "/api/v1", // Proxied through nginx to api-e2e container (same-origin)
 		logging: {
 			enableRemoteLogging: false,
 			consoleLogLevel: "debug",
@@ -101,6 +102,6 @@ export const environment: Environment =
 			tokenRefreshBufferSeconds: 60
 		},
 		altcha: {
-			enabled: false
+			enabled: true
 		}
 	};

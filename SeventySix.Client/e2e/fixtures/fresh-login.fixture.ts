@@ -2,8 +2,9 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-import { test as base, Page, BrowserContext, Browser, expect } from "@playwright/test";
+import { test as base, Page, BrowserContext, Browser } from "@playwright/test";
 import { TEST_USERS, SELECTORS, ROUTES, TIMEOUTS, E2E_CONFIG } from "./index";
+import { solveAltchaChallenge } from "./helpers/altcha.helper";
 import type { TestUser } from "./test-users.constant";
 
 /**
@@ -68,6 +69,8 @@ async function performFreshLogin(
 	await page
 		.locator(SELECTORS.form.passwordInput)
 		.fill(testUser.password);
+
+	await solveAltchaChallenge(page);
 
 	// Submit and wait for redirect
 	await page

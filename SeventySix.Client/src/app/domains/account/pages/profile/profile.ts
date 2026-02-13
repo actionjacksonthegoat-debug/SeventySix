@@ -208,6 +208,10 @@ export class ProfilePage
 	/**
 	 * Initialize the ProfilePage and set up reactive effects for synchronizing
 	 * profile data to the form.
+	 *
+	 * Only populates the form when it is pristine to avoid overwriting
+	 * unsaved user edits during TanStack Query background refetches.
+	 *
 	 * @returns {void}
 	 */
 	constructor()
@@ -217,7 +221,7 @@ export class ProfilePage
 			{
 				const currentProfile: UserProfileDto | undefined =
 					this.profile();
-				if (currentProfile)
+				if (currentProfile && this.profileForm.pristine)
 				{
 					this.populateForm(currentProfile);
 				}
