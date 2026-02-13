@@ -126,5 +126,30 @@ public static class ProblemDetailConstants
 		/// Detail for rate limit exceeded.
 		/// </summary>
 		public const string RateLimitExceeded = "Rate limit exceeded. Please try again later.";
+
+		/// <summary>
+		/// Detail for generic bad request (replaces raw exception.Message for framework exceptions).
+		/// </summary>
+		public const string BadRequest = "The request was invalid. Please check your input.";
+
+		/// <summary>
+		/// Detail for generic resource not found (replaces raw KeyNotFoundException messages).
+		/// </summary>
+		public const string ResourceNotFound = "The requested resource was not found.";
+
+		/// <summary>
+		/// Detail for unauthorized access (replaces raw UnauthorizedAccessException messages).
+		/// </summary>
+		public const string Unauthorized = "You are not authorized to perform this action.";
+
+		/// <summary>
+		/// Detail for role assignment failures.
+		/// </summary>
+		public const string RoleAssignmentFailed = "Role assignment could not be completed.";
+
+		/// <summary>
+		/// Detail for role removal failures.
+		/// </summary>
+		public const string RoleRemovalFailed = "Role removal could not be completed.";
 	}
 }

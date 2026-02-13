@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using SeventySix.Api.Configuration;
 using SeventySix.Identity;
 using SeventySix.Identity.Constants;
+using SeventySix.Shared.Constants;
 using SeventySix.Shared.POCOs;
 using Wolverine;
 
@@ -21,7 +22,9 @@ namespace SeventySix.Api.Controllers;
 /// </param>
 [ApiController]
 [Route(ApiVersionConfig.VersionedRoutePrefix + "/users")]
-public class UserRolesController(IMessageBus messageBus) : ControllerBase
+public class UserRolesController(
+	IMessageBus messageBus,
+	ILogger<UserRolesController> logger) : ControllerBase
 {
 	/// <summary>Gets roles for a user.</summary>
 	/// <param name="id">
@@ -126,11 +129,17 @@ public class UserRolesController(IMessageBus messageBus) : ControllerBase
 		}
 		catch (ArgumentException argumentException)
 		{
+			logger.LogWarning(
+				argumentException,
+				"Role assignment failed for user {UserId}: {Error}",
+				id,
+				argumentException.Message);
+
 			return BadRequest(
 				new ProblemDetails
 				{
 					Title = "Invalid Role",
-					Detail = argumentException.Message,
+					Detail = ProblemDetailConstants.Details.RoleAssignmentFailed,
 					Status = StatusCodes.Status400BadRequest,
 				});
 		}
@@ -196,11 +205,17 @@ public class UserRolesController(IMessageBus messageBus) : ControllerBase
 		}
 		catch (LastAdminException lastAdminException)
 		{
+			logger.LogWarning(
+				lastAdminException,
+				"Role removal failed for user {UserId}: {Error}",
+				id,
+				lastAdminException.Message);
+
 			return Conflict(
 				new ProblemDetails
 				{
 					Title = "Operation Forbidden",
-					Detail = lastAdminException.Message,
+					Detail = ProblemDetailConstants.Details.RoleRemovalFailed,
 					Status = StatusCodes.Status409Conflict,
 				});
 		}

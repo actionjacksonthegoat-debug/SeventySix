@@ -93,6 +93,24 @@ TestBed.configureTestingModule({
 **Forbidden**: `fakeAsync`, `tick`, `NgZone`
 **Use instead**: `TestBed.flushEffects()`, `jasmine.clock().tick()`
 
+## Error Handling (CRITICAL)
+
+> **RULE**: Client error display must separate user-visible details from diagnostic-only details.
+
+| Data                      | Destination              | Never              |
+| ------------------------- | ------------------------ | ------------------ |
+| Validation field errors   | User-visible `details[]` | —                  |
+| Server `title` (4xx only) | User-visible `details[]` | 5xx titles         |
+| URL, HTTP status line     | `diagnosticDetails[]`    | User-visible toast |
+| `detail` from 5xx         | `diagnosticDetails[]`    | User-visible toast |
+| `detail` from 4xx         | User-visible message     | —                  |
+
+**Auth errors** use `mapAuthError()` with explicit `errorCode` switch cases:
+
+- All server `AuthErrorCodes` must have matching client `AUTH_ERROR_CODE` entries
+- Default case returns generic message — NEVER passes through `error.error?.detail`
+- Use `AUTH_ERROR_CODE` constants, not string literals
+
 ## Cross-Platform (Windows + Linux)
 
 | ❌ NEVER                            | ✅ ALWAYS                                         |

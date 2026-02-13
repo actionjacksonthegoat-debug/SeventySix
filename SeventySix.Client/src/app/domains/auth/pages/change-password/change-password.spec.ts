@@ -256,7 +256,7 @@ describe("ChangePasswordComponent",
 						// Assert
 						expect(mockNotificationService.error)
 							.toHaveBeenCalledWith(
-								"Current password is incorrect.");
+								"Invalid request. Please check your input.");
 					});
 
 				it("should show default error message when API error has no detail",

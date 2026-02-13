@@ -182,6 +182,45 @@ isActive(): boolean { }                     // Computed methods MUST have return
 | `"Developer"` inline | `RoleConstants.Developer`               |
 | Repeated literal 2x+ | Extract to constant                     |
 
+### 8. Exception Handling = Secure ProblemDetails (CRITICAL)
+
+> **RULE**: API responses MUST NEVER expose raw `exception.Message` in `ProblemDetails.Detail`.
+> Raw exception text (parameter names, stack traces, SQL, connection strings) is **Internal Only** — logged server-side, never returned to clients.
+
+| ❌ NEVER (in ProblemDetails.Detail)     | ✅ ALWAYS                                                 |
+| --------------------------------------- | --------------------------------------------------------- |
+| `Detail = exception.Message`            | `Detail = ProblemDetailConstants.Details.BadRequest`      |
+| `Detail = argumentException.Message`    | `Detail = ProblemDetailConstants.Details.*` constant      |
+| `Detail = keyNotFoundException.Message` | Log raw message via `ILogger`, return safe constant       |
+| Raw .NET runtime text in API response   | Curated human-readable text from `ProblemDetailConstants` |
+
+**Message Classification:**
+
+| Classification        | Rule                                                                  | Example                                        |
+| --------------------- | --------------------------------------------------------------------- | ---------------------------------------------- |
+| **Public Safe**       | Display directly; hardcoded or constant-sourced                       | `"User already has this role."`                |
+| **Public Actionable** | Display directly; curated `AuthResult.Error` + `errorCode`            | `"Invalid or expired token"` + `INVALID_TOKEN` |
+| **Internal Only**     | NEVER display; replace with `ProblemDetailConstants`; log server-side | `exception.Message`, stack traces, SQL errors  |
+
+**Server Pattern:**
+
+```csharp
+// Log the raw details for diagnostics
+logger.LogWarning(exception, "Operation failed: {Error}", exception.Message);
+// Return safe constant to client
+return BadRequest(new ProblemDetails
+{
+    Detail = ProblemDetailConstants.Details.BadRequest,
+});
+```
+
+**Client Pattern:**
+
+- Display `detail` from 4xx responses (curated after server hardening)
+- NEVER display `detail` from 5xx responses
+- URL and HTTP status line go to `diagnosticDetails` (copy-only), never shown in toast
+- Auth errors use `mapAuthError()` with explicit switch cases — default returns generic message, never passes through `error.error?.detail`
+
 ---
 
 ## Cross-Platform Compatibility (CRITICAL)

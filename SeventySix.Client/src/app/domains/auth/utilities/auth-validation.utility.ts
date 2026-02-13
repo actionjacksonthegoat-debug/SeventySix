@@ -62,6 +62,13 @@ export function validateUsername(username: string | undefined): ValidationResult
 
 /**
  * Validates a password meets the auth domain requirements.
+ * Rules match server-side PasswordValidationExtensions.ApplyPasswordRules().
+ *
+ * @param {string | undefined} password
+ * The password to validate.
+ *
+ * @returns {ValidationResult}
+ * Validation result with the first failing rule's error message, or valid.
  */
 export function validatePassword(password: string | undefined): ValidationResult
 {
@@ -70,6 +77,46 @@ export function validatePassword(password: string | undefined): ValidationResult
 		return {
 			valid: false,
 			errorMessage: `Password must be at least ${PASSWORD_VALIDATION.MIN_LENGTH} characters.`
+		};
+	}
+
+	if (password.length > PASSWORD_VALIDATION.MAX_LENGTH)
+	{
+		return {
+			valid: false,
+			errorMessage: `Password must not exceed ${PASSWORD_VALIDATION.MAX_LENGTH} characters.`
+		};
+	}
+
+	if (PASSWORD_VALIDATION.REQUIRE_UPPERCASE && !PASSWORD_VALIDATION.UPPERCASE_PATTERN.test(password))
+	{
+		return {
+			valid: false,
+			errorMessage: "Password must contain at least one uppercase letter."
+		};
+	}
+
+	if (PASSWORD_VALIDATION.REQUIRE_LOWERCASE && !PASSWORD_VALIDATION.LOWERCASE_PATTERN.test(password))
+	{
+		return {
+			valid: false,
+			errorMessage: "Password must contain at least one lowercase letter."
+		};
+	}
+
+	if (PASSWORD_VALIDATION.REQUIRE_DIGIT && !PASSWORD_VALIDATION.DIGIT_PATTERN.test(password))
+	{
+		return {
+			valid: false,
+			errorMessage: "Password must contain at least one digit."
+		};
+	}
+
+	if (PASSWORD_VALIDATION.REQUIRE_SPECIAL_CHAR && !PASSWORD_VALIDATION.SPECIAL_CHAR_PATTERN.test(password))
+	{
+		return {
+			valid: false,
+			errorMessage: "Password must contain at least one special character."
 		};
 	}
 

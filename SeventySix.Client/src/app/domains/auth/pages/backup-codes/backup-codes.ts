@@ -215,23 +215,19 @@ export class BackupCodesComponent implements OnInit
 
 	/**
 	 * Handles API errors by extracting message and showing notification.
-	 * @param {HttpErrorResponse} error
-	 * The HTTP error response.
-	 * @param {string} fallbackMessage
-	 * Default message if none in response.
+	 * @param {HttpErrorResponse} _error
+	 * The HTTP error response, left for logging purposes.
+	 * @param {string} displayMessage
+	 * The message to display to the user.
 	 * @returns {void}
 	 * @private
 	 */
 	private handleError(
-		error: HttpErrorResponse,
-		fallbackMessage: string): void
+		_error: HttpErrorResponse,
+		displayMessage: string): void
 	{
-		const message: string =
-			error.error?.message
-				?? error.error?.title
-				?? fallbackMessage;
-		this.errorMessage.set(message);
-		this.notification.error(message);
+		this.errorMessage.set(displayMessage);
+		this.notification.error(displayMessage);
 	}
 
 	/**

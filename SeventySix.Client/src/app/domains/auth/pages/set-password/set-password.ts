@@ -112,14 +112,16 @@ export class SetPasswordComponent implements OnInit
 					"",
 					[
 						Validators.required,
-						Validators.minLength(PASSWORD_VALIDATION.MIN_LENGTH)
+						Validators.minLength(PASSWORD_VALIDATION.MIN_LENGTH),
+						Validators.maxLength(PASSWORD_VALIDATION.MAX_LENGTH)
 					]
 				],
 				confirmPassword: [
 					"",
 					[
 						Validators.required,
-						Validators.minLength(PASSWORD_VALIDATION.MIN_LENGTH)
+						Validators.minLength(PASSWORD_VALIDATION.MIN_LENGTH),
+						Validators.maxLength(PASSWORD_VALIDATION.MAX_LENGTH)
 					]
 				]
 			});

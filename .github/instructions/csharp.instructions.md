@@ -67,6 +67,49 @@ Import direction: `Shared ← Domains ← Api` (never reverse)
 | Warning     | Recoverable issues             |
 | Error       | Unrecoverable failures         |
 
+## Exception Handling and ProblemDetails (CRITICAL)
+
+> **RULE**: `ProblemDetails.Detail` MUST NEVER contain raw `exception.Message`. Use `ProblemDetailConstants.Details.*` constants instead.
+
+| Exception Type                | Detail Value                                      | Log Level |
+| ----------------------------- | ------------------------------------------------- | --------- |
+| `ArgumentException`           | `ProblemDetailConstants.Details.BadRequest`       | Warning   |
+| `ArgumentNullException`       | `ProblemDetailConstants.Details.BadRequest`       | Warning   |
+| `KeyNotFoundException`        | `ProblemDetailConstants.Details.ResourceNotFound` | Warning   |
+| `UnauthorizedAccessException` | `ProblemDetailConstants.Details.Unauthorized`     | Warning   |
+| `ValidationException`         | Grouped field errors (FluentValidation, safe)     | Warning   |
+| `EntityNotFoundException`     | `.Message` (curated domain text, safe)            | Error     |
+| `DomainException`             | `.Message` (curated domain text, safe)            | Error     |
+| Default (unhandled)           | Generic text; raw message in dev only             | Error     |
+
+**Pattern — catching exceptions in controllers:**
+
+```csharp
+catch (ArgumentException argumentException)
+{
+    logger.LogWarning(
+        argumentException,
+        "Operation failed for {EntityId}: {Error}",
+        entityId,
+        argumentException.Message);
+
+    return BadRequest(
+        new ProblemDetails
+        {
+            Title = "Invalid Request",
+            Detail = ProblemDetailConstants.Details.BadRequest,
+            Status = StatusCodes.Status400BadRequest,
+        });
+}
+```
+
+**Key rules:**
+
+- Raw exception details → `ILogger` only (never in HTTP response)
+- `ProblemDetailConstants.Details.*` → `ProblemDetails.Detail` (returned to client)
+- Domain exceptions (`EntityNotFoundException`, `BusinessRuleViolationException`, `DomainException`) use `.Message` because those messages are curated in our domain code
+- Framework exceptions (`ArgumentException`, `KeyNotFoundException`, etc.) use constants because their messages expose internals
+
 ## Transactions
 
 - Single write: Direct `SaveChangesAsync`

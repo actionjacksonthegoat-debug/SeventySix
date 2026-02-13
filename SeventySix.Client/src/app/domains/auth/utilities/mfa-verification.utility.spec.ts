@@ -16,7 +16,7 @@ describe("mfa-verification.utility",
 		describe("getMfaErrorMessage",
 			() =>
 			{
-				const fallbackMessage: string = "Verification failed. Please try again.";
+				const displayMessage: string = "Verification failed. Please try again.";
 
 				it("should return invalid code message for INVALID_CODE",
 					() =>
@@ -24,7 +24,7 @@ describe("mfa-verification.utility",
 						const result: string =
 							getMfaErrorMessage(
 								MFA_ERROR_CODE.INVALID_CODE,
-								fallbackMessage);
+								displayMessage);
 
 						expect(result)
 							.toBe("Invalid verification code. Please try again.");
@@ -36,7 +36,7 @@ describe("mfa-verification.utility",
 						const result: string =
 							getMfaErrorMessage(
 								MFA_ERROR_CODE.TOTP_INVALID_CODE,
-								fallbackMessage);
+								displayMessage);
 
 						expect(result)
 							.toBe("Invalid verification code. Please try again.");
@@ -48,7 +48,7 @@ describe("mfa-verification.utility",
 						const result: string =
 							getMfaErrorMessage(
 								MFA_ERROR_CODE.CODE_EXPIRED,
-								fallbackMessage);
+								displayMessage);
 
 						expect(result)
 							.toBe("Code has expired. Please request a new code.");
@@ -60,7 +60,7 @@ describe("mfa-verification.utility",
 						const result: string =
 							getMfaErrorMessage(
 								MFA_ERROR_CODE.TOO_MANY_ATTEMPTS,
-								fallbackMessage);
+								displayMessage);
 
 						expect(result)
 							.toBe("Too many attempts. Please request a new code.");
@@ -72,7 +72,7 @@ describe("mfa-verification.utility",
 						const result: string =
 							getMfaErrorMessage(
 								MFA_ERROR_CODE.INVALID_CHALLENGE,
-								fallbackMessage);
+								displayMessage);
 
 						expect(result)
 							.toBe("Session expired. Please log in again.");
@@ -84,7 +84,7 @@ describe("mfa-verification.utility",
 						const result: string =
 							getMfaErrorMessage(
 								MFA_ERROR_CODE.CHALLENGE_USED,
-								fallbackMessage);
+								displayMessage);
 
 						expect(result)
 							.toBe("Session expired. Please log in again.");
@@ -96,7 +96,7 @@ describe("mfa-verification.utility",
 						const result: string =
 							getMfaErrorMessage(
 								MFA_ERROR_CODE.TOTP_NOT_ENABLED,
-								fallbackMessage);
+								displayMessage);
 
 						expect(result)
 							.toBe("Authenticator app is not set up. Please log in again.");
@@ -108,10 +108,10 @@ describe("mfa-verification.utility",
 						const result: string =
 							getMfaErrorMessage(
 								"UNKNOWN_ERROR_CODE",
-								fallbackMessage);
+								displayMessage);
 
 						expect(result)
-							.toBe(fallbackMessage);
+							.toBe(displayMessage);
 					});
 
 				it("should return fallback for undefined error code",
@@ -120,17 +120,17 @@ describe("mfa-verification.utility",
 						const result: string =
 							getMfaErrorMessage(
 								undefined,
-								fallbackMessage);
+								displayMessage);
 
 						expect(result)
-							.toBe(fallbackMessage);
+							.toBe(displayMessage);
 					});
 			});
 
 		describe("getBackupCodeErrorMessage",
 			() =>
 			{
-				const fallbackMessage: string = "Verification failed. Please try again.";
+				const displayMessage: string = "Verification failed. Please try again.";
 
 				it("should return invalid backup code message for BACKUP_CODE_INVALID",
 					() =>
@@ -138,7 +138,7 @@ describe("mfa-verification.utility",
 						const result: string =
 							getBackupCodeErrorMessage(
 								MFA_ERROR_CODE.BACKUP_CODE_INVALID,
-								fallbackMessage);
+								displayMessage);
 
 						expect(result)
 							.toBe("Invalid backup code. Please try again.");
@@ -150,7 +150,7 @@ describe("mfa-verification.utility",
 						const result: string =
 							getBackupCodeErrorMessage(
 								MFA_ERROR_CODE.BACKUP_CODE_ALREADY_USED,
-								fallbackMessage);
+								displayMessage);
 
 						expect(result)
 							.toBe("This backup code has already been used.");
@@ -162,7 +162,7 @@ describe("mfa-verification.utility",
 						const result: string =
 							getBackupCodeErrorMessage(
 								MFA_ERROR_CODE.NO_BACKUP_CODES_AVAILABLE,
-								fallbackMessage);
+								displayMessage);
 
 						expect(result)
 							.toBe("No backup codes available. Please contact support.");
@@ -174,10 +174,10 @@ describe("mfa-verification.utility",
 						const result: string =
 							getBackupCodeErrorMessage(
 								"UNKNOWN_ERROR_CODE",
-								fallbackMessage);
+								displayMessage);
 
 						expect(result)
-							.toBe(fallbackMessage);
+							.toBe(displayMessage);
 					});
 
 				it("should return fallback for undefined error code",
@@ -186,10 +186,10 @@ describe("mfa-verification.utility",
 						const result: string =
 							getBackupCodeErrorMessage(
 								undefined,
-								fallbackMessage);
+								displayMessage);
 
 						expect(result)
-							.toBe(fallbackMessage);
+							.toBe(displayMessage);
 					});
 			});
 

@@ -154,6 +154,6 @@ describe("RegisterCompleteComponent",
 				await fixture.whenStable();
 
 				expect(mockNotificationService.error)
-					.toHaveBeenCalledWith("Username already exists.");
+					.toHaveBeenCalledWith("Invalid request. Please check your input.");
 			});
 	});

@@ -507,13 +507,10 @@ export class MfaVerifyComponent implements OnInit
 		const errorCode: string | undefined =
 			error.error?.errorCode;
 
-		const fallbackMessage: string =
-			error.error?.detail ?? "Verification failed. Please try again.";
-
 		const errorMessage: string =
 			getMfaErrorMessage(
 				errorCode,
-				fallbackMessage);
+				"Verification failed. Please try again.");
 
 		this.notification.error(errorMessage);
 
@@ -539,13 +536,10 @@ export class MfaVerifyComponent implements OnInit
 		const errorCode: string | undefined =
 			error.error?.errorCode;
 
-		const fallbackMessage: string =
-			error.error?.detail ?? "Verification failed. Please try again.";
-
 		const errorMessage: string =
 			getBackupCodeErrorMessage(
 				errorCode,
-				fallbackMessage);
+				"Verification failed. Please try again.");
 
 		this.notification.error(errorMessage);
 	}
@@ -614,7 +608,7 @@ export class MfaVerifyComponent implements OnInit
 				break;
 			default:
 				this.notification.error(
-					error.error?.detail ?? "Failed to resend code. Please try again.");
+					"Failed to resend code. Please try again.");
 		}
 	}
 

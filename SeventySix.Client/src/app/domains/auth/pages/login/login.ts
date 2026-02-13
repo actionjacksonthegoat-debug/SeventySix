@@ -368,7 +368,7 @@ export class LoginComponent implements OnInit
 					"Please wait before trying again"
 				];
 			default:
-				return [error.error?.detail ?? "An unexpected error occurred"];
+				return ["An unexpected error occurred. Please try again."];
 		}
 	}
 }

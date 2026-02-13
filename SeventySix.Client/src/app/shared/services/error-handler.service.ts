@@ -30,10 +30,17 @@ interface ErrorDetails
 	message: string;
 
 	/**
-	 * Optional technical detail lines for diagnostics or copy-to-clipboard.
+	 * Optional user-visible detail lines (validation errors, curated 4xx titles).
 	 * @type {string[] | undefined}
 	 */
 	details?: string[];
+
+	/**
+	 * Optional diagnostic-only detail lines (URL, status line) for copy-to-clipboard.
+	 * Never shown directly to users.
+	 * @type {string[] | undefined}
+	 */
+	diagnosticDetails?: string[];
 
 	/**
 	 * Optional original Error instance when available.
@@ -200,13 +207,18 @@ export class ErrorHandlerService implements ErrorHandler
 		error: Error | HttpErrorResponse): ErrorDetails
 	{
 		const details: string[] = [];
+		const diagnosticDetails: string[] = [];
 		let message: string;
 
 		if (error instanceof HttpErrorResponse)
 		{
 			message =
 				this.getHttpMessage(error);
-			this.extractHttpErrorDetails(error, details, message);
+			this.extractHttpErrorDetails(
+				error,
+				details,
+				diagnosticDetails,
+				message);
 		}
 		else
 		{
@@ -221,17 +233,22 @@ export class ErrorHandlerService implements ErrorHandler
 		return {
 			message,
 			details: details.length > 0 ? details : undefined,
+			diagnosticDetails: diagnosticDetails.length > 0 ? diagnosticDetails : undefined,
 			error: error instanceof Error ? error : undefined,
 			httpError: error instanceof HttpErrorResponse ? error : undefined
 		};
 	}
 
 	/**
-	 * Appends HTTP-specific detail lines to the details array.
+	 * Separates HTTP error details into user-visible and diagnostic-only arrays.
+	 * User-visible: validation field errors + curated server title (4xx only).
+	 * Diagnostic-only: status line + URL (preserved in copy data).
 	 * @param {HttpErrorResponse} error
 	 * The HTTP error response to inspect.
 	 * @param {string[]} details
-	 * Array to append extracted detail lines to.
+	 * Array for user-visible detail lines.
+	 * @param {string[]} diagnosticDetails
+	 * Array for diagnostic-only detail lines (copy-to-clipboard).
 	 * @param {string} userMessage
 	 * The user-friendly message derived from status.
 	 * @returns {void}
@@ -239,27 +256,36 @@ export class ErrorHandlerService implements ErrorHandler
 	private extractHttpErrorDetails(
 		error: HttpErrorResponse,
 		details: string[],
+		diagnosticDetails: string[],
 		userMessage: string): void
 	{
 		details.push(...extractValidationErrors(error));
 
-		const title: string | null =
-			extractErrorTitle(error, userMessage);
-		if (title)
+		const isClientError: boolean =
+			error.status >= 400 && error.status < 500;
+
+		if (isClientError)
 		{
-			details.push(title);
+			const title: string | null =
+				extractErrorTitle(
+					error,
+					userMessage);
+			if (title)
+			{
+				details.push(title);
+			}
 		}
 
 		const status: string | null =
 			extractHttpStatus(error);
 		if (status)
 		{
-			details.push(status);
+			diagnosticDetails.push(status);
 		}
 
 		if (error.url)
 		{
-			details.push(`URL: ${error.url}`);
+			diagnosticDetails.push(`URL: ${error.url}`);
 		}
 	}
 
@@ -364,6 +390,7 @@ export class ErrorHandlerService implements ErrorHandler
 				timestamp: this.dateService.now(),
 				message: errorDetails.message,
 				details: errorDetails.details,
+				diagnosticDetails: errorDetails.diagnosticDetails,
 				error: {
 					name: error.name,
 					message: error.message,

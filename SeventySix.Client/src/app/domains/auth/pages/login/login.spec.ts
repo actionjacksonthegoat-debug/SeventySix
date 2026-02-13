@@ -401,11 +401,11 @@ describe("LoginComponent",
 							mockNotificationService.errorWithDetails)
 							.toHaveBeenCalledWith("Login Failed",
 								[
-									"An unexpected error occurred"
+									"An unexpected error occurred. Please try again."
 								]);
 					});
 
-				it("should use server error detail if available",
+				it("should not expose server error detail to user",
 					() =>
 					{
 						// Arrange
@@ -434,7 +434,7 @@ describe("LoginComponent",
 							mockNotificationService.errorWithDetails)
 							.toHaveBeenCalledWith("Login Failed",
 								[
-									"Custom server error message"
+									"An unexpected error occurred. Please try again."
 								]);
 					});
 

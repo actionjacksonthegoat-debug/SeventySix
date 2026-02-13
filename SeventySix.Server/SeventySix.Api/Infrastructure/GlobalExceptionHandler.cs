@@ -173,25 +173,25 @@ public class GlobalExceptionHandler(
 					context,
 					HttpStatusCode.BadRequest,
 					"Bad Request",
-					exception.Message),
+					ProblemDetailConstants.Details.BadRequest),
 			ArgumentException =>
 				CreateProblemDetails(
 					context,
 					HttpStatusCode.BadRequest,
 					"Bad Request",
-					exception.Message),
+					ProblemDetailConstants.Details.BadRequest),
 			KeyNotFoundException =>
 				CreateProblemDetails(
 					context,
 					HttpStatusCode.NotFound,
 					"Not Found",
-					exception.Message),
+					ProblemDetailConstants.Details.ResourceNotFound),
 			UnauthorizedAccessException =>
 				CreateProblemDetails(
 					context,
 					HttpStatusCode.Unauthorized,
 					"Unauthorized",
-					exception.Message),
+					ProblemDetailConstants.Details.Unauthorized),
 			_ =>
 				CreateDefaultProblemDetails(context, exception),
 		};

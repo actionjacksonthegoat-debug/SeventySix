@@ -63,9 +63,11 @@ export const PASSWORD_VALIDATION: {
 	readonly REQUIRE_UPPERCASE: true;
 	readonly REQUIRE_LOWERCASE: true;
 	readonly REQUIRE_DIGIT: true;
+	readonly REQUIRE_SPECIAL_CHAR: false;
 	readonly UPPERCASE_PATTERN: RegExp;
 	readonly LOWERCASE_PATTERN: RegExp;
 	readonly DIGIT_PATTERN: RegExp;
+	readonly SPECIAL_CHAR_PATTERN: RegExp;
 } =
 	{
 		MIN_LENGTH: 8,
@@ -73,9 +75,11 @@ export const PASSWORD_VALIDATION: {
 		REQUIRE_UPPERCASE: true,
 		REQUIRE_LOWERCASE: true,
 		REQUIRE_DIGIT: true,
+		REQUIRE_SPECIAL_CHAR: false,
 		UPPERCASE_PATTERN: /[A-Z]/,
 		LOWERCASE_PATTERN: /[a-z]/,
-		DIGIT_PATTERN: /\d/
+		DIGIT_PATTERN: /\d/,
+		SPECIAL_CHAR_PATTERN: /[^a-zA-Z\d]/
 	};
 
 /**
