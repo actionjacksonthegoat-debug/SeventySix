@@ -94,3 +94,29 @@ All TypeScript method and function declarations MUST have explicit return types.
 | Void handlers     | `onClick() {`    | `onClick(): void {`                   |
 
 **Exception**: Inline arrow callbacks where return type is inferred from typed context.
+
+## Documentation Style
+
+### C# XML (tags on own lines)
+
+```xml
+/// <param name="userId">
+/// The unique identifier for the user.
+/// </param>
+///
+/// <returns>
+/// The user DTO when found; otherwise null.
+/// </returns>
+```
+
+### TypeScript JSDoc
+
+```typescript
+/**
+ * @param {string} userId
+ * The unique identifier.
+ *
+ * @returns {UserDto | null}
+ * The user when found.
+ */
+```

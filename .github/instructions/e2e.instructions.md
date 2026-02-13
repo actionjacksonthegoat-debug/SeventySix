@@ -125,18 +125,5 @@ const uniqueEmail = `e2e_test_${Date.now()}@test.local`;
 await page.locator("[data-testid='search']").fill("e2e_");
 ```
 
-## ⚠️ COMPLETION REQUIREMENT (MANDATORY)
-
-> **NEVER claim implementation is complete without running `npm run test:e2e`.**
->
-> You MUST:
-> 1. Execute `npm run test:e2e` in the terminal
-> 2. Wait for full test suite to complete
-> 3. See `[PASS] All E2E tests passed!` in output
-> 4. Fix ANY failures before claiming completion
->
-> Stating "tests will pass when infrastructure runs" is **UNACCEPTABLE**.
-> The E2E script handles its own Docker infrastructure.
-
 
 ````

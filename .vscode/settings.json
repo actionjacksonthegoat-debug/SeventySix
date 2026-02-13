@@ -73,5 +73,18 @@
 	"files.insertFinalNewline": false,
 
 	// Default line ending (LF for cross-platform, overridden per language above)
-	"files.eol": "\n"
+	"files.eol": "\n",
+
+	// Copilot agent mode auto-fix
+	"github.copilot.chat.agent.autoFix": true,
+
+	// Instruction file locations (explicit)
+	"chat.instructionsFilesLocations": {
+		".github/instructions": true
+	},
+
+	// Prompt file locations (explicit)
+	"chat.promptFilesLocations": {
+		".github/prompts": true
+	}
 }

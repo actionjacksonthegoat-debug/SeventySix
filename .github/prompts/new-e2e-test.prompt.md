@@ -1,4 +1,3 @@
-```prompt
 ---
 agent: agent
 description: Generate E2E tests using Playwright following SeventySix patterns
@@ -8,16 +7,22 @@ description: Generate E2E tests using Playwright following SeventySix patterns
 
 Create E2E tests using Playwright for SeventySix application.
 
+## MCP Tools
+
+- Use **context7** to fetch up-to-date Playwright API docs before generating test code
+- Use **playwright** MCP for browser automation debugging if tests need troubleshooting
+- Use **chrome-devtools** MCP for live DOM inspection, network analysis, and performance tracing during test development
+
 ## Test Category Selection (REQUIRED)
 
 Ask user which category this test belongs to:
 
-| Category      | Location                   | Auth State       | Use Case                     |
-| ------------- | -------------------------- | ---------------- | ---------------------------- |
-| public        | `e2e/specs/public/`        | None             | Unauthenticated flows        |
-| authenticated | `e2e/specs/authenticated/` | User role        | General authenticated access |
-| admin         | `e2e/specs/admin/`         | Admin role       | Admin-only features          |
-| developer     | `e2e/specs/developer/`     | Developer role   | Developer tools/features     |
+| Category      | Location                   | Auth State     | Use Case                     |
+| ------------- | -------------------------- | -------------- | ---------------------------- |
+| public        | `e2e/specs/public/`        | None           | Unauthenticated flows        |
+| authenticated | `e2e/specs/authenticated/` | User role      | General authenticated access |
+| admin         | `e2e/specs/admin/`         | Admin role     | Admin-only features          |
+| developer     | `e2e/specs/developer/`     | Developer role | Developer tools/features     |
 
 ## E2E Structure
 
@@ -48,22 +53,15 @@ SeventySix.Client/e2e/
 ├── admin/ # Admin role auth
 └── developer/ # Developer role auth
 
-````
+```
 
 ## Import Rules (CRITICAL)
 
 **ALWAYS** import from barrel export:
 
 ```typescript
-import {
-    test,
-    expect,
-    SELECTORS,
-    ROUTES,
-    PAGE_TEXT,
-    TIMEOUTS
-} from "../../fixtures";
-````
+import { test, expect, SELECTORS, ROUTES, PAGE_TEXT, TIMEOUTS } from "../../fixtures";
+```
 
 **NEVER** import from individual fixture files directly.
 
@@ -123,7 +121,8 @@ test.describe("{{Feature Name}}",
 Page helpers encapsulate common interactions:
 
 ```typescript
-test("should submit login form", async ({ authPage }) => { // Injected via fixture
+test("should submit login form", async ({ authPage }) => {
+	// Injected via fixture
 	await authPage.login("username", "password");
 	await expect(authPage.snackbar).toBeVisible();
 });
@@ -339,8 +338,4 @@ npx playwright test e2e/specs/public/login.spec.ts
 
 # Debug mode with browser visible
 npx playwright test --headed --debug
-```
-
-```
-
 ```

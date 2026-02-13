@@ -7,12 +7,18 @@ description: Scaffold full-stack feature with Angular client and .NET server
 
 Create a complete feature spanning Angular client and .NET server.
 
+## MCP Tools
+
+- Use **context7** to fetch up-to-date API docs for .NET, Wolverine, EF Core, Angular, and TanStack Query before generating code
+- Use **postgresql** MCP to inspect existing schema when designing data-layer code
+- Use **figma** MCP if user provides a Figma design link — extract layout and styling for the client component
+
 ## Domain Selection (REQUIRED)
 
 Ask user which domain this feature belongs to:
 
 - **Server**: Identity, Logging, ApiTracking, ElectronicNotifications
-- **Client**: admin, sandbox, developer
+- **Client**: admin, auth, account, developer, sandbox, home
 
 ## Server Structure
 
@@ -226,7 +232,7 @@ export const {{FEATURE}}_ROUTES: Routes =
 ### Path Aliases
 
 - `@shared/*` - Cross-cutting utilities
-- `@admin/*`, `@game/*`, `@commerce/*` - Domain-specific
+- `@admin/*`, `@auth/*`, `@account/*`, `@developer/*`, `@sandbox/*`, `@home/*` - Domain-specific
 
 ### Other Rules
 

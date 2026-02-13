@@ -22,18 +22,9 @@ applyTo: "**/SeventySix.Client/src/**/*.ts"
 | Templates        | `computed()` signals     | Method calls in templates      |
 | Cleanup          | `takeUntilDestroyed()`   | Manual subscription cleanup    |
 
-## Accessibility (WCAG AA)
+## Accessibility
 
-| Element               | Required                                       | Forbidden                  |
-| --------------------- | ---------------------------------------------- | -------------------------- |
-| Decorative `mat-icon` | `aria-hidden="true"`                           | Icon without aria-hidden   |
-| Icon-only button      | `aria-label` on button                         | `matTooltip` as only label |
-| Toggle button         | `[attr.aria-expanded]`, `[attr.aria-controls]` | Toggle without state       |
-| `mat-spinner`         | `aria-label="Loading"`                         | Spinner without label      |
-| `mat-progress-bar`    | `aria-label`                                   | Progress without label     |
-| Form error            | `aria-live="assertive" role="alert"`           | Silent error               |
-
-See `.github/instructions/accessibility.instructions.md` for complete patterns.
+See `accessibility.instructions.md` for WCAG AA patterns (icons, loading, live regions).
 
 ## Service Scoping (CRITICAL)
 
@@ -111,13 +102,88 @@ TestBed.configureTestingModule({
 - Default case returns generic message — NEVER passes through `error.error?.detail`
 - Use `AUTH_ERROR_CODE` constants, not string literals
 
-## Cross-Platform (Windows + Linux)
+## Cross-Platform
 
-| ❌ NEVER                            | ✅ ALWAYS                                         |
-| ----------------------------------- | ------------------------------------------------- |
-| `"folder\\file.ts"` hardcoded `\\`  | `path.join("folder", "file.ts")` or `/` separator |
-| Case-insensitive import assumptions | Consistent casing (Linux is case-sensitive)       |
-| `process.platform` without fallback | Conditional with both Windows + Linux paths       |
-| PowerShell-only CI scripts          | Cross-platform Node.js scripts or dual support    |
+See `cross-platform.instructions.md` for Windows/Linux compatibility rules.
 
-**Rule**: CI runs on `ubuntu-latest`. All build/test scripts MUST work on Linux.
+---
+
+## TanStack Query Service Pattern
+
+Services extend `BaseQueryService<TFilter>` which extends `BaseFilterService<TFilter>`. Use `injectQuery()` for reads, `createMutation()` for writes. `QueryKeys` for cache key management. `lastValueFrom()` bridges Observable → Promise for TanStack.
+
+```typescript
+@Injectable()
+export class UserService extends BaseQueryService<UserQueryRequest> {
+	protected readonly queryKeyPrefix: string = "users";
+	private readonly apiService: ApiService = inject(ApiService);
+
+	// Query — returns reactive CreateQueryResult
+	getPagedUsers(): CreateQueryResult<PagedResultOfUserDto> {
+		return injectQuery(() => ({
+			queryKey: QueryKeys.users.paged(this.getCurrentFilter()).concat(this.forceRefreshTrigger()),
+			queryFn: () => lastValueFrom(this.getPaged(this.getCurrentFilter(), this.getForceRefreshContext())),
+			...this.queryConfig,
+		}));
+	}
+
+	// Mutation — returns CreateMutationResult
+	createUser(): CreateMutationResult<UserDto, Error, Partial<UserDto>> {
+		return this.createMutation<Partial<UserDto>, UserDto>((user) => this.apiService.post<UserDto>(this.endpoint, user as CreateUserRequest));
+	}
+}
+```
+
+**Key classes:**
+
+| Class                      | Purpose                                     |
+| -------------------------- | ------------------------------------------- |
+| `BaseFilterService`        | Signal-based filter management              |
+| `BaseQueryService`         | Query/mutation helpers + cache invalidation |
+| `QueryKeys`                | Centralized cache key factory               |
+| `CacheCoordinationService` | Cross-feature cache invalidation            |
+
+## App Initialization Pattern
+
+```typescript
+// app.config.ts critical patterns:
+// 1. provideZonelessChangeDetection() — ALWAYS
+// 2. provideRouter(routes, withPreloading(SelectivePreloadingStrategy))
+// 3. provideTanStackQuery(new QueryClient({...})) — env-based config
+// 4. HTTP interceptor pipeline ORDER matters:
+//    cacheBypass → dateParse → auth → logging → error
+// 5. App initializers run at startup:
+//    initializeTheme, initializeTelemetry, initializeWebVitals, initializeAuth
+// 6. ErrorHandler: { provide: ErrorHandler, useClass: ErrorHandlerService }
+```
+
+Standalone app (no NgModule), PWA service worker, `provideAppInitializer()` for startup hooks.
+
+## Route Guard Pattern
+
+Factory functions returning `CanMatchFn`. Use `inject()` inside the returned function. `passwordChangeGuard()` ALWAYS runs before `roleGuard()` in `canMatch` arrays.
+
+```typescript
+export function roleGuard(...requiredRoles: string[]): CanMatchFn {
+	return () => {
+		const authService: AuthService = inject(AuthService);
+		const router: Router = inject(Router);
+
+		if (!authService.isAuthenticated()) {
+			const navigation: Navigation | null = router.currentNavigation();
+			const targetUrl: string = navigation?.extractedUrl?.toString() ?? "/";
+			const redirectUrl: UrlTree = router.createUrlTree([APP_ROUTES.AUTH.LOGIN], { queryParams: { returnUrl: targetUrl } });
+			return redirectUrl;
+		}
+
+		if (requiredRoles.length === 0) {
+			return true;
+		}
+
+		const hasRequiredRole: boolean = authService.hasAnyRole(...requiredRoles);
+		return hasRequiredRole ? true : router.createUrlTree(["/"]);
+	};
+}
+```
+
+**Usage in routes:** `canMatch: [passwordChangeGuard(), roleGuard("Admin")]`

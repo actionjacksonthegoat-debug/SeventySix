@@ -7,12 +7,18 @@ description: Scaffold full-stack feature with Angular client and .NET server
 
 Create a complete feature spanning Angular client and .NET server.
 
+## MCP Tools
+
+- Use **context7** to fetch up-to-date API docs for .NET, Wolverine, EF Core, Angular, and TanStack Query before generating code
+- Use **postgresql** MCP to inspect existing schema when designing data-layer code
+- Use **figma** MCP if user provides a Figma design link — extract layout and styling for the client component
+
 ## Domain Selection (REQUIRED)
 
 Ask user which domain this feature belongs to:
 
 - **Server**: Identity, Logging, ApiTracking, ElectronicNotifications
-- **Client**: admin, game, commerce
+- **Client**: admin, auth, account, developer, sandbox, home
 
 ## Server Structure
 
@@ -226,7 +232,7 @@ export const {{FEATURE}}_ROUTES: Routes =
 ### Path Aliases
 
 - `@shared/*` - Cross-cutting utilities
-- `@admin/*`, `@game/*`, `@commerce/*` - Domain-specific
+- `@admin/*`, `@auth/*`, `@account/*`, `@developer/*`, `@sandbox/*`, `@home/*` - Domain-specific
 
 ### Other Rules
 
@@ -245,3 +251,29 @@ export const {{FEATURE}}_ROUTES: Routes =
 | E2E    | `npm run test:e2e` | `SeventySix.Client/e2e/`   |
 
 **Never** mark work complete with failing tests in any suite.
+
+### Server Test Structure (REQUIRED)
+
+Tests MUST mirror source structure:
+
+```
+Tests/SeventySix.Domains.Tests/
+└── {{Domain}}/
+    ├── Commands/
+    │   └── Create{{Name}}/
+    │       └── Create{{Name}}CommandHandlerTests.cs
+    ├── Queries/
+    │   └── Get{{Name}}ById/
+    │       └── Get{{Name}}ByIdQueryHandlerTests.cs
+    ├── Repositories/
+    │   └── {{Name}}RepositoryTests.cs
+    └── Validators/
+        └── Create{{Name}}RequestValidatorTests.cs
+```
+
+**Test Rules:**
+
+- `[Collection(CollectionNames.PostgreSql)]` for DB tests
+- `FakeTimeProvider` not `Task.Delay()` for time tests
+- Fluent builders for test data
+- `*UnitTests.cs` for mocks, `*Tests.cs` for integration

@@ -446,6 +446,8 @@ SeventySix.Client/e2e/.auth/
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+!.vscode/mcp.json
+!.vscode/copilot-hooks.json
 .history/*
 
 # JetBrains IDEs
