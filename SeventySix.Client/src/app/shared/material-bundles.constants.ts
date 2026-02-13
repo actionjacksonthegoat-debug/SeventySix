@@ -3,7 +3,7 @@
  * Reduces import boilerplate by grouping commonly used Material modules.
  *
  * USAGE:
- * import { FORM_MATERIAL_MODULES } from "@shared/material-bundles";
+ * import { FORM_MATERIAL_MODULES } from "@shared/material-bundles.constants";
  *
  * @Component({
  *     imports: [CommonModule, ...FORM_MATERIAL_MODULES]

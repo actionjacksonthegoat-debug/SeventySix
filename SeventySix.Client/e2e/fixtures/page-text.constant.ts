@@ -240,7 +240,16 @@ export const PAGE_TEXT =
 			{
 				title: "User Management",
 				subtitle: "Manage user accounts and permissions",
-				createUser: "Create User"
+				createUser: "Create User",
+				activeFilter: "Active"
+			},
+
+		/**
+		 * User create text.
+		 */
+		userCreate:
+			{
+				failedToCreate: "Failed to create user"
 			},
 
 		/**
@@ -295,6 +304,7 @@ export const PAGE_TEXT =
 				architectureGuide:
 					{
 						title: "Architecture Guide",
+						cardTitle: "Project Architecture",
 						description: "architecture patterns and conventions"
 					}
 			},

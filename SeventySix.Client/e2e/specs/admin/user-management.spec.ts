@@ -256,7 +256,7 @@ test.describe("User Management Page",
 							filterChips.nth(1);
 
 						await expect(activeChip)
-							.toContainText("Active");
+							.toContainText(PAGE_TEXT.userManagement.activeFilter);
 						await activeChip.click();
 
 						// Data should still be visible (all seeded users are active)

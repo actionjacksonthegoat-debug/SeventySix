@@ -333,7 +333,7 @@ test.describe("User Create",
 					.toBeVisible({ timeout: TIMEOUTS.api });
 
 				await expect(errorBanner)
-					.toContainText("Failed to create user");
+					.toContainText(PAGE_TEXT.userCreate.failedToCreate);
 
 				// Verify we're still on the create page
 				await expect(adminPage)

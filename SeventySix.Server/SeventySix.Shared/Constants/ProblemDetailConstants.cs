@@ -151,5 +151,10 @@ public static class ProblemDetailConstants
 		/// Detail for role removal failures.
 		/// </summary>
 		public const string RoleRemovalFailed = "Role removal could not be completed.";
+
+		/// <summary>
+		/// Detail for registration failures (replaces raw Identity exception messages).
+		/// </summary>
+		public const string RegistrationFailed = "Registration could not be completed. Please try again.";
 	}
 }

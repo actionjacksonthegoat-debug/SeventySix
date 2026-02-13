@@ -11,7 +11,7 @@ import {
 	NAVIGATION_MATERIAL_MODULES,
 	STEPPER_MATERIAL_MODULES,
 	TABLE_MATERIAL_MODULES
-} from "@shared/material-bundles";
+} from "@shared/material-bundles.constants";
 
 describe("Material Bundles",
 	() =>

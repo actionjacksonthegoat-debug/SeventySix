@@ -12,7 +12,7 @@ namespace SeventySix.Api.Configuration;
 /// Maps to "Cache:OutputCache" section in appsettings.json.
 /// Follows Options Pattern for strongly-typed configuration.
 /// </remarks>
-public class OutputCacheOptions
+public record OutputCacheOptions
 {
 	/// <summary>
 	/// Configuration section name.
@@ -20,38 +20,38 @@ public class OutputCacheOptions
 	public const string SectionName = "Cache:OutputCache";
 
 	/// <summary>
-	/// Gets or sets the cache policies.
+	/// Gets the cache policies.
 	/// Key is the policy name (e.g., "Users", "Logs").
 	/// Value is the policy configuration.
 	/// </summary>
-	public Dictionary<string, CachePolicyConfig> Policies { get; set; } = [];
+	public Dictionary<string, CachePolicyConfig> Policies { get; init; } = [];
 }
 
 /// <summary>
 /// Configuration for a single cache policy.
 /// </summary>
-public class CachePolicyConfig
+public record CachePolicyConfig
 {
 	/// <summary>
-	/// Gets or sets the cache duration in seconds.
+	/// Gets the cache duration in seconds.
 	/// </summary>
-	public int DurationSeconds { get; set; }
+	public int DurationSeconds { get; init; }
 
 	/// <summary>
-	/// Gets or sets the query string parameters that vary the cache.
+	/// Gets the query string parameters that vary the cache.
 	/// Each unique combination of these parameters creates a separate cache entry.
 	/// </summary>
-	public string[] VaryByQuery { get; set; } = [];
+	public string[] VaryByQuery { get; init; } = [];
 
 	/// <summary>
-	/// Gets or sets the cache tag for invalidation.
+	/// Gets the cache tag for invalidation.
 	/// Multiple policies can share the same tag for coordinated invalidation.
 	/// </summary>
-	public string Tag { get; set; } = string.Empty;
+	public string Tag { get; init; } = string.Empty;
 
 	/// <summary>
-	/// Gets or sets a value indicating whether this policy is enabled.
+	/// Gets a value indicating whether this policy is enabled.
 	/// Useful for disabling caching in development environments.
 	/// </summary>
-	public bool Enabled { get; set; } = true;
+	public bool Enabled { get; init; } = true;
 }

@@ -3,7 +3,6 @@
 // </copyright>
 
 using FluentValidation.Results;
-using SeventySix.Identity;
 using SeventySix.Identity.Commands.InitiateRegistration;
 using Shouldly;
 

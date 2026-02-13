@@ -3,7 +3,6 @@
 // </copyright>
 
 using FluentValidation.TestHelper;
-using SeventySix.Shared;
 
 namespace SeventySix.Shared.Tests.Validators;
 

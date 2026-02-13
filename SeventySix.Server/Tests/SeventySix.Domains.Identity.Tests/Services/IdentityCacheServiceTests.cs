@@ -3,10 +3,8 @@
 // </copyright>
 
 using NSubstitute;
-using SeventySix.Identity;
 using SeventySix.Shared.Constants;
 using SeventySix.Shared.Interfaces;
-using Shouldly;
 
 namespace SeventySix.Identity.Tests.Services;
 

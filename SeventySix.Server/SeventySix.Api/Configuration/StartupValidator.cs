@@ -2,11 +2,6 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using SeventySix.Shared.Constants;
-
 namespace SeventySix.Api.Configuration;
 
 /// <summary>

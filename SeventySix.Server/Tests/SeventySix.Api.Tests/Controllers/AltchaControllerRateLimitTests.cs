@@ -3,7 +3,6 @@
 // </copyright>
 
 using System.Net;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using SeventySix.Api.Tests.Fixtures;

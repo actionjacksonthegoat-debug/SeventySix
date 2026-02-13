@@ -90,7 +90,7 @@ public class BaseRepositoryTests
 			.Log(
 				LogLevel.Error,
 				Arg.Any<EventId>(),
-				Arg.Is<object>(v => v.ToString()!.Contains("Database error")),
+				Arg.Is<object>(value => value.ToString()!.Contains("Database error")),
 				Arg.Any<Exception>(),
 				Arg.Any<Func<object, Exception?, string>>());
 	}
@@ -119,8 +119,8 @@ public class BaseRepositoryTests
 			.Log(
 				LogLevel.Error,
 				Arg.Any<EventId>(),
-				Arg.Is<object>(v =>
-					v.ToString()!.Contains("Concurrency conflict")),
+				Arg.Is<object>(value =>
+					value.ToString()!.Contains("Concurrency conflict")),
 				Arg.Any<Exception>(),
 				Arg.Any<Func<object, Exception?, string>>());
 	}

@@ -766,7 +766,8 @@ describe("DataTableComponent",
 					return fixture.nativeElement.querySelector(".empty-state");
 				}
 
-				it("should display accessible empty state with icon when not loading and data is empty",
+				it(
+					"should display accessible empty state with icon when not loading and data is empty",
 					async (): Promise<void> =>
 					{
 						const emptyState: HTMLElement | null =
@@ -786,8 +787,9 @@ describe("DataTableComponent",
 						{ scenario: "when loading", overrides: { isLoading: true } },
 						{ scenario: "when data exists", overrides: { data: mockData } },
 						{ scenario: "when error exists", overrides: { error: "Something went wrong" } }
-					])("should not display empty state $scenario",
-					async ({ overrides }: { overrides: Record<string, unknown> }): Promise<void> =>
+					])(
+					"should not display empty state $scenario",
+					async ({ overrides }: { overrides: Record<string, unknown>; }): Promise<void> =>
 					{
 						expect(await queryEmptyState(overrides))
 							.toBeNull();

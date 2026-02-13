@@ -5,8 +5,6 @@
 using SeventySix.Api.Tests.Fixtures;
 using SeventySix.TestUtilities.Constants;
 
-using Xunit;
-
 namespace SeventySix.Api.Tests.Collections;
 
 /// <summary>

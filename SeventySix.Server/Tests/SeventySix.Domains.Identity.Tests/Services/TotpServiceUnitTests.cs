@@ -4,7 +4,6 @@
 
 using Microsoft.Extensions.Options;
 using OtpNet;
-using SeventySix.Identity;
 using Shouldly;
 
 namespace SeventySix.Identity.Tests.Services;

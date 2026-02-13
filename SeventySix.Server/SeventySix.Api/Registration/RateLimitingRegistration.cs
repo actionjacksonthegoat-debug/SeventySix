@@ -162,8 +162,7 @@ public static class RateLimitingRegistration
 			?? ["http://localhost:4200"];
 
 		ISet<string> allowedOriginsSet =
-			new HashSet<string>(
-				allowedOrigins,
+			allowedOrigins.ToHashSet(
 				StringComparer.OrdinalIgnoreCase);
 
 		services.AddRateLimiter(

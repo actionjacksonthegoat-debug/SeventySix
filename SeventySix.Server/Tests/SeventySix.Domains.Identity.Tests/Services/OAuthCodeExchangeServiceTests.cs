@@ -3,8 +3,6 @@
 // </copyright>
 
 using Microsoft.Extensions.DependencyInjection;
-using NSubstitute;
-using SeventySix.Identity;
 using SeventySix.Shared.Constants;
 using SeventySix.TestUtilities.Constants;
 using Shouldly;

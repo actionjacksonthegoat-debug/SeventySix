@@ -4,7 +4,6 @@
 
 using Microsoft.AspNetCore.Identity;
 using NSubstitute;
-using SeventySix.Identity;
 using SeventySix.Identity.Constants;
 using SeventySix.TestUtilities.Mocks;
 using Shouldly;

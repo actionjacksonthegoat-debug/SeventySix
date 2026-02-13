@@ -7,7 +7,6 @@ using NSubstitute;
 using SeventySix.Api.Configuration;
 using SeventySix.Api.Registration;
 using Shouldly;
-using Xunit;
 
 namespace SeventySix.Shared.Tests.Registration;
 
@@ -20,6 +19,12 @@ namespace SeventySix.Shared.Tests.Registration;
 /// </remarks>
 public class DataProtectionRegistrationTests
 {
+	private static readonly string NonExistentCertPath =
+		Path.Combine(
+			Path.GetTempPath(),
+			"nonexistent",
+			"cert.pfx");
+
 	[Fact]
 	public void AddConfiguredDataProtection_WithMissingCertificate_InProduction_ThrowsInvalidOperationException()
 	{
@@ -33,7 +38,7 @@ public class DataProtectionRegistrationTests
 			new()
 			{
 				["DataProtection:UseCertificate"] = "true",
-				["DataProtection:CertificatePath"] = "C:\\nonexistent\\cert.pfx",
+				["DataProtection:CertificatePath"] = NonExistentCertPath,
 				["DataProtection:AllowUnprotectedKeysInDevelopment"] = "false",
 				["DataProtection:KeysDirectory"] = tempKeysDirectory
 			};
@@ -71,7 +76,7 @@ public class DataProtectionRegistrationTests
 			new()
 			{
 				["DataProtection:UseCertificate"] = "true",
-				["DataProtection:CertificatePath"] = "C:\\nonexistent\\cert.pfx",
+				["DataProtection:CertificatePath"] = NonExistentCertPath,
 				["DataProtection:AllowUnprotectedKeysInDevelopment"] = "true",
 			};
 
@@ -161,7 +166,7 @@ public class DataProtectionRegistrationTests
 			new()
 			{
 				["DataProtection:UseCertificate"] = "true",
-				["DataProtection:CertificatePath"] = "C:\\nonexistent\\cert.pfx",
+				["DataProtection:CertificatePath"] = NonExistentCertPath,
 				["DataProtection:AllowUnprotectedKeysInDevelopment"] = "false",
 			};
 

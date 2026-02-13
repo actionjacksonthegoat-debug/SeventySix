@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
-using SeventySix.Identity;
 using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.Mocks;
 using Shouldly;
@@ -283,7 +282,8 @@ public class SetPasswordCommandHandlerTests
 
 		await UserManager
 			.Received(1)
-			.UpdateAsync(Arg.Is<ApplicationUser>(u => u.RequiresPasswordChange == false));
+			.UpdateAsync(Arg.Is<ApplicationUser>(
+				user => user.RequiresPasswordChange == false));
 	}
 
 	[Fact]

@@ -80,6 +80,19 @@ export const FORCE_PASSWORD_CHANGE_USER: TestUser =
 	} as const;
 
 /**
+ * Second forced-password-change user for the lifecycle test.
+ * The lifecycle test changes the password (clearing RequiresPasswordChange) then changes it back.
+ * Using a separate user prevents serial interference with the read-only forced-pw tests.
+ */
+export const FORCE_PASSWORD_CHANGE_LIFECYCLE_USER: TestUser =
+	{
+		username: "e2e_force_pw_lifecycle",
+		password: "E2E_ForcePwLife_Password_123!",
+		role: "User",
+		email: "e2e_force_pw_lifecycle@test.local"
+	} as const;
+
+/**
  * Dedicated test user for password change flow E2E tests.
  * Separate from other users to avoid breaking shared auth state.
  */

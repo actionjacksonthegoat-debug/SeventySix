@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component } from "@angular/core";
 import { RouterLink } from "@angular/router";
-import { CARD_MATERIAL_MODULES } from "@shared/material-bundles";
+import { CARD_MATERIAL_MODULES } from "@shared/material-bundles.constants";
 
 /**
  * 404 Not Found error page.

@@ -3,7 +3,6 @@
 // </copyright>
 
 using Microsoft.AspNetCore.Identity;
-using SeventySix.Identity;
 using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;
 using Shouldly;

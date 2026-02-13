@@ -246,15 +246,10 @@ public class LogsControllerTests(LoggingApiPostgreSqlFixture fixture)
 
 			Log log =
 				await logRepo.CreateAsync(
-				new Log
-				{
-					LogLevel = "Error",
-					Message = "Test log for deletion",
-					CreateDate =
-						timeProvider.GetUtcNow().UtcDateTime,
-					MachineName = "test",
-					Environment = "Test",
-				});
+				LogBuilder
+					.CreateError(timeProvider)
+					.WithMessage("Test log for deletion")
+					.Build());
 
 			logId = log.Id;
 		} // Dispose scope to ensure transaction is committed
@@ -262,7 +257,7 @@ public class LogsControllerTests(LoggingApiPostgreSqlFixture fixture)
 		// Act
 		HttpResponseMessage response =
 			await Client!.DeleteAsync(
-			$"/api/v1/logs/{logId}");
+			ApiEndpoints.Logs.ById(logId));
 
 		// Assert
 		response.StatusCode.ShouldBe(HttpStatusCode.NoContent);
@@ -277,7 +272,7 @@ public class LogsControllerTests(LoggingApiPostgreSqlFixture fixture)
 		// Act
 		HttpResponseMessage response =
 			await Client!.DeleteAsync(
-			"/api/v1/logs/999999999");
+			ApiEndpoints.Logs.ById(999999999));
 
 		// Assert
 		response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
@@ -298,27 +293,17 @@ public class LogsControllerTests(LoggingApiPostgreSqlFixture fixture)
 
 		Log log1 =
 			await logRepo.CreateAsync(
-			new Log
-			{
-				LogLevel = "Error",
-				Message = "Batch delete test 1",
-				CreateDate =
-					timeProvider.GetUtcNow().UtcDateTime,
-				MachineName = "test",
-				Environment = "Test",
-			});
+			LogBuilder
+				.CreateError(timeProvider)
+				.WithMessage("Batch delete test 1")
+				.Build());
 
 		Log log2 =
 			await logRepo.CreateAsync(
-			new Log
-			{
-				LogLevel = "Warning",
-				Message = "Batch delete test 2",
-				CreateDate =
-					timeProvider.GetUtcNow().UtcDateTime,
-				MachineName = "test",
-				Environment = "Test",
-			});
+			LogBuilder
+				.CreateWarning(timeProvider)
+				.WithMessage("Batch delete test 2")
+				.Build());
 
 		long[] idsToDelete =
 			[log1.Id, log2.Id];
@@ -327,7 +312,7 @@ public class LogsControllerTests(LoggingApiPostgreSqlFixture fixture)
 		HttpRequestMessage deleteRequest =
 			new(
 			HttpMethod.Delete,
-			"/api/v1/logs/batch")
+			ApiEndpoints.Logs.Batch)
 			{
 				Content =
 					JsonContent.Create(idsToDelete),
@@ -356,7 +341,7 @@ public class LogsControllerTests(LoggingApiPostgreSqlFixture fixture)
 		HttpRequestMessage deleteRequest =
 			new(
 			HttpMethod.Delete,
-			"/api/v1/logs/batch")
+			ApiEndpoints.Logs.Batch)
 			{
 				Content =
 					JsonContent.Create(emptyIds),

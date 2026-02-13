@@ -2,21 +2,17 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using NSubstitute;
-using SeventySix.Identity;
-using SeventySix.Identity.Commands.CompleteRegistration;
 using SeventySix.Identity.Constants;
 using SeventySix.Shared.Utilities;
 using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;
-using SeventySix.TestUtilities.TestHelpers;
 using Shouldly;
 
 namespace SeventySix.Identity.Tests.Commands.CompleteRegistration;

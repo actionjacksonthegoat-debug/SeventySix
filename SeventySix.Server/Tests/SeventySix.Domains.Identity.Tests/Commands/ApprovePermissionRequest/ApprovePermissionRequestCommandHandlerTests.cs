@@ -4,7 +4,6 @@
 
 using Microsoft.AspNetCore.Identity;
 using NSubstitute;
-using SeventySix.Identity;
 using SeventySix.Identity.Commands.ApprovePermissionRequest;
 using SeventySix.Shared.POCOs;
 using SeventySix.TestUtilities.Mocks;

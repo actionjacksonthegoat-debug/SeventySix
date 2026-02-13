@@ -3,7 +3,6 @@
 // </copyright>
 
 using NSubstitute;
-using SeventySix.Identity;
 using SeventySix.Identity.Constants;
 using SeventySix.Identity.Queries.GetAvailableRoles;
 using SeventySix.Shared.Constants;

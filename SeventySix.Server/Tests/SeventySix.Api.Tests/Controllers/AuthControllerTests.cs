@@ -71,7 +71,7 @@ public class AuthControllerTests(IdentityAuthApiPostgreSqlFixture fixture)
 		// Act
 		HttpResponseMessage response =
 			await Client!.PostAsJsonAsync(
-			"/api/v1/auth/login",
+			ApiEndpoints.Auth.Login,
 			request);
 
 		// Assert
@@ -116,7 +116,7 @@ public class AuthControllerTests(IdentityAuthApiPostgreSqlFixture fixture)
 		// Act
 		HttpResponseMessage response =
 			await Client!.PostAsJsonAsync(
-			"/api/v1/auth/login",
+			ApiEndpoints.Auth.Login,
 			request);
 
 		// Assert
@@ -167,7 +167,7 @@ public class AuthControllerTests(IdentityAuthApiPostgreSqlFixture fixture)
 		// Act
 		HttpResponseMessage response =
 			await Client!.PostAsJsonAsync(
-			"/api/v1/auth/login",
+			ApiEndpoints.Auth.Login,
 			request);
 
 		// Assert
@@ -192,7 +192,7 @@ public class AuthControllerTests(IdentityAuthApiPostgreSqlFixture fixture)
 		// Act
 		HttpResponseMessage response =
 			await Client!.PostAsync(
-			"/api/v1/auth/refresh",
+			ApiEndpoints.Auth.Refresh,
 			null);
 
 		// Assert
@@ -227,7 +227,7 @@ public class AuthControllerTests(IdentityAuthApiPostgreSqlFixture fixture)
 		// Act
 		HttpResponseMessage response =
 			await Client!.PostAsJsonAsync(
-			"/api/v1/auth/login",
+			ApiEndpoints.Auth.Login,
 			request);
 
 		// Assert
@@ -450,7 +450,7 @@ public class AuthControllerTests(IdentityAuthApiPostgreSqlFixture fixture)
 
 		HttpResponseMessage loginResponse =
 			await Client!.PostAsJsonAsync(
-			"/api/v1/auth/login",
+			ApiEndpoints.Auth.Login,
 			new LoginRequest(
 			$"testuser_{testId}",
 			TestUserHelper.TestPassword));

@@ -33,7 +33,7 @@ import {
 	FULL_NAME_VALIDATION,
 	USERNAME_VALIDATION
 } from "@shared/constants/validation.constants";
-import { FORM_MATERIAL_MODULES } from "@shared/material-bundles";
+import { FORM_MATERIAL_MODULES } from "@shared/material-bundles.constants";
 import { LoggerService, NotificationService } from "@shared/services";
 import { getValidationError } from "@shared/utilities";
 import { isNullOrEmpty, isNullOrUndefined } from "@shared/utilities/null-check.utility";

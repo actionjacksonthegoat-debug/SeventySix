@@ -48,7 +48,7 @@ function createAuthenticatedProject(role: string): Project
 export default defineConfig({
 	testDir: "./e2e",
 	fullyParallel: true,
-	forbidOnly: !!process.env.CI,
+	forbidOnly: process.env.CI != null,
 	retries: process.env.CI ? 1 : 0,
 	workers: process.env.CI ? 4 : undefined,
 	reporter: [

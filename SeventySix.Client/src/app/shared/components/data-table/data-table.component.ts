@@ -27,7 +27,7 @@ import {
 } from "@shared/components/data-table/managers";
 import { SKELETON_CHECKBOX, SKELETON_ICON_BUTTON, SKELETON_TABLE_CELL, SkeletonTheme } from "@shared/constants";
 import { TableHeightDirective } from "@shared/directives";
-import { TABLE_MATERIAL_MODULES } from "@shared/material-bundles";
+import { TABLE_MATERIAL_MODULES } from "@shared/material-bundles.constants";
 import {
 	BulkAction,
 	BulkActionEvent,

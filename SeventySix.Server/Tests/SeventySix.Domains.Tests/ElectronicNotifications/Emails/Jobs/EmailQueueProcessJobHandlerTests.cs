@@ -11,7 +11,6 @@ using SeventySix.ElectronicNotifications.Emails;
 using SeventySix.ElectronicNotifications.Emails.Jobs;
 using SeventySix.Shared.BackgroundJobs;
 using SeventySix.TestUtilities.Builders;
-using Shouldly;
 using Wolverine;
 
 namespace SeventySix.Domains.Tests.ElectronicNotifications.Emails.Jobs;

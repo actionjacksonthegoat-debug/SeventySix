@@ -3,7 +3,6 @@
 // </copyright>
 
 using Shouldly;
-using Xunit;
 
 namespace SeventySix.Domains.Tests.Logging.Helpers;
 

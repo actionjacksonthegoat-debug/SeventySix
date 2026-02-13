@@ -3,7 +3,6 @@
 // </copyright>
 
 using Microsoft.Extensions.Options;
-using SeventySix.Api.Configuration;
 using SeventySix.Identity;
 
 namespace SeventySix.Api.Infrastructure;

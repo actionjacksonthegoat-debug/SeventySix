@@ -37,8 +37,8 @@ import {
 	JwtClaims,
 	OAuthProvider
 } from "@shared/services/auth.types";
-import { QueryKeys } from "@shared/utilities/query-keys.utility";
 import { isNullOrEmpty, isPresent } from "@shared/utilities/null-check.utility";
+import { QueryKeys } from "@shared/utilities/query-keys.utility";
 import { QueryClient } from "@tanstack/angular-query-experimental";
 import {
 	catchError,
@@ -646,7 +646,8 @@ export class AuthService
 		// Eagerly fetch the full profile to replace JWT-derived defaults.
 		// Best-effort: failure is silently ignored since the profile page
 		// will fetch fresh data when visited.
-		this.httpClient
+		this
+			.httpClient
 			.get<UserProfileDto>(`${environment.apiUrl}/auth/me`)
 			.pipe(
 				catchError(

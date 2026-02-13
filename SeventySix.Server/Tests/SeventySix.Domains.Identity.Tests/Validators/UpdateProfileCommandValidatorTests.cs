@@ -4,7 +4,6 @@
 
 using FluentValidation.TestHelper;
 using NSubstitute;
-using SeventySix.Identity;
 using SeventySix.Identity.Commands.UpdateProfile;
 using Wolverine;
 

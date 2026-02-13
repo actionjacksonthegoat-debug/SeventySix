@@ -16,7 +16,7 @@ namespace SeventySix.ApiTracking;
 /// Cached in distributed cache for dashboard queries.
 /// </remarks>
 [MemoryPackable]
-public partial class ThirdPartyApiStatisticsDto : ICacheable
+public partial record ThirdPartyApiStatisticsDto : ICacheable
 {
 	/// <summary>
 	/// Gets or sets the total number of API calls made today across all APIs.

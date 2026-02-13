@@ -3,7 +3,6 @@ using FluentValidation.Results;
 using Microsoft.Extensions.DependencyInjection;
 using SeventySix.Shared.Registration;
 using Shouldly;
-using Xunit;
 
 namespace SeventySix.Shared.Tests.Registration;
 

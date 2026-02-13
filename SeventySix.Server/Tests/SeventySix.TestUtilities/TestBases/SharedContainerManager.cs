@@ -126,6 +126,9 @@ public static class SharedContainerManager
 			{
 				// Template is being accessed by other users, wait and retry
 				NpgsqlConnection.ClearAllPools();
+
+				// Pragmatic exception: Task.Delay for container retry backoff in test infrastructure.
+				// Not a test assertion — exponential backoff avoids PostgreSQL template lock contention.
 				await Task.Delay(100 * attempt);
 			}
 		}

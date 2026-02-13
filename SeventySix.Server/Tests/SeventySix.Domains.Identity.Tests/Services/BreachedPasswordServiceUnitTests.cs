@@ -6,7 +6,6 @@ using System.Net;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NSubstitute;
-using SeventySix.Identity;
 using Shouldly;
 
 namespace SeventySix.Identity.Tests.Services;

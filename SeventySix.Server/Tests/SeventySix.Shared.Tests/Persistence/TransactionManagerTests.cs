@@ -383,8 +383,8 @@ public class TransactionManagerTests : IDisposable
 		List<ThirdPartyApiRequest> allEntities =
 			await DbContext.ThirdPartyApiRequests.ToListAsync();
 		allEntities.Count.ShouldBe(2);
-		allEntities.ShouldContain(e => e.ApiName == "Api1");
-		allEntities.ShouldContain(e => e.ApiName == "Api2");
+		allEntities.ShouldContain(entity => entity.ApiName == "Api1");
+		allEntities.ShouldContain(entity => entity.ApiName == "Api2");
 	}
 
 	/// <summary>

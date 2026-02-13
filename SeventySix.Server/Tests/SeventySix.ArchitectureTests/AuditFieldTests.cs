@@ -56,7 +56,8 @@ public class AuditFieldTests : SourceCodeArchitectureTest
 				string[] fields =
 					matches
 					.Cast<Match>()
-					.Select(m => m.Groups[1].Value)
+					.Select(
+						match => match.Groups[1].Value)
 					.Distinct()
 					.ToArray();
 
@@ -107,7 +108,8 @@ public class AuditFieldTests : SourceCodeArchitectureTest
 				string[] fields =
 					matches
 					.Cast<Match>()
-					.Select(m => m.Groups[1].Value)
+					.Select(
+						match => match.Groups[1].Value)
 					.Distinct()
 					.ToArray();
 

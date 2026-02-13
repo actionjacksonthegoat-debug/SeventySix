@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using SeventySix.Api.Configuration;
-using SeventySix.Api.Infrastructure;
 using SeventySix.ApiTracking;
 using SeventySix.ElectronicNotifications;
 using SeventySix.Identity;

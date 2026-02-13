@@ -124,7 +124,8 @@ public class ConstantsUsageTests : SourceCodeArchitectureTest
 				string[] endpoints =
 					matches
 					.Cast<Match>()
-					.Select(m => m.Value)
+					.Select(
+						match => match.Value)
 					.Distinct()
 					.ToArray();
 

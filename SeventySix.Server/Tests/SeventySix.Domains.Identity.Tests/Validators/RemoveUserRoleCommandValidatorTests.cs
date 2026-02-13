@@ -3,7 +3,6 @@
 // </copyright>
 
 using FluentValidation.TestHelper;
-using SeventySix.Identity;
 using SeventySix.Identity.Commands.RemoveUserRole;
 using SeventySix.Identity.Constants;
 

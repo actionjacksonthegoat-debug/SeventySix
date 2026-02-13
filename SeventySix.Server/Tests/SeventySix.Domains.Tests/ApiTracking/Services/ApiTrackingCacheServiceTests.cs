@@ -6,7 +6,6 @@ using NSubstitute;
 using SeventySix.ApiTracking;
 using SeventySix.Shared.Constants;
 using SeventySix.Shared.Interfaces;
-using Shouldly;
 
 namespace SeventySix.Domains.Tests.ApiTracking.Services;
 

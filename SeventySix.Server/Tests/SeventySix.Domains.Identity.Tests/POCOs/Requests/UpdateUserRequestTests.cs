@@ -2,7 +2,6 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using SeventySix.Identity;
 using Shouldly;
 
 namespace SeventySix.Identity.Tests.POCOs.Requests;

@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using SeventySix.Logging;
+using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;
 using Shouldly;
@@ -50,13 +51,10 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 		// Arrange
 		FakeTimeProvider timeProvider = new();
 		Log log =
-			new()
-			{
-				LogLevel = "Error",
-				Message = "Test error message",
-				CreateDate =
-					timeProvider.GetUtcNow().UtcDateTime,
-			};
+			LogBuilder
+				.CreateError(timeProvider)
+				.WithMessage("Test error message")
+				.Build();
 
 		// Act
 		Log result =
@@ -322,14 +320,10 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 		for (int logNumber = 0; logNumber < 150; logNumber++)
 		{
 			await Repository.CreateAsync(
-				new Log
-				{
-					LogLevel = "Info",
-					Message =
-						$"Log {logNumber}",
-					CreateDate =
-						timeProvider.GetUtcNow().UtcDateTime,
-				});
+				new LogBuilder(timeProvider)
+					.WithLogLevel("Info")
+					.WithMessage($"Log {logNumber}")
+					.Build());
 		}
 
 		// Act
@@ -399,23 +393,19 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 		// Arrange
 		FakeTimeProvider timeProvider = new();
 		Log oldLog =
-			new()
-			{
-				LogLevel = "Error",
-				Message = "Old log",
-				CreateDate =
-					timeProvider.GetUtcNow().UtcDateTime.AddDays(-40),
-			};
+			LogBuilder
+				.CreateError(timeProvider)
+				.WithMessage("Old log")
+				.WithTimestamp(
+					timeProvider.GetUtcNow().UtcDateTime.AddDays(-40))
+				.Build();
 		await Repository.CreateAsync(oldLog);
 
 		Log recentLog =
-			new()
-			{
-				LogLevel = "Error",
-				Message = "Recent log",
-				CreateDate =
-					timeProvider.GetUtcNow().UtcDateTime,
-			};
+			LogBuilder
+				.CreateError(timeProvider)
+				.WithMessage("Recent log")
+				.Build();
 		await Repository.CreateAsync(recentLog);
 
 		DateTime cutoffDate =
@@ -444,43 +434,32 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 	{
 		Log[] logs =
 			[
-			new Log
-			{
-				LogLevel = "Error",
-				Message = "Test error 1",
-				SourceContext = "SeventySix.Services.UserService",
-				RequestPath = "/api/users/1",
-				StatusCode = 500,
-				DurationMs = 150,
-				CreateDate =
-					timeProvider.GetUtcNow().UtcDateTime,
-			},
-			new Log
-			{
-				LogLevel = "Warning",
-				Message = "Test warning 1",
-				SourceContext = "SeventySix.Services.HealthCheckService",
-			RequestPath = ApiEndpoints.Health.Base,
-				StatusCode = 200,
-				DurationMs = 75,
-				CreateDate =
+			new LogBuilder(timeProvider)
+				.WithLogLevel("Error")
+				.WithMessage("Test error 1")
+				.WithSourceContext("SeventySix.Services.UserService")
+				.WithHttpRequest(null, "/api/users/1", 500, 150)
+				.Build(),
+			new LogBuilder(timeProvider)
+				.WithLogLevel("Warning")
+				.WithMessage("Test warning 1")
+				.WithSourceContext("SeventySix.Services.HealthCheckService")
+				.WithHttpRequest(null, ApiEndpoints.Health.Base, 200, 75)
+				.WithTimestamp(
 					timeProvider
 					.GetUtcNow()
-					.UtcDateTime.AddMinutes(-5),
-			},
-			new Log
-			{
-				LogLevel = "Error",
-				Message = "Test error 2",
-				SourceContext = "SeventySix.Services.UserService",
-				RequestPath = "/api/users/2",
-				StatusCode = 404,
-				DurationMs = 50,
-				CreateDate =
+					.UtcDateTime.AddMinutes(-5))
+				.Build(),
+			new LogBuilder(timeProvider)
+				.WithLogLevel("Error")
+				.WithMessage("Test error 2")
+				.WithSourceContext("SeventySix.Services.UserService")
+				.WithHttpRequest(null, "/api/users/2", 404, 50)
+				.WithTimestamp(
 					timeProvider
 					.GetUtcNow()
-					.UtcDateTime.AddMinutes(-10),
-			},
+					.UtcDateTime.AddMinutes(-10))
+				.Build(),
 		];
 
 		foreach (Log? log in logs)
@@ -504,47 +483,42 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 	{
 		Log[] logs =
 			[
-			new Log
-			{
-				LogLevel = "Error",
-				Message =
-					$"Authentication_{testId} failed for user",
-				SourceContext =
-					$"SeventySix.Services.UserService_{testId}",
-				RequestPath =
-					$"/api/users_{testId}/login",
-				ExceptionMessage = null,
-				CreateDate =
-					timeProvider.GetUtcNow().UtcDateTime,
-			},
-			new Log
-			{
-				LogLevel = "Error",
-				Message = "Database connection timeout",
-				SourceContext =
-					$"SeventySix.Services.UserService_{testId}",
-				RequestPath =
-					$"/api/users_{testId}/profile",
-				ExceptionMessage =
-					$"NullRef_{testId}: Object reference not set",
-				CreateDate =
-					timeProvider
-					.GetUtcNow()
-					.UtcDateTime.AddMinutes(-5),
-			},
-			new Log
-			{
-				LogLevel = "Warning",
-				Message = "Rate limit approaching",
-				SourceContext = "SeventySix.Services.ApiThrottlingService",
-				RequestPath = "/api/health",
-				ExceptionMessage = null,
-				CreateDate =
-					timeProvider
-					.GetUtcNow()
-					.UtcDateTime.AddMinutes(-10),
-			},
-		];
+				new LogBuilder(timeProvider)
+					.WithLogLevel("Error")
+					.WithMessage(
+						$"Authentication_{testId} failed for user")
+					.WithSourceContext(
+						$"SeventySix.Services.UserService_{testId}")
+					.WithHttpRequest(
+						null,
+						$"/api/users_{testId}/login")
+					.Build(),
+				new LogBuilder(timeProvider)
+					.WithLogLevel("Error")
+					.WithMessage("Database connection timeout")
+					.WithSourceContext(
+						$"SeventySix.Services.UserService_{testId}")
+					.WithHttpRequest(
+						null,
+						$"/api/users_{testId}/profile")
+					.WithExceptionMessage(
+						$"NullRef_{testId}: Object reference not set")
+					.WithTimestamp(
+						timeProvider
+						.GetUtcNow()
+						.UtcDateTime.AddMinutes(-5))
+					.Build(),
+				new LogBuilder(timeProvider)
+					.WithLogLevel("Warning")
+					.WithMessage("Rate limit approaching")
+					.WithSourceContext("SeventySix.Services.ApiThrottlingService")
+					.WithHttpRequest(null, "/api/health")
+					.WithTimestamp(
+						timeProvider
+						.GetUtcNow()
+						.UtcDateTime.AddMinutes(-10))
+					.Build(),
+			];
 
 		foreach (Log? log in logs)
 		{

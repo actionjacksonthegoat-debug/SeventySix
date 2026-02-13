@@ -1,11 +1,7 @@
-using System;
-using System.Threading;
 using Microsoft.AspNetCore.Identity;
 using NSubstitute;
-using SeventySix.Identity;
 using SeventySix.TestUtilities.Mocks;
 using Shouldly;
-using Xunit;
 
 namespace SeventySix.Identity.Tests.Commands.RefreshTokens;
 

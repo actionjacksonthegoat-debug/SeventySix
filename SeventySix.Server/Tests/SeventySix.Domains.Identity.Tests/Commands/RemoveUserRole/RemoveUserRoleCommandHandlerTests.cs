@@ -5,7 +5,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
-using SeventySix.Identity;
 using SeventySix.Identity.Constants;
 using SeventySix.Shared.POCOs;
 using SeventySix.TestUtilities.Builders;

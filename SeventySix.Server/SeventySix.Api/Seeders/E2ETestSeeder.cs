@@ -76,6 +76,11 @@ public class E2ETestSeeder(
 
 		await CreateForcedPasswordChangeUserAsync();
 
+		await CreateForcedPasswordChangeUserAsync(
+			"e2e_force_pw_lifecycle",
+			"e2e_force_pw_lifecycle@test.local",
+			"E2E_ForcePwLife_Password_123!");
+
 		await CreateTestUserAsync(
 			"e2e_pw_change",
 			"e2e_pw_change@test.local",
@@ -194,11 +199,11 @@ public class E2ETestSeeder(
 	/// <returns>
 	/// A task representing the async operation.
 	/// </returns>
-	private async Task CreateForcedPasswordChangeUserAsync()
+	private async Task CreateForcedPasswordChangeUserAsync(
+		string username = "e2e_force_pw",
+		string email = "e2e_force_pw@test.local",
+		string password = "E2E_ForcePw_Password_123!")
 	{
-		const string username = "e2e_force_pw";
-		const string password = "E2E_ForcePw_Password_123!";
-
 		ApplicationUser? existingUser =
 			await userManager.FindByNameAsync(username);
 
@@ -217,7 +222,7 @@ public class E2ETestSeeder(
 			new()
 			{
 				UserName = username,
-				Email = "e2e_force_pw@test.local",
+				Email = email,
 				EmailConfirmed = true,
 				LockoutEnabled = true,
 				CreateDate = timeProvider.GetUtcNow().UtcDateTime,

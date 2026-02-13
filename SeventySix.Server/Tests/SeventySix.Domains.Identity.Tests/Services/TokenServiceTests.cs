@@ -7,7 +7,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
-using SeventySix.Identity;
 using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;
@@ -100,8 +99,8 @@ public class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 		refreshToken.ShouldNotBeEmpty();
 
 		RefreshToken? storedToken =
-			await context.RefreshTokens.FirstOrDefaultAsync(t =>
-				t.UserId == user.Id);
+			await context.RefreshTokens.FirstOrDefaultAsync(token =>
+				token.UserId == user.Id);
 
 		storedToken.ShouldNotBeNull();
 		storedToken.IsRevoked.ShouldBeFalse();
@@ -309,7 +308,7 @@ public class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 			List<RefreshToken> tokens =
 				await context
 				.RefreshTokens.AsNoTracking()
-				.Where(t => t.UserId == userId)
+				.Where(token => token.UserId == userId)
 				.ToListAsync();
 
 			tokens.ShouldAllBe(token => token.IsRevoked);
@@ -387,8 +386,8 @@ public class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 		List<RefreshToken> tokens =
 			await context
 			.RefreshTokens.AsNoTracking()
-			.Where(t => t.UserId == user.Id)
-			.OrderBy(t => t.CreateDate)
+			.Where(token => token.UserId == user.Id)
+			.OrderBy(token => token.CreateDate)
 			.ToListAsync();
 
 		tokens.Count.ShouldBe(3);
@@ -424,7 +423,7 @@ public class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 		RefreshToken? storedToken =
 			await context
 			.RefreshTokens.AsNoTracking()
-			.FirstOrDefaultAsync(t => t.UserId == user.Id);
+			.FirstOrDefaultAsync(token => token.UserId == user.Id);
 
 		storedToken.ShouldNotBeNull();
 		storedToken.FamilyId.ShouldNotBe(Guid.Empty);
@@ -455,8 +454,8 @@ public class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 		RefreshToken? newStoredToken =
 			await context
 			.RefreshTokens.AsNoTracking()
-			.Where(t => t.UserId == user.Id)
-			.Where(t => !t.IsRevoked)
+			.Where(token => token.UserId == user.Id)
+			.Where(token => !token.IsRevoked)
 			.FirstOrDefaultAsync();
 
 		newStoredToken.ShouldNotBeNull();
@@ -541,7 +540,7 @@ public class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 		List<RefreshToken> familyTokens =
 			await context
 			.RefreshTokens.AsNoTracking()
-			.Where(t => t.UserId == user.Id)
+			.Where(token => token.UserId == user.Id)
 			.ToListAsync();
 
 		familyTokens.ShouldAllBe(token => token.IsRevoked);
@@ -754,7 +753,7 @@ public class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 		RefreshToken? token =
 			await context
 			.RefreshTokens.AsNoTracking()
-			.FirstOrDefaultAsync(t => t.UserId == userId);
+			.FirstOrDefaultAsync(token => token.UserId == userId);
 
 		return token?.FamilyId ?? Guid.Empty;
 	}

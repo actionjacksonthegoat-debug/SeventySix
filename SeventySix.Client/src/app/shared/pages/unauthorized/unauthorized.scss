@@ -1,6 +1,5 @@
 @use "mixins" as mixins;
 
-:host
-{
+:host {
 	@include mixins.error-page-layout();
 }

@@ -3,7 +3,6 @@
 // </copyright>
 
 using Microsoft.Extensions.Time.Testing;
-using SeventySix.Identity;
 using SeventySix.TestUtilities.Builders;
 using Shouldly;
 

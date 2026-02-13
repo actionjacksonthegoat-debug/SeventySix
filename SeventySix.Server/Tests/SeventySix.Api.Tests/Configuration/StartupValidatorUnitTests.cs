@@ -8,7 +8,6 @@ using Microsoft.Extensions.Logging;
 using NSubstitute;
 using SeventySix.Api.Configuration;
 using Shouldly;
-using Xunit;
 
 namespace SeventySix.Api.Tests.Configuration;
 

@@ -16,7 +16,7 @@ namespace SeventySix.ApiTracking;
 /// Cached in distributed cache for dashboard queries.
 /// </remarks>
 [MemoryPackable]
-public partial class ThirdPartyApiRequestDto : ICacheable
+public partial record ThirdPartyApiRequestDto : ICacheable
 {
 	/// <summary>
 	/// Gets or sets the unique identifier.

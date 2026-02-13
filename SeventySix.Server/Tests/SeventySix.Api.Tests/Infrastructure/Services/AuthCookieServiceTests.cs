@@ -4,7 +4,6 @@
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
-using SeventySix.Api.Configuration;
 using SeventySix.Api.Infrastructure;
 using SeventySix.Identity;
 using Shouldly;

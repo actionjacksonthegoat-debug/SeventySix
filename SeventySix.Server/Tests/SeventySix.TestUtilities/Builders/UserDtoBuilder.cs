@@ -4,7 +4,6 @@
 
 using SeventySix.Identity;
 using SeventySix.Shared.Constants;
-using SeventySix.TestUtilities.Constants;
 
 namespace SeventySix.TestUtilities.Builders;
 

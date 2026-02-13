@@ -6,7 +6,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
-using SeventySix.Identity;
 using SeventySix.TestUtilities.Constants;
 using Shouldly;
 

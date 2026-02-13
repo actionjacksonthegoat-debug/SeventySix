@@ -3,7 +3,6 @@
 // </copyright>
 
 using FluentValidation.TestHelper;
-using SeventySix.Identity;
 using SeventySix.Identity.Settings;
 
 namespace SeventySix.Identity.Tests.Validators;

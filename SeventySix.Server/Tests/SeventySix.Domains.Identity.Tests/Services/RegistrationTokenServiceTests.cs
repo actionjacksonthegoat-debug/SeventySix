@@ -1,8 +1,6 @@
-using SeventySix.Shared;
 using SeventySix.Shared.POCOs;
 using SeventySix.Shared.Utilities;
 using Shouldly;
-using Xunit;
 
 namespace SeventySix.Identity.Tests.Services;
 

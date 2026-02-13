@@ -199,12 +199,12 @@
 						class="role-chips">
 						@for (roleName of availableRoles; track roleName) {
 								<mat-chip-option
-									[selected]="selectedRoles().includes(roleName)"
-									(click)="toggleRole(roleName)">
-									<mat-icon
-										aria-hidden="true"
-										matChipAvatar>
-										{{ selectedRoles().includes(roleName) ? "check_circle" : "radio_button_unchecked" }}
+								[selected]="selectedRolesSet().has(roleName)"
+								(click)="toggleRole(roleName)">
+								<mat-icon
+									aria-hidden="true"
+									matChipAvatar>
+									{{ selectedRolesSet().has(roleName) ? "check_circle" : "radio_button_unchecked" }}
 									</mat-icon>
 									{{ roleName }}
 								</mat-chip-option>

@@ -3,7 +3,6 @@ using Microsoft.Extensions.DependencyInjection;
 using SeventySix.Shared.Interfaces;
 using SeventySix.Shared.Registration;
 using Shouldly;
-using Xunit;
 
 namespace SeventySix.Shared.Tests.Persistence;
 

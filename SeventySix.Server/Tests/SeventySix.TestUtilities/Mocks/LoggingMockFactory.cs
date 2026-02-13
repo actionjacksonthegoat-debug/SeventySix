@@ -4,7 +4,6 @@
 
 using NSubstitute;
 using SeventySix.Logging;
-using SeventySix.Shared.POCOs;
 
 namespace SeventySix.TestUtilities.Mocks;
 

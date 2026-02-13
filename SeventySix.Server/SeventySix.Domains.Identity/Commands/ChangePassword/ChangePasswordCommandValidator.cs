@@ -4,7 +4,6 @@
 
 using FluentValidation;
 using SeventySix.Identity.Extensions;
-using SeventySix.Identity.Settings;
 
 namespace SeventySix.Identity.Commands.ChangePassword;
 

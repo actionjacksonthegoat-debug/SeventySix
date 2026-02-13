@@ -1,4 +1,4 @@
-export * from "../components/data-table/utilities/data-table.utilities";
+export * from "../components/data-table/utilities/data-table.utility";
 export * from "./clipboard.utility";
 export * from "./http-error.utility";
 export * from "./http-params.utility";

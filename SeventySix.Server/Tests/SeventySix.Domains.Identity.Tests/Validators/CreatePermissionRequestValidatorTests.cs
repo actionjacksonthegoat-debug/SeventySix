@@ -3,11 +3,9 @@
 // </copyright>
 
 using FluentValidation.Results;
-using SeventySix.Identity;
 using SeventySix.Identity.Commands.CreatePermissionRequest;
 using SeventySix.Identity.Constants;
 using Shouldly;
-using Xunit;
 
 namespace SeventySix.Identity.Tests.Validators;
 
@@ -31,8 +29,8 @@ public class CreatePermissionRequestValidatorTests
 
 		// Assert
 		result.IsValid.ShouldBeFalse();
-		result.Errors.ShouldContain(e =>
-			e.ErrorMessage.Contains("Invalid role"));
+		result.Errors.ShouldContain(error =>
+			error.ErrorMessage.Contains("Invalid role"));
 	}
 
 	[Fact]

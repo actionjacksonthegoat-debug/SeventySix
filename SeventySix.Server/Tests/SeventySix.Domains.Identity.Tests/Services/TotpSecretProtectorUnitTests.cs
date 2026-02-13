@@ -3,7 +3,6 @@
 // </copyright>
 
 using Microsoft.AspNetCore.DataProtection;
-using SeventySix.Identity;
 using Shouldly;
 
 namespace SeventySix.Identity.Tests.Services;

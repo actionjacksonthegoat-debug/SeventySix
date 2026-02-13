@@ -6,6 +6,7 @@ import {
 	unauthenticatedTest as test,
 	expect,
 	FORCE_PASSWORD_CHANGE_USER,
+	FORCE_PASSWORD_CHANGE_LIFECYCLE_USER,
 	SELECTORS,
 	ROUTES,
 	PAGE_TEXT,
@@ -26,27 +27,28 @@ import {
  * - Complete password change lifecycle with cleanup
  * - Server 403 enforcement for protected API endpoints
  *
- * Uses `e2e_force_pw` user seeded with RequiresPasswordChange = true.
+ * Uses `e2e_force_pw` user (read-only tests) and `e2e_force_pw_lifecycle` user
+ * (password change lifecycle test) to prevent state interference.
  */
 test.describe("Forced Password Change",
 	() =>
 	{
-		// Serial mode: the lifecycle test clears the RequiresPasswordChange flag
-		// which would break parallel tests that depend on the flag being set.
-		test.describe.configure({ mode: "serial" });
-
 		/**
-		 * Logs in with the forced password change user and waits for redirect
+		 * Logs in with a forced password change user and waits for redirect
 		 * to the change-password page.
 		 *
 		 * @param page
 		 * The Playwright page instance.
+		 * @param user
+		 * The test user to log in with. Defaults to `FORCE_PASSWORD_CHANGE_USER`.
 		 */
-		async function loginAsForcedUser(page: import("@playwright/test").Page): Promise<void>
+		async function loginAsForcedUser(
+			page: import("@playwright/test").Page,
+			user = FORCE_PASSWORD_CHANGE_USER): Promise<void>
 		{
 			await loginAsUser(
 				page,
-				FORCE_PASSWORD_CHANGE_USER,
+				user,
 				{
 					expectedUrl: /change-password/,
 					timeout: TIMEOUTS.navigation
@@ -184,11 +186,16 @@ test.describe("Forced Password Change",
 				expect(apiStatus).toBe(403);
 			});
 
+		// Uses a dedicated lifecycle user so password changes
+		// cannot interfere with the read-only tests above.
 		test("should complete forced password change and login with new password",
 			async ({ unauthenticatedPage }) =>
 			{
+				// Triple timeout: 3 logins + 2 password changes on cold CI
+				test.slow();
+
 				const originalPassword: string =
-					FORCE_PASSWORD_CHANGE_USER.password;
+					FORCE_PASSWORD_CHANGE_LIFECYCLE_USER.password;
 				const newPassword: string =
 					"E2E_ForcePw_Changed_456!";
 
@@ -196,7 +203,9 @@ test.describe("Forced Password Change",
 					new ChangePasswordPageHelper(unauthenticatedPage);
 
 				// Step 1: Login — redirected to change-password
-				await loginAsForcedUser(unauthenticatedPage);
+				await loginAsForcedUser(
+					unauthenticatedPage,
+					FORCE_PASSWORD_CHANGE_LIFECYCLE_USER);
 
 				// Step 2: Fill and submit the change password form
 				await changePasswordPage.fillAndSubmit(
@@ -212,7 +221,7 @@ test.describe("Forced Password Change",
 				// Step 4: Login with new password — no forced change redirect
 				await loginAsUser(
 					unauthenticatedPage,
-					{ ...FORCE_PASSWORD_CHANGE_USER, password: newPassword });
+					{ ...FORCE_PASSWORD_CHANGE_LIFECYCLE_USER, password: newPassword });
 
 				// Step 5: Cleanup — change password back to original
 				await unauthenticatedPage.goto(ROUTES.auth.changePassword);

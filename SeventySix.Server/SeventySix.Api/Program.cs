@@ -31,7 +31,6 @@ using SeventySix.Api.Middleware;
 using SeventySix.Api.Registration;
 using SeventySix.Identity.Registration;
 using SeventySix.Registration;
-using SeventySix.Shared.Constants;
 using SeventySix.Shared.Registration;
 using Wolverine;
 using Wolverine.FluentValidation;

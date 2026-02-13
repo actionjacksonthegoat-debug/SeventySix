@@ -29,7 +29,7 @@ import {
 	FULL_NAME_VALIDATION,
 	USERNAME_VALIDATION
 } from "@shared/constants/validation.constants";
-import { STEPPER_MATERIAL_MODULES } from "@shared/material-bundles";
+import { STEPPER_MATERIAL_MODULES } from "@shared/material-bundles.constants";
 import { LoggerService, NotificationService } from "@shared/services";
 import { getValidationError } from "@shared/utilities";
 import { isNullOrUndefined } from "@shared/utilities/null-check.utility";
@@ -142,6 +142,15 @@ export class UserCreatePage
 	 */
 	readonly selectedRoles: Signal<string[]> =
 		this.selectedRolesSignal.asReadonly();
+
+	/**
+	 * Set-based view of selected roles for efficient template lookups.
+	 * @type {Signal<Set<string>>}
+	 */
+	readonly selectedRolesSet: Signal<Set<string>> =
+		computed(
+			(): Set<string> =>
+				new Set(this.selectedRoles()));
 
 	/**
 	 * Mutation for adding a role to a user.

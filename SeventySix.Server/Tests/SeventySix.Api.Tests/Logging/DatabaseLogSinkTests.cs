@@ -10,7 +10,6 @@ using SeventySix.Api.Logging;
 using SeventySix.Api.Tests.Fixtures;
 using SeventySix.Logging;
 using SeventySix.TestUtilities.Constants;
-using SeventySix.TestUtilities.TestBases;
 using Shouldly;
 
 namespace SeventySix.Api.Tests.Logging;

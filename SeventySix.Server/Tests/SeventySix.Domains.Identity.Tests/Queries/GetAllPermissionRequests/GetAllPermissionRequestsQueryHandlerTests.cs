@@ -5,7 +5,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
-using SeventySix.Identity;
 using SeventySix.Identity.Queries.GetAllPermissionRequests;
 using SeventySix.Shared.Constants;
 using SeventySix.TestUtilities.Builders;

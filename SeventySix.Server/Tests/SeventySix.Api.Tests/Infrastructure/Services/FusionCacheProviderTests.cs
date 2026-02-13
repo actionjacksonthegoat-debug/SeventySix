@@ -4,8 +4,6 @@
 
 using NSubstitute;
 using SeventySix.Api.Infrastructure.Services;
-using SeventySix.Shared.Interfaces;
-using Shouldly;
 using ZiggyCreatures.Caching.Fusion;
 
 namespace SeventySix.Api.Tests.Infrastructure.Services;

@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
-using SeventySix.Identity;
 using SeventySix.Identity.Commands.CreatePermissionRequest;
 using SeventySix.Identity.Constants;
 using SeventySix.TestUtilities.Builders;

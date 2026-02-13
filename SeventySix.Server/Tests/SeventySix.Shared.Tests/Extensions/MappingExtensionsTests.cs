@@ -25,10 +25,10 @@ public class MappingExtensionsTests
 
 		// Act
 		IEnumerable<TestDto> result =
-			entities.MapToDto(e => new TestDto
+			entities.MapToDto(entity => new TestDto
 			{
-				Id = e.Id,
-				DisplayName = e.Name.ToUpper(),
+				Id = entity.Id,
+				DisplayName = entity.Name.ToUpper(),
 			});
 
 		// Assert
@@ -48,10 +48,10 @@ public class MappingExtensionsTests
 
 		// Act
 		IEnumerable<TestDto> result =
-			entities.MapToDto(e => new TestDto
+			entities.MapToDto(entity => new TestDto
 			{
-				Id = e.Id,
-				DisplayName = e.Name,
+				Id = entity.Id,
+				DisplayName = entity.Name,
 			});
 
 		// Assert
@@ -99,11 +99,11 @@ public class MappingExtensionsTests
 		// Act - just calling MapToDto shouldn't execute mapper
 		IEnumerable<TestDto> result =
 			entities.MapToDto(
-	e =>
-		{
-			mapperCallCount++;
-			return new TestDto { Id = e.Id, DisplayName = e.Name };
-		});
+				entity =>
+					{
+						mapperCallCount++;
+						return new TestDto { Id = entity.Id, DisplayName = entity.Name };
+					});
 
 		// Assert - no calls yet (deferred execution)
 		mapperCallCount.ShouldBe(0);

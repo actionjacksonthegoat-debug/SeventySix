@@ -1,13 +1,10 @@
-using System.Linq;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NSubstitute;
-using SeventySix.Identity;
 using SeventySix.Identity.Constants;
 using SeventySix.Identity.Settings;
-using Shouldly;
 
 namespace SeventySix.Identity.Tests.Services;
 

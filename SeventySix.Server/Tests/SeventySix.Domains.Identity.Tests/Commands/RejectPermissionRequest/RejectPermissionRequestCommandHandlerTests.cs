@@ -3,7 +3,6 @@
 // </copyright>
 
 using NSubstitute;
-using SeventySix.Identity;
 using SeventySix.Identity.Commands.RejectPermissionRequest;
 using SeventySix.Shared.POCOs;
 using Shouldly;

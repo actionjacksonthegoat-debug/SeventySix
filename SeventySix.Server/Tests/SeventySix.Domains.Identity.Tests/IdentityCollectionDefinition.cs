@@ -1,8 +1,6 @@
 using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;
 
-using Xunit;
-
 namespace SeventySix.Identity.Tests;
 
 /// <summary>

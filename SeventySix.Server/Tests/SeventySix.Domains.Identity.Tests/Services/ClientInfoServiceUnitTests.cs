@@ -5,7 +5,6 @@
 using System.Net;
 using Microsoft.AspNetCore.Http;
 using NSubstitute;
-using SeventySix.Identity;
 using Shouldly;
 
 namespace SeventySix.Identity.Tests.Services;

@@ -32,4 +32,4 @@ export type PagedResultOfLogDto =
 
 // Re-export client-side utilities and models
 export * from "./log-filter.model";
-export * from "./log.utilities";
+export * from "./log.utility";

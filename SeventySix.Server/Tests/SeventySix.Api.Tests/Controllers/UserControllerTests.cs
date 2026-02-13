@@ -550,8 +550,10 @@ public class UsersControllerTests
 		// Arrange
 		MessageBus
 			.InvokeAsync<bool>(
-				Arg.Is<CheckUsernameExistsQuery>(q =>
-					q.Username == "existinguser" && q.ExcludeUserId == null),
+				Arg.Is<CheckUsernameExistsQuery>(
+					query =>
+						query.Username == "existinguser"
+							&& query.ExcludeUserId == null),
 				Arg.Any<CancellationToken>())
 			.Returns(true);
 
@@ -577,8 +579,10 @@ public class UsersControllerTests
 		// Arrange
 		MessageBus
 			.InvokeAsync<bool>(
-				Arg.Is<CheckUsernameExistsQuery>(q =>
-					q.Username == "newuser" && q.ExcludeUserId == null),
+				Arg.Is<CheckUsernameExistsQuery>(
+					query =>
+						query.Username == "newuser"
+							&& query.ExcludeUserId == null),
 				Arg.Any<CancellationToken>())
 			.Returns(false);
 

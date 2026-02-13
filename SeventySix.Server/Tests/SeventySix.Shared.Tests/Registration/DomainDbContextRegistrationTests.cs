@@ -1,11 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
-using SeventySix.Shared.Registration;
 using SeventySix.Shared.Interfaces;
 using SeventySix.Shared.Persistence;
+using SeventySix.Shared.Registration;
 using Shouldly;
-using Xunit;
 
 namespace SeventySix.Shared.Tests.Registration;
 

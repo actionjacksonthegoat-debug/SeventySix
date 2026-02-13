@@ -47,7 +47,8 @@ describe("UnauthorizedPage",
 			() =>
 			{
 				const loginButton: HTMLElement | null =
-					fixture.nativeElement.querySelector("a[href='/auth/login'], button[routerLink='/auth/login']");
+					fixture.nativeElement.querySelector(
+						"a[href='/auth/login'], button[routerLink='/auth/login']");
 				expect(loginButton)
 					.toBeTruthy();
 			});

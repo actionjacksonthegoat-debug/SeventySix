@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
-using SeventySix.Identity;
 using SeventySix.Shared.Contracts.Emails;
 using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.Mocks;

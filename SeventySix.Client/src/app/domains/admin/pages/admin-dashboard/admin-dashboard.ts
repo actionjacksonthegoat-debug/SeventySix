@@ -6,7 +6,7 @@ import { MatTabsModule } from "@angular/material/tabs";
 import { MatToolbarModule } from "@angular/material/toolbar";
 import { environment } from "@environments/environment";
 import { PageHeaderComponent } from "@shared/components";
-import { CARD_MATERIAL_MODULES } from "@shared/material-bundles";
+import { CARD_MATERIAL_MODULES } from "@shared/material-bundles.constants";
 import { LoggerService } from "@shared/services/logger.service";
 import { NotificationService } from "@shared/services/notification.service";
 import { isPresent } from "@shared/utilities/null-check.utility";

@@ -6,7 +6,6 @@ using MemoryPack;
 using Microsoft.Extensions.Time.Testing;
 using SeventySix.Identity;
 using Shouldly;
-using Xunit;
 
 namespace SeventySix.Shared.Tests.Registration;
 

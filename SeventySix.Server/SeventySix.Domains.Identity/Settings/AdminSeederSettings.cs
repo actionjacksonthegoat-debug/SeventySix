@@ -26,37 +26,37 @@ public record AdminSeederSettings
 	public const string SectionName = "AdminSeeder";
 
 	/// <summary>
-	/// Gets or sets whether admin seeding is enabled.
+	/// Gets whether admin seeding is enabled.
 	/// </summary>
-	public bool Enabled { get; set; }
+	public bool Enabled { get; init; }
 
 	/// <summary>
-	/// Gets or sets the admin username.
+	/// Gets the admin username.
 	/// Must be configured in appsettings.json.
 	/// </summary>
-	public string Username { get; set; } =
+	public string Username { get; init; } =
 		string.Empty;
 
 	/// <summary>
-	/// Gets or sets the admin email.
+	/// Gets the admin email.
 	/// Must be configured in appsettings.json.
 	/// </summary>
-	public string Email { get; set; } =
+	public string Email { get; init; } =
 		string.Empty;
 
 	/// <summary>
-	/// Gets or sets the admin full name.
+	/// Gets the admin full name.
 	/// Must be configured in appsettings.json when Enabled=true.
 	/// </summary>
-	public string FullName { get; set; } =
+	public string FullName { get; init; } =
 		string.Empty;
 
 	/// <summary>
-	/// Gets or sets the initial password. Required when Enabled is true.
+	/// Gets the initial password. Required when Enabled is true.
 	/// </summary>
 	/// <remarks>
 	/// Security: Must be provided via environment variable or secrets in production.
 	/// Set via ADMIN_PASSWORD or AdminSeeder__InitialPassword environment variable.
 	/// </remarks>
-	public string? InitialPassword { get; set; }
+	public string? InitialPassword { get; init; }
 }

@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SeventySix.Identity.Constants;
-using SeventySix.Shared;
+using SeventySix.Shared.Constants;
 using SeventySix.Shared.Extensions;
 using SeventySix.Shared.POCOs;
 using SeventySix.Shared.Utilities;
@@ -51,8 +51,10 @@ public static class CompleteRegistrationCommandHandler
 	/// An <see cref="AuthResult"/> containing access and refresh tokens on success.
 	/// </returns>
 	/// <remarks>
-	/// Wolverine's UseEntityFrameworkCoreTransactions middleware automatically wraps this handler in a transaction.
-	/// Database unique constraints on Username and Email provide atomicity - no manual duplicate checks needed.
+	/// Wolverine's UseEntityFrameworkCoreTransactions middleware automatically
+	/// wraps this handler in a transaction.
+	/// Database unique constraints on Username and Email provide atomicity
+	/// - no manual duplicate checks needed.
 	/// </remarks>
 	public static async Task<AuthResult> HandleAsync(
 		CompleteRegistrationCommand command,
@@ -75,55 +77,16 @@ public static class CompleteRegistrationCommandHandler
 			return breachError;
 		}
 
-		// Decode combined token (contains email + verification token)
-		CombinedRegistrationToken? decodedToken =
-			RegistrationTokenService.Decode(command.Request.Token);
+		// Validate registration token and confirm user email
+		(ApplicationUser? existingUser, string? decodedEmail, AuthResult? tokenError) =
+			await ValidateTokenAsync(
+				command.Request.Token,
+				userManager,
+				logger);
 
-		if (decodedToken is null)
+		if (tokenError is not null)
 		{
-			logger.LogWarning(
-				"Invalid combined registration token format");
-
-			return AuthResult.Failed(
-				"Invalid or expired verification link.",
-				AuthErrorCodes.InvalidToken);
-		}
-
-		string decodedEmail =
-			decodedToken.Email;
-
-		// Find the user by the decoded email (temporary user created during InitiateRegistration)
-		ApplicationUser? existingUser =
-			await userManager.FindByEmailAsync(
-				decodedEmail);
-
-		if (existingUser is null)
-		{
-			logger.LogWarning(
-				"Attempted to complete registration for non-existent email: {Email}",
-				decodedEmail);
-
-			return AuthResult.Failed(
-				"Invalid or expired verification link.",
-				AuthErrorCodes.InvalidToken);
-		}
-
-		// Verify the email confirmation token using Identity's token provider
-		IdentityResult confirmResult =
-			await userManager.ConfirmEmailAsync(
-				existingUser,
-				decodedToken.Token);
-		if (!confirmResult.Succeeded)
-		{
-			string errors = confirmResult.ToErrorString();
-			logger.LogWarning(
-				"Email confirmation failed for {Email}: {Errors}",
-				decodedEmail,
-				errors);
-
-			return AuthResult.Failed(
-				"Invalid or expired verification link.",
-				AuthErrorCodes.InvalidToken);
+			return tokenError;
 		}
 
 		try
@@ -131,7 +94,7 @@ public static class CompleteRegistrationCommandHandler
 			ApplicationUser completedUser =
 				await CompleteUserRegistrationAsync(
 					command,
-					existingUser,
+					existingUser!,
 					userManager,
 					timeProvider);
 
@@ -145,8 +108,13 @@ public static class CompleteRegistrationCommandHandler
 		catch (InvalidOperationException exception)
 		{
 			// Identity update failed due to validation (e.g., username already taken)
+			logger.LogWarning(
+				exception,
+				"Registration failed: {Error}",
+				exception.Message);
+
 			return AuthResult.Failed(
-				exception.Message,
+				ProblemDetailConstants.Details.RegistrationFailed,
 				"REGISTRATION_FAILED");
 		}
 		catch (DbUpdateException exception)
@@ -155,9 +123,102 @@ public static class CompleteRegistrationCommandHandler
 			return DuplicateKeyViolationHandler.HandleAsAuthResult(
 				exception,
 				command.Request.Username,
-				decodedEmail,
+				decodedEmail!,
 				logger);
 		}
+	}
+
+	/// <summary>
+	/// Validates the registration token, finds the user, and confirms their email.
+	/// </summary>
+	/// <param name="token">
+	/// The combined registration token from the verification link.
+	/// </param>
+	/// <param name="userManager">
+	/// Identity <see cref="UserManager{TUser}"/> for user lookup and email confirmation.
+	/// </param>
+	/// <param name="logger">
+	/// Logger instance.
+	/// </param>
+	/// <returns>
+	/// A tuple of (User, DecodedEmail, Error). On success, Error is null.
+	/// On failure, User and DecodedEmail are null and Error contains the result.
+	/// </returns>
+	private static async Task<
+		(
+			ApplicationUser? User,
+			string? DecodedEmail,
+			AuthResult? Error
+		)> ValidateTokenAsync(
+			string token,
+			UserManager<ApplicationUser> userManager,
+			ILogger logger)
+	{
+		CombinedRegistrationToken? decodedToken =
+			RegistrationTokenService.Decode(token);
+
+		if (decodedToken is null)
+		{
+			logger.LogWarning(
+				"Invalid combined registration token format");
+
+			return
+			(
+				null,
+				null,
+				AuthResult.Failed(
+					"Invalid or expired verification link.",
+					AuthErrorCodes.InvalidToken)
+			);
+		}
+
+		string decodedEmail =
+			decodedToken.Email;
+
+		ApplicationUser? existingUser =
+			await userManager.FindByEmailAsync(
+				decodedEmail);
+
+		if (existingUser is null)
+		{
+			logger.LogWarning(
+				"Attempted to complete registration for non-existent email: {Email}",
+				decodedEmail);
+
+			return
+			(
+				null,
+				null,
+				AuthResult.Failed(
+					"Invalid or expired verification link.",
+					AuthErrorCodes.InvalidToken)
+			);
+		}
+
+		IdentityResult confirmResult =
+			await userManager.ConfirmEmailAsync(
+				existingUser,
+				decodedToken.Token);
+
+		if (!confirmResult.Succeeded)
+		{
+			string errors = confirmResult.ToErrorString();
+			logger.LogWarning(
+				"Email confirmation failed for {Email}: {Errors}",
+				decodedEmail,
+				errors);
+
+			return
+			(
+				null,
+				null,
+				AuthResult.Failed(
+					"Invalid or expired verification link.",
+					AuthErrorCodes.InvalidToken)
+			);
+		}
+
+		return (existingUser, decodedEmail, null);
 	}
 
 	/// <summary>

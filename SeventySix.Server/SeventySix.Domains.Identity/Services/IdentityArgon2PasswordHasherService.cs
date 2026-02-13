@@ -2,7 +2,6 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using System;
 using Microsoft.AspNetCore.Identity;
 
 namespace SeventySix.Identity;

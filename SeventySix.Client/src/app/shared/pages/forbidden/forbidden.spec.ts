@@ -47,7 +47,8 @@ describe("ForbiddenPage",
 			() =>
 			{
 				const homeButton: HTMLElement | null =
-					fixture.nativeElement.querySelector("a[href='/'], button[routerLink='/']");
+					fixture.nativeElement.querySelector(
+						"a[href='/'], button[routerLink='/']");
 				expect(homeButton)
 					.toBeTruthy();
 			});

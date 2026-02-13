@@ -4,7 +4,6 @@
 
 using FluentValidation;
 using SeventySix.Api.Configuration;
-using SeventySix.Shared.Constants;
 using SeventySix.Shared.Registration;
 using SeventySix.Shared.Settings;
 

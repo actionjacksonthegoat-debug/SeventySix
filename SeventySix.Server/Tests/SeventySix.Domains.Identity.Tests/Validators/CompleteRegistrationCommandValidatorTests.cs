@@ -3,9 +3,7 @@
 // </copyright>
 
 using FluentValidation.Results;
-using SeventySix.Identity;
 using SeventySix.Identity.Commands.CompleteRegistration;
-using SeventySix.Identity.Settings;
 using Shouldly;
 
 namespace SeventySix.Identity.Tests.Validators;

@@ -3,7 +3,6 @@
 // </copyright>
 
 using Microsoft.EntityFrameworkCore;
-using SeventySix.ElectronicNotifications;
 
 namespace SeventySix.ElectronicNotifications.Emails;
 
@@ -44,6 +43,7 @@ public static class GetPendingEmailsQueryHandler
 
 		return await dbContext
 			.EmailQueue
+			.AsNoTracking()
 			.Where(entry =>
 				entry.Status == EmailQueueStatus.Pending
 				|| (entry.Status == EmailQueueStatus.Failed

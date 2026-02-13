@@ -5,7 +5,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using NSubstitute;
-using SeventySix.Identity;
 using SeventySix.Identity.Constants;
 using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.Constants;

@@ -10,7 +10,6 @@ using SeventySix.Api.Extensions;
 using SeventySix.ElectronicNotifications.Emails;
 using SeventySix.Identity;
 using SeventySix.Identity.Constants;
-using SeventySix.Shared.Constants;
 using SeventySix.Shared.POCOs;
 using Wolverine;
 

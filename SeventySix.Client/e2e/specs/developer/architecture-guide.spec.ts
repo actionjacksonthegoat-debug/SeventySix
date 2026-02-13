@@ -54,7 +54,7 @@ test.describe("Architecture Guide Page",
 							developerPage.locator("mat-card-title");
 
 						await expect(cardTitle)
-							.toContainText("Project Architecture");
+							.toContainText(PAGE_TEXT.developer.architectureGuide.cardTitle);
 					});
 
 				test("should display architecture description",

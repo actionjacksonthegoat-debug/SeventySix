@@ -16,8 +16,8 @@ import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatTableDataSource, MatTableModule } from "@angular/material/table";
 import { SKELETON_TABLE_CELL, SkeletonTheme } from "@shared/constants";
 import { DateService } from "@shared/services/date.service";
-import { NgxSkeletonLoaderModule } from "ngx-skeleton-loader";
 import { isNullOrUndefined } from "@shared/utilities/null-check.utility";
+import { NgxSkeletonLoaderModule } from "ngx-skeleton-loader";
 
 /**
  * Extended interface with computed display properties
