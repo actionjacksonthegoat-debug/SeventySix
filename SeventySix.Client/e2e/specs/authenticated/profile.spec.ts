@@ -7,6 +7,7 @@ import {
 	PAGE_TEXT,
 	TIMEOUTS,
 	E2E_CONFIG,
+	API_ROUTES,
 	createRouteRegex
 } from "../../fixtures";
 
@@ -171,7 +172,7 @@ test.describe("Profile Page",
 									[
 										userPage.waitForResponse(
 											(response) =>
-												response.url().includes("/users/me")
+											response.url().includes(API_ROUTES.users.me)
 												&& response.request().method() === "PUT"
 												&& response.status() === 200),
 										saveButton.click()
@@ -188,7 +189,7 @@ test.describe("Profile Page",
 						{
 							// Restore via direct API call
 							await userPage.request.put(
-								`${E2E_CONFIG.apiBaseUrl}/api/v1/users/me`,
+								`${E2E_CONFIG.apiBaseUrl}${API_ROUTES.users.me}`,
 								{
 									data: {
 										email: originalEmail,
@@ -227,7 +228,7 @@ test.describe("Profile Page",
 									[
 										userPage.waitForResponse(
 											(response) =>
-												response.url().includes("/users/me")
+											response.url().includes(API_ROUTES.users.me)
 												&& response.request().method() === "PUT"
 												&& response.status() === 200),
 										saveButton.click()
@@ -240,7 +241,7 @@ test.describe("Profile Page",
 						{
 							// Restore via direct API call
 							await userPage.request.put(
-								`${E2E_CONFIG.apiBaseUrl}/api/v1/users/me`,
+								`${E2E_CONFIG.apiBaseUrl}${API_ROUTES.users.me}`,
 								{
 									data: {
 										email: originalEmail,
@@ -269,7 +270,7 @@ test.describe("Profile Page",
 							.toBeDisabled();
 
 						const errorMessage =
-							userPage.locator("mat-error");
+							userPage.locator(SELECTORS.form.matError);
 						await expect(errorMessage)
 							.toBeVisible({ timeout: TIMEOUTS.element });
 					});

@@ -22,6 +22,10 @@ public static class GetUserByIdQueryHandler
 	/// <summary>
 	/// Retrieves a user by its identifier with cache-aside pattern.
 	/// </summary>
+	/// <remarks>
+	/// Uses TryGetAsync + SetAsync instead of GetOrSetAsync to avoid capturing
+	/// scoped services (UserManager) in a cache factory lambda.
+	/// </remarks>
 	/// <param name="query">
 	/// The query containing the user ID.
 	/// </param>
@@ -49,16 +53,31 @@ public static class GetUserByIdQueryHandler
 		string cacheKey =
 			IdentityCacheKeys.UserById(query.Id);
 
-		return await cache.GetOrSetAsync(
-			cacheKey,
-			async token =>
-			{
-				ApplicationUser? user =
-					await userManager.FindByIdAsync(
-						query.Id.ToString());
+		// Try cache first — TryGetAsync returns MaybeValue<T> (not nullable)
+		MaybeValue<UserDto?> cached =
+			await cache.TryGetAsync<UserDto?>(
+				cacheKey,
+				token: cancellationToken);
 
-				return user?.ToDto();
-			},
+		if (cached.HasValue)
+		{
+			return cached.Value;
+		}
+
+		// Cache miss — fetch with current scoped UserManager (still alive)
+		ApplicationUser? user =
+			await userManager.FindByIdAsync(
+				query.Id.ToString());
+
+		UserDto? result =
+			user?.ToDto();
+
+		// Store in cache (including null — prevents cache stampede for missing users)
+		await cache.SetAsync(
+			cacheKey,
+			result,
 			token: cancellationToken);
+
+		return result;
 	}
 }

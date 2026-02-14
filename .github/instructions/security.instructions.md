@@ -1,6 +1,6 @@
 ---
 description: Secure exception handling, ProblemDetails, and auth error patterns
-applyTo: "**/*.{ts,cs}"
+applyTo: "**/SeventySix.Client/src/**/*.{ts,cs},**/SeventySix.Server/**/*.{ts,cs}"
 ---
 
 # Security Patterns
@@ -10,7 +10,7 @@ applyTo: "**/*.{ts,cs}"
 > **RULE**: API responses MUST NEVER expose raw `exception.Message` in `ProblemDetails.Detail`.
 > Raw exception text (parameter names, stack traces, SQL, connection strings) is **Internal Only** — logged server-side, never returned to clients.
 
-| ❌ NEVER (in ProblemDetails.Detail)     | ✅ ALWAYS                                                 |
+| [NEVER] (in ProblemDetails.Detail)      | [ALWAYS]                                                  |
 | --------------------------------------- | --------------------------------------------------------- |
 | `Detail = exception.Message`            | `Detail = ProblemDetailConstants.Details.BadRequest`      |
 | `Detail = argumentException.Message`    | `Detail = ProblemDetailConstants.Details.*` constant      |
@@ -39,7 +39,7 @@ return BadRequest(
 	});
 ```
 
-| ❌ NEVER                        | ✅ ALWAYS                                           |
+| [NEVER]                         | [ALWAYS]                                            |
 | ------------------------------- | --------------------------------------------------- |
 | `throw new Exception("...")`    | Use built-in .NET exceptions or `Result<T>` pattern |
 | Catch-all swallowing exceptions | Re-throw or log with `ILogger`                      |
@@ -52,7 +52,7 @@ return BadRequest(
 - Auth errors use `mapAuthError()` with explicit switch cases — default returns generic message, never passes through `error.error?.detail`
 
 ```typescript
-// ✅ Auth error mapping — explicit switch, never pass-through
+// [CORRECT] Auth error mapping — explicit switch, never pass-through
 function mapAuthError(errorCode: string): string {
 	switch (errorCode) {
 		case "INVALID_TOKEN":
@@ -64,4 +64,8 @@ function mapAuthError(errorCode: string): string {
 	}
 }
 ```
+
+## Chrome DevTools Security Verification (REQUIRED)
+
+After auth/security changes, verify via Chrome DevTools MCP `list_network_requests` to check headers, cookies, CORS — see `copilot-instructions.md` Chrome DevTools section.
 

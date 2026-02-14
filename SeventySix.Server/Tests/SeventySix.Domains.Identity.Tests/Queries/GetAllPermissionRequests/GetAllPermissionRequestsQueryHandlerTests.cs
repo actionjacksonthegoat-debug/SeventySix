@@ -2,7 +2,6 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using SeventySix.Identity.Queries.GetAllPermissionRequests;
@@ -26,7 +25,6 @@ public class GetAllPermissionRequestsQueryHandlerTests
 		new(TestTimeProviderBuilder.DefaultTime);
 
 	private readonly IPermissionRequestRepository Repository;
-	private readonly IServiceScopeFactory ScopeFactory;
 	private readonly IFusionCacheProvider CacheProvider;
 	private readonly IFusionCache IdentityCache;
 
@@ -37,20 +35,6 @@ public class GetAllPermissionRequestsQueryHandlerTests
 	{
 		Repository =
 			Substitute.For<IPermissionRequestRepository>();
-
-		// Create mock service scope factory that returns the mock repository
-		IServiceScope scope =
-			Substitute.For<IServiceScope>();
-		IServiceProvider serviceProvider =
-			Substitute.For<IServiceProvider>();
-		serviceProvider
-			.GetService(typeof(IPermissionRequestRepository))
-			.Returns(Repository);
-		scope.ServiceProvider.Returns(serviceProvider);
-
-		ScopeFactory =
-			Substitute.For<IServiceScopeFactory>();
-		ScopeFactory.CreateScope().Returns(scope);
 
 		CacheProvider =
 			Substitute.For<IFusionCacheProvider>();
@@ -79,7 +63,7 @@ public class GetAllPermissionRequestsQueryHandlerTests
 		IEnumerable<PermissionRequestDto> result =
 			await GetAllPermissionRequestsQueryHandler.HandleAsync(
 				query,
-				ScopeFactory,
+				Repository,
 				CacheProvider,
 				CancellationToken.None);
 
@@ -111,7 +95,7 @@ public class GetAllPermissionRequestsQueryHandlerTests
 		IEnumerable<PermissionRequestDto> result =
 			await GetAllPermissionRequestsQueryHandler.HandleAsync(
 				query,
-				ScopeFactory,
+				Repository,
 				CacheProvider,
 				CancellationToken.None);
 
@@ -142,7 +126,7 @@ public class GetAllPermissionRequestsQueryHandlerTests
 		// Act
 		await GetAllPermissionRequestsQueryHandler.HandleAsync(
 			query,
-			ScopeFactory,
+			Repository,
 			CacheProvider,
 			cancellationTokenSource.Token);
 

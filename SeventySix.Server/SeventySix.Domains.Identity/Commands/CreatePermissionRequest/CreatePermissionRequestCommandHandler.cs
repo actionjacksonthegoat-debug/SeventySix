@@ -25,6 +25,9 @@ public static class CreatePermissionRequestCommandHandler
 	/// <param name="userManager">
 	/// Identity <see cref="UserManager{TUser}"/> for role operations.
 	/// </param>
+	/// <param name="identityCache">
+	/// Identity cache service for clearing permission request and role caches.
+	/// </param>
 	/// <param name="whitelistedOptions">
 	/// Options configuring whitelisted emails for auto-approval.
 	/// </param>
@@ -38,6 +41,7 @@ public static class CreatePermissionRequestCommandHandler
 		CreatePermissionRequestCommand command,
 		IPermissionRequestRepository repository,
 		UserManager<ApplicationUser> userManager,
+		IIdentityCacheService identityCache,
 		IOptions<WhitelistedPermissionSettings> whitelistedOptions,
 		CancellationToken cancellationToken)
 	{
@@ -131,5 +135,9 @@ public static class CreatePermissionRequestCommandHandler
 				entity,
 				cancellationToken);
 		}
+
+		// Invalidate caches, requests are updated.
+		await identityCache.InvalidatePermissionRequestsAsync();
+		await identityCache.InvalidateUserRolesAsync(command.UserId);
 	}
 }

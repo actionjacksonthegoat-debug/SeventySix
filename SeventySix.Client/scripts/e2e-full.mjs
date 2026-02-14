@@ -14,6 +14,20 @@ import { fileURLToPath } from "node:url";
 const DOCKER_COMPOSE_FILE =
 	"../docker-compose.e2e.yml";
 
+/**
+ * Collects extra CLI arguments passed after `--` and forwards them to Playwright.
+ * Supports --grep, --project, and spec file paths.
+ *
+ * Usage examples:
+ *   npm run test:e2e -- --grep "Login Page"
+ *   npm run test:e2e -- --grep "should display login heading"
+ *   npm run test:e2e -- specs/public/login.spec.ts
+ *   npm run test:e2e -- --project=admin
+ *   npm run test:e2e -- --grep "RBAC" --project=admin
+ */
+const EXTRA_PLAYWRIGHT_ARGS =
+	process.argv.slice(2).join(" ");
+
 // Certificate path for proper SSL validation (matches dev environment)
 const scriptDirectory =
 	path.dirname(fileURLToPath(import.meta.url));
@@ -143,14 +157,25 @@ function setup()
 
 /**
  * Runs the Playwright E2E tests.
+ * Forwards any extra CLI arguments (--grep, file paths, --project) to Playwright.
  * @returns
  * Exit code (0 for success).
  */
 function runTests()
 {
+	const playwrightCommand =
+		EXTRA_PLAYWRIGHT_ARGS
+			? `npx playwright test ${EXTRA_PLAYWRIGHT_ARGS}`
+			: "npx playwright test";
+
+	const label =
+		EXTRA_PLAYWRIGHT_ARGS
+			? `Playwright E2E Tests (filtered: ${EXTRA_PLAYWRIGHT_ARGS})`
+			: "Playwright E2E Tests";
+
 	return runCommand(
-		"npx playwright test",
-		"Playwright E2E Tests");
+		playwrightCommand,
+		label);
 }
 
 /**
@@ -210,6 +235,11 @@ function dumpDiagnostics(phase)
 function main()
 {
 	console.log("\nStarting E2E Test Suite\n");
+
+	if (EXTRA_PLAYWRIGHT_ARGS)
+	{
+		console.log(`Filter: ${EXTRA_PLAYWRIGHT_ARGS}\n`);
+	}
 
 	let testExitCode =
 		0;

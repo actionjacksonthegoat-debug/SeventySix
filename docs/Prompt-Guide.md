@@ -27,6 +27,23 @@ Prompts are **reusable instruction templates** stored as `.prompt.md` files in `
 
 Think of them as **saved commands** you can invoke by name instead of typing long instructions every time.
 
+### Workflow Overview
+
+```mermaid
+graph LR
+    CP["/create-plan"]
+    RP["/review-plan"]
+    EP["/execute-plan"]
+    CR["/code-review"]
+    FW["/fix-warnings"]
+
+    CP -->|"Creates Implementation.md"| RP
+    RP -->|"Validates plan"| EP
+    EP -->|"Implements changes"| CR
+    CR -->|"Reviews quality"| FW
+    FW -->|"Fixes IDE warnings"| Done["All tests pass"]
+```
+
 **Key facts**:
 
 - Prompts live in `.github/prompts/*.prompt.md` — they are committed to the repo so every team member has access
@@ -108,7 +125,7 @@ Or with extra context:
 **What you'll get back**:
 
 - Code changes for each phase (files created/modified)
-- Test runs after the final phase — all 3 suites must pass:
+- Test runs after the final phase — all required test suites must pass:
     - `dotnet test` → `failed: 0`
     - `npm test` → `X passed`
     - `npm run test:e2e` → `[PASS]`
@@ -144,7 +161,7 @@ Or for a refactor:
 - A complete `Implementation.md` with:
     - **Executive Summary** (problem, goal, constraints)
     - **Numbered phases** with file paths, code patterns, and verification steps
-    - **Final phase** that runs all 3 test suites
+    - **Final phase** that runs all required test suites
     - **Appendices** with file inventories and checklists
 
 **The typical 3-step workflow**:
@@ -183,10 +200,12 @@ These prompts generate code for specific components or domains. They handle file
 
 ## Quality Prompts
 
-| Command         | What It Does                                     | Example Usage   |
-| --------------- | ------------------------------------------------ | --------------- |
-| `/code-review`  | Reviews staged changes against all project rules | `/code-review`  |
-| `/fix-warnings` | Finds and fixes all build/lint warnings          | `/fix-warnings` |
+| Command                  | What It Does                                     | Example Usage              |
+| ------------------------ | ------------------------------------------------ | -------------------------- |
+| `/code-review`           | Reviews staged changes against all project rules | `/code-review`             |
+| `/fix-warnings`          | Finds and fixes all build/lint warnings          | `/fix-warnings`            |
+| `/update-documentation`  | Studies and aligns all READMEs and documentation | `/update-documentation`    |
+| `/review-solution`       | Deep review of entire codebase against all rules | `/review-solution`         |
 
 **`/code-review`** checks for: formatting violations, security issues, accessibility gaps, architecture violations, naming problems, and testing gaps. Output is a list of violations with file, line number, and the rule reference.
 
@@ -244,7 +263,7 @@ This project has a `.vscode/copilot-hooks.json` file with **post-edit hooks** th
 - **Send commits** — you always commit manually
 - **Run database resets** — `db:reset` is forbidden for Copilot
 - **Suppress warnings** — always fixes root causes, never `// @ts-ignore`
-- **Skip tests** — execution prompts MUST run all 3 suites before finishing
+- **Skip tests** — execution prompts MUST run all required test suites before finishing
 - **Break architecture** — prompts encode the dependency rules (`Shared ← Domains ← Api`)
 
 ### Signs a Prompt Worked Correctly
@@ -301,7 +320,7 @@ Each prompt declares which MCP servers it needs. You don't pick them — Copilot
 | `/new-component`                             | context7, figma                       |
 | `/new-server-domain`, `/new-service`         | context7, postgresql                  |
 | `/new-client-domain`, `/new-angular-service` | context7                              |
-| `/new-e2e-test`                              | context7, playwright, chrome-devtools |
+| `/new-e2e-test`                              | context7, chrome-devtools             |
 
 ### "Will hooks run when I edit files manually?"
 

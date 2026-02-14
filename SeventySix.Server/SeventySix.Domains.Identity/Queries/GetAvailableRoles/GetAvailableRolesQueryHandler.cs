@@ -50,20 +50,32 @@ public static class GetAvailableRolesQueryHandler
 		string cacheKey =
 			IdentityCacheKeys.AvailableRoles(query.UserId);
 
-		// Must use List<T> (not IEnumerable<T>) for MemoryPack serialization
-		return await cache.GetOrSetAsync<List<AvailableRoleDto>>(
+		// Try cache first — TryGetAsync returns MaybeValue<T> (not nullable)
+		MaybeValue<List<AvailableRoleDto>> cached =
+			await cache.TryGetAsync<List<AvailableRoleDto>>(
+				cacheKey,
+				token: cancellationToken);
+
+		if (cached.HasValue)
+		{
+			return cached.Value ?? [];
+		}
+
+		// Cache miss — fetch with current scoped DbContext (still alive)
+		List<AvailableRoleDto> roles =
+			(await FetchAvailableRolesAsync(
+				query.UserId,
+				repository,
+				cancellationToken))
+				.ToList();
+
+		// Store in cache
+		await cache.SetAsync(
 			cacheKey,
-			async token =>
-			{
-				IEnumerable<AvailableRoleDto> roles =
-					await FetchAvailableRolesAsync(
-						query.UserId,
-						repository,
-						token);
-				return roles.ToList();
-			},
-			token: cancellationToken)
-			?? [];
+			roles,
+			token: cancellationToken);
+
+		return roles;
 	}
 
 	/// <summary>

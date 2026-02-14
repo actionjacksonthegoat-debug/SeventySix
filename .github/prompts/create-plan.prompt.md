@@ -22,15 +22,19 @@ Write a new `Implementation.md` plan for the following work:
 4. Follow **KISS, DRY, YAGNI** — no speculative features, no duplication
 5. Include a **TDD 80/20** testing strategy — tests on the 20% of code carrying 80% of risk
 6. Architecture: server `Shared ← Domains ← Api` (never reverse), client domains import only `@shared/*` + themselves
-7. **Final phase MUST run all 3 test suites**:
+7. **Final phase MUST run all required test suites — NO SKIPPING, NO EXCEPTIONS, REGARDLESS OF TIME NEEDED**:
     - `dotnet test` → `Test summary: total: X, failed: 0`
     - `npm test` → `X passed (X)`
     - `npm run test:e2e` → `[PASS] All E2E tests passed!`
+    - `npm run loadtest:quick` → All scenarios pass thresholds
+    - E2E and load tests CAN run in parallel to save time
+    - If infrastructure is not running, **start it** — do not skip the suite
 
 ## Output
 
-Write the complete plan to `Implementation.md` (overwrite if existing). Include:
+Split the plan into focused, completable files:
 
-- **Executive Summary** with problem, goal, and key constraints
-- **Numbered phases** with substeps, file paths, and code patterns
-- **Appendices** for file inventories and checklists where helpful
+- **`Implementation.md`** — Orchestrator that lists all `implementation-N.md` files, tracks their status, and contains the final validation gate (all required test suites). Include an Executive Summary with problem, goal, and key constraints. The CRITICAL no-skip rule MUST appear at both the TOP and BOTTOM.
+- **`implementation-1.md`, `implementation-2.md`, etc.** — Each covers one logical unit of work with numbered phases, substeps, file paths, and code patterns. Each file MUST have the CRITICAL no-skip rule at both TOP and BOTTOM.
+- **Appendices** go in the orchestrator for file inventories and checklists
+- **Final validation** (all required test suites + documentation check) lives ONLY in the orchestrator — it runs after ALL implementation files complete

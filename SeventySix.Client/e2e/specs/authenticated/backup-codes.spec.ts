@@ -33,7 +33,7 @@ test.describe("Backup Codes",
 		test("should display warning step heading",
 			async ({ userPage }) =>
 			{
-				await expect(userPage.locator("h1"))
+				await expect(userPage.locator(SELECTORS.layout.pageHeading))
 					.toHaveText(PAGE_TEXT.headings.generateBackupCodes);
 			});
 
@@ -41,7 +41,7 @@ test.describe("Backup Codes",
 			async ({ userPage }) =>
 			{
 				const warningBox =
-					userPage.locator(".warning-box");
+					userPage.locator(SELECTORS.backupCodes.warningBox);
 
 				await expect(warningBox)
 					.toBeVisible();
@@ -74,7 +74,7 @@ test.describe("Backup Codes",
 					.locator(SELECTORS.backupCodes.codesGrid))
 					.toBeVisible({ timeout: TIMEOUTS.api });
 
-				await expect(userPage.locator("h1"))
+				await expect(userPage.locator(SELECTORS.layout.pageHeading))
 					.toHaveText(PAGE_TEXT.headings.saveYourBackupCodes);
 
 				// Verify individual codes are shown

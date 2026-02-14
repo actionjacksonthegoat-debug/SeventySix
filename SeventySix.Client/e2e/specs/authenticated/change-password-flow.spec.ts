@@ -123,7 +123,7 @@ test.describe("Change Password Flow",
 				finally
 				{
 					// Step 4: Cleanup — always restore original password
-					// eslint-disable-next-line playwright/no-conditional-in-test
+					// eslint-disable-next-line playwright/no-conditional-in-test -- conditional cleanup depends on test execution state
 					if (passwordWasChanged)
 					{
 						await unauthenticatedPage.goto(ROUTES.auth.changePassword);
@@ -134,7 +134,7 @@ test.describe("Change Password Flow",
 							originalPassword);
 
 						// Verify cleanup succeeded — redirected to login
-						// eslint-disable-next-line playwright/no-conditional-expect
+						// eslint-disable-next-line playwright/no-conditional-expect -- assertion inside cleanup guard to confirm password was restored
 						await expect(unauthenticatedPage)
 							.toHaveURL(
 								/login/,

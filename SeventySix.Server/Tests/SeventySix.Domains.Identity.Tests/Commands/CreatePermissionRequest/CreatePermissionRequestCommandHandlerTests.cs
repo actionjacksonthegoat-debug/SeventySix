@@ -25,6 +25,7 @@ public class CreatePermissionRequestCommandHandlerTests
 {
 	private readonly IPermissionRequestRepository Repository;
 	private readonly UserManager<ApplicationUser> UserManager;
+	private readonly IIdentityCacheService IdentityCache;
 	private readonly IOptions<WhitelistedPermissionSettings> WhitelistedOptions;
 
 	/// <summary>
@@ -36,6 +37,8 @@ public class CreatePermissionRequestCommandHandlerTests
 			Substitute.For<IPermissionRequestRepository>();
 		UserManager =
 			IdentityMockFactory.CreateUserManager();
+		IdentityCache =
+			Substitute.For<IIdentityCacheService>();
 		WhitelistedOptions =
 			Options.Create(new WhitelistedPermissionSettings());
 	}
@@ -52,6 +55,7 @@ public class CreatePermissionRequestCommandHandlerTests
 				null!,
 				Repository,
 				UserManager,
+				IdentityCache,
 				WhitelistedOptions,
 				CancellationToken.None));
 	}
@@ -75,6 +79,7 @@ public class CreatePermissionRequestCommandHandlerTests
 				command,
 				Repository,
 				UserManager,
+				IdentityCache,
 				WhitelistedOptions,
 				CancellationToken.None));
 	}
@@ -102,6 +107,7 @@ public class CreatePermissionRequestCommandHandlerTests
 				command,
 				Repository,
 				UserManager,
+				IdentityCache,
 				WhitelistedOptions,
 				CancellationToken.None));
 	}
@@ -145,6 +151,7 @@ public class CreatePermissionRequestCommandHandlerTests
 					command,
 					Repository,
 					UserManager,
+					IdentityCache,
 					WhitelistedOptions,
 					CancellationToken.None));
 
@@ -188,6 +195,7 @@ public class CreatePermissionRequestCommandHandlerTests
 			command,
 			Repository,
 			UserManager,
+			IdentityCache,
 			WhitelistedOptions,
 			CancellationToken.None);
 
@@ -246,6 +254,7 @@ public class CreatePermissionRequestCommandHandlerTests
 			command,
 			Repository,
 			UserManager,
+			IdentityCache,
 			WhitelistedOptions,
 			CancellationToken.None);
 

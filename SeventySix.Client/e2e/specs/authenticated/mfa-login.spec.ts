@@ -64,7 +64,7 @@ unauthenticatedTest.describe("MFA Login",
 				{ timeout: TIMEOUTS.navigation });
 
 			// Wait for MFA verify component to fully render
-			await page.locator("h1")
+			await page.locator(SELECTORS.layout.pageHeading)
 				.waitFor({ state: "visible", timeout: TIMEOUTS.element });
 		}
 
@@ -76,7 +76,7 @@ unauthenticatedTest.describe("MFA Login",
 				await expect(unauthenticatedPage)
 					.toHaveURL(new RegExp(ROUTES.auth.mfaVerify.replace(/\//g, "\\/")));
 
-				await expect(unauthenticatedPage.locator("h1"))
+				await expect(unauthenticatedPage.locator(SELECTORS.layout.pageHeading))
 					.toBeVisible();
 			});
 
@@ -131,7 +131,7 @@ unauthenticatedTest.describe("MFA Login",
 					.locator(SELECTORS.mfaVerify.useBackupCodeButton)
 					.click();
 
-				await expect(unauthenticatedPage.locator("h1"))
+				await expect(unauthenticatedPage.locator(SELECTORS.layout.pageHeading))
 					.toHaveText(PAGE_TEXT.headings.useBackupCode);
 
 				// Enter a known backup code

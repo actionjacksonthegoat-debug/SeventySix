@@ -86,7 +86,7 @@ See `security.instructions.md` for ProblemDetails patterns and message classific
 
 ## Cross-Platform
 
-See `cross-platform.instructions.md` for Windows/Linux compatibility rules.
+See `copilot-instructions.md` Cross-Platform Compatibility section for Windows/Linux rules.
 
 ---
 
@@ -190,6 +190,16 @@ ISoftDeletable (+IsDeleted, +DeletedAt, +DeletedBy)  — separate mixin
 
 `AuditInterceptor` in `SeventySix.Shared.Persistence` auto-sets timestamps/user tracking from these interfaces.
 
+## Date/Time Handling (CRITICAL)
+
+| Required | Forbidden |
+| --- | --- |
+| `DateTimeOffset` for all date/time values | `DateTime` anywhere |
+| `TimeProvider` (injected) for current time | `DateTimeOffset.UtcNow`, `DateTime.Now` |
+| `TimeProvider.GetUtcNow()` | Direct clock access |
+
+**Rule**: All entities use `DateTimeOffset`. All "get current time" calls go through `TimeProvider` for testability. Roslyn analyzer `STS002` enforces the `DateTime` ban at compile time.
+
 ## Controller Pattern (Thin CQRS Dispatcher)
 
 Controllers are thin dispatchers — NO business logic. Use `IMessageBus.InvokeAsync` for CQRS. Evict cache on mutations.
@@ -247,7 +257,7 @@ public class LogsController(
 
 **RULE**: Each domain has ONE migrations folder at `{Domain}/Migrations/`. Never place migrations in `Infrastructure/Migrations/`.
 
-| ✅ CORRECT                            | ❌ NEVER                                             |
+| [CORRECT]                             | [NEVER]                                              |
 | ------------------------------------- | ---------------------------------------------------- |
 | `Identity/Migrations/`                | `Identity/Infrastructure/Migrations/`                |
 | `Logging/Migrations/`                 | `Logging/Infrastructure/Migrations/`                 |
@@ -279,6 +289,4 @@ dotnet ef migrations add MigrationName -c ElectronicNotificationsDbContext -o El
 - `Remove{Feature}` — Removing tables or columns
 - `Update{Entity}{Property}` — Modifying existing columns
 
-```
-
-```
+> **Reminder**: Do NOT create documentation files in `/docs/`. Update existing READMEs and instruction files instead. See `copilot-instructions.md` for the full documentation rules.

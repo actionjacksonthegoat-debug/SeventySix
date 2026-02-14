@@ -389,7 +389,7 @@ test.describe("Forgot Password Flow",
 						await page.waitForLoadState("load");
 
 						// Step 4: Set new password
-						await expect(page.locator("h1"))
+						await expect(page.locator(SELECTORS.layout.pageHeading))
 							.toHaveText(
 								PAGE_TEXT.headings.setNewPassword,
 								{ timeout: TIMEOUTS.navigation });
@@ -463,7 +463,7 @@ test.describe("Forgot Password Flow",
 						await page.goto(restoreClientLink);
 						await page.waitForLoadState("load");
 
-						await expect(page.locator("h1"))
+						await expect(page.locator(SELECTORS.layout.pageHeading))
 							.toHaveText(
 								PAGE_TEXT.headings.setNewPassword,
 								{ timeout: TIMEOUTS.navigation });

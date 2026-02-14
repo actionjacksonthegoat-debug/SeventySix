@@ -9,11 +9,11 @@ import {
 	solveAltchaChallenge,
 	TOTP_ENROLL_USER,
 	generateTotpCodeFromSecret,
+	disableTotpViaApi,
 	SELECTORS,
 	ROUTES,
 	PAGE_TEXT,
-	TIMEOUTS,
-	E2E_CONFIG
+	TIMEOUTS
 } from "../../fixtures";
 
 /**
@@ -47,7 +47,7 @@ test.describe("TOTP Setup",
 
 					try
 					{
-						await expect(userPage.locator("h1"))
+						await expect(userPage.locator(SELECTORS.layout.pageHeading))
 							.toHaveText(
 								PAGE_TEXT.headings.setUpAuthenticatorApp,
 								{ timeout: TIMEOUTS.globalSetup });
@@ -82,8 +82,8 @@ test.describe("TOTP Setup",
 			async ({ userPage }) =>
 			{
 				const manualEntryButton =
-					userPage.locator("button.link-button",
-						{ hasText: "Can't scan" });
+					userPage.locator(SELECTORS.totpSetup.cantScanButton,
+						{ hasText: PAGE_TEXT.buttons.cantScan });
 
 				await manualEntryButton.click();
 
@@ -97,11 +97,11 @@ test.describe("TOTP Setup",
 			{
 				const scannedButton =
 					userPage.locator("button",
-						{ hasText: "I've scanned the code" });
+						{ hasText: PAGE_TEXT.buttons.scannedCode });
 
 				await scannedButton.click();
 
-				await expect(userPage.locator("h1"))
+				await expect(userPage.locator(SELECTORS.layout.pageHeading))
 					.toHaveText(
 						PAGE_TEXT.headings.verifySetup,
 						{ timeout: TIMEOUTS.navigation });
@@ -155,15 +155,15 @@ unauthenticatedTest.describe("TOTP Enrollment",
 				await unauthenticatedPage.goto(ROUTES.auth.totpSetup);
 				await unauthenticatedPage.waitForLoadState("load");
 
-				await expect(unauthenticatedPage.locator("h1"))
+				await expect(unauthenticatedPage.locator(SELECTORS.layout.pageHeading))
 					.toHaveText(
 						PAGE_TEXT.headings.setUpAuthenticatorApp,
 						{ timeout: TIMEOUTS.globalSetup });
 
 				// Step 1: Toggle to manual entry to extract the secret
 				const manualEntryButton =
-					unauthenticatedPage.locator("button.link-button",
-						{ hasText: "Can't scan" });
+					unauthenticatedPage.locator(SELECTORS.totpSetup.cantScanButton,
+						{ hasText: PAGE_TEXT.buttons.cantScan });
 
 				await manualEntryButton.click();
 
@@ -182,11 +182,11 @@ unauthenticatedTest.describe("TOTP Enrollment",
 				// Step 2: Proceed to verify step
 				const scannedButton =
 					unauthenticatedPage.locator("button",
-						{ hasText: "I've scanned the code" });
+						{ hasText: PAGE_TEXT.buttons.scannedCode });
 
 				await scannedButton.click();
 
-				await expect(unauthenticatedPage.locator("h1"))
+				await expect(unauthenticatedPage.locator(SELECTORS.layout.pageHeading))
 					.toHaveText(PAGE_TEXT.headings.verifySetup);
 
 				// Step 3: Generate TOTP code from extracted secret and verify
@@ -199,118 +199,20 @@ unauthenticatedTest.describe("TOTP Enrollment",
 
 				await unauthenticatedPage
 					.locator("button",
-						{ hasText: "Verify & Enable" })
+						{ hasText: PAGE_TEXT.buttons.verifyAndEnable })
 					.click();
 
 				// Step 4: Should show success
-				await expect(unauthenticatedPage.locator("h1"))
+				await expect(unauthenticatedPage.locator(SELECTORS.layout.pageHeading))
 					.toHaveText(
 						PAGE_TEXT.headings.authenticatorEnabled,
 						{ timeout: TIMEOUTS.api });
 
 				// Step 5: Best-effort cleanup — disable TOTP via API.
-				// Wait for a fresh TOTP code (different from enrollment code)
-				// to avoid server rejecting a reused code.
-				let cleanupCode: string =
-					generateTotpCodeFromSecret(secret);
-				const maxWaitMs = 35000;
-				const startTime: number =
-					Date.now();
-
-				// eslint-disable-next-line playwright/no-conditional-in-test -- best-effort cleanup loop
-				while (cleanupCode === enrollmentCode
-					&& (Date.now() - startTime) < maxWaitMs)
-				{
-					await new Promise(
-						(resolve) => setTimeout(resolve, 2000));
-					cleanupCode =
-						generateTotpCodeFromSecret(secret);
-				}
-
-				// eslint-disable-next-line playwright/no-conditional-in-test -- best-effort cleanup
-				if (cleanupCode === enrollmentCode)
-				{
-					// Cleanup can't generate a fresh code. Since this is an
-					// isolated user, this won't affect other tests.
-					return;
-				}
-
-				const cookies =
-					await unauthenticatedPage.context().cookies();
-				const cookieHeader: string =
-					cookies
-						.map(
-							(cookie) => `${cookie.name}=${cookie.value}`)
-						.join("; ");
-
-				const loginResponse =
-					await unauthenticatedPage.request.post(
-						`${E2E_CONFIG.apiBaseUrl}/api/v1/auth/login`,
-						{
-							data:
-								{
-									usernameOrEmail: testUser.email,
-									password: testUser.password
-								},
-							headers:
-								{
-									Cookie: cookieHeader
-								}
-						});
-
-				// eslint-disable-next-line playwright/no-conditional-in-test -- best-effort cleanup
-				if (!loginResponse.ok())
-				{
-					return;
-				}
-
-				const loginData =
-					await loginResponse.json();
-
-				// eslint-disable-next-line playwright/no-conditional-in-test -- best-effort cleanup
-				if (!loginData.requiresMfa)
-				{
-					return;
-				}
-
-				const verifyResponse =
-					await unauthenticatedPage.request.post(
-						`${E2E_CONFIG.apiBaseUrl}/api/v1/auth/mfa/totp/verify`,
-						{
-							data:
-								{
-									email: testUser.email,
-									code: cleanupCode,
-									challengeToken: loginData.mfaChallengeToken,
-									trustDevice: false
-								},
-							headers:
-								{
-									Cookie: cookieHeader
-								}
-						});
-
-				// eslint-disable-next-line playwright/no-conditional-in-test -- best-effort cleanup
-				if (!verifyResponse.ok())
-				{
-					return;
-				}
-
-				const verifyData =
-					await verifyResponse.json();
-
-				await unauthenticatedPage.request.post(
-					`${E2E_CONFIG.apiBaseUrl}/api/v1/auth/mfa/totp/disable`,
-					{
-						data:
-							{
-								password: testUser.password
-							},
-						headers:
-							{
-								Authorization: `Bearer ${verifyData.accessToken}`,
-								Cookie: cookieHeader
-							}
-					});
+				await disableTotpViaApi(
+					unauthenticatedPage,
+					testUser,
+					secret,
+					enrollmentCode);
 			});
 	});

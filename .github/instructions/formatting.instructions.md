@@ -1,6 +1,6 @@
 ---
 description: Code formatting rules for all TypeScript and C# files
-applyTo: "**/*.{ts,cs}"
+applyTo: "**/SeventySix.Client/src/**/*.{ts,cs},**/SeventySix.Server/**/*.{ts,cs}"
 ---
 
 # Formatting Instructions
@@ -9,7 +9,7 @@ applyTo: "**/*.{ts,cs}"
 
 ## Variable Naming (CRITICAL - 3+ Characters)
 
-| Context        | ❌ NEVER                | ✅ ALWAYS                              |
+| Context        | [NEVER]                 | [ALWAYS]                               |
 | -------------- | ----------------------- | -------------------------------------- |
 | Lambdas        | `x => x.Id`             | `user => user.Id`                      |
 | Array methods  | `.filter(s => s.title)` | `.filter(section => section.title)`    |
@@ -32,7 +32,7 @@ applyTo: "**/*.{ts,cs}"
 ## Examples
 
 ```csharp
-// ✅ CORRECT C#
+// [CORRECT] C#
 User? user =
     await repo.GetByIdAsync(id);
 
@@ -47,7 +47,7 @@ await bus.InvokeAsync<UserDto?>(
 ```
 
 ```typescript
-// ✅ CORRECT TypeScript
+// [CORRECT] TypeScript
 const userData: UserDto = await this.userService.getById(userId);
 
 this.users.filter((user) => user.isActive).map((user) => user.name);
@@ -57,7 +57,7 @@ const isValid: boolean = isPresent(value) && value.length > 0;
 
 ## Null Coercion (BANNED)
 
-| ❌ NEVER               | ✅ ALWAYS                       |
+| [NEVER]                | [ALWAYS]                        |
 | ---------------------- | ------------------------------- |
 | `!!value`              | `isPresent(value)`              |
 | `if (!value)`          | `if (isNullOrUndefined(value))` |
@@ -75,7 +75,7 @@ const isValid: boolean = isPresent(value) && value.length > 0;
 
 ## Constants (No Magic Values)
 
-| ❌ NEVER             | ✅ ALWAYS                               |
+| [NEVER]              | [ALWAYS]                                |
 | -------------------- | --------------------------------------- |
 | `{ duration: 5000 }` | `{ duration: SNACKBAR_DURATION.error }` |
 | `"Developer"` inline | `RoleConstants.Developer`               |
@@ -85,7 +85,7 @@ const isValid: boolean = isPresent(value) && value.length > 0;
 
 All TypeScript method and function declarations MUST have explicit return types.
 
-| Context           | ❌ NEVER         | ✅ ALWAYS                             |
+| Context           | [NEVER]          | [ALWAYS]                              |
 | ----------------- | ---------------- | ------------------------------------- |
 | Lifecycle hooks   | `ngOnInit() {`   | `ngOnInit(): void {`                  |
 | Service methods   | `getUsers() {`   | `getUsers(): Observable<UserDto[]> {` |
@@ -120,3 +120,5 @@ All TypeScript method and function declarations MUST have explicit return types.
  * The user when found.
  */
 ```
+
+> **Reminder**: Do NOT create documentation files in `/docs/`. Update existing READMEs and instruction files instead. See `copilot-instructions.md` for the full documentation rules.

@@ -25,6 +25,7 @@ public class LoginCommandHandlerTests
 	private readonly FakeTimeProvider TimeProvider;
 	private readonly UserManager<ApplicationUser> UserManager;
 	private readonly SignInManager<ApplicationUser> SignInManager;
+	private readonly IAuthRepository AuthRepository;
 	private readonly AuthenticationService AuthenticationService;
 	private readonly IAltchaService AltchaService;
 	private readonly ISecurityAuditService SecurityAuditService;
@@ -44,6 +45,8 @@ public class LoginCommandHandlerTests
 			IdentityMockFactory.CreateUserManager();
 		SignInManager =
 			IdentityMockFactory.CreateSignInManager(UserManager);
+		AuthRepository =
+			Substitute.For<IAuthRepository>();
 		AuthenticationService =
 			IdentityMockFactory.CreateAuthenticationService();
 		AltchaService =
@@ -91,7 +94,11 @@ public class LoginCommandHandlerTests
 				"testuser",
 				"ValidPass123!");
 
-		IdentityMockFactory.ConfigureUserManagerForSuccess(UserManager, user);
+		AuthRepository
+			.FindByUsernameOrEmailAsync(
+				Arg.Any<string>(),
+				Arg.Any<CancellationToken>())
+			.Returns(user);
 		IdentityMockFactory.ConfigureSignInManagerForSuccess(SignInManager);
 		IdentityMockFactory.ConfigureAuthServiceForSuccess(AuthenticationService, user);
 
@@ -99,8 +106,8 @@ public class LoginCommandHandlerTests
 		AuthResult result =
 			await LoginCommandHandler.HandleAsync(
 				command,
-				UserManager,
 				SignInManager,
+				AuthRepository,
 				AuthenticationService,
 				AltchaService,
 				SecurityAuditService,
@@ -134,7 +141,11 @@ public class LoginCommandHandlerTests
 				"testuser",
 				"WrongPassword!");
 
-		IdentityMockFactory.ConfigureUserManagerForSuccess(UserManager, user);
+		AuthRepository
+			.FindByUsernameOrEmailAsync(
+				Arg.Any<string>(),
+				Arg.Any<CancellationToken>())
+			.Returns(user);
 		SignInManager
 			.CheckPasswordSignInAsync(
 				Arg.Any<ApplicationUser>(),
@@ -146,8 +157,8 @@ public class LoginCommandHandlerTests
 		AuthResult result =
 			await LoginCommandHandler.HandleAsync(
 				command,
-				UserManager,
 				SignInManager,
+				AuthRepository,
 				AuthenticationService,
 				AltchaService,
 				SecurityAuditService,
@@ -181,7 +192,11 @@ public class LoginCommandHandlerTests
 				"testuser",
 				"ValidPass123!");
 
-		IdentityMockFactory.ConfigureUserManagerForSuccess(UserManager, user);
+		AuthRepository
+			.FindByUsernameOrEmailAsync(
+				Arg.Any<string>(),
+				Arg.Any<CancellationToken>())
+			.Returns(user);
 		SignInManager
 			.CheckPasswordSignInAsync(
 				Arg.Any<ApplicationUser>(),
@@ -193,8 +208,8 @@ public class LoginCommandHandlerTests
 		AuthResult result =
 			await LoginCommandHandler.HandleAsync(
 				command,
-				UserManager,
 				SignInManager,
+				AuthRepository,
 				AuthenticationService,
 				AltchaService,
 				SecurityAuditService,
@@ -221,19 +236,18 @@ public class LoginCommandHandlerTests
 				"nonexistent",
 				"Password123!");
 
-		UserManager
-			.FindByNameAsync(Arg.Any<string>())
-			.Returns((ApplicationUser?)null);
-		UserManager
-			.FindByEmailAsync(Arg.Any<string>())
+		AuthRepository
+			.FindByUsernameOrEmailAsync(
+				Arg.Any<string>(),
+				Arg.Any<CancellationToken>())
 			.Returns((ApplicationUser?)null);
 
 		// Act
 		AuthResult result =
 			await LoginCommandHandler.HandleAsync(
 				command,
-				UserManager,
 				SignInManager,
+				AuthRepository,
 				AuthenticationService,
 				AltchaService,
 				SecurityAuditService,
@@ -268,16 +282,18 @@ public class LoginCommandHandlerTests
 				"testuser",
 				"ValidPass123!");
 
-		UserManager
-			.FindByNameAsync(Arg.Any<string>())
+		AuthRepository
+			.FindByUsernameOrEmailAsync(
+				Arg.Any<string>(),
+				Arg.Any<CancellationToken>())
 			.Returns(user);
 
 		// Act
 		AuthResult result =
 			await LoginCommandHandler.HandleAsync(
 				command,
-				UserManager,
 				SignInManager,
+				AuthRepository,
 				AuthenticationService,
 				AltchaService,
 				SecurityAuditService,
@@ -319,8 +335,8 @@ public class LoginCommandHandlerTests
 		AuthResult result =
 			await LoginCommandHandler.HandleAsync(
 				command,
-				UserManager,
 				SignInManager,
+				AuthRepository,
 				AuthenticationService,
 				AltchaService,
 				SecurityAuditService,
@@ -369,7 +385,11 @@ public class LoginCommandHandlerTests
 				"newuser",
 				"ValidPass123!");
 
-		IdentityMockFactory.ConfigureUserManagerForSuccess(UserManager, user);
+		AuthRepository
+			.FindByUsernameOrEmailAsync(
+				Arg.Any<string>(),
+				Arg.Any<CancellationToken>())
+			.Returns(user);
 		IdentityMockFactory.ConfigureSignInManagerForSuccess(SignInManager);
 		IdentityMockFactory.ConfigureAuthServiceForSuccess(AuthenticationService, user);
 
@@ -377,8 +397,8 @@ public class LoginCommandHandlerTests
 		AuthResult result =
 			await LoginCommandHandler.HandleAsync(
 				command,
-				UserManager,
 				SignInManager,
+				AuthRepository,
 				AuthenticationService,
 				AltchaService,
 				SecurityAuditService,
@@ -433,7 +453,11 @@ public class LoginCommandHandlerTests
 				"mfauser",
 				"ValidPass123!");
 
-		IdentityMockFactory.ConfigureUserManagerForSuccess(UserManager, user);
+		AuthRepository
+			.FindByUsernameOrEmailAsync(
+				Arg.Any<string>(),
+				Arg.Any<CancellationToken>())
+			.Returns(user);
 		IdentityMockFactory.ConfigureSignInManagerForSuccess(SignInManager);
 
 		string challengeToken = "mfa-challenge-token-123";
@@ -449,8 +473,8 @@ public class LoginCommandHandlerTests
 		AuthResult result =
 			await LoginCommandHandler.HandleAsync(
 				command,
-				UserManager,
 				SignInManager,
+				AuthRepository,
 				AuthenticationService,
 				AltchaService,
 				SecurityAuditService,

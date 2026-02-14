@@ -21,7 +21,7 @@ export { EmailTestHelper } from "./email.fixture";
 export type { MailDevEmail } from "./email.fixture";
 
 // TOTP helper
-export { generateTotpCode, generateTotpCodeFromSecret } from "./helpers/totp.helper";
+export { generateTotpCode, generateTotpCodeFromSecret, disableTotpViaApi } from "./helpers/totp.helper";
 
 // Login helper
 export { loginAsUser } from "./helpers/login.helper";
@@ -41,7 +41,7 @@ export { SELECTORS } from "./selectors.constant";
 export { ROUTES, ROUTE_GROUPS, createRouteRegex } from "./routes.constant";
 export { PAGE_TEXT } from "./page-text.constant";
 export { TIMEOUTS } from "./timeouts.constant";
-export { E2E_CONFIG } from "./config.constant";
+export { E2E_CONFIG, COOKIE_NAMES, API_ROUTES } from "./config.constant";
 
 // Assertion helpers
 export {

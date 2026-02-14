@@ -9,7 +9,8 @@ import {
 	SELECTORS,
 	ROUTES,
 	PAGE_TEXT,
-	TIMEOUTS
+	TIMEOUTS,
+	COOKIE_NAMES
 } from "../../fixtures";
 
 /**
@@ -125,7 +126,7 @@ test.describe("Login Page",
 						const snackbar: Locator =
 							page.locator(SELECTORS.notification.snackbar);
 						const errorMessage: Locator =
-							page.locator("[role='alert'], .error-message, mat-error");
+							page.locator(SELECTORS.form.errorMessage);
 
 						// Wait for either a snackbar or an inline error
 						await expect(snackbar.or(errorMessage))
@@ -240,7 +241,7 @@ test.describe("Login Page",
 							await context.cookies();
 						const refreshCookie =
 							cookies.find(
-								(cookie) => cookie.name === "X-Refresh-Token");
+								(cookie) => cookie.name === COOKIE_NAMES.refreshToken);
 
 						expect(refreshCookie)
 							.toBeDefined();
@@ -274,7 +275,7 @@ test.describe("Login Page",
 							await context.cookies();
 						const refreshCookie =
 							cookies.find(
-								(cookie) => cookie.name === "X-Refresh-Token");
+								(cookie) => cookie.name === COOKIE_NAMES.refreshToken);
 
 						expect(refreshCookie)
 							.toBeDefined();
@@ -491,7 +492,7 @@ test.describe("Login Page",
 							const snackbar: Locator =
 								page.locator(SELECTORS.notification.snackbar);
 							const errorMessage: Locator =
-								page.locator("[role='alert'], .error-message, mat-error");
+								page.locator(SELECTORS.form.errorMessage);
 
 							await expect(snackbar.or(errorMessage))
 								.toBeVisible({ timeout: TIMEOUTS.api });
@@ -510,7 +511,7 @@ test.describe("Login Page",
 						const snackbar: Locator =
 							page.locator(SELECTORS.notification.snackbar);
 						const errorMessage: Locator =
-							page.locator("[role='alert'], .error-message, mat-error");
+							page.locator(SELECTORS.form.errorMessage);
 
 						await expect(snackbar.or(errorMessage))
 							.toBeVisible({ timeout: TIMEOUTS.api });

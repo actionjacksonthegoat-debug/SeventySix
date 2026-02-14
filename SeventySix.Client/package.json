@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "ng": "ng",
+    "prepare": "playwright install chromium",
     "start": "ng serve",
     "build": "ng build",
     "test": "node scripts/architecture-tests.mjs && vitest run",
@@ -14,7 +15,8 @@
     "format:check": "eslint .",
     "test:e2e": "node scripts/e2e-full.mjs",
     "generate:openapi": "node scripts/generate-openapi.mjs",
-    "generate:openapi:types-only": "openapi-typescript ../openapi.json -o src/app/shared/generated-open-api/generated-open-api.ts"
+    "generate:openapi:types-only": "openapi-typescript ../openapi.json -o src/app/shared/generated-open-api/generated-open-api.ts",
+    "generate:icons": "node scripts/generate-icons.mjs"
   },
   "private": true,
   "dependencies": {
@@ -67,6 +69,7 @@
     "openapi-typescript": "^7.10.1",
     "otpauth": "^9.5.0",
     "playwright": "^1.58.0",
+    "sharp": "^0.34.5",
     "typescript": "~5.9.2",
     "vite-tsconfig-paths": "^6.0.0",
     "vitest": "^4.0.18"

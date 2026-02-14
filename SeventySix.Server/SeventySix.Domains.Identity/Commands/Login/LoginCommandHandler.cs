@@ -26,11 +26,11 @@ public static class LoginCommandHandler
 	/// <param name="command">
 	/// The login command containing credentials and options.
 	/// </param>
-	/// <param name="userManager">
-	/// Identity <see cref="UserManager{TUser}"/> for user lookups.
-	/// </param>
 	/// <param name="signInManager">
 	/// Identity <see cref="SignInManager{TUser}"/> for password checks and lockout.
+	/// </param>
+	/// <param name="authRepository">
+	/// Repository for single-query user lookups by username or email.
 	/// </param>
 	/// <param name="authenticationService">
 	/// Service to generate auth tokens on success.
@@ -61,8 +61,8 @@ public static class LoginCommandHandler
 	/// </returns>
 	public static async Task<AuthResult> HandleAsync(
 		LoginCommand command,
-		UserManager<ApplicationUser> userManager,
 		SignInManager<ApplicationUser> signInManager,
+		IAuthRepository authRepository,
 		AuthenticationService authenticationService,
 		IAltchaService altchaService,
 		ISecurityAuditService securityAuditService,
@@ -86,8 +86,8 @@ public static class LoginCommandHandler
 		(ApplicationUser? user, AuthResult? credentialFailure) =
 			await ValidateCredentialsAsync(
 				command,
-				userManager,
 				signInManager,
+				authRepository,
 				securityAuditService,
 				cancellationToken);
 		if (credentialFailure is not null)
@@ -215,11 +215,11 @@ public static class LoginCommandHandler
 	/// <param name="command">
 	/// The login command.
 	/// </param>
-	/// <param name="userManager">
-	/// User manager.
-	/// </param>
 	/// <param name="signInManager">
 	/// Sign in manager.
+	/// </param>
+	/// <param name="authRepository">
+	/// Repository for single-query user lookups.
 	/// </param>
 	/// <param name="securityAuditService">
 	/// Security audit service.
@@ -232,14 +232,15 @@ public static class LoginCommandHandler
 	/// </returns>
 	private static async Task<(ApplicationUser? User, AuthResult? Failure)> ValidateCredentialsAsync(
 		LoginCommand command,
-		UserManager<ApplicationUser> userManager,
 		SignInManager<ApplicationUser> signInManager,
+		IAuthRepository authRepository,
 		ISecurityAuditService securityAuditService,
 		CancellationToken cancellationToken)
 	{
 		ApplicationUser? user =
-			await userManager.FindByNameAsync(command.Request.UsernameOrEmail)
-				?? await userManager.FindByEmailAsync(command.Request.UsernameOrEmail);
+			await authRepository.FindByUsernameOrEmailAsync(
+				command.Request.UsernameOrEmail,
+				cancellationToken);
 
 		if (!user.IsValidForAuthentication())
 		{

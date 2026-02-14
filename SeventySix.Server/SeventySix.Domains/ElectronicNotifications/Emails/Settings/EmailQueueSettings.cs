@@ -52,4 +52,10 @@ public record EmailQueueSettings
 	/// Must be configured in appsettings.json.
 	/// </summary>
 	public int DeadLetterAfterHours { get; init; }
+
+	/// <summary>
+	/// Gets the fallback backoff in minutes when rate limit has no known reset time.
+	/// Must be configured in appsettings.json.
+	/// </summary>
+	public int RateLimitBackoffMinutes { get; init; }
 }

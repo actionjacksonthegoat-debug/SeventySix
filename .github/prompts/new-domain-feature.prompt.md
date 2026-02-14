@@ -240,7 +240,7 @@ export const {{FEATURE}}_ROUTES: Routes =
 - New line after every `=`, before every `.`
 - Server namespace: `SeventySix.{Domain}` (NOT `SeventySix.Domains.{Domain}`)
 
-### ⚠️ Work Completion Requirements (CRITICAL)
+### [WARNING] Work Completion Requirements (CRITICAL)
 
 **ALL THREE** test suites must pass for work to be considered complete:
 

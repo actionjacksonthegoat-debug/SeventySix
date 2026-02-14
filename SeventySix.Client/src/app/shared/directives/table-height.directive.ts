@@ -12,7 +12,7 @@ import {
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import {
 	DEBOUNCE_TIME,
-	getStandardTableOffset
+	TABLE_BOTTOM_MARGIN
 } from "@shared/constants";
 import { fromEvent } from "rxjs";
 import { debounceTime } from "rxjs/operators";
@@ -21,15 +21,13 @@ import { debounceTime } from "rxjs/operators";
  * Directive to automatically calculate and apply table height based on available viewport space
  *
  * Automatically calculates the available screen height for table content by:
- * 1. Measuring the element's distance from the viewport top
- * 2. Subtracting standard table component heights (120px at density -1)
+ * 1. Measuring the element's distance from the viewport top (getBoundingClientRect().top)
+ * 2. Subtracting a small bottom margin for paginator and page chrome
  * 3. Applying a minimum height constraint (default: 400px)
  * 4. Updating on window resize events with 500ms debounce
  *
- * The directive always accounts for these table components at Material Design density -1:
- * - Search toolbar (72px): mat-form-field + padding
- * - Filter chips toolbar (48px): chip row + padding
- * - Total offset: 120px
+ * The element's top position already accounts for all content above it (toolbars,
+ * headers, nav bars) so no fixed toolbar offset is needed.
  *
  * Usage:
  *   <cdk-virtual-scroll-viewport appTableHeight>
@@ -130,15 +128,10 @@ export class TableHeightDirective
 	 * Calculate and apply height based on available viewport space
 	 *
 	 * Algorithm:
-	 * 1. Get element's top position within viewport
-	 * 2. Subtract standard table offset (120px for search + filters at density -1)
-	 * 3. Calculate available height: viewport height - element top - offset
-	 * 4. Apply minimum height constraint
-	 *
-	 * The offset accounts for:
-	 * - Search toolbar (72px at density -1)
-	 * - Filter chips toolbar (48px at density -1)
-	 * - Total: 120px
+	 * 1. Get element's top position within viewport (rect.top already includes
+	 *    all content rendered above the element — toolbars, headers, nav bars)
+	 * 2. Calculate available height: viewport height - element top - bottom margin
+	 * 3. Apply minimum height constraint
 	 *
 	 * Performance Note:
 	 * With 500ms debounce, even with hundreds of tables on the page,
@@ -156,13 +149,10 @@ export class TableHeightDirective
 		const elementTopPosition: number =
 			rect.top;
 
-		// Use shared constant for standard table offset (120px)
-		const offset: number =
-			getStandardTableOffset();
-
-		// Calculate available height: viewport - element top - offset for table components
+		// Available height = viewport height - element's top position - bottom margin
+		// rect.top already accounts for all content above the element (toolbars, headers, etc.)
 		const adjustedHeight: number =
-			window.innerHeight - elementTopPosition - offset;
+			window.innerHeight - elementTopPosition - TABLE_BOTTOM_MARGIN;
 
 		const minHeight: number =
 			minHeightOverride ?? this.appTableHeight();

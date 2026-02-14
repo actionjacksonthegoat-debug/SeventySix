@@ -179,7 +179,7 @@ test.describe("Request Permissions Page",
 						const notificationPromise =
 							expect(notification)
 								.toContainText(
-									"Permission request submitted",
+									PAGE_TEXT.confirmation.permissionRequestSubmitted,
 									{ timeout: TIMEOUTS.api });
 
 						await submitButton.click();

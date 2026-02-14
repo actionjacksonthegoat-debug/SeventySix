@@ -77,6 +77,10 @@ applyTo: "**/SeventySix.Client/src/**/*.{ts,html,scss}"
 - Focus: use `@include vars.focus-visible()` for custom elements
 - Dialogs: use `cdkFocusInitial` for initial focus
 
+## Chrome DevTools Accessibility Verification (REQUIRED)
+
+After any accessibility-related change, verify via Chrome DevTools MCP `take_snapshot` to check accessibility tree — see `copilot-instructions.md` Chrome DevTools section.
+
 
 ````
 

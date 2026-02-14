@@ -3,6 +3,8 @@
 // </copyright>
 
 import * as OTPAuth from "otpauth";
+import type { Page } from "@playwright/test";
+import { E2E_CONFIG, API_ROUTES } from "../config.constant";
 
 /**
  * Known TOTP secret for the E2E MFA test user.
@@ -57,4 +59,121 @@ export function generateTotpCodeFromSecret(totpSecret: string): string
 			});
 
 	return totp.generate();
+}
+
+/**
+ * Best-effort TOTP cleanup: waits for a fresh code, re-authenticates, and disables TOTP via API.
+ * Silently returns without throwing if any step fails — the test user is isolated so leftover
+ * TOTP state does not affect other tests.
+ *
+ * @param page
+ * The Playwright page (used for request context and cookies).
+ * @param user
+ * The test user credentials.
+ * @param secret
+ * The TOTP secret extracted during enrollment.
+ * @param enrollmentCode
+ * The code used during enrollment (must differ from the cleanup code).
+ */
+export async function disableTotpViaApi(
+	page: Page,
+	user: { email: string; password: string },
+	secret: string,
+	enrollmentCode: string): Promise<void>
+{
+	// Wait for a fresh TOTP code that differs from the enrollment code.
+	let cleanupCode: string =
+		generateTotpCodeFromSecret(secret);
+	const maxWaitMs = 35_000;
+	const startTime: number =
+		Date.now();
+
+	while (cleanupCode === enrollmentCode
+		&& (Date.now() - startTime) < maxWaitMs)
+	{
+		await new Promise(
+			(resolve) => setTimeout(resolve, 2000));
+		cleanupCode =
+			generateTotpCodeFromSecret(secret);
+	}
+
+	if (cleanupCode === enrollmentCode)
+	{
+		return;
+	}
+
+	const cookies =
+		await page.context().cookies();
+	const cookieHeader: string =
+		cookies
+			.map(
+				(cookie) => `${cookie.name}=${cookie.value}`)
+			.join("; ");
+
+	const loginResponse =
+		await page.request.post(
+			`${E2E_CONFIG.apiBaseUrl}${API_ROUTES.auth.login}`,
+			{
+				data:
+					{
+						usernameOrEmail: user.email,
+						password: user.password
+					},
+				headers:
+					{
+						Cookie: cookieHeader
+					}
+			});
+
+	if (!loginResponse.ok())
+	{
+		return;
+	}
+
+	const loginData =
+		await loginResponse.json();
+
+	if (!loginData.requiresMfa)
+	{
+		return;
+	}
+
+	const verifyResponse =
+		await page.request.post(
+			`${E2E_CONFIG.apiBaseUrl}${API_ROUTES.auth.totpVerify}`,
+			{
+				data:
+					{
+						email: user.email,
+						code: cleanupCode,
+						challengeToken: loginData.mfaChallengeToken,
+						trustDevice: false
+					},
+				headers:
+					{
+						Cookie: cookieHeader
+					}
+			});
+
+	if (!verifyResponse.ok())
+	{
+		return;
+	}
+
+	const verifyData =
+		await verifyResponse.json();
+
+	await page.request.post(
+		`${E2E_CONFIG.apiBaseUrl}${API_ROUTES.auth.totpDisable}`,
+		{
+			data:
+				{
+					password: user.password
+				},
+			headers:
+				{
+					Authorization: `Bearer ${verifyData.accessToken}`,
+					Cookie: cookieHeader
+				}
+		});
 }

@@ -42,7 +42,7 @@ test.describe("Style Guide Page",
 					async ({ developerPage }: { developerPage: Page }) =>
 					{
 						const header =
-							developerPage.locator(".style-guide-header");
+							developerPage.locator(SELECTORS.developer.styleGuideContainer);
 
 						await expect(header)
 							.toContainText(PAGE_TEXT.developer.styleGuide.description);
@@ -66,8 +66,7 @@ test.describe("Style Guide Page",
 					async ({ developerPage }: { developerPage: Page }) =>
 					{
 						const colorSchemeSelect =
-							developerPage.locator("mat-select[aria-label='Select color scheme']");
-
+						developerPage.locator(SELECTORS.developer.colorSchemeSelect);
 						await expect(colorSchemeSelect)
 							.toBeVisible();
 					});
@@ -80,8 +79,7 @@ test.describe("Style Guide Page",
 					async ({ developerPage }: { developerPage: Page }) =>
 					{
 						const tabGroup =
-							developerPage.locator("mat-tab-group");
-
+						developerPage.locator(SELECTORS.developer.tabGroup);
 						await expect(tabGroup)
 							.toBeVisible();
 					});
@@ -90,8 +88,7 @@ test.describe("Style Guide Page",
 					async ({ developerPage }: { developerPage: Page }) =>
 					{
 						const colorsTab =
-							developerPage.locator(".mat-mdc-tab:has-text('Colors')");
-
+						developerPage.locator(`.mat-mdc-tab:has-text('${PAGE_TEXT.developer.styleGuide.colorsTab}')`);
 						await expect(colorsTab)
 							.toBeVisible();
 					});

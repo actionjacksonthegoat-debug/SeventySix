@@ -5,7 +5,7 @@
 
 ---
 
-## 🚨 FORBIDDEN COMMANDS (NEVER EXECUTE)
+## [CRITICAL] FORBIDDEN COMMANDS (NEVER EXECUTE)
 
 > **ABSOLUTE PROHIBITION**: The following commands are **USER-ONLY** and must **NEVER** be executed by Copilot under any circumstances.
 
@@ -19,24 +19,48 @@
 
 ---
 
+## [CRITICAL] DOCUMENTATION RULES
+
+> **DO NOT** create files in the `/docs/` folder. Plans are written to `Implementation.md` (orchestrator) and `implementation-N.md` (individual plan files) at the repo root, and ONLY when the `/create-plan` prompt is invoked.
+
+- **`Implementation.md`** is the **orchestrator** — it tracks all `implementation-N.md` files and runs final validation after all complete
+- **`implementation-1.md`, `implementation-2.md`, etc.** are focused, completable plan files — each covers one logical unit of work
+- Writing throwaway docs is expensive — avoid unless `/create-plan` is explicitly run
+- If a change is complex enough to need user-facing documentation, **ASK the user first** before writing it
+- `.github/instructions/*.instructions.md` files are the authoritative reference — keep them current, don't duplicate into `/docs/`
+
+---
+
 ## Core Principles
 
 - **KISS, DRY, YAGNI** — simplest solution, no duplication, no speculative features
 - **TDD 80/20** — focus tests on the 20% of code carrying 80% of risk
 - **IDE Warnings = MUST FIX** — never suppress with `#pragma warning disable`, `// @ts-ignore`, `[SuppressMessage]`
     - **Exceptions**: EF Core Migrations, Generated OpenAPI clients
-- **All 3 test suites MUST pass** before claiming completion (see below)
+- **All required test suites MUST pass** before claiming completion (see below)
 
-## Tests MUST Pass (GATE CONDITION)
+## [CRITICAL] Tests MUST Pass (GATE CONDITION)
 
-| Suite  | Command            | Must See                            |
-| ------ | ------------------ | ----------------------------------- |
-| Server | `dotnet test`      | `Test summary: total: X, failed: 0` |
-| Client | `npm test`         | `X passed (X)`                      |
-| E2E    | `npm run test:e2e` | `[PASS] All E2E tests passed!`      |
+| Suite        | Command              | Must See                            |
+| ------------ | -------------------- | ----------------------------------- |
+| Server       | `dotnet test`        | `Test summary: total: X, failed: 0` |
+| Client       | `npm test`           | `X passed (X)`                      |
+| E2E          | `npm run test:e2e`   | `[PASS] All E2E tests passed!`      |
+| Load (quick) | `npm run loadtest:quick` | All scenarios pass thresholds   |
 
-> 🚫 **NEVER** claim "done" or "complete" without actually running ALL test suites.
-> Saying "tests will pass when infrastructure is running" is **NOT acceptable**.
+> **All required test suites MUST RUN AND PASS. NO SKIPPING. NO EXCEPTIONS. REGARDLESS OF TIME NEEDED OR CURRENT STATE OF THE CODE.**
+> - E2E and load tests CAN run in parallel to save time
+> - Saying "tests will pass when infrastructure is running" is **NOT acceptable**
+> - If infrastructure is not running, **start it** — do not skip the suite
+> - **NEVER** claim "done" or "complete" without actually running and passing all required test suites
+
+## Documentation MUST Be Current (GATE CONDITION)
+
+After all tests pass, verify:
+- All `.github/instructions/*.instructions.md` reflect current patterns
+- All `.github/prompts/*.prompt.md` reference current file locations and commands
+- All READMEs match implementation
+- All `docs/*.md` files are current
 
 ---
 
@@ -64,28 +88,68 @@
 |                           | `sandbox`   |
 |                           | `home`      |
 
+## Cross-Platform Compatibility
+
+All code MUST work on both **Windows** and **Linux** (CI runs on `ubuntu-latest`).
+
+| Area | [NEVER] | [ALWAYS] |
+|------|---------|----------|
+| C# paths | `"folder\\file.txt"` | `Path.Combine("folder", "file.txt")` |
+| C# temp | `C:\Temp\...` | `Path.GetTempPath()` |
+| TS paths | `"folder\\file.ts"` | `path.join("folder", "file.ts")` or `/` |
+| Line endings | Assume `\r\n` | Use `.gitattributes` normalization |
+| Case | Mix casing across references | Consistent casing (Linux is case-sensitive) |
+| Shell | `.ps1`-only for CI | Cross-platform or dual support |
+
 ---
-
-## `#githubRepo` Hints
-
-Use `#githubRepo` with these repos when searching for framework-specific patterns:
-
-- `JasperFx/wolverine` — Wolverine CQRS handler patterns
-- `angular/angular` — Angular 21 patterns
-- `TanStack/query` — TanStack Query patterns
 
 ## MCP Servers (Available in Agent Mode)
 
-| Server            | Purpose                                                |
-| ----------------- | ------------------------------------------------------ |
-| `github`          | Issues, PRs, repo operations                           |
-| `playwright`      | Browser automation for E2E debugging                   |
-| `postgresql`      | Read-only DB queries for debugging/exploration         |
-| `chrome-devtools` | Live browser inspection, console, network, screenshots |
-| `context7`        | Up-to-date library documentation (use context7)        |
-| `figma`           | Design-to-code from Figma files                        |
+| Server            | Purpose                                                | Activation                     |
+| ----------------- | ------------------------------------------------------ | ------------------------------ |
+| `github`          | Issues, PRs, repo operations                           | On-demand — needs PAT (first use) |
+| `postgresql`      | Read-only DB queries for debugging/exploration         | On-demand — needs connection string |
+| `chrome-devtools` | Live browser inspection, console, network, screenshots | On-demand — needs Chrome open  |
+| `context7`        | Up-to-date library documentation                       | On-demand — stateless          |
+| `figma`           | Design-to-code from Figma files                        | On-demand — needs Figma open   |
 
-**Always use context7** when generating code that references Angular, .NET, Wolverine, TanStack Query, Playwright, or any other library — to ensure up-to-date API usage and avoid hallucinated APIs.
+Use **context7** when unsure about current API for Angular, Wolverine, TanStack Query, or Playwright. Not needed for stable APIs like `Path.Combine` or standard HTTP.
+
+## MCP Activation Rules (CRITICAL)
+
+> **RULE**: Before performing a task that an MCP server supports, ALWAYS activate and use that MCP server. Never perform the task manually when an MCP tool exists for it.
+
+| Task | Required MCP | Tool Examples |
+|------|-------------|---------------|
+| Verify client-side changes visually | `chrome-devtools` | `take_screenshot`, `evaluate_script`, `list_console_messages` |
+| Check network requests/responses | `chrome-devtools` | `list_network_requests` |
+| Verify accessibility tree | `chrome-devtools` | `take_snapshot` |
+| Look up library API patterns | `context7` | `resolve-library-id`, `query-docs` |
+| Create/update PRs and issues | `github` | `create_pull_request`, `list_issues` |
+| Inspect database schema/data | `postgresql` | `query` |
+| Convert Figma designs to code | `figma` | `get_figma_data`, `download_figma_images` |
+
+**If an MCP server is not running when needed, start it. If it prompts for credentials, ask the user to provide them. NEVER skip the MCP and do the task manually or theoretically.**
+
+## Chrome DevTools Verification (REQUIRED for Client Changes)
+
+> **RULE**: After any client-side code change (component, service, route, style, template), use Chrome DevTools MCP to verify the change works. NEVER rely on "it should work" — prove it.
+
+### Verification Checklist
+
+| Check | Tool | When |
+|-------|------|------|
+| Visual state correct | `take_screenshot` | Always |
+| No console errors | `list_console_messages` | Always |
+| API calls succeed | `list_network_requests` | When change involves API |
+| Accessibility tree valid | `take_snapshot` | When change involves interactive elements |
+| Signal/state values correct | `evaluate_script` | When change involves reactive state |
+
+### When to Skip (only these cases)
+
+- Server-only changes (C# code with no client impact)
+- Documentation-only changes
+- Build/config changes that don't affect rendered output
 
 ---
 
@@ -93,13 +157,13 @@ Use `#githubRepo` with these repos when searching for framework-specific pattern
 
 | File                             | Scope                                          |
 | -------------------------------- | ---------------------------------------------- |
-| `formatting.instructions.md`     | `**/*.{ts,cs}` — naming, structure, operators  |
+| `formatting.instructions.md`     | `**/SeventySix.Client/src/**,**/SeventySix.Server/**` — naming, structure, operators  |
 | `angular.instructions.md`        | `**/SeventySix.Client/src/**/*.ts`             |
 | `csharp.instructions.md`         | `**/SeventySix.Server/**/*.cs`                 |
-| `security.instructions.md`       | `**/*.{ts,cs}` — ProblemDetails, auth errors   |
+| `security.instructions.md`       | `**/SeventySix.Client/src/**,**/SeventySix.Server/**` — ProblemDetails, auth errors   |
 | `accessibility.instructions.md`  | `**/SeventySix.Client/src/**/*.{ts,html,scss}` |
 | `testing-server.instructions.md` | `**/SeventySix.Server/Tests/**/*.cs`           |
 | `testing-client.instructions.md` | `**/SeventySix.Client/src/**/*.spec.ts`        |
 | `e2e.instructions.md`            | `**/SeventySix.Client/e2e/**/*.ts`             |
-| `cross-platform.instructions.md` | `**/*.{ts,cs,ps1,sh,mjs}`                      |
 | `new-domain.instructions.md`     | Manual reference — domain blueprints           |
+| `load-testing.instructions.md`   | `**/SeventySix.Client/load-testing/**/*.js` — k6 load test patterns |

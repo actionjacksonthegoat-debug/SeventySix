@@ -53,8 +53,7 @@ test.describe("Error Pages",
 					await page.waitForLoadState("load");
 
 						const pageBody =
-							page.locator(".error-page");
-
+						page.locator(SELECTORS.errorPage.container);
 						await expect(pageBody)
 							.toContainText(PAGE_TEXT.errorPage.notFoundDescription);
 					});

@@ -1,0 +1,134 @@
+{
+	"annotations": {
+		"list": []
+	},
+	"description": "k6 Load Test Results for SeventySix API",
+	"editable": true,
+	"fiscalYearStartMonth": 0,
+	"graphTooltip": 1,
+	"id": null,
+	"links": [],
+	"panels": [
+		{
+			"title": "Virtual Users Over Time",
+			"type": "timeseries",
+			"gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+			"targets": [
+				{
+					"expr": "k6_vus",
+					"legendFormat": "Active VUs",
+					"refId": "A"
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"color": { "mode": "palette-classic" },
+					"custom": { "fillOpacity": 10, "lineWidth": 2 }
+				}
+			}
+		},
+		{
+			"title": "Request Rate (req/s)",
+			"type": "timeseries",
+			"gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+			"targets": [
+				{
+					"expr": "rate(k6_http_reqs_total[1m])",
+					"legendFormat": "{{flow}} / {{operation}}",
+					"refId": "A"
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"color": { "mode": "palette-classic" },
+					"custom": { "fillOpacity": 10, "lineWidth": 2 },
+					"unit": "reqps"
+				}
+			}
+		},
+		{
+			"title": "Response Time Percentiles",
+			"type": "timeseries",
+			"gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+			"targets": [
+				{
+					"expr": "k6_http_req_duration_p50",
+					"legendFormat": "p50",
+					"refId": "A"
+				},
+				{
+					"expr": "k6_http_req_duration_p90",
+					"legendFormat": "p90",
+					"refId": "B"
+				},
+				{
+					"expr": "k6_http_req_duration_p95",
+					"legendFormat": "p95",
+					"refId": "C"
+				},
+				{
+					"expr": "k6_http_req_duration_p99",
+					"legendFormat": "p99",
+					"refId": "D"
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"color": { "mode": "palette-classic" },
+					"custom": { "fillOpacity": 5, "lineWidth": 2 },
+					"unit": "ms"
+				}
+			}
+		},
+		{
+			"title": "Error Rate by Endpoint",
+			"type": "timeseries",
+			"gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+			"targets": [
+				{
+					"expr": "rate(k6_http_req_failed_total[1m])",
+					"legendFormat": "{{flow}} / {{operation}}",
+					"refId": "A"
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"color": { "mode": "palette-classic" },
+					"custom": { "fillOpacity": 10, "lineWidth": 2 },
+					"unit": "percentunit"
+				}
+			}
+		},
+		{
+			"title": "Threshold Pass/Fail",
+			"type": "stat",
+			"gridPos": { "h": 4, "w": 24, "x": 0, "y": 16 },
+			"targets": [
+				{
+					"expr": "k6_checks_rate",
+					"legendFormat": "Check Pass Rate",
+					"refId": "A"
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"color": { "mode": "thresholds" },
+					"thresholds": {
+						"steps": [
+							{ "color": "red", "value": null },
+							{ "color": "yellow", "value": 0.9 },
+							{ "color": "green", "value": 0.99 }
+						]
+					},
+					"unit": "percentunit"
+				}
+			}
+		}
+	],
+	"schemaVersion": 39,
+	"tags": ["k6", "load-testing", "seventysix"],
+	"templating": { "list": [] },
+	"time": { "from": "now-30m", "to": "now" },
+	"title": "SeventySix k6 Load Tests",
+	"uid": "seventysix-k6-loadtests"
+}

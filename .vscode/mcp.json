@@ -7,10 +7,6 @@
 				"GITHUB_PERSONAL_ACCESS_TOKEN": "${input:githubToken}"
 			}
 		},
-		"playwright": {
-			"command": "npx",
-			"args": ["-y", "@playwright/mcp"]
-		},
 		"postgresql": {
 			"command": "npx",
 			"args": ["-y", "@modelcontextprotocol/server-postgres", "${input:postgresConnectionString}"],

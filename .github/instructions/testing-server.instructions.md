@@ -135,7 +135,7 @@ public sealed class UsersControllerAuthorizationTests(ApiPostgreSqlTestFixture f
 ## Fluent Builders (ALWAYS use for test data)
 
 ```csharp
-// ✅ ALWAYS — Use builders
+// [ALWAYS] — Use builders
 ApplicationUser user =
 	new UserBuilder(TimeProvider)
 		.WithUsername("admin")
@@ -148,7 +148,7 @@ RefreshToken token =
 		.WithExpiry(TimeProvider.GetUtcNow().AddDays(7))
 		.Build();
 
-// ❌ NEVER — Inline construction
+// [NEVER] — Inline construction
 ApplicationUser user = new() { Username = "admin" };
 ```
 
@@ -166,12 +166,12 @@ IUserRepository userRepo =
 ## Constants (NEVER magic strings)
 
 ```csharp
-// ✅ ALWAYS — Use constants
+// [ALWAYS] — Use constants
 await client.GetAsync(ApiEndpoints.Users.GetById(userId));
 await CreateAuthenticatedClientAsync(TestRoleConstants.Admin);
 [Collection(CollectionNames.PostgreSql)]
 
-// ❌ NEVER — Magic strings
+// [NEVER] — Magic strings
 await client.GetAsync($"/api/users/{userId}");
 [Collection("DatabaseTests")]
 ```
@@ -179,13 +179,10 @@ await client.GetAsync($"/api/users/{userId}");
 ## Time-Based Testing (CRITICAL)
 
 ```csharp
-// ✅ ALWAYS — Use FakeTimeProvider
-FakeTimeProvider timeProvider =
-	new();
-
+// [ALWAYS] — Use FakeTimeProvider
 timeProvider.Advance(TimeSpan.FromHours(1));
 
-// ❌ NEVER — Real delays
+// [NEVER] — Real delays
 await Task.Delay(1000);  // FORBIDDEN
 Thread.Sleep(500);        // FORBIDDEN
 ```
@@ -193,10 +190,10 @@ Thread.Sleep(500);        // FORBIDDEN
 ## Collection Attribute (Required for DB tests)
 
 ```csharp
-// ✅ ALWAYS — Use constant
+// [ALWAYS] — Use constant
 [Collection(CollectionNames.PostgreSql)]
 
-// ❌ NEVER — String literal
+// [NEVER] — String literal
 [Collection("DatabaseTests")]
 ```
 

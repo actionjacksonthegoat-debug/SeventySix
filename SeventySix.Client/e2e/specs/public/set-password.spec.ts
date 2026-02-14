@@ -34,7 +34,7 @@ unauthenticatedTest.describe("Set Password",
 					.locator(SELECTORS.setPassword.invalidLinkSection))
 					.toBeVisible({ timeout: TIMEOUTS.element });
 
-				await expect(unauthenticatedPage.locator("h1"))
+				await expect(unauthenticatedPage.locator(SELECTORS.layout.pageHeading))
 					.toHaveText(PAGE_TEXT.headings.invalidLink);
 			});
 
@@ -46,7 +46,7 @@ unauthenticatedTest.describe("Set Password",
 
 				const returnLink =
 					unauthenticatedPage.locator("a",
-						{ hasText: "Return to Login" });
+						{ hasText: PAGE_TEXT.links.returnToLogin });
 
 				await expect(returnLink)
 					.toBeVisible({ timeout: TIMEOUTS.element });

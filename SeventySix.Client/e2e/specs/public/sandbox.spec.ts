@@ -60,7 +60,7 @@ test.describe("Sandbox Page",
 					async ({ page }) =>
 					{
 						const cardContent =
-							page.locator("mat-card-content");
+							page.locator(SELECTORS.sandbox.cardContent);
 
 						await expect(cardContent)
 							.toContainText(PAGE_TEXT.sandbox.description);

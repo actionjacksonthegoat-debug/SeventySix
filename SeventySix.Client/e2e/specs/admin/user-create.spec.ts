@@ -35,7 +35,7 @@ test.describe("User Create",
 				await adminPage.waitForLoadState("load");
 
 				// Wait for Angular lazy-loaded component to render (extended for Docker)
-				await expect(adminPage.locator("h1"))
+				await expect(adminPage.locator(SELECTORS.layout.pageHeading))
 					.toHaveText(
 						PAGE_TEXT.headings.createNewUser,
 						{ timeout: TIMEOUTS.globalSetup });
@@ -44,7 +44,7 @@ test.describe("User Create",
 		test("should display create user heading",
 			async ({ adminPage }) =>
 			{
-				await expect(adminPage.locator("h1"))
+				await expect(adminPage.locator(SELECTORS.layout.pageHeading))
 					.toHaveText(PAGE_TEXT.headings.createNewUser);
 			});
 
@@ -52,7 +52,7 @@ test.describe("User Create",
 			async ({ adminPage }) =>
 			{
 				const steps =
-					adminPage.locator(".mat-step-header");
+					adminPage.locator(SELECTORS.stepper.stepHeader);
 
 				await expect(steps)
 					.toHaveCount(4, { timeout: TIMEOUTS.element });
@@ -86,7 +86,7 @@ test.describe("User Create",
 				// Try to advance without filling required fields — getByRole
 				// excludes hidden step buttons to avoid strict mode violation
 				await adminPage
-					.getByRole("button", { name: "Next" })
+					.getByRole("button", { name: PAGE_TEXT.buttons.next })
 					.click();
 
 				// Stepper should block advancement — step 1 fields still visible
@@ -136,7 +136,7 @@ test.describe("User Create",
 
 				// getByRole excludes hidden step buttons (avoids strict mode violation)
 				const nextButton = () =>
-					adminPage.getByRole("button", { name: "Next" });
+					adminPage.getByRole("button", { name: PAGE_TEXT.buttons.next });
 				const fullNameInput =
 					adminPage.locator(SELECTORS.userCreate.fullNameInput);
 
@@ -153,7 +153,7 @@ test.describe("User Create",
 				// Step 3: Roles (skip — optional)
 				// Wait for the Roles panel to render before advancing
 				await expect(adminPage
-					.getByRole("listbox", { name: "Role selection" }))
+					.getByRole("listbox", { name: PAGE_TEXT.labels.roleSelection }))
 					.toBeVisible({ timeout: TIMEOUTS.api });
 				await nextButton().click();
 
@@ -209,7 +209,7 @@ test.describe("User Create",
 					.toHaveClass(/ng-valid/, { timeout: TIMEOUTS.api });
 
 				const nextButton = () =>
-					adminPage.getByRole("button", { name: "Next" });
+					adminPage.getByRole("button", { name: PAGE_TEXT.buttons.next });
 				const fullNameInput =
 					adminPage.locator(SELECTORS.userCreate.fullNameInput);
 
@@ -224,7 +224,7 @@ test.describe("User Create",
 
 				// Step 3: Roles (skip)
 				await expect(adminPage
-					.getByRole("listbox", { name: "Role selection" }))
+					.getByRole("listbox", { name: PAGE_TEXT.labels.roleSelection }))
 					.toBeVisible({ timeout: TIMEOUTS.api });
 				await nextButton().click();
 
@@ -247,12 +247,10 @@ test.describe("User Create",
 				const searchInput =
 					adminPage.locator(SELECTORS.dataTable.searchInput);
 
-				// eslint-disable-next-line playwright/no-conditional-in-test -- search may not be visible
-				if (await searchInput.isVisible({ timeout: TIMEOUTS.element }))
-				{
-					await searchInput.fill(testUsername);
-					await adminPage.waitForLoadState("load");
-				}
+				await expect(searchInput)
+					.toBeVisible({ timeout: TIMEOUTS.element });
+				await searchInput.fill(testUsername);
+				await adminPage.waitForLoadState("load");
 
 				// Verify the username appears in the table
 				await expect(adminPage.locator(
@@ -296,7 +294,7 @@ test.describe("User Create",
 					.toHaveClass(/ng-valid/, { timeout: TIMEOUTS.api });
 
 				const nextButton = () =>
-					adminPage.getByRole("button", { name: "Next" });
+					adminPage.getByRole("button", { name: PAGE_TEXT.buttons.next });
 				const fullNameInput =
 					adminPage.locator(SELECTORS.userCreate.fullNameInput);
 
@@ -311,7 +309,7 @@ test.describe("User Create",
 
 				// Step 3: Roles (skip)
 				await expect(adminPage
-					.getByRole("listbox", { name: "Role selection" }))
+					.getByRole("listbox", { name: PAGE_TEXT.labels.roleSelection }))
 					.toBeVisible({ timeout: TIMEOUTS.api });
 				await nextButton().click();
 

@@ -3,7 +3,7 @@ description: Angular/TypeScript patterns and rules for SeventySix.Client
 applyTo: "**/SeventySix.Client/src/**/*.ts"
 ---
 
-# Angular Instructions (20+)
+# Angular Instructions
 
 ## Core Patterns
 
@@ -40,12 +40,12 @@ See `accessibility.instructions.md` for WCAG AA patterns (icons, loading, live r
 
 Each domain imports ONLY `@shared/*` + itself. NEVER another domain.
 
-| From → To  | @shared | @admin | @sandbox | @developer |
-| ---------- | ------- | ------ | -------- | ---------- |
-| @shared    | ✅      | ❌     | ❌       | ❌         |
-| @admin     | ✅      | ✅     | ❌       | ❌         |
-| @sandbox   | ✅      | ❌     | ✅       | ❌         |
-| @developer | ✅      | ❌     | ❌       | ✅         |
+| From → To  | @shared  | @admin   | @sandbox | @developer |
+| ---------- | -------- | -------- | -------- | ---------- |
+| @shared    | [SELF]   | [NEVER]  | [NEVER]  | [NEVER]    |
+| @admin     | [OK]     | [SELF]   | [NEVER]  | [NEVER]    |
+| @sandbox   | [OK]     | [NEVER]  | [SELF]   | [NEVER]    |
+| @developer | [OK]     | [NEVER]  | [NEVER]  | [SELF]     |
 
 ## File Organization
 
@@ -102,9 +102,18 @@ TestBed.configureTestingModule({
 - Default case returns generic message — NEVER passes through `error.error?.detail`
 - Use `AUTH_ERROR_CODE` constants, not string literals
 
+## Date/Time Handling (CRITICAL)
+
+| Required | Forbidden |
+| --- | --- |
+| `DateService` (wraps `date-fns` v4) | Native `new Date()`, `Date.now()`, `Date.parse()` |
+| `date-fns` functions via `DateService` | Direct `moment`, `dayjs`, or other date libraries |
+
+**Rule**: All production code AND test code must use `DateService` for date operations. Architecture tests enforce this — `new Date()` in any `.ts` file (except `date.service.ts` itself) will fail the build.
+
 ## Cross-Platform
 
-See `cross-platform.instructions.md` for Windows/Linux compatibility rules.
+See `copilot-instructions.md` Cross-Platform Compatibility section for Windows/Linux rules.
 
 ---
 
@@ -187,3 +196,16 @@ export function roleGuard(...requiredRoles: string[]): CanMatchFn {
 ```
 
 **Usage in routes:** `canMatch: [passwordChangeGuard(), roleGuard("Admin")]`
+
+## Chrome DevTools Verification (REQUIRED)
+
+After any component/service change, verify via Chrome DevTools MCP — see `copilot-instructions.md` Chrome DevTools section. Take screenshot + check console at minimum.
+
+Use `chrome-devtools` MCP for verifying deployed component behavior:
+- `mcp_chrome-devtoo_take_snapshot` — verify DOM structure and accessibility
+- `mcp_chrome-devtoo_list_console_messages` — check for runtime errors
+- `mcp_chrome-devtoo_list_network_requests` — verify API call patterns
+- `mcp_chrome-devtoo_take_screenshot` — visual verification
+- `mcp_chrome-devtoo_evaluate_script` — test signal values and component state
+
+> **Reminder**: Do NOT create documentation files in `/docs/`. Update existing READMEs and instruction files instead. See `copilot-instructions.md` for the full documentation rules.

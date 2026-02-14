@@ -22,6 +22,10 @@ public static class GetUserProfileQueryHandler
 	/// <summary>
 	/// Handles retrieval of a user's profile with cache-aside pattern.
 	/// </summary>
+	/// <remarks>
+	/// Uses TryGetAsync + SetAsync instead of GetOrSetAsync to avoid capturing
+	/// scoped services (UserManager) in a cache factory lambda.
+	/// </remarks>
 	/// <param name="query">
 	/// The query containing the user ID.
 	/// </param>
@@ -49,13 +53,30 @@ public static class GetUserProfileQueryHandler
 		string cacheKey =
 			IdentityCacheKeys.UserProfile(query.UserId);
 
-		return await cache.GetOrSetAsync(
+		// Try cache first — TryGetAsync returns MaybeValue<T> (not nullable)
+		MaybeValue<UserProfileDto?> cached =
+			await cache.TryGetAsync<UserProfileDto?>(
+				cacheKey,
+				token: cancellationToken);
+
+		if (cached.HasValue)
+		{
+			return cached.Value;
+		}
+
+		// Cache miss — fetch with current scoped UserManager (still alive)
+		UserProfileDto? result =
+			await FetchUserProfileAsync(
+				query.UserId,
+				userManager);
+
+		// Store in cache
+		await cache.SetAsync(
 			cacheKey,
-			async token =>
-				await FetchUserProfileAsync(
-					query.UserId,
-					userManager),
+			result,
 			token: cancellationToken);
+
+		return result;
 	}
 
 	/// <summary>

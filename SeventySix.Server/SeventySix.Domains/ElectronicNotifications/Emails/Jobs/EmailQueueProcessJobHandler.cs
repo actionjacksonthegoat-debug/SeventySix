@@ -6,7 +6,9 @@ using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SeventySix.Shared.BackgroundJobs;
+using SeventySix.Shared.Constants;
 using SeventySix.Shared.Contracts.Emails;
+using SeventySix.Shared.Interfaces;
 using Wolverine;
 
 namespace SeventySix.ElectronicNotifications.Emails.Jobs;
@@ -22,6 +24,9 @@ namespace SeventySix.ElectronicNotifications.Emails.Jobs;
 /// </param>
 /// <param name="recurringJobService">
 /// Service for recording execution and scheduling next run.
+/// </param>
+/// <param name="rateLimitingService">
+/// Rate limiting service for pre-batch circuit breaker checks.
 /// </param>
 /// <param name="emailSettings">
 /// Configuration for email delivery.
@@ -39,6 +44,7 @@ public class EmailQueueProcessJobHandler(
 	IMessageBus messageBus,
 	IEmailService emailService,
 	IRecurringJobService recurringJobService,
+	IRateLimitingService rateLimitingService,
 	IOptions<EmailSettings> emailSettings,
 	IOptions<EmailQueueSettings> queueSettings,
 	TimeProvider timeProvider,
@@ -71,6 +77,17 @@ public class EmailQueueProcessJobHandler(
 
 		if (emailConfig.Enabled && queueConfig.Enabled)
 		{
+			bool rateLimited =
+				await HandleRateLimitCircuitBreakerAsync(
+					queueConfig,
+					now,
+					cancellationToken);
+
+			if (rateLimited)
+			{
+				return;
+			}
+
 			IReadOnlyList<EmailQueueEntry> pendingEmails =
 				await messageBus.InvokeAsync<IReadOnlyList<EmailQueueEntry>>(
 					new GetPendingEmailsQuery(
@@ -85,18 +102,36 @@ public class EmailQueueProcessJobHandler(
 
 				foreach (EmailQueueEntry entry in pendingEmails)
 				{
-					bool success =
-						await ProcessSingleEmailAsync(
-							entry,
+					try
+					{
+						bool success =
+							await ProcessSingleEmailAsync(
+								entry,
+								cancellationToken);
+
+						if (success)
+						{
+							successCount++;
+						}
+						else
+						{
+							failCount++;
+						}
+					}
+					catch (EmailRateLimitException)
+					{
+						logger.LogWarning(
+							"Rate limited on email {EmailId}. Stopping batch — remaining emails deferred.",
+							entry.Id);
+
+						await messageBus.InvokeAsync(
+							new MarkEmailFailedCommand(
+								entry.Id,
+								"Rate limited - will retry"),
 							cancellationToken);
 
-					if (success)
-					{
-						successCount++;
-					}
-					else
-					{
 						failCount++;
+						break;
 					}
 				}
 
@@ -115,6 +150,57 @@ public class EmailQueueProcessJobHandler(
 			now,
 			interval,
 			cancellationToken);
+	}
+
+	/// <summary>
+	/// Checks the rate limit circuit breaker and schedules a backoff if the limit is active.
+	/// </summary>
+	/// <param name="queueConfig">
+	/// The email queue configuration settings.
+	/// </param>
+	/// <param name="now">
+	/// The current timestamp for scheduling.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// The cancellation token.
+	/// </param>
+	/// <returns>
+	/// True if rate limited (caller should skip the batch); otherwise false.
+	/// </returns>
+	private async Task<bool> HandleRateLimitCircuitBreakerAsync(
+		EmailQueueSettings queueConfig,
+		DateTimeOffset now,
+		CancellationToken cancellationToken)
+	{
+		bool canSend =
+			await rateLimitingService.CanMakeRequestAsync(
+				ExternalApiConstants.BrevoEmail,
+				cancellationToken);
+
+		if (canSend)
+		{
+			return false;
+		}
+
+		TimeSpan timeUntilReset =
+			rateLimitingService.GetTimeUntilReset();
+
+		TimeSpan backoffInterval =
+			timeUntilReset > TimeSpan.Zero
+				? timeUntilReset
+				: TimeSpan.FromMinutes(queueConfig.RateLimitBackoffMinutes);
+
+		logger.LogWarning(
+			"Email rate limit active. Skipping batch. Next attempt in {BackoffInterval}",
+			backoffInterval);
+
+		await recurringJobService.RecordAndScheduleNextAsync<EmailQueueProcessJob>(
+			nameof(EmailQueueProcessJob),
+			now,
+			backoffInterval,
+			cancellationToken);
+
+		return true;
 	}
 
 	/// <summary>
@@ -153,17 +239,7 @@ public class EmailQueueProcessJobHandler(
 		}
 		catch (EmailRateLimitException)
 		{
-			logger.LogWarning(
-				"Rate limited while sending email {EmailId}",
-				entry.Id);
-
-			await messageBus.InvokeAsync(
-				new MarkEmailFailedCommand(
-					entry.Id,
-					"Rate limited - will retry"),
-				cancellationToken);
-
-			return false;
+			throw;
 		}
 		catch (Exception exception)
 		{

@@ -2,7 +2,7 @@
 
 > **Model Context Protocol (MCP)** servers give VS Code's Copilot agent mode access to external tools — GitHub PRs, browser automation, database inspection, live docs, and design files.
 >
-> This project uses **6 MCP servers**. All are **100% free** with **zero billing risk**.
+> This project uses multiple MCP servers. All are **100% free** with **zero billing risk**.
 
 ---
 
@@ -12,15 +12,33 @@
 - [Prerequisites](#prerequisites)
 - [Server-by-Server Setup](#server-by-server-setup)
     - [1. GitHub](#1-github)
-    - [2. Playwright](#2-playwright)
-    - [3. PostgreSQL](#3-postgresql)
-    - [4. Chrome DevTools](#4-chrome-devtools)
-    - [5. Context7](#5-context7)
-    - [6. Figma Developer](#6-figma-developer)
+    - [2. PostgreSQL](#2-postgresql)
+    - [3. Chrome DevTools](#3-chrome-devtools)
+    - [4. Context7](#4-context7)
+    - [5. Figma Developer](#5-figma-developer)
         - [Recommended Free Figma UI Kits](#recommended-free-figma-ui-kits)
 - [How VS Code Uses These Servers](#how-vs-code-uses-these-servers)
 - [Pricing Safety Guarantees](#pricing-safety-guarantees)
 - [Troubleshooting](#troubleshooting)
+- [Which MCP Server Do I Need?](#which-mcp-server-do-i-need)
+
+---
+
+## Which MCP Server Do I Need?
+
+```mermaid
+graph TD
+    Start["What are you doing?"]
+    Start -->|PR / Issue work| GH["GitHub MCP"]
+    Start -->|DB inspection| PG["PostgreSQL MCP"]
+    Start -->|Screenshots / DevTools| CD["Chrome DevTools MCP"]
+    Start -->|Library docs lookup| C7["Context7 MCP"]
+    Start -->|Design-to-code| FG["Figma MCP"]
+    Start -->|k6 load test docs| C7
+    Start -->|E2E test running| CLI["Playwright CLI"]
+```
+
+> **Context7** is also the recommended source for k6 documentation when writing or debugging load tests.
 
 ---
 
@@ -29,11 +47,10 @@
 | #   | MCP Server          | Package                                 | License    | Cost                        | Credit Card Required? | Any Possible Charge? |
 | --- | ------------------- | --------------------------------------- | ---------- | --------------------------- | --------------------- | -------------------- |
 | 1   | **GitHub**          | `@modelcontextprotocol/server-github`   | MIT        | Free forever                | No                    | No                   |
-| 2   | **Playwright**      | `@playwright/mcp`                       | Apache-2.0 | Free forever                | No                    | No                   |
-| 3   | **PostgreSQL**      | `@modelcontextprotocol/server-postgres` | MIT        | Free forever                | No                    | No                   |
-| 4   | **Chrome DevTools** | `chrome-devtools-mcp`                   | Apache-2.0 | Free forever                | No                    | No                   |
-| 5   | **Context7**        | `@upstash/context7-mcp`                 | MIT        | Free forever (free tier)    | No                    | No                   |
-| 6   | **Figma Developer** | `figma-developer-mcp`                   | MIT        | Free forever (Starter plan) | No                    | No                   |
+| 2   | **PostgreSQL**      | `@modelcontextprotocol/server-postgres` | MIT        | Free forever                | No                    | No                   |
+| 3   | **Chrome DevTools** | `chrome-devtools-mcp`                   | Apache-2.0 | Free forever                | No                    | No                   |
+| 4   | **Context7**        | `@upstash/context7-mcp`                 | MIT        | Free forever (free tier)    | No                    | No                   |
+| 5   | **Figma Developer** | `figma-developer-mcp`                   | MIT        | Free forever (Starter plan) | No                    | No                   |
 
 > **Bottom line**: No server requires a credit card. No server has an auto-upgrade path. No server makes metered cloud API calls. If you hit a rate limit, the request simply fails — you are never charged.
 
@@ -91,24 +108,7 @@ MCP servers are **tools**, not models. They provide capabilities (GitHub API, br
 
 ---
 
-### 2. Playwright
-
-**Purpose**: Browser automation for E2E test debugging — navigate pages, click elements, fill forms, take screenshots.
-
-**What You Need**:
-
-- Nothing. Runs 100% locally.
-
-**Setup Steps**:
-
-1. That's it. No account, no API key, no configuration.
-2. The MCP server launches a local Chromium browser when activated.
-
-**Pricing Risk**: **NONE.** Fully open-source, fully local. No cloud services contacted.
-
----
-
-### 3. PostgreSQL
+### 2. PostgreSQL
 
 **Purpose**: Read-only database queries for debugging, schema inspection, and data exploration during development.
 
@@ -134,7 +134,7 @@ MCP servers are **tools**, not models. They provide capabilities (GitHub API, br
 
 ---
 
-### 4. Chrome DevTools
+### 3. Chrome DevTools
 
 **Purpose**: Live browser inspection — DOM, console logs, network requests, performance tracing, screenshots. Provides 26 tools across 6 categories.
 
@@ -168,7 +168,7 @@ The MCP is built and tested by the Google ChromeDevTools team specifically for C
 
 ---
 
-### 5. Context7
+### 4. Context7
 
 **Purpose**: Fetches up-to-date, version-specific library documentation directly into Copilot's context. Prevents hallucinated APIs by providing real docs for Angular, .NET, Wolverine, TanStack Query, Playwright, EF Core, and any other library.
 
@@ -216,7 +216,7 @@ Context7 Documentation MCP Server v2.x.x running on stdio
 
 ---
 
-### 6. Figma Developer
+### 5. Figma Developer
 
 **Purpose**: Paste a Figma design link into VS Code agent mode → the MCP extracts simplified layout and styling metadata → Copilot implements the design using your existing Material Design 3 theme and SCSS tokens.
 
@@ -325,7 +325,7 @@ These are the most popular, actively maintained, and fully free community kits o
 
 ## How VS Code Uses These Servers
 
-All 6 servers are configured in `.vscode/mcp.json` (already committed to the repo). When you open the project in VS Code:
+MCP servers are configured in `.vscode/mcp.json` (already committed to the repo). When you open the project in VS Code:
 
 1. **MCP servers start on demand** — they are NOT running in the background
 2. **VS Code prompts for secrets** the first time each server is activated:
@@ -365,7 +365,7 @@ The `.vscode/mcp.json` file is committed to the repo but contains **zero secrets
 | `new-angular-service.prompt.md` | context7                              |
 | `new-service.prompt.md`         | context7, postgresql                  |
 | `new-feature.prompt.md`         | context7, postgresql, figma           |
-| `new-e2e-test.prompt.md`        | context7, playwright, chrome-devtools |
+| `new-e2e-test.prompt.md`        | context7, chrome-devtools             |
 
 ---
 
@@ -380,7 +380,7 @@ The `.vscode/mcp.json` file is committed to the repo but contains **zero secrets
 | **Never create an Upstash account**   | Context7 free tier needs no account. Only create one if you want higher rate limits (and even then, Upstash has a free tier). |
 | **Never generate a Context7 API key** | Without a key, you cannot be charged. Period.                                                                                 |
 | **GitHub stays free**                 | GitHub API at 5,000 req/hour is free for all account types                                                                    |
-| **All local servers cost nothing**    | Playwright, Chrome DevTools, and PostgreSQL run entirely on your machine                                                      |
+| **All local servers cost nothing**    | Chrome DevTools and PostgreSQL run entirely on your machine                                                                    |
 
 ### What Happens If You Hit Rate Limits?
 
@@ -389,7 +389,6 @@ The `.vscode/mcp.json` file is committed to the repo but contains **zero secrets
 | GitHub          | 5,000 req/hour           | Request returns HTTP 403. Wait ~1 minute.  |
 | Context7        | Undisclosed (free tier)  | Request fails with error. Try again later. |
 | Figma           | ~30 req/minute (Starter) | Request returns HTTP 429. Wait ~1 minute.  |
-| Playwright      | None (local)             | N/A                                        |
 | Chrome DevTools | None (local)             | N/A                                        |
 | PostgreSQL      | None (local)             | N/A                                        |
 

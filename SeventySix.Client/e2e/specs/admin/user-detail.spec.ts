@@ -7,7 +7,8 @@ import {
 	expect,
 	SELECTORS,
 	ROUTES,
-	TIMEOUTS
+	TIMEOUTS,
+	PAGE_TEXT
 } from "../../fixtures";
 
 /**
@@ -120,7 +121,7 @@ test.describe("User Detail",
 						adminPage.locator(SELECTORS.notification.snackbar);
 					await expect(notification)
 						.toContainText(
-							"User updated successfully",
+							PAGE_TEXT.confirmation.userUpdated,
 							{ timeout: TIMEOUTS.api });
 
 					// Save button should become disabled again (form pristine)

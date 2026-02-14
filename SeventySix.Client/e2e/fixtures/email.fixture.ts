@@ -2,6 +2,8 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+import { E2E_CONFIG } from "./config.constant";
+
 /**
  * Email from MailDev API.
  */
@@ -44,7 +46,7 @@ export interface MailDevEmail
  */
 export class EmailTestHelper
 {
-	private static readonly MAILDEV_API_URL: string = "http://localhost:1080";
+	private static readonly MAILDEV_API_URL: string = E2E_CONFIG.mailDevUrl;
 
 	/**
 	 * Polls MailDev until it responds or the timeout expires.

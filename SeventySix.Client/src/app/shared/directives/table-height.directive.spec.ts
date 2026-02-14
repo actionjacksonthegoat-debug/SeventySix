@@ -120,7 +120,7 @@ describe("TableHeightDirective",
 					.toHaveBeenCalledTimes(1);
 			});
 
-		it("should always apply standard table offset (120px at density -1)",
+		it("should calculate height using viewport minus element top position",
 			() =>
 			{
 				// Set viewport height to known value for predictable testing

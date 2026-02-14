@@ -12,6 +12,7 @@ import {
 	PAGE_TEXT,
 	TIMEOUTS,
 	E2E_CONFIG,
+	API_ROUTES,
 	loginAsUser,
 	ChangePasswordPageHelper
 } from "../../fixtures";
@@ -147,7 +148,7 @@ test.describe("Forced Password Change",
 				const loginResponsePromise =
 					unauthenticatedPage.waitForResponse(
 						(response) =>
-							response.url().includes("/api/v1/auth/login")
+							response.url().includes(API_ROUTES.auth.login)
 								&& response.status() === 200);
 
 				await loginAsForcedUser(unauthenticatedPage);
@@ -163,7 +164,7 @@ test.describe("Forced Password Change",
 				// Must use absolute API URL since the E2E nginx serves
 				// the client app and has no /api/ proxy.
 				const apiUrl: string =
-					`${E2E_CONFIG.apiBaseUrl}/api/v1/auth/trusted-devices`;
+					`${E2E_CONFIG.apiBaseUrl}${API_ROUTES.auth.trustedDevices}`;
 
 				const apiStatus: number =
 					await unauthenticatedPage.evaluate(

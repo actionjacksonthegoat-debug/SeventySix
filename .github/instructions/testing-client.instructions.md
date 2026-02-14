@@ -60,7 +60,7 @@ TestBed.configureTestingModule({
 ```typescript
 import { createMockLogger, createMockNotificationService, createMockRouter, createMockApiService } from "@testing/mock-factories";
 
-// ✅ Use mock factories for dependencies
+// [CORRECT] Use mock factories for dependencies
 const mockRouter: Router = createMockRouter();
 const mockApi: ApiService = createMockApiService();
 ```
@@ -82,7 +82,7 @@ await flushMicrotasks();
 > ALL client tests MUST use `provideZonelessChangeDetection()`. Never import `Zone.js` in tests.
 
 ```typescript
-// ✅ ALWAYS — Zoneless
+// [ALWAYS] — Zoneless
 TestBed.configureTestingModule({
 	providers: [
 		provideZonelessChangeDetection(),
@@ -90,7 +90,7 @@ TestBed.configureTestingModule({
 	],
 });
 
-// ❌ NEVER — Zone.js dependent
+// [NEVER] — Zone.js dependent
 TestBed.configureTestingModule({
 	// Missing zoneless provider
 });
@@ -106,4 +106,8 @@ Focus coverage on the **20% of code that carries 80% of risk**:
 4. Component behavior with user interactions
 
 **Skip tests for:** Simple template bindings, pass-through services, DTOs, constants.
+
+## Chrome DevTools Verification (REQUIRED)
+
+After unit tests pass, verify in real browser via Chrome DevTools MCP — see `copilot-instructions.md` Chrome DevTools section.
 

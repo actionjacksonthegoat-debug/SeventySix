@@ -72,7 +72,7 @@ expect(criticalViolations).toHaveLength(0);
 
 ## Anti-Flake Rules (CRITICAL)
 
-| ❌ NEVER | ✅ ALWAYS |
+| [NEVER] | [ALWAYS] |
 |----------|-----------|
 | `page.waitForTimeout(1000)` | `page.waitForLoadState("load")` |
 | `page.locator(".row:nth-child(2)")` | `page.locator("[data-testid='user-row']")` |
@@ -118,12 +118,34 @@ export class UserManagementPageHelper
 ## Test Isolation
 
 ```typescript
-// ✅ Unique test data
+// [CORRECT] Unique test data
 const uniqueEmail = `e2e_test_${Date.now()}@test.local`;
 
-// ✅ Filter by test prefix
+// [CORRECT] Filter by test prefix
 await page.locator("[data-testid='search']").fill("e2e_");
 ```
+
+## Playwright CLI (Test Running)
+
+Always use Playwright CLI for running and debugging E2E tests — never use a Playwright MCP:
+
+| Task | Command |
+|---|---|
+| Run all tests | `npx playwright test` |
+| Run one spec | `npx playwright test specs/auth/login.spec.ts` |
+| Run by grep | `npx playwright test --grep "login"` |
+| Run failed only | `npx playwright test --last-failed` |
+| List all tests | `npx playwright test --list` |
+| Run one project | `npx playwright test --project=admin` |
+| Minimal output | `npx playwright test --reporter=line` |
+| Debug (headed) | `npx playwright test --headed --debug` |
+| JSON output | `npx playwright test --reporter=json` |
+| Show report | `npx playwright show-report` |
+| Show trace | `npx playwright show-trace test-results/*/trace.zip` |
+
+## Chrome DevTools MCP (E2E Debugging)
+
+When E2E tests fail, use Chrome DevTools MCP to diagnose — `list_console_messages` for JS errors, `list_network_requests` for API failures, `take_screenshot` for visual state. See `copilot-instructions.md` Chrome DevTools section.
 
 
 ````

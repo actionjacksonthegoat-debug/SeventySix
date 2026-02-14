@@ -85,5 +85,6 @@ public sealed class EmailQueueSettingsValidatorUnitTests
 			MaxAttempts = 3,
 			RetryDelayMinutes = 5,
 			DeadLetterAfterHours = 24,
+			RateLimitBackoffMinutes = 30
 		};
 }

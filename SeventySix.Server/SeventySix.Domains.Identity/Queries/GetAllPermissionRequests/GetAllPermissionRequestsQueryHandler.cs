@@ -2,7 +2,6 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using Microsoft.Extensions.DependencyInjection;
 using SeventySix.Shared.Constants;
 using ZiggyCreatures.Caching.Fusion;
 
@@ -12,9 +11,8 @@ namespace SeventySix.Identity.Queries.GetAllPermissionRequests;
 /// Handler for retrieving all pending permission requests with caching.
 /// </summary>
 /// <remarks>
-/// Uses <see cref="IServiceScopeFactory"/> to create a fresh scope inside the cache factory.
-/// This prevents ObjectDisposedException when FusionCache runs background refresh
-/// (eager refresh) after the original HTTP request scope has been disposed.
+/// Uses TryGetAsync + SetAsync instead of GetOrSetAsync to avoid capturing
+/// scoped services in a cache factory lambda that may execute after scope disposal.
 /// </remarks>
 public static class GetAllPermissionRequestsQueryHandler
 {
@@ -25,15 +23,13 @@ public static class GetAllPermissionRequestsQueryHandler
 		TimeSpan.FromSeconds(30);
 
 	/// <summary>
-	/// Handles the query to get all permission requests.
+	/// Handles the query to get all permission requests with cache-aside pattern.
 	/// </summary>
 	/// <param name="query">
 	/// The query.
 	/// </param>
-	/// <param name="serviceScopeFactory">
-	/// Factory to create new service scopes for background cache refresh.
-	/// Required because FusionCache may call the factory after the original
-	/// request scope is disposed (eager refresh at 80% TTL threshold).
+	/// <param name="repository">
+	/// The permission request repository.
 	/// </param>
 	/// <param name="cacheProvider">
 	/// The FusionCache provider for named cache access.
@@ -46,37 +42,42 @@ public static class GetAllPermissionRequestsQueryHandler
 	/// </returns>
 	public static async Task<IEnumerable<PermissionRequestDto>> HandleAsync(
 		GetAllPermissionRequestsQuery query,
-		IServiceScopeFactory serviceScopeFactory,
+		IPermissionRequestRepository repository,
 		IFusionCacheProvider cacheProvider,
 		CancellationToken cancellationToken)
 	{
-		IFusionCache identityCache =
+		IFusionCache cache =
 			cacheProvider.GetCache(CacheNames.Identity);
 
 		string cacheKey =
 			IdentityCacheKeys.PermissionRequests();
 
-		return await identityCache.GetOrSetAsync(
+		// Try cache first — TryGetAsync returns MaybeValue<T> (not nullable)
+		MaybeValue<List<PermissionRequestDto>> cached =
+			await cache.TryGetAsync<List<PermissionRequestDto>>(
+				cacheKey,
+				token: cancellationToken);
+
+		if (cached.HasValue)
+		{
+			return cached.Value ?? [];
+		}
+
+		// Cache miss — fetch with current scoped DbContext (still alive)
+		List<PermissionRequestDto> requests =
+			(await repository.GetAllAsync(cancellationToken))
+				.ToList();
+
+		// Store in cache
+		await cache.SetAsync(
 			cacheKey,
-			async cancellation =>
-			{
-				// Create a new scope for each factory execution.
-				// This ensures the repository and DbContext are fresh,
-				// even when called from FusionCache's background refresh.
-				await using AsyncServiceScope scope =
-					serviceScopeFactory.CreateAsyncScope();
-
-				IPermissionRequestRepository repository =
-					scope.ServiceProvider
-						.GetRequiredService<IPermissionRequestRepository>();
-
-				return await repository.GetAllAsync(cancellation);
-			},
+			requests,
 			options =>
 			{
 				options.Duration = CacheDuration;
 			},
-			token: cancellationToken)
-			?? [];
+			token: cancellationToken);
+
+		return requests;
 	}
 }

@@ -157,6 +157,48 @@ export default [
 			"no-restricted-syntax": "off"
 		}
 	},
+	// Load testing (k6) — plain JS, no TypeScript
+	{
+		files: ["load-testing/lib/**/*.js", "load-testing/scenarios/**/*.js", "load-testing/scripts/**/*.js"],
+		languageOptions: {
+			parser: parser,
+			parserOptions: {
+				ecmaVersion: 2022,
+				sourceType: "module"
+			},
+			globals: {
+				__ENV: "readonly",
+				__VU: "readonly",
+				__ITER: "readonly",
+				open: "readonly",
+				console: "readonly"
+			}
+		},
+		plugins: sharedPlugins,
+		rules: {
+			// Stylistic rules — same as Client
+			"@stylistic/operator-linebreak": sharedRules["@stylistic/operator-linebreak"],
+			"@stylistic/function-call-argument-newline": sharedRules["@stylistic/function-call-argument-newline"],
+			"@stylistic/newline-per-chained-call": sharedRules["@stylistic/newline-per-chained-call"],
+			"@stylistic/brace-style": sharedRules["@stylistic/brace-style"],
+			"@stylistic/indent": sharedRules["@stylistic/indent"],
+			"@stylistic/quotes": sharedRules["@stylistic/quotes"],
+			"@stylistic/semi": sharedRules["@stylistic/semi"],
+			"@stylistic/comma-dangle": sharedRules["@stylistic/comma-dangle"],
+			// Custom formatting rules — same as Client
+			"local/assignment-newline": sharedRules["local/assignment-newline"],
+			"local/arrow-body-newline": sharedRules["local/arrow-body-newline"],
+			"local/closing-angle-same-line": sharedRules["local/closing-angle-same-line"],
+			"local/closing-paren-same-line": sharedRules["local/closing-paren-same-line"],
+			"local/operator-continuation-indent": sharedRules["local/operator-continuation-indent"],
+			"local/call-argument-object-newline": sharedRules["local/call-argument-object-newline"],
+			// Quality rules (JS-compatible subset)
+			"no-console": sharedRules["no-console"],
+			"prefer-const": "error",
+			"no-var": "error",
+			"eqeqeq": ["error", "always", { "null": "ignore" }]
+		}
+	},
 	// E2E / Playwright tests
 	{
 		files: ["e2e/**/*.ts"],
@@ -252,6 +294,12 @@ export default [
 		}
 	},
 	{
-		ignores: ["dist/**", "node_modules/**", "coverage/**", ".angular/**", "vite.config.ts"]
+		files: ["load-testing/scripts/**/*.js"],
+		rules: {
+			"no-console": "off"
+		}
+	},
+	{
+		ignores: ["dist/**", "node_modules/**", "coverage/**", ".angular/**", "vite.config.ts", "load-testing/node_modules/**", "load-testing/reports/**", "load-testing/results/**"]
 	}
 ];

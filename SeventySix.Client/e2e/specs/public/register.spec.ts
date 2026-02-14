@@ -363,7 +363,7 @@ test.describe("Registration Flow",
 					{
 						// Navigate to register-complete with a token (token is validated on submit)
 						await page.goto(
-							`${ROUTES.auth.register}/complete?token=test-token-value&email=policy_test@test.local`);
+							`${ROUTES.auth.registerComplete}?token=test-token-value&email=policy_test@test.local`);
 						await page.waitForLoadState("load");
 
 						const usernameInput =
@@ -391,7 +391,7 @@ test.describe("Registration Flow",
 					async ({ page }) =>
 					{
 						await page.goto(
-							`${ROUTES.auth.register}/complete?token=test-token-value&email=policy_test@test.local`);
+							`${ROUTES.auth.registerComplete}?token=test-token-value&email=policy_test@test.local`);
 						await page.waitForLoadState("load");
 
 						await page
@@ -413,7 +413,7 @@ test.describe("Registration Flow",
 					async ({ page }) =>
 					{
 						await page.goto(
-							`${ROUTES.auth.register}/complete?token=test-token-value&email=policy_test@test.local`);
+							`${ROUTES.auth.registerComplete}?token=test-token-value&email=policy_test@test.local`);
 						await page.waitForLoadState("load");
 
 						await page

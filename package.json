@@ -6,7 +6,7 @@
 		"test": "npm run test:server && npm run test:client",
 		"test:server": "powershell -Command \"if (-not (Get-Process 'Docker Desktop' -ErrorAction SilentlyContinue)) { Start-Process 'C:\\Program Files\\Docker\\Docker\\Docker Desktop.exe'; Start-Sleep -Seconds 10 }\" && cd SeventySix.Server && dotnet build && dotnet test",
 		"test:client": "cd SeventySix.Client && npm test",
-		"test:e2e": "cd SeventySix.Client && npm run test:e2e",
+		"test:e2e": "cd SeventySix.Client && npm run test:e2e --",
 		"start": "powershell -ExecutionPolicy Bypass -File scripts/start-dev.ps1",
 		"start:client": "cd SeventySix.Client && npm start",
 		"start:api-debug": "powershell -ExecutionPolicy Bypass -File scripts/start-infrastructure.ps1",
@@ -20,6 +20,11 @@
 		"secrets:init": "powershell -ExecutionPolicy Bypass -File scripts/manage-user-secrets.ps1 -Action init",
 		"secrets:list": "powershell -ExecutionPolicy Bypass -File scripts/manage-user-secrets.ps1 -Action list",
 		"secrets:set": "powershell -ExecutionPolicy Bypass -File scripts/manage-user-secrets.ps1 -Action set",
-		"secrets:delete": "powershell -ExecutionPolicy Bypass -File scripts/manage-user-secrets.ps1 -Action delete"
+		"secrets:delete": "powershell -ExecutionPolicy Bypass -File scripts/manage-user-secrets.ps1 -Action delete",
+		"generate:icons": "cd SeventySix.Client && npm run generate:icons",
+		"loadtest:quick": "node -e \"require('child_process').execSync(process.platform==='win32'?'powershell -ExecutionPolicy Bypass -File SeventySix.Client/load-testing/scripts/run-load-tests.ps1 -Profile quick':'bash SeventySix.Client/load-testing/scripts/run-load-tests.sh quick',{stdio:'inherit'})\"",
+		"loadtest:smoke": "node -e \"require('child_process').execSync(process.platform==='win32'?'powershell -ExecutionPolicy Bypass -File SeventySix.Client/load-testing/scripts/run-load-tests.ps1 -Profile smoke':'bash SeventySix.Client/load-testing/scripts/run-load-tests.sh smoke',{stdio:'inherit'})\"",
+		"loadtest:load": "node -e \"require('child_process').execSync(process.platform==='win32'?'powershell -ExecutionPolicy Bypass -File SeventySix.Client/load-testing/scripts/run-load-tests.ps1 -Profile load':'bash SeventySix.Client/load-testing/scripts/run-load-tests.sh load',{stdio:'inherit'})\"",
+		"loadtest:stress": "node -e \"require('child_process').execSync(process.platform==='win32'?'powershell -ExecutionPolicy Bypass -File SeventySix.Client/load-testing/scripts/run-load-tests.ps1 -Profile stress':'bash SeventySix.Client/load-testing/scripts/run-load-tests.sh stress',{stdio:'inherit'})\""
 	}
 }

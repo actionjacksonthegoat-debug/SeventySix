@@ -35,4 +35,21 @@ internal class AuthRepository(IdentityDbContext context) : IAuthRepository
 							user => user.LastLoginIp,
 							clientIp),
 				cancellationToken);
+
+	/// <inheritdoc/>
+	public async Task<ApplicationUser?> FindByUsernameOrEmailAsync(
+		string usernameOrEmail,
+		CancellationToken cancellationToken = default)
+	{
+		string normalized =
+			usernameOrEmail.ToUpperInvariant();
+
+		return await context
+			.Users
+			.FirstOrDefaultAsync(
+				user =>
+					user.NormalizedUserName == normalized
+						|| user.NormalizedEmail == normalized,
+				cancellationToken);
+	}
 }

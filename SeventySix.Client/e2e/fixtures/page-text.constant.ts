@@ -49,7 +49,11 @@ export const PAGE_TEXT =
 				setPassword: /Set Password|Setting Password/,
 				createUser: /Create User/,
 				generateCodes: "Generate Codes",
-				savedMyCodes: "I've Saved My Codes"
+				savedMyCodes: "I've Saved My Codes",
+				next: "Next",
+				cantScan: "Can't scan",
+				scannedCode: "I've scanned the code",
+				verifyAndEnable: "Verify & Enable"
 			},
 
 		/**
@@ -58,7 +62,8 @@ export const PAGE_TEXT =
 		links:
 			{
 				forgotPassword: "Forgot password?",
-				returnToSignIn: "Return to Sign In"
+				returnToSignIn: "Return to Sign In",
+				returnToLogin: "Return to Login"
 			},
 
 		/**
@@ -68,7 +73,8 @@ export const PAGE_TEXT =
 			{
 				enterUsernamePassword: "Please enter username and password",
 				enterEmail: "Please enter an email address",
-				validEmail: "valid email"
+				validEmail: "valid email",
+				minimumCharacters: "8 characters"
 			},
 
 		/**
@@ -133,7 +139,9 @@ export const PAGE_TEXT =
 		confirmation:
 			{
 				checkYourEmail: "Check Your Email",
-				passwordChanged: "Password changed successfully"
+				passwordChanged: "Password changed successfully",
+				userUpdated: "User updated successfully",
+				permissionRequestSubmitted: "Permission request submitted"
 			},
 
 		/**
@@ -161,7 +169,8 @@ export const PAGE_TEXT =
 				usernameOrEmail: "Username or Email",
 				password: "Password",
 				rememberMe: "Remember me",
-				emailAddress: "Email Address"
+				emailAddress: "Email Address",
+				roleSelection: "Role selection"
 			},
 
 		/**
@@ -299,7 +308,8 @@ export const PAGE_TEXT =
 				styleGuide:
 					{
 						title: "Style Guide",
-						description: "Material Design 3 components and design tokens"
+						description: "Material Design 3 components and design tokens",
+						colorsTab: "Colors"
 					},
 				architectureGuide:
 					{

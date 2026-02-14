@@ -34,7 +34,7 @@ test.describe("Change Password",
 		test("should display change password heading",
 			async ({ userPage }) =>
 			{
-				await expect(userPage.locator("h1"))
+				await expect(userPage.locator(SELECTORS.layout.pageHeading))
 					.toHaveText(PAGE_TEXT.headings.changePassword);
 			});
 
@@ -66,11 +66,11 @@ test.describe("Change Password",
 			async ({ userPage }) =>
 			{
 				const passwordHint =
-					userPage.locator("#newPassword-hint");
+					userPage.locator(SELECTORS.changePassword.passwordHint);
 
 				await expect(passwordHint)
 					.toBeVisible();
 				await expect(passwordHint)
-					.toContainText("8 characters");
+					.toContainText(PAGE_TEXT.validation.minimumCharacters);
 			});
 	});

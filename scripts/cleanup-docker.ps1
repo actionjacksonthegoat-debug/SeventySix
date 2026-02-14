@@ -65,12 +65,25 @@ if ($IncludeVolumes)
 	Pop-Location
 
 	# Remove all seventysix_* volumes explicitly (handles both old 'seventysixserver' and new 'seventysix' projects)
-	Write-Host "Removing SeventySix volumes..." -ForegroundColor Yellow
+	# EXCLUDES postgres volumes — use 'npm run db:reset' for database reset (USER ONLY)
+	Write-Host "Removing SeventySix volumes (excluding PostgreSQL)..." -ForegroundColor Yellow
 	$volumes =
-		docker volume ls --format "{{.Name}}" | Where-Object { $_ -match "^seventysix" }
+	docker volume ls --format "{{.Name}}" | Where-Object { $_ -match "^seventysix" -and $_ -notmatch "postgres" }
 
-	foreach ($volume in $volumes)
+	$postgresVolumes =
+	docker volume ls --format "{{.Name}}" | Where-Object { $_ -match "^seventysix" -and $_ -match "postgres" }
+
+	if ($postgresVolumes)
 	{
+		Write-Host ""
+		foreach ($pgVolume in $postgresVolumes) {
+			Write-Host "  Skipping PostgreSQL volume: $pgVolume" -ForegroundColor Yellow
+		}
+		Write-Host "  -> Use 'npm run db:reset' to reset the database (USER ONLY)" -ForegroundColor Yellow
+		Write-Host ""
+	}
+
+	foreach ($volume in $volumes) {
 		Write-Host "  Removing: $volume" -ForegroundColor DarkYellow
 		$ErrorActionPreference = "SilentlyContinue"
 		docker volume rm $volume --force 2>&1 | Out-Null

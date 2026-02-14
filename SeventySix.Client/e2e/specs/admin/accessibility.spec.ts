@@ -63,14 +63,14 @@ test.describe("Admin Routes - WCAG Accessibility",
 
 						// Verify table has proper ARIA attributes
 						const table =
-							adminPage.locator("table[mat-table]");
+							adminPage.locator(SELECTORS.dataTable.matTable);
 
 						await expect(table)
 							.toBeVisible();
 
 						// Check column headers are accessible
 						const headerCells =
-							adminPage.locator("th[mat-header-cell]");
+							adminPage.locator(SELECTORS.dataTable.headerCell);
 
 						await expect(headerCells.first())
 							.toBeVisible();
@@ -83,7 +83,7 @@ test.describe("Admin Routes - WCAG Accessibility",
 						await adminPage.waitForLoadState("load");
 
 						const table =
-							adminPage.locator("table[mat-table]");
+							adminPage.locator(SELECTORS.dataTable.matTable);
 
 						await expect(table)
 							.toBeVisible();
@@ -101,7 +101,7 @@ test.describe("Admin Routes - WCAG Accessibility",
 
 						// All icon buttons should have aria-label
 						const iconButtons =
-							adminPage.locator("button[mat-icon-button]");
+							adminPage.locator(SELECTORS.dataTable.iconButton);
 						const iconButtonCount =
 							await iconButtons.count();
 

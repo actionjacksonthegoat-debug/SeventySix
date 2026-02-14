@@ -34,4 +34,20 @@ public interface IAuthRepository
 		DateTime loginTime,
 		string? clientIp,
 		CancellationToken cancellationToken = default);
+
+	/// <summary>
+	/// Finds a user by username or email in a single query.
+	/// </summary>
+	/// <param name="usernameOrEmail">
+	/// The username or email to search for.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// The user if found; otherwise null.
+	/// </returns>
+	public Task<ApplicationUser?> FindByUsernameOrEmailAsync(
+		string usernameOrEmail,
+		CancellationToken cancellationToken = default);
 }

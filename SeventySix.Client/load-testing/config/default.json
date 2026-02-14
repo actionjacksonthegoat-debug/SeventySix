@@ -1,0 +1,13 @@
+{
+	"baseUrl": "https://localhost:7175",
+	"adminCredentials": {
+		"username": "e2e_admin",
+		"password": "E2E_Admin_Password_123!"
+	},
+	"userCredentials": {
+		"username": "e2e_user",
+		"password": "E2E_User_Password_123!"
+	},
+	"testUserPrefix": "loadtest_",
+	"apiVersion": "v1"
+}

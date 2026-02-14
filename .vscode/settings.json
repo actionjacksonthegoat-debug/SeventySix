@@ -86,5 +86,8 @@
 	// Prompt file locations (explicit)
 	"chat.promptFilesLocations": {
 		".github/prompts": true
-	}
+	},
+
+	// Enable mcp
+	"chat.mcp.access": "all"
 }

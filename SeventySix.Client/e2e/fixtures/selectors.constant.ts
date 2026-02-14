@@ -17,7 +17,9 @@ export const SELECTORS =
 				emailInput: "#email",
 				usernameInput: "#usernameOrEmail",
 				passwordInput: "#password",
-				rememberMeCheckbox: "#rememberMe"
+				rememberMeCheckbox: "#rememberMe",
+				errorMessage: "[role='alert'], .error-message, mat-error",
+				matError: "mat-error"
 			},
 
 		/**
@@ -54,7 +56,8 @@ export const SELECTORS =
 				newPasswordInput: "[data-testid='new-password-input']",
 				confirmPasswordInput: "[data-testid='confirm-password-input']",
 				submitButton: "[data-testid='change-password-submit']",
-				requiredNotice: "[data-testid='required-notice']"
+				requiredNotice: "[data-testid='required-notice']",
+				passwordHint: "#newPassword-hint"
 			},
 
 		/**
@@ -74,7 +77,10 @@ export const SELECTORS =
 			{
 				qrCodeImage: "[data-testid='qr-code-image']",
 				secretCode: "[data-testid='secret-code']",
-				verificationCodeInput: "#verificationCode"
+				verificationCodeInput: "#verificationCode",
+				cantScanButton: "button.link-button",
+				scannedCodeButton: "button",
+				verifyEnableButton: "button"
 			},
 
 		/**
@@ -83,7 +89,8 @@ export const SELECTORS =
 		backupCodes:
 			{
 				codesGrid: "[data-testid='codes-grid']",
-				codeItem: ".code-item"
+				codeItem: ".code-item",
+				warningBox: ".warning-box"
 			},
 
 		/**
@@ -203,7 +210,9 @@ export const SELECTORS =
 			{
 				pageHeader: "app-page-header",
 				logList: "app-log-list",
-				dataTable: "app-data-table"
+				dataTable: "app-data-table",
+				detailDialog: ".log-detail-dialog",
+				messageContent: ".message-content"
 			},
 
 		/**
@@ -244,8 +253,11 @@ export const SELECTORS =
 		developer:
 			{
 				styleGuideHeader: ".style-guide-header h1",
+				styleGuideContainer: ".style-guide-header",
 				architectureGuideHeader: ".architecture-guide-container h1",
-				themeToggle: "button[aria-label='Toggle theme brightness']"
+				themeToggle: "button[aria-label='Toggle theme brightness']",
+				tabGroup: "mat-tab-group",
+				colorSchemeSelect: "mat-select"
 			},
 
 		/**
@@ -255,7 +267,8 @@ export const SELECTORS =
 			{
 				container: ".sandbox-container",
 				sandboxCard: ".sandbox-card",
-				sandboxTitle: ".sandbox-card mat-card-title h1"
+				sandboxTitle: ".sandbox-card mat-card-title h1",
+				cardContent: "mat-card-content"
 			},
 
 		/**
@@ -279,7 +292,39 @@ export const SELECTORS =
 				emptyState: ".empty-state",
 				loadingSpinner: "mat-spinner",
 				searchInput: "input[placeholder*='Search']",
+				matInput: "input[matinput]",
+				chipOption: "mat-chip-option",
+				rowActionsButton: "button[aria-label='Row actions']",
+				matTable: "table[mat-table]",
+				headerCell: "th[mat-header-cell]",
+				iconButton: "button[mat-icon-button]",
 				refreshButton: "button[aria-label*='Refresh']"
+			},
+
+		/**
+		 * Dialog selectors.
+		 */
+		dialog:
+			{
+				container: "mat-dialog-container",
+				closeButton: "button[aria-label*='Close']"
+			},
+
+		/**
+		 * Menu selectors.
+		 */
+		menu:
+			{
+				menuItem: "button.mat-mdc-menu-item",
+				warnMenuItem: "button.mat-mdc-menu-item.warn-action"
+			},
+
+		/**
+		 * Stepper selectors.
+		 */
+		stepper:
+			{
+				stepHeader: ".mat-step-header"
 			},
 
 		/**

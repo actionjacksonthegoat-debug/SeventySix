@@ -1538,6 +1538,210 @@ test("Templates must not use mat-raised-button, mat-flat-button, or mat-fab", as
 });
 
 // ============================================================================
+// E2E & LOAD TESTING ARCHITECTURE TESTS
+// ============================================================================
+
+console.log("\nE2E & Load Testing Tests");
+
+const E2E_DIR = path.join(__dirname, "..", "e2e");
+const LOAD_TESTING_DIR = path.join(__dirname, "..", "load-testing");
+
+/**
+ * Recursively gets all files matching a pattern in a directory.
+ * Supports multiple extensions via an array.
+ */
+async function getTestInfraFiles(
+	directory,
+	extensions
+)
+{
+	const files = [];
+
+	try
+	{
+		const entries = await fs.readdir(directory, { withFileTypes: true });
+
+		for (const entry of entries)
+		{
+			const fullPath = path.join(directory, entry.name);
+
+			if (entry.isDirectory() && !entry.name.startsWith(".") && entry.name !== "node_modules")
+			{
+				files.push(...(await getTestInfraFiles(fullPath, extensions)));
+			}
+			else if (entry.isFile() && extensions.some((extension) => entry.name.endsWith(extension)))
+			{
+				files.push(fullPath);
+			}
+		}
+	}
+	catch
+	{
+		// Directory may not exist
+	}
+
+	return files;
+}
+
+test("E2E code should not use double-bang (!!) for boolean coercion", async () =>
+{
+	const e2eFiles = await getTestInfraFiles(E2E_DIR, [".ts"]);
+	const violations = [];
+	const doubleBangPattern = /!!\s*[a-zA-Z_$]/g;
+
+	for (const file of e2eFiles)
+	{
+		const relativePath = path.relative(path.join(__dirname, ".."), file);
+		const content = await fs.readFile(file, "utf-8");
+
+		// Skip architecture-ignore comments
+		if (content.includes("// architecture-ignore"))
+		{
+			continue;
+		}
+
+		const contentWithoutStrings = content
+			.replace(/`[^`]*`/gs, "``")
+			.replace(/"[^"]*"/g, '""')
+			.replace(/'[^']*'/g, "''");
+
+		const matches = contentWithoutStrings.match(doubleBangPattern);
+
+		if (matches && matches.length > 0)
+		{
+			violations.push(
+				`${relativePath}: ${matches.length} double-bang (!!) usage(s)`
+			);
+		}
+	}
+
+	assertEmpty(violations, "Double-bang (!!) found in E2E code (use explicit boolean checks)");
+});
+
+test("Load testing code should not use double-bang (!!) for boolean coercion", async () =>
+{
+	const loadTestFiles = await getTestInfraFiles(LOAD_TESTING_DIR, [".js", ".mjs"]);
+	const violations = [];
+	const doubleBangPattern = /!!\s*[a-zA-Z_$]/g;
+
+	for (const file of loadTestFiles)
+	{
+		const relativePath = path.relative(path.join(__dirname, ".."), file);
+		const content = await fs.readFile(file, "utf-8");
+
+		if (content.includes("// architecture-ignore"))
+		{
+			continue;
+		}
+
+		const contentWithoutStrings = content
+			.replace(/`[^`]*`/gs, "``")
+			.replace(/"[^"]*"/g, '""')
+			.replace(/'[^']*'/g, "''");
+
+		const matches = contentWithoutStrings.match(doubleBangPattern);
+
+		if (matches && matches.length > 0)
+		{
+			violations.push(
+				`${relativePath}: ${matches.length} double-bang (!!) usage(s)`
+			);
+		}
+	}
+
+	assertEmpty(violations, "Double-bang (!!) found in load testing code (use explicit boolean checks)");
+});
+
+test("E2E code should not have single-letter lambda parameters", async () =>
+{
+	const e2eFiles = await getTestInfraFiles(E2E_DIR, [".ts"]);
+	const violations = [];
+
+	// Same pattern as production code test — single-letter params in common array methods
+	const singleLetterLambdaPattern = /\.\s*(?:map|filter|find|some|every|reduce|forEach|flatMap)\s*\(\s*\(?([a-zA-Z])\)?(?:\s*:\s*[^)]+)?\s*=>/g;
+
+	// Allowed: (m) => m.Component for Angular dynamic imports
+	const allowedPattern = /\(m\)\s*=>\s*m\.\w+/;
+
+	for (const file of e2eFiles)
+	{
+		const relativePath = path.relative(path.join(__dirname, ".."), file);
+		const content = await fs.readFile(file, "utf-8");
+
+		if (content.includes("// architecture-ignore"))
+		{
+			continue;
+		}
+
+		const contentWithoutStrings = content
+			.replace(/`[^`]*`/gs, "``")
+			.replace(/"[^"]*"/g, '""')
+			.replace(/'[^']*'/g, "''");
+
+		const lines = contentWithoutStrings.split("\n");
+
+		for (let lineIndex = 0; lineIndex < lines.length; lineIndex++)
+		{
+			const line = lines[lineIndex];
+			const matches = [...line.matchAll(singleLetterLambdaPattern)];
+
+			for (const match of matches)
+			{
+				if (!allowedPattern.test(match[0]))
+				{
+					violations.push(
+						`${relativePath}:${lineIndex + 1} — "${match[0].trim()}"`
+					);
+				}
+			}
+		}
+	}
+
+	assertEmpty(violations, "Single-letter lambda parameters in E2E code (use descriptive names)");
+});
+
+test("Load testing code should not have single-letter lambda parameters", async () =>
+{
+	const loadTestFiles = await getTestInfraFiles(LOAD_TESTING_DIR, [".js", ".mjs"]);
+	const violations = [];
+
+	const singleLetterLambdaPattern = /\.\s*(?:map|filter|find|some|every|reduce|forEach|flatMap)\s*\(\s*\(?([a-zA-Z])\)?(?:\s*:\s*[^)]+)?\s*=>/g;
+
+	for (const file of loadTestFiles)
+	{
+		const relativePath = path.relative(path.join(__dirname, ".."), file);
+		const content = await fs.readFile(file, "utf-8");
+
+		if (content.includes("// architecture-ignore"))
+		{
+			continue;
+		}
+
+		const contentWithoutStrings = content
+			.replace(/`[^`]*`/gs, "``")
+			.replace(/"[^"]*"/g, '""')
+			.replace(/'[^']*'/g, "''");
+
+		const lines = contentWithoutStrings.split("\n");
+
+		for (let lineIndex = 0; lineIndex < lines.length; lineIndex++)
+		{
+			const line = lines[lineIndex];
+			const matches = [...line.matchAll(singleLetterLambdaPattern)];
+
+			for (const match of matches)
+			{
+				violations.push(
+					`${relativePath}:${lineIndex + 1} — "${match[0].trim()}"`
+				);
+			}
+		}
+	}
+
+	assertEmpty(violations, "Single-letter lambda parameters in load testing code (use descriptive names)");
+});
+
+// ============================================================================
 // Summary
 // ============================================================================
 

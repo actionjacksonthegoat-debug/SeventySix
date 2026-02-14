@@ -16,7 +16,8 @@
 					"/favicon.ico",
 					"/index.html",
 					"/main*.js",
-					"/styles*.css"
+					"/styles*.css",
+					"/icons/*.png"
 				]
 			}
 		},
@@ -35,7 +36,7 @@
 			"resources": {
 				"files": [
 					"/assets/**",
-					"/*.(eot|svg|cur|jpg|png|webp|gif|otf|ttf|woff|woff2|ani)"
+					"/**/*.(eot|svg|cur|jpg|png|webp|gif|otf|ttf|woff|woff2|ani)"
 				]
 			}
 		}

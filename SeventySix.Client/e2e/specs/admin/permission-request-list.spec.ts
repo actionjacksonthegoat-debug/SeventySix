@@ -191,7 +191,7 @@ test.describe("Permission Request List Page",
 						// Step 3: Open the action menu on the first row and click approve
 						// With 2 row actions (approve + reject), a menu button is rendered
 						const menuButton =
-							dataRows.first().locator("button[aria-label='Row actions']");
+							dataRows.first().locator(SELECTORS.dataTable.rowActionsButton);
 
 						await expect(menuButton)
 							.toBeVisible();
@@ -206,7 +206,7 @@ test.describe("Permission Request List Page",
 
 						// Click the approve option (non-warn menu item)
 						const approveMenuItem =
-							adminPage.locator("button.mat-mdc-menu-item").first();
+							adminPage.locator(SELECTORS.menu.menuItem).first();
 
 						await expect(approveMenuItem)
 							.toBeVisible();
@@ -276,7 +276,7 @@ test.describe("Permission Request List Page",
 						// Step 3: Open the action menu on the first row
 						// With 2 row actions (approve + reject), a menu button is rendered
 						const menuButton =
-							dataRows.first().locator("button[aria-label='Row actions']");
+							dataRows.first().locator(SELECTORS.dataTable.rowActionsButton);
 
 						await expect(menuButton)
 							.toBeVisible();
@@ -284,7 +284,7 @@ test.describe("Permission Request List Page",
 
 						// Click the reject option (warn-colored menu item)
 						const rejectMenuItem =
-							adminPage.locator("button.mat-mdc-menu-item.warn-action");
+							adminPage.locator(SELECTORS.menu.warnMenuItem);
 
 						await expect(rejectMenuItem)
 							.toBeVisible();

@@ -83,7 +83,7 @@ test.describe("Authenticated Routes - WCAG Accessibility",
 
 						// User menu button should have aria-label
 						const userMenuButton =
-							userPage.locator("[data-testid='user-menu-button']");
+							userPage.locator(SELECTORS.layout.userMenuButton);
 
 						await expect(userMenuButton)
 							.toBeVisible();

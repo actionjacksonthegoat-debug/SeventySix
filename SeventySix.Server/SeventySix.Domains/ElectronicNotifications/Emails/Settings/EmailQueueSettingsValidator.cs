@@ -39,6 +39,10 @@ public sealed class EmailQueueSettingsValidator : AbstractValidator<EmailQueueSe
 				RuleFor(queue => queue.DeadLetterAfterHours)
 					.InclusiveBetween(1, 168)
 					.WithMessage("Email:Queue:DeadLetterAfterHours must be between 1 and 168");
+
+				RuleFor(queue => queue.RateLimitBackoffMinutes)
+					.InclusiveBetween(1, 1440)
+					.WithMessage("Email:Queue:RateLimitBackoffMinutes must be between 1 and 1440");
 			});
 	}
 }

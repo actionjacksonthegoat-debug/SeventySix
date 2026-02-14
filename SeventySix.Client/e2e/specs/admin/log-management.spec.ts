@@ -114,7 +114,7 @@ test.describe("Log Management Page",
 					{
 						const searchInput =
 							adminPage.locator(SELECTORS.logManagement.dataTable)
-								.locator("input[matinput]");
+								.locator(SELECTORS.dataTable.matInput);
 
 						await expect(searchInput)
 							.toBeVisible();
@@ -132,7 +132,7 @@ test.describe("Log Management Page",
 						// Search for a term unlikely to match any logs
 						const searchInput =
 							adminPage.locator(SELECTORS.logManagement.dataTable)
-								.locator("input[matinput]");
+								.locator(SELECTORS.dataTable.matInput);
 						await searchInput.fill("zzz_nonexistent_search_term");
 
 						// Trigger search via Enter key
@@ -155,7 +155,7 @@ test.describe("Log Management Page",
 					{
 						const filterChips =
 							adminPage.locator(SELECTORS.logManagement.dataTable)
-								.locator("mat-chip-option");
+								.locator(SELECTORS.dataTable.chipOption);
 
 						await expect(filterChips.first())
 							.toBeVisible({ timeout: TIMEOUTS.api });
@@ -179,7 +179,7 @@ test.describe("Log Management Page",
 
 						// Click the "Warnings" filter chip
 						const warningsChip =
-							adminPage.locator("mat-chip-option")
+							adminPage.locator(SELECTORS.dataTable.chipOption)
 								.filter({ hasText: "Warnings" });
 
 						await expect(warningsChip)
@@ -207,7 +207,7 @@ test.describe("Log Management Page",
 
 						// Click the "Errors" filter chip
 						const errorsChip =
-							adminPage.locator("mat-chip-option")
+							adminPage.locator(SELECTORS.dataTable.chipOption)
 								.filter({ hasText: "Errors" });
 
 						await expect(errorsChip)
@@ -242,12 +242,12 @@ test.describe("Log Management Page",
 
 						// Dialog should appear
 						const dialog =
-							adminPage.locator("mat-dialog-container");
+							adminPage.locator(SELECTORS.dialog.container);
 						await expect(dialog)
 							.toBeVisible({ timeout: TIMEOUTS.api });
 
 						// Dialog should contain log detail content
-						await expect(dialog.locator(".log-detail-dialog"))
+						await expect(dialog.locator(SELECTORS.logManagement.detailDialog))
 							.toBeVisible();
 					});
 
@@ -262,13 +262,13 @@ test.describe("Log Management Page",
 						await dataRows.first().click();
 
 						const dialog =
-							adminPage.locator("mat-dialog-container");
+							adminPage.locator(SELECTORS.dialog.container);
 						await expect(dialog)
 							.toBeVisible({ timeout: TIMEOUTS.api });
 
 						// Dialog should show a message content section
 						const messageContent =
-							dialog.locator(".message-content");
+							dialog.locator(SELECTORS.logManagement.messageContent);
 						await expect(messageContent)
 							.toBeVisible();
 						await expect(messageContent)
@@ -286,13 +286,13 @@ test.describe("Log Management Page",
 						await dataRows.first().click();
 
 						const dialog =
-							adminPage.locator("mat-dialog-container");
+							adminPage.locator(SELECTORS.dialog.container);
 						await expect(dialog)
 							.toBeVisible({ timeout: TIMEOUTS.api });
 
 						// Close the dialog (aria-label is "Close dialog (Press Escape)")
 						const closeButton =
-							dialog.locator("button[aria-label*='Close']");
+							dialog.locator(SELECTORS.dialog.closeButton);
 						await closeButton.click();
 
 						// Dialog should be gone

@@ -159,7 +159,7 @@ test.describe("User Management Page",
 					{
 						const searchInput =
 							adminPage.locator(SELECTORS.userManagement.dataTable)
-								.locator("input[matinput]");
+								.locator(SELECTORS.dataTable.matInput);
 
 						await expect(searchInput)
 							.toBeVisible();
@@ -176,7 +176,7 @@ test.describe("User Management Page",
 						// Search for a known seeded user
 						const searchInput =
 							adminPage.locator(SELECTORS.userManagement.dataTable)
-								.locator("input[matinput]");
+								.locator(SELECTORS.dataTable.matInput);
 						await searchInput.fill("e2e_admin");
 						await searchInput.press("Enter");
 
@@ -201,7 +201,7 @@ test.describe("User Management Page",
 
 						const searchInput =
 							adminPage.locator(SELECTORS.userManagement.dataTable)
-								.locator("input[matinput]");
+								.locator(SELECTORS.dataTable.matInput);
 						await searchInput.fill("zzz_nonexistent_user_xyz");
 						await searchInput.press("Enter");
 
@@ -227,7 +227,7 @@ test.describe("User Management Page",
 					{
 						const filterChips =
 							adminPage.locator(SELECTORS.userManagement.dataTable)
-								.locator("mat-chip-option");
+								.locator(SELECTORS.dataTable.chipOption);
 
 						await expect(filterChips.first())
 							.toBeVisible({ timeout: TIMEOUTS.api });
@@ -251,7 +251,7 @@ test.describe("User Management Page",
 						// Quick filter chips: [All Users(0), Active(1), Inactive(2), Show Deleted(3)]
 						const filterChips =
 							adminPage.locator(SELECTORS.userManagement.dataTable)
-								.locator("mat-chip-option");
+								.locator(SELECTORS.dataTable.chipOption);
 						const activeChip =
 							filterChips.nth(1);
 
