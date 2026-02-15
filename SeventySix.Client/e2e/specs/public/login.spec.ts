@@ -474,9 +474,6 @@ test.describe("Login Page",
 				test("should lockout account after repeated failed attempts",
 					async ({ page, authPage }) =>
 					{
-						// Mark slow — 6 sequential login attempts against Docker
-						test.slow();
-
 						const failedAttempts = 6;
 						const wrongPassword = "Wrong_Password_Lockout_123!";
 

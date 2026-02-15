@@ -58,7 +58,7 @@ export class EmailTestHelper
 	 */
 	static async waitUntilReady(timeoutMs: number = 15000): Promise<void>
 	{
-		const pollingIntervalMs: number = 500;
+		const pollingIntervalMs: number = 200;
 		const startTime: number =
 			Date.now();
 
@@ -150,7 +150,7 @@ export class EmailTestHelper
 			}
 
 			await new Promise(
-				(resolve) => setTimeout(resolve, 500));
+				(resolve) => setTimeout(resolve, 200));
 		}
 
 		throw new Error(`Timeout waiting for email to ${recipientEmail}`);

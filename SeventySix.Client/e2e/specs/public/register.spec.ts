@@ -282,8 +282,6 @@ test.describe("Registration Flow",
 				test("should complete full registration via email verification link",
 					async ({ page, authPage }) =>
 					{
-						test.slow();
-
 						const timestamp: number =
 							Date.now();
 						const uniqueEmail =

@@ -88,6 +88,11 @@ After all tests pass, verify:
 |                           | `sandbox`   |
 |                           | `home`      |
 
+## E2E Test Isolation Pattern
+
+> **PROHIBITED**: The "save original → test → restore" anti-pattern. Tests MUST create their own data, never borrow-and-return shared state.
+> State-changing E2E tests (approve/reject, MFA toggle, password change, profile edit) MUST use a **dedicated isolated user** + `browser.newContext({ storageState: undefined })` — never the shared `e2e_user`. See `e2e.instructions.md` § "Test Isolation" for the full pattern. Reference: `PERM_APPROVE_USER` in `permission-request-list.spec.ts`.
+
 ## Cross-Platform Compatibility
 
 All code MUST work on both **Windows** and **Linux** (CI runs on `ubuntu-latest`).

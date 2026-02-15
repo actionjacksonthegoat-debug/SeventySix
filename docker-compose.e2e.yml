@@ -25,7 +25,7 @@ services:
         volumes:
             - postgres_e2e_data:/var/lib/postgresql/data
         healthcheck:
-            test: ["CMD-SHELL", "pg_isready -U postgres"]
+            test: [ "CMD-SHELL", "pg_isready -U postgres" ]
             interval: 5s
             timeout: 5s
             retries: 5
@@ -39,7 +39,7 @@ services:
         ports:
             - "6380:6379"
         healthcheck:
-            test: ["CMD", "valkey-cli", "ping"]
+            test: [ "CMD", "valkey-cli", "ping" ]
             interval: 5s
             timeout: 5s
             retries: 5
@@ -98,7 +98,7 @@ services:
             - Email__FromAddress=noreply@test.local
             - Email__ClientBaseUrl=https://localhost:4201
             - Email__Queue__Enabled=true
-            - Email__Queue__ProcessingIntervalSeconds=5
+            - Email__Queue__ProcessingIntervalSeconds=1
             - Email__Queue__BatchSize=10
             # JWT (test secret - minimum 64 chars for security)
             - Jwt__SecretKey=nR4tY6uH9bE3dF5gA1cZ0iL8oS2wX4nM7qJ6kR9pT3uV5yBxK7mQ2pWvN8jzD2fH4j
@@ -111,6 +111,9 @@ services:
             # MFA (enabled for E2E — required for MFA login tests)
             - Mfa__Enabled=true
             - Mfa__RequiredForAllUsers=false
+            # TOTP (shortened time step for fast E2E — 10s vs 30s production)
+            - Totp__TimeStepSeconds=10
+            - Totp__AllowedTimeStepDrift=2
             # Security
             - Security__EnforceHttps=true
             - Security__HstsIncludeSubdomains=false
@@ -129,7 +132,7 @@ services:
             - Altcha__Enabled=true
             - Altcha__HmacKeyBase64=ZTJlLXRlc3QtaG1hYy1rZXktdGhhdC1tdXN0LWJlLWV4YWN0bHktc2l4dHktZm91ci1ieXRlcy1sb25nLSEhIQ==
             - Altcha__ComplexityMin=1
-            - Altcha__ComplexityMax=50
+            - Altcha__ComplexityMax=10
             - Altcha__ExpirySeconds=120
             - RateLimiting__Enabled=true
             # OAuth (E2E placeholder values — OAuth flow not tested in E2E)
@@ -154,11 +157,11 @@ services:
             maildev:
                 condition: service_started
         healthcheck:
-            test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "--no-check-certificate", "https://localhost:8081/health"]
-            interval: 10s
-            timeout: 5s
-            retries: 10
-            start_period: 30s
+            test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "--no-check-certificate", "https://localhost:8081/health" ]
+            interval: 3s
+            timeout: 3s
+            retries: 15
+            start_period: 10s
         networks:
             - e2e-network
 
@@ -176,11 +179,11 @@ services:
             api-e2e:
                 condition: service_healthy
         healthcheck:
-            test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "--no-check-certificate", "https://localhost:8443/"]
-            interval: 10s
-            timeout: 5s
-            retries: 5
-            start_period: 10s
+            test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "--no-check-certificate", "https://localhost:8443/" ]
+            interval: 2s
+            timeout: 2s
+            retries: 10
+            start_period: 2s
         networks:
             - e2e-network
 

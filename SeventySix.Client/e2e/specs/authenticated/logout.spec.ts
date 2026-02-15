@@ -258,8 +258,6 @@ test.describe("Logout Flow",
 unauthenticatedTest.describe("Cross-Tab Logout",
 	() =>
 	{
-		unauthenticatedTest.slow();
-
 		unauthenticatedTest("should invalidate second context when first context logs out",
 			async ({ browser }) =>
 			{

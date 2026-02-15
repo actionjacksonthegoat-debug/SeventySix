@@ -64,9 +64,9 @@ public sealed class TotpSettingsValidatorUnitTests
 	[Fact]
 	public void Validate_InvalidTimeStepSeconds_FailsValidation()
 	{
-		// Arrange
+		// Arrange — 65 exceeds MaxTimeStepSeconds (60)
 		TotpSettings settings =
-			CreateValidSettings() with { TimeStepSeconds = 45 };
+			CreateValidSettings() with { TimeStepSeconds = 65 };
 
 		// Act
 		TestValidationResult<TotpSettings> result =

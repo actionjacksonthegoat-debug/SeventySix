@@ -25,9 +25,6 @@ import {
 test.describe("User Create",
 	() =>
 	{
-		// Docker can be slow for form rendering and async validators
-		test.slow();
-
 		test.beforeEach(
 			async ({ adminPage }) =>
 			{
@@ -182,6 +179,8 @@ test.describe("User Create",
 					`e2e_verify_${timestamp}`;
 				const testEmail =
 					`e2e_verify_${timestamp}@test.local`;
+				const testFullName =
+					`Verify User ${timestamp}`;
 
 				// Wait for the form to render
 				await expect(adminPage
@@ -245,17 +244,27 @@ test.describe("User Create",
 				// Verify the created user appears in the user list
 				// Use the data table search to find by username prefix
 				const searchInput =
-					adminPage.locator(SELECTORS.dataTable.searchInput);
+					adminPage.locator(SELECTORS.userManagement.dataTable)
+						.locator(SELECTORS.dataTable.matInput);
 
 				await expect(searchInput)
-					.toBeVisible({ timeout: TIMEOUTS.element });
-				await searchInput.fill(testUsername);
-				await adminPage.waitForLoadState("load");
-
-				// Verify the username appears in the table
-				await expect(adminPage.locator(
-					`text=${testUsername}`))
 					.toBeVisible({ timeout: TIMEOUTS.api });
+				await searchInput.fill(testUsername);
+				await searchInput.press("Enter");
+
+				// Wait for API response with filtered results
+				await adminPage.waitForResponse(
+					(response) =>
+						response.url().includes("/users")
+							&& response.status() === 200);
+
+				// Verify the username appears in the table data rows
+				const dataRows =
+					adminPage.locator(SELECTORS.dataTable.dataRow);
+				await expect(dataRows.first())
+					.toBeVisible({ timeout: TIMEOUTS.api });
+				await expect(dataRows.first())
+					.toContainText(testFullName);
 			});
 
 		test("should show error when creating user with duplicate email",

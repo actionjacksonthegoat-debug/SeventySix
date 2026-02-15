@@ -11,8 +11,16 @@ namespace SeventySix.Identity;
 /// </summary>
 public sealed class TotpSettingsValidator : AbstractValidator<TotpSettings>
 {
-	private static readonly int[] ValidTimeSteps =
-		[30, 60];
+	/// <summary>
+	/// Minimum time step in seconds.
+	/// Values below 30 are for E2E/test environments only (reduces TOTP wait times).
+	/// </summary>
+	private const int MinTimeStepSeconds = 10;
+
+	/// <summary>
+	/// Maximum time step in seconds (RFC 6238 allows 30 or 60).
+	/// </summary>
+	private const int MaxTimeStepSeconds = 60;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="TotpSettingsValidator"/> class.
@@ -28,7 +36,7 @@ public sealed class TotpSettingsValidator : AbstractValidator<TotpSettings>
 			.WithMessage("Totp:AllowedTimeStepDrift must be between 0 and 3");
 
 		RuleFor(totp => totp.TimeStepSeconds)
-			.Must(timeStep => ValidTimeSteps.Contains(timeStep))
-			.WithMessage("Totp:TimeStepSeconds must be 30 or 60 (RFC 6238)");
+			.InclusiveBetween(MinTimeStepSeconds, MaxTimeStepSeconds)
+			.WithMessage($"Totp:TimeStepSeconds must be between {MinTimeStepSeconds} and {MaxTimeStepSeconds}");
 	}
 }

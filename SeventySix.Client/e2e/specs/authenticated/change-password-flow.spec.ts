@@ -21,7 +21,6 @@ import {
  * - Error handling for wrong current password
  * - Successful password change with redirect to login
  * - Login with new password verification
- * - Cleanup: restores original password for idempotency
  *
  * Uses `e2e_pw_change` user dedicated for password change tests.
  * Uses `unauthenticatedTest` to control login flow manually.
@@ -88,58 +87,27 @@ test.describe("Change Password Flow",
 		test("should change password and allow login with new password",
 			async ({ unauthenticatedPage }) =>
 			{
-				// Triple the timeout (90s) — this test performs 4 full steps
-				// (login → change → re-login → cleanup), each with API calls.
-				test.slow();
-
 				const changePasswordPage =
 					new ChangePasswordPageHelper(unauthenticatedPage);
-				let passwordWasChanged: boolean = false;
 
-				try
-				{
-					// Step 1: Login with original password and change it
-					await loginAndNavigateToChangePassword(
-						unauthenticatedPage,
-						originalPassword);
+				// Step 1: Login with original password and change it
+				await loginAndNavigateToChangePassword(
+					unauthenticatedPage,
+					originalPassword);
 
-					await changePasswordPage.fillAndSubmit(
-						originalPassword,
-						newPassword);
+				await changePasswordPage.fillAndSubmit(
+					originalPassword,
+					newPassword);
 
-					passwordWasChanged = true;
+				// Step 2: Should redirect to login after password change
+				await expect(unauthenticatedPage)
+					.toHaveURL(
+						/login/,
+						{ timeout: TIMEOUTS.auth });
 
-					// Step 2: Should redirect to login after password change
-					await expect(unauthenticatedPage)
-						.toHaveURL(
-							/login/,
-							{ timeout: TIMEOUTS.auth });
-
-					// Step 3: Login with new password
-					await loginAsUser(
-						unauthenticatedPage,
-						{ ...PASSWORD_CHANGE_USER, password: newPassword });
-				}
-				finally
-				{
-					// Step 4: Cleanup — always restore original password
-					// eslint-disable-next-line playwright/no-conditional-in-test -- conditional cleanup depends on test execution state
-					if (passwordWasChanged)
-					{
-						await unauthenticatedPage.goto(ROUTES.auth.changePassword);
-						await unauthenticatedPage.waitForLoadState("load");
-
-						await changePasswordPage.fillAndSubmit(
-							newPassword,
-							originalPassword);
-
-						// Verify cleanup succeeded — redirected to login
-						// eslint-disable-next-line playwright/no-conditional-expect -- assertion inside cleanup guard to confirm password was restored
-						await expect(unauthenticatedPage)
-							.toHaveURL(
-								/login/,
-								{ timeout: TIMEOUTS.auth });
-					}
-				}
+				// Step 3: Login with new password
+				await loginAsUser(
+					unauthenticatedPage,
+					{ ...PASSWORD_CHANGE_USER, password: newPassword });
 			});
 	});

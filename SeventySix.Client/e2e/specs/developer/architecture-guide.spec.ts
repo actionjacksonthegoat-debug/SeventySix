@@ -41,7 +41,7 @@ test.describe("Architecture Guide Page",
 					async ({ developerPage }: { developerPage: Page }) =>
 					{
 						const guideCard =
-							developerPage.locator("mat-card");
+							developerPage.locator(SELECTORS.card.container);
 
 						await expect(guideCard)
 							.toBeVisible();
@@ -51,7 +51,7 @@ test.describe("Architecture Guide Page",
 					async ({ developerPage }: { developerPage: Page }) =>
 					{
 						const cardTitle =
-							developerPage.locator("mat-card-title");
+							developerPage.locator(SELECTORS.card.title);
 
 						await expect(cardTitle)
 							.toContainText(PAGE_TEXT.developer.architectureGuide.cardTitle);
@@ -61,7 +61,7 @@ test.describe("Architecture Guide Page",
 					async ({ developerPage }: { developerPage: Page }) =>
 					{
 						const cardContent =
-							developerPage.locator("mat-card-content");
+							developerPage.locator(SELECTORS.card.content);
 
 						await expect(cardContent)
 							.toContainText(PAGE_TEXT.developer.architectureGuide.description);

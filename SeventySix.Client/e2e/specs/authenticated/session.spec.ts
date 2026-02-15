@@ -80,8 +80,6 @@ test.describe("Session Continuity",
 unauthenticatedTest.describe("Concurrent Sessions",
 	() =>
 	{
-		unauthenticatedTest.slow();
-
 		unauthenticatedTest("should allow same user to be authenticated in two browser contexts",
 			async ({ browser }) =>
 			{

@@ -117,6 +117,31 @@ export const TOTP_ENROLL_USER: TestUser =
 	} as const;
 
 /**
+ * Dedicated test user for TOTP setup page (read-only) E2E tests.
+ * Isolated so navigating to the setup page (which creates pending TOTP state)
+ * doesn't conflict with the shared e2e_user.
+ */
+export const TOTP_VIEWER_USER: TestUser =
+	{
+		username: "e2e_totp_viewer",
+		password: "E2E_TotpViewer_Password_123!",
+		role: "User",
+		email: "e2e_totp_viewer@test.local"
+	} as const;
+
+/**
+ * Dedicated test user for backup codes E2E tests.
+ * Isolated so generating backup codes doesn't affect the shared e2e_user.
+ */
+export const BACKUP_CODES_USER: TestUser =
+	{
+		username: "e2e_backup_codes",
+		password: "E2E_BackupCodes_Password_123!",
+		role: "User",
+		email: "e2e_backup_codes@test.local"
+	} as const;
+
+/**
  * Dedicated test user for forgot-password reset E2E tests.
  * Isolated from password-change user to prevent parallel security stamp conflicts.
  */
@@ -162,6 +187,19 @@ export const CROSSTAB_USER: TestUser =
 		password: "E2E_CrossTab_Password_123!",
 		role: "User",
 		email: "e2e_crosstab@test.local"
+	} as const;
+
+/**
+ * Dedicated test user for permission-request approve workflow E2E tests.
+ * Isolated because approval permanently grants the user a new role,
+ * which would corrupt shared e2e_user state and break RBAC tests.
+ */
+export const PERM_APPROVE_USER: TestUser =
+	{
+		username: "e2e_perm_approve",
+		password: "E2E_PermApprove_Password_123!",
+		role: "User",
+		email: "e2e_perm_approve@test.local"
 	} as const;
 
 /**

@@ -3,13 +3,16 @@
 // </copyright>
 
 import {
-	test,
 	expect,
+	unauthenticatedTest,
+	loginAsUser,
+	BACKUP_CODES_USER,
 	SELECTORS,
 	ROUTES,
 	PAGE_TEXT,
 	TIMEOUTS
 } from "../../fixtures";
+import type { Page } from "@playwright/test";
 
 /**
  * E2E Tests for Backup Codes Page
@@ -19,39 +22,44 @@ import {
  * - Warning step display
  * - Code generation
  * - Code display with copy actions
+ *
+ * Uses a dedicated `e2e_backup_codes` user so generating backup codes
+ * doesn't mutate the shared `e2e_user` state.
  */
-test.describe("Backup Codes",
+unauthenticatedTest.describe("Backup Codes",
 	() =>
 	{
-		test.beforeEach(
-			async ({ userPage }) =>
+		unauthenticatedTest.beforeEach(
+			async ({ unauthenticatedPage }) =>
 			{
-				await userPage.goto(ROUTES.auth.backupCodes);
-				await userPage.waitForLoadState("load");
+				await loginAsUser(unauthenticatedPage, BACKUP_CODES_USER);
+
+				await unauthenticatedPage.goto(ROUTES.auth.backupCodes);
+				await unauthenticatedPage.waitForLoadState("load");
 			});
 
-		test("should display warning step heading",
-			async ({ userPage }) =>
+		unauthenticatedTest("should display warning step heading",
+			async ({ unauthenticatedPage }: { unauthenticatedPage: Page }) =>
 			{
-				await expect(userPage.locator(SELECTORS.layout.pageHeading))
+				await expect(unauthenticatedPage.locator(SELECTORS.layout.pageHeading))
 					.toHaveText(PAGE_TEXT.headings.generateBackupCodes);
 			});
 
-		test("should display warning information",
-			async ({ userPage }) =>
+		unauthenticatedTest("should display warning information",
+			async ({ unauthenticatedPage }: { unauthenticatedPage: Page }) =>
 			{
 				const warningBox =
-					userPage.locator(SELECTORS.backupCodes.warningBox);
+					unauthenticatedPage.locator(SELECTORS.backupCodes.warningBox);
 
 				await expect(warningBox)
 					.toBeVisible();
 			});
 
-		test("should have generate codes button",
-			async ({ userPage }) =>
+		unauthenticatedTest("should have generate codes button",
+			async ({ unauthenticatedPage }: { unauthenticatedPage: Page }) =>
 			{
 				const generateButton =
-					userPage.locator("button",
+					unauthenticatedPage.locator("button",
 						{ hasText: PAGE_TEXT.buttons.generateCodes });
 
 				await expect(generateButton)
@@ -60,26 +68,26 @@ test.describe("Backup Codes",
 					.toBeEnabled();
 			});
 
-		test("should generate and display backup codes",
-			async ({ userPage }) =>
+		unauthenticatedTest("should generate and display backup codes",
+			async ({ unauthenticatedPage }: { unauthenticatedPage: Page }) =>
 			{
 				const generateButton =
-					userPage.locator("button",
+					unauthenticatedPage.locator("button",
 						{ hasText: PAGE_TEXT.buttons.generateCodes });
 
 				await generateButton.click();
 
 				// Wait for codes to appear
-				await expect(userPage
+				await expect(unauthenticatedPage
 					.locator(SELECTORS.backupCodes.codesGrid))
 					.toBeVisible({ timeout: TIMEOUTS.api });
 
-				await expect(userPage.locator(SELECTORS.layout.pageHeading))
+				await expect(unauthenticatedPage.locator(SELECTORS.layout.pageHeading))
 					.toHaveText(PAGE_TEXT.headings.saveYourBackupCodes);
 
 				// Verify individual codes are shown
 				const codeItems =
-					userPage.locator(SELECTORS.backupCodes.codeItem);
+					unauthenticatedPage.locator(SELECTORS.backupCodes.codeItem);
 
 				const codeCount: number =
 					await codeItems.count();

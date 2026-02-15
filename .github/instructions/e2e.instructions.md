@@ -79,6 +79,8 @@ expect(criticalViolations).toHaveLength(0);
 | `await page.waitForNavigation()` | `await expect(page).toHaveURL(/pattern/)` |
 | Hardcoded strings | `PAGE_TEXT.headings.title` |
 | Test order dependencies | Each test fully independent |
+| `test.slow()` | Fix the root cause or use explicit `timeout` on the assertion |
+| Save original → test → restore | Create dedicated test data instead |
 
 ## CI Compatibility (CRITICAL)
 
@@ -115,15 +117,72 @@ export class UserManagementPageHelper
 }
 ```
 
-## Test Isolation
+## Test Isolation (CRITICAL)
+
+### Own Your Test Data — Never Borrow and Return
+
+> **PROHIBITED**: Reading original data → running test → restoring original data. This "save/restore" pattern is fragile, hides real bugs, leaks state on failure, and breaks parallel execution.
 
 ```typescript
-// [CORRECT] Unique test data
-const uniqueEmail = `e2e_test_${Date.now()}@test.local`;
+// [PROHIBITED] Save-restore anti-pattern
+const originalFullName = await input.inputValue();
+await input.fill("new value");
+// ... test ...
+await input.fill(originalFullName); // fragile cleanup
 
-// [CORRECT] Filter by test prefix
-await page.locator("[data-testid='search']").fill("e2e_");
+// [CORRECT] Create dedicated test data — no cleanup needed
+const testFullName = `E2E Detail ${Date.now()}`;
+await input.fill(testFullName);
+// ... assert against testFullName — done
 ```
+
+**Rule**: Every test creates its own data with a unique prefix/timestamp. If a test mutates server state, use a **dedicated isolated user** or **dedicated test entity** — never the shared `e2e_user` / `e2e_admin` data.
+
+### Isolated Users for State-Changing Tests
+
+> Tests that **permanently mutate state** (granting roles, enabling MFA, changing passwords, editing profiles) MUST use a **dedicated isolated user** + `browser.newContext()` — never the shared auth users.
+
+**Why**: Shared users cause cross-test pollution. Approving a permission request grants a role permanently, breaking subsequent RBAC tests. Editing a shared user's profile affects every test in the project that reads it.
+
+**Pattern**:
+1. **Define** a dedicated `TestUser` in `test-users.constant.ts` (e.g., `PERM_APPROVE_USER`)
+2. **Export** via `fixtures/index.ts` barrel
+3. **Seed** in the server's `E2ETestSeeder`
+4. **Use** `browser.newContext({ storageState: undefined })` + `loginAsUser()` for an isolated session
+
+```typescript
+// Reference: permission-request-list.spec.ts
+const isolatedContext: BrowserContext =
+    await browser.newContext({
+        baseURL: E2E_CONFIG.clientBaseUrl,
+        storageState: undefined,
+        ignoreHTTPSErrors: true
+    });
+const isolatedPage: Page = await isolatedContext.newPage();
+try
+{
+    await loginAsUser(isolatedPage, PERM_APPROVE_USER);
+    // ... state-changing action (no restore needed) ...
+}
+finally
+{
+    await isolatedContext.close();
+}
+```
+
+### Decision Table — When Isolation is Required
+
+| Scenario | Isolated user? | Why |
+|----------|---------------|-----|
+| Approve/reject permission request | **Yes** | Permanently changes roles |
+| Enable/disable MFA | **Yes** | Changes auth state |
+| Change password | **Yes** | Invalidates security stamp |
+| Account lockout | **Yes** | Locks the account |
+| Edit user profile (name, email) | **Yes** | Mutates shared data |
+| Edit admin user detail | **Yes** | Mutates shared data |
+| Read-only page navigation | No | No server state change |
+| Form validation (no submit) | No | No server state change |
+| Fill form without saving | No | Client-side only |
 
 ## Playwright CLI (Test Running)
 

@@ -344,8 +344,6 @@ test.describe("Forgot Password Flow",
 				test("should complete full password reset via email link",
 					async ({ page, authPage }) =>
 					{
-						test.slow();
-
 						// Use dedicated forgot-password user to avoid security
 						// stamp conflicts with parallel tests.
 						const testUser =
@@ -423,70 +421,6 @@ test.describe("Forgot Password Flow",
 
 						await expect(page.locator(SELECTORS.layout.userMenuButton))
 							.toBeVisible({ timeout: TIMEOUTS.element });
-
-						// Step 7: Cleanup — restore original password via API
-						// Logout first
-						await page.locator(SELECTORS.layout.userMenuButton).click();
-						await page.locator(SELECTORS.layout.logoutButton).click();
-
-						await expect(page.locator(SELECTORS.layout.userMenuButton))
-							.toBeHidden({ timeout: TIMEOUTS.navigation });
-
-						// Reset back: request another reset email
-						await EmailTestHelper.clearAllEmails();
-						await page.goto(ROUTES.auth.forgotPassword);
-						await authPage.submitEmail(testUser.email);
-
-						await expect(page.locator(SELECTORS.layout.pageHeading))
-							.toHaveText(
-								PAGE_TEXT.confirmation.checkYourEmail,
-								{ timeout: TIMEOUTS.api });
-
-						const restoreEmail =
-							await EmailTestHelper.waitForEmail(
-								testUser.email,
-								{ timeout: TIMEOUTS.email });
-
-						const restoreLink: string | null =
-							EmailTestHelper.extractLinkFromEmail(
-								restoreEmail,
-								/href="([^"]*set-password[^"]*)"/);
-
-						expect(restoreLink)
-							.toBeTruthy();
-
-						const restoreClientLink: string =
-							restoreLink!.replace(
-								E2E_CONFIG.apiBaseUrl,
-								E2E_CONFIG.clientBaseUrl);
-
-						await page.goto(restoreClientLink);
-						await page.waitForLoadState("load");
-
-						await expect(page.locator(SELECTORS.layout.pageHeading))
-							.toHaveText(
-								PAGE_TEXT.headings.setNewPassword,
-								{ timeout: TIMEOUTS.navigation });
-
-						const restoreNewInput =
-							page.locator(SELECTORS.setPassword.newPasswordInput);
-						const restoreConfirmInput =
-							page.locator(SELECTORS.setPassword.confirmPasswordInput);
-
-						await restoreNewInput.waitFor(
-							{ state: "visible", timeout: TIMEOUTS.element });
-
-						await restoreNewInput.fill(testUser.password);
-						await restoreConfirmInput.fill(testUser.password);
-
-						await page
-							.locator(SELECTORS.form.submitButton)
-							.click();
-
-						// Verify redirect to login after restore
-						await page.waitForURL(
-							(url) => url.pathname.includes(ROUTES.auth.login),
-							{ timeout: TIMEOUTS.navigation });
 					});
 			});
 	});

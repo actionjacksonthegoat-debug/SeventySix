@@ -35,7 +35,7 @@ test.describe("Request Permissions Page",
 					async ({ userPage }: { userPage: Page }) =>
 					{
 						const cardTitle =
-							userPage.locator("mat-card-title");
+							userPage.locator(SELECTORS.card.title);
 
 						await expect(cardTitle)
 							.toHaveText(PAGE_TEXT.requestPermissions.title);
@@ -45,7 +45,7 @@ test.describe("Request Permissions Page",
 					async ({ userPage }: { userPage: Page }) =>
 					{
 						const cardSubtitle =
-							userPage.locator("mat-card-subtitle");
+							userPage.locator(SELECTORS.card.subtitle);
 
 						await expect(cardSubtitle)
 							.toHaveText(PAGE_TEXT.requestPermissions.subtitle);
@@ -147,8 +147,6 @@ test.describe("Request Permissions Page",
 				test("should submit request and show success notification",
 					async ({ userPage }: { userPage: Page }) =>
 					{
-						test.slow();
-
 						// e2e_user has only User role, so Developer/Admin should be available
 						const roleCheckbox =
 							userPage.locator(SELECTORS.requestPermissions.roleCheckbox).first();

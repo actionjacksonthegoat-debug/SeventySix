@@ -98,7 +98,7 @@ unauthenticatedTest.describe("Set Password",
 				const snackbar =
 					unauthenticatedPage.locator(SELECTORS.notification.snackbar);
 				const errorAlert =
-					unauthenticatedPage.locator("[role='alert']");
+					unauthenticatedPage.locator(SELECTORS.accessibility.alert);
 
 				await expect(invalidSection.or(snackbar).or(errorAlert))
 					.toBeVisible({ timeout: TIMEOUTS.api });

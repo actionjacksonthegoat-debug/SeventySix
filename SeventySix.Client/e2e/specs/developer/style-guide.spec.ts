@@ -88,7 +88,7 @@ test.describe("Style Guide Page",
 					async ({ developerPage }: { developerPage: Page }) =>
 					{
 						const colorsTab =
-						developerPage.locator(`.mat-mdc-tab:has-text('${PAGE_TEXT.developer.styleGuide.colorsTab}')`);
+							developerPage.locator(`${SELECTORS.developer.tab}:has-text('${PAGE_TEXT.developer.styleGuide.colorsTab}')`);
 						await expect(colorsTab)
 							.toBeVisible();
 					});

@@ -103,12 +103,12 @@ if [ -n "$SCENARIO" ]; then
 		SCENARIO_PATH="scenarios/$SCENARIO"
 	fi
 	echo "  Running: $SCENARIO_PATH"
-	k6 run --log-level=warn --env "PROFILE=$PROFILE" "$SCENARIO_PATH" || EXIT_CODE=1
+	k6 run -q --env "PROFILE=$PROFILE" "$SCENARIO_PATH" || EXIT_CODE=1
 else
 	# Run all scenarios
 	for SCENARIO_FILE in $(find scenarios -name "*.test.js" -type f | sort); do
 		echo "  Running: $SCENARIO_FILE"
-		if k6 run --log-level=warn --env "PROFILE=$PROFILE" "$SCENARIO_FILE"; then
+		if k6 run -q --env "PROFILE=$PROFILE" "$SCENARIO_FILE"; then
 			echo "  PASSED: $SCENARIO_FILE"
 		else
 			echo "  FAILED: $SCENARIO_FILE"

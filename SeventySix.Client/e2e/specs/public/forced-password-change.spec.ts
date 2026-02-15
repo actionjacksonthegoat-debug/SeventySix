@@ -192,9 +192,6 @@ test.describe("Forced Password Change",
 		test("should complete forced password change and login with new password",
 			async ({ unauthenticatedPage }) =>
 			{
-				// Triple timeout: 3 logins + 2 password changes on cold CI
-				test.slow();
-
 				const originalPassword: string =
 					FORCE_PASSWORD_CHANGE_LIFECYCLE_USER.password;
 				const newPassword: string =
@@ -223,19 +220,5 @@ test.describe("Forced Password Change",
 				await loginAsUser(
 					unauthenticatedPage,
 					{ ...FORCE_PASSWORD_CHANGE_LIFECYCLE_USER, password: newPassword });
-
-				// Step 5: Cleanup — change password back to original
-				await unauthenticatedPage.goto(ROUTES.auth.changePassword);
-				await unauthenticatedPage.waitForLoadState("load");
-
-				await changePasswordPage.fillAndSubmit(
-					newPassword,
-					originalPassword);
-
-				// Verify cleanup — redirected to login
-				await expect(unauthenticatedPage)
-					.toHaveURL(
-						/login/,
-						{ timeout: TIMEOUTS.auth });
 			});
 	});

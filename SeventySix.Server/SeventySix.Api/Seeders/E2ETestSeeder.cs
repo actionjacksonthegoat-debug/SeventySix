@@ -94,6 +94,18 @@ public class E2ETestSeeder(
 			[RoleConstants.User]);
 
 		await CreateTestUserAsync(
+			"e2e_totp_viewer",
+			"e2e_totp_viewer@test.local",
+			"E2E_TotpViewer_Password_123!",
+			[RoleConstants.User]);
+
+		await CreateTestUserAsync(
+			"e2e_backup_codes",
+			"e2e_backup_codes@test.local",
+			"E2E_BackupCodes_Password_123!",
+			[RoleConstants.User]);
+
+		await CreateTestUserAsync(
 			"e2e_forgot_pw",
 			"e2e_forgot_pw@test.local",
 			"E2E_ForgotPw_Password_123!",
@@ -111,6 +123,12 @@ public class E2ETestSeeder(
 			"e2e_concurrent",
 			"e2e_concurrent@test.local",
 			"E2E_Concurrent_Password_123!",
+			[RoleConstants.User]);
+
+		await CreateTestUserAsync(
+			"e2e_perm_approve",
+			"e2e_perm_approve@test.local",
+			"E2E_PermApprove_Password_123!",
 			[RoleConstants.User]);
 
 		await CreateTestUserAsync(

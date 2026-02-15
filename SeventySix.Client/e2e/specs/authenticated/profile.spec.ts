@@ -6,7 +6,6 @@ import {
 	SELECTORS,
 	PAGE_TEXT,
 	TIMEOUTS,
-	E2E_CONFIG,
 	API_ROUTES,
 	createRouteRegex
 } from "../../fixtures";
@@ -49,7 +48,7 @@ test.describe("Profile Page",
 					async ({ userPage }: { userPage: Page }) =>
 					{
 						const cardTitle =
-							userPage.locator("mat-card-title");
+							userPage.locator(SELECTORS.card.title);
 
 						await expect(cardTitle)
 							.toBeVisible();
@@ -154,49 +153,29 @@ test.describe("Profile Page",
 						await expect(userPage.locator(SELECTORS.profile.emailInput))
 							.toHaveValue(/.+/, { timeout: TIMEOUTS.api });
 
-						const originalFullName: string =
-							await fullNameInput.inputValue();
-						const originalEmail: string =
-							await userPage.locator(SELECTORS.profile.emailInput).inputValue();
 						const uniqueFullName =
 							`E2E Profile ${Date.now()}`;
 
-						try
-						{
-							await fullNameInput.fill(uniqueFullName);
-							await expect(saveButton)
-								.toBeEnabled({ timeout: TIMEOUTS.api });
+						await fullNameInput.fill(uniqueFullName);
+						await expect(saveButton)
+							.toBeEnabled({ timeout: TIMEOUTS.api });
 
-							const [putResponse] =
-								await Promise.all(
-									[
-										userPage.waitForResponse(
-											(response) =>
-											response.url().includes(API_ROUTES.users.me)
-												&& response.request().method() === "PUT"
-												&& response.status() === 200),
-										saveButton.click()
-									]);
+						await Promise.all(
+							[
+								userPage.waitForResponse(
+									(response) =>
+									response.url().includes(API_ROUTES.users.me)
+										&& response.request().method() === "PUT"
+										&& response.status() === 200),
+								saveButton.click()
+							]);
 
-							// Reload and verify persistence
-							await userPage.reload();
-							await userPage.waitForLoadState("load");
+						// Reload and verify persistence
+						await userPage.reload();
+						await userPage.waitForLoadState("load");
 
-							await expect(fullNameInput)
-								.toHaveValue(uniqueFullName, { timeout: TIMEOUTS.api });
-						}
-						finally
-						{
-							// Restore via direct API call
-							await userPage.request.put(
-								`${E2E_CONFIG.apiBaseUrl}${API_ROUTES.users.me}`,
-								{
-									data: {
-										email: originalEmail,
-										fullName: originalFullName || undefined
-									}
-								});
-						}
+						await expect(fullNameInput)
+							.toHaveValue(uniqueFullName, { timeout: TIMEOUTS.api });
 					});
 
 				test("should disable save button after successful save",
@@ -210,45 +189,25 @@ test.describe("Profile Page",
 						await expect(userPage.locator(SELECTORS.profile.emailInput))
 							.toHaveValue(/.+/, { timeout: TIMEOUTS.api });
 
-						const originalFullName: string =
-							await fullNameInput.inputValue();
-						const originalEmail: string =
-							await userPage.locator(SELECTORS.profile.emailInput).inputValue();
 						const uniqueFullName =
 							`E2E Pristine ${Date.now()}`;
 
-						try
-						{
-							await fullNameInput.fill(uniqueFullName);
-							await expect(saveButton)
-								.toBeEnabled({ timeout: TIMEOUTS.api });
+						await fullNameInput.fill(uniqueFullName);
+						await expect(saveButton)
+							.toBeEnabled({ timeout: TIMEOUTS.api });
 
-							const [putResponse] =
-								await Promise.all(
-									[
-										userPage.waitForResponse(
-											(response) =>
-											response.url().includes(API_ROUTES.users.me)
-												&& response.request().method() === "PUT"
-												&& response.status() === 200),
-										saveButton.click()
-									]);
+						await Promise.all(
+							[
+								userPage.waitForResponse(
+									(response) =>
+									response.url().includes(API_ROUTES.users.me)
+										&& response.request().method() === "PUT"
+										&& response.status() === 200),
+								saveButton.click()
+							]);
 
-							await expect(saveButton)
-								.toBeDisabled({ timeout: TIMEOUTS.navigation });
-						}
-						finally
-						{
-							// Restore via direct API call
-							await userPage.request.put(
-								`${E2E_CONFIG.apiBaseUrl}${API_ROUTES.users.me}`,
-								{
-									data: {
-										email: originalEmail,
-										fullName: originalFullName || undefined
-									}
-								});
-						}
+						await expect(saveButton)
+							.toBeDisabled({ timeout: TIMEOUTS.navigation });
 					});
 			});
 

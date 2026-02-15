@@ -60,11 +60,20 @@ public static class HealthCheckExtensions
 					serviceProvider.GetRequiredService<IConnectionMultiplexer>(),
 				name: "valkey-cache",
 				failureStatus: HealthStatus.Degraded,
-				tags: ["ready", "cache"])
-			.AddCheck<JaegerHealthCheck>(
-				name: "jaeger",
-				failureStatus: HealthStatus.Degraded,
-				tags: ["ready", "tracing"]);
+				tags: ["ready", "cache"]);
+
+		// Only register Jaeger health check when OpenTelemetry is enabled
+		bool isOpenTelemetryEnabled =
+			configuration.GetValue<bool>("OpenTelemetry:Enabled");
+		if (isOpenTelemetryEnabled)
+		{
+			services
+				.AddHealthChecks()
+				.AddCheck<JaegerHealthCheck>(
+					name: "jaeger",
+					failureStatus: HealthStatus.Degraded,
+					tags: ["ready", "tracing"]);
+		}
 
 		return services;
 	}

@@ -97,7 +97,7 @@ test.describe("User Account Routes - Access Control",
 						await userPage.goto(ROUTES.account.root);
 
 						// Should see profile card with username (mat-card-title)
-						await expect(userPage.locator("mat-card-title"))
+						await expect(userPage.locator(SELECTORS.card.title))
 							.toBeVisible();
 					});
 			});

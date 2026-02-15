@@ -40,8 +40,9 @@ test.describe("User Detail",
 					.first()
 					.click();
 
-				await expect(adminPage)
-					.toHaveURL(/\/admin\/users\/\d+/);
+				await adminPage.waitForURL(
+					/\/admin\/users\/\d+/,
+					{ timeout: TIMEOUTS.api });
 			});
 
 		test("should navigate from user list to detail view",
@@ -82,16 +83,10 @@ test.describe("User Detail",
 				await expect(fullNameInput)
 					.toBeVisible({ timeout: TIMEOUTS.api });
 
-				const originalFullName: string =
-					await fullNameInput.inputValue();
-
 				await fullNameInput.fill(`E2E Admin Edit ${Date.now()}`);
 
 				await expect(saveButton)
 					.toBeEnabled();
-
-				// Revert to avoid persisting test data
-				await fullNameInput.fill(originalFullName);
 			});
 
 		test("should save user changes and show success notification",
@@ -105,35 +100,22 @@ test.describe("User Detail",
 				await expect(fullNameInput)
 					.toBeVisible({ timeout: TIMEOUTS.api });
 
-				const originalFullName: string =
-					await fullNameInput.inputValue();
-
 				const updatedFullName =
 					`E2E Updated ${Date.now()}`;
 
-				try
-				{
-					await fullNameInput.fill(updatedFullName);
-					await saveButton.click();
+				await fullNameInput.fill(updatedFullName);
+				await saveButton.click();
 
-					// Verify success notification
-					const notification =
-						adminPage.locator(SELECTORS.notification.snackbar);
-					await expect(notification)
-						.toContainText(
-							PAGE_TEXT.confirmation.userUpdated,
-							{ timeout: TIMEOUTS.api });
+				// Verify success notification
+				const notification =
+					adminPage.locator(SELECTORS.notification.snackbar);
+				await expect(notification)
+					.toContainText(
+						PAGE_TEXT.confirmation.userUpdated,
+						{ timeout: TIMEOUTS.api });
 
-					// Save button should become disabled again (form pristine)
-					await expect(saveButton)
-						.toBeDisabled({ timeout: TIMEOUTS.api });
-				}
-				finally
-				{
-					// Restore original value
-					await fullNameInput.fill(originalFullName);
-					await saveButton.click();
-					await adminPage.waitForLoadState("load");
-				}
+				// Save button should become disabled again (form pristine)
+				await expect(saveButton)
+					.toBeDisabled({ timeout: TIMEOUTS.api });
 			});
 	});

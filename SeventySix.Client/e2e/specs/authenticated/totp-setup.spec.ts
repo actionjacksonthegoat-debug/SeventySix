@@ -6,8 +6,10 @@ import {
 	test,
 	expect,
 	unauthenticatedTest,
+	loginAsUser,
 	solveAltchaChallenge,
 	TOTP_ENROLL_USER,
+	TOTP_VIEWER_USER,
 	generateTotpCodeFromSecret,
 	disableTotpViaApi,
 	SELECTORS,
@@ -15,6 +17,7 @@ import {
 	PAGE_TEXT,
 	TIMEOUTS
 } from "../../fixtures";
+import type { Page } from "@playwright/test";
 
 /**
  * E2E Tests for TOTP Setup Page
@@ -25,50 +28,37 @@ import {
  * - Manual entry toggle
  * - Verification step
  * - Full enrollment end-to-end with cleanup
+ *
+ * Uses a dedicated `e2e_totp_viewer` user so navigating to the setup page
+ * (which creates pending TOTP state server-side) doesn't conflict with
+ * the shared `e2e_user` in parallel.
  */
-test.describe("TOTP Setup",
+unauthenticatedTest.describe("TOTP Setup",
 	() =>
 	{
-		// Docker API calls can be slow
-		test.slow();
+		// Run serially: all tests login as the same TOTP_VIEWER_USER and create
+		// pending TOTP state server-side — parallel logins cause session races.
+		unauthenticatedTest.describe.configure({ mode: "serial" });
 
-		test.beforeEach(
-			async ({ userPage }) =>
+		unauthenticatedTest.beforeEach(
+			async ({ unauthenticatedPage }) =>
 			{
-				// Navigate to TOTP setup and wait for the scan step heading.
-				// Retries once on failure because parallel E2E tests may cause
-				// a server-side concurrency conflict when modifying the same user.
-				const maxAttempts = 2;
+				await loginAsUser(unauthenticatedPage, TOTP_VIEWER_USER);
 
-				for (let attempt = 1; attempt <= maxAttempts; attempt++)
-				{
-					await userPage.goto(ROUTES.auth.totpSetup);
-					await userPage.waitForLoadState("load");
+				await unauthenticatedPage.goto(ROUTES.auth.totpSetup);
+				await unauthenticatedPage.waitForLoadState("load");
 
-					try
-					{
-						await expect(userPage.locator(SELECTORS.layout.pageHeading))
-							.toHaveText(
-								PAGE_TEXT.headings.setUpAuthenticatorApp,
-								{ timeout: TIMEOUTS.globalSetup });
-						return; // Success — exit beforeEach
-					}
-					catch (error)
-					{
-						if (attempt === maxAttempts)
-						{
-							throw error;
-						}
-						// Retry — parallel tests may have caused a row version conflict
-					}
-				}
+				await expect(unauthenticatedPage.locator(SELECTORS.layout.pageHeading))
+					.toHaveText(
+						PAGE_TEXT.headings.setUpAuthenticatorApp,
+						{ timeout: TIMEOUTS.globalSetup });
 			});
 
-		test("should display QR code",
-			async ({ userPage }) =>
+		unauthenticatedTest("should display QR code",
+			async ({ unauthenticatedPage }: { unauthenticatedPage: Page }) =>
 			{
 				const qrCode =
-					userPage.locator(SELECTORS.totpSetup.qrCodeImage);
+					unauthenticatedPage.locator(SELECTORS.totpSetup.qrCodeImage);
 
 				await expect(qrCode)
 					.toBeVisible({ timeout: TIMEOUTS.navigation });
@@ -78,35 +68,35 @@ test.describe("TOTP Setup",
 					.toHaveAttribute("src", /^data:image/, { timeout: TIMEOUTS.api });
 			});
 
-		test("should toggle to manual entry and show secret",
-			async ({ userPage }) =>
+		unauthenticatedTest("should toggle to manual entry and show secret",
+			async ({ unauthenticatedPage }: { unauthenticatedPage: Page }) =>
 			{
 				const manualEntryButton =
-					userPage.locator(SELECTORS.totpSetup.cantScanButton,
+					unauthenticatedPage.locator(SELECTORS.totpSetup.cantScanButton,
 						{ hasText: PAGE_TEXT.buttons.cantScan });
 
 				await manualEntryButton.click();
 
-				await expect(userPage
+				await expect(unauthenticatedPage
 					.locator(SELECTORS.totpSetup.secretCode))
 					.toBeVisible();
 			});
 
-		test("should proceed to verify step",
-			async ({ userPage }) =>
+		unauthenticatedTest("should proceed to verify step",
+			async ({ unauthenticatedPage }: { unauthenticatedPage: Page }) =>
 			{
 				const scannedButton =
-					userPage.locator("button",
+					unauthenticatedPage.locator("button",
 						{ hasText: PAGE_TEXT.buttons.scannedCode });
 
 				await scannedButton.click();
 
-				await expect(userPage.locator(SELECTORS.layout.pageHeading))
+				await expect(unauthenticatedPage.locator(SELECTORS.layout.pageHeading))
 					.toHaveText(
 						PAGE_TEXT.headings.verifySetup,
 						{ timeout: TIMEOUTS.navigation });
 
-				await expect(userPage
+				await expect(unauthenticatedPage
 					.locator(SELECTORS.totpSetup.verificationCodeInput))
 					.toBeVisible();
 			});
@@ -122,8 +112,6 @@ test.describe("TOTP Setup",
 unauthenticatedTest.describe("TOTP Enrollment",
 	() =>
 	{
-		unauthenticatedTest.slow();
-
 		unauthenticatedTest("should complete TOTP enrollment with valid code",
 			async ({ unauthenticatedPage }) =>
 			{

@@ -5,6 +5,7 @@
 import * as OTPAuth from "otpauth";
 import type { Page } from "@playwright/test";
 import { E2E_CONFIG, API_ROUTES } from "../config.constant";
+import type { TestUser } from "../test-users.constant";
 
 /**
  * Known TOTP secret for the E2E MFA test user.
@@ -29,7 +30,7 @@ export function generateTotpCode(): string
 				label: "e2e_mfa_user@test.local",
 				algorithm: "SHA1",
 				digits: 6,
-				period: 30,
+				period: E2E_CONFIG.totpTimeStepSeconds,
 				secret: E2E_TOTP_SECRET,
 			});
 
@@ -54,7 +55,7 @@ export function generateTotpCodeFromSecret(totpSecret: string): string
 				issuer: "SeventySix",
 				algorithm: "SHA1",
 				digits: 6,
-				period: 30,
+				period: E2E_CONFIG.totpTimeStepSeconds,
 				secret: totpSecret,
 			});
 
@@ -77,14 +78,15 @@ export function generateTotpCodeFromSecret(totpSecret: string): string
  */
 export async function disableTotpViaApi(
 	page: Page,
-	user: { email: string; password: string },
+	user: TestUser,
 	secret: string,
 	enrollmentCode: string): Promise<void>
 {
 	// Wait for a fresh TOTP code that differs from the enrollment code.
 	let cleanupCode: string =
 		generateTotpCodeFromSecret(secret);
-	const maxWaitMs = 35_000;
+	const maxWaitMs: number =
+		(E2E_CONFIG.totpTimeStepSeconds + 5) * 1000;
 	const startTime: number =
 		Date.now();
 

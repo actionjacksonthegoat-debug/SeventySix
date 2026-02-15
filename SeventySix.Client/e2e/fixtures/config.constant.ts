@@ -26,7 +26,14 @@ export const E2E_CONFIG =
 		 * MailDev web UI URL for email testing.
 		 * HTTP only - no sensitive data.
 		 */
-		mailDevUrl: "http://localhost:1080"
+		mailDevUrl: "http://localhost:1080",
+
+		/**
+		 * TOTP time step in seconds.
+		 * Must match Totp:TimeStepSeconds in the E2E API config.
+		 * E2E uses 10s (vs 30s production) to reduce TOTP wait times.
+		 */
+		totpTimeStepSeconds: 10
 	} as const;
 
 /**

@@ -162,7 +162,7 @@ if ($Scenario) {
 		$scenarioPath = "scenarios/$Scenario"
 	}
 	Write-Host "  Running: $scenarioPath" -ForegroundColor White
-	k6 run --log-level=warn --env PROFILE=$Profile $scenarioPath 2>&1 | ForEach-Object { "$_" }
+	k6 run -q --env PROFILE=$Profile $scenarioPath 2>&1 | ForEach-Object { "$_" }
 	if ($LASTEXITCODE -ne 0) { $exitCode = 1 }
 }
 else {
@@ -171,7 +171,7 @@ else {
 	foreach ($file in $scenarioFiles) {
 		$relativePath = $file.FullName.Substring($LoadTestRoot.Length + 1).Replace("\", "/")
 		Write-Host "  Running: $relativePath" -ForegroundColor White
-		k6 run --log-level=warn --env PROFILE=$Profile $relativePath 2>&1 | ForEach-Object { "$_" }
+		k6 run -q --env PROFILE=$Profile $relativePath 2>&1 | ForEach-Object { "$_" }
 		if ($LASTEXITCODE -ne 0) {
 			Write-Host "  FAILED: $relativePath" -ForegroundColor Red
 			$exitCode = 1

@@ -9,6 +9,17 @@
 export const SELECTORS =
 	{
 		/**
+		 * Shared Material card selectors.
+		 */
+		card:
+			{
+				container: "mat-card",
+				title: "mat-card-title",
+				subtitle: "mat-card-subtitle",
+				content: "mat-card-content"
+			},
+
+		/**
 		 * Form element selectors.
 		 */
 		form:
@@ -189,7 +200,8 @@ export const SELECTORS =
 				mainContent: "#main-content",
 				banner: "[role='banner']",
 				main: "main, [role='main']",
-				navigation: "[role='navigation']"
+				navigation: "[role='navigation']",
+				alert: "[role='alert']"
 			},
 
 		/**
@@ -257,6 +269,7 @@ export const SELECTORS =
 				architectureGuideHeader: ".architecture-guide-container h1",
 				themeToggle: "button[aria-label='Toggle theme brightness']",
 				tabGroup: "mat-tab-group",
+				tab: ".mat-mdc-tab",
 				colorSchemeSelect: "mat-select"
 			},
 
