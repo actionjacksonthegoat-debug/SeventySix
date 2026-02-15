@@ -1,0 +1,52 @@
+<section class="cta-footer"
+	appScrollReveal
+	aria-labelledby="cta-heading">
+	<div class="cta-footer-bg-overlay"
+		aria-hidden="true">
+	</div>
+	<div class="cta-footer-content">
+		<h2 id="cta-heading"
+			class="cta-footer-title">
+			Free Forever. Open Source.
+		</h2>
+		<p class="cta-footer-subtitle">
+			MIT Licensed — no paid tiers, no vendor lock-in, no tracking.
+			Clone it, fork it, build on it.
+		</p>
+
+		<div class="cta-footer-clone">
+			<code class="cta-footer-command">{{ cloneCommand() }}</code>
+			<button mat-icon-button
+				(click)="copyCloneCommand()"
+				[attr.aria-label]="copied() ? 'Copied to clipboard' : 'Copy clone command'">
+				<mat-icon aria-hidden="true">
+					{{ copied() ? "check" : "content_copy" }}
+				</mat-icon>
+			</button>
+		</div>
+
+		<div class="cta-footer-actions">
+			<a mat-stroked-button
+				[href]="githubUrl()"
+				target="_blank"
+				rel="noopener noreferrer">
+				<mat-icon aria-hidden="true">star</mat-icon>
+				Star on GitHub
+			</a>
+			<a mat-stroked-button
+				[href]="githubUrl() + '/issues'"
+				target="_blank"
+				rel="noopener noreferrer">
+				<mat-icon aria-hidden="true">bug_report</mat-icon>
+				Report Issue
+			</a>
+			<a mat-stroked-button
+				[href]="githubUrl() + '/pulls'"
+				target="_blank"
+				rel="noopener noreferrer">
+				<mat-icon aria-hidden="true">handshake</mat-icon>
+				Contribute
+			</a>
+		</div>
+	</div>
+</section>

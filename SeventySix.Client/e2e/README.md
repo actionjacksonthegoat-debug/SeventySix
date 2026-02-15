@@ -142,6 +142,7 @@ e2e/
 | `oauth-login.spec.ts` | OAuth provider login flow |
 | `forced-password-change.spec.ts` | Forced password change redirect |
 | `home.spec.ts` | Landing page content |
+| `landing-page.spec.ts` | Detailed landing page sections |
 | `sandbox.spec.ts` | Sandbox page rendering |
 | `error-pages.spec.ts` | 404, 403, 500 error pages |
 | `accessibility.spec.ts` | WCAG 2.2 AA compliance |
@@ -180,7 +181,6 @@ e2e/
 
 | Spec | Covers |
 |------|--------|
-| `architecture-guide.spec.ts` | Architecture documentation page |
 | `style-guide.spec.ts` | Component style guide page |
 | `developer-access.spec.ts` | Developer role enforcement |
 | `accessibility.spec.ts` | WCAG 2.2 AA compliance |

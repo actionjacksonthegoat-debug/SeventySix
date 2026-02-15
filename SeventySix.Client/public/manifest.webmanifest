@@ -1,7 +1,7 @@
 {
 	"name": "SeventySix - Modern Full-Stack Application",
 	"short_name": "SeventySix",
-	"description": "A production-ready full-stack application built with .NET Core 8+ and Angular 20+, demonstrating Clean Architecture, SOLID principles, and Material Design 3.",
+	"description": "A production-ready full-stack application built with .NET 10 and Angular 21, demonstrating DDD, Hexagonal Architecture, CQRS, Wolverine, TanStack Query, comprehensive testing, and Material Design 3. MIT licensed, free forever.",
 	"theme_color": "#1976d2",
 	"background_color": "#fafafa",
 	"display": "standalone",

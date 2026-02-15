@@ -33,6 +33,7 @@ export * from "./theme.service";
 export * from "./token.service";
 export * from "./web-vitals.service";
 export * from "./window.service";
+export { CdnIconService } from "./cdn-icon.service";
 
 // DO NOT export feature services here
 // Import directly from feature folders when needed:

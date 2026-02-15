@@ -18,7 +18,6 @@ export const PAGE_TEXT =
 				register: "Register",
 				forgotPassword: "Forgot Password",
 				checkYourEmail: "Check Your Email",
-				welcome: "Welcome to SeventySix",
 				adminDashboard: "Admin Dashboard",
 				changePassword: "Change Password",
 				setNewPassword: "Set New Password",
@@ -181,28 +180,6 @@ export const PAGE_TEXT =
 				enterYourEmail: "Enter your email address",
 				verificationLink: "verification link",
 				passwordResetLink: "password reset link",
-				selectFeature: "Select a feature to get started"
-			},
-
-		/**
-		 * Home page card text.
-		 */
-		homeCards:
-			{
-				sandbox:
-					{
-						title: "Sandbox",
-						description: "Experimentation area for testing new features and ideas",
-						icon: "science"
-					}
-			},
-
-		/**
-		 * Action text.
-		 */
-		actions:
-			{
-				open: "Open"
 			},
 
 		/**
@@ -210,7 +187,6 @@ export const PAGE_TEXT =
 		 */
 		icons:
 			{
-				arrowForward: "arrow_forward",
 				dashboard: "dashboard"
 			},
 
@@ -301,6 +277,23 @@ export const PAGE_TEXT =
 			},
 
 		/**
+		 * Home page text.
+		 */
+		home:
+			{
+				landingPage:
+					{
+						heroTitle: "SeventySix",
+						heroTagline: "Secure. Observable. AI-Driven.",
+						techStackHeading: "Built With",
+						featuresHeading: "Key Features",
+						architectureHeading: "Architecture Patterns",
+						ctaTitle: "Free Forever. Open Source.",
+						cloneCommand: "git clone https://github.com/actionjacksonthegoat-debug/SeventySix.git"
+					}
+			},
+
+		/**
 		 * Developer pages text.
 		 */
 		developer:
@@ -310,12 +303,6 @@ export const PAGE_TEXT =
 						title: "Style Guide",
 						description: "Material Design 3 components and design tokens",
 						colorsTab: "Colors"
-					},
-				architectureGuide:
-					{
-						title: "Architecture Guide",
-						cardTitle: "Project Architecture",
-						description: "architecture patterns and conventions"
 					}
 			},
 

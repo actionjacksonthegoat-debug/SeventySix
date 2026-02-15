@@ -197,6 +197,42 @@ $transition-opacity: opacity $transition-duration-fast $transition-easing-standa
 // ============================================================================
 // COMPONENT-SPECIFIC SIZES (rem-based for root scaling)
 // ============================================================================
+
+// ============================================================================
+// LANDING PAGE TOKENS
+// ============================================================================
+
+// Animation durations
+$animation-duration-reveal: 600ms;
+$animation-duration-count-up: 1500ms;
+$animation-duration-float: 6000ms;
+$animation-duration-gradient: 15000ms;
+$animation-delay-stagger: 100ms;
+
+// Hero section
+$hero-min-height: 80vh;
+$hero-min-height-mobile: 60vh;
+
+// Tech stack grid
+$tech-icon-size: 2.5rem;
+$tech-icon-size-mobile: 2rem;
+$tech-card-width: 20rem;
+
+// Parallax depth layers (Z-axis values for translateZ)
+$parallax-perspective: 100px;
+$parallax-depth-bg: -50px;
+$parallax-depth-texture: -25px;
+$parallax-depth-shapes: -10px;
+$parallax-depth-icons: -5px;
+$parallax-depth-content: 0px;
+$parallax-disable-below: 600px;
+
+// Section widths
+$landing-section-max-width: 80rem;
+
+// ============================================================================
+// COMPONENT-SPECIFIC SIZES (continued)
+// ============================================================================
 // Buttons
 $button-height-sm: 2rem; // 32px at 16px base
 $button-height-base: 2.5rem; // 40px at 16px base

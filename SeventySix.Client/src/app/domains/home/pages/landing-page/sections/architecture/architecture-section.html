@@ -1,0 +1,59 @@
+<section class="architecture"
+	aria-labelledby="architecture-heading">
+	<h2 id="architecture-heading"
+		class="section-heading">
+		Architecture Patterns
+	</h2>
+	<p class="section-subtitle">
+		The architectural decisions that keep the codebase clean, testable, and ready to evolve.
+	</p>
+
+	<div class="architecture-grid">
+		@for (card of cards(); track card.title; let index = $index) {
+			<div class="arch-card"
+				appScrollReveal
+				[revealDelay]="index * 80"
+				[class.arch-card--expanded]="expandedIndex() === index">
+				<button class="arch-card-header"
+					type="button"
+					[attr.aria-expanded]="expandedIndex() === index"
+					[attr.aria-controls]="'arch-content-' + index"
+					(click)="toggleCard(index)">
+					<div class="arch-card-title-row">
+						<mat-icon
+							class="arch-card-icon"
+							aria-hidden="true">{{ card.icon }}</mat-icon>
+						<h3 class="arch-card-title">{{ card.title }}</h3>
+					</div>
+					<p class="arch-card-description">{{ card.shortDescription }}</p>
+					<mat-icon
+						class="arch-card-expand-icon"
+						aria-hidden="true">
+						{{ expandedIndex() === index ? "expand_less" : "expand_more" }}
+					</mat-icon>
+				</button>
+
+				@if (expandedIndex() === index) {
+					<div class="arch-card-content"
+						[id]="'arch-content-' + index"
+						role="region"
+						[attr.aria-label]="card.title + ' details'">
+						<ul class="arch-card-details"
+							role="list">
+							@for (detail of card.details; track detail) {
+								<li role="listitem">{{ detail }}</li>
+							}
+						</ul>
+						<div class="arch-card-keywords">
+							@for (keyword of card.keywords; track keyword) {
+								<mat-chip-set>
+									<mat-chip>{{ keyword }}</mat-chip>
+								</mat-chip-set>
+							}
+						</div>
+					</div>
+				}
+			</div>
+		}
+	</div>
+</section>

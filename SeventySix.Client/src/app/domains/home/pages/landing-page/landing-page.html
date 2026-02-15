@@ -1,0 +1,40 @@
+<div class="landing-page">
+	<!-- Above the fold — loaded immediately -->
+	<app-hero-section
+		[githubUrl]="githubRepoUrl" />
+
+	<app-tech-stack-section
+		[categories]="techStackCategories" />
+
+	<app-stats-section
+		[stats]="statItems" />
+
+	<!-- Below the fold — deferred until viewport -->
+	@defer (on viewport) {
+		<app-features-section
+			[features]="featureHighlights" />
+	} @placeholder {
+		<div class="section-placeholder"
+			aria-hidden="true">
+		</div>
+	}
+
+	@defer (on viewport) {
+		<app-architecture-section
+			[cards]="architectureCards" />
+	} @placeholder {
+		<div class="section-placeholder"
+			aria-hidden="true">
+		</div>
+	}
+
+	@defer (on viewport) {
+		<app-cta-footer-section
+			[githubUrl]="githubRepoUrl"
+			[cloneCommand]="githubCloneCommand" />
+	} @placeholder {
+		<div class="section-placeholder"
+			aria-hidden="true">
+		</div>
+	}
+</div>

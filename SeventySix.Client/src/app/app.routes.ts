@@ -16,9 +16,9 @@ import {
  */
 export const routes: Routes =
 	[
-	// ══════════════════════════════════════════════════════════════
-	// PUBLIC ROUTES (Guest Access - No Authentication Required)
-	// ══════════════════════════════════════════════════════════════
+		// ══════════════════════════════════════════════════════════════
+		// PUBLIC ROUTES (Guest Access - No Authentication Required)
+		// ══════════════════════════════════════════════════════════════
 		{
 			path: "",
 			loadChildren: () =>
@@ -27,15 +27,12 @@ export const routes: Routes =
 			data: { preload: true }
 		},
 		{
-		// Intentionally public — future landing/demo page (no auth guard needed)
+			// Intentionally public — future landing/demo page (no auth guard needed)
 			path: "sandbox",
 			loadChildren: () =>
 				import("./domains/sandbox/sandbox.routes").then(
 					(module) => module.SANDBOX_ROUTES),
-			data: {
-				preload: true,
-				breadcrumb: "Sandbox"
-			}
+			data: { preload: true, breadcrumb: "Sandbox" }
 		},
 		// Auth routes (login, change-password - public) - preloaded for fast access
 		{
@@ -43,16 +40,13 @@ export const routes: Routes =
 			loadChildren: () =>
 				import("./domains/auth/auth.routes").then(
 					(module) => module.AUTH_ROUTES),
-			data: {
-				preload: true,
-				breadcrumb: "Authentication"
-			}
+			data: { preload: true, breadcrumb: "Authentication" }
 		},
 
-		// ══════════════════════════════════════════════════════════════
+		// ═════════════════════════════════════════════════════════════
 		// USER ROUTES (Any Authenticated User - Own Account Only)
 		// canMatch prevents module download until auth verified
-		// ══════════════════════════════════════════════════════════════
+		// ═════════════════════════════════════════════════════════════
 		{
 			path: "account",
 			loadChildren: () =>
@@ -62,10 +56,10 @@ export const routes: Routes =
 			data: { breadcrumb: "Account" }
 		},
 
-		// ══════════════════════════════════════════════════════════════
+		// ═════════════════════════════════════════════════════════════
 		// ADMIN ROUTES (Admin Only)
 		// canMatch prevents module download until role verified
-		// ══════════════════════════════════════════════════════════════
+		// ═════════════════════════════════════════════════════════════
 		{
 			path: "admin",
 			loadChildren: () =>
@@ -75,10 +69,10 @@ export const routes: Routes =
 			data: { breadcrumb: "Admin" }
 		},
 
-		// ══════════════════════════════════════════════════════════════
+		// ═════════════════════════════════════════════════════════════
 		// DEVELOPER ROUTES (Developer OR Admin)
 		// canMatch prevents module download until role verified
-		// ══════════════════════════════════════════════════════════════
+		// ═════════════════════════════════════════════════════════════
 		{
 			path: "developer",
 			loadChildren: () =>
@@ -88,9 +82,9 @@ export const routes: Routes =
 			data: { breadcrumb: "Developer" }
 		},
 
-		// ══════════════════════════════════════════════════════════════
+		// ═════════════════════════════════════════════════════════════
 		// ERROR PAGES
-		// ══════════════════════════════════════════════════════════════
+		// ═════════════════════════════════════════════════════════════
 		{
 			path: "error/401",
 			loadComponent: () =>

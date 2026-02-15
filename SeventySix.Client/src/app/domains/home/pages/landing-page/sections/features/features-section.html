@@ -1,0 +1,38 @@
+<section class="features"
+	aria-labelledby="features-heading">
+	<h2 id="features-heading"
+		class="section-heading">
+		Key Features
+	</h2>
+	<p class="section-subtitle">
+		Built to be the foundation for anything — from proof of concepts to production systems.
+	</p>
+
+	@for (feature of features(); track feature.title; let index = $index) {
+		<article class="feature"
+			appScrollReveal
+			[class.feature--reversed]="index % 2 !== 0">
+			<div class="feature-visual">
+				<div class="feature-icon-container">
+					<mat-icon
+						class="feature-icon"
+						aria-hidden="true">{{ feature.icon }}</mat-icon>
+				</div>
+			</div>
+			<div class="feature-content">
+				<h3 class="feature-title">{{ feature.title }}</h3>
+				<p class="feature-tagline">{{ feature.tagline }}</p>
+				<p class="feature-description">{{ feature.description }}</p>
+				<ul class="feature-bullets"
+					role="list">
+					@for (bullet of feature.bullets; track bullet) {
+						<li role="listitem">{{ bullet }}</li>
+					}
+				</ul>
+			</div>
+		</article>
+		@if (index < features().length - 1) {
+			<hr class="section-divider" />
+		}
+	}
+</section>

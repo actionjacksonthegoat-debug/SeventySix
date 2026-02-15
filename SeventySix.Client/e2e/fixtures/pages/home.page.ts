@@ -6,15 +6,20 @@ import { Page, Locator } from "@playwright/test";
 import { SELECTORS } from "../selectors.constant";
 
 /**
- * Home page helper for feature card interactions.
+ * Home page helper for landing page interactions.
  * Encapsulates common home page operations.
  */
 export class HomePageHelper
 {
 	readonly page: Page;
-	readonly featureCards: Locator;
-	readonly pageHeading: Locator;
-	readonly subtitle: Locator;
+	readonly heroSection: Locator;
+	readonly heroTitle: Locator;
+	readonly heroTagline: Locator;
+	readonly techStackSection: Locator;
+	readonly statsBar: Locator;
+	readonly featuresSection: Locator;
+	readonly architectureSection: Locator;
+	readonly ctaFooter: Locator;
 
 	/**
 	 * Creates home page helper.
@@ -24,105 +29,63 @@ export class HomePageHelper
 	constructor(page: Page)
 	{
 		this.page = page;
-		this.featureCards = page.locator(SELECTORS.home.featureCard);
-		this.pageHeading = page.locator(SELECTORS.layout.pageHeading);
-		this.subtitle = page.locator(SELECTORS.home.subtitle);
+		this.heroSection = page.locator(SELECTORS.home.heroSection);
+		this.heroTitle = page.locator(SELECTORS.home.heroTitle);
+		this.heroTagline = page.locator(SELECTORS.home.heroTagline);
+		this.techStackSection = page.locator(SELECTORS.home.techStackSection);
+		this.statsBar = page.locator(SELECTORS.home.statsBar);
+		this.featuresSection = page.locator(SELECTORS.home.featuresSection);
+		this.architectureSection = page.locator(SELECTORS.home.architectureSection);
+		this.ctaFooter = page.locator(SELECTORS.home.ctaFooter);
 	}
 
 	/**
-	 * Gets a feature card by index.
-	 * @param cardIndex
-	 * Zero-based card index.
+	 * Gets all tech category elements.
 	 * @returns
-	 * Locator for the card.
+	 * Locator for tech category elements.
 	 */
-	getCard(cardIndex: number): Locator
+	getTechCategories(): Locator
 	{
-		return this.featureCards.nth(cardIndex);
+		return this.page.locator(SELECTORS.home.techCategory);
 	}
 
 	/**
-	 * Gets card title text by index.
-	 * @param cardIndex
-	 * Zero-based card index.
+	 * Gets all stat item elements.
 	 * @returns
-	 * Locator for the card title.
+	 * Locator for stat item elements.
 	 */
-	getCardTitle(cardIndex: number): Locator
+	getStatItems(): Locator
 	{
-		return this.getCard(cardIndex)
-			.locator(SELECTORS.home.cardTitle);
+		return this.page.locator(SELECTORS.home.statItem);
 	}
 
 	/**
-	 * Gets card content text by index.
-	 * @param cardIndex
-	 * Zero-based card index.
+	 * Gets all feature article elements.
 	 * @returns
-	 * Locator for the card content.
+	 * Locator for feature article elements.
 	 */
-	getCardContent(cardIndex: number): Locator
+	getFeatureArticles(): Locator
 	{
-		return this.getCard(cardIndex)
-			.locator(SELECTORS.home.cardContent);
+		return this.page.locator(SELECTORS.home.featureArticle);
 	}
 
 	/**
-	 * Gets card action text by index.
-	 * @param cardIndex
-	 * Zero-based card index.
+	 * Gets all architecture card elements.
 	 * @returns
-	 * Locator for the card action text.
+	 * Locator for architecture card elements.
 	 */
-	getCardAction(cardIndex: number): Locator
+	getArchCards(): Locator
 	{
-		return this.getCard(cardIndex)
-			.locator(SELECTORS.home.cardActionText);
+		return this.page.locator(SELECTORS.home.archCard);
 	}
 
 	/**
-	 * Gets card icon by index.
-	 * @param cardIndex
-	 * Zero-based card index.
+	 * Gets the clone command element in the CTA footer.
 	 * @returns
-	 * Locator for the card icon.
+	 * Locator for the clone command element.
 	 */
-	getCardIcon(cardIndex: number): Locator
+	getCloneCommand(): Locator
 	{
-		return this.getCard(cardIndex)
-			.locator(SELECTORS.home.featureIcon);
-	}
-
-	/**
-	 * Gets card action icon by index.
-	 * @param cardIndex
-	 * Zero-based card index.
-	 * @returns
-	 * Locator for the card action icon.
-	 */
-	getCardActionIcon(cardIndex: number): Locator
-	{
-		return this.getCard(cardIndex)
-			.locator(SELECTORS.home.cardActionIcon);
-	}
-
-	/**
-	 * Clicks a feature card by index.
-	 * @param cardIndex
-	 * Zero-based card index.
-	 */
-	async clickCard(cardIndex: number): Promise<void>
-	{
-		await this.getCard(cardIndex).click();
-	}
-
-	/**
-	 * Gets count of feature cards.
-	 * @returns
-	 * Number of feature cards visible.
-	 */
-	async getCardCount(): Promise<number>
-	{
-		return this.featureCards.count();
+		return this.page.locator(SELECTORS.home.ctaCloneCommand);
 	}
 }

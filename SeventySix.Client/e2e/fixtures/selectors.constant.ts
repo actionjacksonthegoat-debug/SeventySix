@@ -161,13 +161,22 @@ export const SELECTORS =
 		 */
 		home:
 			{
-				featureCard: ".feature-card",
-				cardTitle: "mat-card-title",
-				cardContent: "mat-card-content p",
-				cardActionText: ".card-action-text",
-				cardActionIcon: ".card-action-text mat-icon",
-				featureIcon: ".feature-icon",
-				subtitle: ".subtitle"
+				heroSection: "section.hero",
+				heroTitle: ".hero-title",
+				heroTagline: ".hero-tagline",
+				techStackSection: "section#tech-stack",
+				techCategory: ".tech-category",
+				techItem: ".tech-item",
+				statsBar: "section.stats-bar",
+				statItem: ".stat-item",
+				featuresSection: "section.features",
+				featureArticle: "article.feature",
+				architectureSection: "section.architecture",
+				archCard: ".arch-card",
+				archCardHeader: ".arch-card-header",
+				archCardContent: ".arch-card-content",
+				ctaFooter: "section.cta-footer",
+				ctaCloneCommand: ".cta-footer-command"
 			},
 
 		/**
@@ -266,7 +275,6 @@ export const SELECTORS =
 			{
 				styleGuideHeader: ".style-guide-header h1",
 				styleGuideContainer: ".style-guide-header",
-				architectureGuideHeader: ".architecture-guide-container h1",
 				themeToggle: "button[aria-label='Toggle theme brightness']",
 				tabGroup: "mat-tab-group",
 				tab: ".mat-mdc-tab",

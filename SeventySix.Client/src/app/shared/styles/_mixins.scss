@@ -810,3 +810,158 @@
 		}
 	}
 }
+
+// ============================================================================
+// LANDING PAGE MIXINS
+// ============================================================================
+
+/// Creates a CSS parallax scroll container with perspective.
+/// Must be applied to the outermost scrollable element.
+@mixin parallax-scroll-container() {
+	height: 100%;
+	overflow-x: hidden;
+	overflow-y: auto;
+	perspective: vars.$parallax-perspective;
+	perspective-origin: center center;
+
+	@media (max-width: vars.$parallax-disable-below) {
+		perspective: none;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		perspective: none;
+	}
+}
+
+/// Creates a parallax depth layer using translateZ + scale compensation.
+/// @param {Length} $depth - The Z-axis depth value (negative = farther away).
+@mixin parallax-layer($depth) {
+	$scale: calc(1 + (#{$depth * -1} / #{vars.$parallax-perspective}));
+
+	transform: translateZ($depth) scale($scale);
+	transform-origin: center center;
+
+	@media (max-width: vars.$parallax-disable-below) {
+		transform: none;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		transform: none;
+	}
+}
+
+/// Glassmorphism card effect using theme-aware custom properties.
+@mixin glassmorphism() {
+	background: var(--landing-glass-bg);
+	backdrop-filter: saturate(var(--landing-glass-saturate)) blur(20px);
+	border: 1px solid var(--landing-glass-border);
+	border-radius: vars.$border-radius-lg;
+}
+
+/// Frosted glass pill behind text for readability over image backgrounds.
+/// Apply to inline text elements (headings, paragraphs) sitting on images.
+/// Uses ::before pseudo â€” avoid on elements that already use ::before.
+@mixin text-frosted-glass($v-pad: vars.$spacing-xs, $h-pad: vars.$spacing-md, $blur: 16px) {
+	position: relative;
+	isolation: isolate;
+	display: inline-block;
+
+	&::before {
+		content: "";
+		position: absolute;
+		inset: calc(-1 * #{$v-pad}) calc(-1 * #{$h-pad});
+		background: var(--landing-glass-bg);
+		backdrop-filter: blur($blur) saturate(var(--landing-glass-saturate));
+		border-radius: vars.$border-radius-md;
+		z-index: -1;
+		mask-image: radial-gradient(
+			ellipse at center,
+			black 15%,
+			transparent 80%
+		);
+	}
+}
+
+/// Gradient mesh background for sections.
+@mixin gradient-mesh-background() {
+	background:
+		radial-gradient(ellipse at 20% 50%, color-mix(in srgb, var(--landing-glow-color) 50%, transparent) 0%, transparent 50%),
+		radial-gradient(ellipse at 80% 20%, color-mix(in srgb, var(--landing-floating-shape-color) 50%, transparent) 0%, transparent 40%),
+		var(--landing-section-bg);
+	background-size: 200% 200%;
+	animation: gradient-shift vars.$animation-duration-gradient ease infinite;
+}
+
+/// Hidden state for scroll-reveal animation (before intersection).
+@mixin scroll-reveal-hidden() {
+	opacity: 0;
+	transform: translateY(2rem);
+	transition:
+		opacity vars.$animation-duration-reveal vars.$transition-easing-standard,
+		transform vars.$animation-duration-reveal vars.$transition-easing-standard;
+}
+
+/// Visible state for scroll-reveal animation (after intersection).
+@mixin scroll-reveal-visible() {
+	opacity: 1;
+	transform: translateY(0);
+}
+
+/// Neon glow text effect using theme-aware custom properties.
+@mixin neon-glow() {
+	text-shadow: var(--landing-text-glow);
+}
+
+/// Dot grid pattern overlay for section backgrounds.
+@mixin grid-dot-pattern() {
+	background-image: radial-gradient(
+		circle,
+		var(--landing-glow-color) 1px,
+		transparent 1px
+	);
+	background-size: 2rem 2rem;
+	opacity: 0.04;
+}
+
+/// Section separator with themed glow line.
+@mixin section-separator() {
+	height: 1px;
+	background: linear-gradient(
+		90deg,
+		transparent 0%,
+		var(--landing-divider-glow) 50%,
+		transparent 100%
+	);
+}
+
+/// Grain overlay using theme-controlled opacity.
+@mixin landing-grain-overlay() {
+	&::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background-image: url('/images/landing-page/dark-grid-texture.webp');
+		background-size: 200px 200px;
+		opacity: var(--landing-grain-opacity);
+		pointer-events: none;
+		z-index: 1;
+	}
+}
+
+/// Scanline overlay using repeating gradient.
+@mixin landing-scanline-overlay() {
+	&::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background: repeating-linear-gradient(
+			0deg,
+			transparent,
+			transparent 2px,
+			rgb(0 0 0 / var(--landing-scanline-opacity)) 2px,
+			rgb(0 0 0 / var(--landing-scanline-opacity)) 4px
+		);
+		pointer-events: none;
+		z-index: 1;
+	}
+}

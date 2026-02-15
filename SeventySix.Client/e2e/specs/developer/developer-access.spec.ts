@@ -55,16 +55,6 @@ test.describe("Developer Routes - RBAC",
 						await expect(developerPage.locator(SELECTORS.layout.pageHeading))
 							.toBeVisible();
 					});
-
-				test("should allow developer to view architecture guide",
-					async ({ developerPage }: { developerPage: Page }) =>
-					{
-						await developerPage.goto(ROUTES.developer.architectureGuide);
-
-						// Page should load successfully
-						await expect(developerPage)
-							.toHaveURL(/\/developer\/architecture-guide/);
-					});
 			});
 
 		test.describe("Admin Role Access (Elevated)",

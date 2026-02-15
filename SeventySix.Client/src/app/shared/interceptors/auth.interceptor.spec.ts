@@ -104,6 +104,32 @@ describe("authInterceptor",
 					.toBeNull();
 			});
 
+		it("should not add header for external URLs",
+			() =>
+			{
+				mockAuthService.getAccessToken.mockReturnValue("test-token");
+				mockAuthService.isTokenExpired.mockReturnValue(false);
+				const req: HttpRequest<unknown> =
+					new HttpRequest(
+						"GET",
+						"https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/angular.svg");
+
+				TestBed.runInInjectionContext(
+					() =>
+					{
+						authInterceptor(req, mockHandler.handle.bind(mockHandler));
+					});
+
+				const callArgs: HttpRequest<unknown> =
+					mockHandler
+						.handle
+						.mock
+						.calls
+						.at(-1)![0] as HttpRequest<unknown>;
+				expect(callArgs.headers.get("Authorization"))
+					.toBeNull();
+			});
+
 		it("should add header for change-password endpoint",
 			() =>
 			{

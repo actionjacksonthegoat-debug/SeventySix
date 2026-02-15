@@ -175,7 +175,7 @@ All public forms (login, registration, forgot password) integrate the shared `al
 
 ### Home Domain
 
-Welcome page with navigation cards linking to the Sandbox and Architecture Guide. Serves as the default landing page for authenticated users.
+Dual-theme parallax landing page showcasing the project's tech stack, features, architecture patterns, and stats. Serves as the default page for all visitors.
 
 ### Sandbox Domain
 

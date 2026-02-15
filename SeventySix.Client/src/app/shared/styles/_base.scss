@@ -97,6 +97,28 @@ html.dark-theme {
 		var(--color-error) 10%,
 		transparent
 	);
+
+	// -------------------------------------------------------------------------
+	// LANDING PAGE — Dystopia Theme
+	// -------------------------------------------------------------------------
+	--landing-texture-overlay: url("/images/landing-page/dark-grid-texture.webp");
+	--landing-section-bg: url("/images/landing-page/dark-data-stream.webp");
+	--landing-glow-color: var(--mat-sys-primary);
+	--landing-glow-intensity: 0.3;
+	--landing-grain-opacity: 0.05;
+	--landing-scanline-opacity: 0.03;
+	--landing-parallax-tint: rgba(0, 188, 212, 0.05);
+	--landing-divider-glow: rgba(0, 188, 212, 0.2);
+	--landing-card-border: rgba(0, 188, 212, 0.15);
+	--landing-floating-shape-color: rgba(0, 188, 212, 0.08);
+	--landing-text-glow: 0 0 20px rgba(0, 188, 212, 0.3);
+	--landing-bullet-color: var(--mat-sys-primary);
+	--landing-glass-bg: color-mix(in srgb, var(--mat-sys-surface-container) 85%, transparent);
+	--landing-glass-border: color-mix(in srgb, var(--mat-sys-primary) 20%, transparent);
+	--landing-glass-saturate: 100%;
+	--landing-text-primary: var(--mat-sys-on-surface);
+	--landing-text-secondary: var(--mat-sys-on-surface-variant);
+	--landing-accent-primary: var(--mat-sys-primary);
 }
 
 // -----------------------------------------------------------------------------
@@ -181,6 +203,28 @@ html.light-theme {
 		var(--color-error) 10%,
 		transparent
 	);
+
+	// -------------------------------------------------------------------------
+	// LANDING PAGE — Utopia Theme
+	// -------------------------------------------------------------------------
+	--landing-texture-overlay: none;
+	--landing-section-bg: url("/images/landing-page/light-crystal.webp");
+	--landing-glow-color: var(--mat-sys-primary);
+	--landing-glow-intensity: 0.12;
+	--landing-grain-opacity: 0;
+	--landing-scanline-opacity: 0;
+	--landing-parallax-tint: rgba(0, 137, 123, 0.03);
+	--landing-divider-glow: rgba(0, 137, 123, 0.15);
+	--landing-card-border: rgba(0, 137, 123, 0.1);
+	--landing-floating-shape-color: rgba(0, 137, 123, 0.06);
+	--landing-text-glow: none;
+	--landing-bullet-color: var(--mat-sys-primary);
+	--landing-glass-bg: rgba(255, 255, 255, 0.75);
+	--landing-glass-border: rgba(0, 137, 123, 0.08);
+	--landing-glass-saturate: 180%;
+	--landing-text-primary: var(--mat-sys-on-surface);
+	--landing-text-secondary: var(--mat-sys-on-surface-variant);
+	--landing-accent-primary: var(--mat-sys-primary);
 }
 
 // Link styles (for non-Material links)
@@ -401,5 +445,23 @@ select[aria-invalid="true"] {
 		animation-iteration-count: 1 !important;
 		transition-duration: 0.01ms !important;
 		scroll-behavior: auto !important;
+	}
+}
+
+// =============================================================================
+// LANDING PAGE KEYFRAMES
+// =============================================================================
+
+@keyframes gradient-shift {
+	0% {
+		background-position: 0% 50%;
+	}
+
+	50% {
+		background-position: 100% 50%;
+	}
+
+	100% {
+		background-position: 0% 50%;
 	}
 }

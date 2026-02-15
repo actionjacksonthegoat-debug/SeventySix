@@ -28,9 +28,10 @@ export const authInterceptor: HttpInterceptorFn =
 		const authService: AuthService =
 			inject(AuthService);
 
-		// Skip auth header for public auth endpoints (login, refresh, logout, OAuth)
+		// Skip auth header for external URLs (CDN, third-party APIs)
+		// and public auth endpoints (login, refresh, logout, OAuth)
 		// Note: change-password requires authentication
-		if (isPublicAuthEndpoint(req.url))
+		if (isExternalUrl(req.url) || isPublicAuthEndpoint(req.url))
 		{
 			return next(req);
 		}
@@ -75,6 +76,34 @@ export const authInterceptor: HttpInterceptorFn =
 
 		return next(addAuthHeader(req, token));
 	};
+
+/**
+ * Checks if the URL is an external (third-party) URL.
+ * Relative URLs and same-origin URLs are internal.
+ * Absolute URLs to different origins are external.
+ * @param {string} url
+ * The request URL to check.
+ * @returns {boolean}
+ * True if the URL is external.
+ */
+function isExternalUrl(url: string): boolean
+{
+	if (!url.startsWith("http"))
+	{
+		return false;
+	}
+
+	try
+	{
+		const requestOrigin: string =
+			new URL(url).origin;
+		return requestOrigin !== window.location.origin;
+	}
+	catch
+	{
+		return false;
+	}
+}
 
 /**
  * Checks if the URL is a public auth endpoint that shouldn't have auth header.

@@ -84,6 +84,15 @@ body {
 	& {
 		-webkit-overflow-scrolling: touch;
 	}
+
+	// Full-width page — child owns scrolling, suppress outer scrollbar and footer
+	&:has(.full-width-page) {
+		overflow: hidden;
+
+		> app-footer {
+			display: none;
+		}
+	}
 }
 
 .page-content {
@@ -128,5 +137,16 @@ body {
 			-webkit-font-smoothing: antialiased;
 			-moz-osx-font-smoothing: grayscale;
 		}
+	}
+
+	// Full-width landing page — strip all constraints, child owns layout
+	&:has(.full-width-page) {
+		padding: 0;
+		margin: 0;
+		width: 100%;
+		max-width: none;
+		overflow: hidden;
+		flex: 1 1 0;
+		min-height: 0;
 	}
 }

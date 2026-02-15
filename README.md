@@ -4,93 +4,69 @@
 >
 > This codebase is under active development and is **not yet suitable for production use**. APIs, database schemas, and configuration may change without notice.
 
-A full-stack monorepo built with .NET 10 and Angular 21. Secure by default, observable from the start, designed for AI-assisted development.
+## Overview
 
-### What's In It
+A full-stack monorepo demonstrating enterprise-grade patterns with .NET 10 and Angular 21. Built entirely through AI-assisted development using GitHub Copilot and Claude, this codebase serves as both a functional application and a reference implementation for secure, observable, well-tested systems.
 
-**Security**
-- .NET Core Identity with Argon2 password hashing
-- Altcha proof-of-work CAPTCHA — no third-party tracking
-- Fail2Ban intrusion prevention with GeoIP blocking
-- GitHub OAuth, MFA (TOTP + backup codes)
-- Native .NET rate limiting on all endpoints
+**Core Stack**: .NET 10 (Wolverine CQRS, EF Core, PostgreSQL) • Angular 21 (Zoneless, Signals, TanStack Query) • Docker Compose infrastructure • MIT licensed with no paid dependencies
 
-**Observability**
-- End-to-end OpenTelemetry traces (server + browser → Jaeger)
-- Prometheus metrics with pre-provisioned Grafana dashboards
-- Real-time API monitoring, cache metrics, and Web Vitals
-- All UIs proxied through HTTPS nginx
+## Key Features
 
-**AI-Assisted Development**
-- A set of Copilot prompts, auto-applied instruction files, and MCP servers
-- Hands-free /create-plan → /review-plan → /execute-plan workflow — add your own corrections at each phase
-- Let Chrome DevTools MCP handle interacting and testing your code, build E2E as you go, confirm load testing with existing structures
+### Security
+- **.NET Core Identity** with Argon2 password hashing and JWT bearer tokens
+- **Altcha proof-of-work CAPTCHA** on all public forms (no third-party tracking)
+- **Multi-factor authentication** via TOTP authenticator apps with backup codes
+- **GitHub OAuth** provider integration
+- **Fail2Ban** intrusion prevention with GeoIP blocking and rate-limit monitoring
+- **Role-based access control** enforced server-side and client-side (User, Developer, Admin)
 
-**Free Infrastructure**
-- MIT licensed, no paid tiers required
-- PostgreSQL, Valkey (Redis-compatible), Docker Compose
-- Self-hosted observability stack
+### Observability
+- **End-to-end OpenTelemetry traces** from browser through API to database (exported to Jaeger)
+- **Prometheus metrics** with pre-provisioned Grafana dashboards for system, API, and cache monitoring
+- **Structured logging** via Serilog with correlation IDs linking logs to distributed traces
+- **Client-side telemetry** tracking Web Vitals and user interactions
+- **All observability UIs** served via HTTPS through nginx reverse proxy
 
-**Testing**
-- **Server**: xUnit test projects with NSubstitute + Shouldly, architecture tests, custom Roslyn analyzers with autofixes
-- **Client**: Vitest unit tests with architecture validation (domain isolation enforced) and web-vitals metrics
-- **E2E**: Playwright across defined auth roles with axe-core WCAG 2.2 AA accessibility scanning
-- **Load**: k6 with multiple scenarios and profiles (quick/smoke/load/stress), Docker-isolated, HTML reports
+### Testing
+- **Server tests**: xUnit with NSubstitute and Shouldly, architecture enforcement via custom Roslyn analyzers
+- **Client tests**: Vitest unit tests with domain isolation validation and web-vitals benchmarks
+- **E2E tests**: Playwright with role-based fixtures (public, authenticated, admin, developer) and axe-core WCAG 2.2 AA scanning
+- **Load tests**: k6 with multiple profiles (quick, smoke, load, stress), Docker-isolated environment, HTML summary reports
 
-**CLI-First**
-- A set of npm scripts covering development, testing, secrets, certificates, and Docker
-- `npm start` to stand up, `npm stop` to tear down, `npm run format` to clean all code
+### Development Workflow
+- **AI-assisted tooling** with Copilot prompts, auto-applied instruction files, and MCP server integrations (GitHub, PostgreSQL, Chrome DevTools, context7, Figma)
+- **Structured plan execution** via `/create-plan` → `/review-plan` → `/execute-plan` workflow
+- **npm script orchestration** for lifecycle management: `npm start` (full stack), `npm stop` (teardown), `npm test` (all suites), `npm run format` (all code)
+- **Hot reload** enabled for both .NET API and Angular client during development
+- **IDE debugging** support with F5 configuration for API breakpoint debugging
 
-### Why It Exists
+## Architecture
 
-This is a public sandbox for building secure, scalable applications. The architectural decisions come down to:
+### Server (.NET 10)
+Clean Architecture with strict dependency flow: `Shared ← Domains ← Api`
 
-- **Clean separation** — Domain-Driven Design with bounded contexts
-- **Parallel development safety** — Ports & Adapters (Hexagonal Architecture)
-- **Vertical slice isolation** — CQRS with Wolverine message handlers
-- **AI collaboration** — Structured prompts and context-aware instructions
-- **Tracing everything** — Jaeger traces and log correlation with copy/paste outputs for debugging in Admin
+- **Bounded contexts**: Identity, Logging, ApiTracking, ElectronicNotifications — each owns its schema, migrations, and `DbContext`
+- **Message handling**: Wolverine CQRS with static handlers and method-injected dependencies
+- **Patterns**: DDD + Hexagonal + Vertical Slices in a modular monolith (ready to extract domains as microservices)
 
-The rule: **hands-free AI-assisted coding**. Describe it, the AI builds it. Use the sandbox page and any of the prompts below for new domains to experiment with proof-of-concept work.
+### Client (Angular 21)
+Domain-driven modules with enforced isolation via architecture tests
 
-### Architecture
+- **Domain modules**: admin, auth, account, developer, home, sandbox — each imports only `@shared/*` and itself, never cross-domain
+- **Rendering**: Zoneless change detection with Signals (no `zone.js`)
+- **State management**: TanStack Query for server state with coordinated cache invalidation
 
-- **Server**: .NET 10 — strict `Shared ← Domains ← Api` dependency flow
-  - Bounded contexts include: Identity, Logging, ApiTracking, ElectronicNotifications
-  - Each domain owns its schema, migrations, and EF Core `DbContext`
-  - Wolverine CQRS with static handlers and method-injected dependencies
+### Infrastructure
+- **Databases**: PostgreSQL (primary) + Valkey (Redis-compatible distributed cache)
+- **Observability**: Jaeger (traces), Prometheus (metrics), Grafana (dashboards), OpenTelemetry Collector (pipeline)
+- **Security**: Fail2Ban with MaxMind GeoIP, nginx TLS termination
+- **Management UIs**: pgAdmin (database), RedisInsight (cache), Scalar (API docs in dev mode)
 
-- **Client**: Angular 21 — enforced domain isolation
-  - Client domains (admin, auth, account, developer, home, sandbox)
-  - Each imports only `@shared/*` + itself, never cross-domain
-  - Zoneless change detection, Signals, TanStack Query for server state
-
-- **Patterns**: DDD + Hexagonal + CQRS + Vertical Slices
-  - Modular monolith — one domain already split out, ready to evolve into microservices if further separation is needed
-  - Interface-driven contracts for testability
-  - Strong type safety across client and server
-
-- **Architectural Tests**: Tests that confirm Copilot never breaks the architecture
-  - If you catch him breaking the structure you want, ask him to write tests to check his own code in the server or client
-  - Domain boundaries, method/class size, parameter counts, short variables — all enforced on server and client
-
-- **Formatting**: `npm run format` handles everything
-  - EditorConfig, ESLint, dprint, dotnet format all ran on every file in the server, client, e2e, and load testing folders. Automatically passing and codefixed check-ins.
-
-- **CI/CD**: GitHub Actions with gated master merges
-  - Lint passing with zero build warnings on the client or server
-  - Server, client, E2E, and go/no-go load tests gate the final phase
-
-- **Environment Realism**: Development matches production
-  - 1:1 in development with only less restrictive rate limits. User-secrets are the only thing that changes between environments, and this was selected to match expected deployments using Docker variables. Critical: Never use development passwords or keys in production — cycle keys monthly and do not store anything in code or re-use development setups.
-
-### AI Tooling
-
-Built with GitHub Copilot, Claude (Opus 4.5/4.6), Raptor Mini for simple tasks, and the Microsoft AI Agent Toolkit extension (AIAgentExpert agent mode). The prompts and instructions are provider-agnostic — adapt them to whatever AI assistant you prefer.
-
-None of this code was handwritten. I wrote more in this markdown file than I have in the entire codebase. It started as a fresh .NET 10 Core Web Project and a single `ng new my-app` prompt. Over time it grew from stubbed weather service samples into what you see here, mostly shaped by personal preferences.
-
-The design goal behind every decision: long term I might want a self-hosted LLM running a dynamic MMORPG AI, maybe I want to run realistic physics models in a simulator, or maybe just a quick proof of concept in this tech stack. This codebase is standalone, polyglot-capable, secure out of the gate with error tracking and observability, with the major design standards locked in for whatever direction the sandbox goes.
+### Quality Gates
+- **Code formatting**: `npm run format` runs EditorConfig, ESLint (with custom rules), dprint, and `dotnet format` across all code
+- **CI/CD**: GitHub Actions enforce zero build warnings, test passage (server, client, E2E, load), and lint compliance before merge
+- **Architecture tests**: Automated enforcement of domain boundaries, method size, parameter counts, and variable length
+- **Configuration parity**: Development mirrors production (1:1 except rate limits) — all secrets via user-secrets/environment variables
 
 ## Table of Contents
 

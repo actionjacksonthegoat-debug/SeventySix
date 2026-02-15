@@ -1,0 +1,99 @@
+@use "variables" as vars;
+@use "mixins";
+
+// ============================================================================
+// STATS COUNTER BAR
+// ============================================================================
+
+.stats-bar
+{
+	position: relative;
+	padding: vars.$spacing-3xl vars.$spacing-xl;
+	background-image: var(--landing-section-bg);
+	background-size: cover;
+	background-position: center;
+
+	@include mixins.landing-grain-overlay();
+
+	// Glassmorphism overlay
+	&::before
+	{
+		z-index: 1;
+	}
+
+	// Content above overlays
+	> *
+	{
+		position: relative;
+		z-index: 2;
+	}
+}
+
+.stats-grid
+{
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-around;
+	align-items: flex-start;
+	gap: vars.$spacing-2xl;
+	max-width: vars.$landing-section-max-width;
+	margin: 0 auto;
+}
+
+.stat-item
+{
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	text-align: center;
+	gap: vars.$spacing-sm;
+	min-width: 8rem;
+
+	// Scroll reveal
+	&.scroll-reveal
+	{
+		@include mixins.scroll-reveal-hidden();
+
+		&.revealed
+		{
+			@include mixins.scroll-reveal-visible();
+		}
+	}
+
+	@media (max-width: vars.$breakpoint-sm-min)
+	{
+		min-width: 6rem;
+	}
+}
+
+.stat-item-icon
+{
+	@include mixins.icon-size(vars.$icon-size-lg);
+	color: var(--landing-bullet-color);
+}
+
+.stat-item-value
+{
+	@include mixins.text-frosted-glass(vars.$spacing-xs, vars.$spacing-sm);
+
+	font-family: vars.$font-family-monospace;
+	font-size: vars.$font-size-4xl;
+	font-weight: vars.$font-weight-bold;
+	color: var(--mat-sys-primary);
+	text-shadow: var(--landing-text-glow);
+
+	@media (max-width: vars.$breakpoint-sm-min)
+	{
+		font-size: vars.$font-size-2xl;
+	}
+}
+
+.stat-item-label
+{
+	@include mixins.text-frosted-glass();
+
+	font-size: vars.$font-size-sm;
+	text-transform: uppercase;
+	letter-spacing: 0.1em;
+	color: var(--mat-sys-on-surface-variant);
+}
