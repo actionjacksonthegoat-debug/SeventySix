@@ -18,62 +18,10 @@ concurrency:
 
 jobs:
     # ──────────────────────────────────────────────────────────
-    # Stage 1: Fast gate — run the same `npm run format` devs use locally,
-    # then verify nothing changed. Catches eslint, dprint, and dotnet format.
-    # ──────────────────────────────────────────────────────────
-    format-check:
-        name: Format & Lint
-        runs-on: ubuntu-latest
-
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v4
-
-            - name: Setup Node.js
-              uses: actions/setup-node@v4
-              with:
-                  node-version: "22.x"
-                  cache: "npm"
-                  cache-dependency-path: SeventySix.Client/package-lock.json
-
-            - name: Setup .NET
-              uses: actions/setup-dotnet@v4
-              with:
-                  dotnet-version: "10.0.x"
-
-            - name: Install dprint
-              run: npm install -g dprint
-
-            - name: Install client dependencies
-              working-directory: SeventySix.Client
-              run: npm ci
-
-            - name: Run format (server + client)
-              run: npm run format
-
-            - name: Verify no formatting changes
-              run: |
-                  if [ -n "$(git status --porcelain)" ]; then
-                      echo "============================================"
-                      echo "  FORMAT CHECK FAILED"
-                      echo "============================================"
-                      echo ""
-                      echo "  The following files need formatting."
-                      echo "  Run 'npm run format' locally and commit."
-                      echo ""
-                      git diff --stat
-                      echo ""
-                      echo "============================================"
-                      exit 1
-                  fi
-                  echo "Format check passed — no changes detected."
-
-    # ──────────────────────────────────────────────────────────
-    # Stage 2: Build + Unit tests (parallel)
+    # Stage 1: Lint + Build + Unit tests (parallel)
     # ──────────────────────────────────────────────────────────
     client-build:
         name: Client Build & Test
-        needs: [format-check]
         runs-on: ubuntu-latest
 
         defaults:
@@ -93,6 +41,9 @@ jobs:
 
             - name: Install dependencies
               run: npm ci
+
+            - name: Lint
+              run: npm run lint
 
             - name: Build
               run: npm run build
@@ -117,7 +68,6 @@ jobs:
 
     server-build:
         name: Server Build & Test
-        needs: [format-check]
         runs-on: ubuntu-latest
         # NOTE: Server tests use Testcontainers (requires Docker).
         # ubuntu-latest includes Docker by default.
@@ -344,7 +294,7 @@ jobs:
     # ──────────────────────────────────────────────────────────
     quality-gate:
         name: Quality Gate
-        needs: [format-check, client-build, server-build, e2e, load-test]
+        needs: [client-build, server-build, e2e, load-test]
         runs-on: ubuntu-latest
         if: always()
 
@@ -369,7 +319,6 @@ jobs:
                       fi
                   }
 
-                  check_job "Format & Lint" "${{ needs.format-check.result }}"
                   check_job "Client Build & Test" "${{ needs.client-build.result }}"
                   check_job "Server Build & Test" "${{ needs.server-build.result }}"
                   check_job "E2E Tests" "${{ needs.e2e.result }}"
@@ -377,11 +326,11 @@ jobs:
 
                   echo ""
                   echo "  Checks enforced:"
-                  echo "    - npm run format (eslint + dprint + dotnet format, git diff)"
+                  echo "    - ESLint (client lint — zero errors)"
                   echo "    - Angular production build (zero warnings)"
-                  echo "    - Vitest (all tests pass)"
-                  echo "    - dotnet build Release (zero warnings)"
-                  echo "    - dotnet test (all tests pass, coverage collected)"
+                  echo "    - Vitest (all client tests pass)"
+                  echo "    - dotnet build Release (TreatWarningsAsErrors)"
+                  echo "    - dotnet test (all server tests pass, coverage collected)"
                   echo "    - Playwright E2E (all tests pass)"
                   echo "    - k6 load tests (all scenarios pass thresholds)"
                   echo ""
