@@ -120,9 +120,11 @@ All code MUST work on both **Windows** and **Linux** (CI runs on `ubuntu-latest`
 
 Use **context7** when unsure about current API for Angular, Wolverine, TanStack Query, or Playwright. Not needed for stable APIs like `Path.Combine` or standard HTTP.
 
-## MCP Activation Rules (CRITICAL)
+## MCP Activation Rules (CRITICAL — ABSOLUTE REQUIREMENT)
 
-> **RULE**: Before performing a task that an MCP server supports, ALWAYS activate and use that MCP server. Never perform the task manually when an MCP tool exists for it.
+> **RULE**: ALL MCP servers listed above MUST remain enabled at all times. NEVER disable individual MCP tools in the VS Code chat panel. Before performing a task that an MCP server supports, ALWAYS activate and use that MCP server. Never perform the task manually when an MCP tool exists for it.
+
+> **TOOL AVAILABILITY**: All MCP tools MUST be kept toggled ON in the VS Code chat panel. If any MCP tool appears disabled, RE-ENABLE it immediately — do not proceed without it. Disabling MCP tools is PROHIBITED.
 
 | Task | Required MCP | Tool Examples |
 |------|-------------|---------------|
@@ -134,7 +136,7 @@ Use **context7** when unsure about current API for Angular, Wolverine, TanStack 
 | Inspect database schema/data | `postgresql` | `query` |
 | Convert Figma designs to code | `figma` | `get_figma_data`, `download_figma_images` |
 
-**If an MCP server is not running when needed, start it. If it prompts for credentials, ask the user to provide them. NEVER skip the MCP and do the task manually or theoretically.**
+**If an MCP server is not running when needed, start it. If it prompts for credentials, ask the user to provide them. NEVER skip the MCP and do the task manually or theoretically. If a tool reports "disabled by the user", STOP and ask the user to re-enable it in the VS Code chat panel before continuing.**
 
 ## Chrome DevTools Verification (REQUIRED for Client Changes)
 

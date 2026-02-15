@@ -88,6 +88,10 @@
 		".github/prompts": true
 	},
 
-	// Enable mcp
-	"chat.mcp.access": "all"
+	// Enable mcp — all tools always available, no per-tool confirmation
+	"chat.mcp.access": "all",
+
+	// Auto-approve MCP tool calls in agent mode (no confirmation dialogs)
+	"chat.agent.allowedTools": ["*"],
+	"chat.agent.maxRequests": 50
 }

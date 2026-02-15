@@ -62,53 +62,79 @@ class ConciseReporter implements Reporter
 		switch (result.status)
 		{
 			case "passed":
-			{
-				if (test.outcome() === "flaky")
-				{
-					this.flakyCount++;
-					console.log(
-						`  ${COLORS.yellow}⚠ ${testTitle} ${COLORS.dim}(${durationSeconds}s, flaky)${COLORS.reset}`);
-				}
-				else
-				{
-					this.passedCount++;
-					console.log(
-						`  ${COLORS.green}✓ ${testTitle} ${COLORS.dim}(${durationSeconds}s)${COLORS.reset}`);
-				}
+				this.logPassed(testTitle, durationSeconds, test.outcome() === "flaky");
 				break;
-			}
 			case "failed":
 			case "timedOut":
-			{
-				this.failedCount++;
-				const errorMessage: string =
-					this.extractFirstErrorLine(result);
-				const fileLocation: string =
-					this.getFileLocation(test);
-
-				console.log(
-					`  ${COLORS.red}✗ ${testTitle} ${COLORS.dim}(${durationSeconds}s)${COLORS.reset}`);
-				console.log(
-					`    ${COLORS.red}${errorMessage}${COLORS.reset}`);
-				console.log(
-					`    ${COLORS.dim}at ${fileLocation}${COLORS.reset}`);
+				this.logFailed(testTitle, durationSeconds, result, test);
 				break;
-			}
 			case "skipped":
-			{
 				this.skippedCount++;
 				console.log(
 					`  ${COLORS.yellow}- ${testTitle} ${COLORS.dim}(skipped)${COLORS.reset}`);
 				break;
-			}
 			case "interrupted":
-			{
 				this.skippedCount++;
 				console.log(
-					`  ${COLORS.yellow}! ${testTitle} ${COLORS.dim}(interrupted)${COLORS.reset}`);
+					`  ${COLORS.yellow}${testTitle} ${COLORS.dim}(interrupted)${COLORS.reset}`);
 				break;
-			}
 		}
+	}
+
+	/**
+	 * Logs a passed (or flaky) test result to the console.
+	 * @param testTitle
+	 * Display name of the test case.
+	 * @param durationSeconds
+	 * Formatted duration string (e.g. "1.2").
+	 * @param isFlaky
+	 * Whether the test passed on retry (flaky).
+	 */
+	private logPassed(testTitle: string, durationSeconds: string, isFlaky: boolean): void
+	{
+		if (isFlaky)
+		{
+			this.flakyCount++;
+			console.log(
+				`  ${COLORS.yellow}${testTitle} ${COLORS.dim}(${durationSeconds}s, flaky)${COLORS.reset}`);
+		}
+		else
+		{
+			this.passedCount++;
+			console.log(
+				`  ${COLORS.green}${testTitle} ${COLORS.dim}(${durationSeconds}s)${COLORS.reset}`);
+		}
+	}
+
+	/**
+	 * Logs a failed or timed-out test result with error details and file location.
+	 * @param testTitle
+	 * Display name of the test case.
+	 * @param durationSeconds
+	 * Formatted duration string (e.g. "1.2").
+	 * @param result
+	 * The Playwright TestResult containing error information.
+	 * @param test
+	 * The Playwright TestCase containing file location.
+	 */
+	private logFailed(
+		testTitle: string,
+		durationSeconds: string,
+		result: TestResult,
+		test: TestCase): void
+	{
+		this.failedCount++;
+		const errorMessage: string =
+			this.extractFirstErrorLine(result);
+		const fileLocation: string =
+			this.getFileLocation(test);
+
+		console.log(
+			`  ${COLORS.red}${testTitle} ${COLORS.dim}(${durationSeconds}s)${COLORS.reset}`);
+		console.log(
+			`    ${COLORS.red}${errorMessage}${COLORS.reset}`);
+		console.log(
+			`    ${COLORS.dim}at ${fileLocation}${COLORS.reset}`);
 	}
 
 	onEnd(result: FullResult): void

@@ -75,10 +75,11 @@ The rule: **hands-free AI-assisted coding**. Describe it, the AI builds it. Use 
   - Domain boundaries, method/class size, parameter counts, short variables — all enforced on server and client
 
 - **Formatting**: `npm run format` handles everything
-  - EditorConfig, ESLint, dprint, dotnet format all ran on every file in the server, client, e2e, and load testing folders.
+  - EditorConfig, ESLint, dprint, dotnet format all ran on every file in the server, client, e2e, and load testing folders. Automatically passing and codefixed check-ins.
 
 - **CI/CD**: GitHub Actions with gated master merges
-  - Server, client, and E2E test gates plus a quality gate check
+  - Lint passing with zero build warnings on the client or server
+  - Server, client, E2E, and go/no-go load tests gate the final phase
 
 - **Environment Realism**: Development matches production
   - 1:1 in development with only less restrictive rate limits. User-secrets are the only thing that changes between environments, and this was selected to match expected deployments using Docker variables. Critical: Never use development passwords or keys in production — cycle keys monthly and do not store anything in code or re-use development setups.
@@ -509,12 +510,29 @@ The admin dashboard is a four-tab control center. The first three tabs embed **p
 
 The External Systems tab is built with Angular components rather than Grafana — it surfaces data from the `ApiTracking` domain (third-party API usage with daily limit **enforcement**) and background job execution statuses. In development mode, quick links to Jaeger, Prometheus, Grafana, pgAdmin, and RedisInsight appear here.
 
-<!-- TODO: Capture dashboard tab screenshots when dev environment is running:
-  - dashboard-system.png — System Overview tab
-  - dashboard-api.png — API Metrics tab
-  - dashboard-cache.png — Cache Metrics tab
-  - dashboard-external.png — External Systems tab
--->
+##### System Overview
+
+The default tab shows real-time system health at a glance. Key panels include API Health status, Total Requests, Error Rate, Response Time p95, Memory Usage, GC Collections, CPU Usage, and Thread Pool Queue Length. All metrics auto-refresh and adapt to the active theme.
+
+![Admin Dashboard — System Overview tab showing API health, request counts, error rate, response time, memory, GC, CPU, and thread pool metrics](docs/screenshots/dashboard-system.png)
+
+##### API Metrics
+
+The API Metrics tab provides endpoint-level performance analysis. Panels show the Top 10 Slowest Endpoints, HTTP Status Code Distribution, Error Rate by Endpoint, and Per-Endpoint Response Time charts. Use this tab to identify slow routes and error hotspots.
+
+![Admin Dashboard — API Metrics tab showing top slowest endpoints, status code distribution, error rate by endpoint, and response time charts](docs/screenshots/dashboard-api.png)
+
+##### Cache Metrics
+
+The Cache Metrics tab monitors the Valkey (Redis-compatible) cache layer. Panels include Connected Clients, Memory Usage, Uptime, L2 Cache Hit Rate, Network I/O, Operations/sec, Total Keys, and Command Stats. Critical for verifying FusionCache's L1/L2 behavior.
+
+![Admin Dashboard — Cache Metrics tab showing connected clients, memory, uptime, hit rate, network I/O, operations, keys, and command stats](docs/screenshots/dashboard-cache.png)
+
+##### External Systems
+
+The External Systems tab is built with Angular components rather than Grafana. It surfaces the `ApiTracking` domain's Third-Party API Statistics (daily call counts, limits, lock status), Scheduled Jobs status (last run, next run, health), and quick links to observability and data tools (Jaeger, Prometheus, Grafana, pgAdmin, RedisInsight) in development mode.
+
+![Admin Dashboard — External Systems tab showing API statistics, scheduled jobs, and observability tool links](docs/screenshots/dashboard-external.png)
 
 #### User Management
 
@@ -540,7 +558,7 @@ Client-side errors and diagnostic events flow into a centralized log table with 
 
 Clicking a row opens a detail dialog showing the full log payload — including the OpenTelemetry `CorrelationId`. An **"Open in Jaeger"** button constructs the trace URL directly from the correlation ID, giving administrators one-click access to the distributed trace for any logged event. Copy outputs a JSON object representing the full error for quick chat-based debugging, including the stack trace and any messages or details associated.
 
-![Log detail dialog with correlation ID, Jaeger trace button, and copy-to-clipboard](docs/screenshots/log-drill-in.png)
+![Log detail dialog showing a full stack trace with correlation ID and Jaeger trace link](docs/screenshots/log-detail-stacktrace.png)
 
 ### Developer Tools
 
@@ -554,7 +572,9 @@ An **Architecture Guide** page provides project-specific architectural documenta
 
 ### Observability
 
-Distributed tracing is built in. Every HTTP request generates an OpenTelemetry trace that flows through to Jaeger. Log entries include the trace's correlation ID, and the "Open in Jaeger" button jumps directly to the full trace waterfall.
+**Links to Jaeger, Prometheus, and Grafana Readonly local hosted dashboards are offered in the Admin Dashboard/External Service tab as direct links**
+
+Distributed tracing is built in. Every HTTP request generates an OpenTelemetry trace that flows through to Jaeger, and piped into Grafana and Prometheus. Log entries include the trace's correlation ID, and the "Open in Jaeger" button in Admin Logs jumps directly to the full trace waterfall.
 
 ![Jaeger distributed trace waterfall showing API request spans](docs/screenshots/jaeger-trace.png)
 

@@ -5,6 +5,17 @@
 * text=auto eol=crlf
 
 ###############################################################################
+# Force LF line endings for files that must run on Linux.
+# Shell scripts break with CRLF on bash — $'\r': command not found.
+# CI runs on ubuntu-latest, so .sh files MUST be LF.
+###############################################################################
+*.sh text eol=lf
+Dockerfile* text eol=lf
+*.conf text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+
+###############################################################################
 # Set default behavior for command prompt diff.
 #
 # This is need for earlier builds of msysgit that does not have it on by
