@@ -41,12 +41,12 @@ public class BackupCode : ICreatableEntity
 	/// <summary>
 	/// Gets or sets when the code was used.
 	/// </summary>
-	public DateTime? UsedAt { get; set; }
+	public DateTimeOffset? UsedAt { get; set; }
 
 	/// <summary>
 	/// Gets or sets the creation timestamp.
 	/// </summary>
-	public DateTime CreateDate { get; set; }
+	public DateTimeOffset CreateDate { get; set; }
 
 	/// <summary>
 	/// Gets or sets whether this backup code is soft-deleted.

@@ -5,6 +5,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Options;
 using SeventySix.Api.Attributes;
 using SeventySix.Api.Configuration;
 using SeventySix.Api.Extensions;
@@ -33,7 +34,8 @@ namespace SeventySix.Api.Controllers;
 public class PasswordController(
 	IMessageBus messageBus,
 	IAuthCookieService cookieService,
-	ILogger<PasswordController> logger) : AuthControllerBase(cookieService, logger)
+	IOptions<AuthSettings> authSettings,
+	ILogger<PasswordController> logger) : AuthControllerBase(cookieService, authSettings, logger)
 {
 	/// <summary>
 	/// Changes the current user's password.

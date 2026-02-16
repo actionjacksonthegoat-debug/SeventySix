@@ -20,8 +20,7 @@ function setupMockBrowserApis(): void
 	vi.stubGlobal(
 		"matchMedia",
 		vi.fn(
-			() =>
-				({ matches: true })));
+			() => ({ matches: true })));
 }
 
 describe("HomeComponent",

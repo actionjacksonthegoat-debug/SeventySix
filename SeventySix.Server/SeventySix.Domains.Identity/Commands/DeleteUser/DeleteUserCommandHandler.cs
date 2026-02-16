@@ -62,7 +62,7 @@ public static class DeleteUserCommandHandler
 
 		user.IsDeleted = true;
 		user.DeletedAt =
-			timeProvider.GetUtcNow().UtcDateTime;
+			timeProvider.GetUtcNow();
 		user.DeletedBy = command.DeletedBy;
 		user.IsActive = false;
 

@@ -41,12 +41,12 @@ public class MemoryPackSerializationTests
 				Username: "testuser",
 				Email: "test@example.com",
 				FullName: "Test User",
-				CreateDate: timeProvider.GetUtcNow().UtcDateTime,
+				CreateDate: timeProvider.GetUtcNow(),
 				IsActive: true,
 				CreatedBy: "admin",
 				ModifyDate: null,
 				ModifiedBy: "",
-				LastLoginAt: timeProvider.GetUtcNow().UtcDateTime,
+				LastLoginAt: timeProvider.GetUtcNow(),
 				IsDeleted: false,
 				DeletedAt: null,
 				DeletedBy: null);
@@ -82,7 +82,7 @@ public class MemoryPackSerializationTests
 				Username: "testuser",
 				Email: "test@example.com",
 				FullName: "Test User",
-				CreateDate: timeProvider.GetUtcNow().UtcDateTime,
+				CreateDate: timeProvider.GetUtcNow(),
 				IsActive: true,
 				CreatedBy: "admin",
 				ModifyDate: null,
@@ -132,7 +132,7 @@ public class MemoryPackSerializationTests
 				Roles: ["Developer", "Admin"],
 				HasPassword: true,
 				LinkedProviders: ["Google"],
-				LastLoginAt: timeProvider.GetUtcNow().UtcDateTime);
+				LastLoginAt: timeProvider.GetUtcNow());
 
 		// Act
 		byte[] serialized =

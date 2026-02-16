@@ -3,8 +3,10 @@
 // </copyright>
 
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using SeventySix.Api.Infrastructure;
 using SeventySix.Identity;
+using SeventySix.Shared.Constants;
 
 namespace SeventySix.Api.Controllers;
 
@@ -15,11 +17,15 @@ namespace SeventySix.Api.Controllers;
 /// <param name="cookieService">
 /// Service for authentication cookie management.
 /// </param>
+/// <param name="authSettings">
+/// Authentication settings including session inactivity configuration.
+/// </param>
 /// <param name="logger">
 /// Logger for authentication operations.
 /// </param>
 public abstract class AuthControllerBase(
 	IAuthCookieService cookieService,
+	IOptions<AuthSettings> authSettings,
 	ILogger logger) : ControllerBase
 {
 	/// <summary>
@@ -31,6 +37,11 @@ public abstract class AuthControllerBase(
 	/// Gets the cookie service.
 	/// </summary>
 	protected IAuthCookieService CookieService { get; } = cookieService;
+
+	/// <summary>
+	/// Gets the authentication settings.
+	/// </summary>
+	protected IOptions<AuthSettings> AuthSettings { get; } = authSettings;
 
 	/// <summary>
 	/// Handles a failed authentication result by logging and returning appropriate response.
@@ -122,14 +133,25 @@ public abstract class AuthControllerBase(
 	/// <returns>
 	/// An authentication response for the client.
 	/// </returns>
-	protected static AuthResponse CreateAuthResponse(
-		ValidatedAuthResult validatedResult) =>
-		new(
+	protected AuthResponse CreateAuthResponse(
+		ValidatedAuthResult validatedResult)
+	{
+		SessionInactivitySettings inactivity =
+			AuthSettings.Value.SessionInactivity;
+
+		return new(
 			AccessToken: validatedResult.AccessToken,
 			ExpiresAt: validatedResult.ExpiresAt,
 			Email: validatedResult.Email,
 			FullName: validatedResult.FullName,
-			RequiresPasswordChange: validatedResult.RequiresPasswordChange);
+			RequiresPasswordChange: validatedResult.RequiresPasswordChange,
+			SessionInactivityMinutes: inactivity.Enabled
+				? inactivity.TimeoutMinutes
+				: 0,
+			SessionWarningSeconds: inactivity.Enabled
+				? inactivity.WarningSeconds
+				: 0);
+	}
 
 	/// <summary>
 	/// Validated authentication result with non-nullable token fields.
@@ -155,7 +177,7 @@ public abstract class AuthControllerBase(
 	protected readonly record struct ValidatedAuthResult(
 		string AccessToken,
 		string RefreshToken,
-		DateTime ExpiresAt,
+		DateTimeOffset ExpiresAt,
 		string Email,
 		string? FullName,
 		bool RequiresPasswordChange);
@@ -210,7 +232,7 @@ public abstract class AuthControllerBase(
 			</html>
 			""";
 
-		return Content(html, "text/html");
+		return Content(html, MediaTypeConstants.TextHtml);
 	}
 
 	/// <summary>
@@ -250,6 +272,6 @@ public abstract class AuthControllerBase(
 			</html>
 			""";
 
-		return Content(html, "text/html");
+		return Content(html, MediaTypeConstants.TextHtml);
 	}
 }

@@ -55,7 +55,7 @@ public sealed class HealthCheckService(
 		{
 			Status = overallStatus,
 			CheckedAt =
-				timeProvider.GetUtcNow().UtcDateTime,
+				timeProvider.GetUtcNow(),
 			Database = databaseHealth,
 			ErrorQueue = errorQueueHealth,
 			System = systemHealth,

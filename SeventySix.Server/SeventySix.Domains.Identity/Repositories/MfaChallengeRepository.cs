@@ -53,7 +53,7 @@ internal sealed class MfaChallengeRepository(IdentityDbContext context)
 
 	/// <inheritdoc/>
 	public async Task<int> DeleteExpiredAsync(
-		DateTime expirationCutoff,
+		DateTimeOffset expirationCutoff,
 		CancellationToken cancellationToken = default)
 	{
 		int deletedCount =

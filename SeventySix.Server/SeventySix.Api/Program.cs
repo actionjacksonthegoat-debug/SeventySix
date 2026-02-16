@@ -221,6 +221,11 @@ StartupValidator.ValidateConfiguration(
 	app.Environment,
 	app.Services.GetRequiredService<ILogger<Program>>());
 
+// Validate AllowedHosts is not wildcard in production
+StartupValidator.ValidateAllowedHosts(
+	builder.Configuration,
+	app.Environment);
+
 // Validate dependencies (in debug scenarios this provides actionable errors for VS)
 await app.ValidateDependenciesAsync(builder.Configuration);
 

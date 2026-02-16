@@ -5,6 +5,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Options;
 using SeventySix.Api.Attributes;
 using SeventySix.Api.Configuration;
 using SeventySix.Api.Extensions;
@@ -38,7 +39,8 @@ namespace SeventySix.Api.Controllers;
 public class AuthController(
 	IMessageBus messageBus,
 	IAuthCookieService cookieService,
-	ILogger<AuthController> logger) : AuthControllerBase(cookieService, logger)
+	IOptions<AuthSettings> authSettings,
+	ILogger<AuthController> logger) : AuthControllerBase(cookieService, authSettings, logger)
 {
 	/// <summary>
 	/// Authenticates a user with username/email and password.

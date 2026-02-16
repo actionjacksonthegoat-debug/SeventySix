@@ -39,17 +39,17 @@ if (typeof window !== "undefined")
 			"matchMedia",
 			{
 				writable: true,
-				value: vi.fn()
+				value: vi
+					.fn()
 					.mockImplementation(
-						(query: string) =>
-							({
-								matches: false,
-								media: query,
-								onchange: null,
-								addEventListener: vi.fn(),
-								removeEventListener: vi.fn(),
-								dispatchEvent: vi.fn()
-							}))
+						(query: string) => ({
+							matches: false,
+							media: query,
+							onchange: null,
+							addEventListener: vi.fn(),
+							removeEventListener: vi.fn(),
+							dispatchEvent: vi.fn()
+						}))
 			});
 	}
 }

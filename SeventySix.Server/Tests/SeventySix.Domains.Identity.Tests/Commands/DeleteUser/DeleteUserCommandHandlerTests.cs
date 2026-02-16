@@ -125,7 +125,7 @@ public class DeleteUserCommandHandlerTests
 				.WithIsActive(true)
 				.WithDeletedInfo(
 					isDeleted: true,
-					deletedAt: TimeProvider.GetUtcNow().UtcDateTime,
+					deletedAt: TimeProvider.GetUtcNow(),
 					deletedBy: "system")
 				.Build();
 		DeleteUserCommand command =

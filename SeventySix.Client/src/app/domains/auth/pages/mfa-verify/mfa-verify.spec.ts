@@ -43,7 +43,9 @@ const mockAuthResponse: AuthResponse =
 		email: "test@example.com",
 		fullName: "Test User",
 		requiresMfa: false,
-		requiresPasswordChange: false
+		requiresPasswordChange: false,
+		sessionInactivityMinutes: 0,
+		sessionWarningSeconds: 0
 	};
 
 const mockMfaState: MfaState =

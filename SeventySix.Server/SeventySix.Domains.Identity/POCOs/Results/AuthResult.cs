@@ -58,7 +58,7 @@ public record AuthResult(
 	bool Success,
 	string? AccessToken = null,
 	string? RefreshToken = null,
-	DateTime? ExpiresAt = null,
+	DateTimeOffset? ExpiresAt = null,
 	string? Email = null,
 	string? FullName = null,
 	bool RequiresPasswordChange = false,
@@ -109,7 +109,7 @@ public record AuthResult(
 	public static AuthResult Succeeded(
 		string accessToken,
 		string refreshToken,
-		DateTime expiresAt,
+		DateTimeOffset expiresAt,
 		string email,
 		string? fullName,
 		bool requiresPasswordChange = false,

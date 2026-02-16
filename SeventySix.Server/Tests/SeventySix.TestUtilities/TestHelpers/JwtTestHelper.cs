@@ -139,11 +139,10 @@ public static class JwtTestHelper
 			SecurityAlgorithms.HmacSha256);
 
 		// Create token that expired 1 hour ago
-		DateTime pastExpiration =
+		DateTimeOffset pastExpiration =
 			timeProvider
 			.GetUtcNow()
-			.AddHours(-1)
-			.UtcDateTime;
+			.AddHours(-1);
 
 		JwtSecurityToken token =
 			new(
@@ -151,7 +150,7 @@ public static class JwtTestHelper
 			audience: ValidAudience,
 			claims: claims,
 			notBefore: timeProvider.GetUtcNow().AddHours(-2).UtcDateTime,
-			expires: pastExpiration,
+			expires: pastExpiration.UtcDateTime,
 			signingCredentials: credentials);
 
 		return new JwtSecurityTokenHandler().WriteToken(token);

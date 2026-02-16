@@ -148,6 +148,6 @@ public class GetAllPermissionRequestsQueryHandlerTests
 			RequestedRole: roleName,
 			RequestMessage: "Please approve",
 			CreatedBy: username,
-			CreateDate: TimeProvider.GetUtcNow().UtcDateTime);
+			CreateDate: TimeProvider.GetUtcNow());
 	}
 }

@@ -31,10 +31,10 @@ public class ThirdPartyApiRequestBuilder
 	private string ApiName = "TestApi";
 	private string BaseUrl = "https://api.test.com";
 	private int CallCount = 0;
-	private DateTime? LastCalledAt = null;
+	private DateTimeOffset? LastCalledAt = null;
 	private DateOnly ResetDate;
-	private DateTime CreateDate;
-	private DateTime? ModifyDate = null;
+	private DateTimeOffset CreateDate;
+	private DateTimeOffset? ModifyDate = null;
 	private uint RowVersion = 1;
 
 	/// <summary>
@@ -49,7 +49,7 @@ public class ThirdPartyApiRequestBuilder
 		ResetDate =
 			DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);
 		CreateDate =
-			timeProvider.GetUtcNow().UtcDateTime;
+			timeProvider.GetUtcNow();
 	}
 
 	/// <summary>
@@ -106,7 +106,7 @@ public class ThirdPartyApiRequestBuilder
 	/// <returns>
 	/// The builder instance for method chaining.
 	/// </returns>
-	public ThirdPartyApiRequestBuilder WithLastCalledAt(DateTime? lastCalledAt)
+	public ThirdPartyApiRequestBuilder WithLastCalledAt(DateTimeOffset? lastCalledAt)
 	{
 		LastCalledAt = lastCalledAt;
 		return this;
@@ -136,7 +136,7 @@ public class ThirdPartyApiRequestBuilder
 	/// <returns>
 	/// The builder instance for method chaining.
 	/// </returns>
-	public ThirdPartyApiRequestBuilder WithCreatedAt(DateTime createDate)
+	public ThirdPartyApiRequestBuilder WithCreatedAt(DateTimeOffset createDate)
 	{
 		CreateDate = createDate;
 		return this;
@@ -151,7 +151,7 @@ public class ThirdPartyApiRequestBuilder
 	/// <returns>
 	/// The builder instance for method chaining.
 	/// </returns>
-	public ThirdPartyApiRequestBuilder WithModifiedAt(DateTime? modifyDate)
+	public ThirdPartyApiRequestBuilder WithModifiedAt(DateTimeOffset? modifyDate)
 	{
 		ModifyDate = modifyDate;
 		return this;
@@ -211,6 +211,6 @@ public class ThirdPartyApiRequestBuilder
 	{
 		return new ThirdPartyApiRequestBuilder(timeProvider)
 			.WithCallCount(callCount)
-			.WithLastCalledAt(timeProvider.GetUtcNow().UtcDateTime);
+			.WithLastCalledAt(timeProvider.GetUtcNow());
 	}
 }

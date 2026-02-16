@@ -1,7 +1,8 @@
-import { Injectable, inject } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
+import { inject, Injectable } from "@angular/core";
 import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
-import { Observable, of, map, catchError, shareReplay } from "rxjs";
+import DOMPurify from "dompurify";
+import { catchError, map, Observable, of, shareReplay } from "rxjs";
 
 /** CDN icon source configuration */
 interface CdnIconSource
@@ -72,14 +73,25 @@ export class CdnIconService
 			cdnSource.baseUrl + cdnSource.pathTemplate.replace(/\{slug\}/g, slug);
 
 		const icon$: Observable<SafeHtml> =
-			this.httpClient
+			this
+				.httpClient
 				.get(
 					iconUrl,
 					{ responseType: "text" })
 				.pipe(
 					map(
 						(svg: string) =>
-							this.sanitizer.bypassSecurityTrustHtml(svg)),
+						{
+							const sanitizedSvg: string =
+								DOMPurify.sanitize(
+									svg,
+									{
+										USE_PROFILES: { svg: true },
+										FORBID_TAGS: ["script", "style", "use"],
+										FORBID_ATTR: ["onload", "onerror", "onclick", "onmouseover"]
+									});
+							return this.sanitizer.bypassSecurityTrustHtml(sanitizedSvg);
+						}),
 					catchError(
 						() =>
 							of(this.sanitizer.bypassSecurityTrustHtml(""))),

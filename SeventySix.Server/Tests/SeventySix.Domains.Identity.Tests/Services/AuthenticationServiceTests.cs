@@ -88,7 +88,7 @@ public class AuthenticationServiceTests
 		string expectedAccessToken = "access_token_123";
 		string expectedRefreshToken = "refresh_token_456";
 		string clientIp = "192.168.1.1";
-		DateTime utcNow =
+		DateTimeOffset utcNow =
 			TestDates.DefaultUtc;
 
 		UserManager
@@ -111,7 +111,7 @@ public class AuthenticationServiceTests
 				Arg.Any<CancellationToken>())
 			.Returns(expectedRefreshToken);
 
-		TimeProvider.GetUtcNow().Returns(new DateTimeOffset(utcNow));
+		TimeProvider.GetUtcNow().Returns(new DateTimeOffset(utcNow.UtcDateTime));
 
 		// Act
 		AuthResult result =
@@ -327,7 +327,7 @@ public class AuthenticationServiceTests
 		IList<string> roles =
 			[RoleConstants.User];
 		string expectedAccessToken = "access_token_only";
-		DateTime utcNow =
+		DateTimeOffset utcNow =
 			TestDates.DefaultUtc;
 
 		UserManager
@@ -342,7 +342,7 @@ public class AuthenticationServiceTests
 				Arg.Any<bool>())
 			.Returns(expectedAccessToken);
 
-		TimeProvider.GetUtcNow().Returns(new DateTimeOffset(utcNow));
+		TimeProvider.GetUtcNow().Returns(new DateTimeOffset(utcNow.UtcDateTime));
 
 		// Act
 		AuthResult result =
@@ -375,7 +375,7 @@ public class AuthenticationServiceTests
 			.DidNotReceive()
 			.UpdateLastLoginAsync(
 				Arg.Any<long>(),
-				Arg.Any<DateTime>(),
+				Arg.Any<DateTimeOffset>(),
 				Arg.Any<string?>(),
 				Arg.Any<CancellationToken>());
 	}

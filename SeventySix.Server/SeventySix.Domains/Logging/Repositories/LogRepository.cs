@@ -173,7 +173,7 @@ internal class LogRepository(
 
 	/// <inheritdoc/>
 	public async Task<int> DeleteOlderThanAsync(
-		DateTime cutoffDate,
+		DateTimeOffset cutoffDate,
 		CancellationToken cancellationToken = default)
 	{
 		int deletedCount =

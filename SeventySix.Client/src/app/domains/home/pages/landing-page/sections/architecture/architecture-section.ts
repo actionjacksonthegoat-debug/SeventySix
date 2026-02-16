@@ -6,12 +6,12 @@ import {
 	signal,
 	WritableSignal
 } from "@angular/core";
-import { MatCardModule } from "@angular/material/card";
-import { MatIconModule } from "@angular/material/icon";
 import { MatButtonModule } from "@angular/material/button";
+import { MatCardModule } from "@angular/material/card";
 import { MatChipsModule } from "@angular/material/chips";
-import { ScrollRevealDirective } from "@shared/directives";
+import { MatIconModule } from "@angular/material/icon";
 import { ArchitectureCard } from "@home/models";
+import { ScrollRevealDirective } from "@shared/directives";
 
 /**
  * Architecture section — expandable cards for architecture patterns.

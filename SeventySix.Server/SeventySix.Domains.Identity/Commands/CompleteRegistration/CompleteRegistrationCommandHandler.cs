@@ -245,8 +245,8 @@ public static class CompleteRegistrationCommandHandler
 		UserManager<ApplicationUser> userManager,
 		TimeProvider timeProvider)
 	{
-		DateTime now =
-			timeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset now =
+			timeProvider.GetUtcNow();
 
 		// Update the temporary user with registration details
 		existingUser.UserName = command.Request.Username;

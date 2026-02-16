@@ -79,5 +79,5 @@ public class SecurityEvent : ICreatableEntity
 	/// <summary>
 	/// Gets or sets the event timestamp.
 	/// </summary>
-	public DateTime CreateDate { get; set; }
+	public DateTimeOffset CreateDate { get; set; }
 }

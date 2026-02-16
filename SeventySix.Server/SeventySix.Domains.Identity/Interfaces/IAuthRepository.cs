@@ -31,7 +31,7 @@ public interface IAuthRepository
 	/// </param>
 	public Task UpdateLastLoginAsync(
 		long userId,
-		DateTime loginTime,
+		DateTimeOffset loginTime,
 		string? clientIp,
 		CancellationToken cancellationToken = default);
 

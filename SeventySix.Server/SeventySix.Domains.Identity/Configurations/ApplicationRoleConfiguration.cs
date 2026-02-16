@@ -17,8 +17,8 @@ public class ApplicationRoleConfiguration : IEntityTypeConfiguration<Application
 	public void Configure(EntityTypeBuilder<ApplicationRole> builder)
 	{
 		// Seed the three core roles
-		DateTime seedDate =
-			new(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+		DateTimeOffset seedDate =
+			new(2025, 1, 1, 0, 0, 0, TimeSpan.Zero);
 
 		builder.HasData(
 			new ApplicationRole

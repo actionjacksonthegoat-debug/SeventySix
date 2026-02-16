@@ -235,6 +235,46 @@ public class SecurityHeadersTests : IDisposable
 		cspHeader.ShouldContain("wss:");
 	}
 
+	/// <summary>
+	/// Tests that Cache-Control header is set to no-store.
+	/// Prevents caching of sensitive API responses (OWASP).
+	/// </summary>
+	[Fact]
+	public async Task Response_ContainsCacheControlNoStoreHeaderAsync()
+	{
+		// Arrange
+		using HttpClient httpClient =
+			Factory.CreateClient();
+
+		// Act
+		HttpResponseMessage response =
+			await httpClient.GetAsync(ApiEndpoints.Health.Base);
+
+		// Assert
+		response.Headers.CacheControl.ShouldNotBeNull();
+		response.Headers.CacheControl.NoStore.ShouldBeTrue();
+	}
+
+	/// <summary>
+	/// Tests that Pragma no-cache header is set for HTTP/1.0 compatibility.
+	/// </summary>
+	[Fact]
+	public async Task Response_ContainsPragmaNoCacheHeaderAsync()
+	{
+		// Arrange
+		using HttpClient httpClient =
+			Factory.CreateClient();
+
+		// Act
+		HttpResponseMessage response =
+			await httpClient.GetAsync(ApiEndpoints.Health.Base);
+
+		// Assert
+		response.Headers.Pragma.ShouldNotBeNull();
+		response.Headers.Pragma.ShouldContain(
+			new System.Net.Http.Headers.NameValueHeaderValue("no-cache"));
+	}
+
 	/// <inheritdoc/>
 	public void Dispose() =>
 		Factory.Dispose();

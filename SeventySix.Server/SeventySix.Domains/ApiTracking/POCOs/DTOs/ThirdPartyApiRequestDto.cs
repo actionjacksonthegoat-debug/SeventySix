@@ -43,7 +43,7 @@ public partial record ThirdPartyApiRequestDto : ICacheable
 	/// <summary>
 	/// Gets or sets the timestamp of the most recent API call.
 	/// </summary>
-	public DateTime? LastCalledAt { get; set; }
+	public DateTimeOffset? LastCalledAt { get; set; }
 
 	/// <summary>
 	/// Gets or sets the date for which this counter is tracking.

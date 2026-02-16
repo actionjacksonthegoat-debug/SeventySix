@@ -19,7 +19,7 @@ internal class AuthRepository(IdentityDbContext context) : IAuthRepository
 	/// <inheritdoc/>
 	public async Task UpdateLastLoginAsync(
 		long userId,
-		DateTime loginTime,
+		DateTimeOffset loginTime,
 		string? clientIp,
 		CancellationToken cancellationToken = default) =>
 		await context

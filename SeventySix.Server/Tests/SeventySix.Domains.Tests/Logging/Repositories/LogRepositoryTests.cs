@@ -128,10 +128,10 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 		// Arrange
 		FakeTimeProvider timeProvider = new();
 		await SeedTestLogsAsync(timeProvider);
-		DateTime startDate =
-			timeProvider.GetUtcNow().UtcDateTime.AddHours(-1);
-		DateTime endDate =
-			timeProvider.GetUtcNow().UtcDateTime.AddHours(1);
+		DateTimeOffset startDate =
+			timeProvider.GetUtcNow().AddHours(-1);
+		DateTimeOffset endDate =
+			timeProvider.GetUtcNow().AddHours(1);
 
 		// Act
 		LogQueryRequest request =
@@ -366,8 +366,8 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 		// Arrange
 		FakeTimeProvider timeProvider = new();
 		await SeedTestLogsAsync(timeProvider);
-		DateTime startDate =
-			timeProvider.GetUtcNow().UtcDateTime.AddHours(-1);
+		DateTimeOffset startDate =
+			timeProvider.GetUtcNow().AddHours(-1);
 
 		// Act
 		LogQueryRequest request =
@@ -397,7 +397,7 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 				.CreateError(timeProvider)
 				.WithMessage("Old log")
 				.WithTimestamp(
-					timeProvider.GetUtcNow().UtcDateTime.AddDays(-40))
+					timeProvider.GetUtcNow().AddDays(-40))
 				.Build();
 		await Repository.CreateAsync(oldLog);
 
@@ -408,8 +408,8 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 				.Build();
 		await Repository.CreateAsync(recentLog);
 
-		DateTime cutoffDate =
-			timeProvider.GetUtcNow().UtcDateTime.AddDays(-30);
+		DateTimeOffset cutoffDate =
+			timeProvider.GetUtcNow().AddDays(-30);
 
 		// Act
 		int deletedCount =

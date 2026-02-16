@@ -239,8 +239,8 @@ public static class ApiEndpoints
 		/// <returns>
 		/// Endpoint URL with query string.
 		/// </returns>
-		public static string CleanupWithDate(DateTime cutoffDate) =>
-			$"{Cleanup}?cutoffDate={cutoffDate:O}";
+		public static string CleanupWithDate(DateTimeOffset cutoffDate) =>
+			$"{Cleanup}?cutoffDate={Uri.EscapeDataString(cutoffDate.ToString("O"))}";
 	}
 
 	/// <summary>Third-party API request endpoints.</summary>

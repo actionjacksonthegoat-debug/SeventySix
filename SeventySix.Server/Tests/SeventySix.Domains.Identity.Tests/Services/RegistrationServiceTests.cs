@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using SeventySix.Identity.Constants;
+using SeventySix.Shared.Exceptions;
 using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.Mocks;
 using Shouldly;
@@ -146,7 +147,7 @@ public class RegistrationServiceTests
 		// Assert
 		capturedUser.ShouldNotBeNull();
 		capturedUser.CreatedBy.ShouldBe(TestCreatedBy);
-		capturedUser.CreateDate.ShouldBe(TimeProvider.GetUtcNow().UtcDateTime);
+		capturedUser.CreateDate.ShouldBe(TimeProvider.GetUtcNow());
 		capturedUser.IsActive.ShouldBeTrue();
 	}
 
@@ -214,8 +215,8 @@ public class RegistrationServiceTests
 			CreateService();
 
 		// Act & Assert
-		InvalidOperationException exception =
-			await Should.ThrowAsync<InvalidOperationException>(
+		DomainException exception =
+			await Should.ThrowAsync<DomainException>(
 				async () => await service.CreateUserWithCredentialAsync(
 					TestUsername,
 					TestEmail,
@@ -224,7 +225,7 @@ public class RegistrationServiceTests
 					TestCreatedBy,
 					RoleConstants.User));
 
-		exception.Message.ShouldContain("Failed to create user");
+		exception.Message.ShouldContain("User registration could not be completed");
 	}
 
 	/// <summary>
@@ -257,8 +258,8 @@ public class RegistrationServiceTests
 			CreateService();
 
 		// Act & Assert
-		InvalidOperationException exception =
-			await Should.ThrowAsync<InvalidOperationException>(
+		DomainException exception =
+			await Should.ThrowAsync<DomainException>(
 				async () => await service.CreateUserWithCredentialAsync(
 					TestUsername,
 					TestEmail,
@@ -267,7 +268,7 @@ public class RegistrationServiceTests
 					TestCreatedBy,
 					"NonExistentRole"));
 
-		exception.Message.ShouldContain("Failed to assign role");
+		exception.Message.ShouldContain("User registration could not be completed");
 	}
 
 	/// <summary>

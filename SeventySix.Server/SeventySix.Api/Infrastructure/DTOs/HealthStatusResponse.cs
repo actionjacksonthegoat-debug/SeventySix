@@ -26,7 +26,7 @@ public class HealthStatusResponse
 	/// <summary>
 	/// Gets or sets the timestamp when the health check was performed.
 	/// </summary>
-	public DateTime CheckedAt { get; set; }
+	public DateTimeOffset CheckedAt { get; set; }
 
 	/// <summary>
 	/// Gets or sets the database health information.

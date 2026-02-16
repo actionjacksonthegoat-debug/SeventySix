@@ -24,5 +24,5 @@ public class AltchaChallenge
 	/// Gets or sets the UTC expiry time.
 	/// Challenges past this time can be purged.
 	/// </summary>
-	public DateTime ExpiryUtc { get; set; }
+	public DateTimeOffset ExpiryUtc { get; set; }
 }

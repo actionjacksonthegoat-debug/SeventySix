@@ -46,15 +46,15 @@ namespace SeventySix.Domains.ApiTracking.Migrations
                         .HasColumnType("integer")
                         .HasDefaultValue(0);
 
-                    b.Property<DateTime>("CreateDate")
+                    b.Property<DateTimeOffset>("CreateDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("NOW()");
 
-                    b.Property<DateTime?>("LastCalledAt")
+                    b.Property<DateTimeOffset?>("LastCalledAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime?>("ModifyDate")
+                    b.Property<DateTimeOffset?>("ModifyDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateOnly>("ResetDate")

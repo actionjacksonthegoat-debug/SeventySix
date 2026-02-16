@@ -73,8 +73,8 @@ public class ProductionConfigTests : SourceCodeArchitectureTest
 				allowedHostsElement.GetString();
 
 			(allowedHosts != "*").ShouldBeTrue(
-				"Production AllowedHosts should not be wildcard '*'. " +
-				"Specify explicit hosts like 'seventysix.app;www.seventysix.app'");
+				"Production AllowedHosts should not be wildcard '*'. "
+					+ "Specify explicit hosts like 'seventysix.app;www.seventysix.app'");
 		}
 	}
 
@@ -115,8 +115,8 @@ public class ProductionConfigTests : SourceCodeArchitectureTest
 				(connectionValue?.Contains("localhost") == true ||
 					connectionValue?.Contains("127.0.0.1") == true ||
 					connectionValue?.Contains("(local)") == true).ShouldBeFalse(
-					$"Production connection string '{connectionString.Name}' should not use localhost. " +
-					$"Found: {connectionValue}");
+					$"Production connection string '{connectionString.Name}' should not use localhost. "
+						+ $"Found: {connectionValue}");
 			}
 		}
 	}

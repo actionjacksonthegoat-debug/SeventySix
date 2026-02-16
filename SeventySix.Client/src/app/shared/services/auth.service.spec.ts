@@ -507,11 +507,9 @@ describe("AuthService",
 		describe("loginWithProvider",
 			() =>
 			{
-				// Note: Cannot test loginWithProvider directly as it sets window.location.href causing page reload
-				it("should construct correct OAuth URL",
+				it("should open OAuth popup window",
 					() =>
 					{
-						// Test that the URL would be correct without triggering redirect
 						const expectedUrl: string =
 							`${environment.apiUrl}/auth/oauth/github`;
 

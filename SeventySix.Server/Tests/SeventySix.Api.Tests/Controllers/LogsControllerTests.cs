@@ -70,13 +70,13 @@ public class LogsControllerTests(LoggingApiPostgreSqlFixture fixture)
 				.WithMessage("Test warning message")
 				.WithSourceContext("SeventySix.Api.Controllers.UsersController")
 				.WithTimestamp(
-					timeProvider.GetUtcNow().UtcDateTime.AddHours(-1))
+					timeProvider.GetUtcNow().AddHours(-1))
 				.Build(),
 			LogBuilder
 				.CreateError(timeProvider)
 				.WithMessage("Test error message")
 				.WithTimestamp(
-					timeProvider.GetUtcNow().UtcDateTime.AddDays(-31)) // Older than 30 days for cleanup test
+					timeProvider.GetUtcNow().AddDays(-31)) // Older than 30 days for cleanup test
 				.Build(),
 		];
 
@@ -140,8 +140,8 @@ public class LogsControllerTests(LoggingApiPostgreSqlFixture fixture)
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		DateTime cutoffDate =
-			timeProvider.GetUtcNow().UtcDateTime.AddDays(-30);
+		DateTimeOffset cutoffDate =
+			timeProvider.GetUtcNow().AddDays(-30);
 
 		// Act
 		HttpResponseMessage response =

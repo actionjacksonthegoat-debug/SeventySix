@@ -2,6 +2,20 @@
 	<div class="login-card">
 		<h1>Sign In</h1>
 
+		@if (inactivityBannerVisible())
+		{
+			<div class="inactivity-banner"
+				role="alert"
+				aria-live="assertive">
+				<mat-icon aria-hidden="true">
+					timer_off
+				</mat-icon>
+				<span>
+					You have been logged out due to inactivity. Please sign in again.
+				</span>
+			</div>
+		}
+
 		<!-- OAuth Providers -->
 		<div class="oauth-buttons">
 			<button

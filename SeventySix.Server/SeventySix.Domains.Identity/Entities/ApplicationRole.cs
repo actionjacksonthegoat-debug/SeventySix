@@ -27,5 +27,5 @@ public class ApplicationRole : IdentityRole<long>
 	/// <summary>
 	/// Gets or sets the creation timestamp.
 	/// </summary>
-	public DateTime CreateDate { get; set; }
+	public DateTimeOffset CreateDate { get; set; }
 }

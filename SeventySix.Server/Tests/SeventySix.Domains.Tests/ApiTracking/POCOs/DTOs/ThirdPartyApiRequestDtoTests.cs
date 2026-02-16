@@ -33,10 +33,10 @@ public class ThirdPartyApiRequestDtoTests
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		DateTime now =
-			timeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset now =
+			timeProvider.GetUtcNow();
 		DateOnly resetDate =
-			DateOnly.FromDateTime(now);
+			DateOnly.FromDateTime(now.UtcDateTime);
 		ThirdPartyApiRequestDto dto =
 			new()
 			{

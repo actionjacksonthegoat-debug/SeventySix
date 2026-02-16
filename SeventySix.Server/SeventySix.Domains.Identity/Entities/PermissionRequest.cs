@@ -54,5 +54,5 @@ public class PermissionRequest : ICreatableEntity
 	/// <summary>
 	/// Gets or sets the creation timestamp.
 	/// </summary>
-	public DateTime CreateDate { get; set; }
+	public DateTimeOffset CreateDate { get; set; }
 }

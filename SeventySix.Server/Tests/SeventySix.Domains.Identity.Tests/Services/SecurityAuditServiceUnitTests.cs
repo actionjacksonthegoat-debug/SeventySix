@@ -91,7 +91,7 @@ public class SecurityAuditServiceUnitTests
 		savedEvent.Success.ShouldBeTrue();
 		savedEvent.IpAddress.ShouldBe("192.168.1.100");
 		savedEvent.UserAgent.ShouldBe("Mozilla/5.0 Test Agent");
-		savedEvent.CreateDate.ShouldBe(TimeProvider.GetUtcNow().UtcDateTime);
+		savedEvent.CreateDate.ShouldBe(TimeProvider.GetUtcNow());
 	}
 
 	/// <summary>

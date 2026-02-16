@@ -77,18 +77,16 @@ public sealed class TokenService(
 				key,
 				SecurityAlgorithms.HmacSha256);
 
-		DateTime expires =
-			timeProvider
-			.GetUtcNow()
-			.AddMinutes(jwtSettings.Value.AccessTokenExpirationMinutes)
-			.UtcDateTime;
+		DateTimeOffset expires =
+			timeProvider.GetUtcNow().AddMinutes(
+				jwtSettings.Value.AccessTokenExpirationMinutes);
 
 		JwtSecurityToken token =
 			new(
 				issuer: jwtSettings.Value.Issuer,
 				audience: jwtSettings.Value.Audience,
 				claims: claims,
-				expires: expires,
+				expires: expires.UtcDateTime,
 				signingCredentials: credentials);
 
 		return new JwtSecurityTokenHandler().WriteToken(token);
@@ -120,8 +118,8 @@ public sealed class TokenService(
 		string tokenHash =
 			CryptoExtensions.ComputeSha256Hash(refreshToken);
 
-		DateTime now =
-			timeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset now =
+			timeProvider.GetUtcNow();
 
 		// Find the token (including revoked ones for reuse detection)
 		RefreshToken? existingToken =
@@ -142,7 +140,7 @@ public sealed class TokenService(
 		}
 
 		// Check absolute session timeout (30 days from session start)
-		DateTime absoluteTimeout =
+		DateTimeOffset absoluteTimeout =
 			existingToken.SessionStartedAt.AddDays(
 				jwtSettings.Value.AbsoluteSessionTimeoutDays);
 
@@ -240,11 +238,11 @@ public sealed class TokenService(
 		string? clientIp,
 		bool rememberMe,
 		Guid familyId,
-		DateTime? sessionStartedAt = null,
+		DateTimeOffset? sessionStartedAt = null,
 		CancellationToken cancellationToken = default)
 	{
-		DateTime now =
-			timeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset now =
+			timeProvider.GetUtcNow();
 
 		// Enforce session limit - revoke oldest if at max
 		await EnforceSessionLimitAsync(userId, now, cancellationToken);
@@ -295,7 +293,7 @@ public sealed class TokenService(
 	/// </param>
 	private async Task EnforceSessionLimitAsync(
 		long userId,
-		DateTime now,
+		DateTimeOffset now,
 		CancellationToken cancellationToken)
 	{
 		// Skip session limit enforcement when rotation is disabled (E2E testing)
@@ -335,8 +333,8 @@ public sealed class TokenService(
 		string tokenHash =
 			CryptoExtensions.ComputeSha256Hash(refreshToken);
 
-		DateTime now =
-			timeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset now =
+			timeProvider.GetUtcNow();
 
 		return await tokenRepository.ValidateTokenAsync(
 			tokenHash,
@@ -352,8 +350,8 @@ public sealed class TokenService(
 		string tokenHash =
 			CryptoExtensions.ComputeSha256Hash(refreshToken);
 
-		DateTime now =
-			timeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset now =
+			timeProvider.GetUtcNow();
 
 		return await tokenRepository.RevokeByHashAsync(
 			tokenHash,
@@ -366,8 +364,8 @@ public sealed class TokenService(
 		long userId,
 		CancellationToken cancellationToken = default)
 	{
-		DateTime now =
-			timeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset now =
+			timeProvider.GetUtcNow();
 
 		return await tokenRepository.RevokeAllUserTokensAsync(
 			userId,

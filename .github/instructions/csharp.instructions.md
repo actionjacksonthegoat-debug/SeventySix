@@ -198,7 +198,7 @@ ISoftDeletable (+IsDeleted, +DeletedAt, +DeletedBy)  — separate mixin
 | `TimeProvider` (injected) for current time | `DateTimeOffset.UtcNow`, `DateTime.Now` |
 | `TimeProvider.GetUtcNow()` | Direct clock access |
 
-**Rule**: All entities use `DateTimeOffset`. All "get current time" calls go through `TimeProvider` for testability. Roslyn analyzer `STS002` enforces the `DateTime` ban at compile time.
+**Rule**: All entities use `DateTimeOffset`. All "get current time" calls go through `TimeProvider` for testability. Roslyn analyzer `SS004` enforces the `DateTime` ban at compile time.
 
 ## Controller Pattern (Thin CQRS Dispatcher)
 

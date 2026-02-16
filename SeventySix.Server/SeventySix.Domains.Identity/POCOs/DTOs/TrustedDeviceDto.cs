@@ -32,7 +32,7 @@ namespace SeventySix.Identity;
 public record TrustedDeviceDto(
 	long Id,
 	string? DeviceName,
-	DateTime CreatedAt,
-	DateTime? LastUsedAt,
-	DateTime ExpiresAt,
+	DateTimeOffset CreatedAt,
+	DateTimeOffset? LastUsedAt,
+	DateTimeOffset ExpiresAt,
 	bool IsCurrentDevice);

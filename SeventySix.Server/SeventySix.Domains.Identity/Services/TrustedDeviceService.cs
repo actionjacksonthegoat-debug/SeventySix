@@ -50,8 +50,8 @@ public sealed class TrustedDeviceService(
 		string? deviceName =
 			ExtractDeviceName(userAgent);
 
-		DateTime now =
-			timeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset now =
+			timeProvider.GetUtcNow();
 
 		TrustedDevice trustedDevice =
 			new()
@@ -86,8 +86,8 @@ public sealed class TrustedDeviceService(
 
 		string tokenHash =
 			CryptoExtensions.ComputeSha256Hash(token, useLowercase: true);
-		DateTime now =
-			timeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset now =
+			timeProvider.GetUtcNow();
 
 		TrustedDevice? device =
 			await context
@@ -165,8 +165,8 @@ public sealed class TrustedDeviceService(
 		long userId,
 		CancellationToken cancellationToken)
 	{
-		DateTime now =
-			timeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset now =
+			timeProvider.GetUtcNow();
 
 		List<TrustedDeviceDto> devices =
 			await context

@@ -116,8 +116,8 @@ public sealed class AdminSeederService(
 			return;
 		}
 
-		DateTime now =
-			timeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset now =
+			timeProvider.GetUtcNow();
 
 		await CreateAdminUserAsync(
 			userManager);
@@ -132,8 +132,8 @@ public sealed class AdminSeederService(
 	private async Task<bool> CreateAdminUserAsync(
 		UserManager<ApplicationUser> userManager)
 	{
-		DateTime now =
-			timeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset now =
+			timeProvider.GetUtcNow();
 
 		ApplicationUser adminUser =
 			new()

@@ -34,7 +34,7 @@ public static class LoggingMockFactory
 		// Default: return 0 deleted records
 		repository
 			.DeleteOlderThanAsync(
-				Arg.Any<DateTime>(),
+				Arg.Any<DateTimeOffset>(),
 				Arg.Any<CancellationToken>())
 			.Returns(0);
 

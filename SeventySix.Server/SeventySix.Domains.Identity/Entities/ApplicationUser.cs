@@ -25,7 +25,7 @@ public class ApplicationUser : IdentityUser<long>, IAuditableEntity
 	/// <summary>
 	/// Gets or sets the creation timestamp.
 	/// </summary>
-	public DateTime CreateDate { get; set; }
+	public DateTimeOffset CreateDate { get; set; }
 
 	/// <summary>
 	/// Gets or sets who created this user.
@@ -35,7 +35,7 @@ public class ApplicationUser : IdentityUser<long>, IAuditableEntity
 	/// <summary>
 	/// Gets or sets the last modification timestamp.
 	/// </summary>
-	public DateTime? ModifyDate { get; set; }
+	public DateTimeOffset? ModifyDate { get; set; }
 
 	/// <summary>
 	/// Gets or sets who last modified this user.
@@ -55,7 +55,7 @@ public class ApplicationUser : IdentityUser<long>, IAuditableEntity
 	/// <summary>
 	/// Gets or sets when the user was deleted.
 	/// </summary>
-	public DateTime? DeletedAt { get; set; }
+	public DateTimeOffset? DeletedAt { get; set; }
 
 	/// <summary>
 	/// Gets or sets who deleted this user.
@@ -65,7 +65,7 @@ public class ApplicationUser : IdentityUser<long>, IAuditableEntity
 	/// <summary>
 	/// Gets or sets the last login timestamp.
 	/// </summary>
-	public DateTime? LastLoginAt { get; set; }
+	public DateTimeOffset? LastLoginAt { get; set; }
 
 	/// <summary>
 	/// Gets or sets the last login IP address.
@@ -98,7 +98,7 @@ public class ApplicationUser : IdentityUser<long>, IAuditableEntity
 	/// <summary>
 	/// Gets or sets when TOTP was enrolled.
 	/// </summary>
-	public DateTime? TotpEnrolledAt { get; set; }
+	public DateTimeOffset? TotpEnrolledAt { get; set; }
 
 	/// <summary>
 	/// Gets or sets user preferences as JSON.

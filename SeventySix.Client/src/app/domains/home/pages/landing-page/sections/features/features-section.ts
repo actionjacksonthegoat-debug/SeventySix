@@ -6,8 +6,8 @@ import {
 } from "@angular/core";
 import { MatCardModule } from "@angular/material/card";
 import { MatIconModule } from "@angular/material/icon";
-import { ScrollRevealDirective } from "@shared/directives";
 import { FeatureHighlight } from "@home/models";
+import { ScrollRevealDirective } from "@shared/directives";
 
 /**
  * Features section — alternating left/right layout of feature highlights.

@@ -79,7 +79,7 @@ public record LogDto(
 	int? StatusCode,
 	long? DurationMs,
 	string? Properties,
-	DateTime CreateDate,
+	DateTimeOffset CreateDate,
 	string? MachineName,
 	string? Environment,
 	string? CorrelationId,

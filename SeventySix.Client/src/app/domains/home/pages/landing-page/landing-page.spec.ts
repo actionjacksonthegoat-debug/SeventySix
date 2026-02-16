@@ -1,6 +1,6 @@
-import { provideZonelessChangeDetection } from "@angular/core";
 import { provideHttpClient } from "@angular/common/http";
 import { provideHttpClientTesting } from "@angular/common/http/testing";
+import { provideZonelessChangeDetection } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideAnimations } from "@angular/platform-browser/animations";
 import { vi } from "vitest";
@@ -23,8 +23,7 @@ function setupMockBrowserApis(): void
 	vi.stubGlobal(
 		"matchMedia",
 		vi.fn(
-			() =>
-				({ matches: true })));
+			() => ({ matches: true })));
 }
 
 describe("LandingPageComponent",

@@ -51,8 +51,8 @@ public class AltchaChallengeStore(
 		CancellationToken cancellationToken)
 	{
 		// Clean up expired challenges first
-		DateTime utcNow =
-			timeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset utcNow =
+			timeProvider.GetUtcNow();
 
 		await context.AltchaChallenges
 			.Where(altchaChallenge => altchaChallenge.ExpiryUtc <= utcNow)

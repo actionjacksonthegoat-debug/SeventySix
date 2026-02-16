@@ -12,20 +12,16 @@ class MockMediaQueryList
 {
 	matches: boolean;
 	readonly media: string;
-	onchange: ((this: MediaQueryList, ev: MediaQueryListEvent) => unknown) | null =
-		null;
+	onchange: ((this: MediaQueryList, ev: MediaQueryListEvent) => unknown) | null = null;
 
-	private readonly listeners: ((event: MediaQueryListEvent) => void)[] =
-		[];
+	private readonly listeners: ((event: MediaQueryListEvent) => void)[] = [];
 
 	constructor(
 		query: string,
 		initialMatches: boolean = false)
 	{
-		this.media =
-			query;
-		this.matches =
-			initialMatches;
+		this.media = query;
+		this.matches = initialMatches;
 	}
 
 	addEventListener(
@@ -61,8 +57,7 @@ class MockMediaQueryList
 	 */
 	setMatches(value: boolean): void
 	{
-		this.matches =
-			value;
+		this.matches = value;
 		const event: MediaQueryListEvent =
 			{ matches: value, media: this.media } as MediaQueryListEvent;
 		for (const listener of this.listeners)
@@ -80,8 +75,8 @@ describe("LayoutService",
 		let mockQueryLists: Map<string, MockMediaQueryList>;
 
 		/**
-		 * Set up mock matchMedia so each query gets its own MockMediaQueryList.
-		 */
+	 * Set up mock matchMedia so each query gets its own MockMediaQueryList.
+	 */
 		function setupMatchMediaMock(
 			defaults: Record<string, boolean> = {}): void
 		{
@@ -93,7 +88,8 @@ describe("LayoutService",
 				"matchMedia",
 				{
 					writable: true,
-					value: vi.fn()
+					value: vi
+						.fn()
 						.mockImplementation(
 							(query: string) =>
 							{

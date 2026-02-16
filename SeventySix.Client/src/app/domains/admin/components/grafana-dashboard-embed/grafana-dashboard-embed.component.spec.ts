@@ -184,4 +184,37 @@ describe("GrafanaDashboardEmbedComponent",
 							.toBe("System Overview dashboard");
 					});
 			});
+
+		describe("UID validation",
+			() =>
+			{
+				it("should accept valid alphanumeric UIDs",
+					() =>
+					{
+						fixture.componentRef.setInput("dashboardUid", "abc-123_def");
+						fixture.detectChanges();
+
+						const url: string =
+							component
+								.sanitizedUrl()
+								.toString();
+						expect(url)
+							.toContain("/d/abc-123_def/");
+					});
+
+				it("should reject malicious UIDs with path traversal",
+					() =>
+					{
+						fixture.componentRef.setInput("dashboardUid", "../evil?redirect=bad");
+						fixture.detectChanges();
+
+						const url: string =
+							component
+								.sanitizedUrl()
+								.toString();
+						expect(url)
+							.not
+							.toContain("evil");
+					});
+			});
 	});

@@ -33,8 +33,8 @@ public class UserExtensionsTests
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		DateTime createDate =
-			timeProvider.GetUtcNow().UtcDateTime.AddDays(-5);
+		DateTimeOffset createDate =
+			timeProvider.GetUtcNow().AddDays(-5);
 		ApplicationUser user =
 			new UserBuilder(timeProvider)
 			.WithUsername("john_doe")
@@ -201,7 +201,7 @@ public class UserExtensionsTests
 		entity.FullName.ShouldBe("New User");
 		entity.IsActive.ShouldBeTrue();
 		// Note: CreateDate is set by AuditInterceptor on SaveChanges, not during mapping
-		entity.CreateDate.ShouldBe(default(DateTime));
+		entity.CreateDate.ShouldBe(default(DateTimeOffset));
 	}
 
 	[Fact]
@@ -262,7 +262,7 @@ public class UserExtensionsTests
 		ApplicationUser entity = request.ToEntity();
 
 		// Assert - CreateDate defaults to MinValue, interceptor sets it on SaveChanges
-		entity.CreateDate.ShouldBe(default(DateTime));
+		entity.CreateDate.ShouldBe(default(DateTimeOffset));
 	}
 
 	[Fact]
@@ -325,8 +325,8 @@ public class UserExtensionsTests
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		DateTime deletedAt =
-			timeProvider.GetUtcNow().UtcDateTime.AddHours(-2);
+		DateTimeOffset deletedAt =
+			timeProvider.GetUtcNow().AddHours(-2);
 		ApplicationUser user =
 			new UserBuilder(timeProvider)
 			.WithUsername("deleted_user")

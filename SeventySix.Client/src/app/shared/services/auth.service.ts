@@ -18,6 +18,7 @@ import { HttpClient, HttpErrorResponse } from "@angular/common/http";
 import {
 	computed,
 	DestroyRef,
+	effect,
 	inject,
 	Injectable,
 	Signal,
@@ -37,7 +38,8 @@ import {
 	JwtClaims,
 	OAuthProvider
 } from "@shared/services/auth.types";
-import { isNullOrEmpty, isPresent } from "@shared/utilities/null-check.utility";
+import { IdleDetectionService } from "@shared/services/idle-detection.service";
+import { isNullOrEmpty, isNullOrUndefined, isPresent } from "@shared/utilities/null-check.utility";
 import { QueryKeys } from "@shared/utilities/query-keys.utility";
 import { QueryClient } from "@tanstack/angular-query-experimental";
 import {
@@ -76,6 +78,9 @@ export class AuthService
 
 	private readonly windowService: WindowService =
 		inject(WindowService);
+
+	private readonly idleDetectionService: IdleDetectionService =
+		inject(IdleDetectionService);
 
 	/** Clears cached queries on logout to prevent data leakage between users. */
 	private readonly queryClient: QueryClient =
@@ -116,6 +121,19 @@ export class AuthService
 		computed(
 			() => this.userSignal() !== null);
 
+	constructor()
+	{
+		/** Watches idle signal and triggers inactivity logout. */
+		effect(
+			() =>
+			{
+				if (this.idleDetectionService.isIdle())
+				{
+					this.handleInactivityLogout();
+				}
+			});
+	}
+
 	/**
 	 * Initializes the service: handles OAuth callback and restores session.
 	 * Call this from APP_INITIALIZER. Only runs once per app lifecycle.
@@ -132,13 +150,7 @@ export class AuthService
 		this.initialized = true;
 
 		this.initializeCrossTabLogout();
-
-		// Handle OAuth callback if present
-		if (this.handleOAuthCallback())
-		{
-			this.markHasSession();
-			return of(null);
-		}
+		this.initializeOAuthMessageListener();
 
 		// Only attempt session restoration if user has logged in before
 		// This prevents unnecessary refresh attempts for users who never logged in
@@ -187,12 +199,14 @@ export class AuthService
 							response.requiresPasswordChange);
 						this.markHasSession();
 						this.invalidatePostLogin();
+						this.startIdleDetection(response);
 					}));
 	}
 
 	/**
 	 * Initiates OAuth flow with provider.
-	 * Server will redirect back with token in URL fragment.
+	 * Opens provider in popup; server returns postMessage with one-time code.
+	 * Parent exchanges code for tokens via /oauth/exchange endpoint.
 	 * @param {OAuthProvider} provider
 	 * The OAuth provider to use.
 	 * @param {string} returnUrl
@@ -212,8 +226,18 @@ export class AuthService
 			STORAGE_KEYS.AUTH_RETURN_URL,
 			validatedUrl);
 
-		this.windowService.navigateTo(
-			`${this.authUrl}/oauth/${provider}`);
+		// Open OAuth provider in popup (server returns postMessage HTML)
+		const popup: Window | null =
+			this.windowService.openWindow(
+				`${this.authUrl}/oauth/${provider}`,
+				"oauth_popup");
+
+		if (isNullOrUndefined(popup))
+		{
+			// Popup blocked — fall back to full-page navigation
+			this.windowService.navigateTo(
+				`${this.authUrl}/oauth/${provider}`);
+		}
 	}
 
 	/**
@@ -271,6 +295,7 @@ export class AuthService
 							this.requiresPasswordChangeSignal.set(
 								response.requiresPasswordChange);
 							this.markHasSession();
+							this.startIdleDetection(response);
 						}),
 					catchError(
 						(error: HttpErrorResponse) =>
@@ -481,62 +506,91 @@ export class AuthService
 	}
 
 	/**
-	 * Handles OAuth callback - token in URL fragment.
-	 * @returns {boolean}
-	 * True if OAuth callback was handled, false otherwise.
-	 * @remarks The server may also provide email and fullName in the hash params.
+	 * Listens for OAuth postMessage from the popup window.
+	 * The server sends oauth_success with a one-time code,
+	 * which is exchanged for tokens via /oauth/exchange.
+	 * @returns {void}
 	 */
-	private handleOAuthCallback(): boolean
+	private initializeOAuthMessageListener(): void
 	{
-		const hash: string =
-			this.windowService.getHash();
-
-		if (!hash.includes("access_token="))
+		if (typeof window === "undefined")
 		{
-			return false;
+			return;
 		}
 
-		// Parse token from fragment: #access_token=xxx&expires_at=xxx&email=xxx&full_name=xxx
-		const params: URLSearchParams =
-			new URLSearchParams(hash.substring(1));
-		const token: string | null =
-			params.get("access_token");
-		const expiresAt: string | null =
-			params.get("expires_at");
-		const email: string | null =
-			params.get("email");
-		const fullName: string | null =
-			params.get("full_name");
-		const requiresPasswordChange: string | null =
-			params.get("requires_password_change");
-
-		if (token && expiresAt && email)
-		{
-			this.setAccessToken(
-				token,
-				expiresAt,
-				email,
-				fullName);
-
-			if (requiresPasswordChange === "true")
+		const oauthHandler: (event: MessageEvent) => void =
+			(event: MessageEvent): void =>
 			{
-				this.requiresPasswordChangeSignal.set(true);
-			}
+			// Validate origin matches our API
+				const allowedOrigin: string =
+					new URL(environment.apiUrl).origin;
 
-			// Clean URL fragment
-			this.windowService.replaceState(
-				null,
-				"",
-				this.windowService.getPathname() + this.windowService.getSearch());
+				if (event.origin !== allowedOrigin)
+				{
+					return;
+				}
 
-			// Navigate to stored return URL
-			const returnUrl: string =
-				this.storageService.getSessionItem(STORAGE_KEYS.AUTH_RETURN_URL) ?? "/";
-			this.storageService.removeSessionItem(STORAGE_KEYS.AUTH_RETURN_URL);
-			this.router.navigateByUrl(returnUrl);
-		}
+				if (
+					event.data?.type === "oauth_success"
+						&& isPresent(event.data?.code))
+				{
+					this.exchangeOAuthCode(event.data.code);
+				}
+			};
 
-		return true;
+		window.addEventListener("message", oauthHandler);
+
+		this.destroyRef.onDestroy(
+			() =>
+			{
+				window.removeEventListener("message", oauthHandler);
+			});
+	}
+
+	/**
+	 * Exchanges a one-time OAuth code for tokens.
+	 * Called after receiving postMessage from the OAuth popup.
+	 * @param {string} code
+	 * The one-time code from the OAuth provider.
+	 * @returns {void}
+	 */
+	private exchangeOAuthCode(code: string): void
+	{
+		this
+			.httpClient
+			.post<AuthResponse>(
+				`${this.authUrl}/oauth/exchange`,
+				{ code },
+				{ withCredentials: true })
+			.subscribe(
+				{
+					next: (response: AuthResponse) =>
+					{
+						this.setAccessToken(
+							response.accessToken!,
+							response.expiresAt!,
+							response.email!,
+							response.fullName);
+						this.requiresPasswordChangeSignal.set(
+							response.requiresPasswordChange);
+						this.markHasSession();
+						this.invalidatePostLogin();
+						this.startIdleDetection(response);
+
+						// Navigate to stored return URL
+						const returnUrl: string =
+							this.storageService.getSessionItem(
+								STORAGE_KEYS.AUTH_RETURN_URL) ?? "/";
+						this.storageService.removeSessionItem(
+							STORAGE_KEYS.AUTH_RETURN_URL);
+						this.router.navigateByUrl(returnUrl);
+					},
+					error: () =>
+					{
+						this.router.navigate(
+							[APP_ROUTES.AUTH.LOGIN]);
+					}
+				});
 	}
 
 	/**
@@ -557,6 +611,7 @@ export class AuthService
 			response.requiresPasswordChange);
 		this.markHasSession();
 		this.invalidatePostLogin();
+		this.startIdleDetection(response);
 	}
 
 	/**
@@ -615,14 +670,50 @@ export class AuthService
 	 */
 	private clearAuth(): void
 	{
+		this.idleDetectionService.stop();
 		this.accessToken = null;
 		this.tokenExpiresAt = 0;
 		this.userSignal.set(null);
 		this.requiresPasswordChangeSignal.set(false);
 		this.clearHasSession();
 
+		// Clear error queue to prevent data leakage between users
+		this.storageService.removeItem(STORAGE_KEYS.ERROR_QUEUE);
+
 		// Clear all cached queries to prevent data leakage between users
 		this.queryClient.clear();
+	}
+
+	/**
+	 * Starts idle detection if the server has it enabled.
+	 *
+	 * @param {AuthResponse} response
+	 * Auth response containing session inactivity configuration.
+	 */
+	private startIdleDetection(response: AuthResponse): void
+	{
+		if (response.sessionInactivityMinutes > 0)
+		{
+			this.idleDetectionService.start(
+				response.sessionInactivityMinutes,
+				response.sessionWarningSeconds);
+		}
+	}
+
+	/**
+	 * Handles logout triggered by inactivity timeout.
+	 * Sets a sessionStorage flag so the login page can display the inactivity banner.
+	 */
+	private handleInactivityLogout(): void
+	{
+		this.clearAuth();
+
+		this.storageService.setSessionItem(
+			STORAGE_KEYS.AUTH_INACTIVITY_LOGOUT,
+			"true");
+
+		this.router.navigate(
+			[APP_ROUTES.AUTH.LOGIN]);
 	}
 
 	/**

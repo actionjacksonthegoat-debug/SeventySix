@@ -43,25 +43,19 @@ function setupMockIntersectionObserver(prefersReducedMotion: boolean = false): v
 		{
 			constructor(callback: IntersectionObserverCallback, options?: IntersectionObserverInit)
 			{
-				observerCallback =
-					callback;
-				observerOptions =
-					options;
+				observerCallback = callback;
+				observerOptions = options;
 			}
 
-			observe: ReturnType<typeof vi.fn> =
-				mockObserve;
-			unobserve: ReturnType<typeof vi.fn> =
-				mockUnobserve;
-			disconnect: ReturnType<typeof vi.fn> =
-				mockDisconnect;
+			observe: ReturnType<typeof vi.fn> = mockObserve;
+			unobserve: ReturnType<typeof vi.fn> = mockUnobserve;
+			disconnect: ReturnType<typeof vi.fn> = mockDisconnect;
 		});
 
 	vi.stubGlobal(
 		"matchMedia",
 		vi.fn(
-			() =>
-				({ matches: prefersReducedMotion })));
+			() => ({ matches: prefersReducedMotion })));
 }
 
 describe("ScrollRevealDirective",
@@ -149,7 +143,8 @@ describe("ScrollRevealDirective",
 				expect(directiveElement.classList.contains("revealed"))
 					.toBe(true);
 				expect(mockObserve)
-					.not.toHaveBeenCalled();
+					.not
+					.toHaveBeenCalled();
 			});
 
 		it("should create observer with configured threshold",

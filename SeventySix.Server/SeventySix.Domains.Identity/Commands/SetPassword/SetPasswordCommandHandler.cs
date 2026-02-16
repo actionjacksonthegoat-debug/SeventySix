@@ -75,8 +75,8 @@ public static class SetPasswordCommandHandler
 			return breachError;
 		}
 
-		DateTime now =
-			timeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset now =
+			timeProvider.GetUtcNow();
 
 		// Parse the token to extract user ID and actual token
 		// Token format: {userId}:{resetToken}

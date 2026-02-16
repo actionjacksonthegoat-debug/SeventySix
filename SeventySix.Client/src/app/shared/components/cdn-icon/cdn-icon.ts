@@ -8,8 +8,8 @@ import {
 } from "@angular/core";
 import { toObservable, toSignal } from "@angular/core/rxjs-interop";
 import { SafeHtml } from "@angular/platform-browser";
-import { switchMap } from "rxjs";
 import { CdnIconService } from "@shared/services/cdn-icon.service";
+import { switchMap } from "rxjs";
 
 /**
  * CDN Icon Component — displays an SVG icon loaded from CDN.

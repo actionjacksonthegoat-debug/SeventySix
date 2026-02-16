@@ -89,7 +89,7 @@ public static class TestUserHelper
 				IsActive = opts.IsActive,
 				EmailConfirmed = true,
 				CreateDate =
-					timeProvider.GetUtcNow().UtcDateTime,
+					timeProvider.GetUtcNow(),
 				CreatedBy = "Test",
 				ModifiedBy = "Test",
 			};
@@ -166,7 +166,7 @@ public static class TestUserHelper
 				IsActive = opts.IsActive,
 				EmailConfirmed = true,
 				CreateDate =
-					timeProvider.GetUtcNow().UtcDateTime,
+					timeProvider.GetUtcNow(),
 				CreatedBy = "Test",
 				ModifiedBy = "Test",
 			};

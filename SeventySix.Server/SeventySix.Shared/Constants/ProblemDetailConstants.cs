@@ -74,7 +74,7 @@ public static class ProblemDetailConstants
 		/// <summary>
 		/// Title for not found errors.
 		/// </summary>
-		public const string NotFound = "Resource not found.";
+		public const string NotFound = "Not Found";
 
 		/// <summary>
 		/// Title for conflict errors.
@@ -90,6 +90,36 @@ public static class ProblemDetailConstants
 		/// Title for internal server errors.
 		/// </summary>
 		public const string InternalError = "An error occurred while processing your request.";
+
+		/// <summary>
+		/// Title for business rule violation errors.
+		/// </summary>
+		public const string BusinessRuleViolation = "Business Rule Violation";
+
+		/// <summary>
+		/// Title for domain logic errors.
+		/// </summary>
+		public const string DomainError = "Domain Error";
+
+		/// <summary>
+		/// Title for bad request errors.
+		/// </summary>
+		public const string BadRequest = "Bad Request";
+
+		/// <summary>
+		/// Title for unauthorized access errors.
+		/// </summary>
+		public const string Unauthorized = "Unauthorized";
+
+		/// <summary>
+		/// Title for internal server errors (short form).
+		/// </summary>
+		public const string InternalServerError = "Internal Server Error";
+
+		/// <summary>
+		/// Title for validation errors.
+		/// </summary>
+		public const string ValidationError = "Validation Error";
 	}
 
 	/// <summary>
@@ -141,6 +171,11 @@ public static class ProblemDetailConstants
 		/// Detail for unauthorized access (replaces raw UnauthorizedAccessException messages).
 		/// </summary>
 		public const string Unauthorized = "You are not authorized to perform this action.";
+
+		/// <summary>
+		/// Detail for unprocessable entity (replaces raw domain exception messages).
+		/// </summary>
+		public const string UnprocessableEntity = "The request could not be processed. Please review your input.";
 
 		/// <summary>
 		/// Detail for role assignment failures.

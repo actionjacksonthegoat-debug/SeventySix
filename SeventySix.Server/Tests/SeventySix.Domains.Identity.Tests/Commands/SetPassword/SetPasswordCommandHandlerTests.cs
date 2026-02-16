@@ -223,8 +223,8 @@ public class SetPasswordCommandHandlerTests
 		SetPasswordCommand command =
 			new(request, "192.168.1.1");
 
-		DateTime now =
-			TimeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset now =
+			TimeProvider.GetUtcNow();
 
 		UserManager
 			.FindByIdAsync("456")

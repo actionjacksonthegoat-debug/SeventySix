@@ -47,7 +47,7 @@ public class DisableTotpCommandHandlerUnitTests
 				.WithId(1)
 				.WithMfaEnabled(true)
 				.WithTotpSecret("JBSWY3DPEHPK3PXP")
-				.WithTotpEnrolledAt(TimeProvider.GetUtcNow().UtcDateTime)
+				.WithTotpEnrolledAt(TimeProvider.GetUtcNow())
 				.Build();
 
 		UserManager
@@ -94,7 +94,7 @@ public class DisableTotpCommandHandlerUnitTests
 				.WithId(1)
 				.WithMfaEnabled(true)
 				.WithTotpSecret("JBSWY3DPEHPK3PXP")
-				.WithTotpEnrolledAt(TimeProvider.GetUtcNow().UtcDateTime)
+				.WithTotpEnrolledAt(TimeProvider.GetUtcNow())
 				.Build();
 
 		UserManager

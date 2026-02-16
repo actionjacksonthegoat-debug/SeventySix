@@ -48,7 +48,7 @@ public class ThirdPartyApiRequestsControllerTests
 					.UtcDateTime.AddMinutes(-5),
 				ResetDate =
 					DateOnly.FromDateTime(
-					timeProvider.GetUtcNow().UtcDateTime.AddDays(1)),
+					timeProvider.GetUtcNow().AddDays(1).UtcDateTime),
 			},
 			new ThirdPartyApiRequestDto
 			{
@@ -62,7 +62,7 @@ public class ThirdPartyApiRequestsControllerTests
 					.UtcDateTime.AddMinutes(-10),
 				ResetDate =
 					DateOnly.FromDateTime(
-					timeProvider.GetUtcNow().UtcDateTime.AddDays(1)),
+					timeProvider.GetUtcNow().AddDays(1).UtcDateTime),
 			},
 		];
 
@@ -129,15 +129,15 @@ public class ThirdPartyApiRequestsControllerTests
 						{ "GoogleMaps", 75 },
 					},
 				LastCalledByApi =
-					new Dictionary<string, DateTime?>
+					new Dictionary<string, DateTimeOffset?>
 					{
 						{
 							ExternalApiConstants.BrevoEmail,
-							timeProvider.GetUtcNow().UtcDateTime.AddMinutes(-5)
+							timeProvider.GetUtcNow().AddMinutes(-5)
 						},
 						{
 							"GoogleMaps",
-							timeProvider.GetUtcNow().UtcDateTime.AddMinutes(-10)
+							timeProvider.GetUtcNow().AddMinutes(-10)
 						},
 					},
 			};

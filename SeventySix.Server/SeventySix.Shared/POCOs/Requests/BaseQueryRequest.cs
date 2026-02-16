@@ -27,12 +27,12 @@ public record BaseQueryRequest
 	/// <summary>
 	/// Optional start date filter (inclusive).
 	/// </summary>
-	public DateTime? StartDate { get; init; }
+	public DateTimeOffset? StartDate { get; init; }
 
 	/// <summary>
 	/// Optional end date filter (inclusive).
 	/// </summary>
-	public DateTime? EndDate { get; init; }
+	public DateTimeOffset? EndDate { get; init; }
 
 	/// <summary>
 	/// Field name to sort by (defaults to PropertyConstants.Id).

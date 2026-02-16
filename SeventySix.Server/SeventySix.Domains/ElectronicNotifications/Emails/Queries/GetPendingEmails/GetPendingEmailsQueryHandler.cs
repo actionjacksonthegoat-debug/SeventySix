@@ -35,10 +35,10 @@ public static class GetPendingEmailsQueryHandler
 		TimeProvider timeProvider,
 		CancellationToken cancellationToken)
 	{
-		DateTime now =
-			timeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset now =
+			timeProvider.GetUtcNow();
 
-		DateTime retryThreshold =
+		DateTimeOffset retryThreshold =
 			now.AddMinutes(-query.RetryDelayMinutes);
 
 		return await dbContext

@@ -23,7 +23,7 @@ public interface ISoftDeletable
 	/// <summary>
 	/// Gets or sets when the entity was deleted.
 	/// </summary>
-	public DateTime? DeletedAt { get; set; }
+	public DateTimeOffset? DeletedAt { get; set; }
 
 	/// <summary>
 	/// Gets or sets who deleted the entity.

@@ -249,8 +249,8 @@ public class UsersControllerTests
 			.WithEmail("updated@example.com")
 			.WithFullName("Updated User")
 			.WithIsActive(true)
-			.WithCreateDate(timeProvider.GetUtcNow().UtcDateTime.AddDays(-1))
-			.WithModifyDate(timeProvider.GetUtcNow().UtcDateTime)
+			.WithCreateDate(timeProvider.GetUtcNow().AddDays(-1))
+			.WithModifyDate(timeProvider.GetUtcNow())
 			.WithCreatedBy("System")
 			.WithModifiedBy("Admin")
 			.Build();

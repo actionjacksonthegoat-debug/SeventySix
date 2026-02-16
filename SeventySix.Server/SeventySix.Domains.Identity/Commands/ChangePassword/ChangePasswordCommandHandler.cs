@@ -72,8 +72,8 @@ public static class ChangePasswordCommandHandler
 			return breachError;
 		}
 
-		DateTime now =
-			timeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset now =
+			timeProvider.GetUtcNow();
 
 		ApplicationUser user =
 			await GetUserOrThrowAsync(

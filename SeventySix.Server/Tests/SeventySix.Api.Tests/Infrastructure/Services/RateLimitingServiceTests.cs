@@ -400,7 +400,7 @@ public class RateLimitingServiceTests
 				BaseUrl = "smtp-relay.brevo.com",
 				CallCount = 249,
 				LastCalledAt =
-					timeProvider.GetUtcNow().UtcDateTime.AddMinutes(-5),
+					timeProvider.GetUtcNow().AddMinutes(-5),
 				ResetDate = today,
 			};
 

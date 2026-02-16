@@ -28,7 +28,7 @@ namespace SeventySix.Identity;
 public record OAuthCodeExchangeResult(
 	string AccessToken,
 	string RefreshToken,
-	DateTime ExpiresAt,
+	DateTimeOffset ExpiresAt,
 	string Email,
 	string? FullName,
 	bool RequiresPasswordChange);

@@ -39,6 +39,11 @@ public static class EndpointPathConstants
 		/// Live endpoint for Kubernetes liveness probes.
 		/// </summary>
 		public const string Live = "/health/live";
+
+		/// <summary>
+		/// Versioned health check route prefix.
+		/// </summary>
+		public const string Versioned = "/api/v1/health";
 	}
 
 	/// <summary>
@@ -76,4 +81,9 @@ public static class EndpointPathConstants
 	/// OpenAPI documentation endpoint.
 	/// </summary>
 	public const string OpenApi = "/openapi";
+
+	/// <summary>
+	/// Scalar documentation route prefix.
+	/// </summary>
+	public const string Scalar = "/scalar";
 }

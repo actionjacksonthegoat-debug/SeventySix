@@ -44,8 +44,8 @@ public sealed class BackupCodeService(
 
 		List<string> plainCodes =
 			[];
-		DateTime now =
-			timeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset now =
+			timeProvider.GetUtcNow();
 
 		for (int index = 0; index < settings.Value.CodeCount; index++)
 		{
@@ -102,7 +102,7 @@ public sealed class BackupCodeService(
 				// Mark code as used
 				backupCode.IsUsed = true;
 				backupCode.UsedAt =
-					timeProvider.GetUtcNow().UtcDateTime;
+					timeProvider.GetUtcNow();
 
 				await context.SaveChangesAsync(cancellationToken);
 

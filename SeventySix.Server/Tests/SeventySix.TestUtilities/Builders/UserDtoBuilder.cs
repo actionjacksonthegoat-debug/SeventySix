@@ -18,16 +18,16 @@ public class UserDtoBuilder
 	private string Username = "testuser";
 	private string Email = "test@example.com";
 	private string? FullName = null;
-	private DateTime CreateDate;
+	private DateTimeOffset CreateDate;
 	private bool IsActive = true;
 	private string CreatedBy =
 		AuditConstants.SystemUser;
-	private DateTime? ModifyDate = null;
+	private DateTimeOffset? ModifyDate = null;
 	private string ModifiedBy =
 		AuditConstants.SystemUser;
-	private DateTime? LastLoginAt = null;
+	private DateTimeOffset? LastLoginAt = null;
 	private bool IsDeleted = false;
-	private DateTime? DeletedAt = null;
+	private DateTimeOffset? DeletedAt = null;
 	private string? DeletedBy = null;
 
 	/// <summary>
@@ -40,7 +40,7 @@ public class UserDtoBuilder
 	{
 		TimeProvider = timeProvider;
 		CreateDate =
-			timeProvider.GetUtcNow().UtcDateTime;
+			timeProvider.GetUtcNow();
 	}
 
 	/// <summary>
@@ -82,7 +82,7 @@ public class UserDtoBuilder
 	/// <summary>
 	/// Sets the create date.
 	/// </summary>
-	public UserDtoBuilder WithCreateDate(DateTime value)
+	public UserDtoBuilder WithCreateDate(DateTimeOffset value)
 	{
 		CreateDate = value;
 		return this;
@@ -109,7 +109,7 @@ public class UserDtoBuilder
 	/// <summary>
 	/// Sets the modify date.
 	/// </summary>
-	public UserDtoBuilder WithModifyDate(DateTime? value)
+	public UserDtoBuilder WithModifyDate(DateTimeOffset? value)
 	{
 		ModifyDate = value;
 		return this;
@@ -127,7 +127,7 @@ public class UserDtoBuilder
 	/// <summary>
 	/// Sets the last login timestamp.
 	/// </summary>
-	public UserDtoBuilder WithLastLoginAt(DateTime? value)
+	public UserDtoBuilder WithLastLoginAt(DateTimeOffset? value)
 	{
 		LastLoginAt = value;
 		return this;
@@ -145,7 +145,7 @@ public class UserDtoBuilder
 	/// <summary>
 	/// Sets the deleted at timestamp.
 	/// </summary>
-	public UserDtoBuilder WithDeletedAt(DateTime? value)
+	public UserDtoBuilder WithDeletedAt(DateTimeOffset? value)
 	{
 		DeletedAt = value;
 		return this;

@@ -6,9 +6,9 @@ import {
 } from "@angular/core";
 import { MatCardModule } from "@angular/material/card";
 import { MatIconModule } from "@angular/material/icon";
+import { TechStackCategory } from "@home/models";
 import { CdnIconComponent } from "@shared/components";
 import { ScrollRevealDirective } from "@shared/directives";
-import { TechStackCategory } from "@home/models";
 
 /**
  * Tech stack section — 3-column grid of technology categories.

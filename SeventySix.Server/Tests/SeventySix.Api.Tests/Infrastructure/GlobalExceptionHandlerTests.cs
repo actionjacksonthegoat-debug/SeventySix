@@ -244,8 +244,8 @@ public sealed class GlobalExceptionHandlerTests
 
 		// Assert
 		statusCode.ShouldBe(HttpStatusCode.BadRequest);
-		problem.Title.ShouldBe("Validation Error");
-		problem.Detail.ShouldBe("One or more validation errors occurred.");
+		problem.Title.ShouldBe(ProblemDetailConstants.Titles.ValidationError);
+		problem.Detail.ShouldBe(ProblemDetailConstants.Titles.ValidationFailed);
 	}
 
 	[Fact]
@@ -262,10 +262,10 @@ public sealed class GlobalExceptionHandlerTests
 		(HttpStatusCode statusCode, ProblemDetails problem) =
 			await HandleExceptionAsync(handler, exception);
 
-		// Assert — domain exception messages are curated and safe to display
+		// Assert — domain exceptions now return safe constants, never raw messages
 		statusCode.ShouldBe(HttpStatusCode.NotFound);
-		problem.Title.ShouldBe("Resource Not Found");
-		problem.Detail.ShouldNotBeNullOrEmpty();
+		problem.Title.ShouldBe(ProblemDetailConstants.Titles.NotFound);
+		problem.Detail.ShouldBe(ProblemDetailConstants.Details.ResourceNotFound);
 	}
 
 	[Fact]
@@ -282,10 +282,10 @@ public sealed class GlobalExceptionHandlerTests
 		(HttpStatusCode statusCode, ProblemDetails problem) =
 			await HandleExceptionAsync(handler, exception);
 
-		// Assert — domain exception messages are curated and safe to display
+		// Assert — domain exceptions now return safe constants, never raw messages
 		statusCode.ShouldBe(HttpStatusCode.UnprocessableEntity);
-		problem.Title.ShouldBe("Business Rule Violation");
-		problem.Detail.ShouldBe("Cannot deactivate the last admin user.");
+		problem.Title.ShouldBe(ProblemDetailConstants.Titles.BusinessRuleViolation);
+		problem.Detail.ShouldBe(ProblemDetailConstants.Details.UnprocessableEntity);
 	}
 
 	[Fact]
@@ -302,9 +302,9 @@ public sealed class GlobalExceptionHandlerTests
 		(HttpStatusCode statusCode, ProblemDetails problem) =
 			await HandleExceptionAsync(handler, exception);
 
-		// Assert — domain exception messages are curated and safe to display
+		// Assert — domain exceptions now return safe constants, never raw messages
 		statusCode.ShouldBe(HttpStatusCode.BadRequest);
-		problem.Title.ShouldBe("Domain Error");
-		problem.Detail.ShouldBe("The operation is not valid for the current state.");
+		problem.Title.ShouldBe(ProblemDetailConstants.Titles.DomainError);
+		problem.Detail.ShouldBe(ProblemDetailConstants.Details.BadRequest);
 	}
 }

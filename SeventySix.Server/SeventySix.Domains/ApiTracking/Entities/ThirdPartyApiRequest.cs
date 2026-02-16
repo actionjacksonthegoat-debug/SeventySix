@@ -49,7 +49,7 @@ public class ThirdPartyApiRequest : IModifiableEntity
 	/// <summary>
 	/// Gets or sets the timestamp of the most recent API call.
 	/// </summary>
-	public DateTime? LastCalledAt { get; set; }
+	public DateTimeOffset? LastCalledAt { get; set; }
 
 	/// <summary>
 	/// Gets or sets the date for which this counter is tracking (allows daily reset logic).
@@ -59,12 +59,12 @@ public class ThirdPartyApiRequest : IModifiableEntity
 	/// <summary>
 	/// Gets or sets the date and time when the request was created.
 	/// </summary>
-	public DateTime CreateDate { get; set; }
+	public DateTimeOffset CreateDate { get; set; }
 
 	/// <summary>
 	/// Gets or sets the date and time when the request was last modified.
 	/// </summary>
-	public DateTime? ModifyDate { get; set; }
+	public DateTimeOffset? ModifyDate { get; set; }
 
 	/// <summary>
 	/// Gets or sets the row version for optimistic concurrency control.
@@ -87,7 +87,7 @@ public class ThirdPartyApiRequest : IModifiableEntity
 	/// Ensures CallCount and LastCalledAt are always updated together (consistency).
 	/// RowVersion is automatically updated by PostgreSQL's xmin system column.
 	/// </remarks>
-	public void IncrementCallCount(DateTime currentTime)
+	public void IncrementCallCount(DateTimeOffset currentTime)
 	{
 		CallCount++;
 		LastCalledAt = currentTime;

@@ -91,6 +91,11 @@ public sealed class DateTimeUsageAnalyzer : DiagnosticAnalyzer
 		context.RegisterSyntaxNodeAction(
 			AnalyzeQualifiedName,
 			SyntaxKind.QualifiedName);
+
+		// DateTime used as a type (properties, params, return types, locals, generics)
+		context.RegisterSyntaxNodeAction(
+			AnalyzeIdentifierName,
+			SyntaxKind.IdentifierName);
 	}
 
 	private static void AnalyzeMemberAccess(SyntaxNodeAnalysisContext context)
@@ -161,5 +166,42 @@ public sealed class DateTimeUsageAnalyzer : DiagnosticAnalyzer
 		{
 			context.ReportDiagnostic(Diagnostic.Create(Rule, qualified.GetLocation()));
 		}
+	}
+
+	private static void AnalyzeIdentifierName(SyntaxNodeAnalysisContext context)
+	{
+		if (ShouldIgnoreFile(context))
+		{
+			return;
+		}
+
+		IdentifierNameSyntax identifier = (IdentifierNameSyntax)context.Node;
+
+		if (identifier.Identifier.ValueText != "DateTime")
+		{
+			return;
+		}
+
+		// Skip if already handled by other analyzers to avoid duplicate diagnostics
+		// MemberAccess handler covers DateTime.UtcNow/Now and System.DateTime.* chains
+		if (identifier.Parent is MemberAccessExpressionSyntax)
+		{
+			return;
+		}
+
+		// ObjectCreation handler covers new DateTime(...)
+		if (identifier.Parent is ObjectCreationExpressionSyntax)
+		{
+			return;
+		}
+
+		// QualifiedName handler covers System.DateTime
+		if (identifier.Parent is QualifiedNameSyntax)
+		{
+			return;
+		}
+
+		// Catches DateTime as a type: properties, params, return types, locals, fields, generics
+		context.ReportDiagnostic(Diagnostic.Create(Rule, identifier.GetLocation()));
 	}
 }

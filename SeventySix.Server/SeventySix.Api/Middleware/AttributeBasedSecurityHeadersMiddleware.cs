@@ -102,6 +102,8 @@ public class AttributeBasedSecurityHeadersMiddleware(
 		context.Response.Headers["Referrer-Policy"] = config.ReferrerPolicy;
 		context.Response.Headers["Permissions-Policy"] =
 			config.PermissionsPolicy;
+		context.Response.Headers.CacheControl = "no-store";
+		context.Response.Headers.Pragma = "no-cache";
 
 		// Content Security Policy - use environment-appropriate default
 		string defaultCsp =

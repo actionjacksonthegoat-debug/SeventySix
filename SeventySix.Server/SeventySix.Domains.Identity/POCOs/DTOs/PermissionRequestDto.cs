@@ -39,4 +39,4 @@ public partial record PermissionRequestDto(
 	string RequestedRole,
 	string? RequestMessage,
 	string CreatedBy,
-	DateTime CreateDate) : ICacheable;
+	DateTimeOffset CreateDate) : ICacheable;

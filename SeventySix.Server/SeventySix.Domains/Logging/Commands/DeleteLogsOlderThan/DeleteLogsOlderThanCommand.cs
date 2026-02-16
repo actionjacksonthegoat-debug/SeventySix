@@ -10,4 +10,4 @@ namespace SeventySix.Logging;
 /// <param name="CutoffDate">
 /// The cutoff date - logs older than this will be deleted.
 /// </param>
-public record DeleteLogsOlderThanCommand(DateTime CutoffDate);
+public record DeleteLogsOlderThanCommand(DateTimeOffset CutoffDate);

@@ -16,9 +16,9 @@ import {
  */
 export const routes: Routes =
 	[
-		// ══════════════════════════════════════════════════════════════
-		// PUBLIC ROUTES (Guest Access - No Authentication Required)
-		// ══════════════════════════════════════════════════════════════
+	// ══════════════════════════════════════════════════════════════
+	// PUBLIC ROUTES (Guest Access - No Authentication Required)
+	// ══════════════════════════════════════════════════════════════
 		{
 			path: "",
 			loadChildren: () =>
@@ -27,7 +27,7 @@ export const routes: Routes =
 			data: { preload: true }
 		},
 		{
-			// Intentionally public — future landing/demo page (no auth guard needed)
+		// Intentionally public — future landing/demo page (no auth guard needed)
 			path: "sandbox",
 			loadChildren: () =>
 				import("./domains/sandbox/sandbox.routes").then(

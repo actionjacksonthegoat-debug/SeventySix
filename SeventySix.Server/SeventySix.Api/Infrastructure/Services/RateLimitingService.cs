@@ -191,7 +191,7 @@ public sealed class RateLimitingService(
 
 		// Use domain method to increment (sets CallCount = 1 and LastCalledAt = now)
 		request.IncrementCallCount(
-			timeProvider.GetUtcNow().UtcDateTime);
+			timeProvider.GetUtcNow());
 
 		await repository.CreateAsync(request);
 		return true;
@@ -221,7 +221,7 @@ public sealed class RateLimitingService(
 
 		// Increment counter using domain logic
 		request.IncrementCallCount(
-			timeProvider.GetUtcNow().UtcDateTime);
+			timeProvider.GetUtcNow());
 
 		// Update the record
 		await repository.UpdateAsync(request);
@@ -275,10 +275,10 @@ public sealed class RateLimitingService(
 	{
 		ArgumentException.ThrowIfNullOrWhiteSpace(apiName);
 
-		DateTime utcNow =
-			timeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset utcNow =
+			timeProvider.GetUtcNow();
 		DateOnly today =
-			DateOnly.FromDateTime(utcNow);
+			DateOnly.FromDateTime(utcNow.UtcDateTime);
 
 		if (interval == LimitInterval.Monthly)
 		{

@@ -11,12 +11,10 @@ import {
 // ============================================================================
 
 /** GitHub repository URL — used by CTA footer and hero CTAs. */
-export const GITHUB_REPO_URL: string =
-	"https://github.com/actionjacksonthegoat-debug/SeventySix";
+export const GITHUB_REPO_URL: string = "https://github.com/actionjacksonthegoat-debug/SeventySix";
 
 /** Full `git clone` command pre-formatted for copy-to-clipboard. */
-export const GITHUB_CLONE_COMMAND: string =
-	"git clone https://github.com/actionjacksonthegoat-debug/SeventySix.git";
+export const GITHUB_CLONE_COMMAND: string = "git clone https://github.com/actionjacksonthegoat-debug/SeventySix.git";
 
 // ============================================================================
 // TECH STACK
@@ -359,7 +357,8 @@ export const FEATURE_HIGHLIGHTS: readonly FeatureHighlight[] =
 			title: "Enterprise Security",
 			icon: "security",
 			tagline: "Defense in depth, zero compromises",
-			description: "Multi-layered security with Argon2 hashing, Altcha CAPTCHA, MFA via TOTP, GitHub OAuth, Fail2Ban intrusion prevention, and role-based access control.",
+			description:
+			"Multi-layered security with Argon2 hashing, Altcha CAPTCHA, MFA via TOTP, GitHub OAuth, Fail2Ban intrusion prevention, and role-based access control.",
 			bullets: [
 				"Argon2 password hashing via .NET Core Identity",
 				"Altcha proof-of-work CAPTCHA — no third-party tracking",
@@ -372,7 +371,8 @@ export const FEATURE_HIGHLIGHTS: readonly FeatureHighlight[] =
 			title: "Full Observability",
 			icon: "monitoring",
 			tagline: "Traces, metrics, and logs — correlated end-to-end",
-			description: "OpenTelemetry traces from browser to database, Prometheus metrics with Grafana dashboards, structured Serilog logging with correlation IDs.",
+			description:
+			"OpenTelemetry traces from browser to database, Prometheus metrics with Grafana dashboards, structured Serilog logging with correlation IDs.",
 			bullets: [
 				"End-to-end distributed traces via Jaeger",
 				"Prometheus metrics with pre-provisioned Grafana dashboards",
@@ -385,7 +385,8 @@ export const FEATURE_HIGHLIGHTS: readonly FeatureHighlight[] =
 			title: "Comprehensive Testing",
 			icon: "science",
 			tagline: "Four layers of quality gates",
-			description: "xUnit server tests, Vitest client tests, Playwright E2E with WCAG scanning, and k6 load tests — all enforced in CI/CD.",
+			description:
+			"xUnit server tests, Vitest client tests, Playwright E2E with WCAG scanning, and k6 load tests — all enforced in CI/CD.",
 			bullets: [
 				"Server: xUnit + NSubstitute + Shouldly + Roslyn analyzers",
 				"Client: Vitest with domain isolation validation",
@@ -398,7 +399,8 @@ export const FEATURE_HIGHLIGHTS: readonly FeatureHighlight[] =
 			title: "AI-Assisted Workflow",
 			icon: "smart_toy",
 			tagline: "Built with and for GitHub Copilot",
-			description: "Structured plan execution, auto-applied instruction files, MCP server integrations, and Copilot-optimized prompts for consistent development.",
+			description:
+			"Structured plan execution, auto-applied instruction files, MCP server integrations, and Copilot-optimized prompts for consistent development.",
 			bullets: [
 				"Structured /create-plan → /review-plan → /execute-plan workflow",
 				"Auto-applied instruction files per file type",
@@ -411,7 +413,8 @@ export const FEATURE_HIGHLIGHTS: readonly FeatureHighlight[] =
 			title: "Production Ready Patterns",
 			icon: "architecture",
 			tagline: "Clean architecture, domain-driven design",
-			description: "Strict Shared ← Domains ← Api dependency flow, bounded contexts with isolated schemas, Wolverine CQRS, and coordinated cache invalidation.",
+			description:
+			"Strict Shared ← Domains ← Api dependency flow, bounded contexts with isolated schemas, Wolverine CQRS, and coordinated cache invalidation.",
 			bullets: [
 				"Clean Architecture with strict dependency flow",
 				"Bounded contexts: Identity, Logging, ApiTracking, Notifications",

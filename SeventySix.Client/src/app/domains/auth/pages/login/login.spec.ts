@@ -9,9 +9,11 @@ import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideRouter, Router } from "@angular/router";
 import { AuthResponse } from "@auth/models";
 import { MfaService } from "@auth/services";
+import { APP_ROUTES, AUTH_NOTIFICATION_MESSAGES } from "@shared/constants";
 import { AltchaService, DateService } from "@shared/services";
 import { AuthService } from "@shared/services/auth.service";
 import { NotificationService } from "@shared/services/notification.service";
+import { StorageService } from "@shared/services/storage.service";
 import {
 	createMockAltchaService,
 	createMockNotificationService,
@@ -34,6 +36,13 @@ interface MockMfaService
 	setMfaState: ReturnType<typeof vi.fn>;
 }
 
+interface MockStorageService
+{
+	getSessionItem: ReturnType<typeof vi.fn>;
+	removeSessionItem: ReturnType<typeof vi.fn>;
+	setSessionItem: ReturnType<typeof vi.fn>;
+}
+
 describe("LoginComponent",
 	() =>
 	{
@@ -43,6 +52,7 @@ describe("LoginComponent",
 		let mockMfaService: MockMfaService;
 		let mockNotificationService: MockNotificationService;
 		let mockAltchaService: MockAltchaService;
+		let mockStorageService: MockStorageService;
 		let router: Router;
 
 		const dateService: DateService =
@@ -56,7 +66,9 @@ describe("LoginComponent",
 				email: "test@example.com",
 				fullName: "Test User",
 				requiresPasswordChange: false,
-				requiresMfa: false
+				requiresMfa: false,
+				sessionInactivityMinutes: 0,
+				sessionWarningSeconds: 0
 			};
 
 		beforeEach(
@@ -76,6 +88,14 @@ describe("LoginComponent",
 					createMockNotificationService();
 				mockAltchaService =
 					createMockAltchaService(false);
+				mockStorageService =
+					{
+						getSessionItem: vi
+							.fn()
+							.mockReturnValue(null),
+						removeSessionItem: vi.fn(),
+						setSessionItem: vi.fn()
+					};
 
 				await TestBed
 					.configureTestingModule(
@@ -93,6 +113,10 @@ describe("LoginComponent",
 								{
 									provide: AltchaService,
 									useValue: mockAltchaService
+								},
+								{
+									provide: StorageService,
+									useValue: mockStorageService
 								}
 							]
 						})
@@ -267,10 +291,10 @@ describe("LoginComponent",
 						// Assert
 						expect(mockNotificationService.info)
 							.toHaveBeenCalledWith(
-								"You must change your password before continuing.");
+								AUTH_NOTIFICATION_MESSAGES.PASSWORD_CHANGE_REQUIRED);
 						expect(router.navigate)
 							.toHaveBeenCalledWith(
-								["/auth/change-password"],
+								[APP_ROUTES.AUTH.CHANGE_PASSWORD],
 								{ queryParams: { required: "true", returnUrl: "/" } });
 					});
 
@@ -575,6 +599,73 @@ describe("LoginComponent",
 							fixture.nativeElement.querySelector(".github-button");
 						expect(githubButton)
 							.toBeTruthy();
+					});
+			});
+
+		describe("inactivity banner",
+			() =>
+			{
+				it("should show banner when inactivity flag is set",
+					async () =>
+					{
+						// Arrange - set the flag before creating component
+						mockStorageService
+							.getSessionItem
+							.mockReturnValue("true");
+
+						// Re-create component to trigger ngOnInit with the flag
+						fixture =
+							TestBed.createComponent(LoginComponent);
+						component =
+							fixture.componentInstance;
+						fixture.detectChanges();
+						await fixture.whenStable();
+
+						// Assert
+						const banner: HTMLElement | null =
+							fixture.nativeElement.querySelector(
+								".inactivity-banner");
+						expect(banner)
+							.toBeTruthy();
+						expect(banner?.textContent)
+							.toContain("logged out due to inactivity");
+					});
+
+				it("should not show banner when flag is not set",
+					async () =>
+					{
+						// Arrange (default: getSessionItem returns null)
+						fixture.detectChanges();
+						await fixture.whenStable();
+
+						// Assert
+						const banner: HTMLElement | null =
+							fixture.nativeElement.querySelector(
+								".inactivity-banner");
+						expect(banner)
+							.toBeNull();
+					});
+
+				it("should clear flag from sessionStorage after reading",
+					() =>
+					{
+						// Arrange
+						mockStorageService
+							.getSessionItem
+							.mockReturnValue("true");
+
+						// Act
+						fixture =
+							TestBed.createComponent(LoginComponent);
+						component =
+							fixture.componentInstance;
+						fixture.detectChanges();
+
+						// Assert
+						expect(
+							mockStorageService.removeSessionItem)
+							.toHaveBeenCalledWith(
+								"auth_inactivity_logout");
 					});
 			});
 	});

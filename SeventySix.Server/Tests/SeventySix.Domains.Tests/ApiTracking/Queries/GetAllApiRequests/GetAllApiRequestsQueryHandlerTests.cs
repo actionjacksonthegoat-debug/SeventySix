@@ -35,8 +35,8 @@ public class GetAllApiRequestsQueryHandlerTests
 	public async Task HandleAsync_WithRequests_ReturnsMappedDtosAsync()
 	{
 		// Arrange
-		DateTime lastCalled =
-			new(2024, 1, 15, 10, 30, 0, DateTimeKind.Utc);
+		DateTimeOffset lastCalled =
+			new(2024, 1, 15, 10, 30, 0, TimeSpan.Zero);
 		DateOnly resetDate =
 			new(2024, 1, 16);
 

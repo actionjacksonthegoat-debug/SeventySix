@@ -50,8 +50,8 @@ public class MarkEmailFailedCommandHandlerTests
 		await using ElectronicNotificationsDbContext dbContext =
 			CreateInMemoryDbContext();
 
-		DateTime createDate =
-			TimeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset createDate =
+			TimeProvider.GetUtcNow();
 
 		EmailQueueEntry entry =
 			new()
@@ -103,8 +103,8 @@ public class MarkEmailFailedCommandHandlerTests
 		await using ElectronicNotificationsDbContext dbContext =
 			CreateInMemoryDbContext();
 
-		DateTime createDate =
-			TimeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset createDate =
+			TimeProvider.GetUtcNow();
 
 		EmailQueueEntry entry =
 			new()
@@ -152,8 +152,8 @@ public class MarkEmailFailedCommandHandlerTests
 		await using ElectronicNotificationsDbContext dbContext =
 			CreateInMemoryDbContext();
 
-		DateTime createDate =
-			TimeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset createDate =
+			TimeProvider.GetUtcNow();
 
 		EmailQueueEntry entry =
 			new()

@@ -157,7 +157,7 @@ public class TokenServiceUnitTests
 		JwtSecurityToken jwt =
 			handler.ReadJwtToken(token);
 
-		DateTime expectedExpiry =
+		DateTimeOffset expectedExpiry =
 			FixedTime
 			.AddMinutes(JwtOptions.Value.AccessTokenExpirationMinutes)
 			.UtcDateTime;

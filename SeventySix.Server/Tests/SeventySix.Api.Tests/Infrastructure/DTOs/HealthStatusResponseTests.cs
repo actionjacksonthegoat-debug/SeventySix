@@ -25,7 +25,7 @@ public class HealthStatusResponseTests
 
 		// Assert
 		response.Status.ShouldBe(HealthStatusConstants.Healthy);
-		response.CheckedAt.ShouldBe(default(DateTime));
+		response.CheckedAt.ShouldBe(default(DateTimeOffset));
 		response.Database.ShouldNotBeNull();
 		response.ErrorQueue.ShouldNotBeNull();
 		response.System.ShouldNotBeNull();
@@ -39,8 +39,8 @@ public class HealthStatusResponseTests
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		DateTime now =
-			timeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset now =
+			timeProvider.GetUtcNow();
 		HealthStatusResponse response =
 			new()
 			{

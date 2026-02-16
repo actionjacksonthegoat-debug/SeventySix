@@ -120,7 +120,7 @@ public class TrustedDeviceServiceTests(IdentityPostgreSqlFixture fixture)
 		TrustedDeviceService service =
 			CreateService(context, timeProvider);
 
-		DateTime expectedExpiration =
+		DateTimeOffset expectedExpiration =
 			FixedTime.UtcDateTime.AddDays(30);
 
 		// Act
@@ -338,8 +338,8 @@ public class TrustedDeviceServiceTests(IdentityPostgreSqlFixture fixture)
 
 		// Advance time
 		timeProvider.Advance(TimeSpan.FromHours(1));
-		DateTime expectedLastUsed =
-			timeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset expectedLastUsed =
+			timeProvider.GetUtcNow();
 
 		// Act
 		await service.ValidateTrustedDeviceAsync(

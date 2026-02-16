@@ -84,8 +84,8 @@ public static class InitiateRegistrationCommandHandler
 			return; // Silent success to prevent enumeration
 		}
 
-		DateTime now =
-			timeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset now =
+			timeProvider.GetUtcNow();
 
 		// Create temporary user with unconfirmed email
 		// User will complete registration with password after clicking link

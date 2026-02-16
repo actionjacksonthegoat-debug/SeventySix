@@ -4,6 +4,7 @@
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Options;
 using SeventySix.Api.Configuration;
 using SeventySix.Api.Infrastructure;
 using SeventySix.Identity;
@@ -33,7 +34,8 @@ public class OAuthController(
 	IOAuthService oAuthService,
 	IOAuthCodeExchangeService oAuthCodeExchange,
 	IAuthCookieService cookieService,
-	ILogger<OAuthController> logger) : AuthControllerBase(cookieService, logger)
+	IOptions<AuthSettings> authSettings,
+	ILogger<OAuthController> logger) : AuthControllerBase(cookieService, authSettings, logger)
 {
 	/// <summary>
 	/// Initiates GitHub OAuth login flow.

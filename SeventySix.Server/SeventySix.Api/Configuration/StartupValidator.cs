@@ -121,6 +121,44 @@ public static class StartupValidator
 	}
 
 	/// <summary>
+	/// Validates that AllowedHosts is not a wildcard in production.
+	/// </summary>
+	/// <param name="configuration">
+	/// The application configuration.
+	/// </param>
+	/// <param name="environment">
+	/// The hosting environment.
+	/// </param>
+	/// <exception cref="InvalidOperationException">
+	/// Thrown when AllowedHosts is '*' in production.
+	/// </exception>
+	public static void ValidateAllowedHosts(
+		IConfiguration configuration,
+		IHostEnvironment environment)
+	{
+		ArgumentNullException.ThrowIfNull(configuration);
+		ArgumentNullException.ThrowIfNull(environment);
+
+		if (!environment.IsProduction())
+		{
+			return;
+		}
+
+		string? allowedHosts =
+			configuration["AllowedHosts"];
+
+		if (string.Equals(
+			allowedHosts,
+			"*",
+			StringComparison.Ordinal))
+		{
+			throw new InvalidOperationException(
+				"AllowedHosts must not be '*' in production. "
+					+ "Configure specific hostnames in appsettings.Production.json.");
+		}
+	}
+
+	/// <summary>
 	/// Logs detailed validation errors.
 	/// </summary>
 	/// <param name="logger">

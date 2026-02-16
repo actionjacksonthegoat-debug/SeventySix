@@ -215,8 +215,8 @@ public static class RateLimitingRegistration
 				}
 
 				// Apply rate limiting for health check endpoints (DDOS protection)
-				if (context.Request.Path.StartsWithSegments("/health")
-					|| context.Request.Path.StartsWithSegments("/api/v1/health"))
+				if (context.Request.Path.StartsWithSegments(EndpointPathConstants.Health.Base)
+					|| context.Request.Path.StartsWithSegments(EndpointPathConstants.Health.Versioned))
 				{
 					return RateLimitPartition.GetFixedWindowLimiter(
 						partitionKey: context.Connection.RemoteIpAddress?.ToString()

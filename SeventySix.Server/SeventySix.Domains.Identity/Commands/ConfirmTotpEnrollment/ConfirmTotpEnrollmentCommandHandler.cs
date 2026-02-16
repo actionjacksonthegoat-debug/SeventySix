@@ -82,7 +82,7 @@ public static class ConfirmTotpEnrollmentCommandHandler
 
 		// Confirm enrollment
 		user.TotpEnrolledAt =
-			timeProvider.GetUtcNow().UtcDateTime;
+			timeProvider.GetUtcNow();
 		user.MfaEnabled = true;
 
 		IdentityResult updateResult =

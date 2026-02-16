@@ -67,8 +67,8 @@ public sealed class MfaService(
 		string challengeToken =
 			Guid.NewGuid().ToString("N");
 
-		DateTime now =
-			timeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset now =
+			timeProvider.GetUtcNow();
 
 		MfaChallenge challenge =
 			new()
@@ -117,8 +117,8 @@ public sealed class MfaService(
 				MfaErrorCodes.ChallengeUsed);
 		}
 
-		DateTime now =
-			timeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset now =
+			timeProvider.GetUtcNow();
 
 		if (challenge.ExpiresAt < now)
 		{
@@ -192,8 +192,8 @@ public sealed class MfaService(
 				MfaErrorCodes.ChallengeUsed);
 		}
 
-		DateTime now =
-			timeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset now =
+			timeProvider.GetUtcNow();
 
 		// Check cooldown - cannot resend if created within cooldown period
 		TimeSpan timeSinceCreation =
@@ -268,8 +268,8 @@ public sealed class MfaService(
 				MfaErrorCodes.ChallengeUsed);
 		}
 
-		DateTime now =
-			timeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset now =
+			timeProvider.GetUtcNow();
 
 		if (challenge.ExpiresAt < now)
 		{

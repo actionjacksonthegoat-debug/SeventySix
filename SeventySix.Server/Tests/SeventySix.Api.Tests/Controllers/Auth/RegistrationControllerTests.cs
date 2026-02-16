@@ -173,8 +173,8 @@ public class RegistrationControllerTests(IdentityAuthApiPostgreSqlFixture fixtur
 					UserManager<ApplicationUser>>();
 			TimeProvider timeProvider =
 				scope.ServiceProvider.GetRequiredService<TimeProvider>();
-			DateTime now =
-				timeProvider.GetUtcNow().UtcDateTime;
+			DateTimeOffset now =
+				timeProvider.GetUtcNow();
 
 			// Create temporary unconfirmed user (like InitiateRegistration does)
 			ApplicationUser tempUser =

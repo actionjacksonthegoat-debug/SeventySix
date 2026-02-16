@@ -49,6 +49,11 @@ public record AuthSettings
 	/// Gets breached password checking configuration (OWASP ASVS V2.1.7).
 	/// </summary>
 	public BreachedPasswordSettings BreachedPassword { get; init; } = new();
+
+	/// <summary>
+	/// Gets session inactivity timeout configuration.
+	/// </summary>
+	public SessionInactivitySettings SessionInactivity { get; init; } = new();
 }
 
 /// <summary>
@@ -352,4 +357,26 @@ public record BreachedPasswordSettings
 	/// Must be configured in appsettings.json.
 	/// </summary>
 	public int ApiTimeoutMs { get; init; }
+}
+
+/// <summary>
+/// Session inactivity timeout configuration (NIST 800-63B §7.2).
+/// </summary>
+public record SessionInactivitySettings
+{
+	/// <summary>
+	/// Gets a value indicating whether session inactivity timeout is enabled.
+	/// </summary>
+	public bool Enabled { get; init; } = true;
+
+	/// <summary>
+	/// Gets the minutes of inactivity before session termination.
+	/// NIST 800-63B recommends ≤30 minutes for sensitive applications.
+	/// </summary>
+	public int TimeoutMinutes { get; init; } = 30;
+
+	/// <summary>
+	/// Gets the seconds before timeout to show the countdown warning.
+	/// </summary>
+	public int WarningSeconds { get; init; } = 60;
 }

@@ -85,7 +85,7 @@ public class AuthenticationService(
 
 		await authRepository.UpdateLastLoginAsync(
 			user.Id,
-			timeProvider.GetUtcNow().UtcDateTime,
+			timeProvider.GetUtcNow(),
 			clientIp,
 			cancellationToken);
 
@@ -140,7 +140,7 @@ public class AuthenticationService(
 				[.. roles],
 				requiresPasswordChange);
 
-		DateTime expiresAt =
+		DateTimeOffset expiresAt =
 			timeProvider
 			.GetUtcNow()
 			.AddMinutes(jwtSettings.Value.AccessTokenExpirationMinutes)

@@ -211,8 +211,8 @@ public class EnqueueEmailCommandHandlerTests
 		await using ElectronicNotificationsDbContext dbContext =
 			CreateInMemoryDbContext();
 
-		DateTime expectedDate =
-			TimeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset expectedDate =
+			TimeProvider.GetUtcNow();
 
 		EnqueueEmailCommand command =
 			new(

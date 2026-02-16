@@ -127,7 +127,7 @@ public class AuthControllerTests(IdentityAuthApiPostgreSqlFixture fixture)
 
 		authResponse.ShouldNotBeNull();
 		authResponse.AccessToken.ShouldNotBeNullOrEmpty();
-		(authResponse.ExpiresAt > timeProvider.GetUtcNow().UtcDateTime).ShouldBeTrue();
+		(authResponse.ExpiresAt > timeProvider.GetUtcNow()).ShouldBeTrue();
 		response.Headers.Contains("Set-Cookie").ShouldBeTrue();
 
 		// Verify PII is in response body (not extracted from JWT)
@@ -285,7 +285,7 @@ public class AuthControllerTests(IdentityAuthApiPostgreSqlFixture fixture)
 		IOAuthCodeExchangeService exchangeService =
 			scope.ServiceProvider.GetRequiredService<IOAuthCodeExchangeService>();
 
-		DateTime expiresAt =
+		DateTimeOffset expiresAt =
 			timeProvider
 			.GetUtcNow()
 			.UtcDateTime.AddMinutes(15);
@@ -357,7 +357,7 @@ public class AuthControllerTests(IdentityAuthApiPostgreSqlFixture fixture)
 			exchangeService.StoreTokens(
 			"test-access-token",
 			"test-refresh-token",
-			timeProvider.GetUtcNow().UtcDateTime.AddMinutes(15),
+			timeProvider.GetUtcNow().AddMinutes(15),
 			"oauth@example.com",
 			null,
 			false);
@@ -397,7 +397,7 @@ public class AuthControllerTests(IdentityAuthApiPostgreSqlFixture fixture)
 			exchangeService.StoreTokens(
 			"test-access-token",
 			"test-refresh-token",
-			timeProvider.GetUtcNow().UtcDateTime.AddMinutes(15),
+			timeProvider.GetUtcNow().AddMinutes(15),
 			"oauth@example.com",
 			null,
 			false);

@@ -44,7 +44,9 @@ describe("MfaService",
 				email: "user@example.com",
 				fullName: "Test User",
 				requiresMfa: false,
-				requiresPasswordChange: false
+				requiresPasswordChange: false,
+				sessionInactivityMinutes: 0,
+				sessionWarningSeconds: 0
 			};
 
 		beforeEach(

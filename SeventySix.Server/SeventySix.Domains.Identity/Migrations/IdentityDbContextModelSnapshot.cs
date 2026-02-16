@@ -139,7 +139,7 @@ namespace SeventySix.Domains.Identity.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");
 
-                    b.Property<DateTime>("ExpiryUtc")
+                    b.Property<DateTimeOffset>("ExpiryUtc")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
@@ -166,7 +166,7 @@ namespace SeventySix.Domains.Identity.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("CreateDate")
+                    b.Property<DateTimeOffset>("CreateDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
@@ -196,7 +196,7 @@ namespace SeventySix.Domains.Identity.Migrations
                         {
                             Id = 1L,
                             ConcurrencyStamp = "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-                            CreateDate = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreateDate = new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             Description = "Standard user access",
                             IsActive = true,
                             Name = "User",
@@ -206,7 +206,7 @@ namespace SeventySix.Domains.Identity.Migrations
                         {
                             Id = 2L,
                             ConcurrencyStamp = "b2c3d4e5-f678-9012-bcde-f12345678901",
-                            CreateDate = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreateDate = new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             Description = "Access to developer tools and APIs",
                             IsActive = true,
                             Name = "Developer",
@@ -216,7 +216,7 @@ namespace SeventySix.Domains.Identity.Migrations
                         {
                             Id = 3L,
                             ConcurrencyStamp = "c3d4e5f6-7890-1234-cdef-123456789012",
-                            CreateDate = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreateDate = new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             Description = "Full administrative access",
                             IsActive = true,
                             Name = "Admin",
@@ -239,7 +239,7 @@ namespace SeventySix.Domains.Identity.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("CreateDate")
+                    b.Property<DateTimeOffset>("CreateDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("CreatedBy")
@@ -247,7 +247,7 @@ namespace SeventySix.Domains.Identity.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
-                    b.Property<DateTime?>("DeletedAt")
+                    b.Property<DateTimeOffset?>("DeletedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("DeletedBy")
@@ -271,7 +271,7 @@ namespace SeventySix.Domains.Identity.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
-                    b.Property<DateTime?>("LastLoginAt")
+                    b.Property<DateTimeOffset?>("LastLoginAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("LastLoginIp")
@@ -294,7 +294,7 @@ namespace SeventySix.Domains.Identity.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
-                    b.Property<DateTime?>("ModifyDate")
+                    b.Property<DateTimeOffset?>("ModifyDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("NormalizedEmail")
@@ -331,7 +331,7 @@ namespace SeventySix.Domains.Identity.Migrations
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("text");
 
-                    b.Property<DateTime?>("TotpEnrolledAt")
+                    b.Property<DateTimeOffset?>("TotpEnrolledAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("TotpSecret")
@@ -375,7 +375,7 @@ namespace SeventySix.Domains.Identity.Migrations
                         .HasMaxLength(128)
                         .HasColumnType("character varying(128)");
 
-                    b.Property<DateTime>("CreateDate")
+                    b.Property<DateTimeOffset>("CreateDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<bool>("IsDeleted")
@@ -388,7 +388,7 @@ namespace SeventySix.Domains.Identity.Migrations
                         .HasColumnType("boolean")
                         .HasDefaultValue(false);
 
-                    b.Property<DateTime?>("UsedAt")
+                    b.Property<DateTimeOffset?>("UsedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<long>("UserId")
@@ -424,10 +424,10 @@ namespace SeventySix.Domains.Identity.Migrations
                         .HasMaxLength(64)
                         .HasColumnType("character varying(64)");
 
-                    b.Property<DateTime>("CreateDate")
+                    b.Property<DateTimeOffset>("CreateDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime>("ExpiresAt")
+                    b.Property<DateTimeOffset>("ExpiresAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<bool>("IsDeleted")
@@ -469,7 +469,7 @@ namespace SeventySix.Domains.Identity.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
-                    b.Property<DateTime>("CreateDate")
+                    b.Property<DateTimeOffset>("CreateDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("CreatedBy")
@@ -506,7 +506,7 @@ namespace SeventySix.Domains.Identity.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
-                    b.Property<DateTime>("CreateDate")
+                    b.Property<DateTimeOffset>("CreateDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("NOW()");
@@ -515,7 +515,7 @@ namespace SeventySix.Domains.Identity.Migrations
                         .HasMaxLength(45)
                         .HasColumnType("character varying(45)");
 
-                    b.Property<DateTime>("ExpiresAt")
+                    b.Property<DateTimeOffset>("ExpiresAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("FamilyId")
@@ -526,10 +526,10 @@ namespace SeventySix.Domains.Identity.Migrations
                         .HasColumnType("boolean")
                         .HasDefaultValue(false);
 
-                    b.Property<DateTime?>("RevokedAt")
+                    b.Property<DateTimeOffset?>("RevokedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime>("SessionStartedAt")
+                    b.Property<DateTimeOffset>("SessionStartedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("TokenHash")
@@ -563,7 +563,7 @@ namespace SeventySix.Domains.Identity.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
-                    b.Property<DateTime>("CreateDate")
+                    b.Property<DateTimeOffset>("CreateDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Details")
@@ -613,7 +613,7 @@ namespace SeventySix.Domains.Identity.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
-                    b.Property<DateTime>("CreateDate")
+                    b.Property<DateTimeOffset>("CreateDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("CreatedBy")
@@ -630,7 +630,7 @@ namespace SeventySix.Domains.Identity.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
-                    b.Property<DateTime>("ExpiresAt")
+                    b.Property<DateTimeOffset>("ExpiresAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<bool>("IsDeleted")
@@ -638,14 +638,14 @@ namespace SeventySix.Domains.Identity.Migrations
                         .HasColumnType("boolean")
                         .HasDefaultValue(false);
 
-                    b.Property<DateTime?>("LastUsedAt")
+                    b.Property<DateTimeOffset?>("LastUsedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("ModifiedBy")
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
-                    b.Property<DateTime?>("ModifyDate")
+                    b.Property<DateTimeOffset?>("ModifyDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("TokenHash")

@@ -1,4 +1,4 @@
-import { Page } from "@playwright/test";
+import { Locator, Page } from "@playwright/test";
 import {
 	test,
 	expect,
@@ -228,25 +228,37 @@ test.describe("Log Management Page",
 		test.describe("Log Detail Dialog",
 			() =>
 			{
+				/**
+				 * Opens the log detail dialog by clicking the first data row
+				 * and waits for the Angular component to fully render.
+				 */
+				async function openLogDetailDialog(adminPage: Page): Promise<Locator>
+				{
+					const dataRows: Locator =
+						adminPage.locator(SELECTORS.dataTable.dataRow);
+					await expect(dataRows.first())
+						.toBeVisible({ timeout: TIMEOUTS.api });
+
+					await dataRows.first().click();
+
+					const dialog: Locator =
+						adminPage.locator(SELECTORS.dialog.container);
+					await expect(dialog)
+						.toBeVisible({ timeout: TIMEOUTS.api });
+
+					// Confirm Angular component has rendered inside the dialog overlay
+					await expect(dialog.locator(SELECTORS.logManagement.detailDialog))
+						.toBeVisible({ timeout: TIMEOUTS.api });
+
+					return dialog;
+				}
+
 				test("should open log detail dialog when clicking a row",
 					async ({ adminPage }: { adminPage: Page }) =>
 					{
-						// Wait for data rows to load
-						const dataRows =
-							adminPage.locator(SELECTORS.dataTable.dataRow);
-						await expect(dataRows.first())
-							.toBeVisible({ timeout: TIMEOUTS.api });
+						const dialog: Locator =
+							await openLogDetailDialog(adminPage);
 
-						// Click the first data row
-						await dataRows.first().click();
-
-						// Dialog should appear
-						const dialog =
-							adminPage.locator(SELECTORS.dialog.container);
-						await expect(dialog)
-							.toBeVisible({ timeout: TIMEOUTS.api });
-
-						// Dialog should contain log detail content
 						await expect(dialog.locator(SELECTORS.logManagement.detailDialog))
 							.toBeVisible();
 					});
@@ -254,23 +266,13 @@ test.describe("Log Management Page",
 				test("should display log message in detail dialog",
 					async ({ adminPage }: { adminPage: Page }) =>
 					{
-						const dataRows =
-							adminPage.locator(SELECTORS.dataTable.dataRow);
-						await expect(dataRows.first())
-							.toBeVisible({ timeout: TIMEOUTS.api });
+						const dialog: Locator =
+							await openLogDetailDialog(adminPage);
 
-						await dataRows.first().click();
-
-						const dialog =
-							adminPage.locator(SELECTORS.dialog.container);
-						await expect(dialog)
-							.toBeVisible({ timeout: TIMEOUTS.api });
-
-						// Dialog should show a message content section
-						const messageContent =
+						const messageContent: Locator =
 							dialog.locator(SELECTORS.logManagement.messageContent);
 						await expect(messageContent)
-							.toBeVisible();
+							.toBeVisible({ timeout: TIMEOUTS.api });
 						await expect(messageContent)
 							.not.toBeEmpty();
 					});
@@ -278,24 +280,13 @@ test.describe("Log Management Page",
 				test("should close dialog when clicking close button",
 					async ({ adminPage }: { adminPage: Page }) =>
 					{
-						const dataRows =
-							adminPage.locator(SELECTORS.dataTable.dataRow);
-						await expect(dataRows.first())
-							.toBeVisible({ timeout: TIMEOUTS.api });
+						const dialog: Locator =
+							await openLogDetailDialog(adminPage);
 
-						await dataRows.first().click();
-
-						const dialog =
-							adminPage.locator(SELECTORS.dialog.container);
-						await expect(dialog)
-							.toBeVisible({ timeout: TIMEOUTS.api });
-
-						// Close the dialog (aria-label is "Close dialog (Press Escape)")
-						const closeButton =
+						const closeButton: Locator =
 							dialog.locator(SELECTORS.dialog.closeButton);
 						await closeButton.click();
 
-						// Dialog should be gone
 						await expect(dialog)
 							.toBeHidden();
 					});

@@ -71,9 +71,7 @@ public class AuditInterceptor(
 					if (auditable.CreateDate == default)
 					{
 						auditable.CreateDate =
-							timeProvider
-							.GetUtcNow()
-							.UtcDateTime;
+						timeProvider.GetUtcNow();
 					}
 					if (string.IsNullOrWhiteSpace(auditable.CreatedBy))
 					{
@@ -87,7 +85,7 @@ public class AuditInterceptor(
 				if (entry.State == EntityState.Modified)
 				{
 					auditable.ModifyDate =
-						timeProvider.GetUtcNow().UtcDateTime;
+						timeProvider.GetUtcNow();
 					auditable.ModifiedBy = currentUser;
 				}
 			}
@@ -100,17 +98,13 @@ public class AuditInterceptor(
 					if (modifiable.CreateDate == default)
 					{
 						modifiable.CreateDate =
-							timeProvider
-							.GetUtcNow()
-							.UtcDateTime;
+						timeProvider.GetUtcNow();
 					}
 				}
 				if (entry.State == EntityState.Modified)
 				{
 					modifiable.ModifyDate =
-						timeProvider
-						.GetUtcNow()
-						.UtcDateTime;
+						timeProvider.GetUtcNow();
 				}
 			}
 			// ICreatableEntity: Set CreateDate only (no modify, no user tracking)
@@ -122,7 +116,7 @@ public class AuditInterceptor(
 					&& creatable.CreateDate == default)
 				{
 					creatable.CreateDate =
-						timeProvider.GetUtcNow().UtcDateTime;
+						timeProvider.GetUtcNow();
 				}
 			}
 		}

@@ -173,9 +173,9 @@ public class BaseQueryValidatorTests
 			new()
 			{
 				StartDate =
-					timeProvider.GetUtcNow().UtcDateTime,
+					timeProvider.GetUtcNow(),
 				EndDate =
-					timeProvider.GetUtcNow().UtcDateTime.AddDays(-1),
+					timeProvider.GetUtcNow().AddDays(-1),
 			};
 
 		// Act
@@ -198,9 +198,9 @@ public class BaseQueryValidatorTests
 			new()
 			{
 				StartDate =
-					timeProvider.GetUtcNow().UtcDateTime,
+					timeProvider.GetUtcNow(),
 				EndDate =
-					timeProvider.GetUtcNow().UtcDateTime.AddDays(91),
+					timeProvider.GetUtcNow().AddDays(91),
 			};
 
 		// Act
@@ -222,9 +222,9 @@ public class BaseQueryValidatorTests
 			new()
 			{
 				StartDate =
-					timeProvider.GetUtcNow().UtcDateTime.AddDays(-30),
+					timeProvider.GetUtcNow().AddDays(-30),
 				EndDate =
-					timeProvider.GetUtcNow().UtcDateTime,
+					timeProvider.GetUtcNow(),
 			};
 
 		// Act
@@ -276,7 +276,7 @@ public class TestEntity
 {
 	public int Id { get; set; }
 	public string Name { get; set; } = string.Empty;
-	public DateTime CreateDate { get; set; }
+	public DateTimeOffset CreateDate { get; set; }
 }
 
 /// <summary>

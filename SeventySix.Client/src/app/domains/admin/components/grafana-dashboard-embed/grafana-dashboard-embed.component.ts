@@ -90,6 +90,10 @@ export class GrafanaDashboardEmbedComponent
 	readonly height: InputSignal<string> =
 		input<string>("600px");
 
+	/** Regex pattern for valid Grafana dashboard UIDs (alphanumeric, hyphens, underscores). */
+	private readonly dashboardUidPattern: RegExp =
+		/^[a-zA-Z0-9_-]+$/;
+
 	/**
 	 * Computed safe URL for iframe src binding.
 	 * Constructs Grafana URL with kiosk mode (hides UI chrome).
@@ -109,6 +113,12 @@ export class GrafanaDashboardEmbedComponent
 					this.refreshInterval();
 				const themeValue: string =
 					this.resolvedTheme();
+
+				// Validate dashboard UID to prevent URL injection
+				if (!this.dashboardUidPattern.test(uid))
+				{
+					return this.sanitizer.bypassSecurityTrustResourceUrl("about:blank");
+				}
 
 				// Include the UID as the slug to match Grafana's expected URL format
 				// This prevents "not correct url correcting" console messages

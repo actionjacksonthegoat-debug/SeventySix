@@ -39,23 +39,18 @@ function setupMockIntersectionObserver(prefersReducedMotion: boolean = false): v
 		{
 			constructor(callback: IntersectionObserverCallback)
 			{
-				observerCallback =
-					callback;
+				observerCallback = callback;
 			}
 
-			observe: ReturnType<typeof vi.fn> =
-				mockObserve;
-			unobserve: ReturnType<typeof vi.fn> =
-				mockUnobserve;
-			disconnect: ReturnType<typeof vi.fn> =
-				mockDisconnect;
+			observe: ReturnType<typeof vi.fn> = mockObserve;
+			unobserve: ReturnType<typeof vi.fn> = mockUnobserve;
+			disconnect: ReturnType<typeof vi.fn> = mockDisconnect;
 		});
 
 	vi.stubGlobal(
 		"matchMedia",
 		vi.fn(
-			() =>
-				({ matches: prefersReducedMotion })));
+			() => ({ matches: prefersReducedMotion })));
 }
 
 describe("CountUpDirective",
@@ -150,6 +145,7 @@ describe("CountUpDirective",
 				createFixture();
 
 				expect(mockObserve)
-					.not.toHaveBeenCalled();
+					.not
+					.toHaveBeenCalled();
 			});
 	});

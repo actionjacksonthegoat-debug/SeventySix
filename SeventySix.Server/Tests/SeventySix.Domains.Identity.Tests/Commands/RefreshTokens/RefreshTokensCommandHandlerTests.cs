@@ -72,8 +72,8 @@ public class RefreshTokensCommandHandlerTests
 
 		TimeProvider timeProvider =
 			Substitute.For<TimeProvider>();
-		DateTime now =
-			timeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset now =
+			timeProvider.GetUtcNow();
 
 		AuthResult expectedAccessTokenResult =
 			AuthResult.Succeeded(
@@ -157,8 +157,8 @@ public class RefreshTokensCommandHandlerTests
 
 		TimeProvider timeProvider =
 			Substitute.For<TimeProvider>();
-		DateTime now =
-			timeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset now =
+			timeProvider.GetUtcNow();
 
 		AuthResult expectedAccessTokenResult =
 			AuthResult.Succeeded(
@@ -308,8 +308,8 @@ public class RefreshTokensCommandHandlerTests
 
 		TimeProvider timeProvider =
 			Substitute.For<TimeProvider>();
-		DateTime now =
-			timeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset now =
+			timeProvider.GetUtcNow();
 
 		AuthResult expectedAccessTokenResult =
 			AuthResult.Succeeded(
@@ -403,8 +403,8 @@ public class RefreshTokensCommandHandlerTests
 
 		TimeProvider timeProvider =
 			Substitute.For<TimeProvider>();
-		DateTime now =
-			timeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset now =
+			timeProvider.GetUtcNow();
 
 		AuthResult expectedAccessTokenResult =
 			AuthResult.Succeeded(

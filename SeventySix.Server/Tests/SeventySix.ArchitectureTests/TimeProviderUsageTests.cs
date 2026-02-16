@@ -13,30 +13,30 @@ namespace SeventySix.ArchitectureTests;
 
 /// <summary>
 /// Architectural tests to enforce TimeProvider usage.
-/// Direct DateTime.UtcNow usage prevents testability and must be replaced.
+/// Direct DateTimeOffset.UtcNow usage prevents testability and must be replaced.
 /// </summary>
 /// <remarks>
 /// Per CLAUDE.md and copilot-instructions.md:
-/// - NEVER use DateTime.UtcNow directly in any code (production or tests)
+/// - NEVER use DateTimeOffset.UtcNow directly in any code (production or tests)
 /// - ALWAYS inject TimeProvider for testable time abstraction
 /// - Tests should use TestTimeProvider or mock TimeProvider
 /// </remarks>
 public class TimeProviderUsageTests : SourceCodeArchitectureTest
 {
 	/// <summary>
-	/// Files that are explicitly allowed to use DateTime.UtcNow.
+	/// Files that are explicitly allowed to use DateTimeOffset.UtcNow.
 	/// These should be empty - no exceptions allowed per YAGNI.
 	/// </summary>
 	private static readonly HashSet<string> AllowedExceptions =
 		new(StringComparer.OrdinalIgnoreCase)
 		{
-			// This test file contains DateTime.UtcNow in regex patterns (5 usages)
+			// This test file contains DateTimeOffset.UtcNow in regex patterns (5 usages)
 			"TimeProviderUsageTests.cs",
-			// Analyzer test contains DateTime.UtcNow in test code strings (6 usages)
+			// Analyzer test contains DateTimeOffset.UtcNow in test code strings (6 usages)
 			"AssignmentContinuationIndentCodeFixTests.cs",
-			// Analyzer source detects DateTime usage patterns (13 usages)
+			// Analyzer source detects DateTimeOffset usage patterns (13 usages)
 			"DateTimeUsageAnalyzer.cs",
-			// Analyzer test verifies DateTime detection (3 usages)
+			// Analyzer test verifies DateTimeOffset detection (3 usages)
 			"DateTimeUsageAnalyzerTests.cs",
 		};
 
@@ -87,17 +87,17 @@ public class TimeProviderUsageTests : SourceCodeArchitectureTest
 				continue;
 			}
 
-			// Find DateTime usages (UtcNow, Now, new DateTime(...), or System.DateTime)
+			// Find DateTimeOffset usages (UtcNow, Now, new DateTimeOffset(...), or System.DateTimeOffset)
 			MatchCollection matches =
 				Regex.Matches(
 					fileContent,
-					@"\bDateTime\.(UtcNow|Now)\b|\bSystem\.DateTime\b",
+					@"\bDateTime\.(UtcNow|Now)\b|\bSystem\.DateTimeOffset\b",
 					RegexOptions.Multiline);
 
 			if (matches.Count > 0)
 			{
 				violations.Add(
-					$"{relativePath}: {matches.Count} DateTime usage(s) (UtcNow/Now/new DateTime/System.DateTime)"
+					$"{relativePath}: {matches.Count} DateTimeOffset usage(s) (UtcNow/Now/new DateTimeOffset/System.DateTimeOffset)"
 						+ " - inject TimeProvider or use approved TestTimeProvider in tests");
 			}
 		}

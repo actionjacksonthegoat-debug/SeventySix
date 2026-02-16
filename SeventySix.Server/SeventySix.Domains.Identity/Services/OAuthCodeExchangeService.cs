@@ -47,7 +47,7 @@ public sealed class OAuthCodeExchangeService : IOAuthCodeExchangeService
 	public string StoreTokens(
 		string accessToken,
 		string refreshToken,
-		DateTime expiresAt,
+		DateTimeOffset expiresAt,
 		string email,
 		string? fullName,
 		bool requiresPasswordChange)

@@ -86,7 +86,7 @@ public class AuditFieldTests : SourceCodeArchitectureTest
 		// Check for inconsistent patterns like CreatedDate vs CreateDate
 		Regex inconsistentDatePattern =
 			new Regex(
-			@"public\s+DateTime\??\s+(CreatedDate|ModifiedDate)",
+			@"public\s+DateTimeOffset\??\s+(CreatedDate|ModifiedDate)",
 			RegexOptions.Compiled);
 
 		List<string> violations = [];

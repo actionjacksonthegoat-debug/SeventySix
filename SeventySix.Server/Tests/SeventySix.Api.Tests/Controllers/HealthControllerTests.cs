@@ -41,8 +41,8 @@ public class HealthControllerTests
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		DateTime checkedAt =
-			timeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset checkedAt =
+			timeProvider.GetUtcNow();
 
 		HealthStatusResponse fullStatus =
 			new()
@@ -92,8 +92,8 @@ public class HealthControllerTests
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		DateTime checkedAt =
-			timeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset checkedAt =
+			timeProvider.GetUtcNow();
 
 		HealthStatusResponse fullStatus =
 			new()
@@ -140,8 +140,8 @@ public class HealthControllerTests
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		DateTime checkedAt =
-			timeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset checkedAt =
+			timeProvider.GetUtcNow();
 
 		HealthStatusResponse fullStatus =
 			new()
@@ -188,8 +188,8 @@ public class HealthControllerTests
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		DateTime checkedAt =
-			timeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset checkedAt =
+			timeProvider.GetUtcNow();
 
 		HealthStatusResponse expectedStatus =
 			new()

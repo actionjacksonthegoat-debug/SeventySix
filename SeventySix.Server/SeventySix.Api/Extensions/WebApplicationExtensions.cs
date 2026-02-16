@@ -492,7 +492,7 @@ public static class WebApplicationExtensions
 		this WebApplication app)
 	{
 		app.MapHealthChecks(
-			"/health/live",
+			EndpointPathConstants.Health.Live,
 			new HealthCheckOptions
 			{
 				Predicate =
@@ -502,7 +502,7 @@ public static class WebApplicationExtensions
 			});
 
 		app.MapHealthChecks(
-			"/health/ready",
+			EndpointPathConstants.Health.Ready,
 			new HealthCheckOptions
 			{
 				Predicate =
@@ -512,7 +512,7 @@ public static class WebApplicationExtensions
 			});
 
 		app.MapHealthChecks(
-			"/health",
+			EndpointPathConstants.Health.Base,
 			new HealthCheckOptions
 			{
 				ResponseWriter =
@@ -583,7 +583,7 @@ public static class WebApplicationExtensions
 			new
 			{
 				status = HealthStatusConstants.Healthy,
-				timestamp = timeProvider.GetUtcNow().UtcDateTime,
+				timestamp = timeProvider.GetUtcNow(),
 			});
 	}
 
@@ -612,7 +612,7 @@ public static class WebApplicationExtensions
 			new
 			{
 				status = report.Status.ToString(),
-				timestamp = timeProvider.GetUtcNow().UtcDateTime,
+				timestamp = timeProvider.GetUtcNow(),
 				duration = report.TotalDuration,
 				checks = report.Entries.Select(entry =>
 					new

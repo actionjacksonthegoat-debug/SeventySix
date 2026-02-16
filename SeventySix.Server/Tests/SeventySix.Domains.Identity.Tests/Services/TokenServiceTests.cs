@@ -106,7 +106,7 @@ public class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 		storedToken.IsRevoked.ShouldBeFalse();
 		storedToken.CreatedByIp.ShouldBe("127.0.0.1");
 
-		DateTime expectedExpiry =
+		DateTimeOffset expectedExpiry =
 			FixedTime
 			.AddDays(expectedExpirationDays)
 			.UtcDateTime;

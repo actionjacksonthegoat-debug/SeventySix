@@ -63,7 +63,7 @@ public class TransactionManagerTests : IDisposable
 				timeProvider.GetUtcNow().UtcDateTime),
 				CallCount = 0,
 				CreateDate =
-					timeProvider.GetUtcNow().UtcDateTime,
+					timeProvider.GetUtcNow(),
 				ModifyDate = null,
 			};
 
@@ -103,7 +103,7 @@ public class TransactionManagerTests : IDisposable
 				timeProvider.GetUtcNow().UtcDateTime),
 				CallCount = 2,
 				CreateDate =
-					timeProvider.GetUtcNow().UtcDateTime,
+					timeProvider.GetUtcNow(),
 				ModifyDate = null,
 			};
 
@@ -161,7 +161,7 @@ public class TransactionManagerTests : IDisposable
 				timeProvider.GetUtcNow().UtcDateTime),
 				CallCount = 1,
 				CreateDate =
-					timeProvider.GetUtcNow().UtcDateTime,
+					timeProvider.GetUtcNow(),
 				ModifyDate = null,
 			};
 
@@ -198,7 +198,7 @@ public class TransactionManagerTests : IDisposable
 				timeProvider.GetUtcNow().UtcDateTime),
 				CallCount = 1,
 				CreateDate =
-					timeProvider.GetUtcNow().UtcDateTime,
+					timeProvider.GetUtcNow(),
 				ModifyDate = null,
 			};
 
@@ -348,7 +348,7 @@ public class TransactionManagerTests : IDisposable
 						timeProvider.GetUtcNow().UtcDateTime),
 						CallCount = 0,
 						CreateDate =
-							timeProvider.GetUtcNow().UtcDateTime,
+							timeProvider.GetUtcNow(),
 						ModifyDate = null,
 					};
 				DbContext.ThirdPartyApiRequests.Add(entity);
@@ -370,7 +370,7 @@ public class TransactionManagerTests : IDisposable
 						timeProvider.GetUtcNow().UtcDateTime),
 						CallCount = 1,
 						CreateDate =
-							timeProvider.GetUtcNow().UtcDateTime,
+							timeProvider.GetUtcNow(),
 						ModifyDate = null,
 					};
 				DbContext.ThirdPartyApiRequests.Add(entity);

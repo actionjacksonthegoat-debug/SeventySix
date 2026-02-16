@@ -35,8 +35,9 @@ namespace SeventySix.Api.Controllers;
 public class MfaController(
 	IMessageBus messageBus,
 	IAuthCookieService cookieService,
+	IOptions<AuthSettings> authSettings,
 	IOptions<TrustedDeviceSettings> trustedDeviceSettings,
-	ILogger<MfaController> logger) : AuthControllerBase(cookieService, logger)
+	ILogger<MfaController> logger) : AuthControllerBase(cookieService, authSettings, logger)
 {
 	/// <summary>
 	/// Verifies an MFA code and completes authentication.

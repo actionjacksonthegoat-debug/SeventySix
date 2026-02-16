@@ -37,23 +37,23 @@ public class UserBuilder
 		TestUserConstants.DefaultEmail;
 	private string? FullName =
 		TestUserConstants.DefaultFullName;
-	private DateTime CreateDate;
+	private DateTimeOffset CreateDate;
 	private string? CreatedBy =
 		AuditConstants.SystemUser;
-	private DateTime? ModifyDate = null;
+	private DateTimeOffset? ModifyDate = null;
 	private string? ModifiedBy = null;
 	private bool IsActive = true;
 	private bool IsDeleted = false;
-	private DateTime? DeletedAt = null;
+	private DateTimeOffset? DeletedAt = null;
 	private string? DeletedBy = null;
 	private uint? RowVersion = null;
 	private string? Preferences = null;
-	private DateTime? LastLoginAt = null;
+	private DateTimeOffset? LastLoginAt = null;
 	private string? LastLoginIp = null;
 	private bool RequiresPasswordChange = false;
 	private bool MfaEnabled = true;
 	private string? TotpSecret = null;
-	private DateTime? TotpEnrolledAt = null;
+	private DateTimeOffset? TotpEnrolledAt = null;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="UserBuilder"/> class.
@@ -65,7 +65,7 @@ public class UserBuilder
 	{
 		TimeProvider = timeProvider;
 		CreateDate =
-			timeProvider.GetUtcNow().UtcDateTime;
+			timeProvider.GetUtcNow();
 	}
 
 	/// <summary>
@@ -141,7 +141,7 @@ public class UserBuilder
 	/// The builder instance for method chaining.
 	/// </returns>
 	public UserBuilder WithCreatedInfo(
-		DateTime createDate,
+		DateTimeOffset createDate,
 		string? createdBy = AuditConstants.SystemUser)
 	{
 		CreateDate = createDate;
@@ -162,7 +162,7 @@ public class UserBuilder
 	/// The builder instance for method chaining.
 	/// </returns>
 	public UserBuilder WithModifiedInfo(
-		DateTime modifyDate,
+		DateTimeOffset modifyDate,
 		string? modifiedBy = AuditConstants.SystemUser)
 	{
 		ModifyDate = modifyDate;
@@ -202,7 +202,7 @@ public class UserBuilder
 	/// </returns>
 	public UserBuilder WithDeletedInfo(
 		bool isDeleted,
-		DateTime? deletedAt = null,
+		DateTimeOffset? deletedAt = null,
 		string? deletedBy = null)
 	{
 		IsDeleted = isDeleted;
@@ -254,7 +254,7 @@ public class UserBuilder
 	/// The builder instance for method chaining.
 	/// </returns>
 	public UserBuilder WithLastLogin(
-		DateTime lastLoginAt,
+		DateTimeOffset lastLoginAt,
 		string? lastLoginIp = null)
 	{
 		LastLoginAt = lastLoginAt;
@@ -317,7 +317,7 @@ public class UserBuilder
 	/// <returns>
 	/// The builder instance for method chaining.
 	/// </returns>
-	public UserBuilder WithTotpEnrolledAt(DateTime? totpEnrolledAt)
+	public UserBuilder WithTotpEnrolledAt(DateTimeOffset? totpEnrolledAt)
 	{
 		TotpEnrolledAt = totpEnrolledAt;
 		return this;
@@ -406,7 +406,7 @@ public class UserBuilder
 	{
 		return new UserBuilder(timeProvider).WithDeletedInfo(
 			true,
-			timeProvider.GetUtcNow().UtcDateTime,
+			timeProvider.GetUtcNow(),
 			AuditConstants.SystemUser);
 	}
 }

@@ -152,7 +152,7 @@ public class LogsController(
 	[ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	public async Task<ActionResult<int>> CleanupLogsAsync(
-		[FromQuery] DateTime? cutoffDate,
+		[FromQuery] DateTimeOffset? cutoffDate,
 		CancellationToken cancellationToken = default)
 	{
 		if (!cutoffDate.HasValue)

@@ -49,8 +49,8 @@ public class MarkEmailSentCommandHandlerTests
 		await using ElectronicNotificationsDbContext dbContext =
 			CreateInMemoryDbContext();
 
-		DateTime createDate =
-			TimeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset createDate =
+			TimeProvider.GetUtcNow();
 
 		EmailQueueEntry entry =
 			new()
@@ -88,7 +88,7 @@ public class MarkEmailSentCommandHandlerTests
 		updatedEntry.Status.ShouldBe(EmailQueueStatus.Sent);
 		updatedEntry.SentAt.ShouldNotBeNull();
 		updatedEntry.SentAt.Value.ShouldBe(
-			TimeProvider.GetUtcNow().UtcDateTime);
+			TimeProvider.GetUtcNow());
 	}
 
 	[Fact]

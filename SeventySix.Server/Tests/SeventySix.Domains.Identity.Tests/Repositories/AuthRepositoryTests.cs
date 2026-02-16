@@ -48,8 +48,8 @@ public class AuthRepositoryTests : DataPostgreSqlTestBase
 		context.Users.Add(user);
 		await context.SaveChangesAsync();
 
-		DateTime loginTime =
-			timeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset loginTime =
+			timeProvider.GetUtcNow();
 		string clientIp = "192.168.1.100";
 
 		// Act
@@ -98,8 +98,8 @@ public class AuthRepositoryTests : DataPostgreSqlTestBase
 		context.Users.Add(user);
 		await context.SaveChangesAsync();
 
-		DateTime loginTime =
-			timeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset loginTime =
+			timeProvider.GetUtcNow();
 
 		// Act
 		await repository.UpdateLastLoginAsync(

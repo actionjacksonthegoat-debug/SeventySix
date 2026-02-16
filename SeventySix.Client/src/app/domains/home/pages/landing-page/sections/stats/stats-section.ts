@@ -5,8 +5,8 @@ import {
 	InputSignal
 } from "@angular/core";
 import { MatIconModule } from "@angular/material/icon";
-import { ScrollRevealDirective, CountUpDirective } from "@shared/directives";
 import { StatItem } from "@home/models";
+import { CountUpDirective, ScrollRevealDirective } from "@shared/directives";
 
 /**
  * Stats section — animated counter bar with project statistics.

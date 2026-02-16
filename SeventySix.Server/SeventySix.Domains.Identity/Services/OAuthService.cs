@@ -267,8 +267,8 @@ public sealed class OAuthService(
 			return existingUser;
 		}
 
-		DateTime now =
-			timeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset now =
+			timeProvider.GetUtcNow();
 
 		// Create new user - ensure unique username
 		string username =

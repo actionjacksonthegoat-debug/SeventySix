@@ -253,7 +253,7 @@ public class InitiatePasswordResetByEmailCommandHandlerTests
 			Username: username,
 			Email: email,
 			FullName: null,
-			CreateDate: TimeProvider.GetUtcNow().UtcDateTime,
+			CreateDate: TimeProvider.GetUtcNow(),
 			IsActive: isActive,
 			CreatedBy: "system",
 			ModifyDate: null,

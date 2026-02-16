@@ -32,11 +32,11 @@ public class ThirdPartyApiRequestTests
 					DateOnly.FromDateTime(
 				timeProvider.GetUtcNow().UtcDateTime),
 			};
-		DateTime beforeTimestamp =
-			timeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset beforeTimestamp =
+			timeProvider.GetUtcNow();
 
 		// Act
-		request.IncrementCallCount(timeProvider.GetUtcNow().UtcDateTime);
+		request.IncrementCallCount(timeProvider.GetUtcNow());
 
 		// Assert
 		request.CallCount.ShouldBe(6);
@@ -61,13 +61,13 @@ public class ThirdPartyApiRequestTests
 			};
 
 		// Act
-		request.IncrementCallCount(timeProvider.GetUtcNow().UtcDateTime);
-		DateTime? firstCallTime = request.LastCalledAt;
+		request.IncrementCallCount(timeProvider.GetUtcNow());
+		DateTimeOffset? firstCallTime = request.LastCalledAt;
 
 		timeProvider.Advance(TimeSpan.FromMilliseconds(10)); // Ensure time difference
 
-		request.IncrementCallCount(timeProvider.GetUtcNow().UtcDateTime);
-		DateTime? secondCallTime = request.LastCalledAt;
+		request.IncrementCallCount(timeProvider.GetUtcNow());
+		DateTimeOffset? secondCallTime = request.LastCalledAt;
 
 		// Assert
 		request.CallCount.ShouldBe(2);
@@ -88,14 +88,14 @@ public class ThirdPartyApiRequestTests
 				BaseUrl = "https://api.ExternalAPImap.org",
 				CallCount = 50,
 				LastCalledAt =
-					timeProvider.GetUtcNow().UtcDateTime.AddHours(-1),
+					timeProvider.GetUtcNow().AddHours(-1),
 				ResetDate =
 					DateOnly.FromDateTime(
 				timeProvider.GetUtcNow().UtcDateTime),
 			};
-		DateTime? lastCalledBefore = request.LastCalledAt;
-		DateTime beforeTimestamp =
-			timeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset? lastCalledBefore = request.LastCalledAt;
+		DateTimeOffset beforeTimestamp =
+			timeProvider.GetUtcNow();
 
 		// Act
 		request.ResetCallCount();
@@ -184,7 +184,7 @@ public class ThirdPartyApiRequestTests
 		// Act
 		for (int incrementCount = 0; incrementCount < 100; incrementCount++)
 		{
-			request.IncrementCallCount(timeProvider.GetUtcNow().UtcDateTime);
+			request.IncrementCallCount(timeProvider.GetUtcNow());
 		}
 
 		// Assert

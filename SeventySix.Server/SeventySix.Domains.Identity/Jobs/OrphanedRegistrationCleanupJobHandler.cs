@@ -60,7 +60,7 @@ public class OrphanedRegistrationCleanupJobHandler(
 		DateTimeOffset now =
 			timeProvider.GetUtcNow();
 
-		DateTime cutoffDate =
+		DateTimeOffset cutoffDate =
 			now.AddHours(-config.RetentionHours).UtcDateTime;
 
 		int deletedCount =

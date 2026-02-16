@@ -2279,6 +2279,16 @@ export interface components
 			mfaChallengeToken?: null | string;
 			mfaMethod?: null | components["schemas"]["MfaMethod"];
 			availableMfaMethods?: null | components["schemas"]["MfaMethod"][];
+			/**
+			 * @default 0
+			 * @description Session inactivity timeout in minutes (0 = disabled).
+			 */
+			sessionInactivityMinutes: number;
+			/**
+			 * @default 0
+			 * @description Seconds before inactivity timeout to display warning.
+			 */
+			sessionWarningSeconds: number;
 		};
 		AvailableRoleDto: {
 			name: string;

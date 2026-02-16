@@ -1,9 +1,9 @@
 import { provideZonelessChangeDetection } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideAnimations } from "@angular/platform-browser/animations";
+import { ArchitectureCard } from "@home/models";
 import { vi } from "vitest";
 import { ArchitectureSectionComponent } from "./architecture-section";
-import { ArchitectureCard } from "@home/models";
 
 const TEST_CARDS: readonly ArchitectureCard[] =
 	[
@@ -37,19 +37,16 @@ function setupMockIntersectionObserver(): void
 		"IntersectionObserver",
 		class MockIntersectionObserver
 		{
-			observe: ReturnType<typeof vi.fn> =
-				mockObserve;
+			observe: ReturnType<typeof vi.fn> = mockObserve;
 			unobserve: ReturnType<typeof vi.fn> =
 				vi.fn();
-			disconnect: ReturnType<typeof vi.fn> =
-				mockDisconnect;
+			disconnect: ReturnType<typeof vi.fn> = mockDisconnect;
 		});
 
 	vi.stubGlobal(
 		"matchMedia",
 		vi.fn(
-			() =>
-				({ matches: true })));
+			() => ({ matches: true })));
 }
 
 describe("ArchitectureSectionComponent",

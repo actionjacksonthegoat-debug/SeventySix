@@ -17,11 +17,13 @@ export * from "./base-mutation.service";
 export * from "./base-query-client.service";
 export * from "./base-query.service";
 export * from "./cache-coordination.service";
+export { CdnIconService } from "./cdn-icon.service";
 export * from "./client-error-logger.service";
 export * from "./date.service";
 export * from "./dialog.service";
 export * from "./error-handler.service";
 export * from "./error-queue.service";
+export * from "./idle-detection.service";
 export * from "./layout.service";
 export * from "./loading.service";
 export * from "./logger.service";
@@ -33,7 +35,6 @@ export * from "./theme.service";
 export * from "./token.service";
 export * from "./web-vitals.service";
 export * from "./window.service";
-export { CdnIconService } from "./cdn-icon.service";
 
 // DO NOT export feature services here
 // Import directly from feature folders when needed:

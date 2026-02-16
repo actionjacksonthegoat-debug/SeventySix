@@ -20,7 +20,7 @@ interface AppBreakpoints
 
 export const APP_BREAKPOINTS: AppBreakpoints =
 	{
-		/** Mobile phones — (max-width: 599.98px) */
+	/** Mobile phones — (max-width: 599.98px) */
 		XSmall: "(max-width: 599.98px)",
 		/** Tablets — (min-width: 600px) and (max-width: 959.98px) */
 		Small: "(min-width: 600px) and (max-width: 959.98px)",

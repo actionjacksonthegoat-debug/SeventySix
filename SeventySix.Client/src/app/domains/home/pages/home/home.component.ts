@@ -18,4 +18,4 @@ import { LandingPageComponent } from "@home/pages/landing-page/landing-page";
 		host: { class: "full-width-page" }
 	})
 export class HomeComponent
-{ }
+{}

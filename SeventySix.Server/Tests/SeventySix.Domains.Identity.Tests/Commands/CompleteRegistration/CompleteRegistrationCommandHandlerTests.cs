@@ -430,8 +430,8 @@ public class CompleteRegistrationCommandHandlerTests(
 		TimeProvider timeProvider,
 		string? email = null)
 	{
-		DateTime now =
-			timeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset now =
+			timeProvider.GetUtcNow();
 
 		string testId =
 			Guid.NewGuid().ToString("N")[..8];
@@ -502,7 +502,7 @@ public class CompleteRegistrationCommandHandlerTests(
 					Name = roleName,
 					NormalizedName = roleName.ToUpperInvariant(),
 					CreateDate =
-						timeProvider.GetUtcNow().UtcDateTime,
+						timeProvider.GetUtcNow(),
 				});
 			await context.SaveChangesAsync();
 		}

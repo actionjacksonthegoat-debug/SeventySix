@@ -1,11 +1,11 @@
 import {
 	Directive,
 	ElementRef,
-	OnDestroy,
-	OnInit,
 	inject,
 	input,
 	InputSignal,
+	OnDestroy,
+	OnInit,
 	signal,
 	WritableSignal
 } from "@angular/core";
@@ -72,7 +72,8 @@ export class ScrollRevealDirective implements OnInit, OnDestroy
 	ngOnInit(): void
 	{
 		const prefersReducedMotion: boolean =
-			globalThis.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false;
+			globalThis.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches
+				?? false;
 
 		if (prefersReducedMotion)
 		{
@@ -97,7 +98,8 @@ export class ScrollRevealDirective implements OnInit, OnDestroy
 									(): void =>
 									{
 										this.isRevealed.set(true);
-									}, delay);
+									},
+									delay);
 							}
 							else
 							{

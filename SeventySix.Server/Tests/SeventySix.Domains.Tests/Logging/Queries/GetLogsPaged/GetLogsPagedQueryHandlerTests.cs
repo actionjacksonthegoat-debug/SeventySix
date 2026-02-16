@@ -36,8 +36,8 @@ public class GetLogsPagedQueryHandlerTests
 	public async Task HandleAsync_WithLogs_ReturnsMappedDtosAsync()
 	{
 		// Arrange
-		DateTime createDate =
-			new(2024, 1, 15, 10, 30, 0, DateTimeKind.Utc);
+		DateTimeOffset createDate =
+			new(2024, 1, 15, 10, 30, 0, TimeSpan.Zero);
 
 		List<Log> logs =
 			[

@@ -40,10 +40,10 @@ import {
 	getMfaErrorMessage,
 	requiresLoginRedirect
 } from "@auth/utilities";
-import { APP_ROUTES } from "@shared/constants";
+import { APP_ROUTES, AUTH_NOTIFICATION_MESSAGES } from "@shared/constants";
+import { FORM_MATERIAL_MODULES } from "@shared/material-bundles.constants";
 import { VerifyBackupCodeRequest, VerifyTotpRequest } from "@shared/models";
 import { AuthService, NotificationService } from "@shared/services";
-import { FORM_MATERIAL_MODULES } from "@shared/material-bundles.constants";
 import { isNullOrUndefined } from "@shared/utilities/null-check.utility";
 import {
 	interval,
@@ -477,9 +477,9 @@ export class MfaVerifyComponent implements OnInit
 		if (response.requiresPasswordChange)
 		{
 			this.notification.info(
-				"You must change your password before continuing.");
+				AUTH_NOTIFICATION_MESSAGES.PASSWORD_CHANGE_REQUIRED);
 			this.router.navigate(
-				["/auth/change-password"],
+				[APP_ROUTES.AUTH.CHANGE_PASSWORD],
 				{
 					queryParams: {
 						required: "true",

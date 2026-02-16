@@ -90,7 +90,7 @@ public class Log : ICreatableEntity
 	/// Automatically set by AuditInterceptor if not provided.
 	/// Used for metrics queries and log filtering.
 	/// </remarks>
-	public DateTime CreateDate { get; set; }
+	public DateTimeOffset CreateDate { get; set; }
 
 	/// <summary>
 	/// Gets or sets the machine/container name where the log originated.

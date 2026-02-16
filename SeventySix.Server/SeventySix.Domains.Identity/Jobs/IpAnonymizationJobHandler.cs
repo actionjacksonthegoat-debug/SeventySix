@@ -57,7 +57,7 @@ public class IpAnonymizationJobHandler(
 		DateTimeOffset now =
 			timeProvider.GetUtcNow();
 
-		DateTime cutoffDate =
+		DateTimeOffset cutoffDate =
 			now.AddDays(-config.RetentionDays).UtcDateTime;
 
 		int anonymizedCount =

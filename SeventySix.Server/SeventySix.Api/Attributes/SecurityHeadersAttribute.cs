@@ -58,9 +58,9 @@ public sealed class SecurityHeadersAttribute : Attribute
 	/// <summary>
 	/// Gets or sets the Permissions-Policy header value.
 	/// </summary>
-	/// <value>Default: "geolocation=(), microphone=(), camera=()".</value>
+	/// <value>Default: comprehensive Permissions-Policy restricting all unused features.</value>
 	public string PermissionsPolicy { get; set; } =
-		"geolocation=(), microphone=(), camera=()";
+		"accelerometer=(), ambient-light-sensor=(), autoplay=(), battery=(), camera=(), display-capture=(), document-domain=(), encrypted-media=(), fullscreen=(self), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), midi=(), payment=(), picture-in-picture=(), publickey-credentials-get=(), screen-wake-lock=(), sync-xhr=(), usb=(), xr-spatial-tracking=()";
 
 	/// <summary>
 	/// Gets or sets a value indicating whether HSTS should be enabled.

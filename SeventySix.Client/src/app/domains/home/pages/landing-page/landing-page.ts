@@ -1,10 +1,10 @@
+import { DOCUMENT } from "@angular/common";
 import {
 	afterNextRender,
 	ChangeDetectionStrategy,
 	Component,
 	inject
 } from "@angular/core";
-import { DOCUMENT } from "@angular/common";
 import { Meta } from "@angular/platform-browser";
 import {
 	ARCHITECTURE_CARDS,
@@ -88,8 +88,7 @@ export class LandingPageComponent
 	 * @protected
 	 * @readonly
 	 */
-	protected readonly featureHighlights: readonly FeatureHighlight[] =
-		FEATURE_HIGHLIGHTS;
+	protected readonly featureHighlights: readonly FeatureHighlight[] = FEATURE_HIGHLIGHTS;
 
 	/**
 	 * Animated stats counter items passed to the stats section.
@@ -97,8 +96,7 @@ export class LandingPageComponent
 	 * @protected
 	 * @readonly
 	 */
-	protected readonly statItems: readonly StatItem[] =
-		STAT_ITEMS;
+	protected readonly statItems: readonly StatItem[] = STAT_ITEMS;
 
 	/**
 	 * Expandable architecture cards passed to the architecture section.
@@ -106,8 +104,7 @@ export class LandingPageComponent
 	 * @protected
 	 * @readonly
 	 */
-	protected readonly architectureCards: readonly ArchitectureCard[] =
-		ARCHITECTURE_CARDS;
+	protected readonly architectureCards: readonly ArchitectureCard[] = ARCHITECTURE_CARDS;
 
 	/**
 	 * GitHub repository URL passed to hero and CTA sections.
@@ -115,8 +112,7 @@ export class LandingPageComponent
 	 * @protected
 	 * @readonly
 	 */
-	protected readonly githubRepoUrl: string =
-		GITHUB_REPO_URL;
+	protected readonly githubRepoUrl: string = GITHUB_REPO_URL;
 
 	/**
 	 * `git clone` command string passed to the CTA footer.
@@ -174,7 +170,8 @@ export class LandingPageComponent
 			"@context": "https://schema.org",
 			"@type": "SoftwareSourceCode",
 			"name": "SeventySix",
-			"description": "A full-stack monorepo built with .NET 10 and Angular 21. Secure by default, observable from the start, designed for AI-assisted development. Demonstrates DDD, Hexagonal Architecture, CQRS, Wolverine, TanStack Query, and comprehensive testing patterns.",
+			"description":
+				"A full-stack monorepo built with .NET 10 and Angular 21. Secure by default, observable from the start, designed for AI-assisted development. Demonstrates DDD, Hexagonal Architecture, CQRS, Wolverine, TanStack Query, and comprehensive testing patterns.",
 			"codeRepository": GITHUB_REPO_URL,
 			"programmingLanguage": ["C#", "TypeScript"],
 			"license": "https://opensource.org/licenses/MIT",
@@ -198,18 +195,51 @@ export class LandingPageComponent
 				"availability": "https://schema.org/InStock",
 				"description": "MIT licensed, free forever. No subscription, no hidden fees, fully open source."
 			},
-			"keywords": [
-				"DDD", "Domain-Driven Design", "Hexagonal Architecture", "CQRS",
-				"Event Sourcing", "Vertical Slices", ".NET 10", "Angular 21",
-				"Wolverine", "TanStack Query", "PostgreSQL", "Full-Stack",
-				"Monorepo", "Clean Architecture", "SOLID", "TDD",
-				"E2E Testing", "Load Testing", "Observability", "OpenTelemetry",
-				"Prometheus", "Grafana", "Material Design 3", "PWA",
-				"Service Worker", "Docker", "Kubernetes", "CI/CD",
-				"GitHub Actions", "OAuth", "JWT", "Security",
-				"Accessibility", "WCAG AA", "MIT License", "Open Source"
-			]
+			"keywords": this.buildSoftwareKeywords()
 		};
+	}
+
+	/** Returns Schema.org keyword list for the SoftwareSourceCode schema. */
+	private buildSoftwareKeywords(): string[]
+	{
+		return [
+			"DDD",
+			"Domain-Driven Design",
+			"Hexagonal Architecture",
+			"CQRS",
+			"Event Sourcing",
+			"Vertical Slices",
+			".NET 10",
+			"Angular 21",
+			"Wolverine",
+			"TanStack Query",
+			"PostgreSQL",
+			"Full-Stack",
+			"Monorepo",
+			"Clean Architecture",
+			"SOLID",
+			"TDD",
+			"E2E Testing",
+			"Load Testing",
+			"Observability",
+			"OpenTelemetry",
+			"Prometheus",
+			"Grafana",
+			"Material Design 3",
+			"PWA",
+			"Service Worker",
+			"Docker",
+			"Kubernetes",
+			"CI/CD",
+			"GitHub Actions",
+			"OAuth",
+			"JWT",
+			"Security",
+			"Accessibility",
+			"WCAG AA",
+			"MIT License",
+			"Open Source"
+		];
 	}
 
 	/** Builds Schema.org WebApplication structured data. */
@@ -274,13 +304,15 @@ export class LandingPageComponent
 		this.meta.updateTag(
 			{
 				name: "description",
-				content: "SeventySix is a production-ready full-stack monorepo built with .NET 10 and Angular 21. Features DDD, Hexagonal Architecture, CQRS, Wolverine, TanStack Query, comprehensive testing, observability with OpenTelemetry, and Material Design 3. MIT licensed, free forever."
+				content:
+					"SeventySix is a production-ready full-stack monorepo built with .NET 10 and Angular 21. Features DDD, Hexagonal Architecture, CQRS, Wolverine, TanStack Query, comprehensive testing, observability with OpenTelemetry, and Material Design 3. MIT licensed, free forever."
 			});
 
 		this.meta.updateTag(
 			{
 				name: "keywords",
-				content: "DDD, Domain-Driven Design, Hexagonal Architecture, CQRS, Event Sourcing, Vertical Slices, .NET 10, Angular 21, Wolverine, TanStack Query, PostgreSQL, Full-Stack, Monorepo, Clean Architecture, SOLID, TDD, E2E Testing, Load Testing, Observability, OpenTelemetry, Prometheus, Grafana, Material Design 3, PWA, Service Worker, Docker, Kubernetes, MIT License, Open Source"
+				content:
+					"DDD, Domain-Driven Design, Hexagonal Architecture, CQRS, Event Sourcing, Vertical Slices, .NET 10, Angular 21, Wolverine, TanStack Query, PostgreSQL, Full-Stack, Monorepo, Clean Architecture, SOLID, TDD, E2E Testing, Load Testing, Observability, OpenTelemetry, Prometheus, Grafana, Material Design 3, PWA, Service Worker, Docker, Kubernetes, MIT License, Open Source"
 			});
 
 		this.meta.updateTag(
@@ -318,7 +350,11 @@ export class LandingPageComponent
 		this.meta.updateTag(
 			{ property: "og:title", content: "SeventySix - Production-Ready .NET 10 + Angular 21 Monorepo" });
 		this.meta.updateTag(
-			{ property: "og:description", content: "A full-stack monorepo demonstrating DDD, Hexagonal Architecture, CQRS, Wolverine, TanStack Query, and comprehensive testing. MIT licensed, free forever." });
+			{
+				property: "og:description",
+				content:
+					"A full-stack monorepo demonstrating DDD, Hexagonal Architecture, CQRS, Wolverine, TanStack Query, and comprehensive testing. MIT licensed, free forever."
+			});
 		this.meta.updateTag(
 			{ property: "og:image", content: "https://seventysix.app/icons/icon-512x512.png" });
 		this.meta.updateTag(
@@ -341,7 +377,11 @@ export class LandingPageComponent
 		this.meta.updateTag(
 			{ name: "twitter:title", content: "SeventySix - Production-Ready .NET 10 + Angular 21 Monorepo" });
 		this.meta.updateTag(
-			{ name: "twitter:description", content: "A full-stack monorepo demonstrating DDD, Hexagonal Architecture, CQRS, Wolverine, TanStack Query, and comprehensive testing. MIT licensed, free forever." });
+			{
+				name: "twitter:description",
+				content:
+					"A full-stack monorepo demonstrating DDD, Hexagonal Architecture, CQRS, Wolverine, TanStack Query, and comprehensive testing. MIT licensed, free forever."
+			});
 		this.meta.updateTag(
 			{ name: "twitter:image", content: "https://seventysix.app/icons/icon-512x512.png" });
 	}
@@ -350,7 +390,7 @@ export class LandingPageComponent
 	private updateCanonicalUrl(): void
 	{
 		const existingCanonical: HTMLLinkElement | null =
-			this.document.querySelector('link[rel="canonical"]');
+			this.document.querySelector("link[rel=\"canonical\"]");
 
 		if (existingCanonical)
 		{

@@ -1,11 +1,11 @@
 import {
 	Directive,
 	ElementRef,
-	OnDestroy,
-	OnInit,
 	inject,
 	input,
-	InputSignal
+	InputSignal,
+	OnDestroy,
+	OnInit
 } from "@angular/core";
 
 /**
@@ -40,7 +40,8 @@ export class CountUpDirective implements OnInit, OnDestroy
 	ngOnInit(): void
 	{
 		const prefersReducedMotion: boolean =
-			globalThis.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false;
+			globalThis.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches
+				?? false;
 
 		if (prefersReducedMotion)
 		{
@@ -120,7 +121,8 @@ export class CountUpDirective implements OnInit, OnDestroy
 	private setFinalValue(): void
 	{
 		this.elementRef.nativeElement.textContent =
-			this.countTarget()
+			this
+				.countTarget()
 				.toLocaleString() + this.countSuffix();
 	}
 }

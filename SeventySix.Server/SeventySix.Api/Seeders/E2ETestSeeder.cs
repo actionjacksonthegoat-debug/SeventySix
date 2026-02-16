@@ -172,7 +172,7 @@ public class E2ETestSeeder(
 				Email = email,
 				EmailConfirmed = true,
 				LockoutEnabled = true,
-				CreateDate = timeProvider.GetUtcNow().UtcDateTime,
+				CreateDate = timeProvider.GetUtcNow(),
 
 				// E2E non-MFA users: explicitly opt out (entity default is true)
 				MfaEnabled = false,
@@ -246,7 +246,7 @@ public class E2ETestSeeder(
 				Email = email,
 				EmailConfirmed = true,
 				LockoutEnabled = true,
-				CreateDate = timeProvider.GetUtcNow().UtcDateTime,
+				CreateDate = timeProvider.GetUtcNow(),
 				RequiresPasswordChange = true,
 
 				// E2E forced-pw users: explicitly opt out of MFA (entity default is true)
@@ -294,8 +294,8 @@ public class E2ETestSeeder(
 			return;
 		}
 
-		DateTime now =
-			timeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset now =
+			timeProvider.GetUtcNow();
 
 		ApplicationUser mfaUser =
 			new()
@@ -352,7 +352,7 @@ public class E2ETestSeeder(
 	/// </returns>
 	private async Task SeedBackupCodesAsync(
 		long userId,
-		DateTime createdAt)
+		DateTimeOffset createdAt)
 	{
 		foreach (string plainCode in E2ESeederConstants.MfaBackupCodes)
 		{

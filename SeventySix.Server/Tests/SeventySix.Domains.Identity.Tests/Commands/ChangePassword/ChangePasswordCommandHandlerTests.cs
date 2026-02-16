@@ -100,7 +100,7 @@ public class ChangePasswordCommandHandlerTests
 			.Received(1)
 			.RevokeAllUserTokensAsync(
 				userId,
-				Arg.Any<DateTime>(),
+				Arg.Any<DateTimeOffset>(),
 				Arg.Any<CancellationToken>());
 		await UserManager
 			.Received(1)
@@ -126,8 +126,8 @@ public class ChangePasswordCommandHandlerTests
 
 	private void SetupAuthResultMock(ApplicationUser user)
 	{
-		DateTime now =
-			TimeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset now =
+			TimeProvider.GetUtcNow();
 		AuthResult expectedResult =
 			AuthResult.Succeeded(
 			"access-token",

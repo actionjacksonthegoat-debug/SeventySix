@@ -60,7 +60,7 @@ public class LogCleanupJobHandler(
 		DateTimeOffset now =
 			timeProvider.GetUtcNow();
 
-		DateTime cutoffDate =
+		DateTimeOffset cutoffDate =
 			now.AddDays(-config.RetentionDays).UtcDateTime;
 
 		// Database cleanup
@@ -113,7 +113,7 @@ public class LogCleanupJobHandler(
 	/// </returns>
 	private static int CleanupLogFiles(
 		LogCleanupSettings config,
-		DateTime cutoffDate)
+		DateTimeOffset cutoffDate)
 	{
 		string logDirectory =
 			Path.Combine(

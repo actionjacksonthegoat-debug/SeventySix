@@ -1,15 +1,13 @@
 @use "variables" as vars;
 @use "mixins";
 
-.architecture
-{
+.architecture {
 	padding: vars.$spacing-3xl vars.$spacing-lg;
 	max-width: vars.$landing-section-max-width;
 	margin-inline: auto;
 }
 
-.architecture-grid
-{
+.architecture-grid {
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(vars.$tech-card-width, 1fr));
 	gap: vars.$spacing-lg;
@@ -17,8 +15,7 @@
 	margin-inline: auto;
 }
 
-.arch-card
-{
+.arch-card {
 	@include mixins.glassmorphism();
 	@include mixins.scroll-reveal-hidden();
 
@@ -28,25 +25,21 @@
 		transform vars.$transition-duration-base vars.$transition-easing-standard,
 		box-shadow vars.$transition-duration-base vars.$transition-easing-standard;
 
-	&.revealed
-	{
+	&.revealed {
 		@include mixins.scroll-reveal-visible();
 	}
 
-	&:hover
-	{
+	&:hover {
 		transform: translateY(-0.25rem);
 	}
 
-	&--expanded
-	{
+	&--expanded {
 		@include mixins.neon-glow();
 
 		grid-column: span 1;
 	}
 
-	&-header
-	{
+	&-header {
 		display: flex;
 		flex-direction: column;
 		gap: vars.$spacing-xs;
@@ -60,47 +53,41 @@
 		cursor: pointer;
 		position: relative;
 
-		&:focus-visible
-		{
+		&:focus-visible {
 			outline: 2px solid var(--landing-accent-primary);
 			outline-offset: -2px;
 			border-radius: vars.$border-radius-lg;
 		}
 	}
 
-	&-title-row
-	{
+	&-title-row {
 		display: flex;
 		align-items: center;
 		gap: vars.$spacing-sm;
 	}
 
-	&-icon
-	{
+	&-icon {
 		color: var(--landing-accent-primary);
 		font-size: vars.$icon-size-lg;
 		width: vars.$icon-size-lg;
 		height: vars.$icon-size-lg;
 	}
 
-	&-title
-	{
+	&-title {
 		font-size: vars.$font-size-lg;
 		font-weight: vars.$font-weight-semibold;
 		margin: 0;
 		color: var(--landing-text-primary);
 	}
 
-	&-description
-	{
+	&-description {
 		font-size: vars.$font-size-sm;
 		color: var(--landing-text-secondary);
 		margin: 0;
 		line-height: 1.5;
 	}
 
-	&-expand-icon
-	{
+	&-expand-icon {
 		position: absolute;
 		top: vars.$spacing-lg;
 		right: vars.$spacing-lg;
@@ -108,20 +95,17 @@
 		transition: transform vars.$transition-duration-base vars.$transition-easing-standard;
 	}
 
-	&-content
-	{
+	&-content {
 		padding: 0 vars.$spacing-lg vars.$spacing-lg;
 		animation: expand-in vars.$animation-duration-reveal vars.$transition-easing-standard;
 	}
 
-	&-details
-	{
+	&-details {
 		list-style: none;
 		padding: 0;
 		margin: 0 0 vars.$spacing-md;
 
-		li
-		{
+		li {
 			position: relative;
 			padding-inline-start: vars.$spacing-lg;
 			padding-block: vars.$spacing-xs;
@@ -129,8 +113,7 @@
 			color: var(--landing-text-secondary);
 			line-height: 1.6;
 
-			&::before
-			{
+			&::before {
 				content: "";
 				position: absolute;
 				left: 0;
@@ -143,43 +126,35 @@
 		}
 	}
 
-	&-keywords
-	{
+	&-keywords {
 		display: flex;
 		flex-wrap: wrap;
 		gap: vars.$spacing-xs;
 
-		mat-chip-set
-		{
+		mat-chip-set {
 			display: inline-flex;
 		}
 	}
 }
 
-@keyframes expand-in
-{
-	from
-	{
+@keyframes expand-in {
+	from {
 		opacity: 0;
 		transform: translateY(-0.5rem);
 	}
 
-	to
-	{
+	to {
 		opacity: 1;
 		transform: translateY(0);
 	}
 }
 
-@media (max-width: #{vars.$breakpoint-sm-min - 1})
-{
-	.architecture
-	{
+@media (max-width: #{vars.$breakpoint-sm-min - 1}) {
+	.architecture {
 		padding: vars.$spacing-xl vars.$spacing-md;
 	}
 
-	.architecture-grid
-	{
+	.architecture-grid {
 		grid-template-columns: 1fr;
 	}
 }

@@ -41,10 +41,16 @@ test.describe("OAuth Login (GitHub)",
 		test("should trigger OAuth redirect when clicking GitHub button",
 			async ({ page, authPage }) =>
 			{
-				// Capture any outgoing request to the OAuth endpoint
+				// OAuth now opens a popup; capture the popup or fallback navigation
 				let oauthRequestMade = false;
-				let capturedUrl = "";
 
+				// Listen for popup (primary flow)
+				const popupPromise: Promise<import("@playwright/test").Page> =
+					page.waitForEvent(
+						"popup",
+						{ timeout: TIMEOUTS.navigation });
+
+				// Also listen for requests on main page (fallback if popup blocked)
 				page.on(
 					"request",
 					(request) =>
@@ -56,21 +62,27 @@ test.describe("OAuth Login (GitHub)",
 							|| url.includes("github"))
 						{
 							oauthRequestMade = true;
-							capturedUrl = url;
 						}
 					});
 
-				// Abort external navigation to prevent leaving test domain
-				await page.route(
-					"**/github.com/**",
-					(route) => route.abort());
-
 				await authPage.githubButton.click();
 
-				// Wait for navigation attempt
-				await page.waitForLoadState("load");
+				// Either popup opens or main page navigates
+				try
+				{
+					const popup: import("@playwright/test").Page =
+						await popupPromise;
+					oauthRequestMade = popup.url().includes("oauth")
+						|| popup.url().includes("github")
+						|| popup.url().includes("about:blank");
+					await popup.close();
+				}
+				catch
+				{
+					// Popup was blocked; oauthRequestMade set by request listener
+				}
 
-				// Verify an OAuth request was initiated
+				// Verify an OAuth request was initiated (popup or fallback)
 				expect(oauthRequestMade)
 					.toBeTruthy();
 			});
@@ -80,7 +92,13 @@ test.describe("OAuth Login (GitHub)",
 			{
 				let capturedGitHubUrl = "";
 
-				// Intercept the GitHub redirect to inspect PKCE parameters
+				// OAuth now opens a popup; capture the popup URL
+				const popupPromise: Promise<import("@playwright/test").Page> =
+					page.waitForEvent(
+						"popup",
+						{ timeout: TIMEOUTS.navigation });
+
+				// Also intercept on main page (fallback if popup blocked)
 				await page.route(
 					"**/github.com/**",
 					(route) =>
@@ -91,14 +109,43 @@ test.describe("OAuth Login (GitHub)",
 
 				await authPage.githubButton.click();
 
-				// Wait for the redirect chain to trigger
-				await page.waitForLoadState(
-					"load",
-					{ timeout: TIMEOUTS.navigation });
+				// Try to capture from popup first
+				try
+				{
+					const popup: import("@playwright/test").Page =
+						await popupPromise;
+
+					// Follow redirects in popup by intercepting GitHub requests
+					popup.on(
+						"request",
+						(request) =>
+						{
+							const url: string =
+								request.url();
+
+							if (url.includes("github.com"))
+							{
+								capturedGitHubUrl = url;
+							}
+						});
+
+					// Wait briefly for redirect chain
+					await popup.waitForLoadState(
+						"load",
+						{ timeout: TIMEOUTS.navigation })
+						.catch(
+							() => { /* popup may be blocked by route */ });
+					await popup.close();
+				}
+				catch
+				{
+					// Popup was blocked; wait for main page route handler
+					await page.waitForLoadState(
+						"load",
+						{ timeout: TIMEOUTS.navigation });
+				}
 
 				// If we captured a GitHub URL, verify PKCE params
-				// The OAuth redirect may go through our API first (/auth/oauth/github)
-				// which then redirects to GitHub with PKCE
 				// eslint-disable-next-line playwright/no-conditional-in-test -- OAuth redirect URL may or may not be captured depending on timing
 				if (capturedGitHubUrl.length > 0)
 				{

@@ -58,7 +58,7 @@ public class GetUserProfileQueryHandlerTests
 				UserName = "testuser",
 				Email = "test@example.com",
 				FullName = "Test User",
-				LastLoginAt = TimeProvider.GetUtcNow().UtcDateTime,
+				LastLoginAt = TimeProvider.GetUtcNow(),
 			};
 
 		List<string> roles =

@@ -179,6 +179,84 @@ public sealed class StartupValidatorUnitTests
 			Arg.Any<Func<object, Exception?, string>>());
 	}
 
+	[Fact]
+	public void ValidateAllowedHosts_Production_WildcardAllowedHosts_ThrowsInvalidOperationException()
+	{
+		// Arrange
+		Dictionary<string, string?> configValues =
+			new()
+			{
+				["AllowedHosts"] = "*",
+			};
+
+		IConfiguration configuration =
+			new ConfigurationBuilder()
+				.AddInMemoryCollection(configValues)
+				.Build();
+
+		IHostEnvironment environment =
+			CreateEnvironment(Environments.Production);
+
+		// Act & Assert
+		InvalidOperationException exception =
+			Should.Throw<InvalidOperationException>(
+				() => StartupValidator.ValidateAllowedHosts(
+					configuration,
+					environment));
+
+		exception.Message.ShouldContain("AllowedHosts must not be '*' in production");
+	}
+
+	[Fact]
+	public void ValidateAllowedHosts_Production_SpecificHost_DoesNotThrow()
+	{
+		// Arrange
+		Dictionary<string, string?> configValues =
+			new()
+			{
+				["AllowedHosts"] = "example.com",
+			};
+
+		IConfiguration configuration =
+			new ConfigurationBuilder()
+				.AddInMemoryCollection(configValues)
+				.Build();
+
+		IHostEnvironment environment =
+			CreateEnvironment(Environments.Production);
+
+		// Act & Assert
+		Should.NotThrow(
+			() => StartupValidator.ValidateAllowedHosts(
+				configuration,
+				environment));
+	}
+
+	[Fact]
+	public void ValidateAllowedHosts_Development_WildcardAllowedHosts_DoesNotThrow()
+	{
+		// Arrange
+		Dictionary<string, string?> configValues =
+			new()
+			{
+				["AllowedHosts"] = "*",
+			};
+
+		IConfiguration configuration =
+			new ConfigurationBuilder()
+				.AddInMemoryCollection(configValues)
+				.Build();
+
+		IHostEnvironment environment =
+			CreateEnvironment(Environments.Development);
+
+		// Act & Assert
+		Should.NotThrow(
+			() => StartupValidator.ValidateAllowedHosts(
+				configuration,
+				environment));
+	}
+
 	private static IHostEnvironment CreateEnvironment(string environmentName)
 	{
 		IHostEnvironment environment =

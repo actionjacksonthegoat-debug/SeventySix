@@ -57,8 +57,8 @@ public static class CreateUserCommandHandler
 		ILogger logger,
 		CancellationToken cancellationToken)
 	{
-		DateTime now =
-			timeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset now =
+			timeProvider.GetUtcNow();
 
 		// Create user entity
 		ApplicationUser newUser =

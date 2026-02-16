@@ -1,16 +1,14 @@
 @use "variables" as vars;
 @use "mixins";
 
-:host
-{
+:host {
 	// Full-width page — fills available space; parent strips constraints via .full-width-page
 	display: block;
 	width: 100%;
 	height: 100%;
 }
 
-.landing-page
-{
+.landing-page {
 	// Parallax scroll container — enables CSS perspective + translateZ in child sections
 	@include mixins.parallax-scroll-container();
 
@@ -18,8 +16,7 @@
 	overflow-x: hidden;
 
 	// Shared section heading styles
-	.section-heading
-	{
+	.section-heading {
 		@include mixins.text-frosted-glass(vars.$spacing-sm, vars.$spacing-lg);
 
 		font-size: vars.$font-size-3xl;
@@ -29,8 +26,7 @@
 		color: var(--mat-sys-on-surface);
 	}
 
-	.section-subtitle
-	{
+	.section-subtitle {
 		@include mixins.text-frosted-glass();
 
 		text-align: center;
@@ -41,7 +37,6 @@
 	}
 }
 
-.section-placeholder
-{
+.section-placeholder {
 	min-height: 20rem;
 }

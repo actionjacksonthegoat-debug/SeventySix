@@ -35,6 +35,9 @@ public sealed class AuthSettingsValidator : AbstractValidator<AuthSettings>
 		RuleFor(auth => auth.BreachedPassword)
 			.SetValidator(new BreachedPasswordSettingsValidator());
 
+		RuleFor(auth => auth.SessionInactivity)
+			.SetValidator(new SessionInactivitySettingsValidator());
+
 		RuleFor(auth => auth.Token.DisableRotation)
 			.Equal(false)
 			.When(

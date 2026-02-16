@@ -222,8 +222,7 @@ export class LayoutService
 		const queries: string[] =
 			Object.values(APP_BREAKPOINTS);
 
-		const initialBreakpoints: Record<string, boolean> =
-			{};
+		const initialBreakpoints: Record<string, boolean> = {};
 
 		for (const query of queries)
 		{
@@ -255,7 +254,8 @@ export class LayoutService
 		}
 
 		const hasMatch: boolean =
-			Object.values(initialBreakpoints)
+			Object
+				.values(initialBreakpoints)
 				.some(
 					(matched: boolean) => matched);
 
@@ -286,7 +286,8 @@ export class LayoutService
 			{ ...current.breakpoints, [query]: matches };
 
 		const hasMatch: boolean =
-			Object.values(updatedBreakpoints)
+			Object
+				.values(updatedBreakpoints)
 				.some(
 					(matched: boolean) => matched);
 
