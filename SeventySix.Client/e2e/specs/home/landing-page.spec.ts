@@ -328,7 +328,7 @@ test.describe("Landing Page",
 							await externalLinks.count();
 
 						expect(linkCount)
-							.toBe(3);
+							.toBe(2);
 
 						for (let idx: number = 0; idx < linkCount; idx++)
 						{

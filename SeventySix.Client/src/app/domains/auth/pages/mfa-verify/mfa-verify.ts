@@ -25,7 +25,6 @@ import {
 	ReactiveFormsModule,
 	Validators
 } from "@angular/forms";
-import { MatButtonModule } from "@angular/material/button";
 import { MatCheckboxModule } from "@angular/material/checkbox";
 import { Router } from "@angular/router";
 import { MFA_CONFIG, MFA_METHOD } from "@auth/constants";
@@ -44,6 +43,7 @@ import {
 import { APP_ROUTES } from "@shared/constants";
 import { VerifyBackupCodeRequest, VerifyTotpRequest } from "@shared/models";
 import { AuthService, NotificationService } from "@shared/services";
+import { FORM_MATERIAL_MODULES } from "@shared/material-bundles.constants";
 import { isNullOrUndefined } from "@shared/utilities/null-check.utility";
 import {
 	interval,
@@ -55,7 +55,7 @@ import { takeUntil } from "rxjs/operators";
 	{
 		selector: "app-mfa-verify",
 		standalone: true,
-		imports: [ReactiveFormsModule, MatButtonModule, MatCheckboxModule],
+		imports: [ReactiveFormsModule, ...FORM_MATERIAL_MODULES, MatCheckboxModule],
 		changeDetection: ChangeDetectionStrategy.OnPush,
 		templateUrl: "./mfa-verify.html",
 		styleUrl: "./mfa-verify.scss"

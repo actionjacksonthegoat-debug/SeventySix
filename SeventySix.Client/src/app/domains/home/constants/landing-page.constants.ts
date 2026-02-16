@@ -402,7 +402,7 @@ export const FEATURE_HIGHLIGHTS: readonly FeatureHighlight[] =
 			bullets: [
 				"Structured /create-plan → /review-plan → /execute-plan workflow",
 				"Auto-applied instruction files per file type",
-				"MCP servers: GitHub, PostgreSQL, Chrome DevTools, context7, Figma",
+				"MCP servers: GitHub, PostgreSQL, Chrome DevTools, context7",
 				"Custom ESLint rules enforcing project conventions",
 				"Hot reload for both .NET API and Angular client"
 			]

@@ -40,40 +40,8 @@
 	gap: vars.$spacing-lg;
 }
 
-.form-group {
-	display: flex;
-	flex-direction: column;
-	gap: vars.$spacing-xs;
-
-	label {
-		font-size: 0.875rem;
-		font-weight: 500;
-		color: var(--mat-sys-on-surface);
-	}
-
-	input {
-		padding: vars.$spacing-md;
-		border: 1px solid var(--mat-sys-outline);
-		border-radius: 0.5rem;
-		background: var(--mat-sys-surface);
-		color: var(--mat-sys-on-surface);
-		font-size: 1rem;
-
-		&:focus {
-			outline: none;
-			border-color: var(--mat-sys-primary);
-			box-shadow: 0 0 0 2px rgb(var(--mat-sys-primary-rgb) / 20%);
-		}
-
-		&::placeholder {
-			color: var(--mat-sys-on-surface-variant);
-		}
-	}
-
-	.hint {
-		font-size: 0.75rem;
-		color: var(--mat-sys-on-surface-variant);
-	}
+mat-form-field {
+	width: 100%;
 }
 
 .submit-button {

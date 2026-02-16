@@ -173,6 +173,9 @@ public class E2ETestSeeder(
 				EmailConfirmed = true,
 				LockoutEnabled = true,
 				CreateDate = timeProvider.GetUtcNow().UtcDateTime,
+
+				// E2E non-MFA users: explicitly opt out (entity default is true)
+				MfaEnabled = false,
 			};
 
 		IdentityResult createResult =
@@ -245,6 +248,9 @@ public class E2ETestSeeder(
 				LockoutEnabled = true,
 				CreateDate = timeProvider.GetUtcNow().UtcDateTime,
 				RequiresPasswordChange = true,
+
+				// E2E forced-pw users: explicitly opt out of MFA (entity default is true)
+				MfaEnabled = false,
 			};
 
 		IdentityResult createResult =

@@ -194,7 +194,7 @@ These prompts generate code for specific components or domains. They handle file
 - Follow the project architecture (server: `Shared ← Domains ← Api`, client: domains import only `@shared/*`)
 - Use the correct naming conventions (C# PascalCase, Angular kebab-case files, etc.)
 - Generate test stubs alongside production code
-- Use MCP tools (context7 for docs, postgresql for schema, figma for designs)
+- Use MCP tools (context7 for docs, postgresql for schema)
 
 ---
 
@@ -316,8 +316,8 @@ Each prompt declares which MCP servers it needs. You don't pick them — Copilot
 | `/execute-plan`                              | context7, postgresql, github          |
 | `/create-plan`                               | context7, postgresql                  |
 | `/fix-warnings`                              | context7                              |
-| `/new-feature`                               | context7, postgresql, figma           |
-| `/new-component`                             | context7, figma                       |
+| `/new-feature`                               | context7, postgresql                  |
+| `/new-component`                             | context7                              |
 | `/new-server-domain`, `/new-service`         | context7, postgresql                  |
 | `/new-client-domain`, `/new-angular-service` | context7                              |
 | `/new-e2e-test`                              | context7, chrome-devtools             |

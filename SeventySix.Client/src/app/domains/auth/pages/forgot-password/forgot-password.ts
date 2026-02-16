@@ -20,9 +20,9 @@ import {
 	ReactiveFormsModule,
 	Validators
 } from "@angular/forms";
-import { MatButtonModule } from "@angular/material/button";
 import { RouterLink } from "@angular/router";
 import { AltchaWidgetComponent } from "@shared/components";
+import { FORM_MATERIAL_MODULES } from "@shared/material-bundles.constants";
 import { AltchaService, AuthService, NotificationService } from "@shared/services";
 import { getValidationError } from "@shared/utilities";
 
@@ -33,7 +33,7 @@ import { getValidationError } from "@shared/utilities";
 		imports: [
 			ReactiveFormsModule,
 			RouterLink,
-			MatButtonModule,
+			...FORM_MATERIAL_MODULES,
 			AltchaWidgetComponent
 		],
 		changeDetection: ChangeDetectionStrategy.OnPush,

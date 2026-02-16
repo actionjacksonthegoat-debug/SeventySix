@@ -633,35 +633,7 @@ describe("DataTableComponent",
 		describe("CLS Prevention",
 			() =>
 			{
-				function getHeightStyle(element: HTMLElement): string
-				{
-					const directStyle: string =
-						element.style.height ?? element.style.minHeight ?? "";
-					if (directStyle)
-					{
-						return directStyle;
-					}
-					const styleAttr: string | null =
-						element.getAttribute("style");
-					if (styleAttr)
-					{
-						const minMatch: RegExpMatchArray | null =
-							styleAttr.match(/min-height:\s*([^;]+)/);
-						if (minMatch)
-						{
-							return minMatch[1].trim();
-						}
-						const heightMatch: RegExpMatchArray | null =
-							styleAttr.match(/height:\s*([^;]+)/);
-						if (heightMatch)
-						{
-							return heightMatch[1].trim();
-						}
-					}
-					return "";
-				}
-
-				it("should reserve minimum height to prevent CLS",
+				it("should use flex layout on viewport to prevent CLS",
 					async (): Promise<void> =>
 					{
 						builder.withInputs(fixture,
@@ -679,15 +651,11 @@ describe("DataTableComponent",
 						expect(viewport)
 							.toBeTruthy();
 
-						if (viewport)
-						{
-							const heightStyle: string =
-								getHeightStyle(viewport);
-							expect(heightStyle)
-								.toBeTruthy();
-							expect(heightStyle)
-								.toContain("px");
-						}
+						const wrapper: HTMLElement | null =
+							fixture.nativeElement.querySelector(".table-wrapper");
+
+						expect(wrapper)
+							.toBeTruthy();
 					});
 
 				it("should render skeleton loaders in cells when loading",

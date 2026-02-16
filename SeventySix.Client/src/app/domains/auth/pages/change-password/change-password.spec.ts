@@ -462,7 +462,7 @@ describe("ChangePasswordComponent",
 
 						// Assert
 						const hint: HTMLElement | null =
-							fixture.nativeElement.querySelector(".hint");
+							fixture.nativeElement.querySelector("mat-hint");
 						expect(hint)
 							.toBeTruthy();
 						expect(hint?.textContent)

@@ -28,9 +28,10 @@
 			[formGroup]="registerForm"
 			(ngSubmit)="onSubmit()"
 			class="register-form">
-			<div class="form-group required">
-				<label for="email">Email Address</label>
+			<mat-form-field appearance="outline">
+				<mat-label>Email Address</mat-label>
 				<input
+					matInput
 					id="email"
 					type="email"
 					formControlName="email"
@@ -42,19 +43,14 @@
 						registerForm.get('email')?.invalid &&
 						registerForm.get('email')?.touched
 					"
-					aria-describedby="email-error"
 				/>
 				@if (emailError()) {
-				<span
-					id="email-error"
-					class="error-text">
-					{{ emailError() }}
-				</span>
+				<mat-error>{{ emailError() }}</mat-error>
 				}
-			</div>
+			</mat-form-field>
 
 			@if (altchaEnabled) {
-			<div class="form-group">
+			<div class="altcha-container">
 				<app-altcha-widget
 					[challengeUrl]="challengeUrl"
 					[hideFooter]="true"

@@ -2,6 +2,7 @@
 
 :host {
 	display: block;
+	flex-shrink: 0;
 }
 
 @include mixins.page-header();

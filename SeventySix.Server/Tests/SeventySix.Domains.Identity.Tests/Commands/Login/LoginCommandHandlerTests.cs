@@ -377,9 +377,10 @@ public class LoginCommandHandlerTests
 				.WithUsername("newuser")
 				.WithEmail("newuser@example.com")
 				.WithRequiresPasswordChange(false)
+				.WithMfaEnabled(false)
 				.Build();
 
-		// user.MfaEnabled defaults to false — simulates a newly registered user
+		// user.MfaEnabled explicitly set to false — simulates a user who opted out of MFA
 		LoginCommand command =
 			CreateLoginCommand(
 				"newuser",

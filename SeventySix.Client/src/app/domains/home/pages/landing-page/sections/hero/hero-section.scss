@@ -184,7 +184,6 @@
 {
 	display: flex;
 	gap: vars.$spacing-lg;
-	margin-bottom: vars.$spacing-2xl;
 	flex-wrap: wrap;
 	justify-content: center;
 }
@@ -194,23 +193,9 @@
 	gap: vars.$spacing-sm;
 }
 
-.hero-badge
+.hero-cta--primary
 {
-	@include mixins.glassmorphism();
-	display: inline-flex;
-	align-items: center;
-	gap: vars.$spacing-sm;
-	padding: vars.$spacing-sm vars.$spacing-lg;
-	font-size: vars.$font-size-sm;
-	color: var(--mat-sys-on-surface-variant);
-
-	mat-icon
-	{
-		font-size: vars.$font-size-lg;
-		width: vars.$font-size-lg;
-		height: vars.$font-size-lg;
-		color: var(--landing-bullet-color);
-	}
+	font-weight: 700;
 }
 
 // ============================================================================

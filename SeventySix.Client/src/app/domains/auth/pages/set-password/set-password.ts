@@ -22,13 +22,13 @@ import {
 	ReactiveFormsModule,
 	Validators
 } from "@angular/forms";
-import { MatButtonModule } from "@angular/material/button";
 import { ActivatedRoute, Router } from "@angular/router";
 import { ValidationResult } from "@auth/models";
 import { mapAuthError } from "@auth/utilities";
 import { validatePassword, validatePasswordsMatch } from "@auth/utilities";
 import { APP_ROUTES } from "@shared/constants";
 import { PASSWORD_VALIDATION } from "@shared/constants/validation.constants";
+import { FORM_MATERIAL_MODULES } from "@shared/material-bundles.constants";
 import { AuthErrorResult } from "@shared/models";
 import { AuthService } from "@shared/services/auth.service";
 import { NotificationService } from "@shared/services/notification.service";
@@ -39,7 +39,7 @@ import { isNullOrUndefined } from "@shared/utilities/null-check.utility";
 	{
 		selector: "app-set-password",
 		standalone: true,
-		imports: [ReactiveFormsModule, MatButtonModule],
+		imports: [ReactiveFormsModule, ...FORM_MATERIAL_MODULES],
 		changeDetection: ChangeDetectionStrategy.OnPush,
 		templateUrl: "./set-password.html",
 		styleUrl: "./set-password.scss"

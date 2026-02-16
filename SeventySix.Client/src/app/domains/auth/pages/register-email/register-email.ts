@@ -21,9 +21,9 @@ import {
 	ReactiveFormsModule,
 	Validators
 } from "@angular/forms";
-import { MatButtonModule } from "@angular/material/button";
 import { RouterLink } from "@angular/router";
 import { AltchaWidgetComponent } from "@shared/components";
+import { FORM_MATERIAL_MODULES } from "@shared/material-bundles.constants";
 import { AltchaService } from "@shared/services/altcha.service";
 import { AuthService } from "@shared/services/auth.service";
 import { NotificationService } from "@shared/services/notification.service";
@@ -33,7 +33,7 @@ import { getValidationError } from "@shared/utilities";
 	{
 		selector: "app-register-email",
 		standalone: true,
-		imports: [ReactiveFormsModule, RouterLink, MatButtonModule, AltchaWidgetComponent],
+		imports: [ReactiveFormsModule, RouterLink, ...FORM_MATERIAL_MODULES, AltchaWidgetComponent],
 		changeDetection: ChangeDetectionStrategy.OnPush,
 		templateUrl: "./register-email.html",
 		styleUrl: "./register-email.scss"

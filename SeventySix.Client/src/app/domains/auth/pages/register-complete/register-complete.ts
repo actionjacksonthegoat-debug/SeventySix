@@ -23,7 +23,6 @@ import {
 	ReactiveFormsModule,
 	Validators
 } from "@angular/forms";
-import { MatButtonModule } from "@angular/material/button";
 import { ActivatedRoute, Router, RouterLink } from "@angular/router";
 import { ValidationResult } from "@auth/models";
 import { mapAuthError, validateRegistrationForm } from "@auth/utilities";
@@ -31,6 +30,7 @@ import {
 	PASSWORD_VALIDATION,
 	USERNAME_VALIDATION
 } from "@shared/constants";
+import { FORM_MATERIAL_MODULES } from "@shared/material-bundles.constants";
 import { AuthErrorResult } from "@shared/models";
 import { AuthService, NotificationService } from "@shared/services";
 import { getValidationError } from "@shared/utilities";
@@ -43,7 +43,7 @@ import { isNullOrUndefined } from "@shared/utilities/null-check.utility";
 		imports: [
 			ReactiveFormsModule,
 			RouterLink,
-			MatButtonModule
+			...FORM_MATERIAL_MODULES
 		],
 		changeDetection: ChangeDetectionStrategy.OnPush,
 		templateUrl: "./register-complete.html",

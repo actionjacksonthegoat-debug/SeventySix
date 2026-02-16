@@ -101,6 +101,6 @@ export class AuthPageHelper
 	 */
 	async checkRememberMe(): Promise<void>
 	{
-		await this.rememberMeCheckbox.check();
+		await this.rememberMeCheckbox.click();
 	}
 }

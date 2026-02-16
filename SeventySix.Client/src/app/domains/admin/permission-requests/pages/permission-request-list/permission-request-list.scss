@@ -1,12 +1,14 @@
 @use "variables" as vars;
+@use "mixins" as mixins;
 
 // PermissionRequestListPage uses DataTableComponent - all styling handled by data-table component
 
 :host {
-	display: block;
+	@include mixins.flex-fill-column();
 	width: 100%;
 }
 
 .permission-requests-page {
+	@include mixins.flex-fill-column();
 	width: 100%;
 }

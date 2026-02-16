@@ -30,9 +30,10 @@
 			[formGroup]="loginForm"
 			(ngSubmit)="onLocalLogin()"
 			class="login-form">
-			<div class="form-group required">
-				<label for="usernameOrEmail">Username or Email</label>
+			<mat-form-field appearance="outline">
+				<mat-label>Username or Email</mat-label>
 				<input
+					matInput
 					id="usernameOrEmail"
 					type="text"
 					formControlName="usernameOrEmail"
@@ -43,25 +44,18 @@
 						loginForm.get('usernameOrEmail')?.invalid &&
 						loginForm.get('usernameOrEmail')?.touched
 					"
-					aria-describedby="usernameOrEmail-hint usernameOrEmail-error"
 				/>
-				<span
-					id="usernameOrEmail-hint"
-					class="visually-hidden">
-					Enter your username or email address
-				</span>
 				@if (usernameOrEmailError()) {
-				<span
-					id="usernameOrEmail-error"
-					class="error-text">
+				<mat-error>
 					{{ usernameOrEmailError() }}
-				</span>
+				</mat-error>
 				}
-			</div>
+			</mat-form-field>
 
-			<div class="form-group required">
-				<label for="password">Password</label>
+			<mat-form-field appearance="outline">
+				<mat-label>Password</mat-label>
 				<input
+					matInput
 					id="password"
 					type="password"
 					formControlName="password"
@@ -72,27 +66,21 @@
 						loginForm.get('password')?.invalid &&
 						loginForm.get('password')?.touched
 					"
-					aria-describedby="password-error"
 				/>
 				@if (passwordError()) {
-				<span
-					id="password-error"
-					class="error-text">
+				<mat-error>
 					{{ passwordError() }}
-				</span>
+				</mat-error>
 				}
-			</div>
+			</mat-form-field>
 
 			<div class="form-options" data-testid="form-options">
-				<label class="checkbox-label" data-testid="remember-me">
-					<input
-						id="rememberMe"
-						type="checkbox"
-						formControlName="rememberMe"
-						aria-describedby="rememberMe-hint"
-					/>
-					<span>Remember me</span>
-				</label>
+				<mat-checkbox
+					data-testid="remember-me"
+					formControlName="rememberMe"
+					aria-describedby="rememberMe-hint">
+					Stay signed in
+				</mat-checkbox>
 				<a routerLink="/auth/forgot-password"
 				   class="forgot-password-link"
 				   data-testid="forgot-password">
@@ -102,7 +90,7 @@
 			<span
 				id="rememberMe-hint"
 				class="hint-text">
-				Keep me signed in for 14 days
+				Your session will last 14 days on this browser
 			</span>
 
 			@if (altchaEnabled) {

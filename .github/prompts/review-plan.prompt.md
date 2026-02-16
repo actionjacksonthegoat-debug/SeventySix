@@ -29,10 +29,10 @@ Read `Implementation.md` (orchestrator) and ALL `implementation-N.md` files list
 
 ## Output
 
-Report:
+Report and Update all reviewed plans with:
 
 - **Violations** found (with file name, phase number, and specific issue)
 - **Missing coverage** (rules/patterns not addressed by the plan)
-- **Suggestions** for improvement
+- **Suggestions** for improvement, updated in the reviewed plans along with completion plans, we will add suggestions as needed unless it truly violates YAGNI rules
 - Confirm CRITICAL no-skip rule appears at TOP and BOTTOM of every `implementation-N.md` file AND the orchestrator
 - Overall **pass/fail** assessment

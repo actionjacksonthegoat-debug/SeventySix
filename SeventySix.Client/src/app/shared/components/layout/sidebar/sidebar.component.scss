@@ -5,17 +5,7 @@
 	padding: vars.$spacing-sm 0;
 	display: flex;
 	flex-direction: column;
-	border-right: 1px solid transparent; // Default: no visible border in light mode
-}
-
-// Add border in dark mode only
-:host-context(html.dark-theme) .app-sidebar {
-	border-right-color: rgba(
-		255,
-		255,
-		255,
-		0.12
-	); // Lighter grey border in dark mode
+	border-right: 1px solid var(--mat-sys-outline-variant);
 }
 
 .sidebar-header {

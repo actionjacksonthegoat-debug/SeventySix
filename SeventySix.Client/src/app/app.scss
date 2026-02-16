@@ -93,6 +93,11 @@ body {
 			display: none;
 		}
 	}
+
+	// Data-table pages — suppress outer scroll, let table viewport handle scrolling
+	&:has(.data-table-page) {
+		overflow: hidden;
+	}
 }
 
 .page-content {
@@ -146,6 +151,14 @@ body {
 		width: 100%;
 		max-width: none;
 		overflow: hidden;
+		flex: 1 1 0;
+		min-height: 0;
+	}
+
+	// Data-table pages — enable flex chain for full-height tables
+	&:has(.data-table-page) {
+		display: flex;
+		flex-direction: column;
 		flex: 1 1 0;
 		min-height: 0;
 	}

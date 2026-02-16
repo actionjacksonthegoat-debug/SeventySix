@@ -99,7 +99,7 @@ html.dark-theme {
 	);
 
 	// -------------------------------------------------------------------------
-	// LANDING PAGE — Dystopia Theme
+	// LANDING PAGE — Dark Theme
 	// -------------------------------------------------------------------------
 	--landing-texture-overlay: url("/images/landing-page/dark-grid-texture.webp");
 	--landing-section-bg: url("/images/landing-page/dark-data-stream.webp");
@@ -205,7 +205,7 @@ html.light-theme {
 	);
 
 	// -------------------------------------------------------------------------
-	// LANDING PAGE — Utopia Theme
+	// LANDING PAGE — Light Theme
 	// -------------------------------------------------------------------------
 	--landing-texture-overlay: none;
 	--landing-section-bg: url("/images/landing-page/light-crystal.webp");
@@ -445,6 +445,16 @@ select[aria-invalid="true"] {
 		animation-iteration-count: 1 !important;
 		transition-duration: 0.01ms !important;
 		scroll-behavior: auto !important;
+	}
+
+	// Preserve Material ripple feedback — essential for button interaction UX
+	.mat-ripple-element {
+		animation-duration: 225ms !important;
+		transition-duration: 225ms !important;
+	}
+
+	.mat-mdc-button-persistent-ripple::before {
+		transition-duration: 75ms !important;
 	}
 }
 

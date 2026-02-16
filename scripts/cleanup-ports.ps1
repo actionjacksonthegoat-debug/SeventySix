@@ -7,9 +7,7 @@
 #   .\scripts\cleanup-ports.ps1 -Quiet
 #
 # Ports cleaned:
-#   4200  - Angular client (dev server)
-#   7074  - API HTTPS (development)
-#   5086  - API HTTP (E2E only)
+#   5086  - API HTTP (E2E only, non-Docker)
 
 param(
 	[switch]$Quiet
@@ -17,8 +15,8 @@ param(
 
 $ErrorActionPreference = "Continue"
 
-# Ports used by our development and E2E environments
-$portsToClean = @(4200, 7074, 5086)
+# Ports used by E2E environment only (dev ports excluded to avoid killing running dev stack)
+$portsToClean = @(5086)
 
 # Process names we're allowed to kill (safety - don't kill system processes)
 # Include 'cmd' since Angular is launched via `cmd /k npm start`

@@ -1,22 +1,9 @@
-@use "variables" as vars;
-@use "mixins" as mixins;
-
-.sandbox-container {
-	padding: vars.$spacing-2xl;
-	max-width: 50rem;
-	margin: 0 auto;
+:host {
+	display: block;
+	text-align: center;
+	padding-top: 2rem;
 }
 
-.sandbox-card {
-	background-color: var(--mat-sys-surface-container);
-}
-
-.sandbox-icon {
-	@include mixins.icon-size(vars.$icon-size-xl);
-	color: var(--mat-sys-primary);
-	margin-right: vars.$spacing-md;
-}
-
-h1 {
+.sandbox-title {
 	margin: 0;
 }

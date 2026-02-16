@@ -10,7 +10,6 @@ Create a new Angular component with these requirements:
 ## MCP Tools
 
 - Use **context7** to fetch up-to-date Angular API docs before generating code
-- Use **figma** MCP if user provides a Figma design link — extract layout and styling for pixel-accurate implementation
 
 ## Domain Selection (REQUIRED)
 

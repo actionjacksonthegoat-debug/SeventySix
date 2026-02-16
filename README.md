@@ -34,7 +34,7 @@ A full-stack monorepo demonstrating enterprise-grade patterns with .NET 10 and A
 - **Load tests**: k6 with multiple profiles (quick, smoke, load, stress), Docker-isolated environment, HTML summary reports
 
 ### Development Workflow
-- **AI-assisted tooling** with Copilot prompts, auto-applied instruction files, and MCP server integrations (GitHub, PostgreSQL, Chrome DevTools, context7, Figma)
+- **AI-assisted tooling** with Copilot prompts, auto-applied instruction files, and MCP server integrations (GitHub, PostgreSQL, Chrome DevTools, context7)
 - **Structured plan execution** via `/create-plan` → `/review-plan` → `/execute-plan` workflow
 - **npm script orchestration** for lifecycle management: `npm start` (full stack), `npm stop` (teardown), `npm test` (all suites), `npm run format` (all code)
 - **Hot reload** enabled for both .NET API and Angular client during development
@@ -787,17 +787,6 @@ MCP servers, all free, zero billing risk:
 | PostgreSQL | Read-only database queries for debugging | Free (local) |
 | Chrome DevTools | Live browser inspection, console, network | Free (local) |
 | Context7 | Up-to-date library documentation | Free |
-| Figma | Design-to-code from Figma files | Free (Starter plan) |
-
-#### Figma MCP Workflow
-
-Extract design specs and assets directly from Figma files:
-
-1. **Extract component specs** — `mcp_figma_get_figma_data` retrieves layout, spacing, typography, and color tokens from any Figma node
-2. **Download assets** — `mcp_figma_download_figma_images` exports icons, illustrations, and other assets at any scale
-3. **Design-to-code** — Combine extracted specs with Angular Material tokens to generate components that match the design system
-
-Example: Provide a Figma file URL → extract component dimensions and colors → generate an Angular component with matching Material Design 3 tokens.
 
 #### Chrome DevTools MCP Workflow
 

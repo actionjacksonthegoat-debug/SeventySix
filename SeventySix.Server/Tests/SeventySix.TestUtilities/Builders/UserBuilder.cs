@@ -51,7 +51,7 @@ public class UserBuilder
 	private DateTime? LastLoginAt = null;
 	private string? LastLoginIp = null;
 	private bool RequiresPasswordChange = false;
-	private bool MfaEnabled = false;
+	private bool MfaEnabled = true;
 	private string? TotpSecret = null;
 	private DateTime? TotpEnrolledAt = null;
 

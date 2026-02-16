@@ -11,7 +11,6 @@ Create a complete feature spanning Angular client and .NET server.
 
 - Use **context7** to fetch up-to-date API docs for .NET, Wolverine, EF Core, Angular, and TanStack Query before generating code
 - Use **postgresql** MCP to inspect existing schema when designing data-layer code
-- Use **figma** MCP if user provides a Figma design link — extract layout and styling for the client component
 
 ## Domain Selection (REQUIRED)
 

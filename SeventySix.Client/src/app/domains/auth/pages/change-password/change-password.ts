@@ -27,7 +27,6 @@ import {
 	ReactiveFormsModule,
 	Validators
 } from "@angular/forms";
-import { MatButtonModule } from "@angular/material/button";
 import { ActivatedRoute, Router } from "@angular/router";
 import { ValidationResult } from "@auth/models";
 import {
@@ -39,6 +38,7 @@ import {
 import { environment } from "@environments/environment";
 import { APP_ROUTES } from "@shared/constants";
 import { PASSWORD_VALIDATION } from "@shared/constants/validation.constants";
+import { FORM_MATERIAL_MODULES } from "@shared/material-bundles.constants";
 import { AuthErrorResult } from "@shared/models";
 import { AuthService } from "@shared/services/auth.service";
 import { NotificationService } from "@shared/services/notification.service";
@@ -54,7 +54,7 @@ interface ChangePasswordRequest
 	{
 		selector: "app-change-password",
 		standalone: true,
-		imports: [ReactiveFormsModule, MatButtonModule],
+		imports: [ReactiveFormsModule, ...FORM_MATERIAL_MODULES],
 		changeDetection: ChangeDetectionStrategy.OnPush,
 		templateUrl: "./change-password.html",
 		styleUrl: "./change-password.scss"

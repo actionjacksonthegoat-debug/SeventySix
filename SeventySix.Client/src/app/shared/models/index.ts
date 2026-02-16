@@ -2,6 +2,7 @@
  * Barrel export for shared models
  */
 export * from "./altcha-widget.model";
+export * from "./breakpoint-snapshot.model";
 export * from "./app-error.model";
 export * from "./auth-error-result.model";
 export * from "./base-query-request.model";

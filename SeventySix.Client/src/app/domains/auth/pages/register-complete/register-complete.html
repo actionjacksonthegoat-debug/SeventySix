@@ -26,9 +26,10 @@
 			[formGroup]="registerForm"
 			(ngSubmit)="onSubmit()"
 			class="register-form">
-			<div class="form-group required">
-				<label for="username">Username</label>
+			<mat-form-field appearance="outline">
+				<mat-label>Username</mat-label>
 				<input
+					matInput
 					id="username"
 					data-testid="register-complete-username"
 					type="text"
@@ -40,25 +41,17 @@
 						registerForm.get('username')?.invalid &&
 						registerForm.get('username')?.touched
 					"
-					aria-describedby="username-hint username-error"
 				/>
-				<span
-					id="username-hint"
-					class="hint">
-					Letters, numbers, and underscores only
-				</span>
+				<mat-hint>Letters, numbers, and underscores only</mat-hint>
 				@if (usernameError()) {
-				<span
-					id="username-error"
-					class="error-text">
-					{{ usernameError() }}
-				</span>
+				<mat-error>{{ usernameError() }}</mat-error>
 				}
-			</div>
+			</mat-form-field>
 
-			<div class="form-group required">
-				<label for="password">Password</label>
+			<mat-form-field appearance="outline">
+				<mat-label>Password</mat-label>
 				<input
+					matInput
 					id="password"
 					data-testid="register-complete-password"
 					type="password"
@@ -70,25 +63,17 @@
 						registerForm.get('password')?.invalid &&
 						registerForm.get('password')?.touched
 					"
-					aria-describedby="password-hint password-error"
 				/>
-				<span
-					id="password-hint"
-					class="hint">
-					At least 8 characters with uppercase, lowercase, digit, and special character
-				</span>
+				<mat-hint>At least 8 characters with uppercase, lowercase, digit, and special character</mat-hint>
 				@if (passwordError()) {
-				<span
-					id="password-error"
-					class="error-text">
-					{{ passwordError() }}
-				</span>
+				<mat-error>{{ passwordError() }}</mat-error>
 				}
-			</div>
+			</mat-form-field>
 
-			<div class="form-group required">
-				<label for="confirmPassword">Confirm Password</label>
+			<mat-form-field appearance="outline">
+				<mat-label>Confirm Password</mat-label>
 				<input
+					matInput
 					id="confirmPassword"
 					data-testid="register-complete-confirm-password"
 					type="password"
@@ -100,16 +85,11 @@
 						registerForm.get('confirmPassword')?.invalid &&
 						registerForm.get('confirmPassword')?.touched
 					"
-					aria-describedby="confirmPassword-error"
 				/>
 				@if (confirmPasswordError()) {
-				<span
-					id="confirmPassword-error"
-					class="error-text">
-					{{ confirmPasswordError() }}
-				</span>
+				<mat-error>{{ confirmPasswordError() }}</mat-error>
 				}
-			</div>
+			</mat-form-field>
 
 			<button
 				mat-stroked-button

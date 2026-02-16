@@ -28,7 +28,7 @@ export const SELECTORS =
 				emailInput: "#email",
 				usernameInput: "#usernameOrEmail",
 				passwordInput: "#password",
-				rememberMeCheckbox: "#rememberMe",
+				rememberMeCheckbox: "[data-testid='remember-me']",
 				errorMessage: "[role='alert'], .error-message, mat-error",
 				matError: "mat-error"
 			},
@@ -286,10 +286,7 @@ export const SELECTORS =
 		 */
 		sandbox:
 			{
-				container: ".sandbox-container",
-				sandboxCard: ".sandbox-card",
-				sandboxTitle: ".sandbox-card mat-card-title h1",
-				cardContent: "mat-card-content"
+				title: "h1.sandbox-title"
 			},
 
 		/**

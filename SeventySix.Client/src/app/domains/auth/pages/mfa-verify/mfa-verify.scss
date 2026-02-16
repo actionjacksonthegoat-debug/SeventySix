@@ -39,44 +39,12 @@
 	gap: vars.$spacing-lg;
 }
 
-.form-group {
-	display: flex;
-	flex-direction: column;
-	gap: vars.$spacing-xs;
-
-	label {
-		font-size: 0.875rem;
-		font-weight: 500;
-		color: var(--mat-sys-on-surface);
-	}
+mat-form-field.code-field {
+	width: 100%;
 
 	input {
-		height: 3rem;
-		padding: 0 vars.$spacing-md;
 		font-size: 1.5rem;
 		letter-spacing: 0.5rem;
-		text-align: center;
-		background: var(--mat-sys-surface-container);
-		border: 1px solid var(--mat-sys-outline-variant);
-		border-radius: 0.5rem;
-		color: var(--mat-sys-on-surface);
-		transition: border-color 0.2s, box-shadow 0.2s;
-
-		&::placeholder {
-			color: var(--mat-sys-on-surface-variant);
-			letter-spacing: 0.5rem;
-		}
-
-		&:focus {
-			outline: none;
-			border-color: var(--mat-sys-primary);
-			box-shadow: 0 0 0 2px color-mix(in srgb, var(--mat-sys-primary) 20%, transparent);
-		}
-	}
-
-	.hint {
-		font-size: 0.75rem;
-		color: var(--mat-sys-on-surface-variant);
 		text-align: center;
 	}
 }

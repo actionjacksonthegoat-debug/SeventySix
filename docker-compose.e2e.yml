@@ -10,6 +10,8 @@
 # - PostgreSQL: 5434 (dev: 5433)
 # - Valkey: 6380 (dev: 6379)
 
+name: seventysix-e2e
+
 services:
     # PostgreSQL - Test Database
     postgres-e2e:

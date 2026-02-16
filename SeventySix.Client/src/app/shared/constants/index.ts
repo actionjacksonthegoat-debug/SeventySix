@@ -7,6 +7,7 @@
  */
 export * from "./accessibility.constants";
 export * from "./altcha.constants";
+export * from "./breakpoint.constants";
 export * from "./error-messages.constants";
 export * from "./health.constants";
 export * from "./http-status.constant";
@@ -19,6 +20,5 @@ export * from "./routes.constants";
 export * from "./skeleton.constants";
 export * from "./storage-keys.constants";
 export * from "./timing.constants";
-export * from "./ui.constants";
 export * from "./validation-error.constants";
 export * from "./validation.constants";

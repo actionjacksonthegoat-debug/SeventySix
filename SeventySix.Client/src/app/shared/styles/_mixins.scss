@@ -192,6 +192,24 @@
 	}
 }
 
+/**
+ * Flex fill column mixin
+ * Makes an element participate in a flex column layout chain, filling available height.
+ * Used by data-table pages to propagate the flex chain from the app shell
+ * down to the cdk-virtual-scroll-viewport.
+ *
+ * @example
+ *   :host {
+ *     @include flex-fill-column();
+ *   }
+ */
+@mixin flex-fill-column() {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	min-height: 0;
+}
+
 // ============================================================================
 // FEATURE PLACEHOLDER CARD
 // ============================================================================

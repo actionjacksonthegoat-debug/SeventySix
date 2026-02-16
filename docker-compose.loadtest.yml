@@ -12,181 +12,183 @@
 # - MailDev Web: 1081 (E2E: 1080)
 # - MailDev SMTP: 1026 (E2E: 1025)
 
+name: seventysix-loadtest
+
 services:
-  # PostgreSQL - Load Test Database
-  postgres-loadtest:
-    image: postgres:18-alpine
-    container_name: seventysix-postgres-loadtest
-    environment:
-      POSTGRES_DB: seventysix_loadtest
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: LoadTest_Password_123
-      PGDATA: /var/lib/postgresql/data
-    ports:
-      - "5435:5432"
-    volumes:
-      - postgres_loadtest_data:/var/lib/postgresql/data
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-    networks:
-      - loadtest-network
+    # PostgreSQL - Load Test Database
+    postgres-loadtest:
+        image: postgres:18-alpine
+        container_name: seventysix-postgres-loadtest
+        environment:
+            POSTGRES_DB: seventysix_loadtest
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: LoadTest_Password_123
+            PGDATA: /var/lib/postgresql/data
+        ports:
+            - "5435:5432"
+        volumes:
+            - postgres_loadtest_data:/var/lib/postgresql/data
+        healthcheck:
+            test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+            interval: 5s
+            timeout: 5s
+            retries: 5
+        networks:
+            - loadtest-network
 
-  # Valkey - Load Test Cache
-  valkey-loadtest:
-    image: valkey/valkey:9.0-alpine
-    container_name: seventysix-valkey-loadtest
-    ports:
-      - "6381:6379"
-    healthcheck:
-      test: [ "CMD", "valkey-cli", "ping" ]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-    networks:
-      - loadtest-network
+    # Valkey - Load Test Cache
+    valkey-loadtest:
+        image: valkey/valkey:9.0-alpine
+        container_name: seventysix-valkey-loadtest
+        ports:
+            - "6381:6379"
+        healthcheck:
+            test: [ "CMD", "valkey-cli", "ping" ]
+            interval: 5s
+            timeout: 5s
+            retries: 5
+        networks:
+            - loadtest-network
 
-  # MailDev - Email Capture
-  maildev-loadtest:
-    image: maildev/maildev:latest
-    container_name: seventysix-maildev-loadtest
-    ports:
-      - "1081:1081" # Web UI
-      - "1026:1026" # SMTP
-    environment:
-      - MAILDEV_SMTP_PORT=1026
-      - MAILDEV_WEB_PORT=1081
-    networks:
-      - loadtest-network
+    # MailDev - Email Capture
+    maildev-loadtest:
+        image: maildev/maildev:latest
+        container_name: seventysix-maildev-loadtest
+        ports:
+            - "1081:1081" # Web UI
+            - "1026:1026" # SMTP
+        environment:
+            - MAILDEV_SMTP_PORT=1026
+            - MAILDEV_WEB_PORT=1081
+        networks:
+            - loadtest-network
 
-  # .NET API - Load Test Environment (HTTPS)
-  api-loadtest:
-    build:
-      context: ./SeventySix.Server
-      dockerfile: SeventySix.Api/Dockerfile
-    container_name: seventysix-api-loadtest
-    ports:
-      - "7175:8081" # HTTPS - Load test isolated port
-    environment:
-      # Core Environment
-      - ASPNETCORE_ENVIRONMENT=E2E
-      - ASPNETCORE_HTTPS_PORTS=8081
-      - ASPNETCORE_Kestrel__Certificates__Default__Password=dev-ssl-password
-      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/dev-certificate.pfx
-      # Database (loadtest isolated)
-      - Database__Host=postgres-loadtest
-      - Database__Port=5432
-      - Database__Name=seventysix_loadtest
-      - Database__User=postgres
-      - Database__Password=LoadTest_Password_123
-      - Database__Maintenance__Enabled=false
-      # Cache (loadtest isolated)
-      - Cache__Valkey__Enabled=true
-      - Cache__Valkey__UseSsl=false
-      - Cache__Valkey__ConnectionString=valkey-loadtest:6379
-      - Cache__OutputCache__Policies__users__Enabled=false
-      - Cache__OutputCache__Policies__logs__Enabled=false
-      - Cache__OutputCache__Policies__health__Enabled=false
-      - Cache__OutputCache__Policies__thirdpartyrequests__Enabled=false
-      # Email (MailDev — no auth required)
-      - Email__Enabled=true
-      - Email__UseSsl=false
-      - Email__SmtpHost=maildev-loadtest
-      - Email__SmtpPort=1026
-      - Email__SmtpUsername=
-      - Email__SmtpPassword=
-      - Email__FromAddress=noreply@loadtest.local
-      - Email__ClientBaseUrl=https://localhost:4202
-      - Email__Queue__Enabled=true
-      - Email__Queue__ProcessingIntervalSeconds=5
-      - Email__Queue__BatchSize=10
-      # JWT (test secret - minimum 64 chars for security)
-      - Jwt__SecretKey=nR4tY6uH9bE3dF5gA1cZ0iL8oS2wX4nM7qJ6kR9pT3uV5yBxK7mQ2pWvN8jzD2fH4j
-      # Seeders
-      - AdminSeeder__Enabled=true
-      - AdminSeeder__InitialPassword=SecureE2ETestPassword123!
-      - E2ESeeder__Enabled=true
-      # Background Jobs
-      - BackgroundJobs__Enabled=true
-      # MFA (disabled — simplifies load test auth flow)
-      - Mfa__Enabled=false
-      - Mfa__RequiredForAllUsers=false
-      # Security
-      - Security__EnforceHttps=true
-      - Security__HstsIncludeSubdomains=false
-      - Security__AllowHttpForHealthChecks=false
-      - Security__AllowHttpForMetrics=false
-      - Security__AllowHttpForOpenApi=false
-      # Auth
-      - Auth__Lockout__Enabled=true
-      - Auth__Cookie__SecureCookie=true
-      - Auth__Cookie__SameSiteLax=true
-      - Auth__Token__DisableRotation=false
-      - Auth__BreachedPassword__Enabled=false
-      - Auth__BreachedPassword__BlockBreachedPasswords=false
-      # ALTCHA (disabled — CPU-bound PoW not suitable for load testing)
-      - Altcha__Enabled=false
-      # Rate Limiting (disabled — load tests measure app performance, not rate limiter)
-      - RateLimiting__Enabled=false
-      # OAuth (placeholder values)
-      - Auth__OAuth__Providers__0__ClientId=loadtest-github-client-id
-      - Auth__OAuth__Providers__0__ClientSecret=loadtest-github-client-secret
-      # Runtime stability
-      - DOTNET_EnableDiagnostics=0
-      - OpenTelemetry__Enabled=false
-      - ResponseCompression__Enabled=false
-      - Logging__Cleanup__Enabled=false
-      - ThirdPartyApiLimits__Enabled=false
-      # Health
-      - HealthChecks__Enabled=true
-      # CORS
-      - Cors__AllowedOrigins__0=https://localhost:4202
-    volumes:
-      - ./SeventySix.Client/ssl:/https:ro
-    depends_on:
-      postgres-loadtest:
-        condition: service_healthy
-      valkey-loadtest:
-        condition: service_healthy
-      maildev-loadtest:
-        condition: service_started
-    healthcheck:
-      test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "--no-check-certificate", "https://localhost:8081/health" ]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 30s
-    networks:
-      - loadtest-network
+    # .NET API - Load Test Environment (HTTPS)
+    api-loadtest:
+        build:
+            context: ./SeventySix.Server
+            dockerfile: SeventySix.Api/Dockerfile
+        container_name: seventysix-api-loadtest
+        ports:
+            - "7175:8081" # HTTPS - Load test isolated port
+        environment:
+            # Core Environment
+            - ASPNETCORE_ENVIRONMENT=E2E
+            - ASPNETCORE_HTTPS_PORTS=8081
+            - ASPNETCORE_Kestrel__Certificates__Default__Password=dev-ssl-password
+            - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/dev-certificate.pfx
+            # Database (loadtest isolated)
+            - Database__Host=postgres-loadtest
+            - Database__Port=5432
+            - Database__Name=seventysix_loadtest
+            - Database__User=postgres
+            - Database__Password=LoadTest_Password_123
+            - Database__Maintenance__Enabled=false
+            # Cache (loadtest isolated)
+            - Cache__Valkey__Enabled=true
+            - Cache__Valkey__UseSsl=false
+            - Cache__Valkey__ConnectionString=valkey-loadtest:6379
+            - Cache__OutputCache__Policies__users__Enabled=false
+            - Cache__OutputCache__Policies__logs__Enabled=false
+            - Cache__OutputCache__Policies__health__Enabled=false
+            - Cache__OutputCache__Policies__thirdpartyrequests__Enabled=false
+            # Email (MailDev — no auth required)
+            - Email__Enabled=true
+            - Email__UseSsl=false
+            - Email__SmtpHost=maildev-loadtest
+            - Email__SmtpPort=1026
+            - Email__SmtpUsername=
+            - Email__SmtpPassword=
+            - Email__FromAddress=noreply@loadtest.local
+            - Email__ClientBaseUrl=https://localhost:4202
+            - Email__Queue__Enabled=true
+            - Email__Queue__ProcessingIntervalSeconds=5
+            - Email__Queue__BatchSize=10
+            # JWT (test secret - minimum 64 chars for security)
+            - Jwt__SecretKey=nR4tY6uH9bE3dF5gA1cZ0iL8oS2wX4nM7qJ6kR9pT3uV5yBxK7mQ2pWvN8jzD2fH4j
+            # Seeders
+            - AdminSeeder__Enabled=true
+            - AdminSeeder__InitialPassword=SecureE2ETestPassword123!
+            - E2ESeeder__Enabled=true
+            # Background Jobs
+            - BackgroundJobs__Enabled=true
+            # MFA (disabled — simplifies load test auth flow)
+            - Mfa__Enabled=false
+            - Mfa__RequiredForAllUsers=false
+            # Security
+            - Security__EnforceHttps=true
+            - Security__HstsIncludeSubdomains=false
+            - Security__AllowHttpForHealthChecks=false
+            - Security__AllowHttpForMetrics=false
+            - Security__AllowHttpForOpenApi=false
+            # Auth
+            - Auth__Lockout__Enabled=true
+            - Auth__Cookie__SecureCookie=true
+            - Auth__Cookie__SameSiteLax=true
+            - Auth__Token__DisableRotation=false
+            - Auth__BreachedPassword__Enabled=false
+            - Auth__BreachedPassword__BlockBreachedPasswords=false
+            # ALTCHA (disabled — CPU-bound PoW not suitable for load testing)
+            - Altcha__Enabled=false
+            # Rate Limiting (disabled — load tests measure app performance, not rate limiter)
+            - RateLimiting__Enabled=false
+            # OAuth (placeholder values)
+            - Auth__OAuth__Providers__0__ClientId=loadtest-github-client-id
+            - Auth__OAuth__Providers__0__ClientSecret=loadtest-github-client-secret
+            # Runtime stability
+            - DOTNET_EnableDiagnostics=0
+            - OpenTelemetry__Enabled=false
+            - ResponseCompression__Enabled=false
+            - Logging__Cleanup__Enabled=false
+            - ThirdPartyApiLimits__Enabled=false
+            # Health
+            - HealthChecks__Enabled=true
+            # CORS
+            - Cors__AllowedOrigins__0=https://localhost:4202
+        volumes:
+            - ./SeventySix.Client/ssl:/https:ro
+        depends_on:
+            postgres-loadtest:
+                condition: service_healthy
+            valkey-loadtest:
+                condition: service_healthy
+            maildev-loadtest:
+                condition: service_started
+        healthcheck:
+            test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "--no-check-certificate", "https://localhost:8081/health" ]
+            interval: 10s
+            timeout: 5s
+            retries: 10
+            start_period: 30s
+        networks:
+            - loadtest-network
 
-  # Angular Client - Load Test Build (HTTPS)
-  client-loadtest:
-    build:
-      context: ./SeventySix.Client
-      dockerfile: Dockerfile.e2e
-    container_name: seventysix-client-loadtest
-    ports:
-      - "4202:8443" # HTTPS - Load test isolated port
-    volumes:
-      - ./SeventySix.Client/ssl:/etc/nginx/ssl:ro
-    depends_on:
-      api-loadtest:
-        condition: service_healthy
-    healthcheck:
-      test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "--no-check-certificate", "https://localhost:8443/" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
-    networks:
-      - loadtest-network
+    # Angular Client - Load Test Build (HTTPS)
+    client-loadtest:
+        build:
+            context: ./SeventySix.Client
+            dockerfile: Dockerfile.e2e
+        container_name: seventysix-client-loadtest
+        ports:
+            - "4202:8443" # HTTPS - Load test isolated port
+        volumes:
+            - ./SeventySix.Client/ssl:/etc/nginx/ssl:ro
+        depends_on:
+            api-loadtest:
+                condition: service_healthy
+        healthcheck:
+            test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "--no-check-certificate", "https://localhost:8443/" ]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+            start_period: 10s
+        networks:
+            - loadtest-network
 
 networks:
-  loadtest-network:
-    name: seventysix-loadtest-network
+    loadtest-network:
+        name: seventysix-loadtest-network
 
 volumes:
-  postgres_loadtest_data:
-    name: seventysix_postgres_loadtest_data
+    postgres_loadtest_data:
+        name: seventysix_postgres_loadtest_data

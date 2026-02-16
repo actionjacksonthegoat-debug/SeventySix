@@ -28,6 +28,30 @@ if (typeof window !== "undefined")
 	// Mock window.open to prevent navigation during tests
 	window.open =
 		vi.fn();
+
+	// Mock window.matchMedia for test environments that lack it natively.
+	// Uses the modern addEventListener/removeEventListener API only.
+	// No deprecated addListener/removeListener.
+	if (typeof window.matchMedia === "undefined")
+	{
+		Object.defineProperty(
+			window,
+			"matchMedia",
+			{
+				writable: true,
+				value: vi.fn()
+					.mockImplementation(
+						(query: string) =>
+							({
+								matches: false,
+								media: query,
+								onchange: null,
+								addEventListener: vi.fn(),
+								removeEventListener: vi.fn(),
+								dispatchEvent: vi.fn()
+							}))
+			});
+	}
 }
 
 setupTestBed(

@@ -2,11 +2,20 @@
 @use "mixins" as mixins;
 @use "skeleton";
 
+:host {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	min-height: 0;
+	overflow: hidden;
+}
+
 .data-table-container {
 	display: flex;
 	flex-direction: column;
+	flex: 1;
+	min-height: 0;
 	gap: 0;
-	height: 100%;
 }
 
 .table-toolbar {
@@ -135,6 +144,7 @@
 	min-height: vars.$cls-table-min-height;
 	display: flex;
 	flex-direction: column;
+	flex: 1;
 
 	.error-overlay {
 		@include mixins.cls-loading-overlay();
@@ -144,12 +154,16 @@
 .table-wrapper {
 	overflow: hidden;
 	flex: 1;
+	min-height: 0;
+	display: flex;
+	flex-direction: column;
 
 	.table-viewport {
+		flex: 1;
+		min-height: vars.$cls-table-min-height;
 		overflow-y: auto;
 		width: 100%;
 		@include vars.custom-scrollbar();
-		// Height managed by appTableHeight directive
 	}
 }
 

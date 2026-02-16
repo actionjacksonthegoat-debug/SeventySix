@@ -204,7 +204,8 @@ test.describe("Login Page",
 					async ({ page }) =>
 					{
 						const rememberMe: Locator =
-							page.locator(SELECTORS.form.rememberMeCheckbox);
+							page.locator(SELECTORS.form.rememberMeCheckbox)
+								.locator("input");
 
 						await expect(rememberMe)
 							.not.toBeChecked();
@@ -216,9 +217,9 @@ test.describe("Login Page",
 						const rememberMe: Locator =
 							page.locator(SELECTORS.form.rememberMeCheckbox);
 
-						await rememberMe.check();
+						await rememberMe.click();
 
-						await expect(rememberMe)
+						await expect(rememberMe.locator("input"))
 							.toBeChecked();
 					});
 

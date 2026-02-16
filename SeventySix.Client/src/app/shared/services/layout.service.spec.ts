@@ -1,31 +1,127 @@
-import { BreakpointObserver } from "@angular/cdk/layout";
+import { APP_BREAKPOINTS } from "@shared/constants";
 import { setupSimpleServiceTest } from "@shared/testing";
-import { of } from "rxjs";
 import { Mock, vi } from "vitest";
 import { LayoutService } from "./layout.service";
 
-interface MockBreakpointObserver
+/**
+ * In-memory MediaQueryList stub supporting the modern
+ * `addEventListener('change', ...)` API.
+ * Call `setMatches(value)` to simulate a viewport change.
+ */
+class MockMediaQueryList
 {
-	observe: Mock;
+	matches: boolean;
+	readonly media: string;
+	onchange: ((this: MediaQueryList, ev: MediaQueryListEvent) => unknown) | null =
+		null;
+
+	private readonly listeners: ((event: MediaQueryListEvent) => void)[] =
+		[];
+
+	constructor(
+		query: string,
+		initialMatches: boolean = false)
+	{
+		this.media =
+			query;
+		this.matches =
+			initialMatches;
+	}
+
+	addEventListener(
+		_type: string,
+		handler: (event: MediaQueryListEvent) => void): void
+	{
+		this.listeners.push(handler);
+	}
+
+	removeEventListener(
+		_type: string,
+		handler: (event: MediaQueryListEvent) => void): void
+	{
+		const index: number =
+			this.listeners.indexOf(handler);
+		if (index !== -1)
+		{
+			this.listeners.splice(
+				index,
+				1);
+		}
+	}
+
+	dispatchEvent(): boolean
+	{
+		return true;
+	}
+
+	/**
+	 * Simulate a viewport change.
+	 * @param {boolean} value
+	 * Whether its media query now matches.
+	 */
+	setMatches(value: boolean): void
+	{
+		this.matches =
+			value;
+		const event: MediaQueryListEvent =
+			{ matches: value, media: this.media } as MediaQueryListEvent;
+		for (const listener of this.listeners)
+		{
+			listener(event);
+		}
+	}
 }
 
 describe("LayoutService",
 	() =>
 	{
 		let service: LayoutService;
-		let mockBreakpointObserver: MockBreakpointObserver;
 		let sessionStorageSetItemSpy: Mock<(key: string, value: string) => void>;
+		let mockQueryLists: Map<string, MockMediaQueryList>;
+
+		/**
+		 * Set up mock matchMedia so each query gets its own MockMediaQueryList.
+		 */
+		function setupMatchMediaMock(
+			defaults: Record<string, boolean> = {}): void
+		{
+			mockQueryLists =
+				new Map();
+
+			Object.defineProperty(
+				window,
+				"matchMedia",
+				{
+					writable: true,
+					value: vi.fn()
+						.mockImplementation(
+							(query: string) =>
+							{
+								const existing: MockMediaQueryList | undefined =
+									mockQueryLists.get(query);
+								if (existing)
+								{
+									return existing;
+								}
+
+								const initialMatch: boolean =
+									defaults[query] ?? false;
+								const mediaQueryList: MockMediaQueryList =
+									new MockMediaQueryList(
+										query,
+										initialMatch);
+								mockQueryLists.set(
+									query,
+									mediaQueryList);
+								return mediaQueryList;
+							})
+				});
+		}
 
 		beforeEach(
 			() =>
 			{
-				mockBreakpointObserver =
-					{
-						observe: vi.fn()
-					};
-				mockBreakpointObserver.observe.mockReturnValue(
-					of(
-						{ matches: false, breakpoints: {} }));
+				setupMatchMediaMock();
 
 				// Create spy functions for sessionStorage
 				sessionStorageSetItemSpy =
@@ -51,13 +147,7 @@ describe("LayoutService",
 					});
 
 				service =
-					setupSimpleServiceTest(LayoutService,
-						[
-							{
-								provide: BreakpointObserver,
-								useValue: mockBreakpointObserver
-							}
-						]);
+					setupSimpleServiceTest(LayoutService);
 			});
 
 		it("should be created",
@@ -65,6 +155,53 @@ describe("LayoutService",
 			{
 				expect(service)
 					.toBeTruthy();
+			});
+
+		describe("breakpoint signals",
+			() =>
+			{
+				it("should report isMobile when XSmall matches",
+					() =>
+					{
+						const xsmallMql: MockMediaQueryList | undefined =
+							mockQueryLists.get(APP_BREAKPOINTS.XSmall);
+						xsmallMql?.setMatches(true);
+
+						expect(service.isMobile())
+							.toBe(true);
+						expect(service.isBelowLaptop())
+							.toBe(true);
+						expect(service.sidebarMode())
+							.toBe("over");
+					});
+
+				it("should report isLaptop when Medium matches",
+					() =>
+					{
+						const mediumMql: MockMediaQueryList | undefined =
+							mockQueryLists.get(APP_BREAKPOINTS.Medium);
+						mediumMql?.setMatches(true);
+
+						expect(service.isLaptop())
+							.toBe(true);
+						expect(service.isLaptopOrLarger())
+							.toBe(true);
+						expect(service.sidebarMode())
+							.toBe("side");
+					});
+
+				it("should report isDesktop when Large matches",
+					() =>
+					{
+						const largeMql: MockMediaQueryList | undefined =
+							mockQueryLists.get(APP_BREAKPOINTS.Large);
+						largeMql?.setMatches(true);
+
+						expect(service.isDesktop())
+							.toBe(true);
+						expect(service.isLaptopOrLarger())
+							.toBe(true);
+					});
 			});
 
 		describe("toggleSidebar",

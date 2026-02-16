@@ -48,6 +48,12 @@ public class ApplicationUserConfiguration : IEntityTypeConfiguration<Application
 			.HasDefaultValue(false)
 			.IsRequired();
 
+		builder
+			.Property(user => user.MfaEnabled)
+			.HasColumnType("boolean")
+			.HasDefaultValue(true)
+			.IsRequired();
+
 		// TOTP fields
 		builder
 			.Property(user => user.TotpSecret)

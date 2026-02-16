@@ -1,3 +1,6 @@
 @use "variables" as vars;
+@use "mixins" as mixins;
 
-// LogList uses DataTableComponent - all styling handled by data-table component
+:host {
+	@include mixins.flex-fill-column();
+}

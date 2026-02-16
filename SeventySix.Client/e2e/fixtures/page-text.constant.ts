@@ -167,7 +167,7 @@ export const PAGE_TEXT =
 			{
 				usernameOrEmail: "Username or Email",
 				password: "Password",
-				rememberMe: "Remember me",
+				rememberMe: "Stay signed in",
 				emailAddress: "Email Address",
 				roleSelection: "Role selection"
 			},
@@ -311,8 +311,7 @@ export const PAGE_TEXT =
 		 */
 		sandbox:
 			{
-				title: "Sandbox",
-				description: "experimentation area for testing new features"
+				title: "Hello World"
 			},
 
 		/**

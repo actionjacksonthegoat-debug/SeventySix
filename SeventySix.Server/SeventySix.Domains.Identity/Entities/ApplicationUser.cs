@@ -82,9 +82,10 @@ public class ApplicationUser : IdentityUser<long>, IAuditableEntity
 	/// Gets or sets whether multi-factor authentication is enabled for this user.
 	/// </summary>
 	/// <remarks>
-	/// When enabled, user must complete MFA verification after password authentication.
+	/// Defaults to true (security-first). When RequiredForAllUsers is false,
+	/// this per-user flag determines whether MFA is required after password authentication.
 	/// </remarks>
-	public bool MfaEnabled { get; set; } = false;
+	public bool MfaEnabled { get; set; } = true;
 
 	/// <summary>
 	/// Gets or sets the TOTP authenticator secret (encrypted at rest).
