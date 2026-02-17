@@ -105,4 +105,16 @@ public class ThirdPartyApiRequest : IModifiableEntity
 	{
 		CallCount = 0;
 	}
+
+	/// <summary>
+	/// Decrements the call counter for rollback scenarios (e.g., SMTP send failure).
+	/// If CallCount is already 0, this is a no-op.
+	/// </summary>
+	public void DecrementCallCount()
+	{
+		if (CallCount > 0)
+		{
+			CallCount--;
+		}
+	}
 }

@@ -268,6 +268,12 @@ public static class IdentityRegistration
 			.ValidateWithFluentValidation()
 			.ValidateOnStart();
 
+		// Register OAuth strategies (Singleton — stateless, IHttpClientFactory is Singleton-compatible)
+		services.AddSingleton<IOAuthProviderStrategy, GitHubOAuthStrategy>();
+		// Future providers: services.AddSingleton<IOAuthProviderStrategy, GoogleOAuthStrategy>();
+
+		services.AddSingleton<OAuthProviderFactory>();
+
 		services.AddScoped<OAuthService>();
 		services.AddScoped<IOAuthService>(
 			serviceProvider =>

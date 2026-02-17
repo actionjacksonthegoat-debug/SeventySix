@@ -80,7 +80,7 @@
 	}
 
 	.dropdown-arrow {
-		margin-left: -4px;
+		margin-left: calc(-1 * vars.$spacing-xs);
 	}
 }
 
@@ -185,19 +185,17 @@
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
-	padding: 48px 16px;
+	padding: vars.$spacing-3xl vars.$spacing-lg;
 	color: var(--mat-sys-on-surface-variant);
-	gap: 8px;
+	gap: vars.$spacing-sm;
 
 	mat-icon {
-		font-size: 48px;
-		width: 48px;
-		height: 48px;
+		@include mixins.icon-size(vars.$icon-size-xl);
 		opacity: 0.5;
 	}
 
 	p {
 		margin: 0;
-		font-size: 14px;
+		font-size: vars.$font-size-base;
 	}
 }

@@ -12,6 +12,8 @@ import {
 	provideBrowserGlobalErrorListeners,
 	provideZonelessChangeDetection
 } from "@angular/core";
+import { MatIconRegistry } from "@angular/material/icon";
+import { DomSanitizer } from "@angular/platform-browser";
 import { provideAnimationsAsync } from "@angular/platform-browser/animations/async";
 import {
 	provideRouter,
@@ -42,6 +44,7 @@ import {
 	ThemeService,
 	WebVitalsService
 } from "@shared/services";
+import { registerOAuthIcons } from "@shared/utilities/oauth-icons.utility";
 import { Observable } from "rxjs";
 import { routes } from "./app.routes";
 
@@ -94,6 +97,20 @@ function initializeAuth(): Observable<AuthResponse | null>
 }
 
 /**
+ * Register OAuth provider SVG icons with the Material icon registry.
+ * Must run before any component references these icons.
+ */
+function initializeOAuthIcons(): Promise<void>
+{
+	const iconRegistry: MatIconRegistry =
+		inject(MatIconRegistry);
+	const sanitizer: DomSanitizer =
+		inject(DomSanitizer);
+	registerOAuthIcons(iconRegistry, sanitizer);
+	return Promise.resolve();
+}
+
+/**
  * Global application configuration for Angular `ApplicationConfig`.
  * Registers providers: TanStack Query, HTTP interceptors, router, APP_INITIALIZER hooks, and debug/production services.
  */
@@ -102,6 +119,7 @@ const appInitializers: ReturnType<typeof provideAppInitializer>[] =
 		provideAppInitializer(initializeTheme),
 		provideAppInitializer(initializeTelemetry),
 		provideAppInitializer(initializeWebVitals),
+		provideAppInitializer(initializeOAuthIcons),
 		provideAppInitializer(initializeAuth)
 	];
 

@@ -10,7 +10,8 @@ export const AUTH_ENDPOINTS =
 			LOGIN: "/auth/login",
 			LOGOUT: "/auth/logout",
 			REFRESH: "/auth/refresh",
-			REGISTER_INITIATE: "/auth/register/initiate"
+			REGISTER_INITIATE: "/auth/register/initiate",
+			OAUTH_GITHUB: "/auth/oauth/github"
 		});
 
 /** User endpoints. */

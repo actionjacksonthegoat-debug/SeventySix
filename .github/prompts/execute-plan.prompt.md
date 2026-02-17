@@ -37,3 +37,5 @@ After the final phase, run all required test suites and confirm they pass:
 - E2E and load tests CAN run in parallel to save time
 - If infrastructure is not running, **start it** — do not skip the suite
 - Never claim "done" without running and passing all required test suites
+- Use `--keepalive` for iterative E2E debugging: `npm run test:e2e -- --keepalive`
+- E2E and load tests run in **fully isolated Docker environments** — no dev environment needed

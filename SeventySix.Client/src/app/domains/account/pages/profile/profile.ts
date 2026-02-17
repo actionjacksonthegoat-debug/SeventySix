@@ -18,6 +18,7 @@ import {
 import { MatButtonModule } from "@angular/material/button";
 import { MatCardModule } from "@angular/material/card";
 import { MatFormFieldModule } from "@angular/material/form-field";
+import { MatIconModule } from "@angular/material/icon";
 import { MatInputModule } from "@angular/material/input";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { RouterLink } from "@angular/router";
@@ -32,7 +33,13 @@ import {
 	EMAIL_VALIDATION,
 	FULL_NAME_VALIDATION
 } from "@shared/constants/validation.constants";
-import { NotificationService } from "@shared/services";
+import { AuthService, NotificationService } from "@shared/services";
+import {
+	ExternalLoginDto,
+	OAUTH_PROVIDERS,
+	OAuthProvider,
+	OAuthProviderMetadata
+} from "@shared/services/auth.types";
 import { getValidationError } from "@shared/utilities";
 import { NgxSkeletonLoaderModule } from "ngx-skeleton-loader";
 
@@ -46,6 +53,7 @@ import { NgxSkeletonLoaderModule } from "ngx-skeleton-loader";
 			MatInputModule,
 			MatButtonModule,
 			MatCardModule,
+			MatIconModule,
 			MatProgressSpinnerModule,
 			RouterLink,
 			NgxSkeletonLoaderModule
@@ -87,6 +95,13 @@ export class ProfilePage
 		inject(NotificationService);
 
 	/**
+	 * Auth service for initiating OAuth link flows.
+	 * @type {AuthService}
+	 */
+	private readonly authService: AuthService =
+		inject(AuthService);
+
+	/**
 	 * Query for loading the current user's profile (contains data/isLoading/error).
 	 * @type {ReturnType<typeof this.accountService.getProfile>}
 	 */
@@ -108,6 +123,38 @@ export class ProfilePage
 		this
 			.accountService
 			.getAvailableRoles();
+
+	/**
+	 * Query for fetching linked external OAuth logins.
+	 * @type {ReturnType<typeof this.accountService.getExternalLogins>}
+	 */
+	readonly externalLoginsQuery: ReturnType<typeof this.accountService.getExternalLogins> =
+		this
+			.accountService
+			.getExternalLogins();
+
+	/**
+	 * Mutation for unlinking an external OAuth provider.
+	 * @type {ReturnType<typeof this.accountService.unlinkProvider>}
+	 */
+	readonly unlinkMutation: ReturnType<typeof this.accountService.unlinkProvider> =
+		this
+			.accountService
+			.unlinkProvider();
+
+	/**
+	 * Configured OAuth providers for rendering linked accounts section.
+	 * @type {readonly OAuthProviderMetadata[]}
+	 */
+	readonly oauthProviders: readonly OAuthProviderMetadata[] =
+		OAUTH_PROVIDERS;
+
+	/**
+	 * Whether an OAuth link/unlink operation is in progress.
+	 * @type {Signal<boolean>}
+	 */
+	readonly isOAuthInProgress: Signal<boolean> =
+		this.authService.isOAuthInProgress;
 
 	// Skeleton theme constants
 	/**
@@ -176,6 +223,22 @@ export class ProfilePage
 				const roles: AvailableRoleDto[] | undefined =
 					this.availableRolesQuery.data();
 				return (roles?.length ?? 0) > 0;
+			});
+
+	/**
+	 * Whether the user can safely unlink an external provider.
+	 * Prevents lockout when user has no password and only one linked provider.
+	 * @type {Signal<boolean>}
+	 */
+	readonly canUnlink: Signal<boolean> =
+		computed(
+			() =>
+			{
+				const logins: ExternalLoginDto[] | undefined =
+					this.externalLoginsQuery.data();
+				const hasPassword: boolean =
+					this.profile()?.hasPassword ?? false;
+				return hasPassword || (logins?.length ?? 0) > 1;
 			});
 
 	/**
@@ -263,7 +326,7 @@ export class ProfilePage
 		const request: UpdateProfileRequest =
 			{
 				email: this.profileForm.value.email,
-				fullName: this.profileForm.value.fullName || undefined
+				fullName: this.profileForm.value.fullName ?? undefined
 			};
 
 		try
@@ -275,6 +338,54 @@ export class ProfilePage
 		catch
 		{
 			this.notificationService.error("Failed to update profile");
+		}
+	}
+
+	/**
+	 * Computed set of linked provider IDs (lowercase) for O(1) template lookups.
+	 * @type {Signal<Set<string>>}
+	 */
+	readonly linkedProviderIds: Signal<Set<string>> =
+		computed(
+			() =>
+			{
+				const logins: ExternalLoginDto[] | undefined =
+					this.externalLoginsQuery.data();
+				return new Set(
+					logins?.map(
+						(login: ExternalLoginDto) =>
+							login.provider.toLowerCase()) ?? []);
+			});
+
+	/**
+	 * Initiates the OAuth link flow for the given provider.
+	 * @param {OAuthProvider} provider
+	 * The provider to link.
+	 * @returns {void}
+	 */
+	onLinkProvider(provider: OAuthProvider): void
+	{
+		this.authService.linkProvider(provider);
+	}
+
+	/**
+	 * Unlinks the given provider from the current account.
+	 * @param {string} provider
+	 * The provider name to unlink.
+	 * @returns {Promise<void>}
+	 */
+	async onUnlinkProvider(provider: string): Promise<void>
+	{
+		try
+		{
+			await this.unlinkMutation.mutateAsync(provider);
+			this.notificationService.success(
+				`Disconnected ${provider}`);
+		}
+		catch
+		{
+			this.notificationService.error(
+				`Failed to disconnect ${provider}`);
 		}
 	}
 }

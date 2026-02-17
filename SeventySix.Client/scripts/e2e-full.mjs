@@ -15,8 +15,20 @@ const DOCKER_COMPOSE_FILE =
 	"../docker-compose.e2e.yml";
 
 /**
+ * When true, skips teardown so the E2E environment stays running for
+ * Playwright MCP debugging against https://localhost:4201.
+ *
+ * Usage:
+ *   npm run test:e2e -- --keepalive
+ *   npm run test:e2e -- --keepalive specs/auth/login.spec.ts
+ */
+const KEEP_ALIVE =
+	process.argv.includes("--keepalive");
+
+/**
  * Collects extra CLI arguments passed after `--` and forwards them to Playwright.
  * Supports --grep, --project, and spec file paths.
+ * Filters out the --keepalive flag so Playwright does not receive it.
  *
  * Usage examples:
  *   npm run test:e2e -- --grep "Login Page"
@@ -26,7 +38,10 @@ const DOCKER_COMPOSE_FILE =
  *   npm run test:e2e -- --grep "RBAC" --project=admin
  */
 const EXTRA_PLAYWRIGHT_ARGS =
-	process.argv.slice(2).join(" ");
+	process.argv
+		.slice(2)
+		.filter(arg => arg !== "--keepalive")
+		.join(" ");
 
 // Certificate path for proper SSL validation (matches dev environment)
 const scriptDirectory =
@@ -273,15 +288,29 @@ function main()
 		}
 	}
 
-	// Teardown phase (ALWAYS runs)
-	console.log("\nRunning teardown (always executed)...\n");
+	// Teardown phase (skipped in keepalive mode)
+	let teardownExitCode =
+		0;
 
-	const teardownExitCode =
-		teardown();
-
-	if (teardownExitCode !== 0)
+	if (KEEP_ALIVE)
 	{
-		console.error("\n[WARN] Teardown encountered issues\n");
+		console.log("\n" + "=".repeat(60));
+		console.log("  KEEPALIVE MODE — Skipping teardown");
+		console.log("  E2E environment remains running at https://localhost:4201");
+		console.log("  Manual cleanup: docker compose -f docker-compose.e2e.yml down -v --remove-orphans");
+		console.log("=" .repeat(60) + "\n");
+	}
+	else
+	{
+		console.log("\nRunning teardown (always executed)...\n");
+
+		teardownExitCode =
+			teardown();
+
+		if (teardownExitCode !== 0)
+		{
+			console.error("\n[WARN] Teardown encountered issues\n");
+		}
 	}
 
 	// Report final results
@@ -290,7 +319,7 @@ function main()
 	console.log("=".repeat(60));
 	console.log(`  Setup:    ${setupExitCode === 0 ? "[PASS]" : "[FAIL]"}`);
 	console.log(`  Tests:    ${testExitCode === 0 ? "[PASS]" : "[FAIL]"}`);
-	console.log(`  Teardown: ${teardownExitCode === 0 ? "[PASS]" : "[WARN] Issues"}`);
+	console.log(`  Teardown: ${KEEP_ALIVE ? "[SKIP] KeepAlive" : teardownExitCode === 0 ? "[PASS]" : "[WARN] Issues"}`);
 	console.log("=".repeat(60) + "\n");
 
 	// Set exit code and let Node.js exit naturally after the event loop drains.

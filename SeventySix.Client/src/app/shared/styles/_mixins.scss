@@ -830,6 +830,146 @@
 }
 
 // ============================================================================
+// AUTH PAGE MIXINS
+// ============================================================================
+
+/// Auth page centered container.
+/// Apply to the outer container class in auth page components.
+@mixin auth-page-container() {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	min-height: 100%;
+	padding: vars.$spacing-lg;
+	background: var(--mat-app-background-color);
+}
+
+/// Auth page card.
+/// Apply to the card class in auth page components.
+/// @param {Length} $max-width - Card max width (default: 25rem / 400px)
+/// @param {Length} $card-padding - Card internal padding (default: $spacing-2xl)
+@mixin auth-page-card($max-width: vars.$container-width-xs, $card-padding: vars.$spacing-2xl) {
+	width: 100%;
+	max-width: $max-width;
+	padding: $card-padding;
+	background: var(--mat-sys-surface);
+	border-radius: vars.$border-radius-xl;
+	box-shadow: var(--mat-sys-level2);
+}
+
+/// Auth page card heading.
+/// Standard heading style for auth card titles.
+@mixin auth-page-heading() {
+	margin: 0 0 vars.$spacing-xl;
+	font-size: vars.$font-size-xxl;
+	font-weight: vars.$font-weight-medium;
+	text-align: center;
+	color: var(--mat-sys-on-surface);
+}
+
+/// Full-width Material form fields.
+/// Common pattern for auth forms and card-based forms.
+@mixin form-field-full-width() {
+	mat-form-field {
+		width: 100%;
+	}
+}
+
+/// Inline loading spinner.
+/// Animated circular spinner for inline loading states.
+/// @param {Length} $size - Spinner diameter (default: $icon-size-lg / 32px)
+/// @param {Length} $border-width - Border thickness (default: 3px)
+@mixin inline-spinner($size: vars.$icon-size-lg, $border-width: 3px) {
+	width: $size;
+	height: $size;
+	border: $border-width solid var(--mat-sys-outline-variant);
+	border-top-color: var(--mat-sys-primary);
+	border-radius: vars.$border-radius-full;
+	animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+/// Auth status message box (error or success).
+/// Colored box with icon + text for inline feedback.
+/// @param {String} $type - Message type: "error" or "success"
+@mixin auth-status-message($type: "error") {
+	display: flex;
+	align-items: center;
+	gap: vars.$spacing-sm;
+	padding: vars.$spacing-md;
+	border-radius: vars.$border-radius-base;
+	font-size: vars.$font-size-sm;
+
+	@if $type == "error" {
+		background-color: var(--color-error-surface);
+		color: var(--color-error);
+	} @else if $type == "success" {
+		background-color: var(--color-success-surface);
+		color: var(--color-success);
+	}
+
+	mat-icon {
+		@include icon-size(vars.$icon-size-sm);
+		flex-shrink: 0;
+	}
+}
+
+/// Auth next-steps instructional list.
+/// Numbered or bulleted instruction list after a success state.
+@mixin auth-next-steps() {
+	text-align: left;
+	width: 100%;
+
+	h3 {
+		margin: 0 0 vars.$spacing-md;
+		font-size: vars.$font-size-base;
+		font-weight: vars.$font-weight-medium;
+	}
+
+	ol,
+	ul {
+		margin: 0;
+		padding-left: vars.$spacing-xl;
+		display: flex;
+		flex-direction: column;
+		gap: vars.$spacing-sm;
+
+		li {
+			font-size: vars.$font-size-sm;
+			color: var(--mat-sys-on-surface-variant);
+		}
+	}
+}
+
+/// Admin dashboard table card layout.
+/// Card with header and scrollable table body.
+/// @param {Number} $visible-rows - Number of visible rows before scroll
+/// @param {Length} $row-height - Height per row (default: $table-row-height)
+/// @param {Length} $header-height - Table header height (default: $table-header-height)
+@mixin admin-table-card-layout($visible-rows: 4, $row-height: vars.$table-row-height, $header-height: vars.$table-header-height) {
+	.table-wrapper {
+		max-height: calc(#{$visible-rows} * #{$row-height} + #{$header-height});
+		overflow-y: auto;
+		@include vars.custom-scrollbar();
+	}
+
+	.no-data,
+	.error-container {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: vars.$spacing-xl;
+		color: var(--mat-sys-on-surface-variant);
+		gap: vars.$spacing-sm;
+	}
+}
+
+// ============================================================================
 // LANDING PAGE MIXINS
 // ============================================================================
 

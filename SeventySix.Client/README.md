@@ -353,11 +353,19 @@ npm run format
 
 ### Architecture Tests
 
-`scripts/architecture-tests.mjs` runs before every `npm test` to enforce:
+`scripts/architecture-tests.mjs` runs before every `npm test` to enforce 28 rules across these categories:
 
-- Domain isolation (no cross-domain imports)
-- Shared layer restrictions (shared never imports domains)
-- Import path conventions
+| Category | What's Enforced |
+|----------|----------------|
+| Signal Pattern | `input.required<T>()` / `output<T>()` only — no `@Input()`/`@Output()`; `OnPush` required |
+| Control Flow | `@if`/`@for`/`@switch` only — no structural directives |
+| Dependency Injection | `inject()` function only — no constructor injection |
+| Zoneless | No `NgZone`; no `fakeAsync`/`tick`; `provideZonelessChangeDetection` in all tests |
+| Domain Boundaries | No cross-domain imports; shared independence; route-scoped services |
+| Code Quality | Max 800 lines/file, 50 lines/method, 6 params, 12 public methods; no `!!` or `\\|\\|` null coercion |
+| Date/Time | `DateService` only — no native `new Date()` |
+
+See `scripts/architecture-tests.mjs` for the complete rule set. The server has 25 additional architecture test classes — see the root [README](../README.md#ai-assisted-development-with-architecture-guardrails).\n\n`npm run format` runs ESLint + dprint — see root [README](../README.md#formatting) for the full formatting pipeline.
 
 ### Date/Time Handling (CRITICAL)
 

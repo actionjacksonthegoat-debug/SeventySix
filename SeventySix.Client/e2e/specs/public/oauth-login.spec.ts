@@ -8,7 +8,8 @@ import {
 	SELECTORS,
 	ROUTES,
 	TIMEOUTS,
-	PAGE_TEXT
+	PAGE_TEXT,
+	expectAccessible
 } from "../../fixtures";
 
 /**
@@ -153,5 +154,13 @@ test.describe("OAuth Login (GitHub)",
 					expect(capturedGitHubUrl)
 						.toContain("github.com");
 				}
+			});
+
+		test("should pass accessibility checks on login page with OAuth buttons",
+			async ({ page }) =>
+			{
+				await expectAccessible(
+					page,
+					"OAuth Login");
 			});
 	});

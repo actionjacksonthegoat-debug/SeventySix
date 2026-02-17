@@ -53,14 +53,8 @@
 	// Avoid opacity which reduces contrast ratio unpredictably
 	color: var(--mat-sys-on-surface-variant);
 	letter-spacing: 0.5px;
-	display: block; // Ensure it's always displayed
-	visibility: visible; // Ensure it's always visible
-
-	// Ensure visibility at all breakpoints
-	@media (max-width: vars.$breakpoint-sm-max) {
-		display: block;
-		visibility: visible;
-	}
+	display: block;
+	visibility: visible;
 }
 
 mat-nav-list {

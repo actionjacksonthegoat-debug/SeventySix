@@ -15,6 +15,7 @@
     - [2. PostgreSQL](#2-postgresql)
     - [3. Chrome DevTools](#3-chrome-devtools)
     - [4. Context7](#4-context7)
+	- [5. Playwright](#5-playwright)
 - [How VS Code Uses These Servers](#how-vs-code-uses-these-servers)
 - [Pricing Safety Guarantees](#pricing-safety-guarantees)
 - [Troubleshooting](#troubleshooting)
@@ -32,6 +33,7 @@ graph TD
     Start -->|Screenshots / DevTools| CD["Chrome DevTools MCP"]
     Start -->|Library docs lookup| C7["Context7 MCP"]
     Start -->|k6 load test docs| C7
+    Start -->|E2E test debugging| PW["Playwright MCP"]
     Start -->|E2E test running| CLI["Playwright CLI"]
 ```
 
@@ -47,6 +49,7 @@ graph TD
 | 2   | **PostgreSQL**      | `@modelcontextprotocol/server-postgres` | MIT        | Free forever                | No                    | No                   |
 | 3   | **Chrome DevTools** | `chrome-devtools-mcp`                   | Apache-2.0 | Free forever                | No                    | No                   |
 | 4   | **Context7**        | `@upstash/context7-mcp`                 | MIT        | Free forever (free tier)    | No                    | No                   |
+| 5   | **Playwright**      | `@playwright/mcp`                       | Apache-2.0 | Free forever                | No                    | No                   |
 
 > **Bottom line**: No server requires a credit card. No server has an auto-upgrade path. No server makes metered cloud API calls. If you hit a rate limit, the request simply fails — you are never charged.
 
@@ -212,6 +215,38 @@ Context7 Documentation MCP Server v2.x.x running on stdio
 
 ---
 
+### 5. Playwright
+
+**Purpose**: Browser automation for fine-tuning Playwright E2E test selectors and debugging test failures interactively against the running E2E environment.
+
+**What You Need**:
+
+- The E2E environment running (`npm run test:e2e -- --keepalive`)
+
+**Setup Steps**:
+
+1. The Playwright MCP server is pre-configured in `.vscode/mcp.json`. It launches automatically when used in VS Code Agent mode.
+2. No account, no API key, no browser path configuration needed.
+
+**Usage Workflow**:
+
+1. Start the E2E environment with keepalive: `npm run test:e2e -- --keepalive`
+2. Use Playwright MCP tools in VS Code chat to interact with the running app at `https://localhost:4201`
+3. When done: `docker compose -f docker-compose.e2e.yml down -v --remove-orphans`
+
+**When to Use vs. When NOT to Use**:
+
+| Task | Use Playwright MCP? |
+|------|---------------------|
+| Fine-tune E2E test selectors | Yes |
+| Debug E2E test failures interactively | Yes |
+| Run E2E test suites | No — use `npm run test:e2e` or Playwright CLI |
+| Verify client-side changes | No — use Chrome DevTools MCP |
+
+**Pricing Risk**: **NONE.** Open-source, local execution, no cloud calls, no account.
+
+---
+
 ## How VS Code Uses These Servers
 
 MCP servers are configured in `.vscode/mcp.json` (already committed to the repo). When you open the project in VS Code:
@@ -251,7 +286,7 @@ The `.vscode/mcp.json` file is committed to the repo but contains **zero secrets
 | `new-angular-service.prompt.md` | context7                              |
 | `new-service.prompt.md`         | context7, postgresql                  |
 | `new-feature.prompt.md`         | context7, postgresql                  |
-| `new-e2e-test.prompt.md`        | context7, chrome-devtools             |
+| `new-e2e-test.prompt.md`        | context7, chrome-devtools, playwright     |
 
 ---
 
@@ -277,6 +312,7 @@ The `.vscode/mcp.json` file is committed to the repo but contains **zero secrets
 
 | Chrome DevTools | None (local)             | N/A                                        |
 | PostgreSQL      | None (local)             | N/A                                        |
+| Playwright      | None (local)             | N/A                                        |
 
 **In all cases**: rate limit = request fails. You are **never** billed, charged, or auto-upgraded.
 

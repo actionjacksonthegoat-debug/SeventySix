@@ -10,6 +10,7 @@ import {
 } from "@angular/core";
 import { BaseMutationService } from "@shared/services";
 import { ApiService } from "@shared/services/api.service";
+import { ExternalLoginDto } from "@shared/services/auth.types";
 import { CacheCoordinationService } from "@shared/services/cache-coordination.service";
 import { QueryKeys } from "@shared/utilities/query-keys.utility";
 import {
@@ -105,6 +106,47 @@ export class AccountService extends BaseMutationService
 				this.queryClient.invalidateQueries(
 					{
 						queryKey: QueryKeys.account.availableRoles
+					});
+			});
+	}
+
+	/**
+	 * Query that loads the current user's linked external OAuth logins.
+	 * @returns {CreateQueryResult<ExternalLoginDto[]>}
+	 * Query object with linked providers data and loading state.
+	 */
+	getExternalLogins(): CreateQueryResult<ExternalLoginDto[]>
+	{
+		return injectQuery(
+			() => ({
+				queryKey: QueryKeys.account.externalLogins,
+				queryFn: () =>
+					lastValueFrom(
+						this.apiService.get<ExternalLoginDto[]>("auth/oauth/linked")),
+				...this.queryConfig
+			}));
+	}
+
+	/**
+	 * Mutation to unlink an external OAuth provider from the current user's account.
+	 * Invalidates external logins and profile queries on success.
+	 * @returns {CreateMutationResult<void, Error, string>}
+	 * Mutation that accepts a provider name string.
+	 */
+	unlinkProvider(): CreateMutationResult<void, Error, string>
+	{
+		return this.createMutation<string, void>(
+			(provider: string) =>
+				this.apiService.delete<void>(`auth/oauth/link/${provider}`),
+			() =>
+			{
+				this.queryClient.invalidateQueries(
+					{
+						queryKey: QueryKeys.account.externalLogins
+					});
+				this.queryClient.invalidateQueries(
+					{
+						queryKey: QueryKeys.account.profile
 					});
 			});
 	}

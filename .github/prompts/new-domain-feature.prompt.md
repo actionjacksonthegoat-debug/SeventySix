@@ -21,6 +21,8 @@ Ask user which domain this feature belongs to:
 
 ## Server Structure
 
+> **Note**: Identity features go in `SeventySix.Domains.Identity/` (separate project). All other domains go in `SeventySix.Domains/{Domain}/`.
+
 ```
 SeventySix.Domains/
 └── {{Domain}}/                     # Namespace: SeventySix.{{Domain}}
@@ -83,7 +85,7 @@ public class {{Name}}
         string.Empty;
     public string CreatedBy { get; set; } =
         string.Empty;
-    public DateTime CreatedAt { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
 }
 ```
 
@@ -95,7 +97,7 @@ namespace SeventySix.{{Domain}};
 public record {{Name}}Dto(
     int Id,
     string Name,
-    DateTime CreatedAt);
+    DateTimeOffset CreatedAt);
 ```
 
 ### Wolverine Handler
@@ -241,13 +243,14 @@ export const {{FEATURE}}_ROUTES: Routes =
 
 ### [WARNING] Work Completion Requirements (CRITICAL)
 
-**ALL THREE** test suites must pass for work to be considered complete:
+**ALL FOUR** test suites must pass for work to be considered complete:
 
-| Suite  | Command            | Location                   |
-| ------ | ------------------ | -------------------------- |
-| Server | `dotnet test`      | `SeventySix.Server/Tests/` |
-| Client | `npm test`         | `SeventySix.Client/`       |
-| E2E    | `npm run test:e2e` | `SeventySix.Client/e2e/`   |
+| Suite  | Command                  | Location                   |
+| ------ | ------------------------ | -------------------------- |
+| Server | `dotnet test`            | `SeventySix.Server/Tests/` |
+| Client | `npm test`               | `SeventySix.Client/`       |
+| E2E    | `npm run test:e2e`       | `SeventySix.Client/e2e/`   |
+| Load   | `npm run loadtest:quick` | `SeventySix.Client/load-testing/` |
 
 **Never** mark work complete with failing tests in any suite.
 

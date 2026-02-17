@@ -1,13 +1,17 @@
 # cleanup-ports.ps1
-# Kills any processes (node, dotnet, cmd) holding development/test ports
-# This ensures clean state before starting servers or running E2E tests
+# Kills any processes (node, dotnet, cmd) holding local development ports
+# This ensures clean state before starting dev servers
+#
+# SCOPE: Dev-only. E2E (4201) and LoadTest (4202) ports are Docker containers
+#        managed by their respective compose files — never cleaned here.
 #
 # Usage:
 #   .\scripts\cleanup-ports.ps1
 #   .\scripts\cleanup-ports.ps1 -Quiet
 #
 # Ports cleaned:
-#   5086  - API HTTP (E2E only, non-Docker)
+#   4200  - Angular dev server (ng serve, spawned by start-dev.ps1)
+#   5086  - Legacy API HTTP (no longer used, kept for safety)
 
 param(
 	[switch]$Quiet
@@ -15,8 +19,11 @@ param(
 
 $ErrorActionPreference = "Continue"
 
-# Ports used by E2E environment only (dev ports excluded to avoid killing running dev stack)
-$portsToClean = @(5086)
+# Ports used by local dev processes (NOT Docker containers)
+# - 4200: Angular dev server (ng serve, spawned by start-dev.ps1)
+# - 5086: Legacy API HTTP (no longer used, kept for safety)
+# NEVER add E2E (4201) or LoadTest (4202) — those are Docker containers
+$portsToClean = @(4200, 5086)
 
 # Process names we're allowed to kill (safety - don't kill system processes)
 # Include 'cmd' since Angular is launched via `cmd /k npm start`

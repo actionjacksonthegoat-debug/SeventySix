@@ -6,6 +6,16 @@ applyTo: "**/SeventySix.Client/load-testing/**/*.js"
 
 # Load Testing (Grafana k6)
 
+## Load Test Environment Isolation (CRITICAL)
+
+Load tests run in a **fully isolated Docker environment** (`docker-compose.loadtest.yml`). You do NOT need to start the dev environment (`npm start`) for load tests. The load test scripts handle all infrastructure automatically.
+
+| Environment | Docker Compose File | Ports (DB / Cache / API / Client) |
+|-------------|--------------------|-----------------------------|
+| Dev | `docker-compose.yml` | 5433 / 6379 / 7074 / 4200 |
+| E2E | `docker-compose.e2e.yml` | 5434 / 6380 / 7174 / 4201 |
+| Load Test | `docker-compose.loadtest.yml` | 5435 / 6381 / 7175 / 4202 |
+
 ## File Locations
 
 | Type | Location | Pattern |

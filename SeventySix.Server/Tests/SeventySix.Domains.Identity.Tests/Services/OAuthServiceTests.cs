@@ -2,16 +2,15 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using System.Net;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
-using SeventySix.Shared.Extensions;
+using NSubstitute.ExceptionExtensions;
 using SeventySix.TestUtilities.Builders;
+using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.Mocks;
-using SeventySix.TestUtilities.TestHelpers;
 using Shouldly;
 
 namespace SeventySix.Identity.Tests.Services;
@@ -21,19 +20,19 @@ namespace SeventySix.Identity.Tests.Services;
 /// </summary>
 /// <remarks>
 /// Security-critical tests following 80/20 rule:
-/// - PKCE code challenge generation
-/// - State parameter inclusion (CSRF protection)
-/// - Authorization URL construction
-/// - Token exchange error handling
-/// - User creation security
+/// - Provider delegation via OAuthProviderFactory
+/// - Callback error handling (provider not configured, strategy exceptions)
+/// - Display Name sync on login
+/// - User creation via FindByLoginAsync fallback
 /// </remarks>
 public class OAuthServiceTests
 {
-	private static readonly FakeTimeProvider TimeProvider =
-		new(TestTimeProviderBuilder.DefaultTime);
+	private readonly FakeTimeProvider TimeProvider =
+		TestDates.CreateDefaultTimeProvider();
 
 	private readonly UserManager<ApplicationUser> UserManager;
-	private readonly IHttpClientFactory HttpClientFactory;
+	private readonly OAuthProviderFactory ProviderFactory;
+	private readonly IOAuthProviderStrategy MockStrategy;
 	private readonly IOptions<AuthSettings> AuthSettings;
 	private readonly AuthenticationService AuthenticationService;
 	private readonly ILogger<OAuthService> Logger;
@@ -44,6 +43,11 @@ public class OAuthServiceTests
 	private const string TestClientId = "test-client-id";
 	private const string TestClientSecret = "test-client-secret";
 	private const string TestRedirectUri = "https://localhost/oauth/callback";
+	private const string TestProvider = "GitHub";
+	private const string TestProviderUserId = "12345";
+	private const string TestUsername = "testuser";
+	private const string TestEmail = "test@example.com";
+	private const string TestIpAddress = "127.0.0.1";
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="OAuthServiceTests"/> class.
@@ -52,12 +56,19 @@ public class OAuthServiceTests
 	{
 		UserManager =
 			IdentityMockFactory.CreateUserManager();
-		HttpClientFactory =
-			Substitute.For<IHttpClientFactory>();
 		AuthenticationService =
 			IdentityMockFactory.CreateAuthenticationService();
 		Logger =
 			Substitute.For<ILogger<OAuthService>>();
+
+		// Create mock strategy
+		MockStrategy =
+			Substitute.For<IOAuthProviderStrategy>();
+		MockStrategy.ProviderName.Returns(TestProvider);
+
+		// Create real factory with mock strategy
+		ProviderFactory =
+			new OAuthProviderFactory([MockStrategy]);
 
 		AuthSettings settings =
 			new()
@@ -85,102 +96,53 @@ public class OAuthServiceTests
 			Options.Create(settings);
 	}
 
-	#region BuildGitHubAuthorizationUrl Tests
+	#region BuildAuthorizationUrl Tests
 
 	/// <summary>
-	/// Verifies authorization URL includes state parameter for CSRF protection.
-	/// Security: State parameter prevents CSRF attacks on OAuth callback.
+	/// Verifies BuildAuthorizationUrl delegates to the provider strategy.
 	/// </summary>
 	[Fact]
-	public void BuildGitHubAuthorizationUrl_ValidInput_IncludesStateParameter()
+	public void BuildAuthorizationUrl_ValidProvider_DelegatesToProviderStrategy()
 	{
 		// Arrange
 		OAuthService service =
 			CreateService();
 
+		string expectedUrl =
+			"https://github.com/login/oauth/authorize?test=1";
+
+		MockStrategy
+			.BuildAuthorizationUrl(
+				Arg.Any<OAuthProviderSettings>(),
+				Arg.Any<string>(),
+				Arg.Any<string>(),
+				Arg.Any<string>())
+			.Returns(expectedUrl);
+
 		// Act
 		string url =
-			service.BuildGitHubAuthorizationUrl(
+			service.BuildAuthorizationUrl(
+				TestProvider,
+				TestRedirectUri,
 				TestState,
 				TestCodeVerifier);
 
 		// Assert
-		url.ShouldContain($"state={Uri.EscapeDataString(TestState)}");
-	}
-
-	/// <summary>
-	/// Verifies authorization URL includes PKCE code challenge.
-	/// Security: PKCE prevents authorization code interception attacks.
-	/// </summary>
-	[Fact]
-	public void BuildGitHubAuthorizationUrl_ValidInput_IncludesPkceCodeChallenge()
-	{
-		// Arrange
-		OAuthService service =
-			CreateService();
-
-		// Act
-		string url =
-			service.BuildGitHubAuthorizationUrl(
+		url.ShouldBe(expectedUrl);
+		MockStrategy
+			.Received(1)
+			.BuildAuthorizationUrl(
+				Arg.Any<OAuthProviderSettings>(),
+				TestRedirectUri,
 				TestState,
 				TestCodeVerifier);
-
-		// Assert
-		url.ShouldContain("code_challenge=");
-		url.ShouldContain("code_challenge_method=S256");
 	}
 
 	/// <summary>
-	/// Verifies PKCE code challenge is derived from verifier using SHA256.
-	/// Security: Proper PKCE implementation is critical for security.
+	/// Verifies service throws when provider is not configured in settings.
 	/// </summary>
 	[Fact]
-	public void BuildGitHubAuthorizationUrl_ValidInput_GeneratesCorrectPkceChallenge()
-	{
-		// Arrange
-		OAuthService service =
-			CreateService();
-
-		string expectedChallenge =
-			CryptoExtensions.ComputePkceCodeChallenge(TestCodeVerifier);
-
-		// Act
-		string url =
-			service.BuildGitHubAuthorizationUrl(
-				TestState,
-				TestCodeVerifier);
-
-		// Assert
-		url.ShouldContain($"code_challenge={Uri.EscapeDataString(expectedChallenge)}");
-	}
-
-	/// <summary>
-	/// Verifies authorization URL includes required OAuth parameters.
-	/// </summary>
-	[Fact]
-	public void BuildGitHubAuthorizationUrl_ValidInput_IncludesRequiredParameters()
-	{
-		// Arrange
-		OAuthService service =
-			CreateService();
-
-		// Act
-		string url =
-			service.BuildGitHubAuthorizationUrl(
-				TestState,
-				TestCodeVerifier);
-
-		// Assert
-		url.ShouldContain($"client_id={TestClientId}");
-		url.ShouldContain($"redirect_uri={Uri.EscapeDataString(TestRedirectUri)}");
-		url.ShouldContain("scope=");
-	}
-
-	/// <summary>
-	/// Verifies service throws when GitHub provider is not configured.
-	/// </summary>
-	[Fact]
-	public void BuildGitHubAuthorizationUrl_NoGitHubProvider_ThrowsInvalidOperationException()
+	public void BuildAuthorizationUrl_ProviderNotConfigured_ThrowsInvalidOperationException()
 	{
 		// Arrange
 		IOptions<AuthSettings> emptySettings =
@@ -196,7 +158,7 @@ public class OAuthServiceTests
 		OAuthService service =
 			new(
 				UserManager,
-				HttpClientFactory,
+				ProviderFactory,
 				emptySettings,
 				TimeProvider,
 				AuthenticationService,
@@ -205,22 +167,24 @@ public class OAuthServiceTests
 		// Act & Assert
 		InvalidOperationException exception =
 			Should.Throw<InvalidOperationException>(() =>
-				service.BuildGitHubAuthorizationUrl(
+				service.BuildAuthorizationUrl(
+					TestProvider,
+					TestRedirectUri,
 					TestState,
 					TestCodeVerifier));
 
-		exception.Message.ShouldContain("GitHub");
+		exception.Message.ShouldContain(TestProvider);
 	}
 
 	#endregion
 
-	#region HandleGitHubCallbackAsync Tests
+	#region HandleCallbackAsync Tests
 
 	/// <summary>
-	/// Verifies callback returns failure when GitHub provider is disabled.
+	/// Verifies callback returns failure when provider is not configured.
 	/// </summary>
 	[Fact]
-	public async Task HandleGitHubCallbackAsync_ProviderDisabled_ReturnsFailureAsync()
+	public async Task HandleCallbackAsync_ProviderNotConfigured_ReturnsFailureAsync()
 	{
 		// Arrange
 		IOptions<AuthSettings> emptySettings =
@@ -236,7 +200,7 @@ public class OAuthServiceTests
 		OAuthService service =
 			new(
 				UserManager,
-				HttpClientFactory,
+				ProviderFactory,
 				emptySettings,
 				TimeProvider,
 				AuthenticationService,
@@ -244,10 +208,12 @@ public class OAuthServiceTests
 
 		// Act
 		AuthResult result =
-			await service.HandleGitHubCallbackAsync(
+			await service.HandleCallbackAsync(
+				TestProvider,
 				TestAuthorizationCode,
+				TestRedirectUri,
 				TestCodeVerifier,
-				"127.0.0.1",
+				TestIpAddress,
 				CancellationToken.None);
 
 		// Assert
@@ -256,34 +222,33 @@ public class OAuthServiceTests
 	}
 
 	/// <summary>
-	/// Verifies callback returns failure when token exchange fails.
+	/// Verifies callback returns failure when token exchange throws.
 	/// Security: Error responses should not leak implementation details.
 	/// </summary>
 	[Fact]
-	public async Task HandleGitHubCallbackAsync_TokenExchangeFails_ReturnsFailureAsync()
+	public async Task HandleCallbackAsync_TokenExchangeFails_ReturnsFailureAsync()
 	{
 		// Arrange
-		MockHttpMessageHandler mockHandler =
-			new((request, cancellationToken) =>
-				Task.FromResult(
-					new HttpResponseMessage(HttpStatusCode.BadRequest)));
-
-		HttpClient httpClient =
-			new(mockHandler);
-
-		HttpClientFactory
-			.CreateClient()
-			.Returns(httpClient);
+		MockStrategy
+			.ExchangeCodeForTokenAsync(
+				Arg.Any<OAuthProviderSettings>(),
+				Arg.Any<string>(),
+				Arg.Any<string>(),
+				Arg.Any<string>(),
+				Arg.Any<CancellationToken>())
+			.ThrowsAsync(new HttpRequestException("Token exchange failed"));
 
 		OAuthService service =
 			CreateService();
 
 		// Act
 		AuthResult result =
-			await service.HandleGitHubCallbackAsync(
+			await service.HandleCallbackAsync(
+				TestProvider,
 				TestAuthorizationCode,
+				TestRedirectUri,
 				TestCodeVerifier,
-				"127.0.0.1",
+				TestIpAddress,
 				CancellationToken.None);
 
 		// Assert
@@ -291,12 +256,249 @@ public class OAuthServiceTests
 		result.ErrorCode.ShouldBe(AuthErrorCodes.OAuthError);
 	}
 
-	// NOTE: PKCE code verifier transmission and OAuth user creation tests
-	// (role assignment, passwordless creation) are validated through integration
-	// tests in OAuthSecurityTests.cs. Unit testing the full OAuth flow requires
-	// complex HTTP mocking that doesn't add value beyond what integration tests
-	// provide (per 80/20 rule). The BuildGitHubAuthorizationUrl tests above
-	// validate that PKCE challenge is included in the authorization URL.
+	/// <summary>
+	/// Verifies callback creates user and returns auth result for new OAuth user.
+	/// </summary>
+	[Fact]
+	public async Task HandleCallbackAsync_NewUser_CreatesUserAndExternalLoginAsync()
+	{
+		// Arrange
+		OAuthUserInfo userInfo =
+			new(
+				ProviderId: TestProviderUserId,
+				Login: TestUsername,
+				Email: TestEmail,
+				FullName: "Test User",
+				AvatarUrl: null);
+
+		SetupStrategyForSuccessfulCallback(userInfo);
+		SetupUserManagerForNewUser();
+
+		ApplicationUser createdUser =
+			new UserBuilder(TimeProvider)
+				.WithId(1)
+				.WithUsername(TestUsername)
+				.WithEmail(TestEmail)
+				.Build();
+
+		IdentityMockFactory.ConfigureAuthServiceForSuccess(
+			AuthenticationService,
+			createdUser);
+
+		OAuthService service =
+			CreateService();
+
+		// Act
+		AuthResult result =
+			await service.HandleCallbackAsync(
+				TestProvider,
+				TestAuthorizationCode,
+				TestRedirectUri,
+				TestCodeVerifier,
+				TestIpAddress,
+				CancellationToken.None);
+
+		// Assert
+		result.Success.ShouldBeTrue();
+		await UserManager
+			.Received(1)
+			.CreateAsync(
+				Arg.Any<ApplicationUser>());
+		await UserManager
+			.Received(1)
+			.AddLoginAsync(
+				Arg.Any<ApplicationUser>(),
+				Arg.Is<UserLoginInfo>(login =>
+					login.LoginProvider == TestProvider
+					&& login.ProviderKey == TestProviderUserId));
+	}
+
+	/// <summary>
+	/// Verifies callback returns auth result for existing OAuth user.
+	/// </summary>
+	[Fact]
+	public async Task HandleCallbackAsync_ExistingUser_ReturnsAuthResultAsync()
+	{
+		// Arrange
+		ApplicationUser existingUser =
+			new UserBuilder(TimeProvider)
+				.WithId(42)
+				.WithUsername("existinguser")
+				.WithEmail("existing@example.com")
+				.WithFullName("Existing User")
+				.Build();
+
+		OAuthUserInfo userInfo =
+			new(
+				ProviderId: TestProviderUserId,
+				Login: "existinguser",
+				Email: "existing@example.com",
+				FullName: "Existing User",
+				AvatarUrl: null);
+
+		SetupStrategyForSuccessfulCallback(userInfo);
+
+		UserManager
+			.FindByLoginAsync(TestProvider, TestProviderUserId)
+			.Returns(existingUser);
+
+		IdentityMockFactory.ConfigureAuthServiceForSuccess(
+			AuthenticationService,
+			existingUser);
+
+		OAuthService service =
+			CreateService();
+
+		// Act
+		AuthResult result =
+			await service.HandleCallbackAsync(
+				TestProvider,
+				TestAuthorizationCode,
+				TestRedirectUri,
+				TestCodeVerifier,
+				TestIpAddress,
+				CancellationToken.None);
+
+		// Assert
+		result.Success.ShouldBeTrue();
+		await UserManager
+			.DidNotReceive()
+			.CreateAsync(Arg.Any<ApplicationUser>());
+	}
+
+	/// <summary>
+	/// Verifies Display Name is synced from provider when user's is empty.
+	/// </summary>
+	[Fact]
+	public async Task HandleCallbackAsync_ExistingUser_SyncsDisplayNameWhenEmptyAsync()
+	{
+		// Arrange
+		ApplicationUser existingUser =
+			new UserBuilder(TimeProvider)
+				.WithId(42)
+				.WithUsername("existinguser")
+				.WithEmail("existing@example.com")
+				.WithFullName(null)
+				.Build();
+
+		OAuthUserInfo userInfo =
+			new(
+				ProviderId: TestProviderUserId,
+				Login: "existinguser",
+				Email: "existing@example.com",
+				FullName: "Provider Display Name",
+				AvatarUrl: null);
+
+		SetupStrategyForSuccessfulCallback(userInfo);
+
+		UserManager
+			.FindByLoginAsync(TestProvider, TestProviderUserId)
+			.Returns(existingUser);
+
+		UserManager
+			.UpdateAsync(Arg.Any<ApplicationUser>())
+			.Returns(IdentityResult.Success);
+
+		IdentityMockFactory.ConfigureAuthServiceForSuccess(
+			AuthenticationService,
+			existingUser);
+
+		OAuthService service =
+			CreateService();
+
+		// Act
+		await service.HandleCallbackAsync(
+			TestProvider,
+			TestAuthorizationCode,
+			TestRedirectUri,
+			TestCodeVerifier,
+			TestIpAddress,
+			CancellationToken.None);
+
+		// Assert
+		existingUser.FullName.ShouldBe("Provider Display Name");
+		await UserManager
+			.Received(1)
+			.UpdateAsync(
+				Arg.Is<ApplicationUser>(user =>
+					user.FullName == "Provider Display Name"));
+	}
+
+	/// <summary>
+	/// Verifies Display Name is NOT overwritten when user already has one.
+	/// </summary>
+	[Fact]
+	public async Task HandleCallbackAsync_ExistingUser_DoesNotOverwriteManualDisplayNameAsync()
+	{
+		// Arrange
+		ApplicationUser existingUser =
+			new UserBuilder(TimeProvider)
+				.WithId(42)
+				.WithUsername("existinguser")
+				.WithEmail("existing@example.com")
+				.WithFullName("My Manual Name")
+				.Build();
+
+		OAuthUserInfo userInfo =
+			new(
+				ProviderId: TestProviderUserId,
+				Login: "existinguser",
+				Email: "existing@example.com",
+				FullName: "Provider Display Name",
+				AvatarUrl: null);
+
+		SetupStrategyForSuccessfulCallback(userInfo);
+
+		UserManager
+			.FindByLoginAsync(TestProvider, TestProviderUserId)
+			.Returns(existingUser);
+
+		IdentityMockFactory.ConfigureAuthServiceForSuccess(
+			AuthenticationService,
+			existingUser);
+
+		OAuthService service =
+			CreateService();
+
+		// Act
+		await service.HandleCallbackAsync(
+			TestProvider,
+			TestAuthorizationCode,
+			TestRedirectUri,
+			TestCodeVerifier,
+			TestIpAddress,
+			CancellationToken.None);
+
+		// Assert
+		existingUser.FullName.ShouldBe("My Manual Name");
+		await UserManager
+			.DidNotReceive()
+			.UpdateAsync(Arg.Any<ApplicationUser>());
+	}
+
+	/// <summary>
+	/// Verifies callback throws when provider is not registered in factory.
+	/// </summary>
+	[Fact]
+	public async Task HandleCallbackAsync_InvalidProvider_ReturnsFailureAsync()
+	{
+		// Arrange
+		OAuthService service =
+			CreateService();
+
+		// Act
+		AuthResult result =
+			await service.HandleCallbackAsync(
+				"unknown-provider",
+				TestAuthorizationCode,
+				TestRedirectUri,
+				TestCodeVerifier,
+				TestIpAddress,
+				CancellationToken.None);
+
+		// Assert — provider not in settings → returns failure
+		result.Success.ShouldBeFalse();
+	}
 
 	#endregion
 
@@ -306,11 +508,58 @@ public class OAuthServiceTests
 	{
 		return new OAuthService(
 			UserManager,
-			HttpClientFactory,
+			ProviderFactory,
 			AuthSettings,
 			TimeProvider,
 			AuthenticationService,
 			Logger);
+	}
+
+	private void SetupStrategyForSuccessfulCallback(OAuthUserInfo userInfo)
+	{
+		MockStrategy
+			.ExchangeCodeForTokenAsync(
+				Arg.Any<OAuthProviderSettings>(),
+				Arg.Any<string>(),
+				Arg.Any<string>(),
+				Arg.Any<string>(),
+				Arg.Any<CancellationToken>())
+			.Returns("mock-access-token");
+
+		MockStrategy
+			.GetUserInfoAsync(
+				Arg.Any<string>(),
+				Arg.Any<CancellationToken>())
+			.Returns(userInfo);
+	}
+
+	private void SetupUserManagerForNewUser()
+	{
+		UserManager
+			.FindByLoginAsync(
+				Arg.Any<string>(),
+				Arg.Any<string>())
+			.Returns((ApplicationUser?)null);
+
+		UserManager
+			.FindByNameAsync(Arg.Any<string>())
+			.Returns((ApplicationUser?)null);
+
+		UserManager
+			.CreateAsync(Arg.Any<ApplicationUser>())
+			.Returns(IdentityResult.Success);
+
+		UserManager
+			.AddLoginAsync(
+				Arg.Any<ApplicationUser>(),
+				Arg.Any<UserLoginInfo>())
+			.Returns(IdentityResult.Success);
+
+		UserManager
+			.AddToRoleAsync(
+				Arg.Any<ApplicationUser>(),
+				Arg.Any<string>())
+			.Returns(IdentityResult.Success);
 	}
 
 	#endregion

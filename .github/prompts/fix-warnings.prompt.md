@@ -23,7 +23,7 @@ Find and fix ALL build and lint warnings across the entire codebase.
 - **Never suppress warnings** — always fix the root cause
 - No `#pragma warning disable` in C#
 - No `// @ts-ignore` or `// eslint-disable` in TypeScript
-- **Exceptions**: EF Core Migrations, Generated OpenAPI clients
+- **Exceptions**: Generated OpenAPI clients
 
 ## Validation
 

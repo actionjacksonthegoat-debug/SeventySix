@@ -28,7 +28,7 @@ Read EVERY file in `.github/instructions/` and scan the ENTIRE codebase for viol
 - **testing-client.instructions.md** — Vitest, zoneless, provider helpers, mock factories
 - **e2e.instructions.md** — import rules, anti-flake, CI compatibility
 - **load-testing.instructions.md** — scenario patterns, constants, guards, thresholds
-- **cross-platform.instructions.md** — path handling, line endings, platform compatibility
+- **copilot-instructions.md — Cross-Platform Compatibility section** — path handling, line endings, platform compatibility
 
 ### Stage 2: Security Sweep (OWASP + Identity)
 

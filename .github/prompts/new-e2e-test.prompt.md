@@ -12,6 +12,16 @@ Create E2E tests using Playwright for SeventySix application.
 - Use **context7** MCP to fetch up-to-date Playwright API docs before generating test code
 - Use **Playwright CLI** (`npx playwright test`) for running and debugging tests
 - Use **chrome-devtools** MCP for live DOM inspection, network analysis, and performance tracing during test development
+- Use **playwright** MCP for fine-tuning selectors interactively when the E2E environment is alive
+
+## E2E Debugging Workflow
+
+1. Run failing test with keepalive: `npm run test:e2e -- --keepalive specs/failing-test.spec.ts`
+2. Environment stays alive at `https://localhost:4201`
+3. Use Playwright CLI or Playwright MCP to iterate on selectors and flows
+4. When done: `docker compose -f docker-compose.e2e.yml down -v --remove-orphans`
+
+> **Note**: E2E and Load Tests run in their own isolated Docker environments. You do NOT need to start dev environments for either.
 
 ## Test Category Selection (REQUIRED)
 

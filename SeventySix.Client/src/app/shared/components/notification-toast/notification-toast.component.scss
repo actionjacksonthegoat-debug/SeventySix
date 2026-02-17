@@ -4,7 +4,7 @@
 	position: fixed;
 	top: 5rem; // Below header
 	right: vars.$spacing-lg;
-	z-index: 9999; // Above modals (typically 1000-1050), dialogs, and other overlays
+	z-index: vars.$z-index-notification;
 	display: flex;
 	flex-direction: column;
 	gap: vars.$spacing-sm;
@@ -18,7 +18,7 @@
 	margin: 0;
 	padding: vars.$spacing-md;
 	border-radius: vars.$border-radius-sm;
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25), 0 2px 4px rgba(0, 0, 0, 0.15);
+	box-shadow: 0 4px 12px color-mix(in srgb, black 25%, transparent), 0 2px 4px color-mix(in srgb, black 15%, transparent);
 	min-width: vars.$toast-min-width;
 	max-width: vars.$toast-max-width;
 	pointer-events: auto;
@@ -84,7 +84,7 @@
 .toast-details {
 	margin-top: vars.$spacing-sm;
 	padding-top: vars.$spacing-sm;
-	border-top: 1px solid rgba(255, 255, 255, 0.3);
+	border-top: 1px solid color-mix(in srgb, white 30%, transparent);
 }
 
 .toast-details ul {

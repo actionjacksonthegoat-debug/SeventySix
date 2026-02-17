@@ -12,8 +12,8 @@ using SeventySix.ApiTracking;
 namespace SeventySix.Domains.ApiTracking.Migrations
 {
     [DbContext(typeof(ApiTrackingDbContext))]
-    [Migration("20260216173750_MigrateDateTimeToDateTimeOffset")]
-    partial class MigrateDateTimeToDateTimeOffset
+    [Migration("20260216204809_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

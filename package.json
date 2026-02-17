@@ -7,6 +7,7 @@
 		"test:server": "powershell -Command \"if (-not (Get-Process 'Docker Desktop' -ErrorAction SilentlyContinue)) { Start-Process 'C:\\Program Files\\Docker\\Docker\\Docker Desktop.exe'; Start-Sleep -Seconds 10 }\" && cd SeventySix.Server && dotnet build && dotnet test",
 		"test:client": "cd SeventySix.Client && npm test",
 		"test:e2e": "cd SeventySix.Client && npm run test:e2e --",
+		"test:e2e:keepalive": "cd SeventySix.Client && npm run test:e2e:keepalive --",
 		"start": "powershell -ExecutionPolicy Bypass -File scripts/start-dev.ps1",
 		"start:client": "cd SeventySix.Client && npm start",
 		"start:api-debug": "powershell -ExecutionPolicy Bypass -File scripts/start-infrastructure.ps1",

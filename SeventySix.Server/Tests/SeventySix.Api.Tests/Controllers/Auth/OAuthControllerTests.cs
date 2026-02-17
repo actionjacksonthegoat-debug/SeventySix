@@ -25,6 +25,9 @@ public class OAuthControllerTests(IdentityAuthApiPostgreSqlFixture fixture)
 {
 	private HttpClient? Client;
 
+	private const string OAuthErrorMessage = "oauth_error";
+	private const string PostMessageMethod = "postMessage";
+
 	/// <inheritdoc/>
 	public override async Task InitializeAsync()
 	{
@@ -54,7 +57,7 @@ public class OAuthControllerTests(IdentityAuthApiPostgreSqlFixture fixture)
 	/// Tests that GET /auth/oauth/github redirects to GitHub authorization.
 	/// </summary>
 	[Fact]
-	public async Task GitHubLoginAsync_RedirectsToGitHubAsync()
+	public async Task GitHubLoginAsync_ValidProvider_RedirectsToGitHubAsync()
 	{
 		// Act
 		HttpResponseMessage response =
@@ -72,7 +75,7 @@ public class OAuthControllerTests(IdentityAuthApiPostgreSqlFixture fixture)
 	/// Tests that GET /auth/oauth/github sets OAuth state and code verifier cookies.
 	/// </summary>
 	[Fact]
-	public async Task GitHubLoginAsync_SetsOAuthCookiesAsync()
+	public async Task GitHubLoginAsync_ValidProvider_SetsOAuthCookiesAsync()
 	{
 		// Act
 		HttpResponseMessage response =
@@ -109,8 +112,8 @@ public class OAuthControllerTests(IdentityAuthApiPostgreSqlFixture fixture)
 		string content =
 			await response.Content.ReadAsStringAsync();
 
-		content.ShouldContain("oauth_error");
-		content.ShouldContain("postMessage");
+		content.ShouldContain(OAuthErrorMessage);
+		content.ShouldContain(PostMessageMethod);
 	}
 
 	/// <summary>
@@ -119,7 +122,7 @@ public class OAuthControllerTests(IdentityAuthApiPostgreSqlFixture fixture)
 	[Theory]
 	[InlineData(true)]
 	[InlineData(false)]
-	public async Task GitHubCallbackAsync_ReturnsError_WhenSecurityViolationAsync(
+	public async Task GitHubCallbackAsync_StateMismatch_ReturnsSecurityErrorAsync(
 		bool stateTampered)
 	{
 		// Arrange
@@ -145,8 +148,8 @@ public class OAuthControllerTests(IdentityAuthApiPostgreSqlFixture fixture)
 		string content =
 			await response.Content.ReadAsStringAsync();
 
-		content.ShouldContain("oauth_error");
-		content.ShouldContain("postMessage");
+		content.ShouldContain(OAuthErrorMessage);
+		content.ShouldContain(PostMessageMethod);
 	}
 
 	#endregion

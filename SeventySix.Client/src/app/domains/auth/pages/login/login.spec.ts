@@ -12,6 +12,7 @@ import { MfaService } from "@auth/services";
 import { APP_ROUTES, AUTH_NOTIFICATION_MESSAGES } from "@shared/constants";
 import { AltchaService, DateService } from "@shared/services";
 import { AuthService } from "@shared/services/auth.service";
+import { OAUTH_PROVIDERS } from "@shared/services/auth.types";
 import { NotificationService } from "@shared/services/notification.service";
 import { StorageService } from "@shared/services/storage.service";
 import {
@@ -29,6 +30,7 @@ interface MockAuthService
 	login: ReturnType<typeof vi.fn>;
 	loginWithProvider: ReturnType<typeof vi.fn>;
 	isAuthenticated: ReturnType<typeof signal<boolean>>;
+	isOAuthInProgress: ReturnType<typeof signal<boolean>>;
 }
 
 interface MockMfaService
@@ -78,7 +80,8 @@ describe("LoginComponent",
 					{
 						login: vi.fn(),
 						loginWithProvider: vi.fn(),
-						isAuthenticated: signal<boolean>(false)
+						isAuthenticated: signal<boolean>(false),
+						isOAuthInProgress: signal<boolean>(false)
 					};
 				mockMfaService =
 					{
@@ -512,31 +515,19 @@ describe("LoginComponent",
 					});
 			});
 
-		describe("onGitHubLogin",
+		describe("onOAuthLogin",
 			() =>
 			{
-				it("should call authService.loginWithProvider with github",
+				it("should call authService.loginWithProvider with provider id",
 					() =>
 					{
-						// Act
-						(component as unknown as { onGitHubLogin(): void; }).onGitHubLogin();
+						(component as unknown as { onOAuthLogin(provider: string): void; })
+							.onOAuthLogin("github");
 
-						// Assert
 						expect(mockAuthService.loginWithProvider)
 							.toHaveBeenCalledWith(
 								"github",
 								"/");
-					});
-
-				it("should set isLoading to true",
-					() =>
-					{
-						// Act
-						(component as unknown as { onGitHubLogin(): void; }).onGitHubLogin();
-
-						// Assert
-						expect((component as unknown as { isLoading(): boolean; }).isLoading())
-							.toBe(true);
 					});
 			});
 
@@ -587,18 +578,44 @@ describe("LoginComponent",
 							.toBeTruthy();
 					});
 
-				it("should render GitHub login button",
+				it("should render OAuth buttons for all configured providers",
 					async () =>
 					{
-						// Arrange
 						fixture.detectChanges();
 						await fixture.whenStable();
 
-						// Assert
-						const githubButton: HTMLButtonElement | null =
-							fixture.nativeElement.querySelector(".github-button");
-						expect(githubButton)
-							.toBeTruthy();
+						const oauthButtons: NodeListOf<HTMLButtonElement> =
+							fixture.nativeElement.querySelectorAll(".oauth-button");
+						expect(oauthButtons.length)
+							.toBe(OAUTH_PROVIDERS.length);
+					});
+
+				it("should render OAuth button with correct aria-label",
+					async () =>
+					{
+						fixture.detectChanges();
+						await fixture.whenStable();
+
+						const oauthButton: HTMLButtonElement | null =
+							fixture.nativeElement.querySelector(".oauth-button");
+						expect(oauthButton?.getAttribute("aria-label"))
+							.toBe("Continue with GitHub");
+					});
+
+				it("should call loginWithProvider when OAuth button is clicked",
+					async () =>
+					{
+						fixture.detectChanges();
+						await fixture.whenStable();
+
+						const oauthButton: HTMLButtonElement | null =
+							fixture.nativeElement.querySelector(".oauth-button");
+						oauthButton?.click();
+
+						expect(mockAuthService.loginWithProvider)
+							.toHaveBeenCalledWith(
+								"github",
+								"/");
 					});
 			});
 

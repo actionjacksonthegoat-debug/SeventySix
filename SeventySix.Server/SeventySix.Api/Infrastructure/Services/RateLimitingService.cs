@@ -429,4 +429,48 @@ public sealed class RateLimitingService(
 
 		await repository.UpdateAsync(request);
 	}
+
+	/// <inheritdoc/>
+	public async Task<bool> TryDecrementRequestCountAsync(
+		string apiName,
+		CancellationToken cancellationToken = default)
+	{
+		ArgumentException.ThrowIfNullOrWhiteSpace(apiName);
+
+		if (!RateLimitSettings.IsApiRateLimitEnabled(apiName))
+		{
+			return true;
+		}
+
+		DateOnly today =
+			DateOnly.FromDateTime(
+				timeProvider.GetUtcNow().UtcDateTime);
+
+		return await transactionManager.ExecuteInTransactionAsync(
+			async cancellation =>
+			{
+				ThirdPartyApiRequest? request =
+					await repository.GetByApiNameAndDateAsync(
+						apiName,
+						today,
+						cancellation);
+
+				if (request is null || request.CallCount <= 0)
+				{
+					return false;
+				}
+
+				request.DecrementCallCount();
+				await repository.UpdateAsync(request);
+
+				logger.LogWarning(
+					"Rate limit slot released for {ApiName}. New count: {Count}",
+					apiName,
+					request.CallCount);
+
+				return true;
+			},
+			maxRetries: 3,
+			cancellationToken);
+	}
 }

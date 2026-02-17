@@ -12,7 +12,7 @@ using SeventySix.Logging;
 namespace SeventySix.Domains.Logging.Migrations
 {
     [DbContext(typeof(LoggingDbContext))]
-    [Migration("20260127131218_InitialCreate")]
+    [Migration("20260216204702_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -42,7 +42,7 @@ namespace SeventySix.Domains.Logging.Migrations
                         .HasMaxLength(32)
                         .HasColumnType("character varying(32)");
 
-                    b.Property<DateTime>("CreateDate")
+                    b.Property<DateTimeOffset>("CreateDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("CreateDate")

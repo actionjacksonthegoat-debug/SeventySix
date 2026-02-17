@@ -58,7 +58,11 @@ switch ($Action) {
 		-join ((48..57) + (65..90) + (97..122) | Get-Random -Count 64 | ForEach-Object { [char]$_ })
 		dotnet user-secrets set "Jwt:SecretKey" $jwtSecretKey --project $projectPath
 
-		# GitHub OAuth (replace with real credentials from https://github.com/settings/developers)
+		# GitHub OAuth — Register at https://github.com/settings/developers
+		# 1. Create a new OAuth App
+		# 2. Homepage URL: https://localhost:4200
+		# 3. Authorization callback URL: https://localhost:7074/api/v1/auth/oauth/github/callback
+		# 4. Copy Client ID and Client Secret below
 		dotnet user-secrets set "Auth:OAuth:Providers:0:ClientId" "your-github-client-id" --project $projectPath
 		dotnet user-secrets set "Auth:OAuth:Providers:0:ClientSecret" "your-github-client-secret" --project $projectPath
 

@@ -107,6 +107,21 @@ public static class ProblemDetailConstants
 		public const string BadRequest = "Bad Request";
 
 		/// <summary>
+		/// Title for invalid OAuth authorization code.
+		/// </summary>
+		public const string InvalidCode = "Invalid Code";
+
+		/// <summary>
+		/// Title for failed OAuth provider unlink.
+		/// </summary>
+		public const string UnlinkFailed = "Unlink Failed";
+
+		/// <summary>
+		/// Title for unconfigured OAuth provider.
+		/// </summary>
+		public const string ProviderNotFound = "Provider Not Found";
+
+		/// <summary>
 		/// Title for unauthorized access errors.
 		/// </summary>
 		public const string Unauthorized = "Unauthorized";
@@ -191,5 +206,30 @@ public static class ProblemDetailConstants
 		/// Detail for registration failures (replaces raw Identity exception messages).
 		/// </summary>
 		public const string RegistrationFailed = "Registration could not be completed. Please try again.";
+
+		/// <summary>
+		/// Detail for invalid or expired OAuth authorization code.
+		/// </summary>
+		public const string InvalidOrExpiredCode = "The authorization code is invalid or has expired.";
+
+		/// <summary>
+		/// Detail for external login link failures (replaces raw Identity errors).
+		/// </summary>
+		public const string ExternalLoginLinkFailed = "Failed to link external account. Please try again.";
+
+		/// <summary>
+		/// Detail for external login unlink failures (replaces raw Identity errors).
+		/// </summary>
+		public const string ExternalLoginUnlinkFailed = "Failed to unlink external account. Please try again.";
+
+		/// <summary>
+		/// Detail for OAuth user creation failures (replaces raw Identity errors).
+		/// </summary>
+		public const string OAuthUserCreationFailed = "Account creation could not be completed. Please try again.";
+
+		/// <summary>
+		/// Detail for inactive user account.
+		/// </summary>
+		public const string UserAccountInactive = "User account is inactive.";
 	}
 }

@@ -141,4 +141,21 @@ public interface IRateLimitingService
 	public Task ResetCounterAsync(
 		string apiName,
 		CancellationToken cancellationToken = default);
+
+	/// <summary>
+	/// Best-effort decrement of today's call count for rollback scenarios.
+	/// Used when an API call was reserved but the actual call failed (e.g., SMTP error).
+	/// </summary>
+	/// <param name="apiName">
+	/// The API name to decrement.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// True if decrement succeeded; false if no record found or count already at 0.
+	/// </returns>
+	public Task<bool> TryDecrementRequestCountAsync(
+		string apiName,
+		CancellationToken cancellationToken = default);
 }

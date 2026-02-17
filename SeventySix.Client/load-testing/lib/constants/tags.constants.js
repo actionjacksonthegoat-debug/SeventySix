@@ -34,7 +34,9 @@ export const OPERATION_TAGS =
 			GET_AVAILABLE_ROLES: "get-available-roles",
 			REQUEST_PERMISSION: "request-permission",
 			CLIENT_LOG: "client-log",
-			CLIENT_LOG_BATCH: "client-log-batch"
+			CLIENT_LOG_BATCH: "client-log-batch",
+			OAUTH_REDIRECT: "oauth-redirect",
+			OAUTH_RATE_LIMIT: "oauth-rate-limit"
 		});
 
 /**

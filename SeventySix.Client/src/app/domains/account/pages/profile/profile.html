@@ -72,6 +72,45 @@
 					}
 				</div>
 			</form>
+
+			<!-- Linked Accounts -->
+			<section class="linked-accounts"
+				data-testid="linked-accounts"
+				aria-labelledby="linked-accounts-heading">
+				<h3 id="linked-accounts-heading">Linked Accounts</h3>
+				<p class="linked-accounts-description">
+					Connect external accounts for easier sign-in.
+				</p>
+
+				@for (provider of oauthProviders; track provider.id) {
+					<div class="linked-provider-row">
+						<mat-icon
+							class="provider-icon"
+							[svgIcon]="provider.icon"
+							aria-hidden="true" />
+						<span class="provider-name">{{ provider.displayName }}</span>
+
+						@if (linkedProviderIds().has(provider.id)) {
+							<button
+								mat-stroked-button
+								color="warn"
+								(click)="onUnlinkProvider(provider.id)"
+								[disabled]="!canUnlink() || unlinkMutation.isPending()"
+								[attr.aria-label]="'Disconnect ' + provider.displayName">
+								Disconnect
+							</button>
+						} @else {
+							<button
+								mat-stroked-button
+								(click)="onLinkProvider(provider.id)"
+								[disabled]="isOAuthInProgress()"
+								[attr.aria-label]="'Connect ' + provider.displayName">
+								Connect
+							</button>
+						}
+					</div>
+				}
+			</section>
 		</mat-card-content>
 	</mat-card>
 	}

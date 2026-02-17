@@ -191,4 +191,73 @@ public class ThirdPartyApiRequestTests
 		request.CallCount.ShouldBe(100);
 		request.LastCalledAt.ShouldNotBeNull();
 	}
+
+	[Fact]
+	public void DecrementCallCount_DecrementsCounter()
+	{
+		// Arrange
+		FakeTimeProvider timeProvider = new();
+		ThirdPartyApiRequest request =
+			new()
+			{
+				ApiName = "ExternalAPI",
+				BaseUrl = "https://api.ExternalAPImap.org",
+				CallCount = 5,
+				ResetDate =
+					DateOnly.FromDateTime(
+						timeProvider.GetUtcNow().UtcDateTime),
+			};
+
+		// Act
+		request.DecrementCallCount();
+
+		// Assert
+		request.CallCount.ShouldBe(4);
+	}
+
+	[Fact]
+	public void DecrementCallCount_AtZero_IsNoOp()
+	{
+		// Arrange
+		FakeTimeProvider timeProvider = new();
+		ThirdPartyApiRequest request =
+			new()
+			{
+				ApiName = "ExternalAPI",
+				BaseUrl = "https://api.ExternalAPImap.org",
+				CallCount = 0,
+				ResetDate =
+					DateOnly.FromDateTime(
+						timeProvider.GetUtcNow().UtcDateTime),
+			};
+
+		// Act
+		request.DecrementCallCount();
+
+		// Assert
+		request.CallCount.ShouldBe(0);
+	}
+
+	[Fact]
+	public void DecrementCallCount_FromOne_GoesToZero()
+	{
+		// Arrange
+		FakeTimeProvider timeProvider = new();
+		ThirdPartyApiRequest request =
+			new()
+			{
+				ApiName = "ExternalAPI",
+				BaseUrl = "https://api.ExternalAPImap.org",
+				CallCount = 1,
+				ResetDate =
+					DateOnly.FromDateTime(
+						timeProvider.GetUtcNow().UtcDateTime),
+			};
+
+		// Act
+		request.DecrementCallCount();
+
+		// Assert
+		request.CallCount.ShouldBe(0);
+	}
 }

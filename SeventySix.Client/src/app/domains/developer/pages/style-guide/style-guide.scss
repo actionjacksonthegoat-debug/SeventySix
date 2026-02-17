@@ -51,7 +51,7 @@
 	gap: vars.$spacing-xl;
 
 	h2 {
-		margin: 0 0 8px 0;
+		margin: 0 0 vars.$spacing-sm 0;
 		font-size: vars.$font-size-xl;
 		font-weight: 500;
 	}

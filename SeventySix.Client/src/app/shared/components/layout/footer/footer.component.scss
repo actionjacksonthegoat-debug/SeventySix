@@ -29,15 +29,16 @@
 	display: flex;
 	align-items: center;
 	gap: vars.$spacing-sm;
-	opacity: 0.8;
+	color: var(--mat-sys-on-surface-variant);
 
 	mat-icon {
 		@include mixins.icon-size(vars.$icon-size-sm);
+		color: inherit;
 	}
 }
 
 .version {
-	opacity: 0.7;
+	color: var(--mat-sys-outline);
 	font-size: vars.$font-size-xs;
 
 	@media (max-width: vars.$breakpoint-md-max) {

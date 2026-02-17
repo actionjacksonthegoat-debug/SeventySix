@@ -1,4 +1,4 @@
-// <copyright file="OAuthCodeExchangeService.cs" company="SeventySix">
+﻿// <copyright file="OAuthCodeExchangeService.cs" company="SeventySix">
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
@@ -27,9 +27,14 @@ public sealed class OAuthCodeExchangeService : IOAuthCodeExchangeService
 	private const string CacheKeyPrefix = "oauth_code_";
 
 	/// <summary>
+	/// Cache key prefix for link flow data.
+	/// </summary>
+	private const string LinkFlowKeyPrefix = "oauth_link_";
+
+	/// <summary>
 	/// The identity domain cache.
 	/// </summary>
-	private readonly IFusionCache IdentityCache;
+	private readonly IFusionCache identityCache;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="OAuthCodeExchangeService"/> class.
@@ -39,7 +44,7 @@ public sealed class OAuthCodeExchangeService : IOAuthCodeExchangeService
 	/// </param>
 	public OAuthCodeExchangeService(IFusionCacheProvider cacheProvider)
 	{
-		IdentityCache =
+		identityCache =
 			cacheProvider.GetCache(CacheNames.Identity);
 	}
 
@@ -65,7 +70,7 @@ public sealed class OAuthCodeExchangeService : IOAuthCodeExchangeService
 				requiresPasswordChange);
 
 		// Memory-only for OAuth codes: short-lived, security-sensitive
-		IdentityCache.Set(
+		identityCache.Set(
 			$"{CacheKeyPrefix}{code}",
 			tokenData,
 			options =>
@@ -88,15 +93,52 @@ public sealed class OAuthCodeExchangeService : IOAuthCodeExchangeService
 			$"{CacheKeyPrefix}{code}";
 
 		OAuthCodeExchangeResult? tokenData =
-			IdentityCache.GetOrDefault<OAuthCodeExchangeResult>(cacheKey);
+			identityCache.GetOrDefault<OAuthCodeExchangeResult>(cacheKey);
 
 		if (tokenData is not null)
 		{
 			// One-time use: remove immediately after retrieval
-			IdentityCache.Remove(cacheKey);
+			identityCache.Remove(cacheKey);
 		}
 
 		return tokenData;
+	}
+
+	/// <inheritdoc/>
+	public void StoreLinkFlow(
+		string state,
+		OAuthLinkFlowData data)
+	{
+		identityCache.Set(
+			$"{LinkFlowKeyPrefix}{state}",
+			data,
+			options =>
+			{
+				options.Duration =
+					TimeSpan.FromSeconds(TimeoutConstants.OAuth.CodeExchangeTtlSeconds);
+				options.SkipDistributedCacheWrite =
+					true;
+				options.SkipBackplaneNotifications =
+					true;
+			});
+	}
+
+	/// <inheritdoc/>
+	public OAuthLinkFlowData? RetrieveLinkFlow(string state)
+	{
+		string cacheKey =
+			$"{LinkFlowKeyPrefix}{state}";
+
+		OAuthLinkFlowData? data =
+			identityCache.GetOrDefault<OAuthLinkFlowData>(cacheKey);
+
+		if (data is not null)
+		{
+			// One-time use: remove immediately after retrieval
+			identityCache.Remove(cacheKey);
+		}
+
+		return data;
 	}
 
 	/// <summary>

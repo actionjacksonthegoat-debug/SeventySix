@@ -274,11 +274,6 @@ pre {
 	color: var(--mat-sys-on-primary);
 }
 
-::-moz-selection {
-	background-color: var(--mat-sys-primary);
-	color: var(--mat-sys-on-primary);
-}
-
 // Focus visible styles (for keyboard navigation)
 :focus-visible {
 	outline: 2px solid var(--mat-sys-primary);

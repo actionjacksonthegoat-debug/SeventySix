@@ -22,9 +22,44 @@ import {
 	TEST_ROLE_ADMIN,
 	TEST_ROLE_DEVELOPER
 } from "@testing/constants";
+import { Mock, vi } from "vitest";
 import { AuthService } from "./auth.service";
 import { createMockAuthResponse } from "./auth.service.test-helpers";
 import { DOTNET_ROLE_CLAIM } from "./auth.types";
+import { WindowService } from "./window.service";
+
+/** Mock WindowService for controlling popup and navigation behavior */
+interface MockWindowService
+{
+	openWindow: Mock;
+	navigateTo: Mock;
+	reload: Mock;
+	getCurrentUrl: Mock;
+	getPathname: Mock;
+	getViewportHeight: Mock;
+	getViewportWidth: Mock;
+	scrollToTop: Mock;
+	getHash: Mock;
+	getSearch: Mock;
+	replaceState: Mock;
+}
+
+function createMockWindowService(): MockWindowService
+{
+	return {
+		openWindow: vi.fn(),
+		navigateTo: vi.fn(),
+		reload: vi.fn(),
+		getCurrentUrl: vi.fn().mockReturnValue("https://localhost:4200"),
+		getPathname: vi.fn().mockReturnValue("/"),
+		getViewportHeight: vi.fn().mockReturnValue(768),
+		getViewportWidth: vi.fn().mockReturnValue(1024),
+		scrollToTop: vi.fn(),
+		getHash: vi.fn().mockReturnValue(""),
+		getSearch: vi.fn().mockReturnValue(""),
+		replaceState: vi.fn()
+	};
+}
 
 /** Session marker key used by AuthService */
 const SESSION_KEY: string = "auth_has_session";
@@ -69,6 +104,7 @@ function createFreshTestBed(): { authService: AuthService; httpMock: HttpTesting
 				provideRouter([]),
 				provideTanStackQuery(testQueryClient),
 				{ provide: PLATFORM_ID, useValue: "browser" },
+				{ provide: WindowService, useValue: createMockWindowService() },
 				AuthService
 			]
 		});
@@ -86,6 +122,7 @@ describe("AuthService",
 		let service: AuthService;
 		let httpMock: HttpTestingController;
 		let queryClient: QueryClient;
+		let mockWindowService: MockWindowService;
 
 		beforeEach(
 			() =>
@@ -94,6 +131,8 @@ describe("AuthService",
 
 				queryClient =
 					createTestQueryClient();
+				mockWindowService =
+					createMockWindowService();
 
 				TestBed.configureTestingModule(
 					{
@@ -104,6 +143,7 @@ describe("AuthService",
 							provideRouter([]),
 							provideTanStackQuery(queryClient),
 							{ provide: PLATFORM_ID, useValue: "browser" },
+							{ provide: WindowService, useValue: mockWindowService },
 							AuthService
 						]
 					});
@@ -501,20 +541,6 @@ describe("AuthService",
 						expect(token).not.toBeNull();
 						expect(token)
 							.toBe(mockResponse.accessToken);
-					});
-			});
-
-		describe("loginWithProvider",
-			() =>
-			{
-				it("should open OAuth popup window",
-					() =>
-					{
-						const expectedUrl: string =
-							`${environment.apiUrl}/auth/oauth/github`;
-
-						expect(expectedUrl)
-							.toContain("/auth/oauth/github");
 					});
 			});
 

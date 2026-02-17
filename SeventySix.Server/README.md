@@ -412,9 +412,13 @@ Expected output: `Test summary: total: X, failed: 0`
 
 Each domain has one migrations folder at the domain root — never inside `Infrastructure/`.
 
+Migration files are auto-generated. After generating a migration, run `npm run format:server` then manually fix any remaining analyzer warnings (e.g., SS006 multi-argument formatting). All migration files must pass the same formatting rules as other code — no exemptions.
+
 ```bash
-# Run from SeventySix.Server/SeventySix.Domains/
-dotnet ef migrations add MigrationName -c IdentityDbContext -o Identity/Migrations
+# Identity — run from SeventySix.Server/SeventySix.Domains.Identity/ (separate project)
+dotnet ef migrations add MigrationName -c IdentityDbContext -o Migrations
+
+# Other 3 domains — run from SeventySix.Server/SeventySix.Domains/
 dotnet ef migrations add MigrationName -c LoggingDbContext -o Logging/Migrations
 dotnet ef migrations add MigrationName -c ApiTrackingDbContext -o ApiTracking/Migrations
 dotnet ef migrations add MigrationName -c ElectronicNotificationsDbContext -o ElectronicNotifications/Migrations

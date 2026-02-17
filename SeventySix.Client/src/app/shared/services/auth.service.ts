@@ -27,7 +27,7 @@ import {
 } from "@angular/core";
 import { Router } from "@angular/router";
 import { environment } from "@environments/environment";
-import { APP_ROUTES, STORAGE_KEYS } from "@shared/constants";
+import { APP_ROUTES, POLL_INTERVAL, STORAGE_KEYS } from "@shared/constants";
 import {
 	AuthResponse,
 	LoginRequest,
@@ -92,12 +92,19 @@ export class AuthService
 	private readonly authUrl: string =
 		`${environment.apiUrl}/auth`;
 
+	/** Tracks whether an OAuth popup flow is in progress (login or link). */
+	readonly isOAuthInProgress: WritableSignal<boolean> =
+		signal<boolean>(false);
+
 	/** Access token stored in memory only for XSS protection. */
 	private accessToken: string | null = null;
 
 	private tokenExpiresAt: number = 0;
 
 	private initialized: boolean = false;
+
+	/** Poll timer that detects when the user closes the OAuth popup. */
+	private activePopupPollTimer: ReturnType<typeof setInterval> | undefined;
 
 	/** In-flight refresh observable for single-flight pattern. */
 	private refreshInProgress: Observable<AuthResponse | null> | null = null;
@@ -131,6 +138,12 @@ export class AuthService
 				{
 					this.handleInactivityLogout();
 				}
+			});
+
+		this.destroyRef.onDestroy(
+			(): void =>
+			{
+				this.clearPopupPollTimer();
 			});
 	}
 
@@ -226,6 +239,8 @@ export class AuthService
 			STORAGE_KEYS.AUTH_RETURN_URL,
 			validatedUrl);
 
+		this.isOAuthInProgress.set(true);
+
 		// Open OAuth provider in popup (server returns postMessage HTML)
 		const popup: Window | null =
 			this.windowService.openWindow(
@@ -234,10 +249,57 @@ export class AuthService
 
 		if (isNullOrUndefined(popup))
 		{
+			this.isOAuthInProgress.set(false);
+
 			// Popup blocked — fall back to full-page navigation
 			this.windowService.navigateTo(
 				`${this.authUrl}/oauth/${provider}`);
+
+			return;
 		}
+
+		this.startPopupPollTimer(popup);
+	}
+
+	/**
+	 * Initiates OAuth link flow to connect an external provider to the current account.
+	 * POSTs to the link endpoint with the bearer token, receives an authorization URL,
+	 * and opens a popup to the provider for account linking.
+	 * @param {OAuthProvider} provider
+	 * The OAuth provider to link.
+	 * @returns {void}
+	 */
+	linkProvider(provider: OAuthProvider): void
+	{
+		this.isOAuthInProgress.set(true);
+
+		this
+			.httpClient
+			.post<{ authorizationUrl: string }>(
+				`${this.authUrl}/oauth/link/${provider}`,
+				{})
+			.subscribe(
+				{
+					next: (response: { authorizationUrl: string }) =>
+					{
+						const popup: Window | null =
+							this.windowService.openWindow(
+								response.authorizationUrl,
+								"oauth_link_popup");
+
+						if (isNullOrUndefined(popup))
+						{
+							this.isOAuthInProgress.set(false);
+							return;
+						}
+
+						this.startPopupPollTimer(popup);
+					},
+					error: () =>
+					{
+						this.isOAuthInProgress.set(false);
+					}
+				});
 	}
 
 	/**
@@ -534,7 +596,17 @@ export class AuthService
 					event.data?.type === "oauth_success"
 						&& isPresent(event.data?.code))
 				{
+					this.clearPopupPollTimer();
 					this.exchangeOAuthCode(event.data.code);
+				}
+
+				if (event.data?.type === "oauth_link_success")
+				{
+					this.clearPopupPollTimer();
+					this.queryClient.invalidateQueries(
+						{
+							queryKey: QueryKeys.account.all
+						});
 				}
 			};
 
@@ -816,6 +888,44 @@ export class AuthService
 	private clearHasSession(): void
 	{
 		this.storageService.removeItem(STORAGE_KEYS.AUTH_HAS_SESSION);
+	}
+
+	/**
+	 * Starts a poll timer that detects when the user closes the OAuth popup.
+	 * Resets `isOAuthInProgress` so the UI can remove loading state.
+	 * @param {Window} popup
+	 * The popup window reference.
+	 * @returns {void}
+	 */
+	private startPopupPollTimer(popup: Window): void
+	{
+		this.clearPopupPollTimer();
+
+		this.activePopupPollTimer =
+			setInterval(
+				(): void =>
+				{
+					if (popup.closed)
+					{
+						this.clearPopupPollTimer();
+					}
+				},
+				POLL_INTERVAL.POPUP_CLOSED);
+	}
+
+	/**
+	 * Clears the popup poll timer and resets the OAuth-in-progress state.
+	 * @returns {void}
+	 */
+	private clearPopupPollTimer(): void
+	{
+		if (isPresent(this.activePopupPollTimer))
+		{
+			clearInterval(this.activePopupPollTimer);
+			this.activePopupPollTimer = undefined;
+		}
+
+		this.isOAuthInProgress.set(false);
 	}
 
 	/**

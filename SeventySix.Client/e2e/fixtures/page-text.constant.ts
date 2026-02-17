@@ -262,7 +262,11 @@ export const PAGE_TEXT =
 			{
 				saveChanges: "Save Changes",
 				requestPermissions: "Request Permissions",
-				profileUpdated: "Profile updated"
+				profileUpdated: "Profile updated",
+				linkedAccountsHeading: "Linked Accounts",
+				connectDescription: "Connect external accounts for easier sign-in.",
+				connectButton: "Connect",
+				disconnectButton: "Disconnect"
 			},
 
 		/**

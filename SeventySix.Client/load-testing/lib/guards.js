@@ -25,3 +25,23 @@ export function isSetupInvalid(data)
 	}
 	return false;
 }
+
+/**
+ * Checks that setup data exists (for unauthenticated scenarios).
+ * If setup failed, sleeps and returns true (caller should return early).
+ *
+ * @param {object} data
+ * The setup data.
+ *
+ * @returns {boolean}
+ * True if setup data is missing (caller should return early).
+ */
+export function isSetupMissing(data)
+{
+	if (data == null)
+	{
+		sleep(SLEEP_DURATION.STANDARD);
+		return true;
+	}
+	return false;
+}

@@ -47,6 +47,7 @@ $breakpoint-xl: "(min-width: #{$breakpoint-xl-min})";
 $breakpoint-mobile: $breakpoint-xs;
 $breakpoint-tablet: "(min-width: #{$breakpoint-sm-min})";
 $breakpoint-desktop: "(min-width: #{$breakpoint-md-min})";
+$breakpoint-compact: "(max-width: 30rem)"; // 480px — compact card layouts (backup-codes)
 
 // ============================================================================
 // CONTAINER & LAYOUT WIDTHS
@@ -337,6 +338,11 @@ $spinner-size-lg: 4rem; // 64px at 16px base
 
 // Scrollbar styling mixin
 @mixin custom-scrollbar() {
+	// Standard scrollbar (Firefox, future Chrome)
+	scrollbar-width: thin;
+	scrollbar-color: var(--mat-sys-outline) var(--mat-sys-surface-variant);
+
+	// WebKit scrollbar (Chrome, Safari, Edge)
 	&::-webkit-scrollbar {
 		width: $spacing-sm;
 		height: $spacing-sm;

@@ -18,6 +18,8 @@ Ask user which domain: Identity, Logging, ApiTracking, ElectronicNotifications
 
 ## File Locations
 
+> **Note**: Identity files live in `SeventySix.Domains.Identity/` (separate project). All other domains use `SeventySix.Domains/{Domain}/`.
+
 | Type       | Path                                           | Namespace             |
 | ---------- | ---------------------------------------------- | --------------------- |
 | Service    | `SeventySix.Domains/{Domain}/Services/`        | `SeventySix.{Domain}` |
@@ -104,7 +106,7 @@ namespace SeventySix.{{Domain}};
 public record {{Name}}Dto(
     int Id,
     string Name,
-    DateTime CreatedAt);
+    DateTimeOffset CreatedAt);
 
 public record Create{{Name}}Request(
     string Name,

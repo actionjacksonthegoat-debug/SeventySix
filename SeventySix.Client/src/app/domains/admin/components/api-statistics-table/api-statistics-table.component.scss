@@ -17,9 +17,7 @@
 		p {
 			color: var(--mat-sys-on-surface-variant);
 		}
-	}
 
-	.error-container {
 		mat-icon {
 			font-size: vars.$icon-size-xl;
 			width: vars.$icon-size-xl;
@@ -48,7 +46,7 @@
 	}
 
 	.table-container {
-		max-height: calc(3 * 73px + 56px); // 3 rows + header
+		max-height: calc(3 * 4.5625rem + vars.$table-header-height);
 		overflow-y: auto;
 		overflow-x: auto;
 		@include vars.custom-scrollbar();

@@ -8,7 +8,7 @@ using SeventySix.Identity;
 
 #nullable disable
 
-namespace SeventySix.Domains.Identity.Migrations
+namespace SeventySix.Identity.Migrations
 {
     [DbContext(typeof(IdentityDbContext))]
     partial class IdentityDbContextModelSnapshot : ModelSnapshot

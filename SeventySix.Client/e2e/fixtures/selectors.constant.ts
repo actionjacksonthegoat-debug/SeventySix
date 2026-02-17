@@ -38,10 +38,11 @@ export const SELECTORS =
 		 */
 		auth:
 			{
-				githubButton: ".github-button",
-				forgotPasswordLink: "a[href='/auth/forgot-password']",
-				signInLink: "a[href='/auth/login']",
-				divider: ".divider",
+				githubButton: "button[aria-label='Continue with GitHub']",
+			oauthButton: "[data-testid='oauth-button']",
+			forgotPasswordLink: "a[href='/auth/forgot-password']",
+			signInLink: "a[href='/auth/login']",
+			divider: "[data-testid='divider']",
 				description: ".description",
 				successState: ".success-state"
 			},
@@ -254,7 +255,11 @@ export const SELECTORS =
 				emailInput: "input[formcontrolname='email']",
 				fullNameInput: "input[formcontrolname='fullName']",
 				saveButton: "button[type='submit']",
-				requestPermissionsLink: "a[routerlink='permissions']"
+				requestPermissionsLink: "a[routerlink='permissions']",
+				linkedAccountsSection: "[data-testid='linked-accounts']",
+				linkedAccountsHeading: "#linked-accounts-heading",
+				connectButton: "button[aria-label='Connect GitHub']",
+				disconnectButton: "button[aria-label='Disconnect GitHub']"
 			},
 
 		/**

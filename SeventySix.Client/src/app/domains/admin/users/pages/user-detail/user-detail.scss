@@ -28,8 +28,8 @@
 					display: inline-flex;
 					align-items: center;
 					vertical-align: middle;
-					height: 20px;
-					line-height: 20px;
+					height: vars.$chip-height-sm;
+					line-height: vars.$chip-height-sm;
 				}
 			}
 		}

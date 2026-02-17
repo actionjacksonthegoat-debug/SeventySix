@@ -1,4 +1,5 @@
 @use "../../shared/styles/variables" as vars;
+@use "../../shared/styles/mixins";
 
 .hint-text {
 	font-size: 0.85rem;
@@ -9,28 +10,15 @@
 }
 
 .mfa-verify-container {
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	min-height: 100%;
-	padding: vars.$spacing-lg;
-	background: var(--mat-app-background-color);
+	@include mixins.auth-page-container();
 }
 
 .mfa-verify-card {
-	width: 100%;
-	max-width: 25rem;
-	padding: vars.$spacing-2xl;
-	background: var(--mat-sys-surface);
-	border-radius: 1rem;
-	box-shadow: var(--mat-sys-level2);
+	@include mixins.auth-page-card();
 
 	h1 {
-		margin: 0 0 vars.$spacing-sm;
-		font-size: 1.5rem;
-		font-weight: 500;
-		text-align: center;
-		color: var(--mat-sys-on-surface);
+		@include mixins.auth-page-heading();
+		margin-bottom: vars.$spacing-sm;
 	}
 
 	.subtitle {
@@ -63,7 +51,8 @@ mat-form-field.code-field {
 	margin-top: vars.$spacing-md;
 }
 
-.resend-section {
+.resend-section,
+.backup-section {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -71,7 +60,9 @@ mat-form-field.code-field {
 	margin-top: vars.$spacing-xl;
 	padding-top: vars.$spacing-lg;
 	border-top: 1px solid var(--mat-sys-outline-variant);
+}
 
+.resend-section {
 	.resend-text {
 		margin: 0;
 		font-size: 0.875rem;
@@ -84,14 +75,6 @@ mat-form-field.code-field {
 }
 
 .backup-section {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	gap: vars.$spacing-xs;
-	margin-top: vars.$spacing-xl;
-	padding-top: vars.$spacing-lg;
-	border-top: 1px solid var(--mat-sys-outline-variant);
-
 	.backup-text {
 		margin: 0;
 		font-size: 0.875rem;

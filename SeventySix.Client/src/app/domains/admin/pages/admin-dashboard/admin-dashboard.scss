@@ -61,20 +61,8 @@
 		}
 	}
 
-	.observability-links {
-		display: flex;
-		gap: vars.$spacing-md;
-		flex-wrap: wrap;
-		margin-top: vars.$spacing-lg;
-	}
-
-	.log-validation-links {
-		display: flex;
-		gap: vars.$spacing-md;
-		flex-wrap: wrap;
-		margin-top: vars.$spacing-lg;
-	}
-
+	.observability-links,
+	.log-validation-links,
 	.data-links {
 		display: flex;
 		gap: vars.$spacing-md;

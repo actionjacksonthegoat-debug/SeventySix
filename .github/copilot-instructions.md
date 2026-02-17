@@ -1,7 +1,7 @@
 # SeventySix Copilot Instructions
 
 > **Context-specific rules** are in `.github/instructions/*.instructions.md` files (auto-applied by `applyTo` globs).
-> This file contains **global rules only**. Each concept lives in exactly ONE file — never duplicated.
+> This file contains **global rules only**. Each concept lives in exactly ONE file ï¿½ never duplicated.
 
 ---
 
@@ -23,20 +23,20 @@
 
 > **DO NOT** create files in the `/docs/` folder. Plans are written to `Implementation.md` (orchestrator) and `implementation-N.md` (individual plan files) at the repo root, and ONLY when the `/create-plan` prompt is invoked.
 
-- **`Implementation.md`** is the **orchestrator** — it tracks all `implementation-N.md` files and runs final validation after all complete
-- **`implementation-1.md`, `implementation-2.md`, etc.** are focused, completable plan files — each covers one logical unit of work
-- Writing throwaway docs is expensive — avoid unless `/create-plan` is explicitly run
+- **`Implementation.md`** is the **orchestrator** ï¿½ it tracks all `implementation-N.md` files and runs final validation after all complete
+- **`implementation-1.md`, `implementation-2.md`, etc.** are focused, completable plan files ï¿½ each covers one logical unit of work
+- Writing throwaway docs is expensive ï¿½ avoid unless `/create-plan` is explicitly run
 - If a change is complex enough to need user-facing documentation, **ASK the user first** before writing it
-- `.github/instructions/*.instructions.md` files are the authoritative reference — keep them current, don't duplicate into `/docs/`
+- `.github/instructions/*.instructions.md` files are the authoritative reference ï¿½ keep them current, don't duplicate into `/docs/`
 
 ---
 
 ## Core Principles
 
-- **KISS, DRY, YAGNI** — simplest solution, no duplication, no speculative features
-- **TDD 80/20** — focus tests on the 20% of code carrying 80% of risk
-- **IDE Warnings = MUST FIX** — never suppress with `#pragma warning disable`, `// @ts-ignore`, `[SuppressMessage]`
-    - **Exceptions**: EF Core Migrations, Generated OpenAPI clients
+- **KISS, DRY, YAGNI** ï¿½ simplest solution, no duplication, no speculative features
+- **TDD 80/20** ï¿½ focus tests on the 20% of code carrying 80% of risk
+- **IDE Warnings = MUST FIX** ï¿½ never suppress with `#pragma warning disable`, `// @ts-ignore`, `[SuppressMessage]`
+    - **Exceptions**: Generated OpenAPI clients
 - **All required test suites MUST pass** before claiming completion (see below)
 
 ## [CRITICAL] Tests MUST Pass (GATE CONDITION)
@@ -51,7 +51,7 @@
 > **All required test suites MUST RUN AND PASS. NO SKIPPING. NO EXCEPTIONS. REGARDLESS OF TIME NEEDED OR CURRENT STATE OF THE CODE.**
 > - E2E and load tests CAN run in parallel to save time
 > - Saying "tests will pass when infrastructure is running" is **NOT acceptable**
-> - If infrastructure is not running, **start it** — do not skip the suite
+> - If infrastructure is not running, **start it** ï¿½ do not skip the suite
 > - **NEVER** claim "done" or "complete" without actually running and passing all required test suites
 
 ## Documentation MUST Be Current (GATE CONDITION)
@@ -91,7 +91,7 @@ After all tests pass, verify:
 ## E2E Test Isolation Pattern
 
 > **PROHIBITED**: The "save original ? test ? restore" anti-pattern. Tests MUST create their own data, never borrow-and-return shared state.
-> State-changing E2E tests (approve/reject, MFA toggle, password change, profile edit) MUST use a **dedicated isolated user** + `browser.newContext({ storageState: undefined })` — never the shared `e2e_user`. See `e2e.instructions.md` § "Test Isolation" for the full pattern. Reference: `PERM_APPROVE_USER` in `permission-request-list.spec.ts`.
+> State-changing E2E tests (approve/reject, MFA toggle, password change, profile edit) MUST use a **dedicated isolated user** + `browser.newContext({ storageState: undefined })` ï¿½ never the shared `e2e_user`. See `e2e.instructions.md` ï¿½ "Test Isolation" for the full pattern. Reference: `PERM_APPROVE_USER` in `permission-request-list.spec.ts`.
 
 ## Cross-Platform Compatibility
 
@@ -112,18 +112,18 @@ All code MUST work on both **Windows** and **Linux** (CI runs on `ubuntu-latest`
 
 | Server            | Purpose                                                | Activation                     |
 | ----------------- | ------------------------------------------------------ | ------------------------------ |
-| `github`          | Issues, PRs, repo operations                           | On-demand — needs PAT (first use) |
-| `postgresql`      | Read-only DB queries for debugging/exploration         | On-demand — needs connection string |
-| `chrome-devtools` | Live browser inspection, console, network, screenshots | On-demand — needs Chrome open  |
-| `context7`        | Up-to-date library documentation                       | On-demand — stateless          |
-
+| `github`          | Issues, PRs, repo operations                           | On-demand ï¿½ needs PAT (first use) |
+| `postgresql`      | Read-only DB queries for debugging/exploration         | On-demand ï¿½ needs connection string |
+| `chrome-devtools` | Live browser inspection, console, network, screenshots | On-demand ï¿½ needs Chrome open  |
+| `context7`        | Up-to-date library documentation                       | On-demand â€” stateless          |
+| `playwright`      | Browser automation for E2E test debugging               | On-demand â€” needs E2E environment running |
 Use **context7** when unsure about current API for Angular, Wolverine, TanStack Query, or Playwright. Not needed for stable APIs like `Path.Combine` or standard HTTP.
 
-## MCP Activation Rules (CRITICAL — ABSOLUTE REQUIREMENT)
+## MCP Activation Rules (CRITICAL ï¿½ ABSOLUTE REQUIREMENT)
 
 > **RULE**: ALL MCP servers listed above MUST remain enabled at all times. NEVER disable individual MCP tools in the VS Code chat panel. Before performing a task that an MCP server supports, ALWAYS activate and use that MCP server. Never perform the task manually when an MCP tool exists for it.
 
-> **TOOL AVAILABILITY**: All MCP tools MUST be kept toggled ON in the VS Code chat panel. If any MCP tool appears disabled, RE-ENABLE it immediately — do not proceed without it. Disabling MCP tools is PROHIBITED.
+> **TOOL AVAILABILITY**: All MCP tools MUST be kept toggled ON in the VS Code chat panel. If any MCP tool appears disabled, RE-ENABLE it immediately ï¿½ do not proceed without it. Disabling MCP tools is PROHIBITED.
 
 | Task | Required MCP | Tool Examples |
 |------|-------------|---------------|
@@ -133,18 +133,19 @@ Use **context7** when unsure about current API for Angular, Wolverine, TanStack 
 | Look up library API patterns | `context7` | `resolve-library-id`, `query-docs` |
 | Create/update PRs and issues | `github` | `create_pull_request`, `list_issues` |
 | Inspect database schema/data | `postgresql` | `query` |
+| Fine-tune E2E test selectors/flows | `playwright` | Browser automation tools |
 
 **If an MCP server is not running when needed, start it. If it prompts for credentials, ask the user to provide them. NEVER skip the MCP and do the task manually or theoretically. If a tool reports "disabled by the user", STOP and ask the user to re-enable it in the VS Code chat panel before continuing.**
 
 ## Known Issue: MCP Tools Reset on VS Code Restart
 
-VS Code may reset MCP tool toggles in the Chat panel on restart. This is a known VS Code behavior — the `chat.mcp.access` and `chat.agent.allowedTools` settings control **authorization** (whether tools are allowed), not **activation** (whether toggles are on in the UI). Additionally, the `github` and `postgresql` servers require credential prompts (`${input:...}`) that VS Code intentionally does not persist across sessions for security.
+VS Code may reset MCP tool toggles in the Chat panel on restart. This is a known VS Code behavior ï¿½ the `chat.mcp.access` and `chat.agent.allowedTools` settings control **authorization** (whether tools are allowed), not **activation** (whether toggles are on in the UI). Additionally, the `github` and `postgresql` servers require credential prompts (`${input:...}`) that VS Code intentionally does not persist across sessions for security.
 
 **Workaround**: After opening VS Code, open the Chat panel and re-enable any disabled MCP tools. The workspace settings already grant full access (`chat.mcp.access: "all"`, `chat.agent.allowedTools: ["*"]`), so re-enabling is a single click per tool.
 
 ## Chrome DevTools Verification (REQUIRED for Client Changes)
 
-> **RULE**: After any client-side code change (component, service, route, style, template), use Chrome DevTools MCP to verify the change works. NEVER rely on "it should work" — prove it.
+> **RULE**: After any client-side code change (component, service, route, style, template), use Chrome DevTools MCP to verify the change works. NEVER rely on "it should work" ï¿½ prove it.
 
 ### Verification Checklist
 
@@ -170,11 +171,11 @@ VS Code may reset MCP tool toggles in the Chat panel on restart. This is a known
 
 1. Run `npm start` to start the full dev stack (API + Client + infrastructure)
 2. Log in with seeded admin credentials from user secrets (`Admin:Email` / `Admin:Password`)
-3. Complete MFA — find the code via PostgreSQL MCP:
+3. Complete MFA ï¿½ find the code via PostgreSQL MCP:
    ```sql
    SELECT "To", "Subject", "Body" FROM notification."EmailQueue" ORDER BY "CreatedDate" DESC LIMIT 1;
    ```
-4. These credentials are **dev-only** — never use in production
+4. These credentials are **dev-only** ï¿½ never use in production
 
 ---
 
@@ -190,6 +191,7 @@ VS Code may reset MCP tool toggles in the Chat panel on restart. This is a known
 | `npm run test:server` | Run server tests only (starts Docker if needed) |
 | `npm run test:client` | Run client tests only |
 | `npm run test:e2e` | Run Playwright E2E tests |
+| `npm run test:e2e:keepalive` | Run E2E tests, keep environment alive for debugging |
 | `npm run start:client` | Start Angular dev server only |
 | `npm run start:api-debug` | Start infrastructure (DB, cache) for API debugging |
 | `npm run stop:api` | Stop API and infrastructure containers |
@@ -209,13 +211,13 @@ VS Code may reset MCP tool toggles in the Chat panel on restart. This is a known
 | `npm run generate:icons` | Generate PWA icons |
 | `npm run clean:docker` | Clean Docker containers and images |
 | `npm run clean:docker:full` | Clean Docker including volumes |
-| `npm run db:reset` | **USER ONLY — NEVER run via Copilot** |
+| `npm run db:reset` | **USER ONLY ï¿½ NEVER run via Copilot** |
 
 ---
 
 ## E2E Debugging Note
 
-> When debugging E2E test failures, run individual spec files or filter by test name — never run the full suite for debugging.
+> When debugging E2E test failures, run individual spec files or filter by test name ï¿½ never run the full suite for debugging.
 
 ```bash
 # Run a single spec file
@@ -229,17 +231,34 @@ Only run the full `npm run test:e2e` suite for final validation.
 
 ---
 
+## E2E and Load Test Environment Isolation (CRITICAL)
+
+E2E tests (`npm run test:e2e`) and load tests (`npm run loadtest:*`) run in **fully isolated Docker environments** with their own database, cache, API, and client containers. You do NOT need to start the dev environment (`npm start`) for either.
+
+| Environment | Docker Compose File | Ports (DB / Cache / API / Client) |
+|-------------|--------------------|------------------------------------|
+| Dev | `docker-compose.yml` | 5433 / 6379 / 7074 / 4200 |
+| E2E | `docker-compose.e2e.yml` | 5434 / 6380 / 7174 / 4201 |
+| Load Test | `docker-compose.loadtest.yml` | 5435 / 6381 / 7175 / 4202 |
+
+Use `--keepalive` flag with E2E tests to keep the environment running for Playwright MCP debugging:
+```bash
+npm run test:e2e -- --keepalive
+```
+
+---
+
 ## File Index (Auto-Applied via `applyTo` Globs)
 
 | File                             | Scope                                          |
 | -------------------------------- | ---------------------------------------------- |
-| `formatting.instructions.md`     | `**/SeventySix.Client/src/**,**/SeventySix.Server/**` — naming, structure, operators  |
+| `formatting.instructions.md`     | `**/SeventySix.Client/src/**,**/SeventySix.Server/**` ï¿½ naming, structure, operators  |
 | `angular.instructions.md`        | `**/SeventySix.Client/src/**/*.ts`             |
 | `csharp.instructions.md`         | `**/SeventySix.Server/**/*.cs`                 |
-| `security.instructions.md`       | `**/SeventySix.Client/src/**,**/SeventySix.Server/**` — ProblemDetails, auth errors   |
+| `security.instructions.md`       | `**/SeventySix.Client/src/**,**/SeventySix.Server/**` ï¿½ ProblemDetails, auth errors   |
 | `accessibility.instructions.md`  | `**/SeventySix.Client/src/**/*.{ts,html,scss}` |
 | `testing-server.instructions.md` | `**/SeventySix.Server/Tests/**/*.cs`           |
 | `testing-client.instructions.md` | `**/SeventySix.Client/src/**/*.spec.ts`        |
 | `e2e.instructions.md`            | `**/SeventySix.Client/e2e/**/*.ts`             |
-| `new-domain.instructions.md`     | Manual reference — domain blueprints           |
-| `load-testing.instructions.md`   | `**/SeventySix.Client/load-testing/**/*.js` — k6 load test patterns |
+| `new-domain.instructions.md`     | Manual reference ï¿½ domain blueprints           |
+| `load-testing.instructions.md`   | `**/SeventySix.Client/load-testing/**/*.js` ï¿½ k6 load test patterns |

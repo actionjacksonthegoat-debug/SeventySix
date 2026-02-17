@@ -21,6 +21,18 @@ export const DEBOUNCE_TIME: Readonly<{
 	} as const;
 
 /**
+ * Polling interval constants for periodic checks.
+ * Eliminates magic numbers for timer intervals.
+ */
+export const POLL_INTERVAL: Readonly<{
+	POPUP_CLOSED: 500;
+}> =
+	{
+	/** Interval for checking if an OAuth popup window has closed (500ms). */
+		POPUP_CLOSED: 500
+	} as const;
+
+/**
  * Millisecond conversion constants for time calculations.
  * Use these instead of magic numbers in date/time logic.
  */

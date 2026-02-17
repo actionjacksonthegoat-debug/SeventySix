@@ -29,16 +29,10 @@
 
 .app-container {
 	width: 100%;
-	height: 100vh;
+	height: 100dvh;
 	display: flex;
 	position: relative;
 	overflow: hidden;
-
-	// Optimize for mobile performance
-	& {
-		-webkit-overflow-scrolling: touch;
-		-webkit-tap-highlight-color: transparent;
-	}
 }
 
 // Ensure body doesn't overflow
@@ -58,11 +52,6 @@ body {
 .app-sidenav {
 	width: vars.$sidebar-width;
 
-	// Touch-friendly scrolling
-	& {
-		-webkit-overflow-scrolling: touch;
-	}
-
 	// Overlay mode on screens < 960px - ensure proper width
 	@media (max-width: vars.$breakpoint-sm-max) {
 		width: vars.$sidebar-width;
@@ -79,11 +68,6 @@ body {
 	scroll-behavior: smooth;
 	flex: 1;
 	min-width: 0; // Prevent content from pushing beyond bounds
-
-	// Touch-friendly scrolling
-	& {
-		-webkit-overflow-scrolling: touch;
-	}
 
 	// Full-width page — child owns scrolling, suppress outer scrollbar and footer
 	&:has(.full-width-page) {

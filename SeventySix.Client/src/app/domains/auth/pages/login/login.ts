@@ -31,6 +31,11 @@ import { AltchaWidgetComponent } from "@shared/components";
 import { APP_ROUTES, AUTH_NOTIFICATION_MESSAGES, STORAGE_KEYS } from "@shared/constants";
 import { FORM_MATERIAL_MODULES } from "@shared/material-bundles.constants";
 import { AltchaService, AuthService, NotificationService, StorageService } from "@shared/services";
+import {
+	OAUTH_PROVIDERS,
+	OAuthProvider,
+	OAuthProviderMetadata
+} from "@shared/services/auth.types";
 import { getValidationError } from "@shared/utilities";
 import { isPresent } from "@shared/utilities/null-check.utility";
 
@@ -119,6 +124,20 @@ export class LoginComponent implements OnInit
 	 */
 	private readonly storageService: StorageService =
 		inject(StorageService);
+
+	/**
+	 * Configured OAuth providers for rendering login buttons.
+	 * @type {readonly OAuthProviderMetadata[]}
+	 */
+	protected readonly oauthProviders: readonly OAuthProviderMetadata[] =
+		OAUTH_PROVIDERS;
+
+	/**
+	 * Whether an OAuth popup flow is currently in progress.
+	 * @type {Signal<boolean>}
+	 */
+	protected readonly isOAuthInProgress: Signal<boolean> =
+		this.authService.isOAuthInProgress;
 
 	/**
 	 * Whether ALTCHA validation is enabled.
@@ -366,13 +385,14 @@ export class LoginComponent implements OnInit
 	}
 
 	/**
-	 * Start OAuth login flow with GitHub provider.
+	 * Start OAuth login flow with the specified provider.
+	 * @param {OAuthProvider} provider
+	 * The OAuth provider to authenticate with.
 	 * @returns {void}
 	 */
-	protected onGitHubLogin(): void
+	protected onOAuthLogin(provider: OAuthProvider): void
 	{
-		this.isLoading.set(true);
-		this.authService.loginWithProvider("github", this.returnUrl);
+		this.authService.loginWithProvider(provider, this.returnUrl);
 	}
 
 	/**

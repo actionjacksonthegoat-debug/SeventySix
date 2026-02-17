@@ -53,3 +53,11 @@ export const SLEEP_DURATION =
 			STANDARD: 1,
 			LONG: 2
 		});
+
+/** Rate limiting test parameters. */
+export const RATE_LIMIT =
+	Object.freeze(
+		{
+			/** Maximum attempts for rate limit validation. */
+			MAX_ATTEMPTS: 20
+		});

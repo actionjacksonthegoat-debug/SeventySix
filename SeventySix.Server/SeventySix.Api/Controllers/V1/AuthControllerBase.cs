@@ -274,4 +274,37 @@ public abstract class AuthControllerBase(
 
 		return Content(html, MediaTypeConstants.TextHtml);
 	}
+
+	/// <summary>
+	/// Creates HTML response that posts OAuth link success to parent window.
+	/// </summary>
+	/// <returns>
+	/// HTML content result.
+	/// </returns>
+	protected ContentResult CreateOAuthLinkSuccessResponse()
+	{
+		string origin =
+			CookieService.GetAllowedOrigin();
+
+		string html =
+			$$"""
+			<!DOCTYPE html>
+			<html>
+			<head><title>Account Linked</title></head>
+			<body>
+			<script>
+				if (window.opener) {
+					window.opener.postMessage({
+						type: 'oauth_link_success'
+					}, '{{origin}}');
+				}
+				window.close();
+			</script>
+			<p>Account linked. This window should close automatically.</p>
+			</body>
+			</html>
+			""";
+
+		return Content(html, MediaTypeConstants.TextHtml);
+	}
 }

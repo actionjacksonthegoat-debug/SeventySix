@@ -55,7 +55,65 @@ export interface JwtClaims
 
 /**
  * OAuth provider type.
- * Currently only 'github' is supported.
+ * Add new providers here as they are supported.
  * @type {OAuthProvider}
  */
 export type OAuthProvider = "github";
+
+/**
+ * Metadata for rendering OAuth provider buttons.
+ * @interface OAuthProviderMetadata
+ */
+export interface OAuthProviderMetadata
+{
+	/** Provider identifier matching the route parameter. */
+	readonly id: OAuthProvider;
+
+	/** Human-readable display name. */
+	readonly displayName: string;
+
+	/** Material icon name or registered SVG icon name. */
+	readonly icon: string;
+
+	/** Brand color for the button. */
+	readonly color: string;
+}
+
+/**
+ * Configured OAuth providers with UI metadata.
+ * Adding a new provider: update OAuthProvider type above + add entry here.
+ * @type {readonly OAuthProviderMetadata[]}
+ */
+export const OAUTH_PROVIDERS: readonly OAuthProviderMetadata[] = [
+	{
+		id: "github",
+		displayName: "GitHub",
+		icon: "github",
+		color: "#24292e"
+	}
+] as const;
+
+/**
+ * Server response for linked external login.
+ * Matches SeventySix.Identity.ExternalLoginDto.
+ * @interface ExternalLoginDto
+ */
+export interface ExternalLoginDto
+{
+	readonly provider: string;
+	readonly providerDisplayName: string;
+}
+
+/**
+ * Finds provider metadata by ID.
+ * @param {OAuthProvider} provider
+ * The provider ID to look up.
+ * @returns {OAuthProviderMetadata | undefined}
+ * The metadata or undefined if not found.
+ */
+export function getProviderMetadata(
+	provider: OAuthProvider): OAuthProviderMetadata | undefined
+{
+	return OAUTH_PROVIDERS.find(
+		(metadata: OAuthProviderMetadata) => metadata.id === provider);
+}

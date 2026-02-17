@@ -266,21 +266,23 @@ public class LogsController(
 
 ### Migration Commands
 
-Run from `SeventySix.Server/SeventySix.Domains/` directory:
-
 ```powershell
-# Identity
-dotnet ef migrations add MigrationName -c IdentityDbContext -o Identity/Migrations
+# Identity — run from SeventySix.Server/SeventySix.Domains.Identity/ (separate project)
+dotnet ef migrations add MigrationName -c IdentityDbContext -o Migrations
 
-# Logging
+# Other 3 domains — run from SeventySix.Server/SeventySix.Domains/
 dotnet ef migrations add MigrationName -c LoggingDbContext -o Logging/Migrations
-
-# ApiTracking
 dotnet ef migrations add MigrationName -c ApiTrackingDbContext -o ApiTracking/Migrations
-
-# ElectronicNotifications
 dotnet ef migrations add MigrationName -c ElectronicNotificationsDbContext -o ElectronicNotifications/Migrations
 ```
+
+### Post-Generation Formatting (REQUIRED)
+
+Migration files must pass the same formatting rules as all other code — **no exemptions**.
+
+1. Run `npm run format:server` to auto-fix what it can
+2. Manually fix remaining analyzer warnings (SS006 multi-argument formatting, RCS0053 argument alignment)
+3. Build and verify zero warnings: `dotnet build`
 
 ### Migration Naming
 

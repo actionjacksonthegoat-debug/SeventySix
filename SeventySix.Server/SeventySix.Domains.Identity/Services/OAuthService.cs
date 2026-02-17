@@ -2,101 +2,101 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using System.Net.Http.Headers;
 using System.Text.Json;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SeventySix.Identity.Constants;
 using SeventySix.Shared.Constants;
-using SeventySix.Shared.Extensions;
 
 namespace SeventySix.Identity;
 
 /// <summary>
-/// Authentication service for OAuth integration.
+/// Provider-agnostic OAuth authentication service.
 /// </summary>
 /// <remarks>
 /// Design Principles:
 /// - Returns AuthResult for explicit error handling (no exceptions for auth failures)
 /// - Uses ASP.NET Core Identity for user management
-/// - Supports GitHub OAuth authentication with PKCE
+/// - Delegates provider-specific logic to IOAuthProviderStrategy via OAuthProviderFactory
+/// - Syncs Display Name from provider on login (only if user's is empty)
 /// </remarks>
 public sealed class OAuthService(
 	UserManager<ApplicationUser> userManager,
-	IHttpClientFactory httpClientFactory,
+	OAuthProviderFactory providerFactory,
 	IOptions<AuthSettings> authSettings,
 	TimeProvider timeProvider,
 	AuthenticationService authenticationService,
 	ILogger<OAuthService> logger) : IOAuthService
 {
 	/// <inheritdoc/>
-	public string BuildGitHubAuthorizationUrl(string state, string codeVerifier)
+	public string BuildAuthorizationUrl(
+		string provider,
+		string redirectUri,
+		string state,
+		string codeVerifier)
 	{
-		OAuthProviderSettings? github =
-			authSettings.Value.OAuth.Providers.FirstOrDefault(provider =>
-				provider.Provider == OAuthProviderConstants.GitHub);
+		OAuthProviderSettings providerSettings =
+			GetProviderSettings(provider);
 
-		if (github == null)
-		{
-			throw new InvalidOperationException(
-				OAuthProviderConstants.ErrorMessages.GitHubNotConfigured);
-		}
+		IOAuthProviderStrategy strategy =
+			providerFactory.GetStrategy(provider);
 
-		// Generate PKCE code challenge
-		string codeChallenge =
-			CryptoExtensions.ComputePkceCodeChallenge(
-				codeVerifier);
-
-		string url =
-			$"{github.AuthorizationEndpoint}"
-			+ $"?client_id={Uri.EscapeDataString(github.ClientId)}"
-			+ $"&redirect_uri={Uri.EscapeDataString(github.RedirectUri)}"
-			+ $"&scope={Uri.EscapeDataString(github.Scopes)}"
-			+ $"&state={Uri.EscapeDataString(state)}"
-			+ $"&code_challenge={Uri.EscapeDataString(codeChallenge)}"
-			+ "&code_challenge_method=S256";
-
-		return url;
+		return strategy.BuildAuthorizationUrl(
+			providerSettings,
+			redirectUri,
+			state,
+			codeVerifier);
 	}
 
 	/// <inheritdoc/>
-	public async Task<AuthResult> HandleGitHubCallbackAsync(
+	public async Task<AuthResult> HandleCallbackAsync(
+		string provider,
 		string code,
+		string redirectUri,
 		string codeVerifier,
 		string? clientIp,
 		CancellationToken cancellationToken = default)
 	{
-		OAuthProviderSettings? github =
-			authSettings.Value.OAuth.Providers.FirstOrDefault(provider =>
-				provider.Provider == OAuthProviderConstants.GitHub);
+		OAuthProviderSettings? providerSettings =
+			authSettings.Value.OAuth.Providers.FirstOrDefault(
+				providerConfig => string.Equals(
+					providerConfig.Provider,
+					provider,
+					StringComparison.OrdinalIgnoreCase));
 
-		if (github == null)
+		if (providerSettings is null)
 		{
 			return AuthResult.Failed(
-				OAuthProviderConstants.ErrorMessages.GitHubOAuthDisabled,
+				OAuthProviderConstants.ErrorMessages.ProviderNotConfigured(
+					provider),
 				AuthErrorCodes.OAuthError);
 		}
 
 		try
 		{
+			IOAuthProviderStrategy strategy =
+				providerFactory.GetStrategy(provider);
+
 			// Exchange code for access token
 			string accessToken =
-				await ExchangeCodeForTokenAsync(
-					github,
+				await strategy.ExchangeCodeForTokenAsync(
+					providerSettings,
 					code,
+					redirectUri,
 					codeVerifier,
 					cancellationToken);
 
-			// Get user info from GitHub
-			GitHubUserInfo userInfo =
-				await GetGitHubUserInfoAsync(
+			// Get user info from provider
+			OAuthUserInfo userInfo =
+				await strategy.GetUserInfoAsync(
 					accessToken,
 					cancellationToken);
 
 			// Find or create user
 			ApplicationUser user =
-				await FindOrCreateGitHubUserAsync(
+				await FindOrCreateOAuthUserAsync(
+					provider,
 					userInfo,
 					cancellationToken);
 
@@ -107,144 +107,144 @@ public sealed class OAuthService(
 				rememberMe: false,
 				cancellationToken);
 		}
-		catch (Exception ex)
+		catch (HttpRequestException ex)
 		{
 			logger.LogError(
 				ex,
-				OAuthProviderConstants.ErrorMessages.GitHubCallbackFailed);
+				"OAuth callback failed for provider {Provider}",
+				provider);
 
 			return AuthResult.Failed(
-				OAuthProviderConstants.ErrorMessages.GitHubAuthenticationFailed,
+				OAuthProviderConstants.ErrorMessages.AuthenticationFailed(
+					provider),
+				AuthErrorCodes.OAuthError);
+		}
+		catch (JsonException ex)
+		{
+			logger.LogError(
+				ex,
+				"OAuth callback failed for provider {Provider}",
+				provider);
+
+			return AuthResult.Failed(
+				OAuthProviderConstants.ErrorMessages.AuthenticationFailed(
+					provider),
+				AuthErrorCodes.OAuthError);
+		}
+		catch (InvalidOperationException ex)
+		{
+			logger.LogError(
+				ex,
+				"OAuth callback failed for provider {Provider}",
+				provider);
+
+			return AuthResult.Failed(
+				OAuthProviderConstants.ErrorMessages.AuthenticationFailed(
+					provider),
 				AuthErrorCodes.OAuthError);
 		}
 	}
 
+	/// <inheritdoc/>
+	public async Task<OAuthUserInfo?> ExchangeCodeForUserInfoAsync(
+		string provider,
+		string code,
+		string redirectUri,
+		string codeVerifier,
+		CancellationToken cancellationToken = default)
+	{
+		OAuthProviderSettings? providerSettings =
+			authSettings.Value.OAuth.Providers.FirstOrDefault(
+				providerConfig => string.Equals(
+					providerConfig.Provider,
+					provider,
+					StringComparison.OrdinalIgnoreCase));
+
+		if (providerSettings is null)
+		{
+			return null;
+		}
+
+		try
+		{
+			IOAuthProviderStrategy strategy =
+				providerFactory.GetStrategy(provider);
+
+			string accessToken =
+				await strategy.ExchangeCodeForTokenAsync(
+					providerSettings,
+					code,
+					redirectUri,
+					codeVerifier,
+					cancellationToken);
+
+			return await strategy.GetUserInfoAsync(
+				accessToken,
+				cancellationToken);
+		}
+		catch (HttpRequestException ex)
+		{
+			logger.LogError(
+				ex,
+				"Failed to exchange code for user info from provider {Provider}",
+				provider);
+
+			return null;
+		}
+		catch (JsonException ex)
+		{
+			logger.LogError(
+				ex,
+				"Failed to exchange code for user info from provider {Provider}",
+				provider);
+
+			return null;
+		}
+		catch (InvalidOperationException ex)
+		{
+			logger.LogError(
+				ex,
+				"Failed to exchange code for user info from provider {Provider}",
+				provider);
+
+			return null;
+		}
+	}
+
 	/// <summary>
-	/// Exchanges authorization code for access token.
+	/// Gets provider settings or throws if not configured.
 	/// </summary>
 	/// <param name="provider">
-	/// OAuth provider settings to use for the exchange.
-	/// </param>
-	/// <param name="code">
-	/// The authorization code received from provider.
-	/// </param>
-	/// <param name="codeVerifier">
-	/// The PKCE code verifier to validate the code challenge.
-	/// </param>
-	/// <param name="cancellationToken">
-	/// Cancellation token.
+	/// The OAuth provider name.
 	/// </param>
 	/// <returns>
-	/// The provider access token string.
+	/// The provider settings.
 	/// </returns>
-	private async Task<string> ExchangeCodeForTokenAsync(
-		OAuthProviderSettings provider,
-		string code,
-		string codeVerifier,
-		CancellationToken cancellationToken)
+	/// <exception cref="InvalidOperationException">
+	/// Thrown when the provider is not configured.
+	/// </exception>
+	private OAuthProviderSettings GetProviderSettings(string provider)
 	{
-		using HttpClient client =
-			httpClientFactory.CreateClient();
-
-		Dictionary<string, string> parameters =
-			new()
-			{
-				["client_id"] = provider.ClientId,
-				["client_secret"] = provider.ClientSecret,
-				["code"] = code,
-				["redirect_uri"] = provider.RedirectUri,
-				["code_verifier"] = codeVerifier,
-			};
-
-		using FormUrlEncodedContent content =
-			new(parameters);
-
-		client.DefaultRequestHeaders.Accept.Add(
-			new MediaTypeWithQualityHeaderValue(MediaTypeConstants.Json));
-
-		HttpResponseMessage response =
-			await client.PostAsync(
-				provider.TokenEndpoint,
-				content,
-				cancellationToken);
-
-		response.EnsureSuccessStatusCode();
-
-		string json =
-			await response.Content.ReadAsStringAsync(
-				cancellationToken);
-
-		using JsonDocument doc =
-			JsonDocument.Parse(json);
-
-		return doc.RootElement.GetProperty("access_token").GetString()
+		return authSettings.Value.OAuth.Providers.FirstOrDefault(
+			providerConfig => string.Equals(
+				providerConfig.Provider,
+				provider,
+				StringComparison.OrdinalIgnoreCase))
 			?? throw new InvalidOperationException(
-				"No access_token in response");
+				OAuthProviderConstants.ErrorMessages.ProviderNotConfigured(
+					provider));
 	}
 
 	/// <summary>
-	/// Gets user info from GitHub API.
-	/// </summary>
-	/// <param name="accessToken">
-	/// OAuth access token to call GitHub API.
-	/// </param>
-	/// <param name="cancellationToken">
-	/// Cancellation token.
-	/// </param>
-	/// <returns>
-	/// A <see cref="GitHubUserInfo"/> parsed from the API response.
-	/// </returns>
-	private async Task<GitHubUserInfo> GetGitHubUserInfoAsync(
-		string accessToken,
-		CancellationToken cancellationToken)
-	{
-		using HttpClient client =
-			httpClientFactory.CreateClient();
-
-		client.DefaultRequestHeaders.Authorization =
-			new AuthenticationHeaderValue("Bearer", accessToken);
-
-		client.DefaultRequestHeaders.UserAgent.Add(
-			new ProductInfoHeaderValue("SeventySix", "1.0"));
-
-		HttpResponseMessage response =
-			await client.GetAsync(
-				OAuthProviderConstants.Endpoints.GitHubUserApi,
-				cancellationToken);
-
-		response.EnsureSuccessStatusCode();
-
-		string json =
-			await response.Content.ReadAsStringAsync(
-				cancellationToken);
-
-		using JsonDocument doc =
-			JsonDocument.Parse(json);
-
-		JsonElement root =
-			doc.RootElement;
-
-		return new GitHubUserInfo(
-			Id: root.GetProperty("id").GetInt64().ToString(),
-			Login: root.GetProperty("login").GetString() ?? "",
-			Email: root.TryGetProperty(
-				"email",
-				out JsonElement emailElement)
-				? emailElement.GetString()
-				: null,
-			Name: root.TryGetProperty(
-				"name",
-				out JsonElement nameElement)
-				? nameElement.GetString()
-				: null);
-	}
-
-	/// <summary>
-	/// Finds existing user by GitHub ID or creates new one.
+	/// Finds existing user by provider login or creates new one.
 	/// Uses ASP.NET Core Identity's external login functionality.
+	/// Syncs Display Name from provider if user's is empty.
 	/// </summary>
+	/// <param name="provider">
+	/// The OAuth provider name (e.g., "GitHub").
+	/// </param>
 	/// <param name="userInfo">
-	/// The parsed GitHub user information.
+	/// The standardized OAuth user information.
 	/// </param>
 	/// <param name="cancellationToken">
 	/// Cancellation token.
@@ -252,34 +252,42 @@ public sealed class OAuthService(
 	/// <returns>
 	/// The existing or newly created <see cref="ApplicationUser"/>.
 	/// </returns>
-	private async Task<ApplicationUser> FindOrCreateGitHubUserAsync(
-		GitHubUserInfo userInfo,
+	private async Task<ApplicationUser> FindOrCreateOAuthUserAsync(
+		string provider,
+		OAuthUserInfo userInfo,
 		CancellationToken cancellationToken)
 	{
 		// Look for existing external login using Identity
 		ApplicationUser? existingUser =
 			await userManager.FindByLoginAsync(
-				OAuthProviderConstants.GitHub,
-				userInfo.Id);
+				provider,
+				userInfo.ProviderId);
 
-		if (existingUser != null)
+		if (existingUser is not null)
 		{
+			// Sync Display Name from provider if user's is empty
+			if (string.IsNullOrEmpty(existingUser.FullName)
+				&& !string.IsNullOrEmpty(userInfo.FullName))
+			{
+				existingUser.FullName = userInfo.FullName;
+				existingUser.ModifyDate = timeProvider.GetUtcNow();
+				existingUser.ModifiedBy =
+					OAuthProviderConstants.GetAuditSource(provider);
+				await userManager.UpdateAsync(existingUser);
+			}
+
 			return existingUser;
 		}
 
 		DateTimeOffset now =
 			timeProvider.GetUtcNow();
 
-		// Create new user - ensure unique username
+		// Create new user — use deterministic unique username
 		string username =
-			userInfo.Login;
-		int counter = 1;
+			$"{provider.ToLowerInvariant()}_{userInfo.ProviderId}";
 
-		while (await userManager.FindByNameAsync(username) != null)
-		{
-			username =
-				$"{userInfo.Login}{counter++}";
-		}
+		string placeholderEmailDomain =
+			OAuthProviderConstants.GetPlaceholderEmailDomain(provider);
 
 		ApplicationUser newUser =
 			new()
@@ -287,15 +295,38 @@ public sealed class OAuthService(
 				UserName = username,
 				Email =
 					userInfo.Email
-						?? $"{userInfo.Login}{OAuthProviderConstants.AuditValues.GitHubPlaceholderEmailDomain}",
-				FullName = userInfo.Name,
+						?? $"{userInfo.Login}{placeholderEmailDomain}",
+				FullName = userInfo.FullName,
 				IsActive = true,
 				CreateDate = now,
-				CreatedBy =
-					OAuthProviderConstants.AuditValues.GitHubOAuthCreatedBy,
+				CreatedBy = OAuthProviderConstants.GetAuditSource(provider),
 			};
 
-		// Create user without password (OAuth users don't have local passwords)
+		await RegisterOAuthUserAsync(
+			newUser,
+			provider,
+			userInfo.ProviderId);
+
+		return newUser;
+	}
+
+	/// <summary>
+	/// Creates the user in Identity, links the external login, and assigns the User role.
+	/// </summary>
+	/// <param name="newUser">
+	/// The pre-built <see cref="ApplicationUser"/> to persist.
+	/// </param>
+	/// <param name="provider">
+	/// OAuth provider name (e.g. "GitHub").
+	/// </param>
+	/// <param name="providerId">
+	/// Provider-specific user identifier.
+	/// </param>
+	private async Task RegisterOAuthUserAsync(
+		ApplicationUser newUser,
+		string provider,
+		string providerId)
+	{
 		IdentityResult createResult =
 			await userManager.CreateAsync(newUser);
 
@@ -305,30 +336,29 @@ public sealed class OAuthService(
 				string.Join(
 					", ",
 					createResult.Errors.Select(error => error.Description));
+			logger.LogError(
+				"Failed to create OAuth user: {Errors}",
+				errors);
 			throw new InvalidOperationException(
-				$"Failed to create OAuth user: {errors}");
+				ProblemDetailConstants.Details.OAuthUserCreationFailed);
 		}
 
-		// Add external login
 		UserLoginInfo loginInfo =
-			new(
-				OAuthProviderConstants.GitHub,
-				userInfo.Id,
-				OAuthProviderConstants.GitHub);
+			new(provider, providerId, provider);
 
 		IdentityResult loginResult =
-			await userManager.AddLoginAsync(
-				newUser,
-				loginInfo);
+			await userManager.AddLoginAsync(newUser, loginInfo);
 
 		if (!loginResult.Succeeded)
 		{
 			string errors = loginResult.ToErrorString();
+			logger.LogError(
+				"Failed to add external login: {Errors}",
+				errors);
 			throw new InvalidOperationException(
-				$"Failed to add external login: {errors}");
+				ProblemDetailConstants.Details.ExternalLoginLinkFailed);
 		}
 
-		// Assign User role
 		IdentityResult roleResult =
 			await userManager.AddToRoleAsync(
 				newUser,
@@ -337,19 +367,11 @@ public sealed class OAuthService(
 		if (!roleResult.Succeeded)
 		{
 			string errors = roleResult.ToErrorString();
+			logger.LogError(
+				"Failed to assign role: {Errors}",
+				errors);
 			throw new InvalidOperationException(
-				$"Failed to assign role: {errors}");
+				ProblemDetailConstants.Details.RoleAssignmentFailed);
 		}
-
-		return newUser;
 	}
-
-	/// <summary>
-	/// GitHub user info from API response.
-	/// </summary>
-	private record GitHubUserInfo(
-		string Id,
-		string Login,
-		string? Email,
-		string? Name);
 }

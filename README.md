@@ -281,9 +281,11 @@ For a complete step-by-step walkthrough including account signups, VS Code confi
    | Field | Value |
    |---|---|
    | Username | `admin` |
-   | Email | `admin@seventysix.local` |
+   | Email | Set via `AdminSeeder:Email` user secret |
    | Password | Set via `AdminSeeder:InitialPassword` user secret |
    | First Login | Requires mandatory password change |
+
+   > **MFA Note**: Set `AdminSeeder:Email` to a **real email address you control** (e.g., `contactseventysix@gmail.com`). MFA verification codes are sent to this address on first login — a placeholder like `admin@seventysix.local` won't receive them.
 
    > This account is created by `AdminSeederService` and is **not** created in production environments.
 
@@ -877,6 +879,49 @@ ThirdPartyApiTracking can be decorated on any domain Handler and specific config
 always be cautious, and ensure the third party api tracking is working as intended, I have tests setup but if for any reason this is not working as intended I want you to know early. Emails for example are sent via the Create User flow Verify Email and Time-Based One Time Passwords flows (TOTP) for Multi-Factor Authentication (MFA).
 
 ## Code Quality
+
+### AI-Assisted Development with Architecture Guardrails
+
+This project uses AI-assisted development (GitHub Copilot) constrained by 50+ automated architecture tests that run on every build. AI generates code; architecture tests enforce patterns. Violations fail the build — no exceptions.
+
+**Client** (28 rules in `scripts/architecture-tests.mjs`, run before every `npm test`):
+
+| Category | Enforced |
+|----------|----------|
+| Signal Pattern | `input.required<T>()` / `output<T>()` only — no `@Input()`/`@Output()` decorators; `OnPush` required |
+| Control Flow | `@if`/`@for`/`@switch` only — no `*ngIf`/`*ngFor`/`*ngSwitch` |
+| Dependency Injection | `inject()` function only — no constructor injection |
+| Zoneless | No `NgZone`; no `fakeAsync`/`tick`; `provideZonelessChangeDetection` in all tests |
+| Domain Boundaries | No cross-domain imports; shared independence; route-scoped services |
+| Code Quality | Max 800 lines/file, 50 lines/method, 6 params, 12 public methods; no `!!` or `\|\|` null coercion |
+| Date/Time | `DateService` only — no native `new Date()` |
+
+**Server** (25 test classes in `Tests/SeventySix.ArchitectureTests/`):
+
+| Category | Enforced |
+|----------|----------|
+| Project Structure | `Shared ← Domains ← Api` import direction — never reversed |
+| CQRS Pattern | Wolverine static handlers, method-injected dependencies |
+| Entity Standards | `long` IDs, Fluent API config, audit interface compliance |
+| Code Quality | Sealed services, primary constructors, `*Async` suffix, 3+ char variable names |
+| Correctness | `TimeProvider` injection (no `DateTime.Now`), `CancellationToken` on async handlers, `TransactionManager` for multi-writes |
+| Operations | Health checks per domain, no dev settings in production config |
+
+### Formatting
+
+Single `.editorconfig` as source of truth for all code style rules. Run once to format everything:
+
+```bash
+npm run format
+```
+
+| Layer | Tools | Scope |
+|-------|-------|-------|
+| Server | Roslyn analyzers (SS001-SS006) + `dotnet format` | All `.cs` files |
+| Client | ESLint (custom rules) + dprint | All `.ts` files |
+| Load Tests | Client ESLint + dprint (umbrella config) | All `load-testing/**/*.js` |
+
+Formatting is **never a concern** — the CI gate and architecture tests catch violations before merge.
 
 ### Server (.NET)
 

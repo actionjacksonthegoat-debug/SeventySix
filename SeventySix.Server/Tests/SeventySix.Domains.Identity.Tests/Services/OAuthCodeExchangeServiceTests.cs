@@ -21,6 +21,7 @@ public class OAuthCodeExchangeServiceTests
 
 	private const string TestEmail = "test@example.com";
 	private const string? TestFullName = null;
+	private const string TestProvider = "GitHub";
 
 	/// <summary>
 	/// Creates an OAuthCodeExchangeService with a memory-only FusionCache.
@@ -105,7 +106,7 @@ public class OAuthCodeExchangeServiceTests
 	/// Verifies generated code is base64url-safe (url friendly characters only).
 	/// </summary>
 	[Fact]
-	public void StoreTokens_GeneratesBase64UrlSafeCode()
+	public void StoreTokens_ValidInput_GeneratesBase64UrlSafeCode()
 	{
 		// Arrange
 		OAuthCodeExchangeService service = CreateService();
@@ -235,7 +236,7 @@ public class OAuthCodeExchangeServiceTests
 	/// Verifies generated code length meets expected base64url size.
 	/// </summary>
 	[Fact]
-	public void StoreTokens_CodeLengthIsSecure()
+	public void StoreTokens_ValidInput_GeneratesSecureLengthCode()
 	{
 		// Arrange
 		OAuthCodeExchangeService service = CreateService();
@@ -282,6 +283,86 @@ public class OAuthCodeExchangeServiceTests
 
 		// Assert - All codes should be unique
 		codes.Count.ShouldBe(100);
+	}
+
+	#endregion
+
+	#region StoreLinkFlow / RetrieveLinkFlow Tests
+
+	/// <summary>
+	/// Verifies StoreLinkFlow stores data that can be retrieved by state.
+	/// </summary>
+	[Fact]
+	public void StoreLinkFlow_ValidInput_CanBeRetrieved()
+	{
+		// Arrange
+		OAuthCodeExchangeService service = CreateService();
+
+		string state = "link-state-123";
+		OAuthLinkFlowData data =
+			new(
+				UserId: 42,
+				CodeVerifier: "test-code-verifier",
+				Provider: TestProvider);
+
+		// Act
+		service.StoreLinkFlow(state, data);
+
+		OAuthLinkFlowData? result =
+			service.RetrieveLinkFlow(state);
+
+		// Assert
+		result.ShouldNotBeNull();
+		result.UserId.ShouldBe(42);
+		result.CodeVerifier.ShouldBe("test-code-verifier");
+		result.Provider.ShouldBe(TestProvider);
+	}
+
+	/// <summary>
+	/// Verifies RetrieveLinkFlow returns null for unknown state.
+	/// </summary>
+	[Fact]
+	public void RetrieveLinkFlow_UnknownState_ReturnsNull()
+	{
+		// Arrange
+		OAuthCodeExchangeService service = CreateService();
+
+		// Act
+		OAuthLinkFlowData? result =
+			service.RetrieveLinkFlow("nonexistent-state");
+
+		// Assert
+		result.ShouldBeNull();
+	}
+
+	/// <summary>
+	/// Verifies link flow data is one-time use (removed after retrieval).
+	/// </summary>
+	[Fact]
+	public void RetrieveLinkFlow_SameStateTwice_SecondCallReturnsNull()
+	{
+		// Arrange
+		OAuthCodeExchangeService service = CreateService();
+
+		string state = "link-state-456";
+		OAuthLinkFlowData data =
+			new(
+				UserId: 99,
+				CodeVerifier: "verifier",
+				Provider: TestProvider);
+
+		service.StoreLinkFlow(state, data);
+
+		// Act
+		OAuthLinkFlowData? firstResult =
+			service.RetrieveLinkFlow(state);
+
+		OAuthLinkFlowData? secondResult =
+			service.RetrieveLinkFlow(state);
+
+		// Assert
+		firstResult.ShouldNotBeNull();
+		secondResult.ShouldBeNull();
 	}
 
 	#endregion

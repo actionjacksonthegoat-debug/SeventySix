@@ -398,15 +398,15 @@ export const FEATURE_HIGHLIGHTS: readonly FeatureHighlight[] =
 		{
 			title: "AI-Assisted Workflow",
 			icon: "smart_toy",
-			tagline: "Built with and for GitHub Copilot",
+			tagline: "AI On Guardrails",
 			description:
-			"Structured plan execution, auto-applied instruction files, MCP server integrations, and Copilot-optimized prompts for consistent development.",
+			"GitHub Copilot generates code; 50+ architecture tests enforce patterns at build time. Violations fail the build \u2014 no exceptions.",
 			bullets: [
-				"Structured /create-plan → /review-plan → /execute-plan workflow",
-				"Auto-applied instruction files per file type",
-				"MCP servers: GitHub, PostgreSQL, Chrome DevTools, context7",
-				"Custom ESLint rules enforcing project conventions",
-				"Hot reload for both .NET API and Angular client"
+				"28 client architecture rules: signals, zoneless, domain boundaries, code quality limits",
+				"25 server architecture test classes: CQRS, bounded contexts, sealed services, time provider",
+				"Architecture tests run before every test suite \u2014 violations fail the build, no exceptions",
+				"Structured /create-plan \u2192 /review-plan \u2192 /execute-plan workflow",
+				"5 MCP servers (GitHub, PostgreSQL, Chrome DevTools, Context7, Playwright) for AI-assisted debugging"
 			]
 		},
 		{
@@ -418,8 +418,8 @@ export const FEATURE_HIGHLIGHTS: readonly FeatureHighlight[] =
 			bullets: [
 				"Clean Architecture with strict dependency flow",
 				"Bounded contexts: Identity, Logging, ApiTracking, Notifications",
-				"Wolverine CQRS with static handlers",
-				"TanStack Query with coordinated cache invalidation",
+				"Admin user seeded from user secrets on first dev startup",
+				"Single .editorconfig source of truth; npm run format enforces formatting sitewide",
 				"Docker Compose: dev mirrors production 1:1"
 			]
 		}

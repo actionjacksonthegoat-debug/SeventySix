@@ -3,7 +3,7 @@
 .app-header {
 	position: sticky;
 	top: 0;
-	z-index: 100;
+	z-index: vars.$z-index-sticky;
 	display: flex;
 	align-items: center;
 	gap: vars.$spacing-sm;
@@ -21,7 +21,7 @@
 	gap: vars.$spacing-sm;
 	font-size: vars.$font-size-lg;
 	font-weight: vars.$font-weight-medium;
-	cursor: arrow;
+	cursor: default;
 	user-select: none;
 
 	.logo-icon {

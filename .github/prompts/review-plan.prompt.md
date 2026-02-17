@@ -29,10 +29,22 @@ Read `Implementation.md` (orchestrator) and ALL `implementation-N.md` files list
 
 ## Output
 
-Report and Update all reviewed plans with:
+Report and update all reviewed plans with:
 
 - **Violations** found (with file name, phase number, and specific issue)
 - **Missing coverage** (rules/patterns not addressed by the plan)
-- **Suggestions** for improvement, updated in the reviewed plans along with completion plans, we will add suggestions as needed unless it truly violates YAGNI rules
-- Confirm CRITICAL no-skip rule appears at TOP and BOTTOM of every `implementation-N.md` file AND the orchestrator
-- Overall **pass/fail** assessment
+- **Suggestions** for improvement — add to plans unless it truly violates YAGNI
+
+Confirm CRITICAL no-skip rule appears at TOP and BOTTOM of every `implementation-N.md` file AND the orchestrator.
+
+Overall **pass/fail** assessment.
+
+## Plan Update Requirements (CRITICAL)
+
+> **RULE**: This review is NOT complete until all implementation plans are updated with the findings.
+
+1. **Every violation** must have a fix incorporated into the relevant `implementation-N.md` phase
+2. **Every missing coverage item** must be added as a new phase or step in the appropriate plan file
+3. **Suggestions** are added to plans unless explicitly rejected as YAGNI
+4. **Re-read updated plans** after modifications to verify no new conflicts were introduced
+5. **Do NOT** call this prompt complete if any violation or gap remains unaddressed in the plan files

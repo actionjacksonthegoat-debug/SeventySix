@@ -52,7 +52,7 @@
 	}
 
 	.table-container {
-		max-height: calc(4 * 56px + 56px);
+		max-height: calc(4 * vars.$table-header-height + vars.$table-header-height);
 		overflow-y: auto;
 		overflow-x: auto;
 		@include vars.custom-scrollbar();

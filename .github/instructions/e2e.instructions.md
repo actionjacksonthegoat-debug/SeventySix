@@ -6,6 +6,36 @@ applyTo: "**/SeventySix.Client/e2e/**/*.ts"
 
 # E2E Testing (Playwright)
 
+## E2E Environment Isolation (CRITICAL)
+
+E2E tests run in a **fully isolated Docker environment** (`docker-compose.e2e.yml`). You do NOT need to start the dev environment (`npm start`) for E2E tests. The E2E script handles all infrastructure automatically.
+
+| Environment | Docker Compose File | Ports (DB / Cache / API / Client) |
+|-------------|--------------------|-----------------------------|
+| Dev | `docker-compose.yml` | 5433 / 6379 / 7074 / 4200 |
+| E2E | `docker-compose.e2e.yml` | 5434 / 6380 / 7174 / 4201 |
+| Load Test | `docker-compose.loadtest.yml` | 5435 / 6381 / 7175 / 4202 |
+
+## KeepAlive Mode (For Debugging)
+
+Use `--keepalive` to keep the E2E environment running after tests complete:
+
+```bash
+# Run all E2E tests, keep environment alive
+npm run test:e2e -- --keepalive
+
+# Run a single spec with keepalive
+npm run test:e2e -- --keepalive specs/auth/login.spec.ts
+
+# Run by grep with keepalive
+npm run test:e2e -- --keepalive --grep "should display login form"
+
+# Manual cleanup when done
+docker compose -f docker-compose.e2e.yml down -v --remove-orphans
+```
+
+With the environment alive, use Playwright MCP or Playwright CLI to fine-tune tests interactively against `https://localhost:4201`.
+
 ## Import Rule (CRITICAL)
 
 ```typescript
@@ -186,7 +216,7 @@ finally
 
 ## Playwright CLI (Test Running)
 
-Always use Playwright CLI for running and debugging E2E tests — never use a Playwright MCP:
+Always use Playwright CLI for running and debugging E2E tests — never use a Playwright MCP for test execution:
 
 | Task | Command |
 |---|---|
@@ -201,10 +231,15 @@ Always use Playwright CLI for running and debugging E2E tests — never use a Pl
 | JSON output | `npx playwright test --reporter=json` |
 | Show report | `npx playwright show-report` |
 | Show trace | `npx playwright show-trace test-results/*/trace.zip` |
+| Run with keepalive | `npm run test:e2e -- --keepalive` |
+| Single spec + keepalive | `npm run test:e2e -- --keepalive specs/auth/login.spec.ts` |
 
-## Chrome DevTools MCP (E2E Debugging)
+## MCP Tools for E2E Debugging
 
-When E2E tests fail, use Chrome DevTools MCP to diagnose — `list_console_messages` for JS errors, `list_network_requests` for API failures, `take_screenshot` for visual state. See `copilot-instructions.md` Chrome DevTools section.
+When E2E tests fail, use these MCP servers to diagnose:
+
+- **Chrome DevTools MCP**: `list_console_messages` for JS errors, `list_network_requests` for API failures, `take_screenshot` for visual state. See `copilot-instructions.md` Chrome DevTools section.
+- **Playwright MCP**: Fine-tune selectors and debug test flows interactively when the E2E environment is running (`--keepalive`). Never use Playwright MCP for running test suites.
 
 
 ````

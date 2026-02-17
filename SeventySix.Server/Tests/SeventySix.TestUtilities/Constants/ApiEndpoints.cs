@@ -115,6 +115,53 @@ public static class ApiEndpoints
 			/// <summary>GitHub OAuth callback endpoint.</summary>
 			public const string GitHubCallback = "/api/v1/auth/oauth/github/callback";
 
+			/// <summary>Linked external logins endpoint.</summary>
+			public const string Linked = "/api/v1/auth/oauth/linked";
+
+			/// <summary>
+			/// Gets the OAuth start endpoint for a given provider.
+			/// </summary>
+			/// <param name="provider">
+			/// Provider name (e.g. "github").
+			/// </param>
+			/// <returns>
+			/// The OAuth start URL.
+			/// </returns>
+			public static string Provider(string provider) =>
+				$"/api/v1/auth/oauth/{provider}";
+
+			/// <summary>
+			/// Gets the OAuth callback endpoint for a given provider.
+			/// </summary>
+			/// <param name="provider">
+			/// Provider name (e.g. "github").
+			/// </param>
+			/// <returns>
+			/// The callback URL.
+			/// </returns>
+			public static string Callback(string provider) =>
+				$"/api/v1/auth/oauth/{provider}/callback";
+
+			/// <summary>
+			/// Builds callback URL with query parameters for any provider.
+			/// </summary>
+			/// <param name="provider">
+			/// Provider name.
+			/// </param>
+			/// <param name="code">
+			/// OAuth code.
+			/// </param>
+			/// <param name="state">
+			/// OAuth state.
+			/// </param>
+			/// <returns>
+			/// Full callback URL with query string.
+			/// </returns>
+			public static string CallbackWithParams(
+				string provider,
+				string code,
+				string state) => $"{Callback(provider)}?code={code}&state={state}";
+
 			/// <summary>
 			/// Builds GitHub callback URL with query parameters.
 			/// </summary>
@@ -130,6 +177,18 @@ public static class ApiEndpoints
 			public static string GitHubCallbackWithParams(
 				string code,
 				string state) => $"{GitHubCallback}?code={code}&state={state}";
+
+			/// <summary>
+			/// Gets the link endpoint for a given provider.
+			/// </summary>
+			/// <param name="provider">
+			/// Provider name.
+			/// </param>
+			/// <returns>
+			/// The link URL.
+			/// </returns>
+			public static string Link(string provider) =>
+				$"/api/v1/auth/oauth/link/{provider}";
 		}
 	}
 
