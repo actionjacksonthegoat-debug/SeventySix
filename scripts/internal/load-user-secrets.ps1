@@ -24,8 +24,9 @@
 
 $ErrorActionPreference = "Stop"
 
+$repoRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 $projectPath =
-[System.IO.Path]::Combine($PSScriptRoot, "..", "SeventySix.Server", "SeventySix.Api", "SeventySix.Api.csproj")
+[System.IO.Path]::Combine($repoRoot, "SeventySix.Server", "SeventySix.Api", "SeventySix.Api.csproj")
 
 if (-not (Test-Path $projectPath)) {
 	Write-Host "Project file not found at: $projectPath" -ForegroundColor Red

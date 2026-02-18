@@ -86,7 +86,6 @@ switch ($Action) {
 
 		# Data Protection
 		dotnet user-secrets set "DataProtection:UseCertificate" "true" --project $projectPath
-		dotnet user-secrets set "DataProtection:AllowUnprotectedKeysInDevelopment" "false" --project $projectPath
 		dotnet user-secrets set "DataProtection:CertificatePath" "/app/keys/dataprotection.pfx" --project $projectPath
 		dotnet user-secrets set "DataProtection:CertificatePassword" "SeventySixAdminDataProtection76!" --project $projectPath
 

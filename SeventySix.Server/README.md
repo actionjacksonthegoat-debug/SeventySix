@@ -120,7 +120,7 @@ graph TB
 
 ### Domain Details
 
-**Identity** — The largest domain, housed in its own project. Manages the full user lifecycle: registration (email verification flow), login (JWT with refresh token rotation), multi-factor authentication (TOTP + backup codes), GitHub OAuth, trusted device management, role-based access control (User, Admin, Developer), and permission request workflows. Administrators approve or reject permission requests; approval triggers cross-domain cache invalidation so the role takes effect immediately. Soft-deleted user accounts can be restored. Security events are audited. Background jobs maintain the Identity domain:
+**Identity** — The largest domain, housed in its own project. Manages the full user lifecycle: registration (email verification flow), login (JWT with refresh token rotation), multi-factor authentication (TOTP + backup codes), GitHub OAuth login and account linking (link/unlink external providers from the profile page), trusted device management, role-based access control (User, Admin, Developer), and permission request workflows. Administrators approve or reject permission requests; approval triggers cross-domain cache invalidation so the role takes effect immediately. Soft-deleted user accounts can be restored. Security events are audited. Background jobs maintain the Identity domain:
 
 | Job | Purpose |
 |---|---|

@@ -6,6 +6,8 @@
 import { HttpErrorResponse } from "@angular/common/http";
 import { provideZonelessChangeDetection, signal } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
+import { MatIconRegistry } from "@angular/material/icon";
+import { DomSanitizer } from "@angular/platform-browser";
 import { provideRouter, Router } from "@angular/router";
 import { AuthResponse } from "@auth/models";
 import { MfaService } from "@auth/services";
@@ -21,6 +23,7 @@ import {
 	MockAltchaService,
 	MockNotificationService
 } from "@shared/testing";
+import { registerOAuthIcons } from "@shared/utilities/oauth-icons.utility";
 import { of, throwError } from "rxjs";
 import { vi } from "vitest";
 import { LoginComponent } from "./login";
@@ -124,6 +127,10 @@ describe("LoginComponent",
 							]
 						})
 					.compileComponents();
+
+				registerOAuthIcons(
+					TestBed.inject(MatIconRegistry),
+					TestBed.inject(DomSanitizer));
 
 				fixture =
 					TestBed.createComponent(LoginComponent);

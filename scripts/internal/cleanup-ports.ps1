@@ -6,8 +6,8 @@
 #        managed by their respective compose files — never cleaned here.
 #
 # Usage:
-#   .\scripts\cleanup-ports.ps1
-#   .\scripts\cleanup-ports.ps1 -Quiet
+#   .\scripts\internal\cleanup-ports.ps1
+#   .\scripts\internal\cleanup-ports.ps1 -Quiet
 #
 # Ports cleaned:
 #   4200  - Angular dev server (ng serve, spawned by start-dev.ps1)

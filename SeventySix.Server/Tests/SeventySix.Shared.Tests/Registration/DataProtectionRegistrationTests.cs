@@ -39,7 +39,6 @@ public class DataProtectionRegistrationTests
 			{
 				["DataProtection:UseCertificate"] = "true",
 				["DataProtection:CertificatePath"] = NonExistentCertPath,
-				["DataProtection:AllowUnprotectedKeysInDevelopment"] = "false",
 				["DataProtection:KeysDirectory"] = tempKeysDirectory
 			};
 
@@ -77,7 +76,6 @@ public class DataProtectionRegistrationTests
 			{
 				["DataProtection:UseCertificate"] = "true",
 				["DataProtection:CertificatePath"] = NonExistentCertPath,
-				["DataProtection:AllowUnprotectedKeysInDevelopment"] = "true",
 			};
 
 		IConfiguration configuration =
@@ -102,7 +100,7 @@ public class DataProtectionRegistrationTests
 		ServiceProvider provider =
 			services.BuildServiceProvider();
 
-		// Assert - Should not throw
+		// Assert - Should not throw; falls back to unprotected keys
 		IOptions<AppDataProtectionOptions> dataProtectionOptionsAccessor =
 			provider.GetRequiredService<IOptions<AppDataProtectionOptions>>();
 
@@ -110,7 +108,6 @@ public class DataProtectionRegistrationTests
 			dataProtectionOptionsAccessor.Value;
 
 		dataProtectionOptions.UseCertificate.ShouldBeTrue();
-		dataProtectionOptions.AllowUnprotectedKeysInDevelopment.ShouldBeTrue();
 	}
 
 	[Fact]
@@ -156,42 +153,5 @@ public class DataProtectionRegistrationTests
 			provider.GetRequiredService<IOptions<AppDataProtectionOptions>>();
 
 		dataProtectionOptionsAccessor.Value.UseCertificate.ShouldBeFalse();
-	}
-
-	[Fact]
-	public void AddConfiguredDataProtection_WithMissingCertificate_InDevelopment_FallbackDisabled_ThrowsInvalidOperationException()
-	{
-		// Arrange
-		Dictionary<string, string?> configurationValues =
-			new()
-			{
-				["DataProtection:UseCertificate"] = "true",
-				["DataProtection:CertificatePath"] = NonExistentCertPath,
-				["DataProtection:AllowUnprotectedKeysInDevelopment"] = "false",
-			};
-
-		IConfiguration configuration =
-			new ConfigurationBuilder()
-				.AddInMemoryCollection(configurationValues)
-				.Build();
-
-		ServiceCollection services =
-			new();
-
-		IWebHostEnvironment environment =
-			Substitute.For<IWebHostEnvironment>();
-
-		environment.EnvironmentName =
-			Environments.Development;
-
-		// Act & Assert - Fail-fast: throws when certificate is required but fallback is disabled
-		InvalidOperationException exception =
-			Should.Throw<InvalidOperationException>(
-				() => services.AddConfiguredDataProtection(
-					configuration,
-					environment));
-
-		exception.Message.ShouldContain(
-			"Data Protection certificate is required but could not be loaded");
 	}
 }

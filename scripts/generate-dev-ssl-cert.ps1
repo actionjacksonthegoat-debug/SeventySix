@@ -1,5 +1,7 @@
+#Requires -Version 7.4
 # generate-dev-ssl-cert.ps1
 # Generates a unified self-signed SSL certificate for local development and E2E testing.
+# Cross-platform: uses openssl (Windows via Git, Linux natively, GitHub Actions runners).
 #
 # SINGLE CERTIFICATE COVERS ALL ENVIRONMENTS:
 # ============================================================================
@@ -204,63 +206,59 @@ function New-SslCertificateFiles {
 		Write-Host "  Created directory: $outputDirectory" -ForegroundColor Gray
 	}
 
+	$opensslExecutable = Find-OpenSslExecutable
+	if (-not $opensslExecutable) {
+		Write-Host "  [ERROR] openssl not found. Install Git for Windows (includes openssl) or install openssl directly." -ForegroundColor Red
+		return $null
+	}
+
 	try {
-		# Create certificate with Subject Alternative Names
-		$generatedCertificate = New-SelfSignedCertificate `
-			-Subject "CN=localhost" `
-			-DnsName $dnsNames `
-			-KeyAlgorithm RSA `
-			-KeyLength 2048 `
-			-NotBefore (Get-Date) `
-			-NotAfter (Get-Date).AddYears(2) `
-			-CertStoreLocation "Cert:\CurrentUser\My" `
-			-FriendlyName $friendlyName `
-			-HashAlgorithm SHA256 `
-			-KeyUsage DigitalSignature, KeyEncipherment `
-			-TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.1") `
-			-KeyExportPolicy Exportable
+		# Build SAN config file
+		$tmpConf = [System.IO.Path]::GetTempFileName() + ".cnf"
+		$sanList = ($dnsNames | Where-Object { $_ -notmatch '^[\d:]+$' } | ForEach-Object -Begin { $i = 1 } -Process { "DNS.$i = $_"; $i++ }) -join "`n"
+		$ipList = ($dnsNames | Where-Object { $_ -match '^[\d.:]+$' } | ForEach-Object -Begin { $i = 1 } -Process { "IP.$i = $_"; $i++ }) -join "`n"
+		$confContent = @"
+[req]
+distinguished_name = req_distinguished_name
+x509_extensions = v3_req
+prompt = no
 
-		Write-Host "  Thumbprint: $($generatedCertificate.Thumbprint)" -ForegroundColor Gray
+[req_distinguished_name]
+CN = localhost
 
-		# Export to PFX (contains both certificate and private key)
-		$securePassword = ConvertTo-SecureString -String $pfxPassword -Force -AsPlainText
-		Export-PfxCertificate `
-			-Cert $generatedCertificate `
-			-FilePath $pfxBundlePath `
-			-Password $securePassword | Out-Null
+[v3_req]
+subjectAltName = @alt_names
 
-		# Extract PEM files using OpenSSL if available
-		$opensslExecutable = Find-OpenSslExecutable
+[alt_names]
+$sanList
+$ipList
+"@
+		[System.IO.File]::WriteAllText($tmpConf, $confContent)
 
-		if ($opensslExecutable) {
-			# Extract certificate to PEM format
-			& $opensslExecutable pkcs12 -in $pfxBundlePath -clcerts -nokeys -out $certificatePath -passin "pass:$pfxPassword" 2>$null
-			& $opensslExecutable x509 -in $certificatePath -out $certificatePath 2>$null
+		# Generate key + cert
+		& $opensslExecutable req -x509 -nodes -days 730 -newkey rsa:2048 `
+			-keyout $privateKeyPath -out $certificatePath `
+			-config $tmpConf 2>$null
 
-			# Extract private key to PEM format
-			& $opensslExecutable pkcs12 -in $pfxBundlePath -nocerts -nodes -out $privateKeyPath -passin "pass:$pfxPassword" 2>$null
-			& $opensslExecutable rsa -in $privateKeyPath -out $privateKeyPath 2>$null
+		if ($LASTEXITCODE -ne 0) { throw "openssl req failed" }
 
-			Write-Host "  Created: $certificateName.crt, $certificateName.key, $certificateName.pfx" -ForegroundColor Green
-		}
-		else {
-			# Fallback: Export certificate (public key) to CRT format using .NET
-			$certificateBytes = $generatedCertificate.Export([System.Security.Cryptography.X509Certificates.X509ContentType]::Cert)
-			$certificateBase64 = [System.Convert]::ToBase64String($certificateBytes, [System.Base64FormattingOptions]::InsertLineBreaks)
-			$certificatePem = "-----BEGIN CERTIFICATE-----`n$certificateBase64`n-----END CERTIFICATE-----"
-			[System.IO.File]::WriteAllText($certificatePath, $certificatePem)
+		# Bundle into PFX
+		& $opensslExecutable pkcs12 -export `
+			-out $pfxBundlePath `
+			-inkey $privateKeyPath -in $certificatePath `
+			-passout "pass:$pfxPassword" 2>$null
 
-			Write-Host "  Created: $certificateName.crt, $certificateName.pfx (no .key - OpenSSL not found)" -ForegroundColor Yellow
-		}
+		if ($LASTEXITCODE -ne 0) { throw "openssl pkcs12 export failed" }
 
-		# Clean up from certificate store (we have the files now)
-		Remove-Item -Path "Cert:\CurrentUser\My\$($generatedCertificate.Thumbprint)" -Force
-
+		Write-Host "  Created: $certificateName.crt, $certificateName.key, $certificateName.pfx" -ForegroundColor Green
 		return $certificatePath
 	}
 	catch {
 		Write-Host "  Failed: $_" -ForegroundColor Red
 		return $null
+	}
+	finally {
+		Remove-Item -Path $tmpConf -Force -ErrorAction SilentlyContinue
 	}
 }
 
@@ -356,13 +354,8 @@ function Remove-OldSeventySixCertificates {
 }
 
 function Test-AdministratorPrivileges {
-	<#
-	.SYNOPSIS
-	Checks if the current PowerShell session is running with Administrator privileges.
-
-	.OUTPUTS
-	$true if running as Administrator, $false otherwise.
-	#>
+	# Windows-only: checks if session has Administrator privileges for cert store operations
+	if (-not $IsWindows) { return $false }
 	$currentIdentity = [Security.Principal.WindowsIdentity]::GetCurrent()
 	$currentPrincipal = New-Object Security.Principal.WindowsPrincipal($currentIdentity)
 	return $currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
@@ -421,114 +414,106 @@ foreach ($configuration in $certificateConfigurations) {
 }
 
 # ============================================================================
-# CERTIFICATE TRUST
+# CERTIFICATE TRUST (Windows only — Linux uses system trust or browser flags)
 # ============================================================================
 
-Write-Host ""
-Write-Host "----------------------------------------" -ForegroundColor Gray
-
-# Check which certificates need to be trusted
-$certificatesToTrust = @()
-
-foreach ($certificateInfo in $generatedCertificatePaths) {
-	if (-not (Test-CertificateAlreadyTrusted -CertificatePath $certificateInfo.Path)) {
-		$certificatesToTrust += $certificateInfo
-	}
-	else {
-		Write-Host "$($certificateInfo.Name) certificate is already trusted" -ForegroundColor Green
-	}
-}
-
-if ($certificatesToTrust.Count -eq 0) {
-	Write-Host ""
-	Write-Host "All certificates are already trusted." -ForegroundColor Green
-}
-elseif ($SkipTrust) {
-	Write-Host ""
-	Write-Host "Trust step skipped (-SkipTrust flag)" -ForegroundColor Yellow
-	Write-Host ""
-	Write-Host "To trust certificates manually, run as Administrator:" -ForegroundColor Yellow
-
-	foreach ($certificateInfo in $certificatesToTrust) {
-		Write-Host "  Import-Certificate -FilePath `"$($certificateInfo.Path)`" -CertStoreLocation Cert:\LocalMachine\Root" -ForegroundColor White
-	}
-}
-else {
-	# Prompt user to trust certificates
-	Write-Host ""
-	Write-Host "CERTIFICATE TRUST" -ForegroundColor Cyan
-	Write-Host ""
-	Write-Host "To eliminate browser security warnings, certificates must be added to" -ForegroundColor White
-	Write-Host "the Windows Trusted Root Certification Authorities store." -ForegroundColor White
-	Write-Host ""
-	Write-Host "This will:" -ForegroundColor White
-	Write-Host "  1. Remove any existing SeventySix dev certificates (prevents duplicates)" -ForegroundColor Gray
-	Write-Host "  2. Add the new certificate to Trusted Root store" -ForegroundColor Gray
-	Write-Host ""
-	Write-Host "Certificates to trust:" -ForegroundColor White
-
-	foreach ($certificateInfo in $certificatesToTrust) {
-		Write-Host "  - $($certificateInfo.Name): $($certificateInfo.Path)" -ForegroundColor Gray
-	}
+if ($IsWindows -and -not $SkipTrust) {
 
 	Write-Host ""
+	Write-Host "----------------------------------------" -ForegroundColor Gray
 
-	$userResponse = Read-Host "Clean up old certs and trust new certificate? (y/n)"
+	# Check which certificates need to be trusted
+	$certificatesToTrust = @()
 
-	if ($userResponse -eq 'y' -or $userResponse -eq 'Y') {
-		Write-Host ""
-
-		# Get the thumbprint of the new certificate to avoid removing it
-		$newCertPath = $certificatesToTrust[0].Path
-		$newCert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2($newCertPath)
-		$newThumbprint = $newCert.Thumbprint
-		$newCert.Dispose()
-
-		# Check if running as Administrator
-		if (Test-AdministratorPrivileges) {
-			Write-Host "Cleaning up old localhost dev certificates..." -ForegroundColor Cyan
-			$removedCount = Remove-OldSeventySixCertificates -NewThumbprint $newThumbprint
-			if ($removedCount -gt 0) {
-				Write-Host "  Removed $removedCount old certificate(s)" -ForegroundColor Green
-			}
-			else {
-				Write-Host "  No old certificates found" -ForegroundColor Gray
-			}
-
-			Write-Host ""
-			Write-Host "Installing new certificate as trusted root..." -ForegroundColor Cyan
-
-			foreach ($certificateInfo in $certificatesToTrust) {
-				Install-TrustedCertificate -CertificatePath $certificateInfo.Path -CertificateName $certificateInfo.Name | Out-Null
-			}
-
-			# Verify trust
-			Write-Host ""
-			Write-Host "Verifying certificate trust..." -ForegroundColor Cyan
-			$allTrusted = $true
-			foreach ($certificateInfo in $certificatesToTrust) {
-				if (Test-CertificateAlreadyTrusted -CertificatePath $certificateInfo.Path) {
-					Write-Host "  [OK] $($certificateInfo.Name) is trusted" -ForegroundColor Green
-				}
-				else {
-					Write-Host "  [FAIL] $($certificateInfo.Name) is NOT trusted" -ForegroundColor Red
-					$allTrusted = $false
-				}
-			}
-
-			if ($allTrusted) {
-				Write-Host ""
-				Write-Host "SUCCESS: Certificate is trusted. Close and reopen your browser to apply." -ForegroundColor Green
-			}
+	foreach ($certificateInfo in $generatedCertificatePaths) {
+		if (-not (Test-CertificateAlreadyTrusted -CertificatePath $certificateInfo.Path)) {
+			$certificatesToTrust += $certificateInfo
 		}
 		else {
-			Write-Host "Administrator privileges required. Elevating..." -ForegroundColor Yellow
+			Write-Host "$($certificateInfo.Name) certificate is already trusted" -ForegroundColor Green
+		}
+	}
+
+	if ($certificatesToTrust.Count -eq 0) {
+		Write-Host ""
+		Write-Host "All certificates are already trusted." -ForegroundColor Green
+	}
+	else {
+		# Prompt user to trust certificates
+		Write-Host ""
+		Write-Host "CERTIFICATE TRUST" -ForegroundColor Cyan
+		Write-Host ""
+		Write-Host "To eliminate browser security warnings, certificates must be added to" -ForegroundColor White
+		Write-Host "the Windows Trusted Root Certification Authorities store." -ForegroundColor White
+		Write-Host ""
+		Write-Host "This will:" -ForegroundColor White
+		Write-Host "  1. Remove any existing SeventySix dev certificates (prevents duplicates)" -ForegroundColor Gray
+		Write-Host "  2. Add the new certificate to Trusted Root store" -ForegroundColor Gray
+		Write-Host ""
+		Write-Host "Certificates to trust:" -ForegroundColor White
+
+		foreach ($certificateInfo in $certificatesToTrust) {
+			Write-Host "  - $($certificateInfo.Name): $($certificateInfo.Path)" -ForegroundColor Gray
+		}
+
+		Write-Host ""
+
+		$userResponse = Read-Host "Clean up old certs and trust new certificate? (y/n)"
+
+		if ($userResponse -eq 'y' -or $userResponse -eq 'Y') {
 			Write-Host ""
 
-			# Build a script block that will run elevated
-			$certPaths = ($certificatesToTrust | ForEach-Object { $_.Path }) -join "','"
+			# Get the thumbprint of the new certificate to avoid removing it
+			$newCertPath = $certificatesToTrust[0].Path
+			$newCert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2($newCertPath)
+			$newThumbprint = $newCert.Thumbprint
+			$newCert.Dispose()
 
-			$elevatedScript = @"
+			# Check if running as Administrator
+			if (Test-AdministratorPrivileges) {
+				Write-Host "Cleaning up old localhost dev certificates..." -ForegroundColor Cyan
+				$removedCount = Remove-OldSeventySixCertificates -NewThumbprint $newThumbprint
+				if ($removedCount -gt 0) {
+					Write-Host "  Removed $removedCount old certificate(s)" -ForegroundColor Green
+				}
+				else {
+					Write-Host "  No old certificates found" -ForegroundColor Gray
+				}
+
+				Write-Host ""
+				Write-Host "Installing new certificate as trusted root..." -ForegroundColor Cyan
+
+				foreach ($certificateInfo in $certificatesToTrust) {
+					Install-TrustedCertificate -CertificatePath $certificateInfo.Path -CertificateName $certificateInfo.Name | Out-Null
+				}
+
+				# Verify trust
+				Write-Host ""
+				Write-Host "Verifying certificate trust..." -ForegroundColor Cyan
+				$allTrusted = $true
+				foreach ($certificateInfo in $certificatesToTrust) {
+					if (Test-CertificateAlreadyTrusted -CertificatePath $certificateInfo.Path) {
+						Write-Host "  [OK] $($certificateInfo.Name) is trusted" -ForegroundColor Green
+					}
+					else {
+						Write-Host "  [FAIL] $($certificateInfo.Name) is NOT trusted" -ForegroundColor Red
+						$allTrusted = $false
+					}
+				}
+
+				if ($allTrusted) {
+					Write-Host ""
+					Write-Host "SUCCESS: Certificate is trusted. Close and reopen your browser to apply." -ForegroundColor Green
+				}
+			}
+			else {
+				Write-Host "Administrator privileges required. Elevating..." -ForegroundColor Yellow
+				Write-Host ""
+
+				# Build a script block that will run elevated
+				$certPaths = ($certificatesToTrust | ForEach-Object { $_.Path }) -join "','"
+
+				$elevatedScript = @"
 Write-Host 'Cleaning up old localhost dev certificates...' -ForegroundColor Cyan
 `$newThumbprint = '$newThumbprint'
 `$removed = 0
@@ -562,44 +547,49 @@ Write-Host ''
 Read-Host 'Press Enter to close'
 "@
 
-			try {
-				Start-Process powershell.exe -Verb RunAs -ArgumentList "-NoProfile", "-Command", $elevatedScript -Wait
+				try {
+					Start-Process powershell.exe -Verb RunAs -ArgumentList "-NoProfile", "-Command", $elevatedScript -Wait
 
-				# Verify trust after elevation
-				Start-Sleep -Seconds 1
-				Write-Host ""
-				Write-Host "Verifying certificate trust..." -ForegroundColor Cyan
-				$allTrusted = $true
-				foreach ($certificateInfo in $certificatesToTrust) {
-					if (Test-CertificateAlreadyTrusted -CertificatePath $certificateInfo.Path) {
-						Write-Host "  [OK] $($certificateInfo.Name) is trusted" -ForegroundColor Green
-					}
-					else {
-						Write-Host "  [FAIL] $($certificateInfo.Name) is NOT trusted" -ForegroundColor Red
-						$allTrusted = $false
-					}
-				}
-
-				if ($allTrusted) {
+					# Verify trust after elevation
+					Start-Sleep -Seconds 1
 					Write-Host ""
-					Write-Host "SUCCESS: Certificate is trusted. Close and reopen your browser to apply." -ForegroundColor Green
+					Write-Host "Verifying certificate trust..." -ForegroundColor Cyan
+					$allTrusted = $true
+					foreach ($certificateInfo in $certificatesToTrust) {
+						if (Test-CertificateAlreadyTrusted -CertificatePath $certificateInfo.Path) {
+							Write-Host "  [OK] $($certificateInfo.Name) is trusted" -ForegroundColor Green
+						}
+						else {
+							Write-Host "  [FAIL] $($certificateInfo.Name) is NOT trusted" -ForegroundColor Red
+							$allTrusted = $false
+						}
+					}
+
+					if ($allTrusted) {
+						Write-Host ""
+						Write-Host "SUCCESS: Certificate is trusted. Close and reopen your browser to apply." -ForegroundColor Green
+					}
+				}
+				catch {
+					Write-Host ""
+					Write-Host "Failed to elevate. Please run this command manually as Administrator:" -ForegroundColor Red
+					Write-Host "  .\scripts\generate-dev-ssl-cert.ps1 -Force" -ForegroundColor White
 				}
 			}
-			catch {
-				Write-Host ""
-				Write-Host "Failed to elevate. Please run this command manually as Administrator:" -ForegroundColor Red
-				Write-Host "  .\scripts\generate-dev-ssl-cert.ps1 -Force" -ForegroundColor White
+		}
+		else {
+			Write-Host ""
+			Write-Host "Trust skipped. To trust later, run as Administrator:" -ForegroundColor Yellow
+
+			foreach ($certificateInfo in $certificatesToTrust) {
+				Write-Host "  Import-Certificate -FilePath `"$($certificateInfo.Path)`" -CertStoreLocation Cert:\LocalMachine\Root" -ForegroundColor White
 			}
 		}
 	}
-	else {
-		Write-Host ""
-		Write-Host "Trust skipped. To trust later, run as Administrator:" -ForegroundColor Yellow
-
-		foreach ($certificateInfo in $certificatesToTrust) {
-			Write-Host "  Import-Certificate -FilePath `"$($certificateInfo.Path)`" -CertStoreLocation Cert:\LocalMachine\Root" -ForegroundColor White
-		}
-	}
+}
+elseif ($SkipTrust -and $IsWindows) {
+	Write-Host ""
+	Write-Host "Trust step skipped (-SkipTrust flag)" -ForegroundColor Yellow
 }
 
 # ============================================================================

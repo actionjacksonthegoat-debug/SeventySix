@@ -203,6 +203,19 @@ export const PERM_APPROVE_USER: TestUser =
 	} as const;
 
 /**
+ * Dedicated test user for profile edit E2E tests.
+ * Isolated because editing profile (fullName, email) permanently mutates
+ * shared state and would corrupt other tests that depend on known user data.
+ */
+export const PROFILE_EDIT_USER: TestUser =
+	{
+		username: "e2e_profile_edit",
+		password: "E2E_ProfileEdit_Password_123!",
+		role: "User",
+		email: "e2e_profile_edit@test.local"
+	} as const;
+
+/**
  * Known backup codes for the MFA test user.
  * Must match E2ESeederConstants.MfaBackupCodes in the server seeder.
  */

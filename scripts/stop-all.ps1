@@ -23,7 +23,7 @@ Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 
 # First, kill any orphaned local processes on development ports
-& (Join-Path $PSScriptRoot "cleanup-ports.ps1")
+& (Join-Path $PSScriptRoot "internal" "cleanup-ports.ps1")
 
 # Check if Docker is available
 $dockerAvailable = $false

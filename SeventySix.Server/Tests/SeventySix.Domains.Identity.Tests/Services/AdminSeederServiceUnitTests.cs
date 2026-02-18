@@ -245,14 +245,13 @@ public class AdminSeederServiceUnitTests
 				timeProvider,
 				logger);
 
-		// Act & Assert
+		// Act & Assert — StartAsync fires ExecuteAsync in a background Task;
+		// await StartAsync to let it launch, then await the background task directly.
+		await service.StartAsync(CancellationToken.None);
+
 		StartupFailedException exception =
 			await Should.ThrowAsync<StartupFailedException>(
-				async () =>
-				{
-					await service.StartAsync(CancellationToken.None);
-					await service.StopAsync(CancellationToken.None);
-				});
+				service.ExecuteTask!);
 
 		exception.Message.ShouldContain("InitialPassword");
 	}

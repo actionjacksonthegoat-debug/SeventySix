@@ -41,7 +41,7 @@ test.describe("User Detail",
 
 				await adminPage.waitForURL(
 					/\/admin\/users\/\d+/,
-					{ timeout: TIMEOUTS.api });
+					{ timeout: TIMEOUTS.navigation });
 			});
 
 		test("should navigate from user list to detail view",

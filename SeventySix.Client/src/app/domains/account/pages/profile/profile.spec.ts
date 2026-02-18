@@ -2,6 +2,8 @@ import { AccountService } from "@account/services";
 import { ProfileFixtures } from "@account/testing";
 import { provideZonelessChangeDetection, signal, WritableSignal } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
+import { MatIconRegistry } from "@angular/material/icon";
+import { DomSanitizer } from "@angular/platform-browser";
 import { provideRouter } from "@angular/router";
 import { ApiService } from "@shared/services/api.service";
 import { AuthService } from "@shared/services/auth.service";
@@ -11,6 +13,7 @@ import {
 	createTestQueryClient,
 	MockApiService
 } from "@shared/testing";
+import { registerOAuthIcons } from "@shared/utilities/oauth-icons.utility";
 import { QueryKeys } from "@shared/utilities/query-keys.utility";
 import {
 	provideTanStackQuery,
@@ -52,6 +55,10 @@ describe("ProfilePage",
 							]
 						})
 					.compileComponents();
+
+				registerOAuthIcons(
+					TestBed.inject(MatIconRegistry),
+					TestBed.inject(DomSanitizer));
 
 				fixture =
 					TestBed.createComponent(ProfilePage);
@@ -199,6 +206,10 @@ describe("ProfilePage linked accounts",
 							]
 						})
 					.compileComponents();
+
+				registerOAuthIcons(
+					TestBed.inject(MatIconRegistry),
+					TestBed.inject(DomSanitizer));
 			});
 
 		afterEach(

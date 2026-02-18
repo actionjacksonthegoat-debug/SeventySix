@@ -73,6 +73,5 @@ public sealed class AppDataProtectionOptionsValidatorUnitTests
 		{
 			UseCertificate = false,
 			KeysDirectory = "keys",
-			AllowUnprotectedKeysInDevelopment = true,
 		};
 }

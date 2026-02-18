@@ -86,10 +86,12 @@ export const PAGE_TEXT =
 				error: "Error",
 				/**
 				 * Patterns that indicate server-side failures.
+				 * Use specific phrases that only appear on error pages/overlays,
+				 * not in data tables that legitimately render HTTP status codes.
 				 */
 				serverPatterns:
 					[
-						"500",
+						"500 - Server Error",
 						"Internal Server Error",
 						"502 Bad Gateway",
 						"503 Service Unavailable",

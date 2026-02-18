@@ -182,8 +182,8 @@ public static class DataProtectionExtensions
 	/// The current hosting environment.
 	/// </param>
 	/// <exception cref="InvalidOperationException">
-	/// Thrown when certificate is required but cannot be loaded
-	/// (production always; development when AllowUnprotectedKeysInDevelopment is false).
+	/// Thrown when certificate is required but cannot be loaded in production.
+	/// In development, falls back to unprotected keys when certificate is unavailable.
 	/// </exception>
 	private static void ConfigureKeyProtection(
 		IDataProtectionBuilder dataProtectionBuilder,
@@ -206,17 +206,6 @@ public static class DataProtectionExtensions
 				"Data Protection certificate is required in production but could not be loaded. "
 					+ "Configure DataProtection:CertificatePath with a valid PKCS#12 certificate "
 					+ "or set DataProtection:UseCertificate to false (not recommended for production).");
-		}
-
-		// Fail fast in development if certificate was required and fallback is not allowed
-		if (environment.IsDevelopment()
-			&& dataProtectionOptions.UseCertificate
-			&& !dataProtectionOptions.AllowUnprotectedKeysInDevelopment)
-		{
-			throw new InvalidOperationException(
-				"Data Protection certificate is required but could not be loaded. "
-					+ "Set DataProtection:AllowUnprotectedKeysInDevelopment to true "
-					+ "or configure a valid certificate path.");
 		}
 
 		// In production without certificate requirement, log warning

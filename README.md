@@ -10,13 +10,50 @@ A full-stack monorepo demonstrating enterprise-grade patterns with .NET 10 and A
 
 **Core Stack**: .NET 10 (Wolverine CQRS, EF Core, PostgreSQL) • Angular 21 (Zoneless, Signals, TanStack Query) • Docker Compose infrastructure • MIT licensed with no paid dependencies
 
+## Quick Start
+
+> **One command. Full environment.** Clone the repo, run the bootstrap, start developing.
+
+### Windows
+
+```cmd
+git clone https://github.com/actionjacksonthegoat-debug/SeventySix.git
+cd SeventySix
+scripts\bootstrap.cmd
+```
+
+### Linux / macOS
+
+```bash
+git clone https://github.com/actionjacksonthegoat-debug/SeventySix.git
+cd SeventySix
+chmod +x scripts/bootstrap.sh
+./scripts/bootstrap.sh
+```
+
+### What the bootstrap does
+
+1. **Installs prerequisites** — PowerShell 7 and Node.js (via winget/apt) if not present, then verifies Git, .NET 10 SDK, Docker Desktop
+2. **Collects your secrets** — admin email/password, database password, Brevo SMTP credentials, GitHub OAuth keys, data protection cert password
+3. **Installs all dependencies** — `npm install` (root + client + load-testing), `dotnet restore`
+4. **Generates certificates** — SSL dev cert (localhost) and ASP.NET Core Data Protection cert
+5. **Builds and verifies** — .NET server build + Angular client build
+6. **Runs all test suites** — server tests, client tests, E2E tests, load tests
+7. **Offers to start** — `npm start` launches the full dev stack
+
+> **`scripts\bootstrap.cmd` is the true entry point** — it works from a fresh Windows install with just `cmd.exe`.
+> It installs PowerShell 7 and Node.js automatically, then hands off to `bootstrap.ps1`.
+> Once bootstrap completes, use `npm run bootstrap` for subsequent runs (Node.js is available by then).
+
+For the full step-by-step manual setup, see [Startup Instructions](docs/Startup-Instructions.md).
+
 ## Key Features
 
 ### Security
 - **.NET Core Identity** with Argon2 password hashing and JWT bearer tokens
 - **Altcha proof-of-work CAPTCHA** on all public forms (no third-party tracking)
 - **Multi-factor authentication** via TOTP authenticator apps with backup codes
-- **GitHub OAuth** provider integration
+- **GitHub OAuth** provider integration with account linking (connect/disconnect from profile page)
 - **Fail2Ban** intrusion prevention with GeoIP blocking and rate-limit monitoring
 - **Role-based access control** enforced server-side and client-side (User, Developer, Admin)
 
@@ -229,79 +266,22 @@ SeventySix/
 
 ## Getting Started
 
-For a complete step-by-step walkthrough including account signups, VS Code configuration, and extension installation, see the [Startup Instructions](docs/Startup-Instructions.md).
+**Recommended**: Use the [Quick Start](#quick-start) bootstrap script above — it handles everything automatically.
 
-### Prerequisites
+For manual setup or if you prefer step-by-step control, see the [Startup Instructions](docs/Startup-Instructions.md).
 
-- [.NET 10 SDK](https://dotnet.microsoft.com/download) (version 10.0.100+)
-- [Node.js 22+](https://nodejs.org/) with npm
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+### Access URLs (after `npm start`)
 
-### Setup
-
-1. **Clone the repository**
-
-   ```bash
-   git clone https://github.com/your-org/SeventySix.git
-   cd SeventySix
-   ```
-
-2. **Install client dependencies**
-
-   ```bash
-   cd SeventySix.Client && npm install && cd ..
-   ```
-
-3. **Initialize user secrets** — stores database, JWT, OAuth, email, Altcha, and data protection secrets
-
-   ```bash
-   npm run secrets:init
-   ```
-
-4. **Generate SSL certificate** for local HTTPS
-
-   ```bash
-   npm run generate:ssl-cert
-   ```
-
-5. **Generate data protection certificate** for .NET Data Protection API
-
-   ```bash
-   npm run generate:dataprotection-cert
-   ```
-
-6. **Start everything** — Docker infrastructure, .NET API, and Angular dev server
-
-   ```bash
-   npm start
-   ```
-
-   A seeded administrator account is created on first startup in development environments only - this user is used for all Chrome Dev Tools interactions and in secure local development containers:
-
-   | Field | Value |
-   |---|---|
-   | Username | `admin` |
-   | Email | Set via `AdminSeeder:Email` user secret |
-   | Password | Set via `AdminSeeder:InitialPassword` user secret |
-   | First Login | Ready to use — no password change required |
-
-   > **MFA Note**: Set `AdminSeeder:Email` to a **real email address you control** (e.g., `contactseventysix@gmail.com`). MFA verification codes are sent to this address on first login. Your email will never be accessed by co-pilot, MFA in Chrome Dev Tools is handled through the Email Queue.
-   > **Seeded Password Note**" The `AdminSeeder:InitialPassword` should be static, Chrome Dev Tools uses this for authentication and logins in development environments.
-
-   > This account is created by `AdminSeederService` and is **not** created in production environments.
-
-7. **Access the application**
-
-   | Service | URL |
-   |---|---|
-   | Client (Angular) | `https://localhost:4200` |
-   | API (.NET) | `https://localhost:7074` |
-   | API Docs (Scalar) | `https://localhost:7074/scalar/v1` (dev only) |
-   | Grafana | `https://localhost:3443` |
-   | Jaeger | `https://localhost:16687` |
-   | Prometheus | `https://localhost:9091` |
-   | pgAdmin | `https://localhost:5051` |
-   | RedisInsight | `https://localhost:5540` |
+| Service | URL |
+|---|---|
+| Client (Angular) | `https://localhost:4200` |
+| API (.NET) | `https://localhost:7074` |
+| API Docs (Scalar) | `https://localhost:7074/scalar/v1` (dev only) |
+| Grafana | `https://localhost:3443` |
+| Jaeger | `https://localhost:16687` |
+| Prometheus | `https://localhost:9091` |
+| pgAdmin | `https://localhost:5051` |
+| RedisInsight | `https://localhost:5540` |
 
 ### Debugging the API in Your IDE
 
@@ -464,7 +444,7 @@ The `account` domain covers authenticated user self-service features — profile
 
 The user menu at the top right provides quick access to profile settings and logout.
 
-The profile page allows users to update their email and display name.
+The profile page allows users to update their email and display name. It also includes a **Linked Accounts** section for connecting and disconnecting external OAuth providers (GitHub).
 
 ![Profile edit page with email and full name fields](docs/screenshots/profile-changes.png)
 
@@ -954,7 +934,7 @@ Multiple test suites provide automated checks across the full stack:
 |---|---|---|---|---|
 | Server | xUnit + NSubstitute + Shouldly | 1,400+ | `npm run test:server` | Server projects: API, Domains, Identity, Shared, Architecture, Analyzers |
 | Client | Vitest | 1,200+ | `npm run test:client` | Unit/integration tests across 100+ spec files + architecture enforcement |
-| E2E | Playwright | 270+ | `npm run test:e2e` | Specs across auth roles (public, authenticated, admin, developer), WCAG 2.2 AA accessibility scanning per role |
+| E2E | Playwright | 270+ | `npm run test:e2e` | Specs across auth roles (public, authenticated, admin, developer), WCAG 2.2 AA accessibility scanning per role, MailDev virtual email |
 | Load | k6 (Grafana) | scenarios | `npm run loadtest:quick` | Auth, users, permissions, logging, and health across multiple profiles (smoke, quick, stress, load) |
 
 ### E2E Coverage by Role

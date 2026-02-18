@@ -66,15 +66,4 @@ public record AppDataProtectionOptions
 	/// </remarks>
 	public string? CertificatePassword { get; init; }
 
-	/// <summary>
-	/// When true, allows startup to continue with unprotected keys if certificate
-	/// configuration fails. Only applies in Development environment.
-	/// </summary>
-	/// <remarks>
-	/// <para>
-	/// In Production, invalid certificate configuration always fails startup.
-	/// This option provides developer convenience while maintaining security.
-	/// </para>
-	/// </remarks>
-	public bool AllowUnprotectedKeysInDevelopment { get; init; } = true;
 }

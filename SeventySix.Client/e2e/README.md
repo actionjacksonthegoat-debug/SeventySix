@@ -154,6 +154,7 @@ e2e/
 | Spec | Covers |
 |------|--------|
 | `profile.spec.ts` | Profile viewing and editing |
+| `linked-accounts.spec.ts` | Linked OAuth accounts section (connect/disconnect UI) |
 | `change-password.spec.ts` | Password change form |
 | `change-password-flow.spec.ts` | End-to-end password change |
 | `mfa-login.spec.ts` | MFA-protected login |

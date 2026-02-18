@@ -2,6 +2,16 @@
 
 A step-by-step guide for setting up SeventySix from scratch — including account creation, tool installation, VS Code configuration, and first launch. No prior development experience is assumed.
 
+> **Fastest path**: Run the one-command bootstrap instead of following these manual steps:
+>
+> **Windows** (cmd.exe — no PowerShell or Node required): `scripts\bootstrap.cmd`
+> **Linux / macOS** (bash — no PowerShell or Node required): `./scripts/bootstrap.sh`
+>
+> Both scripts install PowerShell 7 **and Node.js** automatically if they are not present, then run the full setup.
+> `scripts\bootstrap.cmd` is the true entry point on Windows — run it directly from cmd.exe before anything else.
+> Once bootstrap completes, use `npm run bootstrap` for subsequent runs (Node.js will then be on your PATH).
+> Continue reading only if you prefer manual setup.
+
 ---
 
 ## Table of Contents

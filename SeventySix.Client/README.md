@@ -163,7 +163,7 @@ All public forms (login, registration, forgot password) integrate the shared `al
 
 ### Account Domain
 
-**Profile** — Edit email and full name with form validation.
+**Profile** — Edit email and full name with form validation. Includes a Linked Accounts section to connect or disconnect external OAuth providers (e.g., GitHub).
 
 **Request Permissions** — Checkbox-based role selection form. Users select desired roles and submit the request, which enters the admin Permission Request queue for approval.
 

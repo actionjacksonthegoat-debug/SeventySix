@@ -49,12 +49,12 @@ if (-not (Test-Path $dataProtectionCertPath)) {
 
 # Clean up orphaned processes before starting (prevents port conflicts)
 if (-not $SkipCleanup) {
-	& (Join-Path $PSScriptRoot "cleanup-ports.ps1")
+	& (Join-Path $PSScriptRoot "internal" "cleanup-ports.ps1")
 }
 
 # Export user secrets as environment variables for Docker Compose
 Write-Host "Loading secrets from user-secrets store..." -ForegroundColor Yellow
-& (Join-Path $PSScriptRoot "load-user-secrets.ps1")
+& (Join-Path $PSScriptRoot "internal" "load-user-secrets.ps1")
 if ($LASTEXITCODE -ne 0) { exit 1 }
 
 # Start Docker Desktop if not running
@@ -81,7 +81,7 @@ Pop-Location
 
 # Wait for API to be healthy
 Write-Host "Waiting for API health check..." -ForegroundColor Yellow
-& "$PSScriptRoot\wait-for-api.ps1"
+& (Join-Path $PSScriptRoot "internal" "wait-for-api.ps1")
 
 # Bring this API console to the front and set title
 Add-Type -Name Win32 -Namespace Console -MemberDefinition @'

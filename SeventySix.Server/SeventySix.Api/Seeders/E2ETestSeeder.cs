@@ -132,6 +132,12 @@ public class E2ETestSeeder(
 			[RoleConstants.User]);
 
 		await CreateTestUserAsync(
+			"e2e_profile_edit",
+			"e2e_profile_edit@test.local",
+			"E2E_ProfileEdit_Password_123!",
+			[RoleConstants.User]);
+
+		await CreateTestUserAsync(
 			"e2e_crosstab",
 			"e2e_crosstab@test.local",
 			"E2E_CrossTab_Password_123!",

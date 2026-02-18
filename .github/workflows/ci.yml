@@ -153,21 +153,9 @@ jobs:
               run: npm ci
 
             - name: Generate SSL certificate
-              run: |
-                  mkdir -p ssl
-                  openssl req -x509 -newkey rsa:2048 \
-                      -keyout ssl/dev-certificate.key \
-                      -out ssl/dev-certificate.crt \
-                      -days 365 -nodes \
-                      -subj "/CN=localhost/O=SeventySix" \
-                      -addext "subjectAltName=DNS:localhost,IP:127.0.0.1,IP:::1"
-                  openssl pkcs12 -export \
-                      -out ssl/dev-certificate.pfx \
-                      -inkey ssl/dev-certificate.key \
-                      -in ssl/dev-certificate.crt \
-                      -passout pass:dev-ssl-password
-                  # Make cert files readable by Docker container's non-root user (APP_UID 1654)
-                  chmod 644 ssl/dev-certificate.pfx ssl/dev-certificate.crt ssl/dev-certificate.key
+              shell: pwsh
+              working-directory: ${{ github.workspace }}
+              run: scripts/generate-dev-ssl-cert.ps1 -SkipTrust
 
             - name: Install Playwright browsers
               run: npx playwright install --with-deps chromium
@@ -242,21 +230,9 @@ jobs:
                   k6 version
 
             - name: Generate SSL certificate
-              working-directory: SeventySix.Client
-              run: |
-                  mkdir -p ssl
-                  openssl req -x509 -newkey rsa:2048 \
-                      -keyout ssl/dev-certificate.key \
-                      -out ssl/dev-certificate.crt \
-                      -days 365 -nodes \
-                      -subj "/CN=localhost/O=SeventySix" \
-                      -addext "subjectAltName=DNS:localhost,IP:127.0.0.1,IP:::1"
-                  openssl pkcs12 -export \
-                      -out ssl/dev-certificate.pfx \
-                      -inkey ssl/dev-certificate.key \
-                      -in ssl/dev-certificate.crt \
-                      -passout pass:dev-ssl-password
-                  chmod 644 ssl/dev-certificate.pfx ssl/dev-certificate.crt ssl/dev-certificate.key
+              shell: pwsh
+              working-directory: ${{ github.workspace }}
+              run: scripts/generate-dev-ssl-cert.ps1 -SkipTrust
 
             - name: Run load tests
               run: bash SeventySix.Client/load-testing/scripts/run-load-tests.sh quick

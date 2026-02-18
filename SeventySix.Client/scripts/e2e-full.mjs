@@ -108,7 +108,7 @@ function setup()
 	{
 		const cleanupPortsCode =
 			runCommand(
-				"powershell -ExecutionPolicy Bypass -File ../scripts/cleanup-ports.ps1 -Quiet",
+				"powershell -ExecutionPolicy Bypass -File ../scripts/internal/cleanup-ports.ps1 -Quiet",
 				"Killing orphaned local processes on E2E ports");
 
 		if (cleanupPortsCode !== 0)

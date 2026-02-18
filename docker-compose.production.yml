@@ -15,7 +15,7 @@ services:
       - valkey_data:/data
     command: valkey-server --save 60 1 --loglevel warning --appendonly yes
     healthcheck:
-      test: ["CMD", "valkey-cli", "ping"]
+      test: [ "CMD", "valkey-cli", "ping" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -56,17 +56,17 @@ services:
   otel-collector:
     image: otel/opentelemetry-collector-contrib:0.123.0
     container_name: seventysix-otel-collector-prod
-    command: ["--config=/etc/otel-collector.yaml"]
+    command: [ "--config=/etc/otel-collector.yaml" ]
     volumes:
       - ./observability/otel-collector.yaml:/etc/otel-collector.yaml:ro
     ports:
-      - "4317:4317"   # OTLP gRPC receiver
-      - "4318:4318"   # OTLP HTTP receiver
-      - "8889:8889"   # Prometheus metrics export
+      - "4317:4317" # OTLP gRPC receiver
+      - "4318:4318" # OTLP HTTP receiver
+      - "8889:8889" # Prometheus metrics export
     depends_on:
       - jaeger
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:13133/"]
+      test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:13133/" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -90,11 +90,11 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set}
       PGDATA: /var/lib/postgresql/data/pgdata
     ports:
-      - "5433:5432"
+      - "127.0.0.1:5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -146,15 +146,15 @@ services:
       - Altcha__Enabled=true
       - Altcha__HmacKeyBase64=${ALTCHA_HMAC_KEY:?ALTCHA_HMAC_KEY must be set}
       # Admin Seeding
-      - AdminSeeder__Email=${ADMIN_EMAIL:-admin@seventysix.local}
+      - AdminSeeder__Email=${ADMIN_EMAIL:?ADMIN_EMAIL is required in production}
       - AdminSeeder__InitialPassword=${ADMIN_PASSWORD:?ADMIN_PASSWORD must be set}
       # Data Protection
       - DataProtection__UseCertificate=${DATA_PROTECTION_USE_CERTIFICATE:-true}
       - DataProtection__CertificatePath=${DATA_PROTECTION_CERTIFICATE_PATH:-/app/keys/dataprotection.pfx}
       - DataProtection__CertificatePassword=${DATA_PROTECTION_CERTIFICATE_PASSWORD:?DATA_PROTECTION_CERTIFICATE_PASSWORD must be set}
       # CORS - Use HTTPS for all external origins
-      - Cors__AllowedOrigins__0=https://localhost:8080
-      - Cors__AllowedOrigins__1=https://localhost:4200
+      - Cors__AllowedOrigins__0=${CORS_ORIGIN_0:?CORS_ORIGIN_0 is required - set to your production domain e.g. https://yourdomain.com}
+      - Cors__AllowedOrigins__1=${CORS_ORIGIN_1:-}
       # Valkey Cache Connection
       - Cache__Valkey__ConnectionString=valkey:6379
       # OpenTelemetry - send to collector
@@ -170,11 +170,11 @@ services:
       otel-collector:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/health" ]
       interval: 30s
       timeout: 3s
       retries: 3
-      start_period: 60s  # Allow time for migrations
+      start_period: 60s # Allow time for migrations
     networks:
       - seventysix-network
     restart: unless-stopped
@@ -201,7 +201,7 @@ services:
       api:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080"]
+      test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080" ]
       interval: 30s
       timeout: 3s
       retries: 3
@@ -223,7 +223,7 @@ services:
     image: prom/prometheus:v2.54.1
     container_name: seventysix-prometheus-prod
     ports:
-      - "9090:9090"
+      - "127.0.0.1:9090:9090"
     volumes:
       - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus_data:/prometheus
@@ -231,7 +231,7 @@ services:
       - "--config.file=/etc/prometheus/prometheus.yml"
       - "--storage.tsdb.path=/prometheus"
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
+      test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9090/-/healthy" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -251,11 +251,11 @@ services:
     image: jaegertracing/all-in-one:1.62.0
     container_name: seventysix-jaeger-prod
     ports:
-      - "16686:16686"  # Jaeger UI only - OTLP ports handled by otel-collector
+      - "127.0.0.1:16686:16686" # Jaeger UI only - OTLP ports handled by otel-collector
     environment:
       - COLLECTOR_OTLP_ENABLED=true
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:14269/"]
+      test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:14269/" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -274,7 +274,7 @@ services:
     image: grafana/grafana:11.4.0
     container_name: seventysix-grafana-prod
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
     environment:
       - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:?GRAFANA_ADMIN_PASSWORD must be set}
@@ -291,7 +291,7 @@ services:
     depends_on:
       - prometheus
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/api/health" ]
       interval: 30s
       timeout: 10s
       retries: 3

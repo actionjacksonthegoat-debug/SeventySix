@@ -1,4 +1,4 @@
-import { Page } from "@playwright/test";
+import { BrowserContext, Page } from "@playwright/test";
 import {
 	test,
 	expect,
@@ -7,7 +7,9 @@ import {
 	PAGE_TEXT,
 	TIMEOUTS,
 	API_ROUTES,
-	createRouteRegex
+	createRouteRegex,
+	PROFILE_EDIT_USER,
+	loginInFreshContext
 } from "../../fixtures";
 
 /**
@@ -136,75 +138,112 @@ test.describe("Profile Page",
 		test.describe("Save and Persist",
 			() =>
 			{
-				// Save tests modify shared user state — run serially to avoid data races
+				// Save tests both login as PROFILE_EDIT_USER — run serially to avoid
+				// concurrent login rate-limits and server-side profile mutation races.
 				test.describe.configure({ mode: "serial" });
 
 				test("should save profile changes and persist after reload",
-					async ({ userPage }: { userPage: Page }) =>
+					async ({ browser }) =>
 					{
-						const fullNameInput =
-							userPage.locator(SELECTORS.profile.fullNameInput);
-						const saveButton =
-							userPage.locator(SELECTORS.profile.saveButton);
+						// loginInFreshContext includes ALTCHA (~3-5 s in Docker) + login redirect +
+						// profile API + page reload — 30 s default is insufficient.
+						test.setTimeout(45_000);
 
-						// Wait for form population (email always non-empty for seeded users)
-						await expect(userPage.locator(SELECTORS.profile.emailInput))
-							.toHaveValue(/.+/, { timeout: TIMEOUTS.api });
+						const { context, page } =
+							await loginInFreshContext(
+								browser,
+								PROFILE_EDIT_USER);
 
-						const uniqueFullName =
-							`E2E Profile ${Date.now()}`;
+						try
+						{
+							await page.goto(ROUTES.account.root);
 
-						await fullNameInput.fill(uniqueFullName);
-						await expect(saveButton)
-							.toBeEnabled({ timeout: TIMEOUTS.api });
+							const fullNameInput =
+								page.locator(SELECTORS.profile.fullNameInput);
+							const saveButton =
+								page.locator(SELECTORS.profile.saveButton);
 
-						await Promise.all(
-							[
-								userPage.waitForResponse(
-									(response) =>
-									response.url().includes(API_ROUTES.users.me)
-										&& response.request().method() === "PUT"
-										&& response.status() === 200),
-								saveButton.click()
-							]);
+							// Wait for form population (email always non-empty for seeded users)
+							await expect(page.locator(SELECTORS.profile.emailInput))
+								.toHaveValue(/.+/, { timeout: TIMEOUTS.api });
 
-						// Reload and verify persistence
-						await userPage.reload();
+							const uniqueFullName =
+								`E2E Profile ${Date.now()}`;
 
-						await expect(fullNameInput)
-							.toHaveValue(uniqueFullName, { timeout: TIMEOUTS.api });
+							await fullNameInput.fill(uniqueFullName);
+							await expect(saveButton)
+								.toBeEnabled({ timeout: TIMEOUTS.api });
+
+							await Promise.all(
+								[
+									page.waitForResponse(
+										(response) =>
+										response.url().includes(API_ROUTES.users.me)
+											&& response.request().method() === "PUT"
+											&& response.status() === 200),
+									saveButton.click()
+								]);
+
+							// Reload and verify persistence
+							await page.reload();
+
+							await expect(fullNameInput)
+								.toHaveValue(uniqueFullName, { timeout: TIMEOUTS.api });
+						}
+						finally
+						{
+							await context.close();
+						}
 					});
 
 				test("should disable save button after successful save",
-					async ({ userPage }: { userPage: Page }) =>
+					async ({ browser }) =>
 					{
-						const fullNameInput =
-							userPage.locator(SELECTORS.profile.fullNameInput);
-						const saveButton =
-							userPage.locator(SELECTORS.profile.saveButton);
+						// loginInFreshContext includes ALTCHA (~3–5 s in Docker) + login redirect +
+						// profile API + save — 30 s default is insufficient.
+						test.setTimeout(45_000);
 
-						await expect(userPage.locator(SELECTORS.profile.emailInput))
-							.toHaveValue(/.+/, { timeout: TIMEOUTS.api });
+						const { context, page } =
+							await loginInFreshContext(
+								browser,
+								PROFILE_EDIT_USER);
 
-						const uniqueFullName =
-							`E2E Pristine ${Date.now()}`;
+						try
+						{
+							await page.goto(ROUTES.account.root);
 
-						await fullNameInput.fill(uniqueFullName);
-						await expect(saveButton)
-							.toBeEnabled({ timeout: TIMEOUTS.api });
+							const fullNameInput =
+								page.locator(SELECTORS.profile.fullNameInput);
+							const saveButton =
+								page.locator(SELECTORS.profile.saveButton);
 
-						await Promise.all(
-							[
-								userPage.waitForResponse(
-									(response) =>
-									response.url().includes(API_ROUTES.users.me)
-										&& response.request().method() === "PUT"
-										&& response.status() === 200),
-								saveButton.click()
-							]);
+							await expect(page.locator(SELECTORS.profile.emailInput))
+								.toHaveValue(/.+/, { timeout: TIMEOUTS.api });
 
-						await expect(saveButton)
-							.toBeDisabled({ timeout: TIMEOUTS.navigation });
+							const uniqueFullName =
+								`E2E Pristine ${Date.now()}`;
+
+							await fullNameInput.fill(uniqueFullName);
+							await expect(saveButton)
+								.toBeEnabled({ timeout: TIMEOUTS.api });
+
+							await Promise.all(
+								[
+									page.waitForResponse(
+										(response) =>
+										response.url().includes(API_ROUTES.users.me)
+											&& response.request().method() === "PUT"
+											&& response.status() === 200),
+									saveButton.click()
+								]);
+
+							await expect(saveButton)
+								.toBeDisabled({ timeout: TIMEOUTS.navigation });
+						}
+						finally
+						{
+							await context.close();
+						}
 					});
 			});
 

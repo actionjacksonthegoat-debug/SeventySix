@@ -19,11 +19,11 @@ Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 
 # Clean up orphaned processes before starting (prevents port conflicts)
-& (Join-Path $PSScriptRoot "cleanup-ports.ps1")
+& (Join-Path $PSScriptRoot "internal" "cleanup-ports.ps1")
 
 # Export user secrets as environment variables for Docker Compose
 Write-Host "Loading secrets from user-secrets store..." -ForegroundColor Yellow
-& (Join-Path $PSScriptRoot "load-user-secrets.ps1")
+& (Join-Path $PSScriptRoot "internal" "load-user-secrets.ps1")
 if ($LASTEXITCODE -ne 0) { exit 1 }
 
 # Ensure Docker Desktop is running
