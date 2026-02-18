@@ -20,7 +20,6 @@ test.describe("Sandbox Page",
 			async ({ page }) =>
 			{
 				await page.goto(ROUTES.sandbox.root);
-				await page.waitForLoadState("load");
 			});
 
 		test.describe("Page Structure",

@@ -11,6 +11,7 @@ import {
 	HttpRequest
 } from "@angular/common/http";
 import { inject } from "@angular/core";
+import { environment } from "@environments/environment";
 import {
 	AUTH_PUBLIC_PATHS,
 	HTTP_BEARER_PREFIX,
@@ -80,6 +81,7 @@ export const authInterceptor: HttpInterceptorFn =
 /**
  * Checks if the URL is an external (third-party) URL.
  * Relative URLs and same-origin URLs are internal.
+ * Absolute URLs to the configured API origin are also internal.
  * Absolute URLs to different origins are external.
  * @param {string} url
  * The request URL to check.
@@ -97,7 +99,10 @@ function isExternalUrl(url: string): boolean
 	{
 		const requestOrigin: string =
 			new URL(url).origin;
-		return requestOrigin !== window.location.origin;
+		const apiOrigin: string =
+			new URL(environment.apiUrl).origin;
+		return requestOrigin !== window.location.origin
+			&& requestOrigin !== apiOrigin;
 	}
 	catch
 	{

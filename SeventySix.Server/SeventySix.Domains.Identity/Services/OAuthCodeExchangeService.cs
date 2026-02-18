@@ -1,4 +1,4 @@
-﻿// <copyright file="OAuthCodeExchangeService.cs" company="SeventySix">
+// <copyright file="OAuthCodeExchangeService.cs" company="SeventySix">
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
@@ -34,7 +34,7 @@ public sealed class OAuthCodeExchangeService : IOAuthCodeExchangeService
 	/// <summary>
 	/// The identity domain cache.
 	/// </summary>
-	private readonly IFusionCache identityCache;
+	private readonly IFusionCache IdentityCache;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="OAuthCodeExchangeService"/> class.
@@ -44,7 +44,7 @@ public sealed class OAuthCodeExchangeService : IOAuthCodeExchangeService
 	/// </param>
 	public OAuthCodeExchangeService(IFusionCacheProvider cacheProvider)
 	{
-		identityCache =
+		IdentityCache =
 			cacheProvider.GetCache(CacheNames.Identity);
 	}
 
@@ -70,7 +70,7 @@ public sealed class OAuthCodeExchangeService : IOAuthCodeExchangeService
 				requiresPasswordChange);
 
 		// Memory-only for OAuth codes: short-lived, security-sensitive
-		identityCache.Set(
+		IdentityCache.Set(
 			$"{CacheKeyPrefix}{code}",
 			tokenData,
 			options =>
@@ -93,12 +93,12 @@ public sealed class OAuthCodeExchangeService : IOAuthCodeExchangeService
 			$"{CacheKeyPrefix}{code}";
 
 		OAuthCodeExchangeResult? tokenData =
-			identityCache.GetOrDefault<OAuthCodeExchangeResult>(cacheKey);
+			IdentityCache.GetOrDefault<OAuthCodeExchangeResult>(cacheKey);
 
 		if (tokenData is not null)
 		{
 			// One-time use: remove immediately after retrieval
-			identityCache.Remove(cacheKey);
+			IdentityCache.Remove(cacheKey);
 		}
 
 		return tokenData;
@@ -109,7 +109,7 @@ public sealed class OAuthCodeExchangeService : IOAuthCodeExchangeService
 		string state,
 		OAuthLinkFlowData data)
 	{
-		identityCache.Set(
+		IdentityCache.Set(
 			$"{LinkFlowKeyPrefix}{state}",
 			data,
 			options =>
@@ -130,12 +130,12 @@ public sealed class OAuthCodeExchangeService : IOAuthCodeExchangeService
 			$"{LinkFlowKeyPrefix}{state}";
 
 		OAuthLinkFlowData? data =
-			identityCache.GetOrDefault<OAuthLinkFlowData>(cacheKey);
+			IdentityCache.GetOrDefault<OAuthLinkFlowData>(cacheKey);
 
 		if (data is not null)
 		{
 			// One-time use: remove immediately after retrieval
-			identityCache.Remove(cacheKey);
+			IdentityCache.Remove(cacheKey);
 		}
 
 		return data;

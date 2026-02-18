@@ -43,18 +43,24 @@ function createMockWindowService(): MockWindowService
 		openWindow: vi.fn(),
 		navigateTo: vi.fn(),
 		reload: vi.fn(),
-		getCurrentUrl: vi.fn()
+		getCurrentUrl: vi
+			.fn()
 			.mockReturnValue("https://localhost:4200"),
-		getPathname: vi.fn()
+		getPathname: vi
+			.fn()
 			.mockReturnValue("/"),
-		getViewportHeight: vi.fn()
+		getViewportHeight: vi
+			.fn()
 			.mockReturnValue(768),
-		getViewportWidth: vi.fn()
+		getViewportWidth: vi
+			.fn()
 			.mockReturnValue(1024),
 		scrollToTop: vi.fn(),
-		getHash: vi.fn()
+		getHash: vi
+			.fn()
 			.mockReturnValue(""),
-		getSearch: vi.fn()
+		getSearch: vi
+			.fn()
 			.mockReturnValue(""),
 		replaceState: vi.fn()
 	};
@@ -104,7 +110,7 @@ describe("AuthService OAuth",
 		afterEach(
 			() =>
 			{
-				// Flush any pending profile fetch requests from invalidatePostLogin()
+			// Flush any pending profile fetch requests from invalidatePostLogin()
 				httpMock
 					.match(`${environment.apiUrl}/auth/me`)
 					.forEach(

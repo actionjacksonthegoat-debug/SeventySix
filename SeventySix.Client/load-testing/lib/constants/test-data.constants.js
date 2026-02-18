@@ -58,6 +58,6 @@ export const SLEEP_DURATION =
 export const RATE_LIMIT =
 	Object.freeze(
 		{
-			/** Maximum attempts for rate limit validation. */
+		/** Maximum attempts for rate limit validation. */
 			MAX_ATTEMPTS: 20
 		});

@@ -27,7 +27,6 @@ test.describe("User Detail",
 			async ({ adminPage }) =>
 			{
 				await adminPage.goto(ROUTES.admin.users);
-				await adminPage.waitForLoadState("load");
 
 				const dataRows =
 					adminPage.locator(SELECTORS.dataTable.dataRow);

@@ -111,9 +111,11 @@ e2e/
 │   ├── timeouts.constant.ts       # Timeout values for waits
 │   ├── helpers/
 │   │   ├── accessibility.helper.ts  # axe-core WCAG scanning
-│   │   ├── altcha.helper.ts         # CAPTCHA challenge solver
+│   │   ├── altcha.helper.ts         # CAPTCHA challenge solver (idempotent)
+│   │   ├── context-login.helper.ts  # Fresh browser context login (DRY cross-tab/session tests)
+│   │   ├── data-table.helper.ts     # Data table ready/loaded wait helpers
 │   │   ├── login.helper.ts          # Login flow automation
-│   │   └── totp.helper.ts           # TOTP code generation
+│   │   └── totp.helper.ts           # TOTP code generation (time-step safe)
 │   └── pages/                     # Page object classes
 │       ├── admin-dashboard.page.ts
 │       ├── auth.page.ts

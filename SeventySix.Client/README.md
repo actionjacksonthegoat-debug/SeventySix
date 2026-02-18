@@ -171,8 +171,6 @@ All public forms (login, registration, forgot password) integrate the shared `al
 
 **Style Guide** — A comprehensive Material Design 3 component reference organized into tabs: Colors, Typography, Buttons, Forms, Tables, Feedback, Icons, and Loading States. Live theme controls at the top allow previewing every component across multiple theme variants (light/dark × color variants). This page serves as both visual documentation and a design system reference for contributors.
 
-**Architecture Guide** — Placeholder page reserved for project-specific architectural documentation.
-
 ### Home Domain
 
 Dual-theme parallax landing page showcasing the project's tech stack, features, architecture patterns, and stats. Serves as the default page for all visitors.
@@ -188,7 +186,7 @@ The application uses a responsive sidebar with collapsible sections based on the
 | Section | Required Role | Pages |
 |---|---|---|
 | **Main** | All users | Home, Sandbox |
-| **Developer** | Developer or Admin | Style Guide, Architecture Guide |
+| **Developer** | Developer or Admin | Style Guide |
 | **Management** | Admin only | Dashboard, Users, Logs, Permission Requests |
 
 The header contains a theme toggle dropdown (multiple variants) and a user menu with profile and logout links. Unauthenticated visitors see only the Main section with a Login link in the header.

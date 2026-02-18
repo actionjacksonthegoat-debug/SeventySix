@@ -27,8 +27,7 @@ unauthenticatedTest.describe("Set Password",
 		unauthenticatedTest("should show invalid link when no token provided",
 			async ({ unauthenticatedPage }) =>
 			{
-				await unauthenticatedPage.goto(ROUTES.auth.setPassword);
-				await unauthenticatedPage.waitForLoadState("load");
+			await unauthenticatedPage.goto(ROUTES.auth.setPassword);
 
 				await expect(unauthenticatedPage
 					.locator(SELECTORS.setPassword.invalidLinkSection))
@@ -42,7 +41,6 @@ unauthenticatedTest.describe("Set Password",
 			async ({ unauthenticatedPage }) =>
 			{
 				await unauthenticatedPage.goto(ROUTES.auth.setPassword);
-				await unauthenticatedPage.waitForLoadState("load");
 
 				const returnLink =
 					unauthenticatedPage.locator("a",
@@ -59,7 +57,6 @@ unauthenticatedTest.describe("Set Password",
 			{
 				await unauthenticatedPage.goto(
 					`${ROUTES.auth.setPassword}?token=invalid-token-value&email=test@test.local`);
-				await unauthenticatedPage.waitForLoadState("load");
 
 				// When a token is present, the form is shown (token is validated server-side on submit)
 				await expect(unauthenticatedPage
@@ -76,7 +73,6 @@ unauthenticatedTest.describe("Set Password",
 				// Navigate with a fabricated expired token
 				await unauthenticatedPage.goto(
 					`${ROUTES.auth.setPassword}?token=expired-fabricated-token-123&email=test@test.local`);
-				await unauthenticatedPage.waitForLoadState("load");
 
 				// Fill in valid password fields
 				await unauthenticatedPage

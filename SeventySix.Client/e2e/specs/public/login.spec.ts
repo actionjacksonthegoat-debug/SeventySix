@@ -475,12 +475,20 @@ test.describe("Login Page",
 				test("should lockout account after repeated failed attempts",
 					async ({ page, authPage }) =>
 					{
+						// 6 failed login attempts + 1 final attempt, each requiring ALTCHA
+						// proof-of-work (~3–5 s in Docker). 30 s default is insufficient.
+						test.setTimeout(90_000);
+
 						const failedAttempts = 6;
 						const wrongPassword = "Wrong_Password_Lockout_123!";
 
 						for (let attempt = 1; attempt <= failedAttempts; attempt++)
 						{
 							await page.goto(ROUTES.auth.login);
+
+							// Wait for form to be interactive before filling
+							await expect(authPage.usernameInput)
+								.toBeVisible({ timeout: TIMEOUTS.element });
 
 							await authPage.login(
 								LOCKOUT_USER.username,
@@ -497,6 +505,12 @@ test.describe("Login Page",
 
 							await expect(page)
 								.toHaveURL(ROUTES.auth.login);
+
+							// Best-effort: wait for snackbar to dismiss before next iteration
+							// so ALTCHA widget is not obscured. Timing varies in Docker.
+							await snackbar
+								.waitFor({ state: "hidden", timeout: TIMEOUTS.api })
+								.catch(() => { /* snackbar may already be detached */ });
 						}
 
 						// After lockout threshold, even the correct password should fail

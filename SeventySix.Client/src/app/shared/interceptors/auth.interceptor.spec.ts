@@ -157,6 +157,32 @@ describe("authInterceptor",
 					.toBe("Bearer test-token");
 			});
 
+		it("should add header for cross-origin API URL",
+			() =>
+			{
+				mockAuthService.getAccessToken.mockReturnValue("test-token");
+				mockAuthService.isTokenExpired.mockReturnValue(false);
+				const req: HttpRequest<unknown> =
+					new HttpRequest(
+						"GET",
+						"http://localhost:1234/api/v1/auth/me");
+
+				TestBed.runInInjectionContext(
+					() =>
+					{
+						authInterceptor(req, mockHandler.handle.bind(mockHandler));
+					});
+
+				const callArgs: HttpRequest<unknown> =
+					mockHandler
+						.handle
+						.mock
+						.calls
+						.at(-1)![0] as HttpRequest<unknown>;
+				expect(callArgs.headers.get("Authorization"))
+					.toBe("Bearer test-token");
+			});
+
 		it("should not add header when no token",
 			() =>
 			{

@@ -25,7 +25,6 @@ test.describe("Request Permissions Page",
 			async ({ userPage }: { userPage: Page }) =>
 			{
 				await userPage.goto(ROUTES.account.permissions);
-				await userPage.waitForLoadState("load");
 			});
 
 		test.describe("Page Structure",

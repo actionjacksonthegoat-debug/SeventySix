@@ -483,3 +483,8 @@ desktop.ini
 *.swo
 *~
 ~$*
+
+#################################
+# Dev Tools Output (Chrome DevTools walkthrough)
+#################################
+.dev-tools-output/

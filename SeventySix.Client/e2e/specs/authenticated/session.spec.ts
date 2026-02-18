@@ -7,7 +7,7 @@ import {
 	test,
 	expect,
 	unauthenticatedTest,
-	solveAltchaChallenge,
+	loginInFreshContext,
 	CONCURRENT_USER,
 	SELECTORS,
 	ROUTES,
@@ -31,7 +31,6 @@ test.describe("Session Continuity",
 			async ({ userPage }: { userPage: Page }) =>
 			{
 				await userPage.goto(ROUTES.account.root);
-				await userPage.waitForLoadState("load");
 
 				// Verify profile page loads with authenticated content
 				await expect(userPage.locator(SELECTORS.layout.userMenuButton))
@@ -47,14 +46,12 @@ test.describe("Session Continuity",
 			{
 				// Navigate to home
 				await userPage.goto(ROUTES.home);
-				await userPage.waitForLoadState("load");
 
 				await expect(userPage.locator(SELECTORS.layout.userMenuButton))
 					.toBeVisible({ timeout: TIMEOUTS.auth });
 
 				// Navigate to protected route
 				await userPage.goto(ROUTES.account.root);
-				await userPage.waitForLoadState("load");
 
 				// Should still be authenticated
 				await expect(userPage.locator(SELECTORS.layout.userMenuButton))
@@ -62,7 +59,6 @@ test.describe("Session Continuity",
 
 				// Navigate back to home
 				await userPage.goto(ROUTES.home);
-				await userPage.waitForLoadState("load");
 
 				// Still authenticated
 				await expect(userPage.locator(SELECTORS.layout.userMenuButton))
@@ -83,68 +79,20 @@ unauthenticatedTest.describe("Concurrent Sessions",
 		unauthenticatedTest("should allow same user to be authenticated in two browser contexts",
 			async ({ browser }) =>
 			{
-				/**
-				 * Logs in the concurrent user in a fresh browser context.
-				 * @param label
-				 * Label for debugging.
-				 * @returns
-				 * The page and context.
-				 */
-				async function loginInNewContext(
-					label: string): Promise<{ page: Page; context: BrowserContext }>
-				{
-					const context: BrowserContext =
-						await browser.newContext({
-							baseURL: E2E_CONFIG.clientBaseUrl,
-							storageState: undefined,
-							ignoreHTTPSErrors: true
-						});
-					const page: Page =
-						await context.newPage();
-
-					await page.goto(ROUTES.auth.login);
-					await page
-						.locator(SELECTORS.form.usernameInput)
-						.waitFor({ state: "visible", timeout: TIMEOUTS.globalSetup });
-					await page
-						.locator(SELECTORS.form.usernameInput)
-						.fill(CONCURRENT_USER.username);
-					await page
-						.locator(SELECTORS.form.passwordInput)
-						.fill(CONCURRENT_USER.password);
-
-					await solveAltchaChallenge(page);
-
-					await page
-						.locator(SELECTORS.form.submitButton)
-						.click();
-
-					await page.waitForURL(
-						ROUTES.home,
-						{ timeout: TIMEOUTS.globalSetup });
-
-					await expect(page.locator(SELECTORS.layout.userMenuButton))
-						.toBeVisible({ timeout: TIMEOUTS.auth });
-
-					return { page, context };
-				}
-
 				// Login in two separate browser contexts
 				const session1 =
-					await loginInNewContext("session-1");
+					await loginInFreshContext(browser, CONCURRENT_USER);
 				const session2 =
-					await loginInNewContext("session-2");
+					await loginInFreshContext(browser, CONCURRENT_USER);
 
 				try
 				{
 					// Both sessions should be authenticated
 					await session1.page.goto(ROUTES.account.root);
-					await session1.page.waitForLoadState("load");
 					await expect(session1.page.locator(SELECTORS.layout.userMenuButton))
 						.toBeVisible({ timeout: TIMEOUTS.auth });
 
 					await session2.page.goto(ROUTES.account.root);
-					await session2.page.waitForLoadState("load");
 					await expect(session2.page.locator(SELECTORS.layout.userMenuButton))
 						.toBeVisible({ timeout: TIMEOUTS.auth });
 				}

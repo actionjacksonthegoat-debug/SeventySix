@@ -28,7 +28,6 @@ test.describe("Profile Page",
 			async ({ userPage }: { userPage: Page }) =>
 			{
 				await userPage.goto(ROUTES.account.root);
-				await userPage.waitForLoadState("load");
 			});
 
 		test.describe("Page Structure",
@@ -128,7 +127,6 @@ test.describe("Profile Page",
 					async ({ userPage }: { userPage: Page }) =>
 					{
 						await userPage.goto(ROUTES.account.permissions);
-						await userPage.waitForLoadState("load");
 
 						await expect(userPage)
 							.toHaveURL(createRouteRegex(ROUTES.account.permissions));
@@ -172,7 +170,6 @@ test.describe("Profile Page",
 
 						// Reload and verify persistence
 						await userPage.reload();
-						await userPage.waitForLoadState("load");
 
 						await expect(fullNameInput)
 							.toHaveValue(uniqueFullName, { timeout: TIMEOUTS.api });

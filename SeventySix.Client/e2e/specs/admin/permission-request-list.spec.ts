@@ -28,7 +28,6 @@ test.describe("Permission Request List Page",
 			async ({ adminPage }: { adminPage: Page }) =>
 			{
 				await adminPage.goto(ROUTES.admin.permissionRequests);
-				await adminPage.waitForLoadState("load");
 			});
 
 		test.describe("Page Structure",
@@ -128,7 +127,6 @@ test.describe("Permission Request List Page",
 					isolatedPage: Page): Promise<void>
 				{
 					await isolatedPage.goto(ROUTES.account.permissions);
-					await isolatedPage.waitForLoadState("load");
 
 					// Wait for roles to load
 					const roleCheckbox =
@@ -195,7 +193,6 @@ test.describe("Permission Request List Page",
 
 							// Step 3: Navigate admin to permission requests and wait for data
 							await adminPage.goto(ROUTES.admin.permissionRequests);
-							await adminPage.waitForLoadState("load");
 
 							const dataRows =
 								adminPage.locator(SELECTORS.dataTable.dataRow);
@@ -254,7 +251,6 @@ test.describe("Permission Request List Page",
 					userPage: Page): Promise<void>
 				{
 					await userPage.goto(ROUTES.account.permissions);
-					await userPage.waitForLoadState("load");
 
 					// Wait for roles to load
 					const roleCheckbox =
@@ -307,7 +303,6 @@ test.describe("Permission Request List Page",
 
 						// Step 2: Navigate admin to permission requests
 						await adminPage.goto(ROUTES.admin.permissionRequests);
-						await adminPage.waitForLoadState("load");
 
 						const dataRows =
 							adminPage.locator(SELECTORS.dataTable.dataRow);

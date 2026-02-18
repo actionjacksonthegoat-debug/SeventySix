@@ -326,9 +326,11 @@ test.describe("Registration Flow",
 								E2E_CONFIG.clientBaseUrl);
 
 						await page.goto(clientLink);
-						await page.waitForLoadState("load");
 
 						// Step 4: Fill in registration form
+						await page
+							.locator(SELECTORS.registerComplete.usernameInput)
+							.waitFor({ state: "visible", timeout: TIMEOUTS.navigation });
 						await page
 							.locator(SELECTORS.registerComplete.usernameInput)
 							.fill(username);
@@ -362,10 +364,10 @@ test.describe("Registration Flow",
 						// Navigate to register-complete with a token (token is validated on submit)
 						await page.goto(
 							`${ROUTES.auth.registerComplete}?token=test-token-value&email=policy_test@test.local`);
-						await page.waitForLoadState("load");
 
 						const usernameInput =
 							page.locator(SELECTORS.registerComplete.usernameInput);
+						await usernameInput.waitFor({ state: "visible", timeout: TIMEOUTS.element });
 						const passwordInput =
 							page.locator(SELECTORS.registerComplete.passwordInput);
 						const confirmPasswordInput =
@@ -390,8 +392,10 @@ test.describe("Registration Flow",
 					{
 						await page.goto(
 							`${ROUTES.auth.registerComplete}?token=test-token-value&email=policy_test@test.local`);
-						await page.waitForLoadState("load");
 
+						await page
+							.locator(SELECTORS.registerComplete.usernameInput)
+							.waitFor({ state: "visible", timeout: TIMEOUTS.element });
 						await page
 							.locator(SELECTORS.registerComplete.usernameInput)
 							.fill("ab");
@@ -412,8 +416,10 @@ test.describe("Registration Flow",
 					{
 						await page.goto(
 							`${ROUTES.auth.registerComplete}?token=test-token-value&email=policy_test@test.local`);
-						await page.waitForLoadState("load");
 
+						await page
+							.locator(SELECTORS.registerComplete.usernameInput)
+							.waitFor({ state: "visible", timeout: TIMEOUTS.element });
 						await page
 							.locator(SELECTORS.registerComplete.usernameInput)
 							.fill("policy_test_user");

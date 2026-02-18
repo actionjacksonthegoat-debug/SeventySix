@@ -21,7 +21,7 @@ namespace SeventySix.Identity;
 /// Design Principles:
 /// - Runs once at startup (not periodic)
 /// - Idempotent: Safe to run multiple times
-/// - Creates admin with password requiring change on first login
+/// - Creates admin with the configured initial password (no forced change)
 /// - Only creates if configured and no admin user exists
 /// </remarks>
 public sealed class AdminSeederService(
@@ -116,9 +116,6 @@ public sealed class AdminSeederService(
 			return;
 		}
 
-		DateTimeOffset now =
-			timeProvider.GetUtcNow();
-
 		await CreateAdminUserAsync(
 			userManager);
 	}
@@ -145,7 +142,7 @@ public sealed class AdminSeederService(
 				CreateDate = now,
 				CreatedBy =
 					AuditConstants.SystemUser,
-				RequiresPasswordChange = true,
+				RequiresPasswordChange = false,
 				EmailConfirmed = true,
 				LockoutEnabled = true,
 			};
@@ -180,8 +177,7 @@ public sealed class AdminSeederService(
 		}
 
 		logger.LogWarning(
-			"Initial admin user '{Username}' created with temporary password. "
-				+ "Password change required on first login.",
+			"Initial admin user '{Username}' created successfully.",
 			settings.Value.Username);
 
 		return true;

@@ -146,8 +146,7 @@ export class ProfilePage
 	 * Configured OAuth providers for rendering linked accounts section.
 	 * @type {readonly OAuthProviderMetadata[]}
 	 */
-	readonly oauthProviders: readonly OAuthProviderMetadata[] =
-		OAUTH_PROVIDERS;
+	readonly oauthProviders: readonly OAuthProviderMetadata[] = OAUTH_PROVIDERS;
 
 	/**
 	 * Whether an OAuth link/unlink operation is in progress.

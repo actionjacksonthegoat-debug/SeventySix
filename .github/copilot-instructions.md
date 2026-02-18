@@ -35,8 +35,9 @@
 
 - **KISS, DRY, YAGNI** � simplest solution, no duplication, no speculative features
 - **TDD 80/20** � focus tests on the 20% of code carrying 80% of risk
-- **IDE Warnings = MUST FIX** � never suppress with `#pragma warning disable`, `// @ts-ignore`, `[SuppressMessage]`
+- **IDE Warnings = MUST FIX** � never suppress with `#pragma warning disable`, `// @ts-ignore`, `[SuppressMessage]`, or `.editorconfig` severity overrides
     - **Exceptions**: Generated OpenAPI clients
+    - **Format Violations**: NEVER add `.editorconfig` rules to suppress format violations (IDE1006, etc.). Always fix violations manually in source files. If `dotnet format` reports "Unable to fix [RULE]", manually correct all instances in the source code.
 - **All required test suites MUST pass** before claiming completion (see below)
 
 ## [CRITICAL] Tests MUST Pass (GATE CONDITION)
@@ -169,13 +170,20 @@ VS Code may reset MCP tool toggles in the Chat panel on restart. This is a known
 
 > To verify client changes via Chrome DevTools MCP, the app must be running.
 
+> **ABSOLUTE PROHIBITION**: Chrome DevTools MCP must **NEVER** change the seeded admin user's password. The admin credential from user secrets must remain valid at all times. If the app redirects to a change-password page, STOP and ask the user — do NOT fill and submit a new password.
+
 1. Run `npm start` to start the full dev stack (API + Client + infrastructure)
-2. Log in with seeded admin credentials from user secrets (`Admin:Email` / `Admin:Password`)
-3. Complete MFA � find the code via PostgreSQL MCP:
+2. Log in with seeded admin credentials from user secrets (`AdminSeeder:Email` / `AdminSeeder:InitialPassword`)
+3. Complete MFA — find the code via PostgreSQL MCP:
    ```sql
-   SELECT "To", "Subject", "Body" FROM notification."EmailQueue" ORDER BY "CreatedDate" DESC LIMIT 1;
+   SELECT "TemplateData"->>'code' AS "MfaCode"
+   FROM "ElectronicNotifications"."EmailQueue"
+   WHERE "EmailType" = 'MfaVerification'
+   ORDER BY "CreateDate" DESC
+   LIMIT 1;
    ```
-4. These credentials are **dev-only** � never use in production
+4. These credentials are **dev-only** — never use in production
+5. If the user secret password does not work, ask the user for the current admin password
 
 ---
 

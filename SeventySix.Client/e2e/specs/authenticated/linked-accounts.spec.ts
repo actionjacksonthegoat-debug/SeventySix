@@ -31,7 +31,6 @@ test.describe("Linked Accounts",
 			async ({ userPage }: { userPage: Page }) =>
 			{
 				await userPage.goto(ROUTES.account.root);
-				await userPage.waitForLoadState("load");
 			});
 
 		test("should display Linked Accounts section in profile settings",

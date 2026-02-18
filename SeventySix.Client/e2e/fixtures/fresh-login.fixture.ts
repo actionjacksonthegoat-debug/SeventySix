@@ -4,7 +4,7 @@
 
 import { test as base, Page, BrowserContext, Browser } from "@playwright/test";
 import { TEST_USERS, SELECTORS, ROUTES, TIMEOUTS, E2E_CONFIG } from "./index";
-import { solveAltchaChallenge } from "./helpers/altcha.helper";
+import { loginInFreshContext } from "./helpers/context-login.helper";
 import type { TestUser } from "./test-users.constant";
 
 /**
@@ -46,43 +46,12 @@ async function performFreshLogin(
 	baseURL: string,
 	testUser: TestUser): Promise<{ page: Page; browserContext: BrowserContext }>
 {
-	// Create a fresh context WITHOUT any storage state (no inherited auth)
-	const browserContext: BrowserContext =
-		await browser.newContext({
-			baseURL,
-			storageState: undefined,
-			ignoreHTTPSErrors: true
+	const { page, context } =
+		await loginInFreshContext(browser, testUser, {
+			expectedUrl: (url: URL) =>
+				url.pathname === ROUTES.home
+				|| url.pathname.includes("/mfa/"),
 		});
-	const page: Page =
-		await browserContext.newPage();
-
-	// Navigate to login page
-	await page.goto(ROUTES.auth.login);
-	await page
-		.locator(SELECTORS.form.usernameInput)
-		.waitFor({ state: "visible", timeout: TIMEOUTS.globalSetup });
-
-	// Fill login form
-	await page
-		.locator(SELECTORS.form.usernameInput)
-		.fill(testUser.username);
-	await page
-		.locator(SELECTORS.form.passwordInput)
-		.fill(testUser.password);
-
-	await solveAltchaChallenge(page);
-
-	// Submit and wait for redirect
-	await page
-		.locator(SELECTORS.form.submitButton)
-		.click();
-
-	// Wait for either home (success) or MFA verify (TOTP enabled on shared user)
-	await page.waitForURL(
-		(url) =>
-			url.pathname === ROUTES.home
-			|| url.pathname.includes("/mfa/"),
-		{ timeout: TIMEOUTS.globalSetup });
 
 	// If redirected to MFA, the user has TOTP enabled (likely from a parallel test).
 	// Fail fast with a clear message instead of timing out.
@@ -102,7 +71,7 @@ async function performFreshLogin(
 		.locator(SELECTORS.layout.userMenuButton)
 		.waitFor({ state: "visible", timeout: TIMEOUTS.auth });
 
-	return { page, browserContext };
+	return { page, browserContext: context };
 }
 
 /**

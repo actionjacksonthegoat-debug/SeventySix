@@ -50,13 +50,25 @@ function createMockWindowService(): MockWindowService
 		openWindow: vi.fn(),
 		navigateTo: vi.fn(),
 		reload: vi.fn(),
-		getCurrentUrl: vi.fn().mockReturnValue("https://localhost:4200"),
-		getPathname: vi.fn().mockReturnValue("/"),
-		getViewportHeight: vi.fn().mockReturnValue(768),
-		getViewportWidth: vi.fn().mockReturnValue(1024),
+		getCurrentUrl: vi
+			.fn()
+			.mockReturnValue("https://localhost:4200"),
+		getPathname: vi
+			.fn()
+			.mockReturnValue("/"),
+		getViewportHeight: vi
+			.fn()
+			.mockReturnValue(768),
+		getViewportWidth: vi
+			.fn()
+			.mockReturnValue(1024),
 		scrollToTop: vi.fn(),
-		getHash: vi.fn().mockReturnValue(""),
-		getSearch: vi.fn().mockReturnValue(""),
+		getHash: vi
+			.fn()
+			.mockReturnValue(""),
+		getSearch: vi
+			.fn()
+			.mockReturnValue(""),
 		replaceState: vi.fn()
 	};
 }

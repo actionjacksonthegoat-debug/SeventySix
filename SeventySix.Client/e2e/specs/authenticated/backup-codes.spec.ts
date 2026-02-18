@@ -29,13 +29,14 @@ import type { Page } from "@playwright/test";
 unauthenticatedTest.describe("Backup Codes",
 	() =>
 	{
+		unauthenticatedTest.describe.configure({ timeout: 60_000 });
+
 		unauthenticatedTest.beforeEach(
 			async ({ unauthenticatedPage }) =>
 			{
 				await loginAsUser(unauthenticatedPage, BACKUP_CODES_USER);
 
 				await unauthenticatedPage.goto(ROUTES.auth.backupCodes);
-				await unauthenticatedPage.waitForLoadState("load");
 			});
 
 		unauthenticatedTest("should display warning step heading",

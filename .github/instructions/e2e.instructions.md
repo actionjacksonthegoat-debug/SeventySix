@@ -104,13 +104,19 @@ expect(criticalViolations).toHaveLength(0);
 
 | [NEVER] | [ALWAYS] |
 |----------|-----------|
-| `page.waitForTimeout(1000)` | `page.waitForLoadState("load")` |
+| `page.waitForTimeout(N)` | `await expect(locator).toBeVisible()` or state-based wait |
+| `page.waitForLoadState("load")` | `await expect(page.locator(firstElement)).toBeVisible()` — wait for specific element |
 | `page.locator(".row:nth-child(2)")` | `page.locator("[data-testid='user-row']")` |
 | `await page.waitForNavigation()` | `await expect(page).toHaveURL(/pattern/)` |
 | Hardcoded strings | `PAGE_TEXT.headings.title` |
 | Test order dependencies | Each test fully independent |
 | `test.slow()` | Fix the root cause or use explicit `timeout` on the assertion |
 | Save original → test → restore | Create dedicated test data instead |
+| `toHaveCount(expect.any(Number))` | `toHaveCount(exactInt)` or `expect(locator.first()).toBeVisible()` |
+| `waitForResponse` after trigger | Set up `waitForResponse` listener BEFORE the action that triggers it |
+| Chip/tab selection by `.nth(N)` | `.filter({ hasText: /label/i })` or `aria-selected` attribute |
+
+**Exception**: `waitForTimeout(≤100ms)` is acceptable ONLY for IntersectionObserver scroll timing where no observable state change exists to await (e.g., `@defer` block trigger via scroll).
 
 ## CI Compatibility (CRITICAL)
 
@@ -141,8 +147,9 @@ export class UserManagementPageHelper
 
     async waitForTableLoad(): Promise<void>
     {
-        await this.page.waitForLoadState("load");
         await expect(this.dataTable).toBeVisible();
+        await expect(this.dataTable.locator("mat-row").first())
+            .toBeVisible();
     }
 }
 ```
@@ -240,6 +247,23 @@ When E2E tests fail, use these MCP servers to diagnose:
 
 - **Chrome DevTools MCP**: `list_console_messages` for JS errors, `list_network_requests` for API failures, `take_screenshot` for visual state. See `copilot-instructions.md` Chrome DevTools section.
 - **Playwright MCP**: Fine-tune selectors and debug test flows interactively when the E2E environment is running (`--keepalive`). Never use Playwright MCP for running test suites.
+
+## Known Flaky Patterns (AVOID)
+
+| Flaky Pattern | Why It Fails | Preferred Alternative |
+|---|---|---|
+| `waitForLoadState("load")` after `goto()` | Waits for browser `load` event, not Angular render | `await expect(locator).toBeVisible()` on first meaningful element |
+| `waitForResponse` registered AFTER the trigger action | Response may arrive before listener is registered | Register `waitForResponse` promise BEFORE `click()`/`fill()` |
+| `waitForTimeout(N)` for any `N > 0` | Arbitrary delay — too short = flaky, too long = slow | State-based wait (visibility, URL, response). Exception: ≤100ms for IntersectionObserver |
+| `toHaveCount(expect.any(Number))` | Invalid Playwright API — `toHaveCount` requires exact int | `expect(locator.first()).toBeVisible()` or `toHaveCount(exactInt)` |
+| Chip/tab select by `.nth(N)` | Breaks if order changes, fragile | `.filter({ hasText: /label/i })` or `[aria-selected="true"]` |
+| Click table row before data loads | Row may not exist or be a skeleton | `waitForTableReady()` helper or `expect(row.first()).toBeVisible()` first |
+| TOTP code near time-step boundary | Code expires before server validates | Check remaining window; regenerate if < buffer |
+| ALTCHA solve not idempotent | Second solve attempt fails if first partially completed | Guard with `isVisible()` + `isChecked()` checks before solving |
+| Save original → test → restore | Leaks state on failure, breaks parallel | Create dedicated test data with unique prefix/timestamp |
+| `test.slow()` to mask timing issues | Hides missing waits | Fix root cause — add explicit assertion timeout |
+| Cross-tab assertion via `if/else` fallback | Pass-always logic hides real failure | Deterministic assertion with retry (poll or `expect().toBeHidden()`) |
+| `waitForURL` with wrong type signature | Callback receives `URL` object, not `string` | Use `(url: URL) => boolean` predicate, access `url.pathname` |
 
 
 ````

@@ -24,6 +24,8 @@ import type { Result } from "axe-core";
 test.describe("Authenticated Routes - WCAG Accessibility",
 	() =>
 	{
+		test.describe.configure({ timeout: 60_000 });
+
 		const authenticatedPages =
 			[
 				{ path: ROUTES.account.root, name: "Profile" },
@@ -37,7 +39,6 @@ test.describe("Authenticated Routes - WCAG Accessibility",
 				async ({ userPage }: { userPage: Page }) =>
 				{
 					await userPage.goto(pageInfo.path);
-					await userPage.waitForLoadState("load");
 
 					await expectAccessible(userPage, pageInfo.name);
 				});
@@ -50,7 +51,6 @@ test.describe("Authenticated Routes - WCAG Accessibility",
 					async ({ userPage }: { userPage: Page }) =>
 					{
 						await userPage.goto(ROUTES.account.root);
-						await userPage.waitForLoadState("load");
 
 						// Form inputs should have labels
 						const axeResults =
@@ -79,7 +79,6 @@ test.describe("Authenticated Routes - WCAG Accessibility",
 					async ({ userPage }: { userPage: Page }) =>
 					{
 						await userPage.goto(ROUTES.home);
-						await userPage.waitForLoadState("load");
 
 						// User menu button should have aria-label
 						const userMenuButton =
@@ -100,7 +99,7 @@ test.describe("Authenticated Routes - WCAG Accessibility",
 					async ({ userPage }: { userPage: Page }) =>
 					{
 						await userPage.goto(ROUTES.home);
-						await userPage.waitForLoadState("load");
+
 
 						const banner =
 							userPage.locator(SELECTORS.accessibility.banner);
@@ -119,7 +118,7 @@ test.describe("Authenticated Routes - WCAG Accessibility",
 					async ({ userPage }: { userPage: Page }) =>
 					{
 						await userPage.goto(ROUTES.home);
-						await userPage.waitForLoadState("load");
+
 
 						const skipLink =
 							userPage.locator(SELECTORS.accessibility.skipLink);

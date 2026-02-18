@@ -84,14 +84,15 @@ export interface OAuthProviderMetadata
  * Adding a new provider: update OAuthProvider type above + add entry here.
  * @type {readonly OAuthProviderMetadata[]}
  */
-export const OAUTH_PROVIDERS: readonly OAuthProviderMetadata[] = [
-	{
-		id: "github",
-		displayName: "GitHub",
-		icon: "github",
-		color: "#24292e"
-	}
-] as const;
+export const OAUTH_PROVIDERS: readonly OAuthProviderMetadata[] =
+	[
+		{
+			id: "github",
+			displayName: "GitHub",
+			icon: "github",
+			color: "#24292e"
+		}
+	] as const;
 
 /**
  * Server response for linked external login.
@@ -115,5 +116,6 @@ export function getProviderMetadata(
 	provider: OAuthProvider): OAuthProviderMetadata | undefined
 {
 	return OAUTH_PROVIDERS.find(
-		(metadata: OAuthProviderMetadata) => metadata.id === provider);
+		(metadata: OAuthProviderMetadata) =>
+			metadata.id === provider);
 }

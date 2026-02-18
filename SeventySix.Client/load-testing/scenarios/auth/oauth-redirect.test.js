@@ -75,13 +75,13 @@ export default function(data)
 				response.status === HTTP_STATUS.FOUND,
 			"redirect targets github.com": (response) =>
 				response.headers[HTTP_HEADER.LOCATION] != null
-				&& response.headers[HTTP_HEADER.LOCATION].includes("github.com"),
+					&& response.headers[HTTP_HEADER.LOCATION].includes("github.com"),
 			"includes state parameter": (response) =>
 				response.headers[HTTP_HEADER.LOCATION] != null
-				&& response.headers[HTTP_HEADER.LOCATION].includes("state="),
+					&& response.headers[HTTP_HEADER.LOCATION].includes("state="),
 			"includes code_challenge": (response) =>
 				response.headers[HTTP_HEADER.LOCATION] != null
-				&& response.headers[HTTP_HEADER.LOCATION].includes("code_challenge=")
+					&& response.headers[HTTP_HEADER.LOCATION].includes("code_challenge=")
 		});
 
 	sleep(SLEEP_DURATION.STANDARD);
@@ -96,7 +96,8 @@ export default function(data)
  */
 function rateLimitValidation()
 {
-	const maxAttempts = RATE_LIMIT.MAX_ATTEMPTS;
+	const maxAttempts =
+		RATE_LIMIT.MAX_ATTEMPTS;
 
 	for (let index = 0; index < maxAttempts; index++)
 	{

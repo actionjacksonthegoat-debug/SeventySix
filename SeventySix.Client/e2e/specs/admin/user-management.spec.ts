@@ -28,7 +28,6 @@ test.describe("User Management Page",
 			async ({ adminPage }: { adminPage: Page }) =>
 			{
 				await adminPage.goto(ROUTES.admin.users);
-				await adminPage.waitForLoadState("load");
 			});
 
 		test.describe("Page Structure",
@@ -178,13 +177,16 @@ test.describe("User Management Page",
 							adminPage.locator(SELECTORS.userManagement.dataTable)
 								.locator(SELECTORS.dataTable.matInput);
 						await searchInput.fill("e2e_admin");
-						await searchInput.press("Enter");
 
-						// Wait for API response
-						await adminPage.waitForResponse(
-							(response) =>
-								response.url().includes("/users")
-								&& response.status() === 200);
+						// Set up listener BEFORE triggering search
+						const searchResponse: Promise<import("@playwright/test").Response> =
+							adminPage.waitForResponse(
+								(response) =>
+									response.url().includes("/users")
+									&& response.status() === 200);
+
+						await searchInput.press("Enter");
+						await searchResponse;
 
 						// Should show filtered results
 						await expect(dataRows.first())
@@ -203,13 +205,16 @@ test.describe("User Management Page",
 							adminPage.locator(SELECTORS.userManagement.dataTable)
 								.locator(SELECTORS.dataTable.matInput);
 						await searchInput.fill("zzz_nonexistent_user_xyz");
-						await searchInput.press("Enter");
 
-						// Wait for API response
-						await adminPage.waitForResponse(
-							(response) =>
-								response.url().includes("/users")
-								&& response.status() === 200);
+						// Set up listener BEFORE triggering search
+						const searchResponse: Promise<import("@playwright/test").Response> =
+							adminPage.waitForResponse(
+								(response) =>
+									response.url().includes("/users")
+									&& response.status() === 200);
+
+						await searchInput.press("Enter");
+						await searchResponse;
 
 						const emptyState =
 							adminPage.locator(SELECTORS.dataTable.emptyState);

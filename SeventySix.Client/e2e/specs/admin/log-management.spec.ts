@@ -28,7 +28,6 @@ test.describe("Log Management Page",
 			async ({ adminPage }: { adminPage: Page }) =>
 			{
 				await adminPage.goto(ROUTES.admin.logs);
-				await adminPage.waitForLoadState("load");
 			});
 
 		test.describe("Page Structure",
@@ -186,9 +185,6 @@ test.describe("Log Management Page",
 							.toBeVisible();
 						await warningsChip.click();
 
-						// Wait for the table to update
-						await adminPage.waitForLoadState("load");
-
 						// Results should update (either fewer rows, same rows, or empty state)
 						const emptyState =
 							adminPage.locator(SELECTORS.dataTable.emptyState);
@@ -213,9 +209,6 @@ test.describe("Log Management Page",
 						await expect(errorsChip)
 							.toBeVisible();
 						await errorsChip.click();
-
-						// Wait for the table to update
-						await adminPage.waitForLoadState("load");
 
 						// Results should update
 						const emptyState =

@@ -52,8 +52,8 @@ switch ($Environment) {
 
 $volumeName =
 switch ($Environment) {
-	"dev" { "seventysix_postgres_data" }
-	"e2e" { "seventysix_e2e_postgres_data" }
+	"dev" { "seventysix_postgres_dev_data" }
+	"e2e" { "seventysix_postgres_e2e_data" }
 }
 
 Write-Host "`n=== SeventySix Database Reset ===" -ForegroundColor Cyan
@@ -75,7 +75,7 @@ if (-not $SkipConfirmation) {
 	Write-Host ""
 
 	$firstConfirmation =
-		Read-Host "Type 'yes' to continue or anything else to abort"
+	Read-Host "Type 'yes' to continue or anything else to abort"
 
 	if ($firstConfirmation -ne "yes") {
 		Write-Host ""
@@ -101,7 +101,7 @@ if (-not $SkipConfirmation) {
 	Write-Host ""
 
 	$finalConfirmation =
-		Read-Host "Type 'DESTROY' in all caps to confirm"
+	Read-Host "Type 'DESTROY' in all caps to confirm"
 
 	if ($finalConfirmation -ne "DESTROY") {
 		Write-Host ""

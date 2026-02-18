@@ -130,9 +130,9 @@ test.describe("OAuth Login (GitHub)",
 							}
 						});
 
-					// Wait briefly for redirect chain
-					await popup.waitForLoadState(
-						"load",
+					// Wait for popup to navigate (may be blocked by route intercept)
+					await popup.waitForURL(
+						(url) => url.href !== "about:blank",
 						{ timeout: TIMEOUTS.navigation })
 						.catch(
 							() => { /* popup may be blocked by route */ });
@@ -140,10 +140,10 @@ test.describe("OAuth Login (GitHub)",
 				}
 				catch
 				{
-					// Popup was blocked; wait for main page route handler
-					await page.waitForLoadState(
-						"load",
-						{ timeout: TIMEOUTS.navigation });
+					// Popup was blocked; verify the login page is still functional
+					// eslint-disable-next-line playwright/no-conditional-expect -- inside catch for popup-blocked fallback
+					await expect(authPage.githubButton)
+						.toBeVisible({ timeout: TIMEOUTS.element });
 				}
 
 				// If we captured a GitHub URL, verify PKCE params
@@ -156,6 +156,7 @@ test.describe("OAuth Login (GitHub)",
 				}
 			});
 
+		// eslint-disable-next-line playwright/expect-expect -- assertions inside expectAccessible
 		test("should pass accessibility checks on login page with OAuth buttons",
 			async ({ page }) =>
 			{

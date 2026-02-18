@@ -129,8 +129,7 @@ export class LoginComponent implements OnInit
 	 * Configured OAuth providers for rendering login buttons.
 	 * @type {readonly OAuthProviderMetadata[]}
 	 */
-	protected readonly oauthProviders: readonly OAuthProviderMetadata[] =
-		OAUTH_PROVIDERS;
+	protected readonly oauthProviders: readonly OAuthProviderMetadata[] = OAUTH_PROVIDERS;
 
 	/**
 	 * Whether an OAuth popup flow is currently in progress.

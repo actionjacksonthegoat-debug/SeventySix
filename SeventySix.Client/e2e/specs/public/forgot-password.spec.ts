@@ -384,7 +384,6 @@ test.describe("Forgot Password Flow",
 								E2E_CONFIG.clientBaseUrl);
 
 						await page.goto(clientLink);
-						await page.waitForLoadState("load");
 
 						// Step 4: Set new password
 						await expect(page.locator(SELECTORS.layout.pageHeading))

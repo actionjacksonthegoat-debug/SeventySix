@@ -4,6 +4,7 @@ import {
 	ROUTES,
 	ROUTE_GROUPS,
 	SELECTORS,
+	TIMEOUTS,
 	expectAccessible
 } from "../../fixtures";
 import AxeBuilder from "@axe-core/playwright";
@@ -30,7 +31,6 @@ test.describe("WCAG Accessibility Compliance",
 				async ({ page }) =>
 				{
 					await page.goto(pageInfo.path);
-					await page.waitForLoadState("load");
 
 					await expectAccessible(page, pageInfo.name);
 				});
@@ -43,7 +43,6 @@ test.describe("WCAG Accessibility Compliance",
 					async ({ page }) =>
 					{
 						await page.goto(ROUTES.home);
-						await page.waitForLoadState("load");
 
 						const axeResults =
 							await new AxeBuilder(
@@ -65,7 +64,6 @@ test.describe("WCAG Accessibility Compliance",
 					async ({ page }) =>
 					{
 						await page.goto(ROUTES.auth.login);
-						await page.waitForLoadState("load");
 
 						const axeResults =
 							await new AxeBuilder(
@@ -91,7 +89,6 @@ test.describe("WCAG Accessibility Compliance",
 					async ({ page }) =>
 					{
 						await page.goto(ROUTES.home);
-						await page.waitForLoadState("load");
 
 						const axeResults =
 							await new AxeBuilder(
@@ -146,7 +143,6 @@ test.describe("WCAG Accessibility Compliance",
 					async ({ page }) =>
 					{
 						await page.goto(ROUTES.home);
-						await page.waitForLoadState("load");
 
 						// Verify banner landmark (header)
 						const banner =
@@ -174,7 +170,6 @@ test.describe("WCAG Accessibility Compliance",
 					async ({ page }) =>
 					{
 						await page.goto(ROUTES.home);
-						await page.waitForLoadState("load");
 
 						const axeResults =
 							await new AxeBuilder(

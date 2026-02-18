@@ -76,7 +76,10 @@ test.describe("Landing Page",
 			async ({ page }: { page: Page }) =>
 			{
 				await page.goto(ROUTES.home);
-				await page.waitForLoadState("load");
+
+				// Wait for hero section to render before triggering defers
+				await expect(page.locator(SELECTORS.home.heroSection))
+					.toBeVisible();
 
 				// Scroll through the page to trigger all @defer (on viewport) blocks
 				await triggerAllDeferBlocks(page);

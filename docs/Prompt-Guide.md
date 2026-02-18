@@ -15,6 +15,7 @@
     - [/create-plan — Create a New Implementation Plan](#create-plan--create-a-new-implementation-plan)
 - [Scaffolding Prompts](#scaffolding-prompts)
 - [Quality Prompts](#quality-prompts)
+- [Verification Prompts](#verification-prompts)
 - [What About Hooks?](#what-about-hooks)
 - [Expectations & Results](#expectations--results)
 - [Tips & FAQ](#tips--faq)
@@ -210,6 +211,53 @@ These prompts generate code for specific components or domains. They handle file
 **`/code-review`** checks for: formatting violations, security issues, accessibility gaps, architecture violations, naming problems, and testing gaps. Output is a list of violations with file, line number, and the rule reference.
 
 **`/fix-warnings`** runs `dotnet build`, `ng build`, and ESLint, then fixes every warning. It never suppresses — always fixes root causes.
+
+---
+
+## Verification Prompts
+
+### /run-site-base — Full Application Walkthrough
+
+**What it does**: Uses Chrome DevTools MCP to navigate every page of the application, exercise core features (create users, manage roles, view logs, edit profiles), capture screenshots, and generate a pass/fail report — all automated.
+
+**When to use**: After deploying changes, before a demo, or anytime you want a visual inspection of the entire application without manually clicking through every page.
+
+**Prerequisites**:
+- Dev environment must be running (`npm start`)
+- Chrome DevTools MCP must be enabled
+- PostgreSQL MCP recommended (for MFA code retrieval)
+
+**Sample usage**:
+```
+/run-site-base
+```
+
+No additional arguments needed. The prompt asks if your dev environment is running, then automates the entire walkthrough.
+
+**Output**:
+- `.dev-tools-output/walkthrough-report.md` — Step-by-step results with pass/fail status
+- `.dev-tools-output/screenshots/` — One screenshot per page visit
+- Error banners flagged at the top of the report (excluding intentional "Create Error Log" clicks)
+
+**What it covers**:
+1. All public pages (landing, sandbox, login, register, forgot password)
+2. Admin login + MFA verification
+3. Admin dashboard (all 4 tabs + log creation buttons)
+4. User management (list, create, edit, roles)
+5. Log management (view, sort, detail dialog)
+6. Permission requests (approve/reject if pending)
+7. Profile page (view, edit, linked accounts)
+8. Request permissions page
+9. Developer style guide (all 8 tabs)
+10. Error pages (401, 403, 404)
+11. Logout
+
+**Key behaviors**:
+- Always cleans `.dev-tools-output/` before each run (no stale data)
+- Continues on failure — never aborts if a single step fails
+- Error banner detection after every action
+- Screenshots use predictable names: `step-{N}-{slug}.png`
+- Asks for user input only when Chrome DevTools can't automate (e.g., MFA code if PostgreSQL MCP unavailable)
 
 ---
 

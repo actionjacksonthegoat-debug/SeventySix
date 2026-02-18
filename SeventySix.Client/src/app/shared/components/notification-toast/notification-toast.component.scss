@@ -18,7 +18,9 @@
 	margin: 0;
 	padding: vars.$spacing-md;
 	border-radius: vars.$border-radius-sm;
-	box-shadow: 0 4px 12px color-mix(in srgb, black 25%, transparent), 0 2px 4px color-mix(in srgb, black 15%, transparent);
+	box-shadow:
+		0 4px 12px color-mix(in srgb, black 25%, transparent),
+		0 2px 4px color-mix(in srgb, black 15%, transparent);
 	min-width: vars.$toast-min-width;
 	max-width: vars.$toast-max-width;
 	pointer-events: auto;

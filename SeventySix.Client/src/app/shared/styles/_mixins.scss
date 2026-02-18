@@ -951,7 +951,11 @@
 /// @param {Number} $visible-rows - Number of visible rows before scroll
 /// @param {Length} $row-height - Height per row (default: $table-row-height)
 /// @param {Length} $header-height - Table header height (default: $table-header-height)
-@mixin admin-table-card-layout($visible-rows: 4, $row-height: vars.$table-row-height, $header-height: vars.$table-header-height) {
+@mixin admin-table-card-layout(
+	$visible-rows: 4,
+	$row-height: vars.$table-row-height,
+	$header-height: vars.$table-header-height
+) {
 	.table-wrapper {
 		max-height: calc(#{$visible-rows} * #{$row-height} + #{$header-height});
 		overflow-y: auto;

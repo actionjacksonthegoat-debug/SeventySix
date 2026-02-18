@@ -55,7 +55,6 @@ test.describe("Change Password Flow",
 				{ ...PASSWORD_CHANGE_USER, password });
 
 			await page.goto(ROUTES.auth.changePassword);
-			await page.waitForLoadState("load");
 		}
 
 		test("should show error for incorrect current password",

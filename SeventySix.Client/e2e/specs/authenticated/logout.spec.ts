@@ -3,7 +3,7 @@ import {
 	freshLoginTest as test,
 	expect,
 	unauthenticatedTest,
-	solveAltchaChallenge,
+	loginInFreshContext,
 	CROSSTAB_USER,
 	ROUTES,
 	SELECTORS,
@@ -72,7 +72,6 @@ test.describe("Logout Flow",
 
 						// Reload to verify session is also cleared server-side
 						await freshUserPage.goto(ROUTES.home);
-						await freshUserPage.waitForLoadState("domcontentloaded");
 
 						// Wait for Angular to bootstrap and resolve auth state
 						// Uses auth timeout since APP_INITIALIZER makes a refresh API call
@@ -211,7 +210,6 @@ test.describe("Logout Flow",
 
 						// Reload to verify session is also cleared server-side
 						await freshUserPage.goto(ROUTES.home);
-						await freshUserPage.waitForLoadState("domcontentloaded");
 
 						// Wait for Angular to bootstrap and resolve auth state
 						await expect(freshUserPage.locator(SELECTORS.layout.userMenuButton))
@@ -261,54 +259,11 @@ unauthenticatedTest.describe("Cross-Tab Logout",
 		unauthenticatedTest("should invalidate second context when first context logs out",
 			async ({ browser }) =>
 			{
-				/**
-				 * Logs in the cross-tab user in a fresh browser context.
-				 * @returns
-				 * The page and context.
-				 */
-				async function loginCrosstabUser(): Promise<{ page: Page; context: BrowserContext }>
-				{
-					const context: BrowserContext =
-						await browser.newContext({
-							baseURL: E2E_CONFIG.clientBaseUrl,
-							storageState: undefined,
-							ignoreHTTPSErrors: true
-						});
-					const page: Page =
-						await context.newPage();
-
-					await page.goto(ROUTES.auth.login);
-					await page
-						.locator(SELECTORS.form.usernameInput)
-						.waitFor({ state: "visible", timeout: TIMEOUTS.globalSetup });
-					await page
-						.locator(SELECTORS.form.usernameInput)
-						.fill(CROSSTAB_USER.username);
-					await page
-						.locator(SELECTORS.form.passwordInput)
-						.fill(CROSSTAB_USER.password);
-
-					await solveAltchaChallenge(page);
-
-					await page
-						.locator(SELECTORS.form.submitButton)
-						.click();
-
-					await page.waitForURL(
-						ROUTES.home,
-						{ timeout: TIMEOUTS.globalSetup });
-
-					await expect(page.locator(SELECTORS.layout.userMenuButton))
-						.toBeVisible({ timeout: TIMEOUTS.auth });
-
-					return { page, context };
-				}
-
 				// Login in two separate browser contexts (simulates two tabs)
 				const tab1 =
-					await loginCrosstabUser();
+					await loginInFreshContext(browser, CROSSTAB_USER);
 				const tab2 =
-					await loginCrosstabUser();
+					await loginInFreshContext(browser, CROSSTAB_USER);
 
 				try
 				{
@@ -328,7 +283,6 @@ unauthenticatedTest.describe("Cross-Tab Logout",
 					// Tab2: navigate to a protected route — server should reject the request
 					// because the refresh token family is revoked
 					await tab2.page.goto(ROUTES.account.root);
-					await tab2.page.waitForLoadState("load");
 
 					// Tab2 should be redirected to login or home (unauthenticated)
 					await tab2.page.waitForURL(

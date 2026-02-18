@@ -275,12 +275,12 @@ export class AuthService
 
 		this
 			.httpClient
-			.post<{ authorizationUrl: string }>(
+			.post<{ authorizationUrl: string; }>(
 				`${this.authUrl}/oauth/link/${provider}`,
 				{})
 			.subscribe(
 				{
-					next: (response: { authorizationUrl: string }) =>
+					next: (response: { authorizationUrl: string; }) =>
 					{
 						const popup: Window | null =
 							this.windowService.openWindow(

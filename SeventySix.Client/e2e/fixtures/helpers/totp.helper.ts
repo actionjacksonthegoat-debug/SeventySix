@@ -63,6 +63,58 @@ export function generateTotpCodeFromSecret(totpSecret: string): string
 }
 
 /**
+ * Waits until we are at least `safeMarginSeconds` into a fresh TOTP time step.
+ * Prevents generating codes near the boundary that expire during form submission.
+ *
+ * @param safeMarginSeconds
+ * Minimum seconds remaining in the current time step (default: 3).
+ */
+export async function waitForFreshTotpWindow(
+	safeMarginSeconds: number = 3): Promise<void>
+{
+	const stepSeconds: number = E2E_CONFIG.totpTimeStepSeconds;
+	const now: number = Math.floor(Date.now() / 1000);
+	const secondsIntoStep: number = now % stepSeconds;
+	const secondsRemaining: number = stepSeconds - secondsIntoStep;
+
+	if (secondsRemaining <= safeMarginSeconds)
+	{
+		const waitMs: number = (secondsRemaining + 1) * 1000;
+		await new Promise(
+			(resolve) => setTimeout(resolve, waitMs));
+	}
+}
+
+/**
+ * Generates a TOTP code guaranteed to be in a fresh time window.
+ * Use this instead of `generateTotpCode()` in all E2E tests.
+ *
+ * @returns
+ * A 6-digit TOTP code string.
+ */
+export async function generateSafeTotpCode(): Promise<string>
+{
+	await waitForFreshTotpWindow();
+	return generateTotpCode();
+}
+
+/**
+ * Generates a TOTP code from an arbitrary secret, with time-window safety.
+ * Use this instead of `generateTotpCodeFromSecret()` in enrollment tests.
+ *
+ * @param totpSecret
+ * The Base32-encoded TOTP secret.
+ *
+ * @returns
+ * A 6-digit TOTP code string.
+ */
+export async function generateSafeTotpCodeFromSecret(totpSecret: string): Promise<string>
+{
+	await waitForFreshTotpWindow();
+	return generateTotpCodeFromSecret(totpSecret);
+}
+
+/**
  * Best-effort TOTP cleanup: waits for a fresh code, re-authenticates, and disables TOTP via API.
  * Silently returns without throwing if any step fails — the test user is isolated so leftover
  * TOTP state does not affect other tests.

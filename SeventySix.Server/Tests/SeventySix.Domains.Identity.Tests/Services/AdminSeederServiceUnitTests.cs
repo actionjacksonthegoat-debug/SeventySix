@@ -1,3 +1,7 @@
+// <copyright file="AdminSeederServiceUnitTests.cs" company="SeventySix">
+// Copyright (c) SeventySix. All rights reserved.
+// </copyright>
+
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -5,6 +9,9 @@ using Microsoft.Extensions.Options;
 using NSubstitute;
 using SeventySix.Identity.Constants;
 using SeventySix.Identity.Settings;
+using SeventySix.Shared.Exceptions;
+using SeventySix.TestUtilities.Mocks;
+using Shouldly;
 
 namespace SeventySix.Identity.Tests.Services;
 
@@ -80,9 +87,9 @@ public class AdminSeederServiceUnitTests
 			.CreateAsync(
 				Arg.Is<ApplicationUser>(
 					adminUser =>
-						adminUser.RequiresPasswordChange == true
-						&& adminUser.LockoutEnabled == true
-						&& adminUser.EmailConfirmed == true),
+						adminUser.RequiresPasswordChange == false
+							&& adminUser.LockoutEnabled == true
+							&& adminUser.EmailConfirmed == true),
 				settings.InitialPassword!);
 		await userManager
 			.Received(1)
@@ -165,20 +172,8 @@ public class AdminSeederServiceUnitTests
 		IServiceScope scope =
 			Substitute.For<IServiceScope>();
 
-		// Use a real ServiceProvider so GetRequiredService<T>() behaves as in production.
 		UserManager<ApplicationUser> userManager =
-			Substitute.For<
-			UserManager<ApplicationUser>
-		>(
-			Substitute.For<IUserStore<ApplicationUser>>(),
-			null,
-			null,
-			null,
-			null,
-			null,
-			null,
-			null,
-			null);
+			IdentityMockFactory.CreateUserManager();
 
 		RoleManager<ApplicationRole> roleManager =
 			new RoleManager<ApplicationRole>(
@@ -216,9 +211,9 @@ public class AdminSeederServiceUnitTests
 
 	[Fact]
 	/// <summary>
-	/// When InitialPassword is null or empty, the seeder should log error and not create user.
+	/// When InitialPassword is null, ExecuteAsync throws StartupFailedException.
 	/// </summary>
-	public async Task ExecuteAsync_WhenNoPassword_LogsErrorAndSkipsAsync()
+	public async Task ExecuteAsync_NullPassword_ThrowsStartupFailedExceptionAsync()
 	{
 		// Arrange
 		(
@@ -250,15 +245,15 @@ public class AdminSeederServiceUnitTests
 				timeProvider,
 				logger);
 
-		// Act
-		await service.StartAsync(CancellationToken.None);
-		await service.StopAsync(CancellationToken.None);
+		// Act & Assert
+		StartupFailedException exception =
+			await Should.ThrowAsync<StartupFailedException>(
+				async () =>
+				{
+					await service.StartAsync(CancellationToken.None);
+					await service.StopAsync(CancellationToken.None);
+				});
 
-		// Assert - should not attempt to create user
-		await userManager
-			.DidNotReceive()
-			.CreateAsync(
-				Arg.Any<ApplicationUser>(),
-				Arg.Any<string>());
+		exception.Message.ShouldContain("InitialPassword");
 	}
 }

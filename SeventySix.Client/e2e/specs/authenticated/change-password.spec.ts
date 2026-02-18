@@ -28,7 +28,6 @@ test.describe("Change Password",
 			async ({ userPage }) =>
 			{
 				await userPage.goto(ROUTES.auth.changePassword);
-				await userPage.waitForLoadState("load");
 			});
 
 		test("should display change password heading",

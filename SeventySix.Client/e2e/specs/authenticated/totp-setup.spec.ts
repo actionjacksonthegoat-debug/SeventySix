@@ -10,7 +10,7 @@ import {
 	solveAltchaChallenge,
 	TOTP_ENROLL_USER,
 	TOTP_VIEWER_USER,
-	generateTotpCodeFromSecret,
+	generateSafeTotpCodeFromSecret,
 	disableTotpViaApi,
 	SELECTORS,
 	ROUTES,
@@ -46,7 +46,6 @@ unauthenticatedTest.describe("TOTP Setup",
 				await loginAsUser(unauthenticatedPage, TOTP_VIEWER_USER);
 
 				await unauthenticatedPage.goto(ROUTES.auth.totpSetup);
-				await unauthenticatedPage.waitForLoadState("load");
 
 				await expect(unauthenticatedPage.locator(SELECTORS.layout.pageHeading))
 					.toHaveText(
@@ -141,7 +140,6 @@ unauthenticatedTest.describe("TOTP Enrollment",
 
 				// Navigate to TOTP setup
 				await unauthenticatedPage.goto(ROUTES.auth.totpSetup);
-				await unauthenticatedPage.waitForLoadState("load");
 
 				await expect(unauthenticatedPage.locator(SELECTORS.layout.pageHeading))
 					.toHaveText(
@@ -179,7 +177,7 @@ unauthenticatedTest.describe("TOTP Enrollment",
 
 				// Step 3: Generate TOTP code from extracted secret and verify
 				const enrollmentCode: string =
-					generateTotpCodeFromSecret(secret);
+					await generateSafeTotpCodeFromSecret(secret);
 
 				await unauthenticatedPage
 					.locator(SELECTORS.totpSetup.verificationCodeInput)

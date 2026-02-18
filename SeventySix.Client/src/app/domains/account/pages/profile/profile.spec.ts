@@ -1,11 +1,11 @@
-﻿import { AccountService } from "@account/services";
+import { AccountService } from "@account/services";
 import { ProfileFixtures } from "@account/testing";
 import { provideZonelessChangeDetection, signal, WritableSignal } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideRouter } from "@angular/router";
 import { ApiService } from "@shared/services/api.service";
 import { AuthService } from "@shared/services/auth.service";
-import { ExternalLoginDto, OAUTH_PROVIDERS } from "@shared/services/auth.types";
+import { ExternalLoginDto, OAuthProvider } from "@shared/services/auth.types";
 import {
 	createMockApiService,
 	createTestQueryClient,
@@ -133,7 +133,7 @@ describe("ProfilePage linked accounts",
 		let mockApiService: MockApiService;
 		let queryClient: QueryClient;
 		let mockIsOAuthInProgress: WritableSignal<boolean>;
-		let mockLinkProvider: ReturnType<typeof vi.fn>;
+		let mockLinkProvider: ReturnType<typeof vi.fn<(provider: OAuthProvider) => void>>;
 
 		/** GitHub external login fixture */
 		const GITHUB_LOGIN: ExternalLoginDto =
@@ -142,11 +142,7 @@ describe("ProfilePage linked accounts",
 				providerDisplayName: "GitHub"
 			};
 
-		/**
-		 * Pre-populate TanStack Query cache and create component.
-		 * Using setQueryData avoids async queryFn resolution issues
-		 * that leave the component stuck in skeleton/loading state.
-		 */
+		/** Pre-populate TanStack Query cache and create component */
 		async function createFixture(
 			logins: ExternalLoginDto[],
 			profileOverrides?: Partial<ReturnType<typeof ProfileFixtures.create>>): Promise<ComponentFixture<ProfilePage>>
@@ -155,11 +151,14 @@ describe("ProfilePage linked accounts",
 				ProfileFixtures.create(profileOverrides);
 
 			queryClient.setQueryData(
-				QueryKeys.account.profile, profile);
+				QueryKeys.account.profile,
+				profile);
 			queryClient.setQueryData(
-				QueryKeys.account.externalLogins, logins);
+				QueryKeys.account.externalLogins,
+				logins);
 			queryClient.setQueryData(
-				QueryKeys.account.availableRoles, []);
+				QueryKeys.account.availableRoles,
+				[]);
 
 			const componentFixture: ComponentFixture<ProfilePage> =
 				TestBed.createComponent(ProfilePage);

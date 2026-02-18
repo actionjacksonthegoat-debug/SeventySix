@@ -21,10 +21,17 @@ export { EmailTestHelper } from "./email.fixture";
 export type { MailDevEmail } from "./email.fixture";
 
 // TOTP helper
-export { generateTotpCode, generateTotpCodeFromSecret, disableTotpViaApi } from "./helpers/totp.helper";
+export { generateTotpCode, generateTotpCodeFromSecret, generateSafeTotpCode, generateSafeTotpCodeFromSecret, waitForFreshTotpWindow, disableTotpViaApi } from "./helpers/totp.helper";
 
 // Login helper
 export { loginAsUser } from "./helpers/login.helper";
+
+// Context login helper (fresh browser context + login)
+export { loginInFreshContext } from "./helpers/context-login.helper";
+export type { ContextLoginResult } from "./helpers/context-login.helper";
+
+// Data table helper
+export { waitForTableReady, waitForTableLoaded } from "./helpers/data-table.helper";
 
 // Altcha helper
 export { solveAltchaChallenge } from "./helpers/altcha.helper";

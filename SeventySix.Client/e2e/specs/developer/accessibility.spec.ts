@@ -30,7 +30,6 @@ test.describe("Developer Routes - WCAG Accessibility",
 				async ({ developerPage }: { developerPage: Page }) =>
 				{
 					await developerPage.goto(pageInfo.path);
-					await developerPage.waitForLoadState("load");
 
 					await expectAccessible(developerPage, `Developer ${pageInfo.name}`);
 				});
@@ -43,7 +42,6 @@ test.describe("Developer Routes - WCAG Accessibility",
 					async ({ developerPage }: { developerPage: Page }) =>
 					{
 						await developerPage.goto(ROUTE_GROUPS.developerAccessibilityPages[0].path);
-						await developerPage.waitForLoadState("load");
 
 						const axeResults =
 							await new AxeBuilder(

@@ -31,9 +31,23 @@ export async function solveAltchaChallenge(
 
 	const altchaWidget =
 		page.locator(SELECTORS.altcha.widget);
+	const altchaInner =
+		altchaWidget.locator(".altcha");
 
-	// Wait for widget to initialize (challenge fetched, checkbox ready)
-	await expect(altchaWidget.locator(".altcha"))
+	// Wait for widget to be in DOM
+	await altchaWidget.waitFor({ state: "attached", timeout: initTimeout });
+
+	// Check current state — may already be verified (idempotent)
+	const currentState: string | null =
+		await altchaInner.getAttribute("data-state", { timeout: initTimeout });
+
+	if (currentState === "verified")
+	{
+		return;
+	}
+
+	// Ensure we are in unverified state before clicking
+	await expect(altchaInner)
 		.toHaveAttribute(
 			"data-state",
 			"unverified",
@@ -45,7 +59,7 @@ export async function solveAltchaChallenge(
 		.click({ timeout: solveTimeout });
 
 	// Wait for challenge to solve (unverified → verifying → verified)
-	await expect(altchaWidget.locator(".altcha"))
+	await expect(altchaInner)
 		.toHaveAttribute(
 			"data-state",
 			"verified",

@@ -22,7 +22,6 @@ test.describe("Style Guide Page",
 			async ({ developerPage }: { developerPage: Page }) =>
 			{
 				await developerPage.goto(ROUTES.developer.styleGuide);
-				await developerPage.waitForLoadState("load");
 			});
 
 		test.describe("Page Structure",

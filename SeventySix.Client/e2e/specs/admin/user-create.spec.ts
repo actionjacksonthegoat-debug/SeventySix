@@ -29,7 +29,6 @@ test.describe("User Create",
 			async ({ adminPage }) =>
 			{
 				await adminPage.goto(ROUTES.admin.userCreate);
-				await adminPage.waitForLoadState("load");
 
 				// Wait for Angular lazy-loaded component to render (extended for Docker)
 				await expect(adminPage.locator(SELECTORS.layout.pageHeading))
@@ -250,13 +249,16 @@ test.describe("User Create",
 				await expect(searchInput)
 					.toBeVisible({ timeout: TIMEOUTS.api });
 				await searchInput.fill(testUsername);
-				await searchInput.press("Enter");
 
-				// Wait for API response with filtered results
-				await adminPage.waitForResponse(
-					(response) =>
-						response.url().includes("/users")
-							&& response.status() === 200);
+				// Set up listener BEFORE triggering search
+				const searchResponse =
+					adminPage.waitForResponse(
+						(response) =>
+							response.url().includes("/users")
+								&& response.status() === 200);
+
+				await searchInput.press("Enter");
+				await searchResponse;
 
 				// Verify the username appears in the table data rows
 				const dataRows =

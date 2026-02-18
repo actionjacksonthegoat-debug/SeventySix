@@ -276,16 +276,17 @@ For a complete step-by-step walkthrough including account signups, VS Code confi
    npm start
    ```
 
-   A seeded administrator account is created on first startup in development:
+   A seeded administrator account is created on first startup in development environments only - this user is used for all Chrome Dev Tools interactions and in secure local development containers:
 
    | Field | Value |
    |---|---|
    | Username | `admin` |
    | Email | Set via `AdminSeeder:Email` user secret |
    | Password | Set via `AdminSeeder:InitialPassword` user secret |
-   | First Login | Requires mandatory password change |
+   | First Login | Ready to use — no password change required |
 
-   > **MFA Note**: Set `AdminSeeder:Email` to a **real email address you control** (e.g., `contactseventysix@gmail.com`). MFA verification codes are sent to this address on first login — a placeholder like `admin@seventysix.local` won't receive them.
+   > **MFA Note**: Set `AdminSeeder:Email` to a **real email address you control** (e.g., `contactseventysix@gmail.com`). MFA verification codes are sent to this address on first login. Your email will never be accessed by co-pilot, MFA in Chrome Dev Tools is handled through the Email Queue.
+   > **Seeded Password Note**" The `AdminSeeder:InitialPassword` should be static, Chrome Dev Tools uses this for authentication and logins in development environments.
 
    > This account is created by `AdminSeederService` and is **not** created in production environments.
 
@@ -445,7 +446,7 @@ Every page below works out of the box after `npm start`. Role-based navigation s
 
 The `auth` domain handles the full authentication lifecycle — from first visit through verified login.
 
-The login page supports email/password authentication alongside GitHub OAuth. Altcha proof-of-work CAPTCHA protects all public forms — login, registration, forgot password — without third-party services or tracking cookies. After login, users with multi-factor authentication enabled verify via email verification code. Trusted device management skips MFA on recognized browsers. First-login forced password change ensures seeded or admin-created accounts update their credentials immediately.
+The login page supports email/password authentication alongside GitHub OAuth. Altcha proof-of-work CAPTCHA protects all public forms — login, registration, forgot password — without third-party services or tracking cookies. After login, users with multi-factor authentication enabled verify via email verification code. Trusted device management skips MFA on recognized browsers. First-login forced password change ensures admin-created accounts update their credentials immediately. The seeded dev admin skips this for convenience — the user secret password is always valid.
 
 ![Login page with Altcha proof-of-work CAPTCHA and GitHub OAuth](docs/screenshots/login-page.png)
 
@@ -545,8 +546,6 @@ The `developer` domain has tooling for designers and engineers.
 The **Style Guide** shows every Material Design 3 component organized into sections: Colors, Typography, Buttons, Forms, Tables, Feedback, Icons, and Loading States. Theme controls at the top preview multiple theme variants (light/dark × color variants).
 
 ![Style Guide showing Material Design 3 color system with theme controls](docs/screenshots/style-guide.png)
-
-An **Architecture Guide** page provides project-specific architectural documentation. This section is a work in progress and will expand as the codebase evolves.
 
 ### Observability
 
@@ -758,8 +757,11 @@ Prompt files in `.github/prompts/` cover the full development lifecycle:
 | `/new-domain-feature` | Scaffold a feature within an existing domain |
 | `/update-documentation` | Study and align all READMEs and documentation |
 | `/review-solution` | Deep review of entire codebase against all rules |
+| `/run-site-base` | Full-site Chrome DevTools walkthrough with screenshots and report |
 
 **Core workflow**: `/create-plan` → `/review-plan` → `/execute-plan` → `/code-review`
+
+**Site verification**: `/run-site-base` (standalone — runs against live dev environment)
 
 ### Instruction Files
 
@@ -964,7 +966,7 @@ Playwright tests authenticate once per role via `global-setup.ts` and reuse save
 | Public | 10 | 100+ | Login, registration, forgot/set password, OAuth, error pages, accessibility |
 | Authenticated | 11 | 70+ | Profile, password change, MFA/TOTP setup, backup codes, permissions, session, navigation |
 | Admin | 8 | 80+ | Dashboard, user CRUD, log viewer, permission approvals, role enforcement |
-| Developer | 4 | 20+ | Style guide, architecture guide, role enforcement, accessibility |
+| Developer | 4 | 20+ | Style guide, role enforcement, accessibility |
 
 ### Load Testing Profiles
 

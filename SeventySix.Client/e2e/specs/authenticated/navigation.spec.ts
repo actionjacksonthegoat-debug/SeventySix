@@ -3,7 +3,8 @@ import {
 	test,
 	expect,
 	ROUTES,
-	SELECTORS
+	SELECTORS,
+	TIMEOUTS
 } from "../../fixtures";
 
 /**
@@ -24,20 +25,18 @@ test.describe("Navigation",
 					async ({ userPage }: { userPage: Page }) =>
 					{
 						await userPage.goto(ROUTES.home);
-						await userPage.waitForLoadState("load");
 
 						const userMenuButton =
 							userPage.locator(SELECTORS.layout.userMenuButton);
 
 						await expect(userMenuButton)
-							.toBeVisible();
+							.toBeVisible({ timeout: TIMEOUTS.element });
 					});
 
 				test("should open user menu when clicking button",
 					async ({ userPage }: { userPage: Page }) =>
 					{
 						await userPage.goto(ROUTES.home);
-						await userPage.waitForLoadState("load");
 
 						const userMenuButton =
 							userPage.locator(SELECTORS.layout.userMenuButton);
@@ -59,7 +58,6 @@ test.describe("Navigation",
 					async ({ adminPage }: { adminPage: Page }) =>
 					{
 						await adminPage.goto(ROUTES.home);
-						await adminPage.waitForLoadState("load");
 
 						// Admin users should have access to admin routes
 						await adminPage.goto(ROUTES.admin.dashboard);
@@ -76,7 +74,6 @@ test.describe("Navigation",
 					async ({ developerPage }: { developerPage: Page }) =>
 					{
 						await developerPage.goto(ROUTES.home);
-						await developerPage.waitForLoadState("load");
 
 						// Developer users should have access to developer routes
 						await developerPage.goto(ROUTES.developer.styleGuide);

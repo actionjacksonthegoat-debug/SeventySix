@@ -40,7 +40,6 @@ test.describe("Admin Routes - WCAG Accessibility",
 				async ({ adminPage }: { adminPage: Page }) =>
 				{
 					await adminPage.goto(pageInfo.path);
-					await adminPage.waitForLoadState("load");
 
 					// Wait for page content to fully render before accessibility scan.
 					// Required for zoneless Angular where bindings (e.g., aria-label)
@@ -59,7 +58,6 @@ test.describe("Admin Routes - WCAG Accessibility",
 					async ({ adminPage }: { adminPage: Page }) =>
 					{
 						await adminPage.goto(ROUTES.admin.users);
-						await adminPage.waitForLoadState("load");
 
 						// Verify table has proper ARIA attributes
 						const table =
@@ -80,7 +78,6 @@ test.describe("Admin Routes - WCAG Accessibility",
 					async ({ adminPage }: { adminPage: Page }) =>
 					{
 						await adminPage.goto(ROUTES.admin.logs);
-						await adminPage.waitForLoadState("load");
 
 						const table =
 							adminPage.locator(SELECTORS.dataTable.matTable);
@@ -97,7 +94,6 @@ test.describe("Admin Routes - WCAG Accessibility",
 					async ({ adminPage }: { adminPage: Page }) =>
 					{
 						await adminPage.goto(ROUTES.admin.users);
-						await adminPage.waitForLoadState("load");
 
 						// All icon buttons should have aria-label
 						const iconButtons =
@@ -125,7 +121,6 @@ test.describe("Admin Routes - WCAG Accessibility",
 					async ({ adminPage }: { adminPage: Page }) =>
 					{
 						await adminPage.goto(ROUTES.admin.dashboard);
-						await adminPage.waitForLoadState("load");
 
 						// Wait for banner landmark to be attached to DOM
 						const banner =

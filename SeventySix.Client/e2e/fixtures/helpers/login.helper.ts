@@ -31,10 +31,13 @@ export async function loginAsUser(
 	}): Promise<void>
 {
 	await page.goto(ROUTES.auth.login);
-	await page.waitForLoadState("load");
 
-	await page
-		.locator(SELECTORS.form.usernameInput)
+	// Wait for the form to be interactive (Angular rendered)
+	const usernameInput =
+		page.locator(SELECTORS.form.usernameInput);
+	await usernameInput.waitFor({ state: "visible", timeout: TIMEOUTS.auth });
+
+	await usernameInput
 		.fill(user.username);
 	await page
 		.locator(SELECTORS.form.passwordInput)

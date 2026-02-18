@@ -12,7 +12,7 @@ import {
 	PAGE_TEXT,
 	TIMEOUTS,
 	getTestUserByRole,
-	generateTotpCode,
+	generateSafeTotpCode,
 	MFA_BACKUP_CODES
 } from "../../fixtures";
 import type { TestUser } from "../../fixtures";
@@ -86,7 +86,7 @@ unauthenticatedTest.describe("MFA Login",
 				await loginAsMfaUser(unauthenticatedPage);
 
 				const totpCode: string =
-					generateTotpCode();
+					await generateSafeTotpCode();
 
 				await unauthenticatedPage
 					.locator(SELECTORS.mfaVerify.codeInput)
@@ -191,7 +191,7 @@ unauthenticatedTest.describe("MFA Login",
 
 				// Enter valid TOTP code
 				const totpCode: string =
-					generateTotpCode();
+					await generateSafeTotpCode();
 
 				await unauthenticatedPage
 					.locator(SELECTORS.mfaVerify.codeInput)
