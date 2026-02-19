@@ -23,13 +23,32 @@ Review all staged/unstaged changes against every rule in the `.github/instructio
 - **Testing**: Missing `[Collection(CollectionNames.PostgreSql)]` on DB tests, `Task.Delay()` instead of `FakeTimeProvider`, missing copyright headers, not using mock factories, test names not matching behavior
 - **Cross-platform**: Hardcoded `\\` paths, `C:\Temp`, platform-specific assumptions
 - **Dead code**: Unused variables, unreachable code, speculative parameters (YAGNI)
+- **Warning suppression** (FORBIDDEN): `#pragma warning disable`, `// @ts-ignore`, `[SuppressMessage]`, `.editorconfig` severity overrides — fix the root cause, never suppress
+- **Missing `sealed`**: Non-abstract C# classes with no known subclasses should be `sealed`
+- **Test coverage gaps**: New public methods, components, or handlers added without corresponding tests
 
 ## Workflow
 
 1. Scan every changed file for violations
 2. **Fix each violation immediately** by editing the source file
 3. After all fixes, run `npm run format` to ensure consistent formatting
-4. Report a summary of what was fixed
+4. Run the **full validation suite** — ALL suites must pass before calling this complete:
+
+   | Suite | Command | Success Indicator |
+   |-------|---------|-------------------|
+   | Server tests | `npm run test:server` | `Test summary: total: X, failed: 0` |
+   | Client tests | `npm run test:client` | `X passed (X)` |
+   | E2E tests | `npm run test:e2e` | `[PASS] All E2E tests passed!` |
+   | Quick load test | `npm run loadtest:quick` | All scenarios pass thresholds |
+
+   > **NO EXCEPTIONS.** If infrastructure is not running, start it. Do not skip any suite.
+
+5. Confirm **zero build warnings**:
+   - Server: `dotnet build` output must show `0 Warning(s)` — never add `#pragma warning disable` or `[SuppressMessage]`
+   - Client: TypeScript compilation must show no errors or `@ts-ignore` suppressions
+   - **If `dotnet format` reports "Unable to fix [RULE]"** — manually fix all instances in source, do not override in `.editorconfig`
+
+6. Report a summary of what was fixed
 
 ## Report Format
 

@@ -86,6 +86,12 @@ public record LockoutSettings
 public record OAuthSettings
 {
 	/// <summary>
+	/// Gets a value indicating whether OAuth authentication is enabled.
+	/// When disabled, OAuth login and account linking are unavailable.
+	/// </summary>
+	public bool Enabled { get; init; }
+
+	/// <summary>
 	/// Gets the client callback URL for OAuth redirects.
 	/// </summary>
 	public string ClientCallbackUrl { get; init; } = string.Empty;

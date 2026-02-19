@@ -75,10 +75,6 @@ export const environment: Environment =
 			sampleRate: 0 // No sampling in tests
 		},
 		auth: {
-			loginUrl: "/auth/login",
-			tokenRefreshBufferSeconds: 60
-		},
-		altcha: {
-			enabled: false // Disabled in tests
+			loginUrl: "/auth/login"
 		}
 	};

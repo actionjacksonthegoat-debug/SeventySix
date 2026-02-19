@@ -1,5 +1,6 @@
-import { Injectable } from "@angular/core";
+import { inject, Injectable } from "@angular/core";
 import { environment } from "@environments/environment";
+import { FeatureFlagsService } from "@shared/services/feature-flags.service";
 
 /**
  * Provides ALTCHA challenge endpoint access and enabled state for bot protection.
@@ -11,6 +12,9 @@ import { environment } from "@environments/environment";
 	})
 export class AltchaService
 {
+	private readonly featureFlags: FeatureFlagsService =
+		inject(FeatureFlagsService);
+
 	/**
 	 * The ALTCHA challenge endpoint URL.
 	 * @type {string}
@@ -21,22 +25,15 @@ export class AltchaService
 		`${environment.apiUrl}/altcha/challenge`;
 
 	/**
-	 * Whether ALTCHA is enabled in current environment.
-	 * @type {boolean}
-	 * @private
-	 * @readonly
-	 */
-	private readonly isEnabled: boolean =
-		environment.altcha.enabled;
-
-	/**
 	 * Gets whether ALTCHA validation is enabled.
+	 * Reads from server-sourced feature flags rather than environment config,
+	 * allowing server-side control without client redeployment.
 	 * @returns {boolean}
-	 * True if ALTCHA is enabled in environment configuration.
+	 * True if ALTCHA is enabled per server feature flags.
 	 */
 	get enabled(): boolean
 	{
-		return this.isEnabled;
+		return this.featureFlags.altchaEnabled();
 	}
 
 	/**

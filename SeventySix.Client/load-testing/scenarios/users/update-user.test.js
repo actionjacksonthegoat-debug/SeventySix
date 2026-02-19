@@ -2,7 +2,7 @@
  * Update User Load Test
  *
  * Admin user update under concurrent load.
- * Setup: Login as admin → create a test user → store ID
+ * Setup: Login as admin → create one test user per VU to avoid concurrent update contention
  * Flow: PUT /users/{id} (update full name)
  * Validates: 200 response
  */
@@ -29,7 +29,7 @@ export const options =
 	getOptions(THRESHOLDS.RELAXED);
 
 /**
- * @returns {{ accessToken: string, userId: number } | null}
+ * @returns {{ accessToken: string, users: Array<{id: number, username: string, email: string}> } | null}
  */
 export function setup()
 {
@@ -41,27 +41,39 @@ export function setup()
 		return null;
 	}
 
-	// Create a test user to update during the test
-	const createResponse =
-		authenticatedPost(
-			`${CONFIG.apiUrl}${USER_ENDPOINTS.BASE}`,
-			authData.accessToken,
-			buildCreateUserPayload());
+	// Create one test user per VU to prevent concurrent update contention.
+	// Each VU owns its own user record; no identity ConcurrencyStamp conflicts occur.
+	const users =
+		[];
 
-	if (createResponse.status !== HTTP_STATUS.CREATED)
+	for (let i = 0; i < CONFIG.vus; i++)
 	{
-		console.error("Setup failed: could not create test user");
-		return null;
-	}
+		const createResponse =
+			authenticatedPost(
+				`${CONFIG.apiUrl}${USER_ENDPOINTS.BASE}`,
+				authData.accessToken,
+				buildCreateUserPayload());
 
-	const user =
-		createResponse.json();
+		if (createResponse.status !== HTTP_STATUS.CREATED)
+		{
+			console.error(`Setup failed: could not create test user ${i + 1}`);
+			return null;
+		}
+
+		const user =
+			createResponse.json();
+
+		users.push(
+			{
+				id: user.id,
+				username: user.username,
+				email: user.email,
+			});
+	}
 
 	return {
 		accessToken: authData.accessToken,
-		userId: user.id,
-		username: user.username,
-		email: user.email
+		users,
 	};
 }
 
@@ -72,14 +84,18 @@ export default function(data)
 		return;
 	}
 
+	// Each VU uses its own dedicated user - no concurrent writes to the same record
+	const user =
+		data.users[(__VU - 1) % data.users.length];
+
 	const response =
 		authenticatedPut(
-			`${CONFIG.apiUrl}${USER_ENDPOINTS.BASE}/${data.userId}`,
+			`${CONFIG.apiUrl}${USER_ENDPOINTS.BASE}/${user.id}`,
 			data.accessToken,
 			buildUpdateUserPayload(
-				data.userId,
-				data.username,
-				data.email),
+				user.id,
+				user.username,
+				user.email),
 			buildTags(
 				FLOW_TAGS.USERS,
 				OPERATION_TAGS.UPDATE));

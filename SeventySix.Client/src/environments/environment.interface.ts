@@ -127,16 +127,6 @@ export interface TelemetryConfig
 export interface AuthConfig
 {
 	loginUrl: string;
-	tokenRefreshBufferSeconds: number;
-}
-
-/**
- * ALTCHA proof-of-work challenge configuration.
- */
-export interface AltchaConfig
-{
-	/** Whether ALTCHA validation is enabled. */
-	enabled: boolean;
 }
 
 /**
@@ -156,5 +146,4 @@ export interface Environment
 	testing: TestingConfig;
 	telemetry: TelemetryConfig;
 	auth: AuthConfig;
-	altcha: AltchaConfig;
 }

@@ -9,10 +9,20 @@ Perform a comprehensive review of the entire codebase against every rule in `.gi
 
 ## MCP Tools
 
-- Use **context7** to verify ALL library usage follows current API patterns for: Angular, .NET, Wolverine, EF Core, TanStack Query, FusionCache, FluentValidation, Playwright, k6
-- Use **postgresql** to inspect schema for data model alignment
-- Use **github** to check for any open issues or PR comments
-- Use **chrome-devtools** to verify deployed behavior matches expected patterns
+Before reporting ANY violation or outdated API usage, use **context7** to verify the CURRENT recommended pattern. Do not rely on training data — always look up the authoritative docs first.
+
+| Stage | Required Context7 Queries |
+|-------|--------------------------|
+| Stage 1 (Rules Compliance) | Angular 21 signals, TanStack Query v5, Wolverine CQRS, EF Core 10, FusionCache, FluentValidation, Playwright latest, k6 options |
+| Stage 2 (Security) | .NET 10 auth middleware, ASP.NET Core data protection, OWASP .NET checklists |
+| Stage 3 (Dead Code) | Angular standalone components barrel exports, .NET trimming attributes |
+| Stage 4 (Consistency) | Any pattern you are unsure about before flagging |
+
+**Use the MCP servers in every stage:**
+- **context7** — look up CURRENT API patterns before flagging any usage as incorrect
+- **postgresql** to inspect schema for data model alignment
+- **github** to check for any open issues or PR comments
+- **chrome-devtools** to verify deployed behavior matches expected patterns
 
 ## Review Stages
 
@@ -74,6 +84,28 @@ Read EVERY file in `.github/instructions/` and scan the ENTIRE codebase for viol
 - Inconsistent naming (file name vs export name)
 - Services in wrong scope (root vs route-provided)
 - Missing or extra project references
+
+### Stage 4: Consistency Enforcement (Context7 Required)
+
+**For every pattern found in the codebase, use Context7 to verify it matches the current recommended approach.** Do not assume existing code is correct — it may have drifted from library best practices.
+
+**A) Angular patterns to verify:**
+- Signal creation and usage (`signal()`, `computed()`, `effect()`) — query context7 for Angular 21 signals API
+- TanStack Query v5 query/mutation patterns — query context7 for `injectQuery`, `injectMutation` current API
+- Injectable scoping — `providedIn: 'root'` vs route-provided — query context7 for Angular DI scoping
+- `APP_INITIALIZER` usage — query context7 for Angular application initialization
+- Zoneless change detection setup
+
+**B) Server patterns to verify:**
+- Wolverine handler signatures (`static async Task HandleAsync`) — query context7 for current Wolverine API
+- EF Core `DbContext` patterns (transactions, savepoints, owned entities) — query context7
+- FluentValidation `AbstractValidator<T>` — query context7 for current validation API
+- FusionCache patterns — query context7 for current FusionCache API
+
+**C) Cross-cutting patterns to verify:**
+- Any custom pattern that does not have explicit documentation in `.github/instructions/` — look it up
+
+**Deliverable**: Flag any pattern that Context7 shows is deprecated, outdated, or against current best practices — even if it exists in many places today.
 
 ## Output
 

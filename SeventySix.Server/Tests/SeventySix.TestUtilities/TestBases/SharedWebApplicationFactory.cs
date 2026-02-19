@@ -62,6 +62,7 @@ public sealed class SharedWebApplicationFactory<TProgram>
 		builder.UseEnvironment("Test");
 
 		// Skip migration checks in tests - fixture already applies migrations
+		// Also enable Auth features so OAuth and MFA controller tests are not blocked
 		builder.ConfigureAppConfiguration(
 			(context, config) =>
 			{
@@ -69,6 +70,8 @@ public sealed class SharedWebApplicationFactory<TProgram>
 					new Dictionary<string, string?>
 					{
 						["SkipMigrationCheck"] = "true",
+						["Auth:OAuth:Enabled"] = "true",
+						["Auth:Totp:Enabled"] = "true",
 					});
 			});
 

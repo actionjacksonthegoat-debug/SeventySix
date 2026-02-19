@@ -16,6 +16,12 @@ public record TotpSettings
 	public const string SectionName = "Totp";
 
 	/// <summary>
+	/// Gets a value indicating whether TOTP authentication is enabled.
+	/// When disabled, TOTP enrolment and verification are unavailable.
+	/// </summary>
+	public bool Enabled { get; init; }
+
+	/// <summary>
 	/// Gets the issuer name displayed in authenticator apps.
 	/// Must be configured in appsettings.json.
 	/// </summary>

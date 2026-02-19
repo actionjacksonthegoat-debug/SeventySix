@@ -90,6 +90,7 @@ services:
             - Cache__OutputCache__Policies__logs__Enabled=false
             - Cache__OutputCache__Policies__health__Enabled=false
             - Cache__OutputCache__Policies__thirdpartyrequests__Enabled=false
+            - Cache__OutputCache__Policies__features__Enabled=false
             # Email (MailDev — no auth required, empty credentials skip SMTP authentication)
             - Email__Enabled=true
             - Email__UseSsl=false

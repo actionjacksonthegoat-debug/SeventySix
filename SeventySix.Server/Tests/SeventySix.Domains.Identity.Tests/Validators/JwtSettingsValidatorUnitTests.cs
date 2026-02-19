@@ -105,5 +105,6 @@ public sealed class JwtSettingsValidatorUnitTests
 			RefreshTokenRememberMeExpirationDays = 30,
 			AbsoluteSessionTimeoutDays = 90,
 			ClockSkewMinutes = 2,
+			TokenRefreshBufferSeconds = 60,
 		};
 }

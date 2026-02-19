@@ -2,12 +2,11 @@
 	"scripts": {
 		"postinstall": "npm install --prefix SeventySix.Client && npm install --prefix SeventySix.Client/load-testing",
 		"bootstrap": "node scripts/bootstrap.mjs",
-		"bootstrap:linux": "bash scripts/bootstrap.sh",
 		"format": "npm run format:server && npm run format:client",
 		"format:server": "cd SeventySix.Server && dotnet build SeventySix.Analyzers.CodeFixes --configuration Release --no-incremental && dotnet build SeventySix.Analyzers --configuration Release --no-incremental && dotnet build && dotnet format analyzers --severity warn && dotnet format && dotnet format",
 		"format:client": "cd SeventySix.Client && npm run format",
 		"test": "npm run test:server && npm run test:client",
-		"test:server": "node scripts/run-pwsh.mjs -Command \"if (-not (Get-Process 'Docker Desktop' -ErrorAction SilentlyContinue)) { Start-Process 'C:\\Program Files\\Docker\\Docker\\Docker Desktop.exe'; Start-Sleep -Seconds 10 }\" && cd SeventySix.Server && dotnet build && dotnet test",
+		"test:server": "cd SeventySix.Server && dotnet build && dotnet test",
 		"test:client": "cd SeventySix.Client && npm test",
 		"test:e2e": "cd SeventySix.Client && npm run test:e2e --",
 		"test:e2e:keepalive": "cd SeventySix.Client && npm run test:e2e:keepalive --",
@@ -26,9 +25,9 @@
 		"secrets:set": "node scripts/run-pwsh.mjs -File scripts/manage-user-secrets.ps1 -Action set",
 		"secrets:delete": "node scripts/run-pwsh.mjs -File scripts/manage-user-secrets.ps1 -Action delete",
 		"generate:icons": "cd SeventySix.Client && npm run generate:icons",
-		"loadtest:quick": "node -e \"require('child_process').execSync(process.platform==='win32'?'node scripts/run-pwsh.mjs -File SeventySix.Client/load-testing/scripts/run-load-tests.ps1 -Profile quick':'bash SeventySix.Client/load-testing/scripts/run-load-tests.sh quick',{stdio:'inherit'})\"",
-		"loadtest:smoke": "node -e \"require('child_process').execSync(process.platform==='win32'?'node scripts/run-pwsh.mjs -File SeventySix.Client/load-testing/scripts/run-load-tests.ps1 -Profile smoke':'bash SeventySix.Client/load-testing/scripts/run-load-tests.sh smoke',{stdio:'inherit'})\"",
-		"loadtest:load": "node -e \"require('child_process').execSync(process.platform==='win32'?'node scripts/run-pwsh.mjs -File SeventySix.Client/load-testing/scripts/run-load-tests.ps1 -Profile load':'bash SeventySix.Client/load-testing/scripts/run-load-tests.sh load',{stdio:'inherit'})\"",
-		"loadtest:stress": "node -e \"require('child_process').execSync(process.platform==='win32'?'node scripts/run-pwsh.mjs -File SeventySix.Client/load-testing/scripts/run-load-tests.ps1 -Profile stress':'bash SeventySix.Client/load-testing/scripts/run-load-tests.sh stress',{stdio:'inherit'})\""
+		"loadtest:quick": "node scripts/run-pwsh.mjs -File SeventySix.Client/load-testing/scripts/run-load-tests.ps1 -Profile quick",
+		"loadtest:smoke": "node scripts/run-pwsh.mjs -File SeventySix.Client/load-testing/scripts/run-load-tests.ps1 -Profile smoke",
+		"loadtest:load": "node scripts/run-pwsh.mjs -File SeventySix.Client/load-testing/scripts/run-load-tests.ps1 -Profile load",
+		"loadtest:stress": "node scripts/run-pwsh.mjs -File SeventySix.Client/load-testing/scripts/run-load-tests.ps1 -Profile stress"
 	}
 }

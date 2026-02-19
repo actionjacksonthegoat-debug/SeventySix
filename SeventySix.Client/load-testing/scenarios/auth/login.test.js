@@ -7,20 +7,17 @@
 
 import { sleep } from "k6";
 import http from "k6/http";
-import { warmup } from "../../lib/auth.js";
+import { login, warmup } from "../../lib/auth.js";
 import { buildLoginPayload } from "../../lib/builders/index.js";
-import { hasAccessToken, isStatus200 } from "../../lib/checks.js";
 import { CONFIG, getOptions } from "../../lib/config.js";
 import {
 	AUTH_ENDPOINTS,
-	buildTags,
 	CONTENT_TYPE,
-	FLOW_TAGS,
 	HTTP_HEADER,
-	OPERATION_TAGS,
 	SLEEP_DURATION,
 	THRESHOLDS
 } from "../../lib/constants/index.js";
+
 import { createSummaryHandler } from "../../lib/summary.js";
 
 export const options =
@@ -45,23 +42,14 @@ export function setup()
 
 export default function()
 {
-	const response =
-		http.post(
-			`${CONFIG.apiUrl}${AUTH_ENDPOINTS.LOGIN}`,
-			JSON.stringify(
-				buildLoginPayload(
-					CONFIG.adminCredentials.username,
-					CONFIG.adminCredentials.password)),
-			{
-				headers: { [HTTP_HEADER.CONTENT_TYPE]: CONTENT_TYPE.JSON },
-				...buildTags(
-					FLOW_TAGS.AUTH,
-					OPERATION_TAGS.LOGIN)
-			});
+	login(
+		CONFIG.adminCredentials.username,
+		CONFIG.adminCredentials.password);
 
-	isStatus200(response);
-	hasAccessToken(response);
-
+	// Pacing sleep — simulates realistic inter-request delay.
+	// iteration_duration ≈ http_req_duration + SLEEP_DURATION.STANDARD (1 s).
+	// Watch http_req_duration / http_req_waiting for actual API latency.
+	// Expected baseline (production Argon2): avg ~450-650ms, p95 ~650-800ms.
 	sleep(SLEEP_DURATION.STANDARD);
 }
 

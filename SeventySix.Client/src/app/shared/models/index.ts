@@ -11,6 +11,7 @@ export * from "./color-scheme.model";
 export * from "./confirm-dialog-data.model";
 export * from "./confirm-options.model";
 export * from "./error-details.model";
+export * from "./feature-flags.model";
 export * from "./generated-open-api.model";
 export * from "./log-entry.model";
 export * from "./navigation.model";

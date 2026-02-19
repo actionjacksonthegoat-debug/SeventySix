@@ -45,6 +45,21 @@ chmod +x scripts/bootstrap.sh
 > It installs PowerShell 7 and Node.js automatically, then hands off to `bootstrap.ps1`.
 > Once bootstrap completes, use `npm run bootstrap` for subsequent runs (Node.js is available by then).
 
+### Optional: Disable Email and OAuth Requirements
+
+By default, MFA email verification and TOTP are **enabled** — they require Brevo SMTP credentials to send codes. OAuth login requires a GitHub OAuth app. Both are optional.
+
+To run the application **without** Brevo SMTP credentials or OAuth app keys, add these overrides to `SeventySix.Server/SeventySix.Api/appsettings.Development.json`:
+
+```json
+{
+  "Mfa": { "Enabled": false, "RequiredForAllUsers": false },
+  "Totp": { "Enabled": false }
+}
+```
+
+With these settings, login requires only email + password with no email code sent. OAuth is already disabled by default — it only activates when provider app secrets are configured. See [Optional Feature Flags](docs/Startup-Instructions.md#optional-feature-flags) for the complete reference.
+
 For the full step-by-step manual setup, see [Startup Instructions](docs/Startup-Instructions.md).
 
 ## Key Features

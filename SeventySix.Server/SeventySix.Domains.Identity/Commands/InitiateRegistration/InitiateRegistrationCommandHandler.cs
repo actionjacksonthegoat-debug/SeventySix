@@ -124,12 +124,12 @@ public static class InitiateRegistrationCommandHandler
 				["verificationToken"] = verificationToken
 			};
 
-		await messageBus.InvokeAsync(
+		// Fire-and-forget: email delivery must not block registration response
+		await messageBus.PublishAsync(
 			new EnqueueEmailCommand(
 				EmailTypeConstants.Verification,
 				email,
 				temporaryUser.Id,
-				templateData),
-			cancellationToken);
+				templateData));
 	}
 }

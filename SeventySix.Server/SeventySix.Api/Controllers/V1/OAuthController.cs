@@ -38,9 +38,10 @@ namespace SeventySix.Api.Controllers;
 /// <param name="logger">
 /// Logger for OAuth operations.
 /// </param>
+[OAuthFeatureRequired]
 [ApiController]
 [Route(ApiVersionConfig.VersionedRoutePrefix + "/auth/oauth")]
-public class OAuthController(
+public sealed class OAuthController(
 	IOAuthService oAuthService,
 	IOAuthCodeExchangeService oAuthCodeExchange,
 	IMessageBus messageBus,

@@ -38,12 +38,8 @@ public sealed class AuthSettingsValidator : AbstractValidator<AuthSettings>
 		RuleFor(auth => auth.SessionInactivity)
 			.SetValidator(new SessionInactivitySettingsValidator());
 
-		RuleFor(auth => auth.Token.DisableRotation)
-			.Equal(false)
-			.When(
-				auth =>
-					Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production")
-			.WithMessage("Token rotation must NOT be disabled in production.");
+		RuleFor(auth => auth.OAuth)
+			.SetValidator(new OAuthSettingsValidator());
 	}
 }
 
@@ -208,6 +204,31 @@ public sealed class BreachedPasswordSettingsValidator : AbstractValidator<Breach
 				RuleFor(breached => breached.ApiTimeoutMs)
 					.GreaterThan(0)
 					.WithMessage("Auth:BreachedPassword:ApiTimeoutMs must be greater than 0");
+			});
+	}
+}
+
+/// <summary>
+/// Validates <see cref="OAuthSettings"/> configuration values.
+/// </summary>
+public sealed class OAuthSettingsValidator : AbstractValidator<OAuthSettings>
+{
+	/// <summary>
+	/// Initializes a new instance of the <see cref="OAuthSettingsValidator"/> class.
+	/// </summary>
+	public OAuthSettingsValidator()
+	{
+		When(
+			oauth => oauth.Enabled,
+			() =>
+			{
+				RuleFor(oauth => oauth.ClientCallbackUrl)
+					.NotEmpty()
+					.WithMessage("Auth:OAuth:ClientCallbackUrl is required when OAuth is enabled");
+
+				RuleFor(oauth => oauth.Providers)
+					.NotEmpty()
+					.WithMessage("Auth:OAuth:Providers must have at least one provider when OAuth is enabled");
 			});
 	}
 }

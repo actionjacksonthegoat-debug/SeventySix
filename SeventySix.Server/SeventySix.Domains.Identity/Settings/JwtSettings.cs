@@ -60,4 +60,11 @@ public record JwtSettings
 	/// Must be configured in appsettings.json.
 	/// </summary>
 	public int ClockSkewMinutes { get; init; }
+
+	/// <summary>
+	/// Gets the number of seconds before access token expiry at which the client
+	/// should proactively refresh the token. Published to the client via ConfigController.
+	/// Must be configured in appsettings.json.
+	/// </summary>
+	public int TokenRefreshBufferSeconds { get; init; }
 }

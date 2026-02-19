@@ -27,16 +27,21 @@ public sealed class TotpSettingsValidator : AbstractValidator<TotpSettings>
 	/// </summary>
 	public TotpSettingsValidator()
 	{
-		RuleFor(totp => totp.IssuerName)
-			.NotEmpty()
-			.WithMessage("Totp:IssuerName is required");
+		When(
+			totp => totp.Enabled,
+			() =>
+			{
+				RuleFor(totp => totp.IssuerName)
+					.NotEmpty()
+					.WithMessage("Totp:IssuerName is required");
 
-		RuleFor(totp => totp.AllowedTimeStepDrift)
-			.InclusiveBetween(0, 3)
-			.WithMessage("Totp:AllowedTimeStepDrift must be between 0 and 3");
+				RuleFor(totp => totp.AllowedTimeStepDrift)
+					.InclusiveBetween(0, 3)
+					.WithMessage("Totp:AllowedTimeStepDrift must be between 0 and 3");
 
-		RuleFor(totp => totp.TimeStepSeconds)
-			.InclusiveBetween(MinTimeStepSeconds, MaxTimeStepSeconds)
-			.WithMessage($"Totp:TimeStepSeconds must be between {MinTimeStepSeconds} and {MaxTimeStepSeconds}");
+				RuleFor(totp => totp.TimeStepSeconds)
+					.InclusiveBetween(MinTimeStepSeconds, MaxTimeStepSeconds)
+					.WithMessage($"Totp:TimeStepSeconds must be between {MinTimeStepSeconds} and {MaxTimeStepSeconds}");
+			});
 	}
 }

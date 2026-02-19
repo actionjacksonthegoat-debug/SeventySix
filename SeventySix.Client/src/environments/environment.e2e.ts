@@ -98,10 +98,6 @@ export const environment: Environment =
 			sampleRate: 0
 		},
 		auth: {
-			loginUrl: "/auth/login",
-			tokenRefreshBufferSeconds: 60
-		},
-		altcha: {
-			enabled: true
+			loginUrl: "/auth/login"
 		}
 	};

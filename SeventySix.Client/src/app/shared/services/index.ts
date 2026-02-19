@@ -23,6 +23,7 @@ export * from "./date.service";
 export * from "./dialog.service";
 export * from "./error-handler.service";
 export * from "./error-queue.service";
+export * from "./feature-flags.service";
 export * from "./idle-detection.service";
 export * from "./layout.service";
 export * from "./loading.service";

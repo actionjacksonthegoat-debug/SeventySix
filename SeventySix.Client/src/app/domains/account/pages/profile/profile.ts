@@ -33,7 +33,7 @@ import {
 	EMAIL_VALIDATION,
 	FULL_NAME_VALIDATION
 } from "@shared/constants/validation.constants";
-import { AuthService, NotificationService } from "@shared/services";
+import { AuthService, FeatureFlagsService, NotificationService } from "@shared/services";
 import {
 	ExternalLoginDto,
 	OAUTH_PROVIDERS,
@@ -141,6 +141,13 @@ export class ProfilePage
 		this
 			.accountService
 			.unlinkProvider();
+
+	/**
+	 * Feature flags service for conditional UI rendering.
+	 * @type {FeatureFlagsService}
+	 */
+	protected readonly featureFlags: FeatureFlagsService =
+		inject(FeatureFlagsService);
 
 	/**
 	 * Configured OAuth providers for rendering linked accounts section.

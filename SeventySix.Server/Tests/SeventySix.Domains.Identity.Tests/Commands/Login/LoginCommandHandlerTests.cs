@@ -20,7 +20,7 @@ namespace SeventySix.Identity.Tests.Commands.Login;
 /// <remarks>
 /// Tests follow 80/20 rule: focus on happy path and critical security paths.
 /// </remarks>
-public class LoginCommandHandlerTests
+public sealed class LoginCommandHandlerTests
 {
 	private readonly FakeTimeProvider TimeProvider;
 	private readonly UserManager<ApplicationUser> UserManager;
@@ -31,6 +31,7 @@ public class LoginCommandHandlerTests
 	private readonly ISecurityAuditService SecurityAuditService;
 	private readonly IMfaService MfaService;
 	private readonly IOptions<MfaSettings> MfaSettings;
+	private readonly IOptions<TotpSettings> TotpSettings;
 	private readonly ITrustedDeviceService TrustedDeviceService;
 	private readonly IMessageBus MessageBus;
 
@@ -65,6 +66,12 @@ public class LoginCommandHandlerTests
 					CodeExpirationMinutes = 5,
 					MaxAttempts = 5,
 					ResendCooldownSeconds = 60
+				});
+		TotpSettings =
+			Options.Create(
+				new TotpSettings
+				{
+					Enabled = false
 				});
 		TrustedDeviceService =
 			Substitute.For<ITrustedDeviceService>();
@@ -113,6 +120,7 @@ public class LoginCommandHandlerTests
 				SecurityAuditService,
 				MfaService,
 				MfaSettings,
+				TotpSettings,
 				TrustedDeviceService,
 				MessageBus,
 				CancellationToken.None);
@@ -164,6 +172,7 @@ public class LoginCommandHandlerTests
 				SecurityAuditService,
 				MfaService,
 				MfaSettings,
+				TotpSettings,
 				TrustedDeviceService,
 				MessageBus,
 				CancellationToken.None);
@@ -215,6 +224,7 @@ public class LoginCommandHandlerTests
 				SecurityAuditService,
 				MfaService,
 				MfaSettings,
+				TotpSettings,
 				TrustedDeviceService,
 				MessageBus,
 				CancellationToken.None);
@@ -253,6 +263,7 @@ public class LoginCommandHandlerTests
 				SecurityAuditService,
 				MfaService,
 				MfaSettings,
+				TotpSettings,
 				TrustedDeviceService,
 				MessageBus,
 				CancellationToken.None);
@@ -299,6 +310,7 @@ public class LoginCommandHandlerTests
 				SecurityAuditService,
 				MfaService,
 				MfaSettings,
+				TotpSettings,
 				TrustedDeviceService,
 				MessageBus,
 				CancellationToken.None);
@@ -342,6 +354,7 @@ public class LoginCommandHandlerTests
 				SecurityAuditService,
 				MfaService,
 				MfaSettings,
+				TotpSettings,
 				TrustedDeviceService,
 				MessageBus,
 				CancellationToken.None);
@@ -405,6 +418,7 @@ public class LoginCommandHandlerTests
 				SecurityAuditService,
 				MfaService,
 				mfaSettings,
+				TotpSettings,
 				TrustedDeviceService,
 				MessageBus,
 				CancellationToken.None);
@@ -481,6 +495,7 @@ public class LoginCommandHandlerTests
 				SecurityAuditService,
 				MfaService,
 				mfaSettings,
+				TotpSettings,
 				TrustedDeviceService,
 				MessageBus,
 				CancellationToken.None);

@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SeventySix.Shared.Extensions;
-using Wolverine;
+using SeventySix.Shared.Interfaces;
 
 namespace SeventySix.Identity;
 
@@ -20,9 +20,6 @@ public static class UpdateUserCommandHandler
 	/// </summary>
 	/// <param name="request">
 	/// The update user request.
-	/// </param>
-	/// <param name="messageBus">
-	/// Message bus for querying users.
 	/// </param>
 	/// <param name="userManager">
 	/// Identity UserManager for user operations.
@@ -40,85 +37,98 @@ public static class UpdateUserCommandHandler
 	/// The updated user DTO.
 	/// </returns>
 	/// <remarks>
-	/// Wolverine's UseEntityFrameworkCoreTransactions middleware automatically wraps this handler in a transaction.
-	/// Database unique constraints on UserName and Email provide atomicity - no manual transaction management needed.
+	/// Uses <see cref="ITransactionManager"/> to wrap the fetch and update in a transaction with automatic
+	/// retry on concurrency conflicts. ASP.NET Identity uses a ConcurrencyStamp for optimistic concurrency;
+	/// concurrent updates to the same user produce a <c>ConcurrencyFailure</c> result which is translated
+	/// to <see cref="DbUpdateConcurrencyException"/> so the TransactionManager can retry with a fresh fetch.
 	/// </remarks>
 	public static async Task<UserDto> HandleAsync(
 		UpdateUserRequest request,
-		IMessageBus messageBus,
 		UserManager<ApplicationUser> userManager,
 		IIdentityCacheService identityCache,
+		ITransactionManager transactionManager,
 		ILogger logger,
 		CancellationToken cancellationToken)
 	{
-		ApplicationUser? existing =
-			await userManager.FindByIdAsync(
-				request.Id.ToString());
+		string previousEmail = string.Empty;
+		string previousUsername = string.Empty;
+		UserDto? updatedUser = null;
 
-		if (existing == null)
-		{
-			throw new UserNotFoundException(request.Id);
-		}
-
-		// Capture previous values for cache invalidation
-		string previousEmail =
-			existing.Email ?? string.Empty;
-		string previousUsername =
-			existing.UserName ?? string.Empty;
-
-		existing.UserName = request.Username;
-		existing.Email = request.Email;
-		existing.FullName = request.FullName;
-		existing.IsActive = request.IsActive;
-
-		try
-		{
-			IdentityResult result =
-				await userManager.UpdateAsync(existing);
-
-			if (!result.Succeeded)
+		await transactionManager.ExecuteInTransactionAsync(
+			async ct =>
 			{
-				HandleIdentityErrors(result, request, logger);
-			}
+				ApplicationUser? existing =
+					await userManager.FindByIdAsync(
+						request.Id.ToString());
 
-			// Invalidate cache for old values
+				if (existing == null)
+				{
+					throw new UserNotFoundException(request.Id);
+				}
+
+				// Capture previous values for cache invalidation after transaction
+				previousEmail =
+					existing.Email ?? string.Empty;
+				previousUsername =
+					existing.UserName ?? string.Empty;
+
+				existing.UserName = request.Username;
+				existing.Email = request.Email;
+				existing.FullName = request.FullName;
+				existing.IsActive = request.IsActive;
+
+				try
+				{
+					IdentityResult result =
+						await userManager.UpdateAsync(existing);
+
+					if (!result.Succeeded)
+					{
+						HandleIdentityErrors(result, request, logger);
+					}
+
+					updatedUser = existing.ToDto();
+				}
+				catch (DbUpdateException exception)
+					when (exception.IsDuplicateKeyViolation())
+				{
+					HandleDuplicateKeyViolation(exception, request, logger);
+					throw; // Unreachable, but satisfies compiler
+				}
+			},
+			cancellationToken: cancellationToken);
+
+		// Invalidate cache for old values
+		await identityCache.InvalidateUserAsync(
+			request.Id,
+			email: previousEmail,
+			username: previousUsername);
+
+		// Invalidate cache for new values if changed
+		bool emailChanged =
+			!string.Equals(
+				previousEmail,
+				request.Email,
+				StringComparison.OrdinalIgnoreCase);
+
+		bool usernameChanged =
+			!string.Equals(
+				previousUsername,
+				request.Username,
+				StringComparison.OrdinalIgnoreCase);
+
+		if (emailChanged || usernameChanged)
+		{
 			await identityCache.InvalidateUserAsync(
 				request.Id,
-				email: previousEmail,
-				username: previousUsername);
-
-			// Invalidate cache for new values if changed
-			bool emailChanged =
-				!string.Equals(
-					previousEmail,
-					request.Email,
-					StringComparison.OrdinalIgnoreCase);
-
-			bool usernameChanged =
-				!string.Equals(
-					previousUsername,
-					request.Username,
-					StringComparison.OrdinalIgnoreCase);
-
-			if (emailChanged || usernameChanged)
-			{
-				await identityCache.InvalidateUserAsync(
-					request.Id,
-					email: emailChanged ? request.Email : null,
-					username: usernameChanged ? request.Username : null);
-			}
-
-			// Invalidate all users list for admin views
-			await identityCache.InvalidateAllUsersAsync();
-
-			return existing.ToDto();
+				email: emailChanged ? request.Email : null,
+				username: usernameChanged ? request.Username : null);
 		}
-		catch (DbUpdateException exception)
-			when (exception.IsDuplicateKeyViolation())
-		{
-			HandleDuplicateKeyViolation(exception, request, logger);
-			throw; // Unreachable, but satisfies compiler
-		}
+
+		// Invalidate all users list for admin views
+		await identityCache.InvalidateAllUsersAsync();
+
+		return updatedUser!;
 	}
 
 	/// <summary>
@@ -144,6 +154,18 @@ public static class UpdateUserCommandHandler
 		UpdateUserRequest request,
 		ILogger logger)
 	{
+		if (result.Errors.Any(error => error.Code == "ConcurrencyFailure"))
+		{
+			logger.LogWarning(
+				"Concurrency conflict during update. UserId: {UserId}",
+				request.Id);
+
+			// Propagate as DbUpdateConcurrencyException so ITransactionManager retries
+			// with a fresh entity fetch and exponential backoff.
+			throw new DbUpdateConcurrencyException(
+				$"Concurrency conflict updating user {request.Id}");
+		}
+
 		if (result.Errors.Any(error => error.Code == "DuplicateUserName"))
 		{
 			logger.LogWarning(

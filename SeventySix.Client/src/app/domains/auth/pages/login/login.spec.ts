@@ -11,16 +11,18 @@ import { DomSanitizer } from "@angular/platform-browser";
 import { provideRouter, Router } from "@angular/router";
 import { AuthResponse } from "@auth/models";
 import { MfaService } from "@auth/services";
-import { APP_ROUTES, AUTH_NOTIFICATION_MESSAGES } from "@shared/constants";
-import { AltchaService, DateService } from "@shared/services";
+import { APP_ROUTES, AUTH_NOTIFICATION_MESSAGES, STORAGE_KEYS } from "@shared/constants";
+import { AltchaService, DateService, FeatureFlagsService } from "@shared/services";
 import { AuthService } from "@shared/services/auth.service";
 import { OAUTH_PROVIDERS } from "@shared/services/auth.types";
 import { NotificationService } from "@shared/services/notification.service";
 import { StorageService } from "@shared/services/storage.service";
 import {
 	createMockAltchaService,
+	createMockFeatureFlagsService,
 	createMockNotificationService,
 	MockAltchaService,
+	MockFeatureFlagsService,
 	MockNotificationService
 } from "@shared/testing";
 import { registerOAuthIcons } from "@shared/utilities/oauth-icons.utility";
@@ -58,6 +60,7 @@ describe("LoginComponent",
 		let mockNotificationService: MockNotificationService;
 		let mockAltchaService: MockAltchaService;
 		let mockStorageService: MockStorageService;
+		let mockFeatureFlagsService: MockFeatureFlagsService;
 		let router: Router;
 
 		const dateService: DateService =
@@ -102,6 +105,8 @@ describe("LoginComponent",
 						removeSessionItem: vi.fn(),
 						setSessionItem: vi.fn()
 					};
+				mockFeatureFlagsService =
+					createMockFeatureFlagsService();
 
 				await TestBed
 					.configureTestingModule(
@@ -123,6 +128,10 @@ describe("LoginComponent",
 								{
 									provide: StorageService,
 									useValue: mockStorageService
+								},
+								{
+									provide: FeatureFlagsService,
+									useValue: mockFeatureFlagsService
 								}
 							]
 						})
@@ -689,7 +698,7 @@ describe("LoginComponent",
 						expect(
 							mockStorageService.removeSessionItem)
 							.toHaveBeenCalledWith(
-								"auth_inactivity_logout");
+								STORAGE_KEYS.AUTH_INACTIVITY_LOGOUT);
 					});
 			});
 	});

@@ -30,7 +30,7 @@ import { sanitizeRedirectUrl } from "@auth/utilities";
 import { AltchaWidgetComponent } from "@shared/components";
 import { APP_ROUTES, AUTH_NOTIFICATION_MESSAGES, STORAGE_KEYS } from "@shared/constants";
 import { FORM_MATERIAL_MODULES } from "@shared/material-bundles.constants";
-import { AltchaService, AuthService, NotificationService, StorageService } from "@shared/services";
+import { AltchaService, AuthService, FeatureFlagsService, NotificationService, StorageService } from "@shared/services";
 import {
 	OAUTH_PROVIDERS,
 	OAuthProvider,
@@ -124,6 +124,13 @@ export class LoginComponent implements OnInit
 	 */
 	private readonly storageService: StorageService =
 		inject(StorageService);
+
+	/**
+	 * Feature flags service for conditional UI rendering.
+	 * @type {FeatureFlagsService}
+	 */
+	protected readonly featureFlags: FeatureFlagsService =
+		inject(FeatureFlagsService);
 
 	/**
 	 * Configured OAuth providers for rendering login buttons.

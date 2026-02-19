@@ -26,12 +26,28 @@ Write-Host "Loading secrets from user-secrets store..." -ForegroundColor Yellow
 & (Join-Path $PSScriptRoot "internal" "load-user-secrets.ps1")
 if ($LASTEXITCODE -ne 0) { exit 1 }
 
-# Ensure Docker Desktop is running
-if (-not (Get-Process 'Docker Desktop' -ErrorAction SilentlyContinue)) {
-	Write-Host "Starting Docker Desktop..." -ForegroundColor Yellow
-	Start-Process 'C:\Program Files\Docker\Docker\Docker Desktop.exe'
-	Write-Host "Waiting for Docker to initialize..." -ForegroundColor Yellow
-	Start-Sleep -Seconds 15
+# Ensure Docker is running (Windows: try to start Docker Desktop; Linux: check daemon)
+$dockerRunning = $false
+try {
+	docker info 2>&1 | Out-Null
+	$dockerRunning = ($LASTEXITCODE -eq 0)
+}
+catch { }
+
+if (-not $dockerRunning) {
+	if ($IsWindows) {
+		Write-Host "Starting Docker Desktop..." -ForegroundColor Yellow
+		$dockerDesktopPath = "C:\Program Files\Docker\Docker\Docker Desktop.exe"
+		if (Test-Path $dockerDesktopPath) {
+			Start-Process $dockerDesktopPath
+		}
+		Write-Host "Waiting for Docker to initialize..." -ForegroundColor Yellow
+		Start-Sleep -Seconds 15
+	}
+	else {
+		Write-Host "Docker daemon is not running. Please start it and try again." -ForegroundColor Red
+		exit 1
+	}
 }
 
 # Wait for Docker to be fully ready (not just the process, but the daemon)
@@ -134,15 +150,20 @@ try {
 		$clientPort = 4200
 		$clientRunning = $false
 		try {
-			$tcpConnection =
-			Get-NetTCPConnection -LocalPort $clientPort -ErrorAction SilentlyContinue
-			if ($tcpConnection) {
-				$clientRunning = $true
-				Write-Host "Angular client already running on port $clientPort" -ForegroundColor Green
+			if ($IsWindows) {
+				$clientRunning = $null -ne (Get-NetTCPConnection -LocalPort $clientPort -ErrorAction SilentlyContinue)
+			}
+			else {
+				$lsofResult = & lsof -ti ":$clientPort" 2>/dev/null
+				$clientRunning = -not [string]::IsNullOrEmpty($lsofResult)
 			}
 		}
 		catch {
 			# Port not in use
+		}
+
+		if ($clientRunning) {
+			Write-Host "Angular client already running on port $clientPort" -ForegroundColor Green
 		}
 
 		if (-not $clientRunning) {

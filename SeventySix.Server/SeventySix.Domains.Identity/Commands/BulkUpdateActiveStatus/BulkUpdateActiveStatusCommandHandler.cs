@@ -2,7 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace SeventySix.Identity;
 
@@ -17,11 +17,14 @@ public static class BulkUpdateActiveStatusCommandHandler
 	/// <param name="command">
 	/// The bulk update command.
 	/// </param>
-	/// <param name="userManager">
-	/// Identity <see cref="UserManager{TUser}"/> for user operations.
+	/// <param name="context">
+	/// The identity database context.
 	/// </param>
 	/// <param name="identityCache">
 	/// Identity cache service for clearing user cache.
+	/// </param>
+	/// <param name="timeProvider">
+	/// Time provider for <see cref="DateTimeOffset"/> stamping.
 	/// </param>
 	/// <param name="cancellationToken">
 	/// Cancellation token.
@@ -31,41 +34,56 @@ public static class BulkUpdateActiveStatusCommandHandler
 	/// </returns>
 	public static async Task<long> HandleAsync(
 		BulkUpdateActiveStatusCommand command,
-		UserManager<ApplicationUser> userManager,
+		IdentityDbContext context,
 		IIdentityCacheService identityCache,
+		TimeProvider timeProvider,
 		CancellationToken cancellationToken)
 	{
-		long updatedCount = 0;
-		List<long> updatedUserIds = [];
+		List<long> userIdList =
+			[.. command.UserIds];
 
-		foreach (long userId in command.UserIds)
+		if (userIdList.Count == 0)
 		{
-			ApplicationUser? user =
-				await userManager.FindByIdAsync(
-					userId.ToString());
-
-			if (user is null)
-			{
-				continue;
-			}
-
-			user.IsActive = command.IsActive;
-
-			IdentityResult result =
-				await userManager.UpdateAsync(user);
-
-			if (result.Succeeded)
-			{
-				updatedCount++;
-				updatedUserIds.Add(userId);
-			}
+			return 0;
 		}
 
-		// Invalidate cache for all affected users
-		if (updatedUserIds.Count > 0)
+		// Single query to collect valid user IDs for cache invalidation
+		List<long> existingUserIds =
+			await context.Users
+				.Where(user => userIdList.Contains(user.Id))
+				.Select(user => user.Id)
+				.ToListAsync(cancellationToken);
+
+		if (existingUserIds.Count == 0)
 		{
-			await identityCache.InvalidateBulkUsersAsync(updatedUserIds);
+			return 0;
 		}
+
+		DateTimeOffset now =
+			timeProvider.GetUtcNow();
+
+		// Single UPDATE statement — 1 DB roundtrip regardless of batch size
+		// AuditInterceptor is bypassed by ExecuteUpdateAsync, so set audit fields explicitly
+		int updatedCount =
+			await context.Users
+				.Where(
+					user => userIdList.Contains(user.Id)
+						&& user.IsActive != command.IsActive)
+				.ExecuteUpdateAsync(
+					setter => setter
+						.SetProperty(
+							user => user.IsActive,
+							command.IsActive)
+						.SetProperty(
+							user => user.ModifiedBy,
+							command.ModifiedBy)
+						.SetProperty(
+							user => user.ModifyDate,
+							now),
+					cancellationToken);
+
+		// Invalidate cache — idempotent, so invalidate all existing regardless of prior state
+		await identityCache.InvalidateBulkUsersAsync(existingUserIds);
 
 		return updatedCount;
 	}

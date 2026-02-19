@@ -16,6 +16,7 @@
 			</div>
 		}
 
+		@if (featureFlags.oAuthEnabled()) {
 		<!-- OAuth Providers -->
 		<div class="oauth-buttons">
 			@for (provider of oauthProviders; track provider.id) {
@@ -42,6 +43,7 @@
 			data-testid="divider">
 			<span>or</span>
 		</div>
+		}
 
 		<!-- Local Login Form -->
 		<form

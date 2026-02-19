@@ -30,9 +30,10 @@ namespace SeventySix.Api.Controllers;
 /// <param name="logger">
 /// Logger for MFA operations.
 /// </param>
+[MfaFeatureRequired]
 [ApiController]
 [Route(ApiVersionConfig.VersionedRoutePrefix + "/auth/mfa")]
-public class MfaController(
+public sealed class MfaController(
 	IMessageBus messageBus,
 	IAuthCookieService cookieService,
 	IOptions<AuthSettings> authSettings,
@@ -166,6 +167,7 @@ public class MfaController(
 	/// <response code="400">Invalid or expired code.</response>
 	/// <response code="429">Too many verification attempts.</response>
 	[HttpPost("verify-totp")]
+	[TotpFeatureRequired]
 	[EnableRateLimiting(RateLimitPolicyConstants.MfaVerify)]
 	[ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
 	[ProducesResponseType(
@@ -277,6 +279,7 @@ public class MfaController(
 	/// <response code="400">TOTP already configured or other error.</response>
 	/// <response code="401">Unauthorized.</response>
 	[HttpPost("totp/setup")]
+	[TotpFeatureRequired]
 	[Authorize]
 	[ProducesResponseType(typeof(TotpSetupResponse), StatusCodes.Status200OK)]
 	[ProducesResponseType(
@@ -339,6 +342,7 @@ public class MfaController(
 	/// <response code="400">Invalid code or enrollment not initiated.</response>
 	/// <response code="401">Unauthorized.</response>
 	[HttpPost("totp/confirm")]
+	[TotpFeatureRequired]
 	[Authorize]
 	[ProducesResponseType(StatusCodes.Status204NoContent)]
 	[ProducesResponseType(
@@ -396,6 +400,7 @@ public class MfaController(
 	/// <response code="400">Invalid password or TOTP not configured.</response>
 	/// <response code="401">Unauthorized.</response>
 	[HttpPost("totp/disable")]
+	[TotpFeatureRequired]
 	[Authorize]
 	[ProducesResponseType(StatusCodes.Status204NoContent)]
 	[ProducesResponseType(

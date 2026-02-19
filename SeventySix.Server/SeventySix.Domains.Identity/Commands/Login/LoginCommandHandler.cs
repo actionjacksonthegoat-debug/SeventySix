@@ -47,6 +47,9 @@ public static class LoginCommandHandler
 	/// <param name="mfaSettings">
 	/// MFA configuration settings.
 	/// </param>
+	/// <param name="totpSettings">
+	/// TOTP configuration settings (used to guard TOTP challenge initiation).
+	/// </param>
 	/// <param name="trustedDeviceService">
 	/// Service for trusted device validation and MFA bypass.
 	/// </param>
@@ -68,6 +71,7 @@ public static class LoginCommandHandler
 		ISecurityAuditService securityAuditService,
 		IMfaService mfaService,
 		IOptions<MfaSettings> mfaSettings,
+		IOptions<TotpSettings> totpSettings,
 		ITrustedDeviceService trustedDeviceService,
 		IMessageBus messageBus,
 		CancellationToken cancellationToken)
@@ -123,7 +127,7 @@ public static class LoginCommandHandler
 			bool hasTotpEnrolled =
 				!string.IsNullOrEmpty(user!.TotpSecret);
 
-			if (hasTotpEnrolled)
+			if (hasTotpEnrolled && totpSettings.Value.Enabled)
 			{
 				return await InitiateTotpChallengeAsync(
 					user,

@@ -5,11 +5,13 @@ import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { MatIconRegistry } from "@angular/material/icon";
 import { DomSanitizer } from "@angular/platform-browser";
 import { provideRouter } from "@angular/router";
+import { FeatureFlagsService } from "@shared/services";
 import { ApiService } from "@shared/services/api.service";
 import { AuthService } from "@shared/services/auth.service";
 import { ExternalLoginDto, OAuthProvider } from "@shared/services/auth.types";
 import {
 	createMockApiService,
+	createMockFeatureFlagsService,
 	createTestQueryClient,
 	MockApiService
 } from "@shared/testing";
@@ -51,7 +53,11 @@ describe("ProfilePage",
 								provideRouter([]),
 								provideTanStackQuery(queryClient),
 								AccountService,
-								{ provide: ApiService, useValue: mockApiService }
+								{ provide: ApiService, useValue: mockApiService },
+								{
+									provide: FeatureFlagsService,
+									useValue: createMockFeatureFlagsService()
+								}
 							]
 						})
 					.compileComponents();
@@ -202,7 +208,11 @@ describe("ProfilePage linked accounts",
 								provideTanStackQuery(queryClient),
 								AccountService,
 								{ provide: ApiService, useValue: mockApiService },
-								{ provide: AuthService, useValue: mockAuthService }
+								{ provide: AuthService, useValue: mockAuthService },
+								{
+									provide: FeatureFlagsService,
+									useValue: createMockFeatureFlagsService()
+								}
 							]
 						})
 					.compileComponents();

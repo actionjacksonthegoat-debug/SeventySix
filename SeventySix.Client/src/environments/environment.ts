@@ -4,9 +4,9 @@ export const environment: Environment =
 	{
 		production: true,
 		version: "1.0.0",
-		// Production: baked at build time. For deployment behind a reverse proxy,
-		// change to "/api/v1" (relative) and add a proxy_pass rule in nginx.conf.
-		apiUrl: "https://localhost:7074/api/v1",
+		// Production: relative URL routed via reverse proxy (see nginx.conf).
+		// Configure your reverse proxy to route /api/v1 to the backend API container.
+		apiUrl: "/api/v1",
 		logging: {
 			enableRemoteLogging: true,
 			consoleLogLevel: "warn", // Only show warnings and errors in console
@@ -18,10 +18,12 @@ export const environment: Environment =
 			circuitBreakerTimeout: 30000 // 30 seconds
 		},
 		observability: {
-		// Observability stack URLs (via HTTPS nginx-proxy)
-			jaegerUrl: "https://localhost:16687", // Jaeger UI for distributed tracing
-			prometheusUrl: "https://localhost:9091", // Prometheus for metrics
-			grafanaUrl: "https://localhost:3443", // Grafana for metrics visualization
+		// Observability URLs — empty by default in production.
+		// Set to your deployed Jaeger/Prometheus/Grafana URLs if the observability stack is deployed.
+		// These URLs are displayed in the developer tools page; they are not called by the app itself.
+			jaegerUrl: "",
+			prometheusUrl: "",
+			grafanaUrl: "",
 			// pgAdminUrl and redisInsightUrl omitted — services not deployed in production
 			dashboards: {
 				systemOverview: "seventysix-system-overview",
@@ -90,17 +92,13 @@ export const environment: Environment =
 			runIntegrationTests: false
 		},
 		telemetry: {
-			enabled: true,
+			enabled: false, // Enable only when a collector is deployed and otlpEndpoint is configured
 			serviceName: "SeventySix.Client",
 			serviceVersion: "1.0.0",
-			otlpEndpoint: "https://localhost:4319/v1/traces",
-			sampleRate: 0.1 // 10% sampling for production
+			otlpEndpoint: "", // Set to your OTLP collector URL when enabled
+			sampleRate: 0.1 // 10% sampling
 		},
 		auth: {
-			loginUrl: "/auth/login",
-			tokenRefreshBufferSeconds: 60 // Refresh token 60s before expiry
-		},
-		altcha: {
-			enabled: true
+			loginUrl: "/auth/login"
 		}
 	};

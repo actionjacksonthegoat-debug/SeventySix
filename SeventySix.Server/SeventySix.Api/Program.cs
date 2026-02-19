@@ -226,6 +226,12 @@ StartupValidator.ValidateAllowedHosts(
 	builder.Configuration,
 	app.Environment);
 
+// Validate security-critical settings are enabled in production
+StartupValidator.ValidateProductionSecuritySettings(
+	builder.Configuration,
+	app.Environment,
+	app.Services.GetRequiredService<ILogger<Program>>());
+
 // Validate dependencies (in debug scenarios this provides actionable errors for VS)
 await app.ValidateDependenciesAsync(builder.Configuration);
 

@@ -17,12 +17,12 @@
 	<mat-card class="error-card">
 		<mat-card-content>{{ error() }}</mat-card-content>
 	</mat-card>
-	} @else if (profile(); as p) {
+	} @else if (profile(); as userProfile) {
 	<mat-card>
 		<mat-card-header>
-			<mat-card-title>{{ p.username }}</mat-card-title>
-			@if (p.lastLoginAt) {
-			<mat-card-subtitle>Last login {{ p.lastLoginAt | date }}</mat-card-subtitle>
+			<mat-card-title>{{ userProfile.username }}</mat-card-title>
+			@if (userProfile.lastLoginAt) {
+			<mat-card-subtitle>Last login {{ userProfile.lastLoginAt | date }}</mat-card-subtitle>
 			}
 		</mat-card-header>
 
@@ -73,6 +73,7 @@
 				</div>
 			</form>
 
+			@if (featureFlags.oAuthEnabled()) {
 			<!-- Linked Accounts -->
 			<section class="linked-accounts"
 				data-testid="linked-accounts"
@@ -111,6 +112,7 @@
 					</div>
 				}
 			</section>
+			}
 		</mat-card-content>
 	</mat-card>
 	}

@@ -45,7 +45,9 @@ internal class LogRepository(
 
 	/// <inheritdoc/>
 	/// <remarks>
-	/// Batch insert: Uses AddRange for efficient single-roundtrip database operation.
+	/// Batch insert: Uses AddRange for an efficient single-roundtrip database operation.
+	/// AutoDetectChangesEnabled is permanently disabled on LoggingDbContext (insert-only context),
+	/// so no per-call toggle is needed here.
 	/// </remarks>
 	public async Task CreateBatchAsync(
 		IEnumerable<Log> entities,

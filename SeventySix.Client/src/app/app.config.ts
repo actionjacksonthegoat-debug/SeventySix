@@ -39,6 +39,7 @@ import { AuthResponse } from "@shared/models";
 import {
 	AuthService,
 	ErrorHandlerService,
+	FeatureFlagsService,
 	SelectivePreloadingStrategy,
 	TelemetryService,
 	ThemeService,
@@ -97,6 +98,20 @@ function initializeAuth(): Observable<AuthResponse | null>
 }
 
 /**
+ * Loads feature flags from the API during app startup.
+ * All APP_INITIALIZERs run in parallel, so this only adds latency beyond
+ * the slowest other initializer (typically initializeAuth for returning users).
+ * For first-time visitors, this adds ~50–200 ms but guarantees correct UI state
+ * (OAuth buttons, ALTCHA, TOTP) on the very first render — no flicker.
+ */
+function initializeFeatureFlags(): Promise<void>
+{
+	const featureFlagsService: FeatureFlagsService =
+		inject(FeatureFlagsService);
+	return featureFlagsService.initialize();
+}
+
+/**
  * Register OAuth provider SVG icons with the Material icon registry.
  * Must run before any component references these icons.
  */
@@ -120,6 +135,7 @@ const appInitializers: ReturnType<typeof provideAppInitializer>[] =
 		provideAppInitializer(initializeTelemetry),
 		provideAppInitializer(initializeWebVitals),
 		provideAppInitializer(initializeOAuthIcons),
+		provideAppInitializer(initializeFeatureFlags),
 		provideAppInitializer(initializeAuth)
 	];
 

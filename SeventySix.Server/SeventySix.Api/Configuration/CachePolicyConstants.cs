@@ -26,4 +26,7 @@ public static class CachePolicyConstants
 
 	/// <summary>Cache policy for third-party API request tracking endpoints.</summary>
 	public const string ThirdPartyRequests = "thirdpartyrequests";
+
+	/// <summary>Cache policy for feature flag endpoints.</summary>
+	public const string Features = "features";
 }

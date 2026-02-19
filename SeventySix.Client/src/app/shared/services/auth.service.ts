@@ -38,6 +38,7 @@ import {
 	JwtClaims,
 	OAuthProvider
 } from "@shared/services/auth.types";
+import { FeatureFlagsService } from "@shared/services/feature-flags.service";
 import { IdleDetectionService } from "@shared/services/idle-detection.service";
 import { isNullOrEmpty, isNullOrUndefined, isPresent } from "@shared/utilities/null-check.utility";
 import { QueryKeys } from "@shared/utilities/query-keys.utility";
@@ -81,6 +82,9 @@ export class AuthService
 
 	private readonly idleDetectionService: IdleDetectionService =
 		inject(IdleDetectionService);
+
+	private readonly featureFlagsService: FeatureFlagsService =
+		inject(FeatureFlagsService);
 
 	/** Clears cached queries on logout to prevent data leakage between users. */
 	private readonly queryClient: QueryClient =
@@ -536,7 +540,7 @@ export class AuthService
 
 		// Expired if within buffer seconds of expiry
 		const bufferMs: number =
-			environment.auth.tokenRefreshBufferSeconds * 1000;
+			this.featureFlagsService.tokenRefreshBufferSeconds() * 1000;
 		return this.dateService.nowTimestamp() >= this.tokenExpiresAt - bufferMs;
 	}
 
@@ -764,11 +768,14 @@ export class AuthService
 	 */
 	private startIdleDetection(response: AuthResponse): void
 	{
-		if (response.sessionInactivityMinutes > 0)
+		const inactivityMinutes: number =
+			Number(response.sessionInactivityMinutes);
+		const warningSeconds: number =
+			Number(response.sessionWarningSeconds);
+
+		if (inactivityMinutes > 0)
 		{
-			this.idleDetectionService.start(
-				response.sessionInactivityMinutes,
-				response.sessionWarningSeconds);
+			this.idleDetectionService.start(inactivityMinutes, warningSeconds);
 		}
 	}
 

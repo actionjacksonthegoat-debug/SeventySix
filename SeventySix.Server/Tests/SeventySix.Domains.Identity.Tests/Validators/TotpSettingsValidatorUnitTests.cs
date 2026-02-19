@@ -80,6 +80,7 @@ public sealed class TotpSettingsValidatorUnitTests
 	private static TotpSettings CreateValidSettings() =>
 		new()
 		{
+			Enabled = true,
 			IssuerName = "SeventySix",
 			AllowedTimeStepDrift = 1,
 			TimeStepSeconds = 30,

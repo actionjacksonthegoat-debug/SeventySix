@@ -280,6 +280,43 @@ export interface paths
 		patch?: never;
 		trace?: never;
 	};
+	"/api/v1/config/features": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path?: never;
+				cookie?: never;
+			};
+			requestBody?: never;
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"text/plain": components["schemas"]["FeatureFlagsResponse"];
+						"application/json": components["schemas"]["FeatureFlagsResponse"];
+						"text/json": components["schemas"]["FeatureFlagsResponse"];
+					};
+				};
+			};
+		};
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	"/api/v1/health": {
 		parameters: {
 			query?: never;
@@ -1308,7 +1345,7 @@ export interface paths
 		patch?: never;
 		trace?: never;
 	};
-	"/api/v1/auth/oauth/github": {
+	"/api/v1/auth/oauth/{provider}": {
 		parameters: {
 			query?: never;
 			header?: never;
@@ -1319,7 +1356,9 @@ export interface paths
 			parameters: {
 				query?: never;
 				header?: never;
-				path?: never;
+				path: {
+					provider: string;
+				};
 				cookie?: never;
 			};
 			requestBody?: never;
@@ -1331,6 +1370,17 @@ export interface paths
 					};
 					content?: never;
 				};
+				/** @description Not Found */
+				404: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"text/plain": components["schemas"]["ProblemDetails"];
+						"application/json": components["schemas"]["ProblemDetails"];
+						"text/json": components["schemas"]["ProblemDetails"];
+					};
+				};
 			};
 		};
 		put?: never;
@@ -1341,7 +1391,7 @@ export interface paths
 		patch?: never;
 		trace?: never;
 	};
-	"/api/v1/auth/oauth/github/callback": {
+	"/api/v1/auth/oauth/{provider}/callback": {
 		parameters: {
 			query?: never;
 			header?: never;
@@ -1355,7 +1405,9 @@ export interface paths
 					state?: string;
 				};
 				header?: never;
-				path?: never;
+				path: {
+					provider: string;
+				};
 				cookie?: never;
 			};
 			requestBody?: never;
@@ -1426,6 +1478,123 @@ export interface paths
 			};
 		};
 		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/api/v1/auth/oauth/linked": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path?: never;
+				cookie?: never;
+			};
+			requestBody?: never;
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"text/plain": components["schemas"]["ExternalLoginDto"][];
+						"application/json": components["schemas"]["ExternalLoginDto"][];
+						"text/json": components["schemas"]["ExternalLoginDto"][];
+					};
+				};
+			};
+		};
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/api/v1/auth/oauth/link/{provider}": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path: {
+					provider: string;
+				};
+				cookie?: never;
+			};
+			requestBody?: never;
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"text/plain": components["schemas"]["OAuthLinkInitiateResponse"];
+						"application/json": components["schemas"]["OAuthLinkInitiateResponse"];
+						"text/json": components["schemas"]["OAuthLinkInitiateResponse"];
+					};
+				};
+				/** @description Not Found */
+				404: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"text/plain": components["schemas"]["ProblemDetails"];
+						"application/json": components["schemas"]["ProblemDetails"];
+						"text/json": components["schemas"]["ProblemDetails"];
+					};
+				};
+			};
+		};
+		delete: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path: {
+					provider: string;
+				};
+				cookie?: never;
+			};
+			requestBody?: never;
+			responses: {
+				/** @description No Content */
+				204: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content?: never;
+				};
+				/** @description Bad Request */
+				400: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"text/plain": components["schemas"]["ProblemDetails"];
+						"application/json": components["schemas"]["ProblemDetails"];
+						"text/json": components["schemas"]["ProblemDetails"];
+					};
+				};
+			};
+		};
 		options?: never;
 		head?: never;
 		patch?: never;
@@ -2280,15 +2449,15 @@ export interface components
 			mfaMethod?: null | components["schemas"]["MfaMethod"];
 			availableMfaMethods?: null | components["schemas"]["MfaMethod"][];
 			/**
+			 * Format: int32
 			 * @default 0
-			 * @description Session inactivity timeout in minutes (0 = disabled).
 			 */
-			sessionInactivityMinutes: number;
+			sessionInactivityMinutes: number | string;
 			/**
+			 * Format: int32
 			 * @default 0
-			 * @description Seconds before inactivity timeout to display warning.
 			 */
-			sessionWarningSeconds: number;
+			sessionWarningSeconds: number | string;
 		};
 		AvailableRoleDto: {
 			name: string;
@@ -2344,6 +2513,17 @@ export interface components
 		DisableTotpRequest: {
 			password: string;
 		};
+		ExternalLoginDto: {
+			provider: string;
+			providerDisplayName: string;
+		};
+		FeatureFlagsResponse: {
+			mfaEnabled: boolean;
+			totpEnabled: boolean;
+			oAuthEnabled: boolean;
+			oAuthProviders: string[];
+			altchaEnabled: boolean;
+		};
 		ForgotPasswordRequest: {
 			email: string;
 			altchaPayload?: null | string;
@@ -2397,6 +2577,9 @@ export interface components
 		MfaMethod: number;
 		OAuthCodeExchangeRequest: {
 			code: string;
+		};
+		OAuthLinkInitiateResponse: {
+			authorizationUrl: string;
 		};
 		PagedResultOfLogDto: {
 			items: components["schemas"]["LogDto"][];
@@ -2531,7 +2714,7 @@ export interface components
 			fullName: null | string;
 		};
 		UpdateUserRequest: {
-			/** Format: int32 */
+			/** Format: int64 */
 			id: number | string;
 			username: string;
 			email: string;

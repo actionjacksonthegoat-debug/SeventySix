@@ -436,6 +436,28 @@ dotnet ef migrations add MigrationName -c ElectronicNotificationsDbContext -o El
 
 Sensitive values (connection strings, JWT keys, API secrets) are stored in .NET User Secrets during development and Docker environment variables in production.
 
+### Optional Features (disable via appsettings)
+
+The following features are optional and can be turned off in `appsettings.Development.json` without modifying the base `appsettings.json`:
+
+| Setting | Effect when `false` |
+|---------|---------------------|
+| `Mfa.Enabled` | Login requires only email + password — no email OTP sent |
+| `Mfa.RequiredForAllUsers` | MFA becomes opt-in per user rather than enforced globally |
+| `Totp.Enabled` | TOTP authenticator enrollment is hidden and disabled |
+| `Auth.OAuth.Enabled` | OAuth login buttons are hidden; provider configuration is ignored |
+
+**Minimal local setup (no email or OAuth needed):**
+
+```json
+{
+  "Mfa": { "Enabled": false, "RequiredForAllUsers": false },
+  "Totp": { "Enabled": false }
+}
+```
+
+OAuth is disabled by default and only activates when OAuth provider secrets are present in user secrets.
+
 ## Adding a New Domain
 
 See `.github/instructions/new-domain.instructions.md` for the full blueprint. Quick checklist:

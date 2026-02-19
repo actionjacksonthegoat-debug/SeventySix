@@ -48,6 +48,8 @@ GitHub hosts the repository and provides OAuth login for the application.
 
 Brevo provides the SMTP service for transactional emails (registration verification, password reset, MFA codes). The application works without it, but emails will fail to send. Important: Please look for any other options at startup, this appealed as a reasonable amount of free support before I would want to consider going paid and their track record is clean as of this documentation date. Third Party API tracking can be set to lock down at monthly or daily locks, when those locks are up it will retry in the email queue service.
 
+> **Skipping email entirely**: To run without any email requirement at all, set `"Mfa": { "Enabled": false }` in `appsettings.Development.json`. This disables the MFA email code step so login works with only email + password. See [Optional Feature Flags](#optional-feature-flags) for the full list.
+
 1. Go to [app.brevo.com/account/register](https://app.brevo.com/account/register)
 2. Create a free account (300 emails/day included — no credit card required)
 3. After login, go to **Settings** → **SMTP & API** → [SMTP Keys](https://app.brevo.com/settings/keys/smtp)
@@ -385,6 +387,37 @@ MCP servers give VS Code's Copilot agent mode access to external tools — GitHu
 This project uses MCP servers, all 100% free with zero billing risk.
 
 For complete MCP server setup instructions, see the [MCP Server Setup Guide](MCP-Server-Setup.md).
+
+---
+
+## Optional Feature Flags
+
+The following features are fully optional and can be disabled via `appsettings.Development.json` — no code changes required. Create or update `SeventySix.Server/SeventySix.Api/appsettings.Development.json` with one or more of these overrides:
+
+| Feature | Setting key | Default | Effect when `false` |
+|---------|------------|---------|---------------------|
+| MFA (email OTP) | `Mfa.Enabled` | `true` | Login requires only email + password — no email code sent |
+| MFA enforced globally | `Mfa.RequiredForAllUsers` | `true` | MFA becomes opt-in per user rather than mandatory |
+| TOTP authenticator app | `Totp.Enabled` | `true` | TOTP enrollment page hidden; apps cannot be added |
+| OAuth / External Auth | `Auth.OAuth.Enabled` | `false` | OAuth login hidden; only changes if provider secrets are set |
+
+### Minimal local setup (no email or OAuth required)
+
+To run the full application without Brevo SMTP credentials or OAuth app keys:
+
+```json
+{
+  "Mfa": { "Enabled": false, "RequiredForAllUsers": false },
+  "Totp": { "Enabled": false }
+}
+```
+
+With these overrides:
+- Email login works without any email being sent (no MFA code step)
+- TOTP authenticator enrollment is hidden
+- OAuth is already off by default — it only activates when provider secrets are present in user secrets
+
+> **Important**: These are development-only overrides for `appsettings.Development.json`. In production, MFA and TOTP should remain enabled for security. Do not disable them in `appsettings.Production.json`.
 
 ---
 

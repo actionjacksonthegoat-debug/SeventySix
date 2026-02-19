@@ -31,11 +31,19 @@ public class LoggingDbContext : BaseDbContext<LoggingDbContext>
 	/// <summary>
 	/// Initializes a new instance of the <see cref="LoggingDbContext"/> class.
 	/// </summary>
+	/// <remarks>
+	/// AutoDetectChangesEnabled is permanently disabled: this context is insert-only (Logs,
+	/// RecurringJobExecutions — no UPDATE operations), so change detection adds O(n²) overhead
+	/// with zero benefit.
+	/// </remarks>
 	/// <param name="options">
 	/// The options for this context.
 	/// </param>
 	public LoggingDbContext(DbContextOptions<LoggingDbContext> options)
-		: base(options) { }
+		: base(options)
+	{
+		ChangeTracker.AutoDetectChangesEnabled = false;
+	}
 
 	/// <summary>
 	/// Gets or sets the Logs DbSet.

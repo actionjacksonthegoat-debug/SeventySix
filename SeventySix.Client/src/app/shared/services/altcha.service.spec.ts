@@ -6,20 +6,27 @@
 import { provideZonelessChangeDetection } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
 import { environment } from "@environments/environment";
+import { createMockFeatureFlagsService, MockFeatureFlagsService } from "@testing/mock-factories";
 import { AltchaService } from "./altcha.service";
+import { FeatureFlagsService } from "./feature-flags.service";
 
 describe("AltchaService",
 	() =>
 	{
 		let service: AltchaService;
+		let mockFeatureFlags: MockFeatureFlagsService;
 
 		beforeEach(
 			() =>
 			{
+				mockFeatureFlags =
+					createMockFeatureFlagsService();
+
 				TestBed.configureTestingModule(
 					{
 						providers: [
-							provideZonelessChangeDetection()
+							provideZonelessChangeDetection(),
+							{ provide: FeatureFlagsService, useValue: mockFeatureFlags }
 						]
 					});
 
@@ -34,11 +41,11 @@ describe("AltchaService",
 					.toBeTruthy();
 			});
 
-		it("should return enabled status from environment config",
+		it("should return enabled status from feature flags service",
 			() =>
 			{
 				expect(service.enabled)
-					.toBe(environment.altcha.enabled);
+					.toBe(mockFeatureFlags.altchaEnabled());
 			});
 
 		it("should return correct challenge endpoint URL",
