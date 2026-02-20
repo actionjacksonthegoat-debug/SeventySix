@@ -5,9 +5,9 @@ using Wolverine;
 
 namespace SeventySix.Shared.Tests.Persistence;
 
-public class DummyQuery;
+public sealed class DummyQuery;
 
-public class WolverineHealthCheckTests
+public sealed class WolverineHealthCheckTests
 {
 	[Fact]
 	public async Task CheckHealthAsync_InvokesMessageBusAndReturnsResultAsync()

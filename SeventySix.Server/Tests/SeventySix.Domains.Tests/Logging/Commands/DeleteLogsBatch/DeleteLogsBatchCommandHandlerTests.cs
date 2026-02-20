@@ -15,7 +15,7 @@ namespace SeventySix.Domains.Tests.Logging.Commands.DeleteLogsBatch;
 /// Tests batch delete operation with various input sizes.
 /// Uses mocked repository since persistence is tested in LogRepositoryTests.
 /// </remarks>
-public class DeleteLogsBatchCommandHandlerTests
+public sealed class DeleteLogsBatchCommandHandlerTests
 {
 	private readonly ILogRepository Repository;
 

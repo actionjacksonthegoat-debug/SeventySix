@@ -71,7 +71,7 @@ public sealed class BulkUpdateActiveStatusCommandHandlerTests(
 		await using IdentityDbContext verifyContext =
 			CreateIdentityDbContext();
 
-		verifyContext.Users.Where(u => userIds.Contains(u.Id)).All(u => u.IsActive).ShouldBeTrue();
+		verifyContext.Users.Where(user => userIds.Contains(user.Id)).All(user => user.IsActive).ShouldBeTrue();
 	}
 
 	/// <summary>
@@ -116,7 +116,7 @@ public sealed class BulkUpdateActiveStatusCommandHandlerTests(
 		await using IdentityDbContext verifyContext =
 			CreateIdentityDbContext();
 
-		verifyContext.Users.Where(u => userIds.Contains(u.Id)).Any(u => u.IsActive).ShouldBeFalse();
+		verifyContext.Users.Where(user => userIds.Contains(user.Id)).Any(user => user.IsActive).ShouldBeFalse();
 	}
 
 	/// <summary>

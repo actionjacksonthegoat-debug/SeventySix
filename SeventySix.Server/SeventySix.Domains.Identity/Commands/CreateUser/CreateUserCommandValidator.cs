@@ -19,7 +19,7 @@ namespace SeventySix.Identity.Commands.CreateUser;
 /// - FullName: Optional, max 100 characters if provided
 /// - IsActive: No validation (boolean field)
 /// </remarks>
-public class CreateUserCommandValidator : AbstractValidator<CreateUserRequest>
+public sealed class CreateUserCommandValidator : AbstractValidator<CreateUserRequest>
 {
 	/// <summary>
 	/// Initializes a new instance of the <see cref="CreateUserCommandValidator"/> class.

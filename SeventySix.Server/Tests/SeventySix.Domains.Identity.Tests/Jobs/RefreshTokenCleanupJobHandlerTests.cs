@@ -26,7 +26,7 @@ namespace SeventySix.Identity.Tests.Jobs;
 /// Security: Verifies tokens are properly deleted after retention period.
 /// </remarks>
 [Collection(CollectionNames.IdentityPostgreSql)]
-public class RefreshTokenCleanupJobHandlerTests(
+public sealed class RefreshTokenCleanupJobHandlerTests(
 	IdentityPostgreSqlFixture fixture) : DataPostgreSqlTestBase(fixture)
 {
 	private static readonly DateTimeOffset TestTime =

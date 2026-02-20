@@ -15,7 +15,7 @@ namespace SeventySix.Domains.Tests.ApiTracking.Entities;
 /// Tests domain logic and business rules for the ThirdPartyApiRequest entity.
 /// Follows TDD principles: tests written before implementation.
 /// </remarks>
-public class ThirdPartyApiRequestTests
+public sealed class ThirdPartyApiRequestTests
 {
 	[Fact]
 	public void IncrementCallCount_IncrementsCounterAndUpdatesTimestamp()

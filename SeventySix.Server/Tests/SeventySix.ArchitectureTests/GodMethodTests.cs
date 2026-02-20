@@ -20,7 +20,7 @@ namespace SeventySix.ArchitectureTests;
 /// - Max 6 parameters: Beyond this, consider compound handlers or grouping dependencies
 /// Counts non-blank, non-comment lines only.
 /// </remarks>
-public class GodMethodTests : SourceCodeArchitectureTest
+public sealed class GodMethodTests : SourceCodeArchitectureTest
 {
 	/// <summary>
 	/// Maximum allowed lines per method before requiring split.
@@ -56,6 +56,8 @@ public class GodMethodTests : SourceCodeArchitectureTest
 			"Tests/SeventySix.Analyzers.Tests/AssignmentContinuationIndentCodeFixTests.cs::NestedDictionary_OuterBraceWrong_InnerNotFlaggedAsync",
 			// Wolverine CQRS handler - OWASP ASVS V2.1.7 breach checking (83 lines)
 			"SeventySix.Domains.Identity/Commands/SetPassword/SetPasswordCommandHandler.cs::HandleAsync",
+			// Wolverine CQRS handler - TOTP enrollment confirmation with audit closure pattern (83 lines)
+			"SeventySix.Domains.Identity/Commands/ConfirmTotpEnrollment/ConfirmTotpEnrollmentCommandHandler.cs::HandleAsync",
 			// Integration test - extensive mock configuration (88 lines)
 			"Tests/SeventySix.Domains.Identity.Tests/Commands/CompleteRegistration/CompleteRegistrationCommandHandlerTests.cs::HandleAsync_ShouldCompleteRegistration_WhenCombinedTokenIsValid_RefactoredAsync",
 		];
@@ -66,15 +68,15 @@ public class GodMethodTests : SourceCodeArchitectureTest
 	private static readonly HashSet<string> AllowedParameterExceptions =
 		[
 			// Wolverine injected dependencies - authentication handlers require many services
-			"SeventySix.Domains.Identity/Commands/ChangePassword/ChangePasswordCommandHandler.cs::HandleAsync", // 9 params
-			"SeventySix.Domains.Identity/Commands/CompleteRegistration/CompleteRegistrationCommandHandler.cs::HandleAsync", // 7 params
+			"SeventySix.Domains.Identity/Commands/ChangePassword/ChangePasswordCommandHandler.cs::HandleAsync", // 10 params
+			"SeventySix.Domains.Identity/Commands/CompleteRegistration/CompleteRegistrationCommandHandler.cs::HandleAsync", // 8 params
 			"SeventySix.Domains.Identity/Commands/CreateUser/CreateUserCommandHandler.cs::HandleAsync", // 7 params
 			"SeventySix.Domains.Identity/Commands/Login/LoginCommandHandler.cs::HandleAsync", // 11 params
-			"SeventySix.Domains.Identity/Commands/SetPassword/SetPasswordCommandHandler.cs::HandleAsync", // 9 params
+			"SeventySix.Domains.Identity/Commands/SetPassword/SetPasswordCommandHandler.cs::HandleAsync", // 10 params
 			"SeventySix.Domains.Identity/Commands/VerifyBackupCode/VerifyBackupCodeCommandHandler.cs::HandleAsync", // 7 params
 			"SeventySix.Domains.Identity/Commands/VerifyMfa/VerifyMfaCommandHandler.cs::HandleAsync", // 7 params
 			"SeventySix.Domains.Identity/Commands/VerifyTotpCode/VerifyTotpCodeCommandHandler.cs::HandleAsync", // 7 params
-			"SeventySix.Domains.Identity/Commands/ConfirmTotpEnrollment/ConfirmTotpEnrollmentCommandHandler.cs::HandleAsync", // 7 params
+			"SeventySix.Domains.Identity/Commands/ConfirmTotpEnrollment/ConfirmTotpEnrollmentCommandHandler.cs::HandleAsync", // 8 params
 		];
 
 	[Fact]

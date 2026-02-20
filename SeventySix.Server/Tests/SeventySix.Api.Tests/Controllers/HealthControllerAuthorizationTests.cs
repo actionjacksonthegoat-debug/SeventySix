@@ -19,7 +19,7 @@ namespace SeventySix.Api.Tests.Controllers;
 /// The /health/scheduled-jobs endpoint is protected to prevent information disclosure.
 /// </remarks>
 [Collection(CollectionNames.IdentityHealthPostgreSql)]
-public class HealthControllerAuthorizationTests(
+public sealed class HealthControllerAuthorizationTests(
 	IdentityHealthApiPostgreSqlFixture fixture)
 	: ApiPostgreSqlTestBase<Program>(fixture), IAsyncLifetime
 {

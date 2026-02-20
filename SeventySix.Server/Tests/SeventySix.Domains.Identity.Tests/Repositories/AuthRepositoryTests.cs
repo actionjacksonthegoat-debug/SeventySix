@@ -18,7 +18,7 @@ namespace SeventySix.Identity.Tests.Repositories;
 /// User lookup, external logins, and roles are handled by UserManager.
 /// </remarks>
 [Collection(CollectionNames.IdentityPostgreSql)]
-public class AuthRepositoryTests : DataPostgreSqlTestBase
+public sealed class AuthRepositoryTests : DataPostgreSqlTestBase
 {
 	public AuthRepositoryTests(IdentityPostgreSqlFixture fixture)
 		: base(fixture) { }

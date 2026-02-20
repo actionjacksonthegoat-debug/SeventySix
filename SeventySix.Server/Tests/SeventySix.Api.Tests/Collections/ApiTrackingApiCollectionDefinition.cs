@@ -21,4 +21,4 @@ namespace SeventySix.Api.Tests.Collections;
 /// </para>
 /// </remarks>
 [CollectionDefinition(CollectionNames.ApiTrackingPostgreSql)]
-public class ApiTrackingApiCollectionDefinition : ICollectionFixture<ApiTrackingApiPostgreSqlFixture>;
+public sealed class ApiTrackingApiCollectionDefinition : ICollectionFixture<ApiTrackingApiPostgreSqlFixture>;

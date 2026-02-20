@@ -16,7 +16,7 @@ namespace SeventySix.Shared.Tests.Registration;
 /// Follows 80/20 rule: tests critical path (round-trip serialization) only.
 /// Note: LogDto intentionally not cached per Microsoft best practices - logs are write-heavy.
 /// </remarks>
-public class MemoryPackSerializationTests
+public sealed class MemoryPackSerializationTests
 {
 	/// <summary>
 	/// Verifies that UserDto round-trips through MemoryPack serialization correctly.

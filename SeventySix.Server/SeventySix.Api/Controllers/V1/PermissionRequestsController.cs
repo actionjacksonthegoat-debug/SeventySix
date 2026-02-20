@@ -29,7 +29,7 @@ namespace SeventySix.Api.Controllers;
 /// </param>
 [ApiController]
 [Route(ApiVersionConfig.VersionedRoutePrefix + "/users")]
-public class PermissionRequestsController(IMessageBus messageBus)
+public sealed class PermissionRequestsController(IMessageBus messageBus)
 	: ControllerBase
 {
 	/// <summary>

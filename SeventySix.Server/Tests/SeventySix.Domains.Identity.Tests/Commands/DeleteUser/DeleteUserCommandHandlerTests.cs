@@ -19,7 +19,7 @@ namespace SeventySix.Identity.Tests.Commands.DeleteUser;
 /// <remarks>
 /// Tests follow 80/20 rule: focus on happy path and critical validation paths.
 /// </remarks>
-public class DeleteUserCommandHandlerTests
+public sealed class DeleteUserCommandHandlerTests
 {
 	private readonly UserManager<ApplicationUser> UserManager;
 	private readonly IIdentityCacheService IdentityCache;

@@ -21,7 +21,7 @@ namespace SeventySix.Identity.Tests.Validators;
 /// - Valid request (happy path)
 /// - Demonstrates proper inheritance from base validator
 /// </remarks>
-public class UserQueryValidatorTests
+public sealed class UserQueryValidatorTests
 {
 	private readonly UserQueryValidator Validator = new();
 

@@ -344,7 +344,7 @@ public static class LoginCommandHandler
 				EmailTypeConstants.MfaVerification,
 				user.Email!,
 				user.Id,
-				new Dictionary<string, string>
+				new()
 				{
 					["code"] =
 						code,

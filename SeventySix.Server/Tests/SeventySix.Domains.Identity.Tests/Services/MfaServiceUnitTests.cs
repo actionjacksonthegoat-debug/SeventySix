@@ -16,7 +16,7 @@ namespace SeventySix.Identity.Tests.Services;
 /// Unit tests for MfaService.
 /// Tests code generation and verification logic without database.
 /// </summary>
-public class MfaServiceUnitTests
+public sealed class MfaServiceUnitTests
 {
 	private static readonly DateTimeOffset FixedTime =
 		TestDates.Future;

@@ -22,7 +22,7 @@ namespace SeventySix.Api.Controllers;
 /// </param>
 [ApiController]
 [Route(ApiVersionConfig.VersionedRoutePrefix + "/users")]
-public class UserRolesController(
+public sealed class UserRolesController(
 	IMessageBus messageBus,
 	ILogger<UserRolesController> logger) : ControllerBase
 {

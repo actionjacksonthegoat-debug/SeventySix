@@ -16,7 +16,7 @@ namespace SeventySix.Identity.Tests.Queries.GetExternalLogins;
 /// Unit tests for <see cref="GetExternalLoginsQueryHandler"/>.
 /// Validates retrieval of linked OAuth providers for a user.
 /// </summary>
-public class GetExternalLoginsQueryHandlerTests
+public sealed class GetExternalLoginsQueryHandlerTests
 {
 	private readonly UserManager<ApplicationUser> UserManager;
 	private readonly FakeTimeProvider TimeProvider;

@@ -8,7 +8,7 @@ using Shouldly;
 
 namespace SeventySix.Api.Tests.Middleware;
 
-public class CorsRateLimitTests
+public sealed class CorsRateLimitTests
 {
 	[Fact]
 	public void RateLimiter_Rejection_Includes_Cors_Headers()

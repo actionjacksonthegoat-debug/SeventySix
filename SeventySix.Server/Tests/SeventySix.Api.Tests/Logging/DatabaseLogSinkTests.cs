@@ -27,7 +27,7 @@ namespace SeventySix.Api.Tests.Logging;
 /// Uses shared PostgreSQL Testcontainer for efficient integration testing.
 /// </remarks>
 [Collection(CollectionNames.LoggingPostgreSql)]
-public class DatabaseLogSinkTests : IAsyncLifetime
+public sealed class DatabaseLogSinkTests : IAsyncLifetime
 {
 	private readonly LoggingApiPostgreSqlFixture Fixture;
 	private LoggingDbContext? Context;

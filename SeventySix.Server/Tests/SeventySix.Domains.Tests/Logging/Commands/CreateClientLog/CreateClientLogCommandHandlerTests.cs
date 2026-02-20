@@ -16,7 +16,7 @@ namespace SeventySix.Domains.Tests.Logging.Commands.CreateClientLog;
 /// Tests the mapping of request to entity.
 /// Uses mocked repository since persistence is tested in LogRepositoryTests.
 /// </remarks>
-public class CreateClientLogCommandHandlerTests
+public sealed class CreateClientLogCommandHandlerTests
 {
 	private readonly ILogRepository Repository;
 

@@ -3,6 +3,7 @@
 // </copyright>
 
 using Microsoft.AspNetCore.Identity;
+using SeventySix.Shared.Interfaces;
 
 namespace SeventySix.Identity.Commands.BulkApprovePermissionRequests;
 
@@ -26,6 +27,9 @@ public static class BulkApprovePermissionRequestsCommandHandler
 	/// <param name="identityCache">
 	/// Identity cache service for clearing role and request caches.
 	/// </param>
+	/// <param name="transactionManager">
+	/// Transaction manager for concurrency-safe read-then-write operations.
+	/// </param>
 	/// <param name="cancellationToken">
 	/// Cancellation token.
 	/// </param>
@@ -37,42 +41,60 @@ public static class BulkApprovePermissionRequestsCommandHandler
 		IPermissionRequestRepository repository,
 		UserManager<ApplicationUser> userManager,
 		IIdentityCacheService identityCache,
+		ITransactionManager transactionManager,
 		CancellationToken cancellationToken)
 	{
-		List<long> idList = command.RequestIds.ToList();
-
-		IEnumerable<PermissionRequest> requests =
-			await repository.GetByIdsAsync(idList, cancellationToken);
-
-		int approvedCount = 0;
+		// Closure variable for user IDs affected (for cache invalidation outside transaction)
 		List<long> affectedUserIds = [];
 
-		foreach (PermissionRequest request in requests)
-		{
-			ApplicationUser? user =
-				await userManager.FindByIdAsync(
-					request.UserId.ToString());
+		List<long> idList = command.RequestIds.ToList();
 
-			if (user is null)
-			{
-				continue;
-			}
+		int approvedCount =
+			await transactionManager.ExecuteInTransactionAsync(
+				async ct =>
+				{
+					// Reset for retries
+					affectedUserIds = [];
 
-			IdentityResult result =
-				await userManager.AddToRoleAsync(
-					user,
-					request.RequestedRole!.Name!);
+					IEnumerable<PermissionRequest> requests =
+						await repository.GetByIdsAsync(
+							idList,
+							ct);
 
-			if (result.Succeeded)
-			{
-				approvedCount++;
-				affectedUserIds.Add(request.UserId);
-			}
-		}
+					int count = 0;
 
-		await repository.DeleteRangeAsync(idList, cancellationToken);
+					foreach (PermissionRequest request in requests)
+					{
+						ApplicationUser? user =
+							await userManager.FindByIdAsync(
+								request.UserId.ToString());
 
-		// Invalidate caches for all affected users and permission requests
+						if (user is null)
+						{
+							continue;
+						}
+
+						IdentityResult result =
+							await userManager.AddToRoleAsync(
+								user,
+								request.RequestedRole!.Name!);
+
+						if (result.Succeeded)
+						{
+							count++;
+							affectedUserIds.Add(request.UserId);
+						}
+					}
+
+					await repository.DeleteRangeAsync(
+						idList,
+						ct);
+
+					return count;
+				},
+				cancellationToken: cancellationToken);
+
+		// Invalidate caches for all affected users and permission requests (outside transaction)
 		foreach (long userId in affectedUserIds)
 		{
 			await identityCache.InvalidateUserRolesAsync(userId);

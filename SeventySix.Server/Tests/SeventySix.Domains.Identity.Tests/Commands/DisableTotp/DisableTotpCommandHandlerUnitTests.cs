@@ -5,6 +5,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
+using SeventySix.Shared.Interfaces;
 using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.Mocks;
@@ -16,11 +17,12 @@ namespace SeventySix.Identity.Tests.Commands.DisableTotp;
 /// Unit tests for <see cref="DisableTotpCommandHandler"/>.
 /// Verifies TOTP disable clears enrollment and MFA state.
 /// </summary>
-public class DisableTotpCommandHandlerUnitTests
+public sealed class DisableTotpCommandHandlerUnitTests
 {
 	private readonly FakeTimeProvider TimeProvider;
 	private readonly UserManager<ApplicationUser> UserManager;
 	private readonly ISecurityAuditService SecurityAuditService;
+	private readonly ITransactionManager TransactionManager;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="DisableTotpCommandHandlerUnitTests"/> class.
@@ -33,6 +35,20 @@ public class DisableTotpCommandHandlerUnitTests
 			IdentityMockFactory.CreateUserManager();
 		SecurityAuditService =
 			Substitute.For<ISecurityAuditService>();
+		TransactionManager =
+			Substitute.For<ITransactionManager>();
+		TransactionManager
+			.ExecuteInTransactionAsync(
+				Arg.Any<Func<CancellationToken, Task>>(),
+				Arg.Any<int>(),
+				Arg.Any<CancellationToken>())
+			.Returns(
+				call =>
+				{
+					Func<CancellationToken, Task> op =
+						call.ArgAt<Func<CancellationToken, Task>>(0);
+					return op(CancellationToken.None);
+				});
 	}
 
 	/// <summary>
@@ -73,6 +89,7 @@ public class DisableTotpCommandHandlerUnitTests
 				command,
 				UserManager,
 				SecurityAuditService,
+				TransactionManager,
 				CancellationToken.None);
 
 		// Assert
@@ -116,6 +133,7 @@ public class DisableTotpCommandHandlerUnitTests
 				command,
 				UserManager,
 				SecurityAuditService,
+				TransactionManager,
 				CancellationToken.None);
 
 		// Assert
@@ -151,6 +169,7 @@ public class DisableTotpCommandHandlerUnitTests
 				command,
 				UserManager,
 				SecurityAuditService,
+				TransactionManager,
 				CancellationToken.None);
 
 		// Assert

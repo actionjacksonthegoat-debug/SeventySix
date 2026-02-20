@@ -3,6 +3,8 @@
 // </copyright>
 
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using SeventySix.Shared.Interfaces;
 using SeventySix.Shared.POCOs;
 
 namespace SeventySix.Identity.Commands.ApprovePermissionRequest;
@@ -27,6 +29,9 @@ public static class ApprovePermissionRequestCommandHandler
 	/// <param name="identityCache">
 	/// Identity cache service for clearing role and request caches.
 	/// </param>
+	/// <param name="transactionManager">
+	/// Transaction manager for concurrency-safe read-then-write operations.
+	/// </param>
 	/// <param name="cancellationToken">
 	/// Cancellation token.
 	/// </param>
@@ -38,51 +43,77 @@ public static class ApprovePermissionRequestCommandHandler
 		IPermissionRequestRepository repository,
 		UserManager<ApplicationUser> userManager,
 		IIdentityCacheService identityCache,
+		ITransactionManager transactionManager,
 		CancellationToken cancellationToken)
 	{
-		PermissionRequest? request =
-			await repository.GetByIdAsync(
-				command.RequestId,
-				cancellationToken);
+		long approvedUserId = 0;
 
-		if (request is null)
+		Result txResult =
+			await transactionManager.ExecuteInTransactionAsync(
+				async ct =>
+				{
+					PermissionRequest? request =
+						await repository.GetByIdAsync(
+							command.RequestId,
+							ct);
+
+					if (request is null)
+					{
+						return Result.Failure(
+							$"Permission request {command.RequestId} not found");
+					}
+
+					ApplicationUser? user =
+						await userManager.FindByIdAsync(
+							request.UserId.ToString());
+
+					if (user is null)
+					{
+						return Result.Failure(
+							$"User {request.UserId} not found");
+					}
+
+					IdentityResult identityResult =
+						await userManager.AddToRoleAsync(
+							user,
+							request.RequestedRole!.Name!);
+
+					if (!identityResult.Succeeded)
+					{
+						if (identityResult.Errors.Any(
+							error => error.Code == "ConcurrencyFailure"))
+						{
+							throw new DbUpdateConcurrencyException(
+								"Concurrency conflict approving request. Will retry.");
+						}
+
+						return Result.Failure(
+							$"Failed to add role: {string.Join(
+								", ",
+								identityResult.Errors.Select(
+									error => error.Description))}");
+					}
+
+					await repository.DeleteAsync(
+						command.RequestId,
+						ct);
+
+					// Capture for cache invalidation outside transaction
+					approvedUserId = request.UserId;
+
+					return Result.Success();
+				},
+				cancellationToken: cancellationToken);
+
+		if (!txResult.IsSuccess)
 		{
-			return Result.Failure(
-				$"Permission request {command.RequestId} not found");
+			return txResult;
 		}
 
-		ApplicationUser? user =
-			await userManager.FindByIdAsync(
-				request.UserId.ToString());
-
-		if (user is null)
-		{
-			return Result.Failure(
-				$"User {request.UserId} not found");
-		}
-
-		IdentityResult identityResult =
-			await userManager.AddToRoleAsync(
-				user,
-				request.RequestedRole!.Name!);
-
-		if (!identityResult.Succeeded)
-		{
-			return Result.Failure(
-				$"Failed to add role: {string.Join(
-					", ",
-					identityResult.Errors.Select(
-						error => error.Description))}");
-		}
-
-		await repository.DeleteAsync(
-			command.RequestId,
-			cancellationToken);
-
-		// Invalidate caches for roles and permission requests
-		await identityCache.InvalidateUserRolesAsync(request.UserId);
+		// Invalidate caches for roles and permission requests (outside transaction)
+		await identityCache.InvalidateUserRolesAsync(approvedUserId);
 		await identityCache.InvalidatePermissionRequestsAsync();
 
-		return Result.Success();
+		return txResult;
 	}
 }

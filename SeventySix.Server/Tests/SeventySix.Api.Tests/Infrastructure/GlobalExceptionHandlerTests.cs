@@ -13,6 +13,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using SeventySix.Api.Infrastructure;
+using SeventySix.Identity;
 using SeventySix.Shared.Constants;
 using SeventySix.Shared.Exceptions;
 using Shouldly;
@@ -256,7 +257,7 @@ public sealed class GlobalExceptionHandlerTests
 			CreateHandler();
 
 		EntityNotFoundException exception =
-			new("User", 42);
+			new UserNotFoundException(42);
 
 		// Act
 		(HttpStatusCode statusCode, ProblemDetails problem) =
@@ -296,7 +297,7 @@ public sealed class GlobalExceptionHandlerTests
 			CreateHandler();
 
 		DomainException exception =
-			new("The operation is not valid for the current state.");
+			new LastAdminException();
 
 		// Act
 		(HttpStatusCode statusCode, ProblemDetails problem) =

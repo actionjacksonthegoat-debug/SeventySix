@@ -4,7 +4,7 @@ using Shouldly;
 
 namespace SeventySix.Identity.Tests.Services;
 
-public class RegistrationTokenServiceTests
+public sealed class RegistrationTokenServiceTests
 {
 	[Fact]
 	public void Encode_WithValidInputs_ReturnsUrlSafeString()

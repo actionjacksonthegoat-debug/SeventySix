@@ -11,7 +11,7 @@ namespace SeventySix.Identity.Tests.Services;
 /// Unit tests for <see cref="TotpSecretProtector"/>.
 /// Verifies round-trip encryption and nonce uniqueness.
 /// </summary>
-public class TotpSecretProtectorUnitTests
+public sealed class TotpSecretProtectorUnitTests
 {
 	private readonly TotpSecretProtector Protector;
 

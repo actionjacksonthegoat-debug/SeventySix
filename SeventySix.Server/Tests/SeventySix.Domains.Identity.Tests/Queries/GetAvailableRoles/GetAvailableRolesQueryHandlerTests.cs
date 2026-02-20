@@ -16,7 +16,7 @@ namespace SeventySix.Identity.Tests.Queries.GetAvailableRoles;
 /// Unit tests for <see cref="GetAvailableRolesQueryHandler"/>.
 /// Tests query handler with mocked dependencies following 80/20 rule.
 /// </summary>
-public class GetAvailableRolesQueryHandlerTests
+public sealed class GetAvailableRolesQueryHandlerTests
 {
 	private readonly IPermissionRequestRepository Repository;
 	private readonly IFusionCacheProvider CacheProvider;

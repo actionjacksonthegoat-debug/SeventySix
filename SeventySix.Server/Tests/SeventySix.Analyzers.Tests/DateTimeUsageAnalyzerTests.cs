@@ -11,7 +11,7 @@ namespace SeventySix.Analyzers.Tests;
 /// Enforces DateTimeOffset + TimeProvider injection over direct DateTime access.
 /// Follows 80/20 rule: critical paths only.
 /// </summary>
-public class DateTimeUsageAnalyzerTests
+public sealed class DateTimeUsageAnalyzerTests
 {
 	[Fact]
 	public async Task DateTime_UtcNow_MemberAccess_ReportsDiagnosticAsync()
@@ -20,7 +20,7 @@ public class DateTimeUsageAnalyzerTests
 			using System;
 			namespace TestNamespace
 			{
-				public class TestClass
+				public sealed class TestClass
 				{
 					public void TestMethod()
 					{
@@ -42,7 +42,7 @@ public class DateTimeUsageAnalyzerTests
 			using System;
 			namespace TestNamespace
 			{
-				public class TestClass
+				public sealed class TestClass
 				{
 					public void TestMethod()
 					{
@@ -63,7 +63,7 @@ public class DateTimeUsageAnalyzerTests
 		const string source = """
 			namespace TestNamespace
 			{
-				public class TestClass
+				public sealed class TestClass
 				{
 					System.DateTime dateField = System.DateTime.Now;
 				}
@@ -83,7 +83,7 @@ public class DateTimeUsageAnalyzerTests
 			using System;
 			namespace TestNamespace
 			{
-				public class TestClass
+				public sealed class TestClass
 				{
 					public void TestMethod()
 					{
@@ -103,7 +103,7 @@ public class DateTimeUsageAnalyzerTests
 			using System;
 			namespace TestNamespace
 			{
-				public class TestClass
+				public sealed class TestClass
 				{
 					public DateTime CreateDate { get; set; }
 				}
@@ -122,7 +122,7 @@ public class DateTimeUsageAnalyzerTests
 			using System;
 			namespace TestNamespace
 			{
-				public class TestClass
+				public sealed class TestClass
 				{
 					public void Process(DateTime timestamp) { }
 				}
@@ -141,7 +141,7 @@ public class DateTimeUsageAnalyzerTests
 			using System;
 			namespace TestNamespace
 			{
-				public class TestClass
+				public sealed class TestClass
 				{
 					public DateTime GetDate() => default;
 				}
@@ -160,7 +160,7 @@ public class DateTimeUsageAnalyzerTests
 			using System;
 			namespace TestNamespace
 			{
-				public class TestClass
+				public sealed class TestClass
 				{
 					public void TestMethod()
 					{
@@ -183,7 +183,7 @@ public class DateTimeUsageAnalyzerTests
 			using System.Collections.Generic;
 			namespace TestNamespace
 			{
-				public class TestClass
+				public sealed class TestClass
 				{
 					public List<DateTime> Dates { get; set; }
 				}
@@ -202,7 +202,7 @@ public class DateTimeUsageAnalyzerTests
 			using System;
 			namespace TestNamespace
 			{
-				public class TestClass
+				public sealed class TestClass
 				{
 					public DateTimeOffset CreateDate { get; set; }
 				}

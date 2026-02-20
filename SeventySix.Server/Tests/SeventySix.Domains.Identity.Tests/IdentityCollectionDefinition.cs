@@ -9,4 +9,4 @@ namespace SeventySix.Identity.Tests;
 /// and run in parallel with tests from other domain collections.
 /// </summary>
 [CollectionDefinition(CollectionNames.IdentityPostgreSql)]
-public class IdentityCollectionDefinition : ICollectionFixture<IdentityPostgreSqlFixture>;
+public sealed class IdentityCollectionDefinition : ICollectionFixture<IdentityPostgreSqlFixture>;

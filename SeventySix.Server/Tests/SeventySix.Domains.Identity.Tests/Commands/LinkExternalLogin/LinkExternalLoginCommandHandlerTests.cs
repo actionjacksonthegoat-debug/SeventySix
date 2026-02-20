@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
+using SeventySix.Shared.Interfaces;
+using SeventySix.Shared.POCOs;
 using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.Mocks;
@@ -18,11 +20,12 @@ namespace SeventySix.Identity.Tests.Commands.LinkExternalLogin;
 /// Validates linking OAuth providers, duplicate detection, inactive user check,
 /// and Display Name sync behavior.
 /// </summary>
-public class LinkExternalLoginCommandHandlerTests
+public sealed class LinkExternalLoginCommandHandlerTests
 {
 	private readonly UserManager<ApplicationUser> UserManager;
 	private readonly FakeTimeProvider TimeProvider;
-	private readonly ILogger Logger;
+	private readonly ILogger<LinkExternalLoginCommand> Logger;
+	private readonly ITransactionManager TransactionManager;
 
 	private const string TestProvider = "GitHub";
 	private const string TestProviderKey = "12345";
@@ -40,7 +43,21 @@ public class LinkExternalLoginCommandHandlerTests
 		TimeProvider =
 			TestDates.CreateDefaultTimeProvider();
 		Logger =
-			Substitute.For<ILogger>();
+			Substitute.For<ILogger<LinkExternalLoginCommand>>();
+		TransactionManager =
+			Substitute.For<ITransactionManager>();
+		TransactionManager
+			.ExecuteInTransactionAsync(
+				Arg.Any<Func<CancellationToken, Task<Result>>>(),
+				Arg.Any<int>(),
+				Arg.Any<CancellationToken>())
+			.Returns(
+				call =>
+				{
+					Func<CancellationToken, Task<Result>> operation =
+						call.ArgAt<Func<CancellationToken, Task<Result>>>(0);
+					return operation(CancellationToken.None);
+				});
 	}
 
 	/// <summary>
@@ -87,7 +104,9 @@ public class LinkExternalLoginCommandHandlerTests
 				command,
 				UserManager,
 				TimeProvider,
-				Logger);
+				Logger,
+				TransactionManager,
+				CancellationToken.None);
 
 		// Assert
 		result.IsSuccess.ShouldBeTrue();
@@ -124,7 +143,9 @@ public class LinkExternalLoginCommandHandlerTests
 				command,
 				UserManager,
 				TimeProvider,
-				Logger);
+				Logger,
+				TransactionManager,
+				CancellationToken.None);
 
 		// Assert
 		result.IsSuccess.ShouldBeFalse();
@@ -175,7 +196,9 @@ public class LinkExternalLoginCommandHandlerTests
 				command,
 				UserManager,
 				TimeProvider,
-				Logger);
+				Logger,
+				TransactionManager,
+				CancellationToken.None);
 
 		// Assert
 		result.IsSuccess.ShouldBeFalse();
@@ -214,7 +237,9 @@ public class LinkExternalLoginCommandHandlerTests
 				command,
 				UserManager,
 				TimeProvider,
-				Logger);
+				Logger,
+				TransactionManager,
+				CancellationToken.None);
 
 		// Assert
 		result.IsSuccess.ShouldBeFalse();
@@ -270,7 +295,9 @@ public class LinkExternalLoginCommandHandlerTests
 				command,
 				UserManager,
 				TimeProvider,
-				Logger);
+				Logger,
+				TransactionManager,
+				CancellationToken.None);
 
 		// Assert
 		result.IsSuccess.ShouldBeTrue();
@@ -327,7 +354,9 @@ public class LinkExternalLoginCommandHandlerTests
 				command,
 				UserManager,
 				TimeProvider,
-				Logger);
+				Logger,
+				TransactionManager,
+				CancellationToken.None);
 
 		// Assert
 		result.IsSuccess.ShouldBeTrue();

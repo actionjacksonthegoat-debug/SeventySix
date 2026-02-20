@@ -9,7 +9,7 @@ namespace SeventySix.Identity.Commands.InitiateRegistration;
 /// <summary>
 /// Validates initiate registration requests.
 /// </summary>
-public class InitiateRegistrationCommandValidator
+public sealed class InitiateRegistrationCommandValidator
 	: AbstractValidator<InitiateRegistrationRequest>
 {
 	/// <summary>

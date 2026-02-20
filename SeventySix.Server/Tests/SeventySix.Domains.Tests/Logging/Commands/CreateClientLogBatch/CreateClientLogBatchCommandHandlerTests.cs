@@ -15,7 +15,7 @@ namespace SeventySix.Domains.Tests.Logging.Commands.CreateClientLogBatch;
 /// Tests batch processing and early return for empty arrays.
 /// Uses mocked repository since persistence is tested in LogRepositoryTests.
 /// </remarks>
-public class CreateClientLogBatchCommandHandlerTests
+public sealed class CreateClientLogBatchCommandHandlerTests
 {
 	private readonly ILogRepository Repository;
 

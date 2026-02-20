@@ -17,7 +17,7 @@ namespace SeventySix.Identity.Tests.Services;
 /// Validates authorization URL construction, PKCE, token exchange,
 /// user info retrieval, and User-Agent header requirement.
 /// </summary>
-public class GitHubOAuthStrategyTests
+public sealed class GitHubOAuthStrategyTests
 {
 	private readonly IHttpClientFactory HttpClientFactory;
 

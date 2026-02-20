@@ -43,8 +43,7 @@ export function setup()
 
 	// Create one test user per VU to prevent concurrent update contention.
 	// Each VU owns its own user record; no identity ConcurrencyStamp conflicts occur.
-	const users =
-		[];
+	const users = [];
 
 	for (let i = 0; i < CONFIG.vus; i++)
 	{
@@ -67,13 +66,13 @@ export function setup()
 			{
 				id: user.id,
 				username: user.username,
-				email: user.email,
+				email: user.email
 			});
 	}
 
 	return {
 		accessToken: authData.accessToken,
-		users,
+		users
 	};
 }
 

@@ -26,7 +26,7 @@ namespace SeventySix.ElectronicNotifications;
 /// - SRP: Only responsible for ElectronicNotifications domain data access
 /// - OCP: Can be extended with new entity configurations (SMS, push, etc.)
 /// </remarks>
-public class ElectronicNotificationsDbContext
+public sealed class ElectronicNotificationsDbContext
 	: BaseDbContext<ElectronicNotificationsDbContext>
 {
 	/// <summary>

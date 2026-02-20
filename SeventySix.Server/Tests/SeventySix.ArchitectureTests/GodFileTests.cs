@@ -19,7 +19,7 @@ namespace SeventySix.ArchitectureTests;
 /// - 800+ lines: MUST SPLIT - unmaintainable, violates SRP
 /// Threshold applies to ALL files including tests.
 /// </remarks>
-public class GodFileTests : SourceCodeArchitectureTest
+public sealed class GodFileTests : SourceCodeArchitectureTest
 {
 	/// <summary>
 	/// Maximum allowed lines per file before requiring split.

@@ -15,7 +15,7 @@ namespace SeventySix.Identity.Tests.Validators;
 /// - Validates data meets the validation rule requirements
 /// - Acts as documentation for what each data set represents
 /// </remarks>
-public class UserValidationTestDataTests
+public sealed class UserValidationTestDataTests
 {
 	#region TooShortUsernames Tests
 

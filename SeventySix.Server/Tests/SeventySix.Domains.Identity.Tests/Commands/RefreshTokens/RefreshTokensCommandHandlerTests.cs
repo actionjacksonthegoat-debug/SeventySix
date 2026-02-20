@@ -11,7 +11,7 @@ namespace SeventySix.Identity.Tests.Commands.RefreshTokens;
 /// <remarks>
 /// Tests follow 80/20 rule: focus on token rotation and password change scenarios.
 /// </remarks>
-public class RefreshTokensCommandHandlerTests
+public sealed class RefreshTokensCommandHandlerTests
 {
 	private readonly ISecurityAuditService SecurityAuditService;
 

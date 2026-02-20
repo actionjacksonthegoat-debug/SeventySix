@@ -20,7 +20,7 @@ namespace SeventySix.Logging;
 /// - SRP: Only responsible for log entry state
 /// - No framework dependencies (pure POCO)
 /// </remarks>
-public class Log : ICreatableEntity
+public sealed class Log : ICreatableEntity
 {
 	/// <summary>
 	/// Gets or sets the unique identifier.

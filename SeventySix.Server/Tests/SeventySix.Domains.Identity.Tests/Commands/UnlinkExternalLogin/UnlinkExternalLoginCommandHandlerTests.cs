@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
+using SeventySix.Shared.Interfaces;
+using SeventySix.Shared.POCOs;
 using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.Mocks;
@@ -18,11 +20,12 @@ namespace SeventySix.Identity.Tests.Commands.UnlinkExternalLogin;
 /// Validates unlinking OAuth providers and lockout prevention
 /// (user must retain at least one authentication method).
 /// </summary>
-public class UnlinkExternalLoginCommandHandlerTests
+public sealed class UnlinkExternalLoginCommandHandlerTests
 {
 	private readonly UserManager<ApplicationUser> UserManager;
 	private readonly FakeTimeProvider TimeProvider;
-	private readonly ILogger Logger;
+	private readonly ILogger<UnlinkExternalLoginCommand> Logger;
+	private readonly ITransactionManager TransactionManager;
 
 	private const string TestProvider = "GitHub";
 	private const string TestProviderKey = "12345";
@@ -41,7 +44,21 @@ public class UnlinkExternalLoginCommandHandlerTests
 		TimeProvider =
 			TestDates.CreateDefaultTimeProvider();
 		Logger =
-			Substitute.For<ILogger>();
+			Substitute.For<ILogger<UnlinkExternalLoginCommand>>();
+		TransactionManager =
+			Substitute.For<ITransactionManager>();
+		TransactionManager
+			.ExecuteInTransactionAsync(
+				Arg.Any<Func<CancellationToken, Task<Result>>>(),
+				Arg.Any<int>(),
+				Arg.Any<CancellationToken>())
+			.Returns(
+				call =>
+				{
+					Func<CancellationToken, Task<Result>> operation =
+						call.ArgAt<Func<CancellationToken, Task<Result>>>(0);
+					return operation(CancellationToken.None);
+				});
 	}
 
 	/// <summary>
@@ -83,7 +100,9 @@ public class UnlinkExternalLoginCommandHandlerTests
 			await UnlinkExternalLoginCommandHandler.HandleAsync(
 				command,
 				UserManager,
-				Logger);
+				Logger,
+				TransactionManager,
+				CancellationToken.None);
 
 		// Assert
 		result.IsSuccess.ShouldBeTrue();
@@ -130,7 +149,9 @@ public class UnlinkExternalLoginCommandHandlerTests
 			await UnlinkExternalLoginCommandHandler.HandleAsync(
 				command,
 				UserManager,
-				Logger);
+				Logger,
+				TransactionManager,
+				CancellationToken.None);
 
 		// Assert
 		result.IsSuccess.ShouldBeFalse();
@@ -178,7 +199,9 @@ public class UnlinkExternalLoginCommandHandlerTests
 			await UnlinkExternalLoginCommandHandler.HandleAsync(
 				command,
 				UserManager,
-				Logger);
+				Logger,
+				TransactionManager,
+				CancellationToken.None);
 
 		// Assert
 		result.IsSuccess.ShouldBeTrue();
@@ -225,7 +248,9 @@ public class UnlinkExternalLoginCommandHandlerTests
 			await UnlinkExternalLoginCommandHandler.HandleAsync(
 				command,
 				UserManager,
-				Logger);
+				Logger,
+				TransactionManager,
+				CancellationToken.None);
 
 		// Assert
 		result.IsSuccess.ShouldBeTrue();
@@ -256,7 +281,9 @@ public class UnlinkExternalLoginCommandHandlerTests
 			await UnlinkExternalLoginCommandHandler.HandleAsync(
 				command,
 				UserManager,
-				Logger);
+				Logger,
+				TransactionManager,
+				CancellationToken.None);
 
 		// Assert
 		result.IsSuccess.ShouldBeFalse();

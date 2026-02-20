@@ -17,7 +17,7 @@ namespace SeventySix.Api.Tests.Controllers;
 /// Tests controller behavior and response shape.
 /// Rate limiting tests are in AltchaControllerRateLimitTests.
 /// </remarks>
-public class AltchaControllerTests
+public sealed class AltchaControllerTests
 {
 	/// <summary>
 	/// Tests that GET /altcha/challenge returns OK with all required challenge fields populated.

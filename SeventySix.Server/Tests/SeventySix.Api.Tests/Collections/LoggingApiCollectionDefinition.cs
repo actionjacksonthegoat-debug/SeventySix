@@ -21,4 +21,4 @@ namespace SeventySix.Api.Tests.Collections;
 /// </para>
 /// </remarks>
 [CollectionDefinition(CollectionNames.LoggingPostgreSql)]
-public class LoggingApiCollectionDefinition : ICollectionFixture<LoggingApiPostgreSqlFixture>;
+public sealed class LoggingApiCollectionDefinition : ICollectionFixture<LoggingApiPostgreSqlFixture>;

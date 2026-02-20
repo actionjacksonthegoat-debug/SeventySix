@@ -13,7 +13,7 @@ namespace SeventySix.Shared.Tests.BackgroundJobs;
 /// <summary>
 /// Unit tests for <see cref="RecurringJobService"/>.
 /// </summary>
-public class RecurringJobServiceTests
+public sealed class RecurringJobServiceTests
 {
 	private readonly FakeTimeProvider TimeProvider;
 	private readonly IRecurringJobRepository Repository;

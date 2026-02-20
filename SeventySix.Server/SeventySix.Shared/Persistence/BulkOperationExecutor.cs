@@ -29,7 +29,7 @@ namespace SeventySix.Shared.Persistence;
 /// <param name="context">
 /// The DbContext used to load and persist entities for bulk operations.
 /// </param>
-public class BulkOperationExecutor<TEntity>(DbContext context)
+public sealed class BulkOperationExecutor<TEntity>(DbContext context)
 	where TEntity : class
 {
 	/// <summary>

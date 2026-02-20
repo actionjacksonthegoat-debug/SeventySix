@@ -20,7 +20,7 @@ namespace SeventySix.Domains.Tests.Logging.Jobs;
 /// Focus: Scheduling logic and enabled/disabled behavior (80/20 rule).
 /// Database VACUUM operations are PostgreSQL's responsibility.
 /// </summary>
-public class DatabaseMaintenanceJobHandlerTests
+public sealed class DatabaseMaintenanceJobHandlerTests
 {
 	private readonly IDatabaseMaintenanceService DatabaseMaintenanceService;
 	private readonly IRecurringJobService RecurringJobService;

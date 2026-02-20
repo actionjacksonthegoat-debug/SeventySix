@@ -14,7 +14,7 @@ namespace SeventySix.Api.Tests.Infrastructure.Services;
 /// <summary>
 /// Unit tests for HealthCheckService.
 /// </summary>
-public class HealthCheckServiceTests
+public sealed class HealthCheckServiceTests
 {
 	private readonly IMetricsService MetricsService;
 	private readonly IDatabaseHealthCheck IdentityHealthCheck;

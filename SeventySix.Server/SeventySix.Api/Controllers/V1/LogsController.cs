@@ -25,7 +25,7 @@ namespace SeventySix.Api.Controllers;
 [ApiController]
 [Authorize(Policy = PolicyConstants.AdminOnly)]
 [Route(ApiVersionConfig.VersionedRoutePrefix + "/logs")]
-public class LogsController(
+public sealed class LogsController(
 	IMessageBus messageBus,
 	IOutputCacheStore outputCacheStore) : ControllerBase
 {

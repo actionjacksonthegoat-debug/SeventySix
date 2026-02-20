@@ -26,7 +26,7 @@ public sealed class UpdateUserCommandHandlerTests
 	private readonly UserManager<ApplicationUser> UserManager;
 	private readonly IIdentityCacheService IdentityCache;
 	private readonly ITransactionManager TransactionManager;
-	private readonly ILogger Logger;
+	private readonly ILogger<UpdateUserRequest> Logger;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="UpdateUserCommandHandlerTests"/> class.
@@ -40,7 +40,7 @@ public sealed class UpdateUserCommandHandlerTests
 		TransactionManager =
 			Substitute.For<ITransactionManager>();
 		Logger =
-			Substitute.For<ILogger>();
+			Substitute.For<ILogger<UpdateUserRequest>>();
 
 		// Pass-through: execute the operation lambda directly without adding retry overhead
 		TransactionManager

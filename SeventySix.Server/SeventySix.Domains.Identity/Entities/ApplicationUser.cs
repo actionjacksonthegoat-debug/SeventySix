@@ -15,7 +15,7 @@ namespace SeventySix.Identity;
 /// Stores PII cautiously; follow GDPR retention and anonymization policies in the domain settings.
 /// Use `LastLoginIp` and `LastLoginAt` for security telemetry only; ensure cleanup per settings.
 /// </remarks>
-public class ApplicationUser : IdentityUser<long>, IAuditableEntity
+public sealed class ApplicationUser : IdentityUser<long>, IAuditableEntity
 {
 	/// <summary>
 	/// Gets or sets the user's full name.

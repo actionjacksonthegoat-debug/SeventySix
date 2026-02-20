@@ -21,7 +21,7 @@ namespace SeventySix.ArchitectureTests;
 /// - Clear intent: "this class is not designed for inheritance"
 /// - Services implement interfaces - test via interface, not inheritance.
 /// </remarks>
-public class SealedServiceTests
+public sealed class SealedServiceTests
 {
 	/// <summary>
 	/// Services that are intentionally not sealed.

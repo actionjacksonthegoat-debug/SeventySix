@@ -19,7 +19,7 @@ namespace SeventySix.ArchitectureTests;
 /// - All local variables must be 3+ characters
 /// Exceptions: FluentValidation 'x =>' in test files only.
 /// </summary>
-public class VariableNamingTests : SourceCodeArchitectureTest
+public sealed class VariableNamingTests : SourceCodeArchitectureTest
 {
 	// FluentValidation idiomatic pattern - allowed in test files ONLY
 	private static readonly HashSet<string> AllowedInTestsOnly =

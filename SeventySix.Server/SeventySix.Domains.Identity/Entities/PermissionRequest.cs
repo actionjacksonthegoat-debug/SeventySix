@@ -14,7 +14,7 @@ namespace SeventySix.Identity;
 /// - DRY: RequestedRoleId FK to Roles (single source of truth)
 /// - Referential Integrity: FK constraint prevents invalid role requests
 /// </remarks>
-public class PermissionRequest : ICreatableEntity
+public sealed class PermissionRequest : ICreatableEntity
 {
 	/// <summary>
 	/// Gets or sets the unique identifier.

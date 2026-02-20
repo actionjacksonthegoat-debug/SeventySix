@@ -5,6 +5,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
+using SeventySix.Shared.Interfaces;
 using SeventySix.Shared.POCOs;
 using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.Mocks;
@@ -19,13 +20,14 @@ namespace SeventySix.Identity.Tests.Commands.RestoreUser;
 /// Tests follow 80/20 rule: focus on happy path and critical validation paths.
 /// Security-critical: Soft-delete restore must be thoroughly tested.
 /// </remarks>
-public class RestoreUserCommandHandlerTests
+public sealed class RestoreUserCommandHandlerTests
 {
 	private static readonly FakeTimeProvider TimeProvider =
 		new(TestTimeProviderBuilder.DefaultTime);
 
 	private readonly UserManager<ApplicationUser> UserManager;
 	private readonly IIdentityCacheService IdentityCache;
+	private readonly ITransactionManager TransactionManager;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="RestoreUserCommandHandlerTests"/> class.
@@ -36,6 +38,20 @@ public class RestoreUserCommandHandlerTests
 			IdentityMockFactory.CreateUserManager();
 		IdentityCache =
 			Substitute.For<IIdentityCacheService>();
+		TransactionManager =
+			Substitute.For<ITransactionManager>();
+		TransactionManager
+			.ExecuteInTransactionAsync(
+				Arg.Any<Func<CancellationToken, Task<Result>>>(),
+				Arg.Any<int>(),
+				Arg.Any<CancellationToken>())
+			.Returns(
+				call =>
+				{
+					Func<CancellationToken, Task<Result>> op =
+						call.ArgAt<Func<CancellationToken, Task<Result>>>(0);
+					return op(CancellationToken.None);
+				});
 	}
 
 	/// <summary>
@@ -67,6 +83,7 @@ public class RestoreUserCommandHandlerTests
 				command,
 				UserManager,
 				IdentityCache,
+				TransactionManager,
 				CancellationToken.None);
 
 		// Assert
@@ -103,6 +120,7 @@ public class RestoreUserCommandHandlerTests
 				command,
 				UserManager,
 				IdentityCache,
+				TransactionManager,
 				CancellationToken.None);
 
 		// Assert
@@ -139,6 +157,7 @@ public class RestoreUserCommandHandlerTests
 				command,
 				UserManager,
 				IdentityCache,
+				TransactionManager,
 				CancellationToken.None);
 
 		// Assert
@@ -182,6 +201,7 @@ public class RestoreUserCommandHandlerTests
 				command,
 				UserManager,
 				IdentityCache,
+				TransactionManager,
 				CancellationToken.None);
 
 		// Assert

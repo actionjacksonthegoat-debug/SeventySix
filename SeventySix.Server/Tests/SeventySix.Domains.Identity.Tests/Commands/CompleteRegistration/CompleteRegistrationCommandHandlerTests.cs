@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using NSubstitute;
 using SeventySix.Identity.Constants;
+using SeventySix.Shared.Interfaces;
 using SeventySix.Shared.Utilities;
 using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.Constants;
@@ -21,9 +22,12 @@ namespace SeventySix.Identity.Tests.Commands.CompleteRegistration;
 /// Tests for CompleteRegistrationCommandHandler using Identity's email confirmation token system.
 /// </summary>
 [Collection(CollectionNames.IdentityPostgreSql)]
-public class CompleteRegistrationCommandHandlerTests(
+public sealed class CompleteRegistrationCommandHandlerTests(
 	IdentityPostgreSqlFixture fixture) : DataPostgreSqlTestBase(fixture)
 {
+	private readonly ITransactionManager TransactionManager =
+		CreateVoidTransactionManagerMock();
+
 	[Fact]
 	public async Task HandleAsync_ShouldFail_WhenUserNotFoundAsync()
 	{
@@ -168,6 +172,7 @@ public class CompleteRegistrationCommandHandlerTests(
 				breachCheck,
 				timeProvider,
 				logger,
+				TransactionManager,
 				CancellationToken.None);
 
 		result.Success.ShouldBeTrue();
@@ -262,6 +267,7 @@ public class CompleteRegistrationCommandHandlerTests(
 				breachCheck,
 				timeProvider,
 				logger,
+				TransactionManager,
 				CancellationToken.None);
 
 		result.Success.ShouldBeFalse();
@@ -355,6 +361,7 @@ public class CompleteRegistrationCommandHandlerTests(
 				breachCheck,
 				timeProvider,
 				NullLogger<CompleteRegistrationCommand>.Instance,
+				TransactionManager,
 				CancellationToken.None);
 
 		// Assert — Identity validates username uniqueness before DB constraint
@@ -506,5 +513,24 @@ public class CompleteRegistrationCommandHandlerTests(
 				});
 			await context.SaveChangesAsync();
 		}
+	}
+
+	private static ITransactionManager CreateVoidTransactionManagerMock()
+	{
+		ITransactionManager mock =
+			Substitute.For<ITransactionManager>();
+		mock
+			.ExecuteInTransactionAsync(
+				Arg.Any<Func<CancellationToken, Task>>(),
+				Arg.Any<int>(),
+				Arg.Any<CancellationToken>())
+			.Returns(
+				call =>
+				{
+					Func<CancellationToken, Task> operation =
+						call.ArgAt<Func<CancellationToken, Task>>(0);
+					return operation(CancellationToken.None);
+				});
+		return mock;
 	}
 }

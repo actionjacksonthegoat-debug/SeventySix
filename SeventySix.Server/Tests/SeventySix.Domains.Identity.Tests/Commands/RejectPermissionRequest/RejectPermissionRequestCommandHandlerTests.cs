@@ -4,6 +4,7 @@
 
 using NSubstitute;
 using SeventySix.Identity.Commands.RejectPermissionRequest;
+using SeventySix.Shared.Interfaces;
 using SeventySix.Shared.POCOs;
 using Shouldly;
 
@@ -16,10 +17,11 @@ namespace SeventySix.Identity.Tests.Commands.RejectPermissionRequest;
 /// Tests follow 80/20 rule: focus on happy path and validation paths.
 /// Simple handler that deletes permission requests - tests verify proper deletion.
 /// </remarks>
-public class RejectPermissionRequestCommandHandlerTests
+public sealed class RejectPermissionRequestCommandHandlerTests
 {
 	private readonly IPermissionRequestRepository PermissionRequestRepository;
 	private readonly IIdentityCacheService IdentityCache;
+	private readonly ITransactionManager TransactionManager;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="RejectPermissionRequestCommandHandlerTests"/> class.
@@ -30,6 +32,22 @@ public class RejectPermissionRequestCommandHandlerTests
 			Substitute.For<IPermissionRequestRepository>();
 		IdentityCache =
 			Substitute.For<IIdentityCacheService>();
+		TransactionManager =
+			Substitute.For<ITransactionManager>();
+		TransactionManager
+			.ExecuteInTransactionAsync(
+				Arg.Any<Func<CancellationToken, Task<Result>>>(),
+				Arg.Any<int>(),
+				Arg.Any<CancellationToken>())
+			.Returns(
+				call =>
+				{
+					Func<CancellationToken, Task<Result>> operation =
+						call.ArgAt<Func<CancellationToken, Task<Result>>>(0);
+					CancellationToken ct =
+						call.ArgAt<CancellationToken>(2);
+					return operation(ct);
+				});
 	}
 
 	/// <summary>
@@ -63,6 +81,7 @@ public class RejectPermissionRequestCommandHandlerTests
 				command,
 				PermissionRequestRepository,
 				IdentityCache,
+				TransactionManager,
 				CancellationToken.None);
 
 		// Assert
@@ -98,6 +117,7 @@ public class RejectPermissionRequestCommandHandlerTests
 				command,
 				PermissionRequestRepository,
 				IdentityCache,
+				TransactionManager,
 				CancellationToken.None);
 
 		// Assert
@@ -147,6 +167,7 @@ public class RejectPermissionRequestCommandHandlerTests
 			command,
 			PermissionRequestRepository,
 			IdentityCache,
+			TransactionManager,
 			cancellationToken);
 
 		// Assert - Verify CancellationToken was passed through

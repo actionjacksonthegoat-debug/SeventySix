@@ -3,7 +3,9 @@
 // </copyright>
 
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using SeventySix.Shared.Interfaces;
 
 namespace SeventySix.Identity;
 
@@ -39,6 +41,9 @@ public static class SetPasswordCommandHandler
 	/// <param name="logger">
 	/// Logger instance for audit and errors.
 	/// </param>
+	/// <param name="transactionManager">
+	/// Transaction manager for concurrency-safe read-then-write operations.
+	/// </param>
 	/// <param name="cancellationToken">
 	/// Cancellation token.
 	/// </param>
@@ -60,6 +65,7 @@ public static class SetPasswordCommandHandler
 		BreachCheckDependencies breachCheck,
 		TimeProvider timeProvider,
 		ILogger<SetPasswordCommand> logger,
+		ITransactionManager transactionManager,
 		CancellationToken cancellationToken)
 	{
 		// Check new password against known breaches (OWASP ASVS V2.1.7)
@@ -106,63 +112,91 @@ public static class SetPasswordCommandHandler
 				"Token");
 		}
 
-		ApplicationUser? user =
-			await userManager.FindByIdAsync(
-				userId.ToString());
+		ApplicationUser? transactedUser = null;
 
-		if (!user.IsValidForAuthentication())
-		{
-			logger.LogWarning(
-				"User with ID {UserId} not found or inactive for password reset",
-				userId);
-			throw new InvalidOperationException(
-				$"User with ID {userId} not found or inactive");
-		}
-
-		// Use Identity's ResetPasswordAsync with the token
-		IdentityResult result =
-			await userManager.ResetPasswordAsync(
-				user,
-				resetToken,
-				command.Request.NewPassword);
-
-		if (!result.Succeeded)
-		{
-			if (result.Errors.Any(error =>
-				error.Code == "InvalidToken"))
+		await transactionManager.ExecuteInTransactionAsync(
+			async ct =>
 			{
-				logger.LogWarning(
-					"Invalid or expired password reset token for user {UserId}",
-					userId);
-				throw new ArgumentException(
-					"Invalid or expired password reset token",
-					"Token");
-			}
+				ApplicationUser? user =
+					await userManager.FindByIdAsync(
+						userId.ToString());
 
-			throw new InvalidOperationException(
-				string.Join(
-					", ",
-					result.Errors.Select(error => error.Description)));
-		}
+				if (!user.IsValidForAuthentication())
+				{
+					logger.LogWarning(
+						"User with ID {UserId} not found or inactive for password reset",
+						userId);
+					throw new InvalidOperationException(
+						$"User with ID {userId} not found or inactive");
+				}
+
+				transactedUser = user;
+
+				// Use Identity's ResetPasswordAsync with the token
+				IdentityResult result =
+					await userManager.ResetPasswordAsync(
+						user,
+						resetToken,
+						command.Request.NewPassword);
+
+				if (!result.Succeeded)
+				{
+					if (result.Errors.Any(error =>
+						error.Code == "InvalidToken"))
+					{
+						logger.LogWarning(
+							"Invalid or expired password reset token for user {UserId}",
+							userId);
+						throw new ArgumentException(
+							"Invalid or expired password reset token",
+							"Token");
+					}
+
+					if (result.Errors.Any(
+						error => error.Code == "ConcurrencyFailure"))
+					{
+						throw new DbUpdateConcurrencyException(
+							"Concurrency conflict resetting password. Will retry.");
+					}
+
+					throw new InvalidOperationException(
+						string.Join(
+							", ",
+							result.Errors.Select(error => error.Description)));
+				}
+
+				// Clear the requires-password-change flag and persist the update
+				if (user.RequiresPasswordChange)
+				{
+					user.RequiresPasswordChange = false;
+
+					IdentityResult updateResult =
+						await userManager.UpdateAsync(user);
+
+					if (!updateResult.Succeeded)
+					{
+						if (updateResult.Errors.Any(
+							error => error.Code == "ConcurrencyFailure"))
+						{
+							throw new DbUpdateConcurrencyException(
+								"Concurrency conflict clearing password change flag. Will retry.");
+						}
+					}
+				}
+			},
+			cancellationToken: cancellationToken);
 
 		// Revoke all existing refresh tokens
 		await tokenRepository.RevokeAllUserTokensAsync(
-			user.Id,
+			transactedUser!.Id,
 			now,
 			cancellationToken);
 
-		// Clear the requires-password-change flag and persist the update
-		if (user.RequiresPasswordChange)
-		{
-			user.RequiresPasswordChange = false;
-			await userManager.UpdateAsync(user);
-		}
-
 		// Invalidate user cache (profile contains hasPassword flag)
-		await identityCache.InvalidateUserPasswordAsync(user.Id);
+		await identityCache.InvalidateUserPasswordAsync(transactedUser.Id);
 
 		return await authenticationService.GenerateAuthResultAsync(
-			user,
+			transactedUser,
 			command.ClientIp,
 			requiresPasswordChange: false,
 			rememberMe: false,

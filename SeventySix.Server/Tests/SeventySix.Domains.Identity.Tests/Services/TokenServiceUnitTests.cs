@@ -18,7 +18,7 @@ namespace SeventySix.Identity.Tests.Services;
 /// Unit tests for TokenService JWT generation logic.
 /// These tests do NOT require a database - they test pure JWT generation.
 /// </summary>
-public class TokenServiceUnitTests
+public sealed class TokenServiceUnitTests
 {
 	/// <summary>
 	/// Fixed time for deterministic tests.

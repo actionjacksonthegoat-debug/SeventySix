@@ -18,7 +18,7 @@ namespace SeventySix.Shared.Tests.Validators;
 /// Uses a test entity with properties for SortBy validation testing.
 /// Follows AAA pattern (Arrange-Act-Assert).
 /// </remarks>
-public class BaseQueryValidatorTests
+public sealed class BaseQueryValidatorTests
 {
 	private readonly TestQueryValidator Validator = new();
 
@@ -272,7 +272,7 @@ public class BaseQueryValidatorTests
 /// <summary>
 /// Test entity with properties for SortBy validation.
 /// </summary>
-public class TestEntity
+public sealed class TestEntity
 {
 	public int Id { get; set; }
 	public string Name { get; set; } = string.Empty;
@@ -287,6 +287,6 @@ public record TestQueryRequest : BaseQueryRequest { }
 /// <summary>
 /// Test validator inheriting from BaseQueryValidator.
 /// </summary>
-public class TestQueryValidator
+public sealed class TestQueryValidator
 	: BaseQueryValidator<TestQueryRequest, TestEntity>
 { }

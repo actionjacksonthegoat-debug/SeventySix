@@ -21,7 +21,7 @@ namespace SeventySix.Identity.Tests.Commands.CreatePermissionRequest;
 /// Tests follow 80/20 rule: focus on permission flow and auto-approval.
 /// Security-critical: Role assignment must be thoroughly tested.
 /// </remarks>
-public class CreatePermissionRequestCommandHandlerTests
+public sealed class CreatePermissionRequestCommandHandlerTests
 {
 	private readonly IPermissionRequestRepository Repository;
 	private readonly UserManager<ApplicationUser> UserManager;

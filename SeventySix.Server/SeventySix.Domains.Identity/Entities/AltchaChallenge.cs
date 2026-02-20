@@ -8,7 +8,7 @@ namespace SeventySix.Identity;
 /// Entity for tracking used ALTCHA challenges.
 /// Prevents replay attacks by storing verified challenge hashes.
 /// </summary>
-public class AltchaChallenge
+public sealed class AltchaChallenge
 {
 	/// <summary>
 	/// Gets or sets the unique identifier.

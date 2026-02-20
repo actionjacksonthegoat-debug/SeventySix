@@ -10,7 +10,7 @@ namespace SeventySix.Identity.Commands.BulkRejectPermissionRequests;
 /// FluentValidation validator for BulkRejectPermissionRequestsCommand.
 /// Validates bulk permission rejection requests.
 /// </summary>
-public class BulkRejectPermissionRequestsCommandValidator
+public sealed class BulkRejectPermissionRequestsCommandValidator
 	: AbstractValidator<BulkRejectPermissionRequestsCommand>
 {
 	/// <summary>

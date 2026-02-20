@@ -14,7 +14,7 @@ namespace SeventySix.Shared.Tests.Persistence;
 /// Unit tests for <see cref="TransactionManager"/>.
 /// Tests transaction management, retry logic, and error handling.
 /// </summary>
-public class TransactionManagerTests : IDisposable
+public sealed class TransactionManagerTests : IDisposable
 {
 	private readonly ApiTrackingDbContext DbContext;
 	private readonly TransactionManager TransactionManager;

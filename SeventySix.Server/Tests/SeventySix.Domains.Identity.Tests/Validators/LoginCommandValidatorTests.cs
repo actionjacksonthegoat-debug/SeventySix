@@ -15,7 +15,7 @@ namespace SeventySix.Identity.Tests.Validators;
 /// - UsernameOrEmail validation (required, max length)
 /// - Password validation (required, max length for DoS protection)
 /// </remarks>
-public class LoginCommandValidatorTests
+public sealed class LoginCommandValidatorTests
 {
 	private readonly LoginCommandValidator Validator = new();
 

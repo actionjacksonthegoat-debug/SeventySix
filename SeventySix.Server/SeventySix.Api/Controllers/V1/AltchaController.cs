@@ -18,7 +18,7 @@ namespace SeventySix.Api.Controllers;
 /// </param>
 [ApiController]
 [Route(ApiVersionConfig.VersionedRoutePrefix + "/altcha")]
-public class AltchaController(
+public sealed class AltchaController(
 	IAltchaService altchaService) : ControllerBase
 {
 	/// <summary>

@@ -18,7 +18,7 @@ namespace SeventySix.Domains.Tests.ElectronicNotifications.Emails.Commands.Enque
 /// - RecipientEmail validation (required, valid format)
 /// - TemplateData validation (required)
 /// </remarks>
-public class EnqueueEmailCommandValidatorTests
+public sealed class EnqueueEmailCommandValidatorTests
 {
 	private readonly EnqueueEmailCommandValidator Validator = new();
 

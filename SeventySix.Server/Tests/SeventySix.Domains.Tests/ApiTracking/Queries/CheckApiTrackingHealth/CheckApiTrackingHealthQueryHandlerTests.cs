@@ -15,7 +15,7 @@ namespace SeventySix.Domains.Tests.ApiTracking.Queries.CheckApiTrackingHealth;
 /// Tests the health check logic using in-memory database.
 /// The handler now uses DbContext.Database.CanConnectAsync for efficient connectivity check.
 /// </remarks>
-public class CheckApiTrackingHealthQueryHandlerTests : IDisposable
+public sealed class CheckApiTrackingHealthQueryHandlerTests : IDisposable
 {
 	private readonly ApiTrackingDbContext Context;
 

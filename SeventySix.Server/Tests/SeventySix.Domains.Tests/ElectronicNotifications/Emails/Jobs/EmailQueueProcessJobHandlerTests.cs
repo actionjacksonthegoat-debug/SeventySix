@@ -26,7 +26,7 @@ namespace SeventySix.Domains.Tests.ElectronicNotifications.Emails.Jobs;
 /// 80/20 Focus: Tests critical job behavior including enabled/disabled states,
 /// batch processing, and scheduling of next run.
 /// </remarks>
-public class EmailQueueProcessJobHandlerTests
+public sealed class EmailQueueProcessJobHandlerTests
 {
 	private readonly IMessageBus MessageBus;
 	private readonly IEmailService EmailService;

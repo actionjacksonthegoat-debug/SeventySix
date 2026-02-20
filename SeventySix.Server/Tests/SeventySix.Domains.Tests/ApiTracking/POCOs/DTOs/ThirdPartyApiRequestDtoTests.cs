@@ -11,7 +11,7 @@ namespace SeventySix.Domains.Tests.ApiTracking.POCOs.DTOs;
 /// <summary>
 /// Unit tests for <see cref="ThirdPartyApiRequestDto"/>.
 /// </summary>
-public class ThirdPartyApiRequestDtoTests
+public sealed class ThirdPartyApiRequestDtoTests
 {
 	[Fact]
 	public void Constructor_ShouldInitializeWithDefaultValues()

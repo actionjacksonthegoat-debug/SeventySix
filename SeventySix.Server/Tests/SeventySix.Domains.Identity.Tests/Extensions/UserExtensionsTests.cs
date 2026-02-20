@@ -26,7 +26,7 @@ namespace SeventySix.Identity.Tests.Extensions;
 /// - Null argument validation
 /// - Optional field handling
 /// </remarks>
-public class UserExtensionsTests
+public sealed class UserExtensionsTests
 {
 	[Fact]
 	public void ToDto_ShouldMapUserEntityToDto()

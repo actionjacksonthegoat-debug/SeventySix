@@ -18,7 +18,7 @@ namespace SeventySix.Api.Tests.Middleware;
 ///
 /// These are intentionally minimal and isolated so they are fast and reliable.
 /// </summary>
-public class CorsMiddlewareBehaviorTests : IDisposable
+public sealed class CorsMiddlewareBehaviorTests : IDisposable
 {
 	private readonly SharedWebApplicationFactory<Program> Factory;
 

@@ -17,7 +17,7 @@ namespace SeventySix.Identity;
 /// - Token families: FamilyId tracks chains of rotated tokens for reuse detection
 /// - Tracks creation IP for security auditing
 /// </remarks>
-public class RefreshToken : ICreatableEntity
+public sealed class RefreshToken : ICreatableEntity
 {
 	/// <summary>
 	/// Gets or sets the unique identifier.

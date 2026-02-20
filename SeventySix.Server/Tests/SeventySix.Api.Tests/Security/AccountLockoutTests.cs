@@ -16,7 +16,7 @@ namespace SeventySix.Api.Tests.Security;
 /// The actual lockout mechanism is handled by ASP.NET Identity (already well-tested).
 /// Unit tests in LoginCommandHandlerTests verify the handler responds correctly to LockedOut status.
 /// </summary>
-public class AccountLockoutTests : IDisposable
+public sealed class AccountLockoutTests : IDisposable
 {
 	private readonly SharedWebApplicationFactory<Program> Factory;
 

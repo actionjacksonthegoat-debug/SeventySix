@@ -11,7 +11,7 @@ namespace SeventySix.Identity.Tests.Settings;
 /// Unit tests for RefreshTokenCleanupSettings.
 /// Focus: Configuration binding and section name.
 /// </summary>
-public class RefreshTokenCleanupSettingsTests
+public sealed class RefreshTokenCleanupSettingsTests
 {
 	[Fact]
 	public void SectionName_IsRefreshTokenCleanup()

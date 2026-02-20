@@ -34,7 +34,7 @@ namespace SeventySix.Api.Logging;
 /// <param name="machineName">
 /// Optional machine or container name.
 /// </param>
-public class DatabaseLogSink(
+public sealed class DatabaseLogSink(
 	IServiceProvider serviceProvider,
 	string? environment = null,
 	string? machineName = null) : ILogEventSink, IAsyncDisposable

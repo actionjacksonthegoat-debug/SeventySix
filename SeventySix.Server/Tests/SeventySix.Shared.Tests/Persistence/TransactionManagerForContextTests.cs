@@ -6,9 +6,9 @@ using Shouldly;
 
 namespace SeventySix.Shared.Tests.Persistence;
 
-public class DummyContext : DbContext;
+public sealed class DummyContext : DbContext;
 
-public class TransactionManagerForContextTests
+public sealed class TransactionManagerForContextTests
 {
 	[Fact]
 	public void AddTransactionManagerFor_RegistersITransactionManager()

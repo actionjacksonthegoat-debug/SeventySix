@@ -9,7 +9,7 @@ using Shouldly;
 
 namespace SeventySix.Identity.Tests.Validators;
 
-public class CreatePermissionRequestValidatorTests
+public sealed class CreatePermissionRequestValidatorTests
 {
 	[Fact]
 	public void Validate_ReturnsFailure_ForInvalidRoleName()

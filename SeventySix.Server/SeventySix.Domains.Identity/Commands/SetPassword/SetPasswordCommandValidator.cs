@@ -15,7 +15,7 @@ namespace SeventySix.Identity.Commands.SetPassword;
 /// - Token: Required, must be a valid base64 string
 /// - NewPassword: Required, min length from config, complexity requirements.
 /// </remarks>
-public class SetPasswordCommandValidator : AbstractValidator<SetPasswordRequest>
+public sealed class SetPasswordCommandValidator : AbstractValidator<SetPasswordRequest>
 {
 	/// <summary>
 	/// Initializes a new instance of the <see cref="SetPasswordCommandValidator"/> class.

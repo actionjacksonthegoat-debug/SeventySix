@@ -15,7 +15,7 @@ namespace SeventySix.Identity.Commands.AddUserRole;
 /// Security: This validator is critical for preventing unauthorized role assignment.
 /// Only roles defined in RoleConstants.ValidRoleNames are accepted.
 /// </remarks>
-public class AddUserRoleCommandValidator : AbstractValidator<AddUserRoleCommand>
+public sealed class AddUserRoleCommandValidator : AbstractValidator<AddUserRoleCommand>
 {
 	/// <summary>
 	/// Initializes a new instance of the <see cref="AddUserRoleCommandValidator"/> class.

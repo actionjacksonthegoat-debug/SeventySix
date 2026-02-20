@@ -11,7 +11,7 @@ namespace SeventySix.Analyzers.Tests;
 /// Verifies that closing parenthesis is moved to same line as last content.
 /// Follows 80/20 rule: critical paths only.
 /// </summary>
-public class ClosingParenSameLineCodeFixTests
+public sealed class ClosingParenSameLineCodeFixTests
 {
 	/// <summary>
 	/// Basic method call with closing paren alone on line should be fixed.

@@ -24,7 +24,7 @@ namespace SeventySix.Api.Controllers;
 [ApiController]
 [Route(ApiVersionConfig.VersionedRoutePrefix + "/auth/trusted-devices")]
 [Authorize]
-public class TrustedDeviceController(
+public sealed class TrustedDeviceController(
 	ITrustedDeviceService trustedDeviceService,
 	IAuthCookieService cookieService) : ControllerBase
 {

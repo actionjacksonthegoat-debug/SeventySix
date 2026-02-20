@@ -20,7 +20,7 @@ namespace SeventySix.Identity.Tests.Queries.CheckUsernameExists;
 /// Security: Prevents duplicate username registrations.
 /// </remarks>
 [Collection(CollectionNames.IdentityPostgreSql)]
-public class CheckUsernameExistsQueryHandlerTests(
+public sealed class CheckUsernameExistsQueryHandlerTests(
 	IdentityPostgreSqlFixture fixture) : DataPostgreSqlTestBase(fixture)
 {
 	private static readonly FakeTimeProvider TimeProvider =

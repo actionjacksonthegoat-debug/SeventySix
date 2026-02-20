@@ -15,7 +15,7 @@ namespace SeventySix.Identity.Commands.ChangePassword;
 /// - NewPassword: Required, min length from config, complexity requirements
 /// - CurrentPassword: Optional (only required if user has existing password)
 /// </remarks>
-public class ChangePasswordCommandValidator
+public sealed class ChangePasswordCommandValidator
 	: AbstractValidator<ChangePasswordRequest>
 {
 	/// <summary>

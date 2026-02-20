@@ -26,7 +26,7 @@ namespace SeventySix.Identity.Tests.Jobs;
 /// Covers all boundary conditions: orphaned, active, confirmed, and recent users.
 /// </remarks>
 [Collection(CollectionNames.IdentityPostgreSql)]
-public class OrphanedRegistrationCleanupJobHandlerTests(
+public sealed class OrphanedRegistrationCleanupJobHandlerTests(
 	IdentityPostgreSqlFixture fixture) : DataPostgreSqlTestBase(fixture)
 {
 	private static readonly DateTimeOffset TestTime =

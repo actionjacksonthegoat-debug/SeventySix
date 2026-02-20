@@ -31,7 +31,7 @@ namespace SeventySix.Api.Seeders;
 /// <param name="logger">
 /// The logger instance.
 /// </param>
-public class E2ETestSeeder(
+public sealed class E2ETestSeeder(
 	UserManager<ApplicationUser> userManager,
 	IOptions<E2ESeederOptions> options,
 	TimeProvider timeProvider,

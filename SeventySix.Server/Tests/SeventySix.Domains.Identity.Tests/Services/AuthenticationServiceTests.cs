@@ -21,7 +21,7 @@ namespace SeventySix.Identity.Tests.Services;
 /// - Token refresh validation and rotation
 /// Focus on business logic, not infrastructure.
 /// </remarks>
-public class AuthenticationServiceTests
+public sealed class AuthenticationServiceTests
 {
 	private readonly IAuthRepository AuthRepository;
 	private readonly ITokenService TokenService;

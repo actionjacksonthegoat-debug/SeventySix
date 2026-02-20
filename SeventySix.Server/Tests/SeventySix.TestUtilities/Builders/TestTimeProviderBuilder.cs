@@ -29,7 +29,7 @@ namespace SeventySix.TestUtilities.Builders;
 ///     .Build();
 /// </code>
 /// </remarks>
-public class TestTimeProviderBuilder
+public sealed class TestTimeProviderBuilder
 {
 	/// <summary>
 	/// Default fixed time for deterministic tests.

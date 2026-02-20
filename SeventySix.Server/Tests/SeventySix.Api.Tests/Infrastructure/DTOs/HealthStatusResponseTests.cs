@@ -12,7 +12,7 @@ namespace SeventySix.Api.Tests.Infrastructure.DTOs;
 /// <summary>
 /// Unit tests for Health DTOs.
 /// </summary>
-public class HealthStatusResponseTests
+public sealed class HealthStatusResponseTests
 {
 	/// <summary>
 	/// Ensures HealthStatusResponse constructor initializes default values.

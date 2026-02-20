@@ -29,7 +29,7 @@ namespace SeventySix.Identity.Jobs;
 /// <param name="logger">
 /// Logger for diagnostic messages.
 /// </param>
-public class OrphanedRegistrationCleanupJobHandler(
+public sealed class OrphanedRegistrationCleanupJobHandler(
 	IdentityDbContext dbContext,
 	IRecurringJobService recurringJobService,
 	IOptions<OrphanedRegistrationCleanupSettings> settings,

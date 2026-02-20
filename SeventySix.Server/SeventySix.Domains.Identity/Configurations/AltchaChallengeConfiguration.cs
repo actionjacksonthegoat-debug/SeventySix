@@ -15,7 +15,7 @@ namespace SeventySix.Identity;
 /// - Challenge string is indexed for fast lookups
 /// - ExpiryUtc enables cleanup of expired challenges
 /// </remarks>
-public class AltchaChallengeConfiguration : IEntityTypeConfiguration<AltchaChallenge>
+public sealed class AltchaChallengeConfiguration : IEntityTypeConfiguration<AltchaChallenge>
 {
 	/// <summary>
 	/// Configures the entity mapping for AltchaChallenge.

@@ -18,7 +18,7 @@ namespace SeventySix.ArchitectureTests;
 /// Architecture tests ensuring test file locations mirror source code structure.
 /// Tests that all command/query handlers have corresponding test files.
 /// </summary>
-public class TestLocationAlignmentTests : SourceCodeArchitectureTest
+public sealed class TestLocationAlignmentTests : SourceCodeArchitectureTest
 {
 	private static readonly Assembly IdentityAssembly =
 		typeof(ApplicationUser).Assembly;

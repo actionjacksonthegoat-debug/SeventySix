@@ -14,7 +14,7 @@ namespace SeventySix.Registration;
 /// <param name="messageBus">
 /// The Wolverine message bus.
 /// </param>
-public class WolverineMessageScheduler(
+public sealed class WolverineMessageScheduler(
 	IMessageBus messageBus) : IMessageScheduler
 {
 	/// <inheritdoc />

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using SeventySix.Identity.Constants;
+using SeventySix.Shared.Interfaces;
 using SeventySix.Shared.POCOs;
 using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.Constants;
@@ -21,11 +22,12 @@ namespace SeventySix.Identity.Tests.Commands.RemoveUserRole;
 /// Tests follow 80/20 rule: focus on happy path and critical security paths.
 /// Security-critical: Tests last-admin protection to prevent lockout scenarios.
 /// </remarks>
-public class RemoveUserRoleCommandHandlerTests
+public sealed class RemoveUserRoleCommandHandlerTests
 {
 	private readonly FakeTimeProvider TimeProvider;
 	private readonly UserManager<ApplicationUser> UserManager;
 	private readonly IIdentityCacheService IdentityCache;
+	private readonly ITransactionManager TransactionManager;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="RemoveUserRoleCommandHandlerTests"/> class.
@@ -38,6 +40,20 @@ public class RemoveUserRoleCommandHandlerTests
 			IdentityMockFactory.CreateUserManager();
 		IdentityCache =
 			Substitute.For<IIdentityCacheService>();
+		TransactionManager =
+			Substitute.For<ITransactionManager>();
+		TransactionManager
+			.ExecuteInTransactionAsync(
+				Arg.Any<Func<CancellationToken, Task<Result>>>(),
+				Arg.Any<int>(),
+				Arg.Any<CancellationToken>())
+			.Returns(
+				call =>
+				{
+					Func<CancellationToken, Task<Result>> op =
+						call.ArgAt<Func<CancellationToken, Task<Result>>>(0);
+					return op(CancellationToken.None);
+				});
 	}
 
 	/// <summary>
@@ -79,6 +95,7 @@ public class RemoveUserRoleCommandHandlerTests
 				command,
 				UserManager,
 				IdentityCache,
+				TransactionManager,
 				CancellationToken.None);
 
 		// Assert
@@ -112,6 +129,7 @@ public class RemoveUserRoleCommandHandlerTests
 				command,
 				UserManager,
 				IdentityCache,
+				TransactionManager,
 				CancellationToken.None);
 
 		// Assert
@@ -154,6 +172,7 @@ public class RemoveUserRoleCommandHandlerTests
 				command,
 				UserManager,
 				IdentityCache,
+				TransactionManager,
 				CancellationToken.None);
 
 		// Assert
@@ -208,6 +227,7 @@ public class RemoveUserRoleCommandHandlerTests
 				command,
 				UserManager,
 				IdentityCache,
+				TransactionManager,
 				CancellationToken.None));
 
 		// Verify RemoveFromRoleAsync was NOT called
@@ -270,6 +290,7 @@ public class RemoveUserRoleCommandHandlerTests
 				command,
 				UserManager,
 				IdentityCache,
+				TransactionManager,
 				CancellationToken.None);
 
 		// Assert
@@ -325,6 +346,7 @@ public class RemoveUserRoleCommandHandlerTests
 				command,
 				UserManager,
 				IdentityCache,
+				TransactionManager,
 				CancellationToken.None);
 
 		// Assert

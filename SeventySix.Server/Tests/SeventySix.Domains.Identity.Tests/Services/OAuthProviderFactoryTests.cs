@@ -12,7 +12,7 @@ namespace SeventySix.Identity.Tests.Services;
 /// Validates strategy resolution by provider name, case insensitivity,
 /// and error handling for unknown providers.
 /// </summary>
-public class OAuthProviderFactoryTests
+public sealed class OAuthProviderFactoryTests
 {
 	private const string TestProvider = "GitHub";
 	private const string UnknownProvider = "unknown";

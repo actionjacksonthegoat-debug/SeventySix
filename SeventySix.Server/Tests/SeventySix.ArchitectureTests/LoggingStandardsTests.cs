@@ -17,7 +17,7 @@ namespace SeventySix.ArchitectureTests;
 /// - Use LogWarning for recoverable issues
 /// - Use LogError for unrecoverable failures.
 /// </summary>
-public class LoggingStandardsTests : SourceCodeArchitectureTest
+public sealed class LoggingStandardsTests : SourceCodeArchitectureTest
 {
 	[Fact]
 	public void LogDebug_ShouldNeverBeUsed()

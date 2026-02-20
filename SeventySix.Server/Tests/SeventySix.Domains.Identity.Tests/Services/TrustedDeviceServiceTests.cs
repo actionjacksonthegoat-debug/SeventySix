@@ -17,7 +17,7 @@ namespace SeventySix.Identity.Tests.Services;
 /// Tests trusted device creation, validation, and revocation with real database.
 /// </summary>
 [Collection(CollectionNames.IdentityPostgreSql)]
-public class TrustedDeviceServiceTests(IdentityPostgreSqlFixture fixture)
+public sealed class TrustedDeviceServiceTests(IdentityPostgreSqlFixture fixture)
 	: DataPostgreSqlTestBase(fixture)
 {
 	private static readonly DateTimeOffset FixedTime =

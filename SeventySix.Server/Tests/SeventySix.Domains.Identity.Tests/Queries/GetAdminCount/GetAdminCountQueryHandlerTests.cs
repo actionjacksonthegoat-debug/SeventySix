@@ -17,7 +17,7 @@ namespace SeventySix.Identity.Tests.Queries.GetAdminCount;
 /// Tests follow 80/20 rule: focus on count accuracy.
 /// Critical for last-admin protection business rule.
 /// </remarks>
-public class GetAdminCountQueryHandlerTests
+public sealed class GetAdminCountQueryHandlerTests
 {
 	private readonly UserManager<ApplicationUser> UserManager;
 

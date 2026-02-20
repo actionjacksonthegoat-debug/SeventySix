@@ -16,7 +16,7 @@ namespace SeventySix.ArchitectureTests;
 /// - CreatedBy and ModifiedBy must be strings (usernames), not int FKs
 /// - Audit fields should follow consistent naming (CreateDate, ModifyDate, CreatedBy, ModifiedBy).
 /// </summary>
-public class AuditFieldTests : SourceCodeArchitectureTest
+public sealed class AuditFieldTests : SourceCodeArchitectureTest
 {
 	[Fact]
 	public void Audit_Fields_Should_Be_Strings_Not_Foreign_Keys()

@@ -10,7 +10,7 @@ namespace SeventySix.Identity.Commands.CompleteRegistration;
 /// <summary>
 /// Validates complete registration requests.
 /// </summary>
-public class CompleteRegistrationCommandValidator
+public sealed class CompleteRegistrationCommandValidator
 	: AbstractValidator<CompleteRegistrationRequest>
 {
 	/// <summary>

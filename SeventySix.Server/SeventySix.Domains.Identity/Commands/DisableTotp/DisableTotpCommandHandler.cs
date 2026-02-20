@@ -3,6 +3,8 @@
 // </copyright>
 
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using SeventySix.Shared.Interfaces;
 using SeventySix.Shared.POCOs;
 
 namespace SeventySix.Identity;
@@ -24,6 +26,9 @@ public static class DisableTotpCommandHandler
 	/// <param name="securityAuditService">
 	/// Security audit logging service.
 	/// </param>
+	/// <param name="transactionManager">
+	/// Transaction manager for concurrency-safe read-then-write operations.
+	/// </param>
 	/// <param name="cancellationToken">
 	/// Cancellation token.
 	/// </param>
@@ -34,59 +39,109 @@ public static class DisableTotpCommandHandler
 		DisableTotpCommand command,
 		UserManager<ApplicationUser> userManager,
 		ISecurityAuditService securityAuditService,
+		ITransactionManager transactionManager,
 		CancellationToken cancellationToken)
 	{
-		ApplicationUser? user =
-			await userManager.FindByIdAsync(command.UserId.ToString());
+		// Closure state — reset at transaction start to handle retries correctly
+		SecurityEventType? pendingAuditType = null;
+		bool pendingAuditSuccess = false;
+		string? pendingAuditDetails = null;
+		ApplicationUser? pendingAuditUser = null;
+		Result? earlyResult = null;
 
-		if (!user.IsValidForAuthentication())
-		{
-			return Result.Failure(AuthErrorMessages.InvalidCredentials);
-		}
+		await transactionManager.ExecuteInTransactionAsync(
+			async ct =>
+			{
+				// Reset closure state on each attempt to support retries
+				pendingAuditType = null;
+				pendingAuditUser = null;
+				earlyResult = null;
 
-		if (string.IsNullOrEmpty(user.TotpSecret))
-		{
-			return Result.Failure("TOTP is not configured for this account");
-		}
+				ApplicationUser? user =
+					await userManager.FindByIdAsync(command.UserId.ToString());
 
-		// Verify password
-		bool passwordValid =
-			await userManager.CheckPasswordAsync(
-				user,
-				command.Request.Password);
+				if (!user.IsValidForAuthentication())
+				{
+					earlyResult =
+						Result.Failure(AuthErrorMessages.InvalidCredentials);
 
-		if (!passwordValid)
+					return;
+				}
+
+				if (string.IsNullOrEmpty(user.TotpSecret))
+				{
+					earlyResult =
+						Result.Failure("TOTP is not configured for this account");
+
+					return;
+				}
+
+				pendingAuditUser = user;
+
+				// Password verification (read-only — kept inside to avoid double FindByIdAsync)
+				bool passwordValid =
+					await userManager.CheckPasswordAsync(
+						user,
+						command.Request.Password);
+
+				if (!passwordValid)
+				{
+					pendingAuditType =
+						SecurityEventType.MfaFailed;
+					pendingAuditSuccess = false;
+					pendingAuditDetails =
+						"TOTP disable - invalid password";
+					earlyResult =
+						Result.Failure("Invalid password");
+
+					return;
+				}
+
+				// Clear TOTP settings and disable per-user MFA
+				// (TOTP enrollment is the only path that enables per-user MFA)
+				user.TotpSecret = null;
+				user.TotpEnrolledAt = null;
+				user.MfaEnabled = false;
+
+				IdentityResult updateResult =
+					await userManager.UpdateAsync(user);
+
+				if (!updateResult.Succeeded)
+				{
+					if (updateResult.Errors.Any(
+						error => error.Code == "ConcurrencyFailure"))
+					{
+						throw new DbUpdateConcurrencyException(
+							"Concurrency conflict disabling TOTP. Will retry.");
+					}
+
+					earlyResult =
+						Result.Failure("Failed to disable TOTP");
+
+					return;
+				}
+
+				pendingAuditType =
+					SecurityEventType.TotpDisabled;
+				pendingAuditSuccess = true;
+			},
+			cancellationToken: cancellationToken);
+
+		// Run audit log outside transaction (after commit)
+		if (pendingAuditType is not null && pendingAuditUser is not null)
 		{
 			await securityAuditService.LogEventAsync(
-				SecurityEventType.MfaFailed,
-				user,
-				success: false,
-				details: "TOTP disable - invalid password",
+				pendingAuditType.Value,
+				pendingAuditUser,
+				success: pendingAuditSuccess,
+				details: pendingAuditDetails,
 				cancellationToken);
-
-			return Result.Failure("Invalid password");
 		}
 
-		// Clear TOTP settings and disable per-user MFA
-		// (TOTP enrollment is the only path that enables per-user MFA)
-		user.TotpSecret = null;
-		user.TotpEnrolledAt = null;
-		user.MfaEnabled = false;
-
-		IdentityResult updateResult =
-			await userManager.UpdateAsync(user);
-
-		if (!updateResult.Succeeded)
+		if (earlyResult is not null)
 		{
-			return Result.Failure("Failed to disable TOTP");
+			return earlyResult;
 		}
-
-		await securityAuditService.LogEventAsync(
-			SecurityEventType.TotpDisabled,
-			user,
-			success: true,
-			details: null,
-			cancellationToken);
 
 		return Result.Success();
 	}

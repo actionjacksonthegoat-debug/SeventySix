@@ -5,6 +5,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using SeventySix.Shared.Constants;
+using SeventySix.Shared.Interfaces;
 using SeventySix.Shared.POCOs;
 
 namespace SeventySix.Identity;
@@ -27,72 +28,88 @@ public static class UnlinkExternalLoginCommandHandler
 	/// <param name="userManager">
 	/// ASP.NET Core Identity user manager.
 	/// </param>
+	/// <param name="logger">
+	/// Logger instance.
+	/// </param>
+	/// <param name="transactionManager">
+	/// Transaction manager for concurrency-safe read-then-write operations.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
 	/// <returns>
 	/// Success or failure result.
 	/// </returns>
 	public static async Task<Result> HandleAsync(
 		UnlinkExternalLoginCommand command,
 		UserManager<ApplicationUser> userManager,
-		ILogger logger)
+		ILogger<UnlinkExternalLoginCommand> logger,
+		ITransactionManager transactionManager,
+		CancellationToken cancellationToken)
 	{
-		ApplicationUser? user =
-			await userManager.FindByIdAsync(
-				command.UserId.ToString());
+		return await transactionManager.ExecuteInTransactionAsync(
+			async ct =>
+			{
+				ApplicationUser? user =
+					await userManager.FindByIdAsync(
+						command.UserId.ToString());
 
-		if (user is null)
-		{
-			return Result.Failure(ProblemDetailConstants.Details.UserNotFound);
-		}
+				if (user is null)
+				{
+					return Result.Failure(ProblemDetailConstants.Details.UserNotFound);
+				}
 
-		// Get current external logins
-		IList<UserLoginInfo> logins =
-			await userManager.GetLoginsAsync(user);
+				// Get current external logins
+				IList<UserLoginInfo> logins =
+					await userManager.GetLoginsAsync(user);
 
-		// Verify the user actually has this provider linked
-		UserLoginInfo? targetLogin =
-			logins.FirstOrDefault(
-				login => string.Equals(
-					login.LoginProvider,
-					command.Provider,
-					StringComparison.OrdinalIgnoreCase));
+				// Verify the user actually has this provider linked
+				UserLoginInfo? targetLogin =
+					logins.FirstOrDefault(
+						login => string.Equals(
+							login.LoginProvider,
+							command.Provider,
+							StringComparison.OrdinalIgnoreCase));
 
-		if (targetLogin is null)
-		{
-			return Result.Failure(
-				OAuthProviderConstants.ErrorMessages.ExternalLoginNotFound);
-		}
+				if (targetLogin is null)
+				{
+					return Result.Failure(
+						OAuthProviderConstants.ErrorMessages.ExternalLoginNotFound);
+				}
 
-		// Prevent lockout: user must have a password OR at least one other external login
-		bool hasPassword =
-			await userManager.HasPasswordAsync(user);
+				// Prevent lockout: user must have a password OR at least one other external login
+				bool hasPassword =
+					await userManager.HasPasswordAsync(user);
 
-		int otherLoginCount =
-			logins.Count - 1;
+				int otherLoginCount =
+					logins.Count - 1;
 
-		if (!hasPassword && otherLoginCount < 1)
-		{
-			return Result.Failure(
-				OAuthProviderConstants.ErrorMessages.CannotUnlinkLastAuthMethod);
-		}
+				if (!hasPassword && otherLoginCount < 1)
+				{
+					return Result.Failure(
+						OAuthProviderConstants.ErrorMessages.CannotUnlinkLastAuthMethod);
+				}
 
-		// Remove external login
-		IdentityResult result =
-			await userManager.RemoveLoginAsync(
-				user,
-				targetLogin.LoginProvider,
-				targetLogin.ProviderKey);
+				// Remove external login
+				IdentityResult result =
+					await userManager.RemoveLoginAsync(
+						user,
+						targetLogin.LoginProvider,
+						targetLogin.ProviderKey);
 
-		if (!result.Succeeded)
-		{
-			string errors = result.ToErrorString();
-			logger.LogError(
-				"Failed to unlink external login for user {UserId}: {Errors}",
-				command.UserId,
-				errors);
-			return Result.Failure(
-				ProblemDetailConstants.Details.ExternalLoginUnlinkFailed);
-		}
+				if (!result.Succeeded)
+				{
+					string errors = result.ToErrorString();
+					logger.LogError(
+						"Failed to unlink external login for user {UserId}: {Errors}",
+						command.UserId,
+						errors);
+					return Result.Failure(
+						ProblemDetailConstants.Details.ExternalLoginUnlinkFailed);
+				}
 
-		return Result.Success();
+				return Result.Success();
+			},
+			cancellationToken: cancellationToken);
 	}
 }

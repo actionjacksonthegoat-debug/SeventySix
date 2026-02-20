@@ -13,7 +13,7 @@ namespace SeventySix.ArchitectureTests;
 /// Ensures bounded contexts don't have circular dependencies.
 /// Automatically discovers all bounded contexts.
 /// </summary>
-public class BoundedContextTests
+public sealed class BoundedContextTests
 {
 	/// <summary>
 	/// Service-only bounded contexts that don't require a DbContext.

@@ -26,7 +26,7 @@ namespace SeventySix.Logging.Jobs;
 /// <param name="logger">
 /// Logger for diagnostic messages.
 /// </param>
-public class LogCleanupJobHandler(
+public sealed class LogCleanupJobHandler(
 	ILogRepository logRepository,
 	IRecurringJobService recurringJobService,
 	IOptions<LogCleanupSettings> settings,

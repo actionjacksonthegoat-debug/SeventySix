@@ -15,7 +15,7 @@ namespace SeventySix.Identity.Tests.Validators;
 /// - Token validation (required, valid {userId}:{base64} format)
 /// - NewPassword validation (delegates to password rules).
 /// </remarks>
-public class SetPasswordCommandValidatorTests
+public sealed class SetPasswordCommandValidatorTests
 {
 	private static readonly PasswordSettings TestPasswordSettings =
 		new()

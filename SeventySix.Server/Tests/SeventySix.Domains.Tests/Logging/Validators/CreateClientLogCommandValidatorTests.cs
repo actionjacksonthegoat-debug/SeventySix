@@ -11,7 +11,7 @@ using SeventySix.TestUtilities.Constants;
 namespace SeventySix.Domains.Tests.Logging.Validators;
 
 /// <summary>Unit tests for CreateClientLogCommandValidator.</summary>
-public class CreateClientLogCommandValidatorTests
+public sealed class CreateClientLogCommandValidatorTests
 {
 	private readonly CreateClientLogCommandValidator Validator = new();
 

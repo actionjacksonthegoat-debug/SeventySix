@@ -10,7 +10,7 @@ namespace SeventySix.Shared.Tests.Extensions;
 /// <summary>
 /// Unit tests for MappingExtensions generic mapping utilities.
 /// </summary>
-public class MappingExtensionsTests
+public sealed class MappingExtensionsTests
 {
 	[Fact]
 	public void MapToDto_ValidEntities_MapsCorrectly()

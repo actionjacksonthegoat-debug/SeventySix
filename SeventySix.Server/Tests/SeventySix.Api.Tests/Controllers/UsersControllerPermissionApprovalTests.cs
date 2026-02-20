@@ -16,7 +16,7 @@ namespace SeventySix.Api.Tests.Controllers;
 /// Focus: Authorization boundaries (80/20).
 /// </summary>
 [Collection(CollectionNames.IdentityHealthPostgreSql)]
-public class UsersControllerPermissionApprovalTests(
+public sealed class UsersControllerPermissionApprovalTests(
 	IdentityHealthApiPostgreSqlFixture fixture) : ApiPostgreSqlTestBase<Program>(fixture), IAsyncLifetime
 {
 	private const string BaseEndpoint = ApiEndpoints.Users.Base;

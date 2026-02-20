@@ -11,7 +11,7 @@ namespace SeventySix.Analyzers.Tests;
 /// Enforces newline after '=' for complex expressions.
 /// Follows 80/20 rule: critical paths only.
 /// </summary>
-public class AssignmentNewlineAnalyzerTests
+public sealed class AssignmentNewlineAnalyzerTests
 {
 	[Fact]
 	public async Task ComplexExpression_OnSameLine_ReportsDiagnosticAsync()

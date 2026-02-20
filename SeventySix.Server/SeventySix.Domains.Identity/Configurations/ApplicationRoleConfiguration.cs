@@ -11,7 +11,7 @@ namespace SeventySix.Identity;
 /// <summary>
 /// EF Core configuration for <see cref="ApplicationRole"/>.
 /// </summary>
-public class ApplicationRoleConfiguration : IEntityTypeConfiguration<ApplicationRole>
+public sealed class ApplicationRoleConfiguration : IEntityTypeConfiguration<ApplicationRole>
 {
 	/// <inheritdoc/>
 	public void Configure(EntityTypeBuilder<ApplicationRole> builder)

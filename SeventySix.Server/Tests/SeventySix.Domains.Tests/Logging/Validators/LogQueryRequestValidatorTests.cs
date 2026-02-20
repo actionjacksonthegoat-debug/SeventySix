@@ -10,7 +10,7 @@ using SeventySix.Logging.Queries.GetLogsPaged;
 namespace SeventySix.Domains.Tests.Logging.Validators;
 
 /// <summary>Unit tests for LogQueryRequestValidator.</summary>
-public class LogQueryRequestValidatorTests
+public sealed class LogQueryRequestValidatorTests
 {
 	private readonly LogQueryRequestValidator Validator = new();
 

@@ -18,7 +18,7 @@ namespace SeventySix.Identity.Tests.Queries.GetUserByUsername;
 /// <remarks>
 /// Tests follow 80/20 rule: focus on happy path and null handling.
 /// </remarks>
-public class GetUserByUsernameQueryHandlerTests
+public sealed class GetUserByUsernameQueryHandlerTests
 {
 	private readonly UserManager<ApplicationUser> UserManager;
 	private readonly IFusionCacheProvider CacheProvider;

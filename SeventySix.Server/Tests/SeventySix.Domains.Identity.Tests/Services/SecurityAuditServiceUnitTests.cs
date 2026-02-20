@@ -20,7 +20,7 @@ namespace SeventySix.Identity.Tests.Services;
 /// - User overload delegates correctly
 /// - Client info extraction
 /// </remarks>
-public class SecurityAuditServiceUnitTests
+public sealed class SecurityAuditServiceUnitTests
 {
 	private readonly FakeTimeProvider TimeProvider;
 

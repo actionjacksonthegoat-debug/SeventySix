@@ -17,7 +17,7 @@ namespace SeventySix.ArchitectureTests;
 /// This allows proper resource cleanup when clients disconnect or operations timeout.
 /// Automatically discovers all service/repository interfaces across all bounded contexts.
 /// </summary>
-public class CancellationTokenTests
+public sealed class CancellationTokenTests
 {
 	private static readonly string[] QueryPrefixes =
 		[

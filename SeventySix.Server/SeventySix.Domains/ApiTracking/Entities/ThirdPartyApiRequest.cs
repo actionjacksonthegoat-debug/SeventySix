@@ -22,7 +22,7 @@ namespace SeventySix.ApiTracking;
 /// - OCP: Extensible through inheritance if needed
 /// - No framework dependencies (pure POCO)
 /// </remarks>
-public class ThirdPartyApiRequest : IModifiableEntity
+public sealed class ThirdPartyApiRequest : IModifiableEntity
 {
 	/// <summary>
 	/// Gets or sets the unique identifier.

@@ -22,7 +22,7 @@ namespace SeventySix.Api.Tests.Infrastructure.Services;
 /// All tests share a single PostgreSQL instance to match production behavior.
 /// </summary>
 [Collection(CollectionNames.ApiTrackingPostgreSql)]
-public class RateLimitingRepositoryTests : DataPostgreSqlTestBase
+public sealed class RateLimitingRepositoryTests : DataPostgreSqlTestBase
 {
 	private readonly ILogger<RateLimitingService> LoggerMock;
 	private readonly ILogger<ThirdPartyApiRequestRepository> RepoLoggerMock;

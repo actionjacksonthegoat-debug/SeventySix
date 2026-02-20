@@ -20,7 +20,7 @@ namespace SeventySix.Domains.Tests.ApiTracking.Queries.GetApiRequestStatistics;
 /// Tests handler delegation to repository with correct date filtering.
 /// Aggregation logic is tested in repository integration tests.
 /// </remarks>
-public class GetApiRequestStatisticsQueryHandlerTests
+public sealed class GetApiRequestStatisticsQueryHandlerTests
 {
 	private readonly IThirdPartyApiRequestRepository Repository;
 	private readonly FakeTimeProvider TimeProvider;

@@ -16,7 +16,7 @@ namespace SeventySix.Identity.Tests.Queries.GetUserById;
 /// Unit tests for <see cref="GetUserByIdQueryHandler"/>.
 /// Tests query handler with mocked dependencies following 80/20 rule.
 /// </summary>
-public class GetUserByIdQueryHandlerTests
+public sealed class GetUserByIdQueryHandlerTests
 {
 	private readonly UserManager<ApplicationUser> UserManager;
 	private readonly IFusionCacheProvider CacheProvider;

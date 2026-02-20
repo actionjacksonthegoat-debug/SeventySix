@@ -16,7 +16,7 @@ namespace SeventySix.Identity;
 /// - Audit Trail: Track attempts for security forensics
 /// - One-Time Use: Challenge invalidated after successful verification
 /// </remarks>
-public class MfaChallenge : ICreatableEntity
+public sealed class MfaChallenge : ICreatableEntity
 {
 	/// <summary>
 	/// Gets or sets the unique identifier.

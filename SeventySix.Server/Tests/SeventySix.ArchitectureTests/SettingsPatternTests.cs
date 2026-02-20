@@ -23,7 +23,7 @@ namespace SeventySix.ArchitectureTests;
 /// - DTOs use positional parameters (immutable API contracts)
 /// - Settings use init properties with defaults (Options pattern compatibility).
 /// </remarks>
-public class SettingsPatternTests : SourceCodeArchitectureTest
+public sealed class SettingsPatternTests : SourceCodeArchitectureTest
 {
 	[Fact]
 	public void Settings_ShouldBeRecords()

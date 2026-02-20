@@ -9,7 +9,7 @@ namespace SeventySix.Api.Infrastructure;
 /// <summary>
 /// Represents database health status.
 /// </summary>
-public class DatabaseHealthResponse
+public sealed class DatabaseHealthResponse
 {
 	/// <summary>
 	/// Gets or sets a value indicating whether the database is connected.

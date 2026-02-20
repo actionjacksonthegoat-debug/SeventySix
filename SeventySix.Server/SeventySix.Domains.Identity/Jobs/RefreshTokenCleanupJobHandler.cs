@@ -28,7 +28,7 @@ namespace SeventySix.Identity.Jobs;
 /// <param name="logger">
 /// Logger for diagnostic messages.
 /// </param>
-public class RefreshTokenCleanupJobHandler(
+public sealed class RefreshTokenCleanupJobHandler(
 	IdentityDbContext dbContext,
 	IRecurringJobService recurringJobService,
 	IOptions<RefreshTokenCleanupSettings> settings,

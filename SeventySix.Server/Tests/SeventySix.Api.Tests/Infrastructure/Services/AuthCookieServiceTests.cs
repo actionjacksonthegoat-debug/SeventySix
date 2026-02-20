@@ -18,7 +18,7 @@ namespace SeventySix.Api.Tests.Infrastructure.Services;
 /// Uses DefaultHttpContext to capture cookie output without a real HTTP server.
 /// Follows 80/20 rule — focuses on cookie expiration correctness.
 /// </remarks>
-public class AuthCookieServiceTests
+public sealed class AuthCookieServiceTests
 {
 	private const int StandardExpirationDays = 1;
 	private const int RememberMeExpirationDays = 14;

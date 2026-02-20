@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using SeventySix.Identity.Constants;
 using SeventySix.Shared.Constants;
 using SeventySix.Shared.Extensions;
+using SeventySix.Shared.Interfaces;
 using SeventySix.Shared.POCOs;
 using SeventySix.Shared.Utilities;
 
@@ -44,18 +45,15 @@ public static class CompleteRegistrationCommandHandler
 	/// <param name="logger">
 	/// Logger instance.
 	/// </param>
+	/// <param name="transactionManager">
+	/// Transaction manager for concurrency-safe multi-step registration.
+	/// </param>
 	/// <param name="cancellationToken">
 	/// Cancellation token.
 	/// </param>
 	/// <returns>
 	/// An <see cref="AuthResult"/> containing access and refresh tokens on success.
 	/// </returns>
-	/// <remarks>
-	/// Wolverine's UseEntityFrameworkCoreTransactions middleware automatically
-	/// wraps this handler in a transaction.
-	/// Database unique constraints on Username and Email provide atomicity
-	/// - no manual duplicate checks needed.
-	/// </remarks>
 	public static async Task<AuthResult> HandleAsync(
 		CompleteRegistrationCommand command,
 		UserManager<ApplicationUser> userManager,
@@ -63,9 +61,11 @@ public static class CompleteRegistrationCommandHandler
 		BreachCheckDependencies breachCheck,
 		TimeProvider timeProvider,
 		ILogger<CompleteRegistrationCommand> logger,
+		ITransactionManager transactionManager,
 		CancellationToken cancellationToken)
 	{
 		// Check password against known breaches (OWASP ASVS V2.1.7)
+		// (outside transaction — external HTTP call to HIBP)
 		AuthResult? breachError =
 			await breachCheck.ValidatePasswordNotBreachedAsync(
 				command.Request.Password,
@@ -77,55 +77,81 @@ public static class CompleteRegistrationCommandHandler
 			return breachError;
 		}
 
-		// Validate registration token and confirm user email
-		(ApplicationUser? existingUser, string? decodedEmail, AuthResult? tokenError) =
-			await ValidateTokenAsync(
-				command.Request.Token,
-				userManager,
-				logger);
+		// Closure variables for results passed out of the transaction lambda
+		AuthResult? earlyResult = null;
+		ApplicationUser? transactedUser = null;
+		string? capturedDecodedEmail = null;
 
-		if (tokenError is not null)
+		await transactionManager.ExecuteInTransactionAsync(
+			async ct =>
+			{
+				// Reset closure state for retries
+				earlyResult = null;
+				transactedUser = null;
+				capturedDecodedEmail = null;
+
+				// Validate registration token and confirm user email
+				(ApplicationUser? existingUser, string? decodedEmail, AuthResult? tokenError) =
+					await ValidateTokenAsync(
+						command.Request.Token,
+						userManager,
+						logger);
+
+				if (tokenError is not null)
+				{
+					earlyResult = tokenError;
+					return;
+				}
+
+				capturedDecodedEmail = decodedEmail;
+
+				try
+				{
+					transactedUser =
+						await CompleteUserRegistrationAsync(
+							command,
+							existingUser!,
+							userManager,
+							timeProvider);
+				}
+				catch (InvalidOperationException exception)
+				{
+					// Identity update failed due to validation (e.g., username already taken)
+					logger.LogWarning(
+						exception,
+						"Registration failed: {Error}",
+						exception.Message);
+
+					earlyResult =
+						AuthResult.Failed(
+							ProblemDetailConstants.Details.RegistrationFailed,
+							"REGISTRATION_FAILED");
+				}
+				catch (DbUpdateException exception)
+					when (exception.IsDuplicateKeyViolation())
+				{
+					earlyResult =
+						DuplicateKeyViolationHandler.HandleAsAuthResult(
+							exception,
+							command.Request.Username,
+							capturedDecodedEmail!,
+							logger);
+				}
+			},
+			cancellationToken: cancellationToken);
+
+		if (earlyResult is not null)
 		{
-			return tokenError;
+			return earlyResult;
 		}
 
-		try
-		{
-			ApplicationUser completedUser =
-				await CompleteUserRegistrationAsync(
-					command,
-					existingUser!,
-					userManager,
-					timeProvider);
-
-			return await authenticationService.GenerateAuthResultAsync(
-				completedUser,
-				command.ClientIp,
-				requiresPasswordChange: false,
-				rememberMe: false,
-				cancellationToken);
-		}
-		catch (InvalidOperationException exception)
-		{
-			// Identity update failed due to validation (e.g., username already taken)
-			logger.LogWarning(
-				exception,
-				"Registration failed: {Error}",
-				exception.Message);
-
-			return AuthResult.Failed(
-				ProblemDetailConstants.Details.RegistrationFailed,
-				"REGISTRATION_FAILED");
-		}
-		catch (DbUpdateException exception)
-			when (exception.IsDuplicateKeyViolation())
-		{
-			return DuplicateKeyViolationHandler.HandleAsAuthResult(
-				exception,
-				command.Request.Username,
-				decodedEmail!,
-				logger);
-		}
+		// Generate auth tokens outside transaction (creates JWT access/refresh tokens)
+		return await authenticationService.GenerateAuthResultAsync(
+			transactedUser!,
+			command.ClientIp,
+			requiresPasswordChange: false,
+			rememberMe: false,
+			cancellationToken);
 	}
 
 	/// <summary>

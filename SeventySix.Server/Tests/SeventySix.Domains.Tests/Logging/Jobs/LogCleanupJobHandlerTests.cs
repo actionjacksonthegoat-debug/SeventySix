@@ -19,7 +19,7 @@ namespace SeventySix.Domains.Tests.Logging.Jobs;
 /// Unit tests for <see cref="LogCleanupJobHandler"/>.
 /// Focus: Scheduling logic verification. Database operations tested via LogRepositoryTests.
 /// </summary>
-public class LogCleanupJobHandlerTests
+public sealed class LogCleanupJobHandlerTests
 {
 	private readonly ILogRepository LogRepository;
 	private readonly IRecurringJobService RecurringJobService;

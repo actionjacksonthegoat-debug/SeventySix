@@ -3,7 +3,9 @@
 // </copyright>
 
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using SeventySix.Identity.Constants;
+using SeventySix.Shared.Interfaces;
 using SeventySix.Shared.POCOs;
 
 namespace SeventySix.Identity;
@@ -30,6 +32,9 @@ public static class RemoveUserRoleCommandHandler
 	/// <param name="identityCache">
 	/// Identity cache service for clearing role cache.
 	/// </param>
+	/// <param name="transactionManager">
+	/// Transaction manager for concurrency-safe read-then-write operations.
+	/// </param>
 	/// <param name="cancellationToken">
 	/// Cancellation token for async operation.
 	/// </param>
@@ -43,59 +48,80 @@ public static class RemoveUserRoleCommandHandler
 		RemoveUserRoleCommand command,
 		UserManager<ApplicationUser> userManager,
 		IIdentityCacheService identityCache,
+		ITransactionManager transactionManager,
 		CancellationToken cancellationToken)
 	{
-		ApplicationUser? user =
-			await userManager.FindByIdAsync(
-				command.UserId.ToString());
+		Result txResult =
+			await transactionManager.ExecuteInTransactionAsync(
+				async ct =>
+				{
+					ApplicationUser? user =
+						await userManager.FindByIdAsync(
+							command.UserId.ToString());
 
-		if (user is null)
+					if (user is null)
+					{
+						return Result.Failure($"User {command.UserId} not found");
+					}
+
+					IList<string> existingRoles =
+						await userManager.GetRolesAsync(user);
+
+					if (!existingRoles.Contains(command.Role))
+					{
+						return Result.Failure(
+							$"User {command.UserId} does not have role {command.Role}");
+					}
+
+					if (command.Role == RoleConstants.Admin)
+					{
+						IList<ApplicationUser> adminUsers =
+							await userManager.GetUsersInRoleAsync(RoleConstants.Admin);
+
+						bool isLastAdmin =
+							adminUsers.Count <= 1
+								&& adminUsers.Any(
+									adminUser => adminUser.Id == command.UserId);
+
+						if (isLastAdmin)
+						{
+							throw new LastAdminException();
+						}
+					}
+
+					IdentityResult identityResult =
+						await userManager.RemoveFromRoleAsync(
+							user,
+							command.Role);
+
+					if (!identityResult.Succeeded)
+					{
+						if (identityResult.Errors.Any(
+							error => error.Code == "ConcurrencyFailure"))
+						{
+							throw new DbUpdateConcurrencyException(
+								"Concurrency conflict removing role. Will retry.");
+						}
+
+						return Result.Failure(
+							string.Join(
+								", ",
+								identityResult.Errors.Select(
+									error => error.Description)));
+					}
+
+					return Result.Success();
+				},
+				cancellationToken: cancellationToken);
+
+		if (!txResult.IsSuccess)
 		{
-			return Result.Failure($"User {command.UserId} not found");
+			return txResult;
 		}
 
-		IList<string> existingRoles =
-			await userManager.GetRolesAsync(user);
+		// Invalidate role caches (outside transaction — after commit)
+		await identityCache.InvalidateUserRolesAsync(command.UserId);
 
-		if (!existingRoles.Contains(command.Role))
-		{
-			return Result.Failure(
-				$"User {command.UserId} does not have role {command.Role}");
-		}
-
-		if (command.Role == RoleConstants.Admin)
-		{
-			IList<ApplicationUser> adminUsers =
-				await userManager.GetUsersInRoleAsync(RoleConstants.Admin);
-
-			bool isLastAdmin =
-				adminUsers.Count <= 1
-					&& adminUsers.Any(
-						adminUser => adminUser.Id == command.UserId);
-
-			if (isLastAdmin)
-			{
-				throw new LastAdminException();
-			}
-		}
-
-		IdentityResult identityResult =
-			await userManager.RemoveFromRoleAsync(
-				user,
-				command.Role);
-
-		if (identityResult.Succeeded)
-		{
-			// Invalidate role caches
-			await identityCache.InvalidateUserRolesAsync(command.UserId);
-
-			return Result.Success();
-		}
-
-		return Result.Failure(
-			string.Join(
-				", ",
-				identityResult.Errors.Select(
-					error => error.Description)));
+		return txResult;
 	}
 }

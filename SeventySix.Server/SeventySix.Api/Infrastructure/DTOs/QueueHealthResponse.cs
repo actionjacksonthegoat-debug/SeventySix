@@ -9,7 +9,7 @@ namespace SeventySix.Api.Infrastructure;
 /// <summary>
 /// Represents error queue health status.
 /// </summary>
-public class QueueHealthResponse
+public sealed class QueueHealthResponse
 {
 	/// <summary>
 	/// Gets or sets the number of items currently in the queue.

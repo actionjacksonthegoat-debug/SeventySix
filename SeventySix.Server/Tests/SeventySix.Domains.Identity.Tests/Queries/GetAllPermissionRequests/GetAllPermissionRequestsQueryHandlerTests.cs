@@ -19,7 +19,7 @@ namespace SeventySix.Identity.Tests.Queries.GetAllPermissionRequests;
 /// <remarks>
 /// Tests follow 80/20 rule: focus on repository delegation.
 /// </remarks>
-public class GetAllPermissionRequestsQueryHandlerTests
+public sealed class GetAllPermissionRequestsQueryHandlerTests
 {
 	private static readonly FakeTimeProvider TimeProvider =
 		new(TestTimeProviderBuilder.DefaultTime);

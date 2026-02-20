@@ -26,7 +26,7 @@ namespace SeventySix.Identity.Tests.Jobs;
 /// Security/GDPR: Verifies IP addresses are removed after retention period.
 /// </remarks>
 [Collection(CollectionNames.IdentityPostgreSql)]
-public class IpAnonymizationJobHandlerTests(
+public sealed class IpAnonymizationJobHandlerTests(
 	IdentityPostgreSqlFixture fixture) : DataPostgreSqlTestBase(fixture)
 {
 	private static readonly DateTimeOffset TestTime =

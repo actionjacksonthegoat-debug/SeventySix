@@ -16,7 +16,7 @@ namespace SeventySix.Api.Tests;
 /// Use <c>[Collection(CollectionNames.PostgreSql)]</c> on test classes.
 /// </remarks>
 [CollectionDefinition(CollectionNames.PostgreSql)]
-public class PostgreSqlCollectionDefinition
+public sealed class PostgreSqlCollectionDefinition
 	: ICollectionFixture<TestcontainersPostgreSqlFixture>
 {
 	// This class has no code, and is never instantiated. Its purpose is simply

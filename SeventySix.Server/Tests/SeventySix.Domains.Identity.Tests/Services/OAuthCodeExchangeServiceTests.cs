@@ -14,7 +14,7 @@ namespace SeventySix.Identity.Tests.Services;
 /// Unit tests for OAuthCodeExchangeService.
 /// Tests code generation, storage, and one-time exchange pattern.
 /// </summary>
-public class OAuthCodeExchangeServiceTests
+public sealed class OAuthCodeExchangeServiceTests
 {
 	private readonly DateTimeOffset FixedExpiresAt =
 		TestDates.FutureUtc;

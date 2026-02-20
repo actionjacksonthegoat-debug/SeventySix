@@ -22,7 +22,7 @@ namespace SeventySix.Shared.Persistence;
 /// Automatically sets CreateDate, ModifyDate, CreatedBy, and ModifiedBy
 /// based on entity interface implementation (IAuditableEntity, IModifiableEntity, ICreatableEntity).
 /// </remarks>
-public class AuditInterceptor(
+public sealed class AuditInterceptor(
 	IUserContextAccessor userContextAccessor,
 	TimeProvider timeProvider) : SaveChangesInterceptor
 {

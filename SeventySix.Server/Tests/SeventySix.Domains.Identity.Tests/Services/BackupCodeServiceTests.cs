@@ -18,7 +18,7 @@ namespace SeventySix.Identity.Tests.Services;
 /// Tests backup code generation and verification with real database.
 /// </summary>
 [Collection(CollectionNames.IdentityPostgreSql)]
-public class BackupCodeServiceTests(IdentityPostgreSqlFixture fixture)
+public sealed class BackupCodeServiceTests(IdentityPostgreSqlFixture fixture)
 	: DataPostgreSqlTestBase(fixture)
 {
 	private static readonly DateTimeOffset FixedTime =

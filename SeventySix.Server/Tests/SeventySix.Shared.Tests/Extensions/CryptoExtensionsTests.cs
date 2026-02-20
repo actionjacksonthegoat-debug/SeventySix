@@ -10,7 +10,7 @@ namespace SeventySix.Shared.Tests.Extensions;
 /// <summary>
 /// Unit tests for CryptoExtensions utility methods.
 /// </summary>
-public class CryptoExtensionsTests
+public sealed class CryptoExtensionsTests
 {
 	[Fact]
 	public void GenerateSecureToken_ReturnsBase64String()

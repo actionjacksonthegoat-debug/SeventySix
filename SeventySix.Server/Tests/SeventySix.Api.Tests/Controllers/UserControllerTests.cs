@@ -37,7 +37,7 @@ namespace SeventySix.Api.Tests.Controllers;
 /// - Proper HTTP status codes (200, 201, 404, 500)
 /// - Logger integration
 /// </remarks>
-public class UsersControllerTests
+public sealed class UsersControllerTests
 {
 	private readonly IMessageBus MessageBus;
 	private readonly ILogger<UsersController> Logger;

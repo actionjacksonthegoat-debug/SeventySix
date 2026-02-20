@@ -13,7 +13,7 @@ namespace SeventySix.Api.Tests.Middleware;
 /// Tests that security headers are correctly applied by AttributeBasedSecurityHeadersMiddleware.
 /// Per 80/20 rule: Focus on critical OWASP headers that prevent common vulnerabilities.
 /// </summary>
-public class SecurityHeadersTests : IDisposable
+public sealed class SecurityHeadersTests : IDisposable
 {
 	private readonly SharedWebApplicationFactory<Program> Factory;
 

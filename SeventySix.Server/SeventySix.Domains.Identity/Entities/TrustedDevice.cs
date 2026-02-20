@@ -13,7 +13,7 @@ namespace SeventySix.Identity;
 /// Trusted devices allow users to skip MFA verification on recognized devices.
 /// Security is maintained through token hashing and device fingerprinting.
 /// </remarks>
-public class TrustedDevice : ICreatableEntity, IAuditableEntity
+public sealed class TrustedDevice : ICreatableEntity, IAuditableEntity
 {
 	/// <summary>
 	/// Gets or sets the unique identifier.

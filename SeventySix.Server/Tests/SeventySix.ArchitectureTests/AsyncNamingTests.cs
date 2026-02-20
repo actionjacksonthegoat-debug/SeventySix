@@ -13,7 +13,7 @@ namespace SeventySix.ArchitectureTests;
 /// Tests that enforce async method naming conventions.
 /// Rule: All async methods must have Async suffix.
 /// </summary>
-public class AsyncNamingTests : SourceCodeArchitectureTest
+public sealed class AsyncNamingTests : SourceCodeArchitectureTest
 {
 	/// <summary>
 	/// Method names from external library interfaces that cannot be renamed.

@@ -22,7 +22,7 @@ namespace SeventySix.Identity.Tests.Commands.InitiatePasswordReset;
 /// Tests follow 80/20 rule: focus on token generation and email enqueuing.
 /// Security-critical: Password reset flow must be thoroughly tested.
 /// </remarks>
-public class InitiatePasswordResetCommandHandlerTests
+public sealed class InitiatePasswordResetCommandHandlerTests
 {
 	private readonly UserManager<ApplicationUser> UserManager;
 	private readonly IMessageBus MessageBus;

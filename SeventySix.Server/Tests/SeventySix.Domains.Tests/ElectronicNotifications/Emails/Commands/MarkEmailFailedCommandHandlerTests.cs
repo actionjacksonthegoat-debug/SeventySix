@@ -23,7 +23,7 @@ namespace SeventySix.Domains.Tests.ElectronicNotifications.Emails.Commands;
 /// - Status transition to DeadLetter when max attempts reached
 /// - Error message storage.
 /// </remarks>
-public class MarkEmailFailedCommandHandlerTests
+public sealed class MarkEmailFailedCommandHandlerTests
 {
 	private readonly FakeTimeProvider TimeProvider;
 

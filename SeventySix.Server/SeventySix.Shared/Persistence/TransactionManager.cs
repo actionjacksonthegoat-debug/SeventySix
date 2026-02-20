@@ -44,7 +44,7 @@ namespace SeventySix.Shared.Persistence;
 /// <param name="context">
 /// The database context.
 /// </param>
-public class TransactionManager(DbContext context) : ITransactionManager
+public sealed class TransactionManager(DbContext context) : ITransactionManager
 {
 	/// <summary>
 	/// Base delay in milliseconds for retry backoff calculation.

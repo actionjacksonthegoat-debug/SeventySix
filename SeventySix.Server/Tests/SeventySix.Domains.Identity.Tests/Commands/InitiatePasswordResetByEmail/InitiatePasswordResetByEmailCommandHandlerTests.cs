@@ -16,7 +16,7 @@ namespace SeventySix.Identity.Tests.Commands.InitiatePasswordResetByEmail;
 /// Tests follow 80/20 rule: focus on security-critical scenarios.
 /// Email enumeration prevention and ALTCHA validation are critical.
 /// </remarks>
-public class InitiatePasswordResetByEmailCommandHandlerTests
+public sealed class InitiatePasswordResetByEmailCommandHandlerTests
 {
 	private static readonly FakeTimeProvider TimeProvider =
 		new(TestTimeProviderBuilder.DefaultTime);

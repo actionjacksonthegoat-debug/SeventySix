@@ -31,7 +31,7 @@ namespace SeventySix.Api.Controllers;
 /// </param>
 [ApiController]
 [Route(ApiVersionConfig.VersionedRoutePrefix + "/auth/password")]
-public class PasswordController(
+public sealed class PasswordController(
 	IMessageBus messageBus,
 	IAuthCookieService cookieService,
 	IOptions<AuthSettings> authSettings,

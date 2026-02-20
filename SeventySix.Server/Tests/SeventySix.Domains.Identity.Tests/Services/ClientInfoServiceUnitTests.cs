@@ -18,7 +18,7 @@ namespace SeventySix.Identity.Tests.Services;
 /// - User agent extraction and truncation
 /// - Null HttpContext handling
 /// </remarks>
-public class ClientInfoServiceUnitTests
+public sealed class ClientInfoServiceUnitTests
 {
 	private readonly IHttpContextAccessor HttpContextAccessor;
 	private readonly ClientInfoService ServiceUnderTest;

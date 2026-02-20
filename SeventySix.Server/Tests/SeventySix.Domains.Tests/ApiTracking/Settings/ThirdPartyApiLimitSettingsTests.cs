@@ -12,7 +12,7 @@ namespace SeventySix.Domains.Tests.ApiTracking.Settings;
 /// Unit tests for ThirdPartyApiLimitSettings and related types.
 /// Focus: LimitInterval enum handling, GetLimit(), GetLimitInterval() methods.
 /// </summary>
-public class ThirdPartyApiLimitSettingsTests
+public sealed class ThirdPartyApiLimitSettingsTests
 {
 	#region ThirdPartyApiLimitSettings Tests
 

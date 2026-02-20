@@ -10,7 +10,7 @@ namespace SeventySix.Shared.Persistence;
 /// <param name="context">
 /// The <see cref="DbContext"/> instance used by the transaction manager.
 /// </param>
-public class TransactionManagerForContext<TContext>(TContext context)
+public sealed class TransactionManagerForContext<TContext>(TContext context)
 	: ITransactionManager
 		where TContext : DbContext
 {

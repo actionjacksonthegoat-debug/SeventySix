@@ -10,7 +10,7 @@ namespace SeventySix.Identity.Commands.BulkUpdateActiveStatus;
 /// FluentValidation validator for BulkUpdateActiveStatusCommand.
 /// Validates bulk user status update requests.
 /// </summary>
-public class BulkUpdateActiveStatusCommandValidator
+public sealed class BulkUpdateActiveStatusCommandValidator
 	: AbstractValidator<BulkUpdateActiveStatusCommand>
 {
 	/// <summary>

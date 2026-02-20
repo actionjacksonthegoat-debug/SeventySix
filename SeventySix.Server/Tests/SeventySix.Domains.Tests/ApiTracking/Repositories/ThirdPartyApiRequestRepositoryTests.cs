@@ -28,7 +28,7 @@ namespace SeventySix.Domains.Tests.ApiTracking.Repositories;
 /// - Concurrency
 /// </remarks>
 [Collection(CollectionNames.ApiTrackingPostgreSql)]
-public class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase
+public sealed class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase
 {
 	private readonly ThirdPartyApiRequestRepository Repository;
 

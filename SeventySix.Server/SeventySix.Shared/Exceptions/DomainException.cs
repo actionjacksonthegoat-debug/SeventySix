@@ -7,7 +7,7 @@ namespace SeventySix.Shared.Exceptions;
 /// <summary>
 /// Base exception for domain errors.
 /// </summary>
-public class DomainException : Exception
+public abstract class DomainException : Exception
 {
 	/// <summary>
 	/// Initializes a new instance of the <see cref="DomainException"/> class with the specified message.

@@ -11,7 +11,7 @@ namespace SeventySix.Identity;
 /// <summary>
 /// EF Core configuration for <see cref="ApplicationUser"/> entity.
 /// </summary>
-public class ApplicationUserConfiguration : IEntityTypeConfiguration<ApplicationUser>
+public sealed class ApplicationUserConfiguration : IEntityTypeConfiguration<ApplicationUser>
 {
 	/// <summary>
 	/// Configures the <see cref="ApplicationUser"/> mapping.

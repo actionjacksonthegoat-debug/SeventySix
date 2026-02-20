@@ -29,7 +29,7 @@ namespace SeventySix.Api.Tests.Controllers;
 /// Service-layer logic is tested separately in repository/service tests.
 /// </remarks>
 [Collection(CollectionNames.LoggingPostgreSql)]
-public class LogsControllerTests(LoggingApiPostgreSqlFixture fixture)
+public sealed class LogsControllerTests(LoggingApiPostgreSqlFixture fixture)
 	: ApiPostgreSqlTestBase<Program>(fixture),
 		IAsyncLifetime
 {

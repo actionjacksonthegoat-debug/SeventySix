@@ -19,7 +19,7 @@ namespace SeventySix.ArchitectureTests;
 /// Ensures all bounded contexts with databases implement IDatabaseHealthCheck
 /// for comprehensive system-wide health monitoring.
 /// </remarks>
-public class DatabaseHealthCheckTests
+public sealed class DatabaseHealthCheckTests
 {
 	[Fact]
 	public void All_DbContext_Bounded_Contexts_Must_Implement_IDatabaseHealthCheck()

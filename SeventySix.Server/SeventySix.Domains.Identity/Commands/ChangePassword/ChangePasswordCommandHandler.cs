@@ -3,7 +3,9 @@
 // </copyright>
 
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using SeventySix.Shared.Interfaces;
 
 namespace SeventySix.Identity;
 
@@ -39,6 +41,9 @@ public static class ChangePasswordCommandHandler
 	/// <param name="logger">
 	/// Logger for recording errors and information.
 	/// </param>
+	/// <param name="transactionManager">
+	/// Transaction manager for concurrency-safe read-then-write operations.
+	/// </param>
 	/// <param name="cancellationToken">
 	/// The cancellation token for async operations.
 	/// </param>
@@ -57,6 +62,7 @@ public static class ChangePasswordCommandHandler
 		BreachCheckDependencies breachCheck,
 		TimeProvider timeProvider,
 		ILogger<ChangePasswordCommand> logger,
+		ITransactionManager transactionManager,
 		CancellationToken cancellationToken)
 	{
 		// Check new password against known breaches (OWASP ASVS V2.1.7)
@@ -75,21 +81,30 @@ public static class ChangePasswordCommandHandler
 		DateTimeOffset now =
 			timeProvider.GetUtcNow();
 
-		ApplicationUser user =
-			await GetUserOrThrowAsync(
-				command.UserId,
-				userManager,
-				logger);
+		ApplicationUser? transactedUser = null;
 
-		await EnsurePasswordChangedAsync(
-			command,
-			user,
-			userManager);
+		await transactionManager.ExecuteInTransactionAsync(
+			async ct =>
+			{
+				ApplicationUser user =
+					await GetUserOrThrowAsync(
+						command.UserId,
+						userManager,
+						logger);
 
-		await ClearRequiresPasswordChangeIfNeededAsync(
-			user,
-			userManager,
-			logger);
+				transactedUser = user;
+
+				await EnsurePasswordChangedAsync(
+					command,
+					user,
+					userManager);
+
+				await ClearRequiresPasswordChangeIfNeededAsync(
+					user,
+					userManager,
+					logger);
+			},
+			cancellationToken: cancellationToken);
 
 		// Revoke all existing refresh tokens
 		await tokenRepository.RevokeAllUserTokensAsync(
@@ -101,7 +116,7 @@ public static class ChangePasswordCommandHandler
 		await identityCache.InvalidateUserPasswordAsync(command.UserId);
 
 		return await authenticationService.GenerateAuthResultAsync(
-			user,
+			transactedUser!,
 			clientIp: null,
 			requiresPasswordChange: false,
 			rememberMe: false,
@@ -194,6 +209,13 @@ public static class ChangePasswordCommandHandler
 						nameof(command.Request.CurrentPassword));
 				}
 
+				if (changeResult.Errors.Any(
+					error => error.Code == "ConcurrencyFailure"))
+				{
+					throw new DbUpdateConcurrencyException(
+						"Concurrency conflict changing password. Will retry.");
+				}
+
 				throw new InvalidOperationException(
 					string.Join(
 						", ",
@@ -210,6 +232,13 @@ public static class ChangePasswordCommandHandler
 
 			if (!addResult.Succeeded)
 			{
+				if (addResult.Errors.Any(
+					error => error.Code == "ConcurrencyFailure"))
+				{
+					throw new DbUpdateConcurrencyException(
+						"Concurrency conflict adding password. Will retry.");
+				}
+
 				throw new InvalidOperationException(
 					string.Join(
 						", ",
@@ -243,6 +272,13 @@ public static class ChangePasswordCommandHandler
 
 			if (!updateResult.Succeeded)
 			{
+				if (updateResult.Errors.Any(
+					error => error.Code == "ConcurrencyFailure"))
+				{
+					throw new DbUpdateConcurrencyException(
+						"Concurrency conflict clearing password change flag. Will retry.");
+				}
+
 				string errors = updateResult.ToErrorString();
 				logger.LogError(
 					"Failed to clear RequiresPasswordChange flag for user {UserId}: {Errors}",

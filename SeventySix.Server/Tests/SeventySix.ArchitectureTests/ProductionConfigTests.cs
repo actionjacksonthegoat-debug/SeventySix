@@ -13,7 +13,7 @@ namespace SeventySix.ArchitectureTests;
 /// Architecture tests ensuring production configuration is secure.
 /// Verifies localhost origins are not present in production settings.
 /// </summary>
-public class ProductionConfigTests : SourceCodeArchitectureTest
+public sealed class ProductionConfigTests : SourceCodeArchitectureTest
 {
 	/// <summary>
 	/// Verifies production configuration does not contain localhost origins.

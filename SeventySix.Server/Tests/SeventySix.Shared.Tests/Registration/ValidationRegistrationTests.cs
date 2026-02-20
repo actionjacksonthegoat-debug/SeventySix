@@ -6,7 +6,7 @@ using Shouldly;
 
 namespace SeventySix.Shared.Tests.Registration;
 
-public class ValidationRegistrationTests
+public sealed class ValidationRegistrationTests
 {
 	private record TestRequest(string Value);
 

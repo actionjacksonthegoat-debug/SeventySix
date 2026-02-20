@@ -3,6 +3,8 @@
 // </copyright>
 
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using SeventySix.Shared.Interfaces;
 using SeventySix.Shared.POCOs;
 
 namespace SeventySix.Identity;
@@ -21,6 +23,9 @@ public static class ConfirmTotpEnrollmentCommandHandler
 	/// <param name="totpService">
 	/// TOTP service for code verification.
 	/// </param>
+	/// <param name="totpSecretProtector">
+	/// Data protector for TOTP secrets.
+	/// </param>
 	/// <param name="userManager">
 	/// Identity UserManager for user lookup and update.
 	/// </param>
@@ -29,6 +34,9 @@ public static class ConfirmTotpEnrollmentCommandHandler
 	/// </param>
 	/// <param name="timeProvider">
 	/// Time provider for timestamps.
+	/// </param>
+	/// <param name="transactionManager">
+	/// Transaction manager for concurrency-safe read-then-write operations.
 	/// </param>
 	/// <param name="cancellationToken">
 	/// Cancellation token.
@@ -43,62 +51,109 @@ public static class ConfirmTotpEnrollmentCommandHandler
 		UserManager<ApplicationUser> userManager,
 		ISecurityAuditService securityAuditService,
 		TimeProvider timeProvider,
+		ITransactionManager transactionManager,
 		CancellationToken cancellationToken)
 	{
-		ApplicationUser? user =
-			await userManager.FindByIdAsync(command.UserId.ToString());
+		// Closure variables for results passed out of the transaction lambda
+		SecurityEventType? pendingAuditType = null;
+		bool pendingAuditSuccess = false;
+		string? pendingAuditDetails = null;
+		ApplicationUser? pendingAuditUser = null;
+		Result? earlyResult = null;
 
-		if (!user.IsValidForAuthentication())
-		{
-			return Result.Failure(AuthErrorMessages.InvalidCredentials);
-		}
+		await transactionManager.ExecuteInTransactionAsync(
+			async ct =>
+			{
+				// Reset closure state for retries
+				pendingAuditType = null;
+				pendingAuditUser = null;
+				earlyResult = null;
 
-		if (string.IsNullOrEmpty(user.TotpSecret))
-		{
-			return Result.Failure("TOTP enrollment not initiated");
-		}
+				ApplicationUser? user =
+					await userManager.FindByIdAsync(command.UserId.ToString());
 
-		if (user.TotpEnrolledAt.HasValue)
-		{
-			return Result.Failure("TOTP is already confirmed");
-		}
+				if (!user.IsValidForAuthentication())
+				{
+					earlyResult =
+						Result.Failure(AuthErrorMessages.InvalidCredentials);
+					return;
+				}
 
-		bool isValidCode =
-			totpService.VerifyCode(
-				totpSecretProtector.Unprotect(user.TotpSecret),
-				command.Request.Code);
+				if (string.IsNullOrEmpty(user.TotpSecret))
+				{
+					earlyResult =
+						Result.Failure("TOTP enrollment not initiated");
+					return;
+				}
 
-		if (!isValidCode)
+				if (user.TotpEnrolledAt.HasValue)
+				{
+					earlyResult =
+						Result.Failure("TOTP is already confirmed");
+					return;
+				}
+
+				bool isValidCode =
+					totpService.VerifyCode(
+						totpSecretProtector.Unprotect(user.TotpSecret),
+						command.Request.Code);
+
+				if (!isValidCode)
+				{
+					pendingAuditType =
+						SecurityEventType.MfaFailed;
+					pendingAuditSuccess = false;
+					pendingAuditDetails = "TOTP enrollment confirmation failed";
+					pendingAuditUser = user;
+					earlyResult =
+						Result.Failure("Invalid verification code");
+					return;
+				}
+
+				// Confirm enrollment
+				user.TotpEnrolledAt =
+					timeProvider.GetUtcNow();
+				user.MfaEnabled = true;
+				pendingAuditUser = user;
+
+				IdentityResult updateResult =
+					await userManager.UpdateAsync(user);
+
+				if (!updateResult.Succeeded)
+				{
+					if (updateResult.Errors.Any(
+						error => error.Code == "ConcurrencyFailure"))
+					{
+						throw new DbUpdateConcurrencyException(
+							"Concurrency conflict updating TOTP enrollment. Will retry.");
+					}
+
+					earlyResult =
+						Result.Failure("Failed to confirm TOTP enrollment");
+					return;
+				}
+
+				pendingAuditType =
+					SecurityEventType.TotpEnrolled;
+				pendingAuditSuccess = true;
+			},
+			cancellationToken: cancellationToken);
+
+		// Audit log outside transaction (cannot roll back telemetry)
+		if (pendingAuditType is not null && pendingAuditUser is not null)
 		{
 			await securityAuditService.LogEventAsync(
-				SecurityEventType.MfaFailed,
-				user,
-				success: false,
-				details: "TOTP enrollment confirmation failed",
+				pendingAuditType.Value,
+				pendingAuditUser,
+				success: pendingAuditSuccess,
+				details: pendingAuditDetails,
 				cancellationToken);
-
-			return Result.Failure("Invalid verification code");
 		}
 
-		// Confirm enrollment
-		user.TotpEnrolledAt =
-			timeProvider.GetUtcNow();
-		user.MfaEnabled = true;
-
-		IdentityResult updateResult =
-			await userManager.UpdateAsync(user);
-
-		if (!updateResult.Succeeded)
+		if (earlyResult is not null)
 		{
-			return Result.Failure("Failed to confirm TOTP enrollment");
+			return earlyResult;
 		}
-
-		await securityAuditService.LogEventAsync(
-			SecurityEventType.TotpEnrolled,
-			user,
-			success: true,
-			details: null,
-			cancellationToken);
 
 		return Result.Success();
 	}

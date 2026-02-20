@@ -7,7 +7,7 @@ namespace SeventySix.Api.Infrastructure;
 /// <summary>
 /// Represents system resource usage metrics.
 /// </summary>
-public class SystemResourcesResponse
+public sealed class SystemResourcesResponse
 {
 	/// <summary>
 	/// Gets or sets the CPU usage percentage.

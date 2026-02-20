@@ -40,7 +40,7 @@ namespace SeventySix.ElectronicNotifications.Emails.Jobs;
 /// <param name="logger">
 /// Logger for diagnostic messages.
 /// </param>
-public class EmailQueueProcessJobHandler(
+public sealed class EmailQueueProcessJobHandler(
 	IMessageBus messageBus,
 	IEmailService emailService,
 	IRecurringJobService recurringJobService,

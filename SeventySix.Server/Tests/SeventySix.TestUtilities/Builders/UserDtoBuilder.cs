@@ -11,7 +11,7 @@ namespace SeventySix.TestUtilities.Builders;
 /// Builder for creating UserDto instances in tests.
 /// Provides sensible defaults and fluent API for customization.
 /// </summary>
-public class UserDtoBuilder
+public sealed class UserDtoBuilder
 {
 	private readonly TimeProvider TimeProvider;
 	private long Id = 1L;

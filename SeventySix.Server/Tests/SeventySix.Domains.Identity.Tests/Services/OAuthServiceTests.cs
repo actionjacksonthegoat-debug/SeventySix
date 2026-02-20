@@ -25,7 +25,7 @@ namespace SeventySix.Identity.Tests.Services;
 /// - Display Name sync on login
 /// - User creation via FindByLoginAsync fallback
 /// </remarks>
-public class OAuthServiceTests
+public sealed class OAuthServiceTests
 {
 	private readonly FakeTimeProvider TimeProvider =
 		TestDates.CreateDefaultTimeProvider();

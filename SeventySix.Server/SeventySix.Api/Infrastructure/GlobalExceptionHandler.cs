@@ -55,7 +55,7 @@ namespace SeventySix.Api.Infrastructure;
 /// <param name="configuration">
 /// Application configuration to read CORS allowed origins.
 /// </param>
-public class GlobalExceptionHandler(
+public sealed class GlobalExceptionHandler(
 	ILogger<GlobalExceptionHandler> logger,
 	IHostEnvironment environment,
 	IConfiguration configuration) : IExceptionHandler

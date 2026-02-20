@@ -47,7 +47,7 @@ public static class UpdateUserCommandHandler
 		UserManager<ApplicationUser> userManager,
 		IIdentityCacheService identityCache,
 		ITransactionManager transactionManager,
-		ILogger logger,
+		ILogger<UpdateUserRequest> logger,
 		CancellationToken cancellationToken)
 	{
 		string previousEmail = string.Empty;
@@ -152,7 +152,7 @@ public static class UpdateUserCommandHandler
 	private static void HandleIdentityErrors(
 		IdentityResult result,
 		UpdateUserRequest request,
-		ILogger logger)
+		ILogger<UpdateUserRequest> logger)
 	{
 		if (result.Errors.Any(error => error.Code == "ConcurrencyFailure"))
 		{
@@ -214,7 +214,7 @@ public static class UpdateUserCommandHandler
 	private static void HandleDuplicateKeyViolation(
 		DbUpdateException exception,
 		UpdateUserRequest request,
-		ILogger logger)
+		ILogger<UpdateUserRequest> logger)
 	{
 		string message =
 			exception.InnerException?.Message ?? exception.Message;

@@ -25,7 +25,7 @@ namespace SeventySix.TestUtilities.Builders;
 /// - Builder Pattern: Fluent API for constructing complex objects
 /// - Test Data Builder: Specialized builder for test data
 /// </remarks>
-public class ThirdPartyApiRequestBuilder
+public sealed class ThirdPartyApiRequestBuilder
 {
 	private readonly TimeProvider TimeProvider;
 	private string ApiName = "TestApi";

@@ -28,7 +28,7 @@ namespace SeventySix.Identity;
 /// </list>
 /// </para>
 /// </remarks>
-public class SecurityEventConfiguration : IEntityTypeConfiguration<SecurityEvent>
+public sealed class SecurityEventConfiguration : IEntityTypeConfiguration<SecurityEvent>
 {
 	/// <summary>
 	/// Configures the entity mapping for SecurityEvent.

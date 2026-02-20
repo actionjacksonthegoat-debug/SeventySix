@@ -17,7 +17,7 @@ namespace SeventySix.Shared.Tests.Persistence;
 /// Unit tests for <see cref="AuditInterceptor"/>.
 /// Tests automatic audit property setting for IAuditableEntity, IModifiableEntity, and ICreatableEntity.
 /// </summary>
-public class AuditInterceptorTests : IDisposable
+public sealed class AuditInterceptorTests : IDisposable
 {
 	private const string TestUser = "TestUser";
 	private const string SystemUser =

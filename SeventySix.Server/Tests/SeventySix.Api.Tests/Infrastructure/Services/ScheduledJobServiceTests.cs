@@ -19,7 +19,7 @@ namespace SeventySix.Api.Tests.Infrastructure.Services;
 /// <summary>
 /// Unit tests for ScheduledJobService.
 /// </summary>
-public class ScheduledJobServiceTests
+public sealed class ScheduledJobServiceTests
 {
 	private readonly IRecurringJobRepository RecurringJobRepository;
 	private readonly IOptions<RefreshTokenCleanupSettings> RefreshTokenCleanupSettingsOption;

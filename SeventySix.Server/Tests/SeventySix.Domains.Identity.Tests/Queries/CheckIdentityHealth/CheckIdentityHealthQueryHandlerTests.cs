@@ -18,7 +18,7 @@ namespace SeventySix.Identity.Tests.Queries.CheckIdentityHealth;
 /// Infrastructure: Verifies database connectivity and exception handling.
 /// </remarks>
 [Collection(CollectionNames.IdentityPostgreSql)]
-public class CheckIdentityHealthQueryHandlerTests(
+public sealed class CheckIdentityHealthQueryHandlerTests(
 	IdentityPostgreSqlFixture fixture) : DataPostgreSqlTestBase(fixture)
 {
 	/// <summary>

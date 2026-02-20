@@ -15,7 +15,7 @@ namespace SeventySix.Identity;
 /// - RequestedRoleId FK to SecurityRoles with RESTRICT delete
 /// - Composite unique index prevents duplicate pending requests per user per role
 /// </remarks>
-public class PermissionRequestConfiguration
+public sealed class PermissionRequestConfiguration
 	: IEntityTypeConfiguration<PermissionRequest>
 {
 	/// <inheritdoc/>

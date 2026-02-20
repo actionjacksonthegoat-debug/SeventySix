@@ -20,7 +20,7 @@ namespace SeventySix.Api.Tests.Infrastructure.Services;
 /// Tests use mocked repository to verify business logic without database dependencies.
 /// Follows TDD best practices.
 /// </summary>
-public class RateLimitingServiceTests
+public sealed class RateLimitingServiceTests
 {
 	private readonly ILogger<RateLimitingService> Logger;
 	private readonly IThirdPartyApiRequestRepository Repository;

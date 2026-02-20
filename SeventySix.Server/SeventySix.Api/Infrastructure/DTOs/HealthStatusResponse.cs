@@ -13,7 +13,7 @@ namespace SeventySix.Api.Infrastructure;
 /// This DTO aggregates health information from multiple system components
 /// including database, external APIs, error queue, and system resources.
 /// </remarks>
-public class HealthStatusResponse
+public sealed class HealthStatusResponse
 {
 	/// <summary>
 	/// Gets or sets the overall system health status.

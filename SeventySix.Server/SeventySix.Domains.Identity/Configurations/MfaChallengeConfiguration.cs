@@ -17,7 +17,7 @@ namespace SeventySix.Identity;
 /// - Unique index on Token for fast lookups
 /// - Filtered index for active (unused) challenges
 /// </remarks>
-public class MfaChallengeConfiguration : IEntityTypeConfiguration<MfaChallenge>
+public sealed class MfaChallengeConfiguration : IEntityTypeConfiguration<MfaChallenge>
 {
 	/// <summary>
 	/// Configures the entity mapping for MfaChallenge.

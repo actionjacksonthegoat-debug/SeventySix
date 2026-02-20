@@ -20,7 +20,7 @@ namespace SeventySix.Identity.Tests.Queries.CheckEmailExists;
 /// Security: Prevents duplicate email registrations.
 /// </remarks>
 [Collection(CollectionNames.IdentityPostgreSql)]
-public class CheckEmailExistsQueryHandlerTests(
+public sealed class CheckEmailExistsQueryHandlerTests(
 	IdentityPostgreSqlFixture fixture) : DataPostgreSqlTestBase(fixture)
 {
 	private static readonly FakeTimeProvider TimeProvider =

@@ -11,7 +11,7 @@ namespace SeventySix.Analyzers.Tests;
 /// Enforces ')' to be on same line as last content.
 /// Follows 80/20 rule: critical paths only.
 /// </summary>
-public class ClosingParenSameLineAnalyzerTests
+public sealed class ClosingParenSameLineAnalyzerTests
 {
 	[Fact]
 	public async Task ClosingParen_AloneOnLine_ReportsDiagnosticAsync()

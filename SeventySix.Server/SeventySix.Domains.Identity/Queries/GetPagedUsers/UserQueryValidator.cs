@@ -19,7 +19,7 @@ namespace SeventySix.Identity.Queries.GetPagedUsers;
 ///
 /// No additional ApplicationUser-specific validation needed - IsActive and IncludeDeleted are type-safe booleans.
 /// </remarks>
-public class UserQueryValidator
+public sealed class UserQueryValidator
 	: BaseQueryValidator<UserQueryRequest, ApplicationUser>
 {
 	/// <summary>

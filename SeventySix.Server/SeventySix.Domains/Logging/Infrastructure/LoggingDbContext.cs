@@ -26,7 +26,7 @@ namespace SeventySix.Logging;
 /// - SRP: Only responsible for Logging domain data access
 /// - OCP: Can be extended with new entity configurations
 /// </remarks>
-public class LoggingDbContext : BaseDbContext<LoggingDbContext>
+public sealed class LoggingDbContext : BaseDbContext<LoggingDbContext>
 {
 	/// <summary>
 	/// Initializes a new instance of the <see cref="LoggingDbContext"/> class.

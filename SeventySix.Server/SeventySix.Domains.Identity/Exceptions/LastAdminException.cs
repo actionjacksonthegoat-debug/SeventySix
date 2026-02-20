@@ -37,7 +37,7 @@ namespace SeventySix.Identity;
 /// }
 /// </code>
 /// </remarks>
-public class LastAdminException : DomainException
+public sealed class LastAdminException : DomainException
 {
 	/// <summary>
 	/// Initializes a new instance of the <see cref="LastAdminException"/> class with a default message.

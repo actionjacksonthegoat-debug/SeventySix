@@ -96,7 +96,7 @@ public sealed class RegistrationService(
 				"Failed to create user '{Username}': {Errors}",
 				username,
 				errors);
-			throw new DomainException(
+			throw new BusinessRuleViolationException(
 				"User registration could not be completed.");
 		}
 
@@ -113,7 +113,7 @@ public sealed class RegistrationService(
 				roleName,
 				username,
 				errors);
-			throw new DomainException(
+			throw new BusinessRuleViolationException(
 				"User registration could not be completed.");
 		}
 

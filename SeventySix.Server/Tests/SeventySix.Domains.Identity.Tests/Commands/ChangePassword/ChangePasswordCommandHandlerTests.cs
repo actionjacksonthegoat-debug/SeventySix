@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
+using SeventySix.Shared.Interfaces;
 using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.Mocks;
@@ -9,7 +10,7 @@ using Shouldly;
 
 namespace SeventySix.Identity.Tests.Commands.ChangePassword;
 
-public class ChangePasswordCommandHandlerTests
+public sealed class ChangePasswordCommandHandlerTests
 {
 	private readonly UserManager<ApplicationUser> UserManager;
 	private readonly ITokenRepository TokenRepository;
@@ -18,6 +19,7 @@ public class ChangePasswordCommandHandlerTests
 	private readonly BreachCheckDependencies BreachCheck;
 	private readonly FakeTimeProvider TimeProvider;
 	private readonly ILogger<ChangePasswordCommand> Logger;
+	private readonly ITransactionManager TransactionManager;
 
 	public ChangePasswordCommandHandlerTests()
 	{
@@ -59,6 +61,20 @@ public class ChangePasswordCommandHandlerTests
 
 		Logger =
 			Substitute.For<ILogger<ChangePasswordCommand>>();
+		TransactionManager =
+			Substitute.For<ITransactionManager>();
+		TransactionManager
+			.ExecuteInTransactionAsync(
+				Arg.Any<Func<CancellationToken, Task>>(),
+				Arg.Any<int>(),
+				Arg.Any<CancellationToken>())
+			.Returns(
+				call =>
+				{
+					Func<CancellationToken, Task> op =
+						call.ArgAt<Func<CancellationToken, Task>>(0);
+					return op(CancellationToken.None);
+				});
 	}
 
 	[Fact]
@@ -92,6 +108,7 @@ public class ChangePasswordCommandHandlerTests
 				BreachCheck,
 				TimeProvider,
 				Logger,
+				TransactionManager,
 				CancellationToken.None);
 
 		// Assert
@@ -204,6 +221,7 @@ public class ChangePasswordCommandHandlerTests
 				breachedCheck,
 				TimeProvider,
 				Logger,
+				TransactionManager,
 				CancellationToken.None);
 
 		// Assert — handler should reject early without changing the password

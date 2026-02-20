@@ -23,7 +23,7 @@ namespace SeventySix.Domains.Tests.ElectronicNotifications.Emails;
 /// - Argument validation
 /// - URL building with token encoding.
 /// </remarks>
-public class EmailServiceTests
+public sealed class EmailServiceTests
 {
 	private readonly ILogger<EmailService> Logger =
 		Substitute.For<

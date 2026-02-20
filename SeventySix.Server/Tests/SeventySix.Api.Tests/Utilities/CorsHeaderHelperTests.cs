@@ -8,7 +8,7 @@ using Shouldly;
 
 namespace SeventySix.Api.Tests.Middleware;
 
-public class CorsHeaderHelperTests
+public sealed class CorsHeaderHelperTests
 {
 	[Fact]
 	public void AddsHeaders_When_Origin_Is_Allowed()

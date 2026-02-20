@@ -9,7 +9,7 @@ namespace SeventySix.Identity.Tests.POCOs.Requests;
 /// <summary>
 /// Unit tests for <see cref="UpdateUserRequest"/>.
 /// </summary>
-public class UpdateUserRequestTests
+public sealed class UpdateUserRequestTests
 {
 	[Fact]
 	public void UpdateUserRequest_ShouldCreateInstance_WithValidData()

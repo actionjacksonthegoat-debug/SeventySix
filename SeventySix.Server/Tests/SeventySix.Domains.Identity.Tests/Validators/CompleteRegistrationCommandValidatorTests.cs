@@ -11,7 +11,7 @@ namespace SeventySix.Identity.Tests.Validators;
 /// <summary>
 /// Unit tests for <see cref="CompleteRegistrationCommandValidator"/>.
 /// </summary>
-public class CompleteRegistrationCommandValidatorTests
+public sealed class CompleteRegistrationCommandValidatorTests
 {
 	private static readonly PasswordSettings TestPasswordSettings =
 		new()

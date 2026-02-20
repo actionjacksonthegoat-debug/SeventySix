@@ -21,7 +21,7 @@ namespace SeventySix.Api.Tests.Controllers;
 /// 80/20 Rule: Only critical happy paths tested.
 /// </summary>
 [Collection(CollectionNames.IdentityUsersPostgreSql)]
-public class UsersControllerMeEndpointTests(
+public sealed class UsersControllerMeEndpointTests(
 	IdentityUsersApiPostgreSqlFixture fixture) : ApiPostgreSqlTestBase<Program>(fixture), IAsyncLifetime
 {
 	private HttpClient Client =

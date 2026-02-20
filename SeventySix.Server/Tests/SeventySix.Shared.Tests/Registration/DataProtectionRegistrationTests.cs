@@ -17,7 +17,7 @@ namespace SeventySix.Shared.Tests.Registration;
 /// Following 80/20 rule: Tests focus on critical validation paths only.
 /// Certificate file existence and loading are integration concerns.
 /// </remarks>
-public class DataProtectionRegistrationTests
+public sealed class DataProtectionRegistrationTests
 {
 	private static readonly string NonExistentCertPath =
 		Path.Combine(

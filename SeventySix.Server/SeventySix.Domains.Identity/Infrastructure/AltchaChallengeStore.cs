@@ -24,7 +24,7 @@ namespace SeventySix.Identity;
 /// <param name="timeProvider">
 /// Time provider for UTC time.
 /// </param>
-public class AltchaChallengeStore(
+public sealed class AltchaChallengeStore(
 	IdentityDbContext context,
 	TimeProvider timeProvider) : IAltchaCancellableChallengeStore
 {

@@ -13,7 +13,7 @@ namespace SeventySix.Analyzers.Tests;
 /// Note: SimpleArgumentsThreshold is 40 chars - tests need to exceed this.
 /// Note: Code fix calculates indentation from parent statement's leading trivia and adds a tab.
 /// </summary>
-public class MultiArgumentNewlineCodeFixTests
+public sealed class MultiArgumentNewlineCodeFixTests
 {
 	/// <summary>
 	/// Verifies that the code fix triggers for arguments exceeding threshold.

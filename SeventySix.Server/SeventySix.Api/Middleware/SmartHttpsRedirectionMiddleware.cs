@@ -41,7 +41,7 @@ namespace SeventySix.Api.Middleware;
 /// <param name="securitySettings">
 /// Security settings from configuration.
 /// </param>
-public class SmartHttpsRedirectionMiddleware(
+public sealed class SmartHttpsRedirectionMiddleware(
 	RequestDelegate next,
 	IOptions<SecuritySettings> securitySettings)
 {

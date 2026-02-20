@@ -23,7 +23,7 @@ namespace SeventySix.Api.Tests.Controllers;
 /// Rate limits are configured via UseSetting: Login=5/min, Register=3/hour, Refresh=10/min.
 /// </remarks>
 [Collection(CollectionNames.IdentityAuthPostgreSql)]
-public class AuthRateLimitingTests(IdentityAuthApiPostgreSqlFixture fixture)
+public sealed class AuthRateLimitingTests(IdentityAuthApiPostgreSqlFixture fixture)
 	: ApiPostgreSqlTestBase<Program>(fixture),
 		IAsyncLifetime
 {

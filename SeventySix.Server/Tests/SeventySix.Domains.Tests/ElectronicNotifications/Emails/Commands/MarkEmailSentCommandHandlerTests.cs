@@ -22,7 +22,7 @@ namespace SeventySix.Domains.Tests.ElectronicNotifications.Emails.Commands;
 /// - SentAt timestamp setting
 /// - Handling of non-existent entries.
 /// </remarks>
-public class MarkEmailSentCommandHandlerTests
+public sealed class MarkEmailSentCommandHandlerTests
 {
 	private readonly FakeTimeProvider TimeProvider;
 

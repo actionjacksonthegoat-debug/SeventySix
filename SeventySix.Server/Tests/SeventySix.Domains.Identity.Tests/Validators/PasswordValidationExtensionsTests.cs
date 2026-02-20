@@ -21,7 +21,7 @@ namespace SeventySix.Identity.Tests.Validators;
 ///
 /// Uses FluentValidation.TestHelper for cleaner test syntax.
 /// </remarks>
-public class PasswordValidationExtensionsTests
+public sealed class PasswordValidationExtensionsTests
 {
 	private static readonly PasswordSettings TestPasswordSettings =
 		new()

@@ -11,7 +11,7 @@ namespace SeventySix.Analyzers.Tests;
 /// Enforces 2+ arguments to be on separate lines.
 /// Follows 80/20 rule: critical paths only.
 /// </summary>
-public class MultiArgumentNewlineAnalyzerTests
+public sealed class MultiArgumentNewlineAnalyzerTests
 {
 	[Fact]
 	public async Task TwoArguments_OnSameLine_ShouldReportDiagnosticAsync()

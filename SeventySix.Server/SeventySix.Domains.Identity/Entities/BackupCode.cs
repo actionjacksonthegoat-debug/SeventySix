@@ -13,7 +13,7 @@ namespace SeventySix.Identity;
 /// Backup codes are single-use emergency recovery tokens.
 /// They are hashed using Identity's password hasher for security.
 /// </remarks>
-public class BackupCode : ICreatableEntity
+public sealed class BackupCode : ICreatableEntity
 {
 	/// <summary>
 	/// Gets or sets the unique identifier.

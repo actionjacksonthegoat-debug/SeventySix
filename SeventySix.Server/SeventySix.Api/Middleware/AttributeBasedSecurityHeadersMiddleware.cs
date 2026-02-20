@@ -41,7 +41,7 @@ namespace SeventySix.Api.Middleware;
 /// <param name="environment">
 /// The web host environment.
 /// </param>
-public class AttributeBasedSecurityHeadersMiddleware(
+public sealed class AttributeBasedSecurityHeadersMiddleware(
 	RequestDelegate next,
 	IWebHostEnvironment environment)
 {

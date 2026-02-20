@@ -18,7 +18,7 @@ namespace SeventySix.Api.Tests.Controllers;
 /// Tests the public health endpoint which returns minimal status info (PublicHealthDto).
 /// Detailed health endpoint tests are in HealthControllerAuthorizationTests.
 /// </remarks>
-public class HealthControllerTests
+public sealed class HealthControllerTests
 {
 	private readonly IHealthCheckService HealthService;
 	private readonly IScheduledJobService ScheduledJobService;

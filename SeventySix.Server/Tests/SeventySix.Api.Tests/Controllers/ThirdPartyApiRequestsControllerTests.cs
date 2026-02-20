@@ -16,7 +16,7 @@ namespace SeventySix.Api.Tests.Controllers;
 /// <summary>
 /// Unit tests for ThirdPartyApiRequestsController using Wolverine IMessageBus.
 /// </summary>
-public class ThirdPartyApiRequestsControllerTests
+public sealed class ThirdPartyApiRequestsControllerTests
 {
 	private readonly IMessageBus MessageBus;
 	private readonly ThirdPartyApiRequestsController Controller;

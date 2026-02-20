@@ -54,7 +54,7 @@ public static class CreateUserCommandHandler
 		UserManager<ApplicationUser> userManager,
 		IIdentityCacheService identityCache,
 		TimeProvider timeProvider,
-		ILogger logger,
+		ILogger<CreateUserRequest> logger,
 		CancellationToken cancellationToken)
 	{
 		DateTimeOffset now =
@@ -131,7 +131,7 @@ public static class CreateUserCommandHandler
 					EmailTypeConstants.Welcome,
 					createdUser.Email,
 					createdUser.Id,
-					new Dictionary<string, string>
+					new()
 					{
 						["username"] = createdUser.Username,
 						["resetToken"] = combinedToken

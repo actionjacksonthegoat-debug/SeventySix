@@ -38,7 +38,7 @@ namespace SeventySix.Identity;
 /// }
 /// </code>
 /// </remarks>
-public class UserNotFoundException : EntityNotFoundException
+public sealed class UserNotFoundException : EntityNotFoundException
 {
 	/// <summary>
 	/// Initializes a new instance of the <see cref="UserNotFoundException"/> class with a default message.

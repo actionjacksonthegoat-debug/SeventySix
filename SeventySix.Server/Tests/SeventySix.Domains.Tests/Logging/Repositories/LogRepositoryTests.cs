@@ -28,7 +28,7 @@ namespace SeventySix.Domains.Tests.Logging.Repositories;
 /// - Cleanup operations
 /// </remarks>
 [Collection(CollectionNames.LoggingPostgreSql)]
-public class LogRepositoryTests : DataPostgreSqlTestBase
+public sealed class LogRepositoryTests : DataPostgreSqlTestBase
 {
 	private readonly LogRepository Repository;
 

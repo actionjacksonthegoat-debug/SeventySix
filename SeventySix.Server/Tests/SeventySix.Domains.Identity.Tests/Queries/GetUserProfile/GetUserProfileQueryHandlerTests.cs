@@ -18,7 +18,7 @@ namespace SeventySix.Identity.Tests.Queries.GetUserProfile;
 /// Unit tests for <see cref="GetUserProfileQueryHandler"/>.
 /// Tests query handler with mocked dependencies following 80/20 rule.
 /// </summary>
-public class GetUserProfileQueryHandlerTests
+public sealed class GetUserProfileQueryHandlerTests
 {
 	private static readonly FakeTimeProvider TimeProvider =
 		new(TestTimeProviderBuilder.DefaultTime);

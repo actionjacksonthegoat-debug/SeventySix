@@ -28,7 +28,7 @@ namespace SeventySix.Identity.Jobs;
 /// <param name="logger">
 /// Logger for diagnostic messages.
 /// </param>
-public class IpAnonymizationJobHandler(
+public sealed class IpAnonymizationJobHandler(
 	IdentityDbContext dbContext,
 	IRecurringJobService recurringJobService,
 	IOptions<IpAnonymizationSettings> settings,

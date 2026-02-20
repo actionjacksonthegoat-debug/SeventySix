@@ -16,7 +16,7 @@ namespace SeventySix.ElectronicNotifications.Emails;
 /// - Retry logic: Attempts and MaxAttempts track delivery attempts
 /// - Auditability: Full history of email delivery status.
 /// </remarks>
-public class EmailQueueEntry : ICreatableEntity
+public sealed class EmailQueueEntry : ICreatableEntity
 {
 	/// <summary>
 	/// Gets or sets the unique identifier.

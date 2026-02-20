@@ -17,7 +17,7 @@ namespace SeventySix.Identity.Commands.UpdateProfile;
 /// - Email: Required, valid email format, max 255 characters, unique (excluding current user)
 /// - FullName: Optional, max 100 characters if provided
 /// </remarks>
-public class UpdateProfileCommandValidator
+public sealed class UpdateProfileCommandValidator
 	: AbstractValidator<UpdateProfileCommand>
 {
 	/// <summary>

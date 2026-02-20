@@ -27,7 +27,7 @@ namespace SeventySix.TestUtilities.Builders;
 /// - Builder Pattern: Fluent API for constructing complex objects
 /// - Test Data Builder: Specialized builder for test data
 /// </remarks>
-public class UserBuilder
+public sealed class UserBuilder
 {
 	private readonly TimeProvider TimeProvider;
 	private long? UserId = null;

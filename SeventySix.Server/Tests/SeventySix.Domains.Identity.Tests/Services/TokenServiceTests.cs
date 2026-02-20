@@ -20,7 +20,7 @@ namespace SeventySix.Identity.Tests.Services;
 /// Pure JWT generation tests are in TokenServiceUnitTests.cs.
 /// </summary>
 [Collection(CollectionNames.IdentityPostgreSql)]
-public class TokenServiceTests(IdentityPostgreSqlFixture fixture)
+public sealed class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 	: DataPostgreSqlTestBase(fixture)
 {
 	/// <summary>

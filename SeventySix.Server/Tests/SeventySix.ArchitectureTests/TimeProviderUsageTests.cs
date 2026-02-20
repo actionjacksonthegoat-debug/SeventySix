@@ -21,7 +21,7 @@ namespace SeventySix.ArchitectureTests;
 /// - ALWAYS inject TimeProvider for testable time abstraction
 /// - Tests should use TestTimeProvider or mock TimeProvider
 /// </remarks>
-public class TimeProviderUsageTests : SourceCodeArchitectureTest
+public sealed class TimeProviderUsageTests : SourceCodeArchitectureTest
 {
 	/// <summary>
 	/// Files that are explicitly allowed to use DateTimeOffset.UtcNow.

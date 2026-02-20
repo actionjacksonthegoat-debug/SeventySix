@@ -15,7 +15,7 @@ namespace SeventySix.Domains.Tests.Logging.Commands.DeleteLogsOlderThan;
 /// Tests date-based cleanup operation.
 /// Uses mocked repository since persistence is tested in LogRepositoryTests.
 /// </remarks>
-public class DeleteLogsOlderThanCommandHandlerTests
+public sealed class DeleteLogsOlderThanCommandHandlerTests
 {
 	private readonly ILogRepository Repository;
 

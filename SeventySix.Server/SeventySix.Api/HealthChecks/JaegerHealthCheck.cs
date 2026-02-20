@@ -23,7 +23,7 @@ namespace SeventySix.Api.HealthChecks;
 /// <param name="logger">
 /// Logger instance.
 /// </param>
-public class JaegerHealthCheck(
+public sealed class JaegerHealthCheck(
 	IConfiguration configuration,
 	ILogger<JaegerHealthCheck> logger) : IHealthCheck
 {

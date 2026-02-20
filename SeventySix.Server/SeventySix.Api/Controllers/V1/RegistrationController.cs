@@ -28,7 +28,7 @@ namespace SeventySix.Api.Controllers;
 /// </param>
 [ApiController]
 [Route(ApiVersionConfig.VersionedRoutePrefix + "/auth/register")]
-public class RegistrationController(
+public sealed class RegistrationController(
 	IMessageBus messageBus,
 	IAuthCookieService cookieService,
 	IOptions<AuthSettings> authSettings,

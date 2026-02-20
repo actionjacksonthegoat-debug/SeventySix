@@ -22,7 +22,7 @@ namespace SeventySix.TestUtilities.Builders;
 ///     .Build();
 /// </code>
 /// </remarks>
-public class RefreshTokenBuilder
+public sealed class RefreshTokenBuilder
 {
 	/// <summary>
 	/// Test-only default expiration for standard refresh tokens (in days).

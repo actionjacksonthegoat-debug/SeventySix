@@ -14,7 +14,7 @@ namespace SeventySix.Identity;
 /// Events are immutable once created (no update operations).
 /// Schema: security.SecurityEvents
 /// </remarks>
-public class SecurityEvent : ICreatableEntity
+public sealed class SecurityEvent : ICreatableEntity
 {
 	/// <summary>
 	/// Gets or sets the unique identifier.

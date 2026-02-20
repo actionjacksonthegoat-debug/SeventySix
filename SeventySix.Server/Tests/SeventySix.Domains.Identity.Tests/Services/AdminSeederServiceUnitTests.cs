@@ -18,7 +18,7 @@ namespace SeventySix.Identity.Tests.Services;
 /// <summary>
 /// Unit tests for <see cref="AdminSeederService"/>.
 /// </summary>
-public class AdminSeederServiceUnitTests
+public sealed class AdminSeederServiceUnitTests
 {
 	[Fact]
 	/// <summary>

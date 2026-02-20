@@ -24,7 +24,7 @@ namespace SeventySix.Identity.Tests.Services;
 /// - Audit field population
 /// - Error handling for failed registration
 /// </remarks>
-public class RegistrationServiceTests
+public sealed class RegistrationServiceTests
 {
 	private static readonly FakeTimeProvider TimeProvider =
 		new(TestTimeProviderBuilder.DefaultTime);

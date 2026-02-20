@@ -9,4 +9,4 @@ namespace SeventySix.Domains.Tests.ElectronicNotifications;
 /// and run in parallel with tests from other domain collections.
 /// </summary>
 [CollectionDefinition(CollectionNames.ElectronicNotificationsPostgreSql)]
-public class ElectronicNotificationsCollectionDefinition : ICollectionFixture<ElectronicNotificationsPostgreSqlFixture>;
+public sealed class ElectronicNotificationsCollectionDefinition : ICollectionFixture<ElectronicNotificationsPostgreSqlFixture>;

@@ -12,7 +12,7 @@ namespace SeventySix.Identity.Commands.UpdateUser;
 /// Validator for <see cref="UpdateUserRequest"/>.
 /// Ensures data integrity before updating user records.
 /// </summary>
-public class UpdateUserCommandValidator : AbstractValidator<UpdateUserRequest>
+public sealed class UpdateUserCommandValidator : AbstractValidator<UpdateUserRequest>
 {
 	/// <summary>
 	/// Initializes a new instance of the <see cref="UpdateUserCommandValidator"/> class.

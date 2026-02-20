@@ -21,7 +21,7 @@ namespace SeventySix.Identity.Tests.Validators;
 /// - FullName validation (optional, length)
 /// - IsActive validation (no rules, just acceptance)
 /// </remarks>
-public class CreateUserCommandValidatorTests
+public sealed class CreateUserCommandValidatorTests
 {
 	private readonly IMessageBus MessageBus;
 	private readonly CreateUserCommandValidator Validator;

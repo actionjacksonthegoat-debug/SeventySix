@@ -8,10 +8,10 @@ using Shouldly;
 
 namespace SeventySix.Shared.Tests.Registration;
 
-public class FakeDbContext(DbContextOptions<FakeDbContext> options)
+public sealed class FakeDbContext(DbContextOptions<FakeDbContext> options)
 	: DbContext(options);
 
-public class DomainDbContextRegistrationTests
+public sealed class DomainDbContextRegistrationTests
 {
 	[Fact]
 	public void AddDomainDbContext_RegistersDbContextAndInterceptor()

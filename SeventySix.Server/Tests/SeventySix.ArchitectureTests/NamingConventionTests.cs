@@ -17,7 +17,7 @@ namespace SeventySix.ArchitectureTests;
 /// - FK properties must end with Id (e.g., UserId, RoleId)
 /// - Audit fields (CreatedBy, ModifiedBy) should be strings, not FKs.
 /// </summary>
-public class NamingConventionTests : SourceCodeArchitectureTest
+public sealed class NamingConventionTests : SourceCodeArchitectureTest
 {
 	[Fact]
 	public void Foreign_Key_Properties_Should_End_With_Id()

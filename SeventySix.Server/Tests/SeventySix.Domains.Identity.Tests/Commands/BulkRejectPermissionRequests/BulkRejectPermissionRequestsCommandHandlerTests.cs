@@ -15,7 +15,7 @@ namespace SeventySix.Identity.Tests.Commands.BulkRejectPermissionRequests;
 /// Tests follow 80/20 rule: focus on happy path and edge cases.
 /// Bulk operations need tests for empty arrays and proper count returns.
 /// </remarks>
-public class BulkRejectPermissionRequestsCommandHandlerTests
+public sealed class BulkRejectPermissionRequestsCommandHandlerTests
 {
 	private readonly IPermissionRequestRepository PermissionRequestRepository;
 	private readonly IIdentityCacheService IdentityCache;

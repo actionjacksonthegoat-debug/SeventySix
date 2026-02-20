@@ -21,7 +21,7 @@ namespace SeventySix.Identity.Tests.Queries.GetPagedUsers;
 /// Includes search, filtering, and pagination edge cases.
 /// </remarks>
 [Collection(CollectionNames.IdentityPostgreSql)]
-public class GetPagedUsersQueryHandlerTests(
+public sealed class GetPagedUsersQueryHandlerTests(
 	IdentityPostgreSqlFixture fixture) : DataPostgreSqlTestBase(fixture)
 {
 	private static readonly FakeTimeProvider TimeProvider =

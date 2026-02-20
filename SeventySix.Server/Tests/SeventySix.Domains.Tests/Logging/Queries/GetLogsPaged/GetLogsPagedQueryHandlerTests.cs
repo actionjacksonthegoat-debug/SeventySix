@@ -16,7 +16,7 @@ namespace SeventySix.Domains.Tests.Logging.Queries.GetLogsPaged;
 /// Tests the mapping of entities to DTOs and pagination result construction.
 /// Uses mocked repository since data access is tested in LogRepositoryTests.
 /// </remarks>
-public class GetLogsPagedQueryHandlerTests
+public sealed class GetLogsPagedQueryHandlerTests
 {
 	private readonly ILogRepository Repository;
 

@@ -16,7 +16,7 @@ namespace SeventySix.Identity.Tests.Queries.GetUserRoles;
 /// Unit tests for <see cref="GetUserRolesQueryHandler"/>.
 /// Tests query handler with mocked dependencies following 80/20 rule.
 /// </summary>
-public class GetUserRolesQueryHandlerTests
+public sealed class GetUserRolesQueryHandlerTests
 {
 	private readonly UserManager<ApplicationUser> UserManager;
 	private readonly IFusionCacheProvider CacheProvider;
