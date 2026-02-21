@@ -12,7 +12,7 @@ namespace SeventySix.Shared.Settings;
 /// The KeyPrefix should match the cache name to prevent key collisions.
 /// All values MUST be configured in appsettings.json.
 /// </remarks>
-public sealed record NamedCacheSettings
+public sealed record NamedCacheSettings : ICacheDurationSettings
 {
 	/// <summary>
 	/// Cache entry duration (TTL) for this named cache.

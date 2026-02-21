@@ -79,6 +79,19 @@ const sharedRules = {
 	"@stylistic/eol-last": ["error", "never"]
 };
 
+// Restrictions on native Date usage — applied to app and spec files.
+// DateService is the canonical source of truth for all date/time operations.
+const dateUsageRestrictions = [
+	{
+		"selector": "NewExpression[callee.name='Date']",
+		"message": "Use DateService or approved test helpers instead of new Date()"
+	},
+	{
+		"selector": "MemberExpression[object.name='Date'][property.name='now']",
+		"message": "Use dateService.nowTimestamp() or approved test helpers instead of Date.now()"
+	}
+];
+
 // Shared plugins
 const sharedPlugins = {
 	"@typescript-eslint": tseslint,
@@ -112,14 +125,7 @@ export default [
 			...sharedRules,
 			"no-restricted-syntax": [
 				"error",
-				{
-					"selector": "NewExpression[callee.name='Date']",
-					"message": "Use DateService or approved test helpers instead of new Date()"
-				},
-				{
-					"selector": "MemberExpression[object.name='Date'][property.name='now']",
-					"message": "Use dateService.nowTimestamp() or approved test helpers instead of Date.now()"
-				}
+				...dateUsageRestrictions
 			]
 		}
 	},
@@ -138,14 +144,7 @@ export default [
 			...sharedRules,
 			"no-restricted-syntax": [
 				"error",
-				{
-					"selector": "NewExpression[callee.name='Date']",
-					"message": "Use DateService or approved test helpers instead of new Date()"
-				},
-				{
-					"selector": "MemberExpression[object.name='Date'][property.name='now']",
-					"message": "Use dateService.nowTimestamp() or approved test helpers instead of Date.now()"
-				}
+				...dateUsageRestrictions
 			],
 			// Override indent for spec files to properly indent expect() chains
 			"@stylistic/indent": ["error", "tab", { "SwitchCase": 1, "MemberExpression": 1 }]

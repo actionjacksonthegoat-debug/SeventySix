@@ -1,7 +1,10 @@
+import { CACHE_TIMING } from "@shared/constants/timing.constants";
+import { ENVIRONMENT_DEFAULTS } from "./environment.defaults";
 import { Environment } from "./environment.interface";
 
 export const environment: Environment =
 	{
+		...ENVIRONMENT_DEFAULTS,
 		production: true,
 		version: "1.0.0",
 		// Production: relative URL routed via reverse proxy (see nginx.conf).
@@ -35,58 +38,44 @@ export const environment: Environment =
 			query: {
 			// Global defaults
 				default: {
-					staleTime: 30000, // 30s - Consider fresh
-					gcTime: 300000, // 5min - Keep in memory
+					staleTime: CACHE_TIMING.STALE_30S,
+					gcTime: CACHE_TIMING.GC_5MIN,
 					retry: 3,
 					refetchOnWindowFocus: true,
 					refetchOnReconnect: true
 				},
 				// Resource-specific overrides
 				users: {
-					staleTime: 60000, // 1min
-					gcTime: 300000, // 5min
+					staleTime: CACHE_TIMING.STALE_1MIN,
+					gcTime: CACHE_TIMING.GC_5MIN,
 					retry: 3
 				},
 				logs: {
-					staleTime: 30000, // 30s
-					gcTime: 300000, // 5min
+					staleTime: CACHE_TIMING.STALE_30S,
+					gcTime: CACHE_TIMING.GC_5MIN,
 					retry: 2
 				},
 				health: {
-					staleTime: 60_000, // 1min
-					gcTime: 300_000, // 5min
+					staleTime: CACHE_TIMING.STALE_1MIN,
+					gcTime: CACHE_TIMING.GC_5MIN,
 					retry: 1
 				},
 				thirdpartyrequests: {
-					staleTime: 60000, // 1min
-					gcTime: 300000, // 5min
+					staleTime: CACHE_TIMING.STALE_1MIN,
+					gcTime: CACHE_TIMING.GC_5MIN,
 					retry: 2
 				},
 				account: {
-					staleTime: 120000, // 2min - User profile changes infrequently
-					gcTime: 600000, // 10min
+					staleTime: CACHE_TIMING.STALE_2MIN, // User profile changes infrequently
+					gcTime: CACHE_TIMING.GC_10MIN,
 					retry: 2
 				},
 				permissionrequests: {
-					staleTime: 60000, // 1min
-					gcTime: 300000, // 5min
+					staleTime: CACHE_TIMING.STALE_1MIN,
+					gcTime: CACHE_TIMING.GC_5MIN,
 					retry: 2
 				}
 			}
-		},
-		ui: {
-			tables: {
-				defaultPageSize: 50,
-				pageSizeOptions: [25, 50, 100],
-				virtualScrollItemSize: 48
-			},
-			performance: {
-				enableMonitoring: true,
-				fpsWarningThreshold: 30
-			}
-		},
-		http: {
-			defaultTimeout: 30000 // 30 seconds
 		},
 		testing: {
 			runIntegrationTests: false

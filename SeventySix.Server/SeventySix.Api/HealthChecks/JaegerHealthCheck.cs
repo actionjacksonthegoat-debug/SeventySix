@@ -108,12 +108,12 @@ public sealed class JaegerHealthCheck(
 					["port"] = port,
 				});
 		}
-		catch (Exception ex)
+		catch (Exception exception)
 		{
-			logger.LogWarning(ex, "Jaeger health check error");
+			logger.LogWarning(exception, "Jaeger health check error");
 			return HealthCheckResult.Degraded(
-				description: $"Error checking Jaeger connectivity: {ex.Message}",
-				exception: ex);
+				description: $"Error checking Jaeger connectivity: {exception.Message}",
+				exception: exception);
 		}
 	}
 }

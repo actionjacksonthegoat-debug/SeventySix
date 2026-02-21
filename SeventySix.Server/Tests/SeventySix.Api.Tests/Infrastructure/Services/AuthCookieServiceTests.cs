@@ -4,6 +4,7 @@
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Time.Testing;
 using SeventySix.Api.Infrastructure;
 using SeventySix.Identity;
 using Shouldly;
@@ -61,7 +62,7 @@ public sealed class AuthCookieServiceTests
 				new TrustedDeviceSettings());
 	}
 
-	private AuthCookieService CreateService()
+	private AuthCookieService CreateService(TimeProvider? timeProvider = null)
 	{
 		IHttpContextAccessor httpContextAccessor =
 			new HttpContextAccessor
@@ -74,7 +75,7 @@ public sealed class AuthCookieServiceTests
 			AuthSettings,
 			JwtSettings,
 			TrustedDeviceSettings,
-			TimeProvider.System);
+			timeProvider ?? TimeProvider.System);
 	}
 
 	/// <summary>
@@ -86,11 +87,10 @@ public sealed class AuthCookieServiceTests
 	public void SetRefreshTokenCookie_WithoutRememberMe_UsesStandardExpiration()
 	{
 		// Arrange
+		FakeTimeProvider timeProvider = new();
+		DateTimeOffset frozenNow = timeProvider.GetUtcNow();
 		AuthCookieService service =
-			CreateService();
-
-		DateTimeOffset beforeCall =
-			DateTimeOffset.UtcNow;
+			CreateService(timeProvider);
 
 		// Act
 		service.SetRefreshTokenCookie(TestRefreshToken);
@@ -113,14 +113,13 @@ public sealed class AuthCookieServiceTests
 		DateTimeOffset cookieExpires =
 			ParseExpiresFromSetCookieHeader(setCookieHeader);
 
-		DateTimeOffset expectedMinExpiry =
-			beforeCall.AddDays(StandardExpirationDays);
-		DateTimeOffset expectedMaxExpiry =
-			DateTimeOffset.UtcNow.AddDays(StandardExpirationDays).AddSeconds(5);
+		DateTimeOffset expectedExpiry =
+			frozenNow.AddDays(StandardExpirationDays);
 
 		cookieExpires.ShouldBeGreaterThanOrEqualTo(
-			expectedMinExpiry.AddSeconds(-1));
-		cookieExpires.ShouldBeLessThanOrEqualTo(expectedMaxExpiry);
+			expectedExpiry.AddSeconds(-1));
+		cookieExpires.ShouldBeLessThanOrEqualTo(
+			expectedExpiry.AddSeconds(1));
 	}
 
 	/// <summary>

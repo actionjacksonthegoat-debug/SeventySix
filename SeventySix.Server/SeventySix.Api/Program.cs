@@ -56,7 +56,16 @@ builder.Services
 	.ValidateWithFluentValidation()
 	.ValidateOnStart();
 
-// Bind request limits settings for DoS protection
+// Bind request limits settings with FluentValidation + ValidateOnStart
+builder.Services.AddSingleton<IValidator<RequestLimitsSettings>, RequestLimitsSettingsValidator>();
+
+builder.Services
+	.AddOptions<RequestLimitsSettings>()
+	.Bind(builder.Configuration.GetSection(RequestLimitsSettings.SectionName))
+	.ValidateWithFluentValidation()
+	.ValidateOnStart();
+
+// Bind request limits settings for DoS protection (early read required before builder.Build())
 RequestLimitsSettings requestLimitsSettings =
 			builder.Configuration
 				.GetSection(RequestLimitsSettings.SectionName)

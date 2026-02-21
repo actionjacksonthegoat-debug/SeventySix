@@ -296,8 +296,8 @@ public sealed class GlobalExceptionHandlerTests
 		GlobalExceptionHandler handler =
 			CreateHandler();
 
-		DomainException exception =
-			new LastAdminException();
+		DuplicateUserException exception =
+			new("test@example.com");
 
 		// Act
 		(HttpStatusCode statusCode, ProblemDetails problem) =
@@ -307,5 +307,25 @@ public sealed class GlobalExceptionHandlerTests
 		statusCode.ShouldBe(HttpStatusCode.BadRequest);
 		problem.Title.ShouldBe(ProblemDetailConstants.Titles.DomainError);
 		problem.Detail.ShouldBe(ProblemDetailConstants.Details.BadRequest);
+	}
+
+	[Fact]
+	public async Task LastAdminException_Returns409_WithCuratedMessageAsync()
+	{
+		// Arrange
+		GlobalExceptionHandler handler =
+			CreateHandler();
+
+		LastAdminException exception =
+			new();
+
+		// Act
+		(HttpStatusCode statusCode, ProblemDetails problem) =
+			await HandleExceptionAsync(handler, exception);
+
+		// Assert — LastAdminException is mapped specifically to 409 Conflict
+		statusCode.ShouldBe(HttpStatusCode.Conflict);
+		problem.Title.ShouldBe(ProblemDetailConstants.Titles.Conflict);
+		problem.Detail.ShouldBe(ProblemDetailConstants.Details.RoleRemovalFailed);
 	}
 }

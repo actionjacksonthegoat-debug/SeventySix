@@ -124,8 +124,6 @@ public sealed class SettingsPatternTests : SourceCodeArchitectureTest
 		"NamedCacheSettings",
 		// Sub-settings without independent registration
 		"ValkeySettings",
-		// Request limits validated at registration level
-		"RequestLimitsSettings",
 	];
 
 	[Fact]

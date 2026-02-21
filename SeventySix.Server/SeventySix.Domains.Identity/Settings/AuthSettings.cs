@@ -373,16 +373,16 @@ public sealed record SessionInactivitySettings
 	/// <summary>
 	/// Gets a value indicating whether session inactivity timeout is enabled.
 	/// </summary>
-	public bool Enabled { get; init; } = true;
+	public bool Enabled { get; init; }
 
 	/// <summary>
 	/// Gets the minutes of inactivity before session termination.
 	/// NIST 800-63B recommends ≤30 minutes for sensitive applications.
 	/// </summary>
-	public int TimeoutMinutes { get; init; } = 30;
+	public int TimeoutMinutes { get; init; }
 
 	/// <summary>
 	/// Gets the seconds before timeout to show the countdown warning.
 	/// </summary>
-	public int WarningSeconds { get; init; } = 60;
+	public int WarningSeconds { get; init; }
 }

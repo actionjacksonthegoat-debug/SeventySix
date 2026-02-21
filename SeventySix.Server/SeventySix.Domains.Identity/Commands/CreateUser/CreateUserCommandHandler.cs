@@ -138,11 +138,11 @@ public static class CreateUserCommandHandler
 					}),
 				cancellationToken);
 		}
-		catch (Exception ex)
+		catch (Exception exception)
 		{
 			// Log but don't fail - user was created, email can be resent manually
 			logger.LogWarning(
-				ex,
+				exception,
 				"Failed to enqueue welcome email for user {Email} (ID: {UserId}). User was created successfully.",
 				createdUser.Email,
 				createdUser.Id);

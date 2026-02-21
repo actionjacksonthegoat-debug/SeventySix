@@ -136,16 +136,10 @@ public sealed class MfaController(
 				"MFA code resend failed. Code: {ErrorCode}",
 				result.ErrorCode);
 
-			return BadRequest(
-				new ProblemDetails
-				{
-					Title = "MFA Resend Failed",
-					Detail = result.Error,
-					Status =
-						StatusCodes.Status400BadRequest,
-					Extensions =
-						{ ["errorCode"] = result.ErrorCode },
-				});
+			return HandleFailedResult(
+				"MFA Resend Failed",
+				result.Error,
+				errorCode: result.ErrorCode);
 		}
 
 		return NoContent();
@@ -308,16 +302,10 @@ public sealed class MfaController(
 				userId,
 				result.ErrorCode);
 
-			return BadRequest(
-				new ProblemDetails
-				{
-					Title = "TOTP Enrollment Failed",
-					Detail = result.Error,
-					Status =
-						StatusCodes.Status400BadRequest,
-					Extensions =
-						{ ["errorCode"] = result.ErrorCode },
-				});
+			return HandleFailedResult(
+				"TOTP Enrollment Failed",
+				result.Error,
+				errorCode: result.ErrorCode);
 		}
 
 		return Ok(
@@ -371,14 +359,7 @@ public sealed class MfaController(
 				"TOTP enrollment confirmation failed for user {UserId}",
 				userId);
 
-			return BadRequest(
-				new ProblemDetails
-				{
-					Title = "TOTP Confirmation Failed",
-					Detail = result.Error,
-					Status =
-						StatusCodes.Status400BadRequest,
-				});
+			return HandleFailedResult("TOTP Confirmation Failed", result.Error);
 		}
 
 		return NoContent();
@@ -429,14 +410,7 @@ public sealed class MfaController(
 				"TOTP disable failed for user {UserId}",
 				userId);
 
-			return BadRequest(
-				new ProblemDetails
-				{
-					Title = "TOTP Disable Failed",
-					Detail = result.Error,
-					Status =
-						StatusCodes.Status400BadRequest,
-				});
+			return HandleFailedResult("TOTP Disable Failed", result.Error);
 		}
 
 		return NoContent();
@@ -483,16 +457,10 @@ public sealed class MfaController(
 				userId,
 				result.ErrorCode);
 
-			return BadRequest(
-				new ProblemDetails
-				{
-					Title = "Backup Code Generation Failed",
-					Detail = result.Error,
-					Status =
-						StatusCodes.Status400BadRequest,
-					Extensions =
-						{ ["errorCode"] = result.ErrorCode },
-				});
+			return HandleFailedResult(
+				"Backup Code Generation Failed",
+				result.Error,
+				errorCode: result.ErrorCode);
 		}
 
 		return Ok(result.Codes);

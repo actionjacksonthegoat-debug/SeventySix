@@ -123,15 +123,16 @@ public sealed class ConfirmTotpEnrollmentCommandHandlerTests
 	public async Task HandleAsync_AlreadyEnrolled_ReturnsFailureAsync()
 	{
 		// Arrange
+		FakeTimeProvider timeProvider = new();
 		ApplicationUser user =
-			new UserBuilder(new FakeTimeProvider())
+			new UserBuilder(timeProvider)
 				.WithId(TestUserId)
 				.Build();
 
 		user.TotpSecret =
 			ProtectedSecret;
 		user.TotpEnrolledAt =
-			DateTimeOffset.UtcNow;
+			timeProvider.GetUtcNow();
 
 		UserManager
 			.FindByIdAsync(TestUserId.ToString())

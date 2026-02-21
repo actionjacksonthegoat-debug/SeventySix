@@ -17,12 +17,12 @@ public sealed record OrphanedRegistrationCleanupSettings
 	/// <summary>
 	/// Gets the number of hours before an unconfirmed user is considered orphaned.
 	/// </summary>
-	public int RetentionHours { get; init; } = 48;
+	public int RetentionHours { get; init; }
 
 	/// <summary>
 	/// Gets the interval in hours between cleanup runs.
 	/// </summary>
-	public int IntervalHours { get; init; } = 24;
+	public int IntervalHours { get; init; }
 
 	/// <summary>
 	/// Gets the preferred UTC hour to start the job.

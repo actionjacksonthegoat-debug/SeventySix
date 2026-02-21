@@ -301,15 +301,9 @@ public sealed class OAuthController(
 			Logger.LogWarning(
 				"OAuth code exchange failed - invalid or expired code");
 
-			return BadRequest(
-				new ProblemDetails
-				{
-					Title = ProblemDetailConstants.Titles.InvalidCode,
-					Detail =
-						ProblemDetailConstants.Details.InvalidOrExpiredCode,
-					Status =
-						StatusCodes.Status400BadRequest,
-				});
+			return HandleFailedResult(
+				ProblemDetailConstants.Titles.InvalidCode,
+				ProblemDetailConstants.Details.InvalidOrExpiredCode);
 		}
 
 		CookieService.SetRefreshTokenCookie(
@@ -450,13 +444,9 @@ public sealed class OAuthController(
 
 		if (!result.IsSuccess)
 		{
-			return BadRequest(
-				new ProblemDetails
-				{
-					Title = ProblemDetailConstants.Titles.UnlinkFailed,
-					Detail = result.Error,
-					Status = StatusCodes.Status400BadRequest,
-				});
+			return HandleFailedResult(
+				ProblemDetailConstants.Titles.UnlinkFailed,
+				result.Error);
 		}
 
 		return NoContent();

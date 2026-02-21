@@ -13,7 +13,7 @@ namespace SeventySix.Shared.Settings;
 /// Named caches allow per-domain TTL and fail-safe configuration.
 /// All durations MUST be configured in appsettings.json.
 /// </remarks>
-public sealed record CacheSettings
+public sealed record CacheSettings : ICacheDurationSettings
 {
 	/// <summary>
 	/// Configuration section name in appsettings.json.
@@ -33,6 +33,12 @@ public sealed record CacheSettings
 	/// Must be configured in appsettings.json.
 	/// </remarks>
 	public TimeSpan DefaultDuration { get; init; }
+
+	/// <summary>
+	/// Implements <see cref="ICacheDurationSettings.Duration"/> by exposing
+	/// <see cref="DefaultDuration"/> under the shared interface name.
+	/// </summary>
+	TimeSpan ICacheDurationSettings.Duration => DefaultDuration;
 
 	/// <summary>
 	/// Maximum duration to serve stale data during backend failures.

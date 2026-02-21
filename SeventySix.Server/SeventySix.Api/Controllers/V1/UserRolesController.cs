@@ -183,41 +183,22 @@ public sealed class UserRolesController(
 			return NotFound();
 		}
 
-		try
+		Result removed =
+			await messageBus.InvokeAsync<Result>(
+				new RemoveUserRoleCommand(id, role),
+				cancellationToken);
+
+		if (!removed.IsSuccess)
 		{
-			Result removed =
-				await messageBus.InvokeAsync<Result>(
-					new RemoveUserRoleCommand(id, role),
-					cancellationToken);
-
-			if (!removed.IsSuccess)
-			{
-				return NotFound(
-					new ProblemDetails
-					{
-						Title = "Role Not Found",
-						Detail = "Role not found on user",
-						Status = StatusCodes.Status404NotFound,
-					});
-			}
-
-			return NoContent();
-		}
-		catch (LastAdminException lastAdminException)
-		{
-			logger.LogWarning(
-				lastAdminException,
-				"Role removal failed for user {UserId}: {Error}",
-				id,
-				lastAdminException.Message);
-
-			return Conflict(
+			return NotFound(
 				new ProblemDetails
 				{
-					Title = "Operation Forbidden",
-					Detail = ProblemDetailConstants.Details.RoleRemovalFailed,
-					Status = StatusCodes.Status409Conflict,
+					Title = "Role Not Found",
+					Detail = "Role not found on user",
+					Status = StatusCodes.Status404NotFound,
 				});
 		}
+
+		return NoContent();
 	}
 }

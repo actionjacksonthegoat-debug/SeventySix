@@ -119,3 +119,13 @@ export function getProviderMetadata(
 		(metadata: OAuthProviderMetadata) =>
 			metadata.id === provider);
 }
+
+/** Discriminated union of OAuth popup completion events. */
+export type OAuthEvent =
+	| {
+		readonly type: "code_received";
+		readonly code: string;
+	}
+	| {
+		readonly type: "link_success";
+	};

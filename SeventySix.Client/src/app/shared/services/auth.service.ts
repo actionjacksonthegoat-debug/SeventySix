@@ -25,9 +25,10 @@ import {
 	signal,
 	WritableSignal
 } from "@angular/core";
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { Router } from "@angular/router";
 import { environment } from "@environments/environment";
-import { APP_ROUTES, POLL_INTERVAL, STORAGE_KEYS } from "@shared/constants";
+import { APP_ROUTES, STORAGE_KEYS } from "@shared/constants";
 import {
 	AuthResponse,
 	LoginRequest,
@@ -36,11 +37,12 @@ import {
 import { DateService, StorageService, TokenService, WindowService } from "@shared/services";
 import {
 	JwtClaims,
+	OAuthEvent,
 	OAuthProvider
 } from "@shared/services/auth.types";
 import { FeatureFlagsService } from "@shared/services/feature-flags.service";
 import { IdleDetectionService } from "@shared/services/idle-detection.service";
-import { isNullOrEmpty, isNullOrUndefined, isPresent } from "@shared/utilities/null-check.utility";
+import { isNullOrEmpty, isPresent } from "@shared/utilities/null-check.utility";
 import { QueryKeys } from "@shared/utilities/query-keys.utility";
 import { QueryClient } from "@tanstack/angular-query-experimental";
 import {
@@ -51,6 +53,9 @@ import {
 	shareReplay,
 	tap
 } from "rxjs";
+import { OAuthFlowService } from "@shared/services/oauth-flow.service";
+import { PasswordResetService } from "@shared/services/password-reset.service";
+import { RegistrationFlowService } from "@shared/services/registration-flow.service";
 
 /**
  * Provides authentication flows (local and OAuth), session restoration, and in-memory token management.
@@ -93,12 +98,24 @@ export class AuthService
 	private readonly destroyRef: DestroyRef =
 		inject(DestroyRef);
 
+	private readonly oauthFlowService: OAuthFlowService =
+		inject(OAuthFlowService);
+
+	private readonly passwordResetService: PasswordResetService =
+		inject(PasswordResetService);
+
+	private readonly registrationFlowService: RegistrationFlowService =
+		inject(RegistrationFlowService);
+
 	private readonly authUrl: string =
 		`${environment.apiUrl}/auth`;
 
-	/** Tracks whether an OAuth popup flow is in progress (login or link). */
-	readonly isOAuthInProgress: WritableSignal<boolean> =
-		signal<boolean>(false);
+	/**
+	 * Read-only OAuth in-progress state. True while an OAuth popup flow is active.
+	 * Forwarded from OAuthFlowService which owns the popup lifecycle.
+	 */
+	readonly isOAuthInProgress: Signal<boolean> =
+		this.oauthFlowService.isOAuthInProgress.asReadonly();
 
 	/** Access token stored in memory only for XSS protection. */
 	private accessToken: string | null = null;
@@ -106,9 +123,6 @@ export class AuthService
 	private tokenExpiresAt: number = 0;
 
 	private initialized: boolean = false;
-
-	/** Poll timer that detects when the user closes the OAuth popup. */
-	private activePopupPollTimer: ReturnType<typeof setInterval> | undefined;
 
 	/** In-flight refresh observable for single-flight pattern. */
 	private refreshInProgress: Observable<AuthResponse | null> | null = null;
@@ -144,11 +158,29 @@ export class AuthService
 				}
 			});
 
-		this.destroyRef.onDestroy(
-			(): void =>
-			{
-				this.clearPopupPollTimer();
-			});
+		// Subscribe to OAuth events from OAuthFlowService.
+		// code_received: exchange one-time code for tokens.
+		// link_success: invalidate account queries after provider linking.
+		this
+			.oauthFlowService
+			.events$
+			.pipe(takeUntilDestroyed())
+			.subscribe(
+				(event: OAuthEvent) =>
+				{
+					if (event.type === "code_received")
+					{
+						this.exchangeOAuthCode(event.code);
+					}
+
+					if (event.type === "link_success")
+					{
+						this.queryClient.invalidateQueries(
+							{
+								queryKey: QueryKeys.account.all
+							});
+					}
+				});
 	}
 
 	/**
@@ -167,7 +199,6 @@ export class AuthService
 		this.initialized = true;
 
 		this.initializeCrossTabLogout();
-		this.initializeOAuthMessageListener();
 
 		// Only attempt session restoration if user has logged in before
 		// This prevents unnecessary refresh attempts for users who never logged in
@@ -234,35 +265,7 @@ export class AuthService
 		provider: OAuthProvider,
 		returnUrl: string = "/"): void
 	{
-		// Validate returnUrl is relative or same-origin (XSS protection)
-		const validatedUrl: string =
-			this.validateReturnUrl(returnUrl);
-
-		// Use StorageService for SSR-safe session storage access
-		this.storageService.setSessionItem(
-			STORAGE_KEYS.AUTH_RETURN_URL,
-			validatedUrl);
-
-		this.isOAuthInProgress.set(true);
-
-		// Open OAuth provider in popup (server returns postMessage HTML)
-		const popup: Window | null =
-			this.windowService.openWindow(
-				`${this.authUrl}/oauth/${provider}`,
-				"oauth_popup");
-
-		if (isNullOrUndefined(popup))
-		{
-			this.isOAuthInProgress.set(false);
-
-			// Popup blocked — fall back to full-page navigation
-			this.windowService.navigateTo(
-				`${this.authUrl}/oauth/${provider}`);
-
-			return;
-		}
-
-		this.startPopupPollTimer(popup);
+		this.oauthFlowService.openLoginPopup(provider, returnUrl);
 	}
 
 	/**
@@ -275,7 +278,8 @@ export class AuthService
 	 */
 	linkProvider(provider: OAuthProvider): void
 	{
-		this.isOAuthInProgress.set(true);
+		// Optimistically show loading state before HTTP completes
+		this.oauthFlowService.isOAuthInProgress.set(true);
 
 		this
 			.httpClient
@@ -286,43 +290,14 @@ export class AuthService
 				{
 					next: (response: { authorizationUrl: string; }) =>
 					{
-						const popup: Window | null =
-							this.windowService.openWindow(
-								response.authorizationUrl,
-								"oauth_link_popup");
-
-						if (isNullOrUndefined(popup))
-						{
-							this.isOAuthInProgress.set(false);
-							return;
-						}
-
-						this.startPopupPollTimer(popup);
+						this.oauthFlowService.openLinkPopup(
+							response.authorizationUrl);
 					},
-					error: () =>
+					error: (): void =>
 					{
-						this.isOAuthInProgress.set(false);
+						this.oauthFlowService.isOAuthInProgress.set(false);
 					}
 				});
-	}
-
-	/**
-	 * Validates OAuth return URL to prevent open redirect vulnerabilities.
-	 * Only allows relative URLs that don't start with protocol-relative syntax.
-	 * @param {string} url
-	 * The URL to validate.
-	 * @returns {string}
-	 * The validated URL if safe, or '/' as fallback.
-	 */
-	private validateReturnUrl(url: string): string
-	{
-		// Only allow relative URLs starting with single slash
-		// Reject absolute URLs and protocol-relative URLs (//evil.com)
-		if (url.startsWith("/") && !url.startsWith("//"))
-		{
-			return url;
-		}
-		return "/";
 	}
 
 	/**
@@ -426,11 +401,7 @@ export class AuthService
 	 */
 	setPassword(token: string, newPassword: string): Observable<void>
 	{
-		return this.httpClient.post<void>(`${this.authUrl}/password/set`,
-			{
-				token,
-				newPassword
-			});
+		return this.passwordResetService.setPassword(token, newPassword);
 	}
 
 	/**
@@ -447,11 +418,9 @@ export class AuthService
 		email: string,
 		altchaPayload: string | null = null): Observable<void>
 	{
-		return this.httpClient.post<void>(`${this.authUrl}/password/forgot`,
-			{
-				email,
-				altchaPayload
-			});
+		return this.passwordResetService.requestPasswordReset(
+			email,
+			altchaPayload);
 	}
 
 	/**
@@ -468,12 +437,9 @@ export class AuthService
 		email: string,
 		altchaPayload: string | null = null): Observable<void>
 	{
-		return this.httpClient.post<void>(
-			`${this.authUrl}/register/initiate`,
-			{
-				email,
-				altchaPayload
-			});
+		return this.registrationFlowService.initiateRegistration(
+			email,
+			altchaPayload);
 	}
 
 	/**
@@ -497,11 +463,8 @@ export class AuthService
 		password: string): Observable<AuthResponse>
 	{
 		return this
-			.httpClient
-			.post<AuthResponse>(
-				`${this.authUrl}/register/complete`,
-				{ token, username, password },
-				{ withCredentials: true })
+			.registrationFlowService
+			.completeRegistration(token, username, password)
 			.pipe(
 				tap(
 					(response: AuthResponse) =>
@@ -572,60 +535,8 @@ export class AuthService
 	}
 
 	/**
-	 * Listens for OAuth postMessage from the popup window.
-	 * The server sends oauth_success with a one-time code,
-	 * which is exchanged for tokens via /oauth/exchange.
-	 * @returns {void}
-	 */
-	private initializeOAuthMessageListener(): void
-	{
-		if (typeof window === "undefined")
-		{
-			return;
-		}
-
-		const oauthHandler: (event: MessageEvent) => void =
-			(event: MessageEvent): void =>
-			{
-			// Validate origin matches our API
-				const allowedOrigin: string =
-					new URL(environment.apiUrl).origin;
-
-				if (event.origin !== allowedOrigin)
-				{
-					return;
-				}
-
-				if (
-					event.data?.type === "oauth_success"
-						&& isPresent(event.data?.code))
-				{
-					this.clearPopupPollTimer();
-					this.exchangeOAuthCode(event.data.code);
-				}
-
-				if (event.data?.type === "oauth_link_success")
-				{
-					this.clearPopupPollTimer();
-					this.queryClient.invalidateQueries(
-						{
-							queryKey: QueryKeys.account.all
-						});
-				}
-			};
-
-		window.addEventListener("message", oauthHandler);
-
-		this.destroyRef.onDestroy(
-			() =>
-			{
-				window.removeEventListener("message", oauthHandler);
-			});
-	}
-
-	/**
 	 * Exchanges a one-time OAuth code for tokens.
-	 * Called after receiving postMessage from the OAuth popup.
+	 * Called after receiving the code_received event from OAuthFlowService.
 	 * @param {string} code
 	 * The one-time code from the OAuth provider.
 	 * @returns {void}
@@ -895,44 +806,6 @@ export class AuthService
 	private clearHasSession(): void
 	{
 		this.storageService.removeItem(STORAGE_KEYS.AUTH_HAS_SESSION);
-	}
-
-	/**
-	 * Starts a poll timer that detects when the user closes the OAuth popup.
-	 * Resets `isOAuthInProgress` so the UI can remove loading state.
-	 * @param {Window} popup
-	 * The popup window reference.
-	 * @returns {void}
-	 */
-	private startPopupPollTimer(popup: Window): void
-	{
-		this.clearPopupPollTimer();
-
-		this.activePopupPollTimer =
-			setInterval(
-				(): void =>
-				{
-					if (popup.closed)
-					{
-						this.clearPopupPollTimer();
-					}
-				},
-				POLL_INTERVAL.POPUP_CLOSED);
-	}
-
-	/**
-	 * Clears the popup poll timer and resets the OAuth-in-progress state.
-	 * @returns {void}
-	 */
-	private clearPopupPollTimer(): void
-	{
-		if (isPresent(this.activePopupPollTimer))
-		{
-			clearInterval(this.activePopupPollTimer);
-			this.activePopupPollTimer = undefined;
-		}
-
-		this.isOAuthInProgress.set(false);
 	}
 
 	/**

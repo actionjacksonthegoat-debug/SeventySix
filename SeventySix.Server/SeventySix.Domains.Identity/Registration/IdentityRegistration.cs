@@ -226,6 +226,7 @@ public static class IdentityRegistration
 		services.AddScoped<ITokenService, TokenService>();
 		services.AddScoped<AuthenticationService>();
 		services.AddScoped<IMfaService, MfaService>();
+		services.AddScoped<IMfaOrchestrator, MfaOrchestrator>();
 		services.AddScoped<ITotpService, TotpService>();
 		services.AddScoped<TotpSecretProtector>();
 

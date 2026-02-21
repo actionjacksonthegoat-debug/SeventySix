@@ -1,3 +1,4 @@
+import { ENVIRONMENT_DEFAULTS } from "./environment.defaults";
 import { Environment } from "./environment.interface";
 
 /**
@@ -7,6 +8,7 @@ import { Environment } from "./environment.interface";
  */
 export const environment: Environment =
 	{
+		...ENVIRONMENT_DEFAULTS,
 		production: false,
 		version: "1.0.0-test",
 		apiUrl: "http://localhost:1234/api/v1", // API v1 - Test-only port to prevent hitting real API
@@ -50,17 +52,15 @@ export const environment: Environment =
 				permissionrequests: { staleTime: 0, gcTime: 0, retry: 0 }
 			}
 		},
+		// Override: disable performance monitoring in unit tests
 		ui: {
-			tables: {
-				defaultPageSize: 50,
-				pageSizeOptions: [25, 50, 100],
-				virtualScrollItemSize: 48
-			},
+			...ENVIRONMENT_DEFAULTS.ui,
 			performance: {
 				enableMonitoring: false, // Disabled in tests
 				fpsWarningThreshold: 30
 			}
 		},
+		// Override: shorter timeout for faster test feedback
 		http: {
 			defaultTimeout: 5000 // 5 seconds - shorter for tests
 		},

@@ -59,8 +59,8 @@ public sealed class MetricsService() : IMetricsService
 			() => FailedItems,
 			description: "Current number of failed items in the error queue");
 
-	private static int QueuedItems;
-	private static int FailedItems;
+	private static volatile int QueuedItems;
+	private static volatile int FailedItems;
 
 	/// <inheritdoc/>
 	public void RecordDatabaseQuery(double durationMs, string queryType)
@@ -93,8 +93,8 @@ public sealed class MetricsService() : IMetricsService
 	/// <inheritdoc/>
 	public void RecordQueueStats(int queuedItems, int failedItems)
 	{
-		QueuedItems = queuedItems;
-		FailedItems = failedItems;
+		Interlocked.Exchange(ref QueuedItems, queuedItems);
+		Interlocked.Exchange(ref FailedItems, failedItems);
 	}
 
 	/// <inheritdoc/>

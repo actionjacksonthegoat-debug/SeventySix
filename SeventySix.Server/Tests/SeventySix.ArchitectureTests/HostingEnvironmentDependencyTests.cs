@@ -2,9 +2,8 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
+using System;
+using NetArchTest.Rules;
 using Shouldly;
 using Xunit;
 
@@ -19,127 +18,50 @@ namespace SeventySix.ArchitectureTests;
 /// Environment-conditional logic belongs in SeventySix.Api (Program.cs, Registration/).
 /// Violations indicate leakage of infrastructure concerns into business logic.
 /// </remarks>
-public sealed class HostingEnvironmentDependencyTests : SourceCodeArchitectureTest
+public sealed class HostingEnvironmentDependencyTests
 {
-	/// <summary>
-	/// Tests that domain and shared source files do not reference IWebHostEnvironment.
-	/// </summary>
 	[Fact]
-	public void DomainAndSharedFiles_ShouldNotReference_IWebHostEnvironment()
+	public void DomainAssembly_ShouldNotDepend_OnAspNetCoreHosting()
 	{
-		// Arrange — only scan Domains and Shared projects, not Api
-		IEnumerable<string> domainFiles =
-			GetSourceFiles("*.cs")
-				.Where(filePath =>
-					filePath.Contains("/SeventySix.Domains")
-					|| filePath.Contains("/SeventySix.Shared"));
+		TestResult result =
+			Types.InAssembly(typeof(Logging.Log).Assembly)
+				.ShouldNot()
+				.HaveDependencyOn("Microsoft.AspNetCore.Hosting")
+				.GetResult();
 
-		Regex hostingEnvPattern =
-			new Regex(
-			@"\bIWebHostEnvironment\b",
-			RegexOptions.Compiled);
-
-		List<string> violations = [];
-
-		// Act
-		foreach (string file in domainFiles)
-		{
-			string content =
-				ReadFileContent(file);
-
-			if (hostingEnvPattern.IsMatch(content))
-			{
-				string relativePath =
-					GetRelativePath(file);
-
-				violations.Add(
-					$"{relativePath}: references IWebHostEnvironment (API-layer concern only)");
-			}
-		}
-
-		// Assert
-		violations.ShouldBeEmpty();
+		result.IsSuccessful.ShouldBeTrue(
+			string.Join(
+				Environment.NewLine,
+				result.FailingTypeNames ?? []));
 	}
 
-	/// <summary>
-	/// Tests that domain and shared source files do not reference IHostEnvironment.
-	/// </summary>
 	[Fact]
-	public void DomainAndSharedFiles_ShouldNotReference_IHostEnvironment()
+	public void SharedAssembly_ShouldNotDepend_OnAspNetCoreHosting()
 	{
-		// Arrange — only scan Domains and Shared projects, not Api
-		IEnumerable<string> domainFiles =
-			GetSourceFiles("*.cs")
-				.Where(filePath =>
-					filePath.Contains("/SeventySix.Domains")
-					|| filePath.Contains("/SeventySix.Shared"));
+		TestResult result =
+			Types.InAssembly(typeof(Shared.Persistence.TransactionManager).Assembly)
+				.ShouldNot()
+				.HaveDependencyOn("Microsoft.AspNetCore.Hosting")
+				.GetResult();
 
-		Regex hostEnvPattern =
-			new Regex(
-			@"\bIHostEnvironment\b",
-			RegexOptions.Compiled);
-
-		List<string> violations = [];
-
-		// Act
-		foreach (string file in domainFiles)
-		{
-			string content =
-				ReadFileContent(file);
-
-			if (hostEnvPattern.IsMatch(content))
-			{
-				string relativePath =
-					GetRelativePath(file);
-
-				violations.Add(
-					$"{relativePath}: references IHostEnvironment (API-layer concern only)");
-			}
-		}
-
-		// Assert
-		violations.ShouldBeEmpty();
+		result.IsSuccessful.ShouldBeTrue(
+			string.Join(
+				Environment.NewLine,
+				result.FailingTypeNames ?? []));
 	}
 
-	/// <summary>
-	/// Tests that domain and shared source files do not use ASPNETCORE_ENVIRONMENT
-	/// via <see cref="Environment.GetEnvironmentVariable"/>.
-	/// Environment-conditional logic belongs in SeventySix.Api (Program.cs, Registration/, StartupValidator).
-	/// </summary>
 	[Fact]
-	public void DomainAndSharedFiles_ShouldNotReference_AspNetCoreEnvironmentVariable()
+	public void SharedAssembly_ShouldNotDepend_OnMicrosoftExtensionsHosting()
 	{
-		// Arrange — only scan Domains and Shared projects, not Api
-		IEnumerable<string> domainFiles =
-			GetSourceFiles("*.cs")
-				.Where(filePath =>
-					filePath.Contains("/SeventySix.Domains")
-					|| filePath.Contains("/SeventySix.Shared"));
+		TestResult result =
+			Types.InAssembly(typeof(Shared.Persistence.TransactionManager).Assembly)
+				.ShouldNot()
+				.HaveDependencyOn("Microsoft.Extensions.Hosting")
+				.GetResult();
 
-		Regex envVarPattern =
-			new Regex(
-			@"ASPNETCORE_ENVIRONMENT",
-			RegexOptions.Compiled);
-
-		List<string> violations = [];
-
-		// Act
-		foreach (string file in domainFiles)
-		{
-			string content =
-				ReadFileContent(file);
-
-			if (envVarPattern.IsMatch(content))
-			{
-				string relativePath =
-					GetRelativePath(file);
-
-				violations.Add(
-					$"{relativePath}: references ASPNETCORE_ENVIRONMENT (API-layer concern only)");
-			}
-		}
-
-		// Assert
-		violations.ShouldBeEmpty();
+		result.IsSuccessful.ShouldBeTrue(
+			string.Join(
+				Environment.NewLine,
+				result.FailingTypeNames ?? []));
 	}
 }

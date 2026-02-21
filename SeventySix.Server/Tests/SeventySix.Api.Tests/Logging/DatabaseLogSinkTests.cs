@@ -4,6 +4,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Time.Testing;
 using Serilog.Events;
 using Serilog.Parsing;
 using SeventySix.Api.Logging;
@@ -98,7 +99,7 @@ public sealed class DatabaseLogSinkTests : IAsyncLifetime
 			"Test warning message");
 		LogEvent logEvent =
 			new(
-			DateTimeOffset.UtcNow,
+			new FakeTimeProvider().GetUtcNow(),
 			LogEventLevel.Warning,
 			null,
 			messageTemplate,
@@ -127,7 +128,7 @@ public sealed class DatabaseLogSinkTests : IAsyncLifetime
 			"Test warning message");
 		LogEvent logEvent =
 			new(
-			DateTimeOffset.UtcNow,
+			new FakeTimeProvider().GetUtcNow(),
 			LogEventLevel.Warning,
 			null,
 			messageTemplate,
@@ -169,7 +170,7 @@ public sealed class DatabaseLogSinkTests : IAsyncLifetime
 			"Test error message");
 		LogEvent logEvent =
 			new(
-			DateTimeOffset.UtcNow,
+			new FakeTimeProvider().GetUtcNow(),
 			LogEventLevel.Error,
 			null,
 			messageTemplate,
@@ -208,7 +209,7 @@ public sealed class DatabaseLogSinkTests : IAsyncLifetime
 			"Test info message");
 		LogEvent logEvent =
 			new(
-			DateTimeOffset.UtcNow,
+			new FakeTimeProvider().GetUtcNow(),
 			LogEventLevel.Information,
 			null,
 			messageTemplate,
@@ -254,7 +255,7 @@ public sealed class DatabaseLogSinkTests : IAsyncLifetime
 			"Error occurred");
 		LogEvent logEvent =
 			new(
-			DateTimeOffset.UtcNow,
+			new FakeTimeProvider().GetUtcNow(),
 			LogEventLevel.Error,
 			caughtException,
 			messageTemplate,
@@ -301,9 +302,9 @@ public sealed class DatabaseLogSinkTests : IAsyncLifetime
 				throw new InvalidOperationException("Outer exception", inner);
 			}
 		}
-		catch (Exception ex)
+		catch (Exception exception)
 		{
-			nestedException = ex;
+			nestedException = exception;
 		}
 
 		MessageTemplate messageTemplate =
@@ -311,7 +312,7 @@ public sealed class DatabaseLogSinkTests : IAsyncLifetime
 			"Nested error occurred");
 		LogEvent logEvent =
 			new(
-			DateTimeOffset.UtcNow,
+			new FakeTimeProvider().GetUtcNow(),
 			LogEventLevel.Error,
 			nestedException,
 			messageTemplate,

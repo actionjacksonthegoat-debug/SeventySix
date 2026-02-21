@@ -7,6 +7,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using SeventySix.Api.Middleware;
+using SeventySix.Identity;
 using SeventySix.Shared.Constants;
 using SeventySix.Shared.Exceptions;
 
@@ -167,6 +168,14 @@ public sealed class GlobalExceptionHandler(
 					HttpStatusCode.UnprocessableEntity,
 					ProblemDetailConstants.Titles.BusinessRuleViolation,
 					ProblemDetailConstants.Details.UnprocessableEntity),
+			LastAdminException =>
+				LogAndCreateProblemDetails(
+					context,
+					logger,
+					exception,
+					HttpStatusCode.Conflict,
+					ProblemDetailConstants.Titles.Conflict,
+					ProblemDetailConstants.Details.RoleRemovalFailed),
 			DomainException =>
 				LogAndCreateProblemDetails(
 					context,

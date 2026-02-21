@@ -1,7 +1,9 @@
+import { ENVIRONMENT_DEFAULTS } from "./environment.defaults";
 import { Environment } from "./environment.interface";
 
 export const environment: Environment =
 	{
+		...ENVIRONMENT_DEFAULTS,
 		production: false,
 		version: "1.0.0-dev",
 		apiUrl: "https://localhost:7074/api/v1", // HTTPS for local development with HTTP/2 support
@@ -44,20 +46,6 @@ export const environment: Environment =
 				account: { staleTime: 0, gcTime: 60000, retry: 1 },
 				permissionrequests: { staleTime: 0, gcTime: 60000, retry: 1 }
 			}
-		},
-		ui: {
-			tables: {
-				defaultPageSize: 50,
-				pageSizeOptions: [25, 50, 100],
-				virtualScrollItemSize: 48
-			},
-			performance: {
-				enableMonitoring: true,
-				fpsWarningThreshold: 30
-			}
-		},
-		http: {
-			defaultTimeout: 30000 // 30 seconds
 		},
 		testing: {
 			runIntegrationTests: false

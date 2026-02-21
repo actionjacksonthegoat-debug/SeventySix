@@ -145,193 +145,65 @@ public static class FusionCacheRegistration
 		IServiceCollection services,
 		CacheSettings cacheSettings)
 	{
-		FusionCacheCysharpMemoryPackSerializer serializer =
-			new();
-
-		RegisterDefaultCache(
+		RegisterNamedCache(
 			services,
+			CacheNames.Default,
+			cacheSettings.DefaultKeyPrefix,
 			cacheSettings,
-			serializer);
+			cacheSettings.Valkey.InstanceName,
+			enableSyncEvents: true)
+			.AsHybridCache();
 
-		RegisterIdentityCache(
+		RegisterNamedCache(
 			services,
-			cacheSettings,
-			serializer);
+			CacheNames.Identity,
+			cacheSettings.Identity.KeyPrefix,
+			cacheSettings.Identity,
+			cacheSettings.Valkey.InstanceName,
+			enableSyncEvents: true);
 
-		RegisterLoggingCache(
+		RegisterNamedCache(
 			services,
-			cacheSettings,
-			serializer);
+			CacheNames.Logging,
+			cacheSettings.Logging.KeyPrefix,
+			cacheSettings.Logging,
+			cacheSettings.Valkey.InstanceName);
 
-		RegisterApiTrackingCache(
+		RegisterNamedCache(
 			services,
-			cacheSettings,
-			serializer);
+			CacheNames.ApiTracking,
+			cacheSettings.ApiTracking.KeyPrefix,
+			cacheSettings.ApiTracking,
+			cacheSettings.Valkey.InstanceName);
 
 		return services;
 	}
 
 	/// <summary>
-	/// Registers the default cache with HybridCache adapter.
+	/// Registers a named cache with Valkey distributed backend.
 	/// </summary>
-	private static void RegisterDefaultCache(
+	private static IFusionCacheBuilder RegisterNamedCache(
 		IServiceCollection services,
-		CacheSettings cacheSettings,
-		FusionCacheCysharpMemoryPackSerializer serializer)
+		string cacheName,
+		string keyPrefix,
+		ICacheDurationSettings settings,
+		string valkeyInstanceName,
+		bool enableSyncEvents = false)
 	{
-		services
-			.AddFusionCache(CacheNames.Default)
+		return services
+			.AddFusionCache(cacheName)
 			.WithOptions(
 				options =>
 				{
 					options.CacheKeyPrefix =
-						cacheSettings.DefaultKeyPrefix;
-					// Enable distributed cache error logging
+						keyPrefix;
 					options.EnableSyncEventHandlersExecution =
-						true;
+						enableSyncEvents;
 				})
 			.WithDefaultEntryOptions(
-				CreateEntryOptions(cacheSettings))
-			.WithSerializer(serializer)
-			.WithDistributedCache(
-				serviceProvider =>
-					new RedisCache(
-						new RedisCacheOptions
-						{
-							ConnectionMultiplexerFactory =
-								() => Task.FromResult(serviceProvider.GetRequiredService<IConnectionMultiplexer>()),
-							InstanceName =
-								cacheSettings.Valkey.InstanceName,
-						}))
-			.WithBackplane(
-				serviceProvider =>
-					new RedisBackplane(
-						new RedisBackplaneOptions
-						{
-							ConnectionMultiplexerFactory =
-								() => Task.FromResult(serviceProvider.GetRequiredService<IConnectionMultiplexer>()),
-						}))
-			.AsHybridCache();
-	}
-
-	/// <summary>
-	/// Registers the Identity domain cache (short TTL for security-sensitive data).
-	/// </summary>
-	private static void RegisterIdentityCache(
-		IServiceCollection services,
-		CacheSettings cacheSettings,
-		FusionCacheCysharpMemoryPackSerializer serializer)
-	{
-		services
-			.AddFusionCache(CacheNames.Identity)
-			.WithOptions(
-				options =>
-				{
-					options.CacheKeyPrefix =
-						cacheSettings.Identity.KeyPrefix;
-					// Enable distributed cache error logging
-					options.EnableSyncEventHandlersExecution =
-						true;
-				})
-			.WithDefaultEntryOptions(
-				CreateEntryOptions(cacheSettings.Identity))
-			.WithSerializer(serializer)
-			.WithDistributedCache(
-				serviceProvider =>
-					new RedisCache(
-						new RedisCacheOptions
-						{
-							ConnectionMultiplexerFactory =
-								() => Task.FromResult(serviceProvider.GetRequiredService<IConnectionMultiplexer>()),
-							InstanceName =
-								cacheSettings.Valkey.InstanceName,
-						}))
-			.WithBackplane(
-				serviceProvider =>
-					new RedisBackplane(
-						new RedisBackplaneOptions
-						{
-							ConnectionMultiplexerFactory =
-								() => Task.FromResult(serviceProvider.GetRequiredService<IConnectionMultiplexer>()),
-						}));
-	}
-
-	/// <summary>
-	/// Registers the Logging domain cache (longer TTL, read-heavy).
-	/// </summary>
-	private static void RegisterLoggingCache(
-		IServiceCollection services,
-		CacheSettings cacheSettings,
-		FusionCacheCysharpMemoryPackSerializer serializer)
-	{
-		services
-			.AddFusionCache(CacheNames.Logging)
-			.WithOptions(
-				options =>
-				{
-					options.CacheKeyPrefix =
-						cacheSettings.Logging.KeyPrefix;
-				})
-			.WithDefaultEntryOptions(
-				CreateEntryOptions(cacheSettings.Logging))
-			.WithSerializer(serializer)
-			.WithDistributedCache(
-				serviceProvider =>
-					new RedisCache(
-						new RedisCacheOptions
-						{
-							ConnectionMultiplexerFactory =
-								() => Task.FromResult(serviceProvider.GetRequiredService<IConnectionMultiplexer>()),
-							InstanceName =
-								cacheSettings.Valkey.InstanceName,
-						}))
-			.WithBackplane(
-				serviceProvider =>
-					new RedisBackplane(
-						new RedisBackplaneOptions
-						{
-							ConnectionMultiplexerFactory =
-								() => Task.FromResult(serviceProvider.GetRequiredService<IConnectionMultiplexer>()),
-						}));
-	}
-
-	/// <summary>
-	/// Registers the API Tracking domain cache.
-	/// </summary>
-	private static void RegisterApiTrackingCache(
-		IServiceCollection services,
-		CacheSettings cacheSettings,
-		FusionCacheCysharpMemoryPackSerializer serializer)
-	{
-		services
-			.AddFusionCache(CacheNames.ApiTracking)
-			.WithOptions(
-				options =>
-				{
-					options.CacheKeyPrefix =
-						cacheSettings.ApiTracking.KeyPrefix;
-				})
-			.WithDefaultEntryOptions(
-				CreateEntryOptions(cacheSettings.ApiTracking))
-			.WithSerializer(serializer)
-			.WithDistributedCache(
-				serviceProvider =>
-					new RedisCache(
-						new RedisCacheOptions
-						{
-							ConnectionMultiplexerFactory =
-								() => Task.FromResult(serviceProvider.GetRequiredService<IConnectionMultiplexer>()),
-							InstanceName =
-								cacheSettings.Valkey.InstanceName,
-						}))
-			.WithBackplane(
-				serviceProvider =>
-					new RedisBackplane(
-						new RedisBackplaneOptions
-						{
-							ConnectionMultiplexerFactory =
-								() => Task.FromResult(serviceProvider.GetRequiredService<IConnectionMultiplexer>()),
-						}));
+				CreateEntryOptions(settings))
+			.WithSerializer(new FusionCacheCysharpMemoryPackSerializer())
+			.AddValkeyComponents(valkeyInstanceName);
 	}
 
 	/// <summary>
@@ -399,47 +271,52 @@ public static class FusionCacheRegistration
 	}
 
 	/// <summary>
-	/// Creates entry options from root cache settings.
+	/// Adds shared Valkey (Redis) distributed cache and backplane to a FusionCache builder.
+	/// Reuses the shared <see cref="IConnectionMultiplexer"/> registered in the DI container.
 	/// </summary>
-	private static Action<FusionCacheEntryOptions> CreateEntryOptions(
-		CacheSettings settings)
+	/// <param name="builder">
+	/// The FusionCache builder to configure.
+	/// </param>
+	/// <param name="instanceName">
+	/// The Redis instance name prefix.
+	/// </param>
+	/// <returns>
+	/// The builder for chaining.
+	/// </returns>
+	private static IFusionCacheBuilder AddValkeyComponents(
+		this IFusionCacheBuilder builder,
+		string instanceName)
 	{
-		return options =>
-		{
-			options.Duration =
-				settings.DefaultDuration;
-			options.FailSafeMaxDuration =
-				settings.FailSafeMaxDuration;
-			options.FailSafeThrottleDuration =
-				settings.FailSafeThrottleDuration;
-			// Enable fail-safe to serve stale data during backend failures
-			options.IsFailSafeEnabled =
-				true;
-			// Explicitly enable distributed cache read/write operations
-			options.SkipDistributedCacheRead =
-				false;
-			options.SkipDistributedCacheWrite =
-				false;
-			options.SkipDistributedCacheReadWhenStale =
-				false;
-			// Allow background refresh for better performance
-			options.AllowBackgroundDistributedCacheOperations =
-				true;
-			// Eager refresh: proactively refresh when 80% of duration elapsed
-			// Prevents cache misses during high traffic
-			options.EagerRefreshThreshold =
-				0.8f;
-			// Add jitter (±10%) to prevent thundering herd on cache expiration
-			options.JitterMaxDuration =
-				TimeSpan.FromMilliseconds(settings.DefaultDuration.TotalMilliseconds * 0.1);
-		};
+		return builder
+			.WithDistributedCache(
+				serviceProvider =>
+					new RedisCache(
+						new RedisCacheOptions
+						{
+							ConnectionMultiplexerFactory =
+								() => Task.FromResult(
+									serviceProvider.GetRequiredService<IConnectionMultiplexer>()),
+							InstanceName =
+								instanceName,
+						}))
+			.WithBackplane(
+				serviceProvider =>
+					new RedisBackplane(
+						new RedisBackplaneOptions
+						{
+							ConnectionMultiplexerFactory =
+								() => Task.FromResult(
+									serviceProvider.GetRequiredService<IConnectionMultiplexer>()),
+						}));
 	}
 
 	/// <summary>
-	/// Creates entry options from named cache settings.
+	/// Creates entry options from cache duration settings.
+	/// Accepts both <see cref="CacheSettings"/> and <see cref="NamedCacheSettings"/>
+	/// via the shared <see cref="ICacheDurationSettings"/> abstraction.
 	/// </summary>
 	private static Action<FusionCacheEntryOptions> CreateEntryOptions(
-		NamedCacheSettings settings)
+		ICacheDurationSettings settings)
 	{
 		return options =>
 		{

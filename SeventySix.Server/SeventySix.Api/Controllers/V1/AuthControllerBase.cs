@@ -82,6 +82,47 @@ public abstract class AuthControllerBase(
 	}
 
 	/// <summary>
+	/// Creates a failure response with a raw title and detail string.
+	/// Use when the result type is not <see cref="AuthResult"/> or when bypassing automatic logging.
+	/// </summary>
+	/// <param name="title">
+	/// A short, human-readable summary of the problem type.
+	/// </param>
+	/// <param name="detail">
+	/// A human-readable explanation specific to this occurrence of the problem.
+	/// </param>
+	/// <param name="statusCode">
+	/// The HTTP status code to return. Defaults to BadRequest (400).
+	/// </param>
+	/// <param name="errorCode">
+	/// An optional machine-readable error code added to the Extensions dictionary.
+	/// </param>
+	/// <returns>
+	/// An ObjectResult with appropriate status code and ProblemDetails.
+	/// </returns>
+	protected ObjectResult HandleFailedResult(
+		string title,
+		string? detail,
+		int statusCode = StatusCodes.Status400BadRequest,
+		string? errorCode = null)
+	{
+		ProblemDetails problemDetails =
+			new()
+			{
+				Title = title,
+				Detail = detail,
+				Status = statusCode,
+			};
+
+		if (errorCode is not null)
+		{
+			problemDetails.Extensions["errorCode"] = errorCode;
+		}
+
+		return StatusCode(statusCode, problemDetails);
+	}
+
+	/// <summary>
 	/// Gets client IP address from HttpContext.
 	/// ForwardedHeadersMiddleware handles X-Forwarded-For validation.
 	/// </summary>

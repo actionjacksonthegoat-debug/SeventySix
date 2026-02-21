@@ -3,14 +3,12 @@
 // </copyright>
 
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.Mocks;
 using Shouldly;
-using Wolverine;
 
 namespace SeventySix.Identity.Tests.Commands.Login;
 
@@ -29,11 +27,7 @@ public sealed class LoginCommandHandlerTests
 	private readonly AuthenticationService AuthenticationService;
 	private readonly IAltchaService AltchaService;
 	private readonly ISecurityAuditService SecurityAuditService;
-	private readonly IMfaService MfaService;
-	private readonly IOptions<MfaSettings> MfaSettings;
-	private readonly IOptions<TotpSettings> TotpSettings;
-	private readonly ITrustedDeviceService TrustedDeviceService;
-	private readonly IMessageBus MessageBus;
+	private readonly IMfaOrchestrator MfaOrchestrator;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="LoginCommandHandlerTests"/> class.
@@ -54,29 +48,11 @@ public sealed class LoginCommandHandlerTests
 			Substitute.For<IAltchaService>();
 		SecurityAuditService =
 			Substitute.For<ISecurityAuditService>();
-		MfaService =
-			Substitute.For<IMfaService>();
-		MfaSettings =
-			Options.Create(
-				new MfaSettings
-				{
-					Enabled = false,
-					RequiredForAllUsers = false,
-					CodeLength = 6,
-					CodeExpirationMinutes = 5,
-					MaxAttempts = 5,
-					ResendCooldownSeconds = 60
-				});
-		TotpSettings =
-			Options.Create(
-				new TotpSettings
-				{
-					Enabled = false
-				});
-		TrustedDeviceService =
-			Substitute.For<ITrustedDeviceService>();
-		MessageBus =
-			Substitute.For<IMessageBus>();
+		MfaOrchestrator =
+			Substitute.For<IMfaOrchestrator>();
+		MfaOrchestrator
+			.IsMfaRequired(Arg.Any<ApplicationUser>())
+			.Returns(false);
 
 		// Default: ALTCHA disabled for most tests
 		AltchaService.IsEnabled.Returns(false);
@@ -118,11 +94,7 @@ public sealed class LoginCommandHandlerTests
 				AuthenticationService,
 				AltchaService,
 				SecurityAuditService,
-				MfaService,
-				MfaSettings,
-				TotpSettings,
-				TrustedDeviceService,
-				MessageBus,
+				MfaOrchestrator,
 				CancellationToken.None);
 
 		// Assert
@@ -170,11 +142,7 @@ public sealed class LoginCommandHandlerTests
 				AuthenticationService,
 				AltchaService,
 				SecurityAuditService,
-				MfaService,
-				MfaSettings,
-				TotpSettings,
-				TrustedDeviceService,
-				MessageBus,
+				MfaOrchestrator,
 				CancellationToken.None);
 
 		// Assert
@@ -222,11 +190,7 @@ public sealed class LoginCommandHandlerTests
 				AuthenticationService,
 				AltchaService,
 				SecurityAuditService,
-				MfaService,
-				MfaSettings,
-				TotpSettings,
-				TrustedDeviceService,
-				MessageBus,
+				MfaOrchestrator,
 				CancellationToken.None);
 
 		// Assert
@@ -261,11 +225,7 @@ public sealed class LoginCommandHandlerTests
 				AuthenticationService,
 				AltchaService,
 				SecurityAuditService,
-				MfaService,
-				MfaSettings,
-				TotpSettings,
-				TrustedDeviceService,
-				MessageBus,
+				MfaOrchestrator,
 				CancellationToken.None);
 
 		// Assert
@@ -308,11 +268,7 @@ public sealed class LoginCommandHandlerTests
 				AuthenticationService,
 				AltchaService,
 				SecurityAuditService,
-				MfaService,
-				MfaSettings,
-				TotpSettings,
-				TrustedDeviceService,
-				MessageBus,
+				MfaOrchestrator,
 				CancellationToken.None);
 
 		// Assert
@@ -352,11 +308,7 @@ public sealed class LoginCommandHandlerTests
 				AuthenticationService,
 				AltchaService,
 				SecurityAuditService,
-				MfaService,
-				MfaSettings,
-				TotpSettings,
-				TrustedDeviceService,
-				MessageBus,
+				MfaOrchestrator,
 				CancellationToken.None);
 
 		// Assert — returns generic InvalidCredentials (no enumeration)
@@ -365,25 +317,13 @@ public sealed class LoginCommandHandlerTests
 	}
 
 	/// <summary>
-	/// Proves the MFA enforcement bug: when RequiredForAllUsers is false and user has not
-	/// enrolled in MFA, the login succeeds without any MFA challenge — even though Mfa:Enabled is true.
+	/// When RequiredForAllUsers is false and user has not enrolled in MFA,
+	/// the login succeeds without any MFA challenge — IMfaOrchestrator returns false for IsMfaRequired.
 	/// </summary>
 	[Fact]
 	public async Task HandleAsync_RequiredForAllUsersFalse_UserWithoutMfa_SkipsMfaChallengeAsync()
 	{
-		// Arrange — Enabled=true but RequiredForAllUsers=false (the buggy config)
-		IOptions<MfaSettings> mfaSettings =
-			Options.Create(
-				new MfaSettings
-				{
-					Enabled = true,
-					RequiredForAllUsers = false,
-					CodeLength = 6,
-					CodeExpirationMinutes = 5,
-					MaxAttempts = 5,
-					ResendCooldownSeconds = 60
-				});
-
+		// Arrange — orchestrator default (IsMfaRequired returns false)
 		ApplicationUser user =
 			new UserBuilder(TimeProvider)
 				.WithId(20)
@@ -393,7 +333,6 @@ public sealed class LoginCommandHandlerTests
 				.WithMfaEnabled(false)
 				.Build();
 
-		// user.MfaEnabled explicitly set to false — simulates a user who opted out of MFA
 		LoginCommand command =
 			CreateLoginCommand(
 				"newuser",
@@ -416,45 +355,29 @@ public sealed class LoginCommandHandlerTests
 				AuthenticationService,
 				AltchaService,
 				SecurityAuditService,
-				MfaService,
-				mfaSettings,
-				TotpSettings,
-				TrustedDeviceService,
-				MessageBus,
+				MfaOrchestrator,
 				CancellationToken.None);
 
-		// Assert — MFA is SKIPPED (this proves the bug: new users bypass MFA)
+		// Assert — MFA is skipped because IsMfaRequired returns false
 		result.Success.ShouldBeTrue();
 		result.RequiresMfa.ShouldBeFalse();
 
-		// MFA service should never be called
-		await MfaService
+		// Orchestrator InitiateChallengeAsync should never be called
+		await MfaOrchestrator
 			.DidNotReceive()
-			.CreateChallengeAsync(
-				Arg.Any<long>(),
+			.InitiateChallengeAsync(
+				Arg.Any<ApplicationUser>(),
 				Arg.Any<string?>(),
 				Arg.Any<CancellationToken>());
 	}
 
 	/// <summary>
-	/// Tests that MFA is required when MFA is enabled globally and user has email-based MFA.
+	/// Tests that MFA is required when IMfaOrchestrator.IsMfaRequired returns true.
 	/// </summary>
 	[Fact]
 	public async Task HandleAsync_MfaEnabledForAllUsers_ReturnsMfaRequiredAsync()
 	{
 		// Arrange
-		IOptions<MfaSettings> mfaSettings =
-			Options.Create(
-				new MfaSettings
-				{
-					Enabled = true,
-					RequiredForAllUsers = true,
-					CodeLength = 6,
-					CodeExpirationMinutes = 5,
-					MaxAttempts = 5,
-					ResendCooldownSeconds = 60
-				});
-
 		ApplicationUser user =
 			new UserBuilder(TimeProvider)
 				.WithId(10)
@@ -476,13 +399,26 @@ public sealed class LoginCommandHandlerTests
 		IdentityMockFactory.ConfigureSignInManagerForSuccess(SignInManager);
 
 		string challengeToken = "mfa-challenge-token-123";
-		string mfaCode = "123456";
-		MfaService
-			.CreateChallengeAsync(
-				user.Id,
+		MfaOrchestrator
+			.IsMfaRequired(Arg.Any<ApplicationUser>())
+			.Returns(true);
+		MfaOrchestrator
+			.TryBypassViaTrustedDeviceAsync(
+				Arg.Any<LoginCommand>(),
+				Arg.Any<ApplicationUser>(),
+				Arg.Any<CancellationToken>())
+			.Returns((AuthResult?)null);
+		MfaOrchestrator
+			.InitiateChallengeAsync(
+				Arg.Any<ApplicationUser>(),
 				Arg.Any<string?>(),
 				Arg.Any<CancellationToken>())
-			.Returns((challengeToken, mfaCode));
+			.Returns(
+				AuthResult.MfaRequired(
+					challengeToken,
+					"mfa@example.com",
+					MfaMethod.Email,
+					[MfaMethod.Email]));
 
 		// Act
 		AuthResult result =
@@ -493,11 +429,7 @@ public sealed class LoginCommandHandlerTests
 				AuthenticationService,
 				AltchaService,
 				SecurityAuditService,
-				MfaService,
-				mfaSettings,
-				TotpSettings,
-				TrustedDeviceService,
-				MessageBus,
+				MfaOrchestrator,
 				CancellationToken.None);
 
 		// Assert
