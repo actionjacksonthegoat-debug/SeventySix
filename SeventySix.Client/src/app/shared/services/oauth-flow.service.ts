@@ -18,7 +18,7 @@ import {
 import { environment } from "@environments/environment";
 import { POLL_INTERVAL, STORAGE_KEYS } from "@shared/constants";
 import { StorageService, WindowService } from "@shared/services";
-import { OAuthProvider, OAuthEvent } from "@shared/services/auth.types";
+import { OAuthEvent, OAuthProvider } from "@shared/services/auth.types";
 import { isNullOrUndefined, isPresent } from "@shared/utilities/null-check.utility";
 import {
 	Observable,

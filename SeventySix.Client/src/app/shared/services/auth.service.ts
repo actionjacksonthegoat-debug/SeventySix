@@ -42,6 +42,9 @@ import {
 } from "@shared/services/auth.types";
 import { FeatureFlagsService } from "@shared/services/feature-flags.service";
 import { IdleDetectionService } from "@shared/services/idle-detection.service";
+import { OAuthFlowService } from "@shared/services/oauth-flow.service";
+import { PasswordResetService } from "@shared/services/password-reset.service";
+import { RegistrationFlowService } from "@shared/services/registration-flow.service";
 import { isNullOrEmpty, isPresent } from "@shared/utilities/null-check.utility";
 import { QueryKeys } from "@shared/utilities/query-keys.utility";
 import { QueryClient } from "@tanstack/angular-query-experimental";
@@ -53,9 +56,6 @@ import {
 	shareReplay,
 	tap
 } from "rxjs";
-import { OAuthFlowService } from "@shared/services/oauth-flow.service";
-import { PasswordResetService } from "@shared/services/password-reset.service";
-import { RegistrationFlowService } from "@shared/services/registration-flow.service";
 
 /**
  * Provides authentication flows (local and OAuth), session restoration, and in-memory token management.
