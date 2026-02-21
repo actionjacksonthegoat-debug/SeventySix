@@ -1,4 +1,4 @@
-// <copyright file="CombinedRegistrationToken.cs" company="SeventySix">
+// <copyright file="CombinedRegistrationTokenDto.cs" company="SeventySix">
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
@@ -13,6 +13,6 @@ namespace SeventySix.Shared.POCOs;
 /// <param name="Token">
 /// The Identity email confirmation token.
 /// </param>
-public record CombinedRegistrationToken(
+public sealed record CombinedRegistrationTokenDto(
 	string Email,
 	string Token);

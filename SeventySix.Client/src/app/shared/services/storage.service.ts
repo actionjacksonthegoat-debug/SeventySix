@@ -1,4 +1,5 @@
-import { Injectable } from "@angular/core";
+import { inject, Injectable } from "@angular/core";
+import { LoggerService } from "@shared/services/logger.service";
 import { isNullOrUndefined } from "@shared/utilities/null-check.utility";
 
 /**
@@ -11,6 +12,9 @@ import { isNullOrUndefined } from "@shared/utilities/null-check.utility";
 	})
 export class StorageService
 {
+	private readonly logger: LoggerService =
+		inject(LoggerService);
+
 	/**
 	 * Executes a storage operation with standardized error handling.
 	 *
@@ -37,9 +41,9 @@ export class StorageService
 		}
 		catch (error: unknown)
 		{
-			console.error(
+			this.logger.error(
 				`StorageService: ${errorContext}`,
-				error);
+				error instanceof Error ? error : undefined);
 			return fallbackValue;
 		}
 	}

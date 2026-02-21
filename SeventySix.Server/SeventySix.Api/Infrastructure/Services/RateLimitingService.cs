@@ -243,7 +243,7 @@ public sealed class RateLimitingService(
 				apiName,
 				currentCount,
 				limit,
-				(double)currentCount / limit * 100,
+				(decimal)currentCount / limit * 100,
 				interval);
 		}
 

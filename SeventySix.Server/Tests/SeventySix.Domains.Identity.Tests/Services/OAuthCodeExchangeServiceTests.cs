@@ -299,7 +299,7 @@ public sealed class OAuthCodeExchangeServiceTests
 		OAuthCodeExchangeService service = CreateService();
 
 		string state = "link-state-123";
-		OAuthLinkFlowData data =
+		OAuthLinkFlowDataResult data =
 			new(
 				UserId: 42,
 				CodeVerifier: "test-code-verifier",
@@ -308,7 +308,7 @@ public sealed class OAuthCodeExchangeServiceTests
 		// Act
 		service.StoreLinkFlow(state, data);
 
-		OAuthLinkFlowData? result =
+		OAuthLinkFlowDataResult? result =
 			service.RetrieveLinkFlow(state);
 
 		// Assert
@@ -328,7 +328,7 @@ public sealed class OAuthCodeExchangeServiceTests
 		OAuthCodeExchangeService service = CreateService();
 
 		// Act
-		OAuthLinkFlowData? result =
+		OAuthLinkFlowDataResult? result =
 			service.RetrieveLinkFlow("nonexistent-state");
 
 		// Assert
@@ -345,7 +345,7 @@ public sealed class OAuthCodeExchangeServiceTests
 		OAuthCodeExchangeService service = CreateService();
 
 		string state = "link-state-456";
-		OAuthLinkFlowData data =
+		OAuthLinkFlowDataResult data =
 			new(
 				UserId: 99,
 				CodeVerifier: "verifier",
@@ -354,10 +354,10 @@ public sealed class OAuthCodeExchangeServiceTests
 		service.StoreLinkFlow(state, data);
 
 		// Act
-		OAuthLinkFlowData? firstResult =
+		OAuthLinkFlowDataResult? firstResult =
 			service.RetrieveLinkFlow(state);
 
-		OAuthLinkFlowData? secondResult =
+		OAuthLinkFlowDataResult? secondResult =
 			service.RetrieveLinkFlow(state);
 
 		// Assert

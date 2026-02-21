@@ -9,7 +9,7 @@ namespace SeventySix.Identity;
 /// Used by Identity context for token generation and validation.
 /// All values MUST be configured in appsettings.json.
 /// </summary>
-public record JwtSettings
+public sealed record JwtSettings
 {
 	/// <summary>
 	/// Configuration section name for binding.

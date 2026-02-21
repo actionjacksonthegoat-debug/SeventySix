@@ -7,6 +7,34 @@ applyTo: "**/SeventySix.Client/src/**/*.{ts,cs},**/SeventySix.Server/**/*.{ts,cs
 
 > **ESLint** is the enforced lint gate for CI and completion status. **dprint** is a local-only formatting tool — not enforced in CI or GitHub Actions.
 
+## Format Command (CRITICAL — NEVER Run dprint Directly)
+
+> **`npm run format` is the ONLY command for formatting files. `dprint` must NEVER be run standalone.**
+
+| [NEVER] | [ALWAYS] |
+| ------- | -------- |
+| Run `dprint` standalone | `npm run format` (full pipeline) |
+| Run `npx dprint fmt` | `npm run format:client` (ESLint → dprint → ESLint) |
+| Run `dprint` as a pre-step | Manually fix formatting during development |
+
+**Why**: `npm run format:client` runs ESLint → dprint → ESLint in that exact order. Running `dprint` directly bypasses the ESLint pre/post passes and leaves lint violations unfixed.
+
+**When to run format**: Only at the end of implementation phases, right before running the test gate. During active development, manually correct formatting in source files rather than running the format command mid-phase.
+
+## End-of-File Newlines (CRITICAL — NO TRAILING NEWLINE)
+
+> **Policy**: Files MUST NOT end with a newline character.
+
+| Layer | Enforcement | Rule |
+| ----- | ----------- | ---- |
+| TypeScript/JS/SCSS | ESLint `@stylistic/eol-last: ["error", "never"]` | Second ESLint pass in `npm run format:client` removes any final newline dprint adds |
+| C# | `.editorconfig` `insert_final_newline = false` | `dotnet format whitespace` strips final newlines |
+| All files | `.editorconfig` `insert_final_newline = false` | VS Code respects this for manual edits |
+
+**Why dprint doesn't conflict**: dprint unconditionally adds a trailing newline, but it runs
+BETWEEN the two ESLint passes. The second `eslint --fix` pass removes it. **Never add
+`insert_final_newline` back to `.editorconfig`.** Never add `finalNewline` to `dprint.json`.
+
 ## Variable Naming (CRITICAL - 3+ Characters)
 
 | Context        | [NEVER]                 | [ALWAYS]                               |

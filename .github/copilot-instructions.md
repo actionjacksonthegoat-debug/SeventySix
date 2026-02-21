@@ -37,8 +37,11 @@
 - **TDD 80/20** � focus tests on the 20% of code carrying 80% of risk
 - **IDE Warnings = MUST FIX** � never suppress with `#pragma warning disable`, `// @ts-ignore`, `[SuppressMessage]`, or `.editorconfig` severity overrides
     - **Exceptions**: Generated OpenAPI clients
-    - **Format Violations**: NEVER add `.editorconfig` rules to suppress format violations (IDE1006, etc.). Always fix violations manually in source files. If `dotnet format` reports "Unable to fix [RULE]", manually correct all instances in the source code.
-- **All required test suites MUST pass** before claiming completion (see below)
+    - **Format Violations**: NEVER add `.editorconfig` rules to suppress format violations (IDE1006, etc.). Always fix violations manually in source files. If `dotnet format` reports "Unable to fix [RULE]", manually correct all instances in the source code.- **`npm run format` is the ONLY format command** ― `dprint` must NEVER be run standalone outside this pipeline:
+    - `npm run format:client` runs: ESLint → dprint → ESLint (in this exact order)
+    - Running `dprint` directly bypasses ESLint pre/post passes and breaks the required flow
+    - Format runs at the end of implementation phases, right before running the test gate
+    - During active development, correct formatting manually rather than running format mid-phase- **All required test suites MUST pass** before claiming completion (see below)
 
 ## [CRITICAL] Tests MUST Pass (GATE CONDITION)
 
@@ -203,9 +206,9 @@ VS Code may reset MCP tool toggles in the Chat panel on restart. This is a known
 | `npm run start:client` | Start Angular dev server only |
 | `npm run start:api-debug` | Start infrastructure (DB, cache) for API debugging |
 | `npm run stop:api` | Stop API and infrastructure containers |
-| `npm run format` | Format server + client code |
+| `npm run format` | Format server + client code — **USE THIS, never run dprint directly** |
 | `npm run format:server` | Format server code (analyzers + dotnet format) |
-| `npm run format:client` | Format client code (ESLint + dprint) |
+| `npm run format:client` | Format client code (ESLint → dprint → ESLint — required order) |
 | `npm run loadtest:quick` | Quick load test profile |
 | `npm run loadtest:smoke` | Smoke load test profile |
 | `npm run loadtest:load` | Standard load test profile |

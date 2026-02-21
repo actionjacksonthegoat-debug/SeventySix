@@ -1,4 +1,4 @@
-# docker-compose.e2e.yml
+﻿# docker-compose.e2e.yml
 # E2E Test Environment for SeventySix
 # Usage: docker compose -f docker-compose.e2e.yml up -d
 #
@@ -13,187 +13,187 @@
 name: seventysix-e2e
 
 services:
-    # PostgreSQL - Test Database
-    postgres-e2e:
-        image: postgres:18-alpine
-        container_name: seventysix-postgres-e2e
-        environment:
-            POSTGRES_DB: seventysix_e2e
-            POSTGRES_USER: postgres
-            POSTGRES_PASSWORD: E2E_Test_Password_123
-            PGDATA: /var/lib/postgresql/data
-        ports:
-            - "5434:5432"
-        volumes:
-            - postgres_e2e_data:/var/lib/postgresql/data
-        healthcheck:
-            test: [ "CMD-SHELL", "pg_isready -U postgres" ]
-            interval: 5s
-            timeout: 5s
-            retries: 5
-        networks:
-            - e2e-network
+  # PostgreSQL - Test Database
+  postgres-e2e:
+    image: postgres:18-alpine
+    container_name: seventysix-postgres-e2e
+    environment:
+      POSTGRES_DB: seventysix_e2e
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: E2E_Test_Password_123
+      PGDATA: /var/lib/postgresql/data
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_e2e_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - e2e-network
 
-    # Valkey - Test Cache
-    valkey-e2e:
-        image: valkey/valkey:9.0-alpine
-        container_name: seventysix-valkey-e2e
-        ports:
-            - "6380:6379"
-        healthcheck:
-            test: [ "CMD", "valkey-cli", "ping" ]
-            interval: 5s
-            timeout: 5s
-            retries: 5
-        networks:
-            - e2e-network
+  # Valkey - Test Cache
+  valkey-e2e:
+    image: valkey/valkey:9.0-alpine
+    container_name: seventysix-valkey-e2e
+    ports:
+      - "6380:6379"
+    healthcheck:
+      test: [ "CMD", "valkey-cli", "ping" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - e2e-network
 
-    # MailDev - Email Capture
-    maildev:
-        image: maildev/maildev:latest
-        container_name: seventysix-maildev-e2e
-        ports:
-            - "1080:1080" # Web UI
-            - "1025:1025" # SMTP
-        environment:
-            - MAILDEV_SMTP_PORT=1025
-            - MAILDEV_WEB_PORT=1080
-        networks:
-            - e2e-network
+  # MailDev - Email Capture
+  maildev:
+    image: maildev/maildev:latest
+    container_name: seventysix-maildev-e2e
+    ports:
+      - "1080:1080" # Web UI
+      - "1025:1025" # SMTP
+    environment:
+      - MAILDEV_SMTP_PORT=1025
+      - MAILDEV_WEB_PORT=1080
+    networks:
+      - e2e-network
 
-    # .NET API - Test Environment (HTTPS)
-    api-e2e:
-        build:
-            context: ./SeventySix.Server
-            dockerfile: SeventySix.Api/Dockerfile
-        container_name: seventysix-api-e2e
-        ports:
-            - "7174:8081" # HTTPS - E2E isolated port (dev: 7074)
-        environment:
-            # Core Environment - Using E2E-specific appsettings
-            - ASPNETCORE_ENVIRONMENT=E2E
-            - ASPNETCORE_HTTPS_PORTS=8081
-            - ASPNETCORE_Kestrel__Certificates__Default__Password=dev-ssl-password
-            - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/dev-certificate.pfx
-            # Database (E2E isolated)
-            - Database__Host=postgres-e2e
-            - Database__Port=5432
-            - Database__Name=seventysix_e2e
-            - Database__User=postgres
-            - Database__Password=E2E_Test_Password_123
-            - Database__Maintenance__Enabled=false
-            # Cache (E2E isolated)
-            - Cache__Valkey__Enabled=true
-            - Cache__Valkey__UseSsl=false
-            - Cache__Valkey__ConnectionString=valkey-e2e:6379
-            - Cache__OutputCache__Policies__users__Enabled=false
-            - Cache__OutputCache__Policies__logs__Enabled=false
-            - Cache__OutputCache__Policies__health__Enabled=false
-            - Cache__OutputCache__Policies__thirdpartyrequests__Enabled=false
-            - Cache__OutputCache__Policies__features__Enabled=false
-            # Email (MailDev — no auth required, empty credentials skip SMTP authentication)
-            - Email__Enabled=true
-            - Email__UseSsl=false
-            - Email__SmtpHost=maildev
-            - Email__SmtpPort=1025
-            - Email__SmtpUsername=
-            - Email__SmtpPassword=
-            - Email__FromAddress=noreply@test.local
-            - Email__ClientBaseUrl=https://localhost:4201
-            - Email__Queue__Enabled=true
-            - Email__Queue__ProcessingIntervalSeconds=1
-            - Email__Queue__BatchSize=10
-            # JWT (test secret - minimum 64 chars for security)
-            - Jwt__SecretKey=nR4tY6uH9bE3dF5gA1cZ0iL8oS2wX4nM7qJ6kR9pT3uV5yBxK7mQ2pWvN8jzD2fH4j
-            # Seeders
-            - AdminSeeder__Enabled=true
-            - AdminSeeder__InitialPassword=SecureE2ETestPassword123!
-            - E2ESeeder__Enabled=true
-            # Background Jobs
-            - BackgroundJobs__Enabled=true
-            # MFA (enabled for E2E — required for MFA login tests)
-            - Mfa__Enabled=true
-            - Mfa__RequiredForAllUsers=false
-            # TOTP (shortened time step for fast E2E — 10s vs 30s production)
-            - Totp__TimeStepSeconds=10
-            - Totp__AllowedTimeStepDrift=2
-            # Security
-            - Security__EnforceHttps=true
-            - Security__HstsIncludeSubdomains=false
-            - Security__AllowHttpForHealthChecks=false
-            - Security__AllowHttpForMetrics=false
-            - Security__AllowHttpForOpenApi=false
-            # Auth
-            - Auth__Lockout__Enabled=true
-            - Auth__Cookie__SecureCookie=true
-            - Auth__Cookie__SameSiteLax=true
-            - Auth__Token__DisableRotation=true
-            - Auth__BreachedPassword__Enabled=false
-            - Auth__BreachedPassword__BlockBreachedPasswords=false
-            # Disabled for E2E (fast tests)
-            - OpenTelemetry__Enabled=false
-            - Altcha__Enabled=true
-            - Altcha__HmacKeyBase64=ZTJlLXRlc3QtaG1hYy1rZXktdGhhdC1tdXN0LWJlLWV4YWN0bHktc2l4dHktZm91ci1ieXRlcy1sb25nLSEhIQ==
-            - Altcha__ComplexityMin=1
-            - Altcha__ComplexityMax=10
-            - Altcha__ExpirySeconds=120
-            - RateLimiting__Enabled=true
-            # OAuth (E2E placeholder values — OAuth flow not tested in E2E)
-            - Auth__OAuth__Providers__0__ClientId=e2e-github-client-id
-            - Auth__OAuth__Providers__0__ClientSecret=e2e-github-client-secret
-            # Runtime stability - prevents SIGSEGV from diagnostic port socket creation
-            - DOTNET_EnableDiagnostics=0
-            - ResponseCompression__Enabled=false
-            - Logging__Cleanup__Enabled=false
-            - ThirdPartyApiLimits__Enabled=false
-            # Health
-            - HealthChecks__Enabled=true
-            # CORS
-            - Cors__AllowedOrigins__0=https://localhost:4201
-        volumes:
-            - ./SeventySix.Client/ssl:/https:ro
-        depends_on:
-            postgres-e2e:
-                condition: service_healthy
-            valkey-e2e:
-                condition: service_healthy
-            maildev:
-                condition: service_started
-        healthcheck:
-            test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "--no-check-certificate", "https://localhost:8081/health" ]
-            interval: 3s
-            timeout: 3s
-            retries: 15
-            start_period: 10s
-        networks:
-            - e2e-network
+  # .NET API - Test Environment (HTTPS)
+  api-e2e:
+    build:
+      context: ./SeventySix.Server
+      dockerfile: SeventySix.Api/Dockerfile
+    container_name: seventysix-api-e2e
+    ports:
+      - "7174:8081" # HTTPS - E2E isolated port (dev: 7074)
+    environment:
+      # Core Environment - Using E2E-specific appsettings
+      - ASPNETCORE_ENVIRONMENT=E2E
+      - ASPNETCORE_HTTPS_PORTS=8081
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=dev-ssl-password
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/dev-certificate.pfx
+      # Database (E2E isolated)
+      - Database__Host=postgres-e2e
+      - Database__Port=5432
+      - Database__Name=seventysix_e2e
+      - Database__User=postgres
+      - Database__Password=E2E_Test_Password_123
+      - Database__Maintenance__Enabled=false
+      # Cache (E2E isolated)
+      - Cache__Valkey__Enabled=true
+      - Cache__Valkey__UseSsl=false
+      - Cache__Valkey__ConnectionString=valkey-e2e:6379
+      - Cache__OutputCache__Policies__users__Enabled=false
+      - Cache__OutputCache__Policies__logs__Enabled=false
+      - Cache__OutputCache__Policies__health__Enabled=false
+      - Cache__OutputCache__Policies__thirdpartyrequests__Enabled=false
+      - Cache__OutputCache__Policies__features__Enabled=false
+      # Email (MailDev — no auth required, empty credentials skip SMTP authentication)
+      - Email__Enabled=true
+      - Email__UseSsl=false
+      - Email__SmtpHost=maildev
+      - Email__SmtpPort=1025
+      - Email__SmtpUsername=
+      - Email__SmtpPassword=
+      - Email__FromAddress=noreply@test.local
+      - Email__ClientBaseUrl=https://localhost:4201
+      - Email__Queue__Enabled=true
+      - Email__Queue__ProcessingIntervalSeconds=1
+      - Email__Queue__BatchSize=10
+      # JWT (test secret - minimum 64 chars for security)
+      - Jwt__SecretKey=nR4tY6uH9bE3dF5gA1cZ0iL8oS2wX4nM7qJ6kR9pT3uV5yBxK7mQ2pWvN8jzD2fH4j
+      # Seeders
+      - AdminSeeder__Enabled=true
+      - AdminSeeder__InitialPassword=SecureE2ETestPassword123!
+      - E2ESeeder__Enabled=true
+      # Background Jobs
+      - BackgroundJobs__Enabled=true
+      # MFA (enabled for E2E — required for MFA login tests)
+      - Mfa__Enabled=true
+      - Mfa__RequiredForAllUsers=false
+      # TOTP (shortened time step for fast E2E — 10s vs 30s production)
+      - Totp__TimeStepSeconds=10
+      - Totp__AllowedTimeStepDrift=2
+      # Security
+      - Security__EnforceHttps=true
+      - Security__HstsIncludeSubdomains=false
+      - Security__AllowHttpForHealthChecks=false
+      - Security__AllowHttpForMetrics=false
+      - Security__AllowHttpForOpenApi=false
+      # Auth
+      - Auth__Lockout__Enabled=true
+      - Auth__Cookie__SecureCookie=true
+      - Auth__Cookie__SameSiteLax=true
+      - Auth__Token__DisableRotation=true
+      - Auth__BreachedPassword__Enabled=false
+      - Auth__BreachedPassword__BlockBreachedPasswords=false
+      # Disabled for E2E (fast tests)
+      - OpenTelemetry__Enabled=false
+      - Altcha__Enabled=true
+      - Altcha__HmacKeyBase64=ZTJlLXRlc3QtaG1hYy1rZXktdGhhdC1tdXN0LWJlLWV4YWN0bHktc2l4dHktZm91ci1ieXRlcy1sb25nLSEhIQ==
+      - Altcha__ComplexityMin=1
+      - Altcha__ComplexityMax=10
+      - Altcha__ExpirySeconds=120
+      - RateLimiting__Enabled=true
+      # OAuth (E2E placeholder values — OAuth flow not tested in E2E)
+      - Auth__OAuth__Providers__0__ClientId=e2e-github-client-id
+      - Auth__OAuth__Providers__0__ClientSecret=e2e-github-client-secret
+      # Runtime stability - prevents SIGSEGV from diagnostic port socket creation
+      - DOTNET_EnableDiagnostics=0
+      - ResponseCompression__Enabled=false
+      - Logging__Cleanup__Enabled=false
+      - ThirdPartyApiLimits__Enabled=false
+      # Health
+      - HealthChecks__Enabled=true
+      # CORS
+      - Cors__AllowedOrigins__0=https://localhost:4201
+    volumes:
+      - ./SeventySix.Client/ssl:/https:ro
+    depends_on:
+      postgres-e2e:
+        condition: service_healthy
+      valkey-e2e:
+        condition: service_healthy
+      maildev:
+        condition: service_started
+    healthcheck:
+      test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "--no-check-certificate", "https://localhost:8081/health" ]
+      interval: 3s
+      timeout: 3s
+      retries: 15
+      start_period: 10s
+    networks:
+      - e2e-network
 
-    # Angular Client - E2E Build (HTTPS, uses e2e configuration with correct API URL)
-    client-e2e:
-        build:
-            context: ./SeventySix.Client
-            dockerfile: Dockerfile.e2e
-        container_name: seventysix-client-e2e
-        ports:
-            - "4201:8443" # HTTPS - E2E isolated port (dev: 4200)
-        volumes:
-            - ./SeventySix.Client/ssl:/etc/nginx/ssl:ro
-        depends_on:
-            api-e2e:
-                condition: service_healthy
-        healthcheck:
-            test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "--no-check-certificate", "https://localhost:8443/" ]
-            interval: 2s
-            timeout: 2s
-            retries: 10
-            start_period: 2s
-        networks:
-            - e2e-network
+  # Angular Client - E2E Build (HTTPS, uses e2e configuration with correct API URL)
+  client-e2e:
+    build:
+      context: ./SeventySix.Client
+      dockerfile: Dockerfile.e2e
+    container_name: seventysix-client-e2e
+    ports:
+      - "4201:8443" # HTTPS - E2E isolated port (dev: 4200)
+    volumes:
+      - ./SeventySix.Client/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      api-e2e:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "--no-check-certificate", "https://localhost:8443/" ]
+      interval: 2s
+      timeout: 2s
+      retries: 10
+      start_period: 2s
+    networks:
+      - e2e-network
 
 networks:
-    e2e-network:
-        name: seventysix-e2e-network
+  e2e-network:
+    name: seventysix-e2e-network
 
 volumes:
-    postgres_e2e_data:
-        name: seventysix_postgres_e2e_data
+  postgres_e2e_data:
+    name: seventysix_postgres_e2e_data

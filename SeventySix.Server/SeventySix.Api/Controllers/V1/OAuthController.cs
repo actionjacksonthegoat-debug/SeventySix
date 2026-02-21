@@ -127,7 +127,7 @@ public sealed class OAuthController(
 		CancellationToken cancellationToken)
 	{
 		// Check if this is an account linking flow (data stored in cache, not cookies)
-		OAuthLinkFlowData? linkFlowData =
+		OAuthLinkFlowDataResult? linkFlowData =
 			oAuthCodeExchange.RetrieveLinkFlow(state);
 
 		if (linkFlowData is not null)
@@ -226,13 +226,13 @@ public sealed class OAuthController(
 	private async Task<IActionResult> HandleLinkCallbackAsync(
 		string provider,
 		string code,
-		OAuthLinkFlowData linkFlowData,
+		OAuthLinkFlowDataResult linkFlowData,
 		CancellationToken cancellationToken)
 	{
 		string redirectUri =
 			BuildRedirectUri(provider);
 
-		OAuthUserInfo? userInfo =
+		OAuthUserInfoResult? userInfo =
 			await oAuthService.ExchangeCodeForUserInfoAsync(
 				provider,
 				code,
@@ -398,7 +398,7 @@ public sealed class OAuthController(
 		// Store link flow data in cache (not cookies — popup can't send JWT in redirect)
 		oAuthCodeExchange.StoreLinkFlow(
 			state,
-			new OAuthLinkFlowData(userId, codeVerifier, provider));
+			new OAuthLinkFlowDataResult(userId, codeVerifier, provider));
 
 		string redirectUri =
 			BuildRedirectUri(provider);

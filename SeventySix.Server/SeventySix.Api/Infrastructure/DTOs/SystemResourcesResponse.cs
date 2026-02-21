@@ -7,31 +7,31 @@ namespace SeventySix.Api.Infrastructure;
 /// <summary>
 /// Represents system resource usage metrics.
 /// </summary>
-public sealed class SystemResourcesResponse
+public record SystemResourcesResponse
 {
 	/// <summary>
-	/// Gets or sets the CPU usage percentage.
+	/// Gets the CPU usage percentage.
 	/// </summary>
 	/// <value>
 	/// Percentage from 0 to 100.
 	/// </value>
-	public double CpuUsagePercent { get; set; }
+	public decimal CpuUsagePercent { get; init; }
 
 	/// <summary>
-	/// Gets or sets the memory used in megabytes.
+	/// Gets the memory used in megabytes.
 	/// </summary>
-	public long MemoryUsedMb { get; set; }
+	public long MemoryUsedMb { get; init; }
 
 	/// <summary>
-	/// Gets or sets the total available memory in megabytes.
+	/// Gets the total available memory in megabytes.
 	/// </summary>
-	public long MemoryTotalMb { get; set; }
+	public long MemoryTotalMb { get; init; }
 
 	/// <summary>
-	/// Gets or sets the disk usage percentage.
+	/// Gets the disk usage percentage.
 	/// </summary>
 	/// <value>
 	/// Percentage from 0 to 100.
 	/// </value>
-	public double DiskUsagePercent { get; set; }
+	public decimal DiskUsagePercent { get; init; }
 }

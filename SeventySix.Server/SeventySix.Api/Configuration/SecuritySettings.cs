@@ -29,7 +29,7 @@ namespace SeventySix.Api.Configuration;
 /// in development for Prometheus scraping while enforcing HTTPS in production.
 /// </para>
 /// </remarks>
-public record SecuritySettings
+public sealed record SecuritySettings
 {
 	/// <summary>
 	/// Configuration section name for binding.

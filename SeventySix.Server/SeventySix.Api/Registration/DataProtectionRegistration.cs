@@ -59,7 +59,7 @@ public static class DataProtectionExtensions
 		IConfiguration configuration,
 		IWebHostEnvironment environment)
 	{
-		AppDataProtectionOptions dataProtectionOptions =
+		DataProtectionSettings dataProtectionOptions =
 			BindAndValidateOptions(
 				services,
 				configuration,
@@ -101,29 +101,29 @@ public static class DataProtectionExtensions
 	/// <returns>
 	/// The bound and validated options instance.
 	/// </returns>
-	private static AppDataProtectionOptions BindAndValidateOptions(
+	private static DataProtectionSettings BindAndValidateOptions(
 		IServiceCollection services,
 		IConfiguration configuration,
 		IWebHostEnvironment environment)
 	{
 		services.AddSingleton<
-			IValidator<AppDataProtectionOptions>,
-			AppDataProtectionOptionsValidator>();
+			IValidator<DataProtectionSettings>,
+			DataProtectionSettingsValidator>();
 
 		services
-			.AddOptions<AppDataProtectionOptions>()
+			.AddOptions<DataProtectionSettings>()
 			.Bind(
 				configuration.GetSection(
-					AppDataProtectionOptions.SectionName))
+					DataProtectionSettings.SectionName))
 			.ValidateWithFluentValidation()
 			.ValidateOnStart();
 
-		AppDataProtectionOptions? boundOptions =
+		DataProtectionSettings? boundOptions =
 			configuration
-				.GetSection(AppDataProtectionOptions.SectionName)
-				.Get<AppDataProtectionOptions>();
+				.GetSection(DataProtectionSettings.SectionName)
+				.Get<DataProtectionSettings>();
 
-		return boundOptions ?? new AppDataProtectionOptions();
+		return boundOptions ?? new DataProtectionSettings();
 	}
 
 	/// <summary>
@@ -139,7 +139,7 @@ public static class DataProtectionExtensions
 	/// The absolute path to the keys directory.
 	/// </returns>
 	private static string ResolveKeysDirectory(
-		AppDataProtectionOptions dataProtectionOptions,
+		DataProtectionSettings dataProtectionOptions,
 		IWebHostEnvironment environment)
 	{
 		if (!string.IsNullOrWhiteSpace(dataProtectionOptions.KeysDirectory))
@@ -187,7 +187,7 @@ public static class DataProtectionExtensions
 	/// </exception>
 	private static void ConfigureKeyProtection(
 		IDataProtectionBuilder dataProtectionBuilder,
-		AppDataProtectionOptions dataProtectionOptions,
+		DataProtectionSettings dataProtectionOptions,
 		IWebHostEnvironment environment)
 	{
 		if (
@@ -238,7 +238,7 @@ public static class DataProtectionExtensions
 	/// </returns>
 	private static bool TryProtectWithCertificate(
 		IDataProtectionBuilder dataProtectionBuilder,
-		AppDataProtectionOptions dataProtectionOptions)
+		DataProtectionSettings dataProtectionOptions)
 	{
 		if (!dataProtectionOptions.UseCertificate)
 		{

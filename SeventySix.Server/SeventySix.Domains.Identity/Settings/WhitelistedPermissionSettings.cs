@@ -8,7 +8,7 @@ namespace SeventySix.Identity;
 /// Configuration for pre-approved permission grants.
 /// Emails matching grants will have roles auto-approved without admin review.
 /// </summary>
-public record WhitelistedPermissionSettings
+public sealed record WhitelistedPermissionSettings
 {
 	/// <summary>
 	/// Configuration section name in appsettings.json.

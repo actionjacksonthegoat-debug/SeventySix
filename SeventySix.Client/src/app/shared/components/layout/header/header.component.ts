@@ -101,7 +101,7 @@ export class HeaderComponent
 				{
 					return "";
 				}
-				return user.fullName || user.username;
+				return user.fullName ?? user.username;
 			});
 
 	/**

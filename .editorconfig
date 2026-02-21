@@ -28,8 +28,8 @@ indent_style = tab
 # This is the visual width when tabs are displayed
 indent_size = 4
 
-# Do not insert a newline at the end of files
-# Prevents unnecessary diffs when newlines are auto-added
+# Do NOT insert a newline at the end of files
+# The final ESLint pass (after dprint) enforces eol-last: never, stripping any trailing newlines.
 insert_final_newline = false
 
 # Remove whitespace at the end of lines

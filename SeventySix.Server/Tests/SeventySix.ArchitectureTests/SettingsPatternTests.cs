@@ -119,7 +119,7 @@ public sealed class SettingsPatternTests : SourceCodeArchitectureTest
 		"OAuthSettings",
 		"OAuthProviderSettings",
 		// Simple boolean toggles or marker records
-		"E2ESeederOptions",
+		"E2ESeederSettings",
 		// Named cache entries validated by CacheSettingsValidator
 		"NamedCacheSettings",
 		// Sub-settings without independent registration

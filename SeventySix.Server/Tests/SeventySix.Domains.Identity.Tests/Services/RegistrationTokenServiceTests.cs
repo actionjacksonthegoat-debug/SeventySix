@@ -36,7 +36,7 @@ public sealed class RegistrationTokenServiceTests
 			RegistrationTokenService.Encode(testEmail, verificationToken);
 
 		// Act
-		CombinedRegistrationToken? decodedToken =
+		CombinedRegistrationTokenDto? decodedToken =
 			RegistrationTokenService.Decode(encodedToken);
 
 		// Assert
@@ -52,7 +52,7 @@ public sealed class RegistrationTokenServiceTests
 		string invalidToken = "not-a-valid-base64-token";
 
 		// Act
-		CombinedRegistrationToken? decodedToken =
+		CombinedRegistrationTokenDto? decodedToken =
 			RegistrationTokenService.Decode(invalidToken);
 
 		// Assert

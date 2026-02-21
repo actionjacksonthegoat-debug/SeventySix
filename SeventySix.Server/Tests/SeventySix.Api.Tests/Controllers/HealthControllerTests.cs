@@ -53,7 +53,7 @@ public sealed class HealthControllerTests
 					new DatabaseHealthResponse
 					{
 						IsConnected = true,
-						ResponseTimeMs = 25.5,
+						ResponseTimeMs = 25.5m,
 						Status = "Healthy",
 					},
 				ErrorQueue =
@@ -104,7 +104,7 @@ public sealed class HealthControllerTests
 					new DatabaseHealthResponse
 					{
 						IsConnected = true,
-						ResponseTimeMs = 500,
+						ResponseTimeMs = 500m,
 						Status = "Degraded",
 					},
 				ErrorQueue =
@@ -152,7 +152,7 @@ public sealed class HealthControllerTests
 					new DatabaseHealthResponse
 					{
 						IsConnected = false,
-						ResponseTimeMs = 0,
+						ResponseTimeMs = 0m,
 						Status = "Unhealthy",
 					},
 				ErrorQueue =
@@ -200,7 +200,7 @@ public sealed class HealthControllerTests
 					new DatabaseHealthResponse
 					{
 						IsConnected = true,
-						ResponseTimeMs = 25.5,
+						ResponseTimeMs = 25.5m,
 						Status = "Healthy",
 					},
 				ErrorQueue =
@@ -214,10 +214,10 @@ public sealed class HealthControllerTests
 				System =
 					new SystemResourcesResponse
 					{
-						CpuUsagePercent = 45.5,
+						CpuUsagePercent = 45.5m,
 						MemoryUsedMb = 2048,
 						MemoryTotalMb = 8192,
-						DiskUsagePercent = 67.3,
+						DiskUsagePercent = 67.3m,
 					},
 			};
 
@@ -236,8 +236,8 @@ public sealed class HealthControllerTests
 			okResult.Value.ShouldBeOfType<HealthStatusResponse>();
 		returnedStatus.Status.ShouldBe("Healthy");
 		returnedStatus.Database.IsConnected.ShouldBeTrue();
-		returnedStatus.Database.ResponseTimeMs.ShouldBe(25.5);
+		returnedStatus.Database.ResponseTimeMs.ShouldBe(25.5m);
 		returnedStatus.ErrorQueue.QueuedItems.ShouldBe(5);
-		returnedStatus.System.CpuUsagePercent.ShouldBe(45.5);
+		returnedStatus.System.CpuUsagePercent.ShouldBe(45.5m);
 	}
 }

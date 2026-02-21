@@ -20,8 +20,8 @@ public static class ApplicationServicesRegistration
 	/// </summary>
 	/// <remarks>
 	/// Reads configuration sections:
-	/// - "Resilience" (via ResilienceOptions.SectionName)
-	/// - "OutputCache" (via OutputCacheOptions.SectionName)
+	/// - "Resilience" (via ResilienceSettings.SectionName)
+	/// - "OutputCache" (via OutputCacheSettings.SectionName)
 	/// - "RateLimiting" (via RateLimitingSettings.SectionName)
 	/// - "RequestLimits" (via RequestLimitsSettings.SectionName)
 	/// </remarks>
@@ -41,19 +41,19 @@ public static class ApplicationServicesRegistration
 		// Register FluentValidation validators for settings
 		services.AddSingleton<IValidator<RateLimitingSettings>, RateLimitingSettingsValidator>();
 		services.AddSingleton<IValidator<RequestLimitsSettings>, RequestLimitsSettingsValidator>();
-		services.AddSingleton<IValidator<ResilienceOptions>, ResilienceOptionsValidator>();
-		services.AddSingleton<IValidator<OutputCacheOptions>, OutputCacheOptionsValidator>();
+		services.AddSingleton<IValidator<ResilienceSettings>, ResilienceSettingsValidator>();
+		services.AddSingleton<IValidator<OutputCacheSettings>, OutputCacheSettingsValidator>();
 
 		// Configuration options with FluentValidation + ValidateOnStart
 		services
-			.AddOptions<ResilienceOptions>()
-			.Bind(configuration.GetSection(ResilienceOptions.SectionName))
+			.AddOptions<ResilienceSettings>()
+			.Bind(configuration.GetSection(ResilienceSettings.SectionName))
 			.ValidateWithFluentValidation()
 			.ValidateOnStart();
 
 		services
-			.AddOptions<OutputCacheOptions>()
-			.Bind(configuration.GetSection(OutputCacheOptions.SectionName))
+			.AddOptions<OutputCacheSettings>()
+			.Bind(configuration.GetSection(OutputCacheSettings.SectionName))
 			.ValidateWithFluentValidation()
 			.ValidateOnStart();
 

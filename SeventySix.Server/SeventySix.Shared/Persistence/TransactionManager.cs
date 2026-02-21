@@ -180,15 +180,16 @@ public sealed class TransactionManager(DbContext context) : ITransactionManager
 	/// </returns>
 	private static int CalculateBackoff(int retryCount)
 	{
-		double baseDelay =
-			BaseRetryDelayMs * Math.Pow(
+		// Math.Pow only has a double overload — cast result to decimal
+		decimal baseDelay =
+			BaseRetryDelayMs * (decimal)Math.Pow(
 				2,
 				retryCount - 1);
 
-		double jitter =
+		decimal jitter =
 			Random.Shared.Next(
 				-JitterPercentage,
-				JitterPercentage + 1) / 100.0;
+				JitterPercentage + 1) / 100m;
 		int delayMs =
 			(int)(baseDelay * (1 + jitter));
 

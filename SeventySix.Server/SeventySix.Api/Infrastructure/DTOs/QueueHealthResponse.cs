@@ -9,31 +9,31 @@ namespace SeventySix.Api.Infrastructure;
 /// <summary>
 /// Represents error queue health status.
 /// </summary>
-public sealed class QueueHealthResponse
+public record QueueHealthResponse
 {
 	/// <summary>
-	/// Gets or sets the number of items currently in the queue.
+	/// Gets the number of items currently in the queue.
 	/// </summary>
-	public int QueuedItems { get; set; }
+	public int QueuedItems { get; init; }
 
 	/// <summary>
-	/// Gets or sets the number of failed items in the queue.
+	/// Gets the number of failed items in the queue.
 	/// </summary>
-	public int FailedItems { get; set; }
+	public int FailedItems { get; init; }
 
 	/// <summary>
-	/// Gets or sets a value indicating whether the circuit breaker is open.
+	/// Gets a value indicating whether the circuit breaker is open.
 	/// </summary>
 	/// <value>
 	/// True if circuit breaker is open (blocking requests), false otherwise.
 	/// </value>
-	public bool CircuitBreakerOpen { get; set; }
+	public bool CircuitBreakerOpen { get; init; }
 
 	/// <summary>
-	/// Gets or sets the queue health status.
+	/// Gets the queue health status.
 	/// </summary>
 	/// <value>
 	/// Status: "Healthy", "Degraded", or "Unhealthy".
 	/// </value>
-	public string Status { get; set; } = HealthStatusConstants.Healthy;
+	public string Status { get; init; } = HealthStatusConstants.Healthy;
 }

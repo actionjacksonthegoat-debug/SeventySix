@@ -67,7 +67,7 @@ public sealed class GlobalExceptionHandler(
 		new(
 			configuration
 				.GetSection(ConfigurationSectionConstants.Cors.AllowedOrigins)
-				.Get<string[]>() ?? ["http://localhost:4200"],
+				.Get<string[]>() ?? [],
 			StringComparer.OrdinalIgnoreCase);
 
 	/// <summary>

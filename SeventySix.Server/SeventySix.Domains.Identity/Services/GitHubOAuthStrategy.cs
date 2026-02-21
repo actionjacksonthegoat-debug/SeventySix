@@ -91,7 +91,7 @@ public sealed class GitHubOAuthStrategy(
 	}
 
 	/// <inheritdoc/>
-	public async Task<OAuthUserInfo> GetUserInfoAsync(
+	public async Task<OAuthUserInfoResult> GetUserInfoAsync(
 		string accessToken,
 		CancellationToken cancellationToken)
 	{
@@ -124,7 +124,7 @@ public sealed class GitHubOAuthStrategy(
 		JsonElement root =
 			doc.RootElement;
 
-		return new OAuthUserInfo(
+		return new OAuthUserInfoResult(
 			ProviderId: root.GetProperty(OAuthProviderConstants.GitHubJsonProperties.Id).GetInt64().ToString(),
 			Login: root.GetProperty(OAuthProviderConstants.GitHubJsonProperties.Login).GetString() ?? "",
 			Email: root.TryGetProperty(

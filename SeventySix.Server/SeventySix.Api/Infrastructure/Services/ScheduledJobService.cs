@@ -52,8 +52,9 @@ public sealed class ScheduledJobService(
 	/// Grace period multiplier for health status calculation.
 	/// A job is considered unhealthy if it hasn't run within
 	/// (expected interval) * (1 + GracePeriodMultiplier).
+	/// TimeSpan.op_Multiply only accepts double, so cast at usage site.
 	/// </summary>
-	private const double GracePeriodMultiplier = 0.1;
+	private const decimal GracePeriodMultiplier = 0.1m;
 
 	/// <summary>
 	/// Metadata for each known scheduled job, keyed by job name.
@@ -232,7 +233,7 @@ public sealed class ScheduledJobService(
 			now2 - execution.LastExecutedAt;
 
 		TimeSpan maximumAllowedInterval =
-			expectedInterval * (1 + GracePeriodMultiplier);
+			expectedInterval * (1 + (double)GracePeriodMultiplier);
 
 		return timeSinceLastExecution <= maximumAllowedInterval
 			? HealthStatusConstants.Healthy

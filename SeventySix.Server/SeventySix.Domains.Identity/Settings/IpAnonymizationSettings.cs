@@ -9,7 +9,7 @@ namespace SeventySix.Identity.Settings;
 /// Implements GDPR Article 4 compliance for IP address retention.
 /// All values MUST be configured in appsettings.json.
 /// </summary>
-public record IpAnonymizationSettings
+public sealed record IpAnonymizationSettings
 {
 	/// <summary>
 	/// The configuration section name for IP anonymization settings.

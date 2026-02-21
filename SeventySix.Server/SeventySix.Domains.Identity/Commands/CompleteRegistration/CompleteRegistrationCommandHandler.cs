@@ -180,7 +180,7 @@ public static class CompleteRegistrationCommandHandler
 			UserManager<ApplicationUser> userManager,
 			ILogger logger)
 	{
-		CombinedRegistrationToken? decodedToken =
+		CombinedRegistrationTokenDto? decodedToken =
 			RegistrationTokenService.Decode(token);
 
 		if (decodedToken is null)

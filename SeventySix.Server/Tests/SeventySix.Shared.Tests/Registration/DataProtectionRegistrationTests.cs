@@ -76,6 +76,7 @@ public sealed class DataProtectionRegistrationTests
 			{
 				["DataProtection:UseCertificate"] = "true",
 				["DataProtection:CertificatePath"] = NonExistentCertPath,
+				["DataProtection:CertificatePassword"] = "test-password",
 			};
 
 		IConfiguration configuration =
@@ -101,10 +102,10 @@ public sealed class DataProtectionRegistrationTests
 			services.BuildServiceProvider();
 
 		// Assert - Should not throw; falls back to unprotected keys
-		IOptions<AppDataProtectionOptions> dataProtectionOptionsAccessor =
-			provider.GetRequiredService<IOptions<AppDataProtectionOptions>>();
+		IOptions<DataProtectionSettings> dataProtectionOptionsAccessor =
+			provider.GetRequiredService<IOptions<DataProtectionSettings>>();
 
-		AppDataProtectionOptions dataProtectionOptions =
+		DataProtectionSettings dataProtectionOptions =
 			dataProtectionOptionsAccessor.Value;
 
 		dataProtectionOptions.UseCertificate.ShouldBeTrue();
@@ -149,8 +150,8 @@ public sealed class DataProtectionRegistrationTests
 			services.BuildServiceProvider();
 
 		// Assert - Should not throw even in production
-		IOptions<AppDataProtectionOptions> dataProtectionOptionsAccessor =
-			provider.GetRequiredService<IOptions<AppDataProtectionOptions>>();
+		IOptions<DataProtectionSettings> dataProtectionOptionsAccessor =
+			provider.GetRequiredService<IOptions<DataProtectionSettings>>();
 
 		dataProtectionOptionsAccessor.Value.UseCertificate.ShouldBeFalse();
 	}

@@ -19,7 +19,7 @@ public static class OutputCacheRegistration
 	/// Automatically discovers and registers all policies defined in appsettings.json.
 	/// </summary>
 	/// <remarks>
-	/// Reads configuration section: OutputCacheOptions.SectionName (policies and defaults).
+	/// Reads configuration section: OutputCacheSettings.SectionName (policies and defaults).
 	/// Uses Valkey (Redis-compatible) for distributed output caching across nodes.
 	/// In Test environment, uses in-memory cache (no Valkey dependency).
 	/// </remarks>
@@ -82,10 +82,10 @@ public static class OutputCacheRegistration
 		services.AddOutputCache(
 			options =>
 			{
-				OutputCacheOptions? cacheConfig =
+				OutputCacheSettings? cacheConfig =
 					configuration
-						.GetSection(OutputCacheOptions.SectionName)
-						.Get<OutputCacheOptions>();
+						.GetSection(OutputCacheSettings.SectionName)
+						.Get<OutputCacheSettings>();
 
 				if (cacheConfig?.Policies == null)
 				{

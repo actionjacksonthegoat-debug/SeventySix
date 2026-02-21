@@ -91,7 +91,7 @@ public interface IOAuthService
 	/// <returns>
 	/// User info from the provider, or null on failure.
 	/// </returns>
-	public Task<OAuthUserInfo?> ExchangeCodeForUserInfoAsync(
+	public Task<OAuthUserInfoResult?> ExchangeCodeForUserInfoAsync(
 		string provider,
 		string code,
 		string redirectUri,

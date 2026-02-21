@@ -33,7 +33,7 @@ namespace SeventySix.Api.Seeders;
 /// </param>
 public sealed class E2ETestSeeder(
 	UserManager<ApplicationUser> userManager,
-	IOptions<E2ESeederOptions> options,
+	IOptions<E2ESeederSettings> options,
 	TimeProvider timeProvider,
 	IPasswordHasher<BackupCode> backupCodeHasher,
 	IdentityDbContext identityDbContext,
@@ -404,7 +404,7 @@ public static class E2ESeederConstants
 /// <summary>
 /// Configuration options for E2E test seeder.
 /// </summary>
-public record E2ESeederOptions
+public sealed record E2ESeederSettings
 {
 	/// <summary>
 	/// Gets or sets whether E2E seeder is enabled.

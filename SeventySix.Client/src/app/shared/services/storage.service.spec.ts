@@ -269,10 +269,15 @@ describe("StorageService",
 							errorService.setItem("test-key", "value");
 						expect(success)
 							.toBe(false);
-						expect(consoleErrorSpy)
-							.toHaveBeenCalledWith(
-								"StorageService: Failed to set \"test-key\"",
-								quotaError);
+						const errorCalls: unknown[][] =
+							consoleErrorSpy.mock.calls;
+						const setErrorCall: unknown[] | undefined =
+							errorCalls.find(
+								(call) =>
+									call.some((arg) =>
+										typeof arg === "string" && arg.includes("Failed to set")));
+						expect(setErrorCall)
+							.toBeDefined();
 					});
 
 				it("should return false on other storage errors",

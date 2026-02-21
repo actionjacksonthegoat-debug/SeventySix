@@ -19,7 +19,7 @@ namespace SeventySix.Identity;
 /// Generate using: <c>RandomNumberGenerator.GetBytes(64)</c>
 /// </para>
 /// </remarks>
-public record AltchaSettings
+public sealed record AltchaSettings
 {
 	/// <summary>
 	/// Configuration section name in appsettings.json.

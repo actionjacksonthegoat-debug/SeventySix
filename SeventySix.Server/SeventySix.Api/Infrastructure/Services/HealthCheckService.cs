@@ -93,7 +93,7 @@ public sealed class HealthCheckService(
 		{
 			IsConnected = allHealthy,
 			ResponseTimeMs =
-				stopwatch.Elapsed.TotalMilliseconds,
+				(decimal)stopwatch.Elapsed.TotalMilliseconds,
 			Status =
 				allHealthy ? "Healthy" : "Unhealthy",
 			ContextResults = results,
@@ -147,11 +147,11 @@ public sealed class HealthCheckService(
 			GC.GetGCMemoryInfo().TotalAvailableMemoryBytes / 1024 / 1024;
 
 		// Get CPU usage - works on both Linux containers and Windows
-		double cpuUsage =
+		decimal cpuUsage =
 			await GetCpuUsageAsync(process, cancellationToken);
 
 		// Get disk usage - works on both Linux containers and Windows
-		double diskUsage = GetDiskUsage();
+		decimal diskUsage = GetDiskUsage();
 
 		return new SystemResourcesResponse
 		{
@@ -174,7 +174,7 @@ public sealed class HealthCheckService(
 	/// <returns>
 	/// CPU usage percentage rounded to 2 decimals.
 	/// </returns>
-	private static async Task<double> GetCpuUsageAsync(
+	private static async Task<decimal> GetCpuUsageAsync(
 		Process process,
 		CancellationToken cancellationToken)
 	{
@@ -191,24 +191,24 @@ public sealed class HealthCheckService(
 				process.TotalProcessorTime;
 			long endTime = Stopwatch.GetTimestamp();
 
-			double cpuUsedMs =
-				(endCpuTime - startCpuTime).TotalMilliseconds;
-			double totalMs =
-				(endTime - startTime) * 1000.0 / Stopwatch.Frequency;
-			double cpuUsagePercent =
-				(cpuUsedMs / (Environment.ProcessorCount * totalMs)) * 100.0;
+			decimal cpuUsedMs =
+				(decimal)(endCpuTime - startCpuTime).TotalMilliseconds;
+			decimal totalMs =
+				(decimal)(endTime - startTime) * 1000m / (decimal)Stopwatch.Frequency;
+			decimal cpuUsagePercent =
+				(cpuUsedMs / (Environment.ProcessorCount * totalMs)) * 100m;
 
 			return Math.Round(
-				Math.Min(cpuUsagePercent, 100.0),
+				Math.Min(cpuUsagePercent, 100m),
 				2);
 		}
 		catch
 		{
-			return 0.0;
+			return 0m;
 		}
 	}
 
-	private static double GetDiskUsage()
+	private static decimal GetDiskUsage()
 	{
 		try
 		{
@@ -225,8 +225,8 @@ public sealed class HealthCheckService(
 						rootDrive.AvailableFreeSpace;
 					long usedBytes =
 						totalBytes - freeBytes;
-					double usagePercent =
-						(double)usedBytes / totalBytes * 100.0;
+					decimal usagePercent =
+						(decimal)usedBytes / totalBytes * 100m;
 					return Math.Round(usagePercent, 2);
 				}
 			}
@@ -242,17 +242,17 @@ public sealed class HealthCheckService(
 						cDrive.AvailableFreeSpace;
 					long usedBytes =
 						totalBytes - freeBytes;
-					double usagePercent =
-						(double)usedBytes / totalBytes * 100.0;
+					decimal usagePercent =
+						(decimal)usedBytes / totalBytes * 100m;
 					return Math.Round(usagePercent, 2);
 				}
 			}
 
-			return 0.0;
+			return 0m;
 		}
 		catch
 		{
-			return 0.0;
+			return 0m;
 		}
 	}
 

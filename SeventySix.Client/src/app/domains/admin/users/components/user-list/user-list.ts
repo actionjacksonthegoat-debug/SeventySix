@@ -334,7 +334,7 @@ export class UserList
 	onSearch(searchTerm: string): void
 	{
 		this.userService.updateFilter(
-			{ searchTerm: searchTerm || undefined });
+			{ searchTerm: searchTerm.length > 0 ? searchTerm : undefined });
 	}
 
 	/**

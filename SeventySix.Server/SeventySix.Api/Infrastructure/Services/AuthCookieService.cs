@@ -26,11 +26,15 @@ namespace SeventySix.Api.Infrastructure;
 /// <param name="trustedDeviceSettings">
 /// Trusted device settings including cookie name.
 /// </param>
+/// <param name="timeProvider">
+/// Provides the current UTC time for cookie expiration (testable).
+/// </param>
 public sealed class AuthCookieService(
 	IHttpContextAccessor httpContextAccessor,
 	IOptions<AuthSettings> authSettings,
 	IOptions<JwtSettings> jwtSettings,
-	IOptions<TrustedDeviceSettings> trustedDeviceSettings) : IAuthCookieService
+	IOptions<TrustedDeviceSettings> trustedDeviceSettings,
+	TimeProvider timeProvider) : IAuthCookieService
 {
 	/// <summary>
 	/// Gets the current HttpContext.
@@ -168,7 +172,7 @@ public sealed class AuthCookieService(
 					authSettings.Value.Cookie.SecureCookie,
 				SameSite = sameSite,
 				Expires =
-					DateTimeOffset.UtcNow.Add(expiration),
+					timeProvider.GetUtcNow().Add(expiration),
 			};
 
 		HttpContext.Response.Cookies.Append(name, value, options);

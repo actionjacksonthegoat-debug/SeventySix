@@ -202,7 +202,9 @@ export class RequestPermissionsPage
 		const request: CreatePermissionRequestDto =
 			{
 				requestedRoles: roles,
-				requestMessage: this.requestForm.value.requestMessage || undefined
+				requestMessage: this.requestForm.value.requestMessage
+					? this.requestForm.value.requestMessage
+					: undefined
 			};
 
 		try

@@ -9,28 +9,28 @@ namespace SeventySix.Api.Infrastructure;
 /// <summary>
 /// Represents database health status.
 /// </summary>
-public sealed class DatabaseHealthResponse
+public record DatabaseHealthResponse
 {
 	/// <summary>
-	/// Gets or sets a value indicating whether the database is connected.
+	/// Gets a value indicating whether the database is connected.
 	/// </summary>
-	public bool IsConnected { get; set; }
+	public bool IsConnected { get; init; }
 
 	/// <summary>
-	/// Gets or sets the database response time in milliseconds.
+	/// Gets the database response time in milliseconds.
 	/// </summary>
-	public double ResponseTimeMs { get; set; }
+	public decimal ResponseTimeMs { get; init; }
 
 	/// <summary>
-	/// Gets or sets the database health status.
+	/// Gets the database health status.
 	/// </summary>
 	/// <value>
 	/// Status: "Healthy", "Degraded", or "Unhealthy".
 	/// </value>
-	public string Status { get; set; } = HealthStatusConstants.Healthy;
+	public string Status { get; init; } = HealthStatusConstants.Healthy;
 
 	/// <summary>
-	/// Gets or sets the health status per bounded context.
+	/// Gets the health status per bounded context.
 	/// </summary>
-	public Dictionary<string, bool> ContextResults { get; set; } = [];
+	public Dictionary<string, bool> ContextResults { get; init; } = [];
 }

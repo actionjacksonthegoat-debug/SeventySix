@@ -1,4 +1,4 @@
-// <copyright file="AppDataProtectionOptionsValidatorUnitTests.cs" company="SeventySix">
+// <copyright file="DataProtectionSettingsValidatorUnitTests.cs" company="SeventySix">
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
@@ -8,21 +8,21 @@ using SeventySix.Api.Configuration;
 namespace SeventySix.Api.Tests.Configuration;
 
 /// <summary>
-/// Unit tests for AppDataProtectionOptionsValidator.
+/// Unit tests for DataProtectionSettingsValidator.
 /// </summary>
-public sealed class AppDataProtectionOptionsValidatorUnitTests
+public sealed class DataProtectionSettingsValidatorUnitTests
 {
-	private readonly AppDataProtectionOptionsValidator Validator = new();
+	private readonly DataProtectionSettingsValidator Validator = new();
 
 	[Fact]
 	public void Validate_ValidWithoutCertificate_PassesValidation()
 	{
 		// Arrange
-		AppDataProtectionOptions options =
+		DataProtectionSettings options =
 			CreateValidOptions();
 
 		// Act
-		TestValidationResult<AppDataProtectionOptions> result =
+		TestValidationResult<DataProtectionSettings> result =
 			Validator.TestValidate(options);
 
 		// Assert
@@ -33,15 +33,16 @@ public sealed class AppDataProtectionOptionsValidatorUnitTests
 	public void Validate_ValidWithCertificate_PassesValidation()
 	{
 		// Arrange
-		AppDataProtectionOptions options =
+		DataProtectionSettings options =
 			CreateValidOptions() with
 			{
 				UseCertificate = true,
 				CertificatePath = "/app/certs/dataprotection.pfx",
+				CertificatePassword = "s3cr3t",
 			};
 
 		// Act
-		TestValidationResult<AppDataProtectionOptions> result =
+		TestValidationResult<DataProtectionSettings> result =
 			Validator.TestValidate(options);
 
 		// Assert
@@ -49,10 +50,31 @@ public sealed class AppDataProtectionOptionsValidatorUnitTests
 	}
 
 	[Fact]
+	public void Validate_CertificateEnabledWithEmptyPassword_FailsValidation()
+	{
+		// Arrange
+		DataProtectionSettings options =
+			CreateValidOptions() with
+			{
+				UseCertificate = true,
+				CertificatePath = "/app/certs/dataprotection.pfx",
+				CertificatePassword = string.Empty,
+			};
+
+		// Act
+		TestValidationResult<DataProtectionSettings> result =
+			Validator.TestValidate(options);
+
+		// Assert
+		result.ShouldHaveValidationErrorFor(
+			dataProtection => dataProtection.CertificatePassword);
+	}
+
+	[Fact]
 	public void Validate_CertificateEnabledWithEmptyPath_FailsValidation()
 	{
 		// Arrange
-		AppDataProtectionOptions options =
+		DataProtectionSettings options =
 			CreateValidOptions() with
 			{
 				UseCertificate = true,
@@ -60,7 +82,7 @@ public sealed class AppDataProtectionOptionsValidatorUnitTests
 			};
 
 		// Act
-		TestValidationResult<AppDataProtectionOptions> result =
+		TestValidationResult<DataProtectionSettings> result =
 			Validator.TestValidate(options);
 
 		// Assert
@@ -68,7 +90,7 @@ public sealed class AppDataProtectionOptionsValidatorUnitTests
 			dataProtection => dataProtection.CertificatePath);
 	}
 
-	private static AppDataProtectionOptions CreateValidOptions() =>
+	private static DataProtectionSettings CreateValidOptions() =>
 		new()
 		{
 			UseCertificate = false,

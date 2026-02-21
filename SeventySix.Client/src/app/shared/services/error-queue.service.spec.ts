@@ -419,13 +419,15 @@ describe("ErrorQueueService (Zoneless)",
 								writable: true
 							});
 
-						// StorageService handles errors internally, logging to console.error
+						// StorageService handles errors internally, logging to console.error via LoggerService
+						// LoggerService prepends a timestamp prefix as the first arg, message is at index 1
 						const calls: unknown[][] =
 							consoleSpy.mock.calls;
 						const storageErrorCall: unknown[] | undefined =
 							calls.find(
 								(call) =>
-									(call[0] as string)?.includes?.("StorageService"));
+									call.some((arg) =>
+										typeof arg === "string" && arg.includes("StorageService")));
 						expect(storageErrorCall)
 							.toBeDefined();
 					});

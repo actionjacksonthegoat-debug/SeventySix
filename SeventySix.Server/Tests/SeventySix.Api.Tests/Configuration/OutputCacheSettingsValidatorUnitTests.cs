@@ -1,4 +1,4 @@
-// <copyright file="OutputCacheOptionsValidatorUnitTests.cs" company="SeventySix">
+// <copyright file="OutputCacheSettingsValidatorUnitTests.cs" company="SeventySix">
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
@@ -9,21 +9,21 @@ using Shouldly;
 namespace SeventySix.Api.Tests.Configuration;
 
 /// <summary>
-/// Unit tests for OutputCacheOptionsValidator.
+/// Unit tests for OutputCacheSettingsValidator.
 /// </summary>
 public sealed class OutputCacheOptionsValidatorUnitTests
 {
-	private readonly OutputCacheOptionsValidator Validator = new();
+	private readonly OutputCacheSettingsValidator Validator = new();
 
 	[Fact]
 	public void Validate_ValidSettings_PassesValidation()
 	{
 		// Arrange
-		OutputCacheOptions options =
+		OutputCacheSettings options =
 			CreateValidOptions();
 
 		// Act
-		TestValidationResult<OutputCacheOptions> result =
+		TestValidationResult<OutputCacheSettings> result =
 			Validator.TestValidate(options);
 
 		// Assert
@@ -34,11 +34,11 @@ public sealed class OutputCacheOptionsValidatorUnitTests
 	public void Validate_EmptyPolicies_PassesValidation()
 	{
 		// Arrange
-		OutputCacheOptions options =
+		OutputCacheSettings options =
 			new() { Policies = [] };
 
 		// Act
-		TestValidationResult<OutputCacheOptions> result =
+		TestValidationResult<OutputCacheSettings> result =
 			Validator.TestValidate(options);
 
 		// Assert
@@ -49,7 +49,7 @@ public sealed class OutputCacheOptionsValidatorUnitTests
 	public void Validate_PolicyWithZeroDuration_FailsValidation()
 	{
 		// Arrange
-		OutputCacheOptions options =
+		OutputCacheSettings options =
 			new()
 			{
 				Policies = new Dictionary<string, CachePolicyConfig>
@@ -64,14 +64,14 @@ public sealed class OutputCacheOptionsValidatorUnitTests
 			};
 
 		// Act
-		TestValidationResult<OutputCacheOptions> result =
+		TestValidationResult<OutputCacheSettings> result =
 			Validator.TestValidate(options);
 
 		// Assert
 		result.IsValid.ShouldBeFalse();
 	}
 
-	private static OutputCacheOptions CreateValidOptions() =>
+	private static OutputCacheSettings CreateValidOptions() =>
 		new()
 		{
 			Policies = new Dictionary<string, CachePolicyConfig>

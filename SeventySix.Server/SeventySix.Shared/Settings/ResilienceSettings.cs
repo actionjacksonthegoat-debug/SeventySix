@@ -1,4 +1,4 @@
-// <copyright file="ResilienceOptions.cs" company="SeventySix">
+// <copyright file="ResilienceSettings.cs" company="SeventySix">
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
@@ -12,7 +12,7 @@ namespace SeventySix.Shared.Settings;
 /// Values are bound from appsettings.json "Resilience" section.
 /// All numeric properties must be configured in appsettings.json.
 /// </remarks>
-public record ResilienceOptions
+public sealed record ResilienceSettings
 {
 	/// <summary>
 	/// Configuration section name in appsettings.json.

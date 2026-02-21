@@ -19,7 +19,7 @@ namespace SeventySix.Identity;
 /// - One-time use: code removed from cache after exchange
 /// - Memory-only: codes never distributed (SetSkipDistributedCache)
 /// </remarks>
-public sealed class OAuthCodeExchangeService : IOAuthCodeExchangeService
+public sealed class OAuthCodeExchangeService(IFusionCacheProvider cacheProvider) : IOAuthCodeExchangeService
 {
 	/// <summary>
 	/// Cache key prefix for OAuth codes.
@@ -34,19 +34,8 @@ public sealed class OAuthCodeExchangeService : IOAuthCodeExchangeService
 	/// <summary>
 	/// The identity domain cache.
 	/// </summary>
-	private readonly IFusionCache IdentityCache;
-
-	/// <summary>
-	/// Initializes a new instance of the <see cref="OAuthCodeExchangeService"/> class.
-	/// </summary>
-	/// <param name="cacheProvider">
-	/// The FusionCache provider for named cache access.
-	/// </param>
-	public OAuthCodeExchangeService(IFusionCacheProvider cacheProvider)
-	{
-		IdentityCache =
-			cacheProvider.GetCache(CacheNames.Identity);
-	}
+	private readonly IFusionCache IdentityCache =
+		cacheProvider.GetCache(CacheNames.Identity);
 
 	/// <inheritdoc/>
 	public string StoreTokens(
@@ -107,7 +96,7 @@ public sealed class OAuthCodeExchangeService : IOAuthCodeExchangeService
 	/// <inheritdoc/>
 	public void StoreLinkFlow(
 		string state,
-		OAuthLinkFlowData data)
+		OAuthLinkFlowDataResult data)
 	{
 		IdentityCache.Set(
 			$"{LinkFlowKeyPrefix}{state}",
@@ -124,13 +113,13 @@ public sealed class OAuthCodeExchangeService : IOAuthCodeExchangeService
 	}
 
 	/// <inheritdoc/>
-	public OAuthLinkFlowData? RetrieveLinkFlow(string state)
+	public OAuthLinkFlowDataResult? RetrieveLinkFlow(string state)
 	{
 		string cacheKey =
 			$"{LinkFlowKeyPrefix}{state}";
 
-		OAuthLinkFlowData? data =
-			IdentityCache.GetOrDefault<OAuthLinkFlowData>(cacheKey);
+		OAuthLinkFlowDataResult? data =
+			IdentityCache.GetOrDefault<OAuthLinkFlowDataResult>(cacheKey);
 
 		if (data is not null)
 		{

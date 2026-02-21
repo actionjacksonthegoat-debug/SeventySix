@@ -10,6 +10,7 @@ using SeventySix.Api.Configuration;
 using SeventySix.Identity;
 using SeventySix.Identity.Constants;
 using SeventySix.Logging;
+using SeventySix.Logging.Commands.CreateClientLogBatch;
 using SeventySix.Shared.POCOs;
 using Wolverine;
 
@@ -231,7 +232,10 @@ public sealed class LogsController(
 		[FromBody] CreateLogRequest[] requests,
 		CancellationToken cancellationToken = default)
 	{
-		await messageBus.InvokeAsync(requests, cancellationToken);
+		CreateClientLogBatchCommand command =
+			new(requests);
+
+		await messageBus.InvokeAsync(command, cancellationToken);
 
 		await outputCacheStore.EvictByTagAsync("logs", cancellationToken);
 

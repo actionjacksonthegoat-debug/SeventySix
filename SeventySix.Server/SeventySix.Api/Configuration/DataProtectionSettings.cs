@@ -13,7 +13,7 @@ namespace SeventySix.Api.Configuration;
 /// Configuration is loaded from the <c>DataProtection</c> section in appsettings.
 /// </para>
 /// </remarks>
-public record AppDataProtectionOptions
+public sealed record DataProtectionSettings
 {
 	/// <summary>
 	/// Configuration section name for binding.

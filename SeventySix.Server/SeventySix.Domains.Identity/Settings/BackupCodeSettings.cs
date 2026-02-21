@@ -8,7 +8,7 @@ namespace SeventySix.Identity;
 /// Backup code configuration settings bound from appsettings.json.
 /// All values MUST be configured in appsettings.json.
 /// </summary>
-public record BackupCodeSettings
+public sealed record BackupCodeSettings
 {
 	/// <summary>
 	/// Configuration section name.

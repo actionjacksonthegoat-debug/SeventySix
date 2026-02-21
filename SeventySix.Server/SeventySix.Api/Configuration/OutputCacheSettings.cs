@@ -1,4 +1,4 @@
-// <copyright file="OutputCacheOptions.cs" company="SeventySix">
+// <copyright file="OutputCacheSettings.cs" company="SeventySix">
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
@@ -12,7 +12,7 @@ namespace SeventySix.Api.Configuration;
 /// Maps to "Cache:OutputCache" section in appsettings.json.
 /// Follows Options Pattern for strongly-typed configuration.
 /// </remarks>
-public record OutputCacheOptions
+public sealed record OutputCacheSettings
 {
 	/// <summary>
 	/// Configuration section name.

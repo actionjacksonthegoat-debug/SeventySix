@@ -8,7 +8,7 @@ namespace SeventySix.Logging;
 /// Configuration for PostgreSQL database maintenance background service.
 /// All values MUST be configured in appsettings.json.
 /// </summary>
-public record DatabaseMaintenanceSettings
+public sealed record DatabaseMaintenanceSettings
 {
 	/// <summary>
 	/// Configuration section name in appsettings.json.

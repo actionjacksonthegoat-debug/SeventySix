@@ -229,6 +229,9 @@ public sealed class OAuthSettingsValidator : AbstractValidator<OAuthSettings>
 				RuleFor(oauth => oauth.Providers)
 					.NotEmpty()
 					.WithMessage("Auth:OAuth:Providers must have at least one provider when OAuth is enabled");
+
+				RuleForEach(oauth => oauth.Providers)
+					.SetValidator(new OAuthProviderSettingsValidator());
 			});
 	}
 }

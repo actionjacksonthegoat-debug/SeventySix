@@ -7,9 +7,9 @@ import {
 	PAGE_TEXT,
 	TIMEOUTS,
 	E2E_CONFIG,
-	PERM_APPROVE_USER
+	PERM_APPROVE_USER,
+	loginAsUser
 } from "../../fixtures";
-import { loginAsUser } from "../../fixtures/helpers/login.helper";
 
 /**
  * E2E Tests for Permission Request List Page

@@ -1,4 +1,4 @@
-// <copyright file="OAuthUserInfo.cs" company="SeventySix">
+// <copyright file="OAuthUserInfoResult.cs" company="SeventySix">
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
@@ -23,7 +23,7 @@ namespace SeventySix.Identity;
 /// <param name="AvatarUrl">
 /// The user's avatar/profile picture URL (null if not available).
 /// </param>
-public record OAuthUserInfo(
+public sealed record OAuthUserInfoResult(
 	string ProviderId,
 	string Login,
 	string? Email,

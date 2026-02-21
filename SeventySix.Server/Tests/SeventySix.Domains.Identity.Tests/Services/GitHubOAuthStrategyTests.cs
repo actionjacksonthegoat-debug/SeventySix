@@ -227,7 +227,7 @@ public sealed class GitHubOAuthStrategyTests
 			new(HttpClientFactory);
 
 		// Act
-		OAuthUserInfo userInfo =
+		OAuthUserInfoResult userInfo =
 			await strategy.GetUserInfoAsync(
 				TestAccessToken,
 				CancellationToken.None);

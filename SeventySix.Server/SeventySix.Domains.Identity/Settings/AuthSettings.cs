@@ -8,7 +8,7 @@ namespace SeventySix.Identity;
 /// Authentication settings bound from appsettings.json.
 /// All configurable values - no hardcoded magic numbers.
 /// </summary>
-public record AuthSettings
+public sealed record AuthSettings
 {
 	/// <summary>
 	/// Configuration section name for binding.
@@ -60,7 +60,7 @@ public record AuthSettings
 /// Account lockout configuration for brute-force protection.
 /// All numeric values MUST be configured in appsettings.json.
 /// </summary>
-public record LockoutSettings
+public sealed record LockoutSettings
 {
 	/// <summary>
 	/// Gets max failed login attempts before lockout.
@@ -83,7 +83,7 @@ public record LockoutSettings
 /// <summary>
 /// OAuth settings container.
 /// </summary>
-public record OAuthSettings
+public sealed record OAuthSettings
 {
 	/// <summary>
 	/// Gets a value indicating whether OAuth authentication is enabled.
@@ -105,7 +105,7 @@ public record OAuthSettings
 /// <summary>
 /// Individual OAuth provider configuration.
 /// </summary>
-public record OAuthProviderSettings
+public sealed record OAuthProviderSettings
 {
 	/// <summary>
 	/// Gets the provider name (e.g., "GitHub").
@@ -152,7 +152,7 @@ public record OAuthProviderSettings
 /// Rate limiting configuration for auth endpoints.
 /// All values MUST be configured in appsettings.json.
 /// </summary>
-public record AuthRateLimitSettings
+public sealed record AuthRateLimitSettings
 {
 	/// <summary>
 	/// Gets max login attempts per minute.
@@ -194,7 +194,7 @@ public record AuthRateLimitSettings
 /// Cookie configuration for authentication.
 /// Cookie names use string defaults as they are conventional identifiers.
 /// </summary>
-public record AuthCookieSettings
+public sealed record AuthCookieSettings
 {
 	/// <summary>
 	/// Gets refresh token cookie name.
@@ -230,7 +230,7 @@ public record AuthCookieSettings
 /// Password hashing configuration.
 /// Numeric values MUST be configured in appsettings.json.
 /// </summary>
-public record PasswordSettings
+public sealed record PasswordSettings
 {
 	/// <summary>
 	/// Gets minimum password length.
@@ -280,7 +280,7 @@ public record PasswordSettings
 /// balancing security and user experience.
 /// </para>
 /// </remarks>
-public record Argon2Settings
+public sealed record Argon2Settings
 {
 	/// <summary>
 	/// Gets memory size in KB.
@@ -305,7 +305,7 @@ public record Argon2Settings
 /// Token generation configuration.
 /// Note: Token expiration settings are in JwtSettings to avoid DRY violation.
 /// </summary>
-public record TokenSettings
+public sealed record TokenSettings
 {
 	/// <summary>
 	/// Gets max active refresh tokens per user.
@@ -337,7 +337,7 @@ public record TokenSettings
 /// Rate limit: No authentication required, but reasonable use expected.
 /// </para>
 /// </remarks>
-public record BreachedPasswordSettings
+public sealed record BreachedPasswordSettings
 {
 	/// <summary>
 	/// Gets a value indicating whether breach checking is enabled.
@@ -368,7 +368,7 @@ public record BreachedPasswordSettings
 /// <summary>
 /// Session inactivity timeout configuration (NIST 800-63B §7.2).
 /// </summary>
-public record SessionInactivitySettings
+public sealed record SessionInactivitySettings
 {
 	/// <summary>
 	/// Gets a value indicating whether session inactivity timeout is enabled.

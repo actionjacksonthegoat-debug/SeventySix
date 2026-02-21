@@ -75,7 +75,8 @@ const sharedRules = {
 	"@stylistic/indent": ["error", "tab", { "SwitchCase": 1, "MemberExpression": 1 }],
 	"@stylistic/quotes": "off",
 	"@stylistic/semi": "off",
-	"@stylistic/comma-dangle": "off"
+	"@stylistic/comma-dangle": "off",
+	"@stylistic/eol-last": ["error", "never"]
 };
 
 // Shared plugins

@@ -8,7 +8,7 @@ namespace SeventySix.Logging;
 /// Configuration for log cleanup background service.
 /// All values MUST be configured in appsettings.json.
 /// </summary>
-public record LogCleanupSettings
+public sealed record LogCleanupSettings
 {
 	/// <summary>
 	/// Configuration section name in appsettings.json.

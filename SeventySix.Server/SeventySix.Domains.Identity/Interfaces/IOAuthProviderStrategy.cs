@@ -84,7 +84,7 @@ public interface IOAuthProviderStrategy
 	/// <returns>
 	/// Standardized OAuth user information.
 	/// </returns>
-	public Task<OAuthUserInfo> GetUserInfoAsync(
+	public Task<OAuthUserInfoResult> GetUserInfoAsync(
 		string accessToken,
 		CancellationToken cancellationToken);
 }

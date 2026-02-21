@@ -1,4 +1,4 @@
-// <copyright file="OAuthLinkFlowData.cs" company="SeventySix">
+// <copyright file="OAuthLinkFlowDataResult.cs" company="SeventySix">
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
@@ -17,7 +17,7 @@ namespace SeventySix.Identity;
 /// <param name="Provider">
 /// The OAuth provider name being linked.
 /// </param>
-public sealed record OAuthLinkFlowData(
+public sealed record OAuthLinkFlowDataResult(
 	long UserId,
 	string CodeVerifier,
 	string Provider);

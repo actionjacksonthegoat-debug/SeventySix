@@ -426,7 +426,7 @@ export class UserDetailPage
 
 		const updateRequest: UpdateUserRequest | null =
 			this.buildUpdateRequest();
-		if (!updateRequest) return;
+		if (isNullOrUndefined(updateRequest)) return;
 
 		this.executeMutation(updateRequest);
 	}

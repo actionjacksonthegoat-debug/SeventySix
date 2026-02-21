@@ -8,7 +8,7 @@ namespace SeventySix.Identity;
 /// Trusted device (Remember This Device) configuration settings.
 /// Numeric values MUST be configured in appsettings.json.
 /// </summary>
-public record TrustedDeviceSettings
+public sealed record TrustedDeviceSettings
 {
 	/// <summary>
 	/// Configuration section name in appsettings.json.

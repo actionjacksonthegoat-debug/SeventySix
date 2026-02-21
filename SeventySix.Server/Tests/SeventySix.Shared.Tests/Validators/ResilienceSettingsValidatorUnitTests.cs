@@ -1,4 +1,4 @@
-// <copyright file="ResilienceOptionsValidatorUnitTests.cs" company="SeventySix">
+// <copyright file="ResilienceSettingsValidatorUnitTests.cs" company="SeventySix">
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
@@ -8,7 +8,7 @@ using SeventySix.Shared.Settings;
 namespace SeventySix.Shared.Tests.Validators;
 
 /// <summary>
-/// Unit tests for ResilienceOptionsValidator.
+/// Unit tests for ResilienceSettingsValidator.
 /// Validates HTTP resilience configuration requirements.
 /// </summary>
 /// <remarks>
@@ -16,10 +16,10 @@ namespace SeventySix.Shared.Tests.Validators;
 /// </remarks>
 public sealed class ResilienceOptionsValidatorUnitTests
 {
-	private readonly ResilienceOptionsValidator Validator = new();
+	private readonly ResilienceSettingsValidator Validator = new();
 
 	/// <summary>
-	/// Creates a valid ResilienceOptions instance with optional overrides.
+	/// Creates a valid ResilienceSettings instance with optional overrides.
 	/// </summary>
 	/// <param name="retryCount">
 	/// The retry count.
@@ -43,9 +43,9 @@ public sealed class ResilienceOptionsValidatorUnitTests
 	/// The timeout in milliseconds.
 	/// </param>
 	/// <returns>
-	/// A configured ResilienceOptions instance.
+	/// A configured ResilienceSettings instance.
 	/// </returns>
-	private static ResilienceOptions CreateValidOptions(
+	private static ResilienceSettings CreateValidOptions(
 		int retryCount = 3,
 		int retryDelaySeconds = 2,
 		int circuitBreakerFailureThreshold = 5,
@@ -69,11 +69,11 @@ public sealed class ResilienceOptionsValidatorUnitTests
 	public void Validate_ValidSettings_PassesValidation()
 	{
 		// Arrange
-		ResilienceOptions options =
+		ResilienceSettings options =
 			CreateValidOptions();
 
 		// Act
-		TestValidationResult<ResilienceOptions> result =
+		TestValidationResult<ResilienceSettings> result =
 			Validator.TestValidate(options);
 
 		// Assert
@@ -84,11 +84,11 @@ public sealed class ResilienceOptionsValidatorUnitTests
 	public void Validate_NegativeRetryCount_FailsValidation()
 	{
 		// Arrange
-		ResilienceOptions options =
+		ResilienceSettings options =
 			CreateValidOptions(retryCount: -1);
 
 		// Act
-		TestValidationResult<ResilienceOptions> result =
+		TestValidationResult<ResilienceSettings> result =
 			Validator.TestValidate(options);
 
 		// Assert
@@ -101,11 +101,11 @@ public sealed class ResilienceOptionsValidatorUnitTests
 	public void Validate_ZeroRetryCount_PassesValidation()
 	{
 		// Arrange
-		ResilienceOptions options =
+		ResilienceSettings options =
 			CreateValidOptions(retryCount: 0);
 
 		// Act
-		TestValidationResult<ResilienceOptions> result =
+		TestValidationResult<ResilienceSettings> result =
 			Validator.TestValidate(options);
 
 		// Assert
@@ -116,11 +116,11 @@ public sealed class ResilienceOptionsValidatorUnitTests
 	public void Validate_ZeroRetryDelaySeconds_FailsValidation()
 	{
 		// Arrange
-		ResilienceOptions options =
+		ResilienceSettings options =
 			CreateValidOptions(retryDelaySeconds: 0);
 
 		// Act
-		TestValidationResult<ResilienceOptions> result =
+		TestValidationResult<ResilienceSettings> result =
 			Validator.TestValidate(options);
 
 		// Assert
@@ -133,11 +133,11 @@ public sealed class ResilienceOptionsValidatorUnitTests
 	public void Validate_ZeroCircuitBreakerFailureThreshold_FailsValidation()
 	{
 		// Arrange
-		ResilienceOptions options =
+		ResilienceSettings options =
 			CreateValidOptions(circuitBreakerFailureThreshold: 0);
 
 		// Act
-		TestValidationResult<ResilienceOptions> result =
+		TestValidationResult<ResilienceSettings> result =
 			Validator.TestValidate(options);
 
 		// Assert
@@ -150,11 +150,11 @@ public sealed class ResilienceOptionsValidatorUnitTests
 	public void Validate_ZeroCircuitBreakerSamplingDurationSeconds_FailsValidation()
 	{
 		// Arrange
-		ResilienceOptions options =
+		ResilienceSettings options =
 			CreateValidOptions(circuitBreakerSamplingDurationSeconds: 0);
 
 		// Act
-		TestValidationResult<ResilienceOptions> result =
+		TestValidationResult<ResilienceSettings> result =
 			Validator.TestValidate(options);
 
 		// Assert
@@ -167,11 +167,11 @@ public sealed class ResilienceOptionsValidatorUnitTests
 	public void Validate_ZeroCircuitBreakerBreakDurationSeconds_FailsValidation()
 	{
 		// Arrange
-		ResilienceOptions options =
+		ResilienceSettings options =
 			CreateValidOptions(circuitBreakerBreakDurationSeconds: 0);
 
 		// Act
-		TestValidationResult<ResilienceOptions> result =
+		TestValidationResult<ResilienceSettings> result =
 			Validator.TestValidate(options);
 
 		// Assert
@@ -184,13 +184,13 @@ public sealed class ResilienceOptionsValidatorUnitTests
 	public void Validate_BothTimeoutsZero_FailsValidation()
 	{
 		// Arrange
-		ResilienceOptions options =
+		ResilienceSettings options =
 			CreateValidOptions(
 				timeoutSeconds: 0,
 				timeoutMilliseconds: 0);
 
 		// Act
-		TestValidationResult<ResilienceOptions> result =
+		TestValidationResult<ResilienceSettings> result =
 			Validator.TestValidate(options);
 
 		// Assert
@@ -203,13 +203,13 @@ public sealed class ResilienceOptionsValidatorUnitTests
 	public void Validate_OnlyTimeoutMillisecondsSet_PassesValidation()
 	{
 		// Arrange
-		ResilienceOptions options =
+		ResilienceSettings options =
 			CreateValidOptions(
 				timeoutSeconds: 0,
 				timeoutMilliseconds: 100);
 
 		// Act
-		TestValidationResult<ResilienceOptions> result =
+		TestValidationResult<ResilienceSettings> result =
 			Validator.TestValidate(options);
 
 		// Assert
@@ -220,13 +220,13 @@ public sealed class ResilienceOptionsValidatorUnitTests
 	public void Validate_OnlyTimeoutSecondsSet_PassesValidation()
 	{
 		// Arrange
-		ResilienceOptions options =
+		ResilienceSettings options =
 			CreateValidOptions(
 				timeoutSeconds: 10,
 				timeoutMilliseconds: 0);
 
 		// Act
-		TestValidationResult<ResilienceOptions> result =
+		TestValidationResult<ResilienceSettings> result =
 			Validator.TestValidate(options);
 
 		// Assert

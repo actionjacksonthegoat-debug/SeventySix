@@ -28,7 +28,7 @@ public static class E2ESeederRegistration
 		this IServiceCollection services,
 		IConfiguration configuration)
 	{
-		services.Configure<E2ESeederOptions>(
+		services.Configure<E2ESeederSettings>(
 			configuration.GetSection("E2ESeeder"));
 
 		bool isE2ESeederEnabled =

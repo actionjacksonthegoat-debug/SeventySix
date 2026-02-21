@@ -263,7 +263,7 @@ public sealed class OAuthServiceTests
 	public async Task HandleCallbackAsync_NewUser_CreatesUserAndExternalLoginAsync()
 	{
 		// Arrange
-		OAuthUserInfo userInfo =
+		OAuthUserInfoResult userInfo =
 			new(
 				ProviderId: TestProviderUserId,
 				Login: TestUsername,
@@ -328,7 +328,7 @@ public sealed class OAuthServiceTests
 				.WithFullName("Existing User")
 				.Build();
 
-		OAuthUserInfo userInfo =
+		OAuthUserInfoResult userInfo =
 			new(
 				ProviderId: TestProviderUserId,
 				Login: "existinguser",
@@ -381,7 +381,7 @@ public sealed class OAuthServiceTests
 				.WithFullName(null)
 				.Build();
 
-		OAuthUserInfo userInfo =
+		OAuthUserInfoResult userInfo =
 			new(
 				ProviderId: TestProviderUserId,
 				Login: "existinguser",
@@ -439,7 +439,7 @@ public sealed class OAuthServiceTests
 				.WithFullName("My Manual Name")
 				.Build();
 
-		OAuthUserInfo userInfo =
+		OAuthUserInfoResult userInfo =
 			new(
 				ProviderId: TestProviderUserId,
 				Login: "existinguser",
@@ -515,7 +515,7 @@ public sealed class OAuthServiceTests
 			Logger);
 	}
 
-	private void SetupStrategyForSuccessfulCallback(OAuthUserInfo userInfo)
+	private void SetupStrategyForSuccessfulCallback(OAuthUserInfoResult userInfo)
 	{
 		MockStrategy
 			.ExchangeCodeForTokenAsync(

@@ -18,7 +18,7 @@ namespace SeventySix.Identity.Settings;
 /// a password change on first login regardless of initial password strength.
 /// </para>
 /// </remarks>
-public record AdminSeederSettings
+public sealed record AdminSeederSettings
 {
 	/// <summary>
 	/// Configuration section name in appsettings.json.

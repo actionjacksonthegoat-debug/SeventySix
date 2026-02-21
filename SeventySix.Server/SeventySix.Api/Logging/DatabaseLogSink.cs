@@ -330,9 +330,9 @@ public sealed class DatabaseLogSink(
 		if (
 			logEvent.Properties.TryGetValue(
 				"Elapsed",
-				out LogEventPropertyValue? elapsed) && double.TryParse(
+				out LogEventPropertyValue? elapsed) && decimal.TryParse(
 					elapsed.ToString(),
-					out double elapsedValue))
+					out decimal elapsedValue))
 		{
 			log.DurationMs =
 				(long)elapsedValue;

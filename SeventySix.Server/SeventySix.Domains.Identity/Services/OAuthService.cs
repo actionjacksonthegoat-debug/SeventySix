@@ -88,7 +88,7 @@ public sealed class OAuthService(
 					cancellationToken);
 
 			// Get user info from provider
-			OAuthUserInfo userInfo =
+			OAuthUserInfoResult userInfo =
 				await strategy.GetUserInfoAsync(
 					accessToken,
 					cancellationToken);
@@ -146,7 +146,7 @@ public sealed class OAuthService(
 	}
 
 	/// <inheritdoc/>
-	public async Task<OAuthUserInfo?> ExchangeCodeForUserInfoAsync(
+	public async Task<OAuthUserInfoResult?> ExchangeCodeForUserInfoAsync(
 		string provider,
 		string code,
 		string redirectUri,
@@ -254,7 +254,7 @@ public sealed class OAuthService(
 	/// </returns>
 	private async Task<ApplicationUser> FindOrCreateOAuthUserAsync(
 		string provider,
-		OAuthUserInfo userInfo,
+		OAuthUserInfoResult userInfo,
 		CancellationToken cancellationToken)
 	{
 		// Look for existing external login using Identity

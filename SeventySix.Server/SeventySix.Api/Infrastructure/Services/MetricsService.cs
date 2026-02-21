@@ -13,20 +13,24 @@ namespace SeventySix.Api.Infrastructure;
 /// Implements metric recording for database operations, API calls, and queue health.
 /// Uses OpenTelemetry instrumentation for Prometheus export.
 /// Metrics are exposed via the /metrics endpoint for scraping.
+/// Note: Histogram&lt;double&gt; and method parameters use double because the OpenTelemetry
+/// .NET SDK does not support decimal — Histogram&lt;decimal&gt; does not exist.
 /// </remarks>
-public sealed class MetricsService : IMetricsService
+public sealed class MetricsService() : IMetricsService
 {
 	private static readonly Meter ApplicationMeter =
 		new(
 			"SeventySix.Api",
 			"1.0.0");
 
+	// OpenTelemetry SDK requires Histogram<double> — decimal not supported
 	private static readonly Histogram<double> DatabaseQueryDuration =
 		ApplicationMeter.CreateHistogram<double>(
 			"db_query_duration_ms",
 			unit: "milliseconds",
 			description: "Duration of database queries");
 
+	// OpenTelemetry SDK requires Histogram<double> — decimal not supported
 	private static readonly Histogram<double> ApiCallDuration =
 		ApplicationMeter.CreateHistogram<double>(
 			"api_call_duration_ms",
@@ -43,24 +47,20 @@ public sealed class MetricsService : IMetricsService
 			"api_call_failures_total",
 			description: "Total number of failed external API calls");
 
-	private static int QueuedItems;
-	private static int FailedItems;
-
-	/// <summary>
-	/// Initializes a new instance of the <see cref="MetricsService"/> class.
-	/// </summary>
-	public MetricsService()
-	{
+	private static readonly ObservableGauge<int> QueuedItemsGauge =
 		ApplicationMeter.CreateObservableGauge(
 			"queued_items",
 			() => QueuedItems,
 			description: "Current number of items in the error queue");
 
+	private static readonly ObservableGauge<int> FailedItemsGauge =
 		ApplicationMeter.CreateObservableGauge(
 			"failed_items",
 			() => FailedItems,
 			description: "Current number of failed items in the error queue");
-	}
+
+	private static int QueuedItems;
+	private static int FailedItems;
 
 	/// <inheritdoc/>
 	public void RecordDatabaseQuery(double durationMs, string queryType)

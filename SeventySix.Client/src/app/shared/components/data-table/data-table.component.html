@@ -186,7 +186,7 @@
 				{
 					<button
 						mat-stroked-button
-						[color]="action.color || 'primary'"
+						[color]="action.color ?? 'primary'"
 						(click)="onBulkAction(action.key)"
 					>
 						<mat-icon aria-hidden="true">{{

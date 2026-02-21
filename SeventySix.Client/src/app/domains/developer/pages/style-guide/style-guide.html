@@ -609,7 +609,9 @@
 								<p class="mat-body-2">
 									Progress Bar (Indeterminate)
 								</p>
-								<mat-progress-bar mode="indeterminate"></mat-progress-bar>
+								<mat-progress-bar mode="indeterminate"
+									aria-label="Loading">
+								</mat-progress-bar>
 							</div>
 							<div class="progress-item progress-bar-item">
 								<p class="mat-body-2">
@@ -617,7 +619,9 @@
 								</p>
 								<mat-progress-bar
 									mode="determinate"
-									[value]="65"></mat-progress-bar>
+									[value]="65"
+									aria-label="Progress">
+								</mat-progress-bar>
 							</div>
 						</div>
 					</mat-card-content>

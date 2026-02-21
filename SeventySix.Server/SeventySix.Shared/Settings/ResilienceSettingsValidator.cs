@@ -1,4 +1,4 @@
-// <copyright file="ResilienceOptionsValidator.cs" company="SeventySix">
+// <copyright file="ResilienceSettingsValidator.cs" company="SeventySix">
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
@@ -7,7 +7,7 @@ using FluentValidation;
 namespace SeventySix.Shared.Settings;
 
 /// <summary>
-/// FluentValidation validator for ResilienceOptions.
+/// FluentValidation validator for ResilienceSettings.
 /// Ensures HTTP resilience configuration is valid at startup.
 /// </summary>
 /// <remarks>
@@ -22,12 +22,12 @@ namespace SeventySix.Shared.Settings;
 /// This validator is used at application startup to fail fast
 /// if resilience configuration is invalid or missing.
 /// </remarks>
-public sealed class ResilienceOptionsValidator : AbstractValidator<ResilienceOptions>
+public sealed class ResilienceSettingsValidator : AbstractValidator<ResilienceSettings>
 {
 	/// <summary>
-	/// Initializes a new instance of the <see cref="ResilienceOptionsValidator"/> class.
+	/// Initializes a new instance of the <see cref="ResilienceSettingsValidator"/> class.
 	/// </summary>
-	public ResilienceOptionsValidator()
+	public ResilienceSettingsValidator()
 	{
 		RuleFor(options => options.RetryCount)
 			.GreaterThanOrEqualTo(0)
@@ -71,7 +71,7 @@ public sealed class ResilienceOptionsValidator : AbstractValidator<ResilienceOpt
 	/// <returns>
 	/// True if either TimeoutSeconds or TimeoutMilliseconds is greater than 0.
 	/// </returns>
-	private static bool HasValidTimeout(ResilienceOptions options)
+	private static bool HasValidTimeout(ResilienceSettings options)
 	{
 		return options.TimeoutSeconds > 0 || options.TimeoutMilliseconds > 0;
 	}

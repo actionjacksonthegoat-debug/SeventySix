@@ -159,7 +159,7 @@ public static class RateLimitingRegistration
 	{
 		string[] allowedOrigins =
 			configuration?.GetSection(ConfigurationSectionConstants.Cors.AllowedOrigins).Get<string[]>()
-			?? ["http://localhost:4200"];
+			?? [];
 
 		ISet<string> allowedOriginsSet =
 			allowedOrigins.ToHashSet(

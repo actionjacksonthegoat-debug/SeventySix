@@ -73,7 +73,8 @@ public sealed class AuthCookieServiceTests
 			httpContextAccessor,
 			AuthSettings,
 			JwtSettings,
-			TrustedDeviceSettings);
+			TrustedDeviceSettings,
+			TimeProvider.System);
 	}
 
 	/// <summary>
@@ -201,7 +202,8 @@ public sealed class AuthCookieServiceTests
 				httpContextAccessor,
 				laxAuthSettings,
 				JwtSettings,
-				TrustedDeviceSettings);
+				TrustedDeviceSettings,
+				TimeProvider.System);
 
 		// Act
 		service.SetRefreshTokenCookie(TestRefreshToken);

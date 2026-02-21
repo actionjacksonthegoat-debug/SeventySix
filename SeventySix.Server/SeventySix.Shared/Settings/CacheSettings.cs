@@ -13,7 +13,7 @@ namespace SeventySix.Shared.Settings;
 /// Named caches allow per-domain TTL and fail-safe configuration.
 /// All durations MUST be configured in appsettings.json.
 /// </remarks>
-public record CacheSettings
+public sealed record CacheSettings
 {
 	/// <summary>
 	/// Configuration section name in appsettings.json.

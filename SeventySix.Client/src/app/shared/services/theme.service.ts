@@ -204,42 +204,39 @@ export class ThemeService
 	}
 
 	/**
-	 * Check if current brightness is dark.
-	 * @returns {boolean}
-	 * True when the current brightness is dark.
+	 * Whether current brightness is dark.
+	 * @type {Signal<boolean>}
+	 * @readonly
 	 */
-	isDark(): boolean
-	{
-		return this.brightness() === "dark";
-	}
+	readonly isDark: Signal<boolean> =
+		computed(
+			() => this.brightness() === "dark");
 
 	/**
-	 * Check if current brightness is light.
-	 * @returns {boolean}
-	 * True when the current brightness is light.
+	 * Whether current brightness is light.
+	 * @type {Signal<boolean>}
+	 * @readonly
 	 */
-	isLight(): boolean
-	{
-		return this.brightness() === "light";
-	}
+	readonly isLight: Signal<boolean> =
+		computed(
+			() => this.brightness() === "light");
 
 	/**
-	 * Check if current scheme is blue.
-	 * @returns {boolean}
-	 * True when the color scheme is 'blue'.
+	 * Whether current scheme is blue.
+	 * @type {Signal<boolean>}
+	 * @readonly
 	 */
-	isBlue(): boolean
-	{
-		return this.colorScheme() === "blue";
-	}
+	readonly isBlue: Signal<boolean> =
+		computed(
+			() => this.colorScheme() === "blue");
 
 	/**
-	 * Check if current scheme is cyan-orange.
-	 * @returns {boolean}
-	 * True when the color scheme is 'cyan-orange'.
+	 * Whether current scheme is cyan-orange.
+	 * @type {Signal<boolean>}
+	 * @readonly
 	 */
-	isCyanOrange(): boolean
-	{
-		return this.colorScheme() === "cyan-orange";
-	}
+	readonly isCyanOrange: Signal<boolean> =
+		computed(
+			() =>
+				this.colorScheme() === "cyan-orange");
 }

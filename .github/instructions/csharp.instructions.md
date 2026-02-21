@@ -9,14 +9,15 @@ applyTo: "**/SeventySix.Server/**/*.cs"
 
 | Pattern      | Required                              | Forbidden                |
 | ------------ | ------------------------------------- | ------------------------ |
-| Types        | `string name = ""`                    | `var`                    |
-| Constructors | `class Service(IRepo repo)` (primary) | Traditional constructors |
-| Collections  | `[1, 2, 3]`                           | `new List<int>()`        |
-| Async        | Suffix `*Async` always                | Non-suffixed async       |
-| DTOs         | `record UserDto(int Id)` positional   | Classes for DTOs         |
-| Settings     | `record X { prop { get; init; } }`    | Mutable settings         |
-| EF Config    | Fluent API                            | Data annotations         |
-| Queries      | `AsNoTracking()` for reads            | Tracked read queries     |
+| Types         | `string name = ""`                    | `var`                             |
+| Constructors  | `class Service(IRepo repo)` (primary) | Traditional constructors          |
+| Collections   | `[1, 2, 3]`                           | `new List<int>()`                 |
+| Async         | Suffix `*Async` always                | Non-suffixed async                |
+| DTOs          | `record UserDto(int Id)` positional   | Classes for DTOs                  |
+| Settings      | `record X { prop { get; init; } }`    | Mutable settings                  |
+| EF Config     | Fluent API                            | Data annotations                  |
+| Queries       | `AsNoTracking()` for reads            | Tracked read queries              |
+| Numeric types | `decimal` always (incl. DB columns)   | `float`, `double` — **FORBIDDEN** |
 
 ## Naming
 

@@ -69,7 +69,7 @@ public interface IOAuthCodeExchangeService
 	/// </param>
 	public void StoreLinkFlow(
 		string state,
-		OAuthLinkFlowData data);
+		OAuthLinkFlowDataResult data);
 
 	/// <summary>
 	/// Retrieves and removes link flow data for an account linking callback.
@@ -81,5 +81,5 @@ public interface IOAuthCodeExchangeService
 	/// <returns>
 	/// Link flow data if found, null otherwise.
 	/// </returns>
-	public OAuthLinkFlowData? RetrieveLinkFlow(string state);
+	public OAuthLinkFlowDataResult? RetrieveLinkFlow(string state);
 }

@@ -11,7 +11,7 @@ namespace SeventySix.ElectronicNotifications.Emails;
 /// <remarks>
 /// Bound from appsettings.json section "Email:Queue".
 /// </remarks>
-public record EmailQueueSettings
+public sealed record EmailQueueSettings
 {
 	/// <summary>
 	/// Configuration section name in appsettings.json.

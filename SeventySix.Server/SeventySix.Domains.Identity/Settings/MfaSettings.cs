@@ -8,7 +8,7 @@ namespace SeventySix.Identity;
 /// MFA configuration settings bound from appsettings.json.
 /// All numeric values MUST be configured in appsettings.json.
 /// </summary>
-public record MfaSettings
+public sealed record MfaSettings
 {
 	/// <summary>
 	/// Configuration section name.
