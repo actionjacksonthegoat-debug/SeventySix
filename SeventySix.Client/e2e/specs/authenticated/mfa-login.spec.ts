@@ -44,7 +44,7 @@ unauthenticatedTest.describe("MFA Login",
 		{
 			await loginAsUser(page, mfaUser,
 				{
-					expectedUrl: new RegExp(ROUTES.auth.mfaVerify.replace(/\//g, "\\\/")),
+					expectedUrl: `**${ROUTES.auth.mfaVerify}**`,
 					timeout: TIMEOUTS.navigation
 				});
 
@@ -59,7 +59,7 @@ unauthenticatedTest.describe("MFA Login",
 				await loginAsMfaUser(unauthenticatedPage);
 
 				await expect(unauthenticatedPage)
-					.toHaveURL(new RegExp(ROUTES.auth.mfaVerify.replace(/\//g, "\\/")));
+					.toHaveURL(new RegExp(ROUTES.auth.mfaVerify.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
 
 				await expect(unauthenticatedPage.locator(SELECTORS.layout.pageHeading))
 					.toBeVisible();
@@ -103,7 +103,7 @@ unauthenticatedTest.describe("MFA Login",
 
 				// Should remain on MFA verify page
 				await expect(unauthenticatedPage)
-					.toHaveURL(new RegExp(ROUTES.auth.mfaVerify.replace(/\//g, "\\/")));
+					.toHaveURL(new RegExp(ROUTES.auth.mfaVerify.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
 			});
 
 		unauthenticatedTest("should login with backup code",
@@ -160,7 +160,7 @@ unauthenticatedTest.describe("MFA Login",
 					{ timeout: TIMEOUTS.navigation });
 
 				await expect(unauthenticatedPage)
-					.toHaveURL(new RegExp(ROUTES.auth.login.replace(/\//g, "\\/")));
+					.toHaveURL(new RegExp(ROUTES.auth.login.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
 			});
 
 		unauthenticatedTest("should bypass MFA on subsequent login when trust device is checked",
