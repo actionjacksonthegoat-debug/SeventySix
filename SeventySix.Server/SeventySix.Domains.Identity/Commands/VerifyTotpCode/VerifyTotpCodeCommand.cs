@@ -8,11 +8,15 @@ namespace SeventySix.Identity;
 /// Command to verify TOTP code during MFA authentication.
 /// </summary>
 /// <param name="Request">
-/// The verification request containing email and TOTP code.
+/// The verification request containing challenge token and TOTP code.
 /// </param>
 /// <param name="ClientIp">
 /// Client IP for token creation.
 /// </param>
+/// <param name="UserAgent">
+/// Browser User-Agent header for device fingerprinting.
+/// </param>
 public record VerifyTotpCodeCommand(
 	VerifyTotpRequest Request,
-	string? ClientIp);
+	string? ClientIp,
+	string? UserAgent = null);

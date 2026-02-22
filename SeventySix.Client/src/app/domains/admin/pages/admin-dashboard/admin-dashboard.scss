@@ -1,4 +1,5 @@
 @use "variables" as vars;
+@use "mixins" as mixins;
 
 .admin-dashboard {
 	height: 100%;
@@ -13,9 +14,7 @@
 		padding: 0 vars.$spacing-xl;
 
 		mat-icon {
-			font-size: vars.$icon-size-md;
-			width: vars.$icon-size-md;
-			height: vars.$icon-size-md;
+			@include mixins.icon-size(vars.$icon-size-md);
 		}
 
 		h1 {
@@ -61,20 +60,8 @@
 		}
 	}
 
-	.observability-links {
-		display: flex;
-		gap: vars.$spacing-md;
-		flex-wrap: wrap;
-		margin-top: vars.$spacing-lg;
-	}
-
-	.log-validation-links {
-		display: flex;
-		gap: vars.$spacing-md;
-		flex-wrap: wrap;
-		margin-top: vars.$spacing-lg;
-	}
-
+	.observability-links,
+	.log-validation-links,
 	.data-links {
 		display: flex;
 		gap: vars.$spacing-md;

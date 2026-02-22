@@ -97,6 +97,28 @@ html.dark-theme {
 		var(--color-error) 10%,
 		transparent
 	);
+
+	// -------------------------------------------------------------------------
+	// LANDING PAGE — Dark Theme
+	// -------------------------------------------------------------------------
+	--landing-texture-overlay: url("/images/landing-page/dark-grid-texture.webp");
+	--landing-section-bg: url("/images/landing-page/dark-data-stream.webp");
+	--landing-glow-color: var(--mat-sys-primary);
+	--landing-glow-intensity: 0.3;
+	--landing-grain-opacity: 0.05;
+	--landing-scanline-opacity: 0.03;
+	--landing-parallax-tint: rgba(0, 188, 212, 0.05);
+	--landing-divider-glow: rgba(0, 188, 212, 0.2);
+	--landing-card-border: rgba(0, 188, 212, 0.15);
+	--landing-floating-shape-color: rgba(0, 188, 212, 0.08);
+	--landing-text-glow: 0 0 20px rgba(0, 188, 212, 0.3);
+	--landing-bullet-color: var(--mat-sys-primary);
+	--landing-glass-bg: color-mix(in srgb, var(--mat-sys-surface-container) 85%, transparent);
+	--landing-glass-border: color-mix(in srgb, var(--mat-sys-primary) 20%, transparent);
+	--landing-glass-saturate: 100%;
+	--landing-text-primary: var(--mat-sys-on-surface);
+	--landing-text-secondary: var(--mat-sys-on-surface-variant);
+	--landing-accent-primary: var(--mat-sys-primary);
 }
 
 // -----------------------------------------------------------------------------
@@ -181,10 +203,32 @@ html.light-theme {
 		var(--color-error) 10%,
 		transparent
 	);
+
+	// -------------------------------------------------------------------------
+	// LANDING PAGE — Light Theme
+	// -------------------------------------------------------------------------
+	--landing-texture-overlay: none;
+	--landing-section-bg: url("/images/landing-page/light-crystal.webp");
+	--landing-glow-color: var(--mat-sys-primary);
+	--landing-glow-intensity: 0.12;
+	--landing-grain-opacity: 0;
+	--landing-scanline-opacity: 0;
+	--landing-parallax-tint: rgba(0, 137, 123, 0.03);
+	--landing-divider-glow: rgba(0, 137, 123, 0.15);
+	--landing-card-border: rgba(0, 137, 123, 0.1);
+	--landing-floating-shape-color: rgba(0, 137, 123, 0.06);
+	--landing-text-glow: none;
+	--landing-bullet-color: var(--mat-sys-primary);
+	--landing-glass-bg: rgba(255, 255, 255, 0.75);
+	--landing-glass-border: rgba(0, 137, 123, 0.08);
+	--landing-glass-saturate: 180%;
+	--landing-text-primary: var(--mat-sys-on-surface);
+	--landing-text-secondary: var(--mat-sys-on-surface-variant);
+	--landing-accent-primary: var(--mat-sys-primary);
 }
 
 // Link styles (for non-Material links)
-a:not([mat-button]):not([mat-raised-button]):not([mat-flat-button]):not([mat-stroked-button]) {
+a:not([mat-button]):not([mat-stroked-button]) {
 	color: var(--mat-sys-primary);
 	text-decoration: none;
 	transition: color vars.$transition-duration-normal ease;
@@ -230,11 +274,6 @@ pre {
 	color: var(--mat-sys-on-primary);
 }
 
-::-moz-selection {
-	background-color: var(--mat-sys-primary);
-	color: var(--mat-sys-on-primary);
-}
-
 // Focus visible styles (for keyboard navigation)
 :focus-visible {
 	outline: 2px solid var(--mat-sys-primary);
@@ -255,9 +294,7 @@ pre {
 
 // Button horizontal padding
 .mat-mdc-button,
-.mat-mdc-raised-button,
-.mat-mdc-outlined-button,
-.mat-mdc-unelevated-button {
+.mat-mdc-outlined-button {
 	padding-left: vars.$spacing-lg; // 16px
 	padding-right: vars.$spacing-lg; // 16px
 }
@@ -311,12 +348,8 @@ mat-icon {
 
 // Buttons with icons - ensure icon aligns with button text
 .mat-mdc-button,
-.mat-mdc-raised-button,
 .mat-mdc-outlined-button,
-.mat-mdc-unelevated-button,
-.mat-mdc-icon-button,
-.mat-mdc-fab,
-.mat-mdc-mini-fab {
+.mat-mdc-icon-button {
 	mat-icon {
 		display: inline-flex;
 		align-items: center;
@@ -409,9 +442,31 @@ select[aria-invalid="true"] {
 		scroll-behavior: auto !important;
 	}
 
-	// Disable Material ripple effect
-	.mat-mdc-button-ripple,
-	.mat-mdc-focus-indicator {
-		display: none !important;
+	// Preserve Material ripple feedback — essential for button interaction UX
+	.mat-ripple-element {
+		animation-duration: 225ms !important;
+		transition-duration: 225ms !important;
+	}
+
+	.mat-mdc-button-persistent-ripple::before {
+		transition-duration: 75ms !important;
+	}
+}
+
+// =============================================================================
+// LANDING PAGE KEYFRAMES
+// =============================================================================
+
+@keyframes gradient-shift {
+	0% {
+		background-position: 0% 50%;
+	}
+
+	50% {
+		background-position: 100% 50%;
+	}
+
+	100% {
+		background-position: 0% 50%;
 	}
 }

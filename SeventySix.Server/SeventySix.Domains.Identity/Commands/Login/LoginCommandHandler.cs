@@ -3,9 +3,6 @@
 // </copyright>
 
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Options;
-using SeventySix.Shared.Contracts.Emails;
-using Wolverine;
 
 namespace SeventySix.Identity;
 
@@ -26,11 +23,11 @@ public static class LoginCommandHandler
 	/// <param name="command">
 	/// The login command containing credentials and options.
 	/// </param>
-	/// <param name="userManager">
-	/// Identity <see cref="UserManager{TUser}"/> for user lookups.
-	/// </param>
 	/// <param name="signInManager">
 	/// Identity <see cref="SignInManager{TUser}"/> for password checks and lockout.
+	/// </param>
+	/// <param name="authRepository">
+	/// Repository for single-query user lookups by username or email.
 	/// </param>
 	/// <param name="authenticationService">
 	/// Service to generate auth tokens on success.
@@ -41,14 +38,8 @@ public static class LoginCommandHandler
 	/// <param name="securityAuditService">
 	/// Service for logging security audit events.
 	/// </param>
-	/// <param name="mfaService">
-	/// MFA service for challenge creation.
-	/// </param>
-	/// <param name="mfaSettings">
-	/// MFA configuration settings.
-	/// </param>
-	/// <param name="messageBus">
-	/// Message bus for enqueueing emails.
+	/// <param name="mfaOrchestrator">
+	/// Orchestrates MFA requirement checks, trusted device bypass, and challenge initiation.
 	/// </param>
 	/// <param name="cancellationToken">
 	/// Cancellation token.
@@ -58,14 +49,12 @@ public static class LoginCommandHandler
 	/// </returns>
 	public static async Task<AuthResult> HandleAsync(
 		LoginCommand command,
-		UserManager<ApplicationUser> userManager,
 		SignInManager<ApplicationUser> signInManager,
+		IAuthRepository authRepository,
 		AuthenticationService authenticationService,
 		IAltchaService altchaService,
 		ISecurityAuditService securityAuditService,
-		IMfaService mfaService,
-		IOptions<MfaSettings> mfaSettings,
-		IMessageBus messageBus,
+		IMfaOrchestrator mfaOrchestrator,
 		CancellationToken cancellationToken)
 	{
 		AuthResult? altchaFailure =
@@ -82,8 +71,8 @@ public static class LoginCommandHandler
 		(ApplicationUser? user, AuthResult? credentialFailure) =
 			await ValidateCredentialsAsync(
 				command,
-				userManager,
 				signInManager,
+				authRepository,
 				securityAuditService,
 				cancellationToken);
 		if (credentialFailure is not null)
@@ -91,46 +80,22 @@ public static class LoginCommandHandler
 			return credentialFailure;
 		}
 
-		// Check if MFA is required
-		MfaSettings mfaConfig =
-			mfaSettings.Value;
-		bool mfaRequired =
-			mfaConfig.Enabled
-			&& (mfaConfig.RequiredForAllUsers || user!.MfaEnabled);
-
-		if (mfaRequired)
+		if (mfaOrchestrator.IsMfaRequired(user!))
 		{
-			// Determine available MFA methods based on user enrollment
-			bool hasTotpEnrolled =
-				!string.IsNullOrEmpty(user!.TotpSecret);
-
-			if (hasTotpEnrolled)
-			{
-				// User has TOTP enrolled - prefer TOTP (no email sent)
-				await securityAuditService.LogEventAsync(
-					SecurityEventType.MfaChallengeInitiated,
-					user,
-					success: true,
-					details: "TOTP",
+			AuthResult? trustedDeviceResult =
+				await mfaOrchestrator.TryBypassViaTrustedDeviceAsync(
+					command,
+					user!,
 					cancellationToken);
 
-				List<MfaMethod> availableMethods =
-					[MfaMethod.Totp, MfaMethod.Email, MfaMethod.BackupCode];
-
-				return AuthResult.MfaRequired(
-					challengeToken: null,
-					email: user.Email!,
-					mfaMethod: MfaMethod.Totp,
-					availableMethods: availableMethods);
+			if (trustedDeviceResult is not null)
+			{
+				return trustedDeviceResult;
 			}
 
-			// Fall back to email-based MFA
-			return await InitiateMfaChallengeAsync(
+			return await mfaOrchestrator.InitiateChallengeAsync(
 				user!,
 				command.ClientIp,
-				(mfaService, mfaConfig),
-				messageBus,
-				securityAuditService,
 				cancellationToken);
 		}
 
@@ -206,11 +171,11 @@ public static class LoginCommandHandler
 	/// <param name="command">
 	/// The login command.
 	/// </param>
-	/// <param name="userManager">
-	/// User manager.
-	/// </param>
 	/// <param name="signInManager">
 	/// Sign in manager.
+	/// </param>
+	/// <param name="authRepository">
+	/// Repository for single-query user lookups.
 	/// </param>
 	/// <param name="securityAuditService">
 	/// Security audit service.
@@ -223,14 +188,15 @@ public static class LoginCommandHandler
 	/// </returns>
 	private static async Task<(ApplicationUser? User, AuthResult? Failure)> ValidateCredentialsAsync(
 		LoginCommand command,
-		UserManager<ApplicationUser> userManager,
 		SignInManager<ApplicationUser> signInManager,
+		IAuthRepository authRepository,
 		ISecurityAuditService securityAuditService,
 		CancellationToken cancellationToken)
 	{
 		ApplicationUser? user =
-			await userManager.FindByNameAsync(command.Request.UsernameOrEmail)
-				?? await userManager.FindByEmailAsync(command.Request.UsernameOrEmail);
+			await authRepository.FindByUsernameOrEmailAsync(
+				command.Request.UsernameOrEmail,
+				cancellationToken);
 
 		if (!user.IsValidForAuthentication())
 		{
@@ -285,74 +251,5 @@ public static class LoginCommandHandler
 		}
 
 		return (user, null);
-	}
-
-	/// <summary>
-	/// Initiates MFA challenge for the user.
-	/// </summary>
-	/// <param name="user">
-	/// The authenticated user requiring MFA.
-	/// </param>
-	/// <param name="clientIp">
-	/// Client IP address.
-	/// </param>
-	/// <param name="mfaContext">
-	/// MFA service and configuration tuple.
-	/// </param>
-	/// <param name="messageBus">
-	/// Message bus for enqueueing emails.
-	/// </param>
-	/// <param name="securityAuditService">
-	/// Security audit service for logging.
-	/// </param>
-	/// <param name="cancellationToken">
-	/// Cancellation token.
-	/// </param>
-	/// <returns>
-	/// AuthResult requiring MFA verification.
-	/// </returns>
-	private static async Task<AuthResult> InitiateMfaChallengeAsync(
-		ApplicationUser user,
-		string? clientIp,
-		(IMfaService Service, MfaSettings Config) mfaContext,
-		IMessageBus messageBus,
-		ISecurityAuditService securityAuditService,
-		CancellationToken cancellationToken)
-	{
-		(string challengeToken, string code) =
-			await mfaContext.Service.CreateChallengeAsync(
-				user.Id,
-				clientIp,
-				cancellationToken);
-
-		await messageBus.InvokeAsync(
-			new EnqueueEmailCommand(
-				EmailTypeConstants.MfaVerification,
-				user.Email!,
-				user.Id,
-				new Dictionary<string, string>
-				{
-					["code"] =
-						code,
-					["expirationMinutes"] =
-						mfaContext.Config.CodeExpirationMinutes.ToString()
-				}),
-			cancellationToken);
-
-		await securityAuditService.LogEventAsync(
-			SecurityEventType.MfaChallengeInitiated,
-			user,
-			success: true,
-			details: "Email",
-			cancellationToken);
-
-		List<MfaMethod> availableMethods =
-			[MfaMethod.Email];
-
-		return AuthResult.MfaRequired(
-			challengeToken,
-			user.Email!,
-			mfaMethod: MfaMethod.Email,
-			availableMethods: availableMethods);
 	}
 }

@@ -3,8 +3,10 @@
 // </copyright>
 
 using System.Security.Cryptography.X509Certificates;
+using FluentValidation;
 using Microsoft.AspNetCore.DataProtection;
 using SeventySix.Api.Configuration;
+using SeventySix.Shared.Registration;
 
 namespace SeventySix.Api.Registration;
 
@@ -38,11 +40,6 @@ public static class DataProtectionExtensions
 	private const string ApplicationName = "SeventySix";
 
 	/// <summary>
-	/// Configuration section name for data protection options.
-	/// </summary>
-	private const string DataProtectionSection = "DataProtection";
-
-	/// <summary>
 	/// Adds configured Data Protection services with key persistence and encryption.
 	/// </summary>
 	/// <param name="services">
@@ -62,7 +59,7 @@ public static class DataProtectionExtensions
 		IConfiguration configuration,
 		IWebHostEnvironment environment)
 	{
-		AppDataProtectionOptions dataProtectionOptions =
+		DataProtectionSettings dataProtectionOptions =
 			BindAndValidateOptions(
 				services,
 				configuration,
@@ -104,65 +101,29 @@ public static class DataProtectionExtensions
 	/// <returns>
 	/// The bound and validated options instance.
 	/// </returns>
-	private static AppDataProtectionOptions BindAndValidateOptions(
+	private static DataProtectionSettings BindAndValidateOptions(
 		IServiceCollection services,
 		IConfiguration configuration,
 		IWebHostEnvironment environment)
 	{
+		services.AddSingleton<
+			IValidator<DataProtectionSettings>,
+			DataProtectionSettingsValidator>();
+
 		services
-			.AddOptions<AppDataProtectionOptions>()
-			.Bind(configuration.GetSection(DataProtectionSection))
-			.Validate(
-				dataProtectionOptions =>
-					ValidateOptions(dataProtectionOptions, environment),
-				"Invalid DataProtection configuration: Certificate path missing or file not found")
+			.AddOptions<DataProtectionSettings>()
+			.Bind(
+				configuration.GetSection(
+					DataProtectionSettings.SectionName))
+			.ValidateWithFluentValidation()
 			.ValidateOnStart();
 
-		AppDataProtectionOptions? boundOptions =
+		DataProtectionSettings? boundOptions =
 			configuration
-				.GetSection(DataProtectionSection)
-				.Get<AppDataProtectionOptions>();
+				.GetSection(DataProtectionSettings.SectionName)
+				.Get<DataProtectionSettings>();
 
-		return boundOptions ?? new AppDataProtectionOptions();
-	}
-
-	/// <summary>
-	/// Validates Data Protection options based on environment.
-	/// </summary>
-	/// <param name="dataProtectionOptions">
-	/// The options to validate.
-	/// </param>
-	/// <param name="environment">
-	/// The current hosting environment.
-	/// </param>
-	/// <returns>
-	/// True if options are valid; otherwise false.
-	/// </returns>
-	private static bool ValidateOptions(
-		AppDataProtectionOptions dataProtectionOptions,
-		IWebHostEnvironment environment)
-	{
-		if (!dataProtectionOptions.UseCertificate)
-		{
-			return true;
-		}
-
-		bool certificateExists =
-			!string.IsNullOrWhiteSpace(dataProtectionOptions.CertificatePath)
-			&& File.Exists(dataProtectionOptions.CertificatePath);
-
-		if (certificateExists)
-		{
-			return true;
-		}
-
-		// In development with fallback allowed, accept missing certificate
-		if (environment.IsDevelopment())
-		{
-			return dataProtectionOptions.AllowUnprotectedKeysInDevelopment;
-		}
-
-		return false;
+		return boundOptions ?? new DataProtectionSettings();
 	}
 
 	/// <summary>
@@ -178,7 +139,7 @@ public static class DataProtectionExtensions
 	/// The absolute path to the keys directory.
 	/// </returns>
 	private static string ResolveKeysDirectory(
-		AppDataProtectionOptions dataProtectionOptions,
+		DataProtectionSettings dataProtectionOptions,
 		IWebHostEnvironment environment)
 	{
 		if (!string.IsNullOrWhiteSpace(dataProtectionOptions.KeysDirectory))
@@ -221,11 +182,12 @@ public static class DataProtectionExtensions
 	/// The current hosting environment.
 	/// </param>
 	/// <exception cref="InvalidOperationException">
-	/// Thrown when certificate is required in production but cannot be loaded.
+	/// Thrown when certificate is required but cannot be loaded in production.
+	/// In development, falls back to unprotected keys when certificate is unavailable.
 	/// </exception>
 	private static void ConfigureKeyProtection(
 		IDataProtectionBuilder dataProtectionBuilder,
-		AppDataProtectionOptions dataProtectionOptions,
+		DataProtectionSettings dataProtectionOptions,
 		IWebHostEnvironment environment)
 	{
 		if (
@@ -258,6 +220,11 @@ public static class DataProtectionExtensions
 	}
 
 	/// <summary>
+	/// Default certificate filename within the keys directory.
+	/// </summary>
+	private const string DefaultCertificateFilename = "dataprotection.pfx";
+
+	/// <summary>
 	/// Attempts to protect keys with a certificate from configuration.
 	/// </summary>
 	/// <param name="dataProtectionBuilder">
@@ -271,19 +238,17 @@ public static class DataProtectionExtensions
 	/// </returns>
 	private static bool TryProtectWithCertificate(
 		IDataProtectionBuilder dataProtectionBuilder,
-		AppDataProtectionOptions dataProtectionOptions)
+		DataProtectionSettings dataProtectionOptions)
 	{
 		if (!dataProtectionOptions.UseCertificate)
 		{
 			return false;
 		}
 
-		if (string.IsNullOrWhiteSpace(dataProtectionOptions.CertificatePath))
-		{
-			return false;
-		}
+		string? resolvedCertificatePath =
+			ResolveCertificatePath(dataProtectionOptions.CertificatePath);
 
-		if (!File.Exists(dataProtectionOptions.CertificatePath))
+		if (resolvedCertificatePath is null)
 		{
 			return false;
 		}
@@ -292,7 +257,7 @@ public static class DataProtectionExtensions
 		{
 			X509Certificate2 certificate =
 				X509CertificateLoader.LoadPkcs12FromFile(
-					dataProtectionOptions.CertificatePath,
+					resolvedCertificatePath,
 					dataProtectionOptions.CertificatePassword);
 
 			dataProtectionBuilder.ProtectKeysWithCertificate(certificate);
@@ -308,9 +273,61 @@ public static class DataProtectionExtensions
 			Serilog.Log.Warning(
 				certificateException,
 				"Failed to load Data Protection certificate from {Path}",
-				dataProtectionOptions.CertificatePath);
+				resolvedCertificatePath);
 
 			return false;
 		}
+	}
+
+	/// <summary>
+	/// Resolves the certificate file path, checking the configured path first
+	/// then falling back to the local keys directory.
+	/// </summary>
+	/// <remarks>
+	/// <para>
+	/// This supports both Docker containers (where the cert is mounted at
+	/// <c>/app/keys/dataprotection.pfx</c>) and local F5 debugging (where
+	/// the cert lives at <c>keys/dataprotection.pfx</c> relative to the
+	/// project directory).
+	/// </para>
+	/// </remarks>
+	/// <param name="configuredPath">
+	/// The certificate path from configuration.
+	/// </param>
+	/// <returns>
+	/// The resolved path if the certificate file exists; otherwise null.
+	/// </returns>
+	private static string? ResolveCertificatePath(string? configuredPath)
+	{
+		if (string.IsNullOrWhiteSpace(configuredPath))
+		{
+			return null;
+		}
+
+		// Configured path exists (Docker container or absolute path)
+		if (File.Exists(configuredPath))
+		{
+			return configuredPath;
+		}
+
+		// Fallback: check local keys directory (F5 / local debugging)
+		string localCertificatePath =
+			Path.Combine(
+				Directory.GetCurrentDirectory(),
+				DefaultKeysDirectory,
+				DefaultCertificateFilename);
+
+		if (File.Exists(localCertificatePath))
+		{
+			Serilog.Log.Information(
+				"Data Protection certificate not found at {ConfiguredPath}, "
+					+ "using local fallback at {LocalPath}",
+				configuredPath,
+				localCertificatePath);
+
+			return localCertificatePath;
+		}
+
+		return null;
 	}
 }

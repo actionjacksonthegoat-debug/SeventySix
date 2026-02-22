@@ -9,7 +9,7 @@ namespace SeventySix.ElectronicNotifications.Emails;
 /// <summary>
 /// Exception thrown when email sending is blocked due to rate limiting.
 /// </summary>
-public class EmailRateLimitException : DomainException
+public sealed class EmailRateLimitException : DomainException
 {
 	/// <summary>
 	/// Gets the time until the rate limit resets.

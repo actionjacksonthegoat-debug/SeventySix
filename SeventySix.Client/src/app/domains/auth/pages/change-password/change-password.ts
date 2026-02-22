@@ -13,19 +13,20 @@ import {
 	ChangeDetectionStrategy,
 	Component,
 	computed,
+	DestroyRef,
 	inject,
 	OnInit,
 	Signal,
 	signal,
 	WritableSignal
 } from "@angular/core";
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import {
 	FormBuilder,
 	FormGroup,
 	ReactiveFormsModule,
 	Validators
 } from "@angular/forms";
-import { MatButtonModule } from "@angular/material/button";
 import { ActivatedRoute, Router } from "@angular/router";
 import { ValidationResult } from "@auth/models";
 import {
@@ -37,6 +38,8 @@ import {
 import { environment } from "@environments/environment";
 import { APP_ROUTES } from "@shared/constants";
 import { PASSWORD_VALIDATION } from "@shared/constants/validation.constants";
+import { FieldMessageDirective } from "@shared/directives";
+import { FORM_MATERIAL_MODULES } from "@shared/material-bundles.constants";
 import { AuthErrorResult } from "@shared/models";
 import { AuthService } from "@shared/services/auth.service";
 import { NotificationService } from "@shared/services/notification.service";
@@ -52,7 +55,7 @@ interface ChangePasswordRequest
 	{
 		selector: "app-change-password",
 		standalone: true,
-		imports: [ReactiveFormsModule, MatButtonModule],
+		imports: [ReactiveFormsModule, ...FORM_MATERIAL_MODULES, FieldMessageDirective],
 		changeDetection: ChangeDetectionStrategy.OnPush,
 		templateUrl: "./change-password.html",
 		styleUrl: "./change-password.scss"
@@ -63,6 +66,15 @@ interface ChangePasswordRequest
  */
 export class ChangePasswordComponent implements OnInit
 {
+	/**
+	 * Angular destroy reference for automatic subscription cleanup.
+	 * @type {DestroyRef}
+	 * @private
+	 * @readonly
+	 */
+	private readonly destroyRef: DestroyRef =
+		inject(DestroyRef);
+
 	/**
 	 * HTTP client used to call the change-password API endpoint.
 	 * @type {HttpClient}
@@ -127,14 +139,16 @@ export class ChangePasswordComponent implements OnInit
 					"",
 					[
 						Validators.required,
-						Validators.minLength(PASSWORD_VALIDATION.MIN_LENGTH)
+						Validators.minLength(PASSWORD_VALIDATION.MIN_LENGTH),
+						Validators.maxLength(PASSWORD_VALIDATION.MAX_LENGTH)
 					]
 				],
 				confirmPassword: [
 					"",
 					[
 						Validators.required,
-						Validators.minLength(PASSWORD_VALIDATION.MIN_LENGTH)
+						Validators.minLength(PASSWORD_VALIDATION.MIN_LENGTH),
+						Validators.maxLength(PASSWORD_VALIDATION.MAX_LENGTH)
 					]
 				]
 			});
@@ -281,6 +295,8 @@ export class ChangePasswordComponent implements OnInit
 				{
 					withCredentials: true
 				})
+			.pipe(
+				takeUntilDestroyed(this.destroyRef))
 			.subscribe(
 				{
 					next: () =>

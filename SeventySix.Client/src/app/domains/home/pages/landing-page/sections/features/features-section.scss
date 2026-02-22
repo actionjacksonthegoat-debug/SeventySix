@@ -1,0 +1,132 @@
+@use "variables" as vars;
+@use "mixins";
+
+// ============================================================================
+// FEATURES SECTION
+// ============================================================================
+
+.features {
+	padding: vars.$spacing-3xl vars.$spacing-xl;
+	max-width: vars.$landing-section-max-width;
+	margin: 0 auto;
+}
+
+.feature {
+	display: grid;
+	grid-template-columns: 1fr 2fr;
+	gap: vars.$spacing-2xl;
+	align-items: center;
+	padding: vars.$spacing-2xl 0;
+
+	// Scroll reveal
+	&.scroll-reveal {
+		@include mixins.scroll-reveal-hidden();
+
+		&.revealed {
+			@include mixins.scroll-reveal-visible();
+		}
+	}
+
+	@media (max-width: vars.$breakpoint-sm-min) {
+		grid-template-columns: 1fr;
+		text-align: center;
+	}
+}
+
+.feature--reversed {
+	grid-template-columns: 2fr 1fr;
+
+	.feature-visual {
+		order: 2;
+	}
+
+	.feature-content {
+		order: 1;
+	}
+
+	@media (max-width: vars.$breakpoint-sm-min) {
+		grid-template-columns: 1fr;
+
+		.feature-visual {
+			order: 0;
+		}
+
+		.feature-content {
+			order: 0;
+		}
+	}
+}
+
+.feature-visual {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.feature-icon-container {
+	@include mixins.glassmorphism();
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 8rem;
+	height: 8rem;
+	border-radius: 50%;
+}
+
+.feature-icon {
+	@include mixins.icon-size(vars.$icon-size-3xl);
+	color: var(--landing-bullet-color);
+}
+
+.feature-title {
+	font-size: vars.$font-size-2xl;
+	font-weight: vars.$font-weight-semibold;
+	color: var(--mat-sys-on-surface);
+	margin-bottom: vars.$spacing-sm;
+}
+
+.feature-tagline {
+	font-family: vars.$font-family-monospace;
+	font-size: vars.$font-size-base;
+	letter-spacing: 0.05em;
+	color: var(--mat-sys-tertiary);
+	margin-bottom: vars.$spacing-md;
+}
+
+.feature-description {
+	font-size: vars.$font-size-base;
+	color: var(--mat-sys-on-surface-variant);
+	line-height: 1.7;
+	margin-bottom: vars.$spacing-lg;
+}
+
+.feature-bullets {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+
+	li {
+		position: relative;
+		padding-left: vars.$spacing-lg;
+		margin-bottom: vars.$spacing-sm;
+		font-size: vars.$font-size-sm;
+		color: var(--mat-sys-on-surface-variant);
+		line-height: 1.6;
+
+		&::before {
+			content: "";
+			position: absolute;
+			left: 0;
+			top: 0.6em;
+			width: 0.375rem;
+			height: 0.375rem;
+			background: var(--landing-bullet-color);
+		}
+	}
+}
+
+.section-divider {
+	@include mixins.section-separator();
+	border: none;
+	margin: vars.$spacing-3xl 0;
+}

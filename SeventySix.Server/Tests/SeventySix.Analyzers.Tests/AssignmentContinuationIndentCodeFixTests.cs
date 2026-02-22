@@ -10,7 +10,7 @@ namespace SeventySix.Analyzers.Tests;
 /// Tests for SS003 CodeFix provider.
 /// Verifies that the fix provider correctly transforms code without causing regressions.
 /// </summary>
-public class AssignmentContinuationIndentCodeFixTests
+public sealed class AssignmentContinuationIndentCodeFixTests
 {
 	/// <summary>
 	/// Basic variable assignment continuation should be fixed correctly.

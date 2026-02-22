@@ -10,7 +10,7 @@ namespace SeventySix.Domains.Tests.ElectronicNotifications.Emails;
 /// <summary>
 /// Unit tests for EmailRateLimitException.
 /// </summary>
-public class EmailRateLimitExceptionTests
+public sealed class EmailRateLimitExceptionTests
 {
 	[Fact]
 	public void Constructor_WithTimeAndQuota_SetsProperties()

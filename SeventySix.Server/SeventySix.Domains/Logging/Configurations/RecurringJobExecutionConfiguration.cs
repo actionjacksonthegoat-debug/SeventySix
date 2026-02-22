@@ -11,7 +11,7 @@ namespace SeventySix.Logging;
 /// <summary>
 /// EF Core configuration for <see cref="RecurringJobExecution"/>.
 /// </summary>
-public class RecurringJobExecutionConfiguration
+public sealed class RecurringJobExecutionConfiguration
 	: IEntityTypeConfiguration<RecurringJobExecution>
 {
 	/// <inheritdoc />

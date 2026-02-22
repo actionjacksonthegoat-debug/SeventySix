@@ -7,14 +7,21 @@ description: Scaffold full-stack feature with Angular client and .NET server
 
 Create a complete feature spanning Angular client and .NET server.
 
+## MCP Tools
+
+- Use **context7** to fetch up-to-date API docs for .NET, Wolverine, EF Core, Angular, and TanStack Query before generating code
+- Use **postgresql** MCP to inspect existing schema when designing data-layer code
+
 ## Domain Selection (REQUIRED)
 
 Ask user which domain this feature belongs to:
 
 - **Server**: Identity, Logging, ApiTracking, ElectronicNotifications
-- **Client**: admin, sandbox, developer
+- **Client**: admin, auth, account, developer, sandbox, home
 
 ## Server Structure
+
+> **Note**: Identity features go in `SeventySix.Domains.Identity/` (separate project). All other domains go in `SeventySix.Domains/{Domain}/`.
 
 ```
 SeventySix.Domains/
@@ -78,7 +85,7 @@ public class {{Name}}
         string.Empty;
     public string CreatedBy { get; set; } =
         string.Empty;
-    public DateTime CreatedAt { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
 }
 ```
 
@@ -90,7 +97,7 @@ namespace SeventySix.{{Domain}};
 public record {{Name}}Dto(
     int Id,
     string Name,
-    DateTime CreatedAt);
+    DateTimeOffset CreatedAt);
 ```
 
 ### Wolverine Handler
@@ -226,7 +233,7 @@ export const {{FEATURE}}_ROUTES: Routes =
 ### Path Aliases
 
 - `@shared/*` - Cross-cutting utilities
-- `@admin/*`, `@game/*`, `@commerce/*` - Domain-specific
+- `@admin/*`, `@auth/*`, `@account/*`, `@developer/*`, `@sandbox/*`, `@home/*` - Domain-specific
 
 ### Other Rules
 
@@ -234,15 +241,16 @@ export const {{FEATURE}}_ROUTES: Routes =
 - New line after every `=`, before every `.`
 - Server namespace: `SeventySix.{Domain}` (NOT `SeventySix.Domains.{Domain}`)
 
-### ⚠️ Work Completion Requirements (CRITICAL)
+### [WARNING] Work Completion Requirements (CRITICAL)
 
-**ALL THREE** test suites must pass for work to be considered complete:
+**ALL FOUR** test suites must pass for work to be considered complete:
 
-| Suite  | Command            | Location                   |
-| ------ | ------------------ | -------------------------- |
-| Server | `dotnet test`      | `SeventySix.Server/Tests/` |
-| Client | `npm test`         | `SeventySix.Client/`       |
-| E2E    | `npm run test:e2e` | `SeventySix.Client/e2e/`   |
+| Suite  | Command                  | Location                   |
+| ------ | ------------------------ | -------------------------- |
+| Server | `dotnet test`            | `SeventySix.Server/Tests/` |
+| Client | `npm test`               | `SeventySix.Client/`       |
+| E2E    | `npm run test:e2e`       | `SeventySix.Client/e2e/`   |
+| Load   | `npm run loadtest:quick` | `SeventySix.Client/load-testing/` |
 
 **Never** mark work complete with failing tests in any suite.
 

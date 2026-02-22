@@ -11,7 +11,7 @@ namespace SeventySix.Shared.Tests.Persistence;
 /// <summary>
 /// Unit tests for BulkOperationExecutor.
 /// </summary>
-public class BulkOperationExecutorTests
+public sealed class BulkOperationExecutorTests
 {
 	[Fact]
 	public async Task ExecuteBulkUpdateAsync_ValidIds_UpdatesEntitiesAsync()
@@ -181,14 +181,14 @@ public class BulkOperationExecutorTests
 		allEntities.First(entity => entity.Id == 2L).Name.ShouldBe("SECOND");
 	}
 
-	public class TestEntity
+	public sealed class TestEntity
 	{
 		public long Id { get; set; }
 		public string Name { get; set; } = string.Empty;
 		public bool IsActive { get; set; }
 	}
 
-	public class TestDbContext(DbContextOptions<TestDbContext> options)
+	public sealed class TestDbContext(DbContextOptions<TestDbContext> options)
 		: DbContext(options)
 	{
 		public DbSet<TestEntity> TestEntities { get; set; } = null!;

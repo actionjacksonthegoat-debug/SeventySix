@@ -12,7 +12,7 @@ namespace SeventySix.Api.Tests.Collections;
 /// Enables parallel execution separate from auth and user tests.
 /// </summary>
 [CollectionDefinition(CollectionNames.IdentityHealthPostgreSql)]
-public class IdentityHealthCollectionDefinition
+public sealed class IdentityHealthCollectionDefinition
 	: ICollectionFixture<IdentityHealthApiPostgreSqlFixture>
 {
 }

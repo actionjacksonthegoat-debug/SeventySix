@@ -14,6 +14,7 @@ export interface SkeletonTheme
 	width: string;
 	borderRadius?: string;
 	margin?: string;
+	animation?: "progress" | "pulse" | false;
 }
 
 /** Material input field skeleton (56px height). */

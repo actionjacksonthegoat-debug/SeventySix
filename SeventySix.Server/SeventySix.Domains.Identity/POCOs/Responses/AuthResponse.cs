@@ -34,16 +34,24 @@ namespace SeventySix.Identity;
 /// <param name="AvailableMfaMethods">
 /// All available MFA methods for the user (null if MFA not required).
 /// </param>
+/// <param name="SessionInactivityMinutes">
+/// Session inactivity timeout in minutes (0 = disabled).
+/// </param>
+/// <param name="SessionWarningSeconds">
+/// Seconds before inactivity timeout to display warning.
+/// </param>
 public record AuthResponse(
 	string? AccessToken,
-	DateTime? ExpiresAt,
+	DateTimeOffset? ExpiresAt,
 	string? Email,
 	string? FullName,
 	bool RequiresPasswordChange = false,
 	bool RequiresMfa = false,
 	string? MfaChallengeToken = null,
 	MfaMethod? MfaMethod = null,
-	IReadOnlyList<MfaMethod>? AvailableMfaMethods = null)
+	IReadOnlyList<MfaMethod>? AvailableMfaMethods = null,
+	int SessionInactivityMinutes = 0,
+	int SessionWarningSeconds = 0)
 {
 	/// <summary>
 	/// Creates an AuthResponse from an AuthResult.
@@ -64,5 +72,7 @@ public record AuthResponse(
 			RequiresMfa: result.RequiresMfa,
 			MfaChallengeToken: result.MfaChallengeToken,
 			MfaMethod: result.MfaMethod,
-			AvailableMfaMethods: result.AvailableMfaMethods);
+			AvailableMfaMethods: result.AvailableMfaMethods,
+			SessionInactivityMinutes: 0,
+			SessionWarningSeconds: 0);
 }

@@ -7,11 +7,15 @@ description: Generate Angular service with correct scoping for SeventySix domain
 
 Create a new Angular service following domain boundary rules.
 
+## MCP Tools
+
+- Use **context7** to fetch up-to-date Angular and TanStack Query API docs before generating code
+
 ## Domain Selection (REQUIRED)
 
 Ask user:
 
-1. Which domain: admin, game, commerce (or shared)
+1. Which domain: admin, auth, account, developer, sandbox, home (or shared)
 2. Service type: **domain-scoped** or **persistent state**
 
 ## Service Types
@@ -24,8 +28,8 @@ Ask user:
 
 ## Import Boundaries (CRITICAL)
 
--   Domain services import ONLY from `@shared/*` + own domain
--   NEVER import from another domain (`@admin/*`, `@game/*`, `@commerce/*`)
+- Domain services import ONLY from `@shared/*` + own domain
+- NEVER import from another domain (`@admin/*`, `@auth/*`, `@developer/*`, etc.)
 
 ## Domain Scoped Service Template
 
@@ -130,5 +134,4 @@ export class {{Name}}Service {
 1. **NEVER** use `providedIn: 'root'` in `@{domain}/services/`
 2. **ALWAYS** register domain services in route `providers` array
 3. **ONLY** `@{domain}/core/` and `@shared/services/` can use `providedIn: 'root'`
-4. **NEVER** import from another domain - 
-
+4. **NEVER** import from another domain — domains import ONLY `@shared/*` + themselves

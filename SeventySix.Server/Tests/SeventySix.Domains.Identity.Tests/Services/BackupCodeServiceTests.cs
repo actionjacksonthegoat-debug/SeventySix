@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Time.Testing;
-using SeventySix.Identity;
 using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;
@@ -19,7 +18,7 @@ namespace SeventySix.Identity.Tests.Services;
 /// Tests backup code generation and verification with real database.
 /// </summary>
 [Collection(CollectionNames.IdentityPostgreSql)]
-public class BackupCodeServiceTests(IdentityPostgreSqlFixture fixture)
+public sealed class BackupCodeServiceTests(IdentityPostgreSqlFixture fixture)
 	: DataPostgreSqlTestBase(fixture)
 {
 	private static readonly DateTimeOffset FixedTime =

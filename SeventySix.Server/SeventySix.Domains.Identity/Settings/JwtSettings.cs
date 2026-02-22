@@ -9,8 +9,13 @@ namespace SeventySix.Identity;
 /// Used by Identity context for token generation and validation.
 /// All values MUST be configured in appsettings.json.
 /// </summary>
-public record JwtSettings
+public sealed record JwtSettings
 {
+	/// <summary>
+	/// Configuration section name for binding.
+	/// </summary>
+	public const string SectionName = "Jwt";
+
 	/// <summary>
 	/// Gets the secret key for signing tokens.
 	/// </summary>
@@ -55,4 +60,11 @@ public record JwtSettings
 	/// Must be configured in appsettings.json.
 	/// </summary>
 	public int ClockSkewMinutes { get; init; }
+
+	/// <summary>
+	/// Gets the number of seconds before access token expiry at which the client
+	/// should proactively refresh the token. Published to the client via ConfigController.
+	/// Must be configured in appsettings.json.
+	/// </summary>
+	public int TokenRefreshBufferSeconds { get; init; }
 }

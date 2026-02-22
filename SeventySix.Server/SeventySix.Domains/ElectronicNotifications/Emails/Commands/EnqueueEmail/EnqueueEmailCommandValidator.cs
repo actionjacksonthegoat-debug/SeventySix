@@ -14,7 +14,7 @@ namespace SeventySix.ElectronicNotifications.Emails;
 /// <remarks>
 /// Validates the shared email contract from any bounded context.
 /// </remarks>
-public class EnqueueEmailCommandValidator : AbstractValidator<EnqueueEmailCommand>
+public sealed class EnqueueEmailCommandValidator : AbstractValidator<EnqueueEmailCommand>
 {
 	/// <summary>
 	/// Valid email types from constants.

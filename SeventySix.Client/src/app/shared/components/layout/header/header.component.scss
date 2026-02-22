@@ -3,7 +3,7 @@
 .app-header {
 	position: sticky;
 	top: 0;
-	z-index: 100;
+	z-index: vars.$z-index-sticky;
 	display: flex;
 	align-items: center;
 	gap: vars.$spacing-sm;
@@ -21,7 +21,7 @@
 	gap: vars.$spacing-sm;
 	font-size: vars.$font-size-lg;
 	font-weight: vars.$font-weight-medium;
-	cursor: arrow;
+	cursor: default;
 	user-select: none;
 
 	.logo-icon {
@@ -51,8 +51,8 @@
 
 .breadcrumb-container {
 	padding: 0 vars.$spacing-md;
-	background-color: rgba(var(--mat-surface-rgb), 1);
-	border-bottom: 1px solid rgba(var(--mat-outline-rgb), 0.12);
+	background-color: var(--mat-sys-surface);
+	border-bottom: 1px solid color-mix(in srgb, var(--mat-sys-outline) 12%, transparent);
 	flex-shrink: 0; // Prevent breadcrumb from shrinking
 
 	@media (max-width: vars.$breakpoint-xs-max) {

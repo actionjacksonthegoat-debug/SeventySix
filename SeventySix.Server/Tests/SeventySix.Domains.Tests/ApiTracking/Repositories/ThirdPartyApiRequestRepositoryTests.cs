@@ -28,7 +28,7 @@ namespace SeventySix.Domains.Tests.ApiTracking.Repositories;
 /// - Concurrency
 /// </remarks>
 [Collection(CollectionNames.ApiTrackingPostgreSql)]
-public class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase
+public sealed class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase
 {
 	private readonly ThirdPartyApiRequestRepository Repository;
 
@@ -513,16 +513,16 @@ public class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase
 		FakeTimeProvider timeProvider = new();
 		string testId =
 			Guid.NewGuid().ToString("N")[..8];
-		DateTime now =
-			timeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset now =
+			timeProvider.GetUtcNow();
 		DateOnly today =
-			DateOnly.FromDateTime(now);
+			DateOnly.FromDateTime(now.UtcDateTime);
 		DateOnly yesterday =
 			today.AddDays(-1);
 
-		DateTime weatherLastCalled =
+		DateTimeOffset weatherLastCalled =
 			now.AddMinutes(-5);
-		DateTime mapsLastCalled =
+		DateTimeOffset mapsLastCalled =
 			now.AddMinutes(-10);
 
 		// Create today's records

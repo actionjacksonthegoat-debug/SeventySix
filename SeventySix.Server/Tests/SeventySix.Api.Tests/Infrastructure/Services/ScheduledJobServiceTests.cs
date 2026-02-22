@@ -19,13 +19,15 @@ namespace SeventySix.Api.Tests.Infrastructure.Services;
 /// <summary>
 /// Unit tests for ScheduledJobService.
 /// </summary>
-public class ScheduledJobServiceTests
+public sealed class ScheduledJobServiceTests
 {
 	private readonly IRecurringJobRepository RecurringJobRepository;
 	private readonly IOptions<RefreshTokenCleanupSettings> RefreshTokenCleanupSettingsOption;
 	private readonly IOptions<IpAnonymizationSettings> IpAnonymizationSettingsOption;
 	private readonly IOptions<LogCleanupSettings> LogCleanupSettingsOption;
 	private readonly IOptions<EmailQueueSettings> EmailQueueSettingsOption;
+	private readonly IOptions<OrphanedRegistrationCleanupSettings> OrphanedRegistrationCleanupSettingsOption;
+	private readonly IOptions<DatabaseMaintenanceSettings> DatabaseMaintenanceSettingsOption;
 	private readonly FakeTimeProvider TimeProviderFake;
 
 	public ScheduledJobServiceTests()
@@ -49,6 +51,14 @@ public class ScheduledJobServiceTests
 			Options.Create(
 				new EmailQueueSettings { ProcessingIntervalSeconds = 30 });
 
+		OrphanedRegistrationCleanupSettingsOption =
+			Options.Create(
+				new OrphanedRegistrationCleanupSettings { IntervalHours = 24 });
+
+		DatabaseMaintenanceSettingsOption =
+			Options.Create(
+				new DatabaseMaintenanceSettings { IntervalHours = 24 });
+
 		TimeProviderFake =
 			TestDates.CreateHistoricalTimeProvider();
 	}
@@ -61,11 +71,13 @@ public class ScheduledJobServiceTests
 			IpAnonymizationSettingsOption,
 			LogCleanupSettingsOption,
 			EmailQueueSettingsOption,
+			OrphanedRegistrationCleanupSettingsOption,
+			DatabaseMaintenanceSettingsOption,
 			TimeProviderFake);
 	}
 
 	[Fact]
-	public async Task GetAllJobStatusesAsync_ReturnsAllFourJobsAsync()
+	public async Task GetAllJobStatusesAsync_ReturnsAllSixJobsAsync()
 	{
 		// Arrange
 		RecurringJobRepository
@@ -80,7 +92,7 @@ public class ScheduledJobServiceTests
 			await service.GetAllJobStatusesAsync(CancellationToken.None);
 
 		// Assert
-		result.Count.ShouldBe(4);
+		result.Count.ShouldBe(6);
 		result.ShouldContain(
 			job => job.JobName == "RefreshTokenCleanupJob");
 		result.ShouldContain(
@@ -89,6 +101,10 @@ public class ScheduledJobServiceTests
 			job => job.JobName == "LogCleanupJob");
 		result.ShouldContain(
 			job => job.JobName == "EmailQueueProcessJob");
+		result.ShouldContain(
+			job => job.JobName == "OrphanedRegistrationCleanupJob");
+		result.ShouldContain(
+			job => job.JobName == "DatabaseMaintenanceJob");
 	}
 
 	[Fact]

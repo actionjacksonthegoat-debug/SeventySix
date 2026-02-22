@@ -15,7 +15,7 @@ namespace SeventySix.Domains.Tests.Logging.Commands.DeleteLogsOlderThan;
 /// Tests date-based cleanup operation.
 /// Uses mocked repository since persistence is tested in LogRepositoryTests.
 /// </remarks>
-public class DeleteLogsOlderThanCommandHandlerTests
+public sealed class DeleteLogsOlderThanCommandHandlerTests
 {
 	private readonly ILogRepository Repository;
 
@@ -35,8 +35,8 @@ public class DeleteLogsOlderThanCommandHandlerTests
 	public async Task HandleAsync_OldLogsExist_ReturnsDeletedCountAsync()
 	{
 		// Arrange
-		DateTime cutoffDate =
-			new(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+		DateTimeOffset cutoffDate =
+			new(2024, 1, 1, 0, 0, 0, TimeSpan.Zero);
 		DeleteLogsOlderThanCommand command =
 			new(cutoffDate);
 
@@ -64,8 +64,8 @@ public class DeleteLogsOlderThanCommandHandlerTests
 	public async Task HandleAsync_NoOldLogs_ReturnsZeroAsync()
 	{
 		// Arrange
-		DateTime cutoffDate =
-			new(2010, 1, 1, 0, 0, 0, DateTimeKind.Utc); // Very old cutoff, no logs that old
+		DateTimeOffset cutoffDate =
+			new(2010, 1, 1, 0, 0, 0, TimeSpan.Zero); // Very old cutoff, no logs that old
 		DeleteLogsOlderThanCommand command =
 			new(cutoffDate);
 
@@ -93,14 +93,14 @@ public class DeleteLogsOlderThanCommandHandlerTests
 	public async Task HandleAsync_ValidCommand_PassesCorrectDateToRepositoryAsync()
 	{
 		// Arrange
-		DateTime cutoffDate =
-			new(2024, 1, 15, 0, 0, 0, DateTimeKind.Utc);
+		DateTimeOffset cutoffDate =
+			new(2024, 1, 15, 0, 0, 0, TimeSpan.Zero);
 		DeleteLogsOlderThanCommand command =
 			new(cutoffDate);
 
 		Repository
 			.DeleteOlderThanAsync(
-				Arg.Any<DateTime>(),
+				Arg.Any<DateTimeOffset>(),
 				Arg.Any<CancellationToken>())
 			.Returns(50);
 
@@ -125,8 +125,8 @@ public class DeleteLogsOlderThanCommandHandlerTests
 	public async Task HandleAsync_RecentCutoffDate_DeletesRecentLogsAsync()
 	{
 		// Arrange
-		DateTime cutoffDate =
-			new(2025, 6, 1, 12, 0, 0, DateTimeKind.Utc); // A recent fixed cutoff
+		DateTimeOffset cutoffDate =
+			new(2025, 6, 1, 12, 0, 0, TimeSpan.Zero); // A recent fixed cutoff
 		DeleteLogsOlderThanCommand command =
 			new(cutoffDate);
 

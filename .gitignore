@@ -380,6 +380,9 @@ FodyWeavers.xsd
 # User-specific configuration files with sensitive data
 appsettings.*.local.json
 **/appsettings.Production.json
+
+# Not used in this project — secrets are loaded as shell env vars from user-secrets.
+# Kept in gitignore as a safety net.
 .env
 .env.local
 .env.production
@@ -443,6 +446,8 @@ SeventySix.Client/e2e/.auth/
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+!.vscode/mcp.json
+!.vscode/copilot-hooks.json
 .history/*
 
 # JetBrains IDEs
@@ -478,3 +483,8 @@ desktop.ini
 *.swo
 *~
 ~$*
+
+#################################
+# Dev Tools Output (Chrome DevTools walkthrough)
+#################################
+.dev-tools-output/

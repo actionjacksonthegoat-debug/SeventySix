@@ -4,10 +4,13 @@ import {
 	expect,
 	getTestUserByRole,
 	TEST_USERS,
+	LOCKOUT_USER,
+	solveAltchaChallenge,
 	SELECTORS,
 	ROUTES,
 	PAGE_TEXT,
-	TIMEOUTS
+	TIMEOUTS,
+	COOKIE_NAMES
 } from "../../fixtures";
 
 /**
@@ -79,6 +82,22 @@ test.describe("Login Page",
 						await expect(page.getByLabel(PAGE_TEXT.labels.rememberMe))
 							.toBeVisible();
 					});
+
+				test("should render ALTCHA widget",
+					async ({ page }) =>
+					{
+						await expect(page.locator(SELECTORS.altcha.widget))
+							.toBeVisible({ timeout: TIMEOUTS.api });
+					});
+
+				test("should solve ALTCHA challenge",
+					async ({ page }) =>
+					{
+						await expect(page.locator(SELECTORS.altcha.widget))
+							.toBeVisible({ timeout: TIMEOUTS.api });
+
+						await solveAltchaChallenge(page);
+					});
 			});
 
 		test.describe("Validation",
@@ -107,7 +126,7 @@ test.describe("Login Page",
 						const snackbar: Locator =
 							page.locator(SELECTORS.notification.snackbar);
 						const errorMessage: Locator =
-							page.locator("[role='alert'], .error-message, mat-error");
+							page.locator(SELECTORS.form.errorMessage);
 
 						// Wait for either a snackbar or an inline error
 						await expect(snackbar.or(errorMessage))
@@ -132,7 +151,12 @@ test.describe("Login Page",
 		test.describe("Successful Login",
 			() =>
 			{
-				TEST_USERS.forEach(
+				// MFA-enabled users are excluded — they redirect to MFA verify, not home.
+				// MFA login flow is tested in mfa-login.spec.ts.
+				TEST_USERS
+					.filter(
+						(testUser) => !testUser.mfaEnabled)
+					.forEach(
 					(testUser) =>
 					{
 						test(`should login as ${testUser.role} and redirect to home`,
@@ -180,7 +204,8 @@ test.describe("Login Page",
 					async ({ page }) =>
 					{
 						const rememberMe: Locator =
-							page.locator(SELECTORS.form.rememberMeCheckbox);
+							page.locator(SELECTORS.form.rememberMeCheckbox)
+								.locator("input");
 
 						await expect(rememberMe)
 							.not.toBeChecked();
@@ -192,10 +217,78 @@ test.describe("Login Page",
 						const rememberMe: Locator =
 							page.locator(SELECTORS.form.rememberMeCheckbox);
 
-						await rememberMe.check();
+						await rememberMe.click();
 
-						await expect(rememberMe)
+						await expect(rememberMe.locator("input"))
 							.toBeChecked();
+					});
+
+				test("should set persistent cookie when remember me is checked",
+					async ({ page, authPage, context }) =>
+					{
+						const testUser =
+							getTestUserByRole("User");
+
+						await authPage.checkRememberMe();
+						await authPage.login(
+							testUser.email,
+							testUser.password);
+
+						await page.waitForURL(
+							ROUTES.home,
+							{ timeout: TIMEOUTS.navigation });
+
+						const cookies =
+							await context.cookies();
+						const refreshCookie =
+							cookies.find(
+								(cookie) => cookie.name === COOKIE_NAMES.refreshToken);
+
+						expect(refreshCookie)
+							.toBeDefined();
+
+						// RememberMe cookie should expire in ~14 days (> 1 day)
+						const expiresInSeconds: number =
+							refreshCookie!.expires - Date.now() / 1000;
+						const expiresInDays: number =
+							expiresInSeconds / 86400;
+
+						expect(expiresInDays)
+							.toBeGreaterThan(1);
+					});
+
+				test("should set short-lived cookie when remember me is unchecked",
+					async ({ page, authPage, context }) =>
+					{
+						const testUser =
+							getTestUserByRole("User");
+
+						// Leave rememberMe unchecked (default)
+						await authPage.login(
+							testUser.email,
+							testUser.password);
+
+						await page.waitForURL(
+							ROUTES.home,
+							{ timeout: TIMEOUTS.navigation });
+
+						const cookies =
+							await context.cookies();
+						const refreshCookie =
+							cookies.find(
+								(cookie) => cookie.name === COOKIE_NAMES.refreshToken);
+
+						expect(refreshCookie)
+							.toBeDefined();
+
+						// Standard cookie should expire in ~1 day (≤ 2 days as safety margin)
+						const expiresInSeconds: number =
+							refreshCookie!.expires - Date.now() / 1000;
+						const expiresInDays: number =
+							expiresInSeconds / 86400;
+
+						expect(expiresInDays)
+							.toBeLessThanOrEqual(2);
 					});
 			});
 
@@ -209,6 +302,7 @@ test.describe("Login Page",
 							getTestUserByRole("User");
 
 						await authPage.fillLoginForm(testUser.email, testUser.password);
+						await solveAltchaChallenge(page);
 
 						// Verify button has proper aria attribute when loading
 						await authPage.submitButton.click();
@@ -367,6 +461,76 @@ test.describe("Login Page",
 
 						await expect(page)
 							.toHaveURL(/\/account/);
+					});
+			});
+
+		test.describe("Security: Account Lockout",
+			() =>
+			{
+				/**
+				 * P0: Tests that the server locks out an account after too many
+				 * failed login attempts. Uses a dedicated `e2e_lockout` user so
+				 * rate-limit and lockout side-effects never cascade to other tests.
+				 */
+				test("should lockout account after repeated failed attempts",
+					async ({ page, authPage }) =>
+					{
+						// 6 failed login attempts + 1 final attempt, each requiring ALTCHA
+						// proof-of-work (~3–5 s in Docker). 30 s default is insufficient.
+						test.setTimeout(90_000);
+
+						const failedAttempts = 6;
+						const wrongPassword = "Wrong_Password_Lockout_123!";
+
+						for (let attempt = 1; attempt <= failedAttempts; attempt++)
+						{
+							await page.goto(ROUTES.auth.login);
+
+							// Wait for form to be interactive before filling
+							await expect(authPage.usernameInput)
+								.toBeVisible({ timeout: TIMEOUTS.element });
+
+							await authPage.login(
+								LOCKOUT_USER.username,
+								wrongPassword);
+
+							// Each attempt should show an error and stay on login
+							const snackbar: Locator =
+								page.locator(SELECTORS.notification.snackbar);
+							const errorMessage: Locator =
+								page.locator(SELECTORS.form.errorMessage);
+
+							await expect(snackbar.or(errorMessage))
+								.toBeVisible({ timeout: TIMEOUTS.api });
+
+							await expect(page)
+								.toHaveURL(ROUTES.auth.login);
+
+							// Best-effort: wait for snackbar to dismiss before next iteration
+							// so ALTCHA widget is not obscured. Timing varies in Docker.
+							await snackbar
+								.waitFor({ state: "hidden", timeout: TIMEOUTS.api })
+								.catch(() => { /* snackbar may already be detached */ });
+						}
+
+						// After lockout threshold, even the correct password should fail
+						await page.goto(ROUTES.auth.login);
+
+						await authPage.login(
+							LOCKOUT_USER.username,
+							LOCKOUT_USER.password);
+
+						const snackbar: Locator =
+							page.locator(SELECTORS.notification.snackbar);
+						const errorMessage: Locator =
+							page.locator(SELECTORS.form.errorMessage);
+
+						await expect(snackbar.or(errorMessage))
+							.toBeVisible({ timeout: TIMEOUTS.api });
+
+						// Should remain on login page (login blocked)
+						await expect(page)
+							.toHaveURL(ROUTES.auth.login);
 					});
 			});
 	});

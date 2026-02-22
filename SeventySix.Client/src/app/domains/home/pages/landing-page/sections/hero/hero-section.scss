@@ -1,0 +1,217 @@
+@use "variables" as vars;
+@use "mixins";
+
+// ============================================================================
+// HERO SECTION
+// ============================================================================
+
+.hero {
+	position: relative;
+	min-height: vars.$hero-min-height;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	overflow: hidden;
+
+	@include mixins.landing-grain-overlay();
+	@include mixins.landing-scanline-overlay();
+
+	@media (max-width: vars.$breakpoint-sm-min) {
+		min-height: vars.$hero-min-height-mobile;
+	}
+}
+
+// Parallax background layer — scrolls ~33% speed
+.hero-bg-layer {
+	position: absolute;
+	inset: -20% -10%;
+	@include mixins.parallax-layer(vars.$parallax-depth-bg);
+	background-image: var(--landing-section-bg);
+	background-size: cover;
+	background-position: center;
+	z-index: 0;
+
+	:host-context(html.light-theme) & {
+		inset: 0%;
+		transform: scale(1);
+		background-size: cover;
+	}
+
+	// Gradient-mesh fallback behind image
+	&::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+		@include mixins.gradient-mesh-background();
+		z-index: -1;
+	}
+}
+
+// Texture overlay layer — scrolls ~50% speed
+.hero-texture-layer {
+	position: absolute;
+	inset: -10% -5%;
+	@include mixins.parallax-layer(vars.$parallax-depth-texture);
+	background-image: var(--landing-texture-overlay);
+	background-repeat: repeat;
+	background-size: 200px 200px;
+	opacity: 0.4;
+	z-index: 1;
+}
+
+// Floating shapes layer — scrolls ~80% speed
+.hero-shapes-layer {
+	position: absolute;
+	inset: 0;
+	@include mixins.parallax-layer(vars.$parallax-depth-shapes);
+	z-index: 2;
+	pointer-events: none;
+}
+
+.hero-shape {
+	position: absolute;
+	width: 3rem;
+	height: 3rem;
+	background: var(--landing-floating-shape-color);
+	border-radius: vars.$border-radius-lg;
+	opacity: 0.15;
+
+	@media (prefers-reduced-motion: reduce) {
+		animation: none !important;
+	}
+}
+
+.hero-shape--1 {
+	top: 15%;
+	left: 10%;
+	animation: float vars.$animation-duration-float ease-in-out infinite;
+}
+
+.hero-shape--2 {
+	top: 60%;
+	right: 15%;
+	width: 2rem;
+	height: 2rem;
+	animation: float-reverse vars.$animation-duration-float ease-in-out infinite;
+	animation-delay: -2s;
+}
+
+.hero-shape--3 {
+	bottom: 20%;
+	left: 60%;
+	width: 4rem;
+	height: 4rem;
+	border-radius: 50%;
+	animation: float vars.$animation-duration-float ease-in-out infinite;
+	animation-delay: -4s;
+}
+
+// Content layer — normal scroll speed
+.hero-content {
+	position: relative;
+	z-index: 10;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	text-align: center;
+	padding: vars.$spacing-3xl vars.$spacing-xl;
+	max-width: 60rem;
+}
+
+.hero-title {
+	@include mixins.text-frosted-glass(vars.$spacing-sm, vars.$spacing-lg);
+
+	font-family: vars.$font-family-monospace;
+	font-size: vars.$font-size-7xl;
+	font-weight: vars.$font-weight-bold;
+	color: var(--mat-sys-primary);
+	text-shadow: var(--landing-text-glow);
+	line-height: 1;
+	margin-bottom: vars.$spacing-lg;
+
+	@media (max-width: vars.$breakpoint-sm-min) {
+		font-size: vars.$font-size-4xl;
+	}
+}
+
+.hero-tagline {
+	@include mixins.text-frosted-glass();
+
+	font-size: vars.$font-size-2xl;
+	letter-spacing: 0.15em;
+	text-transform: uppercase;
+	color: var(--mat-sys-on-surface-variant);
+	margin-bottom: vars.$spacing-md;
+
+	@media (max-width: vars.$breakpoint-sm-min) {
+		font-size: vars.$font-size-lg;
+	}
+}
+
+.hero-subtitle {
+	@include mixins.text-frosted-glass();
+
+	font-size: vars.$font-size-lg;
+	max-width: 40rem;
+	color: var(--mat-sys-on-surface-variant);
+	margin-bottom: vars.$spacing-2xl;
+
+	@media (max-width: vars.$breakpoint-sm-min) {
+		font-size: vars.$font-size-base;
+	}
+}
+
+.hero-actions {
+	display: flex;
+	gap: vars.$spacing-lg;
+	flex-wrap: wrap;
+	justify-content: center;
+}
+
+.hero-cta {
+	gap: vars.$spacing-sm;
+}
+
+.hero-cta--primary {
+	font-weight: 700;
+}
+
+// ============================================================================
+// FLOATING SHAPE KEYFRAMES
+// ============================================================================
+
+@keyframes float {
+	0%, 100% {
+		transform: translate(0, 0) rotate(0deg);
+	}
+
+	25% {
+		transform: translate(1rem, -1.5rem) rotate(5deg);
+	}
+
+	50% {
+		transform: translate(-0.5rem, 1rem) rotate(-3deg);
+	}
+
+	75% {
+		transform: translate(1.5rem, 0.5rem) rotate(2deg);
+	}
+}
+
+@keyframes float-reverse {
+	0%, 100% {
+		transform: translate(0, 0) rotate(0deg);
+	}
+
+	25% {
+		transform: translate(-1rem, 1rem) rotate(-4deg);
+	}
+
+	50% {
+		transform: translate(0.5rem, -1.5rem) rotate(3deg);
+	}
+
+	75% {
+		transform: translate(-1.5rem, -0.5rem) rotate(-2deg);
+	}
+}

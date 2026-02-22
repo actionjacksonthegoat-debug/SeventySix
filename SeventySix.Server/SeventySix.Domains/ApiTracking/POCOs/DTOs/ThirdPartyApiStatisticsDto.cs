@@ -16,7 +16,7 @@ namespace SeventySix.ApiTracking;
 /// Cached in distributed cache for dashboard queries.
 /// </remarks>
 [MemoryPackable]
-public partial class ThirdPartyApiStatisticsDto : ICacheable
+public partial record ThirdPartyApiStatisticsDto : ICacheable
 {
 	/// <summary>
 	/// Gets or sets the total number of API calls made today across all APIs.
@@ -38,5 +38,5 @@ public partial class ThirdPartyApiStatisticsDto : ICacheable
 	/// Gets or sets the last time each API was called.
 	/// Key: API name, Value: Last called timestamp (null if never called).
 	/// </summary>
-	public Dictionary<string, DateTime?> LastCalledByApi { get; set; } = [];
+	public Dictionary<string, DateTimeOffset?> LastCalledByApi { get; set; } = [];
 }

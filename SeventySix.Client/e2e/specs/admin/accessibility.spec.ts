@@ -4,7 +4,9 @@ import {
 	expect,
 	ROUTES,
 	ROUTE_GROUPS,
-	SELECTORS
+	SELECTORS,
+	TIMEOUTS,
+	expectAccessible
 } from "../../fixtures";
 import AxeBuilder from "@axe-core/playwright";
 import type { Result } from "axe-core";
@@ -38,7 +40,6 @@ test.describe("Admin Routes - WCAG Accessibility",
 				async ({ adminPage }: { adminPage: Page }) =>
 				{
 					await adminPage.goto(pageInfo.path);
-					await adminPage.waitForLoadState("load");
 
 					// Wait for page content to fully render before accessibility scan.
 					// Required for zoneless Angular where bindings (e.g., aria-label)
@@ -46,42 +47,7 @@ test.describe("Admin Routes - WCAG Accessibility",
 					await expect(adminPage.locator(pageInfo.waitFor))
 						.toBeVisible();
 
-					const axeResults =
-						await new AxeBuilder(
-							{ page: adminPage })
-							.withTags(["wcag2a", "wcag2aa", "wcag21aa"])
-							.analyze();
-
-					const criticalViolations: Result[] =
-						axeResults.violations.filter(
-							(violation: Result) =>
-								violation.impact === "critical"
-								|| violation.impact === "serious");
-
-					// eslint-disable-next-line playwright/no-conditional-in-test
-					if (criticalViolations.length > 0)
-					{
-						console.log(
-							`Accessibility violations on Admin ${pageInfo.name}:`,
-							JSON.stringify(
-								criticalViolations.map(
-									(violation: Result) =>
-									(
-										{
-											id: violation.id,
-											impact: violation.impact,
-											description: violation.description,
-											nodes: violation.nodes.map(
-												(node) => node.html).slice(0, 3)
-										})),
-								null,
-								2));
-					}
-
-					expect(
-						criticalViolations,
-						`Found ${criticalViolations.length} critical/serious violations on Admin ${pageInfo.name}`)
-						.toHaveLength(0);
+					await expectAccessible(adminPage, `Admin ${pageInfo.name}`);
 				});
 		}
 
@@ -92,18 +58,17 @@ test.describe("Admin Routes - WCAG Accessibility",
 					async ({ adminPage }: { adminPage: Page }) =>
 					{
 						await adminPage.goto(ROUTES.admin.users);
-						await adminPage.waitForLoadState("load");
 
 						// Verify table has proper ARIA attributes
 						const table =
-							adminPage.locator("table[mat-table]");
+							adminPage.locator(SELECTORS.dataTable.matTable);
 
 						await expect(table)
 							.toBeVisible();
 
 						// Check column headers are accessible
 						const headerCells =
-							adminPage.locator("th[mat-header-cell]");
+							adminPage.locator(SELECTORS.dataTable.headerCell);
 
 						await expect(headerCells.first())
 							.toBeVisible();
@@ -113,10 +78,9 @@ test.describe("Admin Routes - WCAG Accessibility",
 					async ({ adminPage }: { adminPage: Page }) =>
 					{
 						await adminPage.goto(ROUTES.admin.logs);
-						await adminPage.waitForLoadState("load");
 
 						const table =
-							adminPage.locator("table[mat-table]");
+							adminPage.locator(SELECTORS.dataTable.matTable);
 
 						await expect(table)
 							.toBeVisible();
@@ -130,11 +94,10 @@ test.describe("Admin Routes - WCAG Accessibility",
 					async ({ adminPage }: { adminPage: Page }) =>
 					{
 						await adminPage.goto(ROUTES.admin.users);
-						await adminPage.waitForLoadState("load");
 
 						// All icon buttons should have aria-label
 						const iconButtons =
-							adminPage.locator("button[mat-icon-button]");
+							adminPage.locator(SELECTORS.dataTable.iconButton);
 						const iconButtonCount =
 							await iconButtons.count();
 
@@ -158,14 +121,13 @@ test.describe("Admin Routes - WCAG Accessibility",
 					async ({ adminPage }: { adminPage: Page }) =>
 					{
 						await adminPage.goto(ROUTES.admin.dashboard);
-						await adminPage.waitForLoadState("load");
 
 						// Wait for banner landmark to be attached to DOM
 						const banner =
 							adminPage.locator(SELECTORS.accessibility.banner);
 
 						await banner.first()
-							.waitFor({ state: "attached", timeout: 10000 });
+							.waitFor({ state: "attached", timeout: TIMEOUTS.api });
 
 						const bannerCount =
 							await banner.count();

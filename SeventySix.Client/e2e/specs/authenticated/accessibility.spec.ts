@@ -3,7 +3,8 @@ import {
 	test,
 	expect,
 	ROUTES,
-	SELECTORS
+	SELECTORS,
+	expectAccessible
 } from "../../fixtures";
 import AxeBuilder from "@axe-core/playwright";
 import type { Result } from "axe-core";
@@ -23,6 +24,8 @@ import type { Result } from "axe-core";
 test.describe("Authenticated Routes - WCAG Accessibility",
 	() =>
 	{
+		test.describe.configure({ timeout: 60_000 });
+
 		const authenticatedPages =
 			[
 				{ path: ROUTES.account.root, name: "Profile" },
@@ -31,48 +34,13 @@ test.describe("Authenticated Routes - WCAG Accessibility",
 
 		for (const pageInfo of authenticatedPages)
 		{
+			// eslint-disable-next-line playwright/expect-expect -- assertions inside expectAccessible
 			test(`should have no critical accessibility violations on ${pageInfo.name} page`,
 				async ({ userPage }: { userPage: Page }) =>
 				{
 					await userPage.goto(pageInfo.path);
-					await userPage.waitForLoadState("load");
 
-					const axeResults =
-						await new AxeBuilder(
-							{ page: userPage })
-							.withTags(["wcag2a", "wcag2aa", "wcag21aa"])
-							.analyze();
-
-					const criticalViolations: Result[] =
-						axeResults.violations.filter(
-							(violation: Result) =>
-								violation.impact === "critical"
-								|| violation.impact === "serious");
-
-					// eslint-disable-next-line playwright/no-conditional-in-test
-					if (criticalViolations.length > 0)
-					{
-						console.log(
-							`Accessibility violations on ${pageInfo.name}:`,
-							JSON.stringify(
-								criticalViolations.map(
-									(violation: Result) =>
-									(
-										{
-											id: violation.id,
-											impact: violation.impact,
-											description: violation.description,
-											nodes: violation.nodes.map(
-												(node) => node.html).slice(0, 3)
-										})),
-								null,
-								2));
-					}
-
-					expect(
-						criticalViolations,
-						`Found ${criticalViolations.length} critical/serious violations on ${pageInfo.name}`)
-						.toHaveLength(0);
+					await expectAccessible(userPage, pageInfo.name);
 				});
 		}
 
@@ -83,7 +51,6 @@ test.describe("Authenticated Routes - WCAG Accessibility",
 					async ({ userPage }: { userPage: Page }) =>
 					{
 						await userPage.goto(ROUTES.account.root);
-						await userPage.waitForLoadState("load");
 
 						// Form inputs should have labels
 						const axeResults =
@@ -112,11 +79,10 @@ test.describe("Authenticated Routes - WCAG Accessibility",
 					async ({ userPage }: { userPage: Page }) =>
 					{
 						await userPage.goto(ROUTES.home);
-						await userPage.waitForLoadState("load");
 
 						// User menu button should have aria-label
 						const userMenuButton =
-							userPage.locator("[data-testid='user-menu-button']");
+							userPage.locator(SELECTORS.layout.userMenuButton);
 
 						await expect(userMenuButton)
 							.toBeVisible();
@@ -133,7 +99,7 @@ test.describe("Authenticated Routes - WCAG Accessibility",
 					async ({ userPage }: { userPage: Page }) =>
 					{
 						await userPage.goto(ROUTES.home);
-						await userPage.waitForLoadState("load");
+
 
 						const banner =
 							userPage.locator(SELECTORS.accessibility.banner);
@@ -152,7 +118,7 @@ test.describe("Authenticated Routes - WCAG Accessibility",
 					async ({ userPage }: { userPage: Page }) =>
 					{
 						await userPage.goto(ROUTES.home);
-						await userPage.waitForLoadState("load");
+
 
 						const skipLink =
 							userPage.locator(SELECTORS.accessibility.skipLink);

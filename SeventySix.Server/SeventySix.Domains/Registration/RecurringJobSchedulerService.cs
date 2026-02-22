@@ -49,7 +49,7 @@ namespace SeventySix.Registration;
 public sealed class RecurringJobSchedulerService(
 	IServiceScopeFactory serviceScopeFactory,
 	IConfiguration configuration,
-	ILogger<RecurringJobSchedulerService> logger) : IHostedService
+	ILogger<RecurringJobSchedulerService> logger) : BackgroundService
 {
 	/// <summary>
 	/// Delay before attempting job scheduling to allow database to stabilize.
@@ -65,13 +65,13 @@ public sealed class RecurringJobSchedulerService(
 	/// <summary>
 	/// Schedules all recurring jobs on startup with resilient retry logic.
 	/// </summary>
-	/// <param name="cancellationToken">
-	/// The cancellation token.
+	/// <param name="stoppingToken">
+	/// The cancellation token used to signal application shutdown.
 	/// </param>
 	/// <returns>
 	/// A task representing the asynchronous operation.
 	/// </returns>
-	public async Task StartAsync(CancellationToken cancellationToken)
+	protected override async Task ExecuteAsync(CancellationToken stoppingToken)
 	{
 		bool isBackgroundJobsEnabled =
 			configuration.GetValue<bool>(ConfigurationSectionConstants.BackgroundJobs.Enabled);
@@ -91,7 +91,7 @@ public sealed class RecurringJobSchedulerService(
 		{
 			await Task.Delay(
 				TimeSpan.FromSeconds(StartupDelaySeconds),
-				cancellationToken);
+				stoppingToken);
 		}
 		catch (OperationCanceledException)
 		{
@@ -105,13 +105,13 @@ public sealed class RecurringJobSchedulerService(
 		{
 			try
 			{
-				await ScheduleAllJobsAsync(cancellationToken);
+				await ScheduleAllJobsAsync(stoppingToken);
 
 				logger.LogInformation(
 					"Recurring job scheduler completed startup scheduling");
 				return; // SUCCESS - exit method
 			}
-			catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+			catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
 			{
 				// Graceful shutdown requested - exit cleanly
 				logger.LogInformation("Job scheduler startup cancelled");
@@ -131,7 +131,7 @@ public sealed class RecurringJobSchedulerService(
 
 				await Task.Delay(
 					TimeSpan.FromSeconds(retryDelaySeconds),
-					cancellationToken);
+					stoppingToken);
 			}
 		}
 
@@ -143,10 +143,6 @@ public sealed class RecurringJobSchedulerService(
 			MaxRetryAttempts);
 		// Method exits here - no infinite loop
 	}
-
-	/// <inheritdoc />
-	public Task StopAsync(CancellationToken cancellationToken) =>
-		Task.CompletedTask;
 
 	/// <summary>
 	/// Schedules all domain recurring jobs.
@@ -209,8 +205,8 @@ public sealed class RecurringJobSchedulerService(
 		CancellationToken cancellationToken)
 	{
 		EmailSettings emailSettings =
-			configuration.GetSection(ConfigurationSectionConstants.Email).Get<EmailSettings>()
-			?? throw new RequiredConfigurationException(ConfigurationSectionConstants.Email);
+			configuration.GetSection(EmailSettings.SectionName).Get<EmailSettings>()
+			?? throw new RequiredConfigurationException(EmailSettings.SectionName);
 
 		EmailQueueSettings queueSettings =
 			configuration

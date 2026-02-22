@@ -16,7 +16,7 @@ namespace SeventySix.Identity;
 /// - Index on TokenHash for fast token lookups
 /// - Composite index on UserId + IsRevoked for user token queries
 /// </remarks>
-public class RefreshTokenConfiguration : IEntityTypeConfiguration<RefreshToken>
+public sealed class RefreshTokenConfiguration : IEntityTypeConfiguration<RefreshToken>
 {
 	/// <summary>
 	/// Configures the entity mapping for RefreshToken.

@@ -3,13 +3,12 @@ using Microsoft.Extensions.DependencyInjection;
 using SeventySix.Shared.Interfaces;
 using SeventySix.Shared.Registration;
 using Shouldly;
-using Xunit;
 
 namespace SeventySix.Shared.Tests.Persistence;
 
-public class DummyContext : DbContext;
+public sealed class DummyContext : DbContext;
 
-public class TransactionManagerForContextTests
+public sealed class TransactionManagerForContextTests
 {
 	[Fact]
 	public void AddTransactionManagerFor_RegistersITransactionManager()

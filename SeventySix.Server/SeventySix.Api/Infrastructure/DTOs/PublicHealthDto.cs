@@ -18,8 +18,8 @@ namespace SeventySix.Api.Infrastructure;
 /// </param>
 /// <param name="CheckedAt">
 /// The timestamp when the health check was performed.
-/// Nullable to support OpenAPI schema generation (DateTime.MinValue cannot be serialized).
+/// Nullable to support OpenAPI schema generation (DateTimeOffset.MinValue cannot be serialized).
 /// </param>
 public record PublicHealthDto(
 	string Status = HealthStatusConstants.Healthy,
-	DateTime? CheckedAt = null);
+	DateTimeOffset? CheckedAt = null);

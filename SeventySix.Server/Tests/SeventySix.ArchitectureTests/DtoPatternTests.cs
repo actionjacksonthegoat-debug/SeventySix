@@ -15,7 +15,7 @@ namespace SeventySix.ArchitectureTests;
 /// - DTOs must be records
 /// - DTOs must use positional parameters (primary constructors).
 /// </summary>
-public class DtoPatternTests : SourceCodeArchitectureTest
+public sealed class DtoPatternTests : SourceCodeArchitectureTest
 {
 	[Fact]
 	public void Dtos_ShouldBeRecords()

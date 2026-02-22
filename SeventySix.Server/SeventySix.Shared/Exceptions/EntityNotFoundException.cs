@@ -15,7 +15,7 @@ namespace SeventySix.Shared.Exceptions;
 /// HTTP Mapping:
 /// - Maps to 404 Not Found in GlobalExceptionHandler
 /// </remarks>
-public class EntityNotFoundException : DomainException
+public abstract class EntityNotFoundException : DomainException
 {
 	/// <summary>
 	/// Initializes a new instance of the <see cref="EntityNotFoundException"/> class with a default message.

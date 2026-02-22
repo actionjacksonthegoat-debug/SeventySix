@@ -1,14 +1,18 @@
+import { CACHE_TIMING } from "@shared/constants/timing.constants";
+import { ENVIRONMENT_DEFAULTS } from "./environment.defaults";
 import { Environment } from "./environment.interface";
 
 /**
  * E2E Test Environment Configuration
- * Uses Docker container API on HTTPS port 7174
+ * API calls are proxied through nginx (same-origin) to the Docker API container.
+ * This eliminates cross-origin requests and Docker Desktop port-mapping latency.
  */
 export const environment: Environment =
 	{
+		...ENVIRONMENT_DEFAULTS,
 		production: false,
 		version: "1.0.0-e2e",
-		apiUrl: "https://localhost:7174/api/v1", // Docker E2E API container (HTTPS, isolated from dev)
+		apiUrl: "/api/v1", // Proxied through nginx to api-e2e container (same-origin)
 		logging: {
 			enableRemoteLogging: false,
 			consoleLogLevel: "debug",
@@ -34,71 +38,51 @@ export const environment: Environment =
 		cache: {
 			query: {
 				default: {
-					staleTime: 300000,
-					gcTime: 600000,
+					staleTime: CACHE_TIMING.STALE_5MIN,
+					gcTime: CACHE_TIMING.GC_10MIN,
 					retry: 3,
 					refetchOnWindowFocus: false,
 					refetchOnReconnect: false
 				},
 				users: {
-					staleTime: 300000,
-					gcTime: 600000,
+					staleTime: CACHE_TIMING.STALE_5MIN,
+					gcTime: CACHE_TIMING.GC_10MIN,
 					retry: 3
 				},
 				logs: {
-					staleTime: 60000,
-					gcTime: 300000,
+					staleTime: CACHE_TIMING.STALE_1MIN,
+					gcTime: CACHE_TIMING.GC_5MIN,
 					retry: 3
 				},
 				health: {
-					staleTime: 30000,
-					gcTime: 60000,
+					staleTime: CACHE_TIMING.STALE_30S,
+					gcTime: CACHE_TIMING.GC_1MIN,
 					retry: 1
 				},
 				thirdpartyrequests: {
-					staleTime: 300000,
-					gcTime: 600000,
+					staleTime: CACHE_TIMING.STALE_5MIN,
+					gcTime: CACHE_TIMING.GC_10MIN,
 					retry: 3
 				},
 				account: {
-					staleTime: 300000,
-					gcTime: 600000,
+					staleTime: CACHE_TIMING.STALE_5MIN,
+					gcTime: CACHE_TIMING.GC_10MIN,
 					retry: 3
 				},
 				permissionrequests: {
-					staleTime: 300000,
-					gcTime: 600000,
+					staleTime: CACHE_TIMING.STALE_5MIN,
+					gcTime: CACHE_TIMING.GC_10MIN,
 					retry: 3
 				}
 			}
 		},
-		dashboard: {
-			health: {
-				autoRefreshEnabled: false,
-				refreshIntervalSeconds: 60
-			}
-		},
+		// Override: disable performance monitoring in E2E to avoid interfering with test assertions
 		ui: {
-			tables: {
-				defaultPageSize: 50,
-				pageSizeOptions: [25, 50, 100],
-				virtualScrollItemSize: 48
-			},
+			...ENVIRONMENT_DEFAULTS.ui,
 			performance: {
 				enableMonitoring: false,
 				fpsWarningThreshold: 30
 			}
-		},
-		http: {
-			defaultTimeout: 30000,
-			uploadTimeout: 120000
-		},
-		dateTime: {
-			defaultDisplayFormat: "yyyy-MM-dd HH:mm:ss",
-			inputFormat: "yyyy-MM-dd",
-			timeFormat: "HH:mm:ss",
-			relativeTimeThreshold: 86400000,
-			timezoneMode: "local"
 		},
 		testing: {
 			runIntegrationTests: false
@@ -111,10 +95,6 @@ export const environment: Environment =
 			sampleRate: 0
 		},
 		auth: {
-			loginUrl: "/auth/login",
-			tokenRefreshBufferSeconds: 60
-		},
-		altcha: {
-			enabled: false
+			loginUrl: "/auth/login"
 		}
 	};

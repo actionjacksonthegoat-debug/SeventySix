@@ -24,8 +24,10 @@
 				<mat-checkbox
 					[checked]="selectedRoles().has(role.name)"
 					(change)="toggleRole(role.name)">
-					<strong>{{ role.name }}</strong>
-					<span class="role-description">{{ role.description }}</span>
+					<span class="role-label">
+						<strong class="role-name">{{ role.name }}</strong>
+						<span class="role-description">{{ role.description }}</span>
+					</span>
 				</mat-checkbox>
 				} @empty {
 				<p class="no-roles">No additional roles available</p>
@@ -45,7 +47,7 @@
 
 				<div class="form-actions">
 					<button
-						mat-raised-button
+						mat-stroked-button
 						color="primary"
 						type="submit"
 						[disabled]="

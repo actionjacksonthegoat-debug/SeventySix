@@ -301,5 +301,29 @@ describe("NotificationToastComponent",
 							fixture.nativeElement.querySelectorAll(".toast").length)
 							.toBe(0);
 					});
+
+				it("should render dismiss button for multiline notification with details",
+					() =>
+					{
+						notificationService.errorWithDetails(
+							"A very long error message that would span across multiple lines in the toast notification",
+							[
+								"Validation failed for field 'email'",
+								"Validation failed for field 'username'"
+							]);
+						fixture.detectChanges();
+
+						const dismissButton: HTMLElement | null =
+							fixture.nativeElement.querySelector("[aria-label='Dismiss']");
+						expect(dismissButton)
+							.toBeTruthy();
+
+						dismissButton!.click();
+						fixture.detectChanges();
+
+						expect(
+							fixture.nativeElement.querySelectorAll(".toast").length)
+							.toBe(0);
+					});
 			});
 	});

@@ -7,7 +7,7 @@ namespace SeventySix.TestUtilities.TestHelpers;
 /// <summary>
 /// Test helper for mocking HttpMessageHandler without Moq.Protected().
 /// </summary>
-public class MockHttpMessageHandler(
+public sealed class MockHttpMessageHandler(
 	Func<
 		HttpRequestMessage,
 		CancellationToken,

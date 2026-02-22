@@ -153,11 +153,10 @@ describe("ErrorHandlerService",
 
 						callHandleErrorIgnoringRethrow(httpError);
 
-						expect(mockNotification.errorWithDetails)
-							.toHaveBeenCalledWith(
-								expect.stringContaining("not found"),
-								expect.anything(),
-								expect.any(String));
+						const lastCall: unknown[] | undefined =
+							mockNotification.errorWithDetails.mock.lastCall;
+						expect(lastCall?.[0])
+							.toContain("not found");
 					});
 
 				/** Verifies handling of HTTP 401 Unauthorized responses. */
@@ -173,11 +172,10 @@ describe("ErrorHandlerService",
 
 						callHandleErrorIgnoringRethrow(httpError);
 
-						expect(mockNotification.errorWithDetails)
-							.toHaveBeenCalledWith(
-								expect.stringContaining("session"),
-								expect.anything(),
-								expect.any(String));
+						const lastCall: unknown[] | undefined =
+							mockNotification.errorWithDetails.mock.lastCall;
+						expect(lastCall?.[0])
+							.toContain("session");
 					});
 
 				/** Verifies handling of HTTP 500 Server Error responses. */
@@ -193,11 +191,10 @@ describe("ErrorHandlerService",
 
 						callHandleErrorIgnoringRethrow(httpError);
 
-						expect(mockNotification.errorWithDetails)
-							.toHaveBeenCalledWith(
-								expect.stringContaining("Server error"),
-								expect.anything(),
-								expect.any(String));
+						const lastCall: unknown[] | undefined =
+							mockNotification.errorWithDetails.mock.lastCall;
+						expect(lastCall?.[0])
+							.toContain("Server error");
 					});
 
 				it("should handle ValidationError",
@@ -428,7 +425,36 @@ describe("ErrorHandlerService",
 								expect.any(String));
 					});
 
-				it("should include status and URL in details for HTTP errors",
+				it("should not show URL in user-visible details",
+					() =>
+					{
+						const httpError: HttpErrorResponse =
+							new HttpErrorResponse(
+								{
+									status: 500,
+									statusText: "Internal Server Error",
+									url: "https://api.example.com/users/123"
+								});
+
+						callHandleErrorIgnoringRethrow(httpError);
+
+						const lastCall: unknown[] | undefined =
+							mockNotification.errorWithDetails.mock.lastCall;
+						const userDetails: string[] | undefined =
+							lastCall?.[1] as string[] | undefined;
+
+						if (userDetails)
+						{
+							for (const detail of userDetails)
+							{
+								expect(detail)
+									.not
+									.toMatch(/^URL:/);
+							}
+						}
+					});
+
+				it("should not show status line in user-visible details",
 					() =>
 					{
 						const httpError: HttpErrorResponse =
@@ -441,15 +467,134 @@ describe("ErrorHandlerService",
 
 						callHandleErrorIgnoringRethrow(httpError);
 
+						const lastCall: unknown[] | undefined =
+							mockNotification.errorWithDetails.mock.lastCall;
+						const userDetails: string[] | undefined =
+							lastCall?.[1] as string[] | undefined;
+
+						if (userDetails)
+						{
+							for (const detail of userDetails)
+							{
+								expect(detail)
+									.not
+									.toMatch(/^Status:/);
+							}
+						}
+					});
+
+				it("should show server title in details for 4xx errors when different from message",
+					() =>
+					{
+						const httpError: HttpErrorResponse =
+							new HttpErrorResponse(
+								{
+									status: 401,
+									statusText: "Unauthorized",
+									error: {
+										title: "Token Expired"
+									}
+								});
+
+						callHandleErrorIgnoringRethrow(httpError);
+
 						expect(mockNotification.errorWithDetails)
 							.toHaveBeenCalledWith(
 								expect.any(String),
 								expect.arrayContaining(
-									[
-										expect.stringContaining("Status:"),
-										expect.stringContaining("URL:")
-									]),
+									[expect.stringContaining("Token Expired")]),
 								expect.any(String));
+					});
+
+				it("should not show server title in details for 5xx errors",
+					() =>
+					{
+						const httpError: HttpErrorResponse =
+							new HttpErrorResponse(
+								{
+									status: 500,
+									statusText: "Internal Server Error",
+									error: {
+										title: "Internal Server Error"
+									}
+								});
+
+						callHandleErrorIgnoringRethrow(httpError);
+
+						const lastCall: unknown[] | undefined =
+							mockNotification.errorWithDetails.mock.lastCall;
+						const userDetails: string[] | undefined =
+							lastCall?.[1] as string[] | undefined;
+
+						if (userDetails)
+						{
+							for (const detail of userDetails)
+							{
+								expect(detail)
+									.not
+									.toContain("Internal Server Error");
+							}
+						}
+					});
+
+				it("should show generic message for 500 errors without leaking server detail",
+					() =>
+					{
+						const httpError: HttpErrorResponse =
+							new HttpErrorResponse(
+								{
+									status: 500,
+									statusText: "Internal Server Error",
+									error: {
+										detail: "NullReferenceException at UserService.GetUser()"
+									}
+								});
+
+						callHandleErrorIgnoringRethrow(httpError);
+
+						const lastCall: unknown[] | undefined =
+							mockNotification.errorWithDetails.mock.lastCall;
+						const userMessage: string =
+							lastCall?.[0] as string;
+						const userDetails: string[] | undefined =
+							lastCall?.[1] as string[] | undefined;
+
+						expect(userMessage)
+							.toBe("Server error. Please try again later.");
+
+						if (userDetails)
+						{
+							for (const detail of userDetails)
+							{
+								expect(detail)
+									.not
+									.toContain("NullReferenceException");
+							}
+						}
+					});
+
+				it("should include full diagnostics in copy data for HTTP errors",
+					() =>
+					{
+						const httpError: HttpErrorResponse =
+							new HttpErrorResponse(
+								{
+									status: 500,
+									statusText: "Internal Server Error",
+									url: "https://api.example.com/data"
+								});
+
+						callHandleErrorIgnoringRethrow(httpError);
+
+						const lastCall: unknown[] | undefined =
+							mockNotification.errorWithDetails.mock.lastCall;
+						const copyData: string =
+							lastCall?.[2] as string;
+
+						expect(copyData)
+							.toContain("url");
+						expect(copyData)
+							.toContain("status");
 					});
 			});
 

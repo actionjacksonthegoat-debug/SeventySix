@@ -11,12 +11,14 @@ import {
 	HttpRequest
 } from "@angular/common/http";
 import { inject } from "@angular/core";
+import { environment } from "@environments/environment";
 import {
 	AUTH_PUBLIC_PATHS,
 	HTTP_BEARER_PREFIX,
 	HTTP_HEADER_AUTHORIZATION
 } from "@shared/constants";
 import { AuthService } from "@shared/services/auth.service";
+import { isNullOrUndefined } from "@shared/utilities/null-check.utility";
 import { catchError, switchMap, take, throwError } from "rxjs";
 
 export const authInterceptor: HttpInterceptorFn =
@@ -27,9 +29,10 @@ export const authInterceptor: HttpInterceptorFn =
 		const authService: AuthService =
 			inject(AuthService);
 
-		// Skip auth header for public auth endpoints (login, refresh, logout, OAuth)
+		// Skip auth header for external URLs (CDN, third-party APIs)
+		// and public auth endpoints (login, refresh, logout, OAuth)
 		// Note: change-password requires authentication
-		if (isPublicAuthEndpoint(req.url))
+		if (isExternalUrl(req.url) || isPublicAuthEndpoint(req.url))
 		{
 			return next(req);
 		}
@@ -38,7 +41,7 @@ export const authInterceptor: HttpInterceptorFn =
 			authService.getAccessToken();
 
 		// No token - proceed without auth header (guest access)
-		if (!token)
+		if (isNullOrUndefined(token))
 		{
 			return next(req);
 		}
@@ -55,7 +58,7 @@ export const authInterceptor: HttpInterceptorFn =
 						{
 						// If refresh failed (returned null), let the request proceed without token
 						// The server will return 401 which triggers login redirect
-							if (!response)
+							if (isNullOrUndefined(response))
 							{
 								return next(req);
 							}
@@ -76,6 +79,38 @@ export const authInterceptor: HttpInterceptorFn =
 	};
 
 /**
+ * Checks if the URL is an external (third-party) URL.
+ * Relative URLs and same-origin URLs are internal.
+ * Absolute URLs to the configured API origin are also internal.
+ * Absolute URLs to different origins are external.
+ * @param {string} url
+ * The request URL to check.
+ * @returns {boolean}
+ * True if the URL is external.
+ */
+function isExternalUrl(url: string): boolean
+{
+	if (!url.startsWith("http"))
+	{
+		return false;
+	}
+
+	try
+	{
+		const requestOrigin: string =
+			new URL(url).origin;
+		const apiOrigin: string =
+			new URL(environment.apiUrl).origin;
+		return requestOrigin !== window.location.origin
+			&& requestOrigin !== apiOrigin;
+	}
+	catch
+	{
+		return false;
+	}
+}
+
+/**
  * Checks if the URL is a public auth endpoint that shouldn't have auth header.
  * change-password is NOT public - it requires authentication.
  * @param {string} url
@@ -93,7 +128,7 @@ function addAuthHeader(
 	req: HttpRequest<unknown>,
 	token: string | null): HttpRequest<unknown>
 {
-	if (!token)
+	if (isNullOrUndefined(token))
 	{
 		return req;
 	}

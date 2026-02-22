@@ -1,3 +1,7 @@
+// <copyright file="CheckEmailExistsQuery.cs" company="SeventySix">
+// Copyright (c) SeventySix. All rights reserved.
+// </copyright>
+
 namespace SeventySix.Identity;
 
 /// <summary>
@@ -9,4 +13,4 @@ namespace SeventySix.Identity;
 /// <param name="ExcludeUserId">
 /// Optional user ID to exclude from the check (useful for updates).
 /// </param>
-public record CheckEmailExistsQuery(string Email, int? ExcludeUserId);
+public record CheckEmailExistsQuery(string Email, long? ExcludeUserId);

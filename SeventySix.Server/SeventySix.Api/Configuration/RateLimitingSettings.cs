@@ -15,6 +15,11 @@ namespace SeventySix.Api.Configuration;
 public sealed record RateLimitingSettings
 {
 	/// <summary>
+	/// Configuration section name for binding.
+	/// </summary>
+	public const string SectionName = "RateLimiting";
+
+	/// <summary>
 	/// Gets the maximum number of requests allowed per window.
 	/// Must be configured in appsettings.json.
 	/// </summary>

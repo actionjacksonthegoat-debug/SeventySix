@@ -1,13 +1,43 @@
 ---
 description: Code formatting rules for all TypeScript and C# files
-applyTo: "**/*.{ts,cs}"
+applyTo: "**/SeventySix.Client/src/**/*.{ts,cs},**/SeventySix.Server/**/*.{ts,cs}"
 ---
 
 # Formatting Instructions
 
+> **ESLint** is the enforced lint gate for CI and completion status. **dprint** is a local-only formatting tool — not enforced in CI or GitHub Actions.
+
+## Format Command (CRITICAL — NEVER Run dprint Directly)
+
+> **`npm run format` is the ONLY command for formatting files. `dprint` must NEVER be run standalone.**
+
+| [NEVER] | [ALWAYS] |
+| ------- | -------- |
+| Run `dprint` standalone | `npm run format` (full pipeline) |
+| Run `npx dprint fmt` | `npm run format:client` (ESLint → dprint → ESLint) |
+| Run `dprint` as a pre-step | Manually fix formatting during development |
+
+**Why**: `npm run format:client` runs ESLint → dprint → ESLint in that exact order. Running `dprint` directly bypasses the ESLint pre/post passes and leaves lint violations unfixed.
+
+**When to run format**: Only at the end of implementation phases, right before running the test gate. During active development, manually correct formatting in source files rather than running the format command mid-phase.
+
+## End-of-File Newlines (CRITICAL — NO TRAILING NEWLINE)
+
+> **Policy**: Files MUST NOT end with a newline character.
+
+| Layer | Enforcement | Rule |
+| ----- | ----------- | ---- |
+| TypeScript/JS/SCSS | ESLint `@stylistic/eol-last: ["error", "never"]` | Second ESLint pass in `npm run format:client` removes any final newline dprint adds |
+| C# | `.editorconfig` `insert_final_newline = false` | `dotnet format whitespace` strips final newlines |
+| All files | `.editorconfig` `insert_final_newline = false` | VS Code respects this for manual edits |
+
+**Why dprint doesn't conflict**: dprint unconditionally adds a trailing newline, but it runs
+BETWEEN the two ESLint passes. The second `eslint --fix` pass removes it. **Never add
+`insert_final_newline` back to `.editorconfig`.** Never add `finalNewline` to `dprint.json`.
+
 ## Variable Naming (CRITICAL - 3+ Characters)
 
-| Context        | ❌ NEVER                | ✅ ALWAYS                              |
+| Context        | [NEVER]                 | [ALWAYS]                               |
 | -------------- | ----------------------- | -------------------------------------- |
 | Lambdas        | `x => x.Id`             | `user => user.Id`                      |
 | Array methods  | `.filter(s => s.title)` | `.filter(section => section.title)`    |
@@ -30,7 +60,7 @@ applyTo: "**/*.{ts,cs}"
 ## Examples
 
 ```csharp
-// ✅ CORRECT C#
+// [CORRECT] C#
 User? user =
     await repo.GetByIdAsync(id);
 
@@ -45,7 +75,7 @@ await bus.InvokeAsync<UserDto?>(
 ```
 
 ```typescript
-// ✅ CORRECT TypeScript
+// [CORRECT] TypeScript
 const userData: UserDto = await this.userService.getById(userId);
 
 this.users.filter((user) => user.isActive).map((user) => user.name);
@@ -55,7 +85,7 @@ const isValid: boolean = isPresent(value) && value.length > 0;
 
 ## Null Coercion (BANNED)
 
-| ❌ NEVER               | ✅ ALWAYS                       |
+| [NEVER]                | [ALWAYS]                        |
 | ---------------------- | ------------------------------- |
 | `!!value`              | `isPresent(value)`              |
 | `if (!value)`          | `if (isNullOrUndefined(value))` |
@@ -73,9 +103,110 @@ const isValid: boolean = isPresent(value) && value.length > 0;
 
 ## Constants (No Magic Values)
 
-| ❌ NEVER             | ✅ ALWAYS                               |
+| [NEVER]              | [ALWAYS]                                |
 | -------------------- | --------------------------------------- |
 | `{ duration: 5000 }` | `{ duration: SNACKBAR_DURATION.error }` |
 | `"Developer"` inline | `RoleConstants.Developer`               |
 | Repeated literal 2x+ | Extract to constant                     |
 
+## Method Return Types (REQUIRED)
+
+All TypeScript method and function declarations MUST have explicit return types.
+
+| Context           | [NEVER]          | [ALWAYS]                              |
+| ----------------- | ---------------- | ------------------------------------- |
+| Lifecycle hooks   | `ngOnInit() {`   | `ngOnInit(): void {`                  |
+| Service methods   | `getUsers() {`   | `getUsers(): Observable<UserDto[]> {` |
+| Boolean accessors | `canSubmit() {`  | `canSubmit(): boolean {`              |
+| Async methods     | `async save() {` | `async save(): Promise<void> {`       |
+| Void handlers     | `onClick() {`    | `onClick(): void {`                   |
+
+**Exception**: Inline arrow callbacks where return type is inferred from typed context.
+
+## SCSS Color Patterns (CRITICAL — MD3)
+
+> **Rule**: Angular Material 3 does NOT emit RGB-split custom properties. The `rgba(var(--mat-*-rgb), N)` pattern produces **invisible** colors and must NEVER be used.
+
+| [NEVER] | [ALWAYS] |
+| ------- | -------- |
+| `rgba(var(--mat-sys-primary-rgb), 0.12)` | `color-mix(in srgb, var(--mat-sys-primary) 12%, transparent)` |
+| `rgba(var(--mat-outline-rgb), 0.6)` | `color-mix(in srgb, var(--mat-sys-outline) 60%, transparent)` |
+| `rgb(var(--mat-sys-primary-rgb))` | `var(--mat-sys-primary)` |
+| `var(--mat-primary-default)` | `var(--mat-sys-primary)` — use stable MD3 token |
+
+`color-mix()` is already used throughout `_base.scss` and is fully supported in all modern browsers.
+
+## Documentation Style
+
+### C# XML (tags on own lines)
+
+```xml
+/// <param name="userId">
+/// The unique identifier for the user.
+/// </param>
+///
+/// <returns>
+/// The user DTO when found; otherwise null.
+/// </returns>
+```
+
+### TypeScript JSDoc
+
+```typescript
+/**
+ * @param {string} userId
+ * The unique identifier.
+ *
+ * @returns {UserDto | null}
+ * The user when found.
+ */
+```
+
+> **Reminder**: Do NOT create documentation files in `/docs/`. Update existing READMEs and instruction files instead. See `copilot-instructions.md` for the full documentation rules.
+
+## SCSS / CSS Rules (CRITICAL — Required for ALL Style Changes)
+
+> **RULE**: Every CSS/SCSS change must be intentional, minimal, and DRY.
+> Think before adding rules. Prefer reusing existing variables, mixins, or Material tokens over writing new CSS.
+
+### Sources of Truth (use in this order)
+
+| Source | Import | When |
+|--------|--------|------|
+| `_variables.scss` | `@use "variables" as vars;` | Spacing, font size, color tokens, z-index, transitions |
+| `_mixins.scss` | `@use "mixins";` | Elevation, glassmorphism, focus-visible, scroll-reveal |
+| Angular Material Design tokens | `var(--mat-sys-*)` | Theme colors, state layers |
+| `_utilities.scss` shared classes | No import (global) | Display, flex, margin, overflow helpers |
+
+### Forbidden Patterns
+
+| [NEVER] | [ALWAYS] |
+|---------|----------|
+| Hard-coded hex colors (`#4169E1`) | `var(--mat-sys-primary)` or token from `_variables.scss` |
+| Hard-coded pixel spacing (`margin: 16px`) | `vars.$spacing-md`, `vars.$spacing-lg`, etc. |
+| Duplicate `display: flex; align-items: center; gap: X` blocks | Extract to a mixin or reuse an existing layout class |
+| `!important` in component SCSS | Never (only allowed in `_utilities.scss` for utility classes) |
+| Inline styles on HTML elements (other than `host.style` in directives) | Bind via `[style.x]` or component CSS |
+| New single-component classes that duplicate shared patterns | Use shared class or mixin |
+| Repeated `text-overflow: ellipsis; overflow: hidden; white-space: nowrap;` | Use `@include mixins.text-truncate()` if the mixin exists, or extract one |
+| Overriding Material component styles with deep selectors (`::ng-deep`) | Use `@include mat.{component}-overrides(...)` from the Material theming API |
+
+### When Adding a New CSS Rule
+
+1. **Search first**: `grep_search` for the property across `*.scss` — does a mixin or variable already express it?
+2. **Place correctly**:
+   - Shared pattern used in 2+ places → `_mixins.scss` or `_utilities.scss`
+   - Component-specific, used once → component `.scss` file
+   - Design token (color, spacing, z-index) → `_variables.scss`
+3. **No `!important` in components** — if a Material override requires force, use the Material theming mixin API.
+4. **Responsive breakpoints**: always use `vars.$breakpoint-*` variables; never hard-code `max-width` pixel values.
+5. **No trailing `!important`** in component files — the formatter (ESLint pass) will flag this as a violation.
+
+### Review Checklist for Every SCSS PR
+
+- [ ] No new hard-coded colors or pixel values (use tokens / variables)
+- [ ] No duplicated rule blocks (use mixin or shared class)
+- [ ] No `!important` outside `_utilities.scss`
+- [ ] No `::ng-deep` (use Material theming API)
+- [ ] `@use "variables" as vars;` and/or `@use "mixins";` declared at top of file
+- [ ] New shared patterns added to `_mixins.scss` or `_utilities.scss`, not duplicated in components

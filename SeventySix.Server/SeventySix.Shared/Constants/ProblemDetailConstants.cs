@@ -74,7 +74,7 @@ public static class ProblemDetailConstants
 		/// <summary>
 		/// Title for not found errors.
 		/// </summary>
-		public const string NotFound = "Resource not found.";
+		public const string NotFound = "Not Found";
 
 		/// <summary>
 		/// Title for conflict errors.
@@ -90,6 +90,51 @@ public static class ProblemDetailConstants
 		/// Title for internal server errors.
 		/// </summary>
 		public const string InternalError = "An error occurred while processing your request.";
+
+		/// <summary>
+		/// Title for business rule violation errors.
+		/// </summary>
+		public const string BusinessRuleViolation = "Business Rule Violation";
+
+		/// <summary>
+		/// Title for domain logic errors.
+		/// </summary>
+		public const string DomainError = "Domain Error";
+
+		/// <summary>
+		/// Title for bad request errors.
+		/// </summary>
+		public const string BadRequest = "Bad Request";
+
+		/// <summary>
+		/// Title for invalid OAuth authorization code.
+		/// </summary>
+		public const string InvalidCode = "Invalid Code";
+
+		/// <summary>
+		/// Title for failed OAuth provider unlink.
+		/// </summary>
+		public const string UnlinkFailed = "Unlink Failed";
+
+		/// <summary>
+		/// Title for unconfigured OAuth provider.
+		/// </summary>
+		public const string ProviderNotFound = "Provider Not Found";
+
+		/// <summary>
+		/// Title for unauthorized access errors.
+		/// </summary>
+		public const string Unauthorized = "Unauthorized";
+
+		/// <summary>
+		/// Title for internal server errors (short form).
+		/// </summary>
+		public const string InternalServerError = "Internal Server Error";
+
+		/// <summary>
+		/// Title for validation errors.
+		/// </summary>
+		public const string ValidationError = "Validation Error";
 	}
 
 	/// <summary>
@@ -126,5 +171,65 @@ public static class ProblemDetailConstants
 		/// Detail for rate limit exceeded.
 		/// </summary>
 		public const string RateLimitExceeded = "Rate limit exceeded. Please try again later.";
+
+		/// <summary>
+		/// Detail for generic bad request (replaces raw exception.Message for framework exceptions).
+		/// </summary>
+		public const string BadRequest = "The request was invalid. Please check your input.";
+
+		/// <summary>
+		/// Detail for generic resource not found (replaces raw KeyNotFoundException messages).
+		/// </summary>
+		public const string ResourceNotFound = "The requested resource was not found.";
+
+		/// <summary>
+		/// Detail for unauthorized access (replaces raw UnauthorizedAccessException messages).
+		/// </summary>
+		public const string Unauthorized = "You are not authorized to perform this action.";
+
+		/// <summary>
+		/// Detail for unprocessable entity (replaces raw domain exception messages).
+		/// </summary>
+		public const string UnprocessableEntity = "The request could not be processed. Please review your input.";
+
+		/// <summary>
+		/// Detail for role assignment failures.
+		/// </summary>
+		public const string RoleAssignmentFailed = "Role assignment could not be completed.";
+
+		/// <summary>
+		/// Detail for role removal failures.
+		/// </summary>
+		public const string RoleRemovalFailed = "Role removal could not be completed.";
+
+		/// <summary>
+		/// Detail for registration failures (replaces raw Identity exception messages).
+		/// </summary>
+		public const string RegistrationFailed = "Registration could not be completed. Please try again.";
+
+		/// <summary>
+		/// Detail for invalid or expired OAuth authorization code.
+		/// </summary>
+		public const string InvalidOrExpiredCode = "The authorization code is invalid or has expired.";
+
+		/// <summary>
+		/// Detail for external login link failures (replaces raw Identity errors).
+		/// </summary>
+		public const string ExternalLoginLinkFailed = "Failed to link external account. Please try again.";
+
+		/// <summary>
+		/// Detail for external login unlink failures (replaces raw Identity errors).
+		/// </summary>
+		public const string ExternalLoginUnlinkFailed = "Failed to unlink external account. Please try again.";
+
+		/// <summary>
+		/// Detail for OAuth user creation failures (replaces raw Identity errors).
+		/// </summary>
+		public const string OAuthUserCreationFailed = "Account creation could not be completed. Please try again.";
+
+		/// <summary>
+		/// Detail for inactive user account.
+		/// </summary>
+		public const string UserAccountInactive = "User account is inactive.";
 	}
 }

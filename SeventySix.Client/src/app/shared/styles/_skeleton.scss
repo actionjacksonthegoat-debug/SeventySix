@@ -47,6 +47,14 @@
 	display: flex;
 	gap: vars.$spacing-md;
 	padding: vars.$spacing-sm 0;
+
+	/** Header row modifier - reduced opacity to mimic a column header. */
+	&.skeleton-table-header {
+		opacity: 0.5;
+		border-bottom: 1px solid var(--mat-sys-outline-variant);
+		padding-bottom: vars.$spacing-sm;
+		margin-bottom: vars.$spacing-xs;
+	}
 }
 
 /** Checkbox row - checkbox with adjacent label text. */

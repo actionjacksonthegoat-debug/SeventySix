@@ -5,7 +5,6 @@
 using System.Net;
 using Microsoft.AspNetCore.Http;
 using NSubstitute;
-using SeventySix.Identity;
 using Shouldly;
 
 namespace SeventySix.Identity.Tests.Services;
@@ -19,7 +18,7 @@ namespace SeventySix.Identity.Tests.Services;
 /// - User agent extraction and truncation
 /// - Null HttpContext handling
 /// </remarks>
-public class ClientInfoServiceUnitTests
+public sealed class ClientInfoServiceUnitTests
 {
 	private readonly IHttpContextAccessor HttpContextAccessor;
 	private readonly ClientInfoService ServiceUnderTest;

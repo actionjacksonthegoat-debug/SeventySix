@@ -17,7 +17,7 @@ namespace SeventySix.ArchitectureTests;
 /// they use primary constructors instead of traditional constructor with field assignments.
 /// Automatically discovers all classes across all bounded contexts with smart exclusions.
 /// </summary>
-public class PrimaryConstructorTests
+public sealed class PrimaryConstructorTests
 {
 	/// <summary>
 	/// Verifies that ALL production classes use primary constructors.

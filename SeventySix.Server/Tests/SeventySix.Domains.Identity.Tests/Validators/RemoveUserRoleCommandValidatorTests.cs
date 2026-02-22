@@ -3,7 +3,6 @@
 // </copyright>
 
 using FluentValidation.TestHelper;
-using SeventySix.Identity;
 using SeventySix.Identity.Commands.RemoveUserRole;
 using SeventySix.Identity.Constants;
 
@@ -19,7 +18,7 @@ namespace SeventySix.Identity.Tests.Validators;
 /// - Role validation (required, must be valid role name)
 /// - Role manipulation prevention (critical security)
 /// </remarks>
-public class RemoveUserRoleCommandValidatorTests
+public sealed class RemoveUserRoleCommandValidatorTests
 {
 	private readonly RemoveUserRoleCommandValidator Validator = new();
 

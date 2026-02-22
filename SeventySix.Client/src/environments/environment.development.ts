@@ -1,7 +1,9 @@
+import { ENVIRONMENT_DEFAULTS } from "./environment.defaults";
 import { Environment } from "./environment.interface";
 
 export const environment: Environment =
 	{
+		...ENVIRONMENT_DEFAULTS,
 		production: false,
 		version: "1.0.0-dev",
 		apiUrl: "https://localhost:7074/api/v1", // HTTPS for local development with HTTP/2 support
@@ -22,6 +24,7 @@ export const environment: Environment =
 			grafanaUrl: "https://localhost:3443", // Grafana for metrics visualization
 			pgAdminUrl: "https://localhost:5051", // pgAdmin for PostgreSQL management
 			redisInsightUrl: "https://localhost:5541", // RedisInsight for Valkey management
+			scalarUrl: "https://localhost:7074/scalar/v1", // Scalar API reference (dev-only)
 			dashboards: {
 				systemOverview: "seventysix-system-overview",
 				apiEndpoints: "seventysix-api-endpoints",
@@ -45,34 +48,6 @@ export const environment: Environment =
 				permissionrequests: { staleTime: 0, gcTime: 60000, retry: 1 }
 			}
 		},
-		dashboard: {
-			health: {
-				autoRefreshEnabled: true,
-				refreshIntervalSeconds: 30 // 30 seconds in development for faster feedback
-			}
-		},
-		ui: {
-			tables: {
-				defaultPageSize: 50,
-				pageSizeOptions: [25, 50, 100],
-				virtualScrollItemSize: 48
-			},
-			performance: {
-				enableMonitoring: true,
-				fpsWarningThreshold: 30
-			}
-		},
-		http: {
-			defaultTimeout: 30000, // 30 seconds
-			uploadTimeout: 120000 // 2 minutes for file uploads
-		},
-		dateTime: {
-			defaultDisplayFormat: "yyyy-MM-dd HH:mm:ss",
-			inputFormat: "yyyy-MM-dd",
-			timeFormat: "HH:mm:ss",
-			relativeTimeThreshold: 86400000, // 24 hours in milliseconds
-			timezoneMode: "local"
-		},
 		testing: {
 			runIntegrationTests: false
 		},
@@ -84,10 +59,6 @@ export const environment: Environment =
 			sampleRate: 1.0 // 100% sampling for development
 		},
 		auth: {
-			loginUrl: "/auth/login",
-			tokenRefreshBufferSeconds: 60 // Refresh 60 seconds before expiry
-		},
-		altcha: {
-			enabled: false // Disabled in development
+			loginUrl: "/auth/login"
 		}
 	};

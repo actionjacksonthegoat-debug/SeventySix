@@ -14,7 +14,7 @@ namespace SeventySix.Identity.Commands.Login;
 /// - UsernameOrEmail: Required, max 255 characters
 /// - Password: Required
 /// </remarks>
-public class LoginCommandValidator : AbstractValidator<LoginRequest>
+public sealed class LoginCommandValidator : AbstractValidator<LoginRequest>
 {
 	/// <summary>
 	/// Initializes a new instance of the <see cref="LoginCommandValidator"/> class.

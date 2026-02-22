@@ -39,6 +39,6 @@ describe("SandboxLandingComponent",
 				const heading: HTMLElement | null =
 					fixture.nativeElement.querySelector("h1");
 				expect(heading?.textContent)
-					.toContain("Sandbox");
+					.toContain("Hello World");
 			});
 	});

@@ -11,7 +11,7 @@ namespace SeventySix.Identity.Commands.VerifyTotpCode;
 /// </summary>
 /// <remarks>
 /// Validation Rules:
-/// - Email: Required, valid email format
+/// - ChallengeToken: Required, non-empty
 /// - Code: Required, exactly 6 digits
 /// </remarks>
 public sealed class VerifyTotpCodeCommandValidator : AbstractValidator<VerifyTotpRequest>
@@ -21,11 +21,9 @@ public sealed class VerifyTotpCodeCommandValidator : AbstractValidator<VerifyTot
 	/// </summary>
 	public VerifyTotpCodeCommandValidator()
 	{
-		RuleFor(request => request.Email)
+		RuleFor(request => request.ChallengeToken)
 			.NotEmpty()
-			.WithMessage("Email is required")
-			.EmailAddress()
-			.WithMessage("A valid email address is required");
+			.WithMessage("Challenge token is required");
 
 		RuleFor(request => request.Code)
 			.NotEmpty()

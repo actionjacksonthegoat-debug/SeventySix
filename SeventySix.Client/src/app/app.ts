@@ -9,6 +9,7 @@ import {
 	HeaderComponent,
 	SidebarComponent
 } from "@shared/components/layout";
+import { SessionWarningComponent } from "@shared/components/session-warning/session-warning.component";
 import {
 	LayoutService,
 	LoadingService
@@ -28,7 +29,8 @@ import {
 			HeaderComponent,
 			SidebarComponent,
 			FooterComponent,
-			NotificationToastComponent
+			NotificationToastComponent,
+			SessionWarningComponent
 		],
 		templateUrl: "./app.html",
 		styleUrl: "./app.scss",

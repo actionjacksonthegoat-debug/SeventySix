@@ -15,7 +15,7 @@ namespace SeventySix.TestUtilities.TestHelpers;
 /// Helper for testing controller authorization with minimal boilerplate.
 /// Provides fluent API for testing 401 (unauthenticated), 403 (forbidden), and 200 (authorized).
 /// </summary>
-public class AuthorizationTestHelper
+public sealed class AuthorizationTestHelper
 {
 	private readonly HttpClient Client;
 	private readonly IServiceProvider Services;

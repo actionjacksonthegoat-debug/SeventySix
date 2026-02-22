@@ -6,7 +6,6 @@ using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using SeventySix.Shared.Exceptions;
-using ZiggyCreatures.Caching.Fusion.OpenTelemetry;
 
 namespace SeventySix.Api.Registration;
 

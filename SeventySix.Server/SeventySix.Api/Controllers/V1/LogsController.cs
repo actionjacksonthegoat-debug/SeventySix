@@ -10,6 +10,7 @@ using SeventySix.Api.Configuration;
 using SeventySix.Identity;
 using SeventySix.Identity.Constants;
 using SeventySix.Logging;
+using SeventySix.Logging.Commands.CreateClientLogBatch;
 using SeventySix.Shared.POCOs;
 using Wolverine;
 
@@ -25,7 +26,7 @@ namespace SeventySix.Api.Controllers;
 [ApiController]
 [Authorize(Policy = PolicyConstants.AdminOnly)]
 [Route(ApiVersionConfig.VersionedRoutePrefix + "/logs")]
-public class LogsController(
+public sealed class LogsController(
 	IMessageBus messageBus,
 	IOutputCacheStore outputCacheStore) : ControllerBase
 {
@@ -152,7 +153,7 @@ public class LogsController(
 	[ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	public async Task<ActionResult<int>> CleanupLogsAsync(
-		[FromQuery] DateTime? cutoffDate,
+		[FromQuery] DateTimeOffset? cutoffDate,
 		CancellationToken cancellationToken = default)
 	{
 		if (!cutoffDate.HasValue)
@@ -231,7 +232,10 @@ public class LogsController(
 		[FromBody] CreateLogRequest[] requests,
 		CancellationToken cancellationToken = default)
 	{
-		await messageBus.InvokeAsync(requests, cancellationToken);
+		CreateClientLogBatchCommand command =
+			new(requests);
+
+		await messageBus.InvokeAsync(command, cancellationToken);
 
 		await outputCacheStore.EvictByTagAsync("logs", cancellationToken);
 

@@ -5,7 +5,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
-using SeventySix.Identity;
 using SeventySix.Shared.POCOs;
 using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.Constants;
@@ -20,7 +19,7 @@ namespace SeventySix.Identity.Tests.Commands.DeleteUser;
 /// <remarks>
 /// Tests follow 80/20 rule: focus on happy path and critical validation paths.
 /// </remarks>
-public class DeleteUserCommandHandlerTests
+public sealed class DeleteUserCommandHandlerTests
 {
 	private readonly UserManager<ApplicationUser> UserManager;
 	private readonly IIdentityCacheService IdentityCache;
@@ -126,7 +125,7 @@ public class DeleteUserCommandHandlerTests
 				.WithIsActive(true)
 				.WithDeletedInfo(
 					isDeleted: true,
-					deletedAt: TimeProvider.GetUtcNow().UtcDateTime,
+					deletedAt: TimeProvider.GetUtcNow(),
 					deletedBy: "system")
 				.Build();
 		DeleteUserCommand command =

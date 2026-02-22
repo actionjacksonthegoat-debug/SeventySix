@@ -35,7 +35,7 @@ public record PagedResult<T>
 	/// <summary>
 	/// Total number of pages based on <see cref="TotalCount"/> and <see cref="PageSize"/>.
 	/// </summary>
-	public int TotalPages => (int)Math.Ceiling(TotalCount / (double)PageSize);
+	public int TotalPages => (int)Math.Ceiling((decimal)TotalCount / PageSize);
 
 	/// <summary>
 	/// True when there is a previous page available.

@@ -2,10 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using SeventySix.Shared.Constants;
+using SeventySix.Identity;
 
 namespace SeventySix.Api.Configuration;
 
@@ -19,7 +16,8 @@ namespace SeventySix.Api.Configuration;
 public static class StartupValidator
 {
 	/// <summary>
-	/// List of configuration keys that must have non-placeholder values in production.
+	/// Configuration keys that must have non-placeholder values.
+	/// Validated as warnings in non-Production, errors in Production.
 	/// </summary>
 	private static readonly string[] RequiredSecrets =
 		[
@@ -30,7 +28,7 @@ public static class StartupValidator
 		"Email:SmtpUsername",
 		"Email:SmtpPassword",
 		"Email:FromAddress",
-		"Altcha:HmacKeyBase64"
+		"Altcha:HmacKeyBase64",
 	];
 
 	/// <summary>
@@ -62,15 +60,6 @@ public static class StartupValidator
 		ArgumentNullException.ThrowIfNull(environment);
 		ArgumentNullException.ThrowIfNull(logger);
 
-		// Only enforce strict validation in production
-		if (!environment.IsProduction())
-		{
-			logger.LogInformation(
-				"Skipping startup configuration validation in {Environment} environment",
-				environment.EnvironmentName);
-			return;
-		}
-
 		List<string> missingSettings = [];
 		List<string> placeholderSettings = [];
 
@@ -91,6 +80,30 @@ public static class StartupValidator
 			}
 		}
 
+		// Non-Production: warn about missing secrets without failing startup
+		if (!environment.IsProduction())
+		{
+			List<string> allMissing =
+				[.. missingSettings, .. placeholderSettings];
+
+			if (allMissing.Count > 0)
+			{
+				logger.LogWarning(
+					"Configuration keys not set: {MissingKeys}. "
+						+ "Set via User Secrets: 'npm run secrets:set -- -Key \"{{Key}}\" -Value \"{{Value}}\"'",
+					string.Join(", ", allMissing));
+			}
+			else
+			{
+				logger.LogInformation(
+					"Startup configuration validation passed for {Count} required settings",
+					RequiredSecrets.Length);
+			}
+
+			return;
+		}
+
+		// Production: strict validation — fail fast on missing or placeholder values
 		if (missingSettings.Count > 0 || placeholderSettings.Count > 0)
 		{
 			LogValidationErrors(
@@ -99,14 +112,52 @@ public static class StartupValidator
 				placeholderSettings);
 
 			throw new InvalidOperationException(
-				$"Configuration validation failed. Missing: [{string.Join(", ", missingSettings)}]. " +
-				$"Placeholder values: [{string.Join(", ", placeholderSettings)}]. " +
-				"See logs for details.");
+				$"Configuration validation failed. Missing: [{string.Join(", ", missingSettings)}]. "
+				+ $"Placeholder values: [{string.Join(", ", placeholderSettings)}]. "
+				+ "See logs for details.");
 		}
 
 		logger.LogInformation(
 			"Startup configuration validation passed for {Count} required settings",
 			RequiredSecrets.Length);
+	}
+
+	/// <summary>
+	/// Validates that AllowedHosts is not a wildcard in production.
+	/// </summary>
+	/// <param name="configuration">
+	/// The application configuration.
+	/// </param>
+	/// <param name="environment">
+	/// The hosting environment.
+	/// </param>
+	/// <exception cref="InvalidOperationException">
+	/// Thrown when AllowedHosts is '*' in production.
+	/// </exception>
+	public static void ValidateAllowedHosts(
+		IConfiguration configuration,
+		IHostEnvironment environment)
+	{
+		ArgumentNullException.ThrowIfNull(configuration);
+		ArgumentNullException.ThrowIfNull(environment);
+
+		if (!environment.IsProduction())
+		{
+			return;
+		}
+
+		string? allowedHosts =
+			configuration["AllowedHosts"];
+
+		if (string.Equals(
+			allowedHosts,
+			"*",
+			StringComparison.Ordinal))
+		{
+			throw new InvalidOperationException(
+				"AllowedHosts must not be '*' in production. "
+					+ "Configure specific hostnames in appsettings.Production.json.");
+		}
 	}
 
 	/// <summary>
@@ -141,7 +192,82 @@ public static class StartupValidator
 		}
 
 		logger.LogError(
-			"Ensure all required secrets are configured via environment variables or .env file. " +
-			"See .env.example for the complete list of required variables.");
+			"Ensure all required secrets are configured via User Secrets (Development), "
+			+ "appsettings.{{Environment}}.json (Test/E2E), or environment variables (Production). "
+			+ "Run 'npm run secrets:init' to initialize Development secrets.");
+	}
+
+	/// <summary>
+	/// Validates that security-critical settings are enabled in production.
+	/// MFA and TOTP must be enabled; token rotation must not be disabled.
+	/// OAuth is optional and excluded from production validation.
+	/// </summary>
+	/// <param name="configuration">
+	/// The application configuration.
+	/// </param>
+	/// <param name="environment">
+	/// The hosting environment.
+	/// </param>
+	/// <param name="logger">
+	/// The logger for reporting validation results.
+	/// </param>
+	/// <exception cref="InvalidOperationException">
+	/// Thrown when security settings are misconfigured in production.
+	/// </exception>
+	public static void ValidateProductionSecuritySettings(
+		IConfiguration configuration,
+		IHostEnvironment environment,
+		ILogger logger)
+	{
+		ArgumentNullException.ThrowIfNull(configuration);
+		ArgumentNullException.ThrowIfNull(environment);
+		ArgumentNullException.ThrowIfNull(logger);
+
+		if (!environment.IsProduction())
+		{
+			return;
+		}
+
+		List<string> violations = [];
+
+		MfaSettings? mfaSettings =
+			configuration.GetSection(MfaSettings.SectionName).Get<MfaSettings>();
+
+		if (mfaSettings is { Enabled: false })
+		{
+			violations.Add("Mfa:Enabled must be true in Production environment");
+		}
+
+		TotpSettings? totpSettings =
+			configuration.GetSection(TotpSettings.SectionName).Get<TotpSettings>();
+
+		if (totpSettings is { Enabled: false })
+		{
+			violations.Add("Totp:Enabled must be true in Production environment");
+		}
+
+		AuthSettings? authSettings =
+			configuration.GetSection(AuthSettings.SectionName).Get<AuthSettings>();
+
+		if (authSettings?.Token is { DisableRotation: true })
+		{
+			violations.Add("Token rotation must NOT be disabled in Production environment");
+		}
+
+		if (violations.Count > 0)
+		{
+			foreach (string violation in violations)
+			{
+				logger.LogError(
+					"Production security violation: {Violation}",
+					violation);
+			}
+
+			throw new InvalidOperationException(
+				$"Production security validation failed: {string.Join("; ", violations)}");
+		}
+
+		logger.LogInformation(
+			"Production security settings validation passed");
 	}
 }

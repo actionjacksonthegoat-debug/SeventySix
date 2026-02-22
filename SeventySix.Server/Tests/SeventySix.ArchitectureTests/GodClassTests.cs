@@ -21,7 +21,7 @@ namespace SeventySix.ArchitectureTests;
 /// - 12+ methods: MUST SPLIT - violates SRP
 /// - 300+ lines: REVIEW - likely needs split
 /// </remarks>
-public class GodClassTests
+public sealed class GodClassTests
 {
 	/// <summary>
 	/// Maximum allowed methods per service interface before requiring split.

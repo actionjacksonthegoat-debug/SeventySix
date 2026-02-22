@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
-using SeventySix.Identity;
+using SeventySix.Shared.Interfaces;
 using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.Mocks;
@@ -10,7 +10,7 @@ using Shouldly;
 
 namespace SeventySix.Identity.Tests.Commands.ChangePassword;
 
-public class ChangePasswordCommandHandlerTests
+public sealed class ChangePasswordCommandHandlerTests
 {
 	private readonly UserManager<ApplicationUser> UserManager;
 	private readonly ITokenRepository TokenRepository;
@@ -19,6 +19,7 @@ public class ChangePasswordCommandHandlerTests
 	private readonly BreachCheckDependencies BreachCheck;
 	private readonly FakeTimeProvider TimeProvider;
 	private readonly ILogger<ChangePasswordCommand> Logger;
+	private readonly ITransactionManager TransactionManager;
 
 	public ChangePasswordCommandHandlerTests()
 	{
@@ -60,6 +61,20 @@ public class ChangePasswordCommandHandlerTests
 
 		Logger =
 			Substitute.For<ILogger<ChangePasswordCommand>>();
+		TransactionManager =
+			Substitute.For<ITransactionManager>();
+		TransactionManager
+			.ExecuteInTransactionAsync(
+				Arg.Any<Func<CancellationToken, Task>>(),
+				Arg.Any<int>(),
+				Arg.Any<CancellationToken>())
+			.Returns(
+				call =>
+				{
+					Func<CancellationToken, Task> op =
+						call.ArgAt<Func<CancellationToken, Task>>(0);
+					return op(CancellationToken.None);
+				});
 	}
 
 	[Fact]
@@ -93,6 +108,7 @@ public class ChangePasswordCommandHandlerTests
 				BreachCheck,
 				TimeProvider,
 				Logger,
+				TransactionManager,
 				CancellationToken.None);
 
 		// Assert
@@ -101,7 +117,7 @@ public class ChangePasswordCommandHandlerTests
 			.Received(1)
 			.RevokeAllUserTokensAsync(
 				userId,
-				Arg.Any<DateTime>(),
+				Arg.Any<DateTimeOffset>(),
 				Arg.Any<CancellationToken>());
 		await UserManager
 			.Received(1)
@@ -127,8 +143,8 @@ public class ChangePasswordCommandHandlerTests
 
 	private void SetupAuthResultMock(ApplicationUser user)
 	{
-		DateTime now =
-			TimeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset now =
+			TimeProvider.GetUtcNow();
 		AuthResult expectedResult =
 			AuthResult.Succeeded(
 			"access-token",
@@ -146,6 +162,80 @@ public class ChangePasswordCommandHandlerTests
 				false,
 				Arg.Any<CancellationToken>())
 			.Returns(Task.FromResult(expectedResult));
+	}
+
+	/// <summary>
+	/// Verifies that a breached password is rejected before any other operations.
+	/// The handler should return an <see cref="AuthResult"/> with
+	/// <see cref="AuthErrorCodes.BreachedPassword"/> when HIBP detects a compromised password.
+	/// </summary>
+	[Fact]
+	public async Task HandleAsync_BreachedPassword_ReturnsErrorAsync()
+	{
+		// Arrange
+		long userId = 456;
+		ApplicationUser user =
+			new UserBuilder(TimeProvider)
+				.WithId(userId)
+				.WithUsername("breachuser")
+				.WithEmail("breach@example.com")
+				.WithIsActive(true)
+				.Build();
+
+		SetupUserManagerMocks(user);
+
+		// Override breach check to report the password as breached
+		IBreachedPasswordService breachedService =
+			Substitute.For<IBreachedPasswordService>();
+		breachedService
+			.CheckPasswordAsync(
+				Arg.Any<string>(),
+				Arg.Any<CancellationToken>())
+			.Returns(BreachCheckResult.Breached(3_861_493));
+
+		Microsoft.Extensions.Options.IOptions<AuthSettings> breachSettings =
+			Microsoft.Extensions.Options.Options.Create(
+				new AuthSettings
+				{
+					BreachedPassword = new BreachedPasswordSettings
+					{
+						Enabled = true,
+						BlockBreachedPasswords = true,
+					},
+				});
+
+		BreachCheckDependencies breachedCheck =
+			new(breachedService, breachSettings);
+
+		ChangePasswordCommand command =
+			CreateCommand(userId);
+
+		// Act
+		AuthResult result =
+			await ChangePasswordCommandHandler.HandleAsync(
+				command,
+				UserManager,
+				TokenRepository,
+				AuthenticationService,
+				IdentityCache,
+				breachedCheck,
+				TimeProvider,
+				Logger,
+				TransactionManager,
+				CancellationToken.None);
+
+		// Assert — handler should reject early without changing the password
+		result.Success.ShouldBeFalse();
+		result.ErrorCode.ShouldBe(AuthErrorCodes.BreachedPassword);
+		result.Error.ShouldNotBeNullOrWhiteSpace();
+
+		// Verify password was never actually changed
+		await UserManager
+			.DidNotReceive()
+			.ChangePasswordAsync(
+				Arg.Any<ApplicationUser>(),
+				Arg.Any<string>(),
+				Arg.Any<string>());
 	}
 
 	private static ChangePasswordCommand CreateCommand(long userId)

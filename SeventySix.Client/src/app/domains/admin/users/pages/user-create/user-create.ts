@@ -29,7 +29,7 @@ import {
 	FULL_NAME_VALIDATION,
 	USERNAME_VALIDATION
 } from "@shared/constants/validation.constants";
-import { STEPPER_MATERIAL_MODULES } from "@shared/material-bundles";
+import { STEPPER_MATERIAL_MODULES } from "@shared/material-bundles.constants";
 import { LoggerService, NotificationService } from "@shared/services";
 import { getValidationError } from "@shared/utilities";
 import { isNullOrUndefined } from "@shared/utilities/null-check.utility";
@@ -144,6 +144,15 @@ export class UserCreatePage
 		this.selectedRolesSignal.asReadonly();
 
 	/**
+	 * Set-based view of selected roles for efficient template lookups.
+	 * @type {Signal<Set<string>>}
+	 */
+	readonly selectedRolesSet: Signal<Set<string>> =
+		computed(
+			(): Set<string> =>
+				new Set(this.selectedRoles()));
+
+	/**
 	 * Mutation for adding a role to a user.
 	 * @type {ReturnType<typeof this.userService.addRole>}
 	 */
@@ -244,15 +253,22 @@ export class UserCreatePage
 			});
 
 	/**
-	 * Computed signal returning the merged form data for submission.
-	 * @type {Signal<Partial<UserDto>>}
+	 * Returns the merged form data from all steps for review and submission.
+	 *
+	 * <p>This is a method (not a computed signal) because FormGroup.value is
+	 * not a signal — a computed() would cache the initial empty values and
+	 * never re-evaluate in Zoneless mode.</p>
+	 *
+	 * @returns
+	 * The aggregated form data.
 	 */
-	readonly formData: Signal<Partial<UserDto>> =
-		computed(
-			() => ({
-				...this.basicInfoForm.value,
-				...this.accountDetailsForm.value
-			}));
+	formData(): Partial<UserDto>
+	{
+		return {
+			...this.basicInfoForm.value,
+			...this.accountDetailsForm.value
+		};
+	}
 
 	// Validation error signals
 	/**

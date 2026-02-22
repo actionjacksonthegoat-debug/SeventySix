@@ -93,7 +93,12 @@ export class MfaService
 	{
 		return this
 			.httpClient
-			.post<void>(`${this.authUrl}/mfa/resend`, request);
+			.post<void>(
+				`${this.authUrl}/mfa/resend`,
+				request,
+				{
+					withCredentials: true
+				});
 	}
 
 	/**
@@ -138,6 +143,7 @@ export class MfaService
 
 	/**
 	 * Stores MFA state for the verification flow.
+	 * StorageService.setSessionItem handles JSON stringification internally.
 	 * @param {MfaState} state
 	 * The MFA state to store.
 	 */
@@ -145,25 +151,20 @@ export class MfaService
 	{
 		this.storageService.setSessionItem(
 			STORAGE_KEYS.AUTH_MFA_STATE,
-			JSON.stringify(state));
+			state);
 	}
 
 	/**
 	 * Retrieves MFA state from session storage.
+	 * StorageService.getSessionItem handles JSON parsing internally.
 	 * @returns {MfaState | null}
 	 * The stored MFA state or null if not found.
 	 */
 	getMfaState(): MfaState | null
 	{
-		const stored: string | null =
-			this.storageService.getSessionItem(STORAGE_KEYS.AUTH_MFA_STATE);
-
-		if (!stored)
-		{
-			return null;
-		}
-
-		return JSON.parse(stored) as MfaState;
+		return this
+			.storageService
+			.getSessionItem<MfaState>(STORAGE_KEYS.AUTH_MFA_STATE);
 	}
 
 	/**

@@ -20,7 +20,7 @@ namespace SeventySix.Api.Tests.Infrastructure.Services;
 /// Tests use mocked repository to verify business logic without database dependencies.
 /// Follows TDD best practices.
 /// </summary>
-public class RateLimitingServiceTests
+public sealed class RateLimitingServiceTests
 {
 	private readonly ILogger<RateLimitingService> Logger;
 	private readonly IThirdPartyApiRequestRepository Repository;
@@ -400,7 +400,7 @@ public class RateLimitingServiceTests
 				BaseUrl = "smtp-relay.brevo.com",
 				CallCount = 249,
 				LastCalledAt =
-					timeProvider.GetUtcNow().UtcDateTime.AddMinutes(-5),
+					timeProvider.GetUtcNow().AddMinutes(-5),
 				ResetDate = today,
 			};
 
@@ -439,4 +439,175 @@ public class RateLimitingServiceTests
 
 		canMake.ShouldBeTrue();
 	}
+
+	#region TryDecrementRequestCountAsync Tests
+
+	[Fact]
+	public async Task TryDecrementRequestCountAsync_WithExistingRecord_DecrementsAndReturnsTrueAsync()
+	{
+		// Arrange
+		const string apiName = "TestApi";
+		FakeTimeProvider timeProvider = new();
+		RateLimitingService sut =
+			CreateSut(timeProvider);
+
+		DateOnly today =
+			DateOnly.FromDateTime(
+				timeProvider.GetUtcNow().UtcDateTime);
+
+		ThirdPartyApiRequest request =
+			new()
+			{
+				Id = 1,
+				ApiName = apiName,
+				BaseUrl = "https://api.test.com",
+				CallCount = 5,
+				ResetDate = today,
+			};
+
+		Repository
+			.GetByApiNameAndDateAsync(
+				apiName,
+				today,
+				Arg.Any<CancellationToken>())
+			.Returns(request);
+
+		Repository
+			.UpdateAsync(
+				Arg.Any<ThirdPartyApiRequest>(),
+				Arg.Any<CancellationToken>())
+			.Returns(callInfo => callInfo.ArgAt<ThirdPartyApiRequest>(0));
+
+		// Act
+		bool result =
+			await sut.TryDecrementRequestCountAsync(apiName);
+
+		// Assert
+		result.ShouldBeTrue();
+		request.CallCount.ShouldBe(4);
+		await Repository
+			.Received(1)
+			.UpdateAsync(
+				request,
+				Arg.Any<CancellationToken>());
+	}
+
+	[Fact]
+	public async Task TryDecrementRequestCountAsync_NoRecord_ReturnsFalseAsync()
+	{
+		// Arrange
+		const string apiName = "TestApi";
+		FakeTimeProvider timeProvider = new();
+		RateLimitingService sut =
+			CreateSut(timeProvider);
+
+		DateOnly today =
+			DateOnly.FromDateTime(
+				timeProvider.GetUtcNow().UtcDateTime);
+
+		Repository
+			.GetByApiNameAndDateAsync(
+				apiName,
+				today,
+				Arg.Any<CancellationToken>())
+			.Returns((ThirdPartyApiRequest?)null);
+
+		// Act
+		bool result =
+			await sut.TryDecrementRequestCountAsync(apiName);
+
+		// Assert
+		result.ShouldBeFalse();
+		await Repository
+			.DidNotReceive()
+			.UpdateAsync(
+				Arg.Any<ThirdPartyApiRequest>(),
+				Arg.Any<CancellationToken>());
+	}
+
+	[Fact]
+	public async Task TryDecrementRequestCountAsync_AtZero_ReturnsFalseAsync()
+	{
+		// Arrange
+		const string apiName = "TestApi";
+		FakeTimeProvider timeProvider = new();
+		RateLimitingService sut =
+			CreateSut(timeProvider);
+
+		DateOnly today =
+			DateOnly.FromDateTime(
+				timeProvider.GetUtcNow().UtcDateTime);
+
+		ThirdPartyApiRequest request =
+			new()
+			{
+				Id = 1,
+				ApiName = apiName,
+				BaseUrl = "https://api.test.com",
+				CallCount = 0,
+				ResetDate = today,
+			};
+
+		Repository
+			.GetByApiNameAndDateAsync(
+				apiName,
+				today,
+				Arg.Any<CancellationToken>())
+			.Returns(request);
+
+		// Act
+		bool result =
+			await sut.TryDecrementRequestCountAsync(apiName);
+
+		// Assert
+		result.ShouldBeFalse();
+		request.CallCount.ShouldBe(0);
+		await Repository
+			.DidNotReceive()
+			.UpdateAsync(
+				Arg.Any<ThirdPartyApiRequest>(),
+				Arg.Any<CancellationToken>());
+	}
+
+	[Fact]
+	public async Task TryDecrementRequestCountAsync_WhenDisabled_ReturnsTrueAsync()
+	{
+		// Arrange
+		ThirdPartyApiLimitSettings settings =
+			new()
+			{
+				Enabled = false,
+				DefaultDailyLimit = 1000,
+			};
+
+		RateLimitingService sut =
+			CreateSut(null, settings);
+
+		// Act
+		bool result =
+			await sut.TryDecrementRequestCountAsync(
+				ExternalApiConstants.BrevoEmail);
+
+		// Assert
+		result.ShouldBeTrue();
+		await Repository
+			.DidNotReceive()
+			.GetByApiNameAndDateAsync(
+				Arg.Any<string>(),
+				Arg.Any<DateOnly>(),
+				Arg.Any<CancellationToken>());
+	}
+
+	[Fact]
+	public async Task TryDecrementRequestCountAsync_ThrowsOnNullApiNameAsync()
+	{
+		// Arrange
+		RateLimitingService sut = CreateSut();
+
+		// Act & Assert
+		await Should.ThrowAsync<ArgumentException>(() =>
+			sut.TryDecrementRequestCountAsync(null!));
+	}
+
+	#endregion
 }

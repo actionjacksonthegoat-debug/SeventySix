@@ -4,7 +4,6 @@
 
 using FluentValidation;
 using SeventySix.Api.Configuration;
-using SeventySix.Shared.Constants;
 using SeventySix.Shared.Registration;
 using SeventySix.Shared.Settings;
 
@@ -21,10 +20,10 @@ public static class ApplicationServicesRegistration
 	/// </summary>
 	/// <remarks>
 	/// Reads configuration sections:
-	/// - "Resilience" (via ResilienceOptions.SectionName)
-	/// - "OutputCache" (via OutputCacheOptions.SectionName)
-	/// - "RateLimiting" (via ConfigurationSectionConstants.RateLimiting)
-	/// - "RequestLimits" (via ConfigurationSectionConstants.RequestLimits)
+	/// - "Resilience" (via ResilienceSettings.SectionName)
+	/// - "OutputCache" (via OutputCacheSettings.SectionName)
+	/// - "RateLimiting" (via RateLimitingSettings.SectionName)
+	/// - "RequestLimits" (via RequestLimitsSettings.SectionName)
 	/// </remarks>
 	/// <param name="services">
 	/// The service collection.
@@ -42,35 +41,31 @@ public static class ApplicationServicesRegistration
 		// Register FluentValidation validators for settings
 		services.AddSingleton<IValidator<RateLimitingSettings>, RateLimitingSettingsValidator>();
 		services.AddSingleton<IValidator<RequestLimitsSettings>, RequestLimitsSettingsValidator>();
-		services.AddSingleton<IValidator<ResilienceOptions>, ResilienceOptionsValidator>();
+		services.AddSingleton<IValidator<ResilienceSettings>, ResilienceSettingsValidator>();
+		services.AddSingleton<IValidator<OutputCacheSettings>, OutputCacheSettingsValidator>();
 
-		// Configuration options with FluentValidation
-		services.Configure<ResilienceOptions>(
-			configuration.GetSection(ResilienceOptions.SectionName));
-
-		services.Configure<OutputCacheOptions>(
-			configuration.GetSection(OutputCacheOptions.SectionName));
-
+		// Configuration options with FluentValidation + ValidateOnStart
 		services
-			.AddOptions<ResilienceOptions>()
-			.Bind(configuration.GetSection(ResilienceOptions.SectionName))
+			.AddOptions<ResilienceSettings>()
+			.Bind(configuration.GetSection(ResilienceSettings.SectionName))
 			.ValidateWithFluentValidation()
 			.ValidateOnStart();
 
 		services
-			.AddOptions<OutputCacheOptions>()
-			.Bind(configuration.GetSection(OutputCacheOptions.SectionName))
+			.AddOptions<OutputCacheSettings>()
+			.Bind(configuration.GetSection(OutputCacheSettings.SectionName))
+			.ValidateWithFluentValidation()
 			.ValidateOnStart();
 
 		services
 			.AddOptions<RateLimitingSettings>()
-			.BindConfiguration(ConfigurationSectionConstants.RateLimiting)
+			.BindConfiguration(RateLimitingSettings.SectionName)
 			.ValidateWithFluentValidation()
 			.ValidateOnStart();
 
 		services
 			.AddOptions<RequestLimitsSettings>()
-			.BindConfiguration(ConfigurationSectionConstants.RequestLimits)
+			.BindConfiguration(RequestLimitsSettings.SectionName)
 			.ValidateWithFluentValidation()
 			.ValidateOnStart();
 

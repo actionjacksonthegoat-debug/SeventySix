@@ -20,8 +20,27 @@ export { unauthenticatedTest } from "./unauthenticated.fixture";
 export { EmailTestHelper } from "./email.fixture";
 export type { MailDevEmail } from "./email.fixture";
 
+// TOTP helper
+export { generateTotpCode, generateTotpCodeFromSecret, generateSafeTotpCode, generateSafeTotpCodeFromSecret, waitForFreshTotpWindow, disableTotpViaApi } from "./helpers/totp.helper";
+
+// Login helper
+export { loginAsUser } from "./helpers/login.helper";
+
+// Context login helper (fresh browser context + login)
+export { loginInFreshContext } from "./helpers/context-login.helper";
+export type { ContextLoginResult } from "./helpers/context-login.helper";
+
+// Data table helper
+export { waitForTableReady, waitForTableLoaded } from "./helpers/data-table.helper";
+
+// Altcha helper
+export { solveAltchaChallenge } from "./helpers/altcha.helper";
+
+// Accessibility helper
+export { expectAccessible } from "./helpers/accessibility.helper";
+
 // Test users
-export { TEST_USERS, getTestUserByRole } from "./test-users.constant";
+export { TEST_USERS, getTestUserByRole, MFA_BACKUP_CODES, FORCE_PASSWORD_CHANGE_USER, FORCE_PASSWORD_CHANGE_LIFECYCLE_USER, PASSWORD_CHANGE_USER, TOTP_ENROLL_USER, TOTP_VIEWER_USER, BACKUP_CODES_USER, FORGOT_PASSWORD_USER, LOCKOUT_USER, CONCURRENT_USER, CROSSTAB_USER, PERM_APPROVE_USER, PROFILE_EDIT_USER } from "./test-users.constant";
 export type { TestUser } from "./test-users.constant";
 
 // Constants
@@ -29,23 +48,18 @@ export { SELECTORS } from "./selectors.constant";
 export { ROUTES, ROUTE_GROUPS, createRouteRegex } from "./routes.constant";
 export { PAGE_TEXT } from "./page-text.constant";
 export { TIMEOUTS } from "./timeouts.constant";
-export { E2E_CONFIG } from "./config.constant";
+export { E2E_CONFIG, COOKIE_NAMES, API_ROUTES } from "./config.constant";
 
 // Assertion helpers
 export {
 	expectNoAccessDenied,
-	expectNoApplicationErrors,
-	captureConsoleErrors,
-	expectNoConsoleErrors,
-	expectNavigatedTo
+	expectNoApplicationErrors
 } from "./assertions.helper";
 
 // Page helpers
 export {
 	AuthPageHelper,
+	ChangePasswordPageHelper,
 	HomePageHelper,
 	AdminDashboardPageHelper,
-	UserManagementPageHelper,
-	ProfilePageHelper,
-	RequestPermissionsPageHelper
 } from "./pages";

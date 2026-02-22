@@ -24,7 +24,7 @@ namespace SeventySix.Identity.Settings;
 /// Reference: RFC 7518 (JSON Web Algorithms)
 /// https://datatracker.ietf.org/doc/html/rfc7518#section-3.2
 /// </remarks>
-public class JwtSettingsValidator : AbstractValidator<JwtSettings>
+public sealed class JwtSettingsValidator : AbstractValidator<JwtSettings>
 {
 	/// <summary>
 	/// Minimum required length for SecretKey (256 bits = 32 bytes/characters).
@@ -94,6 +94,10 @@ public class JwtSettingsValidator : AbstractValidator<JwtSettings>
 		RuleFor(settings => settings.ClockSkewMinutes)
 			.InclusiveBetween(0, 5)
 			.WithMessage("ClockSkewMinutes must be between 0 and 5");
+
+		RuleFor(settings => settings.TokenRefreshBufferSeconds)
+			.GreaterThan(0)
+			.WithMessage("TokenRefreshBufferSeconds must be greater than 0");
 	}
 
 	/// <summary>

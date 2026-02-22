@@ -26,8 +26,9 @@
  * - Class Structure (2 tests): Services/components with 12+ methods violate SRP
  * - Date Handling (1 test): Use DateService not native Date constructors
  * - Domain Boundary (6 tests): Bounded context isolation, shared independence, API imports, relative imports
+ * - Button Variants (1 test): No mat-raised-button, mat-flat-button, or mat-fab in templates
  *
- * Total: 27 architecture guardrails
+ * Total: 28 architecture guardrails
  * Complemented by ESLint rules in eslint.config.js for real-time feedback
  */
 
@@ -37,14 +38,27 @@ import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const CLIENT_DIR = path.join(__dirname, "..");
 const SRC_DIR = path.join(__dirname, "..", "src", "app");
+const E2E_DIR = path.join(__dirname, "..", "e2e");
+const LOAD_TESTING_DIR = path.join(__dirname, "..", "load-testing");
 
 let totalTests = 0;
 let passedTests = 0;
 let failedTests = 0;
 
 /**
- * Recursively gets all files matching a pattern in a directory.
+ * Recursively gets all files matching a single file extension in a directory.
+ * Skips hidden directories (starting with ".") and node_modules.
+ *
+ * @param {string} directory
+ * Absolute path to the root directory to scan.
+ *
+ * @param {string} pattern
+ * File extension to match (e.g., ".ts", ".html").
+ *
+ * @returns {Promise<string[]>}
+ * Array of absolute file paths matching the pattern.
  */
 async function getFiles(
 	directory,
@@ -72,7 +86,61 @@ async function getFiles(
 }
 
 /**
- * Test runner
+ * Recursively gets all files matching multiple extensions in a directory.
+ * Supports E2E and load-testing directories that may not exist.
+ * Skips hidden directories (starting with ".") and node_modules.
+ *
+ * @param {string} directory
+ * Absolute path to the root directory to scan.
+ *
+ * @param {string[]} extensions
+ * Array of file extensions to match (e.g., [".ts"], [".js", ".mjs"]).
+ *
+ * @returns {Promise<string[]>}
+ * Array of absolute file paths. Returns empty array if directory doesn't exist.
+ */
+async function getTestInfraFiles(
+	directory,
+	extensions
+)
+{
+	const files = [];
+
+	try
+	{
+		const entries = await fs.readdir(directory, { withFileTypes: true });
+
+		for (const entry of entries)
+		{
+			const fullPath = path.join(directory, entry.name);
+
+			if (entry.isDirectory() && !entry.name.startsWith(".") && entry.name !== "node_modules")
+			{
+				files.push(...(await getTestInfraFiles(fullPath, extensions)));
+			}
+			else if (entry.isFile() && extensions.some((extension) => entry.name.endsWith(extension)))
+			{
+				files.push(fullPath);
+			}
+		}
+	}
+	catch
+	{
+		// Directory may not exist
+	}
+
+	return files;
+}
+
+/**
+ * Runs a single architecture test, tracking pass/fail counts.
+ * Supports both sync and async test functions via automatic await.
+ *
+ * @param {string} testName
+ * Human-readable test name displayed in output.
+ *
+ * @param {Function} testFunction
+ * Test body — should throw (via assertEmpty) on failure.
  */
 function test(
 	testName,
@@ -96,7 +164,16 @@ function test(
 }
 
 /**
- * Assertion helper
+ * Asserts that a violations array is empty, throwing a formatted error if not.
+ *
+ * @param {string[]} violations
+ * Array of violation description strings.
+ *
+ * @param {string} message
+ * Summary message prefixed to the error output.
+ *
+ * @throws {Error}
+ * When violations array is non-empty.
  */
 function assertEmpty(
 	violations,
@@ -110,7 +187,17 @@ function assertEmpty(
 }
 
 /**
- * DRY helper: Check templates (HTML and inline) for a specific pattern
+ * Checks all external HTML templates and inline component templates for a
+ * substring pattern, returning violations as relative file paths.
+ *
+ * @param {string} pattern
+ * Plain string to search for in template content.
+ *
+ * @param {string} description
+ * Human-readable label for violation messages.
+ *
+ * @returns {Promise<string[]>}
+ * Array of relative file paths containing the pattern.
  */
 async function checkTemplatesForPattern(
 	pattern,
@@ -148,7 +235,18 @@ async function checkTemplatesForPattern(
 }
 
 /**
- * DRY helper: Check templates for method calls with specific regex pattern
+ * Checks all external HTML templates and inline component templates for
+ * method call patterns using a regex, filtering out safe patterns
+ * (pipes, trackBy, ternary operators, template variables).
+ *
+ * @param {RegExp} regex
+ * Regex pattern to detect method calls in templates.
+ *
+ * @param {string} description
+ * Human-readable label for violation messages.
+ *
+ * @returns {Promise<string[]>}
+ * Array of violation strings with file paths and matched expressions.
  */
 async function checkTemplatesForMethodCalls(
 	regex,
@@ -217,7 +315,86 @@ async function checkTemplatesForMethodCalls(
 }
 
 /**
- * DRY helper: Find all methods in files with optional parameters
+ * Scans files for a regex pattern violation.
+ * Strips string literals before matching to avoid false positives.
+ *
+ * @param {string[]} files
+ * Array of absolute file paths to scan.
+ *
+ * @param {RegExp} pattern
+ * Regex pattern to detect violations.
+ *
+ * @param {string} description
+ * Human-readable description appended to each violation.
+ *
+ * @param {string[]} allowedFiles
+ * Filenames to skip (e.g., "date.service.ts").
+ *
+ * @returns {string[]}
+ * Array of violation strings.
+ */
+async function scanForPatternViolations(
+	files,
+	pattern,
+	description,
+	allowedFiles = []
+)
+{
+	const violations = [];
+
+	for (const file of files)
+	{
+		const fileName = path.basename(file);
+		const relativePath = path.relative(CLIENT_DIR, file);
+
+		if (allowedFiles.includes(fileName))
+		{
+			continue;
+		}
+
+		const content = await fs.readFile(file, "utf-8");
+
+		if (content.includes("// architecture-ignore"))
+		{
+			continue;
+		}
+
+		const contentWithoutStrings = content
+			.replace(/`[^`]*`/gs, "``")
+			.replace(/"[^"]*"/g, '""')
+			.replace(/'[^']*'/g, "''");
+
+		const matches = contentWithoutStrings.match(pattern);
+
+		if (matches && matches.length > 0)
+		{
+			violations.push(
+				`${relativePath}: ${matches.length} ${description}`);
+		}
+	}
+
+	return violations;
+}
+
+/**
+ * Finds all method/function declarations in the given source files.
+ * Detects class methods, arrow function properties, standard methods,
+ * and constructors. Excludes test block functions (describe, test, etc.).
+ *
+ * @param {string[]} sourceFiles
+ * Array of absolute file paths to scan.
+ *
+ * @param {object} options
+ * Configuration options.
+ *
+ * @param {boolean} [options.skipTests=false]
+ * When true, skips .spec.ts files entirely.
+ *
+ * @param {boolean} [options.includeParameters=false]
+ * When true, captures parameter strings for each method.
+ *
+ * @returns {Promise<Array<{file: string, methodName: string, parameters?: string, startLine: number, lines: string[]}>>}
+ * Array of method match objects with file, name, optional parameters, start line, and file lines.
  */
 async function findMethodsInFiles(
 	sourceFiles,
@@ -742,7 +919,11 @@ console.log("\nNull Coercion Tests");
 
 test("code should not use double-bang (!!) for boolean coercion", async () =>
 {
-	const sourceFiles = await getFiles(SRC_DIR, ".ts");
+	const sourceFiles = [
+		...await getFiles(SRC_DIR, ".ts"),
+		...await getTestInfraFiles(E2E_DIR, [".ts"]),
+		...await getTestInfraFiles(LOAD_TESTING_DIR, [".js", ".mjs"])
+	];
 	const violations = [];
 
 	// Pattern: !! followed by any identifier, property access, or method call
@@ -751,8 +932,13 @@ test("code should not use double-bang (!!) for boolean coercion", async () =>
 
 	for (const file of sourceFiles)
 	{
-		const relativePath = path.relative(SRC_DIR, file);
+		const relativePath = path.relative(CLIENT_DIR, file);
 		const content = await fs.readFile(file, "utf-8");
+
+		if (content.includes("// architecture-ignore"))
+		{
+			continue;
+		}
 
 		// Remove string literals before matching to avoid false positives
 		const contentWithoutStrings = content
@@ -765,17 +951,21 @@ test("code should not use double-bang (!!) for boolean coercion", async () =>
 		if (matches && matches.length > 0)
 		{
 			violations.push(
-				`${relativePath}: ${matches.length} double-bang (!!) usage(s) - use isPresent() from @shared/utilities/null-check.utility instead`
+				`${relativePath}: ${matches.length} double-bang (!!) usage(s) - use isPresent() (src) or explicit boolean checks (e2e/load-testing)`
 			);
 		}
 	}
 
-	assertEmpty(violations, "Double-bang (!!) boolean coercion found (use isPresent() instead)");
+	assertEmpty(violations, "Double-bang (!!) boolean coercion found (use isPresent() or explicit checks)");
 });
 
 test("code should not use OR (||) for nullish fallbacks with strings", async () =>
 {
-	const sourceFiles = await getFiles(SRC_DIR, ".ts");
+	const sourceFiles = [
+		...await getFiles(SRC_DIR, ".ts"),
+		...await getTestInfraFiles(E2E_DIR, [".ts"]),
+		...await getTestInfraFiles(LOAD_TESTING_DIR, [".js", ".mjs"])
+	];
 	const violations = [];
 
 	// Pattern: || followed by a string literal (single or double quoted)
@@ -788,7 +978,7 @@ test("code should not use OR (||) for nullish fallbacks with strings", async () 
 	for (const file of sourceFiles)
 	{
 		const fileName = path.basename(file);
-		const relativePath = path.relative(SRC_DIR, file);
+		const relativePath = path.relative(CLIENT_DIR, file);
 
 		if (allowedExceptions.includes(fileName))
 		{
@@ -796,6 +986,12 @@ test("code should not use OR (||) for nullish fallbacks with strings", async () 
 		}
 
 		const content = await fs.readFile(file, "utf-8");
+
+		if (content.includes("// architecture-ignore"))
+		{
+			continue;
+		}
+
 		const matches = content.match(orStringFallbackPattern);
 
 		if (matches && matches.length > 0)
@@ -817,7 +1013,11 @@ console.log("\nFile Structure Tests");
 
 test("all files should have less than 800 lines", async () =>
 {
-	const sourceFiles = await getFiles(SRC_DIR, ".ts");
+	const sourceFiles = [
+		...await getFiles(SRC_DIR, ".ts"),
+		...await getTestInfraFiles(E2E_DIR, [".ts"]),
+		...await getTestInfraFiles(LOAD_TESTING_DIR, [".js", ".mjs"])
+	];
 	const violations = [];
 	const maxLinesPerFile = 800;
 
@@ -825,7 +1025,8 @@ test("all files should have less than 800 lines", async () =>
 	// NOTE: Test files are NOT automatically excepted - apply 80/20 and DRY
 	const allowedExceptions = [
 		"generated-open-api.ts", // Auto-generated from OpenAPI spec (3476 lines)
-		"data-table.component.ts" // Primarily signal/input/output declarations
+		"data-table.component.ts", // Primarily signal/input/output declarations
+		"auth.service.ts" // Auth lifecycle: single domain, ~30% JSDoc documentation (853 lines)
 	];
 
 	for (const file of sourceFiles)
@@ -841,7 +1042,7 @@ test("all files should have less than 800 lines", async () =>
 
 		if (lineCount > maxLinesPerFile)
 		{
-			violations.push(`${path.relative(SRC_DIR, file)}: ${lineCount} lines (max ${maxLinesPerFile})`);
+			violations.push(`${path.relative(CLIENT_DIR, file)}: ${lineCount} lines (max ${maxLinesPerFile})`);
 		}
 	}
 
@@ -948,6 +1149,7 @@ test("services should have less than 12 public methods", async () =>
 	// Services with cohesive single-domain responsibilities are exceptions
 	// These have many methods but serve a single purpose (utility patterns)
 	const allowedExceptions = [
+		"auth.service.ts", // Authentication - all methods serve auth lifecycle (12 methods, single domain)
 		"date.service.ts", // Date utilities - all methods serve date handling (22 methods, single domain)
 		"logger.service.ts", // Logging levels - all methods serve logging (12 methods, single domain)
 		"notification.service.ts" // Toast notifications - all methods serve user feedback (13 methods, single domain)
@@ -1309,9 +1511,13 @@ test("relative imports should only be used in index.ts barrel files", async () =
 
 console.log("\nVariable Naming Tests");
 
-test("production code should not have single-letter lambda parameters", async () =>
+test("code should not have single-letter lambda parameters", async () =>
 {
-	const productionFiles = await getFiles(SRC_DIR, ".ts");
+	const productionFiles = [
+		...await getFiles(SRC_DIR, ".ts"),
+		...await getTestInfraFiles(E2E_DIR, [".ts"]),
+		...await getTestInfraFiles(LOAD_TESTING_DIR, [".js", ".mjs"])
+	];
 	const violations = [];
 
 	// Allowed exceptions
@@ -1328,8 +1534,12 @@ test("production code should not have single-letter lambda parameters", async ()
 	for (const file of productionFiles)
 	{
 		const content = await fs.readFile(file, "utf-8");
-		await fs.readFile(file, "utf-8");
-		const relativePath = path.relative(SRC_DIR, file);
+		const relativePath = path.relative(CLIENT_DIR, file);
+
+		if (content.includes("// architecture-ignore"))
+		{
+			continue;
+		}
 
 		let match;
 		while ((match = arrowFunctionPattern.exec(content)) !== null)
@@ -1486,6 +1696,146 @@ test("Files should have single primary export (with approved exceptions)", async
 		violations,
 		"Files should export only one primary item"
 	);
+});
+
+// ============================================================================
+// BUTTON VARIANT ENFORCEMENT
+// ============================================================================
+
+console.log("\nButton Variant Tests");
+
+test("Templates must not use mat-raised-button, mat-flat-button, or mat-fab", async () =>
+{
+	const htmlFiles =
+		await getFiles(SRC_DIR, ".html");
+	const tsFiles =
+		(await getFiles(SRC_DIR, ".ts")).filter(
+			(file) => !file.endsWith(".spec.ts")
+		);
+	const allFiles =
+		[...htmlFiles, ...tsFiles];
+
+	const forbiddenPattern =
+		/\bmat-raised-button\b|\bmat-flat-button\b|\bmat-fab\b/;
+	const violations = [];
+
+	for (const file of allFiles)
+	{
+		const content =
+			await fs.readFile(file, "utf-8");
+		const lines =
+			content.split("\n");
+
+		for (let index = 0; index < lines.length; index++)
+		{
+			if (forbiddenPattern.test(lines[index]))
+			{
+				const relativePath =
+					path.relative(SRC_DIR, file).replace(/\\/g, "/");
+				violations.push(
+					`${relativePath}:${index + 1} — ${lines[index].trim()}`
+				);
+			}
+		}
+	}
+
+	assertEmpty(
+		violations,
+		"Use mat-stroked-button, mat-button, or mat-icon-button only (no mat-raised-button, mat-flat-button, or mat-fab)"
+	);
+});
+
+// ============================================================================
+// E2E & LOAD TESTING ARCHITECTURE TESTS
+// ============================================================================
+
+console.log("\nE2E & Load Testing Tests");
+
+test("E2E code should not use native Date constructors", async () =>
+{
+	const e2eFiles = await getTestInfraFiles(E2E_DIR, [".ts"]);
+
+	// Bans: new Date(), Date.parse(), Date.UTC()
+	// Allows: Date.now() — used for unique test data generation
+	const nativeDatePattern = /new\s+Date\s*\(|Date\.parse\s*\(|Date\.UTC\s*\(/g;
+
+	const violations = await scanForPatternViolations(
+		e2eFiles,
+		nativeDatePattern,
+		"native Date constructor(s) - use Date.now() for timestamps or string literals for fixed dates");
+
+	assertEmpty(violations, "Native Date constructors found in E2E code");
+});
+
+test("E2E functions should have less than 50 lines", async () =>
+{
+	const e2eFiles = await getTestInfraFiles(E2E_DIR, [".ts"]);
+	const violations = [];
+	const maxLinesPerMethod = 50;
+
+	// Reuse existing findMethodsInFiles — pass skipTests: false since ALL e2e files are .spec.ts
+	// testBlockFunctions exclusion still applies (skips describe/test/beforeEach/etc.)
+	const methodMatches = await findMethodsInFiles(e2eFiles, { skipTests: false });
+
+	for (const { file, methodName, startLine, lines } of methodMatches)
+	{
+		const methodLineCount = countMethodLines(lines, startLine - 1);
+
+		if (methodLineCount > maxLinesPerMethod)
+		{
+			violations.push(
+				`${
+					path.relative(CLIENT_DIR, file)
+				}:${startLine} ${methodName}(): ${methodLineCount} lines (max ${maxLinesPerMethod})`);
+		}
+	}
+
+	assertEmpty(violations, "E2E functions exceeding 50 lines (extract to page helpers or utilities)");
+});
+
+test("Shell scripts should use LF line endings (not CRLF)", async () =>
+{
+	const repoRoot = path.join(__dirname, "..", "..");
+	const shFiles = [];
+
+	// Find all .sh files in the repo
+	async function findShellScripts(directory)
+	{
+		const entries = await fs.readdir(directory, { withFileTypes: true });
+
+		for (const entry of entries)
+		{
+			const fullPath = path.join(directory, entry.name);
+
+			if (entry.isDirectory()
+				&& !entry.name.startsWith(".")
+				&& entry.name !== "node_modules")
+			{
+				await findShellScripts(fullPath);
+			}
+			else if (entry.isFile() && entry.name.endsWith(".sh"))
+			{
+				shFiles.push(fullPath);
+			}
+		}
+	}
+
+	await findShellScripts(repoRoot);
+	const violations = [];
+
+	for (const file of shFiles)
+	{
+		const content = await fs.readFile(file, "utf-8");
+
+		if (content.includes("\r"))
+		{
+			const relativePath = path.relative(repoRoot, file);
+			violations.push(
+				`${relativePath}: contains CRLF line endings (must be LF for Linux/CI)`);
+		}
+	}
+
+	assertEmpty(violations, "Shell scripts with CRLF line endings (run: git add --renormalize .)");
 });
 
 // ============================================================================

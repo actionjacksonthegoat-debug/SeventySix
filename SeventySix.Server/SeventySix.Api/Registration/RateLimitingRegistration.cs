@@ -60,16 +60,16 @@ public static class RateLimitingRegistration
 		IConfiguration configuration)
 	{
 		RateLimitingSettings globalSettings =
-			configuration.GetSection(ConfigurationSectionConstants.RateLimiting).Get<RateLimitingSettings>()
+			configuration.GetSection(RateLimitingSettings.SectionName).Get<RateLimitingSettings>()
 			?? throw new InvalidOperationException(
-				$"{ConfigurationSectionConstants.RateLimiting} configuration section is required");
+				$"{RateLimitingSettings.SectionName} configuration section is required");
 
 		AuthRateLimitSettings authSettings =
 			configuration
-				.GetSection(ConfigurationSectionConstants.AuthNested.RateLimit)
+				.GetSection($"{AuthSettings.SectionName}:RateLimit")
 				.Get<AuthRateLimitSettings>()
 			?? throw new InvalidOperationException(
-				$"{ConfigurationSectionConstants.AuthNested.RateLimit} configuration section is required");
+				$"{AuthSettings.SectionName}:RateLimit configuration section is required");
 
 		if (!globalSettings.Enabled)
 		{
@@ -159,11 +159,10 @@ public static class RateLimitingRegistration
 	{
 		string[] allowedOrigins =
 			configuration?.GetSection(ConfigurationSectionConstants.Cors.AllowedOrigins).Get<string[]>()
-			?? ["http://localhost:4200"];
+			?? [];
 
 		ISet<string> allowedOriginsSet =
-			new HashSet<string>(
-				allowedOrigins,
+			allowedOrigins.ToHashSet(
 				StringComparer.OrdinalIgnoreCase);
 
 		services.AddRateLimiter(
@@ -216,8 +215,8 @@ public static class RateLimitingRegistration
 				}
 
 				// Apply rate limiting for health check endpoints (DDOS protection)
-				if (context.Request.Path.StartsWithSegments("/health")
-					|| context.Request.Path.StartsWithSegments("/api/v1/health"))
+				if (context.Request.Path.StartsWithSegments(EndpointPathConstants.Health.Base)
+					|| context.Request.Path.StartsWithSegments(EndpointPathConstants.Health.Versioned))
 				{
 					return RateLimitPartition.GetFixedWindowLimiter(
 						partitionKey: context.Connection.RemoteIpAddress?.ToString()

@@ -11,7 +11,7 @@ namespace SeventySix.Shared.Exceptions;
 /// Used to signal business logic validation failures that are not covered by input validation.
 /// Examples: Cannot delete active entity, insufficient balance, etc.
 /// </remarks>
-public class BusinessRuleViolationException : DomainException
+public sealed class BusinessRuleViolationException : DomainException
 {
 	/// <summary>
 	/// Initializes a new instance of the <see cref="BusinessRuleViolationException"/> class.

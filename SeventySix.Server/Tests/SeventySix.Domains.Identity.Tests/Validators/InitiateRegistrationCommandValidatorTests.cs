@@ -3,7 +3,6 @@
 // </copyright>
 
 using FluentValidation.Results;
-using SeventySix.Identity;
 using SeventySix.Identity.Commands.InitiateRegistration;
 using Shouldly;
 
@@ -12,7 +11,7 @@ namespace SeventySix.Identity.Tests.Validators;
 /// <summary>
 /// Unit tests for <see cref="InitiateRegistrationCommandValidator"/>.
 /// </summary>
-public class InitiateRegistrationCommandValidatorTests
+public sealed class InitiateRegistrationCommandValidatorTests
 {
 	private readonly InitiateRegistrationCommandValidator Validator = new();
 

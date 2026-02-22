@@ -2,7 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using System.Reflection;
+using Microsoft.Extensions.Configuration;
 
 namespace SeventySix.Shared.Utilities;
 
@@ -11,52 +11,66 @@ namespace SeventySix.Shared.Utilities;
 /// </summary>
 /// <remarks>
 /// Used by DbContext factories during migration generation (dotnet ef commands).
-/// Loads connection details from the .env file to maintain single source of truth.
+/// Loads connection details from appsettings.json and User Secrets.
 /// </remarks>
 public static class DesignTimeConnectionStringProvider
 {
 	/// <summary>
-	/// Builds a PostgreSQL connection string from the .env file.
+	/// The User Secrets ID for the SeventySix.Api project.
+	/// </summary>
+	private const string UserSecretsId = "seventysix-api-dev";
+
+	/// <summary>
+	/// Builds a PostgreSQL connection string from appsettings.json and User Secrets.
 	/// </summary>
 	/// <remarks>
-	/// Searches for the .env file starting from the assembly location
-	/// and traversing up the directory tree until found.
+	/// Searches for the SeventySix.Api project directory by traversing up
+	/// the directory tree, then loads appsettings.json, appsettings.Development.json,
+	/// and User Secrets to build the connection string.
 	/// </remarks>
 	/// <returns>
 	/// A valid PostgreSQL connection string for design-time operations.
 	/// </returns>
 	/// <exception cref="InvalidOperationException">
-	/// Thrown when DB_PASSWORD is not set in the .env file.
+	/// Thrown when required Database settings are not configured.
 	/// </exception>
 	public static string GetConnectionString()
 	{
-		LoadEnvFile();
+		IConfigurationRoot configuration =
+			BuildConfiguration();
+
+		IConfigurationSection databaseSection =
+			configuration.GetSection("Database");
 
 		string databaseHost =
-			Environment.GetEnvironmentVariable("DB_HOST")
+			databaseSection["Host"]
 			?? throw new InvalidOperationException(
-				"DB_HOST must be set in .env file for design-time operations.");
+				"Database:Host must be set in User Secrets or appsettings.json for design-time operations. "
+					+ $"Run: dotnet user-secrets set \"Database:Host\" \"localhost\" --project SeventySix.Api");
 
 		string databasePort =
-			Environment.GetEnvironmentVariable("DB_PORT")
+			databaseSection["Port"]
 			?? throw new InvalidOperationException(
-				"DB_PORT must be set in .env file for design-time operations.");
+				"Database:Port must be set in User Secrets or appsettings.json for design-time operations. "
+					+ $"Run: dotnet user-secrets set \"Database:Port\" \"5433\" --project SeventySix.Api");
 
 		string databaseName =
-			Environment.GetEnvironmentVariable("DB_NAME")
+			databaseSection["Name"]
 			?? throw new InvalidOperationException(
-				"DB_NAME must be set in .env file for design-time operations.");
+				"Database:Name must be set in User Secrets or appsettings.json for design-time operations. "
+					+ $"Run: dotnet user-secrets set \"Database:Name\" \"seventysix\" --project SeventySix.Api");
 
 		string databaseUser =
-			Environment.GetEnvironmentVariable("DB_USER")
+			databaseSection["User"]
 			?? throw new InvalidOperationException(
-				"DB_USER must be set in .env file for design-time operations.");
+				"Database:User must be set in User Secrets or appsettings.json for design-time operations. "
+					+ $"Run: dotnet user-secrets set \"Database:User\" \"postgres\" --project SeventySix.Api");
 
 		string databasePassword =
-			Environment.GetEnvironmentVariable("DB_PASSWORD")
+			databaseSection["Password"]
 			?? throw new InvalidOperationException(
-				"DB_PASSWORD must be set in .env file for design-time operations. "
-					+ "Ensure .env file exists at repository root with DB_PASSWORD set.");
+				"Database:Password must be set in User Secrets or appsettings.json for design-time operations. "
+					+ $"Run: dotnet user-secrets set \"Database:Password\" \"your-password\" --project SeventySix.Api");
 
 		return $"Host={databaseHost};Port={databasePort};Database={databaseName};Username={databaseUser};"
 			+ $"Password={databasePassword};Pooling=true;Minimum Pool Size=5;Maximum Pool Size=100;"
@@ -64,61 +78,63 @@ public static class DesignTimeConnectionStringProvider
 	}
 
 	/// <summary>
-	/// Loads environment variables from the .env file.
+	/// Builds configuration from appsettings.json, appsettings.Development.json, and User Secrets.
 	/// </summary>
-	private static void LoadEnvFile()
+	/// <returns>
+	/// The built configuration root.
+	/// </returns>
+	private static IConfigurationRoot BuildConfiguration()
 	{
-		string? envPath =
-			FindEnvFileFromDirectory(
-				Directory.GetCurrentDirectory());
+		string apiProjectDirectory =
+			FindApiProjectDirectory()
+			?? throw new InvalidOperationException(
+				"Could not find SeventySix.Api project directory. "
+					+ "Ensure you are running from within the repository.");
 
-		if (envPath == null)
-		{
-			string? assemblyLocation =
-				Path.GetDirectoryName(
-					Assembly.GetExecutingAssembly().Location);
-
-			if (!string.IsNullOrEmpty(assemblyLocation))
-			{
-				envPath =
-					FindEnvFileFromDirectory(assemblyLocation);
-			}
-		}
-
-		if (envPath == null)
-		{
-			envPath =
-				FindEnvFileFromDirectory(
-					AppDomain.CurrentDomain.BaseDirectory);
-		}
-
-		if (envPath != null)
-		{
-			LoadFile(envPath);
-		}
+		return new ConfigurationBuilder()
+			.SetBasePath(apiProjectDirectory)
+			.AddJsonFile(
+				"appsettings.json",
+				optional: false)
+			.AddJsonFile(
+				"appsettings.Development.json",
+				optional: true)
+			.AddUserSecrets(UserSecretsId)
+			.Build();
 	}
 
 	/// <summary>
-	/// Searches for a .env file starting from the specified directory.
+	/// Searches for the SeventySix.Api project directory by traversing up the directory tree.
 	/// </summary>
-	/// <param name="startDirectory">
-	/// The directory to start searching from.
-	/// </param>
 	/// <returns>
-	/// The full path to the .env file if found; otherwise null.
+	/// The full path to the SeventySix.Api directory if found; otherwise null.
 	/// </returns>
-	private static string? FindEnvFileFromDirectory(string startDirectory)
+	private static string? FindApiProjectDirectory()
 	{
-		string? currentDirectory = startDirectory;
+		string? currentDirectory =
+			Directory.GetCurrentDirectory();
 
 		while (!string.IsNullOrEmpty(currentDirectory))
 		{
-			string envPath =
-				Path.Combine(currentDirectory, ".env");
+			string apiProjectPath =
+				Path.Combine(
+					currentDirectory,
+					"SeventySix.Api");
 
-			if (File.Exists(envPath))
+			if (Directory.Exists(apiProjectPath))
 			{
-				return envPath;
+				return apiProjectPath;
+			}
+
+			string nestedApiProjectPath =
+				Path.Combine(
+					currentDirectory,
+					"SeventySix.Server",
+					"SeventySix.Api");
+
+			if (Directory.Exists(nestedApiProjectPath))
+			{
+				return nestedApiProjectPath;
 			}
 
 			DirectoryInfo? parent =
@@ -133,49 +149,5 @@ public static class DesignTimeConnectionStringProvider
 		}
 
 		return null;
-	}
-
-	/// <summary>
-	/// Loads environment variables from the specified file.
-	/// </summary>
-	/// <param name="filePath">
-	/// The path to the .env file.
-	/// </param>
-	private static void LoadFile(string filePath)
-	{
-		foreach (string line in File.ReadAllLines(filePath))
-		{
-			if (string.IsNullOrWhiteSpace(line)
-				|| line.TrimStart().StartsWith('#'))
-			{
-				continue;
-			}
-
-			string[] parts =
-				line.Split('=', 2);
-
-			if (parts.Length != 2)
-			{
-				continue;
-			}
-
-			string key = parts[0].Trim();
-			string value = parts[1].Trim();
-
-			if (value.Length >= 2
-				&& ((value.StartsWith('"') && value.EndsWith('"'))
-					|| (value.StartsWith('\'') && value.EndsWith('\''))))
-			{
-				value =
-					value.Substring(
-						1,
-						value.Length - 2);
-			}
-
-			if (Environment.GetEnvironmentVariable(key) == null)
-			{
-				Environment.SetEnvironmentVariable(key, value);
-			}
-		}
 	}
 }

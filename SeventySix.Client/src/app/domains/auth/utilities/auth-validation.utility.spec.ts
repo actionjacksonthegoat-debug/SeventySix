@@ -99,11 +99,88 @@ describe("validatePassword",
 						`Password must be at least ${PASSWORD_VALIDATION.MIN_LENGTH} characters.`);
 			});
 
-		it("should return valid for a valid password",
+		it("should return invalid when password exceeds max length",
+			() =>
+			{
+				const longPassword: string =
+					"A1" + "a".repeat(99);
+
+				const result: ValidationResult =
+					validatePassword(longPassword);
+
+				expect(result.valid)
+					.toBe(false);
+				expect(result.errorMessage)
+					.toBe(
+						`Password must not exceed ${PASSWORD_VALIDATION.MAX_LENGTH} characters.`);
+			});
+
+		it("should return invalid when password is missing uppercase letter",
 			() =>
 			{
 				const result: ValidationResult =
-					validatePassword("validPassword123");
+					validatePassword("password1!");
+
+				expect(result.valid)
+					.toBe(false);
+				expect(result.errorMessage)
+					.toBe(
+						"Password must contain at least one uppercase letter.");
+			});
+
+		it("should return invalid when password is missing lowercase letter",
+			() =>
+			{
+				const result: ValidationResult =
+					validatePassword("PASSWORD1!");
+
+				expect(result.valid)
+					.toBe(false);
+				expect(result.errorMessage)
+					.toBe(
+						"Password must contain at least one lowercase letter.");
+			});
+
+		it("should return invalid when password is missing digit",
+			() =>
+			{
+				const result: ValidationResult =
+					validatePassword("Passwords!");
+
+				expect(result.valid)
+					.toBe(false);
+				expect(result.errorMessage)
+					.toBe(
+						"Password must contain at least one digit.");
+			});
+
+		it("should return valid for a password meeting all rules",
+			() =>
+			{
+				const result: ValidationResult =
+					validatePassword("ValidPass1");
+
+				expect(result.valid)
+					.toBe(true);
+				expect(result.errorMessage)
+					.toBeUndefined();
+			});
+
+		it("should return invalid when password is empty string",
+			() =>
+			{
+				const result: ValidationResult =
+					validatePassword("");
+
+				expect(result.valid)
+					.toBe(false);
+			});
+
+		it("should return valid for exact min length password meeting all rules",
+			() =>
+			{
+				const result: ValidationResult =
+					validatePassword("Abcdef1x");
 
 				expect(result.valid)
 					.toBe(true);

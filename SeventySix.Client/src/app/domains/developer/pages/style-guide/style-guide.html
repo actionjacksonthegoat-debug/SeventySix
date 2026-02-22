@@ -7,7 +7,7 @@
 		</p>
 		<div class="theme-controls">
 			<button
-				mat-raised-button
+				mat-stroked-button
 				(click)="themeService.toggleBrightness()"
 				aria-label="Toggle theme brightness">
 				<mat-icon aria-hidden="true">{{ themeService.isDark() ? "light_mode" : "dark_mode" }}</mat-icon>
@@ -194,6 +194,24 @@
 						</mat-card-content>
 					</mat-card>
 				</div>
+
+				<h2>Transparent Overlay Pattern (MD3)</h2>
+				<p class="mat-body-1">
+					Angular Material 3 only emits full-value color tokens (e.g.
+					<code>--mat-sys-primary</code>). The
+					<code>rgba(var(--token-rgb), N)</code> pattern is invalid — RGB-split variants are never
+					emitted. Use <code>color-mix()</code> instead.
+				</p>
+
+				<div class="style-note preferred">
+					<strong>Correct (MD3 compatible):</strong><br />
+					<code>background: color-mix(in srgb, var(--mat-sys-primary) 12%, transparent);</code><br />
+					<code>border: 1px solid color-mix(in srgb, var(--mat-sys-outline) 12%, transparent);</code>
+					<br /><br />
+					<strong>Wrong (<code>--mat-sys-primary-rgb</code> is undefined — color is invisible):</strong
+					><br />
+					<code>background: rgba(var(--mat-sys-primary-rgb), 0.12);</code>
+				</div>
 			</div>
 		</mat-tab>
 
@@ -235,72 +253,13 @@
 			<div class="tab-content">
 				<h2>Button Variants</h2>
 				<p class="mat-body-1">
-					Material Design 3 button styles for different emphasis levels.
+					Three button styles are used in SeventySix. All other variants
+					(filled, flat, FAB) are prohibited by architecture tests.
 				</p>
 
 				<mat-card class="button-card">
 					<mat-card-header>
-						<mat-card-title>Filled Buttons (High Emphasis)</mat-card-title>
-					</mat-card-header>
-					<mat-card-content>
-						<div class="button-group">
-							<button
-								mat-raised-button
-								color="primary">
-								Primary
-							</button>
-							<button
-								mat-raised-button
-								color="accent">
-								Accent
-							</button>
-							<button
-								mat-raised-button
-								color="warn">
-								Warn
-							</button>
-							<button
-								mat-raised-button
-								disabled>
-								Disabled
-							</button>
-						</div>
-					</mat-card-content>
-				</mat-card>
-
-				<mat-card class="button-card">
-					<mat-card-header>
-						<mat-card-title>Flat Buttons (Medium Emphasis)</mat-card-title>
-					</mat-card-header>
-					<mat-card-content>
-						<div class="button-group">
-							<button
-								mat-flat-button
-								color="primary">
-								Primary
-							</button>
-							<button
-								mat-flat-button
-								color="accent">
-								Accent
-							</button>
-							<button
-								mat-flat-button
-								color="warn">
-								Warn
-							</button>
-							<button
-								mat-flat-button
-								disabled>
-								Disabled
-							</button>
-						</div>
-					</mat-card-content>
-				</mat-card>
-
-				<mat-card class="button-card">
-					<mat-card-header>
-						<mat-card-title>Stroked Buttons (Medium Emphasis)</mat-card-title>
+						<mat-card-title>Action Buttons (Standard)</mat-card-title>
 					</mat-card-header>
 					<mat-card-content>
 						<div class="button-group">
@@ -368,59 +327,25 @@
 								mat-icon-button
 								color="primary"
 								aria-label="Home">
-								<mat-icon>home</mat-icon>
+								<mat-icon aria-hidden="true">home</mat-icon>
 							</button>
 							<button
 								mat-icon-button
 								color="accent"
 								aria-label="Favorite">
-								<mat-icon>favorite</mat-icon>
+								<mat-icon aria-hidden="true">favorite</mat-icon>
 							</button>
 							<button
 								mat-icon-button
 								color="warn"
 								aria-label="Delete">
-								<mat-icon>delete</mat-icon>
+								<mat-icon aria-hidden="true">delete</mat-icon>
 							</button>
 							<button
 								mat-icon-button
 								disabled
 								aria-label="Disabled">
-								<mat-icon>block</mat-icon>
-							</button>
-						</div>
-					</mat-card-content>
-				</mat-card>
-
-				<mat-card class="button-card">
-					<mat-card-header>
-						<mat-card-title>FAB Buttons</mat-card-title>
-					</mat-card-header>
-					<mat-card-content>
-						<div class="button-group">
-							<button
-								mat-fab
-								color="primary"
-								aria-label="Add">
-								<mat-icon>add</mat-icon>
-							</button>
-							<button
-								mat-fab
-								color="accent"
-								aria-label="Edit">
-								<mat-icon>edit</mat-icon>
-							</button>
-							<button
-								mat-fab
-								color="warn"
-								aria-label="Delete">
-								<mat-icon>delete</mat-icon>
-							</button>
-							<button
-								mat-fab
-								disabled
-								aria-label="Disabled">
-								<mat-icon>block</mat-icon>
+								<mat-icon aria-hidden="true">block</mat-icon>
 							</button>
 						</div>
 					</mat-card-content>
@@ -436,6 +361,11 @@
 					Material Design 3 form components for user input.
 				</p>
 
+				<div class="style-note preferred">
+					<strong>Standard:</strong> All inputs use <code>mat-form-field appearance="outline"</code> with <code>matInput</code>.
+					All checkboxes use <code>mat-checkbox</code>. No native HTML form controls.
+				</div>
+
 				<mat-card class="form-card">
 					<mat-card-header>
 						<mat-card-title>Text Inputs</mat-card-title>
@@ -448,12 +378,14 @@
 									matInput
 									placeholder="Placeholder"
 								/>
-								<mat-hint>Hint text</mat-hint>
+								<mat-hint appFieldMessage>Hint text</mat-hint>
 							</mat-form-field>
 
 							<mat-form-field appearance="outline">
 								<mat-label>With Icon</mat-label>
-								<mat-icon matPrefix>email</mat-icon>
+								<mat-icon
+									matPrefix
+									aria-hidden="true">email</mat-icon>
 								<input
 									matInput
 									type="email"
@@ -467,7 +399,7 @@
 									matInput
 									required
 								/>
-								<mat-error>This field is required</mat-error>
+								<mat-error appFieldMessage>This field is required</mat-error>
 							</mat-form-field>
 
 							<mat-form-field appearance="outline">
@@ -477,6 +409,49 @@
 									disabled
 									value="Disabled value"
 								/>
+							</mat-form-field>
+						</div>
+					</mat-card-content>
+				</mat-card>
+
+				<mat-card class="form-card">
+					<mat-card-header>
+						<mat-card-title>Field Messages</mat-card-title>
+						<mat-card-subtitle>Hint &amp; error text with auto-truncation</mat-card-subtitle>
+					</mat-card-header>
+					<mat-card-content>
+						<div class="style-note preferred">
+							<strong>Pattern:</strong> Add <code>appFieldMessage</code> to any <code>mat-hint</code> or
+							<code>mat-error</code>. Text truncates to one line with an ellipsis. A Material tooltip
+							reveals the full message on hover (desktop) or tap (mobile) — but <em>only</em> when text
+							is actually clipped. No tooltip is shown when text fits comfortably.
+						</div>
+						<div class="form-grid">
+							<mat-form-field appearance="outline">
+								<mat-label>Short hint (no tooltip)</mat-label>
+								<input
+									matInput
+									placeholder="Short hint fits"
+								/>
+								<mat-hint appFieldMessage>Required field</mat-hint>
+							</mat-form-field>
+
+							<mat-form-field appearance="outline">
+								<mat-label>Long hint (tooltip on hover)</mat-label>
+								<input
+									matInput
+									placeholder="Long hint truncates"
+								/>
+								<mat-hint appFieldMessage>At least 8 characters with uppercase, lowercase, and a digit</mat-hint>
+							</mat-form-field>
+
+							<mat-form-field appearance="outline">
+								<mat-label>Error message</mat-label>
+								<input
+									matInput
+									required
+								/>
+								<mat-error appFieldMessage>Password must contain uppercase, lowercase, a number, and a special character</mat-error>
 							</mat-form-field>
 						</div>
 					</mat-card-content>
@@ -511,7 +486,7 @@
 
 				<mat-card class="form-card">
 					<mat-card-header>
-						<mat-card-title>Checkboxes & Radio Buttons</mat-card-title>
+						<mat-card-title>Checkboxes &amp; Radio Buttons</mat-card-title>
 					</mat-card-header>
 					<mat-card-content>
 						<div class="form-grid">
@@ -647,7 +622,7 @@
 					<mat-card-content>
 						<div class="button-group">
 							<button
-								mat-raised-button
+								mat-stroked-button
 								color="primary"
 								(click)="
 									showSnackbar('This is a success message!')
@@ -665,7 +640,7 @@
 					<mat-card-content>
 						<div class="button-group">
 							<button
-								mat-raised-button
+								mat-stroked-button
 								color="primary"
 								(click)="showDialog()">
 								Show Dialog
@@ -697,7 +672,9 @@
 								<p class="mat-body-2">
 									Progress Bar (Indeterminate)
 								</p>
-								<mat-progress-bar mode="indeterminate"></mat-progress-bar>
+								<mat-progress-bar mode="indeterminate"
+									aria-label="Loading">
+								</mat-progress-bar>
 							</div>
 							<div class="progress-item progress-bar-item">
 								<p class="mat-body-2">
@@ -705,7 +682,9 @@
 								</p>
 								<mat-progress-bar
 									mode="determinate"
-									[value]="65"></mat-progress-bar>
+									[value]="65"
+									aria-label="Progress">
+								</mat-progress-bar>
 							</div>
 						</div>
 					</mat-card-content>
@@ -721,7 +700,7 @@
 							<mat-chip highlighted>Highlighted Chip</mat-chip>
 							<mat-chip disabled>Disabled Chip</mat-chip>
 							<mat-chip>
-								<mat-icon matChipAvatar>face</mat-icon>
+								<mat-icon matChipAvatar aria-hidden="true">face</mat-icon>
 								Chip with Avatar
 							</mat-chip>
 							<mat-chip>
@@ -729,7 +708,7 @@
 								<button
 									matChipRemove
 									aria-label="Remove">
-									<mat-icon>cancel</mat-icon>
+									<mat-icon aria-hidden="true">cancel</mat-icon>
 								</button>
 							</mat-chip>
 						</mat-chip-set>
@@ -743,25 +722,25 @@
 					<mat-card-content>
 						<div class="button-group">
 							<button
-								mat-raised-button
+								mat-stroked-button
 								matTooltip="Tooltip above"
 								matTooltipPosition="above">
 								Above
 							</button>
 							<button
-								mat-raised-button
+								mat-stroked-button
 								matTooltip="Tooltip below"
 								matTooltipPosition="below">
 								Below
 							</button>
 							<button
-								mat-raised-button
+								mat-stroked-button
 								matTooltip="Tooltip left"
 								matTooltipPosition="left">
 								Left
 							</button>
 							<button
-								mat-raised-button
+								mat-stroked-button
 								matTooltip="Tooltip right"
 								matTooltipPosition="right">
 								Right
@@ -787,27 +766,27 @@
 					<mat-card-content>
 						<div class="icon-grid">
 							<div class="icon-item">
-								<mat-icon>home</mat-icon>
+								<mat-icon aria-hidden="true">home</mat-icon>
 								<span class="mat-body-2">home</span>
 							</div>
 							<div class="icon-item">
-								<mat-icon>menu</mat-icon>
+								<mat-icon aria-hidden="true">menu</mat-icon>
 								<span class="mat-body-2">menu</span>
 							</div>
 							<div class="icon-item">
-								<mat-icon>arrow_back</mat-icon>
+								<mat-icon aria-hidden="true">arrow_back</mat-icon>
 								<span class="mat-body-2">arrow_back</span>
 							</div>
 							<div class="icon-item">
-								<mat-icon>arrow_forward</mat-icon>
+								<mat-icon aria-hidden="true">arrow_forward</mat-icon>
 								<span class="mat-body-2">arrow_forward</span>
 							</div>
 							<div class="icon-item">
-								<mat-icon>expand_more</mat-icon>
+								<mat-icon aria-hidden="true">expand_more</mat-icon>
 								<span class="mat-body-2">expand_more</span>
 							</div>
 							<div class="icon-item">
-								<mat-icon>expand_less</mat-icon>
+								<mat-icon aria-hidden="true">expand_less</mat-icon>
 								<span class="mat-body-2">expand_less</span>
 							</div>
 						</div>
@@ -821,27 +800,27 @@
 					<mat-card-content>
 						<div class="icon-grid">
 							<div class="icon-item">
-								<mat-icon>add</mat-icon>
+								<mat-icon aria-hidden="true">add</mat-icon>
 								<span class="mat-body-2">add</span>
 							</div>
 							<div class="icon-item">
-								<mat-icon>edit</mat-icon>
+								<mat-icon aria-hidden="true">edit</mat-icon>
 								<span class="mat-body-2">edit</span>
 							</div>
 							<div class="icon-item">
-								<mat-icon>delete</mat-icon>
+								<mat-icon aria-hidden="true">delete</mat-icon>
 								<span class="mat-body-2">delete</span>
 							</div>
 							<div class="icon-item">
-								<mat-icon>save</mat-icon>
+								<mat-icon aria-hidden="true">save</mat-icon>
 								<span class="mat-body-2">save</span>
 							</div>
 							<div class="icon-item">
-								<mat-icon>close</mat-icon>
+								<mat-icon aria-hidden="true">close</mat-icon>
 								<span class="mat-body-2">close</span>
 							</div>
 							<div class="icon-item">
-								<mat-icon>check</mat-icon>
+								<mat-icon aria-hidden="true">check</mat-icon>
 								<span class="mat-body-2">check</span>
 							</div>
 						</div>
@@ -855,27 +834,27 @@
 					<mat-card-content>
 						<div class="icon-grid">
 							<div class="icon-item">
-								<mat-icon>search</mat-icon>
+								<mat-icon aria-hidden="true">search</mat-icon>
 								<span class="mat-body-2">search</span>
 							</div>
 							<div class="icon-item">
-								<mat-icon>filter_list</mat-icon>
+								<mat-icon aria-hidden="true">filter_list</mat-icon>
 								<span class="mat-body-2">filter_list</span>
 							</div>
 							<div class="icon-item">
-								<mat-icon>sort</mat-icon>
+								<mat-icon aria-hidden="true">sort</mat-icon>
 								<span class="mat-body-2">sort</span>
 							</div>
 							<div class="icon-item">
-								<mat-icon>info</mat-icon>
+								<mat-icon aria-hidden="true">info</mat-icon>
 								<span class="mat-body-2">info</span>
 							</div>
 							<div class="icon-item">
-								<mat-icon>warning</mat-icon>
+								<mat-icon aria-hidden="true">warning</mat-icon>
 								<span class="mat-body-2">warning</span>
 							</div>
 							<div class="icon-item">
-								<mat-icon>error</mat-icon>
+								<mat-icon aria-hidden="true">error</mat-icon>
 								<span class="mat-body-2">error</span>
 							</div>
 						</div>
@@ -892,6 +871,13 @@
 					Use <strong>Skeleton Loaders</strong> for data fetching (read operations) and
 					<strong>Spinners</strong> for user actions (write operations like save, submit, delete).
 				</p>
+				<p class="mat-body-2">
+					<strong>Reduced motion:</strong> Skeleton and spinner animations are
+					automatically suppressed for users with
+					<code>prefers-reduced-motion: reduce</code> enabled
+					(WCAG 2.3.3 compliance). This is handled globally in
+					<code>_base.scss</code>.
+				</p>
 
 				<!-- Skeletons vs Spinners Comparison -->
 				<div class="loading-comparison">
@@ -899,6 +885,7 @@
 						<mat-card-header>
 							<mat-icon
 								matCardAvatar
+								aria-hidden="true"
 								class="comparison-icon skeleton-icon">view_day</mat-icon>
 							<mat-card-title>Skeleton Loaders</mat-card-title>
 							<mat-card-subtitle>For Load/Fetch Events</mat-card-subtitle>
@@ -922,6 +909,7 @@
 						<mat-card-header>
 							<mat-icon
 								matCardAvatar
+								aria-hidden="true"
 								class="comparison-icon spinner-icon">sync</mat-icon>
 							<mat-card-title>Spinners</mat-card-title>
 							<mat-card-subtitle>For Save/Action Events</mat-card-subtitle>
@@ -1085,14 +1073,28 @@
 								<code class="skeleton-code">SKELETON_AVATAR</code>
 							</div>
 
-							<div class="skeleton-item">
+							<div class="skeleton-item wide">
 								<span class="mat-label-large">SKELETON_TABLE_CELL</span>
-								<span class="mat-body-2">Table cell content (20px)</span>
-								<div class="skeleton-demo">
-									<ngx-skeleton-loader
-										[count]="1"
-										[theme]="skeletonTableCell"
-										aria-label="Table cell loading"></ngx-skeleton-loader>
+								<span class="mat-body-2">Table cell content (20px) &mdash; shown in a row context</span>
+								<div class="skeleton-demo full-width">
+									<div class="skeleton-table-row">
+										<ngx-skeleton-loader
+											[count]="1"
+											[theme]="skeletonTableCell"
+											aria-label="Table cell loading"></ngx-skeleton-loader>
+										<ngx-skeleton-loader
+											[count]="1"
+											[theme]="skeletonTableCell"
+											aria-label="Table cell loading"></ngx-skeleton-loader>
+										<ngx-skeleton-loader
+											[count]="1"
+											[theme]="skeletonTableCell"
+											aria-label="Table cell loading"></ngx-skeleton-loader>
+										<ngx-skeleton-loader
+											[count]="1"
+											[theme]="skeletonTableCell"
+											aria-label="Table cell loading"></ngx-skeleton-loader>
+									</div>
 								</div>
 								<code class="skeleton-code">SKELETON_TABLE_CELL</code>
 							</div>
@@ -1240,6 +1242,24 @@
 						</mat-card-header>
 						<mat-card-content>
 							<div class="skeleton-list">
+								<div class="skeleton-table-row skeleton-table-header">
+									<ngx-skeleton-loader
+										[count]="1"
+										[theme]="skeletonTitle"
+										aria-label="Column header loading"></ngx-skeleton-loader>
+									<ngx-skeleton-loader
+										[count]="1"
+										[theme]="skeletonTitle"
+										aria-label="Column header loading"></ngx-skeleton-loader>
+									<ngx-skeleton-loader
+										[count]="1"
+										[theme]="skeletonTitle"
+										aria-label="Column header loading"></ngx-skeleton-loader>
+									<ngx-skeleton-loader
+										[count]="1"
+										[theme]="skeletonTitle"
+										aria-label="Column header loading"></ngx-skeleton-loader>
+								</div>
 								@for (row of [1, 2, 3]; track row) {
 									<div class="skeleton-table-row">
 										<ngx-skeleton-loader
@@ -1283,7 +1303,7 @@
 							<div class="spinner-example">
 								<span class="mat-label-large">Button with Spinner</span>
 								<button
-									mat-raised-button
+									mat-stroked-button
 									color="primary"
 									disabled
 									class="saving-button">

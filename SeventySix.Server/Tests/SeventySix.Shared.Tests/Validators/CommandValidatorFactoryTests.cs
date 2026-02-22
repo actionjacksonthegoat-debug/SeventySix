@@ -13,7 +13,7 @@ namespace SeventySix.Shared.Tests.Validators;
 /// Unit tests for <see cref="CommandValidatorFactory"/>.
 /// Verifies factory correctly delegates validation to request validators.
 /// </summary>
-public class CommandValidatorFactoryTests
+public sealed class CommandValidatorFactoryTests
 {
 	/// <summary>
 	/// Test command with nested request.

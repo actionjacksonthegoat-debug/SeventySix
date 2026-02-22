@@ -3,7 +3,6 @@
 // </copyright>
 
 using FluentValidation.TestHelper;
-using SeventySix.Identity;
 using SeventySix.Identity.Commands.BulkUpdateActiveStatus;
 
 namespace SeventySix.Identity.Tests.Validators;
@@ -17,7 +16,7 @@ namespace SeventySix.Identity.Tests.Validators;
 /// - UserIds validation (required, not empty, positive values)
 /// - ModifiedBy validation (required)
 /// </remarks>
-public class BulkUpdateActiveStatusCommandValidatorTests
+public sealed class BulkUpdateActiveStatusCommandValidatorTests
 {
 	private readonly BulkUpdateActiveStatusCommandValidator Validator = new();
 

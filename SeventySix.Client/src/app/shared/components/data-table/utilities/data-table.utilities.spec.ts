@@ -1,6 +1,6 @@
 import { DateRangeEvent } from "@shared/models";
 import { DateService } from "@shared/services";
-import { DataTableUtilities } from "./data-table.utilities";
+import { DataTableUtilities } from "./data-table.utility";
 
 /**
  * Unit tests for DataTableUtilities.

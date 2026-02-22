@@ -125,7 +125,7 @@ describe("mapAuthError",
 		describe("when error is BAD_REQUEST with unknown error code",
 			() =>
 			{
-				it("should return error detail if available",
+				it("should return generic fallback message without leaking server detail",
 					() =>
 					{
 						const error: HttpErrorResponse =
@@ -133,7 +133,7 @@ describe("mapAuthError",
 								{
 									status: HTTP_STATUS.BAD_REQUEST,
 									error: {
-										detail: "Custom error message",
+										detail: "Sensitive internal detail",
 										extensions: {
 											errorCode: "UNKNOWN_CODE"
 										}
@@ -144,7 +144,10 @@ describe("mapAuthError",
 							mapAuthError(error);
 
 						expect(result.message)
-							.toBe("Custom error message");
+							.toBe("Invalid request. Please check your input.");
+						expect(result.message)
+							.not
+							.toContain("Sensitive");
 						expect(result.invalidateToken)
 							.toBe(false);
 					});
@@ -183,7 +186,9 @@ describe("mapAuthError",
 							new HttpErrorResponse(
 								{
 									status: 500,
-									error: {}
+									error: {
+										detail: "Stack trace: NullReferenceException at..."
+									}
 								});
 
 						const result: AuthErrorResult =
@@ -191,6 +196,9 @@ describe("mapAuthError",
 
 						expect(result.message)
 							.toBe("An unexpected error occurred. Please try again.");
+						expect(result.message)
+							.not
+							.toContain("Stack trace");
 						expect(result.invalidateToken)
 							.toBe(false);
 					});
@@ -212,6 +220,195 @@ describe("mapAuthError",
 							.toBe("An unexpected error occurred. Please try again.");
 						expect(result.invalidateToken)
 							.toBe(false);
+					});
+			});
+
+		describe("expanded error codes",
+			() =>
+			{
+				it("should return safe message for INVALID_CREDENTIALS",
+					() =>
+					{
+						const error: HttpErrorResponse =
+							new HttpErrorResponse(
+								{
+									status: HTTP_STATUS.BAD_REQUEST,
+									error: {
+										detail: "Invalid credentials",
+										extensions: {
+											errorCode: AUTH_ERROR_CODE.INVALID_CREDENTIALS
+										}
+									}
+								});
+
+						const result: AuthErrorResult =
+							mapAuthError(error);
+
+						expect(result.message)
+							.toBe("Invalid username or password.");
+						expect(result.invalidateToken)
+							.toBe(false);
+					});
+
+				it("should return safe message for ACCOUNT_LOCKED",
+					() =>
+					{
+						const error: HttpErrorResponse =
+							new HttpErrorResponse(
+								{
+									status: HTTP_STATUS.BAD_REQUEST,
+									error: {
+										extensions: {
+											errorCode: AUTH_ERROR_CODE.ACCOUNT_LOCKED
+										}
+									}
+								});
+
+						const result: AuthErrorResult =
+							mapAuthError(error);
+
+						expect(result.message)
+							.toBe("Your account has been locked. Please try again later.");
+						expect(result.invalidateToken)
+							.toBe(false);
+					});
+
+				it("should return safe message for ACCOUNT_INACTIVE",
+					() =>
+					{
+						const error: HttpErrorResponse =
+							new HttpErrorResponse(
+								{
+									status: HTTP_STATUS.BAD_REQUEST,
+									error: {
+										extensions: {
+											errorCode: AUTH_ERROR_CODE.ACCOUNT_INACTIVE
+										}
+									}
+								});
+
+						const result: AuthErrorResult =
+							mapAuthError(error);
+
+						expect(result.message)
+							.toBe("Your account is inactive. Please contact support.");
+						expect(result.invalidateToken)
+							.toBe(false);
+					});
+
+				it("should return safe message for WEAK_PASSWORD",
+					() =>
+					{
+						const error: HttpErrorResponse =
+							new HttpErrorResponse(
+								{
+									status: HTTP_STATUS.BAD_REQUEST,
+									error: {
+										extensions: {
+											errorCode: AUTH_ERROR_CODE.WEAK_PASSWORD
+										}
+									}
+								});
+
+						const result: AuthErrorResult =
+							mapAuthError(error);
+
+						expect(result.message)
+							.toContain("does not meet the requirements");
+						expect(result.invalidateToken)
+							.toBe(false);
+					});
+
+				it("should return safe message for EMAIL_NOT_CONFIRMED",
+					() =>
+					{
+						const error: HttpErrorResponse =
+							new HttpErrorResponse(
+								{
+									status: HTTP_STATUS.BAD_REQUEST,
+									error: {
+										extensions: {
+											errorCode: AUTH_ERROR_CODE.EMAIL_NOT_CONFIRMED
+										}
+									}
+								});
+
+						const result: AuthErrorResult =
+							mapAuthError(error);
+
+						expect(result.message)
+							.toBe("Please verify your email address before signing in.");
+						expect(result.invalidateToken)
+							.toBe(false);
+					});
+
+				it("should invalidate token for REGISTRATION_FAILED",
+					() =>
+					{
+						const error: HttpErrorResponse =
+							new HttpErrorResponse(
+								{
+									status: HTTP_STATUS.BAD_REQUEST,
+									error: {
+										extensions: {
+											errorCode: AUTH_ERROR_CODE.REGISTRATION_FAILED
+										}
+									}
+								});
+
+						const result: AuthErrorResult =
+							mapAuthError(error);
+
+						expect(result.message)
+							.toBe("Registration could not be completed. Please try again.");
+						expect(result.invalidateToken)
+							.toBe(true);
+					});
+
+				it("should invalidate token for INVALID_PASSWORD_RESET_TOKEN",
+					() =>
+					{
+						const error: HttpErrorResponse =
+							new HttpErrorResponse(
+								{
+									status: HTTP_STATUS.BAD_REQUEST,
+									error: {
+										extensions: {
+											errorCode: AUTH_ERROR_CODE.INVALID_PASSWORD_RESET_TOKEN
+										}
+									}
+								});
+
+						const result: AuthErrorResult =
+							mapAuthError(error);
+
+						expect(result.message)
+							.toContain("expired or is invalid");
+						expect(result.invalidateToken)
+							.toBe(true);
+					});
+
+				it("should invalidate token for INVALID_EMAIL_VERIFICATION_TOKEN",
+					() =>
+					{
+						const error: HttpErrorResponse =
+							new HttpErrorResponse(
+								{
+									status: HTTP_STATUS.BAD_REQUEST,
+									error: {
+										extensions: {
+											errorCode: AUTH_ERROR_CODE.INVALID_EMAIL_VERIFICATION_TOKEN
+										}
+									}
+								});
+
+						const result: AuthErrorResult =
+							mapAuthError(error);
+
+						expect(result.message)
+							.toContain("expired or is invalid");
+						expect(result.invalidateToken)
+							.toBe(true);
 					});
 			});
 	});

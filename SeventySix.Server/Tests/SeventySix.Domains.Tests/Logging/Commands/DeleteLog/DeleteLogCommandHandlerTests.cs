@@ -16,7 +16,7 @@ namespace SeventySix.Domains.Tests.Logging.Commands.DeleteLog;
 /// Tests the delete operation's success and failure paths.
 /// Uses mocked repository since persistence is tested in LogRepositoryTests.
 /// </remarks>
-public class DeleteLogCommandHandlerTests
+public sealed class DeleteLogCommandHandlerTests
 {
 	private readonly ILogRepository Repository;
 

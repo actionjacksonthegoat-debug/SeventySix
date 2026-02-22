@@ -2,10 +2,8 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
-using SeventySix.Identity;
 using SeventySix.Identity.Queries.GetAllPermissionRequests;
 using SeventySix.Shared.Constants;
 using SeventySix.TestUtilities.Builders;
@@ -21,13 +19,12 @@ namespace SeventySix.Identity.Tests.Queries.GetAllPermissionRequests;
 /// <remarks>
 /// Tests follow 80/20 rule: focus on repository delegation.
 /// </remarks>
-public class GetAllPermissionRequestsQueryHandlerTests
+public sealed class GetAllPermissionRequestsQueryHandlerTests
 {
 	private static readonly FakeTimeProvider TimeProvider =
 		new(TestTimeProviderBuilder.DefaultTime);
 
 	private readonly IPermissionRequestRepository Repository;
-	private readonly IServiceScopeFactory ScopeFactory;
 	private readonly IFusionCacheProvider CacheProvider;
 	private readonly IFusionCache IdentityCache;
 
@@ -38,20 +35,6 @@ public class GetAllPermissionRequestsQueryHandlerTests
 	{
 		Repository =
 			Substitute.For<IPermissionRequestRepository>();
-
-		// Create mock service scope factory that returns the mock repository
-		IServiceScope scope =
-			Substitute.For<IServiceScope>();
-		IServiceProvider serviceProvider =
-			Substitute.For<IServiceProvider>();
-		serviceProvider
-			.GetService(typeof(IPermissionRequestRepository))
-			.Returns(Repository);
-		scope.ServiceProvider.Returns(serviceProvider);
-
-		ScopeFactory =
-			Substitute.For<IServiceScopeFactory>();
-		ScopeFactory.CreateScope().Returns(scope);
 
 		CacheProvider =
 			Substitute.For<IFusionCacheProvider>();
@@ -80,7 +63,7 @@ public class GetAllPermissionRequestsQueryHandlerTests
 		IEnumerable<PermissionRequestDto> result =
 			await GetAllPermissionRequestsQueryHandler.HandleAsync(
 				query,
-				ScopeFactory,
+				Repository,
 				CacheProvider,
 				CancellationToken.None);
 
@@ -112,7 +95,7 @@ public class GetAllPermissionRequestsQueryHandlerTests
 		IEnumerable<PermissionRequestDto> result =
 			await GetAllPermissionRequestsQueryHandler.HandleAsync(
 				query,
-				ScopeFactory,
+				Repository,
 				CacheProvider,
 				CancellationToken.None);
 
@@ -143,7 +126,7 @@ public class GetAllPermissionRequestsQueryHandlerTests
 		// Act
 		await GetAllPermissionRequestsQueryHandler.HandleAsync(
 			query,
-			ScopeFactory,
+			Repository,
 			CacheProvider,
 			cancellationTokenSource.Token);
 
@@ -165,6 +148,6 @@ public class GetAllPermissionRequestsQueryHandlerTests
 			RequestedRole: roleName,
 			RequestMessage: "Please approve",
 			CreatedBy: username,
-			CreateDate: TimeProvider.GetUtcNow().UtcDateTime);
+			CreateDate: TimeProvider.GetUtcNow());
 	}
 }

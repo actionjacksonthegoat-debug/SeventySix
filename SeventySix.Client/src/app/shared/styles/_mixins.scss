@@ -192,6 +192,24 @@
 	}
 }
 
+/**
+ * Flex fill column mixin
+ * Makes an element participate in a flex column layout chain, filling available height.
+ * Used by data-table pages to propagate the flex chain from the app shell
+ * down to the cdk-virtual-scroll-viewport.
+ *
+ * @example
+ *   :host {
+ *     @include flex-fill-column();
+ *   }
+ */
+@mixin flex-fill-column() {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	min-height: 0;
+}
+
 // ============================================================================
 // FEATURE PLACEHOLDER CARD
 // ============================================================================
@@ -520,7 +538,7 @@
 			font-size: vars.$avatar-size-md;
 			width: vars.$avatar-size-md;
 			height: vars.$avatar-size-md;
-			color: var(--mat-primary-default);
+			color: var(--mat-sys-primary);
 
 			@media (max-width: vars.$breakpoint-xs-max) {
 				font-size: vars.$icon-size-xl;
@@ -622,7 +640,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		background-color: rgba(var(--mat-sys-surface-rgb), 0.8);
+		background-color: color-mix(in srgb, var(--mat-sys-surface) 80%, transparent);
 		z-index: $z-index;
 		border-radius: vars.$border-radius-base;
 	}
@@ -638,7 +656,7 @@
 	margin-bottom: $margin-bottom;
 
 	&.error {
-		border-color: rgb(var(--mat-warn-rgb));
+		border-color: var(--mat-sys-error);
 	}
 
 	.alert-content {
@@ -689,7 +707,7 @@
 
 		.info-icon,
 		.review-icon {
-			color: rgba(var(--mat-primary-rgb), 0.7);
+			color: color-mix(in srgb, var(--mat-sys-primary) 70%, transparent);
 			flex-shrink: 0;
 		}
 
@@ -701,7 +719,7 @@
 
 			.info-label,
 			.review-label {
-				color: rgba(var(--mat-outline-rgb), 0.6);
+				color: color-mix(in srgb, var(--mat-sys-outline) 60%, transparent);
 				font-weight: vars.$font-weight-medium;
 			}
 		}
@@ -808,5 +826,312 @@
 				}
 			}
 		}
+	}
+}
+
+// ============================================================================
+// AUTH PAGE MIXINS
+// ============================================================================
+
+/// Auth page centered container.
+/// Apply to the outer container class in auth page components.
+@mixin auth-page-container() {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	min-height: 100%;
+	padding: vars.$spacing-lg;
+	background: var(--mat-app-background-color);
+}
+
+/// Auth page card.
+/// Apply to the card class in auth page components.
+/// @param {Length} $max-width - Card max width (default: 25rem / 400px)
+/// @param {Length} $card-padding - Card internal padding (default: $spacing-2xl)
+@mixin auth-page-card($max-width: vars.$container-width-xs, $card-padding: vars.$spacing-2xl) {
+	width: 100%;
+	max-width: $max-width;
+	padding: $card-padding;
+	background: var(--mat-sys-surface);
+	border-radius: vars.$border-radius-xl;
+	box-shadow: var(--mat-sys-level2);
+}
+
+/// Auth page card heading.
+/// Standard heading style for auth card titles.
+@mixin auth-page-heading() {
+	margin: 0 0 vars.$spacing-xl;
+	font-size: vars.$font-size-xxl;
+	font-weight: vars.$font-weight-medium;
+	text-align: center;
+	color: var(--mat-sys-on-surface);
+}
+
+/// Full-width Material form fields.
+/// Common pattern for auth forms and card-based forms.
+@mixin form-field-full-width() {
+	mat-form-field {
+		width: 100%;
+	}
+}
+
+/// Inline loading spinner.
+/// Animated circular spinner for inline loading states.
+/// @param {Length} $size - Spinner diameter (default: $icon-size-lg / 32px)
+/// @param {Length} $border-width - Border thickness (default: 3px)
+@mixin inline-spinner($size: vars.$icon-size-lg, $border-width: 3px) {
+	width: $size;
+	height: $size;
+	border: $border-width solid var(--mat-sys-outline-variant);
+	border-top-color: var(--mat-sys-primary);
+	border-radius: vars.$border-radius-full;
+	animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+/// Auth status message box (error or success).
+/// Colored box with icon + text for inline feedback.
+/// @param {String} $type - Message type: "error" or "success"
+@mixin auth-status-message($type: "error") {
+	display: flex;
+	align-items: center;
+	gap: vars.$spacing-sm;
+	padding: vars.$spacing-md;
+	border-radius: vars.$border-radius-base;
+	font-size: vars.$font-size-sm;
+
+	@if $type == "error" {
+		background-color: var(--color-error-surface);
+		color: var(--color-error);
+	} @else if $type == "success" {
+		background-color: var(--color-success-surface);
+		color: var(--color-success);
+	}
+
+	mat-icon {
+		@include icon-size(vars.$icon-size-sm);
+		flex-shrink: 0;
+	}
+}
+
+/// Auth next-steps instructional list.
+/// Numbered or bulleted instruction list after a success state.
+@mixin auth-next-steps() {
+	text-align: left;
+	width: 100%;
+
+	h3 {
+		margin: 0 0 vars.$spacing-md;
+		font-size: vars.$font-size-base;
+		font-weight: vars.$font-weight-medium;
+	}
+
+	ol,
+	ul {
+		margin: 0;
+		padding-left: vars.$spacing-xl;
+		display: flex;
+		flex-direction: column;
+		gap: vars.$spacing-sm;
+
+		li {
+			font-size: vars.$font-size-sm;
+			color: var(--mat-sys-on-surface-variant);
+		}
+	}
+}
+
+/// Admin dashboard table card layout.
+/// Card with header and scrollable table body.
+/// @param {Number} $visible-rows - Number of visible rows before scroll
+/// @param {Length} $row-height - Height per row (default: $table-row-height)
+/// @param {Length} $header-height - Table header height (default: $table-header-height)
+@mixin admin-table-card-layout(
+	$visible-rows: 4,
+	$row-height: vars.$table-row-height,
+	$header-height: vars.$table-header-height
+) {
+	.table-wrapper {
+		max-height: calc(#{$visible-rows} * #{$row-height} + #{$header-height});
+		overflow-y: auto;
+		@include vars.custom-scrollbar();
+	}
+
+	.no-data,
+	.error-container {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: vars.$spacing-xl;
+		color: var(--mat-sys-on-surface-variant);
+		gap: vars.$spacing-sm;
+	}
+}
+
+// ============================================================================
+// LANDING PAGE MIXINS
+// ============================================================================
+
+/// Creates a CSS parallax scroll container with perspective.
+/// Must be applied to the outermost scrollable element.
+@mixin parallax-scroll-container() {
+	height: 100%;
+	overflow-x: hidden;
+	overflow-y: auto;
+	perspective: vars.$parallax-perspective;
+	perspective-origin: center center;
+
+	@media (max-width: vars.$parallax-disable-below) {
+		perspective: none;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		perspective: none;
+	}
+}
+
+/// Creates a parallax depth layer using translateZ + scale compensation.
+/// @param {Length} $depth - The Z-axis depth value (negative = farther away).
+@mixin parallax-layer($depth) {
+	$scale: calc(1 + #{$depth * -1} / #{vars.$parallax-perspective});
+
+	transform: translateZ($depth) scale($scale);
+	transform-origin: center center;
+
+	@media (max-width: vars.$parallax-disable-below) {
+		transform: none;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		transform: none;
+	}
+}
+
+/// Glassmorphism card effect using theme-aware custom properties.
+@mixin glassmorphism() {
+	background: var(--landing-glass-bg);
+	backdrop-filter: saturate(var(--landing-glass-saturate)) blur(20px);
+	border: 1px solid var(--landing-glass-border);
+	border-radius: vars.$border-radius-lg;
+}
+
+/// Frosted glass pill behind text for readability over image backgrounds.
+/// Apply to inline text elements (headings, paragraphs) sitting on images.
+/// Uses ::before pseudo â€” avoid on elements that already use ::before.
+@mixin text-frosted-glass($v-pad: vars.$spacing-xs, $h-pad: vars.$spacing-md, $blur: 16px) {
+	position: relative;
+	isolation: isolate;
+	display: inline-block;
+
+	&::before {
+		content: "";
+		position: absolute;
+		inset: calc(-1 * #{$v-pad}) calc(-1 * #{$h-pad});
+		background: var(--landing-glass-bg);
+		backdrop-filter: blur($blur) saturate(var(--landing-glass-saturate));
+		border-radius: vars.$border-radius-md;
+		z-index: -1;
+		mask-image: radial-gradient(
+			ellipse at center,
+			black 15%,
+			transparent 80%
+		);
+	}
+}
+
+/// Gradient mesh background for sections.
+@mixin gradient-mesh-background() {
+	background:
+		radial-gradient(
+			ellipse at 20% 50%,
+			color-mix(in srgb, var(--landing-glow-color) 50%, transparent) 0%,
+			transparent 50%
+		),
+		radial-gradient(
+		ellipse at 80% 20%,
+		color-mix(in srgb, var(--landing-floating-shape-color) 50%, transparent) 0%,
+		transparent 40%
+	),
+		var(--landing-section-bg);
+	background-size: 200% 200%;
+	animation: gradient-shift vars.$animation-duration-gradient ease infinite;
+}
+
+/// Hidden state for scroll-reveal animation (before intersection).
+@mixin scroll-reveal-hidden() {
+	opacity: 0;
+	transform: translateY(2rem);
+	transition:
+		opacity vars.$animation-duration-reveal vars.$transition-easing-standard,
+		transform vars.$animation-duration-reveal vars.$transition-easing-standard;
+}
+
+/// Visible state for scroll-reveal animation (after intersection).
+@mixin scroll-reveal-visible() {
+	opacity: 1;
+	transform: translateY(0);
+}
+
+/// Neon glow text effect using theme-aware custom properties.
+@mixin neon-glow() {
+	text-shadow: var(--landing-text-glow);
+}
+
+/// Dot grid pattern overlay for section backgrounds.
+@mixin grid-dot-pattern() {
+	background-image: radial-gradient(
+		circle,
+		var(--landing-glow-color) 1px,
+		transparent 1px
+	);
+	background-size: 2rem 2rem;
+	opacity: 0.04;
+}
+
+/// Section separator with themed glow line.
+@mixin section-separator() {
+	height: 1px;
+	background: linear-gradient(
+		90deg,
+		transparent 0%,
+		var(--landing-divider-glow) 50%,
+		transparent 100%
+	);
+}
+
+/// Grain overlay using theme-controlled opacity.
+@mixin landing-grain-overlay() {
+	&::before {
+		content: "";
+		position: absolute;
+		inset: 0;
+		background-image: url("/images/landing-page/dark-grid-texture.webp");
+		background-size: 200px 200px;
+		opacity: var(--landing-grain-opacity);
+		pointer-events: none;
+		z-index: 1;
+	}
+}
+
+/// Scanline overlay using repeating gradient.
+@mixin landing-scanline-overlay() {
+	&::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+		background: repeating-linear-gradient(
+			0deg,
+			transparent,
+			transparent 2px,
+			rgb(0 0 0 / var(--landing-scanline-opacity)) 2px,
+			rgb(0 0 0 / var(--landing-scanline-opacity)) 4px
+		);
+		pointer-events: none;
+		z-index: 1;
 	}
 }

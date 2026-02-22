@@ -6,7 +6,6 @@ using MemoryPack;
 using Microsoft.Extensions.Time.Testing;
 using SeventySix.Identity;
 using Shouldly;
-using Xunit;
 
 namespace SeventySix.Shared.Tests.Registration;
 
@@ -17,7 +16,7 @@ namespace SeventySix.Shared.Tests.Registration;
 /// Follows 80/20 rule: tests critical path (round-trip serialization) only.
 /// Note: LogDto intentionally not cached per Microsoft best practices - logs are write-heavy.
 /// </remarks>
-public class MemoryPackSerializationTests
+public sealed class MemoryPackSerializationTests
 {
 	/// <summary>
 	/// Verifies that UserDto round-trips through MemoryPack serialization correctly.
@@ -42,12 +41,12 @@ public class MemoryPackSerializationTests
 				Username: "testuser",
 				Email: "test@example.com",
 				FullName: "Test User",
-				CreateDate: timeProvider.GetUtcNow().UtcDateTime,
+				CreateDate: timeProvider.GetUtcNow(),
 				IsActive: true,
 				CreatedBy: "admin",
 				ModifyDate: null,
 				ModifiedBy: "",
-				LastLoginAt: timeProvider.GetUtcNow().UtcDateTime,
+				LastLoginAt: timeProvider.GetUtcNow(),
 				IsDeleted: false,
 				DeletedAt: null,
 				DeletedBy: null);
@@ -83,7 +82,7 @@ public class MemoryPackSerializationTests
 				Username: "testuser",
 				Email: "test@example.com",
 				FullName: "Test User",
-				CreateDate: timeProvider.GetUtcNow().UtcDateTime,
+				CreateDate: timeProvider.GetUtcNow(),
 				IsActive: true,
 				CreatedBy: "admin",
 				ModifyDate: null,
@@ -133,7 +132,7 @@ public class MemoryPackSerializationTests
 				Roles: ["Developer", "Admin"],
 				HasPassword: true,
 				LinkedProviders: ["Google"],
-				LastLoginAt: timeProvider.GetUtcNow().UtcDateTime);
+				LastLoginAt: timeProvider.GetUtcNow());
 
 		// Act
 		byte[] serialized =

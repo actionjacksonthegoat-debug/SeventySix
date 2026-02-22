@@ -11,7 +11,7 @@ namespace SeventySix.Analyzers.Tests;
 /// Verifies that block lambdas are detected and moved to new line after opening paren.
 /// Follows 80/20 rule: critical paths only.
 /// </summary>
-public class LambdaArgumentNewlineCodeFixTests
+public sealed class LambdaArgumentNewlineCodeFixTests
 {
 	/// <summary>
 	/// Block lambda inline should be detected by the analyzer.

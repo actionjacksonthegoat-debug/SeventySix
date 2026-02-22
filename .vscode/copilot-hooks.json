@@ -1,0 +1,16 @@
+{
+	"hooks": {
+		"postEditFile": [
+			{
+				"label": "ESLint auto-fix (TypeScript)",
+				"command": "npx eslint --fix ${file}",
+				"when": "resourceExtname == .ts && resourcePath =~ /SeventySix.Client/"
+			},
+			{
+				"label": "Format C# (dotnet format)",
+				"command": "dotnet format --include ${file}",
+				"when": "resourceExtname == .cs && resourcePath =~ /SeventySix.Server/"
+			}
+		]
+	}
+}

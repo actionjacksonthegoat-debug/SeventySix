@@ -29,49 +29,54 @@ namespace SeventySix.Api.Configuration;
 /// in development for Prometheus scraping while enforcing HTTPS in production.
 /// </para>
 /// </remarks>
-public record SecuritySettings
+public sealed record SecuritySettings
 {
 	/// <summary>
-	/// Gets or sets a value indicating whether HTTPS redirection is enforced globally.
+	/// Configuration section name for binding.
+	/// </summary>
+	public const string SectionName = "Security";
+
+	/// <summary>
+	/// Gets a value indicating whether HTTPS redirection is enforced globally.
 	/// When true, all HTTP requests are redirected to HTTPS except for explicitly allowed endpoints.
 	/// Must be configured in appsettings.json.
 	/// </summary>
-	public bool EnforceHttps { get; set; }
+	public bool EnforceHttps { get; init; }
 
 	/// <summary>
-	/// Gets or sets the HTTPS port used for redirections.
+	/// Gets the HTTPS port used for redirections.
 	/// This port is used when redirecting HTTP requests to HTTPS.
 	/// Must be configured in appsettings.json.
 	/// </summary>
-	public int HttpsPort { get; set; }
+	public int HttpsPort { get; init; }
 
 	/// <summary>
-	/// Gets or sets the HSTS (HTTP Strict Transport Security) max-age in seconds.
+	/// Gets the HSTS (HTTP Strict Transport Security) max-age in seconds.
 	/// Tells browsers to only access the site via HTTPS for this duration.
 	/// Must be configured in appsettings.json.
 	/// </summary>
-	public int HstsMaxAgeSeconds { get; set; }
+	public int HstsMaxAgeSeconds { get; init; }
 
 	/// <summary>
-	/// Gets or sets a value indicating whether HSTS should apply to subdomains.
+	/// Gets a value indicating whether HSTS should apply to subdomains.
 	/// </summary>
-	public bool HstsIncludeSubdomains { get; set; }
+	public bool HstsIncludeSubdomains { get; init; }
 
 	/// <summary>
-	/// Gets or sets a value indicating whether /health endpoint can be accessed via HTTP.
+	/// Gets a value indicating whether /health endpoint can be accessed via HTTP.
 	/// Useful for container health checks and load balancers.
 	/// </summary>
-	public bool AllowHttpForHealthChecks { get; set; }
+	public bool AllowHttpForHealthChecks { get; init; }
 
 	/// <summary>
-	/// Gets or sets a value indicating whether /metrics endpoint can be accessed via HTTP.
+	/// Gets a value indicating whether /metrics endpoint can be accessed via HTTP.
 	/// Prometheus scrapers often don't support HTTPS with custom certificates.
 	/// </summary>
-	public bool AllowHttpForMetrics { get; set; }
+	public bool AllowHttpForMetrics { get; init; }
 
 	/// <summary>
-	/// Gets or sets a value indicating whether OpenAPI/Swagger endpoints can be accessed via HTTP.
+	/// Gets a value indicating whether OpenAPI/Swagger endpoints can be accessed via HTTP.
 	/// Useful for development and testing environments.
 	/// </summary>
-	public bool AllowHttpForOpenApi { get; set; }
+	public bool AllowHttpForOpenApi { get; init; }
 }

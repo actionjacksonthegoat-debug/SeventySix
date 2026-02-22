@@ -21,6 +21,7 @@
 /// interfaces with their concrete implementations.
 /// </remarks>
 
+using FluentValidation;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Scalar.AspNetCore;
 using Serilog;
@@ -28,32 +29,46 @@ using SeventySix.Api.Configuration;
 using SeventySix.Api.Extensions;
 using SeventySix.Api.Middleware;
 using SeventySix.Api.Registration;
-using SeventySix.Api.Utilities;
 using SeventySix.Identity.Registration;
 using SeventySix.Registration;
-using SeventySix.Shared.Constants;
 using SeventySix.Shared.Registration;
 using Wolverine;
 using Wolverine.FluentValidation;
 
-DotEnvLoader.Load();
-
 WebApplicationBuilder builder =
 			WebApplication.CreateBuilder(args);
 
-// Map flat .env variables to hierarchical configuration
-// This allows .env file to use simple names while ASP.NET gets proper hierarchy
-// Must be called early to ensure environment variables override appsettings.json
-builder.Configuration.AddEnvironmentVariableMapping();
+// Bind centralized security settings with FluentValidation + ValidateOnStart
+builder.Services.AddSingleton<IValidator<SecuritySettings>, SecuritySettingsValidator>();
 
-// Bind centralized security settings (single source of truth for HTTPS enforcement)
-builder.Services.Configure<SecuritySettings>(
-	builder.Configuration.GetSection(ConfigurationSectionConstants.Security));
+builder.Services
+	.AddOptions<SecuritySettings>()
+	.Bind(builder.Configuration.GetSection(SecuritySettings.SectionName))
+	.ValidateWithFluentValidation()
+	.ValidateOnStart();
 
-// Bind request limits settings for DoS protection
+// Bind forwarded headers settings with FluentValidation + ValidateOnStart
+builder.Services.AddSingleton<IValidator<ForwardedHeadersSettings>, ForwardedHeadersSettingsValidator>();
+
+builder.Services
+	.AddOptions<ForwardedHeadersSettings>()
+	.Bind(builder.Configuration.GetSection(ForwardedHeadersSettings.SectionName))
+	.ValidateWithFluentValidation()
+	.ValidateOnStart();
+
+// Bind request limits settings with FluentValidation + ValidateOnStart
+builder.Services.AddSingleton<IValidator<RequestLimitsSettings>, RequestLimitsSettingsValidator>();
+
+builder.Services
+	.AddOptions<RequestLimitsSettings>()
+	.Bind(builder.Configuration.GetSection(RequestLimitsSettings.SectionName))
+	.ValidateWithFluentValidation()
+	.ValidateOnStart();
+
+// Bind request limits settings for DoS protection (early read required before builder.Build())
 RequestLimitsSettings requestLimitsSettings =
 			builder.Configuration
-				.GetSection(ConfigurationSectionConstants.RequestLimits)
+				.GetSection(RequestLimitsSettings.SectionName)
 				.Get<RequestLimitsSettings>() ?? new RequestLimitsSettings();
 
 // Configure Kestrel with request body size limits to prevent DoS attacks
@@ -136,14 +151,19 @@ builder.Services.AddFusionCacheWithValkey(
 	builder.Environment.EnvironmentName);
 
 // Add MVC controllers to the service container
-builder.Services.AddControllers();
+builder.Services.AddControllers(
+	options =>
+	{
+		options.Filters.Add<SeventySix.Api.Filters.RequiresPasswordChangeFilter>();
+	});
 
 // Add all application services using extension methods
 // This includes: repositories, business logic services, validators, HTTP clients, and configuration
 builder.Services.AddApplicationServices(builder.Configuration);
 
 // Build connection string from Database:* configuration values
-// These are mapped from DB_* environment variables loaded from .env file
+// These are provided via User Secrets (Development), appsettings (Test/E2E),
+// or environment variables (Production).
 string connectionString =
 			ConnectionStringBuilder.BuildPostgresConnectionString(
 				builder.Configuration);
@@ -206,6 +226,17 @@ WebApplication app = builder.Build();
 
 // Validate required configuration settings (fails fast in production if secrets missing)
 StartupValidator.ValidateConfiguration(
+	builder.Configuration,
+	app.Environment,
+	app.Services.GetRequiredService<ILogger<Program>>());
+
+// Validate AllowedHosts is not wildcard in production
+StartupValidator.ValidateAllowedHosts(
+	builder.Configuration,
+	app.Environment);
+
+// Validate security-critical settings are enabled in production
+StartupValidator.ValidateProductionSecuritySettings(
 	builder.Configuration,
 	app.Environment,
 	app.Services.GetRequiredService<ILogger<Program>>());

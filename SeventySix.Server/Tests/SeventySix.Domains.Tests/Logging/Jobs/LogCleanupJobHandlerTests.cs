@@ -19,7 +19,7 @@ namespace SeventySix.Domains.Tests.Logging.Jobs;
 /// Unit tests for <see cref="LogCleanupJobHandler"/>.
 /// Focus: Scheduling logic verification. Database operations tested via LogRepositoryTests.
 /// </summary>
-public class LogCleanupJobHandlerTests
+public sealed class LogCleanupJobHandlerTests
 {
 	private readonly ILogRepository LogRepository;
 	private readonly IRecurringJobService RecurringJobService;
@@ -94,7 +94,7 @@ public class LogCleanupJobHandlerTests
 	public async Task HandleAsync_CallsRepositoryWithCorrectCutoffDateAsync()
 	{
 		// Arrange
-		DateTime expectedCutoff =
+		DateTimeOffset expectedCutoff =
 			TimeProvider.GetUtcNow().AddDays(-30).UtcDateTime;
 
 		// Act
@@ -106,7 +106,7 @@ public class LogCleanupJobHandlerTests
 		await LogRepository
 			.Received(1)
 			.DeleteOlderThanAsync(
-				Arg.Is<DateTime>(
+				Arg.Is<DateTimeOffset>(
 					date => Math.Abs((date - expectedCutoff).TotalSeconds) < 1),
 				Arg.Any<CancellationToken>());
 	}
@@ -187,7 +187,7 @@ public class LogCleanupJobHandlerTests
 		await LogRepository
 			.DidNotReceive()
 			.DeleteOlderThanAsync(
-				Arg.Any<DateTime>(),
+				Arg.Any<DateTimeOffset>(),
 				Arg.Any<CancellationToken>());
 
 		await RecurringJobService
@@ -218,7 +218,7 @@ public class LogCleanupJobHandlerTests
 
 		LogRepository
 			.DeleteOlderThanAsync(
-				Arg.Any<DateTime>(),
+				Arg.Any<DateTimeOffset>(),
 				Arg.Any<CancellationToken>())
 			.ThrowsAsync(expectedException);
 

@@ -14,7 +14,7 @@ namespace SeventySix.Api.Tests.Controllers;
 /// Tests that admin endpoints require proper authentication and admin role.
 /// </summary>
 [Collection(CollectionNames.LoggingPostgreSql)]
-public class LogsControllerAuthorizationTests(
+public sealed class LogsControllerAuthorizationTests(
 	LoggingApiPostgreSqlFixture fixture) : ApiPostgreSqlTestBase<Program>(fixture), IAsyncLifetime
 {
 	private const string Endpoint = ApiEndpoints.Logs.Base;

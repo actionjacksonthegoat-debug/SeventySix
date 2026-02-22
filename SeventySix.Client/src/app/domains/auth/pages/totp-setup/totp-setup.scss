@@ -1,28 +1,16 @@
 @use "variables" as vars;
+@use "mixins";
 
 .totp-setup-container {
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	min-height: 100%;
-	padding: vars.$spacing-lg;
-	background: var(--mat-app-background-color);
+	@include mixins.auth-page-container();
 }
 
 .totp-setup-card {
-	width: 100%;
-	max-width: 28rem;
-	padding: vars.$spacing-2xl;
-	background: var(--mat-sys-surface);
-	border-radius: 1rem;
-	box-shadow: var(--mat-sys-level2);
+	@include mixins.auth-page-card($max-width: 28rem);
 
 	h1 {
-		margin: 0 0 vars.$spacing-sm;
-		font-size: 1.5rem;
-		font-weight: 500;
-		text-align: center;
-		color: var(--mat-sys-on-surface);
+		@include mixins.auth-page-heading();
+		margin-bottom: vars.$spacing-sm;
 	}
 }
 
@@ -44,19 +32,8 @@
 }
 
 .spinner {
-	width: 3rem;
-	height: 3rem;
+	@include mixins.inline-spinner(3rem);
 	margin: 0 auto;
-	border: 3px solid var(--mat-sys-surface-variant);
-	border-top-color: var(--mat-sys-primary);
-	border-radius: 50%;
-	animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-	to {
-		transform: rotate(360deg);
-	}
 }
 
 // QR code section

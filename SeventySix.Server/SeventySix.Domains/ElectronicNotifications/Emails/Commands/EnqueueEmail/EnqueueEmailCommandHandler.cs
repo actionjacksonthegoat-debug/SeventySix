@@ -68,8 +68,8 @@ public static class EnqueueEmailCommandHandler
 
 		int maxAttempts =
 			settings.Value.MaxAttempts;
-		DateTime createDate =
-			timeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset createDate =
+			timeProvider.GetUtcNow();
 
 		EmailQueueEntry entry =
 			new()

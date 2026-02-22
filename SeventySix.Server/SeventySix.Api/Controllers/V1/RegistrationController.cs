@@ -4,6 +4,7 @@
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Options;
 using SeventySix.Api.Configuration;
 using SeventySix.Api.Infrastructure;
 using SeventySix.Identity;
@@ -27,10 +28,11 @@ namespace SeventySix.Api.Controllers;
 /// </param>
 [ApiController]
 [Route(ApiVersionConfig.VersionedRoutePrefix + "/auth/register")]
-public class RegistrationController(
+public sealed class RegistrationController(
 	IMessageBus messageBus,
 	IAuthCookieService cookieService,
-	ILogger<RegistrationController> logger) : AuthControllerBase(cookieService, logger)
+	IOptions<AuthSettings> authSettings,
+	ILogger<RegistrationController> logger) : AuthControllerBase(cookieService, authSettings, logger)
 {
 	/// <summary>
 	/// Initiates user registration by creating an unverified account.
@@ -115,7 +117,9 @@ public class RegistrationController(
 			return HandleFailedAuthResult(result, "Registration Completion");
 		}
 
-		CookieService.SetRefreshTokenCookie(result.RefreshToken!);
+		CookieService.SetRefreshTokenCookie(
+			result.RefreshToken!,
+			rememberMe: false);
 
 		return Ok(
 			new AuthResponse(

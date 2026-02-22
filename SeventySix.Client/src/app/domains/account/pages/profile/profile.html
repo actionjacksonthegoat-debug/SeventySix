@@ -17,17 +17,18 @@
 	<mat-card class="error-card">
 		<mat-card-content>{{ error() }}</mat-card-content>
 	</mat-card>
-	} @else if (profile(); as p) {
+	} @else if (profile(); as userProfile) {
 	<mat-card>
 		<mat-card-header>
-			<mat-card-title>{{ p.username }}</mat-card-title>
-			@if (p.lastLoginAt) {
-			<mat-card-subtitle>Last login {{ p.lastLoginAt | date }}</mat-card-subtitle>
+			<mat-card-title>{{ userProfile.username }}</mat-card-title>
+			@if (userProfile.lastLoginAt) {
+			<mat-card-subtitle>Last login {{ userProfile.lastLoginAt | date }}</mat-card-subtitle>
 			}
 		</mat-card-header>
 
 		<mat-card-content>
 			<form
+				class="profile-form"
 				[formGroup]="profileForm"
 				(ngSubmit)="onSubmit()">
 				<mat-form-field appearance="outline">
@@ -52,7 +53,7 @@
 
 				<div class="form-actions">
 					<button
-						mat-raised-button
+						mat-stroked-button
 						color="primary"
 						type="submit"
 						[disabled]="
@@ -72,6 +73,47 @@
 					}
 				</div>
 			</form>
+
+			@if (featureFlags.oAuthEnabled()) {
+			<!-- Linked Accounts -->
+			<section class="linked-accounts"
+				data-testid="linked-accounts"
+				aria-labelledby="linked-accounts-heading">
+				<h3 id="linked-accounts-heading">Linked Accounts</h3>
+				<p class="linked-accounts-description">
+					Connect external accounts for easier sign-in.
+				</p>
+
+				@for (provider of oauthProviders; track provider.id) {
+					<div class="linked-provider-row">
+						<mat-icon
+							class="provider-icon"
+							[svgIcon]="provider.icon"
+							aria-hidden="true" />
+						<span class="provider-name">{{ provider.displayName }}</span>
+
+						@if (linkedProviderIds().has(provider.id)) {
+							<button
+								mat-stroked-button
+								color="warn"
+								(click)="onUnlinkProvider(provider.id)"
+								[disabled]="!canUnlink() || unlinkMutation.isPending()"
+								[attr.aria-label]="'Disconnect ' + provider.displayName">
+								Disconnect
+							</button>
+						} @else {
+							<button
+								mat-stroked-button
+								(click)="onLinkProvider(provider.id)"
+								[disabled]="isOAuthInProgress()"
+								[attr.aria-label]="'Connect ' + provider.displayName">
+								Connect
+							</button>
+						}
+					</div>
+				}
+			</section>
+			}
 		</mat-card-content>
 	</mat-card>
 	}

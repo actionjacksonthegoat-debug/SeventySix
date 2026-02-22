@@ -17,7 +17,7 @@ namespace SeventySix.Shared.Tests.Persistence;
 /// Unit tests for <see cref="AuditInterceptor"/>.
 /// Tests automatic audit property setting for IAuditableEntity, IModifiableEntity, and ICreatableEntity.
 /// </summary>
-public class AuditInterceptorTests : IDisposable
+public sealed class AuditInterceptorTests : IDisposable
 {
 	private const string TestUser = "TestUser";
 	private const string SystemUser =
@@ -76,7 +76,7 @@ public class AuditInterceptorTests : IDisposable
 		await Context.SaveChangesAsync();
 
 		// Assert
-		entity.CreateDate.ShouldBe(TimeProvider.GetUtcNow().UtcDateTime);
+		entity.CreateDate.ShouldBe(TimeProvider.GetUtcNow());
 	}
 
 	[Fact]
@@ -144,7 +144,7 @@ public class AuditInterceptorTests : IDisposable
 
 		// Assert
 		entity.ModifyDate.ShouldNotBeNull();
-		entity.ModifyDate!.Value.ShouldBe(TimeProvider.GetUtcNow().UtcDateTime);
+		entity.ModifyDate!.Value.ShouldBe(TimeProvider.GetUtcNow());
 	}
 
 	[Fact]
@@ -175,7 +175,7 @@ public class AuditInterceptorTests : IDisposable
 			new() { Name = "Test" };
 		Context.AuditableEntities.Add(entity);
 		await Context.SaveChangesAsync();
-		DateTime originalCreateDate = entity.CreateDate;
+		DateTimeOffset originalCreateDate = entity.CreateDate;
 
 		// Advance time for modification
 		TimeProvider.SetUtcNow(
@@ -214,7 +214,7 @@ public class AuditInterceptorTests : IDisposable
 	public async Task SavingChangesAsync_NewAuditableEntityWithPresetCreateDate_PreservesCreateDateAsync()
 	{
 		// Arrange
-		DateTime presetDate =
+		DateTimeOffset presetDate =
 			new DateTimeOffset(
 				2020,
 				1,
@@ -273,7 +273,7 @@ public class AuditInterceptorTests : IDisposable
 		await Context.SaveChangesAsync();
 
 		// Assert
-		entity.CreateDate.ShouldBe(TimeProvider.GetUtcNow().UtcDateTime);
+		entity.CreateDate.ShouldBe(TimeProvider.GetUtcNow());
 	}
 
 	[Fact]
@@ -310,7 +310,7 @@ public class AuditInterceptorTests : IDisposable
 
 		// Assert
 		entity.ModifyDate.ShouldNotBeNull();
-		entity.ModifyDate!.Value.ShouldBe(TimeProvider.GetUtcNow().UtcDateTime);
+		entity.ModifyDate!.Value.ShouldBe(TimeProvider.GetUtcNow());
 	}
 
 	[Fact]
@@ -321,7 +321,7 @@ public class AuditInterceptorTests : IDisposable
 			new() { Name = "Test" };
 		Context.ModifiableEntities.Add(entity);
 		await Context.SaveChangesAsync();
-		DateTime originalCreateDate = entity.CreateDate;
+		DateTimeOffset originalCreateDate = entity.CreateDate;
 
 		// Advance time for modification
 		TimeProvider.SetUtcNow(
@@ -339,7 +339,7 @@ public class AuditInterceptorTests : IDisposable
 	public async Task SavingChangesAsync_NewModifiableEntityWithPresetCreateDate_PreservesCreateDateAsync()
 	{
 		// Arrange
-		DateTime presetDate =
+		DateTimeOffset presetDate =
 			new DateTimeOffset(
 				2020,
 				6,
@@ -379,14 +379,14 @@ public class AuditInterceptorTests : IDisposable
 		await Context.SaveChangesAsync();
 
 		// Assert
-		entity.CreateDate.ShouldBe(TimeProvider.GetUtcNow().UtcDateTime);
+		entity.CreateDate.ShouldBe(TimeProvider.GetUtcNow());
 	}
 
 	[Fact]
 	public async Task SavingChangesAsync_NewCreatableEntityWithPresetCreateDate_PreservesCreateDateAsync()
 	{
 		// Arrange
-		DateTime presetDate =
+		DateTimeOffset presetDate =
 			new DateTimeOffset(
 				2021,
 				3,
@@ -428,10 +428,10 @@ public class AuditInterceptorTests : IDisposable
 		await Context.SaveChangesAsync();
 
 		// Assert
-		entity1.CreateDate.ShouldBe(TimeProvider.GetUtcNow().UtcDateTime);
+		entity1.CreateDate.ShouldBe(TimeProvider.GetUtcNow());
 		entity1.CreatedBy.ShouldBe(TestUser);
 
-		entity2.CreateDate.ShouldBe(TimeProvider.GetUtcNow().UtcDateTime);
+		entity2.CreateDate.ShouldBe(TimeProvider.GetUtcNow());
 		entity2.CreatedBy.ShouldBe(TestUser);
 	}
 
@@ -460,8 +460,8 @@ public class AuditInterceptorTests : IDisposable
 	{
 		public long Id { get; set; }
 		public string Name { get; set; } = string.Empty;
-		public DateTime CreateDate { get; set; }
-		public DateTime? ModifyDate { get; set; }
+		public DateTimeOffset CreateDate { get; set; }
+		public DateTimeOffset? ModifyDate { get; set; }
 		public string CreatedBy { get; set; } = string.Empty;
 		public string ModifiedBy { get; set; } = string.Empty;
 	}
@@ -470,15 +470,15 @@ public class AuditInterceptorTests : IDisposable
 	{
 		public long Id { get; set; }
 		public string Name { get; set; } = string.Empty;
-		public DateTime CreateDate { get; set; }
-		public DateTime? ModifyDate { get; set; }
+		public DateTimeOffset CreateDate { get; set; }
+		public DateTimeOffset? ModifyDate { get; set; }
 	}
 
 	private class TestCreatableEntity : ICreatableEntity
 	{
 		public long Id { get; set; }
 		public string Name { get; set; } = string.Empty;
-		public DateTime CreateDate { get; set; }
+		public DateTimeOffset CreateDate { get; set; }
 	}
 
 	private class TestDbContext(DbContextOptions<TestDbContext> options)

@@ -1,6 +1,9 @@
 # generate-dataprotection-cert.ps1
 # Generates a self-signed certificate for Data Protection key encryption.
 #
+# Cross-platform: uses openssl (available on Windows via Git, Linux natively,
+# and GitHub Actions ubuntu-latest runners).
+#
 # This certificate is used to encrypt ASP.NET Core Data Protection keys at rest,
 # enabling cross-platform key protection in Docker containers.
 #
@@ -8,20 +11,9 @@
 #   .\scripts\generate-dataprotection-cert.ps1
 #   .\scripts\generate-dataprotection-cert.ps1 -Password "YourSecurePassword"
 #   .\scripts\generate-dataprotection-cert.ps1 -OutputPath ".\custom\path\cert.pfx"
-#
-# Examples:
-#   Pass plaintext password (not recommended for production):
-#     .\scripts\generate-dataprotection-cert.ps1 -Password "DevelopmentPassword123!"
-#
-#   Pass a SecureString:
-#     $secure = ConvertTo-SecureString "YourPassword" -AsPlainText -Force
-#     .\scripts\generate-dataprotection-cert.ps1 -Password $secure
-#
-#   Use a machine-encrypted secure string from .env:
-#     $encrypted = (ConvertTo-SecureString "YourPassword" -AsPlainText -Force | ConvertFrom-SecureString)
-#     # Add $encrypted to .env as DATA_PROTECTION_CERTIFICATE_PASSWORD_SECURE=<encrypted string>
-#     .\scripts\generate-dataprotection-cert.ps1
 
+#Requires -Version 7.4
+[CmdletBinding()]
 param(
 	[Parameter(ValueFromPipelineByPropertyName = $true)]
 	[object]$Password = $null,
@@ -37,106 +29,103 @@ Write-Host "  Data Protection Certificate Generator" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 
+# Resolve password (SecureString, plain string, or env vars)
+if ($Password -is [System.Security.SecureString]) {
+	$plainPassword = [Runtime.InteropServices.Marshal]::PtrToStringAuto(
+		[Runtime.InteropServices.Marshal]::SecureStringToBSTR($Password))
+}
+elseif ($Password -is [string] -and $Password.Length -gt 0) {
+	$plainPassword = $Password
+}
+elseif ($env:DATA_PROTECTION_CERTIFICATE_PASSWORD) {
+	$plainPassword = $env:DATA_PROTECTION_CERTIFICATE_PASSWORD
+}
+else {
+	Write-Host "[ERROR] No password provided. Use -Password parameter or set DATA_PROTECTION_CERTIFICATE_PASSWORD env var." -ForegroundColor Red
+	exit 1
+}
+
+# Locate openssl
+function Find-OpenSsl {
+	$cmd = Get-Command openssl -ErrorAction SilentlyContinue
+	if ($cmd) { return $cmd.Source }
+
+	# Windows fallback: Git's bundled openssl
+	$git = Get-Command git -ErrorAction SilentlyContinue
+	if ($git) {
+		$gitOpenSsl = Join-Path (Split-Path (Split-Path $git.Source)) "usr\bin\openssl.exe"
+		if (Test-Path $gitOpenSsl) { return $gitOpenSsl }
+	}
+
+	return $null
+}
+
+$openssl = Find-OpenSsl
+if (-not $openssl) {
+	Write-Host "[ERROR] openssl not found. Install Git for Windows (includes openssl) or install openssl directly." -ForegroundColor Red
+	exit 1
+}
+
 # Resolve to absolute path
-$resolvedOutputPath =
-$ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($OutputPath)
+$resolvedOutputPath = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($OutputPath)
+$outputDirectory = Split-Path -Parent $resolvedOutputPath
 
-# Ensure output directory exists
-$outputDirectory =
-Split-Path -Parent $resolvedOutputPath
-
-if (-not (Test-Path $outputDirectory))
-{
+if (-not (Test-Path $outputDirectory)) {
 	New-Item -ItemType Directory -Path $outputDirectory -Force | Out-Null
 	Write-Host "Created directory: $outputDirectory" -ForegroundColor Green
 }
 
 # Check if certificate already exists
-if (Test-Path $resolvedOutputPath)
-{
+if (Test-Path $resolvedOutputPath) {
 	Write-Host "Certificate already exists at: $resolvedOutputPath" -ForegroundColor Yellow
-	$overwriteResponse =
-	Read-Host "Overwrite? (y/n)"
-
-	if ($overwriteResponse -ne "y")
-	{
+	$overwrite = Read-Host "Overwrite? (y/n)"
+	if ($overwrite -ne "y") {
 		Write-Host "Aborted." -ForegroundColor Yellow
 		exit 0
 	}
 }
 
-# Generate self-signed certificate
+# Temp files for intermediate key/cert
+$tmpKey = [System.IO.Path]::ChangeExtension($resolvedOutputPath, ".key")
+$tmpCrt = [System.IO.Path]::ChangeExtension($resolvedOutputPath, ".crt")
+$validityDays = $ValidityYears * 365
+
 Write-Host "Generating certificate..." -ForegroundColor Cyan
 
-$generatedCertificate =
-New-SelfSignedCertificate `
-	-Subject "CN=SeventySix-DataProtection" `
-	-FriendlyName "SeventySix Data Protection Key Encryption" `
-	-KeyAlgorithm RSA `
-	-KeyLength 2048 `
-	-KeyUsage KeyEncipherment, DataEncipherment `
-	-KeyExportPolicy Exportable `
-	-NotAfter (Get-Date).AddYears($ValidityYears) `
-	-CertStoreLocation "Cert:\CurrentUser\My"
+try {
+	# Generate private key + self-signed cert
+	& $openssl req -x509 -nodes -days $validityDays -newkey rsa:2048 `
+		-keyout $tmpKey -out $tmpCrt `
+		-subj "/CN=SeventySix-DataProtection" 2>$null
 
-# Resolve password to a SecureString (accepts SecureString, plain string, or env vars)
-if ($Password -is [System.Security.SecureString])
-{
-	$securePassword = $Password
-}
-elseif ($Password -is [string] -and $Password.Length -gt 0)
-{
-	$securePassword = ConvertTo-SecureString -String $Password -Force -AsPlainText
-}
-elseif ($env:DATA_PROTECTION_CERTIFICATE_PASSWORD_SECURE)
-{
-	try
-	{
-		$securePassword = ConvertTo-SecureString -String $env:DATA_PROTECTION_CERTIFICATE_PASSWORD_SECURE
-	}
-	catch
-	{
-		Write-Host "Failed to parse DATA_PROTECTION_CERTIFICATE_PASSWORD_SECURE from environment." -ForegroundColor Yellow
-		$securePassword = $null
-	}
-}
-elseif ($env:DATA_PROTECTION_CERTIFICATE_PASSWORD)
-{
-	$securePassword = ConvertTo-SecureString -String $env:DATA_PROTECTION_CERTIFICATE_PASSWORD -Force -AsPlainText
-}
-else
-{
-	# No hardcoded fallback - password MUST come from .env or -Password parameter
-	Write-Host "ERROR: No password provided. Use -Password parameter or set DATA_PROTECTION_CERTIFICATE_PASSWORD in .env" -ForegroundColor Red
-	exit 1
-}
+	if ($LASTEXITCODE -ne 0) { throw "openssl req failed" }
 
-Export-PfxCertificate `
-	-Cert $generatedCertificate `
-	-FilePath $resolvedOutputPath `
-	-Password $securePassword | Out-Null
+	# Export to PFX with password
+	& $openssl pkcs12 -export `
+		-out $resolvedOutputPath `
+		-inkey $tmpKey -in $tmpCrt `
+		-passout "pass:$plainPassword" 2>$null
 
-# Clean up from certificate store (we only need the file)
-Remove-Item -Path "Cert:\CurrentUser\My\$($generatedCertificate.Thumbprint)" -Force
+	if ($LASTEXITCODE -ne 0) { throw "openssl pkcs12 export failed" }
 
-Write-Host ""
-Write-Host "Certificate generated successfully!" -ForegroundColor Green
-Write-Host ""
-Write-Host "  Path: $resolvedOutputPath" -ForegroundColor White
-Write-Host "  Thumbprint: $($generatedCertificate.Thumbprint)" -ForegroundColor White
-Write-Host "  Expires: $($generatedCertificate.NotAfter.ToString('yyyy-MM-dd'))" -ForegroundColor White
-Write-Host ""
-# Offer both plaintext and machine-encrypted secure string examples for .env
-$encryptedString = ConvertFrom-SecureString -SecureString $securePassword
-Write-Host "Add to your .env file (option 1 - plaintext):" -ForegroundColor Yellow
-Write-Host "  DATA_PROTECTION_USE_CERTIFICATE=true" -ForegroundColor White
-Write-Host "  DATA_PROTECTION_CERTIFICATE_PATH=/app/keys/dataprotection.pfx" -ForegroundColor White
-Write-Host "  DATA_PROTECTION_CERTIFICATE_PASSWORD=YourPlaintextPasswordHere" -ForegroundColor White
-Write-Host ""
-Write-Host "Or (option 2 - machine-encrypted secure string):" -ForegroundColor Yellow
-Write-Host "  DATA_PROTECTION_CERTIFICATE_PASSWORD_SECURE=$encryptedString" -ForegroundColor White
-Write-Host "  # NOTE: Encrypted string is machine/user protected and can only be decrypted on this account/machine." -ForegroundColor Cyan
-Write-Host ""
-Write-Host "NOTE: The path above is the Docker container path." -ForegroundColor Cyan
-Write-Host "      The keys directory is volume-mounted into the container." -ForegroundColor Cyan
-Write-Host ""
+	# Read thumbprint for display
+	$thumbprintOutput = & $openssl x509 -in $tmpCrt -fingerprint -sha1 -noout 2>$null
+	$thumbprint = ($thumbprintOutput -replace "^.*=", "") -replace ":", ""
+
+	Write-Host ""
+	Write-Host "Certificate generated successfully!" -ForegroundColor Green
+	Write-Host ""
+	Write-Host "  Path:      $resolvedOutputPath" -ForegroundColor White
+	Write-Host "  Thumbprint: $thumbprint" -ForegroundColor White
+	$expiryDate = (Get-Date).AddYears($ValidityYears).ToString("yyyy-MM-dd")
+	Write-Host "  Expires:   $expiryDate" -ForegroundColor White
+	Write-Host ""
+	Write-Host "NOTE: The path above is the local file path." -ForegroundColor Cyan
+	Write-Host "      The keys directory is volume-mounted into the container." -ForegroundColor Cyan
+	Write-Host ""
+}
+finally {
+	# Always clean up temp files
+	Remove-Item -Path $tmpKey -Force -ErrorAction SilentlyContinue
+	Remove-Item -Path $tmpCrt -Force -ErrorAction SilentlyContinue
+}

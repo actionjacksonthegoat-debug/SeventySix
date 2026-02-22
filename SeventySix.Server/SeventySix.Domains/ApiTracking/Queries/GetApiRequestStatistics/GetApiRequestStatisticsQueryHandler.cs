@@ -21,6 +21,10 @@ public static class GetApiRequestStatisticsQueryHandler
 	/// <summary>
 	/// Handles the query to retrieve aggregated statistics for third-party API requests.
 	/// </summary>
+	/// <remarks>
+	/// Uses TryGetAsync + SetAsync instead of GetOrSetAsync to avoid capturing
+	/// scoped services (repository) in a cache factory lambda.
+	/// </remarks>
 	/// <param name="query">
 	/// The query containing no parameters.
 	/// </param>
@@ -55,14 +59,34 @@ public static class GetApiRequestStatisticsQueryHandler
 		string cacheKey =
 			ApiTrackingCacheKeys.DailyStatistics(today);
 
-		ThirdPartyApiStatisticsDto? statistics =
-			await apiTrackingCache.GetOrSetAsync(
+		// Try cache first — TryGetAsync returns MaybeValue<T> (not nullable)
+		MaybeValue<ThirdPartyApiStatisticsDto?> cached =
+			await apiTrackingCache.TryGetAsync<ThirdPartyApiStatisticsDto?>(
 				cacheKey,
-				async cancellation =>
-					await repository.GetStatisticsAsync(
-						today,
-						cancellation),
 				token: cancellationToken);
+
+		if (cached.HasValue)
+		{
+			return cached.Value ?? new ThirdPartyApiStatisticsDto
+			{
+				TotalCallsToday = 0,
+				TotalApisTracked = 0,
+				CallsByApi = [],
+				LastCalledByApi = [],
+			};
+		}
+
+		// Cache miss — fetch with current scoped repository (still alive)
+		ThirdPartyApiStatisticsDto? statistics =
+			await repository.GetStatisticsAsync(
+				today,
+				cancellationToken);
+
+		// Store in cache
+		await apiTrackingCache.SetAsync(
+			cacheKey,
+			statistics,
+			token: cancellationToken);
 
 		return statistics ?? new ThirdPartyApiStatisticsDto
 		{

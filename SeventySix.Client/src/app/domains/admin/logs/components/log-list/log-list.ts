@@ -324,7 +324,7 @@ export class LogList
 	onSearch(searchText: string): void
 	{
 		this.logService.updateFilter(
-			{ searchTerm: searchText || undefined });
+			{ searchTerm: searchText.length > 0 ? searchText : undefined });
 	}
 
 	/**

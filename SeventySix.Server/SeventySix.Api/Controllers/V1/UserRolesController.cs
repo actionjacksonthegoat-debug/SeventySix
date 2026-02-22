@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using SeventySix.Api.Configuration;
 using SeventySix.Identity;
 using SeventySix.Identity.Constants;
+using SeventySix.Shared.Constants;
 using SeventySix.Shared.POCOs;
 using Wolverine;
 
@@ -21,7 +22,9 @@ namespace SeventySix.Api.Controllers;
 /// </param>
 [ApiController]
 [Route(ApiVersionConfig.VersionedRoutePrefix + "/users")]
-public class UserRolesController(IMessageBus messageBus) : ControllerBase
+public sealed class UserRolesController(
+	IMessageBus messageBus,
+	ILogger<UserRolesController> logger) : ControllerBase
 {
 	/// <summary>Gets roles for a user.</summary>
 	/// <param name="id">
@@ -126,11 +129,17 @@ public class UserRolesController(IMessageBus messageBus) : ControllerBase
 		}
 		catch (ArgumentException argumentException)
 		{
+			logger.LogWarning(
+				argumentException,
+				"Role assignment failed for user {UserId}: {Error}",
+				id,
+				argumentException.Message);
+
 			return BadRequest(
 				new ProblemDetails
 				{
 					Title = "Invalid Role",
-					Detail = argumentException.Message,
+					Detail = ProblemDetailConstants.Details.RoleAssignmentFailed,
 					Status = StatusCodes.Status400BadRequest,
 				});
 		}
@@ -174,35 +183,22 @@ public class UserRolesController(IMessageBus messageBus) : ControllerBase
 			return NotFound();
 		}
 
-		try
-		{
-			Result removed =
-				await messageBus.InvokeAsync<Result>(
-					new RemoveUserRoleCommand(id, role),
-					cancellationToken);
+		Result removed =
+			await messageBus.InvokeAsync<Result>(
+				new RemoveUserRoleCommand(id, role),
+				cancellationToken);
 
-			if (!removed.IsSuccess)
-			{
-				return NotFound(
-					new ProblemDetails
-					{
-						Title = "Role Not Found",
-						Detail = "Role not found on user",
-						Status = StatusCodes.Status404NotFound,
-					});
-			}
-
-			return NoContent();
-		}
-		catch (LastAdminException lastAdminException)
+		if (!removed.IsSuccess)
 		{
-			return Conflict(
+			return NotFound(
 				new ProblemDetails
 				{
-					Title = "Operation Forbidden",
-					Detail = lastAdminException.Message,
-					Status = StatusCodes.Status409Conflict,
+					Title = "Role Not Found",
+					Detail = "Role not found on user",
+					Status = StatusCodes.Status404NotFound,
 				});
 		}
+
+		return NoContent();
 	}
 }

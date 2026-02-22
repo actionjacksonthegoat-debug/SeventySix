@@ -70,8 +70,28 @@
 
 	// File settings
 	"files.trimTrailingWhitespace": true,
-	"files.insertFinalNewline": false,
+	"files.insertFinalNewline": true,
 
 	// Default line ending (LF for cross-platform, overridden per language above)
-	"files.eol": "\n"
+	"files.eol": "\n",
+
+	// Copilot agent mode auto-fix
+	"github.copilot.chat.agent.autoFix": true,
+
+	// Instruction file locations (explicit)
+	"chat.instructionsFilesLocations": {
+		".github/instructions": true
+	},
+
+	// Prompt file locations (explicit)
+	"chat.promptFilesLocations": {
+		".github/prompts": true
+	},
+
+	// Enable mcp — all tools always available, no per-tool confirmation
+	"chat.mcp.access": "all",
+
+	// Auto-approve MCP tool calls in agent mode (no confirmation dialogs)
+	"chat.agent.allowedTools": ["*"],
+	"chat.agent.maxRequests": 50
 }

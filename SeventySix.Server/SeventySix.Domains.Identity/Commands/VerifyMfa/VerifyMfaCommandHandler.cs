@@ -29,6 +29,9 @@ public static class VerifyMfaCommandHandler
 	/// <param name="securityAuditService">
 	/// Security audit logging service.
 	/// </param>
+	/// <param name="trustedDeviceService">
+	/// Service for creating trusted device tokens.
+	/// </param>
 	/// <param name="cancellationToken">
 	/// Cancellation token.
 	/// </param>
@@ -41,6 +44,7 @@ public static class VerifyMfaCommandHandler
 		UserManager<ApplicationUser> userManager,
 		AuthenticationService authenticationService,
 		ISecurityAuditService securityAuditService,
+		ITrustedDeviceService trustedDeviceService,
 		CancellationToken cancellationToken)
 	{
 		MfaVerificationResult verificationResult =
@@ -82,11 +86,26 @@ public static class VerifyMfaCommandHandler
 			details: null,
 			cancellationToken);
 
-		return await authenticationService.GenerateAuthResultAsync(
-			user,
-			command.ClientIp,
-			user.RequiresPasswordChange,
-			rememberMe: false,
-			cancellationToken);
+		AuthResult authResult =
+			await authenticationService.GenerateAuthResultAsync(
+				user,
+				command.ClientIp,
+				user.RequiresPasswordChange,
+				rememberMe: false,
+				cancellationToken);
+
+		if (command.Request.TrustDevice)
+		{
+			string deviceToken =
+				await trustedDeviceService.CreateTrustedDeviceAsync(
+					user.Id,
+					command.UserAgent ?? string.Empty,
+					command.ClientIp,
+					cancellationToken);
+
+			return authResult with { TrustedDeviceToken = deviceToken };
+		}
+
+		return authResult;
 	}
 }

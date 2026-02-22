@@ -4,6 +4,7 @@
 
 import { chromium, FullConfig, Browser, BrowserContext, Page } from "@playwright/test";
 import { TEST_USERS, SELECTORS, ROUTES, TIMEOUTS, E2E_CONFIG } from "./fixtures";
+import { solveAltchaChallenge } from "./fixtures/helpers/altcha.helper";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -29,47 +30,59 @@ async function globalSetup(config: FullConfig): Promise<void>
 	const browser: Browser =
 		await chromium.launch();
 
-	// Authenticate each test role
-	for (const testUser of TEST_USERS)
-	{
-		const browserContext: BrowserContext =
-			await browser.newContext({ baseURL, ignoreHTTPSErrors: true });
-		const page: Page =
-			await browserContext.newPage();
+	// Authenticate each test role in parallel — each uses its own context and auth file
+	// MFA-enabled users are excluded because they require MFA verification after login
+	// and cannot complete the standard login → home redirect flow.
+	const nonMfaUsers =
+		TEST_USERS.filter(
+			(testUser) => !testUser.mfaEnabled);
 
-		// Navigate to login page and wait for form to be ready
-		await page.goto(ROUTES.auth.login);
-		await page
-			.locator(SELECTORS.form.usernameInput)
-			.waitFor({ state: "visible", timeout: TIMEOUTS.globalSetup });
+	await Promise.all(
+		nonMfaUsers.map(
+			async (testUser) =>
+			{
+				const browserContext: BrowserContext =
+					await browser.newContext({ baseURL, ignoreHTTPSErrors: true });
+				const page: Page =
+					await browserContext.newPage();
 
-		// Fill login form
-		await page
-			.locator(SELECTORS.form.usernameInput)
-			.fill(testUser.username);
-		await page
-			.locator(SELECTORS.form.passwordInput)
-			.fill(testUser.password);
+				// Navigate to login page and wait for form to be ready
+				await page.goto(ROUTES.auth.login);
+				await page
+					.locator(SELECTORS.form.usernameInput)
+					.waitFor({ state: "visible", timeout: TIMEOUTS.globalSetup });
 
-		// Submit and wait for redirect
-		await page
-			.locator(SELECTORS.form.submitButton)
-			.click();
-		await page.waitForURL(ROUTES.home);
+				// Fill login form
+				await page
+					.locator(SELECTORS.form.usernameInput)
+					.fill(testUser.username);
+				await page
+					.locator(SELECTORS.form.passwordInput)
+					.fill(testUser.password);
 
-		// Wait for the app to be fully interactive (user menu visible means auth complete)
-		// This ensures we capture the final cookie state after authentication
-		await page
-			.locator(SELECTORS.layout.userMenuButton)
-			.waitFor({ state: "visible", timeout: TIMEOUTS.auth });
+				await solveAltchaChallenge(
+					page,
+					{ initTimeout: TIMEOUTS.globalSetup });
 
-		// Save storage state for this role
-		const authStatePath: string =
-			path.join(authDir, `${testUser.role.toLowerCase()}.json`);
-		await browserContext.storageState({ path: authStatePath });
+				// Submit and wait for redirect
+				await page
+					.locator(SELECTORS.form.submitButton)
+					.click();
+				await page.waitForURL(ROUTES.home);
 
-		await browserContext.close();
-	}
+				// Wait for the app to be fully interactive (user menu visible means auth complete)
+				// This ensures we capture the final cookie state after authentication
+				await page
+					.locator(SELECTORS.layout.userMenuButton)
+					.waitFor({ state: "visible", timeout: TIMEOUTS.auth });
+
+				// Save storage state for this role
+				const authStatePath: string =
+					path.join(authDir, `${testUser.role.toLowerCase()}.json`);
+				await browserContext.storageState({ path: authStatePath });
+
+				await browserContext.close();
+			}));
 
 	await browser.close();
 }

@@ -3,7 +3,9 @@ import {
 	expect,
 	ROUTES,
 	ROUTE_GROUPS,
-	SELECTORS
+	SELECTORS,
+	TIMEOUTS,
+	expectAccessible
 } from "../../fixtures";
 import AxeBuilder from "@axe-core/playwright";
 import type { Result } from "axe-core";
@@ -24,52 +26,13 @@ test.describe("WCAG Accessibility Compliance",
 	{
 		for (const pageInfo of ROUTE_GROUPS.publicPages)
 		{
+			// eslint-disable-next-line playwright/expect-expect -- assertions inside expectAccessible
 			test(`should have no critical accessibility violations on ${pageInfo.name} page`,
 				async ({ page }) =>
 				{
 					await page.goto(pageInfo.path);
 
-					// Wait for page to be fully loaded
-					await page.waitForLoadState("load");
-
-					const axeResults =
-						await new AxeBuilder(
-							{ page })
-							.withTags(["wcag2a", "wcag2aa", "wcag21aa"])
-							.analyze();
-
-					// Filter for critical and serious violations only
-					const criticalViolations: Result[] =
-						axeResults.violations.filter(
-							(violation: Result) =>
-								violation.impact === "critical"
-								|| violation.impact === "serious");
-
-					// Log violations for debugging (only if there are failures)
-					// eslint-disable-next-line playwright/no-conditional-in-test
-					if (criticalViolations.length > 0)
-					{
-						console.log(
-							`Accessibility violations on ${pageInfo.name}:`,
-							JSON.stringify(
-								criticalViolations.map(
-									(violation: Result) =>
-									(
-										{
-											id: violation.id,
-											impact: violation.impact,
-											description: violation.description,
-											nodes: violation.nodes.map(
-												(node) => node.html).slice(0, 3)
-										})),
-								null,
-								2));
-					}
-
-					expect(
-						criticalViolations,
-						`Found ${criticalViolations.length} critical/serious accessibility violations on ${pageInfo.name} page`)
-						.toHaveLength(0);
+					await expectAccessible(page, pageInfo.name);
 				});
 		}
 
@@ -80,7 +43,6 @@ test.describe("WCAG Accessibility Compliance",
 					async ({ page }) =>
 					{
 						await page.goto(ROUTES.home);
-						await page.waitForLoadState("load");
 
 						const axeResults =
 							await new AxeBuilder(
@@ -102,7 +64,6 @@ test.describe("WCAG Accessibility Compliance",
 					async ({ page }) =>
 					{
 						await page.goto(ROUTES.auth.login);
-						await page.waitForLoadState("load");
 
 						const axeResults =
 							await new AxeBuilder(
@@ -128,7 +89,6 @@ test.describe("WCAG Accessibility Compliance",
 					async ({ page }) =>
 					{
 						await page.goto(ROUTES.home);
-						await page.waitForLoadState("load");
 
 						const axeResults =
 							await new AxeBuilder(
@@ -183,7 +143,6 @@ test.describe("WCAG Accessibility Compliance",
 					async ({ page }) =>
 					{
 						await page.goto(ROUTES.home);
-						await page.waitForLoadState("load");
 
 						// Verify banner landmark (header)
 						const banner =
@@ -211,7 +170,6 @@ test.describe("WCAG Accessibility Compliance",
 					async ({ page }) =>
 					{
 						await page.goto(ROUTES.home);
-						await page.waitForLoadState("load");
 
 						const axeResults =
 							await new AxeBuilder(

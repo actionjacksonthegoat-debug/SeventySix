@@ -2,7 +2,7 @@
 <html lang="en">
 	<head>
 		<meta charset="utf-8" />
-		<title>SeventySix - Modern Full-Stack Application</title>
+		<title>SeventySix - Production-Ready .NET 10 + Angular 21 | MIT Licensed</title>
 		<base href="/" />
 		<meta
 			name="viewport"
@@ -12,11 +12,11 @@
 		<!-- SEO Meta Tags -->
 		<meta
 			name="description"
-			content="SeventySix is a modern full-stack application built with .NET Core 8+ and Angular 20+, following Clean Architecture principles and Material Design 3."
+			content="SeventySix: Production-ready .NET 10 + Angular 21 monorepo demonstrating DDD, Hexagonal Architecture, CQRS, Wolverine, TanStack Query, comprehensive testing, and observability. MIT licensed, free forever."
 		/>
 		<meta
 			name="keywords"
-			content="SeventySix, Angular, .NET Core, Material Design, Clean Architecture, Full-Stack"
+			content="SeventySix, .NET 10, Angular 21, DDD, Domain-Driven Design, Hexagonal Architecture, CQRS, Wolverine, TanStack Query, PostgreSQL, Monorepo, Clean Architecture, SOLID, TDD, E2E Testing, Load Testing, Observability, OpenTelemetry, Material Design 3, PWA, Docker, Kubernetes, MIT License, Open Source"
 		/>
 		<meta
 			name="author"
@@ -25,6 +25,22 @@
 		<meta
 			name="robots"
 			content="index, follow"
+		/>
+
+		<!-- Language and accessibility (AI crawler hints) -->
+		<meta
+			name="language"
+			content="English"
+		/>
+		<!-- SSR/pre-render fallback — updated dynamically by LandingPageComponent -->
+		<meta
+			property="og:locale"
+			content="en_US"
+		/>
+		<!-- Indicate WCAG AA compliance for AI understanding -->
+		<meta
+			name="accessibility"
+			content="WCAG 2.2 AA compliant"
 		/>
 
 		<!-- Open Graph / Facebook -->
@@ -38,11 +54,11 @@
 		/>
 		<meta
 			property="og:title"
-			content="SeventySix - Modern Full-Stack Application"
+			content="SeventySix - Production-Ready .NET 10 + Angular 21 Monorepo"
 		/>
 		<meta
 			property="og:description"
-			content="A production-ready full-stack application demonstrating Clean Architecture, SOLID principles, and modern development practices."
+			content="A full-stack monorepo demonstrating DDD, Hexagonal Architecture, CQRS, Wolverine, TanStack Query, and comprehensive testing. MIT licensed, free forever."
 		/>
 		<meta
 			property="og:image"
@@ -60,16 +76,19 @@
 		/>
 		<meta
 			property="twitter:title"
-			content="SeventySix - Modern Full-Stack Application"
+			content="SeventySix - Production-Ready .NET 10 + Angular 21 Monorepo"
 		/>
 		<meta
 			property="twitter:description"
-			content="A production-ready full-stack application demonstrating Clean Architecture, SOLID principles, and modern development practices."
+			content="A full-stack monorepo demonstrating DDD, Hexagonal Architecture, CQRS, Wolverine, TanStack Query, and comprehensive testing. MIT licensed, free forever."
 		/>
 		<meta
 			property="twitter:image"
 			content="/icons/icon-512x512.png"
 		/>
+
+		<!-- Structured data (JSON-LD) injected dynamically by LandingPageComponent -->
+		<!-- This ensures fresh data on every page load and allows for dynamic updates -->
 
 		<!-- PWA -->
 		<link
@@ -88,6 +107,76 @@
 		<link
 			rel="apple-touch-icon"
 			href="/icons/icon-192x192.png"
+		/>
+
+		<!-- Preload hero background images for fast LCP -->
+		<script>
+			(function () {
+				var brightness = localStorage.getItem('seventysix-theme-brightness');
+				var isDark = brightness === null || brightness === 'dark';
+				var head = document.head;
+
+				if (isDark) {
+					// dark-data-stream — responsive srcset
+					var ds = document.createElement('link');
+					ds.rel = 'preload';
+					ds.as = 'image';
+					ds.type = 'image/webp';
+					ds.fetchPriority = 'high';
+					ds.setAttribute(
+						'imagesrcset',
+						'/images/landing-page/dark-data-stream-mobile.webp 480w, ' +
+						'/images/landing-page/dark-data-stream-tablet.webp 768w, ' +
+						'/images/landing-page/dark-data-stream.webp 1920w'
+					);
+					ds.setAttribute('imagesizes', '100vw');
+					ds.href = '/images/landing-page/dark-data-stream.webp';
+					head.appendChild(ds);
+
+					// dark-grid-texture
+					var gt = document.createElement('link');
+					gt.rel = 'preload';
+					gt.as = 'image';
+					gt.type = 'image/webp';
+					gt.href = '/images/landing-page/dark-grid-texture.webp';
+					head.appendChild(gt);
+				} else {
+					// light-crystal — responsive srcset
+					var lc = document.createElement('link');
+					lc.rel = 'preload';
+					lc.as = 'image';
+					lc.type = 'image/webp';
+					lc.fetchPriority = 'high';
+					lc.setAttribute(
+						'imagesrcset',
+						'/images/landing-page/light-crystal-mobile.webp 480w, ' +
+						'/images/landing-page/light-crystal-tablet.webp 768w, ' +
+						'/images/landing-page/light-crystal.webp 1920w'
+					);
+					lc.setAttribute('imagesizes', '100vw');
+					lc.href = '/images/landing-page/light-crystal.webp';
+					head.appendChild(lc);
+				}
+			})();
+		</script>
+
+		<!-- Resource hints for external domains (2026 best practice) -->
+		<!-- DNS prefetch for faster external resource resolution -->
+		<link
+			rel="dns-prefetch"
+			href="https://fonts.googleapis.com"
+		/>
+		<link
+			rel="dns-prefetch"
+			href="https://fonts.gstatic.com"
+		/>
+		<link
+			rel="dns-prefetch"
+			href="https://www.google.com"
+		/>
+		<link
+			rel="dns-prefetch"
+			href="https://www.gstatic.com"
 		/>
 
 		<!-- Fonts -->

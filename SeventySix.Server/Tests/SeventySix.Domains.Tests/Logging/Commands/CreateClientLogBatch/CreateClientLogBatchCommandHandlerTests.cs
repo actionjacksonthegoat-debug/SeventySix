@@ -4,6 +4,7 @@
 
 using NSubstitute;
 using SeventySix.Logging;
+using SeventySix.Logging.Commands.CreateClientLogBatch;
 using Shouldly;
 
 namespace SeventySix.Domains.Tests.Logging.Commands.CreateClientLogBatch;
@@ -15,7 +16,7 @@ namespace SeventySix.Domains.Tests.Logging.Commands.CreateClientLogBatch;
 /// Tests batch processing and early return for empty arrays.
 /// Uses mocked repository since persistence is tested in LogRepositoryTests.
 /// </remarks>
-public class CreateClientLogBatchCommandHandlerTests
+public sealed class CreateClientLogBatchCommandHandlerTests
 {
 	private readonly ILogRepository Repository;
 
@@ -35,12 +36,12 @@ public class CreateClientLogBatchCommandHandlerTests
 	public async Task HandleAsync_EmptyArray_DoesNotCallRepositoryAsync()
 	{
 		// Arrange
-		CreateLogRequest[] requests =
-			[];
+		CreateClientLogBatchCommand command =
+			new([]);
 
 		// Act
 		await CreateClientLogBatchCommandHandler.HandleAsync(
-			requests,
+			command,
 			Repository,
 			CancellationToken.None);
 
@@ -88,9 +89,12 @@ public class CreateClientLogBatchCommandHandlerTests
 				Arg.Any<CancellationToken>())
 			.Returns(Task.CompletedTask);
 
+		CreateClientLogBatchCommand command =
+			new(requests);
+
 		// Act
 		await CreateClientLogBatchCommandHandler.HandleAsync(
-			requests,
+			command,
 			Repository,
 			CancellationToken.None);
 
@@ -140,9 +144,12 @@ public class CreateClientLogBatchCommandHandlerTests
 				Arg.Any<CancellationToken>())
 			.Returns(Task.CompletedTask);
 
+		CreateClientLogBatchCommand singleCommand =
+			new(requests);
+
 		// Act
 		await CreateClientLogBatchCommandHandler.HandleAsync(
-			requests,
+			singleCommand,
 			Repository,
 			CancellationToken.None);
 
@@ -180,9 +187,12 @@ public class CreateClientLogBatchCommandHandlerTests
 				Arg.Any<CancellationToken>())
 			.Returns(Task.CompletedTask);
 
+		CreateClientLogBatchCommand contextCommand =
+			new(requests);
+
 		// Act
 		await CreateClientLogBatchCommandHandler.HandleAsync(
-			requests,
+			contextCommand,
 			Repository,
 			CancellationToken.None);
 

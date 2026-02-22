@@ -20,4 +20,7 @@ public static class MediaTypeConstants
 
 	/// <summary>Multipart form data content type.</summary>
 	public const string MultipartFormData = "multipart/form-data";
+
+	/// <summary>HTML content type (text/html).</summary>
+	public const string TextHtml = "text/html";
 }

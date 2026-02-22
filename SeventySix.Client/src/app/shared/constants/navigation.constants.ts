@@ -44,11 +44,6 @@ export const NAV_SECTIONS: ReadonlyArray<NavSection> =
 					label: "Style Guide",
 					icon: "palette",
 					route: "/developer/style-guide"
-				},
-				{
-					label: "Architecture Guide",
-					icon: "architecture",
-					route: "/developer/architecture-guide"
 				}
 			],
 			requiredRoles: [ROLE_DEVELOPER, ROLE_ADMIN]

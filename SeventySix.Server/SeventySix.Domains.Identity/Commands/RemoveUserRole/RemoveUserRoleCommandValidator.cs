@@ -15,7 +15,7 @@ namespace SeventySix.Identity.Commands.RemoveUserRole;
 /// Security: This validator is critical for preventing unauthorized role removal.
 /// Only roles defined in RoleConstants.ValidRoleNames are accepted.
 /// </remarks>
-public class RemoveUserRoleCommandValidator : AbstractValidator<RemoveUserRoleCommand>
+public sealed class RemoveUserRoleCommandValidator : AbstractValidator<RemoveUserRoleCommand>
 {
 	/// <summary>
 	/// Initializes a new instance of the <see cref="RemoveUserRoleCommandValidator"/> class.

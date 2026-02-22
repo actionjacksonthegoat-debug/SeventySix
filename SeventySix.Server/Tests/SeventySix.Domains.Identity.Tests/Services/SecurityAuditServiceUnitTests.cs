@@ -6,7 +6,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
-using SeventySix.Identity;
 using SeventySix.TestUtilities.Constants;
 using Shouldly;
 
@@ -21,7 +20,7 @@ namespace SeventySix.Identity.Tests.Services;
 /// - User overload delegates correctly
 /// - Client info extraction
 /// </remarks>
-public class SecurityAuditServiceUnitTests
+public sealed class SecurityAuditServiceUnitTests
 {
 	private readonly FakeTimeProvider TimeProvider;
 
@@ -92,7 +91,7 @@ public class SecurityAuditServiceUnitTests
 		savedEvent.Success.ShouldBeTrue();
 		savedEvent.IpAddress.ShouldBe("192.168.1.100");
 		savedEvent.UserAgent.ShouldBe("Mozilla/5.0 Test Agent");
-		savedEvent.CreateDate.ShouldBe(TimeProvider.GetUtcNow().UtcDateTime);
+		savedEvent.CreateDate.ShouldBe(TimeProvider.GetUtcNow());
 	}
 
 	/// <summary>

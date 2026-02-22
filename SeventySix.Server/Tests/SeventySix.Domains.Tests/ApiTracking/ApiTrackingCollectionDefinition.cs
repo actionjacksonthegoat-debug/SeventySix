@@ -1,8 +1,6 @@
 using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;
 
-using Xunit;
-
 namespace SeventySix.Domains.Tests.ApiTracking;
 
 /// <summary>
@@ -11,4 +9,4 @@ namespace SeventySix.Domains.Tests.ApiTracking;
 /// and run in parallel with tests from other domain collections.
 /// </summary>
 [CollectionDefinition(CollectionNames.ApiTrackingPostgreSql)]
-public class ApiTrackingCollectionDefinition : ICollectionFixture<ApiTrackingPostgreSqlFixture>;
+public sealed class ApiTrackingCollectionDefinition : ICollectionFixture<ApiTrackingPostgreSqlFixture>;

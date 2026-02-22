@@ -3,7 +3,6 @@
 // </copyright>
 
 using Microsoft.Extensions.Options;
-using SeventySix.Api.Configuration;
 using SeventySix.Identity;
 
 namespace SeventySix.Api.Infrastructure;
@@ -24,10 +23,18 @@ namespace SeventySix.Api.Infrastructure;
 /// <param name="jwtSettings">
 /// JWT settings including token expiration.
 /// </param>
+/// <param name="trustedDeviceSettings">
+/// Trusted device settings including cookie name.
+/// </param>
+/// <param name="timeProvider">
+/// Provides the current UTC time for cookie expiration (testable).
+/// </param>
 public sealed class AuthCookieService(
 	IHttpContextAccessor httpContextAccessor,
 	IOptions<AuthSettings> authSettings,
-	IOptions<JwtSettings> jwtSettings) : IAuthCookieService
+	IOptions<JwtSettings> jwtSettings,
+	IOptions<TrustedDeviceSettings> trustedDeviceSettings,
+	TimeProvider timeProvider) : IAuthCookieService
 {
 	/// <summary>
 	/// Gets the current HttpContext.
@@ -46,17 +53,24 @@ public sealed class AuthCookieService(
 	/// Can be configured to Lax via SameSiteLax setting if needed for
 	/// specific cross-site scenarios, but Strict is recommended.
 	/// </remarks>
-	public void SetRefreshTokenCookie(string refreshToken)
+	public void SetRefreshTokenCookie(
+		string refreshToken,
+		bool rememberMe = false)
 	{
 		SameSiteMode sameSite =
 			authSettings.Value.Cookie.SameSiteLax
 				? SameSiteMode.Lax
 				: SameSiteMode.Strict;
 
+		int expirationDays =
+			rememberMe
+				? jwtSettings.Value.RefreshTokenRememberMeExpirationDays
+				: jwtSettings.Value.RefreshTokenExpirationDays;
+
 		SetSecureCookie(
 			authSettings.Value.Cookie.RefreshTokenCookieName,
 			refreshToken,
-			TimeSpan.FromDays(jwtSettings.Value.RefreshTokenExpirationDays),
+			TimeSpan.FromDays(expirationDays),
 			sameSite);
 	}
 
@@ -111,6 +125,24 @@ public sealed class AuthCookieService(
 		return $"{callbackUri.Scheme}://{callbackUri.Authority}";
 	}
 
+	/// <inheritdoc/>
+	public void SetTrustedDeviceCookie(
+		string token,
+		int lifetimeDays) =>
+		SetSecureCookie(
+			trustedDeviceSettings.Value.CookieName,
+			token,
+			TimeSpan.FromDays(lifetimeDays));
+
+	/// <inheritdoc/>
+	public string? GetTrustedDeviceToken() =>
+		HttpContext.Request.Cookies[
+			trustedDeviceSettings.Value.CookieName];
+
+	/// <inheritdoc/>
+	public void ClearTrustedDeviceCookie() =>
+		DeleteCookie(trustedDeviceSettings.Value.CookieName);
+
 	/// <summary>
 	/// Sets an HTTP-only secure cookie with the specified settings.
 	/// </summary>
@@ -140,7 +172,7 @@ public sealed class AuthCookieService(
 					authSettings.Value.Cookie.SecureCookie,
 				SameSite = sameSite,
 				Expires =
-					DateTimeOffset.UtcNow.Add(expiration),
+					timeProvider.GetUtcNow().Add(expiration),
 			};
 
 		HttpContext.Response.Cookies.Append(name, value, options);

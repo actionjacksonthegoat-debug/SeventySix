@@ -10,7 +10,7 @@ using SeventySix.Logging.Queries.GetLogsPaged;
 namespace SeventySix.Domains.Tests.Logging.Validators;
 
 /// <summary>Unit tests for LogQueryRequestValidator.</summary>
-public class LogQueryRequestValidatorTests
+public sealed class LogQueryRequestValidatorTests
 {
 	private readonly LogQueryRequestValidator Validator = new();
 
@@ -24,9 +24,9 @@ public class LogQueryRequestValidatorTests
 				SearchTerm = "error message",
 				LogLevel = LogLevelConstants.Error,
 				StartDate =
-					timeProvider.GetUtcNow().UtcDateTime.AddDays(-7),
+					timeProvider.GetUtcNow().AddDays(-7),
 				EndDate =
-					timeProvider.GetUtcNow().UtcDateTime,
+					timeProvider.GetUtcNow(),
 				Page = 1,
 				PageSize = 50,
 			};

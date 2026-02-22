@@ -17,7 +17,7 @@ namespace SeventySix.Identity;
 /// - Token families: FamilyId tracks chains of rotated tokens for reuse detection
 /// - Tracks creation IP for security auditing
 /// </remarks>
-public class RefreshToken : ICreatableEntity
+public sealed class RefreshToken : ICreatableEntity
 {
 	/// <summary>
 	/// Gets or sets the unique identifier.
@@ -45,18 +45,18 @@ public class RefreshToken : ICreatableEntity
 	/// <summary>
 	/// Gets or sets the expiration date.
 	/// </summary>
-	public DateTime ExpiresAt { get; set; }
+	public DateTimeOffset ExpiresAt { get; set; }
 
 	/// <summary>
 	/// Gets or sets the session start date.
 	/// Used to enforce absolute session timeout regardless of token rotation.
 	/// </summary>
-	public DateTime SessionStartedAt { get; set; }
+	public DateTimeOffset SessionStartedAt { get; set; }
 
 	/// <summary>
 	/// Gets or sets the creation date.
 	/// </summary>
-	public DateTime CreateDate { get; set; }
+	public DateTimeOffset CreateDate { get; set; }
 
 	/// <summary>
 	/// Gets or sets a value indicating whether this token is revoked.
@@ -66,7 +66,7 @@ public class RefreshToken : ICreatableEntity
 	/// <summary>
 	/// Gets or sets when this token was revoked.
 	/// </summary>
-	public DateTime? RevokedAt { get; set; }
+	public DateTimeOffset? RevokedAt { get; set; }
 
 	/// <summary>
 	/// Gets or sets the client IP that created this token.

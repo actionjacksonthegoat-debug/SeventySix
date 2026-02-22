@@ -14,7 +14,7 @@ namespace SeventySix.ArchitectureTests;
 /// Detects code smell: wrapping single repository calls in transactions when
 /// EF Core's SaveChangesAsync already provides atomicity.
 /// </summary>
-public class TransactionUsageTests
+public sealed class TransactionUsageTests
 {
 	private readonly Assembly Assembly =
 		typeof(SeventySix.Identity.ApplicationUser).Assembly;

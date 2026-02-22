@@ -29,7 +29,7 @@ namespace SeventySix.Api.Controllers;
 /// </param>
 [ApiController]
 [Route(ApiVersionConfig.VersionedRoutePrefix + "/health")]
-public class HealthController(
+public sealed class HealthController(
 	IHealthCheckService healthService,
 	IScheduledJobService scheduledJobService) : ControllerBase
 {

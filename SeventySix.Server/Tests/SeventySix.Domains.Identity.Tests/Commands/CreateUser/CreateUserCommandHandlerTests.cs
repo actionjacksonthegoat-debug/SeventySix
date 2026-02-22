@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
-using SeventySix.Identity;
 using SeventySix.Shared.Contracts.Emails;
 using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.Mocks;
@@ -21,13 +20,13 @@ namespace SeventySix.Identity.Tests.Commands.CreateUser;
 /// <remarks>
 /// Tests follow 80/20 rule: focus on happy path and critical error handling.
 /// </remarks>
-public class CreateUserCommandHandlerTests
+public sealed class CreateUserCommandHandlerTests
 {
 	private readonly IMessageBus MessageBus;
 	private readonly UserManager<ApplicationUser> UserManager;
 	private readonly IIdentityCacheService IdentityCache;
 	private readonly FakeTimeProvider TimeProvider;
-	private readonly ILogger Logger;
+	private readonly ILogger<CreateUserRequest> Logger;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="CreateUserCommandHandlerTests"/> class.
@@ -43,7 +42,7 @@ public class CreateUserCommandHandlerTests
 		TimeProvider =
 			TestDates.CreateDefaultTimeProvider();
 		Logger =
-			Substitute.For<ILogger>();
+			Substitute.For<ILogger<CreateUserRequest>>();
 	}
 
 	/// <summary>

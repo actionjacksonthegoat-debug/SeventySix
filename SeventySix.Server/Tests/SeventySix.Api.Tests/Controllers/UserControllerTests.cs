@@ -37,7 +37,7 @@ namespace SeventySix.Api.Tests.Controllers;
 /// - Proper HTTP status codes (200, 201, 404, 500)
 /// - Logger integration
 /// </remarks>
-public class UsersControllerTests
+public sealed class UsersControllerTests
 {
 	private readonly IMessageBus MessageBus;
 	private readonly ILogger<UsersController> Logger;
@@ -249,8 +249,8 @@ public class UsersControllerTests
 			.WithEmail("updated@example.com")
 			.WithFullName("Updated User")
 			.WithIsActive(true)
-			.WithCreateDate(timeProvider.GetUtcNow().UtcDateTime.AddDays(-1))
-			.WithModifyDate(timeProvider.GetUtcNow().UtcDateTime)
+			.WithCreateDate(timeProvider.GetUtcNow().AddDays(-1))
+			.WithModifyDate(timeProvider.GetUtcNow())
 			.WithCreatedBy("System")
 			.WithModifiedBy("Admin")
 			.Build();
@@ -550,8 +550,10 @@ public class UsersControllerTests
 		// Arrange
 		MessageBus
 			.InvokeAsync<bool>(
-				Arg.Is<CheckUsernameExistsQuery>(q =>
-					q.Username == "existinguser" && q.ExcludeUserId == null),
+				Arg.Is<CheckUsernameExistsQuery>(
+					query =>
+						query.Username == "existinguser"
+							&& query.ExcludeUserId == null),
 				Arg.Any<CancellationToken>())
 			.Returns(true);
 
@@ -577,8 +579,10 @@ public class UsersControllerTests
 		// Arrange
 		MessageBus
 			.InvokeAsync<bool>(
-				Arg.Is<CheckUsernameExistsQuery>(q =>
-					q.Username == "newuser" && q.ExcludeUserId == null),
+				Arg.Is<CheckUsernameExistsQuery>(
+					query =>
+						query.Username == "newuser"
+							&& query.ExcludeUserId == null),
 				Arg.Any<CancellationToken>())
 			.Returns(false);
 

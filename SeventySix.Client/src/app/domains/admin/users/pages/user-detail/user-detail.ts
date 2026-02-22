@@ -33,9 +33,10 @@ import {
 	FULL_NAME_VALIDATION,
 	USERNAME_VALIDATION
 } from "@shared/constants/validation.constants";
-import { FORM_MATERIAL_MODULES } from "@shared/material-bundles";
+import { FORM_MATERIAL_MODULES } from "@shared/material-bundles.constants";
 import { LoggerService, NotificationService } from "@shared/services";
 import { getValidationError } from "@shared/utilities";
+import { isNullOrEmpty, isNullOrUndefined } from "@shared/utilities/null-check.utility";
 import { NgxSkeletonLoaderModule } from "ngx-skeleton-loader";
 import { map } from "rxjs";
 
@@ -425,7 +426,7 @@ export class UserDetailPage
 
 		const updateRequest: UpdateUserRequest | null =
 			this.buildUpdateRequest();
-		if (!updateRequest) return;
+		if (isNullOrUndefined(updateRequest)) return;
 
 		this.executeMutation(updateRequest);
 	}
@@ -454,7 +455,7 @@ export class UserDetailPage
 	{
 		const userId: string =
 			this.userId;
-		if (!userId)
+		if (isNullOrEmpty(userId))
 		{
 			this.notificationService.error("Invalid user ID");
 			return null;
@@ -462,7 +463,7 @@ export class UserDetailPage
 
 		const currentUser: UserDto | null =
 			this.user();
-		if (!currentUser)
+		if (isNullOrUndefined(currentUser))
 		{
 			this.notificationService.error("User data not loaded");
 			return null;
@@ -472,7 +473,7 @@ export class UserDetailPage
 			id: parseInt(userId),
 			username: this.userForm.value.username,
 			email: this.userForm.value.email,
-			fullName: this.userForm.value.fullName || undefined,
+			fullName: this.userForm.value.fullName ?? undefined,
 			isActive: this.userForm.value.isActive
 		};
 	}

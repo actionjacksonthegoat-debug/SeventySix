@@ -6,7 +6,6 @@ using System.Net;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NSubstitute;
-using SeventySix.Identity;
 using Shouldly;
 
 namespace SeventySix.Identity.Tests.Services;
@@ -16,7 +15,7 @@ namespace SeventySix.Identity.Tests.Services;
 /// Tests breach checking logic using HaveIBeenPwned k-Anonymity API.
 /// Follows 80/20 rule: tests critical paths and edge cases only.
 /// </summary>
-public class BreachedPasswordServiceUnitTests
+public sealed class BreachedPasswordServiceUnitTests
 {
 	private readonly IHttpClientFactory HttpClientFactory;
 	private readonly IOptions<AuthSettings> AuthSettings;

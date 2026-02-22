@@ -4,8 +4,8 @@
 
 using Microsoft.AspNetCore.Identity;
 using NSubstitute;
-using SeventySix.Identity;
 using SeventySix.Identity.Commands.ApprovePermissionRequest;
+using SeventySix.Shared.Interfaces;
 using SeventySix.Shared.POCOs;
 using SeventySix.TestUtilities.Mocks;
 using Shouldly;
@@ -19,11 +19,12 @@ namespace SeventySix.Identity.Tests.Commands.ApprovePermissionRequest;
 /// Tests follow 80/20 rule: focus on happy path and critical validation paths.
 /// Security-critical: Role elevation operations must be thoroughly tested.
 /// </remarks>
-public class ApprovePermissionRequestCommandHandlerTests
+public sealed class ApprovePermissionRequestCommandHandlerTests
 {
 	private readonly IPermissionRequestRepository PermissionRequestRepository;
 	private readonly UserManager<ApplicationUser> UserManager;
 	private readonly IIdentityCacheService IdentityCache;
+	private readonly ITransactionManager TransactionManager;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="ApprovePermissionRequestCommandHandlerTests"/> class.
@@ -36,6 +37,20 @@ public class ApprovePermissionRequestCommandHandlerTests
 			IdentityMockFactory.CreateUserManager();
 		IdentityCache =
 			Substitute.For<IIdentityCacheService>();
+		TransactionManager =
+			Substitute.For<ITransactionManager>();
+		TransactionManager
+			.ExecuteInTransactionAsync(
+				Arg.Any<Func<CancellationToken, Task<Result>>>(),
+				Arg.Any<int>(),
+				Arg.Any<CancellationToken>())
+			.Returns(
+				call =>
+				{
+					Func<CancellationToken, Task<Result>> operation =
+						call.ArgAt<Func<CancellationToken, Task<Result>>>(0);
+					return operation(CancellationToken.None);
+				});
 	}
 
 	/// <summary>
@@ -85,6 +100,7 @@ public class ApprovePermissionRequestCommandHandlerTests
 				PermissionRequestRepository,
 				UserManager,
 				IdentityCache,
+				TransactionManager,
 				CancellationToken.None);
 
 		// Assert
@@ -127,6 +143,7 @@ public class ApprovePermissionRequestCommandHandlerTests
 				PermissionRequestRepository,
 				UserManager,
 				IdentityCache,
+				TransactionManager,
 				CancellationToken.None);
 
 		// Assert
@@ -170,6 +187,7 @@ public class ApprovePermissionRequestCommandHandlerTests
 				PermissionRequestRepository,
 				UserManager,
 				IdentityCache,
+				TransactionManager,
 				CancellationToken.None);
 
 		// Assert
@@ -230,6 +248,7 @@ public class ApprovePermissionRequestCommandHandlerTests
 				PermissionRequestRepository,
 				UserManager,
 				IdentityCache,
+				TransactionManager,
 				CancellationToken.None);
 
 		// Assert

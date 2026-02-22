@@ -19,7 +19,7 @@ namespace SeventySix.Identity;
 /// - One-time use: code removed from cache after exchange
 /// - Memory-only: codes never distributed (SetSkipDistributedCache)
 /// </remarks>
-public sealed class OAuthCodeExchangeService : IOAuthCodeExchangeService
+public sealed class OAuthCodeExchangeService(IFusionCacheProvider cacheProvider) : IOAuthCodeExchangeService
 {
 	/// <summary>
 	/// Cache key prefix for OAuth codes.
@@ -27,29 +27,24 @@ public sealed class OAuthCodeExchangeService : IOAuthCodeExchangeService
 	private const string CacheKeyPrefix = "oauth_code_";
 
 	/// <summary>
-	/// The identity domain cache.
+	/// Cache key prefix for link flow data.
 	/// </summary>
-	private readonly IFusionCache IdentityCache;
+	private const string LinkFlowKeyPrefix = "oauth_link_";
 
 	/// <summary>
-	/// Initializes a new instance of the <see cref="OAuthCodeExchangeService"/> class.
+	/// The identity domain cache.
 	/// </summary>
-	/// <param name="cacheProvider">
-	/// The FusionCache provider for named cache access.
-	/// </param>
-	public OAuthCodeExchangeService(IFusionCacheProvider cacheProvider)
-	{
-		IdentityCache =
-			cacheProvider.GetCache(CacheNames.Identity);
-	}
+	private readonly IFusionCache IdentityCache =
+		cacheProvider.GetCache(CacheNames.Identity);
 
 	/// <inheritdoc/>
 	public string StoreTokens(
 		string accessToken,
 		string refreshToken,
-		DateTime expiresAt,
+		DateTimeOffset expiresAt,
 		string email,
-		string? fullName)
+		string? fullName,
+		bool requiresPasswordChange)
 	{
 		string code =
 			GenerateSecureCode();
@@ -60,7 +55,8 @@ public sealed class OAuthCodeExchangeService : IOAuthCodeExchangeService
 				refreshToken,
 				expiresAt,
 				email,
-				fullName);
+				fullName,
+				requiresPasswordChange);
 
 		// Memory-only for OAuth codes: short-lived, security-sensitive
 		IdentityCache.Set(
@@ -95,6 +91,43 @@ public sealed class OAuthCodeExchangeService : IOAuthCodeExchangeService
 		}
 
 		return tokenData;
+	}
+
+	/// <inheritdoc/>
+	public void StoreLinkFlow(
+		string state,
+		OAuthLinkFlowDataResult data)
+	{
+		IdentityCache.Set(
+			$"{LinkFlowKeyPrefix}{state}",
+			data,
+			options =>
+			{
+				options.Duration =
+					TimeSpan.FromSeconds(TimeoutConstants.OAuth.CodeExchangeTtlSeconds);
+				options.SkipDistributedCacheWrite =
+					true;
+				options.SkipBackplaneNotifications =
+					true;
+			});
+	}
+
+	/// <inheritdoc/>
+	public OAuthLinkFlowDataResult? RetrieveLinkFlow(string state)
+	{
+		string cacheKey =
+			$"{LinkFlowKeyPrefix}{state}";
+
+		OAuthLinkFlowDataResult? data =
+			IdentityCache.GetOrDefault<OAuthLinkFlowDataResult>(cacheKey);
+
+		if (data is not null)
+		{
+			// One-time use: remove immediately after retrieval
+			IdentityCache.Remove(cacheKey);
+		}
+
+		return data;
 	}
 
 	/// <summary>

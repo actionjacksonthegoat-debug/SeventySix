@@ -46,8 +46,8 @@ public static class MarkEmailFailedCommandHandler
 				$"Email queue entry {command.EmailQueueId} not found");
 		}
 
-		DateTime now =
-			timeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset now =
+			timeProvider.GetUtcNow();
 
 		entry.Attempts++;
 		entry.LastAttemptAt = now;

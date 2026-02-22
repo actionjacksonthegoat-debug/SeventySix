@@ -12,6 +12,8 @@ import {
 	provideBrowserGlobalErrorListeners,
 	provideZonelessChangeDetection
 } from "@angular/core";
+import { MatIconRegistry } from "@angular/material/icon";
+import { DomSanitizer } from "@angular/platform-browser";
 import { provideAnimationsAsync } from "@angular/platform-browser/animations/async";
 import {
 	provideRouter,
@@ -33,14 +35,18 @@ import {
 	errorInterceptor,
 	loggingInterceptor
 } from "@shared/interceptors";
+import { AuthResponse } from "@shared/models";
 import {
 	AuthService,
 	ErrorHandlerService,
+	FeatureFlagsService,
 	SelectivePreloadingStrategy,
 	TelemetryService,
 	ThemeService,
 	WebVitalsService
 } from "@shared/services";
+import { registerOAuthIcons } from "@shared/utilities/oauth-icons.utility";
+import { Observable } from "rxjs";
 import { routes } from "./app.routes";
 
 /**
@@ -61,7 +67,7 @@ function initializeTheme(): Promise<void>
  * Initialize OpenTelemetry on app startup
  * This ensures tracing is active before any HTTP requests
  */
-function initializeTelemetry()
+function initializeTelemetry(): Promise<void>
 {
 	const telemetryService: TelemetryService =
 		inject(TelemetryService);
@@ -73,7 +79,7 @@ function initializeTelemetry()
  * Initialize Web Vitals monitoring on app startup
  * The WebVitalsService constructor handles initialization automatically
  */
-function initializeWebVitals()
+function initializeWebVitals(): Promise<void>
 {
 	inject(WebVitalsService);
 	// Web vitals service constructor handles initialization
@@ -84,11 +90,39 @@ function initializeWebVitals()
  * Initialize auth service on app startup
  * Handles OAuth callback processing and restores auth state
  */
-function initializeAuth()
+function initializeAuth(): Observable<AuthResponse | null>
 {
 	const authService: AuthService =
 		inject(AuthService);
 	return authService.initialize();
+}
+
+/**
+ * Loads feature flags from the API during app startup.
+ * All APP_INITIALIZERs run in parallel, so this only adds latency beyond
+ * the slowest other initializer (typically initializeAuth for returning users).
+ * For first-time visitors, this adds ~50–200 ms but guarantees correct UI state
+ * (OAuth buttons, ALTCHA, TOTP) on the very first render — no flicker.
+ */
+function initializeFeatureFlags(): Promise<void>
+{
+	const featureFlagsService: FeatureFlagsService =
+		inject(FeatureFlagsService);
+	return featureFlagsService.initialize();
+}
+
+/**
+ * Register OAuth provider SVG icons with the Material icon registry.
+ * Must run before any component references these icons.
+ */
+function initializeOAuthIcons(): Promise<void>
+{
+	const iconRegistry: MatIconRegistry =
+		inject(MatIconRegistry);
+	const sanitizer: DomSanitizer =
+		inject(DomSanitizer);
+	registerOAuthIcons(iconRegistry, sanitizer);
+	return Promise.resolve();
 }
 
 /**
@@ -100,6 +134,8 @@ const appInitializers: ReturnType<typeof provideAppInitializer>[] =
 		provideAppInitializer(initializeTheme),
 		provideAppInitializer(initializeTelemetry),
 		provideAppInitializer(initializeWebVitals),
+		provideAppInitializer(initializeOAuthIcons),
+		provideAppInitializer(initializeFeatureFlags),
 		provideAppInitializer(initializeAuth)
 	];
 

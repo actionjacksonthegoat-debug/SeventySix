@@ -3,9 +3,10 @@
 // </copyright>
 
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
-using SeventySix.Identity;
+using SeventySix.Shared.Interfaces;
 using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.Mocks;
@@ -20,12 +21,13 @@ namespace SeventySix.Identity.Tests.Commands.UpdateProfile;
 /// <remarks>
 /// Tests follow 80/20 rule: focus on happy path and critical validation paths.
 /// </remarks>
-public class UpdateProfileCommandHandlerTests
+public sealed class UpdateProfileCommandHandlerTests
 {
 	private readonly FakeTimeProvider TimeProvider;
 	private readonly IMessageBus MessageBus;
 	private readonly UserManager<ApplicationUser> UserManager;
 	private readonly IIdentityCacheService IdentityCache;
+	private readonly ITransactionManager TransactionManager;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="UpdateProfileCommandHandlerTests"/> class.
@@ -40,6 +42,22 @@ public class UpdateProfileCommandHandlerTests
 			IdentityMockFactory.CreateUserManager();
 		IdentityCache =
 			Substitute.For<IIdentityCacheService>();
+		TransactionManager =
+			Substitute.For<ITransactionManager>();
+
+		TransactionManager
+			.ExecuteInTransactionAsync(
+				Arg.Any<Func<CancellationToken, Task>>(),
+				Arg.Any<int>(),
+				Arg.Any<CancellationToken>())
+			.Returns(
+				call =>
+				{
+					Func<CancellationToken, Task> operation =
+						call.ArgAt<Func<CancellationToken, Task>>(0);
+
+					return operation(CancellationToken.None);
+				});
 	}
 
 	/// <summary>
@@ -94,6 +112,7 @@ public class UpdateProfileCommandHandlerTests
 				MessageBus,
 				UserManager,
 				IdentityCache,
+				TransactionManager,
 				CancellationToken.None);
 
 		// Assert
@@ -130,6 +149,7 @@ public class UpdateProfileCommandHandlerTests
 				MessageBus,
 				UserManager,
 				IdentityCache,
+				TransactionManager,
 				CancellationToken.None);
 
 		// Assert
@@ -177,6 +197,48 @@ public class UpdateProfileCommandHandlerTests
 				MessageBus,
 				UserManager,
 				IdentityCache,
+				TransactionManager,
+				CancellationToken.None));
+	}
+
+	/// <summary>
+	/// Tests that concurrency failure results in DbUpdateConcurrencyException.
+	/// </summary>
+	[Fact]
+	public async Task HandleAsync_ConcurrencyFailure_ThrowsDbUpdateConcurrencyExceptionAsync()
+	{
+		// Arrange
+		ApplicationUser user =
+			new UserBuilder(TimeProvider)
+				.WithId(1)
+				.WithEmail("test@example.com")
+				.Build();
+
+		UserManager
+			.FindByIdAsync("1")
+			.Returns(user);
+
+		UserManager
+			.UpdateAsync(user)
+			.Returns(
+				IdentityResult.Failed(
+					new IdentityError
+					{
+						Code = "ConcurrencyFailure",
+						Description = "Optimistic concurrency failure.",
+					}));
+
+		UpdateProfileCommand command =
+			CreateUpdateCommand(user.Id, "test@example.com", "Test User");
+
+		// Act & Assert
+		await Should.ThrowAsync<DbUpdateConcurrencyException>(
+			() => UpdateProfileCommandHandler.HandleAsync(
+				command,
+				MessageBus,
+				UserManager,
+				IdentityCache,
+				TransactionManager,
 				CancellationToken.None));
 	}
 

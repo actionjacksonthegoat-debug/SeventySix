@@ -18,8 +18,20 @@ export const PAGE_TEXT =
 				register: "Register",
 				forgotPassword: "Forgot Password",
 				checkYourEmail: "Check Your Email",
-				welcome: "Welcome to SeventySix",
-				adminDashboard: "Admin Dashboard"
+				adminDashboard: "Admin Dashboard",
+				changePassword: "Change Password",
+				setNewPassword: "Set New Password",
+				invalidLink: "Invalid Link",
+				createNewUser: "Create New User",
+				verifyYourIdentity: "Verify Your Identity",
+				authenticatorCode: "Authenticator Code",
+				useBackupCode: "Use Backup Code",
+				setUpAuthenticatorApp: "Set Up Authenticator App",
+				verifySetup: "Verify Setup",
+				authenticatorEnabled: "Authenticator Enabled!",
+				generateBackupCodes: "Generate Backup Codes",
+				saveYourBackupCodes: "Save Your Backup Codes",
+				backupCodesSaved: "Backup Codes Saved"
 			},
 
 		/**
@@ -30,7 +42,17 @@ export const PAGE_TEXT =
 				continueWithGithub: /Continue with GitHub/,
 				sendResetLink: /Send Reset Link|Sending/,
 				continue: /Continue|Sending/,
-				logout: "Logout"
+				logout: "Logout",
+				verify: /Verify|Verifying/,
+				changePassword: /Change Password|Changing/,
+				setPassword: /Set Password|Setting Password/,
+				createUser: /Create User/,
+				generateCodes: "Generate Codes",
+				savedMyCodes: "I've Saved My Codes",
+				next: "Next",
+				cantScan: "Can't scan",
+				scannedCode: "I've scanned the code",
+				verifyAndEnable: "Verify & Enable"
 			},
 
 		/**
@@ -39,7 +61,8 @@ export const PAGE_TEXT =
 		links:
 			{
 				forgotPassword: "Forgot password?",
-				returnToSignIn: "Return to Sign In"
+				returnToSignIn: "Return to Sign In",
+				returnToLogin: "Return to Login"
 			},
 
 		/**
@@ -49,7 +72,8 @@ export const PAGE_TEXT =
 			{
 				enterUsernamePassword: "Please enter username and password",
 				enterEmail: "Please enter an email address",
-				validEmail: "valid email"
+				validEmail: "valid email",
+				minimumCharacters: "8 characters"
 			},
 
 		/**
@@ -62,10 +86,12 @@ export const PAGE_TEXT =
 				error: "Error",
 				/**
 				 * Patterns that indicate server-side failures.
+				 * Use specific phrases that only appear on error pages/overlays,
+				 * not in data tables that legitimately render HTTP status codes.
 				 */
 				serverPatterns:
 					[
-						"500",
+						"500 - Server Error",
 						"Internal Server Error",
 						"502 Bad Gateway",
 						"503 Service Unavailable",
@@ -113,7 +139,18 @@ export const PAGE_TEXT =
 		 */
 		confirmation:
 			{
-				checkYourEmail: "Check Your Email"
+				checkYourEmail: "Check Your Email",
+				passwordChanged: "Password changed successfully",
+				userUpdated: "User updated successfully",
+				permissionRequestSubmitted: "Permission request submitted"
+			},
+
+		/**
+		 * Change password page text.
+		 */
+		changePassword:
+			{
+				requiredNotice: "You must change your password before continuing."
 			},
 
 		/**
@@ -132,8 +169,9 @@ export const PAGE_TEXT =
 			{
 				usernameOrEmail: "Username or Email",
 				password: "Password",
-				rememberMe: "Remember me",
-				emailAddress: "Email Address"
+				rememberMe: "Stay signed in",
+				emailAddress: "Email Address",
+				roleSelection: "Role selection"
 			},
 
 		/**
@@ -144,28 +182,6 @@ export const PAGE_TEXT =
 				enterYourEmail: "Enter your email address",
 				verificationLink: "verification link",
 				passwordResetLink: "password reset link",
-				selectFeature: "Select a feature to get started"
-			},
-
-		/**
-		 * Home page card text.
-		 */
-		homeCards:
-			{
-				sandbox:
-					{
-						title: "Sandbox",
-						description: "Experimentation area for testing new features and ideas",
-						icon: "science"
-					}
-			},
-
-		/**
-		 * Action text.
-		 */
-		actions:
-			{
-				open: "Open"
 			},
 
 		/**
@@ -173,7 +189,6 @@ export const PAGE_TEXT =
 		 */
 		icons:
 			{
-				arrowForward: "arrow_forward",
 				dashboard: "dashboard"
 			},
 
@@ -212,7 +227,16 @@ export const PAGE_TEXT =
 			{
 				title: "User Management",
 				subtitle: "Manage user accounts and permissions",
-				createUser: "Create User"
+				createUser: "Create User",
+				activeFilter: "Active"
+			},
+
+		/**
+		 * User create text.
+		 */
+		userCreate:
+			{
+				failedToCreate: "Failed to create user"
 			},
 
 		/**
@@ -239,7 +263,12 @@ export const PAGE_TEXT =
 		profile:
 			{
 				saveChanges: "Save Changes",
-				requestPermissions: "Request Permissions"
+				requestPermissions: "Request Permissions",
+				profileUpdated: "Profile updated",
+				linkedAccountsHeading: "Linked Accounts",
+				connectDescription: "Connect external accounts for easier sign-in.",
+				connectButton: "Connect",
+				disconnectButton: "Disconnect"
 			},
 
 		/**
@@ -254,6 +283,23 @@ export const PAGE_TEXT =
 			},
 
 		/**
+		 * Home page text.
+		 */
+		home:
+			{
+				landingPage:
+					{
+						heroTitle: "SeventySix",
+						heroTagline: "Secure. Observable. AI-Driven.",
+						techStackHeading: "Built With",
+						featuresHeading: "Key Features",
+						architectureHeading: "Architecture Patterns",
+						ctaTitle: "Free Forever. Open Source.",
+						cloneCommand: "git clone https://github.com/actionjacksonthegoat-debug/SeventySix.git"
+					}
+			},
+
+		/**
 		 * Developer pages text.
 		 */
 		developer:
@@ -261,12 +307,8 @@ export const PAGE_TEXT =
 				styleGuide:
 					{
 						title: "Style Guide",
-						description: "Material Design 3 components and design tokens"
-					},
-				architectureGuide:
-					{
-						title: "Architecture Guide",
-						description: "architecture patterns and conventions"
+						description: "Material Design 3 components and design tokens",
+						colorsTab: "Colors"
 					}
 			},
 
@@ -275,8 +317,7 @@ export const PAGE_TEXT =
 		 */
 		sandbox:
 			{
-				title: "Sandbox",
-				description: "experimentation area for testing new features"
+				title: "Hello World"
 			},
 
 		/**
@@ -287,5 +328,24 @@ export const PAGE_TEXT =
 				notFoundTitle: "404 - Page Not Found",
 				notFoundDescription: "The page you're looking for doesn't exist",
 				goToHome: "Go to Home"
+			},
+
+		/**
+		 * Registration completion text.
+		 */
+		registerComplete:
+			{
+				heading: "Complete Registration",
+				linkExpired: "Link Expired",
+				passwordHint: "At least 8 characters with uppercase, lowercase, digit, and special character"
+			},
+
+		/**
+		 * Set password / password reset text.
+		 */
+		setPassword:
+			{
+				invalidLink: "Invalid Link",
+				linkExpired: "invalid or has expired"
 			}
 	} as const;

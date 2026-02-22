@@ -51,7 +51,7 @@ export class UserPreferencesService
 	{
 		const stored: UserListPreferences | null =
 			this.storageService.getItem<UserListPreferences>(STORAGE_KEY);
-		return stored || DEFAULT_PREFERENCES;
+		return stored ?? DEFAULT_PREFERENCES;
 	}
 
 	/**

@@ -20,7 +20,8 @@
 	@if (saveError()) {
 	<mat-card
 		appearance="outlined"
-		class="alert-card error">
+		class="alert-card error"
+		data-testid="save-error-banner">
 		<mat-card-content>
 			<div class="alert-content">
 				<mat-icon
@@ -97,7 +98,7 @@
 					<div class="step-actions">
 						<div class="flex-1"></div>
 						<button
-							mat-raised-button
+							mat-stroked-button
 							color="primary"
 							matStepperNext>
 							Next
@@ -166,7 +167,7 @@
 						</button>
 						<div class="flex-1"></div>
 						<button
-							mat-raised-button
+							mat-stroked-button
 							color="primary"
 							matStepperNext>
 							Next
@@ -198,12 +199,12 @@
 						class="role-chips">
 						@for (roleName of availableRoles; track roleName) {
 								<mat-chip-option
-									[selected]="selectedRoles().includes(roleName)"
-									(click)="toggleRole(roleName)">
-									<mat-icon
-										aria-hidden="true"
-										matChipAvatar>
-										{{ selectedRoles().includes(roleName) ? "check_circle" : "radio_button_unchecked" }}
+								[selected]="selectedRolesSet().has(roleName)"
+								(click)="toggleRole(roleName)">
+								<mat-icon
+									aria-hidden="true"
+									matChipAvatar>
+									{{ selectedRolesSet().has(roleName) ? "check_circle" : "radio_button_unchecked" }}
 									</mat-icon>
 									{{ roleName }}
 								</mat-chip-option>
@@ -235,8 +236,7 @@
 					</button>
 					<div class="flex-1"></div>
 					<button
-						mat-raised-button
-						color="primary"
+							mat-stroked-button
 						matStepperNext>
 						Next
 						<mat-icon aria-hidden="true">
@@ -246,8 +246,11 @@
 				</div>
 			</mat-step>
 
-			<!-- Step 4: Review & Submit -->
+			<!-- Step 4: Review & Submit (lazy-rendered to ensure formData() reads
+				current values; without matStepContent, Zoneless mode renders this
+				content once during initial load when forms are still empty) -->
 			<mat-step label="Review & Submit">
+				<ng-template matStepContent>
 				<mat-card appearance="outlined">
 					<mat-card-header>
 						<mat-card-title>Review User Information</mat-card-title>
@@ -296,7 +299,7 @@
 										Full Name
 									</span>
 									<span class="mat-body-1">
-										{{ formData().fullName || "Not provided" }}
+										{{ formData().fullName ?? "Not provided" }}
 									</span>
 								</div>
 							</div>
@@ -354,9 +357,10 @@
 					</button>
 					<div class="flex-1"></div>
 					<button
-						mat-raised-button
+						mat-stroked-button
 						color="primary"
 						type="button"
+						data-testid="create-user-button"
 						(click)="onSubmit()"
 						[disabled]="isSaving()">
 						@if (isSaving()) {
@@ -369,6 +373,7 @@
 						}
 					</button>
 				</div>
+				</ng-template>
 			</mat-step>
 		</mat-stepper>
 	</div>

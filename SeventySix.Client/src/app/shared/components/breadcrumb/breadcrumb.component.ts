@@ -12,6 +12,7 @@ import { ActivatedRoute, NavigationEnd, Router, UrlSegment, UrlSegmentGroup, Url
 import { RouterLink } from "@angular/router";
 import { BreadcrumbItem } from "@shared/models";
 import { capitalize } from "@shared/utilities";
+import { isNullOrEmpty } from "@shared/utilities/null-check.utility";
 import { filter, map, startWith } from "rxjs/operators";
 
 @Component(
@@ -30,6 +31,7 @@ import { filter, map, startWith } from "rxjs/operators";
 						{{ item.label }}
 					</button>
 					<mat-icon class="breadcrumb-separator"
+						aria-hidden="true"
 						>chevron_right</mat-icon
 					>
 				} @else {
@@ -59,7 +61,7 @@ import { filter, map, startWith } from "rxjs/operators";
 				padding: 0 0.5rem;
 
 				&.breadcrumb-active {
-					color: rgba(var(--mat-primary-rgb), 1);
+					color: var(--mat-sys-primary);
 					font-weight: 500;
 				}
 			}
@@ -68,7 +70,7 @@ import { filter, map, startWith } from "rxjs/operators";
 				font-size: 18px;
 				width: 18px;
 				height: 18px;
-				color: rgba(var(--mat-outline-rgb), 0.6);
+				color: color-mix(in srgb, var(--mat-sys-outline) 60%, transparent);
 			}
 		}
 
@@ -313,12 +315,10 @@ export class BreadcrumbComponent
 			const label: string =
 				this.getSegmentLabel(
 					url,
-					segment,
-					urlSegments,
-					i);
+					segment);
 
 			// Skip empty labels
-			if (!label)
+			if (isNullOrEmpty(label))
 			{
 				continue;
 			}
@@ -342,27 +342,18 @@ export class BreadcrumbComponent
 	 * @param {string} segment
 	 * The segment text from the path (e.g., 'users' or '123').
 	 *
-	 * @param {string[]} _allSegments
-	 * All URL segments (unused but available for future rules).
-	 *
-	 * @param {number} _index
-	 * Index of this segment within the full segments array.
-	 *
 	 * @returns {string}
 	 * Display label for the segment (custom mapping, 'Details' for numeric ids, or formatted text).
 	 * @private
 	 */
 	private getSegmentLabel(
 		url: string,
-		segment: string,
-		_allSegments: string[],
-		_index: number): string
+		segment: string): string
 	{
 		// Custom labels for specific routes
 		const routeLabels: Record<string, string> =
 			{
 				"/developer/style-guide": "Style Guide",
-				"/developer/architecture": "Architecture Guide",
 				"/admin/dashboard": "Dashboard",
 				"/admin/logs": "Logs",
 				"/admin/users": "Users",

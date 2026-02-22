@@ -11,7 +11,7 @@ namespace SeventySix.Analyzers.Tests;
 /// Enforces block lambdas to start on new line after opening paren.
 /// Follows 80/20 rule: critical paths only.
 /// </summary>
-public class LambdaArgumentNewlineAnalyzerTests
+public sealed class LambdaArgumentNewlineAnalyzerTests
 {
 	[Fact]
 	public async Task BlockLambdaInline_WithMethodCall_ShouldReportDiagnosticAsync()

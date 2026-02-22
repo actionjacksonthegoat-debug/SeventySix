@@ -162,8 +162,8 @@ public sealed class MfaChallengeBuilder
 	/// </returns>
 	public MfaChallenge Build()
 	{
-		DateTime now =
-			TimeProviderField.GetUtcNow().UtcDateTime;
+		DateTimeOffset now =
+			TimeProviderField.GetUtcNow();
 
 		string codeHash =
 			ComputeSha256Hash(Code);

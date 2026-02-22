@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
-using SeventySix.Identity;
 using SeventySix.Identity.Commands.CreatePermissionRequest;
 using SeventySix.Identity.Constants;
 using SeventySix.TestUtilities.Builders;
@@ -22,10 +21,11 @@ namespace SeventySix.Identity.Tests.Commands.CreatePermissionRequest;
 /// Tests follow 80/20 rule: focus on permission flow and auto-approval.
 /// Security-critical: Role assignment must be thoroughly tested.
 /// </remarks>
-public class CreatePermissionRequestCommandHandlerTests
+public sealed class CreatePermissionRequestCommandHandlerTests
 {
 	private readonly IPermissionRequestRepository Repository;
 	private readonly UserManager<ApplicationUser> UserManager;
+	private readonly IIdentityCacheService IdentityCache;
 	private readonly IOptions<WhitelistedPermissionSettings> WhitelistedOptions;
 
 	/// <summary>
@@ -37,6 +37,8 @@ public class CreatePermissionRequestCommandHandlerTests
 			Substitute.For<IPermissionRequestRepository>();
 		UserManager =
 			IdentityMockFactory.CreateUserManager();
+		IdentityCache =
+			Substitute.For<IIdentityCacheService>();
 		WhitelistedOptions =
 			Options.Create(new WhitelistedPermissionSettings());
 	}
@@ -53,6 +55,7 @@ public class CreatePermissionRequestCommandHandlerTests
 				null!,
 				Repository,
 				UserManager,
+				IdentityCache,
 				WhitelistedOptions,
 				CancellationToken.None));
 	}
@@ -76,6 +79,7 @@ public class CreatePermissionRequestCommandHandlerTests
 				command,
 				Repository,
 				UserManager,
+				IdentityCache,
 				WhitelistedOptions,
 				CancellationToken.None));
 	}
@@ -103,6 +107,7 @@ public class CreatePermissionRequestCommandHandlerTests
 				command,
 				Repository,
 				UserManager,
+				IdentityCache,
 				WhitelistedOptions,
 				CancellationToken.None));
 	}
@@ -146,6 +151,7 @@ public class CreatePermissionRequestCommandHandlerTests
 					command,
 					Repository,
 					UserManager,
+					IdentityCache,
 					WhitelistedOptions,
 					CancellationToken.None));
 
@@ -189,6 +195,7 @@ public class CreatePermissionRequestCommandHandlerTests
 			command,
 			Repository,
 			UserManager,
+			IdentityCache,
 			WhitelistedOptions,
 			CancellationToken.None);
 
@@ -247,6 +254,7 @@ public class CreatePermissionRequestCommandHandlerTests
 			command,
 			Repository,
 			UserManager,
+			IdentityCache,
 			WhitelistedOptions,
 			CancellationToken.None);
 

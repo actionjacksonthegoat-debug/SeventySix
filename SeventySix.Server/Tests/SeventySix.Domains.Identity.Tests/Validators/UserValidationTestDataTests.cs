@@ -15,7 +15,7 @@ namespace SeventySix.Identity.Tests.Validators;
 /// - Validates data meets the validation rule requirements
 /// - Acts as documentation for what each data set represents
 /// </remarks>
-public class UserValidationTestDataTests
+public sealed class UserValidationTestDataTests
 {
 	#region TooShortUsernames Tests
 
@@ -60,8 +60,10 @@ public class UserValidationTestDataTests
 	{
 		// Assert - Each username should contain at least one character that's not alphanumeric or underscore
 		bool hasInvalidChar =
-			username.Any(c =>
-			!char.IsLetterOrDigit(c) && c != '_');
+			username.Any(
+				character =>
+					!char.IsLetterOrDigit(character)
+						&& character != '_');
 		hasInvalidChar.ShouldBeTrue(
 			$"Username '{username}' should contain invalid characters");
 	}
@@ -87,7 +89,9 @@ public class UserValidationTestDataTests
 		// Assert - Must be 3-50 chars and only alphanumeric/underscore
 		username.Length.ShouldBeInRange(3, 50);
 		username.ShouldAllBe(
-			c => char.IsLetterOrDigit(c) || c == '_');
+			character =>
+				char.IsLetterOrDigit(character)
+					|| character == '_');
 	}
 
 	#endregion
@@ -112,7 +116,7 @@ public class UserValidationTestDataTests
 		// Either missing @, has multiple @, or has spaces
 		bool isObviouslyInvalid =
 			!email.Contains('@')
-			|| email.Count(c => c == '@') > 1
+			|| email.Count(character => character == '@') > 1
 			|| email.Contains(' ')
 			|| email.StartsWith('@')
 			|| email.EndsWith('@');
@@ -141,7 +145,7 @@ public class UserValidationTestDataTests
 	{
 		// Assert - Basic structural requirement
 		int atCount =
-			email.Count(c => c == '@');
+			email.Count(character => character == '@');
 		atCount.ShouldBe(1);
 	}
 

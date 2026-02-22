@@ -3,7 +3,7 @@ import { DateService } from "@shared/services";
 import {
 	getDateRangeFromPreset,
 	getDateRangePresetLabel
-} from "./log-filter.model";
+} from "./log-filter.utility";
 
 describe("Log Filter Model",
 	() =>

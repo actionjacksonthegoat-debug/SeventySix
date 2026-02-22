@@ -57,6 +57,7 @@ export const loggingInterceptor: HttpInterceptorFn =
 							const duration: number =
 								dateService.nowTimestamp() - startTime;
 							// Always log HTTP errors regardless of log level
+
 							console.error(
 								`🔴 HTTP Error: ${req.method} ${req.url} (${duration}ms)`,
 								error);

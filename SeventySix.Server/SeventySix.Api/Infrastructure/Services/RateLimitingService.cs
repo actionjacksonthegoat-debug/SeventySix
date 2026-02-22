@@ -191,7 +191,7 @@ public sealed class RateLimitingService(
 
 		// Use domain method to increment (sets CallCount = 1 and LastCalledAt = now)
 		request.IncrementCallCount(
-			timeProvider.GetUtcNow().UtcDateTime);
+			timeProvider.GetUtcNow());
 
 		await repository.CreateAsync(request);
 		return true;
@@ -221,7 +221,7 @@ public sealed class RateLimitingService(
 
 		// Increment counter using domain logic
 		request.IncrementCallCount(
-			timeProvider.GetUtcNow().UtcDateTime);
+			timeProvider.GetUtcNow());
 
 		// Update the record
 		await repository.UpdateAsync(request);
@@ -243,7 +243,7 @@ public sealed class RateLimitingService(
 				apiName,
 				currentCount,
 				limit,
-				(double)currentCount / limit * 100,
+				(decimal)currentCount / limit * 100,
 				interval);
 		}
 
@@ -275,10 +275,10 @@ public sealed class RateLimitingService(
 	{
 		ArgumentException.ThrowIfNullOrWhiteSpace(apiName);
 
-		DateTime utcNow =
-			timeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset utcNow =
+			timeProvider.GetUtcNow();
 		DateOnly today =
-			DateOnly.FromDateTime(utcNow);
+			DateOnly.FromDateTime(utcNow.UtcDateTime);
 
 		if (interval == LimitInterval.Monthly)
 		{
@@ -428,5 +428,49 @@ public sealed class RateLimitingService(
 		request.ResetCallCount();
 
 		await repository.UpdateAsync(request);
+	}
+
+	/// <inheritdoc/>
+	public async Task<bool> TryDecrementRequestCountAsync(
+		string apiName,
+		CancellationToken cancellationToken = default)
+	{
+		ArgumentException.ThrowIfNullOrWhiteSpace(apiName);
+
+		if (!RateLimitSettings.IsApiRateLimitEnabled(apiName))
+		{
+			return true;
+		}
+
+		DateOnly today =
+			DateOnly.FromDateTime(
+				timeProvider.GetUtcNow().UtcDateTime);
+
+		return await transactionManager.ExecuteInTransactionAsync(
+			async cancellation =>
+			{
+				ThirdPartyApiRequest? request =
+					await repository.GetByApiNameAndDateAsync(
+						apiName,
+						today,
+						cancellation);
+
+				if (request is null || request.CallCount <= 0)
+				{
+					return false;
+				}
+
+				request.DecrementCallCount();
+				await repository.UpdateAsync(request);
+
+				logger.LogWarning(
+					"Rate limit slot released for {ApiName}. New count: {Count}",
+					apiName,
+					request.CallCount);
+
+				return true;
+			},
+			maxRetries: 3,
+			cancellationToken);
 	}
 }

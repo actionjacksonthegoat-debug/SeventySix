@@ -46,7 +46,7 @@ public interface ITokenRepository
 	/// </returns>
 	public Task<int> GetActiveSessionCountAsync(
 		long userId,
-		DateTime currentTime,
+		DateTimeOffset currentTime,
 		CancellationToken cancellationToken = default);
 
 	/// <summary>
@@ -76,7 +76,7 @@ public interface ITokenRepository
 	/// </param>
 	public Task RevokeAsync(
 		RefreshToken token,
-		DateTime revokedAt,
+		DateTimeOffset revokedAt,
 		CancellationToken cancellationToken = default);
 
 	/// <summary>
@@ -96,7 +96,7 @@ public interface ITokenRepository
 	/// </returns>
 	public Task<int> RevokeAllUserTokensAsync(
 		long userId,
-		DateTime revokedAt,
+		DateTimeOffset revokedAt,
 		CancellationToken cancellationToken = default);
 
 	/// <summary>
@@ -113,7 +113,7 @@ public interface ITokenRepository
 	/// </param>
 	public Task RevokeFamilyAsync(
 		Guid familyId,
-		DateTime revokedAt,
+		DateTimeOffset revokedAt,
 		CancellationToken cancellationToken = default);
 
 	/// <summary>
@@ -133,8 +133,8 @@ public interface ITokenRepository
 	/// </param>
 	public Task RevokeOldestActiveTokenAsync(
 		long userId,
-		DateTime currentTime,
-		DateTime revokedAt,
+		DateTimeOffset currentTime,
+		DateTimeOffset revokedAt,
 		CancellationToken cancellationToken = default);
 
 	/// <summary>
@@ -154,7 +154,7 @@ public interface ITokenRepository
 	/// </returns>
 	public Task<long?> ValidateTokenAsync(
 		string tokenHash,
-		DateTime currentTime,
+		DateTimeOffset currentTime,
 		CancellationToken cancellationToken = default);
 
 	/// <summary>
@@ -174,6 +174,6 @@ public interface ITokenRepository
 	/// </returns>
 	public Task<bool> RevokeByHashAsync(
 		string tokenHash,
-		DateTime revokedAt,
+		DateTimeOffset revokedAt,
 		CancellationToken cancellationToken = default);
 }

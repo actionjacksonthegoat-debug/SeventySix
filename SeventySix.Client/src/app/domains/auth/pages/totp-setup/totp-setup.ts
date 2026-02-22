@@ -8,11 +8,13 @@ import { HttpErrorResponse } from "@angular/common/http";
 import {
 	ChangeDetectionStrategy,
 	Component,
+	DestroyRef,
 	inject,
 	OnInit,
 	signal,
 	WritableSignal
 } from "@angular/core";
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import {
 	FormBuilder,
 	FormGroup,
@@ -26,7 +28,7 @@ import { CLIPBOARD_RESET_DELAY_MS, QR_CODE_CONFIG } from "@auth/constants";
 import { TotpService } from "@auth/services";
 import { APP_ROUTES } from "@shared/constants";
 import { TotpSetupResponse } from "@shared/models";
-import { NotificationService } from "@shared/services";
+import { LoggerService, NotificationService } from "@shared/services";
 import { copyWithFeedback } from "@shared/utilities";
 import * as QRCode from "qrcode";
 
@@ -86,6 +88,15 @@ export class TotpSetupComponent implements OnInit
 		inject(NotificationService);
 
 	/**
+	 * Logger service for structured error reporting.
+	 * @type {LoggerService}
+	 * @private
+	 * @readonly
+	 */
+	private readonly loggerService: LoggerService =
+		inject(LoggerService);
+
+	/**
 	 * Clipboard service for copy operations.
 	 * @type {Clipboard}
 	 * @private
@@ -93,6 +104,15 @@ export class TotpSetupComponent implements OnInit
 	 */
 	private readonly clipboard: Clipboard =
 		inject(Clipboard);
+
+	/**
+	 * Angular destroy reference for automatic subscription cleanup.
+	 * @type {DestroyRef}
+	 * @private
+	 * @readonly
+	 */
+	private readonly destroyRef: DestroyRef =
+		inject(DestroyRef);
 
 	/**
 	 * Form builder for creating reactive forms.
@@ -216,6 +236,8 @@ export class TotpSetupComponent implements OnInit
 		this
 			.totpService
 			.initiateSetup()
+			.pipe(
+				takeUntilDestroyed(this.destroyRef))
 			.subscribe(
 				{
 					next: (response: TotpSetupResponse) =>
@@ -261,30 +283,28 @@ export class TotpSetupComponent implements OnInit
 			.catch(
 				(error: Error) =>
 				{
-					console.error("Failed to generate QR code:", error);
+					this.loggerService.error(
+						"Failed to generate QR code",
+						error);
 					this.showManualEntry.set(true);
 				});
 	}
 
 	/**
 	 * Handles API errors by extracting message and showing notification.
-	 * @param {HttpErrorResponse} error
-	 * The HTTP error response.
-	 * @param {string} fallbackMessage
-	 * Default message if none in response.
+	 * @param {HttpErrorResponse} _error
+	 * The HTTP error response, left for logging purposes.
+	 * @param {string} displayMessage
+	 * The message to display to the user.
 	 * @returns {void}
 	 * @private
 	 */
 	private handleError(
-		error: HttpErrorResponse,
-		fallbackMessage: string): void
+		_error: HttpErrorResponse,
+		displayMessage: string): void
 	{
-		const message: string =
-			error.error?.message
-				?? error.error?.title
-				?? fallbackMessage;
-		this.errorMessage.set(message);
-		this.notification.error(message);
+		this.errorMessage.set(displayMessage);
+		this.notification.error(displayMessage);
 	}
 
 	/**
@@ -369,6 +389,8 @@ export class TotpSetupComponent implements OnInit
 			.totpService
 			.confirmSetup(
 				{ code: verificationCode })
+			.pipe(
+				takeUntilDestroyed(this.destroyRef))
 			.subscribe(
 				{
 					next: () =>
@@ -421,6 +443,7 @@ export class TotpSetupComponent implements OnInit
 
 	/**
 	 * Checks if verification code is valid (6 digits).
+	 * Uses method instead of computed() because reactive forms are not signal-based.
 	 * @returns {boolean}
 	 * True if code is valid.
 	 * @protected

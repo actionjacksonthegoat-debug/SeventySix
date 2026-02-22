@@ -5,7 +5,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Time.Testing;
-using SeventySix.Identity;
 using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;
@@ -18,7 +17,7 @@ namespace SeventySix.Identity.Tests.Services;
 /// Tests trusted device creation, validation, and revocation with real database.
 /// </summary>
 [Collection(CollectionNames.IdentityPostgreSql)]
-public class TrustedDeviceServiceTests(IdentityPostgreSqlFixture fixture)
+public sealed class TrustedDeviceServiceTests(IdentityPostgreSqlFixture fixture)
 	: DataPostgreSqlTestBase(fixture)
 {
 	private static readonly DateTimeOffset FixedTime =
@@ -121,7 +120,7 @@ public class TrustedDeviceServiceTests(IdentityPostgreSqlFixture fixture)
 		TrustedDeviceService service =
 			CreateService(context, timeProvider);
 
-		DateTime expectedExpiration =
+		DateTimeOffset expectedExpiration =
 			FixedTime.UtcDateTime.AddDays(30);
 
 		// Act
@@ -339,8 +338,8 @@ public class TrustedDeviceServiceTests(IdentityPostgreSqlFixture fixture)
 
 		// Advance time
 		timeProvider.Advance(TimeSpan.FromHours(1));
-		DateTime expectedLastUsed =
-			timeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset expectedLastUsed =
+			timeProvider.GetUtcNow();
 
 		// Act
 		await service.ValidateTrustedDeviceAsync(

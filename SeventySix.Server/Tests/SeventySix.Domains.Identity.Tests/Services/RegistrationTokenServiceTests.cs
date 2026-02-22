@@ -1,12 +1,10 @@
-using SeventySix.Shared;
 using SeventySix.Shared.POCOs;
 using SeventySix.Shared.Utilities;
 using Shouldly;
-using Xunit;
 
 namespace SeventySix.Identity.Tests.Services;
 
-public class RegistrationTokenServiceTests
+public sealed class RegistrationTokenServiceTests
 {
 	[Fact]
 	public void Encode_WithValidInputs_ReturnsUrlSafeString()
@@ -38,7 +36,7 @@ public class RegistrationTokenServiceTests
 			RegistrationTokenService.Encode(testEmail, verificationToken);
 
 		// Act
-		CombinedRegistrationToken? decodedToken =
+		CombinedRegistrationTokenDto? decodedToken =
 			RegistrationTokenService.Decode(encodedToken);
 
 		// Assert
@@ -54,7 +52,7 @@ public class RegistrationTokenServiceTests
 		string invalidToken = "not-a-valid-base64-token";
 
 		// Act
-		CombinedRegistrationToken? decodedToken =
+		CombinedRegistrationTokenDto? decodedToken =
 			RegistrationTokenService.Decode(invalidToken);
 
 		// Assert

@@ -5,7 +5,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using NSubstitute;
-using SeventySix.Identity;
 using SeventySix.Identity.Constants;
 using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.Constants;
@@ -22,7 +21,7 @@ namespace SeventySix.Identity.Tests.Services;
 /// - Token refresh validation and rotation
 /// Focus on business logic, not infrastructure.
 /// </remarks>
-public class AuthenticationServiceTests
+public sealed class AuthenticationServiceTests
 {
 	private readonly IAuthRepository AuthRepository;
 	private readonly ITokenService TokenService;
@@ -89,7 +88,7 @@ public class AuthenticationServiceTests
 		string expectedAccessToken = "access_token_123";
 		string expectedRefreshToken = "refresh_token_456";
 		string clientIp = "192.168.1.1";
-		DateTime utcNow =
+		DateTimeOffset utcNow =
 			TestDates.DefaultUtc;
 
 		UserManager
@@ -100,7 +99,8 @@ public class AuthenticationServiceTests
 			.GenerateAccessToken(
 				user.Id,
 				user.UserName!,
-				Arg.Any<IEnumerable<string>>())
+				Arg.Any<IEnumerable<string>>(),
+				Arg.Any<bool>())
 			.Returns(expectedAccessToken);
 
 		TokenService
@@ -111,7 +111,7 @@ public class AuthenticationServiceTests
 				Arg.Any<CancellationToken>())
 			.Returns(expectedRefreshToken);
 
-		TimeProvider.GetUtcNow().Returns(new DateTimeOffset(utcNow));
+		TimeProvider.GetUtcNow().Returns(new DateTimeOffset(utcNow.UtcDateTime));
 
 		// Act
 		AuthResult result =
@@ -163,7 +163,8 @@ public class AuthenticationServiceTests
 			.GenerateAccessToken(
 				Arg.Any<long>(),
 				Arg.Any<string>(),
-				Arg.Any<IEnumerable<string>>())
+				Arg.Any<IEnumerable<string>>(),
+				Arg.Any<bool>())
 			.Returns("token");
 
 		TokenService
@@ -217,7 +218,8 @@ public class AuthenticationServiceTests
 			.GenerateAccessToken(
 				Arg.Any<long>(),
 				Arg.Any<string>(),
-				Arg.Any<IEnumerable<string>>())
+				Arg.Any<IEnumerable<string>>(),
+				Arg.Any<bool>())
 			.Returns("token");
 
 		TokenService
@@ -274,7 +276,8 @@ public class AuthenticationServiceTests
 			.GenerateAccessToken(
 				Arg.Any<long>(),
 				Arg.Any<string>(),
-				Arg.Do<IEnumerable<string>>(roleList => capturedRoles = roleList))
+				Arg.Do<IEnumerable<string>>(roleList => capturedRoles = roleList),
+				Arg.Any<bool>())
 			.Returns("token");
 
 		TokenService
@@ -303,5 +306,77 @@ public class AuthenticationServiceTests
 		roleList.ShouldContain(RoleConstants.User);
 		roleList.ShouldContain(RoleConstants.Admin);
 		roleList.ShouldContain(RoleConstants.Developer);
+	}
+
+	/// <summary>
+	/// Verifies GenerateAccessTokenResultAsync returns access token without creating a refresh token.
+	/// </summary>
+	[Fact]
+	public async Task GenerateAccessTokenResultAsync_WithValidUser_ReturnsAccessTokenOnlyAsync()
+	{
+		// Arrange
+		ApplicationUser user =
+			new()
+			{
+				Id = 5,
+				UserName = "accessonlyuser",
+				Email = "accessonly@example.com",
+				FullName = "Access Only",
+			};
+
+		IList<string> roles =
+			[RoleConstants.User];
+		string expectedAccessToken = "access_token_only";
+		DateTimeOffset utcNow =
+			TestDates.DefaultUtc;
+
+		UserManager
+			.GetRolesAsync(user)
+			.Returns(roles);
+
+		TokenService
+			.GenerateAccessToken(
+				user.Id,
+				user.UserName!,
+				Arg.Any<IEnumerable<string>>(),
+				Arg.Any<bool>())
+			.Returns(expectedAccessToken);
+
+		TimeProvider.GetUtcNow().Returns(new DateTimeOffset(utcNow.UtcDateTime));
+
+		// Act
+		AuthResult result =
+			await ServiceUnderTest.GenerateAccessTokenResultAsync(
+				user,
+				requiresPasswordChange: false,
+				rememberMe: true,
+				CancellationToken.None);
+
+		// Assert
+		result.Success.ShouldBeTrue();
+		result.AccessToken.ShouldBe(expectedAccessToken);
+		result.RefreshToken.ShouldBe(string.Empty);
+		result.ExpiresAt.ShouldBe(utcNow.AddMinutes(15));
+		result.Email.ShouldBe(user.Email);
+		result.FullName.ShouldBe(user.FullName);
+		result.RememberMe.ShouldBeTrue();
+
+		// Verify NO refresh token was generated
+		await TokenService
+			.DidNotReceive()
+			.GenerateRefreshTokenAsync(
+				Arg.Any<long>(),
+				Arg.Any<string?>(),
+				Arg.Any<bool>(),
+				Arg.Any<CancellationToken>());
+
+		// Verify last login was NOT updated (access-token-only path)
+		await AuthRepository
+			.DidNotReceive()
+			.UpdateLastLoginAsync(
+				Arg.Any<long>(),
+				Arg.Any<DateTimeOffset>(),
+				Arg.Any<string?>(),
+				Arg.Any<CancellationToken>());
 	}
 }

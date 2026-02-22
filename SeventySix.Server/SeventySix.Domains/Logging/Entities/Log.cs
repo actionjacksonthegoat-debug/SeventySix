@@ -20,7 +20,7 @@ namespace SeventySix.Logging;
 /// - SRP: Only responsible for log entry state
 /// - No framework dependencies (pure POCO)
 /// </remarks>
-public class Log : ICreatableEntity
+public sealed class Log : ICreatableEntity
 {
 	/// <summary>
 	/// Gets or sets the unique identifier.
@@ -90,7 +90,7 @@ public class Log : ICreatableEntity
 	/// Automatically set by AuditInterceptor if not provided.
 	/// Used for metrics queries and log filtering.
 	/// </remarks>
-	public DateTime CreateDate { get; set; }
+	public DateTimeOffset CreateDate { get; set; }
 
 	/// <summary>
 	/// Gets or sets the machine/container name where the log originated.

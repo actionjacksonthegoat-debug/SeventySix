@@ -30,7 +30,7 @@ public static class RegistrationTokenService
 		string email,
 		string verificationToken)
 	{
-		CombinedRegistrationToken combinedToken =
+		CombinedRegistrationTokenDto combinedToken =
 			new(email, verificationToken);
 
 		string jsonPayload =
@@ -51,7 +51,7 @@ public static class RegistrationTokenService
 	/// <returns>
 	/// Decoded token or null if invalid.
 	/// </returns>
-	public static CombinedRegistrationToken? Decode(string encodedToken)
+	public static CombinedRegistrationTokenDto? Decode(string encodedToken)
 	{
 		if (string.IsNullOrWhiteSpace(encodedToken))
 		{
@@ -66,7 +66,7 @@ public static class RegistrationTokenService
 			string jsonPayload =
 				Encoding.UTF8.GetString(decodedBytes);
 
-			return JsonSerializer.Deserialize<CombinedRegistrationToken>(
+			return JsonSerializer.Deserialize<CombinedRegistrationTokenDto>(
 				jsonPayload);
 		}
 		catch

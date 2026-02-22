@@ -1,8 +1,6 @@
 using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;
 
-using Xunit;
-
 namespace SeventySix.Domains.Tests.Logging;
 
 /// <summary>
@@ -11,4 +9,4 @@ namespace SeventySix.Domains.Tests.Logging;
 /// and run in parallel with tests from other domain collections.
 /// </summary>
 [CollectionDefinition(CollectionNames.LoggingPostgreSql)]
-public class LoggingCollectionDefinition : ICollectionFixture<LoggingPostgreSqlFixture>;
+public sealed class LoggingCollectionDefinition : ICollectionFixture<LoggingPostgreSqlFixture>;

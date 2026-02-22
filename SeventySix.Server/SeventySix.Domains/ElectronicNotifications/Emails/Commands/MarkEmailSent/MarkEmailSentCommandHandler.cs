@@ -46,8 +46,8 @@ public static class MarkEmailSentCommandHandler
 				$"Email queue entry {command.EmailQueueId} not found");
 		}
 
-		DateTime now =
-			timeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset now =
+			timeProvider.GetUtcNow();
 
 		entry.Status = EmailQueueStatus.Sent;
 		entry.SentAt = now;

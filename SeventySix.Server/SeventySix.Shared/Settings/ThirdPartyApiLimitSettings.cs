@@ -11,7 +11,7 @@ namespace SeventySix.Shared;
 /// Bound from appsettings.json "ThirdPartyApiLimits" section.
 /// All limit values MUST be configured in appsettings.json.
 /// </summary>
-public record ThirdPartyApiLimitSettings
+public sealed record ThirdPartyApiLimitSettings
 {
 	/// <summary>
 	/// Configuration section name in appsettings.json.

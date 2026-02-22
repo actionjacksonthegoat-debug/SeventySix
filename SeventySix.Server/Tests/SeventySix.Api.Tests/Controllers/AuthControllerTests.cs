@@ -25,7 +25,7 @@ namespace SeventySix.Api.Tests.Controllers;
 /// Uses shared WebApplicationFactory for improved test performance.
 /// </remarks>
 [Collection(CollectionNames.IdentityAuthPostgreSql)]
-public class AuthControllerTests(IdentityAuthApiPostgreSqlFixture fixture)
+public sealed class AuthControllerTests(IdentityAuthApiPostgreSqlFixture fixture)
 	: ApiPostgreSqlTestBase<Program>(fixture),
 		IAsyncLifetime
 {
@@ -71,7 +71,7 @@ public class AuthControllerTests(IdentityAuthApiPostgreSqlFixture fixture)
 		// Act
 		HttpResponseMessage response =
 			await Client!.PostAsJsonAsync(
-			"/api/v1/auth/login",
+			ApiEndpoints.Auth.Login,
 			request);
 
 		// Assert
@@ -116,7 +116,7 @@ public class AuthControllerTests(IdentityAuthApiPostgreSqlFixture fixture)
 		// Act
 		HttpResponseMessage response =
 			await Client!.PostAsJsonAsync(
-			"/api/v1/auth/login",
+			ApiEndpoints.Auth.Login,
 			request);
 
 		// Assert
@@ -127,7 +127,7 @@ public class AuthControllerTests(IdentityAuthApiPostgreSqlFixture fixture)
 
 		authResponse.ShouldNotBeNull();
 		authResponse.AccessToken.ShouldNotBeNullOrEmpty();
-		(authResponse.ExpiresAt > timeProvider.GetUtcNow().UtcDateTime).ShouldBeTrue();
+		(authResponse.ExpiresAt > timeProvider.GetUtcNow()).ShouldBeTrue();
 		response.Headers.Contains("Set-Cookie").ShouldBeTrue();
 
 		// Verify PII is in response body (not extracted from JWT)
@@ -167,7 +167,7 @@ public class AuthControllerTests(IdentityAuthApiPostgreSqlFixture fixture)
 		// Act
 		HttpResponseMessage response =
 			await Client!.PostAsJsonAsync(
-			"/api/v1/auth/login",
+			ApiEndpoints.Auth.Login,
 			request);
 
 		// Assert
@@ -192,7 +192,7 @@ public class AuthControllerTests(IdentityAuthApiPostgreSqlFixture fixture)
 		// Act
 		HttpResponseMessage response =
 			await Client!.PostAsync(
-			"/api/v1/auth/refresh",
+			ApiEndpoints.Auth.Refresh,
 			null);
 
 		// Assert
@@ -227,7 +227,7 @@ public class AuthControllerTests(IdentityAuthApiPostgreSqlFixture fixture)
 		// Act
 		HttpResponseMessage response =
 			await Client!.PostAsJsonAsync(
-			"/api/v1/auth/login",
+			ApiEndpoints.Auth.Login,
 			request);
 
 		// Assert
@@ -285,7 +285,7 @@ public class AuthControllerTests(IdentityAuthApiPostgreSqlFixture fixture)
 		IOAuthCodeExchangeService exchangeService =
 			scope.ServiceProvider.GetRequiredService<IOAuthCodeExchangeService>();
 
-		DateTime expiresAt =
+		DateTimeOffset expiresAt =
 			timeProvider
 			.GetUtcNow()
 			.UtcDateTime.AddMinutes(15);
@@ -296,7 +296,8 @@ public class AuthControllerTests(IdentityAuthApiPostgreSqlFixture fixture)
 			"test-refresh-token",
 			expiresAt,
 			"oauth@example.com",
-			null);
+			null,
+			false);
 
 		// Act
 		HttpResponseMessage response =
@@ -313,6 +314,7 @@ public class AuthControllerTests(IdentityAuthApiPostgreSqlFixture fixture)
 		authResponse.ShouldNotBeNull();
 		authResponse.AccessToken.ShouldBe("test-access-token");
 		authResponse.Email.ShouldBe("oauth@example.com");
+		authResponse.RequiresPasswordChange.ShouldBeFalse();
 	}
 
 	/// <summary>
@@ -355,9 +357,10 @@ public class AuthControllerTests(IdentityAuthApiPostgreSqlFixture fixture)
 			exchangeService.StoreTokens(
 			"test-access-token",
 			"test-refresh-token",
-			timeProvider.GetUtcNow().UtcDateTime.AddMinutes(15),
+			timeProvider.GetUtcNow().AddMinutes(15),
 			"oauth@example.com",
-			null);
+			null,
+			false);
 
 		// Act - First call should succeed
 		HttpResponseMessage firstResponse =
@@ -394,9 +397,10 @@ public class AuthControllerTests(IdentityAuthApiPostgreSqlFixture fixture)
 			exchangeService.StoreTokens(
 			"test-access-token",
 			"test-refresh-token",
-			timeProvider.GetUtcNow().UtcDateTime.AddMinutes(15),
+			timeProvider.GetUtcNow().AddMinutes(15),
 			"oauth@example.com",
-			null);
+			null,
+			false);
 
 		// Act
 		HttpResponseMessage response =
@@ -446,7 +450,7 @@ public class AuthControllerTests(IdentityAuthApiPostgreSqlFixture fixture)
 
 		HttpResponseMessage loginResponse =
 			await Client!.PostAsJsonAsync(
-			"/api/v1/auth/login",
+			ApiEndpoints.Auth.Login,
 			new LoginRequest(
 			$"testuser_{testId}",
 			TestUserHelper.TestPassword));

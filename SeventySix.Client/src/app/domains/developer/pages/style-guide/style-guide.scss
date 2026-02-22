@@ -34,6 +34,10 @@
 		align-items: center;
 		flex-wrap: wrap;
 
+		button[mat-stroked-button] {
+			height: vars.$form-field-height;
+		}
+
 		mat-form-field {
 			width: 12.5rem; // 200px
 		}
@@ -47,7 +51,7 @@
 	gap: vars.$spacing-xl;
 
 	h2 {
-		margin: 0 0 8px 0;
+		margin: 0 0 vars.$spacing-sm 0;
 		font-size: vars.$font-size-xl;
 		font-weight: 500;
 	}
@@ -224,6 +228,24 @@
 }
 
 // Forms
+.style-note.preferred {
+	background: var(--mat-sys-primary-container);
+	color: var(--mat-sys-on-primary-container);
+	padding: vars.$spacing-md vars.$spacing-lg;
+	border-radius: 0.5rem;
+	margin-bottom: vars.$spacing-lg;
+	font-size: 0.875rem;
+	line-height: 1.5;
+
+	code {
+		background: var(--mat-sys-surface-variant);
+		color: var(--mat-sys-on-surface-variant);
+		padding: 0.125rem 0.375rem;
+		border-radius: 0.25rem;
+		font-size: 0.8125rem;
+	}
+}
+
 .form-card {
 	margin-bottom: vars.$spacing-lg;
 
@@ -236,6 +258,10 @@
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(15.625rem, 1fr));
 	gap: vars.$spacing-lg;
+
+	mat-form-field {
+		width: 100%;
+	}
 }
 
 .checkbox-group {

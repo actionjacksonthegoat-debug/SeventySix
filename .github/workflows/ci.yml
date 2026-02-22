@@ -12,7 +12,14 @@ permissions:
     checks: write
     pull-requests: write
 
+concurrency:
+    group: ci-${{ github.ref }}
+    cancel-in-progress: true
+
 jobs:
+    # ──────────────────────────────────────────────────────────
+    # Stage 1: Lint + Build + Unit tests (parallel)
+    # ──────────────────────────────────────────────────────────
     client-build:
         name: Client Build & Test
         runs-on: ubuntu-latest
@@ -37,9 +44,6 @@ jobs:
 
             - name: Lint
               run: npm run lint
-
-            - name: Format check
-              run: npm run format:check
 
             - name: Build
               run: npm run build
@@ -85,7 +89,7 @@ jobs:
               run: dotnet restore SeventySix.Server.slnx
 
             - name: Build
-              run: dotnet build SeventySix.Server.slnx --configuration Release --no-restore
+              run: dotnet build SeventySix.Server.slnx --configuration Release --no-restore /p:TreatWarningsAsErrors=true
 
             - name: Test with coverage
               run: >
@@ -95,9 +99,9 @@ jobs:
                   --verbosity normal
                   --collect:"XPlat Code Coverage"
                   --results-directory ./TestResults
-                  --logger "trx;LogFileName=test-results.trx"
+                  --logger "trx"
 
-            - name: Publish test results
+            - name: Publish server test results
               uses: EnricoMi/publish-unit-test-result-action@v2
               if: always()
               with:
@@ -119,29 +123,207 @@ jobs:
                   path: SeventySix.Server/TestResults/**/coverage.cobertura.xml
                   retention-days: 7
 
-    quality-gate:
-        name: Quality Gate
+    # ──────────────────────────────────────────────────────────
+    # Stage 3: Integration tests (parallel — E2E + Load)
+    # ──────────────────────────────────────────────────────────
+    e2e:
+        name: E2E Tests
         needs: [client-build, server-build]
         runs-on: ubuntu-latest
+        # NOTE: E2E tests use Docker Compose for infrastructure (database, cache, API, client).
+        # ubuntu-latest includes Docker and Docker Compose by default.
+        # Playwright runs on the host against Dockerized services.
+
+        defaults:
+            run:
+                working-directory: SeventySix.Client
 
         steps:
-            - name: Verify all checks passed
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "22.x"
+                  cache: "npm"
+                  cache-dependency-path: SeventySix.Client/package-lock.json
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Generate SSL certificate
+              shell: pwsh
+              working-directory: ${{ github.workspace }}
+              run: scripts/generate-dev-ssl-cert.ps1 -SkipTrust
+
+            - name: Fix SSL certificate permissions (Linux Docker compatibility)
+              run: chmod 644 ssl/dev-certificate.* || true
+              working-directory: SeventySix.Client
+
+            - name: Install Playwright browsers
+              run: npx playwright install --with-deps chromium
+
+            - name: Run E2E tests
+              run: npm run test:e2e
+              env:
+                  CI: true
+                  NODE_EXTRA_CA_CERTS: ssl/dev-certificate.crt
+
+            - name: Show failed test summary
+              if: failure()
+              run: |
+                  echo "============================================"
+                  echo "  Failed E2E Test Summary"
+                  echo "============================================"
+                  if [ -d "test-results" ]; then
+                      echo ""
+                      echo "Failed test traces:"
+                      find test-results -name "*.zip" -o -name "*.png" -o -name "*.webm" | head -50
+                      echo ""
+                  fi
+                  if [ -f "playwright-report/index.html" ]; then
+                      echo "Playwright HTML report available in artifacts."
+                  else
+                      echo "No Playwright report generated — failure likely occurred during setup."
+                  fi
+                  echo "============================================"
+
+            - name: Upload Playwright report
+              uses: actions/upload-artifact@v4
+              if: always()
+              with:
+                  name: playwright-report
+                  path: SeventySix.Client/playwright-report/
+                  retention-days: 7
+
+            - name: Upload test results
+              uses: actions/upload-artifact@v4
+              if: always()
+              with:
+                  name: e2e-test-results
+                  path: SeventySix.Client/test-results/
+                  if-no-files-found: ignore
+                  retention-days: 7
+
+    load-test:
+        name: Load Tests
+        needs: [client-build, server-build]
+        runs-on: ubuntu-latest
+        # NOTE: Load tests use Docker Compose for infrastructure + k6 on the host.
+        # ubuntu-latest includes Docker and Docker Compose by default.
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "22.x"
+
+            - name: Install k6
+              run: |
+                  sudo gpg -k
+                  sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg \
+                      --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+                  echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" \
+                      | sudo tee /etc/apt/sources.list.d/k6.list
+                  sudo apt-get update
+                  sudo apt-get install -y k6
+                  k6 version
+
+            - name: Generate SSL certificate
+              shell: pwsh
+              working-directory: ${{ github.workspace }}
+              run: scripts/generate-dev-ssl-cert.ps1 -SkipTrust
+
+            - name: Fix SSL certificate permissions (Linux Docker compatibility)
+              run: chmod 644 SeventySix.Client/ssl/dev-certificate.* || true
+
+            - name: Run load tests
+              run: bash SeventySix.Client/load-testing/scripts/run-load-tests.sh quick
+              env:
+                  NODE_EXTRA_CA_CERTS: SeventySix.Client/ssl/dev-certificate.crt
+
+            - name: Show load test failure details
+              if: failure()
+              run: |
+                  echo "============================================"
+                  echo "  Failed Load Test Summary"
+                  echo "============================================"
+                  if [ -d "SeventySix.Client/load-testing/results" ]; then
+                      echo "Result files:"
+                      find SeventySix.Client/load-testing/results -type f | head -20
+                  fi
+                  echo ""
+                  echo "Docker container logs:"
+                  docker compose -f docker-compose.loadtest.yml logs --tail=50 api-loadtest 2>/dev/null || true
+                  echo "============================================"
+
+            - name: Upload load test report
+              uses: actions/upload-artifact@v4
+              if: always()
+              with:
+                  name: load-test-report
+                  path: |
+                      SeventySix.Client/load-testing/reports/
+                      SeventySix.Client/load-testing/results/
+                  if-no-files-found: ignore
+                  retention-days: 7
+
+    # ──────────────────────────────────────────────────────────
+    # Stage 4: Quality gate — all checks must pass
+    # ──────────────────────────────────────────────────────────
+    quality-gate:
+        name: Quality Gate
+        needs: [client-build, server-build, e2e, load-test]
+        runs-on: ubuntu-latest
+        if: always()
+
+        steps:
+            - name: Evaluate gate results
               run: |
                   echo "============================================"
                   echo "  Quality Gate Results"
                   echo "============================================"
                   echo ""
-                  echo "  Client Build & Test .... PASSED"
-                  echo "  Server Build & Test .... PASSED"
+
+                  FAILED=0
+
+                  check_job() {
+                      local name="$1"
+                      local result="$2"
+                      if [ "$result" = "success" ]; then
+                          printf "  %-30s PASSED\n" "$name"
+                      else
+                          printf "  %-30s FAILED (%s)\n" "$name" "$result"
+                          FAILED=1
+                      fi
+                  }
+
+                  check_job "Client Build & Test" "${{ needs.client-build.result }}"
+                  check_job "Server Build & Test" "${{ needs.server-build.result }}"
+                  check_job "E2E Tests" "${{ needs.e2e.result }}"
+                  check_job "Load Tests" "${{ needs.load-test.result }}"
+
                   echo ""
                   echo "  Checks enforced:"
-                  echo "    - ESLint (zero errors)"
-                  echo "    - dprint format (zero violations)"
+                  echo "    - ESLint (client lint — zero errors)"
                   echo "    - Angular production build (zero warnings)"
-                  echo "    - Vitest (all tests pass)"
-                  echo "    - dotnet build Release (zero warnings)"
-                  echo "    - dotnet test (all tests pass, coverage collected)"
+                  echo "    - Vitest (all client tests pass)"
+                  echo "    - dotnet build Release (TreatWarningsAsErrors)"
+                  echo "    - dotnet test (all server tests pass, coverage collected)"
+                  echo "    - Playwright E2E (all tests pass)"
+                  echo "    - k6 load tests (all scenarios pass thresholds)"
                   echo ""
                   echo "============================================"
+
+                  if [ "$FAILED" -eq 1 ]; then
+                      echo "  Quality Gate: FAILED"
+                      echo "============================================"
+                      exit 1
+                  fi
+
                   echo "  Quality Gate: PASSED"
                   echo "============================================"

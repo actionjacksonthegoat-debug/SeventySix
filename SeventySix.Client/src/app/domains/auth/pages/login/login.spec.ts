@@ -6,18 +6,26 @@
 import { HttpErrorResponse } from "@angular/common/http";
 import { provideZonelessChangeDetection, signal } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
+import { MatIconRegistry } from "@angular/material/icon";
+import { DomSanitizer } from "@angular/platform-browser";
 import { provideRouter, Router } from "@angular/router";
 import { AuthResponse } from "@auth/models";
 import { MfaService } from "@auth/services";
-import { AltchaService, DateService } from "@shared/services";
+import { APP_ROUTES, AUTH_NOTIFICATION_MESSAGES, STORAGE_KEYS } from "@shared/constants";
+import { AltchaService, DateService, FeatureFlagsService } from "@shared/services";
 import { AuthService } from "@shared/services/auth.service";
+import { OAUTH_PROVIDERS } from "@shared/services/auth.types";
 import { NotificationService } from "@shared/services/notification.service";
+import { StorageService } from "@shared/services/storage.service";
 import {
 	createMockAltchaService,
+	createMockFeatureFlagsService,
 	createMockNotificationService,
 	MockAltchaService,
+	MockFeatureFlagsService,
 	MockNotificationService
 } from "@shared/testing";
+import { registerOAuthIcons } from "@shared/utilities/oauth-icons.utility";
 import { of, throwError } from "rxjs";
 import { vi } from "vitest";
 import { LoginComponent } from "./login";
@@ -27,11 +35,19 @@ interface MockAuthService
 	login: ReturnType<typeof vi.fn>;
 	loginWithProvider: ReturnType<typeof vi.fn>;
 	isAuthenticated: ReturnType<typeof signal<boolean>>;
+	isOAuthInProgress: ReturnType<typeof signal<boolean>>;
 }
 
 interface MockMfaService
 {
 	setMfaState: ReturnType<typeof vi.fn>;
+}
+
+interface MockStorageService
+{
+	getSessionItem: ReturnType<typeof vi.fn>;
+	removeSessionItem: ReturnType<typeof vi.fn>;
+	setSessionItem: ReturnType<typeof vi.fn>;
 }
 
 describe("LoginComponent",
@@ -43,6 +59,8 @@ describe("LoginComponent",
 		let mockMfaService: MockMfaService;
 		let mockNotificationService: MockNotificationService;
 		let mockAltchaService: MockAltchaService;
+		let mockStorageService: MockStorageService;
+		let mockFeatureFlagsService: MockFeatureFlagsService;
 		let router: Router;
 
 		const dateService: DateService =
@@ -56,7 +74,9 @@ describe("LoginComponent",
 				email: "test@example.com",
 				fullName: "Test User",
 				requiresPasswordChange: false,
-				requiresMfa: false
+				requiresMfa: false,
+				sessionInactivityMinutes: 0,
+				sessionWarningSeconds: 0
 			};
 
 		beforeEach(
@@ -66,7 +86,8 @@ describe("LoginComponent",
 					{
 						login: vi.fn(),
 						loginWithProvider: vi.fn(),
-						isAuthenticated: signal<boolean>(false)
+						isAuthenticated: signal<boolean>(false),
+						isOAuthInProgress: signal<boolean>(false)
 					};
 				mockMfaService =
 					{
@@ -76,6 +97,16 @@ describe("LoginComponent",
 					createMockNotificationService();
 				mockAltchaService =
 					createMockAltchaService(false);
+				mockStorageService =
+					{
+						getSessionItem: vi
+							.fn()
+							.mockReturnValue(null),
+						removeSessionItem: vi.fn(),
+						setSessionItem: vi.fn()
+					};
+				mockFeatureFlagsService =
+					createMockFeatureFlagsService();
 
 				await TestBed
 					.configureTestingModule(
@@ -93,10 +124,22 @@ describe("LoginComponent",
 								{
 									provide: AltchaService,
 									useValue: mockAltchaService
+								},
+								{
+									provide: StorageService,
+									useValue: mockStorageService
+								},
+								{
+									provide: FeatureFlagsService,
+									useValue: mockFeatureFlagsService
 								}
 							]
 						})
 					.compileComponents();
+
+				registerOAuthIcons(
+					TestBed.inject(MatIconRegistry),
+					TestBed.inject(DomSanitizer));
 
 				fixture =
 					TestBed.createComponent(LoginComponent);
@@ -267,10 +310,10 @@ describe("LoginComponent",
 						// Assert
 						expect(mockNotificationService.info)
 							.toHaveBeenCalledWith(
-								"You must change your password before continuing.");
+								AUTH_NOTIFICATION_MESSAGES.PASSWORD_CHANGE_REQUIRED);
 						expect(router.navigate)
 							.toHaveBeenCalledWith(
-								["/auth/change-password"],
+								[APP_ROUTES.AUTH.CHANGE_PASSWORD],
 								{ queryParams: { required: "true", returnUrl: "/" } });
 					});
 
@@ -401,11 +444,11 @@ describe("LoginComponent",
 							mockNotificationService.errorWithDetails)
 							.toHaveBeenCalledWith("Login Failed",
 								[
-									"An unexpected error occurred"
+									"An unexpected error occurred. Please try again."
 								]);
 					});
 
-				it("should use server error detail if available",
+				it("should not expose server error detail to user",
 					() =>
 					{
 						// Arrange
@@ -434,7 +477,7 @@ describe("LoginComponent",
 							mockNotificationService.errorWithDetails)
 							.toHaveBeenCalledWith("Login Failed",
 								[
-									"Custom server error message"
+									"An unexpected error occurred. Please try again."
 								]);
 					});
 
@@ -488,31 +531,19 @@ describe("LoginComponent",
 					});
 			});
 
-		describe("onGitHubLogin",
+		describe("onOAuthLogin",
 			() =>
 			{
-				it("should call authService.loginWithProvider with github",
+				it("should call authService.loginWithProvider with provider id",
 					() =>
 					{
-						// Act
-						(component as unknown as { onGitHubLogin(): void; }).onGitHubLogin();
+						(component as unknown as { onOAuthLogin(provider: string): void; })
+							.onOAuthLogin("github");
 
-						// Assert
 						expect(mockAuthService.loginWithProvider)
 							.toHaveBeenCalledWith(
 								"github",
 								"/");
-					});
-
-				it("should set isLoading to true",
-					() =>
-					{
-						// Act
-						(component as unknown as { onGitHubLogin(): void; }).onGitHubLogin();
-
-						// Assert
-						expect((component as unknown as { isLoading(): boolean; }).isLoading())
-							.toBe(true);
 					});
 			});
 
@@ -563,18 +594,111 @@ describe("LoginComponent",
 							.toBeTruthy();
 					});
 
-				it("should render GitHub login button",
+				it("should render OAuth buttons for all configured providers",
 					async () =>
 					{
-						// Arrange
+						fixture.detectChanges();
+						await fixture.whenStable();
+
+						const oauthButtons: NodeListOf<HTMLButtonElement> =
+							fixture.nativeElement.querySelectorAll(".oauth-button");
+						expect(oauthButtons.length)
+							.toBe(OAUTH_PROVIDERS.length);
+					});
+
+				it("should render OAuth button with correct aria-label",
+					async () =>
+					{
+						fixture.detectChanges();
+						await fixture.whenStable();
+
+						const oauthButton: HTMLButtonElement | null =
+							fixture.nativeElement.querySelector(".oauth-button");
+						expect(oauthButton?.getAttribute("aria-label"))
+							.toBe("Continue with GitHub");
+					});
+
+				it("should call loginWithProvider when OAuth button is clicked",
+					async () =>
+					{
+						fixture.detectChanges();
+						await fixture.whenStable();
+
+						const oauthButton: HTMLButtonElement | null =
+							fixture.nativeElement.querySelector(".oauth-button");
+						oauthButton?.click();
+
+						expect(mockAuthService.loginWithProvider)
+							.toHaveBeenCalledWith(
+								"github",
+								"/");
+					});
+			});
+
+		describe("inactivity banner",
+			() =>
+			{
+				it("should show banner when inactivity flag is set",
+					async () =>
+					{
+						// Arrange - set the flag before creating component
+						mockStorageService
+							.getSessionItem
+							.mockReturnValue("true");
+
+						// Re-create component to trigger ngOnInit with the flag
+						fixture =
+							TestBed.createComponent(LoginComponent);
+						component =
+							fixture.componentInstance;
 						fixture.detectChanges();
 						await fixture.whenStable();
 
 						// Assert
-						const githubButton: HTMLButtonElement | null =
-							fixture.nativeElement.querySelector(".github-button");
-						expect(githubButton)
+						const banner: HTMLElement | null =
+							fixture.nativeElement.querySelector(
+								".inactivity-banner");
+						expect(banner)
 							.toBeTruthy();
+						expect(banner?.textContent)
+							.toContain("logged out due to inactivity");
+					});
+
+				it("should not show banner when flag is not set",
+					async () =>
+					{
+						// Arrange (default: getSessionItem returns null)
+						fixture.detectChanges();
+						await fixture.whenStable();
+
+						// Assert
+						const banner: HTMLElement | null =
+							fixture.nativeElement.querySelector(
+								".inactivity-banner");
+						expect(banner)
+							.toBeNull();
+					});
+
+				it("should clear flag from sessionStorage after reading",
+					() =>
+					{
+						// Arrange
+						mockStorageService
+							.getSessionItem
+							.mockReturnValue("true");
+
+						// Act
+						fixture =
+							TestBed.createComponent(LoginComponent);
+						component =
+							fixture.componentInstance;
+						fixture.detectChanges();
+
+						// Assert
+						expect(
+							mockStorageService.removeSessionItem)
+							.toHaveBeenCalledWith(
+								STORAGE_KEYS.AUTH_INACTIVITY_LOGOUT);
 					});
 			});
 	});

@@ -3,6 +3,7 @@
 // </copyright>
 
 using System.Text;
+using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
@@ -10,6 +11,7 @@ using SeventySix.Identity;
 using SeventySix.Identity.Constants;
 using SeventySix.Identity.Settings;
 using SeventySix.Shared.Constants;
+using SeventySix.Shared.Registration;
 
 namespace SeventySix.Api.Registration;
 
@@ -46,23 +48,41 @@ public static class AuthenticationExtensions
 		this IServiceCollection services,
 		IConfiguration configuration)
 	{
-		// Bind configuration sections
-		services.Configure<JwtSettings>(configuration.GetSection(ConfigurationSectionConstants.Jwt));
-		services.Configure<AuthSettings>(configuration.GetSection(ConfigurationSectionConstants.Auth));
-		services.Configure<AdminSeederSettings>(
-			configuration.GetSection(AdminSeederSettings.SectionName));
-		services.Configure<WhitelistedPermissionSettings>(
-			configuration.GetSection(WhitelistedPermissionSettings.SectionName));
+		// Register FluentValidation validators for settings
+		services.AddSingleton<IValidator<JwtSettings>, JwtSettingsValidator>();
+		services.AddSingleton<IValidator<AuthSettings>, AuthSettingsValidator>();
+		services.AddSingleton<IValidator<WhitelistedPermissionSettings>, WhitelistedPermissionSettingsValidator>();
+
+		// Bind configuration sections with FluentValidation + ValidateOnStart
+		services
+			.AddOptions<JwtSettings>()
+			.Bind(configuration.GetSection(JwtSettings.SectionName))
+			.ValidateWithFluentValidation()
+			.ValidateOnStart();
+
+		services
+			.AddOptions<AuthSettings>()
+			.Bind(configuration.GetSection(AuthSettings.SectionName))
+			.ValidateWithFluentValidation()
+			.ValidateOnStart();
+
+		// Note: AdminSeederSettings is registered in IdentityRegistration (single registration point)
+
+		services
+			.AddOptions<WhitelistedPermissionSettings>()
+			.Bind(configuration.GetSection(WhitelistedPermissionSettings.SectionName))
+			.ValidateWithFluentValidation()
+			.ValidateOnStart();
 
 		JwtSettings jwtSettings =
-			configuration.GetSection(ConfigurationSectionConstants.Jwt).Get<JwtSettings>()
+			configuration.GetSection(JwtSettings.SectionName).Get<JwtSettings>()
 			?? throw new InvalidOperationException(
-				$"JWT configuration section '{ConfigurationSectionConstants.Jwt}' is missing.");
+				$"JWT configuration section '{JwtSettings.SectionName}' is missing.");
 
 		AuthSettings authSettings =
-			configuration.GetSection(ConfigurationSectionConstants.Auth).Get<AuthSettings>()
+			configuration.GetSection(AuthSettings.SectionName).Get<AuthSettings>()
 			?? throw new InvalidOperationException(
-				$"Auth configuration section '{ConfigurationSectionConstants.Auth}' is missing.");
+				$"Auth configuration section '{AuthSettings.SectionName}' is missing.");
 
 		services
 			.AddAuthentication(

@@ -9,6 +9,17 @@
 export const SELECTORS =
 	{
 		/**
+		 * Shared Material card selectors.
+		 */
+		card:
+			{
+				container: "mat-card",
+				title: "mat-card-title",
+				subtitle: "mat-card-subtitle",
+				content: "mat-card-content"
+			},
+
+		/**
 		 * Form element selectors.
 		 */
 		form:
@@ -17,7 +28,9 @@ export const SELECTORS =
 				emailInput: "#email",
 				usernameInput: "#usernameOrEmail",
 				passwordInput: "#password",
-				rememberMeCheckbox: "#rememberMe"
+				rememberMeCheckbox: "[data-testid='remember-me']",
+				errorMessage: "[role='alert'], .error-message, mat-error",
+				matError: "mat-error"
 			},
 
 		/**
@@ -25,12 +38,105 @@ export const SELECTORS =
 		 */
 		auth:
 			{
-				githubButton: ".github-button",
-				forgotPasswordLink: "a[href='/auth/forgot-password']",
-				signInLink: "a[href='/auth/login']",
-				divider: ".divider",
+				githubButton: "button[aria-label='Continue with GitHub']",
+			oauthButton: "[data-testid='oauth-button']",
+			forgotPasswordLink: "a[href='/auth/forgot-password']",
+			signInLink: "a[href='/auth/login']",
+			divider: "[data-testid='divider']",
 				description: ".description",
 				successState: ".success-state"
+			},
+
+		/**
+		 * MFA verify page selectors.
+		 */
+		mfaVerify:
+			{
+				codeInput: "#code",
+				trustDeviceCheckbox: "[data-testid='trust-device-checkbox']",
+				resendCodeButton: "[data-testid='resend-code-button']",
+				useBackupCodeButton: "[data-testid='use-backup-code-button']",
+				backToLoginButton: "[data-testid='back-to-login-button']"
+			},
+
+		/**
+		 * Change password page selectors.
+		 */
+		changePassword:
+			{
+				currentPasswordInput: "[data-testid='current-password-input']",
+				newPasswordInput: "[data-testid='new-password-input']",
+				confirmPasswordInput: "[data-testid='confirm-password-input']",
+				submitButton: "[data-testid='change-password-submit']",
+				requiredNotice: "[data-testid='required-notice']",
+				passwordHint: "#newPassword-hint"
+			},
+
+		/**
+		 * Set password page selectors.
+		 */
+		setPassword:
+			{
+				newPasswordInput: "#newPassword",
+				confirmPasswordInput: "#confirmPassword",
+				invalidLinkSection: "[data-testid='invalid-link-section']"
+			},
+
+		/**
+		 * TOTP setup page selectors.
+		 */
+		totpSetup:
+			{
+				qrCodeImage: "[data-testid='qr-code-image']",
+				secretCode: "[data-testid='secret-code']",
+				verificationCodeInput: "#verificationCode",
+				cantScanButton: "button.link-button",
+				scannedCodeButton: "button",
+				verifyEnableButton: "button"
+			},
+
+		/**
+		 * Backup codes page selectors.
+		 */
+		backupCodes:
+			{
+				codesGrid: "[data-testid='codes-grid']",
+				codeItem: ".code-item",
+				warningBox: ".warning-box"
+			},
+
+		/**
+		 * Register complete page selectors.
+		 */
+		registerComplete:
+			{
+				usernameInput: "[data-testid='register-complete-username']",
+				passwordInput: "[data-testid='register-complete-password']",
+				confirmPasswordInput: "[data-testid='register-complete-confirm-password']",
+				submitButton: "[data-testid='register-complete-submit']"
+			},
+
+		/**
+		 * User create page selectors.
+		 */
+		userCreate:
+			{
+				createUserButton: "[data-testid='create-user-button']",
+				usernameInput: "input[formcontrolname='username']",
+				emailInput: "input[formcontrolname='email']",
+				fullNameInput: "input[formcontrolname='fullName']",
+				saveErrorBanner: "[data-testid='save-error-banner']"
+			},
+
+		/**
+		 * User detail page selectors.
+		 */
+		userDetail:
+			{
+				saveChangesButton: "[data-testid='save-changes-button']",
+				usernameInput: "input[formcontrolname='username']",
+				emailInput: "input[formcontrolname='email']",
+				fullNameInput: "input[formcontrolname='fullName']"
 			},
 
 		/**
@@ -38,7 +144,7 @@ export const SELECTORS =
 		 */
 		notification:
 			{
-				snackbar: "simple-snack-bar"
+				snackbar: ".toast"
 			},
 
 		/**
@@ -56,13 +162,22 @@ export const SELECTORS =
 		 */
 		home:
 			{
-				featureCard: ".feature-card",
-				cardTitle: "mat-card-title",
-				cardContent: "mat-card-content p",
-				cardActionText: ".card-action-text",
-				cardActionIcon: ".card-action-text mat-icon",
-				featureIcon: ".feature-icon",
-				subtitle: ".subtitle"
+				heroSection: "section.hero",
+				heroTitle: ".hero-title",
+				heroTagline: ".hero-tagline",
+				techStackSection: "section#tech-stack",
+				techCategory: ".tech-category",
+				techItem: ".tech-item",
+				statsBar: "section.stats-bar",
+				statItem: ".stat-item",
+				featuresSection: "section.features",
+				featureArticle: "article.feature",
+				architectureSection: "section.architecture",
+				archCard: ".arch-card",
+				archCardHeader: ".arch-card-header",
+				archCardContent: ".arch-card-content",
+				ctaFooter: "section.cta-footer",
+				ctaCloneCommand: ".cta-footer-command"
 			},
 
 		/**
@@ -95,7 +210,8 @@ export const SELECTORS =
 				mainContent: "#main-content",
 				banner: "[role='banner']",
 				main: "main, [role='main']",
-				navigation: "[role='navigation']"
+				navigation: "[role='navigation']",
+				alert: "[role='alert']"
 			},
 
 		/**
@@ -116,7 +232,9 @@ export const SELECTORS =
 			{
 				pageHeader: "app-page-header",
 				logList: "app-log-list",
-				dataTable: "app-data-table"
+				dataTable: "app-data-table",
+				detailDialog: ".log-detail-dialog",
+				messageContent: ".message-content"
 			},
 
 		/**
@@ -137,7 +255,11 @@ export const SELECTORS =
 				emailInput: "input[formcontrolname='email']",
 				fullNameInput: "input[formcontrolname='fullName']",
 				saveButton: "button[type='submit']",
-				requestPermissionsLink: "a[routerlink='permissions']"
+				requestPermissionsLink: "a[routerlink='permissions']",
+				linkedAccountsSection: "[data-testid='linked-accounts']",
+				linkedAccountsHeading: "#linked-accounts-heading",
+				connectButton: "button[aria-label='Connect GitHub']",
+				disconnectButton: "button[aria-label='Disconnect GitHub']"
 			},
 
 		/**
@@ -157,8 +279,11 @@ export const SELECTORS =
 		developer:
 			{
 				styleGuideHeader: ".style-guide-header h1",
-				architectureGuideHeader: ".architecture-guide-container h1",
-				themeToggle: "button[aria-label='Toggle theme brightness']"
+				styleGuideContainer: ".style-guide-header",
+				themeToggle: "button[aria-label='Toggle theme brightness']",
+				tabGroup: "mat-tab-group",
+				tab: ".mat-mdc-tab",
+				colorSchemeSelect: "mat-select"
 			},
 
 		/**
@@ -166,9 +291,7 @@ export const SELECTORS =
 		 */
 		sandbox:
 			{
-				container: ".sandbox-container",
-				sandboxCard: ".sandbox-card",
-				sandboxTitle: ".sandbox-card mat-card-title h1"
+				title: "h1.sandbox-title"
 			},
 
 		/**
@@ -192,6 +315,46 @@ export const SELECTORS =
 				emptyState: ".empty-state",
 				loadingSpinner: "mat-spinner",
 				searchInput: "input[placeholder*='Search']",
+				matInput: "input[matinput]",
+				chipOption: "mat-chip-option",
+				rowActionsButton: "button[aria-label='Row actions']",
+				matTable: "table[mat-table]",
+				headerCell: "th[mat-header-cell]",
+				iconButton: "button[mat-icon-button]",
 				refreshButton: "button[aria-label*='Refresh']"
+			},
+
+		/**
+		 * Dialog selectors.
+		 */
+		dialog:
+			{
+				container: "mat-dialog-container",
+				closeButton: "button[aria-label*='Close']"
+			},
+
+		/**
+		 * Menu selectors.
+		 */
+		menu:
+			{
+				menuItem: "button.mat-mdc-menu-item",
+				warnMenuItem: "button.mat-mdc-menu-item.warn-action"
+			},
+
+		/**
+		 * Stepper selectors.
+		 */
+		stepper:
+			{
+				stepHeader: ".mat-step-header"
+			},
+
+		/**
+		 * Altcha proof-of-work widget selectors.
+		 */
+		altcha:
+			{
+				widget: "altcha-widget"
 			}
 	} as const;

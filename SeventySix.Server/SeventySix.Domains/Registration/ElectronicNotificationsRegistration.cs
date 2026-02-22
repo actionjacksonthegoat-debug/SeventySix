@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using FluentValidation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SeventySix.ElectronicNotifications;
@@ -64,12 +65,23 @@ public static class ElectronicNotificationsRegistration
 			connectionString,
 			SchemaConstants.ElectronicNotifications);
 
-		// Bind email settings from configuration
-		services.Configure<EmailSettings>(configuration.GetSection(ConfigurationSectionConstants.Email));
+		// Register FluentValidation validators for settings
+		services.AddSingleton<IValidator<EmailSettings>, EmailSettingsValidator>();
+		services.AddSingleton<IValidator<EmailQueueSettings>, EmailQueueSettingsValidator>();
 
-		// Bind email queue settings
-		services.Configure<EmailQueueSettings>(
-			configuration.GetSection(EmailQueueSettings.SectionName));
+		// Bind email settings with FluentValidation + ValidateOnStart
+		services
+			.AddOptions<EmailSettings>()
+			.Bind(configuration.GetSection(EmailSettings.SectionName))
+			.ValidateWithFluentValidation()
+			.ValidateOnStart();
+
+		// Bind email queue settings with FluentValidation + ValidateOnStart
+		services
+			.AddOptions<EmailQueueSettings>()
+			.Bind(configuration.GetSection(EmailQueueSettings.SectionName))
+			.ValidateWithFluentValidation()
+			.ValidateOnStart();
 
 		// Register transaction manager for notifications context
 		services.AddTransactionManagerFor<ElectronicNotificationsDbContext>();

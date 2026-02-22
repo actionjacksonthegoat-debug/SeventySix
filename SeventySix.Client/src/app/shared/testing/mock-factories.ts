@@ -4,6 +4,7 @@
  * Eliminates duplication across 40+ spec files
  */
 
+import { Signal, signal } from "@angular/core";
 import { Observable, of } from "rxjs";
 import { type Mock, vi } from "vitest";
 
@@ -355,5 +356,48 @@ export function createMockAltchaService(
 	return {
 		enabled,
 		challengeEndpoint: "http://localhost/api/v1/altcha/challenge"
+	};
+}
+
+/** Mock FeatureFlagsService interface for testing. */
+export interface MockFeatureFlagsService
+{
+	mfaEnabled: Signal<boolean>;
+	totpEnabled: Signal<boolean>;
+	oAuthEnabled: Signal<boolean>;
+	oAuthProviders: Signal<string[]>;
+	altchaEnabled: Signal<boolean>;
+	tokenRefreshBufferSeconds: Signal<number>;
+	initialize: Mock;
+}
+
+/**
+ * Create a mocked FeatureFlagsService.
+ * Used in components that conditionally render based on feature flags.
+ *
+ * @param {boolean} oAuthEnabled
+ * Whether OAuth is enabled (defaults to true for components that show OAuth UI).
+ * @param {boolean} mfaEnabled
+ * Whether MFA is enabled (defaults to true).
+ * @param {boolean} totpEnabled
+ * Whether TOTP is enabled (defaults to true).
+ * @returns {MockFeatureFlagsService}
+ * Mock object implementing FeatureFlagsService signals for tests.
+ */
+export function createMockFeatureFlagsService(
+	oAuthEnabled: boolean = true,
+	mfaEnabled: boolean = true,
+	totpEnabled: boolean = true): MockFeatureFlagsService
+{
+	return {
+		mfaEnabled: signal(mfaEnabled),
+		totpEnabled: signal(totpEnabled),
+		oAuthEnabled: signal(oAuthEnabled),
+		oAuthProviders: signal([]),
+		altchaEnabled: signal(true),
+		tokenRefreshBufferSeconds: signal(60),
+		initialize: vi
+			.fn()
+			.mockResolvedValue(undefined)
 	};
 }

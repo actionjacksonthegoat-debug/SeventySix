@@ -24,7 +24,7 @@ namespace SeventySix.Identity;
 /// <param name="timeProvider">
 /// Time provider for UTC time.
 /// </param>
-public class AltchaChallengeStore(
+public sealed class AltchaChallengeStore(
 	IdentityDbContext context,
 	TimeProvider timeProvider) : IAltchaCancellableChallengeStore
 {
@@ -51,8 +51,8 @@ public class AltchaChallengeStore(
 		CancellationToken cancellationToken)
 	{
 		// Clean up expired challenges first
-		DateTime utcNow =
-			timeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset utcNow =
+			timeProvider.GetUtcNow();
 
 		await context.AltchaChallenges
 			.Where(altchaChallenge => altchaChallenge.ExpiryUtc <= utcNow)

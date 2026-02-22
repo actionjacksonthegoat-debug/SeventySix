@@ -3,7 +3,10 @@ import {
 	ROLE_ADMIN,
 	ROLE_DEVELOPER
 } from "@shared/constants/role.constants";
-import { roleGuard } from "@shared/guards/role.guard";
+import {
+	passwordChangeGuard,
+	roleGuard
+} from "@shared/guards";
 
 /**
  * Application route configuration.
@@ -24,14 +27,12 @@ export const routes: Routes =
 			data: { preload: true }
 		},
 		{
+		// Intentionally public — future landing/demo page (no auth guard needed)
 			path: "sandbox",
 			loadChildren: () =>
 				import("./domains/sandbox/sandbox.routes").then(
 					(module) => module.SANDBOX_ROUTES),
-			data: {
-				preload: true,
-				breadcrumb: "Sandbox"
-			}
+			data: { preload: true, breadcrumb: "Sandbox" }
 		},
 		// Auth routes (login, change-password - public) - preloaded for fast access
 		{
@@ -39,49 +40,64 @@ export const routes: Routes =
 			loadChildren: () =>
 				import("./domains/auth/auth.routes").then(
 					(module) => module.AUTH_ROUTES),
-			data: {
-				preload: true,
-				breadcrumb: "Authentication"
-			}
+			data: { preload: true, breadcrumb: "Authentication" }
 		},
 
-		// ══════════════════════════════════════════════════════════════
+		// ═════════════════════════════════════════════════════════════
 		// USER ROUTES (Any Authenticated User - Own Account Only)
 		// canMatch prevents module download until auth verified
-		// ══════════════════════════════════════════════════════════════
+		// ═════════════════════════════════════════════════════════════
 		{
 			path: "account",
 			loadChildren: () =>
 				import("./domains/account/account.routes").then(
 					(module) => module.ACCOUNT_ROUTES),
-			canMatch: [roleGuard()],
+			canMatch: [passwordChangeGuard(), roleGuard()],
 			data: { breadcrumb: "Account" }
 		},
 
-		// ══════════════════════════════════════════════════════════════
+		// ═════════════════════════════════════════════════════════════
 		// ADMIN ROUTES (Admin Only)
 		// canMatch prevents module download until role verified
-		// ══════════════════════════════════════════════════════════════
+		// ═════════════════════════════════════════════════════════════
 		{
 			path: "admin",
 			loadChildren: () =>
 				import("./domains/admin/admin.routes").then(
 					(module) => module.ADMIN_ROUTES),
-			canMatch: [roleGuard(ROLE_ADMIN)],
+			canMatch: [passwordChangeGuard(), roleGuard(ROLE_ADMIN)],
 			data: { breadcrumb: "Admin" }
 		},
 
-		// ══════════════════════════════════════════════════════════════
+		// ═════════════════════════════════════════════════════════════
 		// DEVELOPER ROUTES (Developer OR Admin)
 		// canMatch prevents module download until role verified
-		// ══════════════════════════════════════════════════════════════
+		// ═════════════════════════════════════════════════════════════
 		{
 			path: "developer",
 			loadChildren: () =>
 				import("./domains/developer/developer.routes").then(
 					(module) => module.DEVELOPER_ROUTES),
-			canMatch: [roleGuard(ROLE_DEVELOPER, ROLE_ADMIN)],
+			canMatch: [passwordChangeGuard(), roleGuard(ROLE_DEVELOPER, ROLE_ADMIN)],
 			data: { breadcrumb: "Developer" }
+		},
+
+		// ═════════════════════════════════════════════════════════════
+		// ERROR PAGES
+		// ═════════════════════════════════════════════════════════════
+		{
+			path: "error/401",
+			loadComponent: () =>
+				import("@shared/pages/unauthorized/unauthorized").then(
+					(module) => module.UnauthorizedPage),
+			title: "Unauthorized"
+		},
+		{
+			path: "error/403",
+			loadComponent: () =>
+				import("@shared/pages/forbidden/forbidden").then(
+					(module) => module.ForbiddenPage),
+			title: "Forbidden"
 		},
 
 		// Fallback

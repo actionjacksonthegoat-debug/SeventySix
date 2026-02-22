@@ -20,7 +20,7 @@ namespace SeventySix.Domains.Tests.ApiTracking.Queries.GetApiRequestStatistics;
 /// Tests handler delegation to repository with correct date filtering.
 /// Aggregation logic is tested in repository integration tests.
 /// </remarks>
-public class GetApiRequestStatisticsQueryHandlerTests
+public sealed class GetApiRequestStatisticsQueryHandlerTests
 {
 	private readonly IThirdPartyApiRequestRepository Repository;
 	private readonly FakeTimeProvider TimeProvider;
@@ -52,10 +52,10 @@ public class GetApiRequestStatisticsQueryHandlerTests
 	public async Task HandleAsync_DelegatesToRepository_WithTodaysDateAsync()
 	{
 		// Arrange
-		DateTime weatherLastCalled =
-			new(2024, 1, 15, 10, 30, 0, DateTimeKind.Utc);
-		DateTime mapsLastCalled =
-			new(2024, 1, 15, 9, 0, 0, DateTimeKind.Utc);
+		DateTimeOffset weatherLastCalled =
+			new(2024, 1, 15, 10, 30, 0, TimeSpan.Zero);
+		DateTimeOffset mapsLastCalled =
+			new(2024, 1, 15, 9, 0, 0, TimeSpan.Zero);
 
 		ThirdPartyApiStatisticsDto expectedStatistics =
 			new()
@@ -69,7 +69,7 @@ public class GetApiRequestStatisticsQueryHandlerTests
 						["MapsApi"] = 50,
 					},
 				LastCalledByApi =
-					new Dictionary<string, DateTime?>
+					new Dictionary<string, DateTimeOffset?>
 					{
 						["WeatherApi"] = weatherLastCalled,
 						["MapsApi"] = mapsLastCalled,

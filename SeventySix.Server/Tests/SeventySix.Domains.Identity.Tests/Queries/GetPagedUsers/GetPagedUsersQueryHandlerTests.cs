@@ -4,7 +4,6 @@
 
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Time.Testing;
-using SeventySix.Identity;
 using SeventySix.Shared.POCOs;
 using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.Constants;
@@ -22,7 +21,7 @@ namespace SeventySix.Identity.Tests.Queries.GetPagedUsers;
 /// Includes search, filtering, and pagination edge cases.
 /// </remarks>
 [Collection(CollectionNames.IdentityPostgreSql)]
-public class GetPagedUsersQueryHandlerTests(
+public sealed class GetPagedUsersQueryHandlerTests(
 	IdentityPostgreSqlFixture fixture) : DataPostgreSqlTestBase(fixture)
 {
 	private static readonly FakeTimeProvider TimeProvider =

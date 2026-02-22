@@ -18,7 +18,7 @@ namespace SeventySix.Api.Tests.Controllers;
 /// Tests the public health endpoint which returns minimal status info (PublicHealthDto).
 /// Detailed health endpoint tests are in HealthControllerAuthorizationTests.
 /// </remarks>
-public class HealthControllerTests
+public sealed class HealthControllerTests
 {
 	private readonly IHealthCheckService HealthService;
 	private readonly IScheduledJobService ScheduledJobService;
@@ -41,8 +41,8 @@ public class HealthControllerTests
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		DateTime checkedAt =
-			timeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset checkedAt =
+			timeProvider.GetUtcNow();
 
 		HealthStatusResponse fullStatus =
 			new()
@@ -53,7 +53,7 @@ public class HealthControllerTests
 					new DatabaseHealthResponse
 					{
 						IsConnected = true,
-						ResponseTimeMs = 25.5,
+						ResponseTimeMs = 25.5m,
 						Status = "Healthy",
 					},
 				ErrorQueue =
@@ -92,8 +92,8 @@ public class HealthControllerTests
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		DateTime checkedAt =
-			timeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset checkedAt =
+			timeProvider.GetUtcNow();
 
 		HealthStatusResponse fullStatus =
 			new()
@@ -104,7 +104,7 @@ public class HealthControllerTests
 					new DatabaseHealthResponse
 					{
 						IsConnected = true,
-						ResponseTimeMs = 500,
+						ResponseTimeMs = 500m,
 						Status = "Degraded",
 					},
 				ErrorQueue =
@@ -140,8 +140,8 @@ public class HealthControllerTests
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		DateTime checkedAt =
-			timeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset checkedAt =
+			timeProvider.GetUtcNow();
 
 		HealthStatusResponse fullStatus =
 			new()
@@ -152,7 +152,7 @@ public class HealthControllerTests
 					new DatabaseHealthResponse
 					{
 						IsConnected = false,
-						ResponseTimeMs = 0,
+						ResponseTimeMs = 0m,
 						Status = "Unhealthy",
 					},
 				ErrorQueue =
@@ -188,8 +188,8 @@ public class HealthControllerTests
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		DateTime checkedAt =
-			timeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset checkedAt =
+			timeProvider.GetUtcNow();
 
 		HealthStatusResponse expectedStatus =
 			new()
@@ -200,7 +200,7 @@ public class HealthControllerTests
 					new DatabaseHealthResponse
 					{
 						IsConnected = true,
-						ResponseTimeMs = 25.5,
+						ResponseTimeMs = 25.5m,
 						Status = "Healthy",
 					},
 				ErrorQueue =
@@ -214,10 +214,10 @@ public class HealthControllerTests
 				System =
 					new SystemResourcesResponse
 					{
-						CpuUsagePercent = 45.5,
+						CpuUsagePercent = 45.5m,
 						MemoryUsedMb = 2048,
 						MemoryTotalMb = 8192,
-						DiskUsagePercent = 67.3,
+						DiskUsagePercent = 67.3m,
 					},
 			};
 
@@ -236,8 +236,8 @@ public class HealthControllerTests
 			okResult.Value.ShouldBeOfType<HealthStatusResponse>();
 		returnedStatus.Status.ShouldBe("Healthy");
 		returnedStatus.Database.IsConnected.ShouldBeTrue();
-		returnedStatus.Database.ResponseTimeMs.ShouldBe(25.5);
+		returnedStatus.Database.ResponseTimeMs.ShouldBe(25.5m);
 		returnedStatus.ErrorQueue.QueuedItems.ShouldBe(5);
-		returnedStatus.System.CpuUsagePercent.ShouldBe(45.5);
+		returnedStatus.System.CpuUsagePercent.ShouldBe(45.5m);
 	}
 }

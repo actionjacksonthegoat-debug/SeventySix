@@ -143,8 +143,8 @@ public sealed class TrustedDeviceBuilder
 	/// </returns>
 	public TrustedDevice Build()
 	{
-		DateTime now =
-			TimeProviderField.GetUtcNow().UtcDateTime;
+		DateTimeOffset now =
+			TimeProviderField.GetUtcNow();
 
 		string tokenHash =
 			ComputeSha256Hash(Token);

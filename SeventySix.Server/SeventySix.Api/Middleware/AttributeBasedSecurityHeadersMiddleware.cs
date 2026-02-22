@@ -41,14 +41,15 @@ namespace SeventySix.Api.Middleware;
 /// <param name="environment">
 /// The web host environment.
 /// </param>
-public class AttributeBasedSecurityHeadersMiddleware(
+public sealed class AttributeBasedSecurityHeadersMiddleware(
 	RequestDelegate next,
 	IWebHostEnvironment environment)
 {
 	// Production CSP: Strict policy without unsafe-eval
 	// - script-src 'self': No inline scripts or eval needed for Angular AOT builds
 	// - style-src 'unsafe-inline': Required for Angular style bindings ([style.x])
-	// - frame-src: Allows Grafana dashboard embeds via HTTPS proxy
+	// - frame-src 'self': No external frames allowed in production; configure via
+	//   appsettings.json "SecurityHeaders:ProductionFrameSrc" if Grafana embedding is needed
 	// - upgrade-insecure-requests: Auto-upgrade any accidental HTTP to HTTPS
 	private const string ProductionCsp =
 		"default-src 'self'; "
@@ -57,7 +58,7 @@ public class AttributeBasedSecurityHeadersMiddleware(
 		+ "font-src 'self' https://fonts.gstatic.com; "
 		+ "img-src 'self' data: https:; "
 		+ "connect-src 'self' wss:; "
-		+ "frame-src 'self' https://localhost:3443; "
+		+ "frame-src 'self'; "
 		+ "frame-ancestors 'none'; "
 		+ "base-uri 'self'; "
 		+ "form-action 'self'; "
@@ -102,6 +103,8 @@ public class AttributeBasedSecurityHeadersMiddleware(
 		context.Response.Headers["Referrer-Policy"] = config.ReferrerPolicy;
 		context.Response.Headers["Permissions-Policy"] =
 			config.PermissionsPolicy;
+		context.Response.Headers.CacheControl = "no-store";
+		context.Response.Headers.Pragma = "no-cache";
 
 		// Content Security Policy - use environment-appropriate default
 		string defaultCsp =

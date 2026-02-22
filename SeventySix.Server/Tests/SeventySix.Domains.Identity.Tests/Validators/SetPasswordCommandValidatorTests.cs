@@ -3,7 +3,6 @@
 // </copyright>
 
 using FluentValidation.TestHelper;
-using SeventySix.Identity;
 using SeventySix.Identity.Commands.SetPassword;
 
 namespace SeventySix.Identity.Tests.Validators;
@@ -13,12 +12,23 @@ namespace SeventySix.Identity.Tests.Validators;
 /// </summary>
 /// <remarks>
 /// Coverage Focus:
-/// - Token validation (required, valid base64)
+/// - Token validation (required, valid {userId}:{base64} format)
 /// - NewPassword validation (delegates to password rules).
 /// </remarks>
-public class SetPasswordCommandValidatorTests
+public sealed class SetPasswordCommandValidatorTests
 {
-	private readonly SetPasswordCommandValidator Validator = new();
+	private static readonly PasswordSettings TestPasswordSettings =
+		new()
+		{
+			MinLength = 8,
+			RequireUppercase = true,
+			RequireLowercase = true,
+			RequireDigit = true,
+			RequireSpecialChar = false,
+		};
+
+	private readonly SetPasswordCommandValidator Validator =
+		new(TestPasswordSettings);
 
 	#region Valid Request Tests
 
@@ -27,7 +37,7 @@ public class SetPasswordCommandValidatorTests
 	{
 		// Arrange
 		string validToken =
-			Convert.ToBase64String(new byte[64]);
+			$"123:{Convert.ToBase64String(new byte[64])}";
 
 		SetPasswordRequest request =
 			new(
@@ -61,7 +71,7 @@ public class SetPasswordCommandValidatorTests
 
 		// Assert
 		result
-			.ShouldHaveValidationErrorFor(x => x.Token)
+			.ShouldHaveValidationErrorFor(request => request.Token)
 			.WithErrorMessage("Reset token is required.");
 	}
 
@@ -80,17 +90,17 @@ public class SetPasswordCommandValidatorTests
 
 		// Assert
 		result
-			.ShouldHaveValidationErrorFor(x => x.Token)
+			.ShouldHaveValidationErrorFor(request => request.Token)
 			.WithErrorMessage("Reset token is required.");
 	}
 
 	[Fact]
-	public async Task Token_InvalidBase64_FailsValidationAsync()
+	public async Task Token_InvalidFormat_FailsValidationAsync()
 	{
-		// Arrange
+		// Arrange — no colon separator
 		SetPasswordRequest request =
 			new(
-			Token: "not-valid-base64!!!",
+			Token: "not-valid-token!!!",
 			NewPassword: "Password123!");
 
 		// Act
@@ -99,17 +109,57 @@ public class SetPasswordCommandValidatorTests
 
 		// Assert
 		result
-			.ShouldHaveValidationErrorFor(x => x.Token)
+			.ShouldHaveValidationErrorFor(request => request.Token)
 			.WithErrorMessage("Reset token is invalid.");
 	}
 
 	[Fact]
-	public async Task Token_ValidBase64_PassesValidationAsync()
+	public async Task Token_NonNumericUserId_FailsValidationAsync()
 	{
-		// Arrange
+		// Arrange — user ID portion is not a number
+		string invalidToken =
+			$"abc:{Convert.ToBase64String(new byte[32])}";
+
+		SetPasswordRequest request =
+			new(
+			Token: invalidToken,
+			NewPassword: "Password123!");
+
+		// Act
+		TestValidationResult<SetPasswordRequest> result =
+			await Validator.TestValidateAsync(request);
+
+		// Assert
+		result
+			.ShouldHaveValidationErrorFor(request => request.Token)
+			.WithErrorMessage("Reset token is invalid.");
+	}
+
+	[Fact]
+	public async Task Token_InvalidBase64Part_FailsValidationAsync()
+	{
+		// Arrange — Base64 portion is invalid
+		SetPasswordRequest request =
+			new(
+			Token: "123:not-valid-base64!!!",
+			NewPassword: "Password123!");
+
+		// Act
+		TestValidationResult<SetPasswordRequest> result =
+			await Validator.TestValidateAsync(request);
+
+		// Assert
+		result
+			.ShouldHaveValidationErrorFor(request => request.Token)
+			.WithErrorMessage("Reset token is invalid.");
+	}
+
+	[Fact]
+	public async Task Token_ValidCombinedFormat_PassesValidationAsync()
+	{
+		// Arrange — correct {userId}:{base64Token} format
 		string validToken =
-			Convert.ToBase64String(
-			"some-random-bytes"u8.ToArray());
+			$"42:{Convert.ToBase64String("some-random-bytes"u8.ToArray())}";
 
 		SetPasswordRequest request =
 			new(
@@ -121,7 +171,7 @@ public class SetPasswordCommandValidatorTests
 			await Validator.TestValidateAsync(request);
 
 		// Assert
-		result.ShouldNotHaveValidationErrorFor(x => x.Token);
+		result.ShouldNotHaveValidationErrorFor(request => request.Token);
 	}
 
 	#endregion
@@ -133,7 +183,7 @@ public class SetPasswordCommandValidatorTests
 	{
 		// Arrange
 		string validToken =
-			Convert.ToBase64String(new byte[64]);
+			$"123:{Convert.ToBase64String(new byte[64])}";
 
 		SetPasswordRequest request =
 			new(Token: validToken, NewPassword: "");
@@ -143,7 +193,7 @@ public class SetPasswordCommandValidatorTests
 			await Validator.TestValidateAsync(request);
 
 		// Assert
-		result.ShouldHaveValidationErrorFor(x => x.NewPassword);
+		result.ShouldHaveValidationErrorFor(request => request.NewPassword);
 	}
 
 	[Fact]
@@ -151,7 +201,7 @@ public class SetPasswordCommandValidatorTests
 	{
 		// Arrange
 		string validToken =
-			Convert.ToBase64String(new byte[64]);
+			$"123:{Convert.ToBase64String(new byte[64])}";
 
 		SetPasswordRequest request =
 			new(
@@ -163,7 +213,7 @@ public class SetPasswordCommandValidatorTests
 			await Validator.TestValidateAsync(request);
 
 		// Assert
-		result.ShouldHaveValidationErrorFor(x => x.NewPassword);
+		result.ShouldHaveValidationErrorFor(request => request.NewPassword);
 	}
 
 	[Fact]
@@ -171,7 +221,7 @@ public class SetPasswordCommandValidatorTests
 	{
 		// Arrange
 		string validToken =
-			Convert.ToBase64String(new byte[64]);
+			$"123:{Convert.ToBase64String(new byte[64])}";
 
 		SetPasswordRequest request =
 			new(
@@ -183,7 +233,7 @@ public class SetPasswordCommandValidatorTests
 			await Validator.TestValidateAsync(request);
 
 		// Assert
-		result.ShouldHaveValidationErrorFor(x => x.NewPassword);
+		result.ShouldHaveValidationErrorFor(request => request.NewPassword);
 	}
 
 	[Fact]
@@ -191,7 +241,7 @@ public class SetPasswordCommandValidatorTests
 	{
 		// Arrange
 		string validToken =
-			Convert.ToBase64String(new byte[64]);
+			$"123:{Convert.ToBase64String(new byte[64])}";
 
 		SetPasswordRequest request =
 			new(
@@ -203,7 +253,7 @@ public class SetPasswordCommandValidatorTests
 			await Validator.TestValidateAsync(request);
 
 		// Assert
-		result.ShouldHaveValidationErrorFor(x => x.NewPassword);
+		result.ShouldHaveValidationErrorFor(request => request.NewPassword);
 	}
 
 	[Fact]
@@ -211,7 +261,7 @@ public class SetPasswordCommandValidatorTests
 	{
 		// Arrange
 		string validToken =
-			Convert.ToBase64String(new byte[64]);
+			$"123:{Convert.ToBase64String(new byte[64])}";
 
 		SetPasswordRequest request =
 			new(
@@ -223,7 +273,7 @@ public class SetPasswordCommandValidatorTests
 			await Validator.TestValidateAsync(request);
 
 		// Assert
-		result.ShouldHaveValidationErrorFor(x => x.NewPassword);
+		result.ShouldHaveValidationErrorFor(request => request.NewPassword);
 	}
 
 	#endregion

@@ -168,6 +168,12 @@ interface AccountQueryKeys
 	 * Key representing permission request resources.
 	 */
 	readonly permissionRequest: readonly ["account", "permissionRequest"];
+
+	/**
+	 * @type {readonly ["account", "externalLogins"]}
+	 * Key representing linked external OAuth logins.
+	 */
+	readonly externalLogins: readonly ["account", "externalLogins"];
 }
 
 /**
@@ -260,7 +266,8 @@ export const QueryKeys: QueryKeysType =
 			all: ["account"] as const,
 			profile: ["account", "profile"] as const,
 			availableRoles: ["account", "availableRoles"] as const,
-			permissionRequest: ["account", "permissionRequest"] as const
+			permissionRequest: ["account", "permissionRequest"] as const,
+			externalLogins: ["account", "externalLogins"] as const
 		},
 
 		permissionRequests: {

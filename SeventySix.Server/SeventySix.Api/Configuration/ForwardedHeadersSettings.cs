@@ -21,7 +21,7 @@ namespace SeventySix.Api.Configuration;
 /// <item>Production: Configure with actual load balancer/reverse proxy IPs</item>
 /// </list>
 /// </remarks>
-public record ForwardedHeadersSettings
+public sealed record ForwardedHeadersSettings
 {
 	/// <summary>
 	/// Gets the configuration section name.
@@ -29,21 +29,21 @@ public record ForwardedHeadersSettings
 	public const string SectionName = "ForwardedHeaders";
 
 	/// <summary>
-	/// Gets or sets trusted proxy IP addresses.
+	/// Gets trusted proxy IP addresses.
 	/// Leave empty in development. In production, add load balancer IPs.
 	/// </summary>
 	/// <example>["10.0.0.1", "192.168.1.100"]</example>
-	public string[] KnownProxies { get; set; } = [];
+	public string[] KnownProxies { get; init; } = [];
 
 	/// <summary>
-	/// Gets or sets known proxy network ranges in CIDR notation.
+	/// Gets known proxy network ranges in CIDR notation.
 	/// </summary>
 	/// <example>["10.0.0.0/8", "172.16.0.0/12"]</example>
-	public string[] KnownNetworks { get; set; } = [];
+	public string[] KnownNetworks { get; init; } = [];
 
 	/// <summary>
-	/// Gets or sets the limit on number of proxy hops to process.
+	/// Gets the limit on number of proxy hops to process.
 	/// Must be configured in appsettings.json.
 	/// </summary>
-	public int ForwardLimit { get; set; }
+	public int ForwardLimit { get; init; }
 }

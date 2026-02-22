@@ -25,7 +25,7 @@ namespace SeventySix.ApiTracking;
 /// - SRP: Only responsible for ApiTracking domain data access
 /// - OCP: Can be extended with new entity configurations
 /// </remarks>
-public class ApiTrackingDbContext : BaseDbContext<ApiTrackingDbContext>
+public sealed class ApiTrackingDbContext : BaseDbContext<ApiTrackingDbContext>
 {
 	/// <summary>
 	/// Initializes a new instance of the <see cref="ApiTrackingDbContext"/> class.

@@ -12,7 +12,7 @@ namespace SeventySix.Api.Tests.Infrastructure.DTOs;
 /// <summary>
 /// Unit tests for Health DTOs.
 /// </summary>
-public class HealthStatusResponseTests
+public sealed class HealthStatusResponseTests
 {
 	/// <summary>
 	/// Ensures HealthStatusResponse constructor initializes default values.
@@ -25,7 +25,7 @@ public class HealthStatusResponseTests
 
 		// Assert
 		response.Status.ShouldBe(HealthStatusConstants.Healthy);
-		response.CheckedAt.ShouldBe(default(DateTime));
+		response.CheckedAt.ShouldBe(default(DateTimeOffset));
 		response.Database.ShouldNotBeNull();
 		response.ErrorQueue.ShouldNotBeNull();
 		response.System.ShouldNotBeNull();
@@ -39,8 +39,8 @@ public class HealthStatusResponseTests
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		DateTime now =
-			timeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset now =
+			timeProvider.GetUtcNow();
 		HealthStatusResponse response =
 			new()
 			{
@@ -85,14 +85,14 @@ public class HealthStatusResponseTests
 			new()
 			{
 				IsConnected = true,
-				ResponseTimeMs = 25.5,
+				ResponseTimeMs = 25.5m,
 				Status =
 					HealthStatusConstants.Healthy,
 			};
 
 		// Assert
 		response.IsConnected.ShouldBeTrue();
-		response.ResponseTimeMs.ShouldBe(25.5);
+		response.ResponseTimeMs.ShouldBe(25.5m);
 		response.Status.ShouldBe(HealthStatusConstants.Healthy);
 	}
 
@@ -162,16 +162,16 @@ public class HealthStatusResponseTests
 		SystemResourcesResponse response =
 			new()
 			{
-				CpuUsagePercent = 45.5,
+				CpuUsagePercent = 45.5m,
 				MemoryUsedMb = 2048,
 				MemoryTotalMb = 8192,
-				DiskUsagePercent = 67.3,
+				DiskUsagePercent = 67.3m,
 			};
 
 		// Assert
-		response.CpuUsagePercent.ShouldBe(45.5);
+		response.CpuUsagePercent.ShouldBe(45.5m);
 		response.MemoryUsedMb.ShouldBe(2048);
 		response.MemoryTotalMb.ShouldBe(8192);
-		response.DiskUsagePercent.ShouldBe(67.3);
+		response.DiskUsagePercent.ShouldBe(67.3m);
 	}
 }

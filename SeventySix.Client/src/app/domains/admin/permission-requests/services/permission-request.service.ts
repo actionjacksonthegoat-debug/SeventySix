@@ -13,6 +13,7 @@ import { CacheCoordinationService } from "@shared/services/cache-coordination.se
 import { QueryKeys } from "@shared/utilities/query-keys.utility";
 import {
 	CreateMutationResult,
+	CreateQueryResult,
 	injectQuery
 } from "@tanstack/angular-query-experimental";
 import { lastValueFrom } from "rxjs";
@@ -59,7 +60,7 @@ export class PermissionRequestService extends BaseMutationService
 		inject(CacheCoordinationService);
 
 	/** Query for all permission requests (admin). */
-	getAllRequests()
+	getAllRequests(): CreateQueryResult<PermissionRequestDto[]>
 	{
 		return injectQuery(
 			() => ({
@@ -72,7 +73,7 @@ export class PermissionRequestService extends BaseMutationService
 	}
 
 	/** Query for available roles (current user). */
-	getAvailableRoles()
+	getAvailableRoles(): CreateQueryResult<AvailableRoleDto[]>
 	{
 		return injectQuery(
 			() => ({

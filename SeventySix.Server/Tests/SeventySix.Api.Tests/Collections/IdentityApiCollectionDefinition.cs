@@ -5,8 +5,6 @@
 using SeventySix.Api.Tests.Fixtures;
 using SeventySix.TestUtilities.Constants;
 
-using Xunit;
-
 namespace SeventySix.Api.Tests.Collections;
 
 /// <summary>
@@ -23,4 +21,4 @@ namespace SeventySix.Api.Tests.Collections;
 /// </para>
 /// </remarks>
 [CollectionDefinition(CollectionNames.IdentityPostgreSql)]
-public class IdentityApiCollectionDefinition : ICollectionFixture<IdentityApiPostgreSqlFixture>;
+public sealed class IdentityApiCollectionDefinition : ICollectionFixture<IdentityApiPostgreSqlFixture>;

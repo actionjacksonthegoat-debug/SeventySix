@@ -17,12 +17,15 @@
 import { HttpClient, HttpErrorResponse } from "@angular/common/http";
 import {
 	computed,
+	DestroyRef,
+	effect,
 	inject,
 	Injectable,
 	Signal,
 	signal,
 	WritableSignal
 } from "@angular/core";
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { Router } from "@angular/router";
 import { environment } from "@environments/environment";
 import { APP_ROUTES, STORAGE_KEYS } from "@shared/constants";
@@ -34,8 +37,15 @@ import {
 import { DateService, StorageService, TokenService, WindowService } from "@shared/services";
 import {
 	JwtClaims,
+	OAuthEvent,
 	OAuthProvider
 } from "@shared/services/auth.types";
+import { FeatureFlagsService } from "@shared/services/feature-flags.service";
+import { IdleDetectionService } from "@shared/services/idle-detection.service";
+import { OAuthFlowService } from "@shared/services/oauth-flow.service";
+import { PasswordResetService } from "@shared/services/password-reset.service";
+import { RegistrationFlowService } from "@shared/services/registration-flow.service";
+import { isNullOrEmpty, isPresent } from "@shared/utilities/null-check.utility";
 import { QueryKeys } from "@shared/utilities/query-keys.utility";
 import { QueryClient } from "@tanstack/angular-query-experimental";
 import {
@@ -57,150 +67,121 @@ import {
 	})
 export class AuthService
 {
-	/**
-	 * HTTP client for API calls.
-	 * @type {HttpClient}
-	 * @private
-	 * @readonly
-	 */
 	private readonly httpClient: HttpClient =
 		inject(HttpClient);
 
-	/**
-	 * Angular Router for navigation.
-	 * @type {Router}
-	 * @private
-	 * @readonly
-	 */
 	private readonly router: Router =
 		inject(Router);
 
-	/**
-	 * Date service for timestamp/formatting utilities.
-	 * @type {DateService}
-	 * @private
-	 * @readonly
-	 */
 	private readonly dateService: DateService =
 		inject(DateService);
 
-	/**
-	 * Storage service for SSR-safe localStorage access.
-	 * @type {StorageService}
-	 * @private
-	 * @readonly
-	 */
 	private readonly storageService: StorageService =
 		inject(StorageService);
 
-	/**
-	 * Token service for JWT parsing and validation.
-	 * @type {TokenService}
-	 * @private
-	 * @readonly
-	 */
 	private readonly tokenService: TokenService =
 		inject(TokenService);
 
-	/**
-	 * Window service for SSR-safe window operations.
-	 * @type {WindowService}
-	 * @private
-	 * @readonly
-	 */
 	private readonly windowService: WindowService =
 		inject(WindowService);
 
-	/**
-	 * TanStack Query client for cache management.
-	 * Used to clear cached queries on logout to prevent data leakage between users.
-	 * @type {QueryClient}
-	 * @private
-	 * @readonly
-	 */
+	private readonly idleDetectionService: IdleDetectionService =
+		inject(IdleDetectionService);
+
+	private readonly featureFlagsService: FeatureFlagsService =
+		inject(FeatureFlagsService);
+
+	/** Clears cached queries on logout to prevent data leakage between users. */
 	private readonly queryClient: QueryClient =
 		inject(QueryClient);
 
-	/**
-	 * Base auth API URL.
-	 * @type {string}
-	 * @private
-	 * @readonly
-	 */
+	private readonly destroyRef: DestroyRef =
+		inject(DestroyRef);
+
+	private readonly oauthFlowService: OAuthFlowService =
+		inject(OAuthFlowService);
+
+	private readonly passwordResetService: PasswordResetService =
+		inject(PasswordResetService);
+
+	private readonly registrationFlowService: RegistrationFlowService =
+		inject(RegistrationFlowService);
+
 	private readonly authUrl: string =
 		`${environment.apiUrl}/auth`;
 
 	/**
-	 * Access token stored in memory only for XSS protection.
-	 * @type {string | null}
-	 * @private
+	 * Read-only OAuth in-progress state. True while an OAuth popup flow is active.
+	 * Forwarded from OAuthFlowService which owns the popup lifecycle.
 	 */
+	readonly isOAuthInProgress: Signal<boolean> =
+		this.oauthFlowService.isOAuthInProgress.asReadonly();
+
+	/** Access token stored in memory only for XSS protection. */
 	private accessToken: string | null = null;
 
-	/**
-	 * Token expiration timestamp (epoch millis).
-	 * @type {number}
-	 * @private
-	 */
 	private tokenExpiresAt: number = 0;
 
-	/**
-	 * Tracks if initialization has already been attempted.
-	 * @type {boolean}
-	 * @private
-	 */
 	private initialized: boolean = false;
 
-	/**
-	 * In-flight refresh request observable for single-flight pattern.
-	 * Prevents concurrent refresh requests from exhausting rate limits.
-	 * @type {Observable<AuthResponse | null> | null}
-	 * @private
-	 */
+	/** In-flight refresh observable for single-flight pattern. */
 	private refreshInProgress: Observable<AuthResponse | null> | null = null;
 
-	/**
-	 * Current authenticated user signal.
-	 * @type {WritableSignal<UserProfileDto | null>}
-	 * @private
-	 * @readonly
-	 */
 	private readonly userSignal: WritableSignal<UserProfileDto | null> =
 		signal<UserProfileDto | null>(null);
 
-	/**
-	 * Whether user must change password before using the app.
-	 * @type {WritableSignal<boolean>}
-	 * @private
-	 * @readonly
-	 */
 	private readonly requiresPasswordChangeSignal: WritableSignal<boolean> =
 		signal<boolean>(false);
 
-	/**
-	 * Read-only user state.
-	 * @type {Signal<UserProfileDto | null>}
-	 * @readonly
-	 */
+	/** Read-only user state. */
 	readonly user: Signal<UserProfileDto | null> =
 		this.userSignal.asReadonly();
 
-	/**
-	 * Read-only password change requirement state.
-	 * @type {Signal<boolean>}
-	 * @readonly
-	 */
+	/** Read-only password change requirement state. */
 	readonly requiresPasswordChange: Signal<boolean> =
 		this.requiresPasswordChangeSignal.asReadonly();
 
-	/**
-	 * Computed authentication state.
-	 * @type {Signal<boolean>}
-	 * @readonly
-	 */
+	/** Computed authentication state. */
 	readonly isAuthenticated: Signal<boolean> =
 		computed(
 			() => this.userSignal() !== null);
+
+	constructor()
+	{
+		/** Watches idle signal and triggers inactivity logout. */
+		effect(
+			() =>
+			{
+				if (this.idleDetectionService.isIdle())
+				{
+					this.handleInactivityLogout();
+				}
+			});
+
+		// Subscribe to OAuth events from OAuthFlowService.
+		// code_received: exchange one-time code for tokens.
+		// link_success: invalidate account queries after provider linking.
+		this
+			.oauthFlowService
+			.events$
+			.pipe(takeUntilDestroyed())
+			.subscribe(
+				(event: OAuthEvent) =>
+				{
+					if (event.type === "code_received")
+					{
+						this.exchangeOAuthCode(event.code);
+					}
+
+					if (event.type === "link_success")
+					{
+						this.queryClient.invalidateQueries(
+							{
+								queryKey: QueryKeys.account.all
+							});
+					}
+				});
+	}
 
 	/**
 	 * Initializes the service: handles OAuth callback and restores session.
@@ -217,12 +198,7 @@ export class AuthService
 		}
 		this.initialized = true;
 
-		// Handle OAuth callback if present
-		if (this.handleOAuthCallback())
-		{
-			this.markHasSession();
-			return of(null);
-		}
+		this.initializeCrossTabLogout();
 
 		// Only attempt session restoration if user has logged in before
 		// This prevents unnecessary refresh attempts for users who never logged in
@@ -271,12 +247,14 @@ export class AuthService
 							response.requiresPasswordChange);
 						this.markHasSession();
 						this.invalidatePostLogin();
+						this.startIdleDetection(response);
 					}));
 	}
 
 	/**
 	 * Initiates OAuth flow with provider.
-	 * Server will redirect back with token in URL fragment.
+	 * Opens provider in popup; server returns postMessage with one-time code.
+	 * Parent exchanges code for tokens via /oauth/exchange endpoint.
 	 * @param {OAuthProvider} provider
 	 * The OAuth provider to use.
 	 * @param {string} returnUrl
@@ -287,36 +265,39 @@ export class AuthService
 		provider: OAuthProvider,
 		returnUrl: string = "/"): void
 	{
-		// Validate returnUrl is relative or same-origin (XSS protection)
-		const validatedUrl: string =
-			this.validateReturnUrl(returnUrl);
-
-		// Use StorageService for SSR-safe session storage access
-		this.storageService.setSessionItem(
-			STORAGE_KEYS.AUTH_RETURN_URL,
-			validatedUrl);
-
-		this.windowService.navigateTo(
-			`${this.authUrl}/oauth/${provider}`);
+		this.oauthFlowService.openLoginPopup(provider, returnUrl);
 	}
 
 	/**
-	 * Validates OAuth return URL to prevent open redirect vulnerabilities.
-	 * Only allows relative URLs that don't start with protocol-relative syntax.
-	 * @param {string} url
-	 * The URL to validate.
-	 * @returns {string}
-	 * The validated URL if safe, or '/' as fallback.
+	 * Initiates OAuth link flow to connect an external provider to the current account.
+	 * POSTs to the link endpoint with the bearer token, receives an authorization URL,
+	 * and opens a popup to the provider for account linking.
+	 * @param {OAuthProvider} provider
+	 * The OAuth provider to link.
+	 * @returns {void}
 	 */
-	private validateReturnUrl(url: string): string
+	linkProvider(provider: OAuthProvider): void
 	{
-		// Only allow relative URLs starting with single slash
-		// Reject absolute URLs and protocol-relative URLs (//evil.com)
-		if (url.startsWith("/") && !url.startsWith("//"))
-		{
-			return url;
-		}
-		return "/";
+		// Optimistically show loading state before HTTP completes
+		this.oauthFlowService.isOAuthInProgress.set(true);
+
+		this
+			.httpClient
+			.post<{ authorizationUrl: string; }>(
+				`${this.authUrl}/oauth/link/${provider}`,
+				{})
+			.subscribe(
+				{
+					next: (response: { authorizationUrl: string; }) =>
+					{
+						this.oauthFlowService.openLinkPopup(
+							response.authorizationUrl);
+					},
+					error: (): void =>
+					{
+						this.oauthFlowService.isOAuthInProgress.set(false);
+					}
+				});
 	}
 
 	/**
@@ -355,6 +336,7 @@ export class AuthService
 							this.requiresPasswordChangeSignal.set(
 								response.requiresPasswordChange);
 							this.markHasSession();
+							this.startIdleDetection(response);
 						}),
 					catchError(
 						(error: HttpErrorResponse) =>
@@ -419,11 +401,7 @@ export class AuthService
 	 */
 	setPassword(token: string, newPassword: string): Observable<void>
 	{
-		return this.httpClient.post<void>(`${this.authUrl}/password/set`,
-			{
-				token,
-				newPassword
-			});
+		return this.passwordResetService.setPassword(token, newPassword);
 	}
 
 	/**
@@ -440,11 +418,9 @@ export class AuthService
 		email: string,
 		altchaPayload: string | null = null): Observable<void>
 	{
-		return this.httpClient.post<void>(`${this.authUrl}/password/forgot`,
-			{
-				email,
-				altchaPayload
-			});
+		return this.passwordResetService.requestPasswordReset(
+			email,
+			altchaPayload);
 	}
 
 	/**
@@ -452,42 +428,43 @@ export class AuthService
 	 * Always shows success to prevent email enumeration.
 	 * @param {string} email
 	 * The email address to register.
+	 * @param {string | null} altchaPayload
+	 * The ALTCHA payload for bot protection (null when disabled).
 	 * @returns {Observable<void>}
 	 * Observable that completes when the request is accepted.
 	 */
-	initiateRegistration(email: string): Observable<void>
+	initiateRegistration(
+		email: string,
+		altchaPayload: string | null = null): Observable<void>
 	{
-		return this.httpClient.post<void>(`${this.authUrl}/register/initiate`,
-			{
-				email
-			});
+		return this.registrationFlowService.initiateRegistration(
+			email,
+			altchaPayload);
 	}
 
 	/**
 	 * Completes self-registration after email verification.
+	 *
 	 * @param {string} token
 	 * The verification token from the email link.
+	 *
 	 * @param {string} username
 	 * The desired username.
+	 *
 	 * @param {string} password
 	 * The desired password.
-	 * @param {string | null} altchaPayload
-	 * The ALTCHA payload for bot protection (null when disabled).
+	 *
 	 * @returns {Observable<AuthResponse>}
 	 * Observable that resolves to authentication response on success.
 	 */
 	completeRegistration(
 		token: string,
 		username: string,
-		password: string,
-		altchaPayload: string | null): Observable<AuthResponse>
+		password: string): Observable<AuthResponse>
 	{
 		return this
-			.httpClient
-			.post<AuthResponse>(
-				`${this.authUrl}/register/complete`,
-				{ token, username, password, altchaPayload },
-				{ withCredentials: true })
+			.registrationFlowService
+			.completeRegistration(token, username, password)
 			.pipe(
 				tap(
 					(response: AuthResponse) =>
@@ -519,14 +496,14 @@ export class AuthService
 	 */
 	isTokenExpired(): boolean
 	{
-		if (!this.accessToken)
+		if (isNullOrEmpty(this.accessToken))
 		{
 			return true;
 		}
 
 		// Expired if within buffer seconds of expiry
 		const bufferMs: number =
-			environment.auth.tokenRefreshBufferSeconds * 1000;
+			this.featureFlagsService.tokenRefreshBufferSeconds() * 1000;
 		return this.dateService.nowTimestamp() >= this.tokenExpiresAt - bufferMs;
 	}
 
@@ -558,55 +535,49 @@ export class AuthService
 	}
 
 	/**
-	 * Handles OAuth callback - token in URL fragment.
-	 * @returns {boolean}
-	 * True if OAuth callback was handled, false otherwise.
-	 * @remarks The server may also provide email and fullName in the hash params.
+	 * Exchanges a one-time OAuth code for tokens.
+	 * Called after receiving the code_received event from OAuthFlowService.
+	 * @param {string} code
+	 * The one-time code from the OAuth provider.
+	 * @returns {void}
 	 */
-	private handleOAuthCallback(): boolean
+	private exchangeOAuthCode(code: string): void
 	{
-		const hash: string =
-			this.windowService.getHash();
+		this
+			.httpClient
+			.post<AuthResponse>(
+				`${this.authUrl}/oauth/exchange`,
+				{ code },
+				{ withCredentials: true })
+			.subscribe(
+				{
+					next: (response: AuthResponse) =>
+					{
+						this.setAccessToken(
+							response.accessToken!,
+							response.expiresAt!,
+							response.email!,
+							response.fullName);
+						this.requiresPasswordChangeSignal.set(
+							response.requiresPasswordChange);
+						this.markHasSession();
+						this.invalidatePostLogin();
+						this.startIdleDetection(response);
 
-		if (!hash.includes("access_token="))
-		{
-			return false;
-		}
-
-		// Parse token from fragment: #access_token=xxx&expires_at=xxx&email=xxx&full_name=xxx
-		const params: URLSearchParams =
-			new URLSearchParams(hash.substring(1));
-		const token: string | null =
-			params.get("access_token");
-		const expiresAt: string | null =
-			params.get("expires_at");
-		const email: string | null =
-			params.get("email");
-		const fullName: string | null =
-			params.get("full_name");
-
-		if (token && expiresAt && email)
-		{
-			this.setAccessToken(
-				token,
-				expiresAt,
-				email,
-				fullName);
-
-			// Clean URL fragment
-			this.windowService.replaceState(
-				null,
-				"",
-				this.windowService.getPathname() + this.windowService.getSearch());
-
-			// Navigate to stored return URL
-			const returnUrl: string =
-				this.storageService.getSessionItem(STORAGE_KEYS.AUTH_RETURN_URL) ?? "/";
-			this.storageService.removeSessionItem(STORAGE_KEYS.AUTH_RETURN_URL);
-			this.router.navigateByUrl(returnUrl);
-		}
-
-		return true;
+						// Navigate to stored return URL
+						const returnUrl: string =
+							this.storageService.getSessionItem(
+								STORAGE_KEYS.AUTH_RETURN_URL) ?? "/";
+						this.storageService.removeSessionItem(
+							STORAGE_KEYS.AUTH_RETURN_URL);
+						this.router.navigateByUrl(returnUrl);
+					},
+					error: () =>
+					{
+						this.router.navigate(
+							[APP_ROUTES.AUTH.LOGIN]);
+					}
+				});
 	}
 
 	/**
@@ -626,6 +597,8 @@ export class AuthService
 		this.requiresPasswordChangeSignal.set(
 			response.requiresPasswordChange);
 		this.markHasSession();
+		this.invalidatePostLogin();
+		this.startIdleDetection(response);
 	}
 
 	/**
@@ -684,19 +657,60 @@ export class AuthService
 	 */
 	private clearAuth(): void
 	{
+		this.idleDetectionService.stop();
 		this.accessToken = null;
 		this.tokenExpiresAt = 0;
 		this.userSignal.set(null);
 		this.requiresPasswordChangeSignal.set(false);
 		this.clearHasSession();
 
+		// Clear error queue to prevent data leakage between users
+		this.storageService.removeItem(STORAGE_KEYS.ERROR_QUEUE);
+
 		// Clear all cached queries to prevent data leakage between users
 		this.queryClient.clear();
 	}
 
 	/**
+	 * Starts idle detection if the server has it enabled.
+	 *
+	 * @param {AuthResponse} response
+	 * Auth response containing session inactivity configuration.
+	 */
+	private startIdleDetection(response: AuthResponse): void
+	{
+		const inactivityMinutes: number =
+			Number(response.sessionInactivityMinutes);
+		const warningSeconds: number =
+			Number(response.sessionWarningSeconds);
+
+		if (inactivityMinutes > 0)
+		{
+			this.idleDetectionService.start(inactivityMinutes, warningSeconds);
+		}
+	}
+
+	/**
+	 * Handles logout triggered by inactivity timeout.
+	 * Sets a sessionStorage flag so the login page can display the inactivity banner.
+	 */
+	private handleInactivityLogout(): void
+	{
+		this.clearAuth();
+
+		this.storageService.setSessionItem(
+			STORAGE_KEYS.AUTH_INACTIVITY_LOGOUT,
+			"true");
+
+		this.router.navigate(
+			[APP_ROUTES.AUTH.LOGIN]);
+	}
+
+	/**
 	 * Invalidates stale caches after successful login.
 	 * Ensures user sees their own fresh data, not cached data from previous session.
+	 * Eagerly fetches the user profile to replace hardcoded defaults
+	 * (hasPassword, linkedProviders, lastLoginAt) set during setAccessToken.
 	 * @returns {void}
 	 */
 	private invalidatePostLogin(): void
@@ -709,6 +723,34 @@ export class AuthService
 			{
 				queryKey: QueryKeys.permissionRequests.all
 			});
+
+		// Eagerly fetch the full profile to replace JWT-derived defaults.
+		// Best-effort: failure is silently ignored since the profile page
+		// will fetch fresh data when visited.
+		this
+			.httpClient
+			.get<UserProfileDto>(`${environment.apiUrl}/auth/me`)
+			.pipe(
+				catchError(
+					() => of(null)))
+			.subscribe(
+				(profile: UserProfileDto | null) =>
+				{
+					if (isPresent(profile))
+					{
+						this.userSignal.set(profile);
+					}
+				});
+	}
+
+	/**
+	 * Marks the user as requiring a password change.
+	 * Called when the server returns 403 PASSWORD_CHANGE_REQUIRED.
+	 * @returns {void}
+	 */
+	markPasswordChangeRequired(): void
+	{
+		this.requiresPasswordChangeSignal.set(true);
 	}
 
 	/**
@@ -764,5 +806,39 @@ export class AuthService
 	private clearHasSession(): void
 	{
 		this.storageService.removeItem(STORAGE_KEYS.AUTH_HAS_SESSION);
+	}
+
+	/**
+	 * Listens for cross-tab logout via StorageEvent.
+	 * When another tab removes the session marker, forces local logout and navigates home.
+	 * StorageEvent only fires in non-originating tabs, so no circular trigger risk.
+	 * @returns {void}
+	 */
+	private initializeCrossTabLogout(): void
+	{
+		if (typeof window === "undefined")
+		{
+			return;
+		}
+
+		const storageHandler: (storageEvent: StorageEvent) => void =
+			(storageEvent: StorageEvent): void =>
+			{
+				if (
+					storageEvent.key === STORAGE_KEYS.AUTH_HAS_SESSION
+						&& storageEvent.newValue === null)
+				{
+					this.forceLogoutLocally();
+					this.router.navigateByUrl("/");
+				}
+			};
+
+		window.addEventListener("storage", storageHandler);
+
+		this.destroyRef.onDestroy(
+			() =>
+			{
+				window.removeEventListener("storage", storageHandler);
+			});
 	}
 }

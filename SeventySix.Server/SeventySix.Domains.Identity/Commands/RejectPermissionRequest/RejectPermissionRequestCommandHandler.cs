@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using SeventySix.Shared.Interfaces;
 using SeventySix.Shared.POCOs;
 
 namespace SeventySix.Identity.Commands.RejectPermissionRequest;
@@ -23,6 +24,9 @@ public static class RejectPermissionRequestCommandHandler
 	/// <param name="identityCache">
 	/// Identity cache service for clearing request cache.
 	/// </param>
+	/// <param name="transactionManager">
+	/// Transaction manager for concurrency-safe read-then-write operations.
+	/// </param>
 	/// <param name="cancellationToken">
 	/// Cancellation token.
 	/// </param>
@@ -33,26 +37,40 @@ public static class RejectPermissionRequestCommandHandler
 		RejectPermissionRequestCommand command,
 		IPermissionRequestRepository repository,
 		IIdentityCacheService identityCache,
+		ITransactionManager transactionManager,
 		CancellationToken cancellationToken)
 	{
-		PermissionRequest? request =
-			await repository.GetByIdAsync(
-				command.RequestId,
-				cancellationToken);
+		Result txResult =
+			await transactionManager.ExecuteInTransactionAsync(
+				async ct =>
+				{
+					PermissionRequest? request =
+						await repository.GetByIdAsync(
+							command.RequestId,
+							ct);
 
-		if (request is null)
+					if (request is null)
+					{
+						return Result.Failure(
+							$"Permission request {command.RequestId} not found");
+					}
+
+					await repository.DeleteAsync(
+						command.RequestId,
+						ct);
+
+					return Result.Success();
+				},
+				cancellationToken: cancellationToken);
+
+		if (!txResult.IsSuccess)
 		{
-			return Result.Failure(
-				$"Permission request {command.RequestId} not found");
+			return txResult;
 		}
 
-		await repository.DeleteAsync(
-			command.RequestId,
-			cancellationToken);
-
-		// Invalidate permission requests cache
+		// Invalidate permission requests cache (outside transaction)
 		await identityCache.InvalidatePermissionRequestsAsync();
 
-		return Result.Success();
+		return txResult;
 	}
 }

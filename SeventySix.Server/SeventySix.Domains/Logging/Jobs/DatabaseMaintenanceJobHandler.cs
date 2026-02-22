@@ -37,7 +37,7 @@ namespace SeventySix.Logging.Jobs;
 /// <param name="logger">
 /// Logger for diagnostic messages.
 /// </param>
-public class DatabaseMaintenanceJobHandler(
+public sealed class DatabaseMaintenanceJobHandler(
 	IDatabaseMaintenanceService databaseMaintenanceService,
 	IRecurringJobService recurringJobService,
 	IOptions<DatabaseMaintenanceSettings> settings,

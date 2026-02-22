@@ -15,6 +15,7 @@ import { NAV_SECTIONS } from "@shared/constants";
 import { NavItem, NavSection } from "@shared/models";
 import { LayoutService } from "@shared/services";
 import { AuthService } from "@shared/services/auth.service";
+import { isNullOrUndefined } from "@shared/utilities/null-check.utility";
 
 @Component(
 	{
@@ -91,7 +92,7 @@ export class SidebarComponent
 	private hasAccess(requiredRoles?: string[]): boolean
 	{
 		// No roles required - visible to all (including guests)
-		if (!requiredRoles || requiredRoles.length === 0)
+		if (isNullOrUndefined(requiredRoles) || requiredRoles.length === 0)
 		{
 			return true;
 		}

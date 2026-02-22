@@ -34,8 +34,9 @@ WORKDIR /app
 
 # Install required packages:
 # - wget: For healthcheck endpoint verification (uses GnuTLS)
+# - libgssapi-krb5-2: Prevents 'Cannot load library libgssapi_krb5.so.2' runtime error from .NET
 USER root
-RUN apt-get update && apt-get install -y --no-install-recommends wget && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends wget libgssapi-krb5-2 && rm -rf /var/lib/apt/lists/*
 
 # Create data protection keys directory with proper ownership
 # This directory should be mounted as a Docker volume for key persistence

@@ -23,7 +23,7 @@ namespace SeventySix.Api.HealthChecks;
 /// <param name="logger">
 /// Logger instance.
 /// </param>
-public class JaegerHealthCheck(
+public sealed class JaegerHealthCheck(
 	IConfiguration configuration,
 	ILogger<JaegerHealthCheck> logger) : IHealthCheck
 {
@@ -108,12 +108,12 @@ public class JaegerHealthCheck(
 					["port"] = port,
 				});
 		}
-		catch (Exception ex)
+		catch (Exception exception)
 		{
-			logger.LogWarning(ex, "Jaeger health check error");
+			logger.LogWarning(exception, "Jaeger health check error");
 			return HealthCheckResult.Degraded(
-				description: $"Error checking Jaeger connectivity: {ex.Message}",
-				exception: ex);
+				description: $"Error checking Jaeger connectivity: {exception.Message}",
+				exception: exception);
 		}
 	}
 }

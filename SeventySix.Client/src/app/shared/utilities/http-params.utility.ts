@@ -1,4 +1,5 @@
 import { HttpParams } from "@angular/common/http";
+import { isPresent } from "@shared/utilities/null-check.utility";
 
 /**
  * Builds HttpParams from an object.
@@ -15,7 +16,7 @@ export function buildHttpParams(params: Record<string, unknown> | object): HttpP
 
 	for (const [key, value] of Object.entries(params))
 	{
-		if (value !== undefined && value !== null)
+		if (isPresent(value))
 		{
 			if (value instanceof Date)
 			{

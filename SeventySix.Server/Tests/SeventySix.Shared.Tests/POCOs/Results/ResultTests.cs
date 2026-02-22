@@ -10,7 +10,7 @@ namespace SeventySix.Shared.Tests.POCOs.Results;
 /// <summary>
 /// Tests for <see cref="Result"/> non-generic class.
 /// </summary>
-public class ResultTests
+public sealed class ResultTests
 {
 	[Fact]
 	public void Success_ReturnsSuccessfulResult()

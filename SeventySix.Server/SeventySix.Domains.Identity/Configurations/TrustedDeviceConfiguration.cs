@@ -17,7 +17,7 @@ namespace SeventySix.Identity;
 /// - Unique index on TokenHash for fast lookups
 /// - Index on UserId for listing user's devices
 /// </remarks>
-public class TrustedDeviceConfiguration : IEntityTypeConfiguration<TrustedDevice>
+public sealed class TrustedDeviceConfiguration : IEntityTypeConfiguration<TrustedDevice>
 {
 	/// <summary>
 	/// Configures the entity mapping for TrustedDevice.

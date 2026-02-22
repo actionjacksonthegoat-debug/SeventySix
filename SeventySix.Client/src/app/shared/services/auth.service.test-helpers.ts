@@ -61,6 +61,8 @@ export function createMockAuthResponse(
 		fullName: "Test User",
 		requiresPasswordChange: false,
 		requiresMfa: false,
+		sessionInactivityMinutes: 0,
+		sessionWarningSeconds: 0,
 		...responseOverrides
 	};
 }

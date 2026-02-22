@@ -7,20 +7,22 @@ import {
 	ChangeDetectionStrategy,
 	Component,
 	computed,
+	DestroyRef,
 	inject,
 	Signal,
 	signal,
 	WritableSignal
 } from "@angular/core";
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import {
 	FormBuilder,
 	FormGroup,
 	ReactiveFormsModule,
 	Validators
 } from "@angular/forms";
-import { MatButtonModule } from "@angular/material/button";
 import { RouterLink } from "@angular/router";
 import { AltchaWidgetComponent } from "@shared/components";
+import { FORM_MATERIAL_MODULES } from "@shared/material-bundles.constants";
 import { AltchaService, AuthService, NotificationService } from "@shared/services";
 import { getValidationError } from "@shared/utilities";
 
@@ -31,7 +33,7 @@ import { getValidationError } from "@shared/utilities";
 		imports: [
 			ReactiveFormsModule,
 			RouterLink,
-			MatButtonModule,
+			...FORM_MATERIAL_MODULES,
 			AltchaWidgetComponent
 		],
 		changeDetection: ChangeDetectionStrategy.OnPush,
@@ -46,6 +48,8 @@ export class ForgotPasswordComponent
 {
 	private readonly authService: AuthService =
 		inject(AuthService);
+	private readonly destroyRef: DestroyRef =
+		inject(DestroyRef);
 	private readonly notification: NotificationService =
 		inject(NotificationService);
 	private readonly altchaService: AltchaService =
@@ -169,6 +173,8 @@ export class ForgotPasswordComponent
 			.requestPasswordReset(
 				email,
 				this.altchaPayload())
+			.pipe(
+				takeUntilDestroyed(this.destroyRef))
 			.subscribe(
 				{
 					next: () =>

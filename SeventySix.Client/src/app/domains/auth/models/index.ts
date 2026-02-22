@@ -17,7 +17,6 @@ export type {
 } from "@shared/models";
 
 // Auth-domain-specific request types (only used by auth pages)
-export type OAuthCodeExchangeRequest = components["schemas"]["OAuthCodeExchangeRequest"];
 export type ChangePasswordRequest = components["schemas"]["ChangePasswordRequest"];
 export type ForgotPasswordRequest = components["schemas"]["ForgotPasswordRequest"];
 export type InitiateRegistrationRequest = components["schemas"]["InitiateRegistrationRequest"];

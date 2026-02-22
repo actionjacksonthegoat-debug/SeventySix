@@ -3,6 +3,7 @@
 // </copyright>
 
 using System.Diagnostics;
+using SeventySix.Logging.Commands.CreateClientLogBatch;
 
 namespace SeventySix.Logging;
 
@@ -12,10 +13,10 @@ namespace SeventySix.Logging;
 public static class CreateClientLogBatchCommandHandler
 {
 	/// <summary>
-	/// Handles the request to create multiple client log entries.
+	/// Handles the command to create multiple client log entries.
 	/// </summary>
-	/// <param name="requests">
-	/// The array of client log creation requests.
+	/// <param name="command">
+	/// The batch command containing the array of client log creation requests.
 	/// </param>
 	/// <param name="repository">
 	/// The log repository for data access.
@@ -27,11 +28,11 @@ public static class CreateClientLogBatchCommandHandler
 	/// A task representing the asynchronous operation.
 	/// </returns>
 	public static async Task HandleAsync(
-		CreateLogRequest[] requests,
+		CreateClientLogBatchCommand command,
 		ILogRepository repository,
 		CancellationToken cancellationToken)
 	{
-		if (requests.Length == 0)
+		if (command.Requests.Length == 0)
 		{
 			return;
 		}
@@ -44,7 +45,7 @@ public static class CreateClientLogBatchCommandHandler
 			Activity.Current?.ParentSpanId.ToString();
 
 		List<Log> logs =
-			requests
+			command.Requests
 				.Select(
 					request =>
 						request.ToClientLogEntity(

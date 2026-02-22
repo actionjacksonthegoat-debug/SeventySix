@@ -633,35 +633,7 @@ describe("DataTableComponent",
 		describe("CLS Prevention",
 			() =>
 			{
-				function getHeightStyle(element: HTMLElement): string
-				{
-					const directStyle: string =
-						element.style.height ?? element.style.minHeight ?? "";
-					if (directStyle)
-					{
-						return directStyle;
-					}
-					const styleAttr: string | null =
-						element.getAttribute("style");
-					if (styleAttr)
-					{
-						const minMatch: RegExpMatchArray | null =
-							styleAttr.match(/min-height:\s*([^;]+)/);
-						if (minMatch)
-						{
-							return minMatch[1].trim();
-						}
-						const heightMatch: RegExpMatchArray | null =
-							styleAttr.match(/height:\s*([^;]+)/);
-						if (heightMatch)
-						{
-							return heightMatch[1].trim();
-						}
-					}
-					return "";
-				}
-
-				it("should reserve minimum height to prevent CLS",
+				it("should use flex layout on viewport to prevent CLS",
 					async (): Promise<void> =>
 					{
 						builder.withInputs(fixture,
@@ -679,15 +651,11 @@ describe("DataTableComponent",
 						expect(viewport)
 							.toBeTruthy();
 
-						if (viewport)
-						{
-							const heightStyle: string =
-								getHeightStyle(viewport);
-							expect(heightStyle)
-								.toBeTruthy();
-							expect(heightStyle)
-								.toContain("px");
-						}
+						const wrapper: HTMLElement | null =
+							fixture.nativeElement.querySelector(".table-wrapper");
+
+						expect(wrapper)
+							.toBeTruthy();
 					});
 
 				it("should render skeleton loaders in cells when loading",
@@ -748,6 +716,51 @@ describe("DataTableComponent",
 							.toBe(1);
 						expect(dataSource[0].id)
 							.toBeLessThan(0);
+					});
+			});
+
+		describe("Empty State",
+			() =>
+			{
+				async function queryEmptyState(
+					overrides: Record<string, unknown> = {}): Promise<HTMLElement | null>
+				{
+					builder.withInputs(fixture,
+						{ ...defaultInputs, isLoading: false, data: [], totalCount: 0, ...overrides });
+					fixture.detectChanges();
+					await fixture.whenStable();
+					fixture.detectChanges();
+
+					return fixture.nativeElement.querySelector(".empty-state");
+				}
+
+				it(
+					"should display accessible empty state with icon when not loading and data is empty",
+					async (): Promise<void> =>
+					{
+						const emptyState: HTMLElement | null =
+							await queryEmptyState();
+
+						expect(emptyState).not.toBeNull();
+						expect(emptyState?.textContent)
+							.toContain("No data available");
+						expect(emptyState?.querySelector("mat-icon")?.textContent?.trim())
+							.toBe("inbox");
+						expect(emptyState?.getAttribute("role"))
+							.toBe("status");
+					});
+
+				it.each(
+					[
+						{ scenario: "when loading", overrides: { isLoading: true } },
+						{ scenario: "when data exists", overrides: { data: mockData } },
+						{ scenario: "when error exists", overrides: { error: "Something went wrong" } }
+					])(
+					"should not display empty state $scenario",
+					async ({ overrides }: { overrides: Record<string, unknown>; }): Promise<void> =>
+					{
+						expect(await queryEmptyState(overrides))
+							.toBeNull();
 					});
 			});
 	});

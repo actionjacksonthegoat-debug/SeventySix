@@ -10,12 +10,14 @@ import {
 import { MatCardModule } from "@angular/material/card";
 import { DomSanitizer, SafeResourceUrl } from "@angular/platform-browser";
 import { environment } from "@environments/environment";
+import { ThemeService } from "@shared/services";
 
 /**
  * Component for embedding Grafana dashboards via iframe.
  * Handles URL sanitization, kiosk mode, and theming.
  * @remarks
  * Uses DomSanitizer to safely embed external Grafana content.
+ * Theme is derived from the app's brightness automatically.
  * Follows KISS principle by using simple iframe embedding.
  */
 @Component(
@@ -38,6 +40,15 @@ export class GrafanaDashboardEmbedComponent
 		inject(DomSanitizer);
 
 	/**
+	 * Theme service for reactive brightness tracking.
+	 * @type {ThemeService}
+	 * @private
+	 * @readonly
+	 */
+	private readonly themeService: ThemeService =
+		inject(ThemeService);
+
+	/**
 	 * Dashboard UID (e.g., 'seventysix-system-overview').
 	 * Required input for identifying which Grafana dashboard to embed.
 	 * @type {InputSignal<string>}
@@ -55,12 +66,13 @@ export class GrafanaDashboardEmbedComponent
 		input<string>("30s");
 
 	/**
-	 * Grafana theme to apply to embedded dashboard.
-	 * @default 'dark'
-	 * @type {InputSignal<string>}
+	 * Reactive theme derived from the app's current brightness.
+	 * Automatically updates when user toggles light/dark mode.
+	 * @type {Signal<string>}
 	 */
-	readonly theme: InputSignal<string> =
-		input<string>("dark");
+	readonly resolvedTheme: Signal<string> =
+		computed(
+			() => this.themeService.brightness());
 
 	/**
 	 * Dashboard title displayed in card header.
@@ -77,6 +89,10 @@ export class GrafanaDashboardEmbedComponent
 	 */
 	readonly height: InputSignal<string> =
 		input<string>("600px");
+
+	/** Regex pattern for valid Grafana dashboard UIDs (alphanumeric, hyphens, underscores). */
+	private readonly dashboardUidPattern: RegExp =
+		/^[a-zA-Z0-9_-]+$/;
 
 	/**
 	 * Computed safe URL for iframe src binding.
@@ -96,7 +112,13 @@ export class GrafanaDashboardEmbedComponent
 				const refresh: string =
 					this.refreshInterval();
 				const themeValue: string =
-					this.theme();
+					this.resolvedTheme();
+
+				// Validate dashboard UID to prevent URL injection
+				if (!this.dashboardUidPattern.test(uid))
+				{
+					return this.sanitizer.bypassSecurityTrustResourceUrl("about:blank");
+				}
 
 				// Include the UID as the slug to match Grafana's expected URL format
 				// This prevents "not correct url correcting" console messages

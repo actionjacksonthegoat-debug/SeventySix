@@ -11,7 +11,7 @@ namespace SeventySix.Analyzers.Tests;
 /// Enforces proper indentation on continuation lines after '='.
 /// Follows 80/20 rule: critical paths only.
 /// </summary>
-public class AssignmentContinuationIndentAnalyzerTests
+public sealed class AssignmentContinuationIndentAnalyzerTests
 {
 	[Fact]
 	public async Task ContinuationLine_WrongIndent_ReportsDiagnosticAsync()

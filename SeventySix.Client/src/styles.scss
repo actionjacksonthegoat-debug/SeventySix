@@ -120,13 +120,34 @@ html:not(.light-theme):not(.dark-theme) {
 
 // Ensure Material buttons have visible focus indicators
 .mat-mdc-button:focus-visible,
-.mat-mdc-raised-button:focus-visible,
 .mat-mdc-outlined-button:focus-visible,
-.mat-mdc-fab:focus-visible,
-.mat-mdc-mini-fab:focus-visible,
 .mat-mdc-icon-button:focus-visible {
 	outline: 2px solid var(--mat-sys-primary);
 	outline-offset: 2px;
+}
+
+// =============================================================================
+// BUTTON RIPPLE & HOVER STATE LAYER
+// =============================================================================
+// Increase ripple/hover visibility using MD3 design tokens.
+// Values reference --mat-sys-* tokens so they adapt to any theme automatically.
+// Reduced motion: ripple layers explicitly preserved in _base.scss.
+
+html {
+	// Ripple ink-spread color on click (MD3 default ~12%, bumped to 24%)
+	--mat-text-button-ripple-color: color-mix(in srgb, var(--mat-sys-on-surface) 24%, transparent);
+	--mat-outlined-button-ripple-color: color-mix(in srgb, var(--mat-sys-primary) 24%, transparent);
+	--mat-icon-button-ripple-color: color-mix(in srgb, var(--mat-sys-on-surface) 24%, transparent);
+
+	// Hover state layer opacity (MD3 default ~4%, bumped to 12%)
+	--mat-text-button-hover-state-layer-opacity: 0.12;
+	--mat-outlined-button-hover-state-layer-opacity: 0.12;
+	--mat-icon-button-hover-state-layer-opacity: 0.12;
+}
+
+// Add smooth transition to hover state layer for visible feedback
+.mat-mdc-button-persistent-ripple::before {
+	transition: opacity 75ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 // =============================================================================
@@ -385,4 +406,11 @@ ngx-skeleton-loader .skeleton-loader {
 			transparent
 		) !important;
 	}
+}
+
+// Fix ALTCHA widget accessibility: branding link has aria-hidden="true" but
+// remains focusable, violating WCAG 4.1.2 (aria-hidden-focus). Since the widget
+// uses light DOM and hidefooter is set, hide the link entirely.
+altcha-widget .altcha-logo[aria-hidden="true"] {
+	display: none !important;
 }

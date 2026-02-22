@@ -16,7 +16,7 @@ namespace SeventySix.ApiTracking;
 /// Cached in distributed cache for dashboard queries.
 /// </remarks>
 [MemoryPackable]
-public partial class ThirdPartyApiRequestDto : ICacheable
+public partial record ThirdPartyApiRequestDto : ICacheable
 {
 	/// <summary>
 	/// Gets or sets the unique identifier.
@@ -43,7 +43,7 @@ public partial class ThirdPartyApiRequestDto : ICacheable
 	/// <summary>
 	/// Gets or sets the timestamp of the most recent API call.
 	/// </summary>
-	public DateTime? LastCalledAt { get; set; }
+	public DateTimeOffset? LastCalledAt { get; set; }
 
 	/// <summary>
 	/// Gets or sets the date for which this counter is tracking.

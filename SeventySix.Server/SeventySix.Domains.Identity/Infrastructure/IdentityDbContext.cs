@@ -16,7 +16,7 @@ namespace SeventySix.Identity;
 /// Extends IdentityDbContext to leverage ASP.NET Core Identity features while
 /// maintaining custom entities (RefreshToken, PermissionRequest) for app-specific functionality.
 /// </remarks>
-public class IdentityDbContext
+public sealed class IdentityDbContext
 	: IdentityDbContext<
 		ApplicationUser,
 		ApplicationRole,

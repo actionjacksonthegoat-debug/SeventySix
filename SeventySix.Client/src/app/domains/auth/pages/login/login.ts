@@ -8,27 +8,36 @@ import {
 	ChangeDetectionStrategy,
 	Component,
 	computed,
+	DestroyRef,
 	inject,
 	OnInit,
 	Signal,
 	signal,
 	WritableSignal
 } from "@angular/core";
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import {
 	FormBuilder,
 	FormGroup,
 	ReactiveFormsModule,
 	Validators
 } from "@angular/forms";
-import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
 import { ActivatedRoute, Router, RouterLink } from "@angular/router";
 import { AuthResponse, LoginRequest, MfaState } from "@auth/models";
 import { MfaService } from "@auth/services";
 import { sanitizeRedirectUrl } from "@auth/utilities";
 import { AltchaWidgetComponent } from "@shared/components";
-import { AltchaService, AuthService, NotificationService } from "@shared/services";
+import { APP_ROUTES, AUTH_NOTIFICATION_MESSAGES, STORAGE_KEYS } from "@shared/constants";
+import { FORM_MATERIAL_MODULES } from "@shared/material-bundles.constants";
+import { AltchaService, AuthService, FeatureFlagsService, NotificationService, StorageService } from "@shared/services";
+import {
+	OAUTH_PROVIDERS,
+	OAuthProvider,
+	OAuthProviderMetadata
+} from "@shared/services/auth.types";
 import { getValidationError } from "@shared/utilities";
+import { isPresent } from "@shared/utilities/null-check.utility";
 
 @Component(
 	{
@@ -37,8 +46,8 @@ import { getValidationError } from "@shared/utilities";
 		imports: [
 			ReactiveFormsModule,
 			RouterLink,
-			MatButtonModule,
 			MatIconModule,
+			...FORM_MATERIAL_MODULES,
 			AltchaWidgetComponent
 		],
 		changeDetection: ChangeDetectionStrategy.OnPush,
@@ -57,6 +66,15 @@ export class LoginComponent implements OnInit
 	 */
 	private readonly formBuilder: FormBuilder =
 		inject(FormBuilder);
+
+	/**
+	 * Angular destroy reference for automatic subscription cleanup.
+	 * @type {DestroyRef}
+	 * @private
+	 * @readonly
+	 */
+	private readonly destroyRef: DestroyRef =
+		inject(DestroyRef);
 
 	/**
 	 * Auth service for performing login operations.
@@ -99,6 +117,33 @@ export class LoginComponent implements OnInit
 	 */
 	private readonly altchaService: AltchaService =
 		inject(AltchaService);
+
+	/**
+	 * Storage service for reading/clearing the inactivity logout flag.
+	 * @type {StorageService}
+	 */
+	private readonly storageService: StorageService =
+		inject(StorageService);
+
+	/**
+	 * Feature flags service for conditional UI rendering.
+	 * @type {FeatureFlagsService}
+	 */
+	protected readonly featureFlags: FeatureFlagsService =
+		inject(FeatureFlagsService);
+
+	/**
+	 * Configured OAuth providers for rendering login buttons.
+	 * @type {readonly OAuthProviderMetadata[]}
+	 */
+	protected readonly oauthProviders: readonly OAuthProviderMetadata[] = OAUTH_PROVIDERS;
+
+	/**
+	 * Whether an OAuth popup flow is currently in progress.
+	 * @type {Signal<boolean>}
+	 */
+	protected readonly isOAuthInProgress: Signal<boolean> =
+		this.authService.isOAuthInProgress;
 
 	/**
 	 * Whether ALTCHA validation is enabled.
@@ -176,11 +221,36 @@ export class LoginComponent implements OnInit
 		signal<string | null>(null);
 
 	/**
+	 * Whether to show the "logged out due to inactivity" banner.
+	 */
+	private readonly showInactivityBanner: WritableSignal<boolean> =
+		signal(false);
+
+	/**
+	 * Public readonly signal for the template.
+	 * @type {Signal<boolean>}
+	 */
+	protected readonly inactivityBannerVisible: Signal<boolean> =
+		this.showInactivityBanner.asReadonly();
+
+	/**
 	 * Initialize component: determine post-login redirect and redirect if already authenticated.
 	 * @returns {void}
 	 */
 	ngOnInit(): void
 	{
+		// Check for inactivity logout flag before redirect
+		const wasIdleLogout: string | null =
+			this.storageService.getSessionItem(
+				STORAGE_KEYS.AUTH_INACTIVITY_LOGOUT);
+
+		if (isPresent(wasIdleLogout))
+		{
+			this.showInactivityBanner.set(true);
+			this.storageService.removeSessionItem(
+				STORAGE_KEYS.AUTH_INACTIVITY_LOGOUT);
+		}
+
 		// Sanitize returnUrl to prevent open redirect vulnerabilities
 		this.returnUrl =
 			sanitizeRedirectUrl(this.route.snapshot.queryParams["returnUrl"]);
@@ -250,6 +320,8 @@ export class LoginComponent implements OnInit
 		this
 			.authService
 			.login(credentials)
+			.pipe(
+				takeUntilDestroyed(this.destroyRef))
 			.subscribe(
 				{
 					next: (response: AuthResponse) =>
@@ -268,26 +340,28 @@ export class LoginComponent implements OnInit
 	 */
 	private handleLoginSuccess(response: AuthResponse): void
 	{
-		if (response.requiresMfa && response.mfaChallengeToken)
+		if (response.requiresMfa)
 		{
 			const mfaState: MfaState =
 				{
-					challengeToken: response.mfaChallengeToken,
+					challengeToken: response.mfaChallengeToken ?? "",
 					email: response.email ?? "",
-					returnUrl: this.returnUrl
+					returnUrl: this.returnUrl,
+					mfaMethod: response.mfaMethod,
+					availableMfaMethods: response.availableMfaMethods
 				};
 			this.mfaService.setMfaState(mfaState);
 			this.router.navigate(
-				["/auth/mfa/verify"]);
+				[APP_ROUTES.AUTH.MFA_VERIFY]);
 			return;
 		}
 
 		if (response.requiresPasswordChange)
 		{
 			this.notification.info(
-				"You must change your password before continuing.");
+				AUTH_NOTIFICATION_MESSAGES.PASSWORD_CHANGE_REQUIRED);
 			this.router.navigate(
-				["/auth/change-password"],
+				[APP_ROUTES.AUTH.CHANGE_PASSWORD],
 				{
 					queryParams: {
 						required: "true",
@@ -317,13 +391,14 @@ export class LoginComponent implements OnInit
 	}
 
 	/**
-	 * Start OAuth login flow with GitHub provider.
+	 * Start OAuth login flow with the specified provider.
+	 * @param {OAuthProvider} provider
+	 * The OAuth provider to authenticate with.
 	 * @returns {void}
 	 */
-	protected onGitHubLogin(): void
+	protected onOAuthLogin(provider: OAuthProvider): void
 	{
-		this.isLoading.set(true);
-		this.authService.loginWithProvider("github", this.returnUrl);
+		this.authService.loginWithProvider(provider, this.returnUrl);
 	}
 
 	/**
@@ -353,7 +428,7 @@ export class LoginComponent implements OnInit
 					"Please wait before trying again"
 				];
 			default:
-				return [error.error?.detail ?? "An unexpected error occurred"];
+				return ["An unexpected error occurred. Please try again."];
 		}
 	}
 }

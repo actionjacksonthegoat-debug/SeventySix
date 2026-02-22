@@ -9,7 +9,7 @@ namespace SeventySix.Logging.Commands.CreateClientLog;
 /// <summary>
 /// FluentValidation validator for CreateLogRequest.
 /// </summary>
-public class CreateClientLogCommandValidator
+public sealed class CreateClientLogCommandValidator
 	: AbstractValidator<CreateLogRequest>
 {
 	/// <summary>

@@ -65,7 +65,7 @@ public sealed class SecurityAuditService(
 					UserAgent = userAgent,
 					Details = details,
 					Success = success,
-					CreateDate = timeProvider.GetUtcNow().UtcDateTime
+					CreateDate = timeProvider.GetUtcNow()
 				};
 
 			dbContext.SecurityEvents.Add(securityEvent);

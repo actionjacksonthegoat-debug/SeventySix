@@ -162,6 +162,15 @@ export class LogDetailDialogComponent
 				this.dateService.formatRelative(this.log().createDate));
 
 	/**
+	 * Locale-formatted timestamp string for display.
+	 * @type {Signal<string>}
+	 */
+	readonly formattedTimestamp: Signal<string> =
+		computed(
+			(): string =>
+				this.log().createDate.toLocaleString());
+
+	/**
 	 * Formatted JSON properties string for display.
 	 * @type {Signal<string>}
 	 */
@@ -287,7 +296,7 @@ export class LogDetailDialogComponent
 		const log: LogDto =
 			this.log();
 
-		if (!log.correlationId)
+		if (isNullOrEmpty(log.correlationId))
 		{
 			alert(
 				"No trace ID available for this error.\n\n"

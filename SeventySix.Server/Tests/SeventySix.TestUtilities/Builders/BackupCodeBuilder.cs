@@ -17,7 +17,7 @@ public sealed class BackupCodeBuilder
 	private long UserId = 1;
 	private string Code = "ABCD1234";
 	private bool IsUsed = false;
-	private DateTime? UsedAt = null;
+	private DateTimeOffset? UsedAt = null;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="BackupCodeBuilder"/> class.
@@ -72,7 +72,7 @@ public sealed class BackupCodeBuilder
 	{
 		IsUsed = true;
 		UsedAt =
-			TimeProviderField.GetUtcNow().UtcDateTime;
+			TimeProviderField.GetUtcNow();
 		return this;
 	}
 
@@ -84,8 +84,8 @@ public sealed class BackupCodeBuilder
 	/// </returns>
 	public BackupCode Build()
 	{
-		DateTime now =
-			TimeProviderField.GetUtcNow().UtcDateTime;
+		DateTimeOffset now =
+			TimeProviderField.GetUtcNow();
 
 		BackupCode backupCode =
 			new()

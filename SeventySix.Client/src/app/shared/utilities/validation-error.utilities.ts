@@ -3,7 +3,7 @@ import {
 	VALIDATION_ERROR_MESSAGES,
 	ValidationMessageTemplate
 } from "@shared/constants/validation-error.constants";
-import { isNonNullObject } from "@shared/utilities/null-check.utility";
+import { isNonNullObject, isNullOrUndefined } from "@shared/utilities/null-check.utility";
 
 /**
  * Gets the first validation error message for a form control.
@@ -29,7 +29,7 @@ export function getValidationError(
 	control: AbstractControl | null | undefined,
 	fieldLabel: string): string | null
 {
-	if (!control?.errors)
+	if (isNullOrUndefined(control?.errors))
 	{
 		return null;
 	}
@@ -48,7 +48,7 @@ export function getValidationError(
 	const messageTemplate: ValidationMessageTemplate | undefined =
 		VALIDATION_ERROR_MESSAGES[firstErrorKey];
 
-	if (!messageTemplate)
+	if (isNullOrUndefined(messageTemplate))
 	{
 		// Fallback for custom validators with message property
 		if (isNonNullObject(errorValue) && "message" in errorValue)

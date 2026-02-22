@@ -13,8 +13,13 @@ namespace SeventySix.ElectronicNotifications.Emails;
 /// When Enabled=true, all required fields (SmtpHost, FromAddress, ClientBaseUrl)
 /// must be set; validator will catch missing values.
 /// </remarks>
-public record EmailSettings
+public sealed record EmailSettings
 {
+	/// <summary>
+	/// Configuration section name for binding.
+	/// </summary>
+	public const string SectionName = "Email";
+
 	/// <summary>
 	/// Gets the SMTP server hostname.
 	/// </summary>

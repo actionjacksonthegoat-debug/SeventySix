@@ -5,6 +5,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Options;
 using SeventySix.Api.Configuration;
 using SeventySix.Api.Extensions;
 using SeventySix.Api.Infrastructure;
@@ -23,15 +24,21 @@ namespace SeventySix.Api.Controllers;
 /// <param name="cookieService">
 /// Service for authentication cookie management.
 /// </param>
+/// <param name="trustedDeviceSettings">
+/// Trusted device configuration for cookie lifetime.
+/// </param>
 /// <param name="logger">
 /// Logger for MFA operations.
 /// </param>
+[MfaFeatureRequired]
 [ApiController]
 [Route(ApiVersionConfig.VersionedRoutePrefix + "/auth/mfa")]
-public class MfaController(
+public sealed class MfaController(
 	IMessageBus messageBus,
 	IAuthCookieService cookieService,
-	ILogger<MfaController> logger) : AuthControllerBase(cookieService, logger)
+	IOptions<AuthSettings> authSettings,
+	IOptions<TrustedDeviceSettings> trustedDeviceSettings,
+	ILogger<MfaController> logger) : AuthControllerBase(cookieService, authSettings, logger)
 {
 	/// <summary>
 	/// Verifies an MFA code and completes authentication.
@@ -62,10 +69,15 @@ public class MfaController(
 		CancellationToken cancellationToken)
 	{
 		string? clientIp = GetClientIpAddress();
+		string? userAgent =
+			Request.Headers.UserAgent.ToString();
 
 		AuthResult result =
 			await messageBus.InvokeAsync<AuthResult>(
-				new VerifyMfaCommand(request, clientIp),
+				new VerifyMfaCommand(
+					request,
+					clientIp,
+					userAgent),
 				cancellationToken);
 
 		if (!result.Success)
@@ -76,7 +88,11 @@ public class MfaController(
 		ValidatedAuthResult validatedResult =
 			ValidateSuccessfulAuthResult(result);
 
-		CookieService.SetRefreshTokenCookie(validatedResult.RefreshToken);
+		CookieService.SetRefreshTokenCookie(
+			validatedResult.RefreshToken,
+			rememberMe: false);
+
+		SetTrustedDeviceCookieIfPresent(result);
 
 		return Ok(CreateAuthResponse(validatedResult));
 	}
@@ -120,16 +136,10 @@ public class MfaController(
 				"MFA code resend failed. Code: {ErrorCode}",
 				result.ErrorCode);
 
-			return BadRequest(
-				new ProblemDetails
-				{
-					Title = "MFA Resend Failed",
-					Detail = result.Error,
-					Status =
-						StatusCodes.Status400BadRequest,
-					Extensions =
-						{ ["errorCode"] = result.ErrorCode },
-				});
+			return HandleFailedResult(
+				"MFA Resend Failed",
+				result.Error,
+				errorCode: result.ErrorCode);
 		}
 
 		return NoContent();
@@ -139,7 +149,7 @@ public class MfaController(
 	/// Verifies a TOTP code during MFA authentication.
 	/// </summary>
 	/// <param name="request">
-	/// The verification request containing email and TOTP code.
+	/// The verification request containing challenge token and TOTP code.
 	/// </param>
 	/// <param name="cancellationToken">
 	/// Cancellation token.
@@ -151,6 +161,7 @@ public class MfaController(
 	/// <response code="400">Invalid or expired code.</response>
 	/// <response code="429">Too many verification attempts.</response>
 	[HttpPost("verify-totp")]
+	[TotpFeatureRequired]
 	[EnableRateLimiting(RateLimitPolicyConstants.MfaVerify)]
 	[ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
 	[ProducesResponseType(
@@ -164,10 +175,15 @@ public class MfaController(
 		CancellationToken cancellationToken)
 	{
 		string? clientIp = GetClientIpAddress();
+		string? userAgent =
+			Request.Headers.UserAgent.ToString();
 
 		AuthResult result =
 			await messageBus.InvokeAsync<AuthResult>(
-				new VerifyTotpCodeCommand(request, clientIp),
+				new VerifyTotpCodeCommand(
+					request,
+					clientIp,
+					userAgent),
 				cancellationToken);
 
 		if (!result.Success)
@@ -178,7 +194,11 @@ public class MfaController(
 		ValidatedAuthResult validatedResult =
 			ValidateSuccessfulAuthResult(result);
 
-		CookieService.SetRefreshTokenCookie(validatedResult.RefreshToken);
+		CookieService.SetRefreshTokenCookie(
+			validatedResult.RefreshToken,
+			rememberMe: false);
+
+		SetTrustedDeviceCookieIfPresent(result);
 
 		return Ok(CreateAuthResponse(validatedResult));
 	}
@@ -187,7 +207,7 @@ public class MfaController(
 	/// Verifies a backup code during MFA authentication.
 	/// </summary>
 	/// <param name="request">
-	/// The verification request containing email and backup code.
+	/// The verification request containing challenge token and backup code.
 	/// </param>
 	/// <param name="cancellationToken">
 	/// Cancellation token.
@@ -212,10 +232,15 @@ public class MfaController(
 		CancellationToken cancellationToken)
 	{
 		string? clientIp = GetClientIpAddress();
+		string? userAgent =
+			Request.Headers.UserAgent.ToString();
 
 		AuthResult result =
 			await messageBus.InvokeAsync<AuthResult>(
-				new VerifyBackupCodeCommand(request, clientIp),
+				new VerifyBackupCodeCommand(
+					request,
+					clientIp,
+					userAgent),
 				cancellationToken);
 
 		if (!result.Success)
@@ -226,7 +251,11 @@ public class MfaController(
 		ValidatedAuthResult validatedResult =
 			ValidateSuccessfulAuthResult(result);
 
-		CookieService.SetRefreshTokenCookie(validatedResult.RefreshToken);
+		CookieService.SetRefreshTokenCookie(
+			validatedResult.RefreshToken,
+			rememberMe: false);
+
+		SetTrustedDeviceCookieIfPresent(result);
 
 		return Ok(CreateAuthResponse(validatedResult));
 	}
@@ -244,6 +273,7 @@ public class MfaController(
 	/// <response code="400">TOTP already configured or other error.</response>
 	/// <response code="401">Unauthorized.</response>
 	[HttpPost("totp/setup")]
+	[TotpFeatureRequired]
 	[Authorize]
 	[ProducesResponseType(typeof(TotpSetupResponse), StatusCodes.Status200OK)]
 	[ProducesResponseType(
@@ -272,16 +302,10 @@ public class MfaController(
 				userId,
 				result.ErrorCode);
 
-			return BadRequest(
-				new ProblemDetails
-				{
-					Title = "TOTP Enrollment Failed",
-					Detail = result.Error,
-					Status =
-						StatusCodes.Status400BadRequest,
-					Extensions =
-						{ ["errorCode"] = result.ErrorCode },
-				});
+			return HandleFailedResult(
+				"TOTP Enrollment Failed",
+				result.Error,
+				errorCode: result.ErrorCode);
 		}
 
 		return Ok(
@@ -306,6 +330,7 @@ public class MfaController(
 	/// <response code="400">Invalid code or enrollment not initiated.</response>
 	/// <response code="401">Unauthorized.</response>
 	[HttpPost("totp/confirm")]
+	[TotpFeatureRequired]
 	[Authorize]
 	[ProducesResponseType(StatusCodes.Status204NoContent)]
 	[ProducesResponseType(
@@ -334,14 +359,7 @@ public class MfaController(
 				"TOTP enrollment confirmation failed for user {UserId}",
 				userId);
 
-			return BadRequest(
-				new ProblemDetails
-				{
-					Title = "TOTP Confirmation Failed",
-					Detail = result.Error,
-					Status =
-						StatusCodes.Status400BadRequest,
-				});
+			return HandleFailedResult("TOTP Confirmation Failed", result.Error);
 		}
 
 		return NoContent();
@@ -363,6 +381,7 @@ public class MfaController(
 	/// <response code="400">Invalid password or TOTP not configured.</response>
 	/// <response code="401">Unauthorized.</response>
 	[HttpPost("totp/disable")]
+	[TotpFeatureRequired]
 	[Authorize]
 	[ProducesResponseType(StatusCodes.Status204NoContent)]
 	[ProducesResponseType(
@@ -391,14 +410,7 @@ public class MfaController(
 				"TOTP disable failed for user {UserId}",
 				userId);
 
-			return BadRequest(
-				new ProblemDetails
-				{
-					Title = "TOTP Disable Failed",
-					Detail = result.Error,
-					Status =
-						StatusCodes.Status400BadRequest,
-				});
+			return HandleFailedResult("TOTP Disable Failed", result.Error);
 		}
 
 		return NoContent();
@@ -445,16 +457,10 @@ public class MfaController(
 				userId,
 				result.ErrorCode);
 
-			return BadRequest(
-				new ProblemDetails
-				{
-					Title = "Backup Code Generation Failed",
-					Detail = result.Error,
-					Status =
-						StatusCodes.Status400BadRequest,
-					Extensions =
-						{ ["errorCode"] = result.ErrorCode },
-				});
+			return HandleFailedResult(
+				"Backup Code Generation Failed",
+				result.Error,
+				errorCode: result.ErrorCode);
 		}
 
 		return Ok(result.Codes);
@@ -495,5 +501,21 @@ public class MfaController(
 				cancellationToken);
 
 		return Ok(remaining);
+	}
+
+	/// <summary>
+	/// Sets the trusted device cookie when the auth result contains a device token.
+	/// </summary>
+	/// <param name="result">
+	/// The auth result to check for a trusted device token.
+	/// </param>
+	private void SetTrustedDeviceCookieIfPresent(AuthResult result)
+	{
+		if (result.TrustedDeviceToken is not null)
+		{
+			CookieService.SetTrustedDeviceCookie(
+				result.TrustedDeviceToken,
+				trustedDeviceSettings.Value.TokenLifetimeDays);
+		}
 	}
 }

@@ -4,7 +4,6 @@
 
 using Microsoft.AspNetCore.Identity;
 using NSubstitute;
-using SeventySix.Identity;
 using SeventySix.Shared.Constants;
 using SeventySix.TestUtilities.Mocks;
 using SeventySix.TestUtilities.Testing;
@@ -19,7 +18,7 @@ namespace SeventySix.Identity.Tests.Queries.GetUserByEmail;
 /// <remarks>
 /// Tests follow 80/20 rule: focus on happy path and null handling.
 /// </remarks>
-public class GetUserByEmailQueryHandlerTests
+public sealed class GetUserByEmailQueryHandlerTests
 {
 	private readonly UserManager<ApplicationUser> UserManager;
 	private readonly IFusionCacheProvider CacheProvider;

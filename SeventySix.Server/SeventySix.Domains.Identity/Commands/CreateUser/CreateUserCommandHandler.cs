@@ -54,11 +54,11 @@ public static class CreateUserCommandHandler
 		UserManager<ApplicationUser> userManager,
 		IIdentityCacheService identityCache,
 		TimeProvider timeProvider,
-		ILogger logger,
+		ILogger<CreateUserRequest> logger,
 		CancellationToken cancellationToken)
 	{
-		DateTime now =
-			timeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset now =
+			timeProvider.GetUtcNow();
 
 		// Create user entity
 		ApplicationUser newUser =
@@ -131,18 +131,18 @@ public static class CreateUserCommandHandler
 					EmailTypeConstants.Welcome,
 					createdUser.Email,
 					createdUser.Id,
-					new Dictionary<string, string>
+					new()
 					{
 						["username"] = createdUser.Username,
 						["resetToken"] = combinedToken
 					}),
 				cancellationToken);
 		}
-		catch (Exception ex)
+		catch (Exception exception)
 		{
 			// Log but don't fail - user was created, email can be resent manually
 			logger.LogWarning(
-				ex,
+				exception,
 				"Failed to enqueue welcome email for user {Email} (ID: {UserId}). User was created successfully.",
 				createdUser.Email,
 				createdUser.Id);

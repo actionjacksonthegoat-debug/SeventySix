@@ -12,7 +12,7 @@ public record UpdateUserRequest
 	/// <summary>
 	/// Gets the user ID to update.
 	/// </summary>
-	public required int Id { get; init; }
+	public required long Id { get; init; }
 
 	/// <summary>
 	/// Gets the username (unique, 3-50 characters).

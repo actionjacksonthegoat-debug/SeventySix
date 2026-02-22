@@ -4,6 +4,7 @@
 
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
+using SeventySix.Shared.Exceptions;
 
 namespace SeventySix.Identity;
 
@@ -69,8 +70,8 @@ public sealed class RegistrationService(
 		string createdBy,
 		string roleName)
 	{
-		DateTime now =
-			timeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset now =
+			timeProvider.GetUtcNow();
 
 		ApplicationUser newUser =
 			new()
@@ -91,12 +92,12 @@ public sealed class RegistrationService(
 		if (!createResult.Succeeded)
 		{
 			string errors = createResult.ToErrorString();
-			logger.LogError(
+			logger.LogWarning(
 				"Failed to create user '{Username}': {Errors}",
 				username,
 				errors);
-			throw new InvalidOperationException(
-				$"Failed to create user: {errors}");
+			throw new BusinessRuleViolationException(
+				"User registration could not be completed.");
 		}
 
 		IdentityResult roleResult =
@@ -107,13 +108,13 @@ public sealed class RegistrationService(
 		if (!roleResult.Succeeded)
 		{
 			string errors = roleResult.ToErrorString();
-			logger.LogError(
+			logger.LogWarning(
 				"Failed to assign role '{RoleName}' to user '{Username}': {Errors}",
 				roleName,
 				username,
 				errors);
-			throw new InvalidOperationException(
-				$"Failed to assign role: {errors}");
+			throw new BusinessRuleViolationException(
+				"User registration could not be completed.");
 		}
 
 		return newUser;

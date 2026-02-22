@@ -28,6 +28,46 @@ if (typeof window !== "undefined")
 	// Mock window.open to prevent navigation during tests
 	window.open =
 		vi.fn();
+
+	// Always override matchMedia to guarantee consistent behavior across all
+	// environments. happy-dom on Linux CI may expose a native matchMedia but
+	// return mql objects missing addListener/removeListener, which Angular CDK
+	// BreakpointObserver requires (deprecated API still used as a fallback).
+	Object.defineProperty(
+		window,
+		"matchMedia",
+		{
+			writable: true,
+			configurable: true,
+			value: vi
+				.fn()
+				.mockImplementation(
+					(query: string) => ({
+						matches: false,
+						media: query,
+						onchange: null,
+						// Required by Angular CDK BreakpointObserver (deprecated fallback path)
+						addListener: vi.fn(),
+						removeListener: vi.fn(),
+						addEventListener: vi.fn(),
+						removeEventListener: vi.fn(),
+						dispatchEvent: vi.fn()
+					}))
+		});
+
+	// Always override ResizeObserver — happy-dom's implementation on Linux CI
+	// may lack 'unobserve', causing Angular CDK ContentObserver to throw
+	// an UnsubscriptionError during component cleanup.
+	window.ResizeObserver =
+		class MockResizeObserver
+		{
+			observe: () => void =
+				vi.fn();
+			unobserve: () => void =
+				vi.fn();
+			disconnect: () => void =
+				vi.fn();
+		};
 }
 
 setupTestBed(

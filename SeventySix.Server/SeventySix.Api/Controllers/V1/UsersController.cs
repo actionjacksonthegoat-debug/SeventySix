@@ -10,7 +10,6 @@ using SeventySix.Api.Extensions;
 using SeventySix.ElectronicNotifications.Emails;
 using SeventySix.Identity;
 using SeventySix.Identity.Constants;
-using SeventySix.Shared.Constants;
 using SeventySix.Shared.POCOs;
 using Wolverine;
 
@@ -46,7 +45,7 @@ namespace SeventySix.Api.Controllers;
 /// <exception cref="ArgumentNullException">Thrown when messageBus or logger is null.</exception>
 [ApiController]
 [Route(ApiVersionConfig.VersionedRoutePrefix + "/users")]
-public class UsersController(
+public sealed class UsersController(
 	IMessageBus messageBus,
 	ILogger<UsersController> logger,
 	IOutputCacheStore outputCacheStore) : ControllerBase

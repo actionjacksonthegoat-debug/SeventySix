@@ -22,7 +22,7 @@ namespace SeventySix.Api.Tests.Infrastructure.Services;
 /// All tests share a single PostgreSQL instance to match production behavior.
 /// </summary>
 [Collection(CollectionNames.ApiTrackingPostgreSql)]
-public class RateLimitingRepositoryTests : DataPostgreSqlTestBase
+public sealed class RateLimitingRepositoryTests : DataPostgreSqlTestBase
 {
 	private readonly ILogger<RateLimitingService> LoggerMock;
 	private readonly ILogger<ThirdPartyApiRequestRepository> RepoLoggerMock;
@@ -361,7 +361,11 @@ public class RateLimitingRepositoryTests : DataPostgreSqlTestBase
 			[
 			.. Enumerable
 				.Range(0, 10)
-				.Select(i => ExecuteConcurrentIncrementAsync(i, apiName)),
+				.Select(
+					index =>
+						ExecuteConcurrentIncrementAsync(
+							index,
+							apiName)),
 		];
 
 		(bool Success, bool Result, int Index, string? Error)[] results =
@@ -379,7 +383,7 @@ public class RateLimitingRepositoryTests : DataPostgreSqlTestBase
 			int count =
 				await verifyService.GetRequestCountAsync(apiName);
 			int successCount =
-				results.Count(r => r.Success && r.Result);
+				results.Count(result => result.Success && result.Result);
 			count.ShouldBe(
 				10,
 				$"all concurrent increments should be persisted. Success: {successCount}");

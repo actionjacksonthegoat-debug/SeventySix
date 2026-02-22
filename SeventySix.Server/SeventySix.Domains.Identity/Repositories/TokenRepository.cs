@@ -28,7 +28,7 @@ internal class TokenRepository(IdentityDbContext context) : ITokenRepository
 	/// <inheritdoc/>
 	public async Task<int> GetActiveSessionCountAsync(
 		long userId,
-		DateTime currentTime,
+		DateTimeOffset currentTime,
 		CancellationToken cancellationToken = default) =>
 		await context
 			.RefreshTokens
@@ -50,7 +50,7 @@ internal class TokenRepository(IdentityDbContext context) : ITokenRepository
 	/// <inheritdoc/>
 	public async Task RevokeAsync(
 		RefreshToken token,
-		DateTime revokedAt,
+		DateTimeOffset revokedAt,
 		CancellationToken cancellationToken = default) =>
 		await context
 			.RefreshTokens
@@ -69,7 +69,7 @@ internal class TokenRepository(IdentityDbContext context) : ITokenRepository
 	/// <inheritdoc/>
 	public async Task<int> RevokeAllUserTokensAsync(
 		long userId,
-		DateTime revokedAt,
+		DateTimeOffset revokedAt,
 		CancellationToken cancellationToken = default) =>
 		await context
 			.RefreshTokens
@@ -89,7 +89,7 @@ internal class TokenRepository(IdentityDbContext context) : ITokenRepository
 	/// <inheritdoc/>
 	public async Task RevokeFamilyAsync(
 		Guid familyId,
-		DateTime revokedAt,
+		DateTimeOffset revokedAt,
 		CancellationToken cancellationToken = default) =>
 		await context
 			.RefreshTokens
@@ -109,8 +109,8 @@ internal class TokenRepository(IdentityDbContext context) : ITokenRepository
 	/// <inheritdoc/>
 	public async Task RevokeOldestActiveTokenAsync(
 		long userId,
-		DateTime currentTime,
-		DateTime revokedAt,
+		DateTimeOffset currentTime,
+		DateTimeOffset revokedAt,
 		CancellationToken cancellationToken = default) =>
 		await context
 			.RefreshTokens
@@ -133,7 +133,7 @@ internal class TokenRepository(IdentityDbContext context) : ITokenRepository
 	/// <inheritdoc/>
 	public async Task<long?> ValidateTokenAsync(
 		string tokenHash,
-		DateTime currentTime,
+		DateTimeOffset currentTime,
 		CancellationToken cancellationToken = default)
 	{
 		RefreshToken? token =
@@ -151,7 +151,7 @@ internal class TokenRepository(IdentityDbContext context) : ITokenRepository
 	/// <inheritdoc/>
 	public async Task<bool> RevokeByHashAsync(
 		string tokenHash,
-		DateTime revokedAt,
+		DateTimeOffset revokedAt,
 		CancellationToken cancellationToken = default)
 	{
 		int rowsAffected =

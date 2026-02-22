@@ -269,7 +269,7 @@
 				</div>
 				<div class="info-item">
 					<span class="info-label">Timestamp:</span>
-					<span class="info-value">{{ log().createDate.toLocaleString() }}</span>
+					<span class="info-value">{{ formattedTimestamp() }}</span>
 				</div>
 				@if (log().machineName) {
 					<div class="info-item">

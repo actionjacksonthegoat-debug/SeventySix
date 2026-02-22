@@ -8,7 +8,7 @@ namespace SeventySix.Shared.POCOs;
 /// Result pattern for operations without a return value.
 /// Use when operation succeeds or fails without returning data.
 /// </summary>
-public class Result
+public sealed class Result
 {
 	/// <summary>
 	/// Indicates whether the operation completed successfully.
@@ -56,7 +56,7 @@ public class Result
 /// <typeparam name="T">
 /// The type of value returned on success.
 /// </typeparam>
-public class Result<T>
+public sealed class Result<T>
 {
 	/// <summary>
 	/// Indicates whether the operation completed successfully.

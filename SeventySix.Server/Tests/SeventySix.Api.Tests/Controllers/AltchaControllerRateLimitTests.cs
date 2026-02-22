@@ -3,7 +3,6 @@
 // </copyright>
 
 using System.Net;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using SeventySix.Api.Tests.Fixtures;
@@ -24,7 +23,7 @@ namespace SeventySix.Api.Tests.Controllers;
 /// Rate limit is configured via ConfigureAppConfiguration: AltchaChallenge=10/min.
 /// </remarks>
 [Collection(CollectionNames.IdentityAuthPostgreSql)]
-public class AltchaControllerRateLimitTests(IdentityAuthApiPostgreSqlFixture fixture)
+public sealed class AltchaControllerRateLimitTests(IdentityAuthApiPostgreSqlFixture fixture)
 	: ApiPostgreSqlTestBase<Program>(fixture),
 		IAsyncLifetime
 {

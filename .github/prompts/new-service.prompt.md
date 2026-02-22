@@ -7,11 +7,18 @@ description: Generate .NET service with repository following SeventySix patterns
 
 Create a new .NET service with repository following these requirements:
 
+## MCP Tools
+
+- Use **context7** to fetch up-to-date .NET and EF Core API docs before generating code
+- Use **postgresql** MCP to inspect existing schema when creating repository queries
+
 ## Domain Selection (REQUIRED)
 
 Ask user which domain: Identity, Logging, ApiTracking, ElectronicNotifications
 
 ## File Locations
+
+> **Note**: Identity files live in `SeventySix.Domains.Identity/` (separate project). All other domains use `SeventySix.Domains/{Domain}/`.
 
 | Type       | Path                                           | Namespace             |
 | ---------- | ---------------------------------------------- | --------------------- |
@@ -99,7 +106,7 @@ namespace SeventySix.{{Domain}};
 public record {{Name}}Dto(
     int Id,
     string Name,
-    DateTime CreatedAt);
+    DateTimeOffset CreatedAt);
 
 public record Create{{Name}}Request(
     string Name,

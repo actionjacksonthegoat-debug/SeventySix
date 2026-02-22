@@ -43,4 +43,4 @@ public partial record UserProfileDto(
 	IReadOnlyList<string> Roles,
 	bool HasPassword,
 	IReadOnlyList<string> LinkedProviders,
-	DateTime? LastLoginAt) : ICacheable;
+	DateTimeOffset? LastLoginAt) : ICacheable;

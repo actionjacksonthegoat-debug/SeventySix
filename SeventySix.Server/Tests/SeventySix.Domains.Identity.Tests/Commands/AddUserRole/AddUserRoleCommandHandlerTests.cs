@@ -4,8 +4,8 @@
 
 using Microsoft.AspNetCore.Identity;
 using NSubstitute;
-using SeventySix.Identity;
 using SeventySix.Identity.Constants;
+using SeventySix.Shared.Interfaces;
 using SeventySix.Shared.POCOs;
 using SeventySix.TestUtilities.Mocks;
 using Shouldly;
@@ -19,11 +19,12 @@ namespace SeventySix.Identity.Tests.Commands.AddUserRole;
 /// Tests follow 80/20 rule: focus on happy path and critical validation paths.
 /// Security-critical: Direct role assignment must be thoroughly tested.
 /// </remarks>
-public class AddUserRoleCommandHandlerTests
+public sealed class AddUserRoleCommandHandlerTests
 {
 	private readonly UserManager<ApplicationUser> UserManager;
 	private readonly IPermissionRequestRepository PermissionRequestRepository;
 	private readonly IIdentityCacheService IdentityCache;
+	private readonly ITransactionManager TransactionManager;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="AddUserRoleCommandHandlerTests"/> class.
@@ -36,6 +37,20 @@ public class AddUserRoleCommandHandlerTests
 			Substitute.For<IPermissionRequestRepository>();
 		IdentityCache =
 			Substitute.For<IIdentityCacheService>();
+		TransactionManager =
+			Substitute.For<ITransactionManager>();
+		TransactionManager
+			.ExecuteInTransactionAsync(
+				Arg.Any<Func<CancellationToken, Task<Result>>>(),
+				Arg.Any<int>(),
+				Arg.Any<CancellationToken>())
+			.Returns(
+				call =>
+				{
+					Func<CancellationToken, Task<Result>> op =
+						call.ArgAt<Func<CancellationToken, Task<Result>>>(0);
+					return op(CancellationToken.None);
+				});
 	}
 
 	/// <summary>
@@ -73,6 +88,7 @@ public class AddUserRoleCommandHandlerTests
 				UserManager,
 				PermissionRequestRepository,
 				IdentityCache,
+				TransactionManager,
 				CancellationToken.None);
 
 		// Assert
@@ -111,6 +127,7 @@ public class AddUserRoleCommandHandlerTests
 					UserManager,
 					PermissionRequestRepository,
 					IdentityCache,
+					TransactionManager,
 					CancellationToken.None));
 
 		exception.Message.ShouldContain("Invalid role");
@@ -142,6 +159,7 @@ public class AddUserRoleCommandHandlerTests
 					UserManager,
 					PermissionRequestRepository,
 					IdentityCache,
+					TransactionManager,
 					CancellationToken.None));
 
 		exception.EntityId.ShouldBe(NonExistentUserId);
@@ -178,6 +196,7 @@ public class AddUserRoleCommandHandlerTests
 				UserManager,
 				PermissionRequestRepository,
 				IdentityCache,
+				TransactionManager,
 				CancellationToken.None);
 
 		// Assert
@@ -233,6 +252,7 @@ public class AddUserRoleCommandHandlerTests
 				UserManager,
 				PermissionRequestRepository,
 				IdentityCache,
+				TransactionManager,
 				CancellationToken.None);
 
 		// Assert

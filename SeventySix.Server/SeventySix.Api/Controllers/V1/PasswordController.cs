@@ -5,6 +5,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Options;
+using SeventySix.Api.Attributes;
 using SeventySix.Api.Configuration;
 using SeventySix.Api.Extensions;
 using SeventySix.Api.Infrastructure;
@@ -29,10 +31,11 @@ namespace SeventySix.Api.Controllers;
 /// </param>
 [ApiController]
 [Route(ApiVersionConfig.VersionedRoutePrefix + "/auth/password")]
-public class PasswordController(
+public sealed class PasswordController(
 	IMessageBus messageBus,
 	IAuthCookieService cookieService,
-	ILogger<PasswordController> logger) : AuthControllerBase(cookieService, logger)
+	IOptions<AuthSettings> authSettings,
+	ILogger<PasswordController> logger) : AuthControllerBase(cookieService, authSettings, logger)
 {
 	/// <summary>
 	/// Changes the current user's password.
@@ -51,6 +54,7 @@ public class PasswordController(
 	/// <response code="401">Not authenticated.</response>
 	[HttpPost("change")]
 	[Authorize]
+	[AllowWithPendingPasswordChange]
 	[ProducesResponseType(StatusCodes.Status204NoContent)]
 	[ProducesResponseType(
 		typeof(ProblemDetails),
@@ -166,7 +170,9 @@ public class PasswordController(
 			return HandleFailedAuthResult(result, "Set Password");
 		}
 
-		CookieService.SetRefreshTokenCookie(result.RefreshToken!);
+		CookieService.SetRefreshTokenCookie(
+			result.RefreshToken!,
+			rememberMe: false);
 
 		return Ok(
 			new AuthResponse(

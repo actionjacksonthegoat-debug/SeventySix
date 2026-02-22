@@ -4,6 +4,7 @@
 
 import { Page, Locator } from "@playwright/test";
 import { SELECTORS } from "../selectors.constant";
+import { solveAltchaChallenge } from "../helpers/altcha.helper";
 
 /**
  * Auth page helper for login form interactions.
@@ -21,6 +22,7 @@ export class AuthPageHelper
 	readonly githubButton: Locator;
 	readonly forgotPasswordLink: Locator;
 	readonly signInLink: Locator;
+	readonly rememberMeCheckbox: Locator;
 
 	/**
 	 * Creates auth page helper.
@@ -39,6 +41,7 @@ export class AuthPageHelper
 		this.githubButton = page.locator(SELECTORS.auth.githubButton);
 		this.forgotPasswordLink = page.locator(SELECTORS.auth.forgotPasswordLink);
 		this.signInLink = page.locator(SELECTORS.auth.signInLink);
+		this.rememberMeCheckbox = page.locator(SELECTORS.form.rememberMeCheckbox);
 	}
 
 	/**
@@ -54,6 +57,7 @@ export class AuthPageHelper
 	{
 		await this.usernameInput.fill(username);
 		await this.passwordInput.fill(password);
+		await solveAltchaChallenge(this.page);
 		await this.submitButton.click();
 	}
 
@@ -65,6 +69,7 @@ export class AuthPageHelper
 	async submitEmail(email: string): Promise<void>
 	{
 		await this.emailInput.fill(email);
+		await solveAltchaChallenge(this.page);
 		await this.submitButton.click();
 	}
 
@@ -89,5 +94,13 @@ export class AuthPageHelper
 	{
 		await this.usernameInput.fill(username);
 		await this.passwordInput.fill(password);
+	}
+
+	/**
+	 * Checks the Remember Me checkbox.
+	 */
+	async checkRememberMe(): Promise<void>
+	{
+		await this.rememberMeCheckbox.click();
 	}
 }

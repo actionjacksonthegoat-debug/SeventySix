@@ -1,0 +1,8 @@
+node_modules/
+
+# Generated reports
+reports/*.html
+
+# Raw results
+results/*.json
+results/*.csv

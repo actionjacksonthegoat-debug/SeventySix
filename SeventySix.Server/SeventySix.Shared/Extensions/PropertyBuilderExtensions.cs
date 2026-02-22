@@ -22,8 +22,8 @@ public static class PropertyBuilderExtensions
 	/// <returns>
 	/// The property builder for chaining.
 	/// </returns>
-	public static PropertyBuilder<DateTime> ConfigureAsCreateDate(
-		this PropertyBuilder<DateTime> builder) =>
+	public static PropertyBuilder<DateTimeOffset> ConfigureAsCreateDate(
+		this PropertyBuilder<DateTimeOffset> builder) =>
 		builder
 			.IsRequired()
 			.HasDefaultValueSql("NOW()")
@@ -38,8 +38,8 @@ public static class PropertyBuilderExtensions
 	/// <returns>
 	/// The property builder for chaining.
 	/// </returns>
-	public static PropertyBuilder<DateTime?> ConfigureAsNullableTimestamp(
-		this PropertyBuilder<DateTime?> builder) =>
+	public static PropertyBuilder<DateTimeOffset?> ConfigureAsNullableTimestamp(
+		this PropertyBuilder<DateTimeOffset?> builder) =>
 		builder
 			.IsRequired(false)
 			.HasColumnType("timestamp with time zone");

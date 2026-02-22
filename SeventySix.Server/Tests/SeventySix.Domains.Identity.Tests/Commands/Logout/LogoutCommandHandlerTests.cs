@@ -3,7 +3,6 @@
 // </copyright>
 
 using NSubstitute;
-using SeventySix.Identity;
 using SeventySix.Shared.POCOs;
 using Shouldly;
 
@@ -16,7 +15,7 @@ namespace SeventySix.Identity.Tests.Commands.Logout;
 /// Tests follow 80/20 rule: focus on happy path and failure scenarios.
 /// Security-critical: Token revocation must be verified.
 /// </remarks>
-public class LogoutCommandHandlerTests
+public sealed class LogoutCommandHandlerTests
 {
 	private readonly ITokenService TokenService;
 	private readonly ISecurityAuditService SecurityAuditService;

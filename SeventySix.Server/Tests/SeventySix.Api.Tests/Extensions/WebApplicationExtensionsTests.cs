@@ -4,7 +4,7 @@ using static SeventySix.Api.Extensions.WebApplicationExtensions;
 
 namespace SeventySix.Api.Tests.Extensions;
 
-public class WebApplicationExtensionsTests
+public sealed class WebApplicationExtensionsTests
 {
 	[Fact]
 	public void ParsePostgresConnectionString_ExtractsHostAndPort()

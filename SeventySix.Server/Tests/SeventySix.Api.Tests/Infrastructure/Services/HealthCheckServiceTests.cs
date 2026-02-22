@@ -14,7 +14,7 @@ namespace SeventySix.Api.Tests.Infrastructure.Services;
 /// <summary>
 /// Unit tests for HealthCheckService.
 /// </summary>
-public class HealthCheckServiceTests
+public sealed class HealthCheckServiceTests
 {
 	private readonly IMetricsService MetricsService;
 	private readonly IDatabaseHealthCheck IdentityHealthCheck;
@@ -83,8 +83,8 @@ public class HealthCheckServiceTests
 		result.Database.ShouldNotBeNull();
 		result.ErrorQueue.ShouldNotBeNull();
 		result.System.ShouldNotBeNull();
-		result.CheckedAt.ShouldBeLessThanOrEqualTo(timeProvider.GetUtcNow().UtcDateTime);
-		result.CheckedAt.ShouldBeGreaterThan(timeProvider.GetUtcNow().UtcDateTime.AddSeconds(-5));
+		result.CheckedAt.ShouldBeLessThanOrEqualTo(timeProvider.GetUtcNow());
+		result.CheckedAt.ShouldBeGreaterThan(timeProvider.GetUtcNow().AddSeconds(-5));
 	}
 
 	[Fact]

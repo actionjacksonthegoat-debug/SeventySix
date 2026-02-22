@@ -2,21 +2,18 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using NSubstitute;
-using SeventySix.Identity;
-using SeventySix.Identity.Commands.CompleteRegistration;
 using SeventySix.Identity.Constants;
+using SeventySix.Shared.Interfaces;
 using SeventySix.Shared.Utilities;
 using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;
-using SeventySix.TestUtilities.TestHelpers;
 using Shouldly;
 
 namespace SeventySix.Identity.Tests.Commands.CompleteRegistration;
@@ -25,9 +22,12 @@ namespace SeventySix.Identity.Tests.Commands.CompleteRegistration;
 /// Tests for CompleteRegistrationCommandHandler using Identity's email confirmation token system.
 /// </summary>
 [Collection(CollectionNames.IdentityPostgreSql)]
-public class CompleteRegistrationCommandHandlerTests(
+public sealed class CompleteRegistrationCommandHandlerTests(
 	IdentityPostgreSqlFixture fixture) : DataPostgreSqlTestBase(fixture)
 {
+	private readonly ITransactionManager TransactionManager =
+		CreateVoidTransactionManagerMock();
+
 	[Fact]
 	public async Task HandleAsync_ShouldFail_WhenUserNotFoundAsync()
 	{
@@ -102,7 +102,8 @@ public class CompleteRegistrationCommandHandlerTests(
 			.GenerateAccessToken(
 				Arg.Any<long>(),
 				Arg.Any<string>(),
-				Arg.Any<IList<string>>())
+				Arg.Any<IList<string>>(),
+				Arg.Any<bool>())
 			.Returns("access-token");
 		tokenService
 			.GenerateRefreshTokenAsync(
@@ -171,6 +172,7 @@ public class CompleteRegistrationCommandHandlerTests(
 				breachCheck,
 				timeProvider,
 				logger,
+				TransactionManager,
 				CancellationToken.None);
 
 		result.Success.ShouldBeTrue();
@@ -265,6 +267,7 @@ public class CompleteRegistrationCommandHandlerTests(
 				breachCheck,
 				timeProvider,
 				logger,
+				TransactionManager,
 				CancellationToken.None);
 
 		result.Success.ShouldBeFalse();
@@ -294,6 +297,138 @@ public class CompleteRegistrationCommandHandlerTests(
 	}
 
 	/// <summary>
+	/// Verifies that the DB constraint catches duplicate usernames during registration completion.
+	/// Covers the race condition where another user takes the username between initiation and completion.
+	/// </summary>
+	[Fact]
+	public async Task HandleAsync_DuplicateUsername_ReturnsFailedAuthResultAsync()
+	{
+		// Arrange
+		await using IdentityDbContext context =
+			CreateIdentityDbContext();
+		UserManager<ApplicationUser> userManager =
+			CreateUserManager(context);
+		TimeProvider timeProvider =
+			TestTimeProviderBuilder.CreateDefault();
+
+		await EnsureRoleExistsAsync(
+			context,
+			RoleConstants.User,
+			timeProvider);
+
+		string duplicateUsername =
+			$"taken_{Guid.NewGuid():N}"[..16];
+
+		ApplicationUser existingUser =
+			new UserBuilder(timeProvider)
+				.WithUsername(duplicateUsername)
+				.WithEmail($"existing+{Guid.NewGuid():N}@example.com")
+				.Build();
+
+		IdentityResult createResult =
+			await userManager.CreateAsync(existingUser, "P@ssword123!");
+		createResult.Succeeded.ShouldBeTrue();
+
+		ApplicationUser tempUser =
+			await CreateTemporaryUserWithUserManagerAsync(
+				userManager,
+				timeProvider);
+
+		string emailToken =
+			await userManager.GenerateEmailConfirmationTokenAsync(tempUser);
+		string combinedToken =
+			RegistrationTokenService.Encode(
+				tempUser.Email!,
+				emailToken);
+
+		(AuthenticationService authService, BreachCheckDependencies breachCheck) =
+			CreateAuthDependencies(userManager, timeProvider);
+
+		CompleteRegistrationCommand command =
+			new(
+				new CompleteRegistrationRequest(
+					combinedToken,
+					duplicateUsername,
+					"P@ssword123!"),
+				ClientIp: null);
+
+		// Act
+		AuthResult result =
+			await CompleteRegistrationCommandHandler.HandleAsync(
+				command,
+				userManager,
+				authService,
+				breachCheck,
+				timeProvider,
+				NullLogger<CompleteRegistrationCommand>.Instance,
+				TransactionManager,
+				CancellationToken.None);
+
+		// Assert — Identity validates username uniqueness before DB constraint
+		result.Success.ShouldBeFalse();
+	}
+
+	/// <summary>
+	/// Creates mock authentication and breach check dependencies for handler tests.
+	/// </summary>
+	private static (AuthenticationService AuthService, BreachCheckDependencies BreachCheck)
+		CreateAuthDependencies(
+			UserManager<ApplicationUser> userManager,
+			TimeProvider timeProvider)
+	{
+		ITokenService tokenService =
+			Substitute.For<ITokenService>();
+		tokenService
+			.GenerateAccessToken(
+				Arg.Any<long>(),
+				Arg.Any<string>(),
+				Arg.Any<IList<string>>(),
+				Arg.Any<bool>())
+			.Returns("access-token");
+		tokenService
+			.GenerateRefreshTokenAsync(
+				Arg.Any<long>(),
+				Arg.Any<string?>(),
+				Arg.Any<bool>(),
+				Arg.Any<CancellationToken>())
+			.Returns(Task.FromResult("refresh-token"));
+
+		JwtSettings jwtSettings =
+			new() { AccessTokenExpirationMinutes = 60 };
+
+		AuthenticationService authService =
+			new(
+				Substitute.For<IAuthRepository>(),
+				tokenService,
+				Options.Create(jwtSettings),
+				timeProvider,
+				userManager);
+
+		IBreachedPasswordService breachedPasswordService =
+			Substitute.For<IBreachedPasswordService>();
+		breachedPasswordService
+			.CheckPasswordAsync(
+				Arg.Any<string>(),
+				Arg.Any<CancellationToken>())
+			.Returns(BreachCheckResult.NotBreached());
+
+		BreachCheckDependencies breachCheck =
+			new(
+				breachedPasswordService,
+				Options.Create(
+					new AuthSettings
+					{
+						BreachedPassword = new BreachedPasswordSettings
+						{
+							Enabled = true,
+							BlockBreachedPasswords = true,
+						},
+					}));
+
+		return (authService, breachCheck);
+	}
+
+	/// <summary>
 	/// Creates a temporary user using UserManager for proper Identity setup.
 	/// The user is created without a password and with EmailConfirmed=false as used in the registration flow.
 	/// </summary>
@@ -302,8 +437,8 @@ public class CompleteRegistrationCommandHandlerTests(
 		TimeProvider timeProvider,
 		string? email = null)
 	{
-		DateTime now =
-			timeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset now =
+			timeProvider.GetUtcNow();
 
 		string testId =
 			Guid.NewGuid().ToString("N")[..8];
@@ -374,9 +509,28 @@ public class CompleteRegistrationCommandHandlerTests(
 					Name = roleName,
 					NormalizedName = roleName.ToUpperInvariant(),
 					CreateDate =
-						timeProvider.GetUtcNow().UtcDateTime,
+						timeProvider.GetUtcNow(),
 				});
 			await context.SaveChangesAsync();
 		}
+	}
+
+	private static ITransactionManager CreateVoidTransactionManagerMock()
+	{
+		ITransactionManager mock =
+			Substitute.For<ITransactionManager>();
+		mock
+			.ExecuteInTransactionAsync(
+				Arg.Any<Func<CancellationToken, Task>>(),
+				Arg.Any<int>(),
+				Arg.Any<CancellationToken>())
+			.Returns(
+				call =>
+				{
+					Func<CancellationToken, Task> operation =
+						call.ArgAt<Func<CancellationToken, Task>>(0);
+					return operation(CancellationToken.None);
+				});
+		return mock;
 	}
 }

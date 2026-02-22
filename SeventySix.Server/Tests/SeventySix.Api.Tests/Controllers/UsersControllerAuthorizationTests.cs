@@ -16,7 +16,7 @@ namespace SeventySix.Api.Tests.Controllers;
 /// Tests that admin endpoints require proper authentication and admin role.
 /// </summary>
 [Collection(CollectionNames.IdentityUsersPostgreSql)]
-public class UsersControllerAuthorizationTests(
+public sealed class UsersControllerAuthorizationTests(
 	IdentityUsersApiPostgreSqlFixture fixture) : ApiPostgreSqlTestBase<Program>(fixture), IAsyncLifetime
 {
 	private const string Endpoint = ApiEndpoints.Users.Base;

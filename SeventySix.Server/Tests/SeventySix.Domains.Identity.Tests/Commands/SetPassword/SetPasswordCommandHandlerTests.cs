@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
-using SeventySix.Identity;
+using SeventySix.Shared.Interfaces;
 using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.Mocks;
 using Shouldly;
@@ -20,7 +20,7 @@ namespace SeventySix.Identity.Tests.Commands.SetPassword;
 /// Focuses on token validation and password reset flow.
 /// Uses ASP.NET Core Identity's token-based password reset.
 /// </remarks>
-public class SetPasswordCommandHandlerTests
+public sealed class SetPasswordCommandHandlerTests
 {
 	private readonly UserManager<ApplicationUser> UserManager;
 	private readonly ITokenRepository TokenRepository;
@@ -29,6 +29,7 @@ public class SetPasswordCommandHandlerTests
 	private readonly BreachCheckDependencies BreachCheck;
 	private readonly FakeTimeProvider TimeProvider;
 	private readonly ILogger<SetPasswordCommand> Logger;
+	private readonly ITransactionManager TransactionManager;
 
 	public SetPasswordCommandHandlerTests()
 	{
@@ -70,6 +71,20 @@ public class SetPasswordCommandHandlerTests
 			Substitute.For<ILogger<SetPasswordCommand>>();
 		TimeProvider =
 			TestDates.CreateDefaultTimeProvider();
+		TransactionManager =
+			Substitute.For<ITransactionManager>();
+		TransactionManager
+			.ExecuteInTransactionAsync(
+				Arg.Any<Func<CancellationToken, Task>>(),
+				Arg.Any<int>(),
+				Arg.Any<CancellationToken>())
+			.Returns(
+				call =>
+				{
+					Func<CancellationToken, Task> op =
+						call.ArgAt<Func<CancellationToken, Task>>(0);
+					return op(CancellationToken.None);
+				});
 	}
 
 	[Fact]
@@ -96,6 +111,7 @@ public class SetPasswordCommandHandlerTests
 					BreachCheck,
 					TimeProvider,
 					Logger,
+					TransactionManager,
 					CancellationToken.None));
 
 		exception.ParamName.ShouldBe("Token");
@@ -126,6 +142,7 @@ public class SetPasswordCommandHandlerTests
 					BreachCheck,
 					TimeProvider,
 					Logger,
+					TransactionManager,
 					CancellationToken.None));
 
 		exception.ParamName.ShouldBe("Token");
@@ -157,6 +174,7 @@ public class SetPasswordCommandHandlerTests
 					BreachCheck,
 					TimeProvider,
 					Logger,
+					TransactionManager,
 					CancellationToken.None));
 
 		exception.Message.ShouldContain("not found or inactive");
@@ -197,6 +215,7 @@ public class SetPasswordCommandHandlerTests
 					BreachCheck,
 					TimeProvider,
 					Logger,
+					TransactionManager,
 					CancellationToken.None));
 
 		exception.Message.ShouldContain("not found or inactive");
@@ -224,8 +243,8 @@ public class SetPasswordCommandHandlerTests
 		SetPasswordCommand command =
 			new(request, "192.168.1.1");
 
-		DateTime now =
-			TimeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset now =
+			TimeProvider.GetUtcNow();
 
 		UserManager
 			.FindByIdAsync("456")
@@ -236,6 +255,10 @@ public class SetPasswordCommandHandlerTests
 				user,
 				"valid-reset-token",
 				"NewSecurePassword123!")
+			.Returns(IdentityResult.Success);
+
+		UserManager
+			.UpdateAsync(user)
 			.Returns(IdentityResult.Success);
 
 		AuthResult expectedResult =
@@ -267,6 +290,7 @@ public class SetPasswordCommandHandlerTests
 				BreachCheck,
 				TimeProvider,
 				Logger,
+				TransactionManager,
 				CancellationToken.None);
 
 		// Assert
@@ -283,7 +307,8 @@ public class SetPasswordCommandHandlerTests
 
 		await UserManager
 			.Received(1)
-			.UpdateAsync(Arg.Is<ApplicationUser>(u => u.RequiresPasswordChange == false));
+			.UpdateAsync(Arg.Is<ApplicationUser>(
+				user => user.RequiresPasswordChange == false));
 	}
 
 	[Fact]
@@ -331,6 +356,7 @@ public class SetPasswordCommandHandlerTests
 					BreachCheck,
 					TimeProvider,
 					Logger,
+					TransactionManager,
 					CancellationToken.None));
 
 		exception.ParamName.ShouldBe("Token");

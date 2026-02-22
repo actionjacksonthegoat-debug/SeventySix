@@ -61,14 +61,7 @@ describe("BreadcrumbComponent",
 									},
 									{
 										path: "developer",
-										component: TestComponent,
-										children: [
-											{
-												path: "architecture",
-												component: TestComponent,
-												data: { breadcrumb: "Architecture Guide" }
-											}
-										]
+										component: TestComponent
 									}
 								]))
 						.build(BreadcrumbComponent);
@@ -228,7 +221,7 @@ describe("BreadcrumbComponent",
 			{
 				// Ensure login route exists in router config
 				await router.navigateByUrl(
-					"/login?returnUrl=%2Fdeveloper%2Farchitecture");
+					"/login?returnUrl=%2Fadmin%2Fusers");
 				fixture.detectChanges();
 
 				const breadcrumbs: BreadcrumbItem[] =
@@ -238,19 +231,5 @@ describe("BreadcrumbComponent",
 						["Home", "Login"]);
 				expect(breadcrumbs[1].isActive)
 					.toBe(true);
-			});
-
-		it("should compute developer architecture breadcrumb",
-			async () =>
-			{
-				await router.navigate(
-					["/developer/architecture"]);
-				fixture.detectChanges();
-
-				const breadcrumbs: BreadcrumbItem[] =
-					component.breadcrumbs();
-				expect(breadcrumbs.map((crumb) => crumb.label))
-					.toEqual(
-						["Home", "Developer", "Architecture Guide"]);
 			});
 	});

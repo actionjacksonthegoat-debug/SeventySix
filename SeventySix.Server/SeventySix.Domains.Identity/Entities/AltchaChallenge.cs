@@ -8,7 +8,7 @@ namespace SeventySix.Identity;
 /// Entity for tracking used ALTCHA challenges.
 /// Prevents replay attacks by storing verified challenge hashes.
 /// </summary>
-public class AltchaChallenge
+public sealed class AltchaChallenge
 {
 	/// <summary>
 	/// Gets or sets the unique identifier.
@@ -24,5 +24,5 @@ public class AltchaChallenge
 	/// Gets or sets the UTC expiry time.
 	/// Challenges past this time can be purged.
 	/// </summary>
-	public DateTime ExpiryUtc { get; set; }
+	public DateTimeOffset ExpiryUtc { get; set; }
 }

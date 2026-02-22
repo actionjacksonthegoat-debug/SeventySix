@@ -7,7 +7,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
-using SeventySix.Identity;
 using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;
@@ -21,7 +20,7 @@ namespace SeventySix.Identity.Tests.Services;
 /// Pure JWT generation tests are in TokenServiceUnitTests.cs.
 /// </summary>
 [Collection(CollectionNames.IdentityPostgreSql)]
-public class TokenServiceTests(IdentityPostgreSqlFixture fixture)
+public sealed class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 	: DataPostgreSqlTestBase(fixture)
 {
 	/// <summary>
@@ -100,14 +99,14 @@ public class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 		refreshToken.ShouldNotBeEmpty();
 
 		RefreshToken? storedToken =
-			await context.RefreshTokens.FirstOrDefaultAsync(t =>
-				t.UserId == user.Id);
+			await context.RefreshTokens.FirstOrDefaultAsync(token =>
+				token.UserId == user.Id);
 
 		storedToken.ShouldNotBeNull();
 		storedToken.IsRevoked.ShouldBeFalse();
 		storedToken.CreatedByIp.ShouldBe("127.0.0.1");
 
-		DateTime expectedExpiry =
+		DateTimeOffset expectedExpiry =
 			FixedTime
 			.AddDays(expectedExpirationDays)
 			.UtcDateTime;
@@ -309,7 +308,7 @@ public class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 			List<RefreshToken> tokens =
 				await context
 				.RefreshTokens.AsNoTracking()
-				.Where(t => t.UserId == userId)
+				.Where(token => token.UserId == userId)
 				.ToListAsync();
 
 			tokens.ShouldAllBe(token => token.IsRevoked);
@@ -387,8 +386,8 @@ public class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 		List<RefreshToken> tokens =
 			await context
 			.RefreshTokens.AsNoTracking()
-			.Where(t => t.UserId == user.Id)
-			.OrderBy(t => t.CreateDate)
+			.Where(token => token.UserId == user.Id)
+			.OrderBy(token => token.CreateDate)
 			.ToListAsync();
 
 		tokens.Count.ShouldBe(3);
@@ -424,7 +423,7 @@ public class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 		RefreshToken? storedToken =
 			await context
 			.RefreshTokens.AsNoTracking()
-			.FirstOrDefaultAsync(t => t.UserId == user.Id);
+			.FirstOrDefaultAsync(token => token.UserId == user.Id);
 
 		storedToken.ShouldNotBeNull();
 		storedToken.FamilyId.ShouldNotBe(Guid.Empty);
@@ -442,7 +441,7 @@ public class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 			await GetTokenFamilyIdAsync(context, user.Id);
 
 		// Act
-		string? newToken =
+		(string? newToken, bool _) =
 			await service.RotateRefreshTokenAsync(
 			originalToken,
 			"127.0.0.1",
@@ -455,8 +454,8 @@ public class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 		RefreshToken? newStoredToken =
 			await context
 			.RefreshTokens.AsNoTracking()
-			.Where(t => t.UserId == user.Id)
-			.Where(t => !t.IsRevoked)
+			.Where(token => token.UserId == user.Id)
+			.Where(token => !token.IsRevoked)
 			.FirstOrDefaultAsync();
 
 		newStoredToken.ShouldNotBeNull();
@@ -519,7 +518,7 @@ public class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 			await CreateServiceWithUserAndTokenAsync(context);
 
 		// Legitimate rotation - attacker doesn't know about this
-		string? legitimateNewToken =
+		(string? legitimateNewToken, bool _) =
 			await service.RotateRefreshTokenAsync(
 			originalToken,
 			"127.0.0.1",
@@ -528,7 +527,7 @@ public class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 		legitimateNewToken.ShouldNotBeNull();
 
 		// Act - Attacker tries to rotate the revoked original token
-		string? attackerToken =
+		(string? attackerToken, bool _) =
 			await service.RotateRefreshTokenAsync(
 			originalToken,
 			"192.168.1.100", // Different IP - attacker
@@ -541,7 +540,7 @@ public class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 		List<RefreshToken> familyTokens =
 			await context
 			.RefreshTokens.AsNoTracking()
-			.Where(t => t.UserId == user.Id)
+			.Where(token => token.UserId == user.Id)
 			.ToListAsync();
 
 		familyTokens.ShouldAllBe(token => token.IsRevoked);
@@ -571,7 +570,7 @@ public class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 		_ = reason; // Used for test name readability
 
 		// Act
-		string? result =
+		(string? result, bool _) =
 			await service.RotateRefreshTokenAsync(
 			token,
 			"127.0.0.1",
@@ -612,7 +611,7 @@ public class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 		// Simulate multiple rotations over time (staying within token expiry but approaching session limit)
 		// Day 10: First rotation
 		timeProvider.Advance(TimeSpan.FromDays(10));
-		string? tokenDay10 =
+		(string? tokenDay10, bool _) =
 			await serviceAtSessionStart.RotateRefreshTokenAsync(
 				initialToken,
 				"127.0.0.1",
@@ -622,7 +621,7 @@ public class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 
 		// Day 20: Second rotation (still within 30-day session limit)
 		timeProvider.Advance(TimeSpan.FromDays(10));
-		string? tokenDay20 =
+		(string? tokenDay20, bool _) =
 			await serviceAtSessionStart.RotateRefreshTokenAsync(
 				tokenDay10,
 				"127.0.0.1",
@@ -634,7 +633,7 @@ public class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 		timeProvider.Advance(TimeSpan.FromDays(11));
 
 		// Act - Try to rotate after session has exceeded 30-day absolute limit
-		string? tokenDay31 =
+		(string? tokenDay31, bool _) =
 			await serviceAtSessionStart.RotateRefreshTokenAsync(
 				tokenDay20,
 				"127.0.0.1",
@@ -662,7 +661,7 @@ public class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 				timeProvider);
 
 		// Generate initial token with rememberMe=true (14-day expiration)
-		string currentToken =
+		string? currentToken =
 			await serviceAtSessionStart.GenerateRefreshTokenAsync(
 				user.Id,
 				"127.0.0.1",
@@ -671,29 +670,29 @@ public class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 
 		// Rotate at day 10 (within 14-day token expiration)
 		timeProvider.Advance(TimeSpan.FromDays(10));
-		currentToken =
-			(await serviceAtSessionStart.RotateRefreshTokenAsync(
-				currentToken,
+		(currentToken, _) =
+			await serviceAtSessionStart.RotateRefreshTokenAsync(
+				currentToken!,
 				"127.0.0.1",
-				CancellationToken.None))!;
+				CancellationToken.None);
 
 		currentToken.ShouldNotBeNull();
 
 		// Rotate again at day 20 (within new token's 14-day expiration)
 		timeProvider.Advance(TimeSpan.FromDays(10));
-		currentToken =
-			(await serviceAtSessionStart.RotateRefreshTokenAsync(
-				currentToken,
+		(currentToken, _) =
+			await serviceAtSessionStart.RotateRefreshTokenAsync(
+				currentToken!,
 				"127.0.0.1",
-				CancellationToken.None))!;
+				CancellationToken.None);
 
 		currentToken.ShouldNotBeNull();
 
 		// Act - Final rotation at day 29 (still within 30-day session limit)
 		timeProvider.Advance(TimeSpan.FromDays(9));
-		string? rotatedToken =
+		(string? rotatedToken, bool _) =
 			await serviceAtSessionStart.RotateRefreshTokenAsync(
-				currentToken,
+				currentToken!,
 				"127.0.0.1",
 				CancellationToken.None);
 
@@ -754,7 +753,7 @@ public class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 		RefreshToken? token =
 			await context
 			.RefreshTokens.AsNoTracking()
-			.FirstOrDefaultAsync(t => t.UserId == userId);
+			.FirstOrDefaultAsync(token => token.UserId == userId);
 
 		return token?.FamilyId ?? Guid.Empty;
 	}

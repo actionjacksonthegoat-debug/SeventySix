@@ -11,7 +11,7 @@ namespace SeventySix.Domains.Tests.ApiTracking.POCOs.DTOs;
 /// <summary>
 /// Unit tests for <see cref="ThirdPartyApiRequestDto"/>.
 /// </summary>
-public class ThirdPartyApiRequestDtoTests
+public sealed class ThirdPartyApiRequestDtoTests
 {
 	[Fact]
 	public void Constructor_ShouldInitializeWithDefaultValues()
@@ -33,10 +33,10 @@ public class ThirdPartyApiRequestDtoTests
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		DateTime now =
-			timeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset now =
+			timeProvider.GetUtcNow();
 		DateOnly resetDate =
-			DateOnly.FromDateTime(now);
+			DateOnly.FromDateTime(now.UtcDateTime);
 		ThirdPartyApiRequestDto dto =
 			new()
 			{

@@ -37,7 +37,7 @@ namespace SeventySix.Identity;
 /// }
 /// </code>
 /// </remarks>
-public class DuplicateUserException : DomainException
+public sealed class DuplicateUserException : DomainException
 {
 	/// <summary>
 	/// Initializes a new instance of the <see cref="DuplicateUserException"/> class with a default message.

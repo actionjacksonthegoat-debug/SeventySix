@@ -20,31 +20,30 @@ namespace SeventySix.Shared.Persistence;
 /// <item><description><see cref="MaxRetryDelayMs"/>: Maximum delay cap (2 seconds)</description></item>
 /// <item><description><see cref="JitterPercentage"/>: Random variance (±25%) to prevent thundering herd</description></item>
 /// </list>
-/// </remarks>
-/// <remarks>
-/// Design Patterns:
-/// - Retry Pattern: Automatic retry with exponential backoff
-/// - Transaction Pattern: Ensures ACID properties
-/// - Optimistic Concurrency: Uses row versioning instead of pessimistic locks
-///
-/// Thread Safety:
-/// - Each operation gets its own transaction scope
-/// - Uses PostgreSQL's MVCC (Multi-Version Concurrency Control)
-/// - No explicit locks required - database handles isolation
-/// - Retry logic handles race conditions transparently
-///
-/// SOLID Principles:
-/// - SRP: Only responsible for transaction management
-/// - OCP: Can be extended with custom retry strategies
-/// - DIP: Depends on DbContext abstraction
-/// </remarks>
-/// <remarks>
-/// Initializes a new instance of the <see cref="TransactionManager"/> class.
+/// <para>Design Patterns:</para>
+/// <list type="bullet">
+/// <item><description>Retry Pattern: Automatic retry with exponential backoff</description></item>
+/// <item><description>Transaction Pattern: Ensures ACID properties</description></item>
+/// <item><description>Optimistic Concurrency: Uses row versioning instead of pessimistic locks</description></item>
+/// </list>
+/// <para>Thread Safety:</para>
+/// <list type="bullet">
+/// <item><description>Each operation gets its own transaction scope</description></item>
+/// <item><description>Uses PostgreSQL's MVCC (Multi-Version Concurrency Control)</description></item>
+/// <item><description>No explicit locks required — database handles isolation</description></item>
+/// <item><description>Retry logic handles race conditions transparently</description></item>
+/// </list>
+/// <para>SOLID Principles:</para>
+/// <list type="bullet">
+/// <item><description>SRP: Only responsible for transaction management</description></item>
+/// <item><description>OCP: Can be extended with custom retry strategies</description></item>
+/// <item><description>DIP: Depends on DbContext abstraction</description></item>
+/// </list>
 /// </remarks>
 /// <param name="context">
 /// The database context.
 /// </param>
-public class TransactionManager(DbContext context) : ITransactionManager
+public sealed class TransactionManager(DbContext context) : ITransactionManager
 {
 	/// <summary>
 	/// Base delay in milliseconds for retry backoff calculation.
@@ -180,15 +179,16 @@ public class TransactionManager(DbContext context) : ITransactionManager
 	/// </returns>
 	private static int CalculateBackoff(int retryCount)
 	{
-		double baseDelay =
-			BaseRetryDelayMs * Math.Pow(
+		// Math.Pow only has a double overload — cast result to decimal
+		decimal baseDelay =
+			BaseRetryDelayMs * (decimal)Math.Pow(
 				2,
 				retryCount - 1);
 
-		double jitter =
+		decimal jitter =
 			Random.Shared.Next(
 				-JitterPercentage,
-				JitterPercentage + 1) / 100.0;
+				JitterPercentage + 1) / 100m;
 		int delayMs =
 			(int)(baseDelay * (1 + jitter));
 

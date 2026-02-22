@@ -16,7 +16,7 @@ namespace SeventySix.Shared.Tests.Persistence;
 /// Unit tests for BaseRepository template method pattern.
 /// Verifies error handling and logging across all repository operations.
 /// </summary>
-public class BaseRepositoryTests
+public sealed class BaseRepositoryTests
 {
 	private readonly ILogger<TestRepository> Logger;
 	private readonly TestDbContext Context;
@@ -90,7 +90,7 @@ public class BaseRepositoryTests
 			.Log(
 				LogLevel.Error,
 				Arg.Any<EventId>(),
-				Arg.Is<object>(v => v.ToString()!.Contains("Database error")),
+				Arg.Is<object>(value => value.ToString()!.Contains("Database error")),
 				Arg.Any<Exception>(),
 				Arg.Any<Func<object, Exception?, string>>());
 	}
@@ -119,8 +119,8 @@ public class BaseRepositoryTests
 			.Log(
 				LogLevel.Error,
 				Arg.Any<EventId>(),
-				Arg.Is<object>(v =>
-					v.ToString()!.Contains("Concurrency conflict")),
+				Arg.Is<object>(value =>
+					value.ToString()!.Contains("Concurrency conflict")),
 				Arg.Any<Exception>(),
 				Arg.Any<Func<object, Exception?, string>>());
 	}
@@ -183,7 +183,7 @@ public class BaseRepositoryTests
 	/// <summary>
 	/// Test repository implementation for testing BaseRepository.
 	/// </summary>
-	public class TestRepository(
+	public sealed class TestRepository(
 		TestDbContext context,
 		ILogger<TestRepository> logger) : BaseRepository<TestEntity, TestDbContext>(context, logger)
 	{
@@ -212,7 +212,7 @@ public class BaseRepositoryTests
 	/// <summary>
 	/// Test entity for repository tests.
 	/// </summary>
-	public class TestEntity : IEntity
+	public sealed class TestEntity : IEntity
 	{
 		public long Id { get; set; }
 		public string Name { get; set; } = string.Empty;
@@ -221,7 +221,7 @@ public class BaseRepositoryTests
 	/// <summary>
 	/// Test DbContext for repository tests.
 	/// </summary>
-	public class TestDbContext(DbContextOptions<TestDbContext> options)
+	public sealed class TestDbContext(DbContextOptions<TestDbContext> options)
 		: DbContext(options)
 	{
 		public DbSet<TestEntity> TestEntities { get; set; } = null!;

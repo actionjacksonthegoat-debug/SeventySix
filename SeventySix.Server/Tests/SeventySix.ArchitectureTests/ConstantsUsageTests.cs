@@ -22,7 +22,7 @@ namespace SeventySix.ArchitectureTests;
 /// Configuration files are excluded as they define seed data (source of truth).
 /// XML documentation comments are excluded as they're examples only.
 /// </remarks>
-public class ConstantsUsageTests : SourceCodeArchitectureTest
+public sealed class ConstantsUsageTests : SourceCodeArchitectureTest
 {
 	/// <summary>
 	/// Role strings that should use RoleConstants.
@@ -124,7 +124,8 @@ public class ConstantsUsageTests : SourceCodeArchitectureTest
 				string[] endpoints =
 					matches
 					.Cast<Match>()
-					.Select(m => m.Value)
+					.Select(
+						match => match.Value)
 					.Distinct()
 					.ToArray();
 

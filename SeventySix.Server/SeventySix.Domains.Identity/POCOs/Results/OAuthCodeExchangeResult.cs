@@ -22,9 +22,13 @@ namespace SeventySix.Identity;
 /// <param name="FullName">
 /// User's full name (null if not set).
 /// </param>
+/// <param name="RequiresPasswordChange">
+/// Whether user must change password before accessing resources.
+/// </param>
 public record OAuthCodeExchangeResult(
 	string AccessToken,
 	string RefreshToken,
-	DateTime ExpiresAt,
+	DateTimeOffset ExpiresAt,
 	string Email,
-	string? FullName);
+	string? FullName,
+	bool RequiresPasswordChange);

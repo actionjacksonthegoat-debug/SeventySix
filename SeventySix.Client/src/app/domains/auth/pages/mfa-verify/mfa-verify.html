@@ -21,47 +21,37 @@
 			[formGroup]="mfaForm"
 			(ngSubmit)="onVerify()"
 			class="mfa-verify-form">
-			<div class="form-group">
-				@if (showBackupCodeEntry()) {
-					<label for="code">Backup Code</label>
-				} @else {
-					<label for="code">Verification Code</label>
-				}
+			<mat-form-field appearance="outline" class="code-field">
+				<mat-label>
+					@if (showBackupCodeEntry()) {
+						Backup Code
+					} @else {
+						Verification Code
+					}
+				</mat-label>
 				<input
+					matInput
 					id="code"
 					type="text"
-					inputmode="numeric"
+					[attr.inputmode]="showBackupCodeEntry() ? 'text' : 'numeric'"
 					formControlName="code"
 					[maxlength]="expectedCodeLength()"
 					autocomplete="one-time-code"
 					[placeholder]="showBackupCodeEntry() ? 'XXXXXXXX' : '000000'"
 					aria-required="true"
 					[attr.aria-invalid]="mfaForm.get('code')?.invalid && mfaForm.get('code')?.touched"
-					aria-describedby="code-hint"
 				/>
 				@if (showBackupCodeEntry()) {
-					<span
-						id="code-hint"
-						class="hint">
-						Use one of your backup codes
-					</span>
+					<mat-hint>Use one of your backup codes</mat-hint>
 				} @else if (isTotpMode()) {
-					<span
-						id="code-hint"
-						class="hint">
-						Open your authenticator app
-					</span>
+					<mat-hint>Open your authenticator app</mat-hint>
 				} @else {
-					<span
-						id="code-hint"
-						class="hint">
-						Check your email for the code
-					</span>
+					<mat-hint>Check your email for the code</mat-hint>
 				}
-			</div>
+			</mat-form-field>
 
 			<button
-				mat-flat-button
+				mat-stroked-button
 				color="primary"
 				type="submit"
 				class="submit-button"
@@ -69,6 +59,19 @@
 				[attr.aria-busy]="isLoading()">
 				@if (isLoading()) { Verifying... } @else { Verify }
 			</button>
+
+			<div class="trust-device-section">
+				<mat-checkbox
+					data-testid="trust-device-checkbox"
+					[checked]="trustDevice()"
+					(change)="trustDevice.set($event.checked)"
+					aria-label="Skip verification on this device for 30 days">
+					Don't ask for a code on this device
+				</mat-checkbox>
+				<span class="hint-text">
+					Skip verification for 30 days
+				</span>
+			</div>
 		</form>
 
 		@if (isEmailMode()) {
@@ -77,6 +80,7 @@
 				<button
 					mat-button
 					type="button"
+					data-testid="resend-code-button"
 					(click)="onResendCode()"
 					[disabled]="resendOnCooldown() || isResending()"
 					class="resend-button">
@@ -97,6 +101,7 @@
 				<button
 					mat-button
 					type="button"
+					data-testid="use-backup-code-button"
 					(click)="onUseBackupCode()"
 					class="backup-button">
 					Use a Backup Code
@@ -120,6 +125,7 @@
 			<button
 				mat-button
 				type="button"
+				data-testid="back-to-login-button"
 				(click)="onBackToLogin()"
 				class="back-button">
 				Back to Login

@@ -57,7 +57,7 @@
 		@if (showCreate())
 		{
 			<button
-				mat-raised-button
+				mat-stroked-button
 				color="primary"
 				(click)="onCreate()"
 				aria-label="Create new item"
@@ -185,8 +185,8 @@
 				@for (action of bulkActions(); track action.key)
 				{
 					<button
-						mat-raised-button
-						[color]="action.color || 'primary'"
+						mat-stroked-button
+						[color]="action.color ?? 'primary'"
 						(click)="onBulkAction(action.key)"
 					>
 						<mat-icon aria-hidden="true">{{
@@ -220,7 +220,6 @@
 		<div class="table-content">
 			<div class="table-wrapper">
 				<cdk-virtual-scroll-viewport
-					[appTableHeight]="400"
 					[itemSize]="virtualScrollItemSize()"
 					class="table-viewport"
 				>
@@ -253,7 +252,6 @@
 									@if (row.id < 0) {
 									<ngx-skeleton-loader
 										[theme]="skeletonCheckbox"
-										[animation]="'progress'"
 									/>
 									} @else {
 									<mat-checkbox
@@ -285,7 +283,6 @@
 									@if (row.id < 0) {
 									<ngx-skeleton-loader
 										[theme]="skeletonTableCell"
-										[animation]="'progress'"
 									/>
 									} @else if (column.type === "badge") {
 										<mat-chip>
@@ -337,7 +334,6 @@
 									@if (row.id < 0) {
 									<ngx-skeleton-loader
 										[theme]="skeletonIconButton"
-										[animation]="'progress'"
 									/>
 									} @else if (rowActions().length === 1) {
 										<!-- Single action: show icon directly -->
@@ -431,6 +427,15 @@
 					</table>
 				</cdk-virtual-scroll-viewport>
 			</div>
+
+			<!-- Empty State (shown when no data and not loading) -->
+			@if (!isLoading() && data().length === 0 && !error())
+			{
+				<div class="empty-state" data-testid="data-table-empty-state" role="status">
+					<mat-icon aria-hidden="true">inbox</mat-icon>
+					<p>No data available</p>
+				</div>
+			}
 
 			<!-- Paginator -->
 			<mat-paginator

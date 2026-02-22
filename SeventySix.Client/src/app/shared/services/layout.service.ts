@@ -1,24 +1,24 @@
 import {
-	BreakpointObserver,
-	Breakpoints,
-	BreakpointState
-} from "@angular/cdk/layout";
-import {
 	computed,
+	DestroyRef,
 	inject,
 	Injectable,
 	Signal,
 	signal,
 	WritableSignal
 } from "@angular/core";
-import { toSignal } from "@angular/core/rxjs-interop";
-import { STORAGE_KEYS } from "@shared/constants";
+import { APP_BREAKPOINTS, STORAGE_KEYS } from "@shared/constants";
+import { BreakpointSnapshot } from "@shared/models";
 import { StorageService } from "@shared/services/storage.service";
 import { isNullOrUndefined } from "@shared/utilities/null-check.utility";
 
 /**
- * Service for managing application layout state
- * Handles sidebar expansion, responsive breakpoints, and layout preferences
+ * Service for managing application layout state.
+ * Handles sidebar expansion, responsive breakpoints, and layout preferences.
+ *
+ * Uses the standard `window.matchMedia().addEventListener('change', ...)` API
+ * instead of the Angular CDK BreakpointObserver, which relies on the
+ * deprecated `MediaQueryList.addListener()` method.
  */
 @Injectable(
 	{
@@ -27,13 +27,13 @@ import { isNullOrUndefined } from "@shared/utilities/null-check.utility";
 export class LayoutService
 {
 	/**
-	 * Breakpoint observer for responsive breakpoint detection.
-	 * @type {BreakpointObserver}
+	 * Destroy reference for cleanup.
+	 * @type {DestroyRef}
 	 * @private
 	 * @readonly
 	 */
-	private readonly breakpointObserver: BreakpointObserver =
-		inject(BreakpointObserver);
+	private readonly destroyRef: DestroyRef =
+		inject(DestroyRef);
 
 	/**
 	 * Storage service for SSR-safe storage access.
@@ -43,6 +43,16 @@ export class LayoutService
 	 */
 	private readonly storageService: StorageService =
 		inject(StorageService);
+
+	/**
+	 * Internal breakpoint state signal.
+	 * Updated by `matchMedia` change listeners.
+	 * @type {WritableSignal<BreakpointSnapshot>}
+	 * @private
+	 */
+	private readonly _breakpointState: WritableSignal<BreakpointSnapshot> =
+		signal<BreakpointSnapshot>(
+			{ matches: false, breakpoints: {} });
 
 	/**
 	 * Sidebar expanded state.
@@ -55,34 +65,11 @@ export class LayoutService
 			this.getSessionSidebarState());
 
 	/**
-	 * Observe responsive breakpoints.
-	 * Using Angular CDK Breakpoints constants:
-	 * - XSmall: (max-width: 599.98px) - Mobile phones
-	 * - Small: (min-width: 600px) and (max-width: 959.98px) - Tablets
-	 * - Medium and above: (min-width: 960px) - Laptop and desktop
-	 * @type {ReturnType<typeof this.breakpointObserver.observe>}
-	 * @private
-	 */
-	private readonly breakpoints: ReturnType<typeof this.breakpointObserver.observe> =
-		this.breakpointObserver.observe(
-			[
-				Breakpoints.XSmall, // (max-width: 599.98px)
-				Breakpoints.Small, // (min-width: 600px) and (max-width: 959.98px)
-				Breakpoints.Medium, // (min-width: 960px) and (max-width: 1279.98px)
-				Breakpoints.Large, // (min-width: 1280px) and (max-width: 1919.98px)
-				Breakpoints.XLarge // (min-width: 1920px)
-			]);
-
-	/**
 	 * Signal representing the current breakpoint state.
-	 * @type {Signal<BreakpointState>}
+	 * @type {Signal<BreakpointSnapshot>}
 	 */
-	readonly breakpointSignal: Signal<BreakpointState> =
-		toSignal(
-			this.breakpoints,
-			{
-				initialValue: { matches: false, breakpoints: {} }
-			});
+	readonly breakpointSignal: Signal<BreakpointSnapshot> =
+		this._breakpointState.asReadonly();
 
 	/**
 	 * Computed signal: Is screen size XSmall (mobile).
@@ -90,7 +77,7 @@ export class LayoutService
 	 * @readonly
 	 */
 	readonly isMobile: Signal<boolean> =
-		this.createBreakpointSignal(Breakpoints.XSmall);
+		this.createBreakpointSignal(APP_BREAKPOINTS.XSmall);
 
 	/**
 	 * Computed signal: Is screen size Small (tablet).
@@ -98,7 +85,7 @@ export class LayoutService
 	 * @readonly
 	 */
 	readonly isTablet: Signal<boolean> =
-		this.createBreakpointSignal(Breakpoints.Small);
+		this.createBreakpointSignal(APP_BREAKPOINTS.Small);
 
 	/**
 	 * Computed signal: Is screen size Medium (laptop).
@@ -106,7 +93,7 @@ export class LayoutService
 	 * @readonly
 	 */
 	readonly isLaptop: Signal<boolean> =
-		this.createBreakpointSignal(Breakpoints.Medium);
+		this.createBreakpointSignal(APP_BREAKPOINTS.Medium);
 
 	/**
 	 * Computed signal: Is screen size Large or XLarge (desktop).
@@ -115,8 +102,8 @@ export class LayoutService
 	 */
 	readonly isDesktop: Signal<boolean> =
 		this.createBreakpointSignal(
-			Breakpoints.Large,
-			Breakpoints.XLarge);
+			APP_BREAKPOINTS.Large,
+			APP_BREAKPOINTS.XLarge);
 
 	/**
 	 * Computed signal: Is screen size XLarge.
@@ -124,7 +111,7 @@ export class LayoutService
 	 * @readonly
 	 */
 	readonly isXLarge: Signal<boolean> =
-		this.createBreakpointSignal(Breakpoints.XLarge);
+		this.createBreakpointSignal(APP_BREAKPOINTS.XLarge);
 
 	/**
 	 * Helper: Is screen size 600px or larger (tablet and above).
@@ -163,7 +150,7 @@ export class LayoutService
 			});
 
 	/**
-	 * Sidebar mode based on screen size
+	 * Sidebar mode based on screen size.
 	 * - Below 960px: 'over' (overlay, full-width content)
 	 * - 960px and above: 'side' (push content)
 	 * @type {Signal<"over" | "side">}
@@ -195,25 +182,119 @@ export class LayoutService
 			});
 
 	/**
+	 * Constructor: initializes breakpoint observers using modern
+	 * `matchMedia().addEventListener('change', ...)` API.
+	 */
+	constructor()
+	{
+		this.initializeBreakpoints();
+	}
+
+	/**
 	 * Creates a computed signal that checks if any of the specified breakpoints match.
-	 * @param {string[]} breakpointKeys
-	 * Breakpoint constants to check.
+	 * @param {string[]} queries
+	 * Media query strings to check.
 	 * @returns {Signal<boolean>}
 	 * Signal that emits true when any breakpoint matches.
 	 * @private
 	 */
-	private createBreakpointSignal(...breakpointKeys: string[]): Signal<boolean>
+	private createBreakpointSignal(...queries: string[]): Signal<boolean>
 	{
 		return computed(
 			() =>
 			{
-				const breakpointState: { [key: string]: boolean; } =
-					this.breakpointSignal().breakpoints as {
-						[key: string]: boolean;
-					};
-				return breakpointKeys.some(
-					(breakpointKey: string) =>
-						breakpointState[breakpointKey] === true);
+				const breakpoints: Readonly<Record<string, boolean>> =
+					this._breakpointState().breakpoints;
+				return queries.some(
+					(query: string) =>
+						breakpoints[query] === true);
+			});
+	}
+
+	/**
+	 * Initializes matchMedia listeners for all breakpoints.
+	 * Uses the modern `addEventListener('change', ...)` API.
+	 * @private
+	 * @returns {void}
+	 */
+	private initializeBreakpoints(): void
+	{
+		const queries: string[] =
+			Object.values(APP_BREAKPOINTS);
+
+		const initialBreakpoints: Record<string, boolean> = {};
+
+		for (const query of queries)
+		{
+			const mediaQueryList: MediaQueryList =
+				window.matchMedia(query);
+
+			initialBreakpoints[query] =
+				mediaQueryList.matches;
+
+			const handler: (event: MediaQueryListEvent) => void =
+				(event: MediaQueryListEvent): void =>
+				{
+					this.updateBreakpoint(
+						query,
+						event.matches);
+				};
+
+			mediaQueryList.addEventListener(
+				"change",
+				handler);
+
+			this.destroyRef.onDestroy(
+				() =>
+				{
+					mediaQueryList.removeEventListener(
+						"change",
+						handler);
+				});
+		}
+
+		const hasMatch: boolean =
+			Object
+				.values(initialBreakpoints)
+				.some(
+					(matched: boolean) => matched);
+
+		this._breakpointState.set(
+			{
+				matches: hasMatch,
+				breakpoints: { ...initialBreakpoints }
+			});
+	}
+
+	/**
+	 * Updates a single breakpoint match and recomputes aggregate state.
+	 * @param {string} query
+	 * The media query that changed.
+	 * @param {boolean} matches
+	 * Whether the query now matches.
+	 * @private
+	 * @returns {void}
+	 */
+	private updateBreakpoint(
+		query: string,
+		matches: boolean): void
+	{
+		const current: BreakpointSnapshot =
+			this._breakpointState();
+
+		const updatedBreakpoints: Record<string, boolean> =
+			{ ...current.breakpoints, [query]: matches };
+
+		const hasMatch: boolean =
+			Object
+				.values(updatedBreakpoints)
+				.some(
+					(matched: boolean) => matched);
+
+		this._breakpointState.set(
+			{
+				matches: hasMatch,
+				breakpoints: updatedBreakpoints
 			});
 	}
 

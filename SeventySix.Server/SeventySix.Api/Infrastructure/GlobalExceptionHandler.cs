@@ -7,6 +7,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using SeventySix.Api.Middleware;
+using SeventySix.Identity;
 using SeventySix.Shared.Constants;
 using SeventySix.Shared.Exceptions;
 
@@ -55,7 +56,7 @@ namespace SeventySix.Api.Infrastructure;
 /// <param name="configuration">
 /// Application configuration to read CORS allowed origins.
 /// </param>
-public class GlobalExceptionHandler(
+public sealed class GlobalExceptionHandler(
 	ILogger<GlobalExceptionHandler> logger,
 	IHostEnvironment environment,
 	IConfiguration configuration) : IExceptionHandler
@@ -67,7 +68,7 @@ public class GlobalExceptionHandler(
 		new(
 			configuration
 				.GetSection(ConfigurationSectionConstants.Cors.AllowedOrigins)
-				.Get<string[]>() ?? ["http://localhost:4200"],
+				.Get<string[]>() ?? [],
 			StringComparer.OrdinalIgnoreCase);
 
 	/// <summary>
@@ -122,7 +123,8 @@ public class GlobalExceptionHandler(
 				"Validation failed: {Message}",
 				exception.Message);
 		}
-		else
+		// Domain exceptions: logged at Warning level by LogAndCreateProblemDetails (avoid double logging)
+		else if (exception is not DomainException)
 		{
 			logger.LogError(
 				exception,
@@ -150,48 +152,62 @@ public class GlobalExceptionHandler(
 		{
 			ValidationException validationException =>
 				CreateValidationProblemDetails(context, validationException),
-			EntityNotFoundException entityException =>
-				CreateProblemDetails(
+			EntityNotFoundException =>
+				LogAndCreateProblemDetails(
 					context,
+					logger,
+					exception,
 					HttpStatusCode.NotFound,
-					"Resource Not Found",
-					entityException.Message),
-			BusinessRuleViolationException businessException =>
-				CreateProblemDetails(
+					ProblemDetailConstants.Titles.NotFound,
+					ProblemDetailConstants.Details.ResourceNotFound),
+			BusinessRuleViolationException =>
+				LogAndCreateProblemDetails(
 					context,
+					logger,
+					exception,
 					HttpStatusCode.UnprocessableEntity,
-					"Business Rule Violation",
-					businessException.Message),
-			DomainException domainException =>
-				CreateProblemDetails(
+					ProblemDetailConstants.Titles.BusinessRuleViolation,
+					ProblemDetailConstants.Details.UnprocessableEntity),
+			LastAdminException =>
+				LogAndCreateProblemDetails(
 					context,
+					logger,
+					exception,
+					HttpStatusCode.Conflict,
+					ProblemDetailConstants.Titles.Conflict,
+					ProblemDetailConstants.Details.RoleRemovalFailed),
+			DomainException =>
+				LogAndCreateProblemDetails(
+					context,
+					logger,
+					exception,
 					HttpStatusCode.BadRequest,
-					"Domain Error",
-					domainException.Message),
+					ProblemDetailConstants.Titles.DomainError,
+					ProblemDetailConstants.Details.BadRequest),
 			ArgumentNullException =>
 				CreateProblemDetails(
 					context,
 					HttpStatusCode.BadRequest,
-					"Bad Request",
-					exception.Message),
+					ProblemDetailConstants.Titles.BadRequest,
+					ProblemDetailConstants.Details.BadRequest),
 			ArgumentException =>
 				CreateProblemDetails(
 					context,
 					HttpStatusCode.BadRequest,
-					"Bad Request",
-					exception.Message),
+					ProblemDetailConstants.Titles.BadRequest,
+					ProblemDetailConstants.Details.BadRequest),
 			KeyNotFoundException =>
 				CreateProblemDetails(
 					context,
 					HttpStatusCode.NotFound,
-					"Not Found",
-					exception.Message),
+					ProblemDetailConstants.Titles.NotFound,
+					ProblemDetailConstants.Details.ResourceNotFound),
 			UnauthorizedAccessException =>
 				CreateProblemDetails(
 					context,
 					HttpStatusCode.Unauthorized,
-					"Unauthorized",
-					exception.Message),
+					ProblemDetailConstants.Titles.Unauthorized,
+					ProblemDetailConstants.Details.Unauthorized),
 			_ =>
 				CreateDefaultProblemDetails(context, exception),
 		};
@@ -214,10 +230,55 @@ public class GlobalExceptionHandler(
 		CreateProblemDetails(
 			context,
 			HttpStatusCode.InternalServerError,
-			"Internal Server Error",
+			ProblemDetailConstants.Titles.InternalServerError,
 			environment.IsDevelopment()
 				? exception.Message
 				: "An error occurred processing your request.");
+
+	/// <summary>
+	/// Logs a domain exception at Warning level and creates a safe ProblemDetails response.
+	/// </summary>
+	/// <param name="context">
+	/// The HTTP context.
+	/// </param>
+	/// <param name="logger">
+	/// The logger for recording the exception.
+	/// </param>
+	/// <param name="exception">
+	/// The domain exception to log.
+	/// </param>
+	/// <param name="statusCode">
+	/// The HTTP status code.
+	/// </param>
+	/// <param name="title">
+	/// A short, human-readable summary of the problem type.
+	/// </param>
+	/// <param name="safeDetail">
+	/// A safe, curated detail message from ProblemDetailConstants.
+	/// </param>
+	/// <returns>
+	/// A ProblemDetails object with the safe detail message.
+	/// </returns>
+	private static ProblemDetails LogAndCreateProblemDetails(
+		HttpContext context,
+		ILogger logger,
+		Exception exception,
+		HttpStatusCode statusCode,
+		string title,
+		string safeDetail)
+	{
+		logger.LogWarning(
+			exception,
+			"Handled domain exception: {ExceptionType} \u2014 {Message}",
+			exception.GetType().Name,
+			exception.Message);
+
+		return CreateProblemDetails(
+			context,
+			statusCode,
+			title,
+			safeDetail);
+	}
 
 	/// <summary>
 	/// Creates a ProblemDetails object for a given exception.
@@ -280,8 +341,8 @@ public class GlobalExceptionHandler(
 		return new ValidationProblemDetails(errors)
 		{
 			Status = (int)HttpStatusCode.BadRequest,
-			Title = "Validation Error",
-			Detail = "One or more validation errors occurred.",
+			Title = ProblemDetailConstants.Titles.ValidationError,
+			Detail = ProblemDetailConstants.Titles.ValidationFailed,
 			Instance = context.Request.Path,
 			Type = "https://httpstatuses.com/400",
 		};

@@ -3,7 +3,8 @@ import {
 	expect,
 	ROUTES,
 	SELECTORS,
-	PAGE_TEXT
+	PAGE_TEXT,
+	TIMEOUTS
 } from "../../fixtures";
 
 /**
@@ -24,52 +25,47 @@ test.describe("Error Pages",
 					async ({ page }) =>
 					{
 						await page.goto("/this-route-does-not-exist-at-all");
-					await page.waitForLoadState("load");
 
 						const errorContainer =
 							page.locator(SELECTORS.errorPage.container);
 
 						await expect(errorContainer)
-							.toBeVisible();
+							.toBeVisible({ timeout: TIMEOUTS.element });
 					});
 
 				test("should display 404 error title",
 					async ({ page }) =>
 					{
 						await page.goto("/non-existent-page-xyz");
-					await page.waitForLoadState("load");
 
 						const errorTitle =
 							page.locator(SELECTORS.errorPage.errorTitle);
 
 						await expect(errorTitle)
-							.toContainText(PAGE_TEXT.errorPage.notFoundTitle);
+							.toContainText(PAGE_TEXT.errorPage.notFoundTitle, { timeout: TIMEOUTS.element });
 					});
 
 				test("should display error description",
 					async ({ page }) =>
 					{
 						await page.goto("/unknown-route-test");
-					await page.waitForLoadState("load");
 
 						const pageBody =
-							page.locator(".error-page");
-
+					page.locator(SELECTORS.errorPage.container);
 						await expect(pageBody)
-							.toContainText(PAGE_TEXT.errorPage.notFoundDescription);
+							.toContainText(PAGE_TEXT.errorPage.notFoundDescription, { timeout: TIMEOUTS.element });
 					});
 
 				test("should display Go to Home button",
 					async ({ page }) =>
 					{
 						await page.goto("/invalid-path-12345");
-					await page.waitForLoadState("load");
 
 						const homeButton =
 							page.locator(SELECTORS.errorPage.homeButton);
 
 						await expect(homeButton)
-							.toBeVisible();
+							.toBeVisible({ timeout: TIMEOUTS.element });
 						await expect(homeButton)
 							.toContainText(PAGE_TEXT.errorPage.goToHome);
 					});
@@ -78,10 +74,12 @@ test.describe("Error Pages",
 					async ({ page }) =>
 					{
 						await page.goto("/random-invalid-route");
-					await page.waitForLoadState("load");
 
 						const homeButton =
 							page.locator(SELECTORS.errorPage.homeButton);
+
+						await expect(homeButton)
+							.toBeVisible({ timeout: TIMEOUTS.element });
 						await homeButton.click();
 
 						await expect(page)

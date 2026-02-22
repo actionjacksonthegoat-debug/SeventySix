@@ -15,7 +15,7 @@ namespace SeventySix.Api.Tests.HealthChecks;
 /// Tests the built-in ASP.NET Core health check endpoint.
 /// </summary>
 [Collection(CollectionNames.IdentityHealthPostgreSql)]
-public class HealthCheckTests(IdentityHealthApiPostgreSqlFixture fixture)
+public sealed class HealthCheckTests(IdentityHealthApiPostgreSqlFixture fixture)
 	: ApiPostgreSqlTestBase<Program>(fixture),
 		IAsyncLifetime
 {

@@ -21,7 +21,13 @@ public interface IAuthCookieService
 	/// <param name="refreshToken">
 	/// The refresh token value.
 	/// </param>
-	public void SetRefreshTokenCookie(string refreshToken);
+	/// <param name="rememberMe">
+	/// When true, uses extended cookie expiration (RememberMe days).
+	/// When false, uses standard short-lived expiration.
+	/// </param>
+	public void SetRefreshTokenCookie(
+		string refreshToken,
+		bool rememberMe = false);
 
 	/// <summary>
 	/// Gets the refresh token from the request cookies.
@@ -80,4 +86,30 @@ public interface IAuthCookieService
 	/// The origin URL (scheme + authority).
 	/// </returns>
 	public string GetAllowedOrigin();
+
+	/// <summary>
+	/// Sets the trusted device token as an HTTP-only secure cookie.
+	/// </summary>
+	/// <param name="token">
+	/// The trusted device token value.
+	/// </param>
+	/// <param name="lifetimeDays">
+	/// Number of days until the cookie expires.
+	/// </param>
+	public void SetTrustedDeviceCookie(
+		string token,
+		int lifetimeDays);
+
+	/// <summary>
+	/// Gets the trusted device token from the request cookies.
+	/// </summary>
+	/// <returns>
+	/// The trusted device token if present; otherwise null.
+	/// </returns>
+	public string? GetTrustedDeviceToken();
+
+	/// <summary>
+	/// Clears the trusted device cookie.
+	/// </summary>
+	public void ClearTrustedDeviceCookie();
 }

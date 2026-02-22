@@ -15,7 +15,7 @@ namespace SeventySix.Domains.Tests.ApiTracking.Entities;
 /// Tests domain logic and business rules for the ThirdPartyApiRequest entity.
 /// Follows TDD principles: tests written before implementation.
 /// </remarks>
-public class ThirdPartyApiRequestTests
+public sealed class ThirdPartyApiRequestTests
 {
 	[Fact]
 	public void IncrementCallCount_IncrementsCounterAndUpdatesTimestamp()
@@ -32,11 +32,11 @@ public class ThirdPartyApiRequestTests
 					DateOnly.FromDateTime(
 				timeProvider.GetUtcNow().UtcDateTime),
 			};
-		DateTime beforeTimestamp =
-			timeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset beforeTimestamp =
+			timeProvider.GetUtcNow();
 
 		// Act
-		request.IncrementCallCount(timeProvider.GetUtcNow().UtcDateTime);
+		request.IncrementCallCount(timeProvider.GetUtcNow());
 
 		// Assert
 		request.CallCount.ShouldBe(6);
@@ -61,13 +61,13 @@ public class ThirdPartyApiRequestTests
 			};
 
 		// Act
-		request.IncrementCallCount(timeProvider.GetUtcNow().UtcDateTime);
-		DateTime? firstCallTime = request.LastCalledAt;
+		request.IncrementCallCount(timeProvider.GetUtcNow());
+		DateTimeOffset? firstCallTime = request.LastCalledAt;
 
 		timeProvider.Advance(TimeSpan.FromMilliseconds(10)); // Ensure time difference
 
-		request.IncrementCallCount(timeProvider.GetUtcNow().UtcDateTime);
-		DateTime? secondCallTime = request.LastCalledAt;
+		request.IncrementCallCount(timeProvider.GetUtcNow());
+		DateTimeOffset? secondCallTime = request.LastCalledAt;
 
 		// Assert
 		request.CallCount.ShouldBe(2);
@@ -88,14 +88,14 @@ public class ThirdPartyApiRequestTests
 				BaseUrl = "https://api.ExternalAPImap.org",
 				CallCount = 50,
 				LastCalledAt =
-					timeProvider.GetUtcNow().UtcDateTime.AddHours(-1),
+					timeProvider.GetUtcNow().AddHours(-1),
 				ResetDate =
 					DateOnly.FromDateTime(
 				timeProvider.GetUtcNow().UtcDateTime),
 			};
-		DateTime? lastCalledBefore = request.LastCalledAt;
-		DateTime beforeTimestamp =
-			timeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset? lastCalledBefore = request.LastCalledAt;
+		DateTimeOffset beforeTimestamp =
+			timeProvider.GetUtcNow();
 
 		// Act
 		request.ResetCallCount();
@@ -184,11 +184,80 @@ public class ThirdPartyApiRequestTests
 		// Act
 		for (int incrementCount = 0; incrementCount < 100; incrementCount++)
 		{
-			request.IncrementCallCount(timeProvider.GetUtcNow().UtcDateTime);
+			request.IncrementCallCount(timeProvider.GetUtcNow());
 		}
 
 		// Assert
 		request.CallCount.ShouldBe(100);
 		request.LastCalledAt.ShouldNotBeNull();
+	}
+
+	[Fact]
+	public void DecrementCallCount_DecrementsCounter()
+	{
+		// Arrange
+		FakeTimeProvider timeProvider = new();
+		ThirdPartyApiRequest request =
+			new()
+			{
+				ApiName = "ExternalAPI",
+				BaseUrl = "https://api.ExternalAPImap.org",
+				CallCount = 5,
+				ResetDate =
+					DateOnly.FromDateTime(
+						timeProvider.GetUtcNow().UtcDateTime),
+			};
+
+		// Act
+		request.DecrementCallCount();
+
+		// Assert
+		request.CallCount.ShouldBe(4);
+	}
+
+	[Fact]
+	public void DecrementCallCount_AtZero_IsNoOp()
+	{
+		// Arrange
+		FakeTimeProvider timeProvider = new();
+		ThirdPartyApiRequest request =
+			new()
+			{
+				ApiName = "ExternalAPI",
+				BaseUrl = "https://api.ExternalAPImap.org",
+				CallCount = 0,
+				ResetDate =
+					DateOnly.FromDateTime(
+						timeProvider.GetUtcNow().UtcDateTime),
+			};
+
+		// Act
+		request.DecrementCallCount();
+
+		// Assert
+		request.CallCount.ShouldBe(0);
+	}
+
+	[Fact]
+	public void DecrementCallCount_FromOne_GoesToZero()
+	{
+		// Arrange
+		FakeTimeProvider timeProvider = new();
+		ThirdPartyApiRequest request =
+			new()
+			{
+				ApiName = "ExternalAPI",
+				BaseUrl = "https://api.ExternalAPImap.org",
+				CallCount = 1,
+				ResetDate =
+					DateOnly.FromDateTime(
+						timeProvider.GetUtcNow().UtcDateTime),
+			};
+
+		// Act
+		request.DecrementCallCount();
+
+		// Assert
+		request.CallCount.ShouldBe(0);
 	}
 }

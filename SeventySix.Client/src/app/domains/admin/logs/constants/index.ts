@@ -6,4 +6,3 @@
  * Logs feature constants barrel export.
  */
 export * from "./date-range-preset.constant";
-export * from "./log-level.constants";

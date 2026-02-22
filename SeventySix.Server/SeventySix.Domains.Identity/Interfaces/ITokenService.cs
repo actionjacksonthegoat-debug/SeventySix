@@ -25,6 +25,10 @@ public interface ITokenService
 	/// <param name="roles">
 	/// The user's roles.
 	/// </param>
+	/// <param name="requiresPasswordChange">
+	/// Whether the user must change their password before accessing the application.
+	/// When true, a <c>requires_password_change</c> claim is added to the JWT.
+	/// </param>
 	/// <returns>
 	/// The JWT access token string.
 	/// </returns>
@@ -35,7 +39,8 @@ public interface ITokenService
 	public string GenerateAccessToken(
 		long userId,
 		string username,
-		IEnumerable<string> roles);
+		IEnumerable<string> roles,
+		bool requiresPasswordChange = false);
 
 	/// <summary>
 	/// Generates a new refresh token and stores it.
@@ -107,11 +112,12 @@ public interface ITokenService
 	/// Cancellation token.
 	/// </param>
 	/// <returns>
-	/// New plaintext refresh token if successful, null if:
+	/// Tuple of (new plaintext refresh token, rememberMe flag inferred from token lifetime).
+	/// Token is null if:
 	/// - Token not found or expired
 	/// - Token already revoked (reuse attack detected - entire family revoked)
 	/// </returns>
-	public Task<string?> RotateRefreshTokenAsync(
+	public Task<(string? Token, bool RememberMe)> RotateRefreshTokenAsync(
 		string refreshToken,
 		string? clientIp,
 		CancellationToken cancellationToken = default);

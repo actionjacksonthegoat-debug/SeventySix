@@ -4,7 +4,6 @@
 
 using Microsoft.Extensions.Options;
 using OtpNet;
-using SeventySix.Identity;
 using Shouldly;
 
 namespace SeventySix.Identity.Tests.Services;
@@ -13,7 +12,7 @@ namespace SeventySix.Identity.Tests.Services;
 /// Unit tests for TotpService.
 /// Tests TOTP secret generation and code verification.
 /// </summary>
-public class TotpServiceUnitTests
+public sealed class TotpServiceUnitTests
 {
 	private readonly IOptions<TotpSettings> Settings;
 	private readonly TotpService Service;

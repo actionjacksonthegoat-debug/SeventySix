@@ -44,5 +44,11 @@ export const TIMEOUTS =
 		 * Global setup timeout for authentication flow.
 		 * Used during initial login before tests run.
 		 */
-		globalSetup: 30000
+		globalSetup: 30000,
+
+		/**
+		 * Altcha proof-of-work challenge solve timeout.
+		 * Widget transitions: unverified → verifying → verified.
+		 */
+		altchaSolve: 30000
 	} as const;

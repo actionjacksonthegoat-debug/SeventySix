@@ -36,14 +36,21 @@
 		"quotes": "alwaysDouble"
 	},
 	"includes": [
-		"src/**/*.{ts,js,json,scss,css}"
+		"src/**/*.{ts,js,json,scss,css}",
+		"load-testing/lib/**/*.js",
+		"load-testing/scenarios/**/*.js",
+		"load-testing/scripts/generate-summary.js",
+		"load-testing/config/**/*.json"
 	],
 	"excludes": [
 		"node_modules",
 		"dist",
 		"coverage",
 		".angular",
-		"src/app/infrastructure/api/generated-api.ts"
+		"src/app/infrastructure/api/generated-api.ts",
+		"load-testing/node_modules",
+		"load-testing/reports",
+		"load-testing/results"
 	],
 	"plugins": [
 		"https://plugins.dprint.dev/typescript-0.95.13.wasm",

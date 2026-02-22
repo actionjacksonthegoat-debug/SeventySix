@@ -11,14 +11,14 @@ namespace SeventySix.Identity;
 /// <summary>
 /// EF Core configuration for <see cref="ApplicationRole"/>.
 /// </summary>
-public class ApplicationRoleConfiguration : IEntityTypeConfiguration<ApplicationRole>
+public sealed class ApplicationRoleConfiguration : IEntityTypeConfiguration<ApplicationRole>
 {
 	/// <inheritdoc/>
 	public void Configure(EntityTypeBuilder<ApplicationRole> builder)
 	{
 		// Seed the three core roles
-		DateTime seedDate =
-			new(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+		DateTimeOffset seedDate =
+			new(2025, 1, 1, 0, 0, 0, TimeSpan.Zero);
 
 		builder.HasData(
 			new ApplicationRole

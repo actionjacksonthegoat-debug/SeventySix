@@ -69,6 +69,61 @@ public class AuthenticationService(
 		bool rememberMe,
 		CancellationToken cancellationToken)
 	{
+		AuthResult accessTokenResult =
+			await GenerateAccessTokenResultAsync(
+				user,
+				requiresPasswordChange,
+				rememberMe,
+				cancellationToken);
+
+		string refreshToken =
+			await tokenService.GenerateRefreshTokenAsync(
+				user.Id,
+				clientIp,
+				rememberMe,
+				cancellationToken);
+
+		await authRepository.UpdateLastLoginAsync(
+			user.Id,
+			timeProvider.GetUtcNow(),
+			clientIp,
+			cancellationToken);
+
+		return AuthResult.Succeeded(
+			accessTokenResult.AccessToken!,
+			refreshToken,
+			accessTokenResult.ExpiresAt!.Value,
+			accessTokenResult.Email!,
+			accessTokenResult.FullName,
+			requiresPasswordChange,
+			rememberMe);
+	}
+
+	/// <summary>
+	/// Generates only the access token and metadata for use during token rotation.
+	/// Does NOT create a new refresh token — the caller provides the rotated token.
+	/// </summary>
+	/// <param name="user">
+	/// The identity user to issue an access token for.
+	/// </param>
+	/// <param name="requiresPasswordChange">
+	/// Whether the user must change password on next login.
+	/// </param>
+	/// <param name="rememberMe">
+	/// Whether the user's session uses extended expiration.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// An <see cref="AuthResult"/> with access token and metadata (RefreshToken is empty).
+	/// </returns>
+	public virtual async Task<AuthResult> GenerateAccessTokenResultAsync(
+		ApplicationUser user,
+		bool requiresPasswordChange,
+		bool rememberMe,
+		CancellationToken cancellationToken)
+	{
 		if (string.IsNullOrWhiteSpace(user.Email))
 		{
 			throw new InvalidOperationException(
@@ -82,33 +137,22 @@ public class AuthenticationService(
 			tokenService.GenerateAccessToken(
 				user.Id,
 				user.UserName ?? string.Empty,
-				[.. roles]);
+				[.. roles],
+				requiresPasswordChange);
 
-		string refreshToken =
-			await tokenService.GenerateRefreshTokenAsync(
-				user.Id,
-				clientIp,
-				rememberMe,
-				cancellationToken);
-
-		DateTime expiresAt =
+		DateTimeOffset expiresAt =
 			timeProvider
 			.GetUtcNow()
 			.AddMinutes(jwtSettings.Value.AccessTokenExpirationMinutes)
 			.UtcDateTime;
 
-		await authRepository.UpdateLastLoginAsync(
-			user.Id,
-			timeProvider.GetUtcNow().UtcDateTime,
-			clientIp,
-			cancellationToken);
-
 		return AuthResult.Succeeded(
 			accessToken,
-			refreshToken,
+			refreshToken: string.Empty,
 			expiresAt,
 			user.Email,
 			user.FullName,
-			requiresPasswordChange);
+			requiresPasswordChange,
+			rememberMe);
 	}
 }

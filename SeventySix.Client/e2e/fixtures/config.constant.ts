@@ -26,5 +26,39 @@ export const E2E_CONFIG =
 		 * MailDev web UI URL for email testing.
 		 * HTTP only - no sensitive data.
 		 */
-		mailDevUrl: "http://localhost:1080"
+		mailDevUrl: "http://localhost:1080",
+
+		/**
+		 * TOTP time step in seconds.
+		 * Must match Totp:TimeStepSeconds in the E2E API config.
+		 * E2E uses 10s (vs 30s production) to reduce TOTP wait times.
+		 */
+		totpTimeStepSeconds: 10
+	} as const;
+
+/**
+ * Cookie names used in E2E tests.
+ */
+export const COOKIE_NAMES =
+	{
+		refreshToken: "X-Refresh-Token"
+	} as const;
+
+/**
+ * API route paths used in E2E tests for interception and direct calls.
+ */
+export const API_ROUTES =
+	{
+		auth:
+			{
+				login: "/api/v1/auth/login",
+				totpVerify: "/api/v1/auth/mfa/totp/verify",
+				totpDisable: "/api/v1/auth/mfa/totp/disable",
+				trustedDevices: "/api/v1/auth/trusted-devices"
+			},
+		users:
+			{
+				me: "/api/v1/users/me",
+				permissionRequests: "/api/v1/users/me/permission-requests"
+			}
 	} as const;

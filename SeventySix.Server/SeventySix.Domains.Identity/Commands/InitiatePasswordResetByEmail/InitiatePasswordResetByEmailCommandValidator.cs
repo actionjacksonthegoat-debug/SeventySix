@@ -13,7 +13,7 @@ namespace SeventySix.Identity.Commands.InitiatePasswordResetByEmail;
 /// Validation Rules:
 /// - Email: Required, valid email format, max 255 characters.
 /// </remarks>
-public class InitiatePasswordResetByEmailCommandValidator
+public sealed class InitiatePasswordResetByEmailCommandValidator
 	: AbstractValidator<ForgotPasswordRequest>
 {
 	/// <summary>

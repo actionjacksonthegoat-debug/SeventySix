@@ -3,7 +3,6 @@
 // </copyright>
 
 using FluentValidation.TestHelper;
-using SeventySix.Identity;
 using SeventySix.Identity.Commands.InitiatePasswordResetByEmail;
 
 namespace SeventySix.Identity.Tests.Validators;
@@ -15,7 +14,7 @@ namespace SeventySix.Identity.Tests.Validators;
 /// Coverage Focus:
 /// - Email validation (required, valid format, max length).
 /// </remarks>
-public class InitiatePasswordResetByEmailCommandValidatorTests
+public sealed class InitiatePasswordResetByEmailCommandValidatorTests
 {
 	private readonly InitiatePasswordResetByEmailCommandValidator Validator =
 		new();

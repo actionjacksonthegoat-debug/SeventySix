@@ -23,7 +23,7 @@ namespace SeventySix.Logging;
 /// - SRP: Only responsible for entity configuration
 /// - OCP: Can be extended without modifying domain entity
 /// </remarks>
-public class LogConfiguration : IEntityTypeConfiguration<Log>
+public sealed class LogConfiguration : IEntityTypeConfiguration<Log>
 {
 	/// <summary>
 	/// Configures the entity mapping for Log.

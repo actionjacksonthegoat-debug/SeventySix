@@ -3,7 +3,6 @@
 // </copyright>
 
 using Microsoft.AspNetCore.Identity;
-using SeventySix.Identity;
 using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;
 using Shouldly;
@@ -19,7 +18,7 @@ namespace SeventySix.Identity.Tests.Queries.CheckIdentityHealth;
 /// Infrastructure: Verifies database connectivity and exception handling.
 /// </remarks>
 [Collection(CollectionNames.IdentityPostgreSql)]
-public class CheckIdentityHealthQueryHandlerTests(
+public sealed class CheckIdentityHealthQueryHandlerTests(
 	IdentityPostgreSqlFixture fixture) : DataPostgreSqlTestBase(fixture)
 {
 	/// <summary>

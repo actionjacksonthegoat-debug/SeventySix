@@ -2,37 +2,58 @@
 	<div class="login-card">
 		<h1>Sign In</h1>
 
+		@if (inactivityBannerVisible())
+		{
+			<div class="inactivity-banner"
+				role="alert"
+				aria-live="assertive">
+				<mat-icon aria-hidden="true">
+					timer_off
+				</mat-icon>
+				<span>
+					You have been logged out due to inactivity. Please sign in again.
+				</span>
+			</div>
+		}
+
+		@if (featureFlags.oAuthEnabled()) {
 		<!-- OAuth Providers -->
 		<div class="oauth-buttons">
-			<button
-				type="button"
-			class="oauth-button github-button"
-			mat-flat-button
-				[disabled]="isLoading()"
-				(click)="onGitHubLogin()"
-				aria-label="Continue with GitHub">
-				<svg
-					class="icon"
-					viewBox="0 0 24 24"
-					aria-hidden="true">
-					<path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
-				</svg>
-				Continue with GitHub
-			</button>
+			@for (provider of oauthProviders; track provider.id) {
+				<button
+					type="button"
+					class="oauth-button"
+					data-testid="oauth-button"
+					mat-stroked-button
+					[style.--oauth-color]="provider.color"
+					[disabled]="isLoading() || isOAuthInProgress()"
+					(click)="onOAuthLogin(provider.id)"
+					[attr.aria-label]="'Continue with ' + provider.displayName"
+					[attr.aria-busy]="isOAuthInProgress()">
+					<mat-icon
+						class="oauth-icon"
+						[svgIcon]="provider.icon"
+						aria-hidden="true" />
+					Continue with {{ provider.displayName }}
+				</button>
+			}
 		</div>
 
-		<div class="divider">
+		<div class="divider"
+			data-testid="divider">
 			<span>or</span>
 		</div>
+		}
 
 		<!-- Local Login Form -->
 		<form
 			[formGroup]="loginForm"
 			(ngSubmit)="onLocalLogin()"
 			class="login-form">
-			<div class="form-group required">
-				<label for="usernameOrEmail">Username or Email</label>
+			<mat-form-field appearance="outline">
+				<mat-label>Username or Email</mat-label>
 				<input
+					matInput
 					id="usernameOrEmail"
 					type="text"
 					formControlName="usernameOrEmail"
@@ -43,25 +64,18 @@
 						loginForm.get('usernameOrEmail')?.invalid &&
 						loginForm.get('usernameOrEmail')?.touched
 					"
-					aria-describedby="usernameOrEmail-hint usernameOrEmail-error"
 				/>
-				<span
-					id="usernameOrEmail-hint"
-					class="visually-hidden">
-					Enter your username or email address
-				</span>
 				@if (usernameOrEmailError()) {
-				<span
-					id="usernameOrEmail-error"
-					class="error-text">
+				<mat-error>
 					{{ usernameOrEmailError() }}
-				</span>
+				</mat-error>
 				}
-			</div>
+			</mat-form-field>
 
-			<div class="form-group required">
-				<label for="password">Password</label>
+			<mat-form-field appearance="outline">
+				<mat-label>Password</mat-label>
 				<input
+					matInput
 					id="password"
 					type="password"
 					formControlName="password"
@@ -72,40 +86,35 @@
 						loginForm.get('password')?.invalid &&
 						loginForm.get('password')?.touched
 					"
-					aria-describedby="password-error"
 				/>
 				@if (passwordError()) {
-				<span
-					id="password-error"
-					class="error-text">
+				<mat-error>
 					{{ passwordError() }}
-				</span>
+				</mat-error>
 				}
-			</div>
+			</mat-form-field>
 
-			<div class="form-group remember-me">
-				<label class="checkbox-label">
-					<input
-						id="rememberMe"
-						type="checkbox"
-						formControlName="rememberMe"
-						aria-describedby="rememberMe-hint"
-					/>
-					<span>Remember me</span>
-				</label>
-				<span
-					id="rememberMe-hint"
-					class="hint-text">
-					Keep me signed in for 14 days (recommended for personal devices only)
-				</span>
+			<div class="form-options" data-testid="form-options">
+				<mat-checkbox
+					data-testid="remember-me"
+					formControlName="rememberMe"
+					aria-describedby="rememberMe-hint">
+					Stay signed in
+				</mat-checkbox>
+				<a routerLink="/auth/forgot-password"
+				   class="forgot-password-link"
+				   data-testid="forgot-password">
+					Forgot password?
+				</a>
 			</div>
-
-			<div class="forgot-password-link">
-				<a routerLink="/auth/forgot-password">Forgot password?</a>
-			</div>
+			<span
+				id="rememberMe-hint"
+				class="hint-text">
+				Your session will last 14 days on this browser
+			</span>
 
 			@if (altchaEnabled) {
-			<div class="form-group">
+			<div class="altcha-container">
 				<app-altcha-widget
 					[challengeUrl]="challengeUrl"
 					[hideFooter]="true"
@@ -115,7 +124,7 @@
 			}
 
 			<button
-				mat-flat-button
+				mat-stroked-button
 				color="primary"
 				type="submit"
 				class="submit-button"

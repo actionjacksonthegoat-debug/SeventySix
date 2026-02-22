@@ -11,7 +11,7 @@ namespace SeventySix.Identity.Commands.VerifyBackupCode;
 /// </summary>
 /// <remarks>
 /// Validation Rules:
-/// - Email: Required, valid email format
+/// - ChallengeToken: Required, non-empty
 /// - Code: Required, 8-10 characters (allows for dash separator)
 /// </remarks>
 public sealed class VerifyBackupCodeCommandValidator : AbstractValidator<VerifyBackupCodeRequest>
@@ -21,11 +21,9 @@ public sealed class VerifyBackupCodeCommandValidator : AbstractValidator<VerifyB
 	/// </summary>
 	public VerifyBackupCodeCommandValidator()
 	{
-		RuleFor(request => request.Email)
+		RuleFor(request => request.ChallengeToken)
 			.NotEmpty()
-			.WithMessage("Email is required")
-			.EmailAddress()
-			.WithMessage("A valid email address is required");
+			.WithMessage("Challenge token is required");
 
 		RuleFor(request => request.Code)
 			.NotEmpty()

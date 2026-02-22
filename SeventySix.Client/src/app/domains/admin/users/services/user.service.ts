@@ -22,6 +22,7 @@ import { buildHttpParams } from "@shared/utilities/http-params.utility";
 import { QueryKeys } from "@shared/utilities/query-keys.utility";
 import {
 	CreateMutationResult,
+	CreateQueryResult,
 	injectQuery
 } from "@tanstack/angular-query-experimental";
 import { lastValueFrom, Observable } from "rxjs";
@@ -88,7 +89,7 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 	 * @returns {ReturnType<typeof injectQuery>}
 	 * Query object with data, isLoading, error, etc.
 	 */
-	getPagedUsers()
+	getPagedUsers(): CreateQueryResult<PagedResultOfUserDto>
 	{
 		return injectQuery(
 			() => ({
@@ -109,7 +110,7 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 	 * @returns {ReturnType<typeof injectQuery>}
 	 * Query object with data, isLoading, error, etc.
 	 */
-	getUserById(userId: number | string)
+	getUserById(userId: number | string): CreateQueryResult<UserDto>
 	{
 		return injectQuery(
 			() => ({
@@ -186,7 +187,7 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 	 * @returns {ReturnType<typeof injectQuery>}
 	 * Query object with User data.
 	 */
-	getUserByUsername(username: string)
+	getUserByUsername(username: string): CreateQueryResult<UserDto>
 	{
 		return injectQuery(
 			() => ({
@@ -294,7 +295,7 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 	 * @returns {ReturnType<typeof injectQuery>}
 	 * Query object with roles data.
 	 */
-	getUserRoles(userId: number | string)
+	getUserRoles(userId: number | string): CreateQueryResult<string[]>
 	{
 		return injectQuery(
 			() => ({
@@ -311,7 +312,7 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 	 * @returns {ReturnType<typeof injectQuery>}
 	 * Query object with admin count data.
 	 */
-	getAdminCount()
+	getAdminCount(): CreateQueryResult<number>
 	{
 		return injectQuery(
 			() => ({

@@ -70,6 +70,6 @@ public interface IMfaChallengeRepository
 	/// Number of deleted challenges.
 	/// </returns>
 	public Task<int> DeleteExpiredAsync(
-		DateTime expirationCutoff,
+		DateTimeOffset expirationCutoff,
 		CancellationToken cancellationToken = default);
 }

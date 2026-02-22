@@ -12,20 +12,62 @@
 		}
 	}
 
-	mat-form-field {
-		width: 100%;
-		margin-bottom: vars.$spacing-md;
+	.profile-form {
+		display: flex;
+		flex-direction: column;
+		gap: vars.$spacing-lg;
+
+		mat-form-field {
+			width: 100%;
+		}
 	}
 
 	.form-actions {
 		display: flex;
 		gap: vars.$spacing-md;
 		justify-content: flex-end;
-		margin-top: vars.$spacing-lg;
 	}
 
 	.error-card {
 		background-color: var(--color-error-container);
 		color: var(--color-on-error-container);
+	}
+
+	.linked-accounts {
+		margin-top: vars.$spacing-xl;
+		padding-top: vars.$spacing-lg;
+		border-top: 1px solid var(--mat-sys-outline-variant);
+
+		h3 {
+			margin: 0 0 vars.$spacing-xs;
+			font-size: vars.$font-size-base;
+			font-weight: vars.$font-weight-medium;
+			color: var(--mat-sys-on-surface);
+		}
+	}
+
+	.linked-accounts-description {
+		margin: 0 0 vars.$spacing-lg;
+		font-size: vars.$font-size-sm;
+		color: var(--mat-sys-on-surface-variant);
+	}
+
+	.linked-provider-row {
+		display: flex;
+		align-items: center;
+		gap: vars.$spacing-md;
+		padding: vars.$spacing-sm 0;
+
+		.provider-icon {
+			width: 1.25rem;
+			height: 1.25rem;
+			flex-shrink: 0;
+		}
+
+		.provider-name {
+			flex: 1;
+			font-size: vars.$font-size-sm;
+			color: var(--mat-sys-on-surface);
+		}
 	}
 }

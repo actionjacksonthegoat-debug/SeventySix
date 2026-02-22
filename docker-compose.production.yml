@@ -2,13 +2,9 @@
 # Handles both clean deployments and existing data scenarios
 # Automatic migrations ensure database is always up-to-date
 #
-# Environment Variables (from .env at repository root):
-#   - DB_NAME: Database name (defaults to seventysix)
-#   - DB_USER: Database username (defaults to postgres)
-#   - DB_PASSWORD: PostgreSQL password
-#   - JWT_SECRET_KEY: 64-char secret for JWT token signing
-#   - GITHUB_CLIENT_ID/SECRET: GitHub OAuth credentials
-#   - EMAIL_*: Brevo SMTP credentials for email functionality
+# Secrets are injected via environment variables from the deployment platform
+# (GitHub Actions Secrets, Docker Swarm secrets, Kubernetes secrets, etc.).
+# No .env file is used. All ${VAR:?...} references must be set externally.
 
 services:
   # Valkey - Open Source Redis-Compatible Cache (BSD licensed, Linux Foundation)
@@ -19,7 +15,7 @@ services:
       - valkey_data:/data
     command: valkey-server --save 60 1 --loglevel warning --appendonly yes
     healthcheck:
-      test: ["CMD", "valkey-cli", "ping"]
+      test: [ "CMD", "valkey-cli", "ping" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -60,17 +56,17 @@ services:
   otel-collector:
     image: otel/opentelemetry-collector-contrib:0.123.0
     container_name: seventysix-otel-collector-prod
-    command: ["--config=/etc/otel-collector.yaml"]
+    command: [ "--config=/etc/otel-collector.yaml" ]
     volumes:
       - ./observability/otel-collector.yaml:/etc/otel-collector.yaml:ro
     ports:
-      - "4317:4317"   # OTLP gRPC receiver
-      - "4318:4318"   # OTLP HTTP receiver
-      - "8889:8889"   # Prometheus metrics export
+      - "4317:4317" # OTLP gRPC receiver
+      - "4318:4318" # OTLP HTTP receiver
+      - "8889:8889" # Prometheus metrics export
     depends_on:
       - jaeger
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:13133/"]
+      test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:13133/" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -88,19 +84,17 @@ services:
   database:
     image: postgres:18-alpine
     container_name: seventysix-postgres-prod
-    env_file:
-      - .env
     environment:
       POSTGRES_DB: ${DB_NAME:-seventysix}
       POSTGRES_USER: ${DB_USER:-postgres}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set in .env}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set}
       PGDATA: /var/lib/postgresql/data/pgdata
     ports:
-      - "5433:5432"
+      - "127.0.0.1:5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -123,8 +117,6 @@ services:
       context: ./SeventySix.Server
       dockerfile: Dockerfile.production
     container_name: seventysix-api-prod
-    env_file:
-      - .env
     ports:
       - "5085:8080"
     environment:
@@ -135,21 +127,34 @@ services:
       - Database__Port=5432
       - Database__Name=${DB_NAME:-seventysix}
       - Database__User=${DB_USER:-postgres}
-      - Database__Password=${DB_PASSWORD:?DB_PASSWORD must be set in .env}
+      - Database__Password=${DB_PASSWORD:?DB_PASSWORD must be set}
+      # Migration entrypoint uses $DB_HOST, $DB_NAME, $DB_USER, $DB_PASSWORD for psql
+      - DB_HOST=database
+      - DB_NAME=${DB_NAME:-seventysix}
+      - DB_USER=${DB_USER:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:?DB_PASSWORD must be set}
       # JWT Authentication
-      - Jwt__SecretKey=${JWT_SECRET_KEY:?JWT_SECRET_KEY must be set in .env}
+      - Jwt__SecretKey=${JWT_SECRET_KEY:?JWT_SECRET_KEY must be set}
       # GitHub OAuth
-      - Auth__OAuth__Providers__0__ClientId=${GITHUB_CLIENT_ID:?GITHUB_CLIENT_ID must be set in .env}
-      - Auth__OAuth__Providers__0__ClientSecret=${GITHUB_CLIENT_SECRET:?GITHUB_CLIENT_SECRET must be set in .env}
+      - Auth__OAuth__Providers__0__ClientId=${GITHUB_CLIENT_ID:?GITHUB_CLIENT_ID must be set}
+      - Auth__OAuth__Providers__0__ClientSecret=${GITHUB_CLIENT_SECRET:?GITHUB_CLIENT_SECRET must be set}
       # Email Configuration
-      - Email__SmtpUsername=${EMAIL_SMTP_USERNAME:?EMAIL_SMTP_USERNAME must be set in .env}
-      - Email__SmtpPassword=${EMAIL_SMTP_PASSWORD:?EMAIL_SMTP_PASSWORD must be set in .env}
-      - Email__FromAddress=${EMAIL_FROM_ADDRESS:?EMAIL_FROM_ADDRESS must be set in .env}
+      - Email__SmtpUsername=${EMAIL_SMTP_USERNAME:?EMAIL_SMTP_USERNAME must be set}
+      - Email__SmtpPassword=${EMAIL_SMTP_PASSWORD:?EMAIL_SMTP_PASSWORD must be set}
+      - Email__FromAddress=${EMAIL_FROM_ADDRESS:?EMAIL_FROM_ADDRESS must be set}
       # ALTCHA (Proof-of-Work) - enabled by default, uses self-hosted verification
       - Altcha__Enabled=true
+      - Altcha__HmacKeyBase64=${ALTCHA_HMAC_KEY:?ALTCHA_HMAC_KEY must be set}
+      # Admin Seeding
+      - AdminSeeder__Email=${ADMIN_EMAIL:?ADMIN_EMAIL is required in production}
+      - AdminSeeder__InitialPassword=${ADMIN_PASSWORD:?ADMIN_PASSWORD must be set}
+      # Data Protection
+      - DataProtection__UseCertificate=${DATA_PROTECTION_USE_CERTIFICATE:-true}
+      - DataProtection__CertificatePath=${DATA_PROTECTION_CERTIFICATE_PATH:-/app/keys/dataprotection.pfx}
+      - DataProtection__CertificatePassword=${DATA_PROTECTION_CERTIFICATE_PASSWORD:?DATA_PROTECTION_CERTIFICATE_PASSWORD must be set}
       # CORS - Use HTTPS for all external origins
-      - Cors__AllowedOrigins__0=https://localhost:8080
-      - Cors__AllowedOrigins__1=https://localhost:4200
+      - Cors__AllowedOrigins__0=${CORS_ORIGIN_0:?CORS_ORIGIN_0 is required - set to your production domain e.g. https://yourdomain.com}
+      - Cors__AllowedOrigins__1=${CORS_ORIGIN_1:-}
       # Valkey Cache Connection
       - Cache__Valkey__ConnectionString=valkey:6379
       # OpenTelemetry - send to collector
@@ -165,11 +170,11 @@ services:
       otel-collector:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/health" ]
       interval: 30s
       timeout: 3s
       retries: 3
-      start_period: 60s  # Allow time for migrations
+      start_period: 60s # Allow time for migrations
     networks:
       - seventysix-network
     restart: unless-stopped
@@ -196,7 +201,7 @@ services:
       api:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080"]
+      test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080" ]
       interval: 30s
       timeout: 3s
       retries: 3
@@ -218,7 +223,7 @@ services:
     image: prom/prometheus:v2.54.1
     container_name: seventysix-prometheus-prod
     ports:
-      - "9090:9090"
+      - "127.0.0.1:9090:9090"
     volumes:
       - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus_data:/prometheus
@@ -226,7 +231,7 @@ services:
       - "--config.file=/etc/prometheus/prometheus.yml"
       - "--storage.tsdb.path=/prometheus"
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
+      test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9090/-/healthy" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -246,11 +251,11 @@ services:
     image: jaegertracing/all-in-one:1.62.0
     container_name: seventysix-jaeger-prod
     ports:
-      - "16686:16686"  # Jaeger UI only - OTLP ports handled by otel-collector
+      - "127.0.0.1:16686:16686" # Jaeger UI only - OTLP ports handled by otel-collector
     environment:
       - COLLECTOR_OTLP_ENABLED=true
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:14269/"]
+      test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:14269/" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -269,10 +274,10 @@ services:
     image: grafana/grafana:11.4.0
     container_name: seventysix-grafana-prod
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
     environment:
       - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
-      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:?GRAFANA_ADMIN_PASSWORD must be set in .env}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:?GRAFANA_ADMIN_PASSWORD must be set}
       - GF_USERS_DEFAULT_THEME=dark
       - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
@@ -286,7 +291,7 @@ services:
     depends_on:
       - prometheus
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/api/health" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -299,6 +304,45 @@ services:
         limits:
           cpus: "0.5"
           memory: 256M
+
+  # Fail2Ban - Intrusion prevention (bans IPs after repeated violations)
+  fail2ban:
+    image: crazymax/fail2ban:latest
+    container_name: seventysix-fail2ban-prod
+    network_mode: host
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    volumes:
+      - ./fail2ban/jail.d:/etc/fail2ban/jail.d:ro
+      - ./fail2ban/filter.d:/etc/fail2ban/filter.d:ro
+      - geoip_data:/usr/share/GeoIP:ro
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 64M
+
+  # GeoIP Updater - Downloads MaxMind GeoLite2-Country database for Fail2Ban
+  geoipupdate:
+    image: ghcr.io/maxmind/geoipupdate:latest
+    container_name: seventysix-geoipupdate-prod
+    environment:
+      GEOIPUPDATE_ACCOUNT_ID: "${MAXMIND_ACCOUNT_ID:?MAXMIND_ACCOUNT_ID must be set}"
+      GEOIPUPDATE_LICENSE_KEY: "${MAXMIND_LICENSE_KEY:?MAXMIND_LICENSE_KEY must be set}"
+      GEOIPUPDATE_EDITION_IDS: "GeoLite2-Country"
+      GEOIPUPDATE_FREQUENCY: "24"
+    volumes:
+      - geoip_data:/usr/share/GeoIP
+    restart: unless-stopped
+    networks:
+      - seventysix-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 64M
 
 # Named volumes for data persistence across container lifecycle
 # Data survives: docker-compose down, docker-compose up, container restarts
@@ -318,6 +362,9 @@ volumes:
   dataprotection_keys:
     driver: local
     name: seventysix_dataprotection_prod_keys
+  geoip_data:
+    driver: local
+    name: seventysix_geoip_prod_data
 
 networks:
   seventysix-network:

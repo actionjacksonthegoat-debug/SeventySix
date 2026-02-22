@@ -29,6 +29,12 @@ namespace SeventySix.Api.Infrastructure;
 /// <param name="emailQueueSettings">
 /// Configuration settings for the email queue processor.
 /// </param>
+/// <param name="orphanedRegistrationCleanupSettings">
+/// Configuration settings for the orphaned registration cleanup job.
+/// </param>
+/// <param name="databaseMaintenanceSettings">
+/// Configuration settings for the database maintenance job.
+/// </param>
 /// <param name="timeProvider">
 /// Abstraction for time-related operations.
 /// </param>
@@ -38,14 +44,17 @@ public sealed class ScheduledJobService(
 	IOptions<IpAnonymizationSettings> ipAnonymizationSettings,
 	IOptions<LogCleanupSettings> logCleanupSettings,
 	IOptions<EmailQueueSettings> emailQueueSettings,
+	IOptions<OrphanedRegistrationCleanupSettings> orphanedRegistrationCleanupSettings,
+	IOptions<DatabaseMaintenanceSettings> databaseMaintenanceSettings,
 	TimeProvider timeProvider) : IScheduledJobService
 {
 	/// <summary>
 	/// Grace period multiplier for health status calculation.
 	/// A job is considered unhealthy if it hasn't run within
 	/// (expected interval) * (1 + GracePeriodMultiplier).
+	/// TimeSpan.op_Multiply only accepts double, so cast at usage site.
 	/// </summary>
-	private const double GracePeriodMultiplier = 0.1;
+	private const decimal GracePeriodMultiplier = 0.1m;
 
 	/// <summary>
 	/// Metadata for each known scheduled job, keyed by job name.
@@ -78,6 +87,18 @@ public sealed class ScheduledJobService(
 					TimeSpan.FromSeconds(
 						emailQueueSettings.Value.ProcessingIntervalSeconds)
 				),
+			["OrphanedRegistrationCleanupJob"] =
+				(
+					"Orphaned Registration Cleanup",
+					TimeSpan.FromHours(
+						orphanedRegistrationCleanupSettings.Value.IntervalHours)
+				),
+			["DatabaseMaintenanceJob"] =
+				(
+					"Database Maintenance",
+					TimeSpan.FromHours(
+						databaseMaintenanceSettings.Value.IntervalHours)
+				)
 		};
 
 	/// <inheritdoc />
@@ -212,7 +233,7 @@ public sealed class ScheduledJobService(
 			now2 - execution.LastExecutedAt;
 
 		TimeSpan maximumAllowedInterval =
-			expectedInterval * (1 + GracePeriodMultiplier);
+			expectedInterval * (1 + (double)GracePeriodMultiplier);
 
 		return timeSinceLastExecution <= maximumAllowedInterval
 			? HealthStatusConstants.Healthy

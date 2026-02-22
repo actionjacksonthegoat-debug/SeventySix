@@ -3,14 +3,14 @@
 // </copyright>
 
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
-using SeventySix.Identity;
+using SeventySix.Shared.Interfaces;
 using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.Mocks;
 using Shouldly;
-using Wolverine;
 
 namespace SeventySix.Identity.Tests.Commands.UpdateUser;
 
@@ -21,12 +21,12 @@ namespace SeventySix.Identity.Tests.Commands.UpdateUser;
 /// <remarks>
 /// 80/20 Focus: Tests critical update paths including validation and duplicate handling.
 /// </remarks>
-public class UpdateUserCommandHandlerTests
+public sealed class UpdateUserCommandHandlerTests
 {
 	private readonly UserManager<ApplicationUser> UserManager;
-	private readonly IMessageBus MessageBus;
 	private readonly IIdentityCacheService IdentityCache;
-	private readonly ILogger Logger;
+	private readonly ITransactionManager TransactionManager;
+	private readonly ILogger<UpdateUserRequest> Logger;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="UpdateUserCommandHandlerTests"/> class.
@@ -35,12 +35,27 @@ public class UpdateUserCommandHandlerTests
 	{
 		UserManager =
 			IdentityMockFactory.CreateUserManager();
-		MessageBus =
-			Substitute.For<IMessageBus>();
 		IdentityCache =
 			Substitute.For<IIdentityCacheService>();
+		TransactionManager =
+			Substitute.For<ITransactionManager>();
 		Logger =
-			Substitute.For<ILogger>();
+			Substitute.For<ILogger<UpdateUserRequest>>();
+
+		// Pass-through: execute the operation lambda directly without adding retry overhead
+		TransactionManager
+			.ExecuteInTransactionAsync(
+				Arg.Any<Func<CancellationToken, Task>>(),
+				Arg.Any<int>(),
+				Arg.Any<CancellationToken>())
+			.Returns(
+				call =>
+				{
+					Func<CancellationToken, Task> operation =
+						call.ArgAt<Func<CancellationToken, Task>>(0);
+
+					return operation(CancellationToken.None);
+				});
 	}
 
 	/// <summary>
@@ -79,9 +94,9 @@ public class UpdateUserCommandHandlerTests
 		UserDto result =
 			await UpdateUserCommandHandler.HandleAsync(
 				request,
-				MessageBus,
 				UserManager,
 				IdentityCache,
+				TransactionManager,
 				Logger,
 				CancellationToken.None);
 
@@ -116,9 +131,9 @@ public class UpdateUserCommandHandlerTests
 		await Should.ThrowAsync<UserNotFoundException>(async () =>
 			await UpdateUserCommandHandler.HandleAsync(
 				request,
-				MessageBus,
 				UserManager,
 				IdentityCache,
+				TransactionManager,
 				Logger,
 				CancellationToken.None));
 	}
@@ -160,9 +175,9 @@ public class UpdateUserCommandHandlerTests
 		await Should.ThrowAsync<DuplicateUserException>(async () =>
 			await UpdateUserCommandHandler.HandleAsync(
 				request,
-				MessageBus,
 				UserManager,
 				IdentityCache,
+				TransactionManager,
 				Logger,
 				CancellationToken.None));
 	}
@@ -204,9 +219,9 @@ public class UpdateUserCommandHandlerTests
 		await Should.ThrowAsync<DuplicateUserException>(async () =>
 			await UpdateUserCommandHandler.HandleAsync(
 				request,
-				MessageBus,
 				UserManager,
 				IdentityCache,
+				TransactionManager,
 				Logger,
 				CancellationToken.None));
 	}
@@ -253,13 +268,60 @@ public class UpdateUserCommandHandlerTests
 			await Should.ThrowAsync<InvalidOperationException>(async () =>
 				await UpdateUserCommandHandler.HandleAsync(
 					request,
-					MessageBus,
 					UserManager,
 					IdentityCache,
+					TransactionManager,
 					Logger,
 					CancellationToken.None));
 
 		exception.Message.ShouldContain("Some unknown error");
+	}
+
+	/// <summary>
+	/// Tests that a ConcurrencyFailure result from Identity is translated to DbUpdateConcurrencyException,
+	/// signalling ITransactionManager to retry with a fresh entity fetch.
+	/// </summary>
+	[Fact]
+	public async Task HandleAsync_ConcurrencyFailure_ThrowsDbUpdateConcurrencyExceptionAsync()
+	{
+		// Arrange
+		const int UserId = 42;
+		ApplicationUser existingUser =
+			CreateUser(
+				UserId,
+				"original",
+				"original@example.com");
+
+		UpdateUserRequest request =
+			new()
+			{
+				Id = UserId,
+				Username = "original",
+				Email = "original@example.com",
+			};
+
+		UserManager
+			.FindByIdAsync(UserId.ToString())
+			.Returns(existingUser);
+
+		IdentityError error =
+			new() { Code = "ConcurrencyFailure" };
+
+		UserManager
+			.UpdateAsync(Arg.Any<ApplicationUser>())
+			.Returns(IdentityResult.Failed(error));
+
+		// Act & Assert
+		// ConcurrencyFailure propagates as DbUpdateConcurrencyException so
+		// ITransactionManager can catch it and retry with a fresh entity fetch.
+		await Should.ThrowAsync<DbUpdateConcurrencyException>(async () =>
+			await UpdateUserCommandHandler.HandleAsync(
+				request,
+				UserManager,
+				IdentityCache,
+				TransactionManager,
+				Logger,
+				CancellationToken.None));
 	}
 
 	/// <summary>
@@ -300,9 +362,9 @@ public class UpdateUserCommandHandlerTests
 		// Act
 		await UpdateUserCommandHandler.HandleAsync(
 			request,
-			MessageBus,
 			UserManager,
 			IdentityCache,
+			TransactionManager,
 			Logger,
 			CancellationToken.None);
 

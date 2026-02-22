@@ -45,10 +45,52 @@ export function mapAuthError(error: HttpErrorResponse): AuthErrorResult
 					invalidateToken: false
 				};
 
+			case AUTH_ERROR_CODE.INVALID_CREDENTIALS:
+				return {
+					message: "Invalid username or password.",
+					invalidateToken: false
+				};
+
+			case AUTH_ERROR_CODE.ACCOUNT_LOCKED:
+				return {
+					message: "Your account has been locked. Please try again later.",
+					invalidateToken: false
+				};
+
+			case AUTH_ERROR_CODE.ACCOUNT_INACTIVE:
+				return {
+					message: "Your account is inactive. Please contact support.",
+					invalidateToken: false
+				};
+
+			case AUTH_ERROR_CODE.WEAK_PASSWORD:
+				return {
+					message: "This password does not meet the requirements. Please choose a stronger password.",
+					invalidateToken: false
+				};
+
+			case AUTH_ERROR_CODE.REGISTRATION_FAILED:
+				return {
+					message: "Registration could not be completed. Please try again.",
+					invalidateToken: true
+				};
+
+			case AUTH_ERROR_CODE.INVALID_PASSWORD_RESET_TOKEN:
+			case AUTH_ERROR_CODE.INVALID_EMAIL_VERIFICATION_TOKEN:
+				return {
+					message: "This link has expired or is invalid. Please request a new one.",
+					invalidateToken: true
+				};
+
+			case AUTH_ERROR_CODE.EMAIL_NOT_CONFIRMED:
+				return {
+					message: "Please verify your email address before signing in.",
+					invalidateToken: false
+				};
+
 			default:
 				return {
-					message: error.error?.detail
-						?? "Invalid request. Please check your input.",
+					message: "Invalid request. Please check your input.",
 					invalidateToken: false
 				};
 		}

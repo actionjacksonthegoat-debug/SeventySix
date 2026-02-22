@@ -12,7 +12,7 @@ namespace SeventySix.Identity;
 /// <remarks>
 /// Roles are seeded during migration; prefer the constants in `RoleConstants` rather than literal strings.
 /// </remarks>
-public class ApplicationRole : IdentityRole<long>
+public sealed class ApplicationRole : IdentityRole<long>
 {
 	/// <summary>
 	/// Gets or sets the role description.
@@ -27,5 +27,5 @@ public class ApplicationRole : IdentityRole<long>
 	/// <summary>
 	/// Gets or sets the creation timestamp.
 	/// </summary>
-	public DateTime CreateDate { get; set; }
+	public DateTimeOffset CreateDate { get; set; }
 }

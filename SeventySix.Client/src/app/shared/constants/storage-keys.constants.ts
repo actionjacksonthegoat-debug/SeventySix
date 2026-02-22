@@ -13,6 +13,8 @@ export const STORAGE_KEYS: Readonly<{
 	AUTH_RETURN_URL: "auth_return_url";
 	/** Authentication: MFA state in sessionStorage. */
 	AUTH_MFA_STATE: "auth_mfa_state";
+	/** Authentication: inactivity logout flag in sessionStorage. */
+	AUTH_INACTIVITY_LOGOUT: "auth_inactivity_logout";
 	/** Error queue: persisted errors in localStorage. */
 	ERROR_QUEUE: "error-queue";
 	/** Layout: sidebar collapsed state in sessionStorage. */
@@ -26,6 +28,7 @@ export const STORAGE_KEYS: Readonly<{
 		AUTH_HAS_SESSION: "auth_has_session",
 		AUTH_RETURN_URL: "auth_return_url",
 		AUTH_MFA_STATE: "auth_mfa_state",
+		AUTH_INACTIVITY_LOGOUT: "auth_inactivity_logout",
 		ERROR_QUEUE: "error-queue",
 		SIDEBAR_SESSION: "seventysix-sidebar-session",
 		THEME_BRIGHTNESS: "seventysix-theme-brightness",

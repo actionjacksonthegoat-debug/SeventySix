@@ -13,7 +13,7 @@ namespace SeventySix.Identity;
 /// Backup codes are single-use emergency recovery tokens.
 /// They are hashed using Identity's password hasher for security.
 /// </remarks>
-public class BackupCode : ICreatableEntity
+public sealed class BackupCode : ICreatableEntity
 {
 	/// <summary>
 	/// Gets or sets the unique identifier.
@@ -41,12 +41,12 @@ public class BackupCode : ICreatableEntity
 	/// <summary>
 	/// Gets or sets when the code was used.
 	/// </summary>
-	public DateTime? UsedAt { get; set; }
+	public DateTimeOffset? UsedAt { get; set; }
 
 	/// <summary>
 	/// Gets or sets the creation timestamp.
 	/// </summary>
-	public DateTime CreateDate { get; set; }
+	public DateTimeOffset CreateDate { get; set; }
 
 	/// <summary>
 	/// Gets or sets whether this backup code is soft-deleted.

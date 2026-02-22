@@ -1,6 +1,7 @@
-import { Page, expect } from "@playwright/test";
+import { Page } from "@playwright/test";
 import {
 	test,
+	expect,
 	ROUTES,
 	ROUTE_GROUPS,
 	SELECTORS,
@@ -54,16 +55,6 @@ test.describe("Developer Routes - RBAC",
 						await expect(developerPage.locator(SELECTORS.layout.pageHeading))
 							.toBeVisible();
 					});
-
-				test("should allow developer to view architecture guide",
-					async ({ developerPage }: { developerPage: Page }) =>
-					{
-						await developerPage.goto(ROUTES.developer.architectureGuide);
-
-						// Page should load successfully
-						await expect(developerPage)
-							.toHaveURL(/\/developer\/architecture-guide/);
-					});
 			});
 
 		test.describe("Admin Role Access (Elevated)",
@@ -88,6 +79,7 @@ test.describe("Developer Routes - RBAC",
 		test.describe("User Role Blocked",
 			() =>
 			{
+
 				ROUTE_GROUPS.developerRoutes.forEach(
 					(route) =>
 					{

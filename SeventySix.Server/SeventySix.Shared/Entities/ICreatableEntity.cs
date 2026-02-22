@@ -13,5 +13,5 @@ public interface ICreatableEntity : IEntity
 	/// <remarks>
 	/// Stored in UTC.
 	/// </remarks>
-	public DateTime CreateDate { get; set; }
+	public DateTimeOffset CreateDate { get; set; }
 }

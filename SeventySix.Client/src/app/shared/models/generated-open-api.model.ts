@@ -20,37 +20,17 @@ export type AuthResponse = components["schemas"]["AuthResponse"];
 export type TotpSetupResponse = components["schemas"]["TotpSetupResponse"];
 export type ConfirmTotpEnrollmentRequest = components["schemas"]["ConfirmTotpEnrollmentRequest"];
 export type DisableTotpRequest = components["schemas"]["DisableTotpRequest"];
+
+// MFA verification types - now fully typed from OpenAPI (includes trustDevice)
 export type VerifyTotpRequest = components["schemas"]["VerifyTotpRequest"];
-
-// Backup code types - used by BackupCodesService
 export type VerifyBackupCodeRequest = components["schemas"]["VerifyBackupCodeRequest"];
+export type VerifyMfaRequest = components["schemas"]["VerifyMfaRequest"];
+export type ResendMfaCodeRequest = components["schemas"]["ResendMfaCodeRequest"];
 
-/**
- * Request to verify an MFA code (email-based).
- */
-export interface VerifyMfaRequest
-{
-	/**
-	 * The challenge token from the login response.
-	 */
-	challengeToken: string;
-
-	/**
-	 * The 6-digit verification code.
-	 */
-	code: string;
-}
-
-/**
- * Request to resend an MFA verification code.
- */
-export interface ResendMfaCodeRequest
-{
-	/**
-	 * The challenge token from the login response.
-	 */
-	challengeToken: string;
-}
+// Trusted device types - used by TrustedDeviceService
+export type TrustedDeviceDto =
+	& Omit<components["schemas"]["TrustedDeviceDto"], "id">
+	& { id: number; };
 
 /**
  * MFA state stored during the verification flow.
@@ -63,7 +43,7 @@ export interface MfaState
 	challengeToken: string;
 
 	/**
-	 * The masked email displayed to user.
+	 * The user's email for MFA verification.
 	 */
 	email: string;
 

@@ -13,7 +13,7 @@ namespace SeventySix.Identity;
 /// Trusted devices allow users to skip MFA verification on recognized devices.
 /// Security is maintained through token hashing and device fingerprinting.
 /// </remarks>
-public class TrustedDevice : ICreatableEntity, IAuditableEntity
+public sealed class TrustedDevice : ICreatableEntity, IAuditableEntity
 {
 	/// <summary>
 	/// Gets or sets the unique identifier.
@@ -49,17 +49,17 @@ public class TrustedDevice : ICreatableEntity, IAuditableEntity
 	/// <summary>
 	/// Gets or sets when the trusted device token expires.
 	/// </summary>
-	public DateTime ExpiresAt { get; set; }
+	public DateTimeOffset ExpiresAt { get; set; }
 
 	/// <summary>
 	/// Gets or sets when the device was last used for MFA bypass.
 	/// </summary>
-	public DateTime? LastUsedAt { get; set; }
+	public DateTimeOffset? LastUsedAt { get; set; }
 
 	/// <summary>
 	/// Gets or sets the creation timestamp.
 	/// </summary>
-	public DateTime CreateDate { get; set; }
+	public DateTimeOffset CreateDate { get; set; }
 
 	/// <summary>
 	/// Gets or sets who created this record.
@@ -69,7 +69,7 @@ public class TrustedDevice : ICreatableEntity, IAuditableEntity
 	/// <summary>
 	/// Gets or sets the last modification timestamp.
 	/// </summary>
-	public DateTime? ModifyDate { get; set; }
+	public DateTimeOffset? ModifyDate { get; set; }
 
 	/// <summary>
 	/// Gets or sets who last modified this record.

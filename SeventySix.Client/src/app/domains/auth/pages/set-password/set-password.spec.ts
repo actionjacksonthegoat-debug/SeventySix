@@ -199,6 +199,6 @@ describe("SetPasswordComponent",
 
 				expect(mockNotificationService.error)
 					.toHaveBeenCalledWith(
-						"Password does not meet requirements.");
+						"Invalid request. Please check your input.");
 			});
 	});

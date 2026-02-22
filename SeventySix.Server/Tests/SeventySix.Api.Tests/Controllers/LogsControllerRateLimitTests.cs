@@ -21,7 +21,7 @@ namespace SeventySix.Api.Tests.Controllers;
 /// Rate limit is configured via UseSetting: ClientLogs=30/min.
 /// </remarks>
 [Collection(CollectionNames.LoggingPostgreSql)]
-public class LogsControllerRateLimitTests(LoggingApiPostgreSqlFixture fixture)
+public sealed class LogsControllerRateLimitTests(LoggingApiPostgreSqlFixture fixture)
 	: ApiPostgreSqlTestBase<Program>(fixture),
 		IAsyncLifetime
 {

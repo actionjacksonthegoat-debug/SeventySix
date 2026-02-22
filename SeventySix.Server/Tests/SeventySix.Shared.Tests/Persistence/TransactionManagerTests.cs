@@ -14,7 +14,7 @@ namespace SeventySix.Shared.Tests.Persistence;
 /// Unit tests for <see cref="TransactionManager"/>.
 /// Tests transaction management, retry logic, and error handling.
 /// </summary>
-public class TransactionManagerTests : IDisposable
+public sealed class TransactionManagerTests : IDisposable
 {
 	private readonly ApiTrackingDbContext DbContext;
 	private readonly TransactionManager TransactionManager;
@@ -63,7 +63,7 @@ public class TransactionManagerTests : IDisposable
 				timeProvider.GetUtcNow().UtcDateTime),
 				CallCount = 0,
 				CreateDate =
-					timeProvider.GetUtcNow().UtcDateTime,
+					timeProvider.GetUtcNow(),
 				ModifyDate = null,
 			};
 
@@ -103,7 +103,7 @@ public class TransactionManagerTests : IDisposable
 				timeProvider.GetUtcNow().UtcDateTime),
 				CallCount = 2,
 				CreateDate =
-					timeProvider.GetUtcNow().UtcDateTime,
+					timeProvider.GetUtcNow(),
 				ModifyDate = null,
 			};
 
@@ -161,7 +161,7 @@ public class TransactionManagerTests : IDisposable
 				timeProvider.GetUtcNow().UtcDateTime),
 				CallCount = 1,
 				CreateDate =
-					timeProvider.GetUtcNow().UtcDateTime,
+					timeProvider.GetUtcNow(),
 				ModifyDate = null,
 			};
 
@@ -198,7 +198,7 @@ public class TransactionManagerTests : IDisposable
 				timeProvider.GetUtcNow().UtcDateTime),
 				CallCount = 1,
 				CreateDate =
-					timeProvider.GetUtcNow().UtcDateTime,
+					timeProvider.GetUtcNow(),
 				ModifyDate = null,
 			};
 
@@ -348,7 +348,7 @@ public class TransactionManagerTests : IDisposable
 						timeProvider.GetUtcNow().UtcDateTime),
 						CallCount = 0,
 						CreateDate =
-							timeProvider.GetUtcNow().UtcDateTime,
+							timeProvider.GetUtcNow(),
 						ModifyDate = null,
 					};
 				DbContext.ThirdPartyApiRequests.Add(entity);
@@ -370,7 +370,7 @@ public class TransactionManagerTests : IDisposable
 						timeProvider.GetUtcNow().UtcDateTime),
 						CallCount = 1,
 						CreateDate =
-							timeProvider.GetUtcNow().UtcDateTime,
+							timeProvider.GetUtcNow(),
 						ModifyDate = null,
 					};
 				DbContext.ThirdPartyApiRequests.Add(entity);
@@ -383,8 +383,8 @@ public class TransactionManagerTests : IDisposable
 		List<ThirdPartyApiRequest> allEntities =
 			await DbContext.ThirdPartyApiRequests.ToListAsync();
 		allEntities.Count.ShouldBe(2);
-		allEntities.ShouldContain(e => e.ApiName == "Api1");
-		allEntities.ShouldContain(e => e.ApiName == "Api2");
+		allEntities.ShouldContain(entity => entity.ApiName == "Api1");
+		allEntities.ShouldContain(entity => entity.ApiName == "Api2");
 	}
 
 	/// <summary>

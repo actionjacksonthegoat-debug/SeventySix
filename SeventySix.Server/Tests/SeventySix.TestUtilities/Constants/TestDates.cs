@@ -81,30 +81,30 @@ public static class TestDates
 
 	#endregion
 
-	#region DateTime Conversions (For APIs requiring DateTime)
+	#region DateTimeOffset Conversions (For APIs requiring DateTimeOffset)
 
 	/// <summary>
-	/// Default date as UTC DateTime.
+	/// Default date as UTC DateTimeOffset.
 	/// </summary>
-	public static DateTime DefaultUtc =>
+	public static DateTimeOffset DefaultUtc =>
 		Default.UtcDateTime;
 
 	/// <summary>
-	/// Historical date as UTC DateTime.
+	/// Historical date as UTC DateTimeOffset.
 	/// </summary>
-	public static DateTime HistoricalUtc =>
+	public static DateTimeOffset HistoricalUtc =>
 		Historical.UtcDateTime;
 
 	/// <summary>
-	/// Future date as UTC DateTime.
+	/// Future date as UTC DateTimeOffset.
 	/// </summary>
-	public static DateTime FutureUtc =>
+	public static DateTimeOffset FutureUtc =>
 		Future.UtcDateTime;
 
 	/// <summary>
-	/// Modification date as UTC DateTime.
+	/// Modification date as UTC DateTimeOffset.
 	/// </summary>
-	public static DateTime ModificationUtc =>
+	public static DateTimeOffset ModificationUtc =>
 		Modification.UtcDateTime;
 
 	#endregion

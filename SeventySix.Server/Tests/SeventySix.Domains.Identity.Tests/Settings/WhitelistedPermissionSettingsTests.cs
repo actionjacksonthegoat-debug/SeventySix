@@ -2,7 +2,6 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using SeventySix.Identity;
 using SeventySix.TestUtilities.Constants;
 using Shouldly;
 
@@ -12,7 +11,7 @@ namespace SeventySix.Identity.Tests.Settings;
 /// Unit tests for WhitelistedPermissionSettings.
 /// Focus: IsWhitelisted method validation.
 /// </summary>
-public class WhitelistedPermissionSettingsTests
+public sealed class WhitelistedPermissionSettingsTests
 {
 	[Fact]
 	public void IsWhitelisted_ReturnsTrue_WhenEmailAndRoleMatch()

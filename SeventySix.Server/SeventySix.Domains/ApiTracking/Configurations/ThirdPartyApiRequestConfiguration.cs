@@ -22,7 +22,7 @@ namespace SeventySix.ApiTracking;
 /// - SRP: Only responsible for entity configuration
 /// - OCP: Can be extended without modifying domain entity
 /// </remarks>
-public class ThirdPartyApiRequestConfiguration
+public sealed class ThirdPartyApiRequestConfiguration
 	: IEntityTypeConfiguration<ThirdPartyApiRequest>
 {
 	/// <summary>

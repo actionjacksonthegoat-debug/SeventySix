@@ -33,18 +33,51 @@ if (-not (Test-Path $certificatePath)) {
 	}
 }
 
-# Clean up orphaned processes before starting (prevents port conflicts)
-if (-not $SkipCleanup) {
-	& (Join-Path $PSScriptRoot "cleanup-ports.ps1")
+# Check DataProtection certificate exists before starting
+$dataProtectionCertPath =
+"$PSScriptRoot\..\SeventySix.Server\SeventySix.Api\keys\dataprotection.pfx"
+
+if (-not (Test-Path $dataProtectionCertPath)) {
+	Write-Host "DataProtection certificate not found. Generating..." -ForegroundColor Yellow
+	& "$PSScriptRoot\generate-dataprotection-cert.ps1"
+
+	if (-not (Test-Path $dataProtectionCertPath)) {
+		Write-Host "Failed to generate DataProtection certificate!" -ForegroundColor Red
+		exit 1
+	}
 }
 
-# Start Docker Desktop if not running
-$dockerProcess =
-Get-Process 'Docker Desktop' -ErrorAction SilentlyContinue
-if (-not $dockerProcess) {
-	Write-Host "Starting Docker Desktop..." -ForegroundColor Yellow
-	Start-Process 'C:\Program Files\Docker\Docker\Docker Desktop.exe'
-	Start-Sleep -Seconds 10
+# Clean up orphaned processes before starting (prevents port conflicts)
+if (-not $SkipCleanup) {
+	& (Join-Path $PSScriptRoot "internal" "cleanup-ports.ps1")
+}
+
+# Export user secrets as environment variables for Docker Compose
+Write-Host "Loading secrets from user-secrets store..." -ForegroundColor Yellow
+& (Join-Path $PSScriptRoot "internal" "load-user-secrets.ps1")
+if ($LASTEXITCODE -ne 0) { exit 1 }
+
+# Start Docker Desktop if not running (Windows only — on Linux Docker runs as a service)
+$dockerRunning = $false
+try {
+	docker info 2>&1 | Out-Null
+	$dockerRunning = ($LASTEXITCODE -eq 0)
+}
+catch { }
+
+if (-not $dockerRunning) {
+	if ($IsWindows) {
+		Write-Host "Starting Docker Desktop..." -ForegroundColor Yellow
+		$dockerDesktopPath = "C:\Program Files\Docker\Docker\Docker Desktop.exe"
+		if (Test-Path $dockerDesktopPath) {
+			Start-Process $dockerDesktopPath
+		}
+		Start-Sleep -Seconds 10
+	}
+	else {
+		Write-Host "Docker daemon is not running. Please start it and try again." -ForegroundColor Red
+		exit 1
+	}
 }
 
 # Start ALL infrastructure services first (without force-recreate to preserve data)
@@ -62,26 +95,34 @@ Pop-Location
 
 # Wait for API to be healthy
 Write-Host "Waiting for API health check..." -ForegroundColor Yellow
-& "$PSScriptRoot\wait-for-api.ps1"
+& (Join-Path $PSScriptRoot "internal" "wait-for-api.ps1")
 
-# Bring this API console to the front and set title
-Add-Type -Name Win32 -Namespace Console -MemberDefinition @'
+# Bring this API console to the front and set title (Windows only)
+if ($IsWindows) {
+	Add-Type -Name Win32 -Namespace Console -MemberDefinition @'
 [DllImport("kernel32.dll")]
 public static extern IntPtr GetConsoleWindow();
 [DllImport("user32.dll")]
 public static extern bool SetForegroundWindow(IntPtr hWnd);
 '@ -ErrorAction SilentlyContinue
-try {
-	$consoleHandle = [Console.Win32]::GetConsoleWindow()
-	[Console.Win32]::SetForegroundWindow($consoleHandle) | Out-Null
-	[Console]::Title = 'SeventySix API'
-}
-catch {
-	# If platform doesn't support bringing window to front, ignore
+	try {
+		$consoleHandle = [Console.Win32]::GetConsoleWindow()
+		[Console.Win32]::SetForegroundWindow($consoleHandle) | Out-Null
+		[Console]::Title = 'SeventySix API'
+	}
+	catch {
+		# If platform doesn't support bringing window to front, ignore
+	}
 }
 # Check if Angular client is already running on port 4200
-$clientPortInUse =
-Get-NetTCPConnection -LocalPort 4200 -State Listen -ErrorAction SilentlyContinue
+$clientPortInUse = $false
+if ($IsWindows) {
+	$clientPortInUse = $null -ne (Get-NetTCPConnection -LocalPort 4200 -State Listen -ErrorAction SilentlyContinue)
+}
+else {
+	$lsofResult = & lsof -ti ":4200" 2>/dev/null
+	$clientPortInUse = -not [string]::IsNullOrEmpty($lsofResult)
+}
 
 # Verify the port is actually responding (extra safety check)
 $clientResponding = $false
@@ -119,12 +160,13 @@ if ($clientPortInUse -and $clientResponding) {
 	Write-Host "========================================" -ForegroundColor Yellow
 }
 else {
-	# Launch Angular client in NEW Command Prompt window BEFORE streaming logs
+	# Launch Angular client in new terminal window BEFORE streaming logs
 	Write-Host "Launching Angular client in new window..." -ForegroundColor Yellow
 
-	Start-Process cmd -ArgumentList @(
-		"/k",
-		"cd /d `"$clientPath`" && npm start"
+	Start-Process pwsh -ArgumentList @(
+		"-NoExit",
+		"-Command",
+		"cd '$clientPath'; npm start"
 	) -WindowStyle Normal
 }
 

@@ -22,7 +22,7 @@ namespace SeventySix.TestUtilities.Builders;
 ///     .Build();
 /// </code>
 /// </remarks>
-public class RefreshTokenBuilder
+public sealed class RefreshTokenBuilder
 {
 	/// <summary>
 	/// Test-only default expiration for standard refresh tokens (in days).
@@ -42,10 +42,10 @@ public class RefreshTokenBuilder
 		Guid.NewGuid();
 	private string CreatedByIp = "127.0.0.1";
 	private bool IsRevoked = false;
-	private DateTime? RevokedAt = null;
+	private DateTimeOffset? RevokedAt = null;
 	private bool RememberMe = false;
-	private DateTime? CustomExpiresAt = null;
-	private DateTime? CustomSessionStartedAt = null;
+	private DateTimeOffset? CustomExpiresAt = null;
+	private DateTimeOffset? CustomSessionStartedAt = null;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="RefreshTokenBuilder"/> class.
@@ -129,7 +129,7 @@ public class RefreshTokenBuilder
 	{
 		IsRevoked = true;
 		RevokedAt =
-			TimeProvider.GetUtcNow().UtcDateTime;
+			TimeProvider.GetUtcNow();
 		return this;
 	}
 
@@ -157,7 +157,7 @@ public class RefreshTokenBuilder
 	/// <returns>
 	/// The builder instance for method chaining.
 	/// </returns>
-	public RefreshTokenBuilder WithExpiresAt(DateTime expiresAt)
+	public RefreshTokenBuilder WithExpiresAt(DateTimeOffset expiresAt)
 	{
 		CustomExpiresAt = expiresAt;
 		return this;
@@ -172,7 +172,7 @@ public class RefreshTokenBuilder
 	/// <returns>
 	/// The builder instance for method chaining.
 	/// </returns>
-	public RefreshTokenBuilder WithSessionStartedAt(DateTime sessionStartedAt)
+	public RefreshTokenBuilder WithSessionStartedAt(DateTimeOffset sessionStartedAt)
 	{
 		CustomSessionStartedAt = sessionStartedAt;
 		return this;
@@ -186,8 +186,8 @@ public class RefreshTokenBuilder
 	/// </returns>
 	public RefreshTokenBuilder AsExpired()
 	{
-		DateTime now =
-			TimeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset now =
+			TimeProvider.GetUtcNow();
 		CustomExpiresAt =
 			now.AddSeconds(-1);
 		return this;
@@ -201,18 +201,18 @@ public class RefreshTokenBuilder
 	/// </returns>
 	public RefreshToken Build()
 	{
-		DateTime now =
-			TimeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset now =
+			TimeProvider.GetUtcNow();
 
 		int expirationDays =
 			RememberMe
 				? TestRefreshTokenRememberMeExpirationDays
 				: TestRefreshTokenExpirationDays;
 
-		DateTime expiresAt =
+		DateTimeOffset expiresAt =
 			CustomExpiresAt ?? now.AddDays(expirationDays);
 
-		DateTime sessionStartedAt =
+		DateTimeOffset sessionStartedAt =
 			CustomSessionStartedAt ?? now;
 
 		return new RefreshToken

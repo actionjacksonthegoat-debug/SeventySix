@@ -22,6 +22,10 @@ public static class GetUserByEmailQueryHandler
 	/// <summary>
 	/// Retrieves a user by email address with cache-aside pattern.
 	/// </summary>
+	/// <remarks>
+	/// Uses TryGetAsync + SetAsync instead of GetOrSetAsync to avoid capturing
+	/// scoped services (UserManager) in a cache factory lambda.
+	/// </remarks>
 	/// <param name="query">
 	/// The query containing the email address.
 	/// </param>
@@ -49,15 +53,30 @@ public static class GetUserByEmailQueryHandler
 		string cacheKey =
 			IdentityCacheKeys.UserByEmail(query.Email);
 
-		return await identityCache.GetOrSetAsync(
-			cacheKey,
-			async cancellation =>
-			{
-				ApplicationUser? user =
-					await userManager.FindByEmailAsync(query.Email);
+		// Try cache first — TryGetAsync returns MaybeValue<T> (not nullable)
+		MaybeValue<UserDto?> cached =
+			await identityCache.TryGetAsync<UserDto?>(
+				cacheKey,
+				token: cancellationToken);
 
-				return user?.ToDto();
-			},
+		if (cached.HasValue)
+		{
+			return cached.Value;
+		}
+
+		// Cache miss — fetch with current scoped UserManager (still alive)
+		ApplicationUser? user =
+			await userManager.FindByEmailAsync(query.Email);
+
+		UserDto? result =
+			user?.ToDto();
+
+		// Store in cache
+		await identityCache.SetAsync(
+			cacheKey,
+			result,
 			token: cancellationToken);
+
+		return result;
 	}
 }

@@ -13,7 +13,7 @@ namespace SeventySix.ArchitectureTests;
 /// Ensures bounded contexts don't have circular dependencies.
 /// Automatically discovers all bounded contexts.
 /// </summary>
-public class BoundedContextTests
+public sealed class BoundedContextTests
 {
 	/// <summary>
 	/// Service-only bounded contexts that don't require a DbContext.
@@ -32,18 +32,6 @@ public class BoundedContextTests
 		[
 			("Identity", typeof(Identity.ApplicationUser).Assembly),
 		];
-
-	/// <summary>
-	/// Allowed cross-context dependencies.
-	/// Key = dependent context, Value = contexts it can depend on.
-	/// Service-only contexts are typically safe to depend on.
-	/// </summary>
-	private static readonly Dictionary<string, string[]> AllowedDependencies =
-		new()
-		{
-			// Identity is now isolated - NO cross-domain dependencies allowed
-			// It uses shared contracts for email communication
-		};
 
 	[Fact]
 	public void Bounded_Contexts_Should_Not_Reference_Each_Other()
@@ -191,15 +179,7 @@ public class BoundedContextTests
 		string targetContextName)
 	{
 		// Skip self-references
-		if (sourceContextName == targetContextName)
-		{
-			return true;
-		}
-
-		// Check if this dependency is explicitly allowed
-		return AllowedDependencies.TryGetValue(
-			sourceContextName,
-			out string[]? allowed) && allowed.Contains(targetContextName);
+		return sourceContextName == targetContextName;
 	}
 
 	/// <summary>

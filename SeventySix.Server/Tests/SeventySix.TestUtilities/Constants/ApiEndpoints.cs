@@ -84,6 +84,28 @@ public static class ApiEndpoints
 			public const string Set = "/api/v1/auth/password/set";
 		}
 
+		/// <summary>Trusted device management endpoints.</summary>
+		public static class TrustedDevices
+		{
+			/// <summary>List trusted devices endpoint.</summary>
+			public const string List = "/api/v1/auth/trusted-devices";
+
+			/// <summary>Revoke all trusted devices endpoint.</summary>
+			public const string RevokeAll = "/api/v1/auth/trusted-devices";
+
+			/// <summary>
+			/// Builds the revoke device endpoint for a specific device.
+			/// </summary>
+			/// <param name="deviceId">
+			/// The device ID.
+			/// </param>
+			/// <returns>
+			/// The formatted endpoint URL.
+			/// </returns>
+			public static string Revoke(long deviceId) =>
+				$"/api/v1/auth/trusted-devices/{deviceId}";
+		}
+
 		/// <summary>OAuth provider endpoints.</summary>
 		public static class OAuth
 		{
@@ -92,6 +114,53 @@ public static class ApiEndpoints
 
 			/// <summary>GitHub OAuth callback endpoint.</summary>
 			public const string GitHubCallback = "/api/v1/auth/oauth/github/callback";
+
+			/// <summary>Linked external logins endpoint.</summary>
+			public const string Linked = "/api/v1/auth/oauth/linked";
+
+			/// <summary>
+			/// Gets the OAuth start endpoint for a given provider.
+			/// </summary>
+			/// <param name="provider">
+			/// Provider name (e.g. "github").
+			/// </param>
+			/// <returns>
+			/// The OAuth start URL.
+			/// </returns>
+			public static string Provider(string provider) =>
+				$"/api/v1/auth/oauth/{provider}";
+
+			/// <summary>
+			/// Gets the OAuth callback endpoint for a given provider.
+			/// </summary>
+			/// <param name="provider">
+			/// Provider name (e.g. "github").
+			/// </param>
+			/// <returns>
+			/// The callback URL.
+			/// </returns>
+			public static string Callback(string provider) =>
+				$"/api/v1/auth/oauth/{provider}/callback";
+
+			/// <summary>
+			/// Builds callback URL with query parameters for any provider.
+			/// </summary>
+			/// <param name="provider">
+			/// Provider name.
+			/// </param>
+			/// <param name="code">
+			/// OAuth code.
+			/// </param>
+			/// <param name="state">
+			/// OAuth state.
+			/// </param>
+			/// <returns>
+			/// Full callback URL with query string.
+			/// </returns>
+			public static string CallbackWithParams(
+				string provider,
+				string code,
+				string state) => $"{Callback(provider)}?code={code}&state={state}";
 
 			/// <summary>
 			/// Builds GitHub callback URL with query parameters.
@@ -108,6 +177,18 @@ public static class ApiEndpoints
 			public static string GitHubCallbackWithParams(
 				string code,
 				string state) => $"{GitHubCallback}?code={code}&state={state}";
+
+			/// <summary>
+			/// Gets the link endpoint for a given provider.
+			/// </summary>
+			/// <param name="provider">
+			/// Provider name.
+			/// </param>
+			/// <returns>
+			/// The link URL.
+			/// </returns>
+			public static string Link(string provider) =>
+				$"/api/v1/auth/oauth/link/{provider}";
 		}
 	}
 
@@ -217,8 +298,8 @@ public static class ApiEndpoints
 		/// <returns>
 		/// Endpoint URL with query string.
 		/// </returns>
-		public static string CleanupWithDate(DateTime cutoffDate) =>
-			$"{Cleanup}?cutoffDate={cutoffDate:O}";
+		public static string CleanupWithDate(DateTimeOffset cutoffDate) =>
+			$"{Cleanup}?cutoffDate={Uri.EscapeDataString(cutoffDate.ToString("O"))}";
 	}
 
 	/// <summary>Third-party API request endpoints.</summary>

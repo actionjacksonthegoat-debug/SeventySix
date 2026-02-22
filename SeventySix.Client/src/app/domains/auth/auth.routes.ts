@@ -1,4 +1,5 @@
 import { Routes } from "@angular/router";
+import { mfaFeatureGuard } from "@auth/guards/mfa-feature.guard";
 import { BackupCodesService, MfaService, TotpService } from "@auth/services";
 
 /**
@@ -52,6 +53,7 @@ export const AUTH_ROUTES: Routes =
 		},
 		{
 			path: "mfa/verify",
+			canMatch: [mfaFeatureGuard()],
 			loadComponent: () =>
 				import("./pages/mfa-verify/mfa-verify").then(
 					(m) => m.MfaVerifyComponent),

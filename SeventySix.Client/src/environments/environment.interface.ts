@@ -47,8 +47,12 @@ export interface ObservabilityConfig
 	jaegerUrl: string;
 	prometheusUrl: string;
 	grafanaUrl: string;
-	pgAdminUrl: string;
-	redisInsightUrl: string;
+	/** Dev-only: pgAdmin URL. Not available in production (service not deployed). */
+	pgAdminUrl?: string;
+	/** Dev-only: RedisInsight URL. Not available in production (service not deployed). */
+	redisInsightUrl?: string;
+	/** Dev-only: OpenAPI/Scalar URL. Not available in production (documentation only in Development). */
+	scalarUrl?: string;
 	/** Optional - used in test environment to disable observability. */
 	enabled?: boolean;
 	dashboards: {
@@ -75,17 +79,6 @@ export interface CacheConfig
 }
 
 /**
- * Dashboard configuration settings.
- */
-export interface DashboardConfig
-{
-	health: {
-		autoRefreshEnabled: boolean;
-		refreshIntervalSeconds: number;
-	};
-}
-
-/**
  * UI configuration for tables and performance.
  */
 export interface UiConfig
@@ -108,20 +101,6 @@ export interface HttpConfig
 {
 	/** Default request timeout in milliseconds. */
 	defaultTimeout: number;
-	/** Extended timeout for file upload operations in milliseconds. */
-	uploadTimeout: number;
-}
-
-/**
- * Date/time formatting configuration.
- */
-export interface DateTimeConfig
-{
-	defaultDisplayFormat: string;
-	inputFormat: string;
-	timeFormat: string;
-	relativeTimeThreshold: number;
-	timezoneMode: "utc" | "local";
 }
 
 /**
@@ -150,16 +129,6 @@ export interface TelemetryConfig
 export interface AuthConfig
 {
 	loginUrl: string;
-	tokenRefreshBufferSeconds: number;
-}
-
-/**
- * ALTCHA proof-of-work challenge configuration.
- */
-export interface AltchaConfig
-{
-	/** Whether ALTCHA validation is enabled. */
-	enabled: boolean;
 }
 
 /**
@@ -174,12 +143,9 @@ export interface Environment
 	logging: LoggingConfig;
 	observability: ObservabilityConfig;
 	cache: CacheConfig;
-	dashboard: DashboardConfig;
 	ui: UiConfig;
 	http: HttpConfig;
-	dateTime: DateTimeConfig;
 	testing: TestingConfig;
 	telemetry: TelemetryConfig;
 	auth: AuthConfig;
-	altcha: AltchaConfig;
 }

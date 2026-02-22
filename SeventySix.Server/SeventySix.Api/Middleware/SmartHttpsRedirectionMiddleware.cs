@@ -4,6 +4,7 @@
 
 using Microsoft.Extensions.Options;
 using SeventySix.Api.Configuration;
+using SeventySix.Shared.Constants;
 
 namespace SeventySix.Api.Middleware;
 
@@ -40,7 +41,7 @@ namespace SeventySix.Api.Middleware;
 /// <param name="securitySettings">
 /// Security settings from configuration.
 /// </param>
-public class SmartHttpsRedirectionMiddleware(
+public sealed class SmartHttpsRedirectionMiddleware(
 	RequestDelegate next,
 	IOptions<SecuritySettings> securitySettings)
 {
@@ -76,14 +77,14 @@ public class SmartHttpsRedirectionMiddleware(
 			context.Request.Path.Value?.ToLowerInvariant() ?? string.Empty;
 
 		// Metrics endpoint exemption
-		if (path.StartsWith("/metrics") && settings.AllowHttpForMetrics)
+		if (path.StartsWith(EndpointPathConstants.Metrics) && settings.AllowHttpForMetrics)
 		{
 			await next(context);
 			return;
 		}
 
 		// Health check endpoint exemption
-		if (path.StartsWith("/health") && settings.AllowHttpForHealthChecks)
+		if (path.StartsWith(EndpointPathConstants.Health.Base) && settings.AllowHttpForHealthChecks)
 		{
 			await next(context);
 			return;
@@ -91,7 +92,7 @@ public class SmartHttpsRedirectionMiddleware(
 
 		// OpenAPI/Swagger endpoint exemption
 		if (
-			(path.StartsWith("/openapi") || path.StartsWith("/scalar"))
+			(path.StartsWith(EndpointPathConstants.OpenApi) || path.StartsWith(EndpointPathConstants.Scalar))
 			&& settings.AllowHttpForOpenApi)
 		{
 			await next(context);

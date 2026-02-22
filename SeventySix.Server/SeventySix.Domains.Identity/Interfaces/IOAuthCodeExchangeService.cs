@@ -32,15 +32,19 @@ public interface IOAuthCodeExchangeService
 	/// <param name="fullName">
 	/// User's full name (optional).
 	/// </param>
+	/// <param name="requiresPasswordChange">
+	/// Whether user must change password.
+	/// </param>
 	/// <returns>
 	/// A one-time authorization code (60 seconds TTL).
 	/// </returns>
 	public string StoreTokens(
 		string accessToken,
 		string refreshToken,
-		DateTime expiresAt,
+		DateTimeOffset expiresAt,
 		string email,
-		string? fullName);
+		string? fullName,
+		bool requiresPasswordChange);
 
 	/// <summary>
 	/// Exchanges a one-time code for tokens.
@@ -53,4 +57,29 @@ public interface IOAuthCodeExchangeService
 	/// Token data if code is valid, null otherwise.
 	/// </returns>
 	public OAuthCodeExchangeResult? ExchangeCode(string code);
+
+	/// <summary>
+	/// Stores link flow data for an OAuth account linking operation.
+	/// </summary>
+	/// <param name="state">
+	/// The OAuth state parameter used as the cache key.
+	/// </param>
+	/// <param name="data">
+	/// The link flow data containing user ID, code verifier, and provider.
+	/// </param>
+	public void StoreLinkFlow(
+		string state,
+		OAuthLinkFlowDataResult data);
+
+	/// <summary>
+	/// Retrieves and removes link flow data for an account linking callback.
+	/// One-time use: data is removed from cache after retrieval.
+	/// </summary>
+	/// <param name="state">
+	/// The OAuth state parameter used as the cache key.
+	/// </param>
+	/// <returns>
+	/// Link flow data if found, null otherwise.
+	/// </returns>
+	public OAuthLinkFlowDataResult? RetrieveLinkFlow(string state);
 }

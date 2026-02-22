@@ -8,12 +8,18 @@ namespace SeventySix.Identity;
 /// TOTP (Time-based One-Time Password) configuration settings.
 /// All values MUST be configured in appsettings.json.
 /// </summary>
-public record TotpSettings
+public sealed record TotpSettings
 {
 	/// <summary>
 	/// Configuration section name in appsettings.json.
 	/// </summary>
 	public const string SectionName = "Totp";
+
+	/// <summary>
+	/// Gets a value indicating whether TOTP authentication is enabled.
+	/// When disabled, TOTP enrolment and verification are unavailable.
+	/// </summary>
+	public bool Enabled { get; init; }
 
 	/// <summary>
 	/// Gets the issuer name displayed in authenticator apps.

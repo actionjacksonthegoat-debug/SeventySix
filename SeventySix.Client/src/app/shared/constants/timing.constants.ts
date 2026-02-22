@@ -10,7 +10,6 @@ export const DEBOUNCE_TIME: Readonly<{
 	INPUT_VALIDATION: 500;
 	RESIZE_EVENT: 500;
 	SEARCH: 300;
-	SCROLL: 100;
 }> =
 	{
 	/** Debounce time for form input validation (500ms). */
@@ -18,26 +17,19 @@ export const DEBOUNCE_TIME: Readonly<{
 		/** Debounce time for window resize events (500ms). */
 		RESIZE_EVENT: 500,
 		/** Debounce time for search input (300ms). */
-		SEARCH: 300,
-		/** Debounce time for scroll events (100ms). */
-		SCROLL: 100
+		SEARCH: 300
 	} as const;
 
 /**
- * Animation duration constants in milliseconds.
+ * Polling interval constants for periodic checks.
+ * Eliminates magic numbers for timer intervals.
  */
-export const ANIMATION_DURATION: Readonly<{
-	FAST: 150;
-	NORMAL: 300;
-	SLOW: 500;
+export const POLL_INTERVAL: Readonly<{
+	POPUP_CLOSED: 500;
 }> =
 	{
-	/** Fast animation duration (150ms). */
-		FAST: 150,
-		/** Normal animation duration (300ms). */
-		NORMAL: 300,
-		/** Slow animation duration (500ms). */
-		SLOW: 500
+	/** Interval for checking if an OAuth popup window has closed (500ms). */
+		POPUP_CLOSED: 500
 	} as const;
 
 /**
@@ -62,4 +54,34 @@ export const MILLISECONDS: Readonly<{
 		PER_DAY: 86_400_000,
 		/** Milliseconds in one week (604,800,000). */
 		PER_WEEK: 604_800_000
+	} as const;
+
+/**
+ * Cache timing constants for TanStack Query staleTime and gcTime configuration.
+ * Use these instead of inline numeric literals in environment files.
+ */
+export const CACHE_TIMING: Readonly<{
+	STALE_30S: 30_000;
+	STALE_1MIN: 60_000;
+	STALE_2MIN: 120_000;
+	STALE_5MIN: 300_000;
+	GC_1MIN: 60_000;
+	GC_5MIN: 300_000;
+	GC_10MIN: 600_000;
+}> =
+	{
+	/** staleTime: 30 seconds — frequently changing data (health checks, recent logs). */
+		STALE_30S: 30_000,
+		/** staleTime: 1 minute — moderately changing data (users, logs, requests). */
+		STALE_1MIN: 60_000,
+		/** staleTime: 2 minutes — infrequently changing data (account profile). */
+		STALE_2MIN: 120_000,
+		/** staleTime: 5 minutes — rarely changing data (permission requests, large lists). */
+		STALE_5MIN: 300_000,
+		/** gcTime: 1 minute — evict quickly (health checks, high-churn data). */
+		GC_1MIN: 60_000,
+		/** gcTime: 5 minutes — standard retention for most resources. */
+		GC_5MIN: 300_000,
+		/** gcTime: 10 minutes — extended retention for expensive or slowly changing data. */
+		GC_10MIN: 600_000
 	} as const;

@@ -1,18 +1,17 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
-using SeventySix.Registration;
 using SeventySix.Shared.Interfaces;
 using SeventySix.Shared.Persistence;
+using SeventySix.Shared.Registration;
 using Shouldly;
-using Xunit;
 
 namespace SeventySix.Shared.Tests.Registration;
 
-public class FakeDbContext(DbContextOptions<FakeDbContext> options)
+public sealed class FakeDbContext(DbContextOptions<FakeDbContext> options)
 	: DbContext(options);
 
-public class DomainDbContextRegistrationTests
+public sealed class DomainDbContextRegistrationTests
 {
 	[Fact]
 	public void AddDomainDbContext_RegistersDbContextAndInterceptor()

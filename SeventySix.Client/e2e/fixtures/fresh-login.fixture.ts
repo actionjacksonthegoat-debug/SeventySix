@@ -4,6 +4,7 @@
 
 import { test as base, Page, BrowserContext, Browser } from "@playwright/test";
 import { TEST_USERS, SELECTORS, ROUTES, TIMEOUTS, E2E_CONFIG } from "./index";
+import { loginInFreshContext } from "./helpers/context-login.helper";
 import type { TestUser } from "./test-users.constant";
 
 /**
@@ -45,42 +46,32 @@ async function performFreshLogin(
 	baseURL: string,
 	testUser: TestUser): Promise<{ page: Page; browserContext: BrowserContext }>
 {
-	// Create a fresh context WITHOUT any storage state (no inherited auth)
-	const browserContext: BrowserContext =
-		await browser.newContext({
-			baseURL,
-			storageState: undefined,
-			ignoreHTTPSErrors: true
+	const { page, context } =
+		await loginInFreshContext(browser, testUser, {
+			expectedUrl: (url: URL) =>
+				url.pathname === ROUTES.home
+				|| url.pathname.includes("/mfa/"),
 		});
-	const page: Page =
-		await browserContext.newPage();
 
-	// Navigate to login page
-	await page.goto(ROUTES.auth.login);
-	await page
-		.locator(SELECTORS.form.usernameInput)
-		.waitFor({ state: "visible", timeout: TIMEOUTS.globalSetup });
+	// If redirected to MFA, the user has TOTP enabled (likely from a parallel test).
+	// Fail fast with a clear message instead of timing out.
+	const currentPath: string =
+		new URL(page.url()).pathname;
 
-	// Fill login form
-	await page
-		.locator(SELECTORS.form.usernameInput)
-		.fill(testUser.username);
-	await page
-		.locator(SELECTORS.form.passwordInput)
-		.fill(testUser.password);
-
-	// Submit and wait for redirect
-	await page
-		.locator(SELECTORS.form.submitButton)
-		.click();
-	await page.waitForURL(ROUTES.home, { timeout: TIMEOUTS.globalSetup });
+	if (currentPath.includes("/mfa/"))
+	{
+		throw new Error(
+			`Fresh login for ${testUser.username} was redirected to MFA verify. `
+			+ "Another test likely enabled TOTP on this shared user. "
+			+ "Retry should succeed after TOTP cleanup completes.");
+	}
 
 	// Wait for the app to be fully interactive (user menu visible means auth complete)
 	await page
 		.locator(SELECTORS.layout.userMenuButton)
 		.waitFor({ state: "visible", timeout: TIMEOUTS.auth });
 
-	return { page, browserContext };
+	return { page, browserContext: context };
 }
 
 /**

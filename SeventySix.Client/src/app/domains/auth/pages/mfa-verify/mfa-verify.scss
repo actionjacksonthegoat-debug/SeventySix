@@ -1,28 +1,23 @@
 @use "../../shared/styles/variables" as vars;
+@use "../../shared/styles/mixins";
+
+.hint-text {
+	font-size: 0.85rem;
+	color: var(--mat-sys-on-surface-variant);
+	display: inline-block;
+	padding-left: vars.$spacing-sm;
+}
 
 .mfa-verify-container {
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	min-height: 100%;
-	padding: vars.$spacing-lg;
-	background: var(--mat-app-background-color);
+	@include mixins.auth-page-container();
 }
 
 .mfa-verify-card {
-	width: 100%;
-	max-width: 25rem;
-	padding: vars.$spacing-2xl;
-	background: var(--mat-sys-surface);
-	border-radius: 1rem;
-	box-shadow: var(--mat-sys-level2);
+	@include mixins.auth-page-card();
 
 	h1 {
-		margin: 0 0 vars.$spacing-sm;
-		font-size: 1.5rem;
-		font-weight: 500;
-		text-align: center;
-		color: var(--mat-sys-on-surface);
+		@include mixins.auth-page-heading();
+		margin-bottom: vars.$spacing-sm;
 	}
 
 	.subtitle {
@@ -39,44 +34,12 @@
 	gap: vars.$spacing-lg;
 }
 
-.form-group {
-	display: flex;
-	flex-direction: column;
-	gap: vars.$spacing-xs;
-
-	label {
-		font-size: 0.875rem;
-		font-weight: 500;
-		color: var(--mat-sys-on-surface);
-	}
+mat-form-field.code-field {
+	width: 100%;
 
 	input {
-		height: 3rem;
-		padding: 0 vars.$spacing-md;
 		font-size: 1.5rem;
 		letter-spacing: 0.5rem;
-		text-align: center;
-		background: var(--mat-sys-surface-container);
-		border: 1px solid var(--mat-sys-outline-variant);
-		border-radius: 0.5rem;
-		color: var(--mat-sys-on-surface);
-		transition: border-color 0.2s, box-shadow 0.2s;
-
-		&::placeholder {
-			color: var(--mat-sys-on-surface-variant);
-			letter-spacing: 0.5rem;
-		}
-
-		&:focus {
-			outline: none;
-			border-color: var(--mat-sys-primary);
-			box-shadow: 0 0 0 2px color-mix(in srgb, var(--mat-sys-primary) 20%, transparent);
-		}
-	}
-
-	.hint {
-		font-size: 0.75rem;
-		color: var(--mat-sys-on-surface-variant);
 		text-align: center;
 	}
 }
@@ -87,7 +50,8 @@
 	margin-top: vars.$spacing-md;
 }
 
-.resend-section {
+.resend-section,
+.backup-section {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -95,7 +59,9 @@
 	margin-top: vars.$spacing-xl;
 	padding-top: vars.$spacing-lg;
 	border-top: 1px solid var(--mat-sys-outline-variant);
+}
 
+.resend-section {
 	.resend-text {
 		margin: 0;
 		font-size: 0.875rem;
@@ -108,14 +74,6 @@
 }
 
 .backup-section {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	gap: vars.$spacing-xs;
-	margin-top: vars.$spacing-xl;
-	padding-top: vars.$spacing-lg;
-	border-top: 1px solid var(--mat-sys-outline-variant);
-
 	.backup-text {
 		margin: 0;
 		font-size: 0.875rem;

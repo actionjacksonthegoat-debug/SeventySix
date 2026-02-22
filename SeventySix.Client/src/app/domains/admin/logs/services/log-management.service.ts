@@ -27,6 +27,7 @@ import { QueryKeys } from "@shared/utilities/query-keys.utility";
 import { toggleSetItem } from "@shared/utilities/selection.utility";
 import {
 	CreateMutationResult,
+	CreateQueryResult,
 	injectQuery
 } from "@tanstack/angular-query-experimental";
 import { lastValueFrom, Observable } from "rxjs";
@@ -121,7 +122,7 @@ export class LogManagementService extends BaseQueryService<LogQueryRequest>
 	 * @returns {ReturnType<typeof injectQuery>}
 	 * Query object with `data`, `isLoading`, `error`, and related flags.
 	 */
-	getLogs()
+	getLogs(): CreateQueryResult<PagedResultOfLogDto>
 	{
 		return injectQuery(
 			() => ({

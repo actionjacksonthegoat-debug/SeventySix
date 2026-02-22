@@ -14,7 +14,13 @@ export const ROUTES =
 			{
 				login: "/auth/login",
 				register: "/auth/register",
-				forgotPassword: "/auth/forgot-password"
+				registerComplete: "/auth/register/complete",
+				forgotPassword: "/auth/forgot-password",
+				changePassword: "/auth/change-password",
+				setPassword: "/auth/set-password",
+				mfaVerify: "/auth/mfa/verify",
+				totpSetup: "/auth/totp-setup",
+				backupCodes: "/auth/backup-codes"
 			},
 
 		account:
@@ -34,8 +40,7 @@ export const ROUTES =
 
 		developer:
 			{
-				styleGuide: "/developer/style-guide",
-				architectureGuide: "/developer/architecture-guide"
+				styleGuide: "/developer/style-guide"
 			},
 
 		sandbox:
@@ -70,8 +75,7 @@ export const ROUTE_GROUPS =
 
 		developerRoutes:
 			[
-				ROUTES.developer.styleGuide,
-				ROUTES.developer.architectureGuide
+				ROUTES.developer.styleGuide
 			] as const,
 
 		accountRoutes:
@@ -105,8 +109,7 @@ export const ROUTE_GROUPS =
 		 */
 		developerAccessibilityPages:
 			[
-				{ path: ROUTES.developer.styleGuide, name: "Style Guide" },
-				{ path: ROUTES.developer.architectureGuide, name: "Architecture Guide" }
+				{ path: ROUTES.developer.styleGuide, name: "Style Guide" }
 			] as const
 	} as const;
 

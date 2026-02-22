@@ -13,33 +13,33 @@ namespace SeventySix.Api.Infrastructure;
 /// This DTO aggregates health information from multiple system components
 /// including database, external APIs, error queue, and system resources.
 /// </remarks>
-public class HealthStatusResponse
+public record HealthStatusResponse
 {
 	/// <summary>
-	/// Gets or sets the overall system health status.
+	/// Gets the overall system health status.
 	/// </summary>
 	/// <value>
 	/// Health status: "Healthy", "Degraded", or "Unhealthy".
 	/// </value>
-	public string Status { get; set; } = HealthStatusConstants.Healthy;
+	public string Status { get; init; } = HealthStatusConstants.Healthy;
 
 	/// <summary>
-	/// Gets or sets the timestamp when the health check was performed.
+	/// Gets the timestamp when the health check was performed.
 	/// </summary>
-	public DateTime CheckedAt { get; set; }
+	public DateTimeOffset CheckedAt { get; init; }
 
 	/// <summary>
-	/// Gets or sets the database health information.
+	/// Gets the database health information.
 	/// </summary>
-	public DatabaseHealthResponse Database { get; set; } = new();
+	public DatabaseHealthResponse Database { get; init; } = new();
 
 	/// <summary>
-	/// Gets or sets the error queue health information.
+	/// Gets the error queue health information.
 	/// </summary>
-	public QueueHealthResponse ErrorQueue { get; set; } = new();
+	public QueueHealthResponse ErrorQueue { get; init; } = new();
 
 	/// <summary>
-	/// Gets or sets the system resources information.
+	/// Gets the system resources information.
 	/// </summary>
-	public SystemResourcesResponse System { get; set; } = new();
+	public SystemResourcesResponse System { get; init; } = new();
 }

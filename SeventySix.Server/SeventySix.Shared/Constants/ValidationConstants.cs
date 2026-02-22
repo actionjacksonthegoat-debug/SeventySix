@@ -123,4 +123,9 @@ public static class ValidationConstants
 	/// Standard token hash maximum length.
 	/// </summary>
 	public const int TokenHashMaxLength = 64;
+
+	/// <summary>
+	/// Maximum length for encrypted TOTP secrets (Data Protection API output).
+	/// </summary>
+	public const int EncryptedTotpSecretMaxLength = 512;
 }

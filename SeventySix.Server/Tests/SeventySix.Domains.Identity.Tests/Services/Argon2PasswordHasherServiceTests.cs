@@ -3,7 +3,6 @@
 // </copyright>
 
 using Microsoft.Extensions.Options;
-using SeventySix.Identity;
 using Shouldly;
 
 namespace SeventySix.Identity.Tests.Services;
@@ -14,7 +13,7 @@ namespace SeventySix.Identity.Tests.Services;
 /// <remarks>
 /// Security-critical tests - 100% coverage required per 80/20 rule.
 /// </remarks>
-public class Argon2PasswordHasherServiceTests
+public sealed class Argon2PasswordHasherServiceTests
 {
 	private readonly Argon2PasswordHasherService Hasher;
 

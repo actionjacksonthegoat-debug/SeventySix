@@ -8,7 +8,7 @@ using Shouldly;
 namespace SeventySix.Domains.Tests.Logging.Settings;
 
 /// <summary>Unit tests for LogCleanupSettings record.</summary>
-public class LogCleanupSettingsTests
+public sealed class LogCleanupSettingsTests
 {
 	[Fact]
 	public void SectionName_HasCorrectValue()

@@ -1,4 +1,3 @@
-```prompt
 ---
 agent: agent
 description: Generate E2E tests using Playwright following SeventySix patterns
@@ -8,16 +7,32 @@ description: Generate E2E tests using Playwright following SeventySix patterns
 
 Create E2E tests using Playwright for SeventySix application.
 
+## Tools
+
+- Use **context7** MCP to fetch up-to-date Playwright API docs before generating test code
+- Use **Playwright CLI** (`npx playwright test`) for running and debugging tests
+- Use **chrome-devtools** MCP for live DOM inspection, network analysis, and performance tracing during test development
+- Use **playwright** MCP for fine-tuning selectors interactively when the E2E environment is alive
+
+## E2E Debugging Workflow
+
+1. Run failing test with keepalive: `npm run test:e2e -- --keepalive specs/failing-test.spec.ts`
+2. Environment stays alive at `https://localhost:4201`
+3. Use Playwright CLI or Playwright MCP to iterate on selectors and flows
+4. When done: `docker compose -f docker-compose.e2e.yml down -v --remove-orphans`
+
+> **Note**: E2E and Load Tests run in their own isolated Docker environments. You do NOT need to start dev environments for either.
+
 ## Test Category Selection (REQUIRED)
 
 Ask user which category this test belongs to:
 
-| Category      | Location                   | Auth State       | Use Case                     |
-| ------------- | -------------------------- | ---------------- | ---------------------------- |
-| public        | `e2e/specs/public/`        | None             | Unauthenticated flows        |
-| authenticated | `e2e/specs/authenticated/` | User role        | General authenticated access |
-| admin         | `e2e/specs/admin/`         | Admin role       | Admin-only features          |
-| developer     | `e2e/specs/developer/`     | Developer role   | Developer tools/features     |
+| Category      | Location                   | Auth State     | Use Case                     |
+| ------------- | -------------------------- | -------------- | ---------------------------- |
+| public        | `e2e/specs/public/`        | None           | Unauthenticated flows        |
+| authenticated | `e2e/specs/authenticated/` | User role      | General authenticated access |
+| admin         | `e2e/specs/admin/`         | Admin role     | Admin-only features          |
+| developer     | `e2e/specs/developer/`     | Developer role | Developer tools/features     |
 
 ## E2E Structure
 
@@ -48,24 +63,11 @@ SeventySix.Client/e2e/
 ├── admin/ # Admin role auth
 └── developer/ # Developer role auth
 
-````
+```
 
-## Import Rules (CRITICAL)
+## Import Rules
 
-**ALWAYS** import from barrel export:
-
-```typescript
-import {
-    test,
-    expect,
-    SELECTORS,
-    ROUTES,
-    PAGE_TEXT,
-    TIMEOUTS
-} from "../../fixtures";
-````
-
-**NEVER** import from individual fixture files directly.
+See `e2e.instructions.md` Import Rule — ALWAYS import from `../../fixtures` barrel.
 
 ## Spec File Template
 
@@ -123,7 +125,8 @@ test.describe("{{Feature Name}}",
 Page helpers encapsulate common interactions:
 
 ```typescript
-test("should submit login form", async ({ authPage }) => { // Injected via fixture
+test("should submit login form", async ({ authPage }) => {
+	// Injected via fixture
 	await authPage.login("username", "password");
 	await expect(authPage.snackbar).toBeVisible();
 });
@@ -135,111 +138,11 @@ test("should navigate to feature", async ({ homePage }) => {
 
 ## Creating New Page Helper
 
-Location: `e2e/fixtures/pages/{{name}}.page.ts`
+Location: `e2e/fixtures/pages/{{name}}.page.ts` — follow existing page helpers as templates. Export via `e2e/fixtures/pages/index.ts` and register in `e2e/fixtures/page-helpers.fixture.ts`.
 
-```typescript
-// <copyright file="{{name}}.page.ts" company="SeventySix">
-// Copyright (c) SeventySix. All rights reserved.
-// </copyright>
+## Adding Constants
 
-import { Page, Locator } from "@playwright/test";
-import { SELECTORS } from "../selectors.constant";
-
-/**
- * {{Name}} page helper for {{description}}.
- * Encapsulates common {{feature}} page operations.
- */
-export class {{Name}}PageHelper
-{
-    readonly page: Page;
-    readonly heading: Locator;
-    readonly submitButton: Locator;
-
-    /**
-     * Creates {{name}} page helper.
-     * @param page
-     * Playwright page instance.
-     */
-    constructor(page: Page)
-    {
-        this.page = page;
-        this.heading = page.locator(SELECTORS.layout.pageHeading);
-        this.submitButton = page.locator(SELECTORS.form.submitButton);
-    }
-
-    /**
-     * Performs {{action}}.
-     * @param param
-     * Description of parameter.
-     */
-    async doAction(param: string): Promise<void>
-    {
-        await this.page.locator(`[data-testid="${param}"]`).click();
-    }
-}
-```
-
-Then add to:
-
-1. `e2e/fixtures/pages/index.ts` - barrel export
-2. `e2e/fixtures/page-helpers.fixture.ts` - fixture registration
-
-## Adding Selectors
-
-Location: `e2e/fixtures/selectors.constant.ts`
-
-```typescript
-export const SELECTORS =
-    {
-        // Group by feature area
-        {{feature}}:
-            {
-                button: "[data-testid='{{feature}}-button']",
-                input: "#{{feature}}Input",
-                list: ".{{feature}}-list"
-            },
-    } as const;
-```
-
-**Prefer** `data-testid` attributes for test stability.
-
-## Adding Routes
-
-Location: `e2e/fixtures/routes.constant.ts`
-
-```typescript
-export const ROUTES =
-    {
-        {{feature}}:
-            {
-                list: "/{{feature}}",
-                detail: "/{{feature}}/:id",
-                create: "/{{feature}}/new"
-            },
-    } as const;
-```
-
-## Adding Page Text
-
-Location: `e2e/fixtures/page-text.constant.ts`
-
-```typescript
-export const PAGE_TEXT =
-    {
-        headings:
-            {
-                {{feature}}: "{{Feature Title}}"
-            },
-        buttons:
-            {
-                {{action}}: "{{Button Text}}"
-            },
-        messages:
-            {
-                {{feature}}Success: "{{Success message}}"
-            },
-    } as const;
-```
+Add selectors to `selectors.constant.ts`, routes to `routes.constant.ts`, text to `page-text.constant.ts`. Prefer `data-testid` attributes for selectors.
 
 ## Test Patterns
 
@@ -297,12 +200,9 @@ freshLoginTest.describe("Logout Flow", () => {
 });
 ```
 
-## Formatting Rules
+## Formatting & CLI
 
-- New line after every `=` with indented value
-- Callback functions on new line after `(`
-- Each param on new line when 2+ params
-- Descriptive variable names (3+ chars): `page`, `authPage`, `response`
+See `formatting.instructions.md` for code style rules and `e2e.instructions.md` for Playwright CLI commands and anti-flake rules.
 
 ## Test Naming Convention
 
@@ -326,21 +226,4 @@ Examples:
 
 ## Running E2E Tests
 
-```bash
-# Run all E2E tests
-npm run test:e2e
-
-# Run specific category
-npx playwright test --project=public
-npx playwright test --project=admin
-
-# Run specific spec file
-npx playwright test e2e/specs/public/login.spec.ts
-
-# Debug mode with browser visible
-npx playwright test --headed --debug
-```
-
-```
-
-```
+See `e2e.instructions.md` Playwright CLI section for all run/debug commands.

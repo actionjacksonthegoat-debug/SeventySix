@@ -5,7 +5,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
-using SeventySix.Identity;
 using SeventySix.Shared.Contracts.Emails;
 using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.Mocks;
@@ -21,9 +20,10 @@ namespace SeventySix.Identity.Tests.Commands.InitiateRegistration;
 /// Tests follow 80/20 rule: focus on security-critical scenarios.
 /// Email enumeration prevention is critical.
 /// </remarks>
-public class InitiateRegistrationCommandHandlerTests
+public sealed class InitiateRegistrationCommandHandlerTests
 {
 	private readonly UserManager<ApplicationUser> UserManager;
+	private readonly IAltchaService AltchaService;
 	private readonly IMessageBus MessageBus;
 	private readonly FakeTimeProvider TimeProvider;
 
@@ -34,10 +34,15 @@ public class InitiateRegistrationCommandHandlerTests
 	{
 		UserManager =
 			IdentityMockFactory.CreateUserManager();
+		AltchaService =
+			Substitute.For<IAltchaService>();
 		MessageBus =
 			Substitute.For<IMessageBus>();
 		TimeProvider =
 			new FakeTimeProvider(TestTimeProviderBuilder.DefaultTime);
+
+		// Default: ALTCHA disabled for most tests
+		AltchaService.IsEnabled.Returns(false);
 	}
 
 	/// <summary>
@@ -62,6 +67,7 @@ public class InitiateRegistrationCommandHandlerTests
 		// Act
 		await InitiateRegistrationCommandHandler.HandleAsync(
 			request,
+			AltchaService,
 			UserManager,
 			MessageBus,
 			TimeProvider,
@@ -74,9 +80,8 @@ public class InitiateRegistrationCommandHandlerTests
 
 		await MessageBus
 			.DidNotReceive()
-			.InvokeAsync(
-				Arg.Any<EnqueueEmailCommand>(),
-				Arg.Any<CancellationToken>());
+			.PublishAsync(
+				Arg.Any<EnqueueEmailCommand>());
 	}
 
 	/// <summary>
@@ -107,6 +112,7 @@ public class InitiateRegistrationCommandHandlerTests
 		// Act
 		await InitiateRegistrationCommandHandler.HandleAsync(
 			request,
+			AltchaService,
 			UserManager,
 			MessageBus,
 			TimeProvider,
@@ -120,11 +126,10 @@ public class InitiateRegistrationCommandHandlerTests
 
 		await MessageBus
 			.Received(1)
-			.InvokeAsync(
+			.PublishAsync(
 				Arg.Is<EnqueueEmailCommand>(
 					command => command.RecipientEmail == Email
-						&& command.EmailType == EmailTypeConstants.Verification),
-				Arg.Any<CancellationToken>());
+						&& command.EmailType == EmailTypeConstants.Verification));
 	}
 
 	/// <summary>
@@ -151,6 +156,7 @@ public class InitiateRegistrationCommandHandlerTests
 		// Act
 		await InitiateRegistrationCommandHandler.HandleAsync(
 			request,
+			AltchaService,
 			UserManager,
 			MessageBus,
 			TimeProvider,
@@ -159,9 +165,8 @@ public class InitiateRegistrationCommandHandlerTests
 		// Assert - No email should be enqueued on failure
 		await MessageBus
 			.DidNotReceive()
-			.InvokeAsync(
-				Arg.Any<EnqueueEmailCommand>(),
-				Arg.Any<CancellationToken>());
+			.PublishAsync(
+				Arg.Any<EnqueueEmailCommand>());
 	}
 
 	/// <summary>
@@ -194,6 +199,7 @@ public class InitiateRegistrationCommandHandlerTests
 		// Act
 		await InitiateRegistrationCommandHandler.HandleAsync(
 			request,
+			AltchaService,
 			UserManager,
 			MessageBus,
 			TimeProvider,

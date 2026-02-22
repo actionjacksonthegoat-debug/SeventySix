@@ -4,7 +4,10 @@ import {
 } from "@angular/core";
 import { environment } from "@environments/environment";
 import { LoggerService } from "@shared/services/logger.service";
-import { timer } from "rxjs";
+import {
+	take,
+	timer
+} from "rxjs";
 
 /**
  * Delay before initializing telemetry (milliseconds).
@@ -90,6 +93,7 @@ export class TelemetryService
 
 		// Defer telemetry setup to not block initial render
 		timer(TELEMETRY_INIT_DELAY_MS)
+			.pipe(take(1))
 			.subscribe(
 				() =>
 				{

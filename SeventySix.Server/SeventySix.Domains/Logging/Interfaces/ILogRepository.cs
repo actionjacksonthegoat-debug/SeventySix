@@ -70,7 +70,7 @@ public interface ILogRepository
 	/// The number of deleted records.
 	/// </returns>
 	public Task<int> DeleteOlderThanAsync(
-		DateTime cutoffDate,
+		DateTimeOffset cutoffDate,
 		CancellationToken cancellationToken = default);
 
 	/// <summary>

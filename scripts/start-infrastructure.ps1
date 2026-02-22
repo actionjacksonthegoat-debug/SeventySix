@@ -19,15 +19,35 @@ Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 
 # Clean up orphaned processes before starting (prevents port conflicts)
-& (Join-Path $PSScriptRoot "cleanup-ports.ps1")
+& (Join-Path $PSScriptRoot "internal" "cleanup-ports.ps1")
 
-# Ensure Docker Desktop is running
-if (-not (Get-Process 'Docker Desktop' -ErrorAction SilentlyContinue))
-{
-	Write-Host "Starting Docker Desktop..." -ForegroundColor Yellow
-	Start-Process 'C:\Program Files\Docker\Docker\Docker Desktop.exe'
-	Write-Host "Waiting for Docker to initialize..." -ForegroundColor Yellow
-	Start-Sleep -Seconds 15
+# Export user secrets as environment variables for Docker Compose
+Write-Host "Loading secrets from user-secrets store..." -ForegroundColor Yellow
+& (Join-Path $PSScriptRoot "internal" "load-user-secrets.ps1")
+if ($LASTEXITCODE -ne 0) { exit 1 }
+
+# Ensure Docker is running (Windows: try to start Docker Desktop; Linux: check daemon)
+$dockerRunning = $false
+try {
+	docker info 2>&1 | Out-Null
+	$dockerRunning = ($LASTEXITCODE -eq 0)
+}
+catch { }
+
+if (-not $dockerRunning) {
+	if ($IsWindows) {
+		Write-Host "Starting Docker Desktop..." -ForegroundColor Yellow
+		$dockerDesktopPath = "C:\Program Files\Docker\Docker\Docker Desktop.exe"
+		if (Test-Path $dockerDesktopPath) {
+			Start-Process $dockerDesktopPath
+		}
+		Write-Host "Waiting for Docker to initialize..." -ForegroundColor Yellow
+		Start-Sleep -Seconds 15
+	}
+	else {
+		Write-Host "Docker daemon is not running. Please start it and try again." -ForegroundColor Red
+		exit 1
+	}
 }
 
 # Wait for Docker to be fully ready (not just the process, but the daemon)
@@ -36,33 +56,27 @@ $maxWaitSeconds = 60
 $waitedSeconds = 0
 $dockerReady = $false
 
-while (-not $dockerReady -and $waitedSeconds -lt $maxWaitSeconds)
-{
-	try
-	{
+while (-not $dockerReady -and $waitedSeconds -lt $maxWaitSeconds) {
+	try {
 		$dockerVersion =
 		docker version --format "{{.Server.Version}}" 2>$null
-		if ($dockerVersion)
-		{
+		if ($dockerVersion) {
 			$dockerReady = $true
 			Write-Host "  Docker daemon ready (v$dockerVersion)" -ForegroundColor Green
 		}
 	}
-	catch
-	{
+	catch {
 		# Docker not ready yet
 	}
 
-	if (-not $dockerReady)
-	{
+	if (-not $dockerReady) {
 		Start-Sleep -Seconds 2
 		$waitedSeconds += 2
 		Write-Host "  Waiting for Docker daemon... ($waitedSeconds/$maxWaitSeconds seconds)" -ForegroundColor DarkGray
 	}
 }
 
-if (-not $dockerReady)
-{
+if (-not $dockerReady) {
 	Write-Host ""
 	Write-Host "ERROR: Docker daemon did not start within $maxWaitSeconds seconds" -ForegroundColor Red
 	Write-Host "  Please start Docker Desktop manually and try again" -ForegroundColor Yellow
@@ -74,29 +88,15 @@ if (-not $dockerReady)
 Write-Host "Ensuring API ports are free for debugging..." -ForegroundColor Yellow
 & (Join-Path $PSScriptRoot "stop-api.ps1")
 
-# Verify .env file exists
-$envFilePath = Join-Path $PSScriptRoot "..\.env"
-if (-not (Test-Path $envFilePath))
-{
-	Write-Host ""
-	Write-Host "ERROR: .env file not found!" -ForegroundColor Red
-	Write-Host "Please copy .env.example to .env and configure your values:" -ForegroundColor Yellow
-	Write-Host "  Copy-Item .env.example .env" -ForegroundColor White
-	Write-Host ""
-	exit 1
-}
-
 # Check SSL certificate exists for nginx-proxy
 $certificatePath =
-	Join-Path $PSScriptRoot "..\SeventySix.Client\ssl\dev-certificate.crt"
+Join-Path $PSScriptRoot "..\SeventySix.Client\ssl\dev-certificate.crt"
 
-if (-not (Test-Path $certificatePath))
-{
+if (-not (Test-Path $certificatePath)) {
 	Write-Host "SSL certificate not found. Generating..." -ForegroundColor Yellow
 	& (Join-Path $PSScriptRoot "generate-dev-ssl-cert.ps1")
 
-	if (-not (Test-Path $certificatePath))
-	{
+	if (-not (Test-Path $certificatePath)) {
 		Write-Host "Failed to generate SSL certificate!" -ForegroundColor Red
 		exit 1
 	}
@@ -105,32 +105,29 @@ if (-not (Test-Path $certificatePath))
 # Change to repository root directory
 Push-Location (Join-Path $PSScriptRoot "..")
 
-try
-{
+try {
 	# Infrastructure services including HTTPS proxy (not the API)
 	$infrastructureServices =
-		@(
-			"postgres",
-			"valkey",
-			"redis-exporter",
-			"otel-collector",
-			"jaeger",
-			"prometheus",
-			"grafana",
-			"pgadmin",
-			"redisinsight",
-			"nginx-proxy"
-		)
+	@(
+		"postgres",
+		"valkey",
+		"redis-exporter",
+		"otel-collector",
+		"jaeger",
+		"prometheus",
+		"grafana",
+		"pgadmin",
+		"redisinsight",
+		"nginx-proxy"
+	)
 
 	Write-Host "Starting services: $($infrastructureServices -join ', ')" -ForegroundColor Cyan
 	Write-Host ""
 
-	if ($Attached)
-	{
+	if ($Attached) {
 		docker compose up $infrastructureServices
 	}
-	else
-	{
+	else {
 		docker compose up -d $infrastructureServices
 
 		Write-Host ""
@@ -152,23 +149,24 @@ try
 		# Start client in new PowerShell window if not already running
 		$clientPort = 4200
 		$clientRunning = $false
-		try
-		{
-			$tcpConnection =
-			Get-NetTCPConnection -LocalPort $clientPort -ErrorAction SilentlyContinue
-			if ($tcpConnection)
-			{
-				$clientRunning = $true
-				Write-Host "Angular client already running on port $clientPort" -ForegroundColor Green
+		try {
+			if ($IsWindows) {
+				$clientRunning = $null -ne (Get-NetTCPConnection -LocalPort $clientPort -ErrorAction SilentlyContinue)
+			}
+			else {
+				$lsofResult = & lsof -ti ":$clientPort" 2>/dev/null
+				$clientRunning = -not [string]::IsNullOrEmpty($lsofResult)
 			}
 		}
-		catch
-		{
+		catch {
 			# Port not in use
 		}
 
-		if (-not $clientRunning)
-		{
+		if ($clientRunning) {
+			Write-Host "Angular client already running on port $clientPort" -ForegroundColor Green
+		}
+
+		if (-not $clientRunning) {
 			Write-Host "Starting Angular client in new window..." -ForegroundColor Cyan
 			$clientPath =
 			Join-Path $PSScriptRoot "..\SeventySix.Client"
@@ -189,7 +187,6 @@ try
 		Write-Host ""
 	}
 }
-finally
-{
+finally {
 	Pop-Location
 }

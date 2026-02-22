@@ -3,7 +3,6 @@
 // </copyright>
 
 using Microsoft.Extensions.Time.Testing;
-using SeventySix.Identity;
 using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;
@@ -19,7 +18,7 @@ namespace SeventySix.Identity.Tests.Repositories;
 /// User lookup, external logins, and roles are handled by UserManager.
 /// </remarks>
 [Collection(CollectionNames.IdentityPostgreSql)]
-public class AuthRepositoryTests : DataPostgreSqlTestBase
+public sealed class AuthRepositoryTests : DataPostgreSqlTestBase
 {
 	public AuthRepositoryTests(IdentityPostgreSqlFixture fixture)
 		: base(fixture) { }
@@ -49,8 +48,8 @@ public class AuthRepositoryTests : DataPostgreSqlTestBase
 		context.Users.Add(user);
 		await context.SaveChangesAsync();
 
-		DateTime loginTime =
-			timeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset loginTime =
+			timeProvider.GetUtcNow();
 		string clientIp = "192.168.1.100";
 
 		// Act
@@ -99,8 +98,8 @@ public class AuthRepositoryTests : DataPostgreSqlTestBase
 		context.Users.Add(user);
 		await context.SaveChangesAsync();
 
-		DateTime loginTime =
-			timeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset loginTime =
+			timeProvider.GetUtcNow();
 
 		// Act
 		await repository.UpdateLastLoginAsync(

@@ -1,0 +1,42 @@
+@use "variables" as vars;
+@use "mixins";
+
+:host {
+	// Full-width page — fills available space; parent strips constraints via .full-width-page
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+.landing-page {
+	// Parallax scroll container — enables CSS perspective + translateZ in child sections
+	@include mixins.parallax-scroll-container();
+
+	// Full-width — each section manages its own width
+	overflow-x: hidden;
+
+	// Shared section heading styles
+	.section-heading {
+		@include mixins.text-frosted-glass(vars.$spacing-sm, vars.$spacing-lg);
+
+		font-size: vars.$font-size-3xl;
+		font-weight: vars.$font-weight-bold;
+		text-align: center;
+		margin-bottom: vars.$spacing-md;
+		color: var(--mat-sys-on-surface);
+	}
+
+	.section-subtitle {
+		@include mixins.text-frosted-glass();
+
+		text-align: center;
+		font-size: vars.$font-size-lg;
+		color: var(--mat-sys-on-surface-variant);
+		max-width: 40rem;
+		margin: 0 auto vars.$spacing-2xl;
+	}
+}
+
+.section-placeholder {
+	min-height: 20rem;
+}

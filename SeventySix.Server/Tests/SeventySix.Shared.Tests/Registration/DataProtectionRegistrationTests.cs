@@ -7,7 +7,6 @@ using NSubstitute;
 using SeventySix.Api.Configuration;
 using SeventySix.Api.Registration;
 using Shouldly;
-using Xunit;
 
 namespace SeventySix.Shared.Tests.Registration;
 
@@ -18,8 +17,14 @@ namespace SeventySix.Shared.Tests.Registration;
 /// Following 80/20 rule: Tests focus on critical validation paths only.
 /// Certificate file existence and loading are integration concerns.
 /// </remarks>
-public class DataProtectionRegistrationTests
+public sealed class DataProtectionRegistrationTests
 {
+	private static readonly string NonExistentCertPath =
+		Path.Combine(
+			Path.GetTempPath(),
+			"nonexistent",
+			"cert.pfx");
+
 	[Fact]
 	public void AddConfiguredDataProtection_WithMissingCertificate_InProduction_ThrowsInvalidOperationException()
 	{
@@ -33,8 +38,7 @@ public class DataProtectionRegistrationTests
 			new()
 			{
 				["DataProtection:UseCertificate"] = "true",
-				["DataProtection:CertificatePath"] = "C:\\nonexistent\\cert.pfx",
-				["DataProtection:AllowUnprotectedKeysInDevelopment"] = "false",
+				["DataProtection:CertificatePath"] = NonExistentCertPath,
 				["DataProtection:KeysDirectory"] = tempKeysDirectory
 			};
 
@@ -71,8 +75,8 @@ public class DataProtectionRegistrationTests
 			new()
 			{
 				["DataProtection:UseCertificate"] = "true",
-				["DataProtection:CertificatePath"] = "C:\\nonexistent\\cert.pfx",
-				["DataProtection:AllowUnprotectedKeysInDevelopment"] = "true",
+				["DataProtection:CertificatePath"] = NonExistentCertPath,
+				["DataProtection:CertificatePassword"] = "test-password",
 			};
 
 		IConfiguration configuration =
@@ -97,15 +101,14 @@ public class DataProtectionRegistrationTests
 		ServiceProvider provider =
 			services.BuildServiceProvider();
 
-		// Assert - Should not throw
-		IOptions<AppDataProtectionOptions> dataProtectionOptionsAccessor =
-			provider.GetRequiredService<IOptions<AppDataProtectionOptions>>();
+		// Assert - Should not throw; falls back to unprotected keys
+		IOptions<DataProtectionSettings> dataProtectionOptionsAccessor =
+			provider.GetRequiredService<IOptions<DataProtectionSettings>>();
 
-		AppDataProtectionOptions dataProtectionOptions =
+		DataProtectionSettings dataProtectionOptions =
 			dataProtectionOptionsAccessor.Value;
 
 		dataProtectionOptions.UseCertificate.ShouldBeTrue();
-		dataProtectionOptions.AllowUnprotectedKeysInDevelopment.ShouldBeTrue();
 	}
 
 	[Fact]
@@ -147,55 +150,9 @@ public class DataProtectionRegistrationTests
 			services.BuildServiceProvider();
 
 		// Assert - Should not throw even in production
-		IOptions<AppDataProtectionOptions> dataProtectionOptionsAccessor =
-			provider.GetRequiredService<IOptions<AppDataProtectionOptions>>();
+		IOptions<DataProtectionSettings> dataProtectionOptionsAccessor =
+			provider.GetRequiredService<IOptions<DataProtectionSettings>>();
 
 		dataProtectionOptionsAccessor.Value.UseCertificate.ShouldBeFalse();
-	}
-
-	[Fact]
-	public void AddConfiguredDataProtection_WithMissingCertificate_InDevelopment_FallbackDisabled_ValidationFailsAsync()
-	{
-		// Arrange
-		Dictionary<string, string?> configurationValues =
-			new()
-			{
-				["DataProtection:UseCertificate"] = "true",
-				["DataProtection:CertificatePath"] = "C:\\nonexistent\\cert.pfx",
-				["DataProtection:AllowUnprotectedKeysInDevelopment"] = "false",
-			};
-
-		IConfiguration configuration =
-			new ConfigurationBuilder()
-				.AddInMemoryCollection(configurationValues)
-				.Build();
-
-		ServiceCollection services =
-			new();
-
-		IWebHostEnvironment environment =
-			Substitute.For<IWebHostEnvironment>();
-
-		environment.EnvironmentName =
-			Environments.Development;
-
-		// Act
-		services.AddConfiguredDataProtection(
-			configuration,
-			environment);
-
-		ServiceProvider provider =
-			services.BuildServiceProvider();
-
-		// Assert - Should throw even in development when fallback is disabled
-		Should.Throw<OptionsValidationException>(
-			() =>
-			{
-				IOptions<AppDataProtectionOptions> dataProtectionOptions =
-					provider.GetRequiredService<
-						IOptions<AppDataProtectionOptions>>();
-				_ =
-					dataProtectionOptions.Value;
-			});
 	}
 }

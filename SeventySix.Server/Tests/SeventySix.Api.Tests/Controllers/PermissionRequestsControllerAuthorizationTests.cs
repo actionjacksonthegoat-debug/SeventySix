@@ -15,7 +15,7 @@ namespace SeventySix.Api.Tests.Controllers;
 /// Verifies that admin-only endpoints require proper authentication and admin role.
 /// </summary>
 [Collection(CollectionNames.IdentityHealthPostgreSql)]
-public class PermissionRequestsControllerAuthorizationTests(
+public sealed class PermissionRequestsControllerAuthorizationTests(
 	IdentityHealthApiPostgreSqlFixture fixture)
 	: ApiPostgreSqlTestBase<Program>(fixture), IAsyncLifetime
 {

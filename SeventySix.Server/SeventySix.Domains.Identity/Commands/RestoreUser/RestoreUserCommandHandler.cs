@@ -3,6 +3,8 @@
 // </copyright>
 
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using SeventySix.Shared.Interfaces;
 using SeventySix.Shared.POCOs;
 
 namespace SeventySix.Identity;
@@ -24,6 +26,9 @@ public static class RestoreUserCommandHandler
 	/// <param name="identityCache">
 	/// Identity cache service for clearing user cache.
 	/// </param>
+	/// <param name="transactionManager">
+	/// Transaction manager for concurrency-safe read-then-write operations.
+	/// </param>
 	/// <param name="cancellationToken">
 	/// Cancellation token.
 	/// </param>
@@ -34,53 +39,75 @@ public static class RestoreUserCommandHandler
 		RestoreUserCommand command,
 		UserManager<ApplicationUser> userManager,
 		IIdentityCacheService identityCache,
+		ITransactionManager transactionManager,
 		CancellationToken cancellationToken)
 	{
-		ApplicationUser? user =
-			await userManager.FindByIdAsync(
-				command.UserId.ToString());
+		string? userEmail = null;
+		string? userName = null;
 
-		if (user is null)
+		Result txResult =
+			await transactionManager.ExecuteInTransactionAsync(
+				async ct =>
+				{
+					ApplicationUser? user =
+						await userManager.FindByIdAsync(
+							command.UserId.ToString());
+
+					if (user is null)
+					{
+						return Result.Failure($"User {command.UserId} not found");
+					}
+
+					if (!user.IsDeleted)
+					{
+						return Result.Failure($"User {command.UserId} is not deleted");
+					}
+
+					// Capture values for cache invalidation outside transaction
+					userEmail = user.Email;
+					userName = user.UserName;
+
+					user.IsDeleted = false;
+					user.DeletedAt = null;
+					user.DeletedBy = null;
+					user.IsActive = true;
+
+					IdentityResult identityResult =
+						await userManager.UpdateAsync(user);
+
+					if (!identityResult.Succeeded)
+					{
+						if (identityResult.Errors.Any(
+							error => error.Code == "ConcurrencyFailure"))
+						{
+							throw new DbUpdateConcurrencyException(
+								"Concurrency conflict restoring user. Will retry.");
+						}
+
+						return Result.Failure(
+							string.Join(
+								", ",
+								identityResult.Errors.Select(
+									error => error.Description)));
+					}
+
+					return Result.Success();
+				},
+				cancellationToken: cancellationToken);
+
+		if (!txResult.IsSuccess)
 		{
-			return Result.Failure($"User {command.UserId} not found");
+			return txResult;
 		}
 
-		if (!user.IsDeleted)
-		{
-			return Result.Failure($"User {command.UserId} is not deleted");
-		}
+		// Invalidate all user cache entries (outside transaction — after commit)
+		await identityCache.InvalidateUserAsync(
+			command.UserId,
+			email: userEmail,
+			username: userName);
 
-		// Capture values for cache invalidation
-		string? userEmail =
-			user.Email;
-		string? userName =
-			user.UserName;
+		await identityCache.InvalidateAllUsersAsync();
 
-		user.IsDeleted = false;
-		user.DeletedAt = null;
-		user.DeletedBy = null;
-		user.IsActive = true;
-
-		IdentityResult identityResult =
-			await userManager.UpdateAsync(user);
-
-		if (identityResult.Succeeded)
-		{
-			// Invalidate all user cache entries
-			await identityCache.InvalidateUserAsync(
-				command.UserId,
-				email: userEmail,
-				username: userName);
-
-			await identityCache.InvalidateAllUsersAsync();
-
-			return Result.Success();
-		}
-
-		return Result.Failure(
-			string.Join(
-				", ",
-				identityResult.Errors.Select(
-					error => error.Description)));
+		return txResult;
 	}
 }

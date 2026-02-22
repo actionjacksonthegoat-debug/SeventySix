@@ -21,9 +21,20 @@ namespace SeventySix.Identity.Tests.Validators;
 ///
 /// Uses FluentValidation.TestHelper for cleaner test syntax.
 /// </remarks>
-public class PasswordValidationExtensionsTests
+public sealed class PasswordValidationExtensionsTests
 {
-	private readonly TestPasswordValidator Validator = new();
+	private static readonly PasswordSettings TestPasswordSettings =
+		new()
+		{
+			MinLength = 8,
+			RequireUppercase = true,
+			RequireLowercase = true,
+			RequireDigit = true,
+			RequireSpecialChar = false,
+		};
+
+	private readonly TestPasswordValidator Validator =
+		new(TestPasswordSettings);
 
 	[Fact]
 	public void Password_ShouldNotHaveError_WhenValid()
@@ -211,9 +222,10 @@ public class PasswordValidationExtensionsTests
 	private sealed class TestPasswordValidator
 		: AbstractValidator<TestPasswordRequest>
 	{
-		public TestPasswordValidator()
+		public TestPasswordValidator(PasswordSettings passwordSettings)
 		{
-			RuleFor(x => x.Password).ApplyPasswordRules();
+			RuleFor(request => request.Password)
+				.ApplyPasswordRules(passwordSettings);
 		}
 	}
 }

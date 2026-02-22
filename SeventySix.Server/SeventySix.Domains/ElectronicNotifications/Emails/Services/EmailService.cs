@@ -258,7 +258,18 @@ public sealed class EmailService(
 	/// <param name="cancellationToken">
 	/// Cancellation token.
 	/// </param>
-	/// <exception cref="InvalidOperationException">Thrown when email daily limit is exceeded.</exception>
+	/// <exception cref="EmailRateLimitException">Thrown when email daily limit is exceeded.</exception>
+	/// <remarks>
+	/// <para>
+	/// Uses a reserve-then-execute pattern to guarantee the rate limit count is always
+	/// greater than or equal to the number of actual SMTP sends:
+	/// </para>
+	/// <list type="number">
+	/// <item>Reserve a rate limit slot (atomic increment via transaction with retry)</item>
+	/// <item>Send the email via SMTP</item>
+	/// <item>On SMTP failure: best-effort decrement (count staying 1 too high is safe)</item>
+	/// </list>
+	/// </remarks>
 	private async Task SendEmailAsync(
 		string to,
 		string subject,
@@ -274,12 +285,27 @@ public sealed class EmailService(
 			return;
 		}
 
-		await EnsureRateLimitNotExceededAsync(cancellationToken);
+		// RESERVE the rate limit slot BEFORE sending — atomic, transactional with retry
+		await ReserveRateLimitSlotAsync(cancellationToken);
 
-		using MimeMessage message =
-			BuildMimeMessage(to, subject, htmlBody);
-		await SendViaSMtpAsync(message, cancellationToken);
-		await TrackRateLimitAsync(cancellationToken);
+		try
+		{
+			using MimeMessage message =
+				BuildMimeMessage(to, subject, htmlBody);
+			await SendViaSMtpAsync(message, cancellationToken);
+		}
+		catch (Exception exception)
+		{
+			// SMTP failed — release the reserved slot (best-effort)
+			await TryReleaseRateLimitSlotAsync(cancellationToken);
+
+			logger.LogError(
+				exception,
+				"SMTP send failed for {To}: {Subject}. Rate limit slot released.",
+				to,
+				subject);
+			throw;
+		}
 
 		logger.LogWarning(
 			"Email sent to {To}: {Subject}",
@@ -288,7 +314,7 @@ public sealed class EmailService(
 	}
 
 	/// <summary>
-	/// Ensures the daily email rate limit has not been exceeded.
+	/// Atomically reserves a rate limit slot. Throws if the limit is reached.
 	/// </summary>
 	/// <param name="cancellationToken">
 	/// Cancellation token.
@@ -296,30 +322,56 @@ public sealed class EmailService(
 	/// <exception cref="EmailRateLimitException">
 	/// Thrown when the configured daily quota has been reached.
 	/// </exception>
-	private async Task EnsureRateLimitNotExceededAsync(
+	private async Task ReserveRateLimitSlotAsync(
 		CancellationToken cancellationToken)
 	{
-		bool canSend =
-			await rateLimitingService.CanMakeRequestAsync(
+		bool reserved =
+			await rateLimitingService.TryIncrementRequestCountAsync(
 				BREVO_API_NAME,
+				BREVO_BASE_URL,
 				cancellationToken);
-		if (canSend)
+
+		if (!reserved)
 		{
-			return;
-		}
+			int remaining =
+				await rateLimitingService.GetRemainingQuotaAsync(
+					BREVO_API_NAME,
+					cancellationToken);
+			TimeSpan resetTime =
+				rateLimitingService.GetTimeUntilReset();
 
-		int remaining =
-			await rateLimitingService.GetRemainingQuotaAsync(
+			logger.LogError(
+				"Email daily limit exceeded. Remaining: {Remaining}. Resets in: {TimeUntilReset}",
+				remaining,
+				resetTime);
+			throw new EmailRateLimitException(resetTime, remaining);
+		}
+	}
+
+	/// <summary>
+	/// Best-effort release of a previously reserved rate limit slot.
+	/// If this fails, the count stays 1 too high (conservative/safe).
+	/// </summary>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	private async Task TryReleaseRateLimitSlotAsync(
+		CancellationToken cancellationToken)
+	{
+		try
+		{
+			await rateLimitingService.TryDecrementRequestCountAsync(
 				BREVO_API_NAME,
 				cancellationToken);
-		TimeSpan resetTime =
-			rateLimitingService.GetTimeUntilReset();
-
-		logger.LogError(
-			"Email daily limit exceeded. Remaining: {Remaining}. Resets in: {TimeUntilReset}",
-			remaining,
-			resetTime);
-		throw new EmailRateLimitException(resetTime, remaining);
+		}
+		catch (Exception decrementException)
+		{
+			// Log but don't throw — the email wasn't sent, count is 1 too high, which is safe
+			logger.LogWarning(
+				decrementException,
+				"Failed to release rate limit slot for {ApiName}. Count may be 1 too high (safe/conservative).",
+				BREVO_API_NAME);
+		}
 	}
 
 	/// <summary>
@@ -392,27 +444,6 @@ public sealed class EmailService(
 
 		await client.SendAsync(message, cancellationToken);
 		await client.DisconnectAsync(quit: true, cancellationToken);
-	}
-
-	/// <summary>
-	/// Attempts to increment the external API rate limit counter and logs a warning if it fails.
-	/// </summary>
-	/// <param name="cancellationToken">
-	/// Cancellation token.
-	/// </param>
-	private async Task TrackRateLimitAsync(CancellationToken cancellationToken)
-	{
-		bool success =
-			await rateLimitingService.TryIncrementRequestCountAsync(
-				BREVO_API_NAME,
-				BREVO_BASE_URL,
-				cancellationToken);
-		if (!success)
-		{
-			logger.LogWarning(
-				"Email sent successfully but failed to increment rate limit counter for {ApiName}",
-				BREVO_API_NAME);
-		}
 	}
 
 	/// <summary>

@@ -10,7 +10,7 @@ namespace SeventySix.ArchitectureTests;
 /// Architecture tests to enforce use of 64-bit identifiers (long/bigint) for PKs and FKs.
 /// TDD-first: these tests should fail before code changes are made.
 /// </summary>
-public class IdTypeTests : SourceCodeArchitectureTest
+public sealed class IdTypeTests : SourceCodeArchitectureTest
 {
 	[Fact]
 	public void Entities_PrimaryKey_ShouldBeLong()

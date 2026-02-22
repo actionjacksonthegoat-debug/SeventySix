@@ -106,7 +106,7 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
 # Sensitive values (DB_PASSWORD) must be provided at runtime via docker-compose or secrets
 ENV ASPNETCORE_URLS=http://+:8080
 ENV ASPNETCORE_ENVIRONMENT=Production
-ENV DB_HOST=postgres
+ENV DB_HOST=database
 ENV DB_NAME=seventysix
 ENV DB_USER=postgres
 

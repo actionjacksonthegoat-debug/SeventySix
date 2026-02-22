@@ -3,7 +3,6 @@
 // </copyright>
 
 using Microsoft.EntityFrameworkCore;
-using SeventySix.ElectronicNotifications;
 
 namespace SeventySix.ElectronicNotifications.Emails;
 
@@ -36,14 +35,15 @@ public static class GetPendingEmailsQueryHandler
 		TimeProvider timeProvider,
 		CancellationToken cancellationToken)
 	{
-		DateTime now =
-			timeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset now =
+			timeProvider.GetUtcNow();
 
-		DateTime retryThreshold =
+		DateTimeOffset retryThreshold =
 			now.AddMinutes(-query.RetryDelayMinutes);
 
 		return await dbContext
 			.EmailQueue
+			.AsNoTracking()
 			.Where(entry =>
 				entry.Status == EmailQueueStatus.Pending
 				|| (entry.Status == EmailQueueStatus.Failed

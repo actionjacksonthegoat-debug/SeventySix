@@ -60,7 +60,7 @@ public static class ResendMfaCodeCommandHandler
 				EmailTypeConstants.MfaVerification,
 				refreshResult.Email,
 				refreshResult.UserId,
-				new Dictionary<string, string>
+				new()
 				{
 					["code"] =
 						refreshResult.NewCode,

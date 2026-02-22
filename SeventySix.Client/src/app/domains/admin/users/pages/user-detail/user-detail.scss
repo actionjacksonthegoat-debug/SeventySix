@@ -28,8 +28,8 @@
 					display: inline-flex;
 					align-items: center;
 					vertical-align: middle;
-					height: 20px;
-					line-height: 20px;
+					height: vars.$chip-height-sm;
+					line-height: vars.$chip-height-sm;
 				}
 			}
 		}
@@ -75,7 +75,7 @@
 
 			.field-hint {
 				margin: 0;
-				color: rgba(var(--mat-outline-rgb), 0.6);
+				color: color-mix(in srgb, var(--mat-sys-outline) 60%, transparent);
 				padding-left: vars.$spacing-2xl;
 			}
 		}

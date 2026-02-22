@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
-using SeventySix.Identity;
 using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.Constants;
 using Shouldly;
@@ -17,7 +16,7 @@ namespace SeventySix.Identity.Tests.Services;
 /// Unit tests for MfaService.
 /// Tests code generation and verification logic without database.
 /// </summary>
-public class MfaServiceUnitTests
+public sealed class MfaServiceUnitTests
 {
 	private static readonly DateTimeOffset FixedTime =
 		TestDates.Future;

@@ -1,15 +1,17 @@
 @use "variables" as vars;
+@use "mixins" as mixins;
 
 :host {
-	display: block;
+	@include mixins.flex-fill-column();
 	width: 100%;
 }
 
 .logs-page {
+	@include mixins.flex-fill-column();
 	width: 100%;
 }
 
 .page-content {
+	@include mixins.flex-fill-column();
 	width: 100%;
-	min-height: vars.$cls-table-min-height; // Prevent CLS during table load
 }

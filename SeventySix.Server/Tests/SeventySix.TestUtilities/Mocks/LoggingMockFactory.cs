@@ -4,7 +4,6 @@
 
 using NSubstitute;
 using SeventySix.Logging;
-using SeventySix.Shared.POCOs;
 
 namespace SeventySix.TestUtilities.Mocks;
 
@@ -35,7 +34,7 @@ public static class LoggingMockFactory
 		// Default: return 0 deleted records
 		repository
 			.DeleteOlderThanAsync(
-				Arg.Any<DateTime>(),
+				Arg.Any<DateTimeOffset>(),
 				Arg.Any<CancellationToken>())
 			.Returns(0);
 

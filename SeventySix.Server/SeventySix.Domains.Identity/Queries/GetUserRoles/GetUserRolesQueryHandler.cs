@@ -22,6 +22,10 @@ public static class GetUserRolesQueryHandler
 	/// <summary>
 	/// Returns the role names assigned to a user by identifier with cache-aside pattern.
 	/// </summary>
+	/// <remarks>
+	/// Uses TryGetAsync + SetAsync instead of GetOrSetAsync to avoid capturing
+	/// scoped services (UserManager) in a cache factory lambda.
+	/// </remarks>
 	/// <param name="query">
 	/// The query containing the user ID.
 	/// </param>
@@ -49,19 +53,31 @@ public static class GetUserRolesQueryHandler
 		string cacheKey =
 			IdentityCacheKeys.UserRoles(query.UserId);
 
-		// Must use List<T> (not IEnumerable<T>) for MemoryPack serialization
-		return await cache.GetOrSetAsync<List<string>>(
+		// Try cache first — TryGetAsync returns MaybeValue<T> (not nullable)
+		MaybeValue<List<string>> cached =
+			await cache.TryGetAsync<List<string>>(
+				cacheKey,
+				token: cancellationToken);
+
+		if (cached.HasValue)
+		{
+			return cached.Value ?? [];
+		}
+
+		// Cache miss — fetch with current scoped UserManager (still alive)
+		List<string> roles =
+			(await FetchUserRolesAsync(
+				query.UserId,
+				userManager))
+				.ToList();
+
+		// Store in cache
+		await cache.SetAsync(
 			cacheKey,
-			async token =>
-			{
-				IEnumerable<string> roles =
-					await FetchUserRolesAsync(
-						query.UserId,
-						userManager);
-				return roles.ToList();
-			},
-			token: cancellationToken)
-			?? [];
+			roles,
+			token: cancellationToken);
+
+		return roles;
 	}
 
 	/// <summary>

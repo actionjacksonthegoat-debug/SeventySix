@@ -14,6 +14,35 @@ import { fileURLToPath } from "node:url";
 const DOCKER_COMPOSE_FILE =
 	"../docker-compose.e2e.yml";
 
+/**
+ * When true, skips teardown so the E2E environment stays running for
+ * Playwright MCP debugging against https://localhost:4201.
+ *
+ * Usage:
+ *   npm run test:e2e -- --keepalive
+ *   npm run test:e2e -- --keepalive specs/auth/login.spec.ts
+ */
+const KEEP_ALIVE =
+	process.argv.includes("--keepalive");
+
+/**
+ * Collects extra CLI arguments passed after `--` and forwards them to Playwright.
+ * Supports --grep, --project, and spec file paths.
+ * Filters out the --keepalive flag so Playwright does not receive it.
+ *
+ * Usage examples:
+ *   npm run test:e2e -- --grep "Login Page"
+ *   npm run test:e2e -- --grep "should display login heading"
+ *   npm run test:e2e -- specs/public/login.spec.ts
+ *   npm run test:e2e -- --project=admin
+ *   npm run test:e2e -- --grep "RBAC" --project=admin
+ */
+const EXTRA_PLAYWRIGHT_ARGS =
+	process.argv
+		.slice(2)
+		.filter(arg => arg !== "--keepalive")
+		.join(" ");
+
 // Certificate path for proper SSL validation (matches dev environment)
 const scriptDirectory =
 	path.dirname(fileURLToPath(import.meta.url));
@@ -79,7 +108,7 @@ function setup()
 	{
 		const cleanupPortsCode =
 			runCommand(
-				"powershell -ExecutionPolicy Bypass -File ../scripts/cleanup-ports.ps1 -Quiet",
+				"powershell -ExecutionPolicy Bypass -File ../scripts/internal/cleanup-ports.ps1 -Quiet",
 				"Killing orphaned local processes on E2E ports");
 
 		if (cleanupPortsCode !== 0)
@@ -99,10 +128,10 @@ function setup()
 		return cleanupCode;
 	}
 
-	// Build fresh containers (both API and Client with no cache)
+	// Build containers (Docker layer caching speeds up unchanged layers)
 	const buildCode =
 		runCommand(
-			`docker compose -f ${DOCKER_COMPOSE_FILE} build --no-cache api-e2e client-e2e`,
+			`docker compose -f ${DOCKER_COMPOSE_FILE} build api-e2e client-e2e`,
 			"Building E2E containers (API + Client)");
 
 	if (buildCode !== 0)
@@ -143,14 +172,25 @@ function setup()
 
 /**
  * Runs the Playwright E2E tests.
+ * Forwards any extra CLI arguments (--grep, file paths, --project) to Playwright.
  * @returns
  * Exit code (0 for success).
  */
 function runTests()
 {
+	const playwrightCommand =
+		EXTRA_PLAYWRIGHT_ARGS
+			? `npx playwright test ${EXTRA_PLAYWRIGHT_ARGS}`
+			: "npx playwright test";
+
+	const label =
+		EXTRA_PLAYWRIGHT_ARGS
+			? `Playwright E2E Tests (filtered: ${EXTRA_PLAYWRIGHT_ARGS})`
+			: "Playwright E2E Tests";
+
 	return runCommand(
-		"npx playwright test",
-		"Playwright E2E Tests");
+		playwrightCommand,
+		label);
 }
 
 /**
@@ -166,12 +206,55 @@ function teardown()
 }
 
 /**
+ * Dumps diagnostic information from all E2E containers.
+ * Called on setup or test failure BEFORE teardown so containers are still available.
+ * @param phase
+ * The phase that failed ("Setup" or "Tests").
+ */
+function dumpDiagnostics(phase)
+{
+	console.log(`\n${"!".repeat(60)}`);
+	console.log(`  DIAGNOSTIC DUMP — ${phase} failed`);
+	console.log(`${"!".repeat(60)}\n`);
+
+	// Container status
+	runCommand(
+		`docker compose -f ${DOCKER_COMPOSE_FILE} ps -a`,
+		"Container Status");
+
+	// Individual container logs (most useful → least useful order)
+	const containers =
+		["seventysix-api-e2e", "seventysix-client-e2e", "seventysix-postgres-e2e", "seventysix-valkey-e2e", "seventysix-maildev-e2e"];
+
+	for (const container of containers)
+	{
+		runCommand(
+			`docker logs ${container} --tail 25 2>&1 || true`,
+			`Logs: ${container}`);
+	}
+
+	// Docker events (recent container lifecycle events)
+	runCommand(
+		`docker events --since 5m --until 0s --filter type=container --format "{{.Time}} {{.Action}} {{.Actor.Attributes.name}}" 2>&1 || true`,
+		"Recent Docker Events");
+
+	console.log(`\n${"!".repeat(60)}`);
+	console.log("  END DIAGNOSTIC DUMP");
+	console.log(`${"!".repeat(60)}\n`);
+}
+
+/**
  * Main execution flow for E2E tests.
  * Always runs teardown regardless of setup or test failures.
  */
 function main()
 {
 	console.log("\nStarting E2E Test Suite\n");
+
+	if (EXTRA_PLAYWRIGHT_ARGS)
+	{
+		console.log(`Filter: ${EXTRA_PLAYWRIGHT_ARGS}\n`);
+	}
 
 	let testExitCode =
 		0;
@@ -185,6 +268,8 @@ function main()
 		console.error("\n[FAIL] Setup failed - skipping tests\n");
 		testExitCode =
 			setupExitCode;
+
+		dumpDiagnostics("Setup");
 	}
 	else
 	{
@@ -199,18 +284,33 @@ function main()
 		else
 		{
 			console.error(`\n[FAIL] E2E tests failed with exit code: ${testExitCode}\n`);
+			console.log("Run 'npx playwright show-report' for detailed failure info.\n");
 		}
 	}
 
-	// Teardown phase (ALWAYS runs)
-	console.log("\nRunning teardown (always executed)...\n");
+	// Teardown phase (skipped in keepalive mode)
+	let teardownExitCode =
+		0;
 
-	const teardownExitCode =
-		teardown();
-
-	if (teardownExitCode !== 0)
+	if (KEEP_ALIVE)
 	{
-		console.error("\n[WARN] Teardown encountered issues\n");
+		console.log("\n" + "=".repeat(60));
+		console.log("  KEEPALIVE MODE — Skipping teardown");
+		console.log("  E2E environment remains running at https://localhost:4201");
+		console.log("  Manual cleanup: docker compose -f docker-compose.e2e.yml down -v --remove-orphans");
+		console.log("=" .repeat(60) + "\n");
+	}
+	else
+	{
+		console.log("\nRunning teardown (always executed)...\n");
+
+		teardownExitCode =
+			teardown();
+
+		if (teardownExitCode !== 0)
+		{
+			console.error("\n[WARN] Teardown encountered issues\n");
+		}
 	}
 
 	// Report final results
@@ -219,11 +319,15 @@ function main()
 	console.log("=".repeat(60));
 	console.log(`  Setup:    ${setupExitCode === 0 ? "[PASS]" : "[FAIL]"}`);
 	console.log(`  Tests:    ${testExitCode === 0 ? "[PASS]" : "[FAIL]"}`);
-	console.log(`  Teardown: ${teardownExitCode === 0 ? "[PASS]" : "[WARN] Issues"}`);
+	console.log(`  Teardown: ${KEEP_ALIVE ? "[SKIP] KeepAlive" : teardownExitCode === 0 ? "[PASS]" : "[WARN] Issues"}`);
 	console.log("=".repeat(60) + "\n");
 
-	// Exit with test exit code (or setup code if setup failed)
-	process.exit(testExitCode);
+	// Set exit code and let Node.js exit naturally after the event loop drains.
+	// Using process.exitCode instead of process.exit() ensures all stdio pipes
+	// (especially Docker's stderr output) are fully flushed before termination,
+	// preventing npm from misinterpreting a broken pipe as a script failure.
+	process.exitCode =
+		testExitCode;
 }
 
 main();

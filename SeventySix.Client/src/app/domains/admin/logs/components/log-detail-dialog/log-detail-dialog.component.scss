@@ -92,7 +92,7 @@
 		}
 
 		&.error-section {
-			background-color: rgba(var(--mat-sys-error-rgb, 179, 38, 30), 0.05);
+			background-color: color-mix(in srgb, var(--mat-sys-error) 5%, transparent);
 			padding: vars.$spacing-lg;
 			border-radius: 0;
 			border-left: 4px solid var(--mat-sys-error);
@@ -126,10 +126,7 @@
 		}
 
 		&.stack-section {
-			background-color: rgba(
-				var(--mat-sys-tertiary-rgb, 103, 80, 164),
-				0.05
-			);
+			background-color: color-mix(in srgb, var(--mat-sys-tertiary) 5%, transparent);
 			padding: vars.$spacing-lg;
 			border-radius: vars.$border-radius-md;
 			border-left: 4px solid var(--mat-sys-tertiary);

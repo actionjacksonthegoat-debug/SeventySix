@@ -30,7 +30,7 @@ export default {
 
 	create(context)
 	{
-		const sourceCode = context.sourceCode || context.getSourceCode();
+		const sourceCode = context.sourceCode;
 
 		/**
 		 * Get the indentation string of a line (leading whitespace)

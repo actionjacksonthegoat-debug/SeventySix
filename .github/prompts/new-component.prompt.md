@@ -7,9 +7,13 @@ description: Generate Angular component following SeventySix patterns
 
 Create a new Angular component with these requirements:
 
+## MCP Tools
+
+- Use **context7** to fetch up-to-date Angular API docs before generating code
+
 ## Domain Selection (REQUIRED)
 
-Ask user which domain: admin, sandbox, developer (or shared for cross-cutting)
+Ask user which domain: admin, auth, account, developer, sandbox, home (or shared for cross-cutting)
 
 ## Import Boundaries (CRITICAL)
 

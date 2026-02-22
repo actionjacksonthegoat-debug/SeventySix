@@ -17,7 +17,7 @@ namespace SeventySix.ArchitectureTests;
 /// - ALWAYS use Fluent API
 /// - All entities must have corresponding EntityConfiguration classes.
 /// </summary>
-public class EntityConfigurationTests : SourceCodeArchitectureTest
+public sealed class EntityConfigurationTests : SourceCodeArchitectureTest
 {
 	private static readonly string[] DataAnnotations =
 		[

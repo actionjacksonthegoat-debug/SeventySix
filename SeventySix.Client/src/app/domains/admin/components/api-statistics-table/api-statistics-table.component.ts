@@ -16,6 +16,7 @@ import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatTableDataSource, MatTableModule } from "@angular/material/table";
 import { SKELETON_TABLE_CELL, SkeletonTheme } from "@shared/constants";
 import { DateService } from "@shared/services/date.service";
+import { isNullOrUndefined } from "@shared/utilities/null-check.utility";
 import { NgxSkeletonLoaderModule } from "ngx-skeleton-loader";
 
 /**
@@ -151,7 +152,7 @@ export class ApiStatisticsTableComponent
 	 */
 	getStatus(timestamp: string | null | undefined): string
 	{
-		if (!timestamp) return "error";
+		if (isNullOrUndefined(timestamp)) return "error";
 
 		const hoursSince: number =
 			this.dateService.hoursSince(timestamp);
@@ -170,7 +171,7 @@ export class ApiStatisticsTableComponent
 	 */
 	formatLastCalled(timestamp: string | null | undefined): string
 	{
-		if (!timestamp) return "Never";
+		if (isNullOrUndefined(timestamp)) return "Never";
 
 		return this.dateService.formatRelative(timestamp);
 	}

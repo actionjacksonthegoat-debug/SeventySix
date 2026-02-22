@@ -12,7 +12,7 @@ namespace SeventySix.Shared.Settings;
 /// Connection string format: "host:port" or "host:port,password=xxx,ssl=true".
 /// All numeric values MUST be configured in appsettings.json.
 /// </remarks>
-public record ValkeySettings
+public sealed record ValkeySettings
 {
 	/// <summary>
 	/// Whether Valkey distributed caching is enabled.

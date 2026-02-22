@@ -5,13 +5,16 @@
 namespace SeventySix.Shared.Constants;
 
 /// <summary>
-/// Constants for configuration section names.
-/// Single source of truth to prevent typos and enable refactoring (DRY).
+/// Constants for configuration keys accessed directly via IConfiguration
+/// (not bound to a POCO settings record).
 /// </summary>
+/// <remarks>
+/// Settings that bind to POCO records use {RecordType}.SectionName instead.
+/// </remarks>
 public static class ConfigurationSectionConstants
 {
 	/// <summary>
-	/// Database configuration section.
+	/// Database connection keys accessed individually by ConnectionStringBuilder.
 	/// </summary>
 	public static class Database
 	{
@@ -42,42 +45,7 @@ public static class ConfigurationSectionConstants
 	}
 
 	/// <summary>
-	/// JWT settings section.
-	/// </summary>
-	public const string Jwt = "Jwt";
-
-	/// <summary>
-	/// Auth settings section.
-	/// </summary>
-	public const string Auth = "Auth";
-
-	/// <summary>
-	/// Security settings section.
-	/// </summary>
-	public const string Security = "Security";
-
-	/// <summary>
-	/// Email settings section.
-	/// </summary>
-	public const string Email = "Email";
-
-	/// <summary>
-	/// Rate limiting settings section.
-	/// </summary>
-	public const string RateLimiting = "RateLimiting";
-
-	/// <summary>
-	/// Request limits settings section for DoS protection.
-	/// </summary>
-	public const string RequestLimits = "RequestLimits";
-
-	/// <summary>
-	/// Cache settings section.
-	/// </summary>
-	public const string Cache = "Cache";
-
-	/// <summary>
-	/// Background jobs settings section.
+	/// Feature flags accessed individually from IConfiguration.
 	/// </summary>
 	public static class BackgroundJobs
 	{
@@ -88,7 +56,7 @@ public static class ConfigurationSectionConstants
 	}
 
 	/// <summary>
-	/// CORS settings section.
+	/// CORS origins accessed individually for AddCors configuration.
 	/// </summary>
 	public static class Cors
 	{
@@ -96,16 +64,5 @@ public static class ConfigurationSectionConstants
 		/// Allowed origins subsection.
 		/// </summary>
 		public const string AllowedOrigins = "Cors:AllowedOrigins";
-	}
-
-	/// <summary>
-	/// Auth nested sections.
-	/// </summary>
-	public static class AuthNested
-	{
-		/// <summary>
-		/// Auth rate limit subsection.
-		/// </summary>
-		public const string RateLimit = "Auth:RateLimit";
 	}
 }

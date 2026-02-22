@@ -1,0 +1,27 @@
+<section class="stats-bar"
+	aria-labelledby="stats-heading">
+	<h2 id="stats-heading"
+		class="visually-hidden">
+		Project Statistics
+	</h2>
+	<div class="stats-grid"
+		role="list">
+		@for (stat of stats(); track stat.label; let index = $index) {
+			<div class="stat-item"
+				role="listitem"
+				appScrollReveal
+				[revealDelay]="index * 100">
+				<mat-icon
+					class="stat-item-icon"
+					aria-hidden="true">{{ stat.icon }}</mat-icon>
+				<span class="stat-item-value"
+					appCountUp
+					[countTarget]="stat.value"
+					[countSuffix]="stat.suffix">
+					0
+				</span>
+				<span class="stat-item-label">{{ stat.label }}</span>
+			</div>
+		}
+	</div>
+</section>

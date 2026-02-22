@@ -14,6 +14,7 @@ import {
 } from "@shared/constants";
 import { Notification } from "@shared/models";
 import { LoggerService } from "@shared/services/logger.service";
+import { isNullOrUndefined } from "@shared/utilities/null-check.utility";
 
 /**
  * Notification service for displaying user-facing messages.
@@ -347,7 +348,7 @@ export class NotificationService
 	 */
 	copyToClipboard(notification: Notification): boolean
 	{
-		if (!notification.copyData)
+		if (isNullOrUndefined(notification.copyData))
 		{
 			return false;
 		}

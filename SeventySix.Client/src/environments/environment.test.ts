@@ -1,3 +1,4 @@
+import { ENVIRONMENT_DEFAULTS } from "./environment.defaults";
 import { Environment } from "./environment.interface";
 
 /**
@@ -7,6 +8,7 @@ import { Environment } from "./environment.interface";
  */
 export const environment: Environment =
 	{
+		...ENVIRONMENT_DEFAULTS,
 		production: false,
 		version: "1.0.0-test",
 		apiUrl: "http://localhost:1234/api/v1", // API v1 - Test-only port to prevent hitting real API
@@ -26,6 +28,7 @@ export const environment: Environment =
 			grafanaUrl: "https://localhost:3443",
 			pgAdminUrl: "https://localhost:5051",
 			redisInsightUrl: "https://localhost:5541",
+			scalarUrl: "https://localhost:7074/scalar/v1",
 			enabled: false, // Disabled in tests
 			dashboards: {
 				systemOverview: "seventysix-system-overview",
@@ -50,36 +53,20 @@ export const environment: Environment =
 				permissionrequests: { staleTime: 0, gcTime: 0, retry: 0 }
 			}
 		},
-		dashboard: {
-			health: {
-				autoRefreshEnabled: false, // Disabled in tests
-				refreshIntervalSeconds: 60
-			}
-		},
+		// Override: disable performance monitoring in unit tests
 		ui: {
-			tables: {
-				defaultPageSize: 50,
-				pageSizeOptions: [25, 50, 100],
-				virtualScrollItemSize: 48
-			},
+			...ENVIRONMENT_DEFAULTS.ui,
 			performance: {
 				enableMonitoring: false, // Disabled in tests
 				fpsWarningThreshold: 30
 			}
 		},
+		// Override: shorter timeout for faster test feedback
 		http: {
-			defaultTimeout: 5000, // 5 seconds - shorter for tests
-			uploadTimeout: 10000 // 10 seconds - shorter for tests
+			defaultTimeout: 5000 // 5 seconds - shorter for tests
 		},
 		testing: {
 			runIntegrationTests: false // Integration tests disabled by default
-		},
-		dateTime: {
-			defaultDisplayFormat: "yyyy-MM-dd HH:mm:ss",
-			inputFormat: "yyyy-MM-dd",
-			timeFormat: "HH:mm:ss",
-			relativeTimeThreshold: 86400000, // 24 hours in milliseconds
-			timezoneMode: "local"
 		},
 		telemetry: {
 			enabled: false, // Disabled in tests
@@ -89,10 +76,6 @@ export const environment: Environment =
 			sampleRate: 0 // No sampling in tests
 		},
 		auth: {
-			loginUrl: "/auth/login",
-			tokenRefreshBufferSeconds: 60
-		},
-		altcha: {
-			enabled: false // Disabled in tests
+			loginUrl: "/auth/login"
 		}
 	};

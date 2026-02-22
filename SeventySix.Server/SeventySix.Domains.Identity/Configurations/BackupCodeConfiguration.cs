@@ -16,7 +16,7 @@ namespace SeventySix.Identity;
 /// - Multiple codes per user (typically 10)
 /// - Single-use: marked as used after verification
 /// </remarks>
-public class BackupCodeConfiguration : IEntityTypeConfiguration<BackupCode>
+public sealed class BackupCodeConfiguration : IEntityTypeConfiguration<BackupCode>
 {
 	/// <summary>
 	/// Configures the entity mapping for BackupCode.

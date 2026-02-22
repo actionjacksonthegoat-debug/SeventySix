@@ -23,7 +23,7 @@ namespace SeventySix.TestUtilities.TestHelpers;
 /// NEVER use this in production - security parameters are intentionally weak.
 /// </para>
 /// </remarks>
-public class TestPasswordHasher : IPasswordHasher
+public sealed class TestPasswordHasher : IPasswordHasher
 {
 	private const int SaltSize = 16;
 	private const int HashSize = 16; // Smaller for tests

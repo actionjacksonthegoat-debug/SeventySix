@@ -8,7 +8,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
-using SeventySix.Identity;
 using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.Constants;
 using Shouldly;
@@ -19,7 +18,7 @@ namespace SeventySix.Identity.Tests.Services;
 /// Unit tests for TokenService JWT generation logic.
 /// These tests do NOT require a database - they test pure JWT generation.
 /// </summary>
-public class TokenServiceUnitTests
+public sealed class TokenServiceUnitTests
 {
 	/// <summary>
 	/// Fixed time for deterministic tests.
@@ -158,13 +157,52 @@ public class TokenServiceUnitTests
 		JwtSecurityToken jwt =
 			handler.ReadJwtToken(token);
 
-		DateTime expectedExpiry =
+		DateTimeOffset expectedExpiry =
 			FixedTime
 			.AddMinutes(JwtOptions.Value.AccessTokenExpirationMinutes)
 			.UtcDateTime;
 
 		(Math.Abs((jwt.ValidTo - expectedExpiry).TotalSeconds) < 1).ShouldBeTrue(
 			$"Expected expiry around {expectedExpiry}, got {jwt.ValidTo}");
+	}
+
+	[Fact]
+	public void GenerateAccessToken_RequiresPasswordChange_IncludesClaimAsync()
+	{
+		string token =
+			Service.GenerateAccessToken(
+				userId: 1L,
+				username: "testuser",
+				roles: [],
+				requiresPasswordChange: true);
+
+		JwtSecurityTokenHandler handler = new();
+		JwtSecurityToken jwt =
+			handler.ReadJwtToken(token);
+
+		Claim? passwordChangeClaim =
+			jwt.Claims.FirstOrDefault(
+				claim => claim.Type == CustomClaimTypes.RequiresPasswordChange);
+
+		passwordChangeClaim.ShouldNotBeNull();
+		passwordChangeClaim.Value.ShouldBe("true");
+	}
+
+	[Fact]
+	public void GenerateAccessToken_NoPasswordChangeRequired_ExcludesClaimAsync()
+	{
+		string token =
+			GenerateTestAccessToken();
+
+		JwtSecurityTokenHandler handler = new();
+		JwtSecurityToken jwt =
+			handler.ReadJwtToken(token);
+
+		Claim? passwordChangeClaim =
+			jwt.Claims.FirstOrDefault(
+				claim => claim.Type == CustomClaimTypes.RequiresPasswordChange);
+
+		passwordChangeClaim.ShouldBeNull();
 	}
 
 	#endregion

@@ -3,7 +3,6 @@
 // </copyright>
 
 using FluentValidation.TestHelper;
-using SeventySix.Identity;
 using SeventySix.Identity.Settings;
 
 namespace SeventySix.Identity.Tests.Validators;
@@ -20,7 +19,7 @@ namespace SeventySix.Identity.Tests.Validators;
 ///
 /// Test Pattern: MethodName_ExpectedBehavior_WhenCondition
 /// </remarks>
-public class JwtSettingsValidatorTests
+public sealed class JwtSettingsValidatorTests
 {
 	/// <summary>
 	/// High-entropy test key with 10+ unique characters for tests requiring valid keys.
@@ -42,7 +41,8 @@ public class JwtSettingsValidatorTests
 		string? audience = null,
 		int? accessTokenMinutes = null,
 		int? refreshTokenDays = null,
-		int? clockSkewMinutes = null) =>
+		int? clockSkewMinutes = null,
+		int? tokenRefreshBufferSeconds = null) =>
 		new()
 		{
 			SecretKey =
@@ -57,6 +57,8 @@ public class JwtSettingsValidatorTests
 				refreshTokenDays ?? 7,
 			ClockSkewMinutes =
 				clockSkewMinutes ?? 1,
+			TokenRefreshBufferSeconds =
+				tokenRefreshBufferSeconds ?? 60,
 		};
 
 	#region SecretKey Validation Tests

@@ -4,13 +4,13 @@
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Time.Testing;
 using Serilog.Events;
 using Serilog.Parsing;
 using SeventySix.Api.Logging;
 using SeventySix.Api.Tests.Fixtures;
 using SeventySix.Logging;
 using SeventySix.TestUtilities.Constants;
-using SeventySix.TestUtilities.TestBases;
 using Shouldly;
 
 namespace SeventySix.Api.Tests.Logging;
@@ -28,7 +28,7 @@ namespace SeventySix.Api.Tests.Logging;
 /// Uses shared PostgreSQL Testcontainer for efficient integration testing.
 /// </remarks>
 [Collection(CollectionNames.LoggingPostgreSql)]
-public class DatabaseLogSinkTests : IAsyncLifetime
+public sealed class DatabaseLogSinkTests : IAsyncLifetime
 {
 	private readonly LoggingApiPostgreSqlFixture Fixture;
 	private LoggingDbContext? Context;
@@ -99,7 +99,7 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 			"Test warning message");
 		LogEvent logEvent =
 			new(
-			DateTimeOffset.UtcNow,
+			new FakeTimeProvider().GetUtcNow(),
 			LogEventLevel.Warning,
 			null,
 			messageTemplate,
@@ -128,7 +128,7 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 			"Test warning message");
 		LogEvent logEvent =
 			new(
-			DateTimeOffset.UtcNow,
+			new FakeTimeProvider().GetUtcNow(),
 			LogEventLevel.Warning,
 			null,
 			messageTemplate,
@@ -170,7 +170,7 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 			"Test error message");
 		LogEvent logEvent =
 			new(
-			DateTimeOffset.UtcNow,
+			new FakeTimeProvider().GetUtcNow(),
 			LogEventLevel.Error,
 			null,
 			messageTemplate,
@@ -209,7 +209,7 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 			"Test info message");
 		LogEvent logEvent =
 			new(
-			DateTimeOffset.UtcNow,
+			new FakeTimeProvider().GetUtcNow(),
 			LogEventLevel.Information,
 			null,
 			messageTemplate,
@@ -255,7 +255,7 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 			"Error occurred");
 		LogEvent logEvent =
 			new(
-			DateTimeOffset.UtcNow,
+			new FakeTimeProvider().GetUtcNow(),
 			LogEventLevel.Error,
 			caughtException,
 			messageTemplate,
@@ -302,9 +302,9 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 				throw new InvalidOperationException("Outer exception", inner);
 			}
 		}
-		catch (Exception ex)
+		catch (Exception exception)
 		{
-			nestedException = ex;
+			nestedException = exception;
 		}
 
 		MessageTemplate messageTemplate =
@@ -312,7 +312,7 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 			"Nested error occurred");
 		LogEvent logEvent =
 			new(
-			DateTimeOffset.UtcNow,
+			new FakeTimeProvider().GetUtcNow(),
 			LogEventLevel.Error,
 			nestedException,
 			messageTemplate,

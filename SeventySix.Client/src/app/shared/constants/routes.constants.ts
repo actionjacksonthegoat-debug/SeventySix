@@ -11,8 +11,8 @@ export const APP_ROUTES: Readonly<{
 	AUTH: {
 		LOGIN: "/auth/login";
 		REGISTER: "/auth/register";
+		CHANGE_PASSWORD: "/auth/change-password";
 		FORGOT_PASSWORD: "/auth/forgot-password";
-		RESET_PASSWORD: "/auth/reset-password";
 		MFA_VERIFY: "/auth/mfa/verify";
 		TOTP_SETUP: "/auth/totp-setup";
 		BACKUP_CODES: "/auth/backup-codes";
@@ -20,7 +20,6 @@ export const APP_ROUTES: Readonly<{
 	ACCOUNT: {
 		PROFILE: "/account";
 		PERMISSIONS: "/account/permissions";
-		SETTINGS: "/account/settings";
 	};
 	ERROR: {
 		NOT_FOUND: "/error/404";
@@ -35,8 +34,8 @@ export const APP_ROUTES: Readonly<{
 		AUTH: {
 			LOGIN: "/auth/login",
 			REGISTER: "/auth/register",
+			CHANGE_PASSWORD: "/auth/change-password",
 			FORGOT_PASSWORD: "/auth/forgot-password",
-			RESET_PASSWORD: "/auth/reset-password",
 			MFA_VERIFY: "/auth/mfa/verify",
 			TOTP_SETUP: "/auth/totp-setup",
 			BACKUP_CODES: "/auth/backup-codes"
@@ -44,8 +43,7 @@ export const APP_ROUTES: Readonly<{
 		/** Account management routes. */
 		ACCOUNT: {
 			PROFILE: "/account",
-			PERMISSIONS: "/account/permissions",
-			SETTINGS: "/account/settings"
+			PERMISSIONS: "/account/permissions"
 		},
 		/** Error page routes. */
 		ERROR: {
@@ -65,5 +63,13 @@ export const AUTH_PUBLIC_PATHS: readonly string[] =
 		"/auth/refresh",
 		"/auth/logout",
 		"/auth/oauth/github",
-		"/auth/oauth/github/callback"
+		"/auth/oauth/github/callback",
+		"/auth/register/initiate",
+		"/auth/register/complete",
+		"/auth/password/forgot",
+		"/auth/password/set",
+		"/auth/mfa/verify",
+		"/auth/mfa/verify-totp",
+		"/auth/mfa/verify-backup",
+		"/auth/mfa/resend"
 	] as const;

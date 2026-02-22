@@ -16,7 +16,7 @@ namespace SeventySix.ArchitectureTests;
 /// - CreatedBy and ModifiedBy must be strings (usernames), not int FKs
 /// - Audit fields should follow consistent naming (CreateDate, ModifyDate, CreatedBy, ModifiedBy).
 /// </summary>
-public class AuditFieldTests : SourceCodeArchitectureTest
+public sealed class AuditFieldTests : SourceCodeArchitectureTest
 {
 	[Fact]
 	public void Audit_Fields_Should_Be_Strings_Not_Foreign_Keys()
@@ -56,7 +56,8 @@ public class AuditFieldTests : SourceCodeArchitectureTest
 				string[] fields =
 					matches
 					.Cast<Match>()
-					.Select(m => m.Groups[1].Value)
+					.Select(
+						match => match.Groups[1].Value)
 					.Distinct()
 					.ToArray();
 
@@ -85,7 +86,7 @@ public class AuditFieldTests : SourceCodeArchitectureTest
 		// Check for inconsistent patterns like CreatedDate vs CreateDate
 		Regex inconsistentDatePattern =
 			new Regex(
-			@"public\s+DateTime\??\s+(CreatedDate|ModifiedDate)",
+			@"public\s+DateTimeOffset\??\s+(CreatedDate|ModifiedDate)",
 			RegexOptions.Compiled);
 
 		List<string> violations = [];
@@ -107,7 +108,8 @@ public class AuditFieldTests : SourceCodeArchitectureTest
 				string[] fields =
 					matches
 					.Cast<Match>()
-					.Select(m => m.Groups[1].Value)
+					.Select(
+						match => match.Groups[1].Value)
 					.Distinct()
 					.ToArray();
 

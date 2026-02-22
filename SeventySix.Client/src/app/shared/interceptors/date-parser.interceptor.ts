@@ -1,6 +1,7 @@
 import { HttpInterceptorFn, HttpResponse } from "@angular/common/http";
 import { inject } from "@angular/core";
 import { DateService } from "@shared/services";
+import { isNullOrUndefined } from "@shared/utilities/null-check.utility";
 import { map } from "rxjs/operators";
 
 /**
@@ -14,7 +15,7 @@ const ISO_DATE_REGEX: RegExp =
  */
 function parseDates(body: unknown, dateService: DateService): unknown
 {
-	if (body === null || body === undefined)
+	if (isNullOrUndefined(body))
 	{
 		return body;
 	}

@@ -29,7 +29,7 @@ namespace SeventySix.Api.Controllers;
 [ApiController]
 [Authorize(Policy = PolicyConstants.AdminOnly)]
 [Route(ApiVersionConfig.VersionedRoutePrefix + "/thirdpartyrequests")]
-public class ThirdPartyApiRequestsController(IMessageBus messageBus)
+public sealed class ThirdPartyApiRequestsController(IMessageBus messageBus)
 	: ControllerBase
 {
 	/// <summary>

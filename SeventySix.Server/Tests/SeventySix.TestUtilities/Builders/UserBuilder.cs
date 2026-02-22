@@ -27,7 +27,7 @@ namespace SeventySix.TestUtilities.Builders;
 /// - Builder Pattern: Fluent API for constructing complex objects
 /// - Test Data Builder: Specialized builder for test data
 /// </remarks>
-public class UserBuilder
+public sealed class UserBuilder
 {
 	private readonly TimeProvider TimeProvider;
 	private long? UserId = null;
@@ -37,20 +37,23 @@ public class UserBuilder
 		TestUserConstants.DefaultEmail;
 	private string? FullName =
 		TestUserConstants.DefaultFullName;
-	private DateTime CreateDate;
+	private DateTimeOffset CreateDate;
 	private string? CreatedBy =
 		AuditConstants.SystemUser;
-	private DateTime? ModifyDate = null;
+	private DateTimeOffset? ModifyDate = null;
 	private string? ModifiedBy = null;
 	private bool IsActive = true;
 	private bool IsDeleted = false;
-	private DateTime? DeletedAt = null;
+	private DateTimeOffset? DeletedAt = null;
 	private string? DeletedBy = null;
 	private uint? RowVersion = null;
 	private string? Preferences = null;
-	private DateTime? LastLoginAt = null;
+	private DateTimeOffset? LastLoginAt = null;
 	private string? LastLoginIp = null;
 	private bool RequiresPasswordChange = false;
+	private bool MfaEnabled = true;
+	private string? TotpSecret = null;
+	private DateTimeOffset? TotpEnrolledAt = null;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="UserBuilder"/> class.
@@ -62,7 +65,7 @@ public class UserBuilder
 	{
 		TimeProvider = timeProvider;
 		CreateDate =
-			timeProvider.GetUtcNow().UtcDateTime;
+			timeProvider.GetUtcNow();
 	}
 
 	/// <summary>
@@ -138,7 +141,7 @@ public class UserBuilder
 	/// The builder instance for method chaining.
 	/// </returns>
 	public UserBuilder WithCreatedInfo(
-		DateTime createDate,
+		DateTimeOffset createDate,
 		string? createdBy = AuditConstants.SystemUser)
 	{
 		CreateDate = createDate;
@@ -159,7 +162,7 @@ public class UserBuilder
 	/// The builder instance for method chaining.
 	/// </returns>
 	public UserBuilder WithModifiedInfo(
-		DateTime modifyDate,
+		DateTimeOffset modifyDate,
 		string? modifiedBy = AuditConstants.SystemUser)
 	{
 		ModifyDate = modifyDate;
@@ -199,7 +202,7 @@ public class UserBuilder
 	/// </returns>
 	public UserBuilder WithDeletedInfo(
 		bool isDeleted,
-		DateTime? deletedAt = null,
+		DateTimeOffset? deletedAt = null,
 		string? deletedBy = null)
 	{
 		IsDeleted = isDeleted;
@@ -251,7 +254,7 @@ public class UserBuilder
 	/// The builder instance for method chaining.
 	/// </returns>
 	public UserBuilder WithLastLogin(
-		DateTime lastLoginAt,
+		DateTimeOffset lastLoginAt,
 		string? lastLoginIp = null)
 	{
 		LastLoginAt = lastLoginAt;
@@ -272,6 +275,51 @@ public class UserBuilder
 	{
 		RequiresPasswordChange =
 			requiresPasswordChange;
+		return this;
+	}
+
+	/// <summary>
+	/// Sets the MFA enabled flag.
+	/// </summary>
+	/// <param name="mfaEnabled">
+	/// Whether MFA is enabled for this user.
+	/// </param>
+	/// <returns>
+	/// The builder instance for method chaining.
+	/// </returns>
+	public UserBuilder WithMfaEnabled(bool mfaEnabled)
+	{
+		MfaEnabled = mfaEnabled;
+		return this;
+	}
+
+	/// <summary>
+	/// Sets the TOTP secret for authenticator enrollment.
+	/// </summary>
+	/// <param name="totpSecret">
+	/// The base32-encoded TOTP secret.
+	/// </param>
+	/// <returns>
+	/// The builder instance for method chaining.
+	/// </returns>
+	public UserBuilder WithTotpSecret(string? totpSecret)
+	{
+		TotpSecret = totpSecret;
+		return this;
+	}
+
+	/// <summary>
+	/// Sets the TOTP enrolled date.
+	/// </summary>
+	/// <param name="totpEnrolledAt">
+	/// The date TOTP was confirmed.
+	/// </param>
+	/// <returns>
+	/// The builder instance for method chaining.
+	/// </returns>
+	public UserBuilder WithTotpEnrolledAt(DateTimeOffset? totpEnrolledAt)
+	{
+		TotpEnrolledAt = totpEnrolledAt;
 		return this;
 	}
 
@@ -304,6 +352,9 @@ public class UserBuilder
 				LastLoginAt = LastLoginAt,
 				LastLoginIp = LastLoginIp,
 				RequiresPasswordChange = RequiresPasswordChange,
+				MfaEnabled = MfaEnabled,
+				TotpSecret = TotpSecret,
+				TotpEnrolledAt = TotpEnrolledAt,
 			};
 
 		if (UserId.HasValue)
@@ -355,7 +406,7 @@ public class UserBuilder
 	{
 		return new UserBuilder(timeProvider).WithDeletedInfo(
 			true,
-			timeProvider.GetUtcNow().UtcDateTime,
+			timeProvider.GetUtcNow(),
 			AuditConstants.SystemUser);
 	}
 }

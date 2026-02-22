@@ -3,7 +3,6 @@
 // </copyright>
 
 using FluentValidation.TestHelper;
-using SeventySix.Identity;
 using SeventySix.Identity.Commands.AddUserRole;
 using SeventySix.Identity.Constants;
 
@@ -19,7 +18,7 @@ namespace SeventySix.Identity.Tests.Validators;
 /// - Role validation (required, must be valid role name)
 /// - Role injection prevention (critical security)
 /// </remarks>
-public class AddUserRoleCommandValidatorTests
+public sealed class AddUserRoleCommandValidatorTests
 {
 	private readonly AddUserRoleCommandValidator Validator = new();
 

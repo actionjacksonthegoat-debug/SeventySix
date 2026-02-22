@@ -16,7 +16,7 @@ namespace SeventySix.Domains.Tests.Logging.Queries.CheckLoggingHealth;
 /// Tests the health check logic including exception handling.
 /// Uses mocked repository since actual database connectivity is tested elsewhere.
 /// </remarks>
-public class CheckLoggingHealthQueryHandlerTests
+public sealed class CheckLoggingHealthQueryHandlerTests
 {
 	private readonly ILogRepository Repository;
 

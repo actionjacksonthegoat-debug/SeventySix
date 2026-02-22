@@ -16,7 +16,7 @@ namespace SeventySix.Identity;
 /// - Audit Trail: Track attempts for security forensics
 /// - One-Time Use: Challenge invalidated after successful verification
 /// </remarks>
-public class MfaChallenge : ICreatableEntity
+public sealed class MfaChallenge : ICreatableEntity
 {
 	/// <summary>
 	/// Gets or sets the unique identifier.
@@ -47,7 +47,7 @@ public class MfaChallenge : ICreatableEntity
 	/// <summary>
 	/// Gets or sets when the challenge expires.
 	/// </summary>
-	public DateTime ExpiresAt { get; set; }
+	public DateTimeOffset ExpiresAt { get; set; }
 
 	/// <summary>
 	/// Gets or sets the number of verification attempts made.
@@ -75,7 +75,7 @@ public class MfaChallenge : ICreatableEntity
 	/// <summary>
 	/// Gets or sets the creation timestamp.
 	/// </summary>
-	public DateTime CreateDate { get; set; }
+	public DateTimeOffset CreateDate { get; set; }
 
 	/// <summary>
 	/// Gets or sets whether this MFA challenge is soft-deleted.

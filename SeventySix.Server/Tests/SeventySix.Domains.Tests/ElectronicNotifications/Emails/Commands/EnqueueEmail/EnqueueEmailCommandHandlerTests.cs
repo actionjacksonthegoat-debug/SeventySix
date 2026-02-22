@@ -22,7 +22,7 @@ namespace SeventySix.Domains.Tests.ElectronicNotifications.Emails.Commands.Enque
 /// - Idempotency key handling (deduplication)
 /// - Template data serialization.
 /// </remarks>
-public class EnqueueEmailCommandHandlerTests
+public sealed class EnqueueEmailCommandHandlerTests
 {
 	private readonly FakeTimeProvider TimeProvider;
 	private readonly IOptions<EmailQueueSettings> Settings;
@@ -211,8 +211,8 @@ public class EnqueueEmailCommandHandlerTests
 		await using ElectronicNotificationsDbContext dbContext =
 			CreateInMemoryDbContext();
 
-		DateTime expectedDate =
-			TimeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset expectedDate =
+			TimeProvider.GetUtcNow();
 
 		EnqueueEmailCommand command =
 			new(

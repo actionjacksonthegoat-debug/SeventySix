@@ -2,6 +2,8 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+import { isNullOrUndefined } from "@shared/utilities/null-check.utility";
+
 /**
  * Dangerous URL protocols that could be used for XSS attacks.
  * These should never be allowed in redirect URLs.
@@ -40,7 +42,7 @@ const DANGEROUS_PROTOCOLS: readonly string[] =
 export function isValidRedirectUrl(url: string | null | undefined): boolean
 {
 	// Null/undefined/empty is invalid
-	if (!url || url.trim() === "")
+	if (isNullOrUndefined(url) || url.trim() === "")
 	{
 		return false;
 	}

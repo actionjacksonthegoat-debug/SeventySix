@@ -33,7 +33,7 @@ namespace SeventySix.Identity;
 /// Whether MFA verification is required to complete authentication.
 /// </param>
 /// <param name="MfaChallengeToken">
-/// Temporary token identifying the MFA challenge (null if MFA not required or TOTP).
+/// Temporary token identifying the MFA challenge (proof of password authentication).
 /// </param>
 /// <param name="MfaMethod">
 /// The MFA method required for verification (null if MFA not required).
@@ -47,11 +47,18 @@ namespace SeventySix.Identity;
 /// <param name="ErrorCode">
 /// Error code for client handling.
 /// </param>
+/// <param name="TrustedDeviceToken">
+/// Trusted device token to set as a cookie (null when not applicable).
+/// </param>
+/// <param name="RememberMe">
+/// Whether the user selected the "Remember Me" option during authentication.
+/// Used by cookie service to set appropriate cookie expiration.
+/// </param>
 public record AuthResult(
 	bool Success,
 	string? AccessToken = null,
 	string? RefreshToken = null,
-	DateTime? ExpiresAt = null,
+	DateTimeOffset? ExpiresAt = null,
 	string? Email = null,
 	string? FullName = null,
 	bool RequiresPasswordChange = false,
@@ -60,7 +67,9 @@ public record AuthResult(
 	MfaMethod? MfaMethod = null,
 	IReadOnlyList<MfaMethod>? AvailableMfaMethods = null,
 	string? Error = null,
-	string? ErrorCode = null)
+	string? ErrorCode = null,
+	string? TrustedDeviceToken = null,
+	bool RememberMe = false)
 {
 	/// <summary>
 	/// Creates a successful result without tokens (e.g., password change).
@@ -91,16 +100,20 @@ public record AuthResult(
 	/// <param name="requiresPasswordChange">
 	/// Whether user must change password.
 	/// </param>
+	/// <param name="rememberMe">
+	/// Whether the user selected "Remember Me" during authentication.
+	/// </param>
 	/// <returns>
 	/// Success result with tokens.
 	/// </returns>
 	public static AuthResult Succeeded(
 		string accessToken,
 		string refreshToken,
-		DateTime expiresAt,
+		DateTimeOffset expiresAt,
 		string email,
 		string? fullName,
-		bool requiresPasswordChange = false) =>
+		bool requiresPasswordChange = false,
+		bool rememberMe = false) =>
 		new(
 			Success: true,
 			AccessToken: accessToken,
@@ -108,16 +121,17 @@ public record AuthResult(
 			ExpiresAt: expiresAt,
 			Email: email,
 			FullName: fullName,
-			RequiresPasswordChange: requiresPasswordChange);
+			RequiresPasswordChange: requiresPasswordChange,
+			RememberMe: rememberMe);
 
 	/// <summary>
 	/// Creates a result requiring MFA verification.
 	/// </summary>
 	/// <param name="challengeToken">
-	/// Temporary token to identify the MFA challenge (null for TOTP).
+	/// Temporary token to identify the MFA challenge (proof of password authentication).
 	/// </param>
 	/// <param name="email">
-	/// User's email (will be masked for display).
+	/// User's email (passed through for display masking on the client).
 	/// </param>
 	/// <param name="mfaMethod">
 	/// The preferred MFA method for verification.
@@ -139,7 +153,7 @@ public record AuthResult(
 			MfaChallengeToken: challengeToken,
 			MfaMethod: mfaMethod,
 			AvailableMfaMethods: availableMethods ?? [mfaMethod],
-			Email: MaskEmail(email));
+			Email: email);
 
 	/// <summary>
 	/// Creates a failed authentication result.
@@ -160,28 +174,6 @@ public record AuthResult(
 			Success: false,
 			Error: error,
 			ErrorCode: errorCode);
-
-	/// <summary>
-	/// Masks an email address for display (e.g., "j***@example.com").
-	/// </summary>
-	/// <param name="email">
-	/// The email address to mask.
-	/// </param>
-	/// <returns>
-	/// Masked email address.
-	/// </returns>
-	private static string MaskEmail(string email)
-	{
-		int atIndex =
-			email.IndexOf('@');
-
-		if (atIndex <= 1)
-		{
-			return email;
-		}
-
-		return $"{email[0]}***{email[(atIndex - 1)..]}";
-	}
 }
 
 /// <summary>
@@ -248,6 +240,46 @@ public static class AuthErrorCodes
 	/// Password found in known data breaches (OWASP ASVS V2.1.7).
 	/// </summary>
 	public const string BreachedPassword = "BREACHED_PASSWORD";
+
+	/// <summary>
+	/// User must change their password.
+	/// </summary>
+	public const string PasswordChangeRequired = "PASSWORD_CHANGE_REQUIRED";
+
+	/// <summary>
+	/// Weak admin password detected during seeding.
+	/// </summary>
+	public const string WeakAdminPassword = "WEAK_ADMIN_PASSWORD";
+
+	/// <summary>
+	/// Registration process failed.
+	/// </summary>
+	public const string RegistrationFailed = "REGISTRATION_FAILED";
+
+	/// <summary>
+	/// Invalid refresh token family (potential token reuse attack).
+	/// </summary>
+	public const string InvalidTokenFamily = "INVALID_TOKEN_FAMILY";
+
+	/// <summary>
+	/// ALTCHA verification failed.
+	/// </summary>
+	public const string AltchaFailed = "ALTCHA_FAILED";
+
+	/// <summary>
+	/// Email not confirmed.
+	/// </summary>
+	public const string EmailNotConfirmed = "EMAIL_NOT_CONFIRMED";
+
+	/// <summary>
+	/// Password reset token expired or invalid.
+	/// </summary>
+	public const string InvalidPasswordResetToken = "INVALID_PASSWORD_RESET_TOKEN";
+
+	/// <summary>
+	/// Email verification token expired or invalid.
+	/// </summary>
+	public const string InvalidEmailVerificationToken = "INVALID_EMAIL_VERIFICATION_TOKEN";
 }
 
 /// <summary>
@@ -274,4 +306,9 @@ public static class AuthErrorMessages
 	/// Invalid or expired token message.
 	/// </summary>
 	public const string InvalidToken = "Invalid or expired token";
+
+	/// <summary>
+	/// Too many failed attempts message.
+	/// </summary>
+	public const string TooManyAttempts = "Too many failed attempts. Please try again later.";
 }

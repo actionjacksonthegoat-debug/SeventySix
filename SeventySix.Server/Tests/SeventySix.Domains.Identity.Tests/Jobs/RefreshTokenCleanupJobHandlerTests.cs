@@ -7,7 +7,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
-using SeventySix.Identity;
 using SeventySix.Identity.Jobs;
 using SeventySix.Identity.Settings;
 using SeventySix.Shared.BackgroundJobs;
@@ -27,7 +26,7 @@ namespace SeventySix.Identity.Tests.Jobs;
 /// Security: Verifies tokens are properly deleted after retention period.
 /// </remarks>
 [Collection(CollectionNames.IdentityPostgreSql)]
-public class RefreshTokenCleanupJobHandlerTests(
+public sealed class RefreshTokenCleanupJobHandlerTests(
 	IdentityPostgreSqlFixture fixture) : DataPostgreSqlTestBase(fixture)
 {
 	private static readonly DateTimeOffset TestTime =

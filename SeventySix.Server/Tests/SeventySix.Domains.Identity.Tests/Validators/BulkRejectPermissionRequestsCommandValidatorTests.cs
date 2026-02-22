@@ -15,7 +15,7 @@ namespace SeventySix.Identity.Tests.Validators;
 /// Coverage Focus (80/20):
 /// - RequestIds validation (required, not empty, positive values)
 /// </remarks>
-public class BulkRejectPermissionRequestsCommandValidatorTests
+public sealed class BulkRejectPermissionRequestsCommandValidatorTests
 {
 	private readonly BulkRejectPermissionRequestsCommandValidator Validator = new();
 

@@ -3,7 +3,9 @@
 // </copyright>
 
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using SeventySix.Identity.Constants;
+using SeventySix.Shared.Interfaces;
 using SeventySix.Shared.POCOs;
 
 namespace SeventySix.Identity;
@@ -28,6 +30,9 @@ public static class AddUserRoleCommandHandler
 	/// <param name="identityCache">
 	/// Identity cache service for clearing role cache.
 	/// </param>
+	/// <param name="transactionManager">
+	/// Transaction manager for concurrency-safe read-then-write operations.
+	/// </param>
 	/// <param name="cancellationToken">
 	/// Cancellation token.
 	/// </param>
@@ -45,6 +50,7 @@ public static class AddUserRoleCommandHandler
 		UserManager<ApplicationUser> userManager,
 		IPermissionRequestRepository permissionRequestRepository,
 		IIdentityCacheService identityCache,
+		ITransactionManager transactionManager,
 		CancellationToken cancellationToken)
 	{
 		if (!RoleConstants.ValidRoleNames.Contains(command.Role))
@@ -54,36 +60,56 @@ public static class AddUserRoleCommandHandler
 				nameof(command));
 		}
 
-		ApplicationUser? user =
-			await userManager.FindByIdAsync(
-				command.UserId.ToString());
+		Result txResult =
+			await transactionManager.ExecuteInTransactionAsync(
+				async ct =>
+				{
+					ApplicationUser? user =
+						await userManager.FindByIdAsync(
+							command.UserId.ToString());
 
-		if (user is null)
+					if (user is null)
+					{
+						throw new UserNotFoundException(command.UserId);
+					}
+
+					IList<string> existingRoles =
+						await userManager.GetRolesAsync(user);
+
+					if (existingRoles.Contains(command.Role))
+					{
+						return Result.Failure(
+							$"User {command.UserId} already has role {command.Role}");
+					}
+
+					IdentityResult identityResult =
+						await userManager.AddToRoleAsync(
+							user,
+							command.Role);
+
+					if (!identityResult.Succeeded)
+					{
+						if (identityResult.Errors.Any(
+							error => error.Code == "ConcurrencyFailure"))
+						{
+							throw new DbUpdateConcurrencyException(
+								"Concurrency conflict adding role. Will retry.");
+						}
+
+						return Result.Failure(
+							$"Failed to add role: {string.Join(
+								", ",
+								identityResult.Errors.Select(
+									error => error.Description))}");
+					}
+
+					return Result.Success();
+				},
+				cancellationToken: cancellationToken);
+
+		if (!txResult.IsSuccess)
 		{
-			throw new UserNotFoundException(command.UserId);
-		}
-
-		IList<string> existingRoles =
-			await userManager.GetRolesAsync(user);
-
-		if (existingRoles.Contains(command.Role))
-		{
-			return Result.Failure(
-				$"User {command.UserId} already has role {command.Role}");
-		}
-
-		IdentityResult identityResult =
-			await userManager.AddToRoleAsync(
-				user,
-				command.Role);
-
-		if (!identityResult.Succeeded)
-		{
-			return Result.Failure(
-				$"Failed to add role: {string.Join(
-					", ",
-					identityResult.Errors.Select(
-						error => error.Description))}");
+			return txResult;
 		}
 
 		await permissionRequestRepository.DeleteByUserAndRoleAsync(
@@ -95,6 +121,6 @@ public static class AddUserRoleCommandHandler
 		await identityCache.InvalidateUserRolesAsync(command.UserId);
 		await identityCache.InvalidateUserProfileAsync(command.UserId);
 
-		return Result.Success();
+		return txResult;
 	}
 }

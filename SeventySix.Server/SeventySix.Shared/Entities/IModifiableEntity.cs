@@ -18,5 +18,5 @@ public interface IModifiableEntity : ICreatableEntity
 	/// <remarks>
 	/// Null when entity has never been modified. Stored in UTC.
 	/// </remarks>
-	public DateTime? ModifyDate { get; set; }
+	public DateTimeOffset? ModifyDate { get; set; }
 }

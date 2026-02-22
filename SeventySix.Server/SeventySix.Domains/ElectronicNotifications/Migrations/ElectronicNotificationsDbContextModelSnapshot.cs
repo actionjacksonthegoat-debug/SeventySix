@@ -36,7 +36,7 @@ namespace SeventySix.Domains.ElectronicNotifications.Migrations
                         .HasColumnType("integer")
                         .HasDefaultValue(0);
 
-                    b.Property<DateTime>("CreateDate")
+                    b.Property<DateTimeOffset>("CreateDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("NOW()");
@@ -53,7 +53,7 @@ namespace SeventySix.Domains.ElectronicNotifications.Migrations
                     b.Property<Guid>("IdempotencyKey")
                         .HasColumnType("uuid");
 
-                    b.Property<DateTime?>("LastAttemptAt")
+                    b.Property<DateTimeOffset?>("LastAttemptAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("MaxAttempts")
@@ -69,7 +69,7 @@ namespace SeventySix.Domains.ElectronicNotifications.Migrations
                     b.Property<long?>("RecipientUserId")
                         .HasColumnType("bigint");
 
-                    b.Property<DateTime?>("SentAt")
+                    b.Property<DateTimeOffset?>("SentAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Status")

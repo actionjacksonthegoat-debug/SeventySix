@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using SeventySix.Api.Configuration;
-using SeventySix.Api.Infrastructure;
 using SeventySix.ApiTracking;
 using SeventySix.ElectronicNotifications;
 using SeventySix.Identity;
@@ -300,8 +299,8 @@ public static class WebApplicationExtensions
 			throw new StartupFailedException(
 				StartupFailedReason.Configuration,
 				$"Database connection string could not be built: {exception.Message} "
-					+ "Ensure .env file exists at repository root with DB_PASSWORD set, "
-					+ "or configure Database:Password in user secrets.");
+					+ "Configure Database settings in User Secrets: "
+					+ "dotnet user-secrets set \"Database:Password\" \"your-password\" --project SeventySix.Api");
 		}
 
 		PostgresConnectionInfo connectionInfo =
@@ -493,7 +492,7 @@ public static class WebApplicationExtensions
 		this WebApplication app)
 	{
 		app.MapHealthChecks(
-			"/health/live",
+			EndpointPathConstants.Health.Live,
 			new HealthCheckOptions
 			{
 				Predicate =
@@ -503,7 +502,7 @@ public static class WebApplicationExtensions
 			});
 
 		app.MapHealthChecks(
-			"/health/ready",
+			EndpointPathConstants.Health.Ready,
 			new HealthCheckOptions
 			{
 				Predicate =
@@ -513,7 +512,7 @@ public static class WebApplicationExtensions
 			});
 
 		app.MapHealthChecks(
-			"/health",
+			EndpointPathConstants.Health.Base,
 			new HealthCheckOptions
 			{
 				ResponseWriter =
@@ -584,7 +583,7 @@ public static class WebApplicationExtensions
 			new
 			{
 				status = HealthStatusConstants.Healthy,
-				timestamp = timeProvider.GetUtcNow().UtcDateTime,
+				timestamp = timeProvider.GetUtcNow(),
 			});
 	}
 
@@ -613,7 +612,7 @@ public static class WebApplicationExtensions
 			new
 			{
 				status = report.Status.ToString(),
-				timestamp = timeProvider.GetUtcNow().UtcDateTime,
+				timestamp = timeProvider.GetUtcNow(),
 				duration = report.TotalDuration,
 				checks = report.Entries.Select(entry =>
 					new

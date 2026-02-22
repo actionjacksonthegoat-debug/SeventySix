@@ -16,7 +16,7 @@ namespace SeventySix.ElectronicNotifications.Emails;
 /// - Retry logic: Attempts and MaxAttempts track delivery attempts
 /// - Auditability: Full history of email delivery status.
 /// </remarks>
-public class EmailQueueEntry : ICreatableEntity
+public sealed class EmailQueueEntry : ICreatableEntity
 {
 	/// <summary>
 	/// Gets or sets the unique identifier.
@@ -67,7 +67,7 @@ public class EmailQueueEntry : ICreatableEntity
 	/// <summary>
 	/// Gets or sets when the last send attempt occurred.
 	/// </summary>
-	public DateTime? LastAttemptAt { get; set; }
+	public DateTimeOffset? LastAttemptAt { get; set; }
 
 	/// <summary>
 	/// Gets or sets the error message from the last failed attempt.
@@ -77,12 +77,12 @@ public class EmailQueueEntry : ICreatableEntity
 	/// <summary>
 	/// Gets or sets when this entry was created.
 	/// </summary>
-	public DateTime CreateDate { get; set; }
+	public DateTimeOffset CreateDate { get; set; }
 
 	/// <summary>
 	/// Gets or sets when the email was successfully sent.
 	/// </summary>
-	public DateTime? SentAt { get; set; }
+	public DateTimeOffset? SentAt { get; set; }
 
 	/// <summary>
 	/// Gets or sets the idempotency key to prevent duplicate sends.

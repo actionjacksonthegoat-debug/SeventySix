@@ -2,5 +2,6 @@
  * Shared directives barrel export
  */
 
-export * from "./accessible-icon-button.directive";
-export * from "./table-height.directive";
+export { CountUpDirective } from "./count-up.directive";
+export { FieldMessageDirective } from "./field-message.directive";
+export { ScrollRevealDirective } from "./scroll-reveal.directive";

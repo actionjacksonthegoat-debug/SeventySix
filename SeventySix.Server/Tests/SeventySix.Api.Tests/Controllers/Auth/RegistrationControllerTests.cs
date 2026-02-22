@@ -27,7 +27,7 @@ namespace SeventySix.Api.Tests.Controllers.Auth;
 /// Uses shared WebApplicationFactory for improved test performance.
 /// </remarks>
 [Collection(CollectionNames.IdentityAuthPostgreSql)]
-public class RegistrationControllerTests(IdentityAuthApiPostgreSqlFixture fixture)
+public sealed class RegistrationControllerTests(IdentityAuthApiPostgreSqlFixture fixture)
 	: ApiPostgreSqlTestBase<Program>(fixture),
 		IAsyncLifetime
 {
@@ -173,8 +173,8 @@ public class RegistrationControllerTests(IdentityAuthApiPostgreSqlFixture fixtur
 					UserManager<ApplicationUser>>();
 			TimeProvider timeProvider =
 				scope.ServiceProvider.GetRequiredService<TimeProvider>();
-			DateTime now =
-				timeProvider.GetUtcNow().UtcDateTime;
+			DateTimeOffset now =
+				timeProvider.GetUtcNow();
 
 			// Create temporary unconfirmed user (like InitiateRegistration does)
 			ApplicationUser tempUser =

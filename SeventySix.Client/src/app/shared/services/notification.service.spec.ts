@@ -535,16 +535,25 @@ describe("NotificationService copyToClipboard",
 					setupSimpleServiceTest(
 						NotificationService,
 						[{ provide: Clipboard, useValue: clipboardMock }]);
+
+				// Suppress console output from LoggerService during passing tests
+				const logger: LoggerService =
+					TestBed.inject(LoggerService);
+				vi
+					.spyOn(logger, "debug")
+					.mockImplementation(
+						() =>
+						{});
+				vi
+					.spyOn(logger, "error")
+					.mockImplementation(
+						() =>
+						{});
 			});
 
 		it("should copy notification data to clipboard",
 			() =>
 			{
-				vi
-					.spyOn(console, "info")
-					.mockImplementation(
-						() =>
-						{});
 				const copyData: string = "Error details to copy";
 				service.errorWithDetails("Error", undefined, copyData);
 				const notification: Notification =
@@ -579,8 +588,6 @@ describe("NotificationService copyToClipboard",
 			{
 				const logger: LoggerService =
 					TestBed.inject(LoggerService);
-				const loggerErrorSpy: ReturnType<typeof vi.spyOn> =
-					vi.spyOn(logger, "error");
 				clipboardMock.copy.mockReturnValue(false);
 
 				service.errorWithDetails("Error", undefined, "Copy data");
@@ -592,7 +599,7 @@ describe("NotificationService copyToClipboard",
 
 				expect(result)
 					.toBe(false);
-				expect(loggerErrorSpy)
+				expect(logger.error)
 					.toHaveBeenCalled();
 			});
 
@@ -615,8 +622,6 @@ describe("NotificationService copyToClipboard",
 			{
 				const logger: LoggerService =
 					TestBed.inject(LoggerService);
-				const loggerDebugSpy: ReturnType<typeof vi.spyOn> =
-					vi.spyOn(logger, "debug");
 				const copyData: string = "Error details to copy";
 
 				service.errorWithDetails("Error", undefined, copyData);
@@ -625,7 +630,7 @@ describe("NotificationService copyToClipboard",
 
 				service.copyToClipboard(notification);
 
-				expect(loggerDebugSpy)
+				expect(logger.debug)
 					.toHaveBeenCalledWith(
 						"Notification copied to clipboard",
 						{ copyData });

@@ -4,7 +4,6 @@
 
 using Microsoft.AspNetCore.Identity;
 using NSubstitute;
-using SeventySix.Identity;
 using SeventySix.Shared.Constants;
 using SeventySix.TestUtilities.Mocks;
 using SeventySix.TestUtilities.Testing;
@@ -17,7 +16,7 @@ namespace SeventySix.Identity.Tests.Queries.GetUserRoles;
 /// Unit tests for <see cref="GetUserRolesQueryHandler"/>.
 /// Tests query handler with mocked dependencies following 80/20 rule.
 /// </summary>
-public class GetUserRolesQueryHandlerTests
+public sealed class GetUserRolesQueryHandlerTests
 {
 	private readonly UserManager<ApplicationUser> UserManager;
 	private readonly IFusionCacheProvider CacheProvider;

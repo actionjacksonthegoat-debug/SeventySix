@@ -13,7 +13,7 @@ namespace SeventySix.Identity.Infrastructure;
 /// Provides access to the current authenticated user from HttpContext.
 /// Falls back to "System" for unauthenticated requests (background jobs, etc.).
 /// </summary>
-public class UserContextAccessor(IHttpContextAccessor httpContextAccessor)
+public sealed class UserContextAccessor(IHttpContextAccessor httpContextAccessor)
 	: IUserContextAccessor
 {
 	/// <summary>

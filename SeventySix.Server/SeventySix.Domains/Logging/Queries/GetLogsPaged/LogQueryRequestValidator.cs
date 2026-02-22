@@ -15,7 +15,7 @@ namespace SeventySix.Logging.Queries.GetLogsPaged;
 /// ONLY validates domain-specific LogLevel property.
 /// SortBy validation automatically uses Log entity properties via reflection.
 /// </remarks>
-public class LogQueryRequestValidator : BaseQueryValidator<LogQueryRequest, Log>
+public sealed class LogQueryRequestValidator : BaseQueryValidator<LogQueryRequest, Log>
 {
 	/// <summary>
 	/// Initializes a new instance of the <see cref="LogQueryRequestValidator"/> class.

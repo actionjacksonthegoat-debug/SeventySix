@@ -8,6 +8,8 @@ namespace SeventySix.Identity;
 
 /// <summary>
 /// Handler for TOTP code verification command.
+/// Validates the MFA challenge token (proof of prior password authentication)
+/// before verifying the TOTP code.
 /// </summary>
 public static class VerifyTotpCodeCommandHandler
 {
@@ -20,6 +22,9 @@ public static class VerifyTotpCodeCommandHandler
 	/// <param name="totpService">
 	/// TOTP service for code validation.
 	/// </param>
+	/// <param name="totpSecretProtector">
+	/// Protector for encrypting/decrypting TOTP secrets at rest.
+	/// </param>
 	/// <param name="userManager">
 	/// Identity UserManager for user lookup.
 	/// </param>
@@ -28,6 +33,15 @@ public static class VerifyTotpCodeCommandHandler
 	/// </param>
 	/// <param name="securityAuditService">
 	/// Security audit logging service.
+	/// </param>
+	/// <param name="trustedDeviceService">
+	/// Service for creating trusted device tokens.
+	/// </param>
+	/// <param name="mfaService">
+	/// MFA service for challenge token validation.
+	/// </param>
+	/// <param name="attemptTracker">
+	/// Per-user attempt tracker for brute-force protection.
 	/// </param>
 	/// <param name="cancellationToken">
 	/// Cancellation token.
@@ -38,19 +52,41 @@ public static class VerifyTotpCodeCommandHandler
 	public static async Task<AuthResult> HandleAsync(
 		VerifyTotpCodeCommand command,
 		ITotpService totpService,
+		TotpSecretProtector totpSecretProtector,
 		UserManager<ApplicationUser> userManager,
 		AuthenticationService authenticationService,
 		ISecurityAuditService securityAuditService,
+		ITrustedDeviceService trustedDeviceService,
+		IMfaService mfaService,
+		IMfaAttemptTracker attemptTracker,
 		CancellationToken cancellationToken)
 	{
-		ApplicationUser? user =
-			await userManager.FindByEmailAsync(command.Request.Email);
+		(ApplicationUser? user, AuthResult? challengeError) =
+			await ValidateChallengeAndGetUserAsync(
+				mfaService,
+				userManager,
+				command.Request.ChallengeToken,
+				cancellationToken);
 
-		if (!user.IsValidForAuthentication())
+		if (challengeError is not null)
 		{
+			return challengeError;
+		}
+
+		if (attemptTracker.IsLockedOut(
+			user!.Id,
+			MfaAttemptTypes.Totp))
+		{
+			await securityAuditService.LogEventAsync(
+				SecurityEventType.MfaFailed,
+				user,
+				success: false,
+				details: "TOTP locked out — too many attempts",
+				cancellationToken);
+
 			return AuthResult.Failed(
-				AuthErrorMessages.InvalidCredentials,
-				AuthErrorCodes.InvalidCredentials);
+				AuthErrorMessages.TooManyAttempts,
+				MfaErrorCodes.TooManyAttempts);
 		}
 
 		if (string.IsNullOrEmpty(user.TotpSecret))
@@ -69,11 +105,13 @@ public static class VerifyTotpCodeCommandHandler
 
 		bool isValidCode =
 			totpService.VerifyCode(
-				user.TotpSecret,
+				totpSecretProtector.Unprotect(user.TotpSecret),
 				command.Request.Code);
 
 		if (!isValidCode)
 		{
+			attemptTracker.RecordFailedAttempt(user.Id, MfaAttemptTypes.Totp);
+
 			await securityAuditService.LogEventAsync(
 				SecurityEventType.MfaFailed,
 				user,
@@ -86,6 +124,12 @@ public static class VerifyTotpCodeCommandHandler
 				MfaErrorCodes.InvalidCode);
 		}
 
+		attemptTracker.ResetAttempts(user.Id, MfaAttemptTypes.Totp);
+
+		await mfaService.ConsumeChallengeAsync(
+			command.Request.ChallengeToken,
+			cancellationToken);
+
 		await securityAuditService.LogEventAsync(
 			SecurityEventType.MfaSuccess,
 			user,
@@ -93,11 +137,86 @@ public static class VerifyTotpCodeCommandHandler
 			details: "TOTP",
 			cancellationToken);
 
-		return await authenticationService.GenerateAuthResultAsync(
+		return await GenerateResultWithOptionalTrustAsync(
 			user,
-			command.ClientIp,
-			user.RequiresPasswordChange,
-			rememberMe: false,
+			(command.Request.TrustDevice, command.ClientIp, command.UserAgent),
+			authenticationService,
+			trustedDeviceService,
 			cancellationToken);
+	}
+
+	/// <summary>
+	/// Validates the MFA challenge token and retrieves the associated user.
+	/// </summary>
+	private static async Task<(ApplicationUser? User, AuthResult? Error)>
+		ValidateChallengeAndGetUserAsync(
+			IMfaService mfaService,
+			UserManager<ApplicationUser> userManager,
+			string challengeToken,
+			CancellationToken cancellationToken)
+	{
+		MfaChallengeValidationResult challengeValidation =
+			await mfaService.ValidateChallengeTokenAsync(
+				challengeToken,
+				cancellationToken);
+
+		if (!challengeValidation.Success)
+		{
+			AuthResult challengeError =
+				AuthResult.Failed(
+					challengeValidation.Error!,
+					challengeValidation.ErrorCode);
+
+			return (null, challengeError);
+		}
+
+		ApplicationUser? user =
+			await userManager.FindByIdAsync(
+				challengeValidation.UserId.ToString());
+
+		if (!user.IsValidForAuthentication())
+		{
+			AuthResult invalidError =
+				AuthResult.Failed(
+					AuthErrorMessages.InvalidCredentials,
+					AuthErrorCodes.InvalidCredentials);
+
+			return (null, invalidError);
+		}
+
+		return (user, null);
+	}
+
+	/// <summary>
+	/// Generates the auth result, optionally adding a trusted device token.
+	/// </summary>
+	private static async Task<AuthResult> GenerateResultWithOptionalTrustAsync(
+		ApplicationUser user,
+		(bool TrustDevice, string? ClientIp, string? UserAgent) deviceDetails,
+		AuthenticationService authenticationService,
+		ITrustedDeviceService trustedDeviceService,
+		CancellationToken cancellationToken)
+	{
+		AuthResult authResult =
+			await authenticationService.GenerateAuthResultAsync(
+				user,
+				deviceDetails.ClientIp,
+				user.RequiresPasswordChange,
+				rememberMe: false,
+				cancellationToken);
+
+		if (deviceDetails.TrustDevice)
+		{
+			string deviceToken =
+				await trustedDeviceService.CreateTrustedDeviceAsync(
+					user.Id,
+					deviceDetails.UserAgent ?? string.Empty,
+					deviceDetails.ClientIp,
+					cancellationToken);
+
+			return authResult with { TrustedDeviceToken = deviceToken };
+		}
+
+		return authResult;
 	}
 }

@@ -4,7 +4,6 @@
 
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Time.Testing;
-using SeventySix.Identity;
 using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;
@@ -21,7 +20,7 @@ namespace SeventySix.Identity.Tests.Queries.CheckUsernameExists;
 /// Security: Prevents duplicate username registrations.
 /// </remarks>
 [Collection(CollectionNames.IdentityPostgreSql)]
-public class CheckUsernameExistsQueryHandlerTests(
+public sealed class CheckUsernameExistsQueryHandlerTests(
 	IdentityPostgreSqlFixture fixture) : DataPostgreSqlTestBase(fixture)
 {
 	private static readonly FakeTimeProvider TimeProvider =

@@ -13,7 +13,7 @@ namespace SeventySix.ArchitectureTests;
 /// Ensures controllers ONLY access services, never repositories directly.
 /// Automatically discovers all bounded contexts to prevent regression.
 /// </summary>
-public class ServiceFacadeTests
+public sealed class ServiceFacadeTests
 {
 	[Fact]
 	public void Controllers_Should_Not_Depend_On_Any_Repository_Namespace()

@@ -1,0 +1,17 @@
+{
+	"name": "seventysix-loadtests",
+	"version": "1.0.0",
+	"private": true,
+	"type": "module",
+	"description": "k6 load testing infrastructure for SeventySix API",
+	"scripts": {
+		"test:quick": "k6 run --env PROFILE=quick scenarios/health/health-check.test.js && k6 run --env PROFILE=quick scenarios/auth/login.test.js && k6 run --env PROFILE=quick scenarios/auth/token-refresh.test.js && k6 run --env PROFILE=quick scenarios/auth/logout.test.js && k6 run --env PROFILE=quick scenarios/auth/registration.test.js && k6 run --env PROFILE=quick scenarios/users/create-user.test.js && k6 run --env PROFILE=quick scenarios/users/update-user.test.js && k6 run --env PROFILE=quick scenarios/users/get-users-paged.test.js && k6 run --env PROFILE=quick scenarios/users/bulk-operations.test.js && k6 run --env PROFILE=quick scenarios/permissions/request-permission.test.js && k6 run --env PROFILE=quick scenarios/permissions/grant-permission.test.js && k6 run --env PROFILE=quick scenarios/logs/client-log.test.js && k6 run --env PROFILE=quick scenarios/logs/client-log-batch.test.js",
+		"test:smoke": "k6 run --env PROFILE=smoke scenarios/health/health-check.test.js",
+		"test:load": "k6 run --env PROFILE=load scenarios/health/health-check.test.js && k6 run --env PROFILE=load scenarios/auth/login.test.js && k6 run --env PROFILE=load scenarios/auth/token-refresh.test.js && k6 run --env PROFILE=load scenarios/auth/logout.test.js && k6 run --env PROFILE=load scenarios/users/create-user.test.js && k6 run --env PROFILE=load scenarios/users/get-users-paged.test.js && k6 run --env PROFILE=load scenarios/logs/client-log.test.js && k6 run --env PROFILE=load scenarios/logs/client-log-batch.test.js",
+		"test:stress": "k6 run --env PROFILE=stress scenarios/health/health-check.test.js && k6 run --env PROFILE=stress scenarios/auth/login.test.js && k6 run --env PROFILE=stress scenarios/logs/client-log.test.js",
+		"test:all": "npm run test:quick"
+	},
+	"devDependencies": {
+		"@types/k6": "^1.0.0"
+	}
+}

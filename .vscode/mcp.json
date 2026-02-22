@@ -1,0 +1,45 @@
+{
+	"servers": {
+		"github": {
+			"command": "npx",
+			"args": ["-y", "@modelcontextprotocol/server-github"],
+			"env": {
+				"GITHUB_PERSONAL_ACCESS_TOKEN": "${input:githubToken}"
+			}
+		},
+		"postgresql": {
+			"command": "npx",
+			"args": ["-y", "@modelcontextprotocol/server-postgres", "${input:postgresConnectionString}"],
+			"env": {
+				"PGHOST": "localhost",
+				"PGDATABASE": "seventysix"
+			}
+		},
+		"chrome-devtools": {
+			"command": "npx",
+			"args": ["-y", "chrome-devtools-mcp@latest"]
+		},
+		"context7": {
+			"command": "npx",
+			"args": ["-y", "@upstash/context7-mcp@latest"]
+		},
+		"playwright": {
+			"command": "npx",
+			"args": ["-y", "@playwright/mcp@latest"]
+		}
+	},
+	"inputs": [
+		{
+			"id": "githubToken",
+			"type": "promptString",
+			"description": "GitHub Personal Access Token (repo scope required)",
+			"password": true
+		},
+		{
+			"id": "postgresConnectionString",
+			"type": "promptString",
+			"description": "PostgreSQL connection string (dev default - Create a read only user if you want this in Prod or Staging: postgresql://postgres:TestPassword@localhost:5433/seventysix)",
+			"password": true
+		},
+	]
+}

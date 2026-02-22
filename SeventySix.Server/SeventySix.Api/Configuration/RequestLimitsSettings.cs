@@ -16,6 +16,11 @@ namespace SeventySix.Api.Configuration;
 public sealed record RequestLimitsSettings
 {
 	/// <summary>
+	/// Configuration section name for binding.
+	/// </summary>
+	public const string SectionName = "RequestLimits";
+
+	/// <summary>
 	/// Gets the maximum request body size in bytes.
 	/// Must be configured in appsettings.json.
 	/// </summary>

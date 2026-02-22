@@ -11,7 +11,7 @@ namespace SeventySix.Domains.Tests.ApiTracking.POCOs.DTOs;
 /// <summary>
 /// Unit tests for <see cref="ThirdPartyApiStatisticsDto"/>.
 /// </summary>
-public class ThirdPartyApiStatisticsDtoTests
+public sealed class ThirdPartyApiStatisticsDtoTests
 {
 	[Fact]
 	public void Constructor_ShouldInitializeWithDefaultValues()
@@ -33,15 +33,15 @@ public class ThirdPartyApiStatisticsDtoTests
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		DateTime now =
-			timeProvider.GetUtcNow().UtcDateTime;
+		DateTimeOffset now =
+			timeProvider.GetUtcNow();
 		Dictionary<string, int> callsByApi =
 			new()
 			{
 			{ "ExternalAPI", 150 },
 			{ "GoogleMaps", 75 },
 		};
-		Dictionary<string, DateTime?> lastCalledByApi =
+		Dictionary<string, DateTimeOffset?> lastCalledByApi =
 			new()
 			{
 			{ "ExternalAPI", now },
@@ -73,10 +73,10 @@ public class ThirdPartyApiStatisticsDtoTests
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		Dictionary<string, DateTime?> lastCalledByApi =
+		Dictionary<string, DateTimeOffset?> lastCalledByApi =
 			new()
 			{
-			{ "Api1", timeProvider.GetUtcNow().UtcDateTime },
+			{ "Api1", timeProvider.GetUtcNow() },
 			{ "Api2", null },
 		};
 

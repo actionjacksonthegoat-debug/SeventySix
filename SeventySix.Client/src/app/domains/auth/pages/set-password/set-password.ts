@@ -8,35 +8,38 @@ import {
 	ChangeDetectionStrategy,
 	Component,
 	computed,
+	DestroyRef,
 	inject,
 	OnInit,
 	Signal,
 	signal,
 	WritableSignal
 } from "@angular/core";
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import {
 	FormBuilder,
 	FormGroup,
 	ReactiveFormsModule,
 	Validators
 } from "@angular/forms";
-import { MatButtonModule } from "@angular/material/button";
 import { ActivatedRoute, Router } from "@angular/router";
 import { ValidationResult } from "@auth/models";
 import { mapAuthError } from "@auth/utilities";
 import { validatePassword, validatePasswordsMatch } from "@auth/utilities";
 import { APP_ROUTES } from "@shared/constants";
 import { PASSWORD_VALIDATION } from "@shared/constants/validation.constants";
+import { FORM_MATERIAL_MODULES } from "@shared/material-bundles.constants";
 import { AuthErrorResult } from "@shared/models";
 import { AuthService } from "@shared/services/auth.service";
 import { NotificationService } from "@shared/services/notification.service";
 import { getValidationError } from "@shared/utilities";
+import { isNullOrUndefined } from "@shared/utilities/null-check.utility";
 
 @Component(
 	{
 		selector: "app-set-password",
 		standalone: true,
-		imports: [ReactiveFormsModule, MatButtonModule],
+		imports: [ReactiveFormsModule, ...FORM_MATERIAL_MODULES],
 		changeDetection: ChangeDetectionStrategy.OnPush,
 		templateUrl: "./set-password.html",
 		styleUrl: "./set-password.scss"
@@ -47,6 +50,15 @@ import { getValidationError } from "@shared/utilities";
  */
 export class SetPasswordComponent implements OnInit
 {
+	/**
+	 * Angular destroy reference for automatic subscription cleanup.
+	 * @type {DestroyRef}
+	 * @private
+	 * @readonly
+	 */
+	private readonly destroyRef: DestroyRef =
+		inject(DestroyRef);
+
 	/**
 	 * Auth service used to validate tokens and set the new password.
 	 * @type {AuthService}
@@ -100,14 +112,16 @@ export class SetPasswordComponent implements OnInit
 					"",
 					[
 						Validators.required,
-						Validators.minLength(PASSWORD_VALIDATION.MIN_LENGTH)
+						Validators.minLength(PASSWORD_VALIDATION.MIN_LENGTH),
+						Validators.maxLength(PASSWORD_VALIDATION.MAX_LENGTH)
 					]
 				],
 				confirmPassword: [
 					"",
 					[
 						Validators.required,
-						Validators.minLength(PASSWORD_VALIDATION.MIN_LENGTH)
+						Validators.minLength(PASSWORD_VALIDATION.MIN_LENGTH),
+						Validators.maxLength(PASSWORD_VALIDATION.MAX_LENGTH)
 					]
 				]
 			});
@@ -163,7 +177,7 @@ export class SetPasswordComponent implements OnInit
 		this.token =
 			this.route.snapshot.queryParams["token"] ?? "";
 
-		if (!this.token)
+		if (isNullOrUndefined(this.token) || this.token === "")
 		{
 			this.tokenValid.set(false);
 			this.notification.error(
@@ -177,7 +191,7 @@ export class SetPasswordComponent implements OnInit
 	 */
 	private validateForm(): boolean
 	{
-		if (!this.token)
+		if (isNullOrUndefined(this.token) || this.token === "")
 		{
 			this.notification.error("Invalid password reset token.");
 			return false;
@@ -232,6 +246,8 @@ export class SetPasswordComponent implements OnInit
 		this
 			.authService
 			.setPassword(this.token!, formValue.newPassword)
+			.pipe(
+				takeUntilDestroyed(this.destroyRef))
 			.subscribe(
 				{
 					next: () =>

@@ -5,8 +5,8 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
-using SeventySix.Identity;
 using SeventySix.Identity.Commands.BulkApprovePermissionRequests;
+using SeventySix.Shared.Interfaces;
 using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.Mocks;
@@ -21,12 +21,13 @@ namespace SeventySix.Identity.Tests.Commands.BulkApprovePermissionRequests;
 /// Tests follow 80/20 rule: focus on happy path and edge cases.
 /// Security-critical: Bulk role elevation operations must be thoroughly tested.
 /// </remarks>
-public class BulkApprovePermissionRequestsCommandHandlerTests
+public sealed class BulkApprovePermissionRequestsCommandHandlerTests
 {
 	private readonly FakeTimeProvider TimeProvider;
 	private readonly IPermissionRequestRepository PermissionRequestRepository;
 	private readonly UserManager<ApplicationUser> UserManager;
 	private readonly IIdentityCacheService IdentityCache;
+	private readonly ITransactionManager TransactionManager;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="BulkApprovePermissionRequestsCommandHandlerTests"/> class.
@@ -41,6 +42,20 @@ public class BulkApprovePermissionRequestsCommandHandlerTests
 			IdentityMockFactory.CreateUserManager();
 		IdentityCache =
 			Substitute.For<IIdentityCacheService>();
+		TransactionManager =
+			Substitute.For<ITransactionManager>();
+		TransactionManager
+			.ExecuteInTransactionAsync(
+				Arg.Any<Func<CancellationToken, Task<int>>>(),
+				Arg.Any<int>(),
+				Arg.Any<CancellationToken>())
+			.Returns(
+				call =>
+				{
+					Func<CancellationToken, Task<int>> operation =
+						call.ArgAt<Func<CancellationToken, Task<int>>>(0);
+					return operation(CancellationToken.None);
+				});
 	}
 
 	/// <summary>
@@ -103,6 +118,7 @@ public class BulkApprovePermissionRequestsCommandHandlerTests
 				PermissionRequestRepository,
 				UserManager,
 				IdentityCache,
+				TransactionManager,
 				CancellationToken.None);
 
 		// Assert
@@ -176,6 +192,7 @@ public class BulkApprovePermissionRequestsCommandHandlerTests
 				PermissionRequestRepository,
 				UserManager,
 				IdentityCache,
+				TransactionManager,
 				CancellationToken.None);
 
 		// Assert - Only 1 approved (user 99 was skipped)
@@ -262,6 +279,7 @@ public class BulkApprovePermissionRequestsCommandHandlerTests
 				PermissionRequestRepository,
 				UserManager,
 				IdentityCache,
+				TransactionManager,
 				CancellationToken.None);
 
 		// Assert - Only 1 approved (second failed)
@@ -300,6 +318,7 @@ public class BulkApprovePermissionRequestsCommandHandlerTests
 				PermissionRequestRepository,
 				UserManager,
 				IdentityCache,
+				TransactionManager,
 				CancellationToken.None);
 
 		// Assert

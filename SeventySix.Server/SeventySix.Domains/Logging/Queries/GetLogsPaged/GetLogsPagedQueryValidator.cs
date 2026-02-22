@@ -9,7 +9,7 @@ namespace SeventySix.Logging;
 /// <summary>
 /// Validator for GetLogsPagedQuery to ensure query parameters are valid.
 /// </summary>
-public class GetLogsPagedQueryValidator : AbstractValidator<GetLogsPagedQuery>
+public sealed class GetLogsPagedQueryValidator : AbstractValidator<GetLogsPagedQuery>
 {
 	/// <summary>
 	/// Initializes a new instance of the <see cref="GetLogsPagedQueryValidator"/> class.

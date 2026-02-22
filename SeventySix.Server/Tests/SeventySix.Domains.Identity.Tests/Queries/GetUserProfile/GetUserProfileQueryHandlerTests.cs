@@ -5,7 +5,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
-using SeventySix.Identity;
 using SeventySix.Shared.Constants;
 using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.Mocks;
@@ -19,7 +18,7 @@ namespace SeventySix.Identity.Tests.Queries.GetUserProfile;
 /// Unit tests for <see cref="GetUserProfileQueryHandler"/>.
 /// Tests query handler with mocked dependencies following 80/20 rule.
 /// </summary>
-public class GetUserProfileQueryHandlerTests
+public sealed class GetUserProfileQueryHandlerTests
 {
 	private static readonly FakeTimeProvider TimeProvider =
 		new(TestTimeProviderBuilder.DefaultTime);
@@ -59,7 +58,7 @@ public class GetUserProfileQueryHandlerTests
 				UserName = "testuser",
 				Email = "test@example.com",
 				FullName = "Test User",
-				LastLoginAt = TimeProvider.GetUtcNow().UtcDateTime,
+				LastLoginAt = TimeProvider.GetUtcNow(),
 			};
 
 		List<string> roles =
