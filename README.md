@@ -1,5 +1,10 @@
 # SeventySix
 
+[![CI](https://github.com/actionjacksonthegoat-debug/SeventySix/actions/workflows/ci.yml/badge.svg)](https://github.com/actionjacksonthegoat-debug/SeventySix/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/actionjacksonthegoat-debug/SeventySix/actions/workflows/codeql.yml/badge.svg)](https://github.com/actionjacksonthegoat-debug/SeventySix/actions/workflows/codeql.yml)
+[![codecov](https://codecov.io/gh/actionjacksonthegoat-debug/SeventySix/graph/badge.svg)](https://codecov.io/gh/actionjacksonthegoat-debug/SeventySix)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE.txt)
+
 > **Work in Progress — Not Production Ready**
 >
 > This codebase is under active development and is **not yet suitable for production use**. APIs, database schemas, and configuration may change without notice.
@@ -47,9 +52,9 @@ chmod +x scripts/bootstrap.sh
 
 ### Optional: Disable Email and OAuth Requirements
 
-By default, MFA email verification and TOTP are **enabled** — they require Brevo SMTP credentials to send codes. OAuth login requires a GitHub OAuth app. Both are optional.
+Most contributors won't need email or OAuth for local development. The bootstrap prompts clearly mark these as **[OPTIONAL]** — press Enter to skip them.
 
-To run the application **without** Brevo SMTP credentials or OAuth app keys, add these overrides to `SeventySix.Server/SeventySix.Api/appsettings.Development.json`:
+After bootstrap, disable MFA (which requires Brevo email) by adding to `SeventySix.Server/SeventySix.Api/appsettings.Development.json`:
 
 ```json
 {
@@ -58,7 +63,9 @@ To run the application **without** Brevo SMTP credentials or OAuth app keys, add
 }
 ```
 
-With these settings, login requires only email + password with no email code sent. OAuth is already disabled by default — it only activates when provider app secrets are configured. See [Optional Feature Flags](docs/Startup-Instructions.md#optional-feature-flags) for the complete reference.
+Login then requires only email + password. OAuth is already inactive without provider secrets.
+
+**Adding Brevo or OAuth later**: Run `npm run secrets:set` with the appropriate keys — see [Startup Instructions](docs/Startup-Instructions.md#adding-brevooauth-later) for details.
 
 > ⚠️ **Production Security**: `Mfa.Enabled` is **highly recommended for all production deployments** — disabling it removes email-based second-factor protection for every user. `Totp.Enabled` adds authenticator-app support and is also recommended. OAuth is safe to leave off until provider secrets are configured. The server enforces this: `StartupValidator` will throw a startup exception if `Mfa.Enabled: false` is detected in the Production environment.
 
@@ -597,6 +604,8 @@ All error responses follow ProblemDetails (RFC 9457). Exception messages are nev
 ### Data Protection
 
 The .NET Data Protection API uses certificate-based key encryption. HTTPS is enforced in all environments (development, E2E, production) via self-signed or real certificates.
+
+For security vulnerability reporting, see [SECURITY.md](SECURITY.md).
 
 ## Accessibility
 

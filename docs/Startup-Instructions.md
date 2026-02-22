@@ -14,6 +14,65 @@ A step-by-step guide for setting up SeventySix from scratch — including accoun
 
 ---
 
+## Running Without Third-Party Services
+
+SeventySix runs fully functional without any third-party service accounts. The only required external dependency is **Docker Desktop**.
+
+### What's Required vs Optional
+
+| Component | Required? | Without It |
+|-----------|-----------|------------|
+| Docker Desktop | **Yes** | Cannot run — database, cache, and API run in Docker |
+| PostgreSQL password | **Yes** | Set during bootstrap — used for local Docker database |
+| Admin email/password | **Yes** | Set during bootstrap — seeds the first admin account |
+| Brevo SMTP credentials | No | MFA email codes won't send — disable MFA to bypass (see below) |
+| GitHub OAuth app keys | No | OAuth login button hidden — email/password login works |
+| Grafana/pgAdmin passwords | No | Defaults used (`admin`/`admin` and `pgadmin@example.com`/`pgadmin`) |
+
+### Minimal Setup (No Brevo, No OAuth)
+
+After running the bootstrap and skipping the optional Brevo/OAuth prompts, add these overrides to disable MFA (which requires email):
+
+**File**: `SeventySix.Server/SeventySix.Api/appsettings.Development.json`
+
+Add or merge into the existing JSON:
+```json
+{
+  "Mfa": { "Enabled": false, "RequiredForAllUsers": false },
+  "Totp": { "Enabled": false }
+}
+```
+
+With these settings:
+- Login requires only email + password (no MFA email code step)
+- TOTP authenticator enrollment is hidden
+- OAuth is already inactive when provider secrets are not configured
+- All other features work normally
+
+### Adding Brevo/OAuth Later
+
+You can configure these services at any time without re-running bootstrap:
+
+**Brevo SMTP (enables MFA email codes)**:
+```bash
+npm run secrets:set -- Email:SmtpUsername "your-brevo-login"
+npm run secrets:set -- Email:SmtpPassword "your-brevo-api-key"
+npm run secrets:set -- Email:FromAddress "you@yourdomain.com"
+```
+Then remove the `"Mfa": { "Enabled": false }` override from `appsettings.Development.json` and restart.
+Sign up at [https://www.brevo.com](https://www.brevo.com) (free tier: 300 emails/day).
+
+**GitHub OAuth (enables "Sign in with GitHub")**:
+```bash
+npm run secrets:set -- Auth:OAuth:Providers:0:ClientId "your-client-id"
+npm run secrets:set -- Auth:OAuth:Providers:0:ClientSecret "your-client-secret"
+```
+Then restart. Create an OAuth app at [https://github.com/settings/developers](https://github.com/settings/developers).
+- Homepage URL: `https://localhost:4200`
+- Authorization callback URL: `https://localhost:7074/api/v1/auth/oauth/github/callback`
+
+---
+
 ## Table of Contents
 
 - [1. Create Required Accounts](#1-create-required-accounts)
@@ -391,6 +450,8 @@ For complete MCP server setup instructions, see the [MCP Server Setup Guide](MCP
 ---
 
 ## Optional Feature Flags
+
+> For a quick overview of running without third-party services, see [Running Without Third-Party Services](#running-without-third-party-services) above.
 
 The following features are fully optional and can be disabled via `appsettings.Development.json` — no code changes required. Create or update `SeventySix.Server/SeventySix.Api/appsettings.Development.json` with one or more of these overrides:
 

@@ -37,6 +37,7 @@ Write a new `Implementation.md` plan for the following work:
 Split the plan into focused, completable files:
 
 - **`Implementation.md`** — Orchestrator that lists all `implementation-N.md` files, tracks their status, and contains the final validation gate (all required test suites). Include an Executive Summary with problem, goal, and key constraints. The CRITICAL no-skip rule MUST appear at both the TOP and BOTTOM.
+- **Security review gate** — The orchestrator MUST include a security review step (invoke `/security-review`) between the final implementation file and the test gate. This is mandatory for all plans.
 - **`implementation-1.md`, `implementation-2.md`, etc.** — Each covers one logical unit of work with numbered phases, substeps, file paths, and code patterns. Each file MUST have the CRITICAL no-skip rule at both TOP and BOTTOM.
 - **Appendices** go in the orchestrator for file inventories and checklists
 - **Final validation** (all required test suites + documentation check) lives ONLY in the orchestrator — it runs after ALL implementation files complete

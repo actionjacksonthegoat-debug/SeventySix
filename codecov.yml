@@ -1,0 +1,60 @@
+codecov:
+  require_ci_to_pass: true
+
+coverage:
+  precision: 2
+  round: down
+  range: "60...90"
+
+  status:
+    project:
+      default:
+        target: auto
+        threshold: 2%
+        if_ci_failed: error
+      server:
+        flags:
+          - server
+        target: auto
+        threshold: 2%
+      client:
+        flags:
+          - client
+        target: auto
+        threshold: 2%
+
+    patch:
+      default:
+        target: 70%
+        threshold: 5%
+        if_ci_failed: error
+
+flags:
+  server:
+    paths:
+      - SeventySix.Server/
+    carryforward: true
+  client:
+    paths:
+      - SeventySix.Client/src/
+    carryforward: true
+
+ignore:
+  - "**/*.spec.ts"
+  - "**/testing/**"
+  - "**/test-results/**"
+  - "**/coverage/**"
+  - "**/node_modules/**"
+  - "**/Migrations/**"
+  - "**/generated-open-api.ts"
+  - "SeventySix.Client/e2e/**"
+  - "SeventySix.Client/load-testing/**"
+  - "scripts/**"
+  - "docs/**"
+
+comment:
+  layout: "header, diff, flags, components"
+  behavior: default
+  require_changes: true
+  require_base: false
+  require_head: true
