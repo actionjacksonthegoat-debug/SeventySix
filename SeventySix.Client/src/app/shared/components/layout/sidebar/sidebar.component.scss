@@ -14,10 +14,7 @@
 	padding: vars.$spacing-xs vars.$spacing-sm;
 	min-height: vars.$form-field-height-dense; // 48px
 	align-items: center;
-	position: absolute;
-	top: 0;
-	right: 0;
-	z-index: 10;
+	flex-shrink: 0;
 
 	// Only show close button when sidebar is in overlay mode (< 960px)
 	@media (min-width: vars.$breakpoint-md-min) {
@@ -25,21 +22,14 @@
 	}
 
 	.close-sidebar-btn {
-		// Ensure the button is visible and accessible
 		mat-icon {
 			font-size: vars.$icon-size-base;
 		}
 	}
 }
 
-// Add top padding to first section title to account for absolute positioned close button
 .nav-section-title:first-of-type {
 	padding-top: vars.$spacing-md;
-
-	// No extra padding needed when close button is hidden
-	@media (min-width: vars.$breakpoint-md-min) {
-		padding-top: vars.$spacing-md;
-	}
 }
 
 .nav-section-title {
@@ -63,21 +53,17 @@ mat-nav-list {
 
 a[mat-list-item] {
 	&.active {
-		background-color: rgba(var(--mat-primary-rgb), 0.12);
-		color: var(--mat-primary-default);
+		background-color: color-mix(in srgb, var(--mat-sys-primary) 12%, transparent);
+		color: var(--mat-sys-primary);
 
 		mat-icon {
-			color: var(--mat-primary-default);
+			color: var(--mat-sys-primary);
 		}
 	}
 
 	&[disabled] {
 		opacity: 0.5;
 		cursor: not-allowed;
-	}
-
-	mat-icon {
-		margin-right: vars.$spacing-md;
 	}
 }
 

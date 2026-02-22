@@ -5,8 +5,8 @@
 	margin-top: auto;
 	min-height: vars.$footer-height;
 	height: auto;
-	background-color: rgba(var(--mat-surface-rgb), 0.8);
-	border-top: 1px solid rgba(var(--mat-outline-rgb), 0.12);
+	background-color: color-mix(in srgb, var(--mat-sys-surface) 80%, transparent);
+	border-top: 1px solid color-mix(in srgb, var(--mat-sys-outline) 12%, transparent);
 	flex-shrink: 0; // Prevent footer from shrinking
 }
 

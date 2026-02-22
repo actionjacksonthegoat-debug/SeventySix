@@ -258,6 +258,10 @@
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(15.625rem, 1fr));
 	gap: vars.$spacing-lg;
+
+	mat-form-field {
+		width: 100%;
+	}
 }
 
 .checkbox-group {

@@ -38,6 +38,7 @@ import {
 import { environment } from "@environments/environment";
 import { APP_ROUTES } from "@shared/constants";
 import { PASSWORD_VALIDATION } from "@shared/constants/validation.constants";
+import { FieldMessageDirective } from "@shared/directives";
 import { FORM_MATERIAL_MODULES } from "@shared/material-bundles.constants";
 import { AuthErrorResult } from "@shared/models";
 import { AuthService } from "@shared/services/auth.service";
@@ -54,7 +55,7 @@ interface ChangePasswordRequest
 	{
 		selector: "app-change-password",
 		standalone: true,
-		imports: [ReactiveFormsModule, ...FORM_MATERIAL_MODULES],
+		imports: [ReactiveFormsModule, ...FORM_MATERIAL_MODULES, FieldMessageDirective],
 		changeDetection: ChangeDetectionStrategy.OnPush,
 		templateUrl: "./change-password.html",
 		styleUrl: "./change-password.scss"

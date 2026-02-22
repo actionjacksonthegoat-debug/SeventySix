@@ -51,8 +51,8 @@
 
 .breadcrumb-container {
 	padding: 0 vars.$spacing-md;
-	background-color: rgba(var(--mat-surface-rgb), 1);
-	border-bottom: 1px solid rgba(var(--mat-outline-rgb), 0.12);
+	background-color: var(--mat-sys-surface);
+	border-bottom: 1px solid color-mix(in srgb, var(--mat-sys-outline) 12%, transparent);
 	flex-shrink: 0; // Prevent breadcrumb from shrinking
 
 	@media (max-width: vars.$breakpoint-xs-max) {

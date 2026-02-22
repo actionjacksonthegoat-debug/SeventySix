@@ -123,6 +123,19 @@ All TypeScript method and function declarations MUST have explicit return types.
 
 **Exception**: Inline arrow callbacks where return type is inferred from typed context.
 
+## SCSS Color Patterns (CRITICAL — MD3)
+
+> **Rule**: Angular Material 3 does NOT emit RGB-split custom properties. The `rgba(var(--mat-*-rgb), N)` pattern produces **invisible** colors and must NEVER be used.
+
+| [NEVER] | [ALWAYS] |
+| ------- | -------- |
+| `rgba(var(--mat-sys-primary-rgb), 0.12)` | `color-mix(in srgb, var(--mat-sys-primary) 12%, transparent)` |
+| `rgba(var(--mat-outline-rgb), 0.6)` | `color-mix(in srgb, var(--mat-sys-outline) 60%, transparent)` |
+| `rgb(var(--mat-sys-primary-rgb))` | `var(--mat-sys-primary)` |
+| `var(--mat-primary-default)` | `var(--mat-sys-primary)` — use stable MD3 token |
+
+`color-mix()` is already used throughout `_base.scss` and is fully supported in all modern browsers.
+
 ## Documentation Style
 
 ### C# XML (tags on own lines)

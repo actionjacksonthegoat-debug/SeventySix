@@ -61,7 +61,7 @@ import { filter, map, startWith } from "rxjs/operators";
 				padding: 0 0.5rem;
 
 				&.breadcrumb-active {
-					color: rgba(var(--mat-primary-rgb), 1);
+					color: var(--mat-sys-primary);
 					font-weight: 500;
 				}
 			}
@@ -70,7 +70,7 @@ import { filter, map, startWith } from "rxjs/operators";
 				font-size: 18px;
 				width: 18px;
 				height: 18px;
-				color: rgba(var(--mat-outline-rgb), 0.6);
+				color: color-mix(in srgb, var(--mat-sys-outline) 60%, transparent);
 			}
 		}
 

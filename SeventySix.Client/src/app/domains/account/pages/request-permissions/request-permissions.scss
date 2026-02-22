@@ -13,21 +13,23 @@
 		margin-bottom: vars.$spacing-lg;
 
 		mat-checkbox {
+			align-items: flex-start; // Align checkbox indicator to top of multi-line label
+		}
+
+		.role-label {
 			display: flex;
 			flex-direction: column;
-			align-items: flex-start;
+			gap: vars.$spacing-xs;
 		}
 
 		.role-description {
-			display: block;
 			font-size: vars.$font-size-sm;
-			color: var(--color-on-surface-variant);
-			margin-left: vars.$spacing-xl;
+			color: var(--mat-sys-on-surface-variant);
 		}
 	}
 
 	.no-roles {
-		color: var(--color-on-surface-variant);
+		color: var(--mat-sys-on-surface-variant);
 		font-style: italic;
 	}
 

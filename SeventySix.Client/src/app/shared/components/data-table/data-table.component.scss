@@ -62,14 +62,14 @@
 	font-size: vars.$font-size-base;
 	font-weight: 500;
 	text-transform: none;
-	border: 1px solid rgba(var(--mat-sys-outline-rgb), 0.38);
-	color: rgba(var(--mat-sys-on-surface-rgb), 0.87);
+	border: 1px solid color-mix(in srgb, var(--mat-sys-outline) 38%, transparent);
+	color: color-mix(in srgb, var(--mat-sys-on-surface) 87%, transparent);
 	background-color: transparent;
 	transition: all vars.$transition-duration-fast vars.$transition-easing-standard;
 
 	&:hover {
-		background-color: rgba(var(--mat-sys-on-surface-rgb), 0.04);
-		border-color: rgba(var(--mat-sys-outline-rgb), 0.6);
+		background-color: color-mix(in srgb, var(--mat-sys-on-surface) 4%, transparent);
+		border-color: color-mix(in srgb, var(--mat-sys-outline) 60%, transparent);
 	}
 
 	mat-icon {
@@ -85,11 +85,11 @@
 }
 
 .active-range {
-	background-color: rgba(var(--mat-sys-primary-rgb), 0.08);
-	color: rgb(var(--mat-sys-primary-rgb));
+	background-color: color-mix(in srgb, var(--mat-sys-primary) 8%, transparent);
+	color: var(--mat-sys-primary);
 
 	mat-icon {
-		color: rgb(var(--mat-sys-primary-rgb));
+		color: var(--mat-sys-primary);
 	}
 }
 
@@ -98,8 +98,8 @@
 	align-items: center;
 	padding: vars.$spacing-xs vars.$spacing-md;
 	border-radius: vars.$border-radius-xl;
-	background-color: rgba(var(--mat-sys-primary-rgb), 0.12);
-	color: rgb(var(--mat-sys-primary-rgb));
+	background-color: color-mix(in srgb, var(--mat-sys-primary) 12%, transparent);
+	color: var(--mat-sys-primary);
 	font-size: vars.$font-size-base;
 	font-weight: 500;
 	line-height: 1;

@@ -31,6 +31,7 @@ import {
 	SKELETON_TITLE,
 	SkeletonTheme
 } from "@shared/constants";
+import { FieldMessageDirective } from "@shared/directives";
 import { NotificationService, ThemeService } from "@shared/services";
 import { NgxSkeletonLoaderModule } from "ngx-skeleton-loader";
 
@@ -58,7 +59,8 @@ import { NgxSkeletonLoaderModule } from "ngx-skeleton-loader";
 			MatTooltipModule,
 			MatProgressSpinnerModule,
 			MatProgressBarModule,
-			NgxSkeletonLoaderModule
+			NgxSkeletonLoaderModule,
+			FieldMessageDirective
 		],
 		templateUrl: "./style-guide.html",
 		styleUrl: "./style-guide.scss",

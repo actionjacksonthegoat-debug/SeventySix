@@ -12,16 +12,20 @@
 		}
 	}
 
-	mat-form-field {
-		width: 100%;
-		margin-bottom: vars.$spacing-md;
+	.profile-form {
+		display: flex;
+		flex-direction: column;
+		gap: vars.$spacing-lg;
+
+		mat-form-field {
+			width: 100%;
+		}
 	}
 
 	.form-actions {
 		display: flex;
 		gap: vars.$spacing-md;
 		justify-content: flex-end;
-		margin-top: vars.$spacing-lg;
 	}
 
 	.error-card {
@@ -36,15 +40,15 @@
 
 		h3 {
 			margin: 0 0 vars.$spacing-xs;
-			font-size: 1rem;
-			font-weight: 500;
+			font-size: vars.$font-size-base;
+			font-weight: vars.$font-weight-medium;
 			color: var(--mat-sys-on-surface);
 		}
 	}
 
 	.linked-accounts-description {
 		margin: 0 0 vars.$spacing-lg;
-		font-size: 0.875rem;
+		font-size: vars.$font-size-sm;
 		color: var(--mat-sys-on-surface-variant);
 	}
 
@@ -62,7 +66,7 @@
 
 		.provider-name {
 			flex: 1;
-			font-size: 0.875rem;
+			font-size: vars.$font-size-sm;
 			color: var(--mat-sys-on-surface);
 		}
 	}

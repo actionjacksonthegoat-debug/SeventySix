@@ -11,7 +11,7 @@
 		}
 
 		.error-detail {
-			color: rgba(var(--mat-outline-rgb), 0.7);
+			color: color-mix(in srgb, var(--mat-sys-outline) 70%, transparent);
 		}
 	}
 }

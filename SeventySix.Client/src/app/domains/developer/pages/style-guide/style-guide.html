@@ -194,6 +194,24 @@
 						</mat-card-content>
 					</mat-card>
 				</div>
+
+				<h2>Transparent Overlay Pattern (MD3)</h2>
+				<p class="mat-body-1">
+					Angular Material 3 only emits full-value color tokens (e.g.
+					<code>--mat-sys-primary</code>). The
+					<code>rgba(var(--token-rgb), N)</code> pattern is invalid — RGB-split variants are never
+					emitted. Use <code>color-mix()</code> instead.
+				</p>
+
+				<div class="style-note preferred">
+					<strong>Correct (MD3 compatible):</strong><br />
+					<code>background: color-mix(in srgb, var(--mat-sys-primary) 12%, transparent);</code><br />
+					<code>border: 1px solid color-mix(in srgb, var(--mat-sys-outline) 12%, transparent);</code>
+					<br /><br />
+					<strong>Wrong (<code>--mat-sys-primary-rgb</code> is undefined — color is invisible):</strong
+					><br />
+					<code>background: rgba(var(--mat-sys-primary-rgb), 0.12);</code>
+				</div>
 			</div>
 		</mat-tab>
 
@@ -360,12 +378,14 @@
 									matInput
 									placeholder="Placeholder"
 								/>
-								<mat-hint>Hint text</mat-hint>
+								<mat-hint appFieldMessage>Hint text</mat-hint>
 							</mat-form-field>
 
 							<mat-form-field appearance="outline">
 								<mat-label>With Icon</mat-label>
-								<mat-icon matPrefix aria-hidden="true">email</mat-icon>
+								<mat-icon
+									matPrefix
+									aria-hidden="true">email</mat-icon>
 								<input
 									matInput
 									type="email"
@@ -379,7 +399,7 @@
 									matInput
 									required
 								/>
-								<mat-error>This field is required</mat-error>
+								<mat-error appFieldMessage>This field is required</mat-error>
 							</mat-form-field>
 
 							<mat-form-field appearance="outline">
@@ -389,6 +409,49 @@
 									disabled
 									value="Disabled value"
 								/>
+							</mat-form-field>
+						</div>
+					</mat-card-content>
+				</mat-card>
+
+				<mat-card class="form-card">
+					<mat-card-header>
+						<mat-card-title>Field Messages</mat-card-title>
+						<mat-card-subtitle>Hint &amp; error text with auto-truncation</mat-card-subtitle>
+					</mat-card-header>
+					<mat-card-content>
+						<div class="style-note preferred">
+							<strong>Pattern:</strong> Add <code>appFieldMessage</code> to any <code>mat-hint</code> or
+							<code>mat-error</code>. Text truncates to one line with an ellipsis. A Material tooltip
+							reveals the full message on hover (desktop) or tap (mobile) — but <em>only</em> when text
+							is actually clipped. No tooltip is shown when text fits comfortably.
+						</div>
+						<div class="form-grid">
+							<mat-form-field appearance="outline">
+								<mat-label>Short hint (no tooltip)</mat-label>
+								<input
+									matInput
+									placeholder="Short hint fits"
+								/>
+								<mat-hint appFieldMessage>Required field</mat-hint>
+							</mat-form-field>
+
+							<mat-form-field appearance="outline">
+								<mat-label>Long hint (tooltip on hover)</mat-label>
+								<input
+									matInput
+									placeholder="Long hint truncates"
+								/>
+								<mat-hint appFieldMessage>At least 8 characters with uppercase, lowercase, and a digit</mat-hint>
+							</mat-form-field>
+
+							<mat-form-field appearance="outline">
+								<mat-label>Error message</mat-label>
+								<input
+									matInput
+									required
+								/>
+								<mat-error appFieldMessage>Password must contain uppercase, lowercase, a number, and a special character</mat-error>
 							</mat-form-field>
 						</div>
 					</mat-card-content>
@@ -423,7 +486,7 @@
 
 				<mat-card class="form-card">
 					<mat-card-header>
-						<mat-card-title>Checkboxes & Radio Buttons</mat-card-title>
+						<mat-card-title>Checkboxes &amp; Radio Buttons</mat-card-title>
 					</mat-card-header>
 					<mat-card-content>
 						<div class="form-grid">
@@ -1010,14 +1073,28 @@
 								<code class="skeleton-code">SKELETON_AVATAR</code>
 							</div>
 
-							<div class="skeleton-item">
+							<div class="skeleton-item wide">
 								<span class="mat-label-large">SKELETON_TABLE_CELL</span>
-								<span class="mat-body-2">Table cell content (20px)</span>
-								<div class="skeleton-demo">
-									<ngx-skeleton-loader
-										[count]="1"
-										[theme]="skeletonTableCell"
-										aria-label="Table cell loading"></ngx-skeleton-loader>
+								<span class="mat-body-2">Table cell content (20px) &mdash; shown in a row context</span>
+								<div class="skeleton-demo full-width">
+									<div class="skeleton-table-row">
+										<ngx-skeleton-loader
+											[count]="1"
+											[theme]="skeletonTableCell"
+											aria-label="Table cell loading"></ngx-skeleton-loader>
+										<ngx-skeleton-loader
+											[count]="1"
+											[theme]="skeletonTableCell"
+											aria-label="Table cell loading"></ngx-skeleton-loader>
+										<ngx-skeleton-loader
+											[count]="1"
+											[theme]="skeletonTableCell"
+											aria-label="Table cell loading"></ngx-skeleton-loader>
+										<ngx-skeleton-loader
+											[count]="1"
+											[theme]="skeletonTableCell"
+											aria-label="Table cell loading"></ngx-skeleton-loader>
+									</div>
 								</div>
 								<code class="skeleton-code">SKELETON_TABLE_CELL</code>
 							</div>
@@ -1165,6 +1242,24 @@
 						</mat-card-header>
 						<mat-card-content>
 							<div class="skeleton-list">
+								<div class="skeleton-table-row skeleton-table-header">
+									<ngx-skeleton-loader
+										[count]="1"
+										[theme]="skeletonTitle"
+										aria-label="Column header loading"></ngx-skeleton-loader>
+									<ngx-skeleton-loader
+										[count]="1"
+										[theme]="skeletonTitle"
+										aria-label="Column header loading"></ngx-skeleton-loader>
+									<ngx-skeleton-loader
+										[count]="1"
+										[theme]="skeletonTitle"
+										aria-label="Column header loading"></ngx-skeleton-loader>
+									<ngx-skeleton-loader
+										[count]="1"
+										[theme]="skeletonTitle"
+										aria-label="Column header loading"></ngx-skeleton-loader>
+								</div>
 								@for (row of [1, 2, 3]; track row) {
 									<div class="skeleton-table-row">
 										<ngx-skeleton-loader
