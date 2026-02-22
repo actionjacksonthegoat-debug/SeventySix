@@ -450,6 +450,18 @@ The application supports Progressive Web App features via Angular's service work
 - `public/manifest.webmanifest` provides install metadata
 - Pre-cached assets for offline capability
 
+## Feature Flags
+
+The client reads feature flags from the API at startup (`GET /api/v1/config/features`). These flags control UI visibility for MFA, TOTP, and OAuth flows:
+
+| Flag | Effect on client UI |
+|------|---------------------|
+| `mfaEnabled` | Shows/hides the MFA code entry step during login |
+| `totpEnabled` | Shows/hides TOTP authenticator enrollment in account settings |
+| `oAuthEnabled` | Shows/hides OAuth login buttons and account linking UI |
+
+Flags are controlled server-side in `appsettings.json`. See [Optional Feature Flags](../docs/Startup-Instructions.md#optional-feature-flags) for the full reference and production recommendations.
+
 ## Related Projects
 
 - [Repository Overview](../README.md) — Top-level README with full architecture, security, and setup guide

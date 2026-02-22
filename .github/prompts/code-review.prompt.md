@@ -29,6 +29,9 @@ Review all staged/unstaged changes against every rule in the `.github/instructio
 
 ## Workflow
 
+> **[CRITICAL] NEVER COMMIT OR PUSH.** After all fixes and tests pass, stage changes with `git add` and stop.
+> The user gates all commits. Do NOT run `git commit` or `git push` at any point.
+
 1. Scan every changed file for violations
 2. **Fix each violation immediately** by editing the source file
 3. After all fixes, run `npm run format` to ensure consistent formatting

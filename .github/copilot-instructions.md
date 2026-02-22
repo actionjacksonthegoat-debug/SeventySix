@@ -14,8 +14,14 @@
 | `npm run db:reset`                      | Destroys all database data - USER ONLY |
 | `db:reset`                              | Alias - same prohibition               |
 | Any command containing `reset-database` | PowerShell script - USER ONLY          |
+| `git commit` / `git push`               | All commits are USER-GATED — NEVER commit or push on behalf of the user |
+| `git push --force` / `git push -f`      | Destructive — absolutely forbidden     |
+| `git add` / `git stage`                 | Staging is USER-ONLY — NEVER stage files on behalf of the user |
+| `git add -A` / `git add .`              | Same prohibition — staging any files is forbidden |
 
-**NO EXCEPTIONS. NO WORKAROUNDS. If a task requires database reset, STOP and ask the user to run it manually.**
+**NO EXCEPTIONS. NO WORKAROUNDS. If a task requires a database reset or a commit/push/stage, STOP and ask the user to run it manually.**
+
+> **STAGE/COMMIT/PUSH PROHIBITION (CRITICAL)**: Copilot must **NEVER** run `git add`, `git stage`, `git commit`, or `git push` under any circumstances. The user owns the **entire** Git workflow — staging, committing, and pushing. When file changes are complete, instruct the user to review the diff and stage/commit manually.
 
 ---
 

@@ -60,6 +60,8 @@ To run the application **without** Brevo SMTP credentials or OAuth app keys, add
 
 With these settings, login requires only email + password with no email code sent. OAuth is already disabled by default — it only activates when provider app secrets are configured. See [Optional Feature Flags](docs/Startup-Instructions.md#optional-feature-flags) for the complete reference.
 
+> ⚠️ **Production Security**: `Mfa.Enabled` is **highly recommended for all production deployments** — disabling it removes email-based second-factor protection for every user. `Totp.Enabled` adds authenticator-app support and is also recommended. OAuth is safe to leave off until provider secrets are configured. The server enforces this: `StartupValidator` will throw a startup exception if `Mfa.Enabled: false` is detected in the Production environment.
+
 For the full step-by-step manual setup, see [Startup Instructions](docs/Startup-Instructions.md).
 
 ## Key Features

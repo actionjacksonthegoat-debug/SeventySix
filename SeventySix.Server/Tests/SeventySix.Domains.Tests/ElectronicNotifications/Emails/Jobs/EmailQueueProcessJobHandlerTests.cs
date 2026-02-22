@@ -400,6 +400,122 @@ public sealed class EmailQueueProcessJobHandlerTests
 				Arg.Any<CancellationToken>());
 	}
 
+	/// <summary>
+	/// Tests that an unhandled exception during batch processing does not kill the job —
+	/// the job must still reschedule itself with the normal interval.
+	/// </summary>
+	[Fact]
+	public async Task HandleAsync_ExceptionDuringBatchProcessing_StillReschedulesNextRunAsync()
+	{
+		// Arrange
+		MessageBus
+			.InvokeAsync<IReadOnlyList<EmailQueueEntry>>(
+				Arg.Any<GetPendingEmailsQuery>(),
+				Arg.Any<CancellationToken>())
+			.ThrowsAsync(new InvalidOperationException("DB connection lost"));
+
+		EmailQueueProcessJobHandler handler =
+			CreateHandler(
+				new() { Enabled = true },
+				new()
+				{
+					Enabled = true,
+					ProcessingIntervalSeconds = 10,
+				});
+
+		// Act — must not throw
+		await handler.HandleAsync(
+			new EmailQueueProcessJob(),
+			CancellationToken.None);
+
+		// Assert — job rescheduled despite exception, with the normal interval
+		await RecurringJobService
+			.Received(1)
+			.RecordAndScheduleNextAsync<EmailQueueProcessJob>(
+				nameof(EmailQueueProcessJob),
+				Arg.Any<DateTimeOffset>(),
+				TimeSpan.FromSeconds(10),
+				Arg.Any<CancellationToken>());
+	}
+
+	/// <summary>
+	/// Tests that when rate limited, the job reschedules exactly once with the backoff interval.
+	/// </summary>
+	[Fact]
+	public async Task HandleAsync_RateLimited_ReschedulesOnceWithBackoffIntervalAsync()
+	{
+		// Arrange
+		RateLimitingService
+			.CanMakeRequestAsync(
+				ExternalApiConstants.BrevoEmail,
+				Arg.Any<CancellationToken>())
+			.Returns(false);
+
+		RateLimitingService
+			.GetTimeUntilReset()
+			.Returns(TimeSpan.FromMinutes(45));
+
+		EmailQueueProcessJobHandler handler =
+			CreateHandler(
+				new() { Enabled = true },
+				new()
+				{
+					Enabled = true,
+					ProcessingIntervalSeconds = 10,
+				});
+
+		// Act
+		await handler.HandleAsync(
+			new EmailQueueProcessJob(),
+			CancellationToken.None);
+
+		// Assert — exactly ONE scheduling call with the 45-minute reset interval
+		await RecurringJobService
+			.Received(1)
+			.RecordAndScheduleNextAsync<EmailQueueProcessJob>(
+				nameof(EmailQueueProcessJob),
+				Arg.Any<DateTimeOffset>(),
+				TimeSpan.FromMinutes(45),
+				Arg.Any<CancellationToken>());
+	}
+
+	/// <summary>
+	/// Tests that a normal (non-rate-limited) batch reschedules exactly once with the configured interval.
+	/// </summary>
+	[Fact]
+	public async Task HandleAsync_NormalBatch_ReschedulesOnceWithNormalIntervalAsync()
+	{
+		// Arrange
+		MessageBus
+			.InvokeAsync<IReadOnlyList<EmailQueueEntry>>(
+				Arg.Any<GetPendingEmailsQuery>(),
+				Arg.Any<CancellationToken>())
+			.Returns(Array.Empty<EmailQueueEntry>());
+
+		EmailQueueProcessJobHandler handler =
+			CreateHandler(
+				new() { Enabled = true },
+				new()
+				{
+					Enabled = true,
+					ProcessingIntervalSeconds = 30,
+				});
+
+		// Act
+		await handler.HandleAsync(
+			new EmailQueueProcessJob(),
+			CancellationToken.None);
+
+		// Assert — exactly ONE scheduling call with the normal interval
+		await RecurringJobService
+			.Received(1)
+			.RecordAndScheduleNextAsync<EmailQueueProcessJob>(
+				nameof(EmailQueueProcessJob),
+				Arg.Any<DateTimeOffset>(),
+				TimeSpan.FromSeconds(30),
+				Arg.Any<CancellationToken>());
+	}
+
 	private EmailQueueProcessJobHandler CreateHandler(
 		EmailSettings emailSettings,
 		EmailQueueSettings queueSettings) =>

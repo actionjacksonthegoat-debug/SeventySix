@@ -75,19 +75,54 @@ public sealed class EmailQueueProcessJobHandler(
 		DateTimeOffset now =
 			timeProvider.GetUtcNow();
 
+		TimeSpan finalInterval =
+			TimeSpan.FromSeconds(queueConfig.ProcessingIntervalSeconds);
+
 		if (emailConfig.Enabled && queueConfig.Enabled)
 		{
-			bool rateLimited =
+			TimeSpan? backoff =
 				await HandleRateLimitCircuitBreakerAsync(
 					queueConfig,
-					now,
 					cancellationToken);
 
-			if (rateLimited)
+			if (backoff is not null)
 			{
-				return;
+				finalInterval = backoff.Value;
 			}
+			else
+			{
+				await ProcessPendingEmailsBatchAsync(
+					queueConfig,
+					cancellationToken);
+			}
+		}
 
+		await recurringJobService.RecordAndScheduleNextAsync<EmailQueueProcessJob>(
+			nameof(EmailQueueProcessJob),
+			now,
+			finalInterval,
+			cancellationToken);
+	}
+
+	/// <summary>
+	/// Fetches pending emails and processes each one. Absorbs any unhandled exception
+	/// so that the job self-scheduling loop always reaches <see cref="IRecurringJobService.RecordAndScheduleNextAsync{TJob}"/>.
+	/// </summary>
+	/// <param name="queueConfig">
+	/// The email queue configuration settings.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// The cancellation token.
+	/// </param>
+	/// <returns>
+	/// A task representing the asynchronous batch operation.
+	/// </returns>
+	private async Task ProcessPendingEmailsBatchAsync(
+		EmailQueueSettings queueConfig,
+		CancellationToken cancellationToken)
+	{
+		try
+		{
 			IReadOnlyList<EmailQueueEntry> pendingEmails =
 				await messageBus.InvokeAsync<IReadOnlyList<EmailQueueEntry>>(
 					new GetPendingEmailsQuery(
@@ -141,35 +176,29 @@ public sealed class EmailQueueProcessJobHandler(
 					failCount);
 			}
 		}
-
-		TimeSpan interval =
-			TimeSpan.FromSeconds(queueConfig.ProcessingIntervalSeconds);
-
-		await recurringJobService.RecordAndScheduleNextAsync<EmailQueueProcessJob>(
-			nameof(EmailQueueProcessJob),
-			now,
-			interval,
-			cancellationToken);
+		catch (Exception exception)
+		{
+			logger.LogError(
+				exception,
+				"Unhandled exception during email batch processing. Job will reschedule normally.");
+		}
 	}
 
 	/// <summary>
-	/// Checks the rate limit circuit breaker and schedules a backoff if the limit is active.
+	/// Checks the rate limit circuit breaker.
 	/// </summary>
 	/// <param name="queueConfig">
 	/// The email queue configuration settings.
-	/// </param>
-	/// <param name="now">
-	/// The current timestamp for scheduling.
 	/// </param>
 	/// <param name="cancellationToken">
 	/// The cancellation token.
 	/// </param>
 	/// <returns>
-	/// True if rate limited (caller should skip the batch); otherwise false.
+	/// The backoff <see cref="TimeSpan"/> to use for rescheduling if rate limited;
+	/// <see langword="null"/> if requests can proceed normally.
 	/// </returns>
-	private async Task<bool> HandleRateLimitCircuitBreakerAsync(
+	private async Task<TimeSpan?> HandleRateLimitCircuitBreakerAsync(
 		EmailQueueSettings queueConfig,
-		DateTimeOffset now,
 		CancellationToken cancellationToken)
 	{
 		bool canSend =
@@ -179,7 +208,7 @@ public sealed class EmailQueueProcessJobHandler(
 
 		if (canSend)
 		{
-			return false;
+			return null;
 		}
 
 		TimeSpan timeUntilReset =
@@ -194,13 +223,7 @@ public sealed class EmailQueueProcessJobHandler(
 			"Email rate limit active. Skipping batch. Next attempt in {BackoffInterval}",
 			backoffInterval);
 
-		await recurringJobService.RecordAndScheduleNextAsync<EmailQueueProcessJob>(
-			nameof(EmailQueueProcessJob),
-			now,
-			backoffInterval,
-			cancellationToken);
-
-		return true;
+		return backoffInterval;
 	}
 
 	/// <summary>

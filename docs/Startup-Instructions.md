@@ -417,7 +417,16 @@ With these overrides:
 - TOTP authenticator enrollment is hidden
 - OAuth is already off by default — it only activates when provider secrets are present in user secrets
 
-> **Important**: These are development-only overrides for `appsettings.Development.json`. In production, MFA and TOTP should remain enabled for security. Do not disable them in `appsettings.Production.json`.
+> ### ⚠️ Production Security Recommendation
+>
+> | Flag | Production Recommendation |
+> |------|---------------------------|
+> | `Mfa.Enabled` | **`true` (strongly recommended)** — disabling removes email second-factor for all users |
+> | `Mfa.RequiredForAllUsers` | **`true` (recommended)** — disabling makes MFA opt-in per user |
+> | `Totp.Enabled` | **`true` (recommended)** — enables authenticator app enrollment |
+> | `Auth.OAuth.Enabled` | Safe to leave `false` until OAuth provider secrets are configured |
+>
+> The server enforces these rules: `StartupValidator` will throw a startup exception if `Mfa.Enabled: false` is detected in the Production environment.
 
 ---
 

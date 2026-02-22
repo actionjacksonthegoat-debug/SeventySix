@@ -458,6 +458,17 @@ The following features are optional and can be turned off in `appsettings.Develo
 
 OAuth is disabled by default and only activates when OAuth provider secrets are present in user secrets.
 
+> ### ⚠️ Production Security Recommendation
+>
+> | Flag | Production Recommendation |
+> |------|---------------------------|
+> | `Mfa.Enabled` | **`true` (strongly recommended)** — disabling removes email second-factor for all users |
+> | `Mfa.RequiredForAllUsers` | **`true` (recommended)** — disabling makes MFA opt-in per user |
+> | `Totp.Enabled` | **`true` (recommended)** — enables authenticator app enrollment |
+> | `Auth.OAuth.Enabled` | Safe to leave `false` until OAuth provider secrets are configured |
+>
+> See [Optional Feature Flags](../docs/Startup-Instructions.md#optional-feature-flags) for the full reference.
+
 ## Adding a New Domain
 
 See `.github/instructions/new-domain.instructions.md` for the full blueprint. Quick checklist:
