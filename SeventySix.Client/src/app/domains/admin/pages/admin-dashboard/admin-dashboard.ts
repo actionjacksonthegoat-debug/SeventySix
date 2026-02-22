@@ -174,6 +174,26 @@ export class AdminDashboardPage
 	}
 
 	/**
+	 * Opens Scalar OpenAPI reference UI in a new browser tab.
+	 * Only available in development (endpoint mapped only when IsDevelopment()).
+	 * @remarks
+	 * Provides interactive API documentation and request testing.
+	 * @returns {void}
+	 */
+	openScalar(): void
+	{
+		const scalarUrl: string | undefined =
+			environment.observability.scalarUrl;
+
+		if (isPresent(scalarUrl))
+		{
+			window.open(
+				scalarUrl,
+				"_blank");
+		}
+	}
+
+	/**
 	 * Sends a test Info log and shows notification.
 	 * Uses forceInfo to bypass environment log level filtering.
 	 * @returns {void}

@@ -163,3 +163,50 @@ All TypeScript method and function declarations MUST have explicit return types.
 ```
 
 > **Reminder**: Do NOT create documentation files in `/docs/`. Update existing READMEs and instruction files instead. See `copilot-instructions.md` for the full documentation rules.
+
+## SCSS / CSS Rules (CRITICAL — Required for ALL Style Changes)
+
+> **RULE**: Every CSS/SCSS change must be intentional, minimal, and DRY.
+> Think before adding rules. Prefer reusing existing variables, mixins, or Material tokens over writing new CSS.
+
+### Sources of Truth (use in this order)
+
+| Source | Import | When |
+|--------|--------|------|
+| `_variables.scss` | `@use "variables" as vars;` | Spacing, font size, color tokens, z-index, transitions |
+| `_mixins.scss` | `@use "mixins";` | Elevation, glassmorphism, focus-visible, scroll-reveal |
+| Angular Material Design tokens | `var(--mat-sys-*)` | Theme colors, state layers |
+| `_utilities.scss` shared classes | No import (global) | Display, flex, margin, overflow helpers |
+
+### Forbidden Patterns
+
+| [NEVER] | [ALWAYS] |
+|---------|----------|
+| Hard-coded hex colors (`#4169E1`) | `var(--mat-sys-primary)` or token from `_variables.scss` |
+| Hard-coded pixel spacing (`margin: 16px`) | `vars.$spacing-md`, `vars.$spacing-lg`, etc. |
+| Duplicate `display: flex; align-items: center; gap: X` blocks | Extract to a mixin or reuse an existing layout class |
+| `!important` in component SCSS | Never (only allowed in `_utilities.scss` for utility classes) |
+| Inline styles on HTML elements (other than `host.style` in directives) | Bind via `[style.x]` or component CSS |
+| New single-component classes that duplicate shared patterns | Use shared class or mixin |
+| Repeated `text-overflow: ellipsis; overflow: hidden; white-space: nowrap;` | Use `@include mixins.text-truncate()` if the mixin exists, or extract one |
+| Overriding Material component styles with deep selectors (`::ng-deep`) | Use `@include mat.{component}-overrides(...)` from the Material theming API |
+
+### When Adding a New CSS Rule
+
+1. **Search first**: `grep_search` for the property across `*.scss` — does a mixin or variable already express it?
+2. **Place correctly**:
+   - Shared pattern used in 2+ places → `_mixins.scss` or `_utilities.scss`
+   - Component-specific, used once → component `.scss` file
+   - Design token (color, spacing, z-index) → `_variables.scss`
+3. **No `!important` in components** — if a Material override requires force, use the Material theming mixin API.
+4. **Responsive breakpoints**: always use `vars.$breakpoint-*` variables; never hard-code `max-width` pixel values.
+5. **No trailing `!important`** in component files — the formatter (ESLint pass) will flag this as a violation.
+
+### Review Checklist for Every SCSS PR
+
+- [ ] No new hard-coded colors or pixel values (use tokens / variables)
+- [ ] No duplicated rule blocks (use mixin or shared class)
+- [ ] No `!important` outside `_utilities.scss`
+- [ ] No `::ng-deep` (use Material theming API)
+- [ ] `@use "variables" as vars;` and/or `@use "mixins";` declared at top of file
+- [ ] New shared patterns added to `_mixins.scss` or `_utilities.scss`, not duplicated in components

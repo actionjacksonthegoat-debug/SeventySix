@@ -162,4 +162,71 @@ describe("FieldMessageDirective",
 				expect(mockResizeDisconnect)
 					.toHaveBeenCalled();
 			});
+
+		it("should hide tooltip on mouseleave",
+			async () =>
+			{
+				setupMockResizeObserver();
+				await createFixture();
+
+				const hideSpy: ReturnType<typeof vi.spyOn> =
+					vi.spyOn(tooltip, "hide");
+
+				hostElement.dispatchEvent(new Event("mouseleave"));
+
+				expect(hideSpy)
+					.toHaveBeenCalledWith(0);
+			});
+
+		it("should hide tooltip on blur",
+			async () =>
+			{
+				setupMockResizeObserver();
+				await createFixture();
+
+				const hideSpy: ReturnType<typeof vi.spyOn> =
+					vi.spyOn(tooltip, "hide");
+
+				hostElement.dispatchEvent(new Event("blur"));
+
+				expect(hideSpy)
+					.toHaveBeenCalledWith(0);
+			});
+
+		it("should hide tooltip on touchend when tooltip is visible",
+			async () =>
+			{
+				setupMockResizeObserver();
+				await createFixture();
+
+				vi
+					.spyOn(tooltip, "_isTooltipVisible")
+					.mockReturnValue(true);
+				const hideSpy: ReturnType<typeof vi.spyOn> =
+					vi.spyOn(tooltip, "hide");
+
+				hostElement.dispatchEvent(new Event("touchend"));
+
+				expect(hideSpy)
+					.toHaveBeenCalledWith(0);
+			});
+
+		it("should not hide tooltip on touchend when tooltip is not visible",
+			async () =>
+			{
+				setupMockResizeObserver();
+				await createFixture();
+
+				vi
+					.spyOn(tooltip, "_isTooltipVisible")
+					.mockReturnValue(false);
+				const hideSpy: ReturnType<typeof vi.spyOn> =
+					vi.spyOn(tooltip, "hide");
+
+				hostElement.dispatchEvent(new Event("touchend"));
+
+				expect(hideSpy)
+					.not
+					.toHaveBeenCalled();
+			});
 	});

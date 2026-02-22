@@ -243,14 +243,25 @@ $ipList
 		if ($LASTEXITCODE -ne 0) { throw "openssl req failed" }
 
 		# Bundle into PFX
+		# -name sets the certificate's FriendlyName inside the PFX, enabling
+		# the SeventySix-specific match in Remove-OldSeventySixCertificates.
 		& $opensslExecutable pkcs12 -export `
 			-out $pfxBundlePath `
 			-inkey $privateKeyPath -in $certificatePath `
-			-passout "pass:$pfxPassword" 2>$null
+			-passout "pass:$pfxPassword" `
+			-name "$friendlyName" 2>$null
 
 		if ($LASTEXITCODE -ne 0) { throw "openssl pkcs12 export failed" }
 
 		Write-Host "  Created: $certificateName.crt, $certificateName.key, $certificateName.pfx" -ForegroundColor Green
+
+		# Ensure files are readable by all users on Linux (required for Docker volume mounts)
+		# On Windows this is not needed — PowerShell handles permissions differently.
+		if (-not $IsWindows) {
+			chmod 644 $certificatePath $privateKeyPath $pfxBundlePath 2>$null
+			Write-Host "  Permissions set (644): $certificateName.*" -ForegroundColor Gray
+		}
+
 		return $certificatePath
 	}
 	catch {
@@ -394,6 +405,13 @@ foreach ($configuration in $certificateConfigurations) {
 			$generatedCertificatePaths += @{
 				Path = $existingCrtPath
 				Name = $environmentName
+			}
+
+			# Fix permissions for existing certs on Linux (may have been generated with 600)
+			if (-not $IsWindows) {
+				$existingKeyPath = Join-Path $outputDirectory "$certificateName.key"
+				$existingPfxPath2 = Join-Path $outputDirectory "$certificateName.pfx"
+				chmod 644 $existingCrtPath $existingKeyPath $existingPfxPath2 2>$null
 			}
 		}
 

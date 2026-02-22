@@ -99,6 +99,12 @@ describe("AdminDashboardPage",
 			fixture.detectChanges();
 		}
 
+		afterEach(
+			() =>
+			{
+				vi.restoreAllMocks();
+			});
+
 		it("should create",
 			() =>
 			{
@@ -234,6 +240,42 @@ describe("AdminDashboardPage",
 					.toHaveBeenCalledWith(
 						environment.observability.redisInsightUrl,
 						"_blank");
+			});
+
+		it("should open Scalar in new tab when scalarUrl is defined",
+			() =>
+			{
+				createComponent();
+				vi.spyOn(window, "open");
+
+				component.openScalar();
+
+				expect(window.open)
+					.toHaveBeenCalledWith(
+						environment.observability.scalarUrl,
+						"_blank");
+			});
+
+		it("should not open window when scalarUrl is undefined",
+			() =>
+			{
+				createComponent();
+
+				const openSpy: ReturnType<typeof vi.spyOn> =
+					vi.spyOn(window, "open");
+				openSpy.mockClear();
+
+				const originalUrl: string | undefined =
+					environment.observability.scalarUrl;
+				environment.observability.scalarUrl = undefined;
+
+				component.openScalar();
+
+				expect(openSpy)
+					.not
+					.toHaveBeenCalled();
+
+				environment.observability.scalarUrl = originalUrl;
 			});
 
 		it("should send info log and show notification",

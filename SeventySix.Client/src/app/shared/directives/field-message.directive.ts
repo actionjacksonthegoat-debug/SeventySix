@@ -28,7 +28,10 @@ import { MatTooltip } from "@angular/material/tooltip";
 		selector: "[appFieldMessage]",
 		hostDirectives: [MatTooltip],
 		host: {
-			style: "display: block; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;"
+			style: "display: block; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;",
+			"(mouseleave)": "hideTooltip()",
+			"(blur)": "hideTooltip()",
+			"(touchend)": "onTouchEnd()"
 		}
 	})
 export class FieldMessageDirective implements OnDestroy
@@ -92,6 +95,29 @@ export class FieldMessageDirective implements OnDestroy
 	{
 		this.resizeObserver?.disconnect();
 		this.resizeObserver = null;
+	}
+
+	/**
+	 * Hides the tooltip explicitly.
+	 * Called on mouseleave and blur to ensure the tooltip collapses
+	 * back to the single-line ellipsis layout.
+	 */
+	hideTooltip(): void
+	{
+		this.tooltip.hide(0);
+	}
+
+	/**
+	 * Handles touchend — hides the tooltip on a second tap if it is currently visible.
+	 * The first tap is handled by MatTooltip.touchGestures="on".
+	 * This ensures mobile users can dismiss the tooltip without navigating away.
+	 */
+	onTouchEnd(): void
+	{
+		if (this.tooltip._isTooltipVisible())
+		{
+			this.tooltip.hide(0);
+		}
 	}
 
 	/**

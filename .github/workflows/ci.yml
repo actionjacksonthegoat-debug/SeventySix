@@ -157,6 +157,10 @@ jobs:
               working-directory: ${{ github.workspace }}
               run: scripts/generate-dev-ssl-cert.ps1 -SkipTrust
 
+            - name: Fix SSL certificate permissions (Linux Docker compatibility)
+              run: chmod 644 ssl/dev-certificate.* || true
+              working-directory: SeventySix.Client
+
             - name: Install Playwright browsers
               run: npx playwright install --with-deps chromium
 
@@ -233,6 +237,9 @@ jobs:
               shell: pwsh
               working-directory: ${{ github.workspace }}
               run: scripts/generate-dev-ssl-cert.ps1 -SkipTrust
+
+            - name: Fix SSL certificate permissions (Linux Docker compatibility)
+              run: chmod 644 SeventySix.Client/ssl/dev-certificate.* || true
 
             - name: Run load tests
               run: bash SeventySix.Client/load-testing/scripts/run-load-tests.sh quick

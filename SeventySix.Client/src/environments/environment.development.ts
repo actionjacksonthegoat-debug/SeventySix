@@ -24,6 +24,7 @@ export const environment: Environment =
 			grafanaUrl: "https://localhost:3443", // Grafana for metrics visualization
 			pgAdminUrl: "https://localhost:5051", // pgAdmin for PostgreSQL management
 			redisInsightUrl: "https://localhost:5541", // RedisInsight for Valkey management
+			scalarUrl: "https://localhost:7074/scalar/v1", // Scalar API reference (dev-only)
 			dashboards: {
 				systemOverview: "seventysix-system-overview",
 				apiEndpoints: "seventysix-api-endpoints",

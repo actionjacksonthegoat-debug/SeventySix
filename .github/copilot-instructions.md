@@ -49,6 +49,10 @@
     - Format runs at the end of implementation phases, right before running the test gate
     - During active development, correct formatting manually rather than running format mid-phase- **All required test suites MUST pass** before claiming completion (see below)
 
+> **[CRITICAL] CI/CD ENVIRONMENT VERIFICATION**: Tests passing locally on Windows is necessary but NOT sufficient.
+> All tests must also be verified to pass in an environment matching CI/CD (`ubuntu-latest`, Linux Docker).
+> This applies to ALL plan completion gates — E2E, load tests, server tests, and client tests.
+
 ## [CRITICAL] Tests MUST Pass (GATE CONDITION)
 
 | Suite        | Command              | Must See                            |
@@ -63,7 +67,16 @@
 > - Saying "tests will pass when infrastructure is running" is **NOT acceptable**
 > - If infrastructure is not running, **start it** � do not skip the suite
 > - **NEVER** claim "done" or "complete" without actually running and passing all required test suites
-
+> **UBUNTU CI/CD ENVIRONMENT (CRITICAL — REQUIRED FOR COMPLETION)**
+> All tests must ALSO pass in an environment matching GitHub Actions CI (`ubuntu-latest` / Linux).
+> A passing local Windows run is a good sign, but NOT sufficient to declare a plan complete.
+>
+> Acceptable verification approaches (in order of preference):
+> 1. **Push to GitHub** and confirm all four CI jobs pass (`client-build`, `server-build`, `e2e`, `load-test`).
+> 2. **Run locally in WSL (Ubuntu)** — E2E and load tests in Docker on a Linux host.
+> 3. **Run in a Linux VM** or Docker dev container.
+>
+> This is non-negotiable. The app is cross-platform and must run identically on Linux (CI) and Windows (dev).
 ## Documentation MUST Be Current (GATE CONDITION)
 
 After all tests pass, verify:

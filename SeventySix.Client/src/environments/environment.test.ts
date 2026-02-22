@@ -28,6 +28,7 @@ export const environment: Environment =
 			grafanaUrl: "https://localhost:3443",
 			pgAdminUrl: "https://localhost:5051",
 			redisInsightUrl: "https://localhost:5541",
+			scalarUrl: "https://localhost:7074/scalar/v1",
 			enabled: false, // Disabled in tests
 			dashboards: {
 				systemOverview: "seventysix-system-overview",

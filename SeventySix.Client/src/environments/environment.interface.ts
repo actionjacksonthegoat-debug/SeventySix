@@ -51,6 +51,8 @@ export interface ObservabilityConfig
 	pgAdminUrl?: string;
 	/** Dev-only: RedisInsight URL. Not available in production (service not deployed). */
 	redisInsightUrl?: string;
+	/** Dev-only: OpenAPI/Scalar URL. Not available in production (documentation only in Development). */
+	scalarUrl?: string;
 	/** Optional - used in test environment to disable observability. */
 	enabled?: boolean;
 	dashboards: {
