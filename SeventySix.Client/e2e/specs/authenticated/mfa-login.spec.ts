@@ -6,6 +6,7 @@ import { Page } from "@playwright/test";
 import {
 	unauthenticatedTest,
 	expect,
+	loginAsUser,
 	solveAltchaChallenge,
 	SELECTORS,
 	ROUTES,
@@ -14,8 +15,8 @@ import {
 	getTestUserByRole,
 	generateSafeTotpCode,
 	MFA_BACKUP_CODES
-} from "../../fixtures";
-import type { TestUser } from "../../fixtures";
+} from "@e2e-fixtures";
+import type { TestUser } from "@e2e-fixtures";
 
 const mfaUser: TestUser =
 	getTestUserByRole("MfaUser");
@@ -41,27 +42,11 @@ unauthenticatedTest.describe("MFA Login",
 		 */
 		async function loginAsMfaUser(page: Page): Promise<void>
 		{
-			await page.goto(ROUTES.auth.login);
-			await page
-				.locator(SELECTORS.form.usernameInput)
-				.waitFor({ state: "visible", timeout: TIMEOUTS.globalSetup });
-
-			await page
-				.locator(SELECTORS.form.usernameInput)
-				.fill(mfaUser.username);
-			await page
-				.locator(SELECTORS.form.passwordInput)
-				.fill(mfaUser.password);
-
-			await solveAltchaChallenge(page);
-
-			await page
-				.locator(SELECTORS.form.submitButton)
-				.click();
-
-			await page.waitForURL(
-				`**${ROUTES.auth.mfaVerify}**`,
-				{ timeout: TIMEOUTS.navigation });
+			await loginAsUser(page, mfaUser,
+				{
+					expectedUrl: new RegExp(ROUTES.auth.mfaVerify.replace(/\//g, "\\\/")),
+					timeout: TIMEOUTS.navigation
+				});
 
 			// Wait for MFA verify component to fully render
 			await page.locator(SELECTORS.layout.pageHeading)
@@ -181,6 +166,9 @@ unauthenticatedTest.describe("MFA Login",
 		unauthenticatedTest("should bypass MFA on subsequent login when trust device is checked",
 			async ({ unauthenticatedPage }) =>
 			{
+				// 2 logins + 2 ALTCHA solves + MFA verify + logout + cookie operations
+				unauthenticatedTest.setTimeout(90_000);
+
 				// Step 1: Login and complete MFA with "Trust Device" checked
 				await loginAsMfaUser(unauthenticatedPage);
 

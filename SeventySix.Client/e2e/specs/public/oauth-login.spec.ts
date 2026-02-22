@@ -10,7 +10,7 @@ import {
 	TIMEOUTS,
 	PAGE_TEXT,
 	expectAccessible
-} from "../../fixtures";
+} from "@e2e-fixtures";
 
 /**
  * E2E Tests for OAuth Login (GitHub)

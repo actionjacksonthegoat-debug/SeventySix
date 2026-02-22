@@ -1505,6 +1505,37 @@ test("relative imports should only be used in index.ts barrel files", async () =
 	assertEmpty(violations, "Relative imports outside index.ts (use @shared/*, @admin/*, etc. alias imports)");
 });
 
+test("E2E files outside fixtures/ should not use relative imports", async () =>
+{
+	const violations = [];
+	const allE2EFiles = await getTestInfraFiles(E2E_DIR, [".ts"]);
+	const fixturesDir = path.join(E2E_DIR, "fixtures");
+
+	// Pattern to detect relative imports: from "./" or from "../"
+	const relativeImportPattern = /from\s+["']\.\.?\/[^"']*["']/g;
+
+	for (const file of allE2EFiles)
+	{
+		// Files inside fixtures/ are the module internals — relative imports are fine there
+		if (file.startsWith(fixturesDir + path.sep) || file === path.join(fixturesDir, "index.ts"))
+		{
+			continue;
+		}
+
+		const content = await fs.readFile(file, "utf-8");
+		const matches = content.match(relativeImportPattern);
+
+		if (matches && matches.length > 0)
+		{
+			violations.push(
+				`${path.relative(E2E_DIR, file)}: ${matches.length} relative import(s) (use @e2e-fixtures alias instead)`
+			);
+		}
+	}
+
+	assertEmpty(violations, "E2E relative imports outside fixtures/ (use @e2e-fixtures alias)");
+});
+
 // ============================================================================
 // Variable Naming Tests
 // ============================================================================

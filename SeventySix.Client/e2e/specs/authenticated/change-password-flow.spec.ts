@@ -3,7 +3,7 @@
 // </copyright>
 
 import {
-	unauthenticatedTest as test,
+	unauthenticatedTest,
 	expect,
 	PASSWORD_CHANGE_USER,
 	SELECTORS,
@@ -11,7 +11,7 @@ import {
 	TIMEOUTS,
 	loginAsUser,
 	ChangePasswordPageHelper
-} from "../../fixtures";
+} from "@e2e-fixtures";
 
 /**
  * E2E Tests for Change Password Execution Flow
@@ -25,12 +25,12 @@ import {
  * Uses `e2e_pw_change` user dedicated for password change tests.
  * Uses `unauthenticatedTest` to control login flow manually.
  */
-test.describe("Change Password Flow",
+unauthenticatedTest.describe("Change Password Flow",
 	() =>
 	{
 		// Serial mode: tests share PASSWORD_CHANGE_USER and test 2 mutates the password.
 		// Without serial, Playwright may run them in parallel causing state conflicts.
-		test.describe.configure({ mode: "serial" });
+		unauthenticatedTest.describe.configure({ mode: "serial" });
 
 		const originalPassword: string =
 			PASSWORD_CHANGE_USER.password;
@@ -57,7 +57,7 @@ test.describe("Change Password Flow",
 			await page.goto(ROUTES.auth.changePassword);
 		}
 
-		test("should show error for incorrect current password",
+		unauthenticatedTest("should show error for incorrect current password",
 			async ({ unauthenticatedPage }) =>
 			{
 				await loginAndNavigateToChangePassword(
@@ -83,7 +83,7 @@ test.describe("Change Password Flow",
 					.toHaveURL(ROUTES.auth.changePassword);
 			});
 
-		test("should change password and allow login with new password",
+		unauthenticatedTest("should change password and allow login with new password",
 			async ({ unauthenticatedPage }) =>
 			{
 				const changePasswordPage =

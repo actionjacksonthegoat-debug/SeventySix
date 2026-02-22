@@ -21,6 +21,11 @@ export async function expectAccessible(
 	page: Page,
 	pageName: string): Promise<void>
 {
+	// Wait for all network activity to settle so Angular defer blocks
+	// and dynamic content are fully rendered before running the axe scan.
+	// eslint-disable-next-line playwright/no-networkidle
+	await page.waitForLoadState("networkidle");
+
 	const axeResults =
 		await new AxeBuilder(
 			{ page })

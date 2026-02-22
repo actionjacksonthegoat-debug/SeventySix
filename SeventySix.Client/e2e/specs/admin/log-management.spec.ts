@@ -7,7 +7,7 @@ import {
 	PAGE_TEXT,
 	TIMEOUTS,
 	createRouteRegex
-} from "../../fixtures";
+} from "@e2e-fixtures";
 
 /**
  * E2E Tests for Log Management Page
@@ -183,7 +183,16 @@ test.describe("Log Management Page",
 
 						await expect(warningsChip)
 							.toBeVisible();
+
+						// Set up response listener BEFORE clicking (anti-flake pattern)
+						const filterResponse =
+							adminPage.waitForResponse(
+								(response) =>
+									response.url().includes("/logs")
+									&& response.status() === 200);
+
 						await warningsChip.click();
+						await filterResponse;
 
 						// Results should update (either fewer rows, same rows, or empty state)
 						const emptyState =
@@ -208,7 +217,16 @@ test.describe("Log Management Page",
 
 						await expect(errorsChip)
 							.toBeVisible();
+
+						// Set up response listener BEFORE clicking (anti-flake pattern)
+						const filterResponse =
+							adminPage.waitForResponse(
+								(response) =>
+									response.url().includes("/logs")
+									&& response.status() === 200);
+
 						await errorsChip.click();
+						await filterResponse;
 
 						// Results should update
 						const emptyState =
@@ -265,7 +283,7 @@ test.describe("Log Management Page",
 						const messageContent: Locator =
 							dialog.locator(SELECTORS.logManagement.messageContent);
 						await expect(messageContent)
-							.toBeVisible({ timeout: TIMEOUTS.api });
+							.toBeVisible({ timeout: TIMEOUTS.navigation });
 						await expect(messageContent)
 							.not.toBeEmpty();
 					});

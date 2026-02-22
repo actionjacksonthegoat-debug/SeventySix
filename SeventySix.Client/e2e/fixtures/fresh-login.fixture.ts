@@ -6,6 +6,12 @@ import { test as base, Page, BrowserContext, Browser } from "@playwright/test";
 import { TEST_USERS, SELECTORS, ROUTES, TIMEOUTS, E2E_CONFIG } from "./index";
 import { loginInFreshContext } from "./helpers/context-login.helper";
 import type { TestUser } from "./test-users.constant";
+import {
+	createDiagnosticsCollector,
+	instrumentPageForDiagnostics,
+	attachDiagnosticsOnFailure,
+	type DiagnosticsCollector
+} from "./diagnostics.fixture";
 
 /**
  * Fixture that provides pages with fresh login sessions.
@@ -44,7 +50,7 @@ interface FreshLoginFixtures
 async function performFreshLogin(
 	browser: Browser,
 	baseURL: string,
-	testUser: TestUser): Promise<{ page: Page; browserContext: BrowserContext }>
+	testUser: TestUser): Promise<{ page: Page; browserContext: BrowserContext; collector: DiagnosticsCollector }>
 {
 	const { page, context } =
 		await loginInFreshContext(browser, testUser, {
@@ -52,6 +58,11 @@ async function performFreshLogin(
 				url.pathname === ROUTES.home
 				|| url.pathname.includes("/mfa/"),
 		});
+
+	// Instrument immediately after the page is created
+	const collector: DiagnosticsCollector =
+		createDiagnosticsCollector();
+	instrumentPageForDiagnostics(page, collector);
 
 	// If redirected to MFA, the user has TOTP enabled (likely from a parallel test).
 	// Fail fast with a clear message instead of timing out.
@@ -71,7 +82,7 @@ async function performFreshLogin(
 		.locator(SELECTORS.layout.userMenuButton)
 		.waitFor({ state: "visible", timeout: TIMEOUTS.auth });
 
-	return { page, browserContext: context };
+	return { page, browserContext: context, collector };
 }
 
 /**
@@ -81,7 +92,7 @@ async function performFreshLogin(
 export const freshLoginTest =
 	base.extend<FreshLoginFixtures>({
 		freshUserPage:
-			async ({ browser }, use) =>
+			async ({ browser }, use, testInfo) =>
 			{
 				const userTestUser: TestUser | undefined =
 					TEST_USERS.find(
@@ -92,15 +103,16 @@ export const freshLoginTest =
 					throw new Error("User test account not found");
 				}
 
-				const { page, browserContext } =
+				const { page, browserContext, collector } =
 					await performFreshLogin(browser, E2E_CONFIG.clientBaseUrl, userTestUser);
 
 				await use(page);
+				await attachDiagnosticsOnFailure(page, collector, testInfo);
 				await browserContext.close();
 			},
 
 		freshAdminPage:
-			async ({ browser }, use) =>
+			async ({ browser }, use, testInfo) =>
 			{
 				const adminTestUser: TestUser | undefined =
 					TEST_USERS.find(
@@ -111,15 +123,16 @@ export const freshLoginTest =
 					throw new Error("Admin test account not found");
 				}
 
-				const { page, browserContext } =
+				const { page, browserContext, collector } =
 					await performFreshLogin(browser, E2E_CONFIG.clientBaseUrl, adminTestUser);
 
 				await use(page);
+				await attachDiagnosticsOnFailure(page, collector, testInfo);
 				await browserContext.close();
 			},
 
 		freshDeveloperPage:
-			async ({ browser }, use) =>
+			async ({ browser }, use, testInfo) =>
 			{
 				const developerTestUser: TestUser | undefined =
 					TEST_USERS.find(
@@ -130,10 +143,11 @@ export const freshLoginTest =
 					throw new Error("Developer test account not found");
 				}
 
-				const { page, browserContext } =
+				const { page, browserContext, collector } =
 					await performFreshLogin(browser, E2E_CONFIG.clientBaseUrl, developerTestUser);
 
 				await use(page);
+				await attachDiagnosticsOnFailure(page, collector, testInfo);
 				await browserContext.close();
 			}
 	});

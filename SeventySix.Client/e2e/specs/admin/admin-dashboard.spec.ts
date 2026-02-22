@@ -3,7 +3,7 @@ import {
 	expect,
 	ROUTES,
 	PAGE_TEXT
-} from "../../fixtures";
+} from "@e2e-fixtures";
 
 /**
  * E2E Tests for Admin Dashboard

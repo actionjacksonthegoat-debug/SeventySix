@@ -13,7 +13,7 @@ import {
 	ROUTES,
 	TIMEOUTS,
 	E2E_CONFIG
-} from "../../fixtures";
+} from "@e2e-fixtures";
 
 /**
  * E2E Tests for Session Management

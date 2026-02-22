@@ -255,9 +255,18 @@ npm run test:e2e -- specs/auth/login.spec.ts
 
 # Filter by test name
 npm run test:e2e -- --grep "should display login form"
+
+# Keep environment alive for Playwright MCP debugging
+npm run test:e2e -- --keepalive specs/failing-test.spec.ts
 ```
 
 Only run the full `npm run test:e2e` suite for final validation.
+
+### Auto-Failure Diagnostics
+
+The E2E test reporter automatically prints failure diagnostics (screenshot path, URL, console errors, failed network requests) for every failed test. No extra instrumentation needed — it's built into the fixture chain via `diagnostics.fixture.ts`.
+
+Use the Playwright MCP server for interactive selector debugging when the E2E environment is kept alive with `--keepalive`.
 
 ---
 

@@ -4,6 +4,12 @@
 
 import { test as base, Page, BrowserContext, expect } from "@playwright/test";
 import { E2E_CONFIG } from "./index";
+import {
+	createDiagnosticsCollector,
+	instrumentPageForDiagnostics,
+	attachDiagnosticsOnFailure,
+	DiagnosticsCollector
+} from "./diagnostics.fixture";
 
 export { expect };
 
@@ -28,7 +34,7 @@ interface UnauthenticatedFixtures
 export const unauthenticatedTest =
 	base.extend<UnauthenticatedFixtures>({
 		unauthenticatedPage:
-			async ({ browser }, use) =>
+			async ({ browser }, use, testInfo) =>
 			{
 				// Create a new context WITHOUT storage state
 				const browserContext: BrowserContext =
@@ -41,7 +47,13 @@ export const unauthenticatedTest =
 				const page: Page =
 					await browserContext.newPage();
 
+				const collector: DiagnosticsCollector =
+					createDiagnosticsCollector();
+				instrumentPageForDiagnostics(page, collector);
+
 				await use(page);
+
+				await attachDiagnosticsOnFailure(page, collector, testInfo);
 				await browserContext.close();
 			}
 	});

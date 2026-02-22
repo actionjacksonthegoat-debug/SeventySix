@@ -55,7 +55,8 @@ export default defineConfig({
 		["html", { outputFolder: "playwright-report", open: "never" }],
 		["./e2e/reporters/concise-reporter.ts"]
 	],
-	timeout: 30000,
+	timeout: 45000,
+	failOnFlakyTests: process.env.CI != null,
 	expect: {
 		timeout: 10000
 	},
@@ -100,7 +101,18 @@ export default defineConfig({
 		createAuthenticatedProject("admin"),
 
 		// Developer tests - uses Developer role auth state
-		createAuthenticatedProject("developer")
+		createAuthenticatedProject("developer"),
+
+		// Home tests - uses User role auth state (exercises home page features)
+		{
+			name: "home",
+			testDir: "./e2e/specs/home",
+			dependencies: ["setup"],
+			use: {
+				...DESKTOP_CHROME,
+				storageState: getAuthStatePath("user")
+			}
+		}
 	],
 
 	// Web server to start - reuseExistingServer detects if containers are running

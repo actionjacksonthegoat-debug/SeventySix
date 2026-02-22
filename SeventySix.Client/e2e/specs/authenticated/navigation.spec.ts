@@ -5,7 +5,7 @@ import {
 	ROUTES,
 	SELECTORS,
 	TIMEOUTS
-} from "../../fixtures";
+} from "@e2e-fixtures";
 
 /**
  * E2E Tests for Navigation Components

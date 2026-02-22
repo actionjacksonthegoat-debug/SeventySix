@@ -5,7 +5,7 @@ import {
 	ROUTES,
 	SELECTORS,
 	expectAccessible
-} from "../../fixtures";
+} from "@e2e-fixtures";
 import AxeBuilder from "@axe-core/playwright";
 import type { Result } from "axe-core";
 

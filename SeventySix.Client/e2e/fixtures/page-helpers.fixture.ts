@@ -2,7 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-import { test as base, Page, BrowserContext, Browser } from "@playwright/test";
+import { test as base } from "./diagnostics.fixture";
 import { AuthPageHelper } from "./pages/auth.page";
 import { HomePageHelper } from "./pages/home.page";
 import { AdminDashboardPageHelper } from "./pages/admin-dashboard.page";

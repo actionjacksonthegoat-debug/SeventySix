@@ -5,8 +5,10 @@ import {
 	ROUTES,
 	SELECTORS,
 	PAGE_TEXT,
-	expectAccessible
-} from "../../fixtures";
+	TIMEOUTS,
+	expectAccessible,
+	triggerAllDeferBlocks
+} from "@e2e-fixtures";
 
 /**
  * E2E Tests for Landing Page
@@ -22,52 +24,6 @@ import {
  * - Heading hierarchy (h1 → h2 → h3)
  * - Accessibility (axe-core scan)
  */
-
-/**
- * Triggers all @defer (on viewport) blocks by using mouse wheel scrolling
- * to simulate real user interaction. The .landing-page container has
- * overflow-y: auto, so we need to hover over it first, then scroll down
- * in small increments to trigger IntersectionObserver for each placeholder.
- */
-async function triggerAllDeferBlocks(page: Page): Promise<void>
-{
-	// Click on the page to ensure the scroll container is focused
-	await page.locator(".landing-page").click({ position: { x: 100, y: 100 } });
-
-	// Scroll down in increments using mouse wheel
-	const scrollIncrement: number = 400;
-	const maxScrollAttempts: number = 30;
-
-	for (let attempt: number = 0; attempt < maxScrollAttempts; attempt++)
-	{
-		await page.mouse.wheel(0, scrollIncrement);
-
-		// Check if the last deferred section has loaded
-		const ctaLoaded: boolean =
-			await page.locator("section.cta-footer").count()
-				.then((count) => count > 0);
-
-		if (ctaLoaded)
-		{
-			break;
-		}
-	}
-
-	// Scroll back to the top using evaluate instead of clicks
-	await page.evaluate(
-		() =>
-		{
-			const container: Element | null =
-				document.querySelector(".landing-page");
-
-			if (container)
-			{
-				container.scrollTo({ top: 0, behavior: "instant" });
-			}
-
-			window.scrollTo({ top: 0, behavior: "instant" });
-		});
-}
 
 test.describe("Landing Page",
 	() =>
@@ -198,7 +154,7 @@ test.describe("Landing Page",
 							page.locator(SELECTORS.home.featuresSection);
 
 						await expect(section)
-							.toBeVisible({ timeout: 10000 });
+							.toBeVisible({ timeout: TIMEOUTS.api });
 
 						const heading =
 							section.locator("h2");
@@ -227,7 +183,7 @@ test.describe("Landing Page",
 							page.locator(SELECTORS.home.architectureSection);
 
 						await expect(section)
-							.toBeVisible({ timeout: 10000 });
+							.toBeVisible({ timeout: TIMEOUTS.api });
 
 						const heading =
 							section.locator("h2");
@@ -243,7 +199,7 @@ test.describe("Landing Page",
 							page.locator(SELECTORS.home.architectureSection);
 
 						await expect(section)
-							.toBeVisible({ timeout: 10000 });
+							.toBeVisible({ timeout: TIMEOUTS.api });
 
 						// Scroll the container so the cards are in view
 						await page.evaluate(
@@ -303,7 +259,7 @@ test.describe("Landing Page",
 							page.locator(SELECTORS.home.ctaFooter);
 
 						await expect(cta)
-							.toBeVisible({ timeout: 10000 });
+							.toBeVisible({ timeout: TIMEOUTS.api });
 
 						const title =
 							cta.locator("h2");

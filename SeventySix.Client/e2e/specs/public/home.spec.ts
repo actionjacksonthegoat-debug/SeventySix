@@ -1,10 +1,10 @@
-import { type Locator, type Page } from "@playwright/test";
 import {
 	test,
 	expect,
 	ROUTES,
-	PAGE_TEXT
-} from "../../fixtures";
+	PAGE_TEXT,
+	scrollUntilVisible
+} from "@e2e-fixtures";
 
 /**
  * E2E Tests for Home Page
@@ -12,36 +12,6 @@ import {
  * The home page displays the landing page.
  * Detailed landing page content tests are in specs/home/landing-page.spec.ts.
  */
-
-/**
- * Scrolls the landing page until the target element is visible.
- * Uses mouse wheel scrolling to trigger @defer (on viewport) blocks.
- * @param page - Playwright Page object
- * @param targetLocator - Locator for the element to scroll into view
- */
-async function scrollToElement(
-	page: Page,
-	targetLocator: Locator): Promise<void>
-{
-	await page.locator(".landing-page").click({ position: { x: 100, y: 100 } });
-
-	const maxAttempts: number = 30;
-	const scrollIncrement: number = 400;
-
-	for (let attempt: number = 0; attempt < maxAttempts; attempt++)
-	{
-		await page.mouse.wheel(0, scrollIncrement);
-
-		const isVisible: boolean =
-			await targetLocator.count()
-				.then((count) => count > 0);
-
-		if (isVisible)
-		{
-			return;
-		}
-	}
-}
 
 test.describe("Home Page",
 	() =>
@@ -97,7 +67,7 @@ test.describe("Home Page",
 				test("should display features section",
 					async ({ page, homePage }) =>
 					{
-						await scrollToElement(page, homePage.featuresSection);
+						await scrollUntilVisible(page, { targetLocator: homePage.featuresSection });
 						await expect(homePage.featuresSection)
 							.toBeVisible();
 					});
@@ -105,7 +75,7 @@ test.describe("Home Page",
 				test("should display architecture section",
 					async ({ page, homePage }) =>
 					{
-						await scrollToElement(page, homePage.architectureSection);
+						await scrollUntilVisible(page, { targetLocator: homePage.architectureSection });
 						await expect(homePage.architectureSection)
 							.toBeVisible();
 					});
@@ -113,7 +83,7 @@ test.describe("Home Page",
 				test("should display CTA footer",
 					async ({ page, homePage }) =>
 					{
-						await scrollToElement(page, homePage.ctaFooter);
+						await scrollUntilVisible(page, { targetLocator: homePage.ctaFooter });
 						await expect(homePage.ctaFooter)
 							.toBeVisible();
 					});

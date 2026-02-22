@@ -10,7 +10,7 @@ import {
 	expectNoAccessDenied,
 	expectNoApplicationErrors,
 	unauthenticatedTest
-} from "../../fixtures";
+} from "@e2e-fixtures";
 
 /**
  * E2E Tests for Admin Routes - Role-Based Access Control

@@ -2,7 +2,11 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "types": ["@playwright/test", "node"],
-    "allowJs": false
+    "allowJs": false,
+    "paths": {
+      "@e2e-fixtures": ["./e2e/fixtures/index.ts"],
+      "@e2e-fixtures/*": ["./e2e/fixtures/*"]
+    }
   },
   "include": ["e2e/**/*.ts"]
 }

@@ -4,7 +4,7 @@ import {
 	ROUTES,
 	SELECTORS,
 	PAGE_TEXT
-} from "../../fixtures";
+} from "@e2e-fixtures";
 
 /**
  * E2E Tests for Sandbox Page

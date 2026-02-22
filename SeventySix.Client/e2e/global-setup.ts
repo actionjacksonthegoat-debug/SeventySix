@@ -3,8 +3,7 @@
 // </copyright>
 
 import { chromium, FullConfig, Browser, BrowserContext, Page } from "@playwright/test";
-import { TEST_USERS, SELECTORS, ROUTES, TIMEOUTS, E2E_CONFIG } from "./fixtures";
-import { solveAltchaChallenge } from "./fixtures/helpers/altcha.helper";
+import { TEST_USERS, SELECTORS, ROUTES, TIMEOUTS, E2E_CONFIG, solveAltchaChallenge } from "@e2e-fixtures";
 import * as fs from "fs";
 import * as path from "path";
 

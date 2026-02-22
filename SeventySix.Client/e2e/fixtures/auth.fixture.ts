@@ -5,6 +5,11 @@
 import { test as base } from "./page-helpers.fixture";
 import type { Page, BrowserContext, Browser } from "@playwright/test";
 import { TestUser } from "./test-users.constant";
+import {
+	createDiagnosticsCollector,
+	instrumentPageForDiagnostics,
+	attachDiagnosticsOnFailure
+} from "./diagnostics.fixture";
 
 /**
  * Extended test fixture with role-based authentication.
@@ -65,29 +70,41 @@ async function createAuthenticatedPage(
 export const test =
 	base.extend<AuthFixtures>({
 		userPage:
-			async ({ browser }, use) =>
+			async ({ browser }, use, testInfo) =>
 			{
 				const { page, browserContext } =
 					await createAuthenticatedPage(browser, "user");
+				const collector =
+					createDiagnosticsCollector();
+				instrumentPageForDiagnostics(page, collector);
 				await use(page);
+				await attachDiagnosticsOnFailure(page, collector, testInfo);
 				await browserContext.close();
 			},
 
 		adminPage:
-			async ({ browser }, use) =>
+			async ({ browser }, use, testInfo) =>
 			{
 				const { page, browserContext } =
 					await createAuthenticatedPage(browser, "admin");
+				const collector =
+					createDiagnosticsCollector();
+				instrumentPageForDiagnostics(page, collector);
 				await use(page);
+				await attachDiagnosticsOnFailure(page, collector, testInfo);
 				await browserContext.close();
 			},
 
 		developerPage:
-			async ({ browser }, use) =>
+			async ({ browser }, use, testInfo) =>
 			{
 				const { page, browserContext } =
 					await createAuthenticatedPage(browser, "developer");
+				const collector =
+					createDiagnosticsCollector();
+				instrumentPageForDiagnostics(page, collector);
 				await use(page);
+				await attachDiagnosticsOnFailure(page, collector, testInfo);
 				await browserContext.close();
 			},
 
