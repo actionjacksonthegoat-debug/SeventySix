@@ -1,5 +1,5 @@
-@use "../../shared/styles/variables" as vars;
-@use "../../shared/styles/mixins";
+@use "variables" as vars;
+@use "mixins";
 
 .register-container {
 	@include mixins.auth-page-container();

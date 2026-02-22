@@ -1,28 +1,9 @@
 @use "variables" as vars;
-@use "mixins" as mixins;
 
 .admin-dashboard {
 	height: 100%;
 	display: flex;
 	flex-direction: column;
-
-	mat-toolbar {
-		flex-shrink: 0;
-		display: flex;
-		align-items: center;
-		gap: vars.$spacing-lg;
-		padding: 0 vars.$spacing-xl;
-
-		mat-icon {
-			@include mixins.icon-size(vars.$icon-size-md);
-		}
-
-		h1 {
-			margin: 0;
-			font-size: vars.$font-size-xl;
-			font-weight: vars.$font-weight-medium;
-		}
-	}
 
 	.dashboard-content {
 		flex: 1;
@@ -71,14 +52,6 @@
 
 	// Responsive breakpoints
 	@media #{vars.$breakpoint-mobile} {
-		mat-toolbar {
-			padding: 0 vars.$spacing-lg;
-
-			h1 {
-				font-size: vars.$font-size-lg;
-			}
-		}
-
 		.dashboard-content {
 			padding: vars.$spacing-md;
 		}

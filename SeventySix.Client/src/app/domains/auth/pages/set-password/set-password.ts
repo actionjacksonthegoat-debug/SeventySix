@@ -22,7 +22,7 @@ import {
 	ReactiveFormsModule,
 	Validators
 } from "@angular/forms";
-import { ActivatedRoute, Router } from "@angular/router";
+import { ActivatedRoute, Router, RouterLink } from "@angular/router";
 import { ValidationResult } from "@auth/models";
 import { mapAuthError } from "@auth/utilities";
 import { validatePassword, validatePasswordsMatch } from "@auth/utilities";
@@ -39,7 +39,7 @@ import { isNullOrUndefined } from "@shared/utilities/null-check.utility";
 	{
 		selector: "app-set-password",
 		standalone: true,
-		imports: [ReactiveFormsModule, ...FORM_MATERIAL_MODULES],
+		imports: [ReactiveFormsModule, RouterLink, ...FORM_MATERIAL_MODULES],
 		changeDetection: ChangeDetectionStrategy.OnPush,
 		templateUrl: "./set-password.html",
 		styleUrl: "./set-password.scss"

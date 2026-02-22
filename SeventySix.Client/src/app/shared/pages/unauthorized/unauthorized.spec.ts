@@ -43,13 +43,13 @@ describe("UnauthorizedPage",
 					.toContain("401 - Unauthorized");
 			});
 
-		it("should have login link",
+		it("should have home link",
 			() =>
 			{
-				const loginButton: HTMLElement | null =
+				const homeButton: HTMLElement | null =
 					fixture.nativeElement.querySelector(
-						"a[href='/auth/login'], button[routerLink='/auth/login']");
-				expect(loginButton)
+						"button[routerLink='/']");
+				expect(homeButton)
 					.toBeTruthy();
 			});
 	});

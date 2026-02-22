@@ -15,11 +15,14 @@ Navigate every page, exercise core features, capture screenshots, and generate a
 
 ## Prerequisites
 
-Before starting, ask the user:
+Stop any existing dev environment and start a fresh instance. Run in terminal:
 
-> Is your dev environment running? (Started with `npm start` — app available at `https://localhost:4200`)
+```powershell
+npm run stop
+npm start
+```
 
-If the user says no, tell them to run `npm start` and wait for it to be ready before continuing. Do NOT start the environment yourself.
+Wait for the environment to be fully ready (client available at `https://localhost:4200`, API responding) before proceeding.
 
 ---
 

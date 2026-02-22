@@ -28,8 +28,6 @@
 					display: inline-flex;
 					align-items: center;
 					vertical-align: middle;
-					height: vars.$chip-height-sm;
-					line-height: vars.$chip-height-sm;
 				}
 			}
 		}
@@ -114,7 +112,7 @@
 			}
 
 			.no-roles {
-				color: var(--color-text-secondary);
+				color: var(--mat-sys-on-surface-variant);
 				font-style: italic;
 			}
 		}

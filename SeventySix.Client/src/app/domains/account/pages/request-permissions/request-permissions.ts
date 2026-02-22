@@ -22,6 +22,7 @@ import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { Router } from "@angular/router";
+import { PageHeaderComponent } from "@shared/components";
 import {
 	SKELETON_CHECKBOX,
 	SKELETON_TEXT_MEDIUM,
@@ -43,7 +44,8 @@ import { NgxSkeletonLoaderModule } from "ngx-skeleton-loader";
 			MatCardModule,
 			MatCheckboxModule,
 			MatProgressSpinnerModule,
-			NgxSkeletonLoaderModule
+			NgxSkeletonLoaderModule,
+			PageHeaderComponent
 		],
 		templateUrl: "./request-permissions.html",
 		styleUrl: "./request-permissions.scss",

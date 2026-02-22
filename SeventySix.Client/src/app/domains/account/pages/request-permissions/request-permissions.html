@@ -1,3 +1,5 @@
+<app-page-header title="Request Permissions" icon="lock_open" />
+
 <div class="request-permissions-page">
 	<mat-card>
 		<mat-card-header>
@@ -37,7 +39,7 @@
 			<form
 				[formGroup]="requestForm"
 				(ngSubmit)="onSubmit()">
-				<mat-form-field appearance="outline">
+				<mat-form-field appearance="outline" subscriptSizing="dynamic">
 					<mat-label>Reason for request (optional)</mat-label>
 					<textarea
 						matInput

@@ -146,4 +146,12 @@ body {
 		flex: 1 1 0;
 		min-height: 0;
 	}
+
+	// Error pages — enable flex chain for centered error content
+	&:has(.error-page) {
+		display: flex;
+		flex-direction: column;
+		flex: 1 1 0;
+		min-height: 0;
+	}
 }

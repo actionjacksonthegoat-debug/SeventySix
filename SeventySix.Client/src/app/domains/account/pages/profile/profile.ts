@@ -22,6 +22,7 @@ import { MatIconModule } from "@angular/material/icon";
 import { MatInputModule } from "@angular/material/input";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { RouterLink } from "@angular/router";
+import { PageHeaderComponent } from "@shared/components";
 import {
 	SKELETON_BUTTON,
 	SKELETON_INPUT,
@@ -56,7 +57,8 @@ import { NgxSkeletonLoaderModule } from "ngx-skeleton-loader";
 			MatIconModule,
 			MatProgressSpinnerModule,
 			RouterLink,
-			NgxSkeletonLoaderModule
+			NgxSkeletonLoaderModule,
+			PageHeaderComponent
 		],
 		templateUrl: "./profile.html",
 		styleUrl: "./profile.scss",
