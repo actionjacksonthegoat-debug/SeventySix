@@ -11,14 +11,19 @@
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
+		gap: vars.$spacing-lg;
 		margin-bottom: vars.$spacing-2xl;
 
 		h1 {
 			margin: 0;
+			flex: 1;
+			min-width: 0;
+			@include vars.truncate-text();
 		}
 
 		.page-actions {
 			display: flex;
+			flex-shrink: 0;
 			gap: vars.$spacing-md;
 			align-items: center;
 

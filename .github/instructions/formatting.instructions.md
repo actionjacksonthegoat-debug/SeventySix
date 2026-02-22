@@ -1,6 +1,6 @@
 ---
 description: Code formatting rules for all TypeScript and C# files
-applyTo: "**/SeventySix.Client/src/**/*.{ts,cs},**/SeventySix.Server/**/*.{ts,cs}"
+applyTo: "**/SeventySix.Client/src/**/*.{ts,html,scss,css},**/SeventySix.Server/**/*.cs"
 ---
 
 # Formatting Instructions
@@ -29,7 +29,7 @@ applyTo: "**/SeventySix.Client/src/**/*.{ts,cs},**/SeventySix.Server/**/*.{ts,cs
 | ----- | ----------- | ---- |
 | TypeScript/JS/SCSS | ESLint `@stylistic/eol-last: ["error", "never"]` | Second ESLint pass in `npm run format:client` removes any final newline dprint adds |
 | C# | `.editorconfig` `insert_final_newline = false` | `dotnet format whitespace` strips final newlines |
-| All files | `.editorconfig` `insert_final_newline = false` | VS Code respects this for manual edits |
+| All files | `.editorconfig` `insert_final_newline = false` + `.vscode/settings.json` `"files.insertFinalNewline": false` | Both layers agree — VS Code's explicit setting prevents it from overriding EditorConfig |
 
 **Why dprint doesn't conflict**: dprint unconditionally adds a trailing newline, but it runs
 BETWEEN the two ESLint passes. The second `eslint --fix` pass removes it. **Never add
@@ -173,8 +173,8 @@ All TypeScript method and function declarations MUST have explicit return types.
 
 | Source | Import | When |
 |--------|--------|------|
-| `_variables.scss` | `@use "variables" as vars;` | Spacing, font size, color tokens, z-index, transitions |
-| `_mixins.scss` | `@use "mixins";` | Elevation, glassmorphism, focus-visible, scroll-reveal |
+| `_variables.scss` | `@use "variables" as vars;` | Spacing, font size, color tokens, z-index, transitions; also `truncate-text()` and `focus-visible()` mixins |
+| `_mixins.scss` | `@use "mixins";` | Elevation, glassmorphism, scroll-reveal |
 | Angular Material Design tokens | `var(--mat-sys-*)` | Theme colors, state layers |
 | `_utilities.scss` shared classes | No import (global) | Display, flex, margin, overflow helpers |
 
@@ -188,7 +188,7 @@ All TypeScript method and function declarations MUST have explicit return types.
 | `!important` in component SCSS | Never (only allowed in `_utilities.scss` for utility classes) |
 | Inline styles on HTML elements (other than `host.style` in directives) | Bind via `[style.x]` or component CSS |
 | New single-component classes that duplicate shared patterns | Use shared class or mixin |
-| Repeated `text-overflow: ellipsis; overflow: hidden; white-space: nowrap;` | Use `@include mixins.text-truncate()` if the mixin exists, or extract one |
+| Repeated `text-overflow: ellipsis; overflow: hidden; white-space: nowrap;` | Use `@include vars.truncate-text()` |
 | Overriding Material component styles with deep selectors (`::ng-deep`) | Use `@include mat.{component}-overrides(...)` from the Material theming API |
 
 ### When Adding a New CSS Rule

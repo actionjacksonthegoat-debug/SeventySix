@@ -29,8 +29,8 @@ Review all staged/unstaged changes against every rule in the `.github/instructio
 
 ## Workflow
 
-> **[CRITICAL] NEVER COMMIT OR PUSH.** After all fixes and tests pass, stage changes with `git add` and stop.
-> The user gates all commits. Do NOT run `git commit` or `git push` at any point.
+> **[CRITICAL] NEVER COMMIT OR PUSH.** After all fixes and tests pass, inform the user that changes are ready for their review — the user gates all staging, committing, and pushing.
+> Do NOT run `git add`, `git stage`, `git commit`, or `git push` at any point.
 
 1. Scan every changed file for violations
 2. **Fix each violation immediately** by editing the source file

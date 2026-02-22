@@ -108,9 +108,7 @@
 .tech-item-name {
 	font-weight: vars.$font-weight-medium;
 	font-size: vars.$font-size-base;
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
+	@include vars.truncate-text();
 }
 
 .tech-item-license {

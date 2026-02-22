@@ -282,10 +282,10 @@ npm run test:e2e -- --keepalive
 
 | File                             | Scope                                          |
 | -------------------------------- | ---------------------------------------------- |
-| `formatting.instructions.md`     | `**/SeventySix.Client/src/**,**/SeventySix.Server/**` � naming, structure, operators  |
+| `formatting.instructions.md`     | `**/SeventySix.Client/src/**/*.{ts,html,scss,css},**/SeventySix.Server/**/*.cs` — naming, structure, operators  |
 | `angular.instructions.md`        | `**/SeventySix.Client/src/**/*.ts`             |
 | `csharp.instructions.md`         | `**/SeventySix.Server/**/*.cs`                 |
-| `security.instructions.md`       | `**/SeventySix.Client/src/**,**/SeventySix.Server/**` � ProblemDetails, auth errors   |
+| `security.instructions.md`       | `**/SeventySix.Client/src/**/*.ts,**/SeventySix.Server/**/*.cs` — ProblemDetails, auth errors   |
 | `accessibility.instructions.md`  | `**/SeventySix.Client/src/**/*.{ts,html,scss}` |
 | `testing-server.instructions.md` | `**/SeventySix.Server/Tests/**/*.cs`           |
 | `testing-client.instructions.md` | `**/SeventySix.Client/src/**/*.spec.ts`        |
