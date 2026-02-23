@@ -45,12 +45,6 @@ test.describe("OAuth Login (GitHub)",
 				// OAuth now opens a popup; capture the popup or fallback navigation
 				let oauthRequestMade = false;
 
-				// Listen for popup (primary flow)
-				const popupPromise: Promise<import("@playwright/test").Page> =
-					page.waitForEvent(
-						"popup",
-						{ timeout: TIMEOUTS.navigation });
-
 				// Also listen for requests on main page (fallback if popup blocked)
 				page.on(
 					"request",
@@ -66,13 +60,14 @@ test.describe("OAuth Login (GitHub)",
 						}
 					});
 
-				await authPage.githubButton.click();
-
-				// Either popup opens or main page navigates
+				// Either popup opens or main page navigates; register listener and click concurrently
 				try
 				{
-					const popup: import("@playwright/test").Page =
-						await popupPromise;
+					const [popup] = await Promise.all([
+						page.waitForEvent(
+							"popup",
+							{ timeout: TIMEOUTS.navigation }),
+						authPage.githubButton.click()]);
 					oauthRequestMade = popup.url().includes("oauth")
 						|| popup.url().includes("github")
 						|| popup.url().includes("about:blank");
@@ -93,12 +88,6 @@ test.describe("OAuth Login (GitHub)",
 			{
 				let capturedGitHubUrl = "";
 
-				// OAuth now opens a popup; capture the popup URL
-				const popupPromise: Promise<import("@playwright/test").Page> =
-					page.waitForEvent(
-						"popup",
-						{ timeout: TIMEOUTS.navigation });
-
 				// Also intercept on main page (fallback if popup blocked)
 				await page.route(
 					"**/github.com/**",
@@ -108,13 +97,14 @@ test.describe("OAuth Login (GitHub)",
 						route.abort();
 					});
 
-				await authPage.githubButton.click();
-
-				// Try to capture from popup first
+				// Try to capture popup; register listener and click concurrently
 				try
 				{
-					const popup: import("@playwright/test").Page =
-						await popupPromise;
+					const [popup] = await Promise.all([
+						page.waitForEvent(
+							"popup",
+							{ timeout: TIMEOUTS.navigation }),
+						authPage.githubButton.click()]);
 
 					// Follow redirects in popup by intercepting GitHub requests
 					popup.on(
