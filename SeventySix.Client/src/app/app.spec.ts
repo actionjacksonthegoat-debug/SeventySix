@@ -1,5 +1,6 @@
 import { provideZonelessChangeDetection } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
+import { provideAnimations } from "@angular/platform-browser/animations";
 import { ActivatedRoute } from "@angular/router";
 import { AuthService, LayoutService } from "@shared/services";
 import {
@@ -49,6 +50,7 @@ describe("App",
 							imports: [App],
 							providers: [
 								provideZonelessChangeDetection(),
+								provideAnimations(),
 								{ provide: ActivatedRoute, useValue: mockActivatedRoute },
 								{ provide: LayoutService, useValue: mockLayoutService },
 								{ provide: AuthService, useValue: mockAuthService }

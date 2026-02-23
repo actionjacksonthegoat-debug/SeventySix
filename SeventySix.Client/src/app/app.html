@@ -52,5 +52,10 @@
 
 		<!-- Footer -->
 		<app-footer></app-footer>
+
+		<!-- Cookie Consent Banner (GDPR/CCPA) -->
+		<app-cookie-consent-banner
+			(openPreferences)="openCookiePreferences()">
+		</app-cookie-consent-banner>
 	</mat-sidenav-content>
 </mat-sidenav-container>

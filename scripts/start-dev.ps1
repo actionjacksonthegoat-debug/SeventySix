@@ -87,9 +87,10 @@ docker compose up -d postgres valkey redis-exporter otel-collector jaeger promet
 Pop-Location
 
 # Build and start API container (only force-recreate the API to pick up code changes)
+# --no-cache ensures uncommitted source changes are always reflected in the built image.
 Write-Host "Building and starting API container..." -ForegroundColor Yellow
 Push-Location "$PSScriptRoot\.."
-docker compose build seventysix-api
+docker compose build --no-cache seventysix-api
 docker compose up -d --force-recreate seventysix-api
 Pop-Location
 

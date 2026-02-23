@@ -10,4 +10,5 @@ export * from "./query-config.utility";
 export * from "./query-keys.utility";
 export * from "./selection.utility";
 export * from "./string.utility";
+export * from "./url.utility";
 export * from "./validation-error.utilities";

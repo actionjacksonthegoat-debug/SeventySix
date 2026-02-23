@@ -41,7 +41,8 @@ export const E2E_CONFIG =
  */
 export const COOKIE_NAMES =
 	{
-		refreshToken: "X-Refresh-Token"
+		refreshToken: "X-Refresh-Token",
+		cookieConsent: "seventysix_consent"
 	} as const;
 
 /**

@@ -488,3 +488,10 @@ desktop.ini
 # Dev Tools Output (Chrome DevTools walkthrough)
 #################################
 .dev-tools-output/
+
+#################################
+# CodeQL local scan artifacts
+#################################
+.codeql/
+codeql-*.sarif
+

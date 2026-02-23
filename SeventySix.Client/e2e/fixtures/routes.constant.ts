@@ -10,6 +10,12 @@ export const ROUTES =
 	{
 		home: "/",
 
+		legal:
+			{
+				privacyPolicy: "/privacy-policy",
+				termsOfService: "/terms-of-service"
+			},
+
 		auth:
 			{
 				login: "/auth/login",

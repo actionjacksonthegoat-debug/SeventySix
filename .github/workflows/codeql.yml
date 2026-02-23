@@ -51,6 +51,15 @@ jobs:
         uses: github/codeql-action/analyze@v3
         with:
           category: "/language:csharp"
+          output: codeql-results/csharp
+
+      - name: Upload SARIF results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: codeql-sarif-csharp
+          path: codeql-results/csharp
+          retention-days: 30
 
   analyze-javascript:
     name: Analyze JavaScript/TypeScript
@@ -70,3 +79,12 @@ jobs:
         uses: github/codeql-action/analyze@v3
         with:
           category: "/language:javascript-typescript"
+          output: codeql-results/javascript
+
+      - name: Upload SARIF results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: codeql-sarif-javascript
+          path: codeql-results/javascript
+          retention-days: 30
