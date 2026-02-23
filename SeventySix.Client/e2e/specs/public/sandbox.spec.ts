@@ -1,10 +1,11 @@
 import {
-	test,
 	expect,
+	PAGE_TEXT,
 	ROUTES,
 	SELECTORS,
-	PAGE_TEXT
+	test
 } from "@e2e-fixtures";
+import type { Locator } from "@playwright/test";
 
 /**
  * E2E Tests for Sandbox Page
@@ -28,7 +29,7 @@ test.describe("Sandbox Page",
 				test("should display Hello World heading",
 					async ({ page }) =>
 					{
-						const heading =
+						const heading: Locator =
 							page.locator(SELECTORS.sandbox.title);
 
 						await expect(heading)

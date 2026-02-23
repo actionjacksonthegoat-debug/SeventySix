@@ -2,14 +2,14 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-import { test as base, Page, BrowserContext, expect } from "@playwright/test";
-import { E2E_CONFIG } from "./index";
+import { BrowserContext, expect, Page, test as base } from "@playwright/test";
 import {
-	createDiagnosticsCollector,
-	instrumentPageForDiagnostics,
 	attachDiagnosticsOnFailure,
-	DiagnosticsCollector
+	createDiagnosticsCollector,
+	DiagnosticsCollector,
+	instrumentPageForDiagnostics
 } from "./diagnostics.fixture";
+import { E2E_CONFIG } from "./index";
 
 export { expect };
 
@@ -31,18 +31,20 @@ interface UnauthenticatedFixtures
  * Use `unauthenticatedTest` from this file for tests that need to
  * verify behavior for anonymous users, even in authenticated projects.
  */
-export const unauthenticatedTest =
-	base.extend<UnauthenticatedFixtures>({
-		unauthenticatedPage:
-			async ({ browser }, use, testInfo) =>
+export const unauthenticatedTest: ReturnType<typeof base.extend<UnauthenticatedFixtures>> =
+	base.extend<
+		UnauthenticatedFixtures>(
+		{
+			unauthenticatedPage: async ({ browser }, use, testInfo) =>
 			{
-				// Create a new context WITHOUT storage state
+			// Create a new context WITHOUT storage state
 				const browserContext: BrowserContext =
-					await browser.newContext({
-						baseURL: E2E_CONFIG.clientBaseUrl,
-						storageState: undefined,
-						ignoreHTTPSErrors: true
-					});
+					await browser.newContext(
+						{
+							baseURL: E2E_CONFIG.clientBaseUrl,
+							storageState: undefined,
+							ignoreHTTPSErrors: true
+						});
 
 				const page: Page =
 					await browserContext.newPage();
@@ -56,4 +58,4 @@ export const unauthenticatedTest =
 				await attachDiagnosticsOnFailure(page, collector, testInfo);
 				await browserContext.close();
 			}
-	});
+		});

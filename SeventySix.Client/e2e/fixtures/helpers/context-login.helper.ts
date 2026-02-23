@@ -2,13 +2,13 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-import type { Page, BrowserContext, Browser } from "@playwright/test";
-import { SELECTORS } from "../selectors.constant";
-import { ROUTES } from "../routes.constant";
-import { TIMEOUTS } from "../timeouts.constant";
+import type { Browser, BrowserContext, Page } from "@playwright/test";
 import { E2E_CONFIG } from "../config.constant";
-import { solveAltchaChallenge } from "./altcha.helper";
+import { ROUTES } from "../routes.constant";
+import { SELECTORS } from "../selectors.constant";
 import type { TestUser } from "../test-users.constant";
+import { TIMEOUTS } from "../timeouts.constant";
+import { solveAltchaChallenge } from "./altcha.helper";
 
 /**
  * Result of creating a fresh browser context and logging in.
@@ -44,25 +44,36 @@ export async function loginInFreshContext(
 	}): Promise<ContextLoginResult>
 {
 	const context: BrowserContext =
-		await browser.newContext({
-			baseURL: E2E_CONFIG.clientBaseUrl,
-			storageState: undefined,
-			ignoreHTTPSErrors: true,
-		});
-	const page: Page = await context.newPage();
+		await browser.newContext(
+			{
+				baseURL: E2E_CONFIG.clientBaseUrl,
+				storageState: undefined,
+				ignoreHTTPSErrors: true
+			});
+	const page: Page =
+		await context.newPage();
 
 	await page.goto(ROUTES.auth.login);
-	await page.locator(SELECTORS.form.usernameInput)
-		.waitFor({ state: "visible", timeout: TIMEOUTS.auth });
-	await page.locator(SELECTORS.form.usernameInput).fill(user.username);
-	await page.locator(SELECTORS.form.passwordInput).fill(user.password);
+	await page
+		.locator(SELECTORS.form.usernameInput)
+		.waitFor(
+			{ state: "visible", timeout: TIMEOUTS.auth });
+	await page
+		.locator(SELECTORS.form.usernameInput)
+		.fill(user.username);
+	await page
+		.locator(SELECTORS.form.passwordInput)
+		.fill(user.password);
 
 	await solveAltchaChallenge(page);
-	await page.locator(SELECTORS.form.submitButton).click();
+	await page
+		.locator(SELECTORS.form.submitButton)
+		.click();
 
 	const expectedUrl: string | RegExp | ((url: URL) => boolean) =
 		options?.expectedUrl ?? ROUTES.home;
-	await page.waitForURL(expectedUrl, { timeout: TIMEOUTS.auth });
+	await page.waitForURL(expectedUrl,
+		{ timeout: TIMEOUTS.auth });
 
 	return { page, context };
 }

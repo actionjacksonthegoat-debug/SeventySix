@@ -63,7 +63,8 @@ export function instrumentPageForDiagnostics(
 			if (message.type() === "error" || message.type() === "warning")
 			{
 				collector.consoleErrors.push(
-					`[${message.type().toUpperCase()}] ${message.text()}`);
+					`[${message.type()
+						.toUpperCase()}] ${message.text()}`);
 			}
 		});
 
@@ -82,7 +83,8 @@ export function instrumentPageForDiagnostics(
 			if (response.status() >= 400)
 			{
 				collector.apiErrors.push(
-					`${response.status()} ${response.request().method()} ${response.url()}`);
+					`${response.status()} ${response.request()
+						.method()} ${response.url()}`);
 			}
 		});
 }
@@ -113,7 +115,10 @@ export async function attachDiagnosticsOnFailure(
 
 	// Capture screenshot
 	const screenshot: Buffer | null =
-		await page.screenshot({ fullPage: false }).catch(() => null);
+		await page
+			.screenshot(
+				{ fullPage: false })
+			.catch(() => null);
 
 	if (screenshot)
 	{
@@ -149,11 +154,12 @@ export async function attachDiagnosticsOnFailure(
 
 	await fs.promises.writeFile(logFile, diagnosticsText, "utf8");
 
-	testInfo.attachments.push({
-		name: "diagnostics",
-		contentType: "text/plain",
-		path: logFile
-	});
+	testInfo.attachments.push(
+		{
+			name: "diagnostics",
+			contentType: "text/plain",
+			path: logFile
+		});
 }
 
 /**
@@ -161,10 +167,11 @@ export async function attachDiagnosticsOnFailure(
  * Instruments the default `page` fixture for console/network error capture.
  * Extend from this instead of `@playwright/test` in fixture files that use `page`.
  */
-export const test =
-	base.extend<{ autoFailureDiagnostics: void }>({
-		autoFailureDiagnostics:
-			[
+export const test: ReturnType<typeof base.extend<{ autoFailureDiagnostics: void; }>> =
+	base.extend<
+		{ autoFailureDiagnostics: void; }>(
+		{
+			autoFailureDiagnostics: [
 				async ({ page }, use, testInfo) =>
 				{
 					const collector: DiagnosticsCollector =
@@ -178,4 +185,4 @@ export const test =
 				},
 				{ auto: true }
 			]
-	});
+		});

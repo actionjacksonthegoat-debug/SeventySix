@@ -1,13 +1,13 @@
-import { Page } from "@playwright/test";
+import AxeBuilder from "@axe-core/playwright";
 import {
-	test,
 	expect,
+	expectAccessible,
 	ROUTES,
 	SELECTORS,
-	expectAccessible
+	test
 } from "@e2e-fixtures";
-import AxeBuilder from "@axe-core/playwright";
-import type { Result } from "axe-core";
+import { Locator, Page } from "@playwright/test";
+import type { AxeResults, Result } from "axe-core";
 
 /**
  * WCAG Accessibility E2E Tests for Authenticated User Pages
@@ -24,9 +24,10 @@ import type { Result } from "axe-core";
 test.describe("Authenticated Routes - WCAG Accessibility",
 	() =>
 	{
-		test.describe.configure({ timeout: 60_000 });
+		test.describe.configure(
+			{ timeout: 60_000 });
 
-		const authenticatedPages =
+		const authenticatedPages: ReadonlyArray<{ path: string; name: string; }> =
 			[
 				{ path: ROUTES.account.root, name: "Profile" },
 				{ path: ROUTES.account.permissions, name: "Permissions" }
@@ -34,9 +35,10 @@ test.describe("Authenticated Routes - WCAG Accessibility",
 
 		for (const pageInfo of authenticatedPages)
 		{
-			// eslint-disable-next-line playwright/expect-expect -- assertions inside expectAccessible
-			test(`should have no critical accessibility violations on ${pageInfo.name} page`,
-				async ({ userPage }: { userPage: Page }) =>
+		// eslint-disable-next-line playwright/expect-expect -- assertions inside expectAccessible
+			test(
+				`should have no critical accessibility violations on ${pageInfo.name} page`,
+				async ({ userPage }: { userPage: Page; }) =>
 				{
 					await userPage.goto(pageInfo.path);
 
@@ -48,22 +50,23 @@ test.describe("Authenticated Routes - WCAG Accessibility",
 			() =>
 			{
 				test("should have accessible form controls on profile page",
-					async ({ userPage }: { userPage: Page }) =>
+					async ({ userPage }: { userPage: Page; }) =>
 					{
 						await userPage.goto(ROUTES.account.root);
 
 						// Form inputs should have labels
-						const axeResults =
+						const axeResults: AxeResults =
 							await new AxeBuilder(
 								{ page: userPage })
-								.withTags(["wcag2a"])
+								.withTags(
+									["wcag2a"])
 								.analyze();
 
 						const labelViolations: Result[] =
 							axeResults.violations.filter(
 								(violation: Result) =>
 									violation.id === "label"
-									|| violation.id === "form-field-multiple-labels");
+										|| violation.id === "form-field-multiple-labels");
 
 						expect(
 							labelViolations,
@@ -76,12 +79,12 @@ test.describe("Authenticated Routes - WCAG Accessibility",
 			() =>
 			{
 				test("should have accessible user menu",
-					async ({ userPage }: { userPage: Page }) =>
+					async ({ userPage }: { userPage: Page; }) =>
 					{
 						await userPage.goto(ROUTES.home);
 
 						// User menu button should have aria-label
-						const userMenuButton =
+						const userMenuButton: Locator =
 							userPage.locator(SELECTORS.layout.userMenuButton);
 
 						await expect(userMenuButton)
@@ -96,18 +99,17 @@ test.describe("Authenticated Routes - WCAG Accessibility",
 			() =>
 			{
 				test("should have proper landmark regions when authenticated",
-					async ({ userPage }: { userPage: Page }) =>
+					async ({ userPage }: { userPage: Page; }) =>
 					{
 						await userPage.goto(ROUTES.home);
 
-
-						const banner =
+						const banner: Locator =
 							userPage.locator(SELECTORS.accessibility.banner);
 
 						await expect(banner)
 							.toBeVisible();
 
-						const main =
+						const main: Locator =
 							userPage.locator(SELECTORS.accessibility.main);
 
 						await expect(main)
@@ -115,12 +117,11 @@ test.describe("Authenticated Routes - WCAG Accessibility",
 					});
 
 				test("should make skip link functional when authenticated",
-					async ({ userPage }: { userPage: Page }) =>
+					async ({ userPage }: { userPage: Page; }) =>
 					{
 						await userPage.goto(ROUTES.home);
 
-
-						const skipLink =
+						const skipLink: Locator =
 							userPage.locator(SELECTORS.accessibility.skipLink);
 
 						// Verify skip link exists and has correct href
@@ -131,7 +132,7 @@ test.describe("Authenticated Routes - WCAG Accessibility",
 							.toHaveAttribute("href", "#main-content");
 
 						// Verify main content target exists with correct id
-						const mainContent =
+						const mainContent: Locator =
 							userPage.locator(SELECTORS.accessibility.mainContent);
 
 						await expect(mainContent)

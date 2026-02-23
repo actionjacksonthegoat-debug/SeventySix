@@ -1,4 +1,5 @@
-import { test, expect, ROUTES, COOKIE_NAMES, expectAccessible } from "@e2e-fixtures";
+import { COOKIE_NAMES, expect, expectAccessible, ROUTES, test } from "@e2e-fixtures";
+import type { Locator } from "@playwright/test";
 
 /**
  * E2E Tests: Cookie Consent Banner
@@ -8,150 +9,171 @@ import { test, expect, ROUTES, COOKIE_NAMES, expectAccessible } from "@e2e-fixtu
  * so the banner reliably appears on first visit.
  */
 test.describe("Cookie Consent Banner",
-() =>
-{
-// Fresh context with no storage state — ensures no consent cookie pre-set
-test.use(
-{
-storageState: undefined
-});
+	() =>
+	{
+	// Fresh context with no storage state — ensures no consent cookie pre-set
+		test.use(
+			{
+				storageState: undefined
+			});
 
-test("banner is visible on first visit with no consent cookie",
-async ({ page }) =>
-{
-await page.goto(ROUTES.home);
+		test("banner is visible on first visit with no consent cookie",
+			async ({ page }) =>
+			{
+				await page.goto(ROUTES.home);
 
-const banner =
-page.getByRole("region",
-{ name: "Cookie consent" });
-await expect(banner)
-.toBeVisible();
-});
+				const banner: Locator =
+					page.getByRole("region",
+						{ name: "Cookie consent" });
+				await expect(banner)
+					.toBeVisible();
+			});
 
-test("Accept All Cookies hides the banner and sets consent cookie",
-async ({ page }) =>
-{
-await page.goto(ROUTES.home);
+		test("Accept All Cookies hides the banner and sets consent cookie",
+			async ({ page }) =>
+			{
+				await page.goto(ROUTES.home);
 
-const banner =
-page.getByRole("region",
-{ name: "Cookie consent" });
-await expect(banner)
-.toBeVisible();
+				const banner: Locator =
+					page.getByRole("region",
+						{ name: "Cookie consent" });
+				await expect(banner)
+					.toBeVisible();
 
-await page.getByRole("button",
-{ name: "Accept All Cookies" }).click();
+				await page
+					.getByRole("button",
+						{ name: "Accept All Cookies" })
+					.click();
 
-await expect(banner)
-.toBeHidden();
+				await expect(banner)
+					.toBeHidden();
 
-const cookies: Array<{ name: string }> =
-await page.context().cookies();
-const consentCookie =
-cookies.find((cookie) => cookie.name === COOKIE_NAMES.cookieConsent);
-expect(consentCookie)
-.toBeDefined();
-});
+				const cookies: Array<{ name: string; }> =
+					await page
+						.context()
+						.cookies();
+				const consentCookie: { name: string; } | undefined =
+					cookies.find((cookie) =>
+						cookie.name === COOKIE_NAMES.cookieConsent);
+				expect(consentCookie)
+					.toBeDefined();
+			});
 
-test("Reject Non-Essential hides the banner and sets consent cookie",
-async ({ page }) =>
-{
-await page.goto(ROUTES.home);
+		test("Reject Non-Essential hides the banner and sets consent cookie",
+			async ({ page }) =>
+			{
+				await page.goto(ROUTES.home);
 
-const banner =
-page.getByRole("region",
-{ name: "Cookie consent" });
-await expect(banner)
-.toBeVisible();
+				const banner: Locator =
+					page.getByRole("region",
+						{ name: "Cookie consent" });
+				await expect(banner)
+					.toBeVisible();
 
-await page.getByRole("button",
-{ name: "Reject Non-Essential" }).click();
+				await page
+					.getByRole("button",
+						{ name: "Reject Non-Essential" })
+					.click();
 
-await expect(banner)
-.toBeHidden();
+				await expect(banner)
+					.toBeHidden();
 
-const cookies: Array<{ name: string; value: string }> =
-await page.context().cookies();
-const consentCookie =
-cookies.find((cookie) => cookie.name === COOKIE_NAMES.cookieConsent);
-expect(consentCookie)
-.toBeDefined();
-});
+				const cookies: Array<{ name: string; value: string; }> =
+					await page
+						.context()
+						.cookies();
+				const consentCookie: { name: string; value: string; } | undefined =
+					cookies.find((cookie) =>
+						cookie.name === COOKIE_NAMES.cookieConsent);
+				expect(consentCookie)
+					.toBeDefined();
+			});
 
-test("Cookie Settings button opens the preferences dialog",
-async ({ page }) =>
-{
-await page.goto(ROUTES.home);
+		test("Cookie Settings button opens the preferences dialog",
+			async ({ page }) =>
+			{
+				await page.goto(ROUTES.home);
 
-await page.getByRole("button",
-{ name: "Cookie Settings" }).click();
+				await page
+					.getByRole("button",
+						{ name: "Cookie Settings" })
+					.click();
 
-const dialog =
-page.getByRole("dialog",
-{ name: "Cookie Preferences" });
-await expect(dialog)
-.toBeVisible();
-});
+				const dialog: Locator =
+					page.getByRole("dialog",
+						{ name: "Cookie Preferences" });
+				await expect(dialog)
+					.toBeVisible();
+			});
 
-test("preferences dialog: Save My Choices closes dialog and sets cookie",
-async ({ page }) =>
-{
-await page.goto(ROUTES.home);
+		test("preferences dialog: Save My Choices closes dialog and sets cookie",
+			async ({ page }) =>
+			{
+				await page.goto(ROUTES.home);
 
-await page.getByRole("button",
-{ name: "Cookie Settings" }).click();
+				await page
+					.getByRole("button",
+						{ name: "Cookie Settings" })
+					.click();
 
-const dialog =
-page.getByRole("dialog",
-{ name: "Cookie Preferences" });
-await expect(dialog)
-.toBeVisible();
+				const dialog: Locator =
+					page.getByRole("dialog",
+						{ name: "Cookie Preferences" });
+				await expect(dialog)
+					.toBeVisible();
 
-await page.getByRole("button",
-{ name: "Save My Choices" }).click();
+				await page
+					.getByRole("button",
+						{ name: "Save My Choices" })
+					.click();
 
-await expect(dialog)
-.toBeHidden();
+				await expect(dialog)
+					.toBeHidden();
 
-const cookies: Array<{ name: string }> =
-await page.context().cookies();
-const consentCookie =
-cookies.find((cookie) => cookie.name === COOKIE_NAMES.cookieConsent);
-expect(consentCookie)
-.toBeDefined();
-});
+				const cookies: Array<{ name: string; }> =
+					await page
+						.context()
+						.cookies();
+				const consentCookie: { name: string; } | undefined =
+					cookies.find((cookie) =>
+						cookie.name === COOKIE_NAMES.cookieConsent);
+				expect(consentCookie)
+					.toBeDefined();
+			});
 
-test("banner does not reappear after accepting on page reload",
-async ({ page }) =>
-{
-await page.goto(ROUTES.home);
+		test("banner does not reappear after accepting on page reload",
+			async ({ page }) =>
+			{
+				await page.goto(ROUTES.home);
 
-await page.getByRole("button",
-{ name: "Accept All Cookies" }).click();
+				await page
+					.getByRole("button",
+						{ name: "Accept All Cookies" })
+					.click();
 
-const banner =
-page.getByRole("region",
-{ name: "Cookie consent" });
-await expect(banner)
-.toBeHidden();
+				const banner: Locator =
+					page.getByRole("region",
+						{ name: "Cookie consent" });
+				await expect(banner)
+					.toBeHidden();
 
-await page.reload();
+				await page.reload();
 
-await expect(banner)
-.toBeHidden();
-});
+				await expect(banner)
+					.toBeHidden();
+			});
 
-test("banner has no critical accessibility violations",
-async ({ page }) =>
-{
-await page.goto(ROUTES.home);
+		test("banner has no critical accessibility violations",
+			async ({ page }) =>
+			{
+				await page.goto(ROUTES.home);
 
-const banner =
-page.getByRole("region",
-{ name: "Cookie consent" });
-await expect(banner)
-.toBeVisible();
+				const banner: Locator =
+					page.getByRole("region",
+						{ name: "Cookie consent" });
+				await expect(banner)
+					.toBeVisible();
 
-await expectAccessible(page, "Cookie Consent Banner");
-});
-});
+				await expectAccessible(page, "Cookie Consent Banner");
+			});
+	});

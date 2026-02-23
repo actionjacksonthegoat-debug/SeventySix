@@ -3,19 +3,20 @@
 // </copyright>
 
 import {
-	unauthenticatedTest,
-	expect,
-	FORCE_PASSWORD_CHANGE_USER,
-	FORCE_PASSWORD_CHANGE_LIFECYCLE_USER,
-	SELECTORS,
-	ROUTES,
-	PAGE_TEXT,
-	TIMEOUTS,
-	E2E_CONFIG,
 	API_ROUTES,
+	ChangePasswordPageHelper,
+	E2E_CONFIG,
+	expect,
+	FORCE_PASSWORD_CHANGE_LIFECYCLE_USER,
+	FORCE_PASSWORD_CHANGE_USER,
 	loginAsUser,
-	ChangePasswordPageHelper
+	PAGE_TEXT,
+	ROUTES,
+	SELECTORS,
+	TIMEOUTS,
+	unauthenticatedTest
 } from "@e2e-fixtures";
+import type { Locator, Response as PlaywrightResponse } from "@playwright/test";
 
 /**
  * E2E Tests for Forced Password Change Flow
@@ -34,15 +35,15 @@ import {
 unauthenticatedTest.describe("Forced Password Change",
 	() =>
 	{
-		/**
-		 * Logs in with a forced password change user and waits for redirect
-		 * to the change-password page.
-		 *
-		 * @param page
-		 * The Playwright page instance.
-		 * @param user
-		 * The test user to log in with. Defaults to `FORCE_PASSWORD_CHANGE_USER`.
-		 */
+	/**
+	 * Logs in with a forced password change user and waits for redirect
+	 * to the change-password page.
+	 *
+	 * @param page
+	 * The Playwright page instance.
+	 * @param user
+	 * The test user to log in with. Defaults to `FORCE_PASSWORD_CHANGE_USER`.
+	 */
 		async function loginAsForcedUser(
 			page: import("@playwright/test").Page,
 			user = FORCE_PASSWORD_CHANGE_USER): Promise<void>
@@ -70,7 +71,7 @@ unauthenticatedTest.describe("Forced Password Change",
 			{
 				await loginAsForcedUser(unauthenticatedPage);
 
-				const requiredNotice =
+				const requiredNotice: Locator =
 					unauthenticatedPage.locator(
 						SELECTORS.changePassword.requiredNotice);
 
@@ -139,23 +140,26 @@ unauthenticatedTest.describe("Forced Password Change",
 						{ timeout: TIMEOUTS.auth });
 			});
 
-		unauthenticatedTest("should receive 403 from protected API while password change pending",
+		unauthenticatedTest(
+			"should receive 403 from protected API while password change pending",
 			async ({ unauthenticatedPage }) =>
 			{
-				// Capture access token from login API response.
-				// Filter must match the API URL specifically to avoid
-				// catching the page navigation HTML response.
-				const loginResponsePromise =
+			// Capture access token from login API response.
+			// Filter must match the API URL specifically to avoid
+			// catching the page navigation HTML response.
+				const loginResponsePromise: Promise<PlaywrightResponse> =
 					unauthenticatedPage.waitForResponse(
 						(response) =>
-							response.url().includes(API_ROUTES.auth.login)
+							response
+								.url()
+								.includes(API_ROUTES.auth.login)
 								&& response.status() === 200);
 
 				await loginAsForcedUser(unauthenticatedPage);
 
-				const loginResponse =
+				const loginResponse: PlaywrightResponse =
 					await loginResponsePromise;
-				const responseBody =
+				const responseBody: unknown =
 					await loginResponse.json();
 				const capturedToken: string =
 					responseBody.accessToken;
@@ -168,14 +172,13 @@ unauthenticatedTest.describe("Forced Password Change",
 
 				const apiStatus: number =
 					await unauthenticatedPage.evaluate(
-						async ({ token, url }: { token: string; url: string }) =>
+						async ({ token, url }: { token: string; url: string; }) =>
 						{
-							const response =
+							const response: Response =
 								await fetch(
 									url,
 									{
-										headers:
-										{
+										headers: {
 											Authorization: `Bearer ${token}`
 										}
 									});
@@ -184,20 +187,21 @@ unauthenticatedTest.describe("Forced Password Change",
 						},
 						{ token: capturedToken, url: apiUrl });
 
-				expect(apiStatus).toBe(403);
+				expect(apiStatus)
+					.toBe(403);
 			});
 
 		// Uses a dedicated lifecycle user so password changes
 		// cannot interfere with the read-only tests above.
-		unauthenticatedTest("should complete forced password change and login with new password",
+		unauthenticatedTest(
+			"should complete forced password change and login with new password",
 			async ({ unauthenticatedPage }) =>
 			{
 				const originalPassword: string =
 					FORCE_PASSWORD_CHANGE_LIFECYCLE_USER.password;
-				const newPassword: string =
-					"E2E_ForcePw_Changed_456!";
+				const newPassword: string = "E2E_ForcePw_Changed_456!";
 
-				const changePasswordPage =
+				const changePasswordPage: ChangePasswordPageHelper =
 					new ChangePasswordPageHelper(unauthenticatedPage);
 
 				// Step 1: Login — redirected to change-password

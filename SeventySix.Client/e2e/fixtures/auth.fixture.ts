@@ -2,14 +2,16 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-import { test as base } from "./page-helpers.fixture";
-import type { Page, BrowserContext, Browser } from "@playwright/test";
-import { TestUser } from "./test-users.constant";
+import type { Browser, BrowserContext, Page } from "@playwright/test";
+import { E2E_CONFIG } from "./config.constant";
 import {
+	attachDiagnosticsOnFailure,
 	createDiagnosticsCollector,
-	instrumentPageForDiagnostics,
-	attachDiagnosticsOnFailure
+	type DiagnosticsCollector,
+	instrumentPageForDiagnostics
 } from "./diagnostics.fixture";
+import { test as base } from "./page-helpers.fixture";
+import { TestUser } from "./test-users.constant";
 
 /**
  * Extended test fixture with role-based authentication.
@@ -55,26 +57,35 @@ interface AuthFixtures
  */
 async function createAuthenticatedPage(
 	browser: Browser,
-	role: string): Promise<{ page: Page; browserContext: BrowserContext }>
+	role: string): Promise<{ page: Page; browserContext: BrowserContext; }>
 {
 	const authStatePath: string =
 		`e2e/.auth/${role.toLowerCase()}.json`;
 	const browserContext: BrowserContext =
-		await browser.newContext({ storageState: authStatePath });
+		await browser.newContext(
+			{
+				storageState: authStatePath,
+				// Mirror the playwright.config.ts `use` settings for manually-created
+				// contexts. browser.newContext() does not inherit config-level `use`
+				// options, so ignoreHTTPSErrors must be set explicitly to prevent SSL
+				// errors against the self-signed dev certificate in CI.
+				baseURL: E2E_CONFIG.clientBaseUrl,
+				ignoreHTTPSErrors: true
+			});
 	const page: Page =
 		await browserContext.newPage();
 
 	return { page, browserContext };
 }
 
-export const test =
-	base.extend<AuthFixtures>({
-		userPage:
-			async ({ browser }, use, testInfo) =>
+export const test: ReturnType<typeof base.extend<AuthFixtures>> =
+	base.extend<AuthFixtures>(
+		{
+			userPage: async ({ browser }, use, testInfo) =>
 			{
 				const { page, browserContext } =
 					await createAuthenticatedPage(browser, "user");
-				const collector =
+				const collector: DiagnosticsCollector =
 					createDiagnosticsCollector();
 				instrumentPageForDiagnostics(page, collector);
 				await use(page);
@@ -82,12 +93,11 @@ export const test =
 				await browserContext.close();
 			},
 
-		adminPage:
-			async ({ browser }, use, testInfo) =>
+			adminPage: async ({ browser }, use, testInfo) =>
 			{
 				const { page, browserContext } =
 					await createAuthenticatedPage(browser, "admin");
-				const collector =
+				const collector: DiagnosticsCollector =
 					createDiagnosticsCollector();
 				instrumentPageForDiagnostics(page, collector);
 				await use(page);
@@ -95,12 +105,11 @@ export const test =
 				await browserContext.close();
 			},
 
-		developerPage:
-			async ({ browser }, use, testInfo) =>
+			developerPage: async ({ browser }, use, testInfo) =>
 			{
 				const { page, browserContext } =
 					await createAuthenticatedPage(browser, "developer");
-				const collector =
+				const collector: DiagnosticsCollector =
 					createDiagnosticsCollector();
 				instrumentPageForDiagnostics(page, collector);
 				await use(page);
@@ -108,10 +117,9 @@ export const test =
 				await browserContext.close();
 			},
 
-		authenticatedPage:
-			async ({ browser }, use) =>
+			authenticatedPage: async ({ browser }, use) =>
 			{
-				const createPage =
+				const createPage: (testUser: TestUser) => Promise<Page> =
 					async (testUser: TestUser): Promise<Page> =>
 					{
 						const { page } =
@@ -120,6 +128,6 @@ export const test =
 					};
 				await use(createPage);
 			}
-	});
+		});
 
 export { expect } from "@playwright/test";

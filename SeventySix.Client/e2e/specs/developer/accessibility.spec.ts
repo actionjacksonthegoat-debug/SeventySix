@@ -1,12 +1,12 @@
-import { Page } from "@playwright/test";
-import {
-	test,
-	expect,
-	ROUTE_GROUPS,
-	expectAccessible
-} from "@e2e-fixtures";
 import AxeBuilder from "@axe-core/playwright";
-import type { Result } from "axe-core";
+import {
+	expect,
+	expectAccessible,
+	ROUTE_GROUPS,
+	test
+} from "@e2e-fixtures";
+import { Page } from "@playwright/test";
+import type { AxeResults, Result } from "axe-core";
 
 /**
  * WCAG Accessibility E2E Tests for Developer Pages
@@ -25,9 +25,10 @@ test.describe("Developer Routes - WCAG Accessibility",
 	{
 		for (const pageInfo of ROUTE_GROUPS.developerAccessibilityPages)
 		{
-			// eslint-disable-next-line playwright/expect-expect -- assertions inside expectAccessible
-			test(`should have no critical accessibility violations on ${pageInfo.name} page`,
-				async ({ developerPage }: { developerPage: Page }) =>
+		// eslint-disable-next-line playwright/expect-expect -- assertions inside expectAccessible
+			test(
+				`should have no critical accessibility violations on ${pageInfo.name} page`,
+				async ({ developerPage }: { developerPage: Page; }) =>
 				{
 					await developerPage.goto(pageInfo.path);
 
@@ -38,20 +39,23 @@ test.describe("Developer Routes - WCAG Accessibility",
 		test.describe("Color Contrast",
 			() =>
 			{
-				test("should have adequate color contrast on style guide page",
-					async ({ developerPage }: { developerPage: Page }) =>
+				test(
+					"should have adequate color contrast on style guide page",
+					async ({ developerPage }: { developerPage: Page; }) =>
 					{
 						await developerPage.goto(ROUTE_GROUPS.developerAccessibilityPages[0].path);
 
-						const axeResults =
+						const axeResults: AxeResults =
 							await new AxeBuilder(
 								{ page: developerPage })
-								.withTags(["wcag2aa"])
+								.withTags(
+									["wcag2aa"])
 								.analyze();
 
 						const contrastViolations: Result[] =
 							axeResults.violations.filter(
-								(violation: Result) => violation.id === "color-contrast");
+								(violation: Result) =>
+									violation.id === "color-contrast");
 
 						expect(
 							contrastViolations,

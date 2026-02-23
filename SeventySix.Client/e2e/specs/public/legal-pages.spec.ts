@@ -1,4 +1,5 @@
-import { test, expect, ROUTES, expectAccessible } from "@e2e-fixtures";
+import { expect, expectAccessible, ROUTES, test } from "@e2e-fixtures";
+import type { Locator } from "@playwright/test";
 
 /**
  * E2E Tests: Legal Pages (Privacy Policy + Terms of Service)
@@ -9,7 +10,7 @@ import { test, expect, ROUTES, expectAccessible } from "@e2e-fixtures";
 test.describe("Legal Pages",
 	() =>
 	{
-		// Legal pages are public — verify without auth state
+	// Legal pages are public — verify without auth state
 		test.use(
 			{
 				storageState: undefined
@@ -108,7 +109,7 @@ test.describe("Legal Pages",
 				test("contains all 11 required sections",
 					async ({ page }) =>
 					{
-						const requiredHeadings =
+						const requiredHeadings: Array<RegExp> =
 							[
 								/Acceptance of Terms/i,
 								/Use of the Service/i,
@@ -154,17 +155,20 @@ test.describe("Legal Pages",
 						await page.goto(ROUTES.auth.login);
 
 						// Dismiss banner — wait for it to fully disappear before checking footer.
-						const banner =
+						const banner: Locator =
 							page.getByRole("region",
 								{ name: "Cookie consent" });
-						await page.getByRole("button",
-							{ name: "Accept All Cookies" }).click();
-						await expect(banner).toBeHidden();
+						await page
+							.getByRole("button",
+								{ name: "Accept All Cookies" })
+							.click();
+						await expect(banner)
+							.toBeHidden();
 
 						// Scope to footer (contentinfo) to avoid any page-level ambiguity.
-						const footer =
+						const footer: Locator =
 							page.getByRole("contentinfo");
-						const privacyLink =
+						const privacyLink: Locator =
 							footer.getByRole("link",
 								{ name: "Privacy Policy" });
 						await expect(privacyLink)
@@ -180,17 +184,20 @@ test.describe("Legal Pages",
 						await page.goto(ROUTES.auth.login);
 
 						// Dismiss banner — wait for it to fully disappear before checking footer.
-						const banner =
+						const banner: Locator =
 							page.getByRole("region",
 								{ name: "Cookie consent" });
-						await page.getByRole("button",
-							{ name: "Accept All Cookies" }).click();
-						await expect(banner).toBeHidden();
+						await page
+							.getByRole("button",
+								{ name: "Accept All Cookies" })
+							.click();
+						await expect(banner)
+							.toBeHidden();
 
 						// Scope to footer (contentinfo) to avoid any page-level ambiguity.
-						const footer =
+						const footer: Locator =
 							page.getByRole("contentinfo");
-						const tosLink =
+						const tosLink: Locator =
 							footer.getByRole("link",
 								{ name: "Terms of Service" });
 						await expect(tosLink)
@@ -206,19 +213,24 @@ test.describe("Legal Pages",
 						await page.goto(ROUTES.auth.login);
 
 						// Dismiss banner — wait for it to fully disappear before re-opening.
-						const banner =
+						const banner: Locator =
 							page.getByRole("region",
 								{ name: "Cookie consent" });
-						await page.getByRole("button",
-							{ name: "Accept All Cookies" }).click();
-						await expect(banner).toBeHidden();
+						await page
+							.getByRole("button",
+								{ name: "Accept All Cookies" })
+							.click();
+						await expect(banner)
+							.toBeHidden();
 
 						// Click Cookie Preferences in footer — should reopen banner.
 						// Scope to footer (contentinfo) to target the footer button specifically.
-						const footer =
+						const footer: Locator =
 							page.getByRole("contentinfo");
-						await footer.getByRole("button",
-							{ name: "Manage cookie preferences" }).click();
+						await footer
+							.getByRole("button",
+								{ name: "Manage cookie preferences" })
+							.click();
 
 						await expect(banner)
 							.toBeVisible();

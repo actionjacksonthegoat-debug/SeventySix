@@ -37,6 +37,7 @@
 	},
 	"includes": [
 		"src/**/*.{ts,js,json,scss,css}",
+		"e2e/**/*.ts",
 		"load-testing/lib/**/*.js",
 		"load-testing/scenarios/**/*.js",
 		"load-testing/scripts/generate-summary.js",

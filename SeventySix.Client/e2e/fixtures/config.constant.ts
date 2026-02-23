@@ -10,36 +10,48 @@
  * - API: 7174 (dev: 7074)
  * - Client: 4201 (dev: 4200)
  */
-export const E2E_CONFIG =
+type E2eConfig = {
+	clientBaseUrl: string;
+	apiBaseUrl: string;
+	mailDevUrl: string;
+	totpTimeStepSeconds: number;
+};
+
+export const E2E_CONFIG: E2eConfig =
 	{
-		/**
-		 * Base URL for the Angular client.
-		 */
+	/**
+	 * Base URL for the Angular client.
+	 */
 		clientBaseUrl: "https://localhost:4201",
 
 		/**
-		 * Base URL for the API server (HTTPS for E2E).
-		 */
+	 * Base URL for the API server (HTTPS for E2E).
+	 */
 		apiBaseUrl: "https://localhost:7174",
 
 		/**
-		 * MailDev web UI URL for email testing.
-		 * HTTP only - no sensitive data.
-		 */
+	 * MailDev web UI URL for email testing.
+	 * HTTP only - no sensitive data.
+	 */
 		mailDevUrl: "http://localhost:1080",
 
 		/**
-		 * TOTP time step in seconds.
-		 * Must match Totp:TimeStepSeconds in the E2E API config.
-		 * E2E uses 10s (vs 30s production) to reduce TOTP wait times.
-		 */
+	 * TOTP time step in seconds.
+	 * Must match Totp:TimeStepSeconds in the E2E API config.
+	 * E2E uses 10s (vs 30s production) to reduce TOTP wait times.
+	 */
 		totpTimeStepSeconds: 10
 	} as const;
 
 /**
  * Cookie names used in E2E tests.
  */
-export const COOKIE_NAMES =
+type CookieNames = {
+	refreshToken: string;
+	cookieConsent: string;
+};
+
+export const COOKIE_NAMES: CookieNames =
 	{
 		refreshToken: "X-Refresh-Token",
 		cookieConsent: "seventysix_consent"
@@ -48,18 +60,29 @@ export const COOKIE_NAMES =
 /**
  * API route paths used in E2E tests for interception and direct calls.
  */
-export const API_ROUTES =
+type ApiRoutes = {
+	auth: {
+		login: string;
+		totpVerify: string;
+		totpDisable: string;
+		trustedDevices: string;
+	};
+	users: {
+		me: string;
+		permissionRequests: string;
+	};
+};
+
+export const API_ROUTES: ApiRoutes =
 	{
-		auth:
-			{
-				login: "/api/v1/auth/login",
-				totpVerify: "/api/v1/auth/mfa/totp/verify",
-				totpDisable: "/api/v1/auth/mfa/totp/disable",
-				trustedDevices: "/api/v1/auth/trusted-devices"
-			},
-		users:
-			{
-				me: "/api/v1/users/me",
-				permissionRequests: "/api/v1/users/me/permission-requests"
-			}
+		auth: {
+			login: "/api/v1/auth/login",
+			totpVerify: "/api/v1/auth/mfa/totp/verify",
+			totpDisable: "/api/v1/auth/mfa/totp/disable",
+			trustedDevices: "/api/v1/auth/trusted-devices"
+		},
+		users: {
+			me: "/api/v1/users/me",
+			permissionRequests: "/api/v1/users/me/permission-requests"
+		}
 	} as const;

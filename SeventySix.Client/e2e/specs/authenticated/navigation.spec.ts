@@ -1,11 +1,11 @@
-import { Page } from "@playwright/test";
 import {
-	test,
 	expect,
 	ROUTES,
 	SELECTORS,
+	test,
 	TIMEOUTS
 } from "@e2e-fixtures";
+import { Locator, Page } from "@playwright/test";
 
 /**
  * E2E Tests for Navigation Components
@@ -22,28 +22,29 @@ test.describe("Navigation",
 			() =>
 			{
 				test("should display user menu button when authenticated",
-					async ({ userPage }: { userPage: Page }) =>
+					async ({ userPage }: { userPage: Page; }) =>
 					{
 						await userPage.goto(ROUTES.home);
 
-						const userMenuButton =
+						const userMenuButton: Locator =
 							userPage.locator(SELECTORS.layout.userMenuButton);
 
 						await expect(userMenuButton)
-							.toBeVisible({ timeout: TIMEOUTS.element });
+							.toBeVisible(
+								{ timeout: TIMEOUTS.element });
 					});
 
 				test("should open user menu when clicking button",
-					async ({ userPage }: { userPage: Page }) =>
+					async ({ userPage }: { userPage: Page; }) =>
 					{
 						await userPage.goto(ROUTES.home);
 
-						const userMenuButton =
+						const userMenuButton: Locator =
 							userPage.locator(SELECTORS.layout.userMenuButton);
 						await userMenuButton.click();
 
 						// Menu should open and show logout option
-						const logoutButton =
+						const logoutButton: Locator =
 							userPage.locator(SELECTORS.layout.logoutButton);
 
 						await expect(logoutButton)
@@ -55,7 +56,7 @@ test.describe("Navigation",
 			() =>
 			{
 				test("should display admin navigation for admin users",
-					async ({ adminPage }: { adminPage: Page }) =>
+					async ({ adminPage }: { adminPage: Page; }) =>
 					{
 						await adminPage.goto(ROUTES.home);
 
@@ -70,8 +71,9 @@ test.describe("Navigation",
 		test.describe("Role-Based Navigation - Developer",
 			() =>
 			{
-				test("should display developer navigation for developer users",
-					async ({ developerPage }: { developerPage: Page }) =>
+				test(
+					"should display developer navigation for developer users",
+					async ({ developerPage }: { developerPage: Page; }) =>
 					{
 						await developerPage.goto(ROUTES.home);
 
@@ -87,23 +89,25 @@ test.describe("Navigation",
 			() =>
 			{
 				test("should not allow user to access admin routes",
-					async ({ userPage }: { userPage: Page }) =>
+					async ({ userPage }: { userPage: Page; }) =>
 					{
 						await userPage.goto(ROUTES.admin.dashboard);
 
 						// User should be redirected away from admin
 						await expect(userPage)
-							.not.toHaveURL(/\/admin\/dashboard/);
+							.not
+							.toHaveURL(/\/admin\/dashboard/);
 					});
 
 				test("should not allow user to access developer routes",
-					async ({ userPage }: { userPage: Page }) =>
+					async ({ userPage }: { userPage: Page; }) =>
 					{
 						await userPage.goto(ROUTES.developer.styleGuide);
 
 						// User should be redirected away from developer
 						await expect(userPage)
-							.not.toHaveURL(/\/developer\/style-guide/);
+							.not
+							.toHaveURL(/\/developer\/style-guide/);
 					});
 			});
 	});

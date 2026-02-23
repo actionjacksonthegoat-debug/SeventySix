@@ -220,7 +220,13 @@ export const PROFILE_EDIT_USER: TestUser =
  * Must match E2ESeederConstants.MfaBackupCodes in the server seeder.
  */
 export const MFA_BACKUP_CODES: readonly string[] =
-	["E2EBAK01", "E2EBAK02", "E2EBAK03", "E2EBAK04", "E2EBAK05"] as const;
+	[
+		"E2EBAK01",
+		"E2EBAK02",
+		"E2EBAK03",
+		"E2EBAK04",
+		"E2EBAK05"
+	] as const;
 
 /**
  * Gets test user by role.

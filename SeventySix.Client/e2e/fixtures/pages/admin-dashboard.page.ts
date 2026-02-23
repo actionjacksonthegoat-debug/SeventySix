@@ -2,7 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-import { Page, Locator, expect } from "@playwright/test";
+import { expect, Locator, Page } from "@playwright/test";
 import { SELECTORS } from "../selectors.constant";
 
 /**
@@ -34,19 +34,32 @@ export class AdminDashboardPageHelper
 	constructor(page: Page)
 	{
 		this.page = page;
-		this.tabs = page.locator(SELECTORS.adminDashboard.tab);
-		this.pageHeader = page.locator(SELECTORS.adminDashboard.pageHeader);
-		this.toolbarHeading = page.locator(SELECTORS.adminDashboard.toolbarHeading);
-		this.toolbarIcon = page.locator(SELECTORS.adminDashboard.toolbarIcon);
-		this.grafanaEmbed = page.locator(SELECTORS.adminDashboard.grafanaEmbed);
-		this.apiStatsTable = page.locator(SELECTORS.adminDashboard.apiStatsTable);
-		this.observabilityCard = page.locator(SELECTORS.adminDashboard.observabilityCard);
-		this.dataCard = page.locator(SELECTORS.adminDashboard.dataCard);
-		this.jaegerButton = page.locator(SELECTORS.adminDashboard.jaegerButton);
-		this.prometheusButton = page.locator(SELECTORS.adminDashboard.prometheusButton);
-		this.grafanaButton = page.locator(SELECTORS.adminDashboard.grafanaButton);
-		this.pgAdminButton = page.locator(SELECTORS.adminDashboard.pgAdminButton);
-		this.redisInsightButton = page.locator(SELECTORS.adminDashboard.redisInsightButton);
+		this.tabs =
+			page.locator(SELECTORS.adminDashboard.tab);
+		this.pageHeader =
+			page.locator(SELECTORS.adminDashboard.pageHeader);
+		this.toolbarHeading =
+			page.locator(SELECTORS.adminDashboard.toolbarHeading);
+		this.toolbarIcon =
+			page.locator(SELECTORS.adminDashboard.toolbarIcon);
+		this.grafanaEmbed =
+			page.locator(SELECTORS.adminDashboard.grafanaEmbed);
+		this.apiStatsTable =
+			page.locator(SELECTORS.adminDashboard.apiStatsTable);
+		this.observabilityCard =
+			page.locator(SELECTORS.adminDashboard.observabilityCard);
+		this.dataCard =
+			page.locator(SELECTORS.adminDashboard.dataCard);
+		this.jaegerButton =
+			page.locator(SELECTORS.adminDashboard.jaegerButton);
+		this.prometheusButton =
+			page.locator(SELECTORS.adminDashboard.prometheusButton);
+		this.grafanaButton =
+			page.locator(SELECTORS.adminDashboard.grafanaButton);
+		this.pgAdminButton =
+			page.locator(SELECTORS.adminDashboard.pgAdminButton);
+		this.redisInsightButton =
+			page.locator(SELECTORS.adminDashboard.redisInsightButton);
 	}
 
 	/**
@@ -68,7 +81,10 @@ export class AdminDashboardPageHelper
 	 */
 	async selectTab(tabIndex: number): Promise<void>
 	{
-		await this.tabs.nth(tabIndex).click();
+		await this
+			.tabs
+			.nth(tabIndex)
+			.click();
 	}
 
 	/**

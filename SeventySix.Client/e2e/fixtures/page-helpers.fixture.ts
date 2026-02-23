@@ -3,9 +3,9 @@
 // </copyright>
 
 import { test as base } from "./diagnostics.fixture";
+import { AdminDashboardPageHelper } from "./pages/admin-dashboard.page";
 import { AuthPageHelper } from "./pages/auth.page";
 import { HomePageHelper } from "./pages/home.page";
-import { AdminDashboardPageHelper } from "./pages/admin-dashboard.page";
 
 /**
  * Page helper fixtures for E2E tests.
@@ -33,24 +33,22 @@ interface PageHelperFixtures
  * Extended test fixture with pre-configured page helpers.
  * Import this instead of base test to get page helpers automatically.
  */
-export const test =
-	base.extend<PageHelperFixtures>({
-		authPage:
-			async ({ page }, use) =>
+export const test: ReturnType<typeof base.extend<PageHelperFixtures>> =
+	base.extend<PageHelperFixtures>(
+		{
+			authPage: async ({ page }, use) =>
 			{
 				await use(new AuthPageHelper(page));
 			},
-		homePage:
-			async ({ page }, use) =>
+			homePage: async ({ page }, use) =>
 			{
 				await use(new HomePageHelper(page));
 			},
-		adminDashboardPage:
-			async ({ page }, use) =>
+			adminDashboardPage: async ({ page }, use) =>
 			{
 				await use(new AdminDashboardPageHelper(page));
 			}
-	});
+		});
 
 export { expect } from "@playwright/test";
-export type { Page, BrowserContext, Browser } from "@playwright/test";
+export type { Browser, BrowserContext, Page } from "@playwright/test";

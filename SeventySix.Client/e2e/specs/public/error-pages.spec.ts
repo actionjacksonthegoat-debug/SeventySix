@@ -1,11 +1,12 @@
 import {
-	test,
 	expect,
+	PAGE_TEXT,
 	ROUTES,
 	SELECTORS,
-	PAGE_TEXT,
+	test,
 	TIMEOUTS
 } from "@e2e-fixtures";
+import type { Locator } from "@playwright/test";
 
 /**
  * E2E Tests for Error Pages
@@ -26,11 +27,12 @@ test.describe("Error Pages",
 					{
 						await page.goto("/this-route-does-not-exist-at-all");
 
-						const errorContainer =
+						const errorContainer: Locator =
 							page.locator(SELECTORS.errorPage.container);
 
 						await expect(errorContainer)
-							.toBeVisible({ timeout: TIMEOUTS.element });
+							.toBeVisible(
+								{ timeout: TIMEOUTS.element });
 					});
 
 				test("should display 404 error title",
@@ -38,11 +40,12 @@ test.describe("Error Pages",
 					{
 						await page.goto("/non-existent-page-xyz");
 
-						const errorTitle =
+						const errorTitle: Locator =
 							page.locator(SELECTORS.errorPage.errorTitle);
 
 						await expect(errorTitle)
-							.toContainText(PAGE_TEXT.errorPage.notFoundTitle, { timeout: TIMEOUTS.element });
+							.toContainText(PAGE_TEXT.errorPage.notFoundTitle,
+								{ timeout: TIMEOUTS.element });
 					});
 
 				test("should display error description",
@@ -50,10 +53,11 @@ test.describe("Error Pages",
 					{
 						await page.goto("/unknown-route-test");
 
-						const pageBody =
-					page.locator(SELECTORS.errorPage.container);
+						const pageBody: Locator =
+							page.locator(SELECTORS.errorPage.container);
 						await expect(pageBody)
-							.toContainText(PAGE_TEXT.errorPage.notFoundDescription, { timeout: TIMEOUTS.element });
+							.toContainText(PAGE_TEXT.errorPage.notFoundDescription,
+								{ timeout: TIMEOUTS.element });
 					});
 
 				test("should display Go to Home button",
@@ -61,11 +65,12 @@ test.describe("Error Pages",
 					{
 						await page.goto("/invalid-path-12345");
 
-						const homeButton =
+						const homeButton: Locator =
 							page.locator(SELECTORS.errorPage.homeButton);
 
 						await expect(homeButton)
-							.toBeVisible({ timeout: TIMEOUTS.element });
+							.toBeVisible(
+								{ timeout: TIMEOUTS.element });
 						await expect(homeButton)
 							.toContainText(PAGE_TEXT.errorPage.goToHome);
 					});
@@ -75,11 +80,12 @@ test.describe("Error Pages",
 					{
 						await page.goto("/random-invalid-route");
 
-						const homeButton =
+						const homeButton: Locator =
 							page.locator(SELECTORS.errorPage.homeButton);
 
 						await expect(homeButton)
-							.toBeVisible({ timeout: TIMEOUTS.element });
+							.toBeVisible(
+								{ timeout: TIMEOUTS.element });
 						await homeButton.click();
 
 						await expect(page)

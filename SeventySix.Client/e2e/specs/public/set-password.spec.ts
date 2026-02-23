@@ -3,13 +3,14 @@
 // </copyright>
 
 import {
-	unauthenticatedTest,
 	expect,
-	SELECTORS,
-	ROUTES,
 	PAGE_TEXT,
-	TIMEOUTS
+	ROUTES,
+	SELECTORS,
+	TIMEOUTS,
+	unauthenticatedTest
 } from "@e2e-fixtures";
+import type { Locator } from "@playwright/test";
 
 /**
  * E2E Tests for Set Password Page
@@ -27,11 +28,12 @@ unauthenticatedTest.describe("Set Password",
 		unauthenticatedTest("should show invalid link when no token provided",
 			async ({ unauthenticatedPage }) =>
 			{
-			await unauthenticatedPage.goto(ROUTES.auth.setPassword);
+				await unauthenticatedPage.goto(ROUTES.auth.setPassword);
 
 				await expect(unauthenticatedPage
 					.locator(SELECTORS.setPassword.invalidLinkSection))
-					.toBeVisible({ timeout: TIMEOUTS.element });
+					.toBeVisible(
+						{ timeout: TIMEOUTS.element });
 
 				await expect(unauthenticatedPage.locator(SELECTORS.layout.pageHeading))
 					.toHaveText(PAGE_TEXT.headings.invalidLink);
@@ -42,12 +44,13 @@ unauthenticatedTest.describe("Set Password",
 			{
 				await unauthenticatedPage.goto(ROUTES.auth.setPassword);
 
-				const returnLink =
+				const returnLink: Locator =
 					unauthenticatedPage.locator("a",
 						{ hasText: PAGE_TEXT.links.returnToLogin });
 
 				await expect(returnLink)
-					.toBeVisible({ timeout: TIMEOUTS.element });
+					.toBeVisible(
+						{ timeout: TIMEOUTS.element });
 				await expect(returnLink)
 					.toHaveAttribute("href", ROUTES.auth.login);
 			});
@@ -61,16 +64,19 @@ unauthenticatedTest.describe("Set Password",
 				// When a token is present, the form is shown (token is validated server-side on submit)
 				await expect(unauthenticatedPage
 					.locator(SELECTORS.setPassword.newPasswordInput))
-					.toBeVisible({ timeout: TIMEOUTS.element });
+					.toBeVisible(
+						{ timeout: TIMEOUTS.element });
 				await expect(unauthenticatedPage
 					.locator(SELECTORS.setPassword.confirmPasswordInput))
-					.toBeVisible({ timeout: TIMEOUTS.element });
+					.toBeVisible(
+						{ timeout: TIMEOUTS.element });
 			});
 
-		unauthenticatedTest("should show error when submitting with expired or invalid token",
+		unauthenticatedTest(
+			"should show error when submitting with expired or invalid token",
 			async ({ unauthenticatedPage }) =>
 			{
-				// Navigate with a fabricated expired token
+			// Navigate with a fabricated expired token
 				await unauthenticatedPage.goto(
 					`${ROUTES.auth.setPassword}?token=expired-fabricated-token-123&email=test@test.local`);
 
@@ -89,14 +95,18 @@ unauthenticatedTest.describe("Set Password",
 
 				// Server should reject the invalid token
 				// The page should show the invalid link section or an error
-				const invalidSection =
+				const invalidSection: Locator =
 					unauthenticatedPage.locator(SELECTORS.setPassword.invalidLinkSection);
-				const snackbar =
+				const snackbar: Locator =
 					unauthenticatedPage.locator(SELECTORS.notification.snackbar);
-				const errorAlert =
+				const errorAlert: Locator =
 					unauthenticatedPage.locator(SELECTORS.accessibility.alert);
 
-				await expect(invalidSection.or(snackbar).or(errorAlert))
-					.toBeVisible({ timeout: TIMEOUTS.api });
+				await expect(
+					invalidSection
+						.or(snackbar)
+						.or(errorAlert))
+					.toBeVisible(
+						{ timeout: TIMEOUTS.api });
 			});
 	});

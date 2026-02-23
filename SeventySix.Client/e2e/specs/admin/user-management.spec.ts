@@ -1,13 +1,13 @@
-import { Page } from "@playwright/test";
 import {
-	test,
+	createRouteRegex,
 	expect,
+	PAGE_TEXT,
 	ROUTES,
 	SELECTORS,
-	PAGE_TEXT,
-	TIMEOUTS,
-	createRouteRegex
+	test,
+	TIMEOUTS
 } from "@e2e-fixtures";
+import { Locator, Page, Response } from "@playwright/test";
 
 /**
  * E2E Tests for User Management Page
@@ -25,7 +25,7 @@ test.describe("User Management Page",
 	() =>
 	{
 		test.beforeEach(
-			async ({ adminPage }: { adminPage: Page }) =>
+			async ({ adminPage }: { adminPage: Page; }) =>
 			{
 				await adminPage.goto(ROUTES.admin.users);
 			});
@@ -34,19 +34,21 @@ test.describe("User Management Page",
 			() =>
 			{
 				test("should display user management heading",
-					async ({ adminPage }: { adminPage: Page }) =>
+					async ({ adminPage }: { adminPage: Page; }) =>
 					{
-						const heading =
-							adminPage.locator(SELECTORS.userManagement.pageHeader).locator("h1");
+						const heading: Locator =
+							adminPage
+								.locator(SELECTORS.userManagement.pageHeader)
+								.locator("h1");
 
 						await expect(heading)
 							.toHaveText(PAGE_TEXT.userManagement.title);
 					});
 
 				test("should display page subtitle",
-					async ({ adminPage }: { adminPage: Page }) =>
+					async ({ adminPage }: { adminPage: Page; }) =>
 					{
-						const pageHeader =
+						const pageHeader: Locator =
 							adminPage.locator(SELECTORS.userManagement.pageHeader);
 
 						await expect(pageHeader)
@@ -54,9 +56,9 @@ test.describe("User Management Page",
 					});
 
 				test("should display create user button",
-					async ({ adminPage }: { adminPage: Page }) =>
+					async ({ adminPage }: { adminPage: Page; }) =>
 					{
-						const createButton =
+						const createButton: Locator =
 							adminPage.locator(SELECTORS.userManagement.createUserButton);
 
 						await expect(createButton)
@@ -66,9 +68,9 @@ test.describe("User Management Page",
 					});
 
 				test("should display user list component",
-					async ({ adminPage }: { adminPage: Page }) =>
+					async ({ adminPage }: { adminPage: Page; }) =>
 					{
-						const userList =
+						const userList: Locator =
 							adminPage.locator(SELECTORS.userManagement.userList);
 
 						await expect(userList)
@@ -76,9 +78,9 @@ test.describe("User Management Page",
 					});
 
 				test("should display data table",
-					async ({ adminPage }: { adminPage: Page }) =>
+					async ({ adminPage }: { adminPage: Page; }) =>
 					{
-						const dataTable =
+						const dataTable: Locator =
 							adminPage.locator(SELECTORS.userManagement.dataTable);
 
 						await expect(dataTable)
@@ -89,10 +91,11 @@ test.describe("User Management Page",
 		test.describe("Navigation",
 			() =>
 			{
-				test("should navigate to create user page when clicking create button",
-					async ({ adminPage }: { adminPage: Page }) =>
+				test(
+					"should navigate to create user page when clicking create button",
+					async ({ adminPage }: { adminPage: Page; }) =>
 					{
-						const createButton =
+						const createButton: Locator =
 							adminPage.locator(SELECTORS.userManagement.createUserButton);
 
 						await createButton.click();
@@ -106,9 +109,9 @@ test.describe("User Management Page",
 			() =>
 			{
 				test("should display table with header row",
-					async ({ adminPage }: { adminPage: Page }) =>
+					async ({ adminPage }: { adminPage: Page; }) =>
 					{
-						const headerRow =
+						const headerRow: Locator =
 							adminPage.locator(SELECTORS.dataTable.headerRow);
 
 						await expect(headerRow)
@@ -116,13 +119,14 @@ test.describe("User Management Page",
 					});
 
 				test("should display seeded user data rows",
-					async ({ adminPage }: { adminPage: Page }) =>
+					async ({ adminPage }: { adminPage: Page; }) =>
 					{
-						const dataRows =
+						const dataRows: Locator =
 							adminPage.locator(SELECTORS.dataTable.dataRow);
 
 						await expect(dataRows.first())
-							.toBeVisible({ timeout: TIMEOUTS.api });
+							.toBeVisible(
+								{ timeout: TIMEOUTS.api });
 
 						// E2E seeder creates 11 test users, so we should have rows
 						const rowCount: number =
@@ -133,20 +137,24 @@ test.describe("User Management Page",
 					});
 
 				test("should navigate to user detail when clicking a row",
-					async ({ adminPage }: { adminPage: Page }) =>
+					async ({ adminPage }: { adminPage: Page; }) =>
 					{
-						const dataRows =
+						const dataRows: Locator =
 							adminPage.locator(SELECTORS.dataTable.dataRow);
 
 						await expect(dataRows.first())
-							.toBeVisible({ timeout: TIMEOUTS.api });
+							.toBeVisible(
+								{ timeout: TIMEOUTS.api });
 
 						// Click the first user row to navigate to detail
-						await dataRows.first().click();
+						await dataRows
+							.first()
+							.click();
 
 						// Should navigate to a user detail URL (contains /admin/users/ followed by an ID)
 						await expect(adminPage)
-							.toHaveURL(/\/admin\/users\/\d+/, { timeout: TIMEOUTS.navigation });
+							.toHaveURL(/\/admin\/users\/\d+/,
+								{ timeout: TIMEOUTS.navigation });
 					});
 			});
 
@@ -154,10 +162,11 @@ test.describe("User Management Page",
 			() =>
 			{
 				test("should display search input",
-					async ({ adminPage }: { adminPage: Page }) =>
+					async ({ adminPage }: { adminPage: Page; }) =>
 					{
-						const searchInput =
-							adminPage.locator(SELECTORS.userManagement.dataTable)
+						const searchInput: Locator =
+							adminPage
+								.locator(SELECTORS.userManagement.dataTable)
 								.locator(SELECTORS.dataTable.matInput);
 
 						await expect(searchInput)
@@ -165,16 +174,18 @@ test.describe("User Management Page",
 					});
 
 				test("should filter users when searching for e2e_admin",
-					async ({ adminPage }: { adminPage: Page }) =>
+					async ({ adminPage }: { adminPage: Page; }) =>
 					{
-						const dataRows =
+						const dataRows: Locator =
 							adminPage.locator(SELECTORS.dataTable.dataRow);
 						await expect(dataRows.first())
-							.toBeVisible({ timeout: TIMEOUTS.api });
+							.toBeVisible(
+								{ timeout: TIMEOUTS.api });
 
 						// Search for a known seeded user
-						const searchInput =
-							adminPage.locator(SELECTORS.userManagement.dataTable)
+						const searchInput: Locator =
+							adminPage
+								.locator(SELECTORS.userManagement.dataTable)
 								.locator(SELECTORS.dataTable.matInput);
 						await searchInput.fill("e2e_admin");
 
@@ -182,27 +193,32 @@ test.describe("User Management Page",
 						const searchResponse: Promise<import("@playwright/test").Response> =
 							adminPage.waitForResponse(
 								(response) =>
-									response.url().includes("/users")
-									&& response.status() === 200);
+									response
+										.url()
+										.includes("/users")
+										&& response.status() === 200);
 
 						await searchInput.press("Enter");
 						await searchResponse;
 
 						// Should show filtered results
 						await expect(dataRows.first())
-							.toBeVisible({ timeout: TIMEOUTS.api });
+							.toBeVisible(
+								{ timeout: TIMEOUTS.api });
 					});
 
 				test("should show empty state for nonexistent search",
-					async ({ adminPage }: { adminPage: Page }) =>
+					async ({ adminPage }: { adminPage: Page; }) =>
 					{
-						const dataRows =
+						const dataRows: Locator =
 							adminPage.locator(SELECTORS.dataTable.dataRow);
 						await expect(dataRows.first())
-							.toBeVisible({ timeout: TIMEOUTS.api });
+							.toBeVisible(
+								{ timeout: TIMEOUTS.api });
 
-						const searchInput =
-							adminPage.locator(SELECTORS.userManagement.dataTable)
+						const searchInput: Locator =
+							adminPage
+								.locator(SELECTORS.userManagement.dataTable)
 								.locator(SELECTORS.dataTable.matInput);
 						await searchInput.fill("zzz_nonexistent_user_xyz");
 
@@ -210,17 +226,20 @@ test.describe("User Management Page",
 						const searchResponse: Promise<import("@playwright/test").Response> =
 							adminPage.waitForResponse(
 								(response) =>
-									response.url().includes("/users")
-									&& response.status() === 200);
+									response
+										.url()
+										.includes("/users")
+										&& response.status() === 200);
 
 						await searchInput.press("Enter");
 						await searchResponse;
 
-						const emptyState =
+						const emptyState: Locator =
 							adminPage.locator(SELECTORS.dataTable.emptyState);
 
 						await expect(emptyState)
-							.toBeVisible({ timeout: TIMEOUTS.api });
+							.toBeVisible(
+								{ timeout: TIMEOUTS.api });
 					});
 			});
 
@@ -228,14 +247,16 @@ test.describe("User Management Page",
 			() =>
 			{
 				test("should display filter chips",
-					async ({ adminPage }: { adminPage: Page }) =>
+					async ({ adminPage }: { adminPage: Page; }) =>
 					{
-						const filterChips =
-							adminPage.locator(SELECTORS.userManagement.dataTable)
+						const filterChips: Locator =
+							adminPage
+								.locator(SELECTORS.userManagement.dataTable)
 								.locator(SELECTORS.dataTable.chipOption);
 
 						await expect(filterChips.first())
-							.toBeVisible({ timeout: TIMEOUTS.api });
+							.toBeVisible(
+								{ timeout: TIMEOUTS.api });
 
 						const chipCount: number =
 							await filterChips.count();
@@ -246,18 +267,20 @@ test.describe("User Management Page",
 					});
 
 				test("should filter to active users only",
-					async ({ adminPage }: { adminPage: Page }) =>
+					async ({ adminPage }: { adminPage: Page; }) =>
 					{
-						const dataRows =
+						const dataRows: Locator =
 							adminPage.locator(SELECTORS.dataTable.dataRow);
 						await expect(dataRows.first())
-							.toBeVisible({ timeout: TIMEOUTS.api });
+							.toBeVisible(
+								{ timeout: TIMEOUTS.api });
 
 						// Quick filter chips: [All Users(0), Active(1), Inactive(2), Show Deleted(3)]
-						const filterChips =
-							adminPage.locator(SELECTORS.userManagement.dataTable)
+						const filterChips: Locator =
+							adminPage
+								.locator(SELECTORS.userManagement.dataTable)
 								.locator(SELECTORS.dataTable.chipOption);
-						const activeChip =
+						const activeChip: Locator =
 							filterChips.nth(1);
 
 						await expect(activeChip)
@@ -265,10 +288,14 @@ test.describe("User Management Page",
 						await activeChip.click();
 
 						// Data should still be visible (all seeded users are active)
-						const emptyState =
+						const emptyState: Locator =
 							adminPage.locator(SELECTORS.dataTable.emptyState);
-						await expect(dataRows.first().or(emptyState))
-							.toBeVisible({ timeout: TIMEOUTS.api });
+						await expect(
+							dataRows
+								.first()
+								.or(emptyState))
+							.toBeVisible(
+								{ timeout: TIMEOUTS.api });
 					});
 			});
 
@@ -276,32 +303,36 @@ test.describe("User Management Page",
 			() =>
 			{
 				test("should refresh data when clicking refresh button",
-					async ({ adminPage }: { adminPage: Page }) =>
+					async ({ adminPage }: { adminPage: Page; }) =>
 					{
-						const dataRows =
+						const dataRows: Locator =
 							adminPage.locator(SELECTORS.dataTable.dataRow);
 						await expect(dataRows.first())
-							.toBeVisible({ timeout: TIMEOUTS.api });
+							.toBeVisible(
+								{ timeout: TIMEOUTS.api });
 
-						const refreshButton =
+						const refreshButton: Locator =
 							adminPage.locator(SELECTORS.dataTable.refreshButton);
 
 						await expect(refreshButton)
 							.toBeVisible();
 
 						// Click refresh and verify API call is made
-						const responsePromise =
+						const responsePromise: Promise<Response> =
 							adminPage.waitForResponse(
 								(response) =>
-									response.url().includes("/users")
-									&& response.status() === 200);
+									response
+										.url()
+										.includes("/users")
+										&& response.status() === 200);
 
 						await refreshButton.click();
 						await responsePromise;
 
 						// Data rows should still be visible after refresh
 						await expect(dataRows.first())
-							.toBeVisible({ timeout: TIMEOUTS.api });
+							.toBeVisible(
+								{ timeout: TIMEOUTS.api });
 					});
 			});
 	});

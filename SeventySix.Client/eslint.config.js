@@ -230,6 +230,9 @@ export default [
 			}
 		},
 		rules: {
+			// All shared TypeScript + style rules — must match app and spec files exactly.
+			// Without this, eslint --fix skips E2E files for every formatting rule.
+			...sharedRules,
 			// Playwright recommended rules (merged because flat config has no `extends`)
 			...(playwrightRecommended.rules ?? {}),
 			// Allow some test-specific flexibility

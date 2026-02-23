@@ -1,14 +1,14 @@
-import {
-	test,
-	expect,
-	ROUTES,
-	ROUTE_GROUPS,
-	SELECTORS,
-	TIMEOUTS,
-	expectAccessible
-} from "@e2e-fixtures";
 import AxeBuilder from "@axe-core/playwright";
-import type { Result } from "axe-core";
+import {
+	expect,
+	expectAccessible,
+	ROUTE_GROUPS,
+	ROUTES,
+	SELECTORS,
+	test
+} from "@e2e-fixtures";
+import type { Locator } from "@playwright/test";
+import type { AxeResults, Result } from "axe-core";
 
 /**
  * WCAG Accessibility E2E Tests using axe-core
@@ -26,7 +26,7 @@ test.describe("WCAG Accessibility Compliance",
 	{
 		for (const pageInfo of ROUTE_GROUPS.publicPages)
 		{
-			// eslint-disable-next-line playwright/expect-expect -- assertions inside expectAccessible
+		// eslint-disable-next-line playwright/expect-expect -- assertions inside expectAccessible
 			test(`should have no critical accessibility violations on ${pageInfo.name} page`,
 				async ({ page }) =>
 				{
@@ -44,15 +44,17 @@ test.describe("WCAG Accessibility Compliance",
 					{
 						await page.goto(ROUTES.home);
 
-						const axeResults =
+						const axeResults: AxeResults =
 							await new AxeBuilder(
 								{ page })
-								.withTags(["wcag2aa"])
+								.withTags(
+									["wcag2aa"])
 								.analyze();
 
 						const contrastViolations: Result[] =
 							axeResults.violations.filter(
-								(violation: Result) => violation.id === "color-contrast");
+								(violation: Result) =>
+									violation.id === "color-contrast");
 
 						expect(
 							contrastViolations,
@@ -65,15 +67,17 @@ test.describe("WCAG Accessibility Compliance",
 					{
 						await page.goto(ROUTES.auth.login);
 
-						const axeResults =
+						const axeResults: AxeResults =
 							await new AxeBuilder(
 								{ page })
-								.withTags(["wcag2aa"])
+								.withTags(
+									["wcag2aa"])
 								.analyze();
 
 						const contrastViolations: Result[] =
 							axeResults.violations.filter(
-								(violation: Result) => violation.id === "color-contrast");
+								(violation: Result) =>
+									violation.id === "color-contrast");
 
 						expect(
 							contrastViolations,
@@ -90,18 +94,19 @@ test.describe("WCAG Accessibility Compliance",
 					{
 						await page.goto(ROUTES.home);
 
-						const axeResults =
+						const axeResults: AxeResults =
 							await new AxeBuilder(
 								{ page })
-								.withTags(["wcag2a"])
+								.withTags(
+									["wcag2a"])
 								.analyze();
 
 						const keyboardViolations: Result[] =
 							axeResults.violations.filter(
 								(violation: Result) =>
 									violation.id === "keyboard"
-									|| violation.id === "focus-order-semantics"
-									|| violation.id === "focusable-content");
+										|| violation.id === "focus-order-semantics"
+										|| violation.id === "focusable-content");
 
 						expect(
 							keyboardViolations,
@@ -118,7 +123,7 @@ test.describe("WCAG Accessibility Compliance",
 						await page.keyboard.press("Tab");
 
 						// Verify skip link is focused
-						const skipLink =
+						const skipLink: Locator =
 							page.locator(SELECTORS.accessibility.skipLink);
 
 						await expect(skipLink)
@@ -128,7 +133,7 @@ test.describe("WCAG Accessibility Compliance",
 						await page.keyboard.press("Enter");
 
 						// Verify main content is focused
-						const mainContent =
+						const mainContent: Locator =
 							page.locator(SELECTORS.accessibility.mainContent);
 
 						await expect(mainContent)
@@ -145,21 +150,21 @@ test.describe("WCAG Accessibility Compliance",
 						await page.goto(ROUTES.home);
 
 						// Verify banner landmark (header)
-						const banner =
+						const banner: Locator =
 							page.locator(SELECTORS.accessibility.banner);
 
 						await expect(banner)
 							.toBeVisible();
 
 						// Verify main content landmark
-						const main =
+						const main: Locator =
 							page.locator(SELECTORS.accessibility.main);
 
 						await expect(main)
 							.toBeVisible();
 
 						// Verify navigation landmark
-						const nav =
+						const nav: Locator =
 							page.locator(SELECTORS.accessibility.navigation);
 
 						await expect(nav)
@@ -171,17 +176,18 @@ test.describe("WCAG Accessibility Compliance",
 					{
 						await page.goto(ROUTES.home);
 
-						const axeResults =
+						const axeResults: AxeResults =
 							await new AxeBuilder(
 								{ page })
-								.withTags(["wcag2a"])
+								.withTags(
+									["wcag2a"])
 								.analyze();
 
 						const imageViolations: Result[] =
 							axeResults.violations.filter(
 								(violation: Result) =>
 									violation.id === "image-alt"
-									|| violation.id === "image-redundant-alt");
+										|| violation.id === "image-redundant-alt");
 
 						expect(
 							imageViolations,

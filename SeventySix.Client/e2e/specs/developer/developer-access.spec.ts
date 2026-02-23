@@ -1,16 +1,20 @@
-import { Page } from "@playwright/test";
+// <copyright file="developer-access.spec.ts" company="SeventySix">
+// Copyright (c) SeventySix. All rights reserved.
+// </copyright>
+
 import {
-	test,
-	expect,
-	ROUTES,
-	ROUTE_GROUPS,
-	SELECTORS,
-	TIMEOUTS,
 	createRouteRegex,
+	expect,
 	expectNoAccessDenied,
 	expectNoApplicationErrors,
+	ROUTE_GROUPS,
+	ROUTES,
+	SELECTORS,
+	test,
+	TIMEOUTS,
 	unauthenticatedTest
 } from "@e2e-fixtures";
+import { Page } from "@playwright/test";
 
 /**
  * E2E Tests for Developer Routes - Role-Based Access Control
@@ -32,7 +36,7 @@ test.describe("Developer Routes - RBAC",
 					(route) =>
 					{
 						test(`should allow developer to access ${route}`,
-							async ({ developerPage }: { developerPage: Page }) =>
+							async ({ developerPage }: { developerPage: Page; }) =>
 							{
 								await developerPage.goto(route);
 
@@ -40,14 +44,14 @@ test.describe("Developer Routes - RBAC",
 								await expect(developerPage)
 									.toHaveURL(createRouteRegex(route));
 
-							// Should not show access denied or application errors
-							await expectNoAccessDenied(developerPage);
-							await expectNoApplicationErrors(developerPage);
+								// Should not show access denied or application errors
+								await expectNoAccessDenied(developerPage);
+								await expectNoApplicationErrors(developerPage);
 							});
 					});
 
 				test("should allow developer to view style guide",
-					async ({ developerPage }: { developerPage: Page }) =>
+					async ({ developerPage }: { developerPage: Page; }) =>
 					{
 						await developerPage.goto(ROUTES.developer.styleGuide);
 
@@ -65,7 +69,7 @@ test.describe("Developer Routes - RBAC",
 					(route) =>
 					{
 						test(`should allow admin to access ${route}`,
-							async ({ adminPage }: { adminPage: Page }) =>
+							async ({ adminPage }: { adminPage: Page; }) =>
 							{
 								await adminPage.goto(route);
 
@@ -79,34 +83,47 @@ test.describe("Developer Routes - RBAC",
 		test.describe("User Role Blocked",
 			() =>
 			{
-
 				ROUTE_GROUPS.developerRoutes.forEach(
 					(route) =>
 					{
 						test(`should redirect user role from ${route}`,
-							async ({ userPage }: { userPage: Page }) =>
+							async ({ userPage }: { userPage: Page; }) =>
 							{
 								await userPage.goto(route);
 
-								// Should redirect away from developer area
+								// Role guard redirects users without Developer/Admin role.
+								// CI Docker is slower — use waitForURL with navigation timeout
+								// rather than the global expect.timeout (10 s) to give Angular
+								// time to run the canMatch guard and complete the redirect.
+								await userPage.waitForURL(
+									(url: URL) =>
+										!url.pathname.startsWith("/developer"),
+									{ timeout: TIMEOUTS.navigation });
+
+								// Confirm the redirect completed (satisfies playwright/expect-expect).
 								await expect(userPage)
-									.not.toHaveURL(createRouteRegex(route));
+									.not
+									.toHaveURL(createRouteRegex(route));
 							});
 					});
 
 				test("should redirect user role to home from developer area",
-					async ({ userPage }: { userPage: Page }) =>
+					async ({ userPage }: { userPage: Page; }) =>
 					{
 						await userPage.goto(ROUTES.developer.styleGuide);
 
-						// Should redirect to home (insufficient permissions)
+						// Should redirect to home (insufficient permissions).
+						// Use TIMEOUTS.navigation (15 s) instead of TIMEOUTS.api (10 s) —
+						// CI Docker environments are slower to process the canMatch redirect.
 						await userPage.waitForURL(
-							(url) => !url.pathname.startsWith("/developer"),
-							{ timeout: TIMEOUTS.api });
+							(url: URL) =>
+								!url.pathname.startsWith("/developer"),
+							{ timeout: TIMEOUTS.navigation });
 
 						// Verify not on developer area
 						await expect(userPage)
-							.not.toHaveURL(/\/developer/);
+							.not
+							.toHaveURL(/\/developer/);
 					});
 			});
 
@@ -116,7 +133,8 @@ test.describe("Developer Routes - RBAC",
 				ROUTE_GROUPS.developerRoutes.forEach(
 					(route) =>
 					{
-						unauthenticatedTest(`should redirect anonymous user to login from ${route}`,
+						unauthenticatedTest(
+							`should redirect anonymous user to login from ${route}`,
 							async ({ unauthenticatedPage }) =>
 							{
 								await unauthenticatedPage.goto(route);
@@ -131,8 +149,9 @@ test.describe("Developer Routes - RBAC",
 		test.describe("Default Route Redirect",
 			() =>
 			{
-				test("should redirect developer base path to style-guide",
-					async ({ developerPage }: { developerPage: Page }) =>
+				test(
+					"should redirect developer base path to style-guide",
+					async ({ developerPage }: { developerPage: Page; }) =>
 					{
 						await developerPage.goto("/developer");
 

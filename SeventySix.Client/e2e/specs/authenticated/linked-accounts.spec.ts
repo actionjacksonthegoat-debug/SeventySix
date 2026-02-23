@@ -2,15 +2,15 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-import { Page } from "@playwright/test";
 import {
-	test,
 	expect,
+	expectAccessible,
+	PAGE_TEXT,
 	ROUTES,
 	SELECTORS,
-	PAGE_TEXT,
-	expectAccessible
+	test
 } from "@e2e-fixtures";
+import { Locator, Page } from "@playwright/test";
 
 /**
  * E2E Tests for Linked Accounts Section (Profile Page)
@@ -28,21 +28,21 @@ test.describe("Linked Accounts",
 	() =>
 	{
 		test.beforeEach(
-			async ({ userPage }: { userPage: Page }) =>
+			async ({ userPage }: { userPage: Page; }) =>
 			{
 				await userPage.goto(ROUTES.account.root);
 			});
 
 		test("should display Linked Accounts section in profile settings",
-			async ({ userPage }: { userPage: Page }) =>
+			async ({ userPage }: { userPage: Page; }) =>
 			{
-				const section =
+				const section: Locator =
 					userPage.locator(SELECTORS.profile.linkedAccountsSection);
 
 				await expect(section)
 					.toBeVisible();
 
-				const heading =
+				const heading: Locator =
 					userPage.locator(SELECTORS.profile.linkedAccountsHeading);
 
 				await expect(heading)
@@ -50,9 +50,9 @@ test.describe("Linked Accounts",
 			});
 
 		test("should display Connect button for unconfigured providers",
-			async ({ userPage }: { userPage: Page }) =>
+			async ({ userPage }: { userPage: Page; }) =>
 			{
-				const connectButton =
+				const connectButton: Locator =
 					userPage.locator(SELECTORS.profile.connectButton);
 
 				await expect(connectButton)
@@ -63,7 +63,7 @@ test.describe("Linked Accounts",
 
 		// eslint-disable-next-line playwright/expect-expect -- expectAccessible uses expect internally
 		test("should pass accessibility checks on linked accounts section",
-			async ({ userPage }: { userPage: Page }) =>
+			async ({ userPage }: { userPage: Page; }) =>
 			{
 				await expectAccessible(
 					userPage,

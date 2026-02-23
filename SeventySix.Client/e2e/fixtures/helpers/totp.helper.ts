@@ -2,17 +2,16 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+import type { APIResponse, Cookie, Page } from "@playwright/test";
 import * as OTPAuth from "otpauth";
-import type { Page } from "@playwright/test";
-import { E2E_CONFIG, API_ROUTES } from "../config.constant";
+import { API_ROUTES, E2E_CONFIG } from "../config.constant";
 import type { TestUser } from "../test-users.constant";
 
 /**
  * Known TOTP secret for the E2E MFA test user.
  * Must match E2ESeederConstants.MfaTotpSecret in the server seeder.
  */
-const E2E_TOTP_SECRET =
-	"JBSWY3DPEHPK3PXP";
+const E2E_TOTP_SECRET: string = "JBSWY3DPEHPK3PXP";
 
 /**
  * Generates a valid TOTP code for the E2E MFA test user.
@@ -31,7 +30,7 @@ export function generateTotpCode(): string
 				algorithm: "SHA1",
 				digits: 6,
 				period: E2E_CONFIG.totpTimeStepSeconds,
-				secret: E2E_TOTP_SECRET,
+				secret: E2E_TOTP_SECRET
 			});
 
 	return totp.generate();
@@ -56,7 +55,7 @@ export function generateTotpCodeFromSecret(totpSecret: string): string
 				algorithm: "SHA1",
 				digits: 6,
 				period: E2E_CONFIG.totpTimeStepSeconds,
-				secret: totpSecret,
+				secret: totpSecret
 			});
 
 	return totp.generate();
@@ -72,14 +71,19 @@ export function generateTotpCodeFromSecret(totpSecret: string): string
 export async function waitForFreshTotpWindow(
 	safeMarginSeconds: number = 3): Promise<void>
 {
-	const stepSeconds: number = E2E_CONFIG.totpTimeStepSeconds;
-	const now: number = Math.floor(Date.now() / 1000);
-	const secondsIntoStep: number = now % stepSeconds;
-	const secondsRemaining: number = stepSeconds - secondsIntoStep;
+	const stepSeconds: number =
+		E2E_CONFIG.totpTimeStepSeconds;
+	const now: number =
+		Math.floor(Date.now() / 1000);
+	const secondsIntoStep: number =
+		now % stepSeconds;
+	const secondsRemaining: number =
+		stepSeconds - secondsIntoStep;
 
 	if (secondsRemaining <= safeMarginSeconds)
 	{
-		const waitMs: number = (secondsRemaining + 1) * 1000;
+		const waitMs: number =
+			(secondsRemaining + 1) * 1000;
 		await new Promise(
 			(resolve) => setTimeout(resolve, waitMs));
 	}
@@ -142,8 +146,9 @@ export async function disableTotpViaApi(
 	const startTime: number =
 		Date.now();
 
-	while (cleanupCode === enrollmentCode
-		&& (Date.now() - startTime) < maxWaitMs)
+	while (
+		cleanupCode === enrollmentCode
+			&& (Date.now() - startTime) < maxWaitMs)
 	{
 		await new Promise(
 			(resolve) => setTimeout(resolve, 2000));
@@ -156,27 +161,28 @@ export async function disableTotpViaApi(
 		return;
 	}
 
-	const cookies =
-		await page.context().cookies();
+	const cookies: Array<Cookie> =
+		await page
+			.context()
+			.cookies();
 	const cookieHeader: string =
 		cookies
 			.map(
-				(cookie) => `${cookie.name}=${cookie.value}`)
+				(cookie) =>
+					`${cookie.name}=${cookie.value}`)
 			.join("; ");
 
-	const loginResponse =
+	const loginResponse: APIResponse =
 		await page.request.post(
 			`${E2E_CONFIG.apiBaseUrl}${API_ROUTES.auth.login}`,
 			{
-				data:
-					{
-						usernameOrEmail: user.email,
-						password: user.password
-					},
-				headers:
-					{
-						Cookie: cookieHeader
-					}
+				data: {
+					usernameOrEmail: user.email,
+					password: user.password
+				},
+				headers: {
+					Cookie: cookieHeader
+				}
 			});
 
 	if (!loginResponse.ok())
@@ -184,7 +190,7 @@ export async function disableTotpViaApi(
 		return;
 	}
 
-	const loginData =
+	const loginData: { requiresMfa: boolean; mfaChallengeToken: string; } =
 		await loginResponse.json();
 
 	if (!loginData.requiresMfa)
@@ -192,21 +198,19 @@ export async function disableTotpViaApi(
 		return;
 	}
 
-	const verifyResponse =
+	const verifyResponse: APIResponse =
 		await page.request.post(
 			`${E2E_CONFIG.apiBaseUrl}${API_ROUTES.auth.totpVerify}`,
 			{
-				data:
-					{
-						email: user.email,
-						code: cleanupCode,
-						challengeToken: loginData.mfaChallengeToken,
-						trustDevice: false
-					},
-				headers:
-					{
-						Cookie: cookieHeader
-					}
+				data: {
+					email: user.email,
+					code: cleanupCode,
+					challengeToken: loginData.mfaChallengeToken,
+					trustDevice: false
+				},
+				headers: {
+					Cookie: cookieHeader
+				}
 			});
 
 	if (!verifyResponse.ok())
@@ -214,20 +218,18 @@ export async function disableTotpViaApi(
 		return;
 	}
 
-	const verifyData =
+	const verifyData: { accessToken: string; } =
 		await verifyResponse.json();
 
 	await page.request.post(
 		`${E2E_CONFIG.apiBaseUrl}${API_ROUTES.auth.totpDisable}`,
 		{
-			data:
-				{
-					password: user.password
-				},
-			headers:
-				{
-					Authorization: `Bearer ${verifyData.accessToken}`,
-					Cookie: cookieHeader
-				}
+			data: {
+				password: user.password
+			},
+			headers: {
+				Authorization: `Bearer ${verifyData.accessToken}`,
+				Cookie: cookieHeader
+			}
 		});
 }

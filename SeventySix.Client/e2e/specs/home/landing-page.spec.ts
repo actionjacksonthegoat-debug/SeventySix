@@ -1,14 +1,14 @@
-import { Page } from "@playwright/test";
 import {
-	test,
 	expect,
+	expectAccessible,
+	PAGE_TEXT,
 	ROUTES,
 	SELECTORS,
-	PAGE_TEXT,
+	test,
 	TIMEOUTS,
-	expectAccessible,
 	triggerAllDeferBlocks
 } from "@e2e-fixtures";
+import { Locator, Page } from "@playwright/test";
 
 /**
  * E2E Tests for Landing Page
@@ -29,7 +29,7 @@ test.describe("Landing Page",
 	() =>
 	{
 		test.beforeEach(
-			async ({ page }: { page: Page }) =>
+			async ({ page }: { page: Page; }) =>
 			{
 				await page.goto(ROUTES.home);
 
@@ -45,21 +45,21 @@ test.describe("Landing Page",
 			() =>
 			{
 				test("should display hero with title and tagline",
-					async ({ page }: { page: Page }) =>
+					async ({ page }: { page: Page; }) =>
 					{
-						const hero =
+						const hero: Locator =
 							page.locator(SELECTORS.home.heroSection);
 
 						await expect(hero)
 							.toBeVisible();
 
-						const title =
+						const title: Locator =
 							page.locator(SELECTORS.home.heroTitle);
 
 						await expect(title)
 							.toHaveText(PAGE_TEXT.home.landingPage.heroTitle);
 
-						const tagline =
+						const tagline: Locator =
 							page.locator(SELECTORS.home.heroTagline);
 
 						await expect(tagline)
@@ -67,9 +67,9 @@ test.describe("Landing Page",
 					});
 
 				test("should have GitHub link with noopener",
-					async ({ page }: { page: Page }) =>
+					async ({ page }: { page: Page; }) =>
 					{
-						const githubLink =
+						const githubLink: Locator =
 							page
 								.locator(SELECTORS.home.heroSection)
 								.locator("a[target='_blank']")
@@ -84,21 +84,21 @@ test.describe("Landing Page",
 			() =>
 			{
 				test("should display tech stack heading and categories",
-					async ({ page }: { page: Page }) =>
+					async ({ page }: { page: Page; }) =>
 					{
-						const section =
+						const section: Locator =
 							page.locator(SELECTORS.home.techStackSection);
 
 						await expect(section)
 							.toBeVisible();
 
-						const heading =
+						const heading: Locator =
 							section.locator("h2");
 
 						await expect(heading)
 							.toHaveText(PAGE_TEXT.home.landingPage.techStackHeading);
 
-						const categories =
+						const categories: Locator =
 							section.locator(SELECTORS.home.techCategory);
 
 						await expect(categories)
@@ -106,9 +106,9 @@ test.describe("Landing Page",
 					});
 
 				test("should have tech item links with noopener",
-					async ({ page }: { page: Page }) =>
+					async ({ page }: { page: Page; }) =>
 					{
-						const firstItem =
+						const firstItem: Locator =
 							page
 								.locator(SELECTORS.home.techItem)
 								.first();
@@ -125,15 +125,15 @@ test.describe("Landing Page",
 			() =>
 			{
 				test("should display stats bar with items",
-					async ({ page }: { page: Page }) =>
+					async ({ page }: { page: Page; }) =>
 					{
-						const statsBar =
+						const statsBar: Locator =
 							page.locator(SELECTORS.home.statsBar);
 
 						await expect(statsBar)
 							.toBeVisible();
 
-						const statItems =
+						const statItems: Locator =
 							statsBar.locator(SELECTORS.home.statItem);
 
 						const count: number =
@@ -148,21 +148,22 @@ test.describe("Landing Page",
 			() =>
 			{
 				test("should display features heading and articles",
-					async ({ page }: { page: Page }) =>
+					async ({ page }: { page: Page; }) =>
 					{
-						const section =
+						const section: Locator =
 							page.locator(SELECTORS.home.featuresSection);
 
 						await expect(section)
-							.toBeVisible({ timeout: TIMEOUTS.api });
+							.toBeVisible(
+								{ timeout: TIMEOUTS.api });
 
-						const heading =
+						const heading: Locator =
 							section.locator("h2");
 
 						await expect(heading)
 							.toHaveText(PAGE_TEXT.home.landingPage.featuresHeading);
 
-						const articles =
+						const articles: Locator =
 							section.locator(SELECTORS.home.featureArticle);
 
 						const articleCount: number =
@@ -177,15 +178,16 @@ test.describe("Landing Page",
 			() =>
 			{
 				test("should display architecture cards",
-					async ({ page }: { page: Page }) =>
+					async ({ page }: { page: Page; }) =>
 					{
-						const section =
+						const section: Locator =
 							page.locator(SELECTORS.home.architectureSection);
 
 						await expect(section)
-							.toBeVisible({ timeout: TIMEOUTS.api });
+							.toBeVisible(
+								{ timeout: TIMEOUTS.api });
 
-						const heading =
+						const heading: Locator =
 							section.locator("h2");
 
 						await expect(heading)
@@ -193,13 +195,14 @@ test.describe("Landing Page",
 					});
 
 				test("should expand and collapse architecture card on click",
-					async ({ page }: { page: Page }) =>
+					async ({ page }: { page: Page; }) =>
 					{
-						const section =
+						const section: Locator =
 							page.locator(SELECTORS.home.architectureSection);
 
 						await expect(section)
-							.toBeVisible({ timeout: TIMEOUTS.api });
+							.toBeVisible(
+								{ timeout: TIMEOUTS.api });
 
 						// Scroll the container so the cards are in view
 						await page.evaluate(
@@ -207,11 +210,14 @@ test.describe("Landing Page",
 							{
 								const element: Element | null =
 									document.querySelector("section.architecture");
-								element?.scrollIntoView({ behavior: "instant" });
+								element?.scrollIntoView(
+									{ behavior: "instant" });
 							});
 
-						const firstHeader =
-							section.locator(SELECTORS.home.archCardHeader).first();
+						const firstHeader: Locator =
+							section
+								.locator(SELECTORS.home.archCardHeader)
+								.first();
 
 						// Initially collapsed
 						await expect(firstHeader)
@@ -223,7 +229,7 @@ test.describe("Landing Page",
 						await expect(firstHeader)
 							.toHaveAttribute("aria-expanded", "true");
 
-						const expandedContent =
+						const expandedContent: Locator =
 							section.locator(SELECTORS.home.archCardContent);
 
 						await expect(expandedContent)
@@ -239,8 +245,9 @@ test.describe("Landing Page",
 
 		test.describe("CTA Footer Section",
 			() =>
-			{				test.beforeEach(
-					async ({ page }: { page: Page }) =>
+			{
+				test.beforeEach(
+					async ({ page }: { page: Page; }) =>
 					{
 						// Scroll the CTA section into view within the parallax container
 						await page.evaluate(
@@ -248,26 +255,28 @@ test.describe("Landing Page",
 							{
 								const element: Element | null =
 									document.querySelector("section.cta-footer");
-								element?.scrollIntoView({ behavior: "instant" });
+								element?.scrollIntoView(
+									{ behavior: "instant" });
 							});
 					});
 
 				test("should display CTA footer with clone command",
-					async ({ page }: { page: Page }) =>
+					async ({ page }: { page: Page; }) =>
 					{
-						const cta =
+						const cta: Locator =
 							page.locator(SELECTORS.home.ctaFooter);
 
 						await expect(cta)
-							.toBeVisible({ timeout: TIMEOUTS.api });
+							.toBeVisible(
+								{ timeout: TIMEOUTS.api });
 
-						const title =
+						const title: Locator =
 							cta.locator("h2");
 
 						await expect(title)
 							.toHaveText(PAGE_TEXT.home.landingPage.ctaTitle);
 
-						const cloneCmd =
+						const cloneCmd: Locator =
 							cta.locator(SELECTORS.home.ctaCloneCommand);
 
 						await expect(cloneCmd)
@@ -275,12 +284,12 @@ test.describe("Landing Page",
 					});
 
 				test("should have external links with noopener",
-					async ({ page }: { page: Page }) =>
+					async ({ page }: { page: Page; }) =>
 					{
-						const cta =
+						const cta: Locator =
 							page.locator(SELECTORS.home.ctaFooter);
 
-						const externalLinks =
+						const externalLinks: Locator =
 							cta.locator("a[target='_blank']");
 
 						const linkCount: number =
@@ -301,15 +310,17 @@ test.describe("Landing Page",
 			() =>
 			{
 				test("should have exactly one h1 and correct h2 structure",
-					async ({ page }: { page: Page }) =>
+					async ({ page }: { page: Page; }) =>
 					{
 						const h1Count: number =
-							await page.locator("h1").count();
+							await page
+								.locator("h1")
+								.count();
 
 						expect(h1Count)
 							.toBe(1);
 
-						const h2Elements =
+						const h2Elements: Locator =
 							page.locator("h2");
 
 						const h2Count: number =
@@ -326,7 +337,7 @@ test.describe("Landing Page",
 			{
 				// eslint-disable-next-line playwright/expect-expect -- assertions inside expectAccessible
 				test("should have no critical accessibility violations",
-					async ({ page }: { page: Page }) =>
+					async ({ page }: { page: Page; }) =>
 					{
 						await expectAccessible(page, "Landing Page");
 					});

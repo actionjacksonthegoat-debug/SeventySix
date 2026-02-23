@@ -3,15 +3,17 @@
 // </copyright>
 
 import {
-	test,
 	expect,
-	getTestUserByRole,
 	fillUserCreateStepper,
-	SELECTORS,
-	ROUTES,
+	getTestUserByRole,
 	PAGE_TEXT,
+	ROUTES,
+	SELECTORS,
+	test,
+	type TestUser,
 	TIMEOUTS
 } from "@e2e-fixtures";
+import type { Locator, Response } from "@playwright/test";
 
 /**
  * E2E Tests for Admin User Create Page
@@ -48,11 +50,12 @@ test.describe("User Create",
 		test("should display stepper with steps",
 			async ({ adminPage }) =>
 			{
-				const steps =
+				const steps: Locator =
 					adminPage.locator(SELECTORS.stepper.stepHeader);
 
 				await expect(steps)
-					.toHaveCount(4, { timeout: TIMEOUTS.element });
+					.toHaveCount(4,
+						{ timeout: TIMEOUTS.element });
 			});
 
 		test("should show username and email fields on step 1",
@@ -69,12 +72,13 @@ test.describe("User Create",
 		test("should validate required fields on step 1",
 			async ({ adminPage }) =>
 			{
-				const usernameField =
+				const usernameField: Locator =
 					adminPage.locator(SELECTORS.userCreate.usernameInput);
 
 				// Wait for the form to render
 				await expect(usernameField)
-					.toBeVisible({ timeout: TIMEOUTS.navigation });
+					.toBeVisible(
+						{ timeout: TIMEOUTS.navigation });
 
 				// Touch the username field to trigger validation
 				await usernameField.focus();
@@ -83,15 +87,18 @@ test.describe("User Create",
 				// Try to advance without filling required fields — getByRole
 				// excludes hidden step buttons to avoid strict mode violation
 				await adminPage
-					.getByRole("button", { name: PAGE_TEXT.buttons.next })
+					.getByRole("button",
+						{ name: PAGE_TEXT.buttons.next })
 					.click();
 
 				// Stepper should block advancement — step 1 fields still visible
 				await expect(usernameField)
-					.toBeVisible({ timeout: TIMEOUTS.element });
+					.toBeVisible(
+						{ timeout: TIMEOUTS.element });
 				await expect(adminPage
 					.locator(SELECTORS.userCreate.emailInput))
-					.toBeVisible({ timeout: TIMEOUTS.element });
+					.toBeVisible(
+						{ timeout: TIMEOUTS.element });
 			});
 
 		test("should create user with valid data",
@@ -106,7 +113,8 @@ test.describe("User Create",
 				// Wait for the form to render before filling
 				await expect(adminPage
 					.locator(SELECTORS.userCreate.usernameInput))
-					.toBeVisible({ timeout: TIMEOUTS.element });
+					.toBeVisible(
+						{ timeout: TIMEOUTS.element });
 
 				await fillUserCreateStepper(adminPage,
 					{
@@ -133,15 +141,16 @@ test.describe("User Create",
 
 				const timestamp: number =
 					Date.now();
-				const testUsername =
+				const testUsername: string =
 					`e2e_verify_${timestamp}`;
-				const testFullName =
+				const testFullName: string =
 					`Verify User ${timestamp}`;
 
 				// Wait for the form to render before filling
 				await expect(adminPage
 					.locator(SELECTORS.userCreate.usernameInput))
-					.toBeVisible({ timeout: TIMEOUTS.element });
+					.toBeVisible(
+						{ timeout: TIMEOUTS.element });
 
 				await fillUserCreateStepper(adminPage,
 					{
@@ -161,29 +170,34 @@ test.describe("User Create",
 
 				// Verify the created user appears in the user list
 				// Use the data table search to find by username prefix
-				const searchInput =
-					adminPage.locator(SELECTORS.userManagement.dataTable)
+				const searchInput: Locator =
+					adminPage
+						.locator(SELECTORS.userManagement.dataTable)
 						.locator(SELECTORS.dataTable.matInput);
 
 				await expect(searchInput)
-					.toBeVisible({ timeout: TIMEOUTS.api });
+					.toBeVisible(
+						{ timeout: TIMEOUTS.api });
 				await searchInput.fill(testUsername);
 
 				// Set up listener BEFORE triggering search
-				const searchResponse =
+				const searchResponse: Promise<Response> =
 					adminPage.waitForResponse(
 						(response) =>
-							response.url().includes("/users")
+							response
+								.url()
+								.includes("/users")
 								&& response.status() === 200);
 
 				await searchInput.press("Enter");
 				await searchResponse;
 
 				// Verify the username appears in the table data rows
-				const dataRows =
+				const dataRows: Locator =
 					adminPage.locator(SELECTORS.dataTable.dataRow);
 				await expect(dataRows.first())
-					.toBeVisible({ timeout: TIMEOUTS.api });
+					.toBeVisible(
+						{ timeout: TIMEOUTS.api });
 				await expect(dataRows.first())
 					.toContainText(testFullName);
 			});
@@ -194,17 +208,18 @@ test.describe("User Create",
 				// 4-step stepper + error assertion
 				test.setTimeout(60_000);
 
-				const existingUser =
+				const existingUser: TestUser =
 					getTestUserByRole("User");
 				const timestamp: number =
 					Date.now();
-				const uniqueUsername =
+				const uniqueUsername: string =
 					`e2e_dupemail_${timestamp}`;
 
 				// Wait for the form to render before filling
 				await expect(adminPage
 					.locator(SELECTORS.userCreate.usernameInput))
-					.toBeVisible({ timeout: TIMEOUTS.element });
+					.toBeVisible(
+						{ timeout: TIMEOUTS.element });
 
 				await fillUserCreateStepper(adminPage,
 					{
@@ -219,11 +234,12 @@ test.describe("User Create",
 
 				// Should NOT navigate to user list — stay on create page due to server error.
 				// The component displays an inline error banner (mat-card.alert-card.error).
-				const errorBanner =
+				const errorBanner: Locator =
 					adminPage.locator(SELECTORS.userCreate.saveErrorBanner);
 
 				await expect(errorBanner)
-					.toBeVisible({ timeout: TIMEOUTS.api });
+					.toBeVisible(
+						{ timeout: TIMEOUTS.api });
 
 				await expect(errorBanner)
 					.toContainText(PAGE_TEXT.userCreate.failedToCreate);

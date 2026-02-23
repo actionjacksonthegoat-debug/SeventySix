@@ -1,16 +1,16 @@
-import { BrowserContext, Page } from "@playwright/test";
 import {
-	test,
-	expect,
-	ROUTES,
-	SELECTORS,
-	PAGE_TEXT,
-	TIMEOUTS,
 	API_ROUTES,
 	createRouteRegex,
+	expect,
+	loginInFreshContext,
+	PAGE_TEXT,
 	PROFILE_EDIT_USER,
-	loginInFreshContext
+	ROUTES,
+	SELECTORS,
+	test,
+	TIMEOUTS
 } from "@e2e-fixtures";
+import { Locator, Page } from "@playwright/test";
 
 /**
  * E2E Tests for Profile Page
@@ -27,7 +27,7 @@ test.describe("Profile Page",
 	() =>
 	{
 		test.beforeEach(
-			async ({ userPage }: { userPage: Page }) =>
+			async ({ userPage }: { userPage: Page; }) =>
 			{
 				await userPage.goto(ROUTES.account.root);
 			});
@@ -36,25 +36,28 @@ test.describe("Profile Page",
 			() =>
 			{
 				test("should display profile card",
-					async ({ userPage }: { userPage: Page }) =>
+					async ({ userPage }: { userPage: Page; }) =>
 					{
-						const profileCard =
-							userPage.locator(SELECTORS.profile.profileCard).first();
+						const profileCard: Locator =
+							userPage
+								.locator(SELECTORS.profile.profileCard)
+								.first();
 
 						await expect(profileCard)
 							.toBeVisible();
 					});
 
 				test("should display username in card title",
-					async ({ userPage }: { userPage: Page }) =>
+					async ({ userPage }: { userPage: Page; }) =>
 					{
-						const cardTitle =
+						const cardTitle: Locator =
 							userPage.locator(SELECTORS.card.title);
 
 						await expect(cardTitle)
 							.toBeVisible();
 						await expect(cardTitle)
-							.not.toBeEmpty();
+							.not
+							.toBeEmpty();
 					});
 			});
 
@@ -62,9 +65,9 @@ test.describe("Profile Page",
 			() =>
 			{
 				test("should display email input field",
-					async ({ userPage }: { userPage: Page }) =>
+					async ({ userPage }: { userPage: Page; }) =>
 					{
-						const emailInput =
+						const emailInput: Locator =
 							userPage.locator(SELECTORS.profile.emailInput);
 
 						await expect(emailInput)
@@ -72,9 +75,9 @@ test.describe("Profile Page",
 					});
 
 				test("should display full name input field",
-					async ({ userPage }: { userPage: Page }) =>
+					async ({ userPage }: { userPage: Page; }) =>
 					{
-						const fullNameInput =
+						const fullNameInput: Locator =
 							userPage.locator(SELECTORS.profile.fullNameInput);
 
 						await expect(fullNameInput)
@@ -82,9 +85,9 @@ test.describe("Profile Page",
 					});
 
 				test("should display save button",
-					async ({ userPage }: { userPage: Page }) =>
+					async ({ userPage }: { userPage: Page; }) =>
 					{
-						const saveButton =
+						const saveButton: Locator =
 							userPage.locator(SELECTORS.profile.saveButton);
 
 						await expect(saveButton)
@@ -94,9 +97,9 @@ test.describe("Profile Page",
 					});
 
 				test("should disable save button when form is pristine",
-					async ({ userPage }: { userPage: Page }) =>
+					async ({ userPage }: { userPage: Page; }) =>
 					{
-						const saveButton =
+						const saveButton: Locator =
 							userPage.locator(SELECTORS.profile.saveButton);
 
 						await expect(saveButton)
@@ -104,16 +107,17 @@ test.describe("Profile Page",
 					});
 
 				test("should enable save button when form is modified",
-					async ({ userPage }: { userPage: Page }) =>
+					async ({ userPage }: { userPage: Page; }) =>
 					{
-						const fullNameInput =
+						const fullNameInput: Locator =
 							userPage.locator(SELECTORS.profile.fullNameInput);
-						const saveButton =
+						const saveButton: Locator =
 							userPage.locator(SELECTORS.profile.saveButton);
 
 						// Wait for profile data to populate before modifying
 						await expect(userPage.locator(SELECTORS.profile.emailInput))
-							.toHaveValue(/.+/, { timeout: TIMEOUTS.api });
+							.toHaveValue(/.+/,
+								{ timeout: TIMEOUTS.api });
 
 						await fullNameInput.fill("Test User Modified");
 
@@ -126,7 +130,7 @@ test.describe("Profile Page",
 			() =>
 			{
 				test("should navigate to permissions page when clicking link",
-					async ({ userPage }: { userPage: Page }) =>
+					async ({ userPage }: { userPage: Page; }) =>
 					{
 						await userPage.goto(ROUTES.account.permissions);
 
@@ -140,7 +144,8 @@ test.describe("Profile Page",
 			{
 				// Save tests both login as PROFILE_EDIT_USER — run serially to avoid
 				// concurrent login rate-limits and server-side profile mutation races.
-				test.describe.configure({ mode: "serial" });
+				test.describe.configure(
+					{ mode: "serial" });
 
 				test("should save profile changes and persist after reload",
 					async ({ browser }) =>
@@ -158,29 +163,35 @@ test.describe("Profile Page",
 						{
 							await page.goto(ROUTES.account.root);
 
-							const fullNameInput =
+							const fullNameInput: Locator =
 								page.locator(SELECTORS.profile.fullNameInput);
-							const saveButton =
+							const saveButton: Locator =
 								page.locator(SELECTORS.profile.saveButton);
 
 							// Wait for form population (email always non-empty for seeded users)
 							await expect(page.locator(SELECTORS.profile.emailInput))
-								.toHaveValue(/.+/, { timeout: TIMEOUTS.api });
+								.toHaveValue(/.+/,
+									{ timeout: TIMEOUTS.api });
 
-							const uniqueFullName =
+							const uniqueFullName: string =
 								`E2E Profile ${Date.now()}`;
 
 							await fullNameInput.fill(uniqueFullName);
 							await expect(saveButton)
-								.toBeEnabled({ timeout: TIMEOUTS.api });
+								.toBeEnabled(
+									{ timeout: TIMEOUTS.api });
 
 							await Promise.all(
 								[
 									page.waitForResponse(
 										(response) =>
-										response.url().includes(API_ROUTES.users.me)
-											&& response.request().method() === "PUT"
-											&& response.status() === 200),
+											response
+												.url()
+												.includes(API_ROUTES.users.me)
+												&& response
+													.request()
+													.method() === "PUT"
+												&& response.status() === 200),
 									saveButton.click()
 								]);
 
@@ -188,7 +199,8 @@ test.describe("Profile Page",
 							await page.reload();
 
 							await expect(fullNameInput)
-								.toHaveValue(uniqueFullName, { timeout: TIMEOUTS.api });
+								.toHaveValue(uniqueFullName,
+									{ timeout: TIMEOUTS.api });
 						}
 						finally
 						{
@@ -212,33 +224,40 @@ test.describe("Profile Page",
 						{
 							await page.goto(ROUTES.account.root);
 
-							const fullNameInput =
+							const fullNameInput: Locator =
 								page.locator(SELECTORS.profile.fullNameInput);
-							const saveButton =
+							const saveButton: Locator =
 								page.locator(SELECTORS.profile.saveButton);
 
 							await expect(page.locator(SELECTORS.profile.emailInput))
-								.toHaveValue(/.+/, { timeout: TIMEOUTS.api });
+								.toHaveValue(/.+/,
+									{ timeout: TIMEOUTS.api });
 
-							const uniqueFullName =
+							const uniqueFullName: string =
 								`E2E Pristine ${Date.now()}`;
 
 							await fullNameInput.fill(uniqueFullName);
 							await expect(saveButton)
-								.toBeEnabled({ timeout: TIMEOUTS.api });
+								.toBeEnabled(
+									{ timeout: TIMEOUTS.api });
 
 							await Promise.all(
 								[
 									page.waitForResponse(
 										(response) =>
-										response.url().includes(API_ROUTES.users.me)
-											&& response.request().method() === "PUT"
-											&& response.status() === 200),
+											response
+												.url()
+												.includes(API_ROUTES.users.me)
+												&& response
+													.request()
+													.method() === "PUT"
+												&& response.status() === 200),
 									saveButton.click()
 								]);
 
 							await expect(saveButton)
-								.toBeDisabled({ timeout: TIMEOUTS.navigation });
+								.toBeDisabled(
+									{ timeout: TIMEOUTS.navigation });
 						}
 						finally
 						{
@@ -251,11 +270,11 @@ test.describe("Profile Page",
 			() =>
 			{
 				test("should show validation error for invalid email",
-					async ({ userPage }: { userPage: Page }) =>
+					async ({ userPage }: { userPage: Page; }) =>
 					{
-						const emailInput =
+						const emailInput: Locator =
 							userPage.locator(SELECTORS.profile.emailInput);
-						const saveButton =
+						const saveButton: Locator =
 							userPage.locator(SELECTORS.profile.saveButton);
 
 						await emailInput.fill("not-an-email");
@@ -264,18 +283,19 @@ test.describe("Profile Page",
 						await expect(saveButton)
 							.toBeDisabled();
 
-						const errorMessage =
+						const errorMessage: Locator =
 							userPage.locator(SELECTORS.form.matError);
 						await expect(errorMessage)
-							.toBeVisible({ timeout: TIMEOUTS.element });
+							.toBeVisible(
+								{ timeout: TIMEOUTS.element });
 					});
 
 				test("should show validation error for empty required email",
-					async ({ userPage }: { userPage: Page }) =>
+					async ({ userPage }: { userPage: Page; }) =>
 					{
-						const emailInput =
+						const emailInput: Locator =
 							userPage.locator(SELECTORS.profile.emailInput);
-						const saveButton =
+						const saveButton: Locator =
 							userPage.locator(SELECTORS.profile.saveButton);
 
 						await emailInput.fill("");

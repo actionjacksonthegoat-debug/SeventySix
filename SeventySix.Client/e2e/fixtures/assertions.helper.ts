@@ -2,7 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-import { expect, Page, Locator } from "@playwright/test";
+import { expect, Locator, Page } from "@playwright/test";
 import { PAGE_TEXT } from "./page-text.constant";
 
 /**
@@ -13,7 +13,8 @@ import { PAGE_TEXT } from "./page-text.constant";
 export async function expectNoAccessDenied(page: Page): Promise<void>
 {
 	await expect(page.locator("body"))
-		.not.toContainText(PAGE_TEXT.errors.accessDenied);
+		.not
+		.toContainText(PAGE_TEXT.errors.accessDenied);
 }
 
 /**
@@ -35,7 +36,8 @@ export async function expectNoApplicationErrors(page: Page): Promise<void>
 		await expect(
 			bodyLocator,
 			`Server error detected: ${pattern}`)
-			.not.toContainText(pattern);
+			.not
+			.toContainText(pattern);
 	}
 
 	// Check client error patterns
@@ -44,7 +46,8 @@ export async function expectNoApplicationErrors(page: Page): Promise<void>
 		await expect(
 			bodyLocator,
 			`Client error detected: ${pattern}`)
-			.not.toContainText(pattern);
+			.not
+			.toContainText(pattern);
 	}
 
 	// Check Angular error patterns
@@ -53,6 +56,7 @@ export async function expectNoApplicationErrors(page: Page): Promise<void>
 		await expect(
 			bodyLocator,
 			`Angular error detected: ${pattern}`)
-			.not.toContainText(pattern);
+			.not
+			.toContainText(pattern);
 	}
 }

@@ -2,9 +2,9 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-import { Page, Locator } from "@playwright/test";
-import { SELECTORS } from "../selectors.constant";
+import { Locator, Page } from "@playwright/test";
 import { solveAltchaChallenge } from "../helpers/altcha.helper";
+import { SELECTORS } from "../selectors.constant";
 
 /**
  * Auth page helper for login form interactions.
@@ -32,16 +32,26 @@ export class AuthPageHelper
 	constructor(page: Page)
 	{
 		this.page = page;
-		this.submitButton = page.locator(SELECTORS.form.submitButton);
-		this.usernameInput = page.locator(SELECTORS.form.usernameInput);
-		this.passwordInput = page.locator(SELECTORS.form.passwordInput);
-		this.emailInput = page.locator(SELECTORS.form.emailInput);
-		this.snackbar = page.locator(SELECTORS.notification.snackbar);
-		this.pageHeading = page.locator(SELECTORS.layout.pageHeading);
-		this.githubButton = page.locator(SELECTORS.auth.githubButton);
-		this.forgotPasswordLink = page.locator(SELECTORS.auth.forgotPasswordLink);
-		this.signInLink = page.locator(SELECTORS.auth.signInLink);
-		this.rememberMeCheckbox = page.locator(SELECTORS.form.rememberMeCheckbox);
+		this.submitButton =
+			page.locator(SELECTORS.form.submitButton);
+		this.usernameInput =
+			page.locator(SELECTORS.form.usernameInput);
+		this.passwordInput =
+			page.locator(SELECTORS.form.passwordInput);
+		this.emailInput =
+			page.locator(SELECTORS.form.emailInput);
+		this.snackbar =
+			page.locator(SELECTORS.notification.snackbar);
+		this.pageHeading =
+			page.locator(SELECTORS.layout.pageHeading);
+		this.githubButton =
+			page.locator(SELECTORS.auth.githubButton);
+		this.forgotPasswordLink =
+			page.locator(SELECTORS.auth.forgotPasswordLink);
+		this.signInLink =
+			page.locator(SELECTORS.auth.signInLink);
+		this.rememberMeCheckbox =
+			page.locator(SELECTORS.form.rememberMeCheckbox);
 	}
 
 	/**
