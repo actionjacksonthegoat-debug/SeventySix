@@ -28,6 +28,9 @@
 		"loadtest:quick": "node scripts/run-pwsh.mjs -File SeventySix.Client/load-testing/scripts/run-load-tests.ps1 -Profile quick",
 		"loadtest:smoke": "node scripts/run-pwsh.mjs -File SeventySix.Client/load-testing/scripts/run-load-tests.ps1 -Profile smoke",
 		"loadtest:load": "node scripts/run-pwsh.mjs -File SeventySix.Client/load-testing/scripts/run-load-tests.ps1 -Profile load",
-		"loadtest:stress": "node scripts/run-pwsh.mjs -File SeventySix.Client/load-testing/scripts/run-load-tests.ps1 -Profile stress"
+		"loadtest:stress": "node scripts/run-pwsh.mjs -File SeventySix.Client/load-testing/scripts/run-load-tests.ps1 -Profile stress",
+		"scan:codeql": "node scripts/run-pwsh.mjs -File scripts/run-codeql-scan.ps1",
+		"scan:codeql:cs": "node scripts/run-pwsh.mjs -File scripts/run-codeql-scan.ps1 -LanguageFilter csharp",
+		"scan:codeql:ts": "node scripts/run-pwsh.mjs -File scripts/run-codeql-scan.ps1 -LanguageFilter typescript"
 	}
 }

@@ -1,16 +1,16 @@
-import { Page } from "@playwright/test";
 import {
-	test,
-	expect,
-	ROUTES,
-	ROUTE_GROUPS,
-	SELECTORS,
-	TIMEOUTS,
 	createRouteRegex,
+	expect,
 	expectNoAccessDenied,
 	expectNoApplicationErrors,
+	ROUTE_GROUPS,
+	ROUTES,
+	SELECTORS,
+	test,
+	TIMEOUTS,
 	unauthenticatedTest
 } from "@e2e-fixtures";
+import { Page } from "@playwright/test";
 
 /**
  * E2E Tests for Admin Routes - Role-Based Access Control
@@ -32,7 +32,7 @@ test.describe("Admin Routes - RBAC",
 					(route) =>
 					{
 						test(`should allow admin to access ${route}`,
-							async ({ adminPage }: { adminPage: Page }) =>
+							async ({ adminPage }: { adminPage: Page; }) =>
 							{
 								await adminPage.goto(route);
 
@@ -40,14 +40,14 @@ test.describe("Admin Routes - RBAC",
 								await expect(adminPage)
 									.toHaveURL(createRouteRegex(route));
 
-							// Should not show access denied or application errors
-							await expectNoAccessDenied(adminPage);
-							await expectNoApplicationErrors(adminPage);
+								// Should not show access denied or application errors
+								await expectNoAccessDenied(adminPage);
+								await expectNoApplicationErrors(adminPage);
 							});
 					});
 
 				test("should allow admin to navigate admin dashboard",
-					async ({ adminPage }: { adminPage: Page }) =>
+					async ({ adminPage }: { adminPage: Page; }) =>
 					{
 						await adminPage.goto(ROUTES.admin.dashboard);
 
@@ -64,29 +64,32 @@ test.describe("Admin Routes - RBAC",
 					(route) =>
 					{
 						test(`should redirect user role from ${route}`,
-							async ({ userPage }: { userPage: Page }) =>
+							async ({ userPage }: { userPage: Page; }) =>
 							{
 								await userPage.goto(route);
 
 								// Should redirect away from admin area
 								await expect(userPage)
-									.not.toHaveURL(createRouteRegex(route));
+									.not
+									.toHaveURL(createRouteRegex(route));
 							});
 					});
 
 				test("should redirect user role to home from admin dashboard",
-					async ({ userPage }: { userPage: Page }) =>
+					async ({ userPage }: { userPage: Page; }) =>
 					{
 						await userPage.goto(ROUTES.admin.dashboard);
 
 						// Should redirect to home (insufficient permissions)
 						await userPage.waitForURL(
-							(url) => !url.pathname.startsWith("/admin"),
+							(url) =>
+								!url.pathname.startsWith("/admin"),
 							{ timeout: TIMEOUTS.api });
 
 						// Verify not on admin dashboard
 						await expect(userPage)
-							.not.toHaveURL(/\/admin\/dashboard/);
+							.not
+							.toHaveURL(/\/admin\/dashboard/);
 					});
 			});
 
@@ -94,23 +97,25 @@ test.describe("Admin Routes - RBAC",
 			() =>
 			{
 				test("should block developer role from admin dashboard",
-					async ({ developerPage }: { developerPage: Page }) =>
+					async ({ developerPage }: { developerPage: Page; }) =>
 					{
 						await developerPage.goto(ROUTES.admin.dashboard);
 
 						// Developer should be redirected away from admin
 						await expect(developerPage)
-							.not.toHaveURL(/\/admin\/dashboard/);
+							.not
+							.toHaveURL(/\/admin\/dashboard/);
 					});
 
 				test("should block developer role from user management",
-					async ({ developerPage }: { developerPage: Page }) =>
+					async ({ developerPage }: { developerPage: Page; }) =>
 					{
 						await developerPage.goto(ROUTES.admin.users);
 
 						// Developer should be redirected
 						await expect(developerPage)
-							.not.toHaveURL(/\/admin\/users/);
+							.not
+							.toHaveURL(/\/admin\/users/);
 					});
 			});
 
@@ -120,7 +125,8 @@ test.describe("Admin Routes - RBAC",
 				ROUTE_GROUPS.adminRoutes.forEach(
 					(route) =>
 					{
-						unauthenticatedTest(`should redirect anonymous user to login from ${route}`,
+						unauthenticatedTest(
+							`should redirect anonymous user to login from ${route}`,
 							async ({ unauthenticatedPage }) =>
 							{
 								await unauthenticatedPage.goto(route);
@@ -136,7 +142,7 @@ test.describe("Admin Routes - RBAC",
 			() =>
 			{
 				test("should allow admin to view user list",
-					async ({ adminPage }: { adminPage: Page }) =>
+					async ({ adminPage }: { adminPage: Page; }) =>
 					{
 						await adminPage.goto(ROUTES.admin.users);
 
@@ -146,7 +152,7 @@ test.describe("Admin Routes - RBAC",
 					});
 
 				test("should allow admin to access create user page",
-					async ({ adminPage }: { adminPage: Page }) =>
+					async ({ adminPage }: { adminPage: Page; }) =>
 					{
 						await adminPage.goto(`${ROUTES.admin.users}/create`);
 
@@ -160,7 +166,7 @@ test.describe("Admin Routes - RBAC",
 			() =>
 			{
 				test("should allow admin to view permission requests",
-					async ({ adminPage }: { adminPage: Page }) =>
+					async ({ adminPage }: { adminPage: Page; }) =>
 					{
 						await adminPage.goto(ROUTES.admin.permissionRequests);
 

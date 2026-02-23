@@ -1,15 +1,15 @@
-import { Page, Locator, BrowserContext } from "@playwright/test";
 import {
-	freshLoginTest as test,
-	expect,
-	unauthenticatedTest,
-	loginInFreshContext,
+	type ContextLoginResult,
 	CROSSTAB_USER,
+	expect,
+	freshLoginTest as test,
+	loginInFreshContext,
 	ROUTES,
 	SELECTORS,
 	TIMEOUTS,
-	E2E_CONFIG
+	unauthenticatedTest
 } from "@e2e-fixtures";
+import { Locator, Page } from "@playwright/test";
 
 /**
  * E2E Tests for Logout Flow
@@ -23,7 +23,8 @@ import {
  *
  * These tests run serially to avoid interference.
  */
-test.describe.configure({ mode: "serial" });
+test.describe.configure(
+	{ mode: "serial" });
 
 test.describe("Logout Flow",
 	() =>
@@ -32,7 +33,7 @@ test.describe("Logout Flow",
 			() =>
 			{
 				test("should display logout option in user menu",
-					async ({ freshUserPage }: { freshUserPage: Page }) =>
+					async ({ freshUserPage }: { freshUserPage: Page; }) =>
 					{
 						await freshUserPage.goto(ROUTES.home);
 
@@ -53,7 +54,7 @@ test.describe("Logout Flow",
 					});
 
 				test("should logout user when clicking logout button",
-					async ({ freshUserPage }: { freshUserPage: Page }) =>
+					async ({ freshUserPage }: { freshUserPage: Page; }) =>
 					{
 						await freshUserPage.goto(ROUTES.home);
 
@@ -62,13 +63,18 @@ test.describe("Logout Flow",
 							.toBeVisible();
 
 						// Open user menu and click logout
-						await freshUserPage.locator(SELECTORS.layout.userMenuButton).click();
-						await freshUserPage.locator(SELECTORS.layout.logoutButton).click();
+						await freshUserPage
+							.locator(SELECTORS.layout.userMenuButton)
+							.click();
+						await freshUserPage
+							.locator(SELECTORS.layout.logoutButton)
+							.click();
 
 						// Wait for logout to fully complete (clearAuth runs after async POST)
 						// This ensures the session marker is cleared before we reload
 						await expect(freshUserPage.locator(SELECTORS.layout.userMenuButton))
-							.toBeHidden({ timeout: TIMEOUTS.navigation });
+							.toBeHidden(
+								{ timeout: TIMEOUTS.navigation });
 
 						// Reload to verify session is also cleared server-side
 						await freshUserPage.goto(ROUTES.home);
@@ -76,33 +82,38 @@ test.describe("Logout Flow",
 						// Wait for Angular to bootstrap and resolve auth state
 						// Uses auth timeout since APP_INITIALIZER makes a refresh API call
 						await expect(freshUserPage.locator(SELECTORS.layout.userMenuButton))
-							.toBeHidden({ timeout: TIMEOUTS.auth });
+							.toBeHidden(
+								{ timeout: TIMEOUTS.auth });
 					});
 
 				test("should redirect to home after logout",
-					async ({ freshUserPage }: { freshUserPage: Page }) =>
+					async ({ freshUserPage }: { freshUserPage: Page; }) =>
 					{
 						// Start on a non-home page
 						await freshUserPage.goto(ROUTES.account.root);
 
 						// Perform logout
-						await freshUserPage.locator(SELECTORS.layout.userMenuButton).click();
-						await freshUserPage.locator(SELECTORS.layout.logoutButton).click();
+						await freshUserPage
+							.locator(SELECTORS.layout.userMenuButton)
+							.click();
+						await freshUserPage
+							.locator(SELECTORS.layout.logoutButton)
+							.click();
 
 						// Should eventually be on home or login
 						await freshUserPage.waitForURL(
 							(url) =>
 								url.pathname === ROUTES.home
-								|| url.pathname === ROUTES.auth.login,
+									|| url.pathname === ROUTES.auth.login,
 							{ timeout: TIMEOUTS.api });
 
 						// Verify we're on the expected page
-						const currentPath =
+						const currentPath: string =
 							new URL(freshUserPage.url()).pathname;
 
 						expect(
 							currentPath === ROUTES.home
-							|| currentPath === ROUTES.auth.login)
+								|| currentPath === ROUTES.auth.login)
 							.toBeTruthy();
 					});
 			});
@@ -111,7 +122,7 @@ test.describe("Logout Flow",
 			() =>
 			{
 				test("should logout admin user successfully",
-					async ({ freshAdminPage }: { freshAdminPage: Page }) =>
+					async ({ freshAdminPage }: { freshAdminPage: Page; }) =>
 					{
 						await freshAdminPage.goto(ROUTES.admin.dashboard);
 
@@ -120,25 +131,32 @@ test.describe("Logout Flow",
 							.toBeVisible();
 
 						// Perform logout
-						await freshAdminPage.locator(SELECTORS.layout.userMenuButton).click();
-						await freshAdminPage.locator(SELECTORS.layout.logoutButton).click();
+						await freshAdminPage
+							.locator(SELECTORS.layout.userMenuButton)
+							.click();
+						await freshAdminPage
+							.locator(SELECTORS.layout.logoutButton)
+							.click();
 
 						// Should redirect away from admin area
 						await freshAdminPage.waitForURL(
-							(url) => !url.pathname.startsWith("/admin"),
+							(url) =>
+								!url.pathname.startsWith("/admin"),
 							{ timeout: TIMEOUTS.api });
 
 						// Verify we're no longer in admin area
 						await expect(freshAdminPage)
-							.not.toHaveURL(/\/admin/);
+							.not
+							.toHaveURL(/\/admin/);
 					});
 			});
 
 		test.describe("Developer Logout",
 			() =>
 			{
-				test("should logout developer user successfully",
-					async ({ freshDeveloperPage }: { freshDeveloperPage: Page }) =>
+				test(
+					"should logout developer user successfully",
+					async ({ freshDeveloperPage }: { freshDeveloperPage: Page; }) =>
 					{
 						await freshDeveloperPage.goto(ROUTES.developer.styleGuide);
 
@@ -147,17 +165,23 @@ test.describe("Logout Flow",
 							.toBeVisible();
 
 						// Perform logout
-						await freshDeveloperPage.locator(SELECTORS.layout.userMenuButton).click();
-						await freshDeveloperPage.locator(SELECTORS.layout.logoutButton).click();
+						await freshDeveloperPage
+							.locator(SELECTORS.layout.userMenuButton)
+							.click();
+						await freshDeveloperPage
+							.locator(SELECTORS.layout.logoutButton)
+							.click();
 
 						// Should redirect away from developer area
 						await freshDeveloperPage.waitForURL(
-							(url) => !url.pathname.startsWith("/developer"),
+							(url) =>
+								!url.pathname.startsWith("/developer"),
 							{ timeout: TIMEOUTS.api });
 
 						// Verify we're no longer in developer area
 						await expect(freshDeveloperPage)
-							.not.toHaveURL(/\/developer/);
+							.not
+							.toHaveURL(/\/developer/);
 					});
 			});
 
@@ -165,19 +189,23 @@ test.describe("Logout Flow",
 			() =>
 			{
 				test("should not access protected routes after logout",
-					async ({ freshUserPage }: { freshUserPage: Page }) =>
+					async ({ freshUserPage }: { freshUserPage: Page; }) =>
 					{
 						await freshUserPage.goto(ROUTES.account.root);
 
 						// Logout
-						await freshUserPage.locator(SELECTORS.layout.userMenuButton).click();
-						await freshUserPage.locator(SELECTORS.layout.logoutButton).click();
+						await freshUserPage
+							.locator(SELECTORS.layout.userMenuButton)
+							.click();
+						await freshUserPage
+							.locator(SELECTORS.layout.logoutButton)
+							.click();
 
 						// Wait for logout redirect
 						await freshUserPage.waitForURL(
 							(url) =>
 								url.pathname === ROUTES.home
-								|| url.pathname.includes(ROUTES.auth.login),
+									|| url.pathname.includes(ROUTES.auth.login),
 							{ timeout: TIMEOUTS.api });
 
 						// Try to access protected route
@@ -187,46 +215,57 @@ test.describe("Logout Flow",
 						await freshUserPage.waitForURL(
 							(url) =>
 								url.pathname.includes(ROUTES.auth.login)
-								|| url.pathname === ROUTES.home,
+									|| url.pathname === ROUTES.home,
 							{ timeout: TIMEOUTS.api });
 
 						// Verify we can't access account
 						await expect(freshUserPage)
-							.not.toHaveURL(/^\/account$/);
+							.not
+							.toHaveURL(/^\/account$/);
 					});
 
 				test("should show login UI elements after logout",
-					async ({ freshUserPage }: { freshUserPage: Page }) =>
+					async ({ freshUserPage }: { freshUserPage: Page; }) =>
 					{
 						await freshUserPage.goto(ROUTES.home);
 
 						// Logout
-						await freshUserPage.locator(SELECTORS.layout.userMenuButton).click();
-						await freshUserPage.locator(SELECTORS.layout.logoutButton).click();
+						await freshUserPage
+							.locator(SELECTORS.layout.userMenuButton)
+							.click();
+						await freshUserPage
+							.locator(SELECTORS.layout.logoutButton)
+							.click();
 
 						// Wait for logout to fully complete (clearAuth runs after async POST)
 						await expect(freshUserPage.locator(SELECTORS.layout.userMenuButton))
-							.toBeHidden({ timeout: TIMEOUTS.navigation });
+							.toBeHidden(
+								{ timeout: TIMEOUTS.navigation });
 
 						// Reload to verify session is also cleared server-side
 						await freshUserPage.goto(ROUTES.home);
 
 						// Wait for Angular to bootstrap and resolve auth state
 						await expect(freshUserPage.locator(SELECTORS.layout.userMenuButton))
-							.toBeHidden({ timeout: TIMEOUTS.auth });
+							.toBeHidden(
+								{ timeout: TIMEOUTS.auth });
 					});
 
-				test("should redirect to login when session cookie is cleared",
-					async ({ freshUserPage }: { freshUserPage: Page }) =>
+				test(
+					"should redirect to login when session cookie is cleared",
+					async ({ freshUserPage }: { freshUserPage: Page; }) =>
 					{
 						await freshUserPage.goto(ROUTES.home);
 
 						// Verify initially authenticated
 						await expect(freshUserPage.locator(SELECTORS.layout.userMenuButton))
-							.toBeVisible({ timeout: TIMEOUTS.auth });
+							.toBeVisible(
+								{ timeout: TIMEOUTS.auth });
 
 						// Clear all cookies (simulates session expiry)
-						await freshUserPage.context().clearCookies();
+						await freshUserPage
+							.context()
+							.clearCookies();
 
 						// Navigate to a protected route
 						await freshUserPage.goto(ROUTES.account.root);
@@ -235,12 +274,13 @@ test.describe("Logout Flow",
 						await freshUserPage.waitForURL(
 							(url) =>
 								url.pathname.includes(ROUTES.auth.login)
-								|| url.pathname === ROUTES.home,
+									|| url.pathname === ROUTES.home,
 							{ timeout: TIMEOUTS.api });
 
 						// Verify user menu is not visible (unauthenticated)
 						await expect(freshUserPage.locator(SELECTORS.layout.userMenuButton))
-							.toBeHidden({ timeout: TIMEOUTS.auth });
+							.toBeHidden(
+								{ timeout: TIMEOUTS.auth });
 					});
 			});
 	});
@@ -260,25 +300,34 @@ unauthenticatedTest.describe("Cross-Tab Logout",
 			async ({ browser }) =>
 			{
 				// Login in two separate browser contexts (simulates two tabs)
-				const tab1 =
+				const tab1: ContextLoginResult =
 					await loginInFreshContext(browser, CROSSTAB_USER);
-				const tab2 =
+				const tab2: ContextLoginResult =
 					await loginInFreshContext(browser, CROSSTAB_USER);
 
 				try
 				{
 					// Verify both are initially authenticated
 					await expect(tab1.page.locator(SELECTORS.layout.userMenuButton))
-						.toBeVisible({ timeout: TIMEOUTS.auth });
+						.toBeVisible(
+							{ timeout: TIMEOUTS.auth });
 					await expect(tab2.page.locator(SELECTORS.layout.userMenuButton))
-						.toBeVisible({ timeout: TIMEOUTS.auth });
+						.toBeVisible(
+							{ timeout: TIMEOUTS.auth });
 
 					// Logout in tab1
-					await tab1.page.locator(SELECTORS.layout.userMenuButton).click();
-					await tab1.page.locator(SELECTORS.layout.logoutButton).click();
+					await tab1
+						.page
+						.locator(SELECTORS.layout.userMenuButton)
+						.click();
+					await tab1
+						.page
+						.locator(SELECTORS.layout.logoutButton)
+						.click();
 
 					await expect(tab1.page.locator(SELECTORS.layout.userMenuButton))
-						.toBeHidden({ timeout: TIMEOUTS.navigation });
+						.toBeHidden(
+							{ timeout: TIMEOUTS.navigation });
 
 					// Tab2: navigate to a protected route — server should reject the request
 					// because the refresh token family is revoked
@@ -288,8 +337,8 @@ unauthenticatedTest.describe("Cross-Tab Logout",
 					await tab2.page.waitForURL(
 						(url) =>
 							url.pathname.includes(ROUTES.auth.login)
-							|| url.pathname === ROUTES.home
-							|| url.pathname === ROUTES.account.root,
+								|| url.pathname === ROUTES.home
+								|| url.pathname === ROUTES.account.root,
 						{ timeout: TIMEOUTS.api });
 
 					// If tab2 stayed on account, it means the session was still valid
@@ -300,13 +349,15 @@ unauthenticatedTest.describe("Cross-Tab Logout",
 						new URL(tab2.page.url()).pathname;
 
 					// eslint-disable-next-line playwright/no-conditional-in-test -- cross-tab session behavior depends on server config
-					if (currentPath.includes(ROUTES.auth.login)
-						|| currentPath === ROUTES.home)
+					if (
+						currentPath.includes(ROUTES.auth.login)
+							|| currentPath === ROUTES.home)
 					{
 						// Session was invalidated — tab2 was kicked out
 						// eslint-disable-next-line playwright/no-conditional-expect -- conditional on server config is intentional
 						await expect(tab2.page.locator(SELECTORS.layout.userMenuButton))
-							.toBeHidden({ timeout: TIMEOUTS.auth });
+							.toBeHidden(
+								{ timeout: TIMEOUTS.auth });
 					}
 					// else: tab2 retained its own session — acceptable for independent refresh token families
 				}

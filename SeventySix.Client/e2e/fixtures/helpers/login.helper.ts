@@ -2,12 +2,12 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-import type { Page } from "@playwright/test";
-import { SELECTORS } from "../selectors.constant";
+import type { Locator, Page } from "@playwright/test";
 import { ROUTES } from "../routes.constant";
+import { SELECTORS } from "../selectors.constant";
+import type { TestUser } from "../test-users.constant";
 import { TIMEOUTS } from "../timeouts.constant";
 import { solveAltchaChallenge } from "./altcha.helper";
-import type { TestUser } from "../test-users.constant";
 
 /**
  * Performs a full login flow: navigates to login page,
@@ -33,9 +33,10 @@ export async function loginAsUser(
 	await page.goto(ROUTES.auth.login);
 
 	// Wait for the form to be interactive (Angular rendered)
-	const usernameInput =
+	const usernameInput: Locator =
 		page.locator(SELECTORS.form.usernameInput);
-	await usernameInput.waitFor({ state: "visible", timeout: TIMEOUTS.auth });
+	await usernameInput.waitFor(
+		{ state: "visible", timeout: TIMEOUTS.auth });
 
 	await usernameInput
 		.fill(user.username);

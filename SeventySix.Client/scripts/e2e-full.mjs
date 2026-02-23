@@ -128,10 +128,11 @@ function setup()
 		return cleanupCode;
 	}
 
-	// Build containers (Docker layer caching speeds up unchanged layers)
-	const buildCode =
-		runCommand(
-			`docker compose -f ${DOCKER_COMPOSE_FILE} build api-e2e client-e2e`,
+// Build containers fresh — --no-cache ensures source file changes are always
+        // reflected in the image regardless of Docker layer cache state.
+        const buildCode =
+                runCommand(
+                        `docker compose -f ${DOCKER_COMPOSE_FILE} build --no-cache api-e2e client-e2e`,
 			"Building E2E containers (API + Client)");
 
 	if (buildCode !== 0)

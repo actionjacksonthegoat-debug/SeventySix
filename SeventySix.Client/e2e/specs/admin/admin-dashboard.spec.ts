@@ -1,8 +1,8 @@
 import {
-	test,
 	expect,
+	PAGE_TEXT,
 	ROUTES,
-	PAGE_TEXT
+	test
 } from "@e2e-fixtures";
 
 /**
@@ -39,7 +39,11 @@ test.describe("Admin Dashboard",
 					async ({ adminDashboardPage }) =>
 					{
 						// Wait for tabs to be visible before counting
-						await adminDashboardPage.tabs.first().waitFor({ state: "visible" });
+						await adminDashboardPage
+							.tabs
+							.first()
+							.waitFor(
+								{ state: "visible" });
 
 						const tabCount: number =
 							await adminDashboardPage.getTabCount();

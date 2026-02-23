@@ -1,0 +1,24 @@
+.cookie-category {
+	padding: 16px 0;
+
+	&__header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		margin-bottom: 8px;
+	}
+
+	&__required {
+		font-size: 0.75rem;
+		color: var(--mat-sys-on-surface-variant);
+		font-style: italic;
+	}
+
+	&__description {
+		margin: 0;
+		font-size: 0.875rem;
+		color: var(--mat-sys-on-surface-variant);
+		line-height: 1.5;
+		padding-left: 32px; // Align with checkbox label
+	}
+}

@@ -1,5 +1,6 @@
 import { provideZonelessChangeDetection } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
+import { provideRouter } from "@angular/router";
 import { DateService } from "@shared/services";
 import { FooterComponent } from "./footer.component";
 
@@ -16,7 +17,7 @@ describe("FooterComponent",
 					.configureTestingModule(
 						{
 							imports: [FooterComponent],
-							providers: [provideZonelessChangeDetection()]
+							providers: [provideZonelessChangeDetection(), provideRouter([])]
 						})
 					.compileComponents();
 

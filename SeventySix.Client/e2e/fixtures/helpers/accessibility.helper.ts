@@ -2,10 +2,10 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+import AxeBuilder from "@axe-core/playwright";
 import type { Page } from "@playwright/test";
 import { expect } from "@playwright/test";
-import AxeBuilder from "@axe-core/playwright";
-import type { Result } from "axe-core";
+import type { Result, Results } from "axe-core";
 
 /**
  * Runs an axe-core accessibility scan and asserts
@@ -26,35 +26,39 @@ export async function expectAccessible(
 	// eslint-disable-next-line playwright/no-networkidle
 	await page.waitForLoadState("networkidle");
 
-	const axeResults =
+	const axeResults: Results =
 		await new AxeBuilder(
 			{ page })
-			.withTags(["wcag2a", "wcag2aa", "wcag21aa"])
+			.withTags(
+				["wcag2a", "wcag2aa", "wcag21aa"])
 			.analyze();
 
 	const criticalViolations: Result[] =
 		axeResults.violations.filter(
 			(violation: Result) =>
 				violation.impact === "critical"
-				|| violation.impact === "serious");
+					|| violation.impact === "serious");
 
 	if (criticalViolations.length > 0)
 	{
-		console.log(
-			`Accessibility violations on ${pageName}:`,
-			JSON.stringify(
-				criticalViolations.map(
-					(violation: Result) =>
-					(
-						{
-							id: violation.id,
-							impact: violation.impact,
-							description: violation.description,
-							nodes: violation.nodes.map(
-								(node) => node.html).slice(0, 3)
-						})),
-				null,
-				2));
+		process.stdout.write(
+			`Accessibility violations on ${pageName}: ${
+				JSON.stringify(
+					criticalViolations.map(
+						(violation: Result) => (
+							{
+								id: violation.id,
+								impact: violation.impact,
+								description: violation.description,
+								nodes: violation
+									.nodes
+									.map(
+										(node) => node.html)
+									.slice(0, 3)
+							})),
+					null,
+					2)
+			}\n`);
 	}
 
 	expect(

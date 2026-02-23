@@ -1,12 +1,12 @@
-import { Page } from "@playwright/test";
 import {
-	test,
 	expect,
+	PAGE_TEXT,
 	ROUTES,
 	SELECTORS,
-	PAGE_TEXT,
+	test,
 	TIMEOUTS
 } from "@e2e-fixtures";
+import { Locator, Page } from "@playwright/test";
 
 /**
  * E2E Tests for Request Permissions Page
@@ -22,7 +22,7 @@ test.describe("Request Permissions Page",
 	() =>
 	{
 		test.beforeEach(
-			async ({ userPage }: { userPage: Page }) =>
+			async ({ userPage }: { userPage: Page; }) =>
 			{
 				await userPage.goto(ROUTES.account.permissions);
 			});
@@ -31,9 +31,9 @@ test.describe("Request Permissions Page",
 			() =>
 			{
 				test("should display request permissions title",
-					async ({ userPage }: { userPage: Page }) =>
+					async ({ userPage }: { userPage: Page; }) =>
 					{
-						const cardTitle =
+						const cardTitle: Locator =
 							userPage.locator(SELECTORS.card.title);
 
 						await expect(cardTitle)
@@ -41,9 +41,9 @@ test.describe("Request Permissions Page",
 					});
 
 				test("should display subtitle",
-					async ({ userPage }: { userPage: Page }) =>
+					async ({ userPage }: { userPage: Page; }) =>
 					{
-						const cardSubtitle =
+						const cardSubtitle: Locator =
 							userPage.locator(SELECTORS.card.subtitle);
 
 						await expect(cardSubtitle)
@@ -51,9 +51,9 @@ test.describe("Request Permissions Page",
 					});
 
 				test("should display submit button",
-					async ({ userPage }: { userPage: Page }) =>
+					async ({ userPage }: { userPage: Page; }) =>
 					{
-						const submitButton =
+						const submitButton: Locator =
 							userPage.locator(SELECTORS.requestPermissions.submitButton);
 
 						await expect(submitButton)
@@ -66,10 +66,11 @@ test.describe("Request Permissions Page",
 		test.describe("Form Behavior",
 			() =>
 			{
-				test("should disable submit button initially when no roles selected",
-					async ({ userPage }: { userPage: Page }) =>
+				test(
+					"should disable submit button initially when no roles selected",
+					async ({ userPage }: { userPage: Page; }) =>
 					{
-						const submitButton =
+						const submitButton: Locator =
 							userPage.locator(SELECTORS.requestPermissions.submitButton);
 
 						await expect(submitButton)
@@ -77,16 +78,19 @@ test.describe("Request Permissions Page",
 					});
 
 				test("should display message textarea for request reason",
-					async ({ userPage }: { userPage: Page }) =>
+					async ({ userPage }: { userPage: Page; }) =>
 					{
 						// Wait for roles to load
-						const roleCheckbox =
-							userPage.locator(SELECTORS.requestPermissions.roleCheckbox).first();
+						const roleCheckbox: Locator =
+							userPage
+								.locator(SELECTORS.requestPermissions.roleCheckbox)
+								.first();
 
 						await expect(roleCheckbox)
-							.toBeVisible({ timeout: TIMEOUTS.api });
+							.toBeVisible(
+								{ timeout: TIMEOUTS.api });
 
-						const messageTextarea =
+						const messageTextarea: Locator =
 							userPage.locator(SELECTORS.requestPermissions.messageTextarea);
 
 						await expect(messageTextarea)
@@ -98,16 +102,17 @@ test.describe("Request Permissions Page",
 			() =>
 			{
 				test("should display role checkboxes for available roles",
-					async ({ userPage }: { userPage: Page }) =>
+					async ({ userPage }: { userPage: Page; }) =>
 					{
 						// e2e_user has only User role, so Developer/Admin should be requestable
-						const roleCheckboxes =
+						const roleCheckboxes: Locator =
 							userPage.locator(SELECTORS.requestPermissions.roleCheckbox);
 
 						await expect(roleCheckboxes.first())
-							.toBeVisible({ timeout: TIMEOUTS.api });
+							.toBeVisible(
+								{ timeout: TIMEOUTS.api });
 
-						const roleCount =
+						const roleCount: number =
 							await roleCheckboxes.count();
 
 						expect(roleCount)
@@ -115,16 +120,19 @@ test.describe("Request Permissions Page",
 					});
 
 				test("should enable submit button when a role is selected",
-					async ({ userPage }: { userPage: Page }) =>
+					async ({ userPage }: { userPage: Page; }) =>
 					{
 						// e2e_user has only User role, so Developer/Admin should be available
-						const roleCheckbox =
-							userPage.locator(SELECTORS.requestPermissions.roleCheckbox).first();
+						const roleCheckbox: Locator =
+							userPage
+								.locator(SELECTORS.requestPermissions.roleCheckbox)
+								.first();
 
 						await expect(roleCheckbox)
-							.toBeVisible({ timeout: TIMEOUTS.api });
+							.toBeVisible(
+								{ timeout: TIMEOUTS.api });
 
-						const submitButton =
+						const submitButton: Locator =
 							userPage.locator(SELECTORS.requestPermissions.submitButton);
 
 						// Initially disabled
@@ -132,7 +140,9 @@ test.describe("Request Permissions Page",
 							.toBeDisabled();
 
 						// Click the internal input to reliably trigger (change) event
-						await roleCheckbox.locator("input").check();
+						await roleCheckbox
+							.locator("input")
+							.check();
 
 						// Now enabled
 						await expect(submitButton)
@@ -144,20 +154,25 @@ test.describe("Request Permissions Page",
 			() =>
 			{
 				test("should submit request and show success notification",
-					async ({ userPage }: { userPage: Page }) =>
+					async ({ userPage }: { userPage: Page; }) =>
 					{
 						// e2e_user has only User role, so Developer/Admin should be available
-						const roleCheckbox =
-							userPage.locator(SELECTORS.requestPermissions.roleCheckbox).first();
+						const roleCheckbox: Locator =
+							userPage
+								.locator(SELECTORS.requestPermissions.roleCheckbox)
+								.first();
 
 						await expect(roleCheckbox)
-							.toBeVisible({ timeout: TIMEOUTS.api });
+							.toBeVisible(
+								{ timeout: TIMEOUTS.api });
 
 						// Click the internal input to reliably trigger (change) event
-						await roleCheckbox.locator("input").check();
+						await roleCheckbox
+							.locator("input")
+							.check();
 
 						// Fill in an optional message
-						const messageTextarea =
+						const messageTextarea: Locator =
 							userPage.locator(SELECTORS.requestPermissions.messageTextarea);
 
 						await expect(messageTextarea)
@@ -165,15 +180,15 @@ test.describe("Request Permissions Page",
 						await messageTextarea.fill(`E2E request test ${Date.now()}`);
 
 						// Submit
-						const submitButton =
+						const submitButton: Locator =
 							userPage.locator(SELECTORS.requestPermissions.submitButton);
 						await expect(submitButton)
 							.toBeEnabled();
 
 						// Set up notification listener before click
-						const notification =
+						const notification: Locator =
 							userPage.locator(SELECTORS.notification.snackbar);
-						const notificationPromise =
+						const notificationPromise: Promise<void> =
 							expect(notification)
 								.toContainText(
 									PAGE_TEXT.confirmation.permissionRequestSubmitted,
@@ -186,7 +201,8 @@ test.describe("Request Permissions Page",
 
 						// Should navigate back to account page after submission
 						await expect(userPage)
-							.toHaveURL(/\/account/, { timeout: TIMEOUTS.navigation });
+							.toHaveURL(/\/account/,
+								{ timeout: TIMEOUTS.navigation });
 					});
 			});
 	});

@@ -1,15 +1,15 @@
-import { Page } from "@playwright/test";
 import {
-	test,
 	expect,
-	ROUTES,
-	ROUTE_GROUPS,
-	SELECTORS,
-	PAGE_TEXT,
 	expectNoAccessDenied,
 	expectNoApplicationErrors,
+	PAGE_TEXT,
+	ROUTE_GROUPS,
+	ROUTES,
+	SELECTORS,
+	test,
 	unauthenticatedTest
 } from "@e2e-fixtures";
+import { Page } from "@playwright/test";
 
 /**
  * E2E Tests for User Account Routes - Authentication Required
@@ -26,7 +26,7 @@ test.describe("User Account Routes - Access Control",
 			() =>
 			{
 				test("should allow user role to access profile page",
-					async ({ userPage }: { userPage: Page }) =>
+					async ({ userPage }: { userPage: Page; }) =>
 					{
 						await userPage.goto(ROUTES.account.root);
 
@@ -40,7 +40,7 @@ test.describe("User Account Routes - Access Control",
 					});
 
 				test("should allow user role to access permissions request page",
-					async ({ userPage }: { userPage: Page }) =>
+					async ({ userPage }: { userPage: Page; }) =>
 					{
 						await userPage.goto(ROUTES.account.permissions);
 
@@ -50,7 +50,7 @@ test.describe("User Account Routes - Access Control",
 					});
 
 				test("should allow admin to access own account",
-					async ({ adminPage }: { adminPage: Page }) =>
+					async ({ adminPage }: { adminPage: Page; }) =>
 					{
 						await adminPage.goto(ROUTES.account.root);
 
@@ -60,7 +60,7 @@ test.describe("User Account Routes - Access Control",
 					});
 
 				test("should allow developer to access own account",
-					async ({ developerPage }: { developerPage: Page }) =>
+					async ({ developerPage }: { developerPage: Page; }) =>
 					{
 						await developerPage.goto(ROUTES.account.root);
 
@@ -76,7 +76,8 @@ test.describe("User Account Routes - Access Control",
 				ROUTE_GROUPS.accountRoutes.forEach(
 					(route) =>
 					{
-						unauthenticatedTest(`should redirect anonymous user to login from ${route}`,
+						unauthenticatedTest(
+							`should redirect anonymous user to login from ${route}`,
 							async ({ unauthenticatedPage }) =>
 							{
 								await unauthenticatedPage.goto(route);
@@ -92,7 +93,7 @@ test.describe("User Account Routes - Access Control",
 			() =>
 			{
 				test("should display user information on profile page",
-					async ({ userPage }: { userPage: Page }) =>
+					async ({ userPage }: { userPage: Page; }) =>
 					{
 						await userPage.goto(ROUTES.account.root);
 
@@ -106,7 +107,7 @@ test.describe("User Account Routes - Access Control",
 			() =>
 			{
 				test("should make permission request page accessible",
-					async ({ userPage }: { userPage: Page }) =>
+					async ({ userPage }: { userPage: Page; }) =>
 					{
 						await userPage.goto(ROUTES.account.permissions);
 
@@ -114,7 +115,8 @@ test.describe("User Account Routes - Access Control",
 						await expect(userPage)
 							.toHaveURL(/\/account\/permissions/);
 						await expect(userPage.locator("body"))
-							.not.toContainText(PAGE_TEXT.errors.error);
+							.not
+							.toContainText(PAGE_TEXT.errors.error);
 					});
 			});
 	});

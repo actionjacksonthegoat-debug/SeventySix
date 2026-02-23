@@ -93,5 +93,11 @@
 
 	// Auto-approve MCP tool calls in agent mode (no confirmation dialogs)
 	"chat.agent.allowedTools": ["*"],
-	"chat.agent.maxRequests": 50
+	"chat.agent.maxRequests": 50,
+
+	// CodeQL extension settings
+	"codeQL.runningQueries.maxQueries": 20,
+	"codeQL.runningQueries.memory": 4096,
+	"codeQL.resultsDisplay.pageSize": 100,
+	"codeQL.telemetry.enableTelemetry": false
 }

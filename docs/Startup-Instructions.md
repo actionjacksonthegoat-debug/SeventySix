@@ -211,6 +211,9 @@ Open VS Code, press `Ctrl+Shift+X` (Windows) or `Cmd+Shift+X` (macOS) to open th
 | **GitHub Copilot** | GitHub | Recommended | AI-assisted development (uses Copilot prompts and instruction files) |
 | **GitHub Copilot Chat** | GitHub | Recommended | Copilot chat with agent mode for MCP servers |
 | **Docker** | Microsoft | Recommended | Docker container management from VS Code |
+| **GitHub CodeQL** | GitHub | Recommended | Local CodeQL security scanning and inline SARIF alert display |
+
+> **Faster method**: Use the workspace recommendations (see section below) to install all of these at once.
 
 ### GitHub Copilot Setup
 
@@ -221,6 +224,31 @@ If you choose to use GitHub Copilot (recommended — the project includes Copilo
    - **Copilot Pro**: Unlimited completions ($10/month or free for students/educators/open-source)
 2. In VS Code, click the Copilot icon in the bottom-right status bar and sign in with your GitHub account
 3. The project's `.github/prompts/` and `.github/instructions/` files activate automatically — no configuration needed
+
+### Install Workspace-Recommended Extensions
+
+When you open the project in VS Code, it will offer to install all workspace-recommended extensions. Click **Install All** (or **Show Recommended Extensions** and install each one). These include:
+
+- **C# Dev Kit** — .NET IntelliSense, debugging, and test runner
+- **Angular Language Service** — Angular template IntelliSense
+- **ESLint** — TypeScript linting
+- **Docker** — Container management
+- **GitHub Actions** — Workflow syntax and status
+- **GitHub CodeQL** — Run CodeQL security scans locally and view SARIF results inline
+
+You can also install them manually: `Ctrl+Shift+P` → **Extensions: Show Recommended Extensions**.
+
+### Accept CodeQL Databases (GitHub CodeQL Extension)
+
+After installing the **GitHub CodeQL** extension, you will be prompted to accept pre-built CodeQL databases for the languages in this workspace. When prompted:
+
+1. Accept the **JavaScript/TypeScript** database — covers the Angular client
+2. Accept the **C#** database — covers the .NET server
+
+These databases enable inline alert display and local scanning without having to build databases from scratch. You can also load them manually via:
+`Ctrl+Shift+P` → **CodeQL: Download Database from GitHub** → select `actionjacksonthegoat-debug/SeventySix`
+
+> **Tip**: To run a full local scan at any time, use `npm run scan:codeql` (requires CodeQL CLI — see [CodeQL CLI setup](https://github.com/github/codeql-action/releases/latest)).
 
 ### Trust the Workspace
 

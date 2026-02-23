@@ -2,16 +2,16 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-import { test as base, Page, BrowserContext, Browser } from "@playwright/test";
-import { TEST_USERS, SELECTORS, ROUTES, TIMEOUTS, E2E_CONFIG } from "./index";
-import { loginInFreshContext } from "./helpers/context-login.helper";
-import type { TestUser } from "./test-users.constant";
+import { Browser, BrowserContext, Page, test as base } from "@playwright/test";
 import {
-	createDiagnosticsCollector,
-	instrumentPageForDiagnostics,
 	attachDiagnosticsOnFailure,
-	type DiagnosticsCollector
+	createDiagnosticsCollector,
+	type DiagnosticsCollector,
+	instrumentPageForDiagnostics
 } from "./diagnostics.fixture";
+import { loginInFreshContext } from "./helpers/context-login.helper";
+import { E2E_CONFIG, ROUTES, SELECTORS, TEST_USERS, TIMEOUTS } from "./index";
+import type { TestUser } from "./test-users.constant";
 
 /**
  * Fixture that provides pages with fresh login sessions.
@@ -50,14 +50,15 @@ interface FreshLoginFixtures
 async function performFreshLogin(
 	browser: Browser,
 	baseURL: string,
-	testUser: TestUser): Promise<{ page: Page; browserContext: BrowserContext; collector: DiagnosticsCollector }>
+	testUser: TestUser): Promise<{ page: Page; browserContext: BrowserContext; collector: DiagnosticsCollector; }>
 {
 	const { page, context } =
-		await loginInFreshContext(browser, testUser, {
-			expectedUrl: (url: URL) =>
-				url.pathname === ROUTES.home
-				|| url.pathname.includes("/mfa/"),
-		});
+		await loginInFreshContext(browser, testUser,
+			{
+				expectedUrl: (url: URL) =>
+					url.pathname === ROUTES.home
+						|| url.pathname.includes("/mfa/")
+			});
 
 	// Instrument immediately after the page is created
 	const collector: DiagnosticsCollector =
@@ -73,14 +74,15 @@ async function performFreshLogin(
 	{
 		throw new Error(
 			`Fresh login for ${testUser.username} was redirected to MFA verify. `
-			+ "Another test likely enabled TOTP on this shared user. "
-			+ "Retry should succeed after TOTP cleanup completes.");
+				+ "Another test likely enabled TOTP on this shared user. "
+				+ "Retry should succeed after TOTP cleanup completes.");
 	}
 
 	// Wait for the app to be fully interactive (user menu visible means auth complete)
 	await page
 		.locator(SELECTORS.layout.userMenuButton)
-		.waitFor({ state: "visible", timeout: TIMEOUTS.auth });
+		.waitFor(
+			{ state: "visible", timeout: TIMEOUTS.auth });
 
 	return { page, browserContext: context, collector };
 }
@@ -89,10 +91,10 @@ async function performFreshLogin(
  * Test fixture with fresh login sessions.
  * Use `freshLoginTest` from this file for logout/destructive auth tests.
  */
-export const freshLoginTest =
-	base.extend<FreshLoginFixtures>({
-		freshUserPage:
-			async ({ browser }, use, testInfo) =>
+export const freshLoginTest: ReturnType<typeof base.extend<FreshLoginFixtures>> =
+	base.extend<FreshLoginFixtures>(
+		{
+			freshUserPage: async ({ browser }, use, testInfo) =>
 			{
 				const userTestUser: TestUser | undefined =
 					TEST_USERS.find(
@@ -104,15 +106,17 @@ export const freshLoginTest =
 				}
 
 				const { page, browserContext, collector } =
-					await performFreshLogin(browser, E2E_CONFIG.clientBaseUrl, userTestUser);
+					await performFreshLogin(
+						browser,
+						E2E_CONFIG.clientBaseUrl,
+						userTestUser);
 
 				await use(page);
 				await attachDiagnosticsOnFailure(page, collector, testInfo);
 				await browserContext.close();
 			},
 
-		freshAdminPage:
-			async ({ browser }, use, testInfo) =>
+			freshAdminPage: async ({ browser }, use, testInfo) =>
 			{
 				const adminTestUser: TestUser | undefined =
 					TEST_USERS.find(
@@ -124,19 +128,22 @@ export const freshLoginTest =
 				}
 
 				const { page, browserContext, collector } =
-					await performFreshLogin(browser, E2E_CONFIG.clientBaseUrl, adminTestUser);
+					await performFreshLogin(
+						browser,
+						E2E_CONFIG.clientBaseUrl,
+						adminTestUser);
 
 				await use(page);
 				await attachDiagnosticsOnFailure(page, collector, testInfo);
 				await browserContext.close();
 			},
 
-		freshDeveloperPage:
-			async ({ browser }, use, testInfo) =>
+			freshDeveloperPage: async ({ browser }, use, testInfo) =>
 			{
 				const developerTestUser: TestUser | undefined =
 					TEST_USERS.find(
-						(testUser) => testUser.role === "Developer");
+						(testUser) =>
+							testUser.role === "Developer");
 
 				if (!developerTestUser)
 				{
@@ -144,12 +151,15 @@ export const freshLoginTest =
 				}
 
 				const { page, browserContext, collector } =
-					await performFreshLogin(browser, E2E_CONFIG.clientBaseUrl, developerTestUser);
+					await performFreshLogin(
+						browser,
+						E2E_CONFIG.clientBaseUrl,
+						developerTestUser);
 
 				await use(page);
 				await attachDiagnosticsOnFailure(page, collector, testInfo);
 				await browserContext.close();
 			}
-	});
+		});
 
 export { expect } from "@playwright/test";

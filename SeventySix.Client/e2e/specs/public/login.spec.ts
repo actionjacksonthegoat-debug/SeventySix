@@ -1,17 +1,18 @@
-import { Locator, Page } from "@playwright/test";
 import {
-	test,
+	COOKIE_NAMES,
 	expect,
 	getTestUserByRole,
-	TEST_USERS,
 	LOCKOUT_USER,
-	solveAltchaChallenge,
-	SELECTORS,
-	ROUTES,
 	PAGE_TEXT,
-	TIMEOUTS,
-	COOKIE_NAMES
+	ROUTES,
+	SELECTORS,
+	solveAltchaChallenge,
+	test,
+	TEST_USERS,
+	TIMEOUTS
 } from "@e2e-fixtures";
+import type { TestUser } from "@e2e-fixtures";
+import type { Cookie, Locator, Page } from "@playwright/test";
 
 /**
  * E2E Tests for Login Page
@@ -87,14 +88,16 @@ test.describe("Login Page",
 					async ({ page }) =>
 					{
 						await expect(page.locator(SELECTORS.altcha.widget))
-							.toBeVisible({ timeout: TIMEOUTS.api });
+							.toBeVisible(
+								{ timeout: TIMEOUTS.api });
 					});
 
 				test("should solve ALTCHA challenge",
 					async ({ page }) =>
 					{
 						await expect(page.locator(SELECTORS.altcha.widget))
-							.toBeVisible({ timeout: TIMEOUTS.api });
+							.toBeVisible(
+								{ timeout: TIMEOUTS.api });
 
 						await solveAltchaChallenge(page);
 					});
@@ -130,7 +133,8 @@ test.describe("Login Page",
 
 						// Wait for either a snackbar or an inline error
 						await expect(snackbar.or(errorMessage))
-							.toBeVisible({ timeout: TIMEOUTS.api });
+							.toBeVisible(
+								{ timeout: TIMEOUTS.api });
 					});
 
 				test("should require username field",
@@ -157,28 +161,29 @@ test.describe("Login Page",
 					.filter(
 						(testUser) => !testUser.mfaEnabled)
 					.forEach(
-					(testUser) =>
-					{
-						test(`should login as ${testUser.role} and redirect to home`,
-							async ({ page, authPage }) =>
-							{
-								await authPage.login(testUser.email, testUser.password);
+						(testUser) =>
+						{
+							test(`should login as ${testUser.role} and redirect to home`,
+								async ({ page, authPage }) =>
+								{
+									await authPage.login(testUser.email, testUser.password);
 
-								// Wait for navigation to complete
-								await page.waitForURL(
-									ROUTES.home,
-									{ timeout: TIMEOUTS.navigation });
+									// Wait for navigation to complete
+									await page.waitForURL(
+										ROUTES.home,
+										{ timeout: TIMEOUTS.navigation });
 
-								// Verify user is authenticated - user menu should be visible
-								await expect(page.locator(SELECTORS.layout.userMenuButton))
-									.toBeVisible({ timeout: TIMEOUTS.element });
-							});
-					});
+									// Verify user is authenticated - user menu should be visible
+									await expect(page.locator(SELECTORS.layout.userMenuButton))
+										.toBeVisible(
+											{ timeout: TIMEOUTS.element });
+								});
+						});
 
 				test("should redirect to returnUrl after login",
 					async ({ page, authPage }) =>
 					{
-						const testUser =
+						const testUser: TestUser =
 							getTestUserByRole("User");
 
 						// Navigate to login with returnUrl
@@ -204,11 +209,13 @@ test.describe("Login Page",
 					async ({ page }) =>
 					{
 						const rememberMe: Locator =
-							page.locator(SELECTORS.form.rememberMeCheckbox)
+							page
+								.locator(SELECTORS.form.rememberMeCheckbox)
 								.locator("input");
 
 						await expect(rememberMe)
-							.not.toBeChecked();
+							.not
+							.toBeChecked();
 					});
 
 				test("should allow checking remember me",
@@ -226,7 +233,7 @@ test.describe("Login Page",
 				test("should set persistent cookie when remember me is checked",
 					async ({ page, authPage, context }) =>
 					{
-						const testUser =
+						const testUser: TestUser =
 							getTestUserByRole("User");
 
 						await authPage.checkRememberMe();
@@ -238,11 +245,12 @@ test.describe("Login Page",
 							ROUTES.home,
 							{ timeout: TIMEOUTS.navigation });
 
-						const cookies =
+						const cookies: Array<Cookie> =
 							await context.cookies();
-						const refreshCookie =
+						const refreshCookie: Cookie | undefined =
 							cookies.find(
-								(cookie) => cookie.name === COOKIE_NAMES.refreshToken);
+								(cookie) =>
+									cookie.name === COOKIE_NAMES.refreshToken);
 
 						expect(refreshCookie)
 							.toBeDefined();
@@ -260,7 +268,7 @@ test.describe("Login Page",
 				test("should set short-lived cookie when remember me is unchecked",
 					async ({ page, authPage, context }) =>
 					{
-						const testUser =
+						const testUser: TestUser =
 							getTestUserByRole("User");
 
 						// Leave rememberMe unchecked (default)
@@ -272,11 +280,12 @@ test.describe("Login Page",
 							ROUTES.home,
 							{ timeout: TIMEOUTS.navigation });
 
-						const cookies =
+						const cookies: Array<Cookie> =
 							await context.cookies();
-						const refreshCookie =
+						const refreshCookie: Cookie | undefined =
 							cookies.find(
-								(cookie) => cookie.name === COOKIE_NAMES.refreshToken);
+								(cookie) =>
+									cookie.name === COOKIE_NAMES.refreshToken);
 
 						expect(refreshCookie)
 							.toBeDefined();
@@ -298,7 +307,7 @@ test.describe("Login Page",
 				test("should show loading indicator during submission",
 					async ({ page, authPage }) =>
 					{
-						const testUser =
+						const testUser: TestUser =
 							getTestUserByRole("User");
 
 						await authPage.fillLoginForm(testUser.email, testUser.password);
@@ -321,18 +330,20 @@ test.describe("Login Page",
 			() =>
 			{
 				test("should redirect authenticated user away from login page",
-					async ({ userPage }: { userPage: Page }) =>
+					async ({ userPage }: { userPage: Page; }) =>
 					{
 						await userPage.goto(ROUTES.auth.login);
 
 						// Should redirect to home or stay away from login
 						await userPage.waitForURL(
-							(url) => !url.pathname.includes(ROUTES.auth.login),
+							(url) =>
+								!url.pathname.includes(ROUTES.auth.login),
 							{ timeout: TIMEOUTS.api });
 
 						// Verify we're not on login page
 						await expect(userPage)
-							.not.toHaveURL(/\/auth\/login/);
+							.not
+							.toHaveURL(/\/auth\/login/);
 					});
 			});
 
@@ -340,13 +351,13 @@ test.describe("Login Page",
 			() =>
 			{
 				/**
-				 * P0 CRITICAL: Prevents open redirect vulnerability.
-				 * Attackers could use returnUrl to redirect users to malicious sites.
-				 */
+		 * P0 CRITICAL: Prevents open redirect vulnerability.
+		 * Attackers could use returnUrl to redirect users to malicious sites.
+		 */
 				test("should reject external URL in returnUrl and redirect to home",
 					async ({ page, authPage }) =>
 					{
-						const testUser =
+						const testUser: TestUser =
 							getTestUserByRole("User");
 
 						// Attempt to use an external URL as returnUrl
@@ -366,7 +377,7 @@ test.describe("Login Page",
 				test("should reject protocol-relative URL in returnUrl",
 					async ({ page, authPage }) =>
 					{
-						const testUser =
+						const testUser: TestUser =
 							getTestUserByRole("User");
 
 						// Protocol-relative URLs can also lead to open redirects
@@ -386,7 +397,7 @@ test.describe("Login Page",
 				test("should reject javascript: protocol in returnUrl",
 					async ({ page, authPage }) =>
 					{
-						const testUser =
+						const testUser: TestUser =
 							getTestUserByRole("User");
 
 						// XSS attack vector via javascript: protocol
@@ -406,7 +417,7 @@ test.describe("Login Page",
 				test("should reject javascript: protocol with URL encoding",
 					async ({ page, authPage }) =>
 					{
-						const testUser =
+						const testUser: TestUser =
 							getTestUserByRole("User");
 
 						// URL-encoded javascript: attack vector
@@ -426,7 +437,7 @@ test.describe("Login Page",
 				test("should reject data: protocol in returnUrl",
 					async ({ page, authPage }) =>
 					{
-						const testUser =
+						const testUser: TestUser =
 							getTestUserByRole("User");
 
 						// data: protocol can be used for XSS
@@ -446,7 +457,7 @@ test.describe("Login Page",
 				test("should accept valid internal path in returnUrl",
 					async ({ page, authPage }) =>
 					{
-						const testUser =
+						const testUser: TestUser =
 							getTestUserByRole("User");
 
 						// Valid internal path should work
@@ -468,10 +479,10 @@ test.describe("Login Page",
 			() =>
 			{
 				/**
-				 * P0: Tests that the server locks out an account after too many
-				 * failed login attempts. Uses a dedicated `e2e_lockout` user so
-				 * rate-limit and lockout side-effects never cascade to other tests.
-				 */
+		 * P0: Tests that the server locks out an account after too many
+		 * failed login attempts. Uses a dedicated `e2e_lockout` user so
+		 * rate-limit and lockout side-effects never cascade to other tests.
+		 */
 				test("should lockout account after repeated failed attempts",
 					async ({ page, authPage }) =>
 					{
@@ -479,16 +490,17 @@ test.describe("Login Page",
 						// proof-of-work (~3–5 s in Docker). 30 s default is insufficient.
 						test.setTimeout(90_000);
 
-						const failedAttempts = 6;
-						const wrongPassword = "Wrong_Password_Lockout_123!";
+						const failedAttempts: number = 6;
+						const wrongPassword: string = "Wrong_Password_Lockout_123!";
 
-						for (let attempt = 1; attempt <= failedAttempts; attempt++)
+						for (let attempt: number = 1; attempt <= failedAttempts; attempt++)
 						{
 							await page.goto(ROUTES.auth.login);
 
 							// Wait for form to be interactive before filling
 							await expect(authPage.usernameInput)
-								.toBeVisible({ timeout: TIMEOUTS.element });
+								.toBeVisible(
+									{ timeout: TIMEOUTS.element });
 
 							await authPage.login(
 								LOCKOUT_USER.username,
@@ -501,7 +513,8 @@ test.describe("Login Page",
 								page.locator(SELECTORS.form.errorMessage);
 
 							await expect(snackbar.or(errorMessage))
-								.toBeVisible({ timeout: TIMEOUTS.api });
+								.toBeVisible(
+									{ timeout: TIMEOUTS.api });
 
 							await expect(page)
 								.toHaveURL(ROUTES.auth.login);
@@ -509,8 +522,11 @@ test.describe("Login Page",
 							// Best-effort: wait for snackbar to dismiss before next iteration
 							// so ALTCHA widget is not obscured. Timing varies in Docker.
 							await snackbar
-								.waitFor({ state: "hidden", timeout: TIMEOUTS.api })
-								.catch(() => { /* snackbar may already be detached */ });
+								.waitFor(
+									{ state: "hidden", timeout: TIMEOUTS.api })
+								.catch(
+									() =>
+									{/* snackbar may already be detached */});
 						}
 
 						// After lockout threshold, even the correct password should fail
@@ -526,7 +542,8 @@ test.describe("Login Page",
 							page.locator(SELECTORS.form.errorMessage);
 
 						await expect(snackbar.or(errorMessage))
-							.toBeVisible({ timeout: TIMEOUTS.api });
+							.toBeVisible(
+								{ timeout: TIMEOUTS.api });
 
 						// Should remain on login page (login blocked)
 						await expect(page)

@@ -3,20 +3,20 @@
 // </copyright>
 
 import {
-	test,
+	disableTotpViaApi,
 	expect,
-	unauthenticatedTest,
+	generateSafeTotpCodeFromSecret,
 	loginAsUser,
+	PAGE_TEXT,
+	ROUTES,
+	SELECTORS,
+	type TestUser,
+	TIMEOUTS,
 	TOTP_ENROLL_USER,
 	TOTP_VIEWER_USER,
-	generateSafeTotpCodeFromSecret,
-	disableTotpViaApi,
-	SELECTORS,
-	ROUTES,
-	PAGE_TEXT,
-	TIMEOUTS
+	unauthenticatedTest
 } from "@e2e-fixtures";
-import type { Page } from "@playwright/test";
+import type { Locator, Page } from "@playwright/test";
 
 /**
  * E2E Tests for TOTP Setup Page
@@ -35,9 +35,10 @@ import type { Page } from "@playwright/test";
 unauthenticatedTest.describe("TOTP Setup",
 	() =>
 	{
-		// Run serially: all tests login as the same TOTP_VIEWER_USER and create
-		// pending TOTP state server-side — parallel logins cause session races.
-		unauthenticatedTest.describe.configure({ mode: "serial" });
+	// Run serially: all tests login as the same TOTP_VIEWER_USER and create
+	// pending TOTP state server-side — parallel logins cause session races.
+		unauthenticatedTest.describe.configure(
+			{ mode: "serial" });
 
 		unauthenticatedTest.beforeEach(
 			async ({ unauthenticatedPage }) =>
@@ -53,25 +54,30 @@ unauthenticatedTest.describe("TOTP Setup",
 			});
 
 		unauthenticatedTest("should display QR code",
-			async ({ unauthenticatedPage }: { unauthenticatedPage: Page }) =>
+			async ({ unauthenticatedPage }: { unauthenticatedPage: Page; }) =>
 			{
-				const qrCode =
+				const qrCode: Locator =
 					unauthenticatedPage.locator(SELECTORS.totpSetup.qrCodeImage);
 
 				await expect(qrCode)
-					.toBeVisible({ timeout: TIMEOUTS.navigation });
+					.toBeVisible(
+						{ timeout: TIMEOUTS.navigation });
 
 				// Verify the QR code src is populated (data URL)
 				await expect(qrCode)
-					.toHaveAttribute("src", /^data:image/, { timeout: TIMEOUTS.api });
+					.toHaveAttribute("src", /^data:image/,
+						{ timeout: TIMEOUTS.api });
 			});
 
-		unauthenticatedTest("should toggle to manual entry and show secret",
-			async ({ unauthenticatedPage }: { unauthenticatedPage: Page }) =>
+		unauthenticatedTest(
+			"should toggle to manual entry and show secret",
+			async ({ unauthenticatedPage }: { unauthenticatedPage: Page; }) =>
 			{
-				const manualEntryButton =
+				const manualEntryButton: Locator =
 					unauthenticatedPage.locator(SELECTORS.totpSetup.cantScanButton,
-						{ hasText: PAGE_TEXT.buttons.cantScan });
+						{
+							hasText: PAGE_TEXT.buttons.cantScan
+						});
 
 				await manualEntryButton.click();
 
@@ -80,12 +86,15 @@ unauthenticatedTest.describe("TOTP Setup",
 					.toBeVisible();
 			});
 
-		unauthenticatedTest("should proceed to verify step",
-			async ({ unauthenticatedPage }: { unauthenticatedPage: Page }) =>
+		unauthenticatedTest(
+			"should proceed to verify step",
+			async ({ unauthenticatedPage }: { unauthenticatedPage: Page; }) =>
 			{
-				const scannedButton =
+				const scannedButton: Locator =
 					unauthenticatedPage.locator("button",
-						{ hasText: PAGE_TEXT.buttons.scannedCode });
+						{
+							hasText: PAGE_TEXT.buttons.scannedCode
+						});
 
 				await scannedButton.click();
 
@@ -116,8 +125,7 @@ unauthenticatedTest.describe("TOTP Enrollment",
 				// Login + TOTP wizard (scan + verify) + API cleanup
 				unauthenticatedTest.setTimeout(90_000);
 
-				const testUser =
-					TOTP_ENROLL_USER;
+				const testUser: TestUser = TOTP_ENROLL_USER;
 
 				// Step 0: Login as the dedicated enrollment user
 				await loginAsUser(unauthenticatedPage, testUser);
@@ -131,17 +139,20 @@ unauthenticatedTest.describe("TOTP Enrollment",
 						{ timeout: TIMEOUTS.globalSetup });
 
 				// Step 1: Toggle to manual entry to extract the secret
-				const manualEntryButton =
+				const manualEntryButton: Locator =
 					unauthenticatedPage.locator(SELECTORS.totpSetup.cantScanButton,
-						{ hasText: PAGE_TEXT.buttons.cantScan });
+						{
+							hasText: PAGE_TEXT.buttons.cantScan
+						});
 
 				await manualEntryButton.click();
 
-				const secretElement =
+				const secretElement: Locator =
 					unauthenticatedPage.locator(SELECTORS.totpSetup.secretCode);
 
 				await expect(secretElement)
-					.toBeVisible({ timeout: TIMEOUTS.api });
+					.toBeVisible(
+						{ timeout: TIMEOUTS.api });
 
 				const secret: string =
 					(await secretElement.textContent())?.trim() ?? "";
@@ -150,9 +161,11 @@ unauthenticatedTest.describe("TOTP Enrollment",
 					.toBeGreaterThan(0);
 
 				// Step 2: Proceed to verify step
-				const scannedButton =
+				const scannedButton: Locator =
 					unauthenticatedPage.locator("button",
-						{ hasText: PAGE_TEXT.buttons.scannedCode });
+						{
+							hasText: PAGE_TEXT.buttons.scannedCode
+						});
 
 				await scannedButton.click();
 

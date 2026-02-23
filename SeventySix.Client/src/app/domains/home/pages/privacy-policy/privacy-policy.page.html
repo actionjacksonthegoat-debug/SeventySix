@@ -1,0 +1,213 @@
+<app-page-header title="Privacy Policy">
+</app-page-header>
+
+<main
+	class="legal-page"
+	role="main">
+	<div class="legal-page__container">
+		<p class="legal-page__updated">
+			Last updated: {{ lastUpdated }}
+		</p>
+
+		<section aria-labelledby="section-introduction">
+			<h2 id="section-introduction">1. Introduction</h2>
+			<p>
+				SeventySix ("we", "our", or "us") is committed to protecting your privacy.
+				This Privacy Policy explains how we collect, use, disclose, and safeguard
+				your personal information when you use our service.
+			</p>
+		</section>
+
+		<section aria-labelledby="section-data-collected">
+			<h2 id="section-data-collected">2. Data We Collect</h2>
+			<h3>2.1 Account Information</h3>
+			<p>When you create an account we collect your email address and a hashed password.</p>
+
+			<h3>2.2 Authentication Data</h3>
+			<p>
+				We store authentication tokens, MFA configuration, and session information
+				to provide secure access to your account.
+			</p>
+
+			<h3>2.3 Usage Data</h3>
+			<p>
+				We may collect log data including your IP address, browser type, pages visited,
+				and the date and time of your visits.
+			</p>
+
+			<h3>2.4 Cookies</h3>
+			<p>
+				We use cookies as described in our
+				<a routerLink="/privacy-policy" fragment="section-cookies">Cookie Policy</a>
+				below.
+			</p>
+		</section>
+
+		<section aria-labelledby="section-use">
+			<h2 id="section-use">3. How We Use Your Data</h2>
+			<ul>
+				<li>To provide, operate, and maintain our service</li>
+				<li>To authenticate you and keep your account secure</li>
+				<li>To send essential account notifications (security alerts, verification codes)</li>
+				<li>To comply with legal obligations</li>
+				<li>To improve our service through aggregated, anonymised analytics</li>
+			</ul>
+		</section>
+
+		<section aria-labelledby="section-legal-basis">
+			<h2 id="section-legal-basis">4. Legal Basis for Processing (GDPR)</h2>
+			<ul>
+				<li><strong>Contract</strong>: Processing your account data to deliver the service you signed up for</li>
+				<li><strong>Consent</strong>: Analytics cookies (withdrawn at any time via Cookie Settings)</li>
+				<li><strong>Legitimate interest</strong>: Security logging and fraud prevention</li>
+				<li><strong>Legal obligation</strong>: Compliance with applicable laws</li>
+			</ul>
+		</section>
+
+		<section aria-labelledby="section-sharing">
+			<h2 id="section-sharing">5. Data Sharing</h2>
+			<p>
+				We do not sell, trade, or transfer your personal information to third parties
+				except as required to operate the service (e.g., hosting infrastructure) or as
+				required by law. We do not share personal data with advertisers.
+			</p>
+		</section>
+
+		<section aria-labelledby="section-cookies">
+			<h2 id="section-cookies">6. Cookie Policy</h2>
+
+			<h3>6.1 Strictly Necessary Cookies</h3>
+			<p>
+				Required for authentication and core functionality. Always active.
+				Cannot be disabled.
+			</p>
+			<table class="legal-page__table">
+				<thead>
+					<tr>
+						<th scope="col">Cookie</th>
+						<th scope="col">Purpose</th>
+						<th scope="col">Duration</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>auth_session</td>
+						<td>Authentication session</td>
+						<td>Session</td>
+					</tr>
+					<tr>
+						<td>seventysix_consent</td>
+						<td>Stores your cookie preferences</td>
+						<td>1 year</td>
+					</tr>
+					<tr>
+						<td>XSRF-TOKEN</td>
+						<td>CSRF protection</td>
+						<td>Session</td>
+					</tr>
+				</tbody>
+			</table>
+
+			<h3>6.2 Functional Cookies</h3>
+			<p>Remember your preferences. Optional — enabled only with your consent.</p>
+
+			<h3>6.3 Analytics Cookies</h3>
+			<p>
+				Aggregated, anonymised usage data to improve the service.
+				Optional — enabled only with your consent. No personal data is shared.
+			</p>
+
+			<h3>6.4 Managing Cookies</h3>
+			<p>
+				You can update your cookie preferences at any time using the
+				<button
+					mat-button
+					class="legal-page__inline-btn"
+					type="button"
+					routerLink="/"
+					[queryParams]="{ 'cookie-settings': 1 }"
+					aria-label="Open cookie settings">
+					Cookie Settings
+				</button>
+				link in the footer.
+			</p>
+		</section>
+
+		<section aria-labelledby="section-rights">
+			<h2 id="section-rights">7. Your Rights</h2>
+			<p>
+				Depending on your location, you may have the following rights regarding
+				your personal data:
+			</p>
+			<ul>
+				<li><strong>Right of access</strong> — request a copy of your personal data</li>
+				<li><strong>Right to rectification</strong> — request correction of inaccurate data</li>
+				<li><strong>Right to erasure</strong> — request deletion of your data ("right to be forgotten")</li>
+				<li><strong>Right to restriction</strong> — request we limit processing of your data</li>
+				<li><strong>Right to data portability</strong> — receive your data in a portable format</li>
+				<li><strong>Right to object</strong> — object to processing based on legitimate interests</li>
+				<li><strong>Right to withdraw consent</strong> — withdraw consent for analytics cookies at any time</li>
+			</ul>
+			<p>
+				To exercise these rights, contact us at
+				<a href="mailto:privacy@seventysix.app">privacy@seventysix.app</a>.
+				We will respond within 30 days.
+			</p>
+		</section>
+
+		<section aria-labelledby="section-ccpa">
+			<h2 id="section-ccpa">8. California Privacy Rights (CCPA)</h2>
+			<p>
+				If you are a California resident, you have additional rights under the
+				California Consumer Privacy Act (CCPA):
+			</p>
+			<ul>
+				<li>Right to know what personal information is collected</li>
+				<li>Right to know whether personal information is sold or disclosed</li>
+				<li>Right to opt out of the sale of personal information</li>
+				<li>Right to non-discrimination for exercising CCPA rights</li>
+			</ul>
+			<p>
+				<strong>We do not sell your personal information.</strong>
+				To submit a Do Not Sell or Share My Personal Information request,
+				contact <a href="mailto:privacy@seventysix.app">privacy@seventysix.app</a>.
+			</p>
+		</section>
+
+		<section aria-labelledby="section-retention">
+			<h2 id="section-retention">9. Data Retention</h2>
+			<p>
+				We retain your account data for as long as your account is active or as
+				required by law. Log data is retained for 90 days. Analytics data is
+				aggregated and anonymised after 30 days.
+			</p>
+		</section>
+
+		<section aria-labelledby="section-security">
+			<h2 id="section-security">10. Security</h2>
+			<p>
+				We use industry-standard security measures including TLS encryption for
+				data in transit, Argon2id password hashing, multi-factor authentication,
+				and regular security audits to protect your data.
+			</p>
+		</section>
+
+		<section aria-labelledby="section-changes">
+			<h2 id="section-changes">11. Changes to This Policy</h2>
+			<p>
+				We may update this Privacy Policy periodically. We will notify you of
+				significant changes by updating the "Last updated" date. Continued use of
+				the service after changes constitutes acceptance of the updated policy.
+			</p>
+		</section>
+
+		<section aria-labelledby="section-contact">
+			<h2 id="section-contact">12. Contact Us</h2>
+			<p>
+				If you have questions about this Privacy Policy or your data rights,
+				contact us at:
+				<a href="mailto:privacy@seventysix.app">privacy@seventysix.app</a>
+			</p>
+		</section>
+	</div>
+</main>

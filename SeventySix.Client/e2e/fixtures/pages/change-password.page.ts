@@ -2,7 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-import type { Page, Locator } from "@playwright/test";
+import type { Locator, Page } from "@playwright/test";
 import { SELECTORS } from "../selectors.constant";
 
 /**
@@ -35,10 +35,14 @@ export class ChangePasswordPageHelper
 	constructor(page: Page)
 	{
 		this.page = page;
-		this.currentPasswordInput = page.locator(SELECTORS.changePassword.currentPasswordInput);
-		this.newPasswordInput = page.locator(SELECTORS.changePassword.newPasswordInput);
-		this.confirmPasswordInput = page.locator(SELECTORS.changePassword.confirmPasswordInput);
-		this.submitButton = page.locator(SELECTORS.changePassword.submitButton);
+		this.currentPasswordInput =
+			page.locator(SELECTORS.changePassword.currentPasswordInput);
+		this.newPasswordInput =
+			page.locator(SELECTORS.changePassword.newPasswordInput);
+		this.confirmPasswordInput =
+			page.locator(SELECTORS.changePassword.confirmPasswordInput);
+		this.submitButton =
+			page.locator(SELECTORS.changePassword.submitButton);
 	}
 
 	/**

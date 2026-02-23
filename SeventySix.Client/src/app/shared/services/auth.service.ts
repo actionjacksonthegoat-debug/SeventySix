@@ -47,6 +47,7 @@ import { PasswordResetService } from "@shared/services/password-reset.service";
 import { RegistrationFlowService } from "@shared/services/registration-flow.service";
 import { isNullOrEmpty, isPresent } from "@shared/utilities/null-check.utility";
 import { QueryKeys } from "@shared/utilities/query-keys.utility";
+import { sanitizeReturnUrl } from "@shared/utilities/url.utility";
 import { QueryClient } from "@tanstack/angular-query-experimental";
 import {
 	catchError,
@@ -565,12 +566,14 @@ export class AuthService
 						this.startIdleDetection(response);
 
 						// Navigate to stored return URL
-						const returnUrl: string =
+						// [SECURITY] Re-validate at point of use — session storage is a
+						// CodeQL-tainted source (js/client-side-unvalidated-url-redirect)
+						const storedUrl: string =
 							this.storageService.getSessionItem(
 								STORAGE_KEYS.AUTH_RETURN_URL) ?? "/";
 						this.storageService.removeSessionItem(
 							STORAGE_KEYS.AUTH_RETURN_URL);
-						this.router.navigateByUrl(returnUrl);
+						this.router.navigateByUrl(sanitizeReturnUrl(storedUrl));
 					},
 					error: () =>
 					{

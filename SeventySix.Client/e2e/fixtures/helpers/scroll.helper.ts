@@ -16,13 +16,12 @@ import type { Locator, Page } from "@playwright/test";
  */
 export async function scrollUntilVisible(
 	page: Page,
-	options:
-		{
-			targetLocator: Locator;
-			containerSelector?: string;
-			scrollIncrement?: number;
-			maxAttempts?: number;
-		}): Promise<void>
+	options: {
+		targetLocator: Locator;
+		containerSelector?: string;
+		scrollIncrement?: number;
+		maxAttempts?: number;
+	}): Promise<void>
 {
 	const containerSelector: string =
 		options.containerSelector ?? ".landing-page";
@@ -31,15 +30,19 @@ export async function scrollUntilVisible(
 	const maxAttempts: number =
 		options.maxAttempts ?? 30;
 
-	await page.locator(containerSelector)
-		.click({ position: { x: 100, y: 100 } });
+	await page
+		.locator(containerSelector)
+		.click(
+			{ position: { x: 100, y: 100 } });
 
 	for (let attempt: number = 0; attempt < maxAttempts; attempt++)
 	{
 		await page.mouse.wheel(0, scrollIncrement);
 
 		const isVisible: boolean =
-			await options.targetLocator.count()
+			await options
+				.targetLocator
+				.count()
 				.then((count) => count > 0);
 
 		if (isVisible)
@@ -72,9 +75,11 @@ export async function triggerAllDeferBlocks(page: Page): Promise<void>
 
 			if (container)
 			{
-				container.scrollTo({ top: 0, behavior: "instant" });
+				container.scrollTo(
+					{ top: 0, behavior: "instant" });
 			}
 
-			window.scrollTo({ top: 0, behavior: "instant" });
+			window.scrollTo(
+				{ top: 0, behavior: "instant" });
 		});
 }

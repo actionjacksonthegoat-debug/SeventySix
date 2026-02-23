@@ -17,12 +17,12 @@ export interface MailDevEmail
 	/**
 	 * Email sender address.
 	 */
-	from: Array<{ address: string; name: string }>;
+	from: Array<{ address: string; name: string; }>;
 
 	/**
 	 * Email recipient addresses.
 	 */
-	to: Array<{ address: string; name: string }>;
+	to: Array<{ address: string; name: string; }>;
 
 	/**
 	 * Email subject line.
@@ -46,7 +46,8 @@ export interface MailDevEmail
  */
 export class EmailTestHelper
 {
-	private static readonly MAILDEV_API_URL: string = E2E_CONFIG.mailDevUrl;
+	private static readonly MAILDEV_API_URL: string =
+		E2E_CONFIG.mailDevUrl;
 
 	/**
 	 * Polls MailDev until it responds or the timeout expires.
@@ -80,7 +81,8 @@ export class EmailTestHelper
 			}
 
 			await new Promise(
-				(resolve) => setTimeout(resolve, pollingIntervalMs));
+				(resolve) =>
+					setTimeout(resolve, pollingIntervalMs));
 		}
 
 		throw new Error(
@@ -113,10 +115,12 @@ export class EmailTestHelper
 			await this.getAllEmails();
 
 		return allEmails.filter(
-			(email) => email
-				.to
-				.some(
-					(recipient) => recipient.address === recipientEmail));
+			(email) =>
+				email
+					.to
+					.some(
+						(recipient) =>
+							recipient.address === recipientEmail));
 	}
 
 	/**
@@ -132,7 +136,7 @@ export class EmailTestHelper
 	 */
 	static async waitForEmail(
 		recipientEmail: string,
-		options: { timeout?: number } = {}): Promise<MailDevEmail>
+		options: { timeout?: number; } = {}): Promise<MailDevEmail>
 	{
 		const timeoutMs: number =
 			options.timeout ?? 10000;

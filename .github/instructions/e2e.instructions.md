@@ -307,6 +307,8 @@ When E2E tests fail, use these MCP servers to diagnose:
 | `test.slow()` to mask timing issues | Hides missing waits | Fix root cause — add explicit assertion timeout |
 | Cross-tab assertion via `if/else` fallback | Pass-always logic hides real failure | Deterministic assertion with retry (poll or `expect().toBeHidden()`) |
 | `waitForURL` with wrong type signature | Callback receives `URL` object, not `string` | Use `(url: URL) => boolean` predicate, access `url.pathname` |
+| Navigating to `ROUTES.home` to test `<app-footer>` | `app.scss` hides footer on `.full-width-page` (landing page) | Navigate to any non-landing page, e.g., `ROUTES.auth.login` |
+| Checking footer before cookie banner is hidden | Cookie banner overlays footer; `contentinfo` links inaccessible | `await expect(banner).toBeHidden()` then scope to `page.getByRole("contentinfo")` |
 
 
 ````

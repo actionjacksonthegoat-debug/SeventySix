@@ -1,17 +1,18 @@
-import { Locator } from "@playwright/test";
 import {
-	test,
-	expect,
+	E2E_CONFIG,
 	EmailTestHelper,
-	getTestUserByRole,
+	expect,
 	FORGOT_PASSWORD_USER,
-	solveAltchaChallenge,
-	SELECTORS,
-	ROUTES,
+	getTestUserByRole,
 	PAGE_TEXT,
-	TIMEOUTS,
-	E2E_CONFIG
+	ROUTES,
+	SELECTORS,
+	solveAltchaChallenge,
+	test,
+	TIMEOUTS
 } from "@e2e-fixtures";
+import type { MailDevEmail, TestUser } from "@e2e-fixtures";
+import { Locator } from "@playwright/test";
 
 /**
  * E2E Tests for Forgot Password Flow
@@ -92,14 +93,16 @@ test.describe("Forgot Password Flow",
 					async ({ page }) =>
 					{
 						await expect(page.locator(SELECTORS.altcha.widget))
-							.toBeVisible({ timeout: TIMEOUTS.api });
+							.toBeVisible(
+								{ timeout: TIMEOUTS.api });
 					});
 
 				test("should solve ALTCHA challenge",
 					async ({ page }) =>
 					{
 						await expect(page.locator(SELECTORS.altcha.widget))
-							.toBeVisible({ timeout: TIMEOUTS.api });
+							.toBeVisible(
+								{ timeout: TIMEOUTS.api });
 
 						await solveAltchaChallenge(page);
 					});
@@ -167,7 +170,7 @@ test.describe("Forgot Password Flow",
 					async ({ page, authPage }) =>
 					{
 						// Use test user email to test existing account
-						const testUser =
+						const testUser: TestUser =
 							getTestUserByRole("User");
 
 						await authPage.submitEmail(testUser.email);
@@ -186,7 +189,7 @@ test.describe("Forgot Password Flow",
 					async ({ page, authPage }) =>
 					{
 						// Use email that definitely doesn't exist
-						const nonExistentEmail =
+						const nonExistentEmail: string =
 							`nonexistent_${Date.now()}@example.com`;
 
 						await authPage.submitEmail(nonExistentEmail);
@@ -201,7 +204,7 @@ test.describe("Forgot Password Flow",
 				test("should provide return to sign in link after submission",
 					async ({ page, authPage }) =>
 					{
-						const testUser =
+						const testUser: TestUser =
 							getTestUserByRole("User");
 
 						await authPage.submitEmail(testUser.email);
@@ -226,7 +229,7 @@ test.describe("Forgot Password Flow",
 				test("should complete submission successfully",
 					async ({ page, authPage }) =>
 					{
-						const testUser =
+						const testUser: TestUser =
 							getTestUserByRole("User");
 
 						await authPage.submitEmail(testUser.email);
@@ -265,7 +268,7 @@ test.describe("Forgot Password Flow",
 					"should send password reset email for existing user",
 					async ({ page, authPage }) =>
 					{
-						const testUser =
+						const testUser: TestUser =
 							getTestUserByRole("User");
 
 						// Clear any existing emails
@@ -281,7 +284,7 @@ test.describe("Forgot Password Flow",
 								{ timeout: TIMEOUTS.api });
 
 						// Check MailDev for the email
-						const resetEmail =
+						const resetEmail: MailDevEmail =
 							await EmailTestHelper.waitForEmail(
 								testUser.email,
 								{ timeout: TIMEOUTS.email });
@@ -295,7 +298,7 @@ test.describe("Forgot Password Flow",
 				test("should not send email for non-existent user",
 					async ({ page, authPage }) =>
 					{
-						const nonExistentEmail =
+						const nonExistentEmail: string =
 							`nonexistent_${Date.now()}@test.local`;
 
 						// Clear any existing emails
@@ -311,16 +314,14 @@ test.describe("Forgot Password Flow",
 								{ timeout: TIMEOUTS.api });
 
 						// Attempt to get email with short timeout - should fail
-						let emailFound =
-							false;
+						let emailFound: boolean = false;
 
 						try
 						{
 							await EmailTestHelper.waitForEmail(
 								nonExistentEmail,
 								{ timeout: TIMEOUTS.negativeTest });
-							emailFound =
-								true;
+							emailFound = true;
 						}
 						catch
 						{
@@ -346,10 +347,9 @@ test.describe("Forgot Password Flow",
 					{
 						// Use dedicated forgot-password user to avoid security
 						// stamp conflicts with parallel tests.
-						const testUser =
+						const testUser: TestUser =
 							FORGOT_PASSWORD_USER;
-						const newPassword =
-							"E2E_TempReset_Password_123!";
+						const newPassword: string = "E2E_TempReset_Password_123!";
 
 						// Clear emails for clean state
 						await EmailTestHelper.clearAllEmails();
@@ -364,7 +364,7 @@ test.describe("Forgot Password Flow",
 								{ timeout: TIMEOUTS.api });
 
 						// Step 2: Get reset email from MailDev
-						const resetEmail =
+						const resetEmail: MailDevEmail =
 							await EmailTestHelper.waitForEmail(
 								testUser.email,
 								{ timeout: TIMEOUTS.email });
@@ -391,9 +391,9 @@ test.describe("Forgot Password Flow",
 								PAGE_TEXT.headings.setNewPassword,
 								{ timeout: TIMEOUTS.navigation });
 
-						const newPasswordInput =
+						const newPasswordInput: Locator =
 							page.locator(SELECTORS.setPassword.newPasswordInput);
-						const confirmPasswordInput =
+						const confirmPasswordInput: Locator =
 							page.locator(SELECTORS.setPassword.confirmPasswordInput);
 
 						await newPasswordInput.waitFor(
@@ -408,7 +408,8 @@ test.describe("Forgot Password Flow",
 
 						// Step 5: Should redirect to login after password set
 						await page.waitForURL(
-							(url) => url.pathname.includes(ROUTES.auth.login),
+							(url) =>
+								url.pathname.includes(ROUTES.auth.login),
 							{ timeout: TIMEOUTS.navigation });
 
 						// Step 6: Login with new password
@@ -419,7 +420,8 @@ test.describe("Forgot Password Flow",
 							{ timeout: TIMEOUTS.navigation });
 
 						await expect(page.locator(SELECTORS.layout.userMenuButton))
-							.toBeVisible({ timeout: TIMEOUTS.element });
+							.toBeVisible(
+								{ timeout: TIMEOUTS.element });
 					});
 			});
 	});

@@ -236,6 +236,9 @@ VS Code may reset MCP tool toggles in the Chat panel on restart. This is a known
 | `npm run loadtest:smoke` | Smoke load test profile |
 | `npm run loadtest:load` | Standard load test profile |
 | `npm run loadtest:stress` | Stress load test profile |
+| `npm run scan:codeql` | Run full CodeQL security scan (C# + TypeScript) locally |
+| `npm run scan:codeql:cs` | Run CodeQL scan for C# only |
+| `npm run scan:codeql:ts` | Run CodeQL scan for TypeScript only |
 | `npm run secrets:init` | Initialize user secrets |
 | `npm run secrets:list` | List current user secrets |
 | `npm run secrets:set` | Set a user secret value |

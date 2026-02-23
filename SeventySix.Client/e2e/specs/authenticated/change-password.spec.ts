@@ -3,13 +3,13 @@
 // </copyright>
 
 import {
-	test,
 	expect,
-	SELECTORS,
-	ROUTES,
 	PAGE_TEXT,
-	TIMEOUTS
+	ROUTES,
+	SELECTORS,
+	test
 } from "@e2e-fixtures";
+import type { Locator } from "@playwright/test";
 
 /**
  * E2E Tests for Change Password Page
@@ -54,7 +54,7 @@ test.describe("Change Password",
 		test("should disable submit when form is empty",
 			async ({ userPage }) =>
 			{
-				const submitButton =
+				const submitButton: Locator =
 					userPage.locator(SELECTORS.form.submitButton);
 
 				await expect(submitButton)
@@ -64,7 +64,7 @@ test.describe("Change Password",
 		test("should show validation hint for new password",
 			async ({ userPage }) =>
 			{
-				const passwordHint =
+				const passwordHint: Locator =
 					userPage.locator(SELECTORS.changePassword.passwordHint);
 
 				await expect(passwordHint)

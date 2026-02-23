@@ -2,20 +2,32 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-import * as fs from "fs";
 import type {
 	FullConfig,
 	FullResult,
+	Location,
 	Reporter,
 	Suite,
 	TestCase,
+	TestError,
 	TestResult
 } from "@playwright/test/reporter";
+import * as fs from "fs";
 
 /**
  * ANSI color codes for terminal output.
  */
-const COLORS =
+type AnsiColors = {
+	green: string;
+	red: string;
+	yellow: string;
+	cyan: string;
+	dim: string;
+	reset: string;
+	bold: string;
+};
+
+const COLORS: AnsiColors =
 	{
 		green: "\x1b[32m",
 		red: "\x1b[31m",
@@ -41,12 +53,17 @@ class ConciseReporter implements Reporter
 	private flakyCount: number = 0;
 	private totalDurationMs: number = 0;
 
+	private static print(message: string): void
+	{
+		process.stdout.write(`${message}\n`);
+	}
+
 	onBegin(_config: FullConfig, suite: Suite): void
 	{
 		const testCount: number =
 			suite.allTests().length;
 
-		console.log(
+		ConciseReporter.print(
 			`\n${COLORS.cyan}Running ${testCount} tests${COLORS.reset}\n`);
 	}
 
@@ -71,12 +88,12 @@ class ConciseReporter implements Reporter
 				break;
 			case "skipped":
 				this.skippedCount++;
-				console.log(
+				ConciseReporter.print(
 					`  ${COLORS.yellow}- ${testTitle} ${COLORS.dim}(skipped)${COLORS.reset}`);
 				break;
 			case "interrupted":
 				this.skippedCount++;
-				console.log(
+				ConciseReporter.print(
 					`  ${COLORS.yellow}${testTitle} ${COLORS.dim}(interrupted)${COLORS.reset}`);
 				break;
 		}
@@ -96,13 +113,13 @@ class ConciseReporter implements Reporter
 		if (isFlaky)
 		{
 			this.flakyCount++;
-			console.log(
+			ConciseReporter.print(
 				`  ${COLORS.yellow}${testTitle} ${COLORS.dim}(${durationSeconds}s, flaky)${COLORS.reset}`);
 		}
 		else
 		{
 			this.passedCount++;
-			console.log(
+			ConciseReporter.print(
 				`  ${COLORS.green}${testTitle} ${COLORS.dim}(${durationSeconds}s)${COLORS.reset}`);
 		}
 	}
@@ -130,11 +147,11 @@ class ConciseReporter implements Reporter
 		const fileLocation: string =
 			this.getFileLocation(test);
 
-		console.log(
+		ConciseReporter.print(
 			`  ${COLORS.red}${testTitle} ${COLORS.dim}(${durationSeconds}s)${COLORS.reset}`);
-		console.log(
+		ConciseReporter.print(
 			`    ${COLORS.red}${errorMessage}${COLORS.reset}`);
-		console.log(
+		ConciseReporter.print(
 			`    ${COLORS.dim}at ${fileLocation}${COLORS.reset}`);
 		this.printDiagnostics(result);
 	}
@@ -144,29 +161,29 @@ class ConciseReporter implements Reporter
 		const totalSeconds: string =
 			(this.totalDurationMs / 1000).toFixed(1);
 
-		console.log(`\n${"─".repeat(50)}`);
-		console.log(`${COLORS.bold}  Test Results${COLORS.reset}`);
-		console.log(`${"─".repeat(50)}`);
-		console.log(`  ${COLORS.green}Passed:  ${this.passedCount}${COLORS.reset}`);
+		ConciseReporter.print(`\n${"─".repeat(50)}`);
+		ConciseReporter.print(`${COLORS.bold}  Test Results${COLORS.reset}`);
+		ConciseReporter.print(`${"─".repeat(50)}`);
+		ConciseReporter.print(`  ${COLORS.green}Passed:  ${this.passedCount}${COLORS.reset}`);
 
 		if (this.failedCount > 0)
 		{
-			console.log(`  ${COLORS.red}Failed:  ${this.failedCount}${COLORS.reset}`);
+			ConciseReporter.print(`  ${COLORS.red}Failed:  ${this.failedCount}${COLORS.reset}`);
 		}
 
 		if (this.skippedCount > 0)
 		{
-			console.log(`  ${COLORS.yellow}Skipped: ${this.skippedCount}${COLORS.reset}`);
+			ConciseReporter.print(`  ${COLORS.yellow}Skipped: ${this.skippedCount}${COLORS.reset}`);
 		}
 
 		if (this.flakyCount > 0)
 		{
-			console.log(`  ${COLORS.yellow}Flaky:   ${this.flakyCount}${COLORS.reset}`);
+			ConciseReporter.print(`  ${COLORS.yellow}Flaky:   ${this.flakyCount}${COLORS.reset}`);
 		}
 
-		console.log(`  ${COLORS.dim}Duration: ${totalSeconds}s${COLORS.reset}`);
-		console.log(`  ${COLORS.dim}Status:   ${result.status}${COLORS.reset}`);
-		console.log(`${"─".repeat(50)}\n`);
+		ConciseReporter.print(`  ${COLORS.dim}Duration: ${totalSeconds}s${COLORS.reset}`);
+		ConciseReporter.print(`  ${COLORS.dim}Status:   ${result.status}${COLORS.reset}`);
+		ConciseReporter.print(`${"─".repeat(50)}\n`);
 	}
 
 	/**
@@ -178,7 +195,7 @@ class ConciseReporter implements Reporter
 	 */
 	private extractFirstErrorLine(result: TestResult): string
 	{
-		const firstError =
+		const firstError: TestError | undefined =
 			result.errors[0];
 
 		if (!firstError?.message)
@@ -194,7 +211,7 @@ class ConciseReporter implements Reporter
 				.split("\n")
 				.map((line) => line.trim())
 				.find((line) => line.length > 0)
-			?? "Unknown error";
+				?? "Unknown error";
 
 		// Truncate long messages
 		const maxLength: number = 200;
@@ -212,9 +229,10 @@ class ConciseReporter implements Reporter
 	 */
 	private printDiagnostics(result: TestResult): void
 	{
-		const attachment =
+		const attachment: TestResult["attachments"][number] | undefined =
 			result.attachments.find(
-				(attachment) => attachment.name === "diagnostics" && attachment.path != null);
+				(attachment) =>
+					attachment.name === "diagnostics" && attachment.path != null);
 
 		if (!attachment?.path || !fs.existsSync(attachment.path))
 		{
@@ -225,18 +243,20 @@ class ConciseReporter implements Reporter
 			fs.readFileSync(attachment.path, "utf8");
 
 		const lines: string[] =
-			content.split("\n").filter((line) => line.trim().length > 0);
+			content
+				.split("\n")
+				.filter((line) => line.trim().length > 0);
 
 		if (lines.length === 0)
 		{
 			return;
 		}
 
-		console.log(`    ${COLORS.dim}── Diagnostics ──${COLORS.reset}`);
+		ConciseReporter.print(`    ${COLORS.dim}── Diagnostics ──${COLORS.reset}`);
 
 		for (const line of lines)
 		{
-			console.log(`    ${COLORS.dim}${line}${COLORS.reset}`);
+			ConciseReporter.print(`    ${COLORS.dim}${line}${COLORS.reset}`);
 		}
 	}
 
@@ -249,7 +269,7 @@ class ConciseReporter implements Reporter
 	 */
 	private getFileLocation(test: TestCase): string
 	{
-		const location =
+		const location: Location =
 			test.location;
 
 		return `${location.file}:${location.line}`;

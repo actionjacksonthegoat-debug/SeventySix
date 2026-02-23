@@ -3,15 +3,16 @@
 // </copyright>
 
 import {
-	unauthenticatedTest,
+	ChangePasswordPageHelper,
 	expect,
-	PASSWORD_CHANGE_USER,
-	SELECTORS,
-	ROUTES,
-	TIMEOUTS,
 	loginAsUser,
-	ChangePasswordPageHelper
+	PASSWORD_CHANGE_USER,
+	ROUTES,
+	SELECTORS,
+	TIMEOUTS,
+	unauthenticatedTest
 } from "@e2e-fixtures";
+import type { Locator } from "@playwright/test";
 
 /**
  * E2E Tests for Change Password Execution Flow
@@ -28,24 +29,24 @@ import {
 unauthenticatedTest.describe("Change Password Flow",
 	() =>
 	{
-		// Serial mode: tests share PASSWORD_CHANGE_USER and test 2 mutates the password.
-		// Without serial, Playwright may run them in parallel causing state conflicts.
-		unauthenticatedTest.describe.configure({ mode: "serial" });
+	// Serial mode: tests share PASSWORD_CHANGE_USER and test 2 mutates the password.
+	// Without serial, Playwright may run them in parallel causing state conflicts.
+		unauthenticatedTest.describe.configure(
+			{ mode: "serial" });
 
 		const originalPassword: string =
 			PASSWORD_CHANGE_USER.password;
-		const newPassword: string =
-			"E2E_NewPw_Changed_456!";
+		const newPassword: string = "E2E_NewPw_Changed_456!";
 
 		/**
-		 * Logs in as PASSWORD_CHANGE_USER and navigates to password change page.
-		 *
-		 * @param page
-		 * The Playwright page instance.
-		 *
-		 * @param password
-		 * The password to use for login.
-		 */
+	 * Logs in as PASSWORD_CHANGE_USER and navigates to password change page.
+	 *
+	 * @param page
+	 * The Playwright page instance.
+	 *
+	 * @param password
+	 * The password to use for login.
+	 */
 		async function loginAndNavigateToChangePassword(
 			page: import("@playwright/test").Page,
 			password: string): Promise<void>
@@ -64,19 +65,20 @@ unauthenticatedTest.describe("Change Password Flow",
 					unauthenticatedPage,
 					originalPassword);
 
-				const changePasswordPage =
+				const changePasswordPage: ChangePasswordPageHelper =
 					new ChangePasswordPageHelper(unauthenticatedPage);
 
 				await changePasswordPage.fillAndSubmit(
 					"WrongCurrentPassword_123!",
 					newPassword);
 
-				const snackbar =
+				const snackbar: Locator =
 					unauthenticatedPage.locator(
 						SELECTORS.notification.snackbar);
 
 				await expect(snackbar)
-					.toBeVisible({ timeout: TIMEOUTS.api });
+					.toBeVisible(
+						{ timeout: TIMEOUTS.api });
 
 				// Should remain on the change password page
 				await expect(unauthenticatedPage)
@@ -86,7 +88,7 @@ unauthenticatedTest.describe("Change Password Flow",
 		unauthenticatedTest("should change password and allow login with new password",
 			async ({ unauthenticatedPage }) =>
 			{
-				const changePasswordPage =
+				const changePasswordPage: ChangePasswordPageHelper =
 					new ChangePasswordPageHelper(unauthenticatedPage);
 
 				// Step 1: Login with original password and change it

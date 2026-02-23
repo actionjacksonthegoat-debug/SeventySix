@@ -192,6 +192,69 @@ Review EVERY file in `SeventySix.Domains.Identity/` and the `auth/` client domai
 
 ---
 
+## Stage 6: CodeQL Alert Triage (MANDATORY)
+
+> This stage requires the `github.vscode-codeql` extension and CodeQL CLI (see `docs/Startup-Instructions.md`).
+
+### A) Run Local Scan (if not already done)
+
+```powershell
+# From repo root
+npm run scan:codeql
+```
+
+### B) Review GitHub Code Scanning Alerts
+
+Navigate to: **GitHub repo → Security → Code Scanning Alerts**
+
+- Filter by: **Open** + **Tool: CodeQL**
+- Record all Critical and High alerts
+- Each must be fixed before declaring the review complete
+
+### C) VS Code SARIF Review
+
+1. Open Command Palette → **CodeQL: Open SARIF File**
+2. Select `.codeql/results/csharp.sarif` and `.codeql/results/typescript.sarif`
+3. Use the in-editor alert highlights to navigate to each finding
+4. Apply fixes from `implementation-2.md` Phase 2-5 patterns
+
+### D) Exit Criteria for Stage 6
+
+- Zero open Critical or High CodeQL alerts on the Security tab
+- All fixes include a corresponding unit or integration test where applicable
+- No new alerts introduced by recent changes
+
+---
+
+## Stage 7: Cookie Consent Legal Compliance Check
+
+### A) Banner Compliance
+
+- [ ] Cookie consent banner appears on first visit of a fresh browser profile
+- [ ] "Reject Non-Essential" and "Accept All Cookies" have equal visual weight (no dark patterns)
+- [ ] No non-essential cookies are set before consent is given (check DevTools → Application → Cookies)
+- [ ] Consent cookie (`seventysix_consent`) is set after accepting
+- [ ] Consent cookie expires in 1 year (check cookie expiry in DevTools)
+- [ ] Re-opening settings from footer triggers the dialog/banner
+
+### B) Legal Pages
+
+- [ ] `/privacy-policy` accessible without authentication
+- [ ] `/terms-of-service` accessible without authentication
+- [ ] GDPR Art. 13/14 disclosures present in Privacy Policy
+- [ ] CCPA rights section present in Privacy Policy
+- [ ] "We do not sell" statement present in Privacy Policy
+
+### C) Accessibility
+
+- [ ] axe-core WCAG 2.2 AA — 0 critical/serious violations on banner
+- [ ] axe-core WCAG 2.2 AA — 0 violations on Privacy Policy page
+- [ ] axe-core WCAG 2.2 AA — 0 violations on Terms of Service page
+- [ ] Banner keyboard navigable (Tab, Enter/Space on buttons)
+- [ ] `aria-live="polite"` on banner for screen reader announcement
+
+---
+
 ## Output
 
 ### For Each Finding

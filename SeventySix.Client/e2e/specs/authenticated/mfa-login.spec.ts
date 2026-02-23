@@ -2,21 +2,21 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-import { Page } from "@playwright/test";
 import {
-	unauthenticatedTest,
 	expect,
-	loginAsUser,
-	solveAltchaChallenge,
-	SELECTORS,
-	ROUTES,
-	PAGE_TEXT,
-	TIMEOUTS,
-	getTestUserByRole,
 	generateSafeTotpCode,
-	MFA_BACKUP_CODES
+	getTestUserByRole,
+	loginAsUser,
+	MFA_BACKUP_CODES,
+	PAGE_TEXT,
+	ROUTES,
+	SELECTORS,
+	solveAltchaChallenge,
+	TIMEOUTS,
+	unauthenticatedTest
 } from "@e2e-fixtures";
 import type { TestUser } from "@e2e-fixtures";
+import { Page } from "@playwright/test";
 
 const mfaUser: TestUser =
 	getTestUserByRole("MfaUser");
@@ -35,11 +35,11 @@ const mfaUser: TestUser =
 unauthenticatedTest.describe("MFA Login",
 	() =>
 	{
-		/**
-		 * Logs in the MFA user and waits for the MFA verify page.
-		 * @param page
-		 * The Playwright page.
-		 */
+	/**
+	 * Logs in the MFA user and waits for the MFA verify page.
+	 * @param page
+	 * The Playwright page.
+	 */
 		async function loginAsMfaUser(page: Page): Promise<void>
 		{
 			await loginAsUser(page, mfaUser,
@@ -49,8 +49,10 @@ unauthenticatedTest.describe("MFA Login",
 				});
 
 			// Wait for MFA verify component to fully render
-			await page.locator(SELECTORS.layout.pageHeading)
-				.waitFor({ state: "visible", timeout: TIMEOUTS.element });
+			await page
+				.locator(SELECTORS.layout.pageHeading)
+				.waitFor(
+					{ state: "visible", timeout: TIMEOUTS.element });
 		}
 
 		unauthenticatedTest("should redirect to MFA verify page after login",
@@ -86,7 +88,8 @@ unauthenticatedTest.describe("MFA Login",
 
 				await expect(unauthenticatedPage
 					.locator(SELECTORS.layout.userMenuButton))
-					.toBeVisible({ timeout: TIMEOUTS.auth });
+					.toBeVisible(
+						{ timeout: TIMEOUTS.auth });
 			});
 
 		unauthenticatedTest("should show error for invalid TOTP code",
@@ -133,7 +136,8 @@ unauthenticatedTest.describe("MFA Login",
 
 				await expect(unauthenticatedPage
 					.locator(SELECTORS.layout.userMenuButton))
-					.toBeVisible({ timeout: TIMEOUTS.auth });
+					.toBeVisible(
+						{ timeout: TIMEOUTS.auth });
 			});
 
 		unauthenticatedTest("should display trust device checkbox",
@@ -163,10 +167,11 @@ unauthenticatedTest.describe("MFA Login",
 					.toHaveURL(new RegExp(ROUTES.auth.login.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
 			});
 
-		unauthenticatedTest("should bypass MFA on subsequent login when trust device is checked",
+		unauthenticatedTest(
+			"should bypass MFA on subsequent login when trust device is checked",
 			async ({ unauthenticatedPage }) =>
 			{
-				// 2 logins + 2 ALTCHA solves + MFA verify + logout + cookie operations
+			// 2 logins + 2 ALTCHA solves + MFA verify + logout + cookie operations
 				unauthenticatedTest.setTimeout(90_000);
 
 				// Step 1: Login and complete MFA with "Trust Device" checked
@@ -195,7 +200,8 @@ unauthenticatedTest.describe("MFA Login",
 
 				await expect(unauthenticatedPage
 					.locator(SELECTORS.layout.userMenuButton))
-					.toBeVisible({ timeout: TIMEOUTS.auth });
+					.toBeVisible(
+						{ timeout: TIMEOUTS.auth });
 
 				// Step 2: Logout
 				await unauthenticatedPage
@@ -207,13 +213,15 @@ unauthenticatedTest.describe("MFA Login",
 
 				await expect(unauthenticatedPage
 					.locator(SELECTORS.layout.userMenuButton))
-					.toBeHidden({ timeout: TIMEOUTS.navigation });
+					.toBeHidden(
+						{ timeout: TIMEOUTS.navigation });
 
 				// Step 3: Login again — MFA should be bypassed due to trusted device
 				await unauthenticatedPage.goto(ROUTES.auth.login);
 				await unauthenticatedPage
 					.locator(SELECTORS.form.usernameInput)
-					.waitFor({ state: "visible", timeout: TIMEOUTS.globalSetup });
+					.waitFor(
+						{ state: "visible", timeout: TIMEOUTS.globalSetup });
 
 				await unauthenticatedPage
 					.locator(SELECTORS.form.usernameInput)
@@ -235,6 +243,7 @@ unauthenticatedTest.describe("MFA Login",
 
 				await expect(unauthenticatedPage
 					.locator(SELECTORS.layout.userMenuButton))
-					.toBeVisible({ timeout: TIMEOUTS.auth });
+					.toBeVisible(
+						{ timeout: TIMEOUTS.auth });
 			});
 	});

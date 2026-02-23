@@ -1,11 +1,11 @@
-import { Page } from "@playwright/test";
 import {
-	test,
 	expect,
+	PAGE_TEXT,
 	ROUTES,
 	SELECTORS,
-	PAGE_TEXT
+	test
 } from "@e2e-fixtures";
+import { Locator, Page } from "@playwright/test";
 
 /**
  * E2E Tests for Style Guide Page
@@ -19,7 +19,7 @@ test.describe("Style Guide Page",
 	() =>
 	{
 		test.beforeEach(
-			async ({ developerPage }: { developerPage: Page }) =>
+			async ({ developerPage }: { developerPage: Page; }) =>
 			{
 				await developerPage.goto(ROUTES.developer.styleGuide);
 			});
@@ -28,9 +28,9 @@ test.describe("Style Guide Page",
 			() =>
 			{
 				test("should display style guide heading",
-					async ({ developerPage }: { developerPage: Page }) =>
+					async ({ developerPage }: { developerPage: Page; }) =>
 					{
-						const heading =
+						const heading: Locator =
 							developerPage.locator(SELECTORS.developer.styleGuideHeader);
 
 						await expect(heading)
@@ -38,9 +38,9 @@ test.describe("Style Guide Page",
 					});
 
 				test("should display style guide description",
-					async ({ developerPage }: { developerPage: Page }) =>
+					async ({ developerPage }: { developerPage: Page; }) =>
 					{
-						const header =
+						const header: Locator =
 							developerPage.locator(SELECTORS.developer.styleGuideContainer);
 
 						await expect(header)
@@ -48,9 +48,9 @@ test.describe("Style Guide Page",
 					});
 
 				test("should display theme toggle button",
-					async ({ developerPage }: { developerPage: Page }) =>
+					async ({ developerPage }: { developerPage: Page; }) =>
 					{
-						const themeToggle =
+						const themeToggle: Locator =
 							developerPage.locator(SELECTORS.developer.themeToggle);
 
 						await expect(themeToggle)
@@ -62,10 +62,10 @@ test.describe("Style Guide Page",
 			() =>
 			{
 				test("should display color scheme selector",
-					async ({ developerPage }: { developerPage: Page }) =>
+					async ({ developerPage }: { developerPage: Page; }) =>
 					{
-						const colorSchemeSelect =
-						developerPage.locator(SELECTORS.developer.colorSchemeSelect);
+						const colorSchemeSelect: Locator =
+							developerPage.locator(SELECTORS.developer.colorSchemeSelect);
 						await expect(colorSchemeSelect)
 							.toBeVisible();
 					});
@@ -75,19 +75,20 @@ test.describe("Style Guide Page",
 			() =>
 			{
 				test("should display tab group",
-					async ({ developerPage }: { developerPage: Page }) =>
+					async ({ developerPage }: { developerPage: Page; }) =>
 					{
-						const tabGroup =
-						developerPage.locator(SELECTORS.developer.tabGroup);
+						const tabGroup: Locator =
+							developerPage.locator(SELECTORS.developer.tabGroup);
 						await expect(tabGroup)
 							.toBeVisible();
 					});
 
 				test("should display Colors tab",
-					async ({ developerPage }: { developerPage: Page }) =>
+					async ({ developerPage }: { developerPage: Page; }) =>
 					{
-						const colorsTab =
-							developerPage.locator(`${SELECTORS.developer.tab}:has-text('${PAGE_TEXT.developer.styleGuide.colorsTab}')`);
+						const colorsTab: Locator =
+							developerPage.locator(
+								`${SELECTORS.developer.tab}:has-text('${PAGE_TEXT.developer.styleGuide.colorsTab}')`);
 						await expect(colorsTab)
 							.toBeVisible();
 					});

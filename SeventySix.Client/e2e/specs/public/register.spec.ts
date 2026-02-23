@@ -1,15 +1,16 @@
-import { Locator } from "@playwright/test";
 import {
-	test,
-	expect,
+	E2E_CONFIG,
 	EmailTestHelper,
-	solveAltchaChallenge,
-	SELECTORS,
-	ROUTES,
+	expect,
 	PAGE_TEXT,
-	TIMEOUTS,
-	E2E_CONFIG
+	ROUTES,
+	SELECTORS,
+	solveAltchaChallenge,
+	test,
+	TIMEOUTS
 } from "@e2e-fixtures";
+import type { MailDevEmail } from "@e2e-fixtures";
+import { Locator } from "@playwright/test";
 
 /**
  * E2E Tests for Registration Flow
@@ -91,14 +92,16 @@ test.describe("Registration Flow",
 							async ({ page }) =>
 							{
 								await expect(page.locator(SELECTORS.altcha.widget))
-									.toBeVisible({ timeout: TIMEOUTS.api });
+									.toBeVisible(
+										{ timeout: TIMEOUTS.api });
 							});
 
 						test("should solve ALTCHA challenge",
 							async ({ page }) =>
 							{
 								await expect(page.locator(SELECTORS.altcha.widget))
-									.toBeVisible({ timeout: TIMEOUTS.api });
+									.toBeVisible(
+										{ timeout: TIMEOUTS.api });
 
 								await solveAltchaChallenge(page);
 							});
@@ -163,11 +166,11 @@ test.describe("Registration Flow",
 					() =>
 					{
 						test("should show confirmation after valid email submission",
-						async ({ page, authPage }) =>
-						{
-							// Use unique email to avoid conflicts
-							const uniqueEmail =
-								`e2e_register_${Date.now()}@test.local`;
+							async ({ page, authPage }) =>
+							{
+								// Use unique email to avoid conflicts
+								const uniqueEmail: string =
+									`e2e_register_${Date.now()}@test.local`;
 								await authPage.submitEmail(uniqueEmail);
 
 								// Should show success state
@@ -183,7 +186,7 @@ test.describe("Registration Flow",
 						test("should provide return to sign in link after submission",
 							async ({ page, authPage }) =>
 							{
-								const uniqueEmail =
+								const uniqueEmail: string =
 									`e2e_register_${Date.now()}@test.local`;
 
 								await authPage.submitEmail(uniqueEmail);
@@ -206,10 +209,10 @@ test.describe("Registration Flow",
 					() =>
 					{
 						test("should complete submission successfully",
-						async ({ page, authPage }) =>
-						{
-							const uniqueEmail =
-								`e2e_register_${Date.now()}@test.local`;
+							async ({ page, authPage }) =>
+							{
+								const uniqueEmail: string =
+									`e2e_register_${Date.now()}@test.local`;
 								await authPage.submitEmail(uniqueEmail);
 
 								// Verify success state is shown
@@ -241,7 +244,7 @@ test.describe("Registration Flow",
 					"should send verification email when registering",
 					async ({ page, authPage }) =>
 					{
-						const uniqueEmail =
+						const uniqueEmail: string =
 							`e2e_verify_${Date.now()}@test.local`;
 
 						// Clear any existing emails
@@ -258,7 +261,7 @@ test.describe("Registration Flow",
 								{ timeout: TIMEOUTS.api });
 
 						// Check MailDev for the email
-						const verificationEmail =
+						const verificationEmail: MailDevEmail =
 							await EmailTestHelper.waitForEmail(
 								uniqueEmail,
 								{ timeout: TIMEOUTS.email });
@@ -284,12 +287,11 @@ test.describe("Registration Flow",
 					{
 						const timestamp: number =
 							Date.now();
-						const uniqueEmail =
+						const uniqueEmail: string =
 							`e2e_fullreg_${timestamp}@test.local`;
-						const username =
+						const username: string =
 							`e2e_fullreg_${timestamp}`;
-						const password =
-							"E2E_FullReg_Password_123!";
+						const password: string = "E2E_FullReg_Password_123!";
 
 						// Clear emails for clean state
 						await EmailTestHelper.clearAllEmails();
@@ -305,7 +307,7 @@ test.describe("Registration Flow",
 								{ timeout: TIMEOUTS.api });
 
 						// Step 2: Get verification email from MailDev
-						const verificationEmail =
+						const verificationEmail: MailDevEmail =
 							await EmailTestHelper.waitForEmail(
 								uniqueEmail,
 								{ timeout: TIMEOUTS.email });
@@ -330,7 +332,8 @@ test.describe("Registration Flow",
 						// Step 4: Fill in registration form
 						await page
 							.locator(SELECTORS.registerComplete.usernameInput)
-							.waitFor({ state: "visible", timeout: TIMEOUTS.navigation });
+							.waitFor(
+								{ state: "visible", timeout: TIMEOUTS.navigation });
 						await page
 							.locator(SELECTORS.registerComplete.usernameInput)
 							.fill(username);
@@ -350,7 +353,7 @@ test.describe("Registration Flow",
 						await page.waitForURL(
 							(url) =>
 								url.pathname === ROUTES.home
-								|| url.pathname === ROUTES.auth.login,
+									|| url.pathname === ROUTES.auth.login,
 							{ timeout: TIMEOUTS.navigation });
 					});
 			});
@@ -365,14 +368,15 @@ test.describe("Registration Flow",
 						await page.goto(
 							`${ROUTES.auth.registerComplete}?token=test-token-value&email=policy_test@test.local`);
 
-						const usernameInput =
+						const usernameInput: Locator =
 							page.locator(SELECTORS.registerComplete.usernameInput);
-						await usernameInput.waitFor({ state: "visible", timeout: TIMEOUTS.element });
-						const passwordInput =
+						await usernameInput.waitFor(
+							{ state: "visible", timeout: TIMEOUTS.element });
+						const passwordInput: Locator =
 							page.locator(SELECTORS.registerComplete.passwordInput);
-						const confirmPasswordInput =
+						const confirmPasswordInput: Locator =
 							page.locator(SELECTORS.registerComplete.confirmPasswordInput);
-						const submitButton =
+						const submitButton: Locator =
 							page.locator(SELECTORS.registerComplete.submitButton);
 
 						// Fill valid username
@@ -395,7 +399,8 @@ test.describe("Registration Flow",
 
 						await page
 							.locator(SELECTORS.registerComplete.usernameInput)
-							.waitFor({ state: "visible", timeout: TIMEOUTS.element });
+							.waitFor(
+								{ state: "visible", timeout: TIMEOUTS.element });
 						await page
 							.locator(SELECTORS.registerComplete.usernameInput)
 							.fill("ab");
@@ -419,7 +424,8 @@ test.describe("Registration Flow",
 
 						await page
 							.locator(SELECTORS.registerComplete.usernameInput)
-							.waitFor({ state: "visible", timeout: TIMEOUTS.element });
+							.waitFor(
+								{ state: "visible", timeout: TIMEOUTS.element });
 						await page
 							.locator(SELECTORS.registerComplete.usernameInput)
 							.fill("policy_test_user");

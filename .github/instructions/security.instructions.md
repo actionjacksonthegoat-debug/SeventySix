@@ -69,3 +69,62 @@ function mapAuthError(errorCode: string): string {
 
 After auth/security changes, verify via Chrome DevTools MCP `list_network_requests` to check headers, cookies, CORS — see `copilot-instructions.md` Chrome DevTools section.
 
+## CodeQL Local Scanning
+
+> Run before every push to catch security issues before CI.
+
+```powershell
+# Full scan (C# + TypeScript)
+npm run scan:codeql
+
+# C# only
+npm run scan:codeql:cs
+
+# TypeScript only
+npm run scan:codeql:ts
+```
+
+Results open in VS Code via `github.vscode-codeql`. Use Command Palette →
+**CodeQL: Open SARIF File** to view results inline.
+
+## Cookie Consent Security Patterns
+
+```typescript
+// [ALWAYS] — check consent before activating optional tracking
+export class AnalyticsService
+{
+    private readonly consentService = inject(CookieConsentService);
+
+    initialize(): void
+    {
+        // Only initialize analytics AFTER analytics consent is granted
+        if (this.consentService.hasAnalytics())
+        {
+            // initialize analytics SDK here
+        }
+    }
+}
+```
+
+**Rules:**
+- NEVER set non-essential cookies before consent is granted
+- Consent cookie (`seventysix_consent`) itself is essential (stores the choice)
+- Auth cookies (session, CSRF) are essential — no consent needed
+- Re-check consent on every app initialization, not just on first load
+
+## URL Redirect Security (CodeQL: js/client-side-unvalidated-url-redirect)
+
+Session storage and local storage are **CodeQL-tainted sources**. Any URL read from
+storage must be re-validated at the point of navigation even if validated before storing.
+
+```typescript
+// [NEVER] — reads tainted value directly into router
+const returnUrl = sessionStorage.getItem("returnUrl") ?? "/";
+this.router.navigateByUrl(returnUrl); // CodeQL alert
+
+// [ALWAYS] — sanitize at point of use with shared utility
+import { sanitizeReturnUrl } from "@shared/utilities/url.utility";
+const stored = sessionStorage.getItem("returnUrl") ?? "/";
+this.router.navigateByUrl(sanitizeReturnUrl(stored));
+```
+

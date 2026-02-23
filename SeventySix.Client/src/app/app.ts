@@ -1,9 +1,12 @@
 import { DOCUMENT } from "@angular/common";
 import { ChangeDetectionStrategy, Component, effect, inject, Renderer2 } from "@angular/core";
+import { MatDialog } from "@angular/material/dialog";
 import { MatProgressBarModule } from "@angular/material/progress-bar";
 import { MatSidenavModule } from "@angular/material/sidenav";
 import { RouterOutlet } from "@angular/router";
 import { NotificationToastComponent } from "@shared/components";
+import { CookieConsentBannerComponent } from "@shared/components/cookie-consent/cookie-consent-banner.component";
+import { CookiePreferencesDialogComponent } from "@shared/components/cookie-consent/cookie-preferences-dialog.component";
 import {
 	FooterComponent,
 	HeaderComponent,
@@ -30,7 +33,8 @@ import {
 			SidebarComponent,
 			FooterComponent,
 			NotificationToastComponent,
-			SessionWarningComponent
+			SessionWarningComponent,
+			CookieConsentBannerComponent
 		],
 		templateUrl: "./app.html",
 		styleUrl: "./app.scss",
@@ -70,6 +74,15 @@ export class App
 	 */
 	private readonly document: Document =
 		inject(DOCUMENT);
+
+	/**
+	 * Dialog service for opening the cookie preferences dialog.
+	 * @type {MatDialog}
+	 * @private
+	 * @readonly
+	 */
+	private readonly dialog: MatDialog =
+		inject(MatDialog);
 
 	/**
 	 * Initialize the application component and synchronize sidebar state to the document body
@@ -137,5 +150,15 @@ export class App
 	onBackdropClick(): void
 	{
 		this.layoutService.closeSidebar();
+	}
+
+	/**
+	 * Open the cookie preferences dialog.
+	 * Invoked from the cookie consent banner's openPreferences output event.
+	 * @returns {void}
+	 */
+	openCookiePreferences(): void
+	{
+		this.dialog.open(CookiePreferencesDialogComponent);
 	}
 }

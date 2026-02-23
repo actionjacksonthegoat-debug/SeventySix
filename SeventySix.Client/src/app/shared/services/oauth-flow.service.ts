@@ -20,6 +20,7 @@ import { POLL_INTERVAL, STORAGE_KEYS } from "@shared/constants";
 import { StorageService, WindowService } from "@shared/services";
 import { OAuthEvent, OAuthProvider } from "@shared/services/auth.types";
 import { isNullOrUndefined, isPresent } from "@shared/utilities/null-check.utility";
+import { sanitizeReturnUrl } from "@shared/utilities/url.utility";
 import {
 	Observable,
 	Subject
@@ -92,7 +93,7 @@ export class OAuthFlowService
 		returnUrl: string = "/"): void
 	{
 		const validatedUrl: string =
-			this.validateReturnUrl(returnUrl);
+			sanitizeReturnUrl(returnUrl);
 
 		this.storageService.setSessionItem(
 			STORAGE_KEYS.AUTH_RETURN_URL,
@@ -141,25 +142,6 @@ export class OAuthFlowService
 		}
 
 		this.startPopupPollTimer(popup);
-	}
-
-	/**
-	 * Validates OAuth return URL to prevent open redirect vulnerabilities.
-	 * Only allows relative URLs that don't start with protocol-relative syntax.
-	 * @param {string} url
-	 * The URL to validate.
-	 * @returns {string}
-	 * The validated URL if safe, or '/' as fallback.
-	 */
-	private validateReturnUrl(url: string): string
-	{
-		// Only allow relative URLs starting with single slash
-		// Reject absolute URLs and protocol-relative URLs (//evil.com)
-		if (url.startsWith("/") && !url.startsWith("//"))
-		{
-			return url;
-		}
-		return "/";
 	}
 
 	/**

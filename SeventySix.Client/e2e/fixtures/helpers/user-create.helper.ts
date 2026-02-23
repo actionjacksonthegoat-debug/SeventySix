@@ -2,11 +2,11 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-import type { Page } from "@playwright/test";
+import type { Locator, Page, Response } from "@playwright/test";
 import { expect } from "@playwright/test";
+import { PAGE_TEXT } from "../page-text.constant";
 import { SELECTORS } from "../selectors.constant";
 import { TIMEOUTS } from "../timeouts.constant";
-import { PAGE_TEXT } from "../page-text.constant";
 
 /**
  * Data for creating a new user via the admin wizard.
@@ -49,15 +49,19 @@ export async function fillUserCreateStepper(
 	options: CreateUserOptions): Promise<void>
 {
 	// Set up response listener BEFORE filling username to avoid validator race
-	const usernameCheckResponse =
+	const usernameCheckResponse: Promise<Response> =
 		page.waitForResponse(
 			(response) =>
-				response.url().includes("/check/username/"));
+				response
+					.url()
+					.includes("/check/username/"));
 
 	// Step 1: Credentials
-	await page.locator(SELECTORS.userCreate.usernameInput)
+	await page
+		.locator(SELECTORS.userCreate.usernameInput)
 		.fill(options.username);
-	await page.locator(SELECTORS.userCreate.emailInput)
+	await page
+		.locator(SELECTORS.userCreate.emailInput)
 		.fill(options.email);
 
 	// Wait for async username availability validator to complete
@@ -65,28 +69,38 @@ export async function fillUserCreateStepper(
 
 	// Ensure Angular has processed the validator result (PENDING → VALID)
 	await expect(page.locator(SELECTORS.userCreate.usernameInput))
-		.toHaveClass(/ng-valid/, { timeout: TIMEOUTS.api });
+		.toHaveClass(/ng-valid/,
+			{ timeout: TIMEOUTS.api });
 
 	// getByRole excludes hidden step buttons (avoids strict mode violation)
-	const nextButton =
-		() => page.getByRole("button", { name: PAGE_TEXT.buttons.next });
+	const nextButton: () => Locator =
+		(): Locator =>
+			page.getByRole("button",
+				{ name: PAGE_TEXT.buttons.next });
 
-	await nextButton().click();
+	await nextButton()
+		.click();
 
 	// Step 2: Profile — wait with extended timeout for stepper transition
-	const fullNameInput =
+	const fullNameInput: Locator =
 		page.locator(SELECTORS.userCreate.fullNameInput);
-	await fullNameInput.waitFor({ state: "visible", timeout: TIMEOUTS.api });
+	await fullNameInput.waitFor(
+		{ state: "visible", timeout: TIMEOUTS.api });
 	await fullNameInput.fill(options.fullName);
-	await nextButton().click();
+	await nextButton()
+		.click();
 
 	// Step 3: Roles (skip — optional)
 	// Wait for the Roles panel to render before advancing
-	await expect(page.getByRole("listbox", { name: PAGE_TEXT.labels.roleSelection }))
-		.toBeVisible({ timeout: TIMEOUTS.api });
-	await nextButton().click();
+	await expect(page.getByRole("listbox",
+		{ name: PAGE_TEXT.labels.roleSelection }))
+		.toBeVisible(
+			{ timeout: TIMEOUTS.api });
+	await nextButton()
+		.click();
 
 	// Step 4: Review — caller performs the final submit/assertion
 	await expect(page.locator(SELECTORS.userCreate.createUserButton))
-		.toBeVisible({ timeout: TIMEOUTS.navigation });
+		.toBeVisible(
+			{ timeout: TIMEOUTS.navigation });
 }

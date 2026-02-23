@@ -1,0 +1,83 @@
+:host {
+	display: block;
+}
+
+.cookie-banner {
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	z-index: 1000;
+	background-color: var(--mat-sys-surface-container-high);
+	border-top: 1px solid var(--mat-sys-outline-variant);
+	padding: 16px 24px;
+	box-shadow: 0 -4px 16px rgb(0 0 0 / 12%);
+
+	&__content {
+		max-width: 1200px;
+		margin: 0 auto;
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+
+		@media (width >= 768px) {
+			flex-direction: row;
+			align-items: center;
+		}
+	}
+
+	&__message {
+		flex: 1;
+	}
+
+	&__text {
+		margin: 0;
+		font-size: 0.9rem;
+		color: var(--mat-sys-on-surface);
+		line-height: 1.5;
+	}
+
+	&__link {
+		color: var(--mat-sys-primary);
+		// Explicit underline ensures axe link-in-text-block rule is satisfied.
+		// Some browser resets or Material typography may suppress the default
+		// anchor underline; forcing it here guarantees WCAG non-color distinction.
+		text-decoration: underline;
+		text-decoration-color: var(--mat-sys-primary);
+		text-underline-offset: 2px;
+		font-weight: 500;
+	}
+
+	&__actions {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		flex-shrink: 0;
+
+		@media (width >= 480px) {
+			flex-direction: row;
+			align-items: center;
+		}
+	}
+
+	// Equal visual weight — both stroked buttons same style
+	&__btn--reject,
+	&__btn--settings {
+		white-space: nowrap;
+	}
+
+	&__btn--accept {
+		white-space: nowrap;
+	}
+}
+
+// Responsive: stack on mobile
+@media (width <= 479px) {
+	.cookie-banner__actions {
+		width: 100%;
+
+		button {
+			width: 100%;
+		}
+	}
+}

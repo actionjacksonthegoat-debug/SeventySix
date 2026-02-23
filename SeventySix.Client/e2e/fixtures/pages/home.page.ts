@@ -2,7 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-import { Page, Locator } from "@playwright/test";
+import { Locator, Page } from "@playwright/test";
 import { SELECTORS } from "../selectors.constant";
 
 /**
@@ -29,14 +29,22 @@ export class HomePageHelper
 	constructor(page: Page)
 	{
 		this.page = page;
-		this.heroSection = page.locator(SELECTORS.home.heroSection);
-		this.heroTitle = page.locator(SELECTORS.home.heroTitle);
-		this.heroTagline = page.locator(SELECTORS.home.heroTagline);
-		this.techStackSection = page.locator(SELECTORS.home.techStackSection);
-		this.statsBar = page.locator(SELECTORS.home.statsBar);
-		this.featuresSection = page.locator(SELECTORS.home.featuresSection);
-		this.architectureSection = page.locator(SELECTORS.home.architectureSection);
-		this.ctaFooter = page.locator(SELECTORS.home.ctaFooter);
+		this.heroSection =
+			page.locator(SELECTORS.home.heroSection);
+		this.heroTitle =
+			page.locator(SELECTORS.home.heroTitle);
+		this.heroTagline =
+			page.locator(SELECTORS.home.heroTagline);
+		this.techStackSection =
+			page.locator(SELECTORS.home.techStackSection);
+		this.statsBar =
+			page.locator(SELECTORS.home.statsBar);
+		this.featuresSection =
+			page.locator(SELECTORS.home.featuresSection);
+		this.architectureSection =
+			page.locator(SELECTORS.home.architectureSection);
+		this.ctaFooter =
+			page.locator(SELECTORS.home.ctaFooter);
 	}
 
 	/**

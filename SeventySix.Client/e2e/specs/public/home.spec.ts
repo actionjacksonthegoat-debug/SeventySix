@@ -1,9 +1,9 @@
 import {
-	test,
 	expect,
-	ROUTES,
 	PAGE_TEXT,
-	scrollUntilVisible
+	ROUTES,
+	scrollUntilVisible,
+	test
 } from "@e2e-fixtures";
 
 /**
@@ -67,7 +67,8 @@ test.describe("Home Page",
 				test("should display features section",
 					async ({ page, homePage }) =>
 					{
-						await scrollUntilVisible(page, { targetLocator: homePage.featuresSection });
+						await scrollUntilVisible(page,
+							{ targetLocator: homePage.featuresSection });
 						await expect(homePage.featuresSection)
 							.toBeVisible();
 					});
@@ -75,7 +76,8 @@ test.describe("Home Page",
 				test("should display architecture section",
 					async ({ page, homePage }) =>
 					{
-						await scrollUntilVisible(page, { targetLocator: homePage.architectureSection });
+						await scrollUntilVisible(page,
+							{ targetLocator: homePage.architectureSection });
 						await expect(homePage.architectureSection)
 							.toBeVisible();
 					});
@@ -83,7 +85,8 @@ test.describe("Home Page",
 				test("should display CTA footer",
 					async ({ page, homePage }) =>
 					{
-						await scrollUntilVisible(page, { targetLocator: homePage.ctaFooter });
+						await scrollUntilVisible(page,
+							{ targetLocator: homePage.ctaFooter });
 						await expect(homePage.ctaFooter)
 							.toBeVisible();
 					});

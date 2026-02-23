@@ -8,6 +8,40 @@
 			<span>{{ currentYear }} SeventySix. All rights reserved.</span>
 		</div>
 
+		<!-- Legal Links -->
+		<nav
+			class="footer-legal"
+			aria-label="Legal navigation">
+			<a
+				routerLink="/privacy-policy"
+				class="footer-link">
+				Privacy Policy
+			</a>
+			<span
+				class="footer-separator"
+				aria-hidden="true">
+				·
+			</span>
+			<a
+				routerLink="/terms-of-service"
+				class="footer-link">
+				Terms of Service
+			</a>
+			<span
+				class="footer-separator"
+				aria-hidden="true">
+				·
+			</span>
+			<button
+				mat-button
+				class="footer-link footer-link--btn"
+				type="button"
+				(click)="openCookieSettings()"
+				aria-label="Manage cookie preferences">
+				Cookie Preferences
+			</button>
+		</nav>
+
 		<!-- Spacer -->
 		<span class="flex-1"></span>
 

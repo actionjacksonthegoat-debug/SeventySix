@@ -3,13 +3,12 @@
 // </copyright>
 
 import {
-	test,
 	expect,
-	SELECTORS,
-	ROUTES,
-	TIMEOUTS,
+	expectAccessible,
 	PAGE_TEXT,
-	expectAccessible
+	ROUTES,
+	test,
+	TIMEOUTS
 } from "@e2e-fixtures";
 
 /**
@@ -43,13 +42,7 @@ test.describe("OAuth Login (GitHub)",
 			async ({ page, authPage }) =>
 			{
 				// OAuth now opens a popup; capture the popup or fallback navigation
-				let oauthRequestMade = false;
-
-				// Listen for popup (primary flow)
-				const popupPromise: Promise<import("@playwright/test").Page> =
-					page.waitForEvent(
-						"popup",
-						{ timeout: TIMEOUTS.navigation });
+				let oauthRequestMade: boolean = false;
 
 				// Also listen for requests on main page (fallback if popup blocked)
 				page.on(
@@ -59,23 +52,35 @@ test.describe("OAuth Login (GitHub)",
 						const url: string =
 							request.url();
 
-						if (url.includes("oauth")
-							|| url.includes("github"))
+						if (
+							url.includes("oauth")
+								|| url.includes("github"))
 						{
 							oauthRequestMade = true;
 						}
 					});
 
-				await authPage.githubButton.click();
-
-				// Either popup opens or main page navigates
+				// Either popup opens or main page navigates; register listener and click concurrently
 				try
 				{
-					const popup: import("@playwright/test").Page =
-						await popupPromise;
-					oauthRequestMade = popup.url().includes("oauth")
-						|| popup.url().includes("github")
-						|| popup.url().includes("about:blank");
+					const [popup] =
+						await Promise.all(
+							[
+								page.waitForEvent(
+									"popup",
+									{ timeout: TIMEOUTS.navigation }),
+								authPage.githubButton.click()
+							]);
+					oauthRequestMade =
+						popup
+							.url()
+							.includes("oauth")
+							|| popup
+								.url()
+								.includes("github")
+							|| popup
+								.url()
+								.includes("about:blank");
 					await popup.close();
 				}
 				catch
@@ -91,30 +96,31 @@ test.describe("OAuth Login (GitHub)",
 		test("should include PKCE parameters in OAuth redirect URL",
 			async ({ page, authPage }) =>
 			{
-				let capturedGitHubUrl = "";
-
-				// OAuth now opens a popup; capture the popup URL
-				const popupPromise: Promise<import("@playwright/test").Page> =
-					page.waitForEvent(
-						"popup",
-						{ timeout: TIMEOUTS.navigation });
+				let capturedGitHubUrl: string = "";
 
 				// Also intercept on main page (fallback if popup blocked)
 				await page.route(
 					"**/github.com/**",
 					(route) =>
 					{
-						capturedGitHubUrl = route.request().url();
+						capturedGitHubUrl =
+							route
+								.request()
+								.url();
 						route.abort();
 					});
 
-				await authPage.githubButton.click();
-
-				// Try to capture from popup first
+				// Try to capture popup; register listener and click concurrently
 				try
 				{
-					const popup: import("@playwright/test").Page =
-						await popupPromise;
+					const [popup] =
+						await Promise.all(
+							[
+								page.waitForEvent(
+									"popup",
+									{ timeout: TIMEOUTS.navigation }),
+								authPage.githubButton.click()
+							]);
 
 					// Follow redirects in popup by intercepting GitHub requests
 					popup.on(
@@ -131,11 +137,13 @@ test.describe("OAuth Login (GitHub)",
 						});
 
 					// Wait for popup to navigate (may be blocked by route intercept)
-					await popup.waitForURL(
-						(url) => url.href !== "about:blank",
-						{ timeout: TIMEOUTS.navigation })
+					await popup
+						.waitForURL(
+							(url) => url.href !== "about:blank",
+							{ timeout: TIMEOUTS.navigation })
 						.catch(
-							() => { /* popup may be blocked by route */ });
+							() =>
+							{/* popup may be blocked by route */});
 					await popup.close();
 				}
 				catch
@@ -143,7 +151,8 @@ test.describe("OAuth Login (GitHub)",
 					// Popup was blocked; verify the login page is still functional
 					// eslint-disable-next-line playwright/no-conditional-expect -- inside catch for popup-blocked fallback
 					await expect(authPage.githubButton)
-						.toBeVisible({ timeout: TIMEOUTS.element });
+						.toBeVisible(
+							{ timeout: TIMEOUTS.element });
 				}
 
 				// If we captured a GitHub URL, verify PKCE params

@@ -1,15 +1,12 @@
-import { Page } from "@playwright/test";
 import {
-	test,
 	expect,
+	expectAccessible,
 	ROUTES,
-	ROUTE_GROUPS,
 	SELECTORS,
-	TIMEOUTS,
-	expectAccessible
+	test,
+	TIMEOUTS
 } from "@e2e-fixtures";
-import AxeBuilder from "@axe-core/playwright";
-import type { Result } from "axe-core";
+import { Locator, Page } from "@playwright/test";
 
 /**
  * WCAG Accessibility E2E Tests for Admin Pages
@@ -26,18 +23,23 @@ import type { Result } from "axe-core";
 test.describe("Admin Routes - WCAG Accessibility",
 	() =>
 	{
-		const adminPages =
+		const adminPages: Array<{ path: string; name: string; waitFor: string; }> =
 			[
 				{ path: ROUTES.admin.dashboard, name: "Dashboard", waitFor: SELECTORS.adminDashboard.pageHeader },
 				{ path: ROUTES.admin.users, name: "Users", waitFor: SELECTORS.userManagement.dataTable },
 				{ path: ROUTES.admin.logs, name: "Logs", waitFor: SELECTORS.logManagement.dataTable },
-				{ path: ROUTES.admin.permissionRequests, name: "Permission Requests", waitFor: SELECTORS.permissionRequests.dataTable }
+				{
+					path: ROUTES.admin.permissionRequests,
+					name: "Permission Requests",
+					waitFor: SELECTORS.permissionRequests.dataTable
+				}
 			];
 
 		for (const pageInfo of adminPages)
 		{
-			test(`should have no critical accessibility violations on ${pageInfo.name} page`,
-				async ({ adminPage }: { adminPage: Page }) =>
+			test(
+				`should have no critical accessibility violations on ${pageInfo.name} page`,
+				async ({ adminPage }: { adminPage: Page; }) =>
 				{
 					await adminPage.goto(pageInfo.path);
 
@@ -55,19 +57,19 @@ test.describe("Admin Routes - WCAG Accessibility",
 			() =>
 			{
 				test("should have accessible data table on users page",
-					async ({ adminPage }: { adminPage: Page }) =>
+					async ({ adminPage }: { adminPage: Page; }) =>
 					{
 						await adminPage.goto(ROUTES.admin.users);
 
 						// Verify table has proper ARIA attributes
-						const table =
+						const table: Locator =
 							adminPage.locator(SELECTORS.dataTable.matTable);
 
 						await expect(table)
 							.toBeVisible();
 
 						// Check column headers are accessible
-						const headerCells =
+						const headerCells: Locator =
 							adminPage.locator(SELECTORS.dataTable.headerCell);
 
 						await expect(headerCells.first())
@@ -75,11 +77,11 @@ test.describe("Admin Routes - WCAG Accessibility",
 					});
 
 				test("should have accessible data table on logs page",
-					async ({ adminPage }: { adminPage: Page }) =>
+					async ({ adminPage }: { adminPage: Page; }) =>
 					{
 						await adminPage.goto(ROUTES.admin.logs);
 
-						const table =
+						const table: Locator =
 							adminPage.locator(SELECTORS.dataTable.matTable);
 
 						await expect(table)
@@ -91,19 +93,19 @@ test.describe("Admin Routes - WCAG Accessibility",
 			() =>
 			{
 				test("should have aria-labels on icon-only buttons",
-					async ({ adminPage }: { adminPage: Page }) =>
+					async ({ adminPage }: { adminPage: Page; }) =>
 					{
 						await adminPage.goto(ROUTES.admin.users);
 
 						// All icon buttons should have aria-label
-						const iconButtons =
+						const iconButtons: Locator =
 							adminPage.locator(SELECTORS.dataTable.iconButton);
-						const iconButtonCount =
+						const iconButtonCount: number =
 							await iconButtons.count();
 
-						for (let index = 0; index < iconButtonCount; index++)
+						for (let index: number = 0; index < iconButtonCount; index++)
 						{
-							const button =
+							const button: Locator =
 								iconButtons.nth(index);
 
 							await expect(
@@ -118,18 +120,20 @@ test.describe("Admin Routes - WCAG Accessibility",
 			() =>
 			{
 				test("should have proper landmark regions",
-					async ({ adminPage }: { adminPage: Page }) =>
+					async ({ adminPage }: { adminPage: Page; }) =>
 					{
 						await adminPage.goto(ROUTES.admin.dashboard);
 
 						// Wait for banner landmark to be attached to DOM
-						const banner =
+						const banner: Locator =
 							adminPage.locator(SELECTORS.accessibility.banner);
 
-						await banner.first()
-							.waitFor({ state: "attached", timeout: TIMEOUTS.api });
+						await banner
+							.first()
+							.waitFor(
+								{ state: "attached", timeout: TIMEOUTS.api });
 
-						const bannerCount =
+						const bannerCount: number =
 							await banner.count();
 
 						expect(
@@ -138,16 +142,16 @@ test.describe("Admin Routes - WCAG Accessibility",
 							.toBeGreaterThanOrEqual(1);
 
 						// Verify main content landmark exists
-						const main =
+						const main: Locator =
 							adminPage.locator(SELECTORS.accessibility.main);
 
 						await expect(main.first())
 							.toBeVisible();
 
 						// Verify at least one navigation landmark exists
-						const navigation =
+						const navigation: Locator =
 							adminPage.locator(SELECTORS.accessibility.navigation);
-						const navCount =
+						const navCount: number =
 							await navigation.count();
 
 						expect(
