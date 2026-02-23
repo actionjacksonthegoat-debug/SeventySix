@@ -6,11 +6,12 @@ import {
 	test,
 	expect,
 	getTestUserByRole,
+	fillUserCreateStepper,
 	SELECTORS,
 	ROUTES,
 	PAGE_TEXT,
 	TIMEOUTS
-} from "../../fixtures";
+} from "@e2e-fixtures";
 
 /**
  * E2E Tests for Admin User Create Page
@@ -96,68 +97,23 @@ test.describe("User Create",
 		test("should create user with valid data",
 			async ({ adminPage }) =>
 			{
+				// 4-step stepper + async validation + API response
+				test.setTimeout(60_000);
+
 				const timestamp: number =
 					Date.now();
-				const testUsername =
-					`e2e_test_${timestamp}`;
-				const testEmail =
-					`e2e_test_${timestamp}@test.local`;
 
-				// Wait for the form to render
+				// Wait for the form to render before filling
 				await expect(adminPage
 					.locator(SELECTORS.userCreate.usernameInput))
 					.toBeVisible({ timeout: TIMEOUTS.element });
 
-				// Register response listener BEFORE filling to avoid race conditions
-				const usernameCheckResponse =
-					adminPage.waitForResponse(
-						(response) =>
-							response.url().includes("/check/username/"));
-
-				// Step 1: Basic Information
-				await adminPage
-					.locator(SELECTORS.userCreate.usernameInput)
-					.fill(testUsername);
-				await adminPage
-					.locator(SELECTORS.userCreate.emailInput)
-					.fill(testEmail);
-
-				// Wait for async username availability validator to complete
-				await usernameCheckResponse;
-
-				// Ensure Angular has processed the validator result (PENDING → VALID)
-				await expect(adminPage
-					.locator(SELECTORS.userCreate.usernameInput))
-					.toHaveClass(/ng-valid/, { timeout: TIMEOUTS.api });
-
-				// getByRole excludes hidden step buttons (avoids strict mode violation)
-				const nextButton = () =>
-					adminPage.getByRole("button", { name: PAGE_TEXT.buttons.next });
-				const fullNameInput =
-					adminPage.locator(SELECTORS.userCreate.fullNameInput);
-
-				// Click Next and wait for step 2 to render
-				await nextButton().click();
-
-				// Step 2: Account Details — wait with extended timeout for stepper transition
-				await fullNameInput
-					.waitFor({ state: "visible", timeout: TIMEOUTS.api });
-				await fullNameInput
-					.fill(`E2E Test User ${timestamp}`);
-				await nextButton().click();
-
-				// Step 3: Roles (skip — optional)
-				// Wait for the Roles panel to render before advancing
-				await expect(adminPage
-					.getByRole("listbox", { name: PAGE_TEXT.labels.roleSelection }))
-					.toBeVisible({ timeout: TIMEOUTS.api });
-				await nextButton().click();
-
-				// Step 4: Review & Submit (uses matStepContent lazy rendering
-				// to ensure form data is fresh in Zoneless mode)
-				await expect(adminPage
-					.locator(SELECTORS.userCreate.createUserButton))
-					.toBeVisible({ timeout: TIMEOUTS.navigation });
+				await fillUserCreateStepper(adminPage,
+					{
+						username: `e2e_test_${timestamp}`,
+						email: `e2e_test_${timestamp}@test.local`,
+						fullName: `E2E Test User ${timestamp}`
+					});
 
 				await adminPage
 					.locator(SELECTORS.userCreate.createUserButton)
@@ -172,64 +128,27 @@ test.describe("User Create",
 		test("should create user and verify user appears in user list",
 			async ({ adminPage }) =>
 			{
+				// 4-step stepper + search + verify
+				test.setTimeout(60_000);
+
 				const timestamp: number =
 					Date.now();
 				const testUsername =
 					`e2e_verify_${timestamp}`;
-				const testEmail =
-					`e2e_verify_${timestamp}@test.local`;
 				const testFullName =
 					`Verify User ${timestamp}`;
 
-				// Wait for the form to render
+				// Wait for the form to render before filling
 				await expect(adminPage
 					.locator(SELECTORS.userCreate.usernameInput))
 					.toBeVisible({ timeout: TIMEOUTS.element });
 
-				// Register response listener BEFORE filling
-				const usernameCheckResponse =
-					adminPage.waitForResponse(
-						(response) =>
-							response.url().includes("/check/username/"));
-
-				// Step 1: Basic Information
-				await adminPage
-					.locator(SELECTORS.userCreate.usernameInput)
-					.fill(testUsername);
-				await adminPage
-					.locator(SELECTORS.userCreate.emailInput)
-					.fill(testEmail);
-
-				await usernameCheckResponse;
-
-				await expect(adminPage
-					.locator(SELECTORS.userCreate.usernameInput))
-					.toHaveClass(/ng-valid/, { timeout: TIMEOUTS.api });
-
-				const nextButton = () =>
-					adminPage.getByRole("button", { name: PAGE_TEXT.buttons.next });
-				const fullNameInput =
-					adminPage.locator(SELECTORS.userCreate.fullNameInput);
-
-				await nextButton().click();
-
-				// Step 2: Account Details
-				await fullNameInput
-					.waitFor({ state: "visible", timeout: TIMEOUTS.api });
-				await fullNameInput
-					.fill(`Verify User ${timestamp}`);
-				await nextButton().click();
-
-				// Step 3: Roles (skip)
-				await expect(adminPage
-					.getByRole("listbox", { name: PAGE_TEXT.labels.roleSelection }))
-					.toBeVisible({ timeout: TIMEOUTS.api });
-				await nextButton().click();
-
-				// Step 4: Review & Submit
-				await expect(adminPage
-					.locator(SELECTORS.userCreate.createUserButton))
-					.toBeVisible({ timeout: TIMEOUTS.navigation });
+				await fillUserCreateStepper(adminPage,
+					{
+						username: testUsername,
+						email: `e2e_verify_${timestamp}@test.local`,
+						fullName: testFullName
+					});
 
 				await adminPage
 					.locator(SELECTORS.userCreate.createUserButton)
@@ -272,6 +191,9 @@ test.describe("User Create",
 		test("should show error when creating user with duplicate email",
 			async ({ adminPage }) =>
 			{
+				// 4-step stepper + error assertion
+				test.setTimeout(60_000);
+
 				const existingUser =
 					getTestUserByRole("User");
 				const timestamp: number =
@@ -279,55 +201,17 @@ test.describe("User Create",
 				const uniqueUsername =
 					`e2e_dupemail_${timestamp}`;
 
-				// Wait for the form to render
+				// Wait for the form to render before filling
 				await expect(adminPage
 					.locator(SELECTORS.userCreate.usernameInput))
 					.toBeVisible({ timeout: TIMEOUTS.element });
 
-				// Register response listener BEFORE filling
-				const usernameCheckResponse =
-					adminPage.waitForResponse(
-						(response) =>
-							response.url().includes("/check/username/"));
-
-				// Step 1: Use unique username but existing email
-				await adminPage
-					.locator(SELECTORS.userCreate.usernameInput)
-					.fill(uniqueUsername);
-				await adminPage
-					.locator(SELECTORS.userCreate.emailInput)
-					.fill(existingUser.email);
-
-				await usernameCheckResponse;
-
-				await expect(adminPage
-					.locator(SELECTORS.userCreate.usernameInput))
-					.toHaveClass(/ng-valid/, { timeout: TIMEOUTS.api });
-
-				const nextButton = () =>
-					adminPage.getByRole("button", { name: PAGE_TEXT.buttons.next });
-				const fullNameInput =
-					adminPage.locator(SELECTORS.userCreate.fullNameInput);
-
-				await nextButton().click();
-
-				// Step 2: Account Details
-				await fullNameInput
-					.waitFor({ state: "visible", timeout: TIMEOUTS.api });
-				await fullNameInput
-					.fill(`Duplicate Email Test ${timestamp}`);
-				await nextButton().click();
-
-				// Step 3: Roles (skip)
-				await expect(adminPage
-					.getByRole("listbox", { name: PAGE_TEXT.labels.roleSelection }))
-					.toBeVisible({ timeout: TIMEOUTS.api });
-				await nextButton().click();
-
-				// Step 4: Submit with duplicate email
-				await expect(adminPage
-					.locator(SELECTORS.userCreate.createUserButton))
-					.toBeVisible({ timeout: TIMEOUTS.navigation });
+				await fillUserCreateStepper(adminPage,
+					{
+						username: uniqueUsername,
+						email: existingUser.email,
+						fullName: `Duplicate Email Test ${timestamp}`
+					});
 
 				await adminPage
 					.locator(SELECTORS.userCreate.createUserButton)

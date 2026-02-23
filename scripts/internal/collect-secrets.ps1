@@ -115,7 +115,9 @@ Write-Host ""
 $dbPassword = Read-Prompt -Prompt "  Database Container Password (min 8 chars)" -MinLength 8
 
 Write-Host ""
-Write-Host "--- Email (Brevo SMTP) ---" -ForegroundColor Cyan
+Write-Host "--- [OPTIONAL] Email (Brevo SMTP) ---" -ForegroundColor Cyan
+Write-Host "  Press Enter to skip — login will work with email + password only (no MFA email codes)."
+Write-Host "  You can add these later by running: npm run secrets:set"
 Write-Host "  Free tier: 300 emails/day (the app self-limits to 250/day)."
 Write-Host "  Sign up: https://app.brevo.com/account/register"
 Write-Host "  Find keys at: Settings > SMTP & API > SMTP Keys"
@@ -125,8 +127,14 @@ $smtpUsername = Read-Prompt -Prompt "  Brevo SMTP Username (e.g. 123abc@smtp-bre
 $smtpPassword = Read-Prompt -Prompt "  Brevo SMTP Password / API Key (the long xsmtpsib-... key)"
 $fromAddress = Read-Prompt -Prompt "  Sender Email Address (the From: address for outbound mail)"
 
+if ([string]::IsNullOrWhiteSpace($smtpUsername)) { $smtpUsername = "PLACEHOLDER_USE_USER_SECRETS" }
+if ([string]::IsNullOrWhiteSpace($smtpPassword)) { $smtpPassword = "PLACEHOLDER_USE_USER_SECRETS" }
+if ([string]::IsNullOrWhiteSpace($fromAddress)) { $fromAddress = "PLACEHOLDER_USE_USER_SECRETS" }
+
 Write-Host ""
-Write-Host "--- GitHub OAuth App ---" -ForegroundColor Cyan
+Write-Host "--- [OPTIONAL] GitHub OAuth App ---" -ForegroundColor Cyan
+Write-Host "  Press Enter to skip — OAuth login button will be hidden."
+Write-Host "  You can add these later by running: npm run secrets:set"
 Write-Host "  Create an app at: https://github.com/settings/developers"
 Write-Host "  Homepage URL:           https://localhost:4200"
 Write-Host "  Authorization callback: https://localhost:7074/api/v1/auth/oauth/github/callback"
@@ -134,6 +142,9 @@ Write-Host ""
 
 $githubClientId = Read-Prompt -Prompt "  GitHub OAuth App Client ID"
 $githubClientSecret = Read-Prompt -Prompt "  GitHub OAuth App Client Secret (the ghp_... or long hex value)"
+
+if ([string]::IsNullOrWhiteSpace($githubClientId)) { $githubClientId = "PLACEHOLDER_USE_USER_SECRETS" }
+if ([string]::IsNullOrWhiteSpace($githubClientSecret)) { $githubClientSecret = "PLACEHOLDER_USE_USER_SECRETS" }
 
 Write-Host ""
 Write-Host "--- Data Protection Certificate ---" -ForegroundColor Cyan
@@ -154,15 +165,26 @@ Write-Host ""
 Write-Host "========================================" -ForegroundColor Green
 Write-Host "  Review Configuration" -ForegroundColor Green
 Write-Host "========================================" -ForegroundColor Green
+
+$maskedAdminPw = if ($adminPassword.Length -gt 3) { "$($adminPassword.Substring(0,3))****" } else { "****" }
+$maskedDbPw = if ($dbPassword.Length -gt 3) { "$($dbPassword.Substring(0,3))****" }    else { "****" }
+$maskedSmtpPw = if ($smtpPassword -eq "PLACEHOLDER_USE_USER_SECRETS") { "[skipped]" }
+elseif ($smtpPassword.Length -gt 6) { "$($smtpPassword.Substring(0,6))****" }
+else { "****" }
+$maskedOAuthSec = if ($githubClientSecret -eq "PLACEHOLDER_USE_USER_SECRETS") { "[skipped]" }
+elseif ($githubClientSecret.Length -gt 6) { "$($githubClientSecret.Substring(0,6))****" }
+else { "****" }
+$maskedDpPw = if ($dataProtectionPassword.Length -gt 3) { "$($dataProtectionPassword.Substring(0,3))****" } else { "****" }
+
 Write-Host "  Admin User Email:              $adminEmail"
-Write-Host "  Admin User Password:           $adminPassword"
-Write-Host "  Database Container Password:   $dbPassword"
+Write-Host "  Admin User Password:           $maskedAdminPw"
+Write-Host "  Database Container Password:   $maskedDbPw"
 Write-Host "  Brevo SMTP Username:           $smtpUsername"
-Write-Host "  Brevo SMTP Password/Key:       $smtpPassword"
+Write-Host "  Brevo SMTP Password/Key:       $maskedSmtpPw"
 Write-Host "  Sender Email Address:          $fromAddress"
 Write-Host "  GitHub OAuth Client ID:        $githubClientId"
-Write-Host "  GitHub OAuth Client Secret:    $githubClientSecret"
-Write-Host "  DataProtection Cert Password:  $dataProtectionPassword"
+Write-Host "  GitHub OAuth Client Secret:    $maskedOAuthSec"
+Write-Host "  DataProtection Cert Password:  $maskedDpPw"
 Write-Host "  JWT Secret Key:                [auto-generated]"
 Write-Host "  Altcha HMAC Key:               [auto-generated]"
 Write-Host ""

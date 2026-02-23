@@ -1,7 +1,9 @@
+@use "variables" as vars;
+
 :host {
 	display: block;
 	text-align: center;
-	padding-top: 2rem;
+	padding-top: vars.$spacing-2xl;
 }
 
 .sandbox-title {

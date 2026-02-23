@@ -7,7 +7,6 @@ import {
 	expect,
 	unauthenticatedTest,
 	loginAsUser,
-	solveAltchaChallenge,
 	TOTP_ENROLL_USER,
 	TOTP_VIEWER_USER,
 	generateSafeTotpCodeFromSecret,
@@ -16,7 +15,7 @@ import {
 	ROUTES,
 	PAGE_TEXT,
 	TIMEOUTS
-} from "../../fixtures";
+} from "@e2e-fixtures";
 import type { Page } from "@playwright/test";
 
 /**
@@ -114,29 +113,14 @@ unauthenticatedTest.describe("TOTP Enrollment",
 		unauthenticatedTest("should complete TOTP enrollment with valid code",
 			async ({ unauthenticatedPage }) =>
 			{
+				// Login + TOTP wizard (scan + verify) + API cleanup
+				unauthenticatedTest.setTimeout(90_000);
+
 				const testUser =
 					TOTP_ENROLL_USER;
 
 				// Step 0: Login as the dedicated enrollment user
-				await unauthenticatedPage.goto(ROUTES.auth.login);
-				await unauthenticatedPage
-					.locator(SELECTORS.form.usernameInput)
-					.waitFor({ state: "visible", timeout: TIMEOUTS.globalSetup });
-				await unauthenticatedPage
-					.locator(SELECTORS.form.usernameInput)
-					.fill(testUser.username);
-				await unauthenticatedPage
-					.locator(SELECTORS.form.passwordInput)
-					.fill(testUser.password);
-
-				await solveAltchaChallenge(unauthenticatedPage);
-
-				await unauthenticatedPage
-					.locator(SELECTORS.form.submitButton)
-					.click();
-				await unauthenticatedPage.waitForURL(
-					ROUTES.home,
-					{ timeout: TIMEOUTS.globalSetup });
+				await loginAsUser(unauthenticatedPage, testUser);
 
 				// Navigate to TOTP setup
 				await unauthenticatedPage.goto(ROUTES.auth.totpSetup);

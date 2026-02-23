@@ -53,6 +53,7 @@ import { test, expect, ROUTES, SELECTORS } from "../../fixtures";
 | authenticated | User | `specs/authenticated/` |
 | admin | Admin | `specs/admin/` |
 | developer | Developer | `specs/developer/` |
+| home | User | `specs/home/` |
 
 ## Spec Pattern
 
@@ -100,6 +101,34 @@ expect(criticalViolations).toHaveLength(0);
 2. Export via `fixtures/index.ts`
 3. Use `data-testid` for selectors
 
+## Auto-Failure Diagnostics (Built-In)
+
+Every test automatically captures failure context via `diagnostics.fixture.ts`. On failure, the test attaches:
+
+| Attachment | Content |
+|------------|--------|
+| `failure-screenshot` | PNG screenshot at failure moment |
+| `failure-url` | The current page URL |
+| `failure-console-errors` | All `console.error()` messages captured during test |
+| `failure-network-errors` | All failed network requests (4xx/5xx + request failures) |
+
+The enhanced `concise-reporter.ts` reads these attachments and prints verbose diagnostics for **failures only** — passing tests show single-line output.
+
+**No action required** — this fixture is injected via `page-helpers.fixture.ts` → `diagnostics.fixture.ts` → `@playwright/test`. Automatic for ALL tests.
+
+## Fixture Chain
+
+```
+@playwright/test
+  └── diagnostics.fixture.ts    (auto-failure screenshots, console, network)
+       └── page-helpers.fixture.ts (AuthPageHelper, HomePageHelper, etc.)
+            └── auth.fixture.ts           (userPage, adminPage, developerPage)
+            └── unauthenticated.fixture.ts (unauthenticatedPage)
+            └── fresh-login.fixture.ts     (freshLoginTest)
+```
+
+When creating new fixtures, extend `page-helpers.fixture.ts` (or `diagnostics.fixture.ts` if page helpers aren't needed).
+
 ## Anti-Flake Rules (CRITICAL)
 
 | [NEVER] | [ALWAYS] |
@@ -115,8 +144,28 @@ expect(criticalViolations).toHaveLength(0);
 | `toHaveCount(expect.any(Number))` | `toHaveCount(exactInt)` or `expect(locator.first()).toBeVisible()` |
 | `waitForResponse` after trigger | Set up `waitForResponse` listener BEFORE the action that triggers it |
 | Chip/tab selection by `.nth(N)` | `.filter({ hasText: /label/i })` or `aria-selected` attribute |
+| `test.setTimeout()` without comment | Always add a comment: `// 2 logins + ALTCHA + MFA verify` |
 
-**Exception**: `waitForTimeout(≤100ms)` is acceptable ONLY for IntersectionObserver scroll timing where no observable state change exists to await (e.g., `@defer` block trigger via scroll).
+**Exception**: `waitForTimeout(≥10ms)` is acceptable ONLY for IntersectionObserver scroll timing where no observable state change exists to await (e.g., `@defer` block trigger via scroll).
+
+### Multi-Step Test Timeouts
+
+Tests with multiple sequential user flows (login + MFA + stepper + verify) need explicit timeouts. Use `test.setTimeout()` with a comment explaining the flow:
+
+```typescript
+test("should complete multi-step flow",
+    async ({ adminPage }) =>
+    {
+        // 4-step stepper + API validation + search verification
+        test.setTimeout(60_000);
+        // ...
+    });
+```
+
+**Guideline**: Default timeout (45s) covers most single-flow tests. Add explicit timeouts for:
+- Tests with 2+ ALTCHA solves (90s)
+- Tests with multi-step wizard/stepper (60s)
+- Tests creating isolated contexts + login (90s)
 
 ## CI Compatibility (CRITICAL)
 
@@ -189,16 +238,10 @@ await input.fill(testFullName);
 
 ```typescript
 // Reference: permission-request-list.spec.ts
-const isolatedContext: BrowserContext =
-    await browser.newContext({
-        baseURL: E2E_CONFIG.clientBaseUrl,
-        storageState: undefined,
-        ignoreHTTPSErrors: true
-    });
-const isolatedPage: Page = await isolatedContext.newPage();
+const { page: isolatedPage, context: isolatedContext } =
+    await loginInFreshContext(browser, PERM_APPROVE_USER);
 try
 {
-    await loginAsUser(isolatedPage, PERM_APPROVE_USER);
     // ... state-changing action (no restore needed) ...
 }
 finally

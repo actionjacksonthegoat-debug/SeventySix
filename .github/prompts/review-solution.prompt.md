@@ -42,30 +42,13 @@ Read EVERY file in `.github/instructions/` and scan the ENTIRE codebase for viol
 
 ### Stage 2: Security Sweep (OWASP + Identity)
 
-**A) Full OWASP / PII Security Scan:**
-- Scan ALL code and checked-in files for:
-  - Hardcoded secrets, API keys, connection strings, passwords
-  - PII exposure in logs, error messages, or API responses
-  - SQL injection vectors (raw SQL, string concatenation in queries)
-  - XSS vectors (unescaped user input in templates)
-  - CSRF token validation
-  - Insecure deserialization
-  - Missing input validation
-  - Insecure direct object references
-  - Security misconfiguration (default passwords, debug modes)
-  - Vulnerable dependencies (check package versions)
-
-**B) Authentication / Identity / MFA Deep Audit:**
-- Review EVERY file in `SeventySix.Domains.Identity/` and `auth/` client domain:
-  - Login flow: credential validation, lockout, brute-force protection
-  - MFA flow: code generation, hashing, verification, timing-safe comparison
-  - TOTP flow: secret generation, encryption at rest, enrollment, verification
-  - Token rotation: access token, refresh token, sliding expiration, revocation
-  - Backup codes: generation, hashing, single-use enforcement
-  - Trusted devices: cookie security, token lifetime, device limits
-  - Password policy: hashing algorithm (Argon2), complexity rules, breach detection
-  - Session management: cookie flags (Secure, HttpOnly, SameSite), CSRF
-  - Rate limiting: per-endpoint limits, MFA attempt tracking
+> **Delegate to `/security-review`** — run the standalone security review prompt which covers:
+> - Full OWASP / PII Security Scan (Stages 1-2 of `/security-review`)
+> - Authentication / Identity / MFA Deep Audit (Stage 3 of `/security-review`)
+> - Infrastructure Security (Stage 4 of `/security-review`)
+> - Client-Side Security (Stage 5 of `/security-review`)
+>
+> Fix all Critical and High findings before proceeding to Stage 3.
 
 ### Stage 3: Dead Code and Structural Alignment Sweep
 

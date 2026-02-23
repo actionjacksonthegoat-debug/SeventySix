@@ -5,7 +5,7 @@ description: Execute all remaining phases in Implementation.md
 
 # Execute Implementation Plan
 
-Proceed through **all remaining phases** across all `implementation-N.md` files listed in the `Implementation.md` orchestrator, following every project rule. Execute each implementation file completely before moving to the next. Final validation (all required test suites) runs ONLY after all implementation files are complete.
+Proceed through **all remaining phases** across all `implementation-N.md` files listed in the `Implementation.md` orchestrator, following every project rule. Execute each implementation file completely before moving to the next. A mandatory security review (OWASP/PII/Auth) runs after all implementation phases complete and before the final test gate. Final validation (all required test suites) runs ONLY after the security review passes.
 
 ## MCP Tools
 
@@ -22,9 +22,27 @@ Proceed through **all remaining phases** across all `implementation-N.md` files 
 5. **Do NOT send commits** — I will handle these
 6. **Do NOT run** `npm run db:reset`, `db:reset`, or any `reset-database` command
 
+## [CRITICAL] Security Review Gate — Runs Before Final Tests
+
+After completing ALL implementation phases but BEFORE running the final test gate:
+
+1. **Execute the `/security-review` prompt** — perform a full OWASP/PII/Auth security audit
+2. **Fix ALL Critical and High findings** — these block release
+3. **Document Medium findings** as GitHub issues if not fixable immediately
+4. **Run `npm run format`** after any security fixes
+
+This security review is NON-NEGOTIABLE. The codebase must be verified clean of:
+- Hardcoded secrets, API keys, passwords, connection strings
+- PII exposure (developer names, emails, machine paths)
+- OWASP Top 10 vulnerabilities
+- Authentication/authorization bypasses
+- Sensitive data in logs or error responses
+
+Only after the security review passes with zero Critical/High findings do you proceed to the test gate.
+
 ## [CRITICAL] Completion Gate — all required test suites, no exceptions
 
-After the final phase, run all required test suites and confirm they pass:
+After the security review passes, run all required test suites and confirm they pass:
 
 | Suite        | Command              | Must See                            |
 | ------------ | -------------------- | ----------------------------------- |

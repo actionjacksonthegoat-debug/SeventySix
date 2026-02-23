@@ -70,7 +70,7 @@
 
 	// File settings
 	"files.trimTrailingWhitespace": true,
-	"files.insertFinalNewline": true,
+	"files.insertFinalNewline": false,
 
 	// Default line ending (LF for cross-platform, overridden per language above)
 	"files.eol": "\n",

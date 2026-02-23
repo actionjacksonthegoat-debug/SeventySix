@@ -39,6 +39,13 @@ export { solveAltchaChallenge } from "./helpers/altcha.helper";
 // Accessibility helper
 export { expectAccessible } from "./helpers/accessibility.helper";
 
+// Scroll helper (shared across home.spec.ts and landing-page.spec.ts)
+export { scrollUntilVisible, triggerAllDeferBlocks } from "./helpers/scroll.helper";
+
+// User-create stepper helper (shared across user-create.spec.ts tests)
+export { fillUserCreateStepper } from "./helpers/user-create.helper";
+export type { CreateUserOptions } from "./helpers/user-create.helper";
+
 // Test users
 export { TEST_USERS, getTestUserByRole, MFA_BACKUP_CODES, FORCE_PASSWORD_CHANGE_USER, FORCE_PASSWORD_CHANGE_LIFECYCLE_USER, PASSWORD_CHANGE_USER, TOTP_ENROLL_USER, TOTP_VIEWER_USER, BACKUP_CODES_USER, FORGOT_PASSWORD_USER, LOCKOUT_USER, CONCURRENT_USER, CROSSTAB_USER, PERM_APPROVE_USER, PROFILE_EDIT_USER } from "./test-users.constant";
 export type { TestUser } from "./test-users.constant";

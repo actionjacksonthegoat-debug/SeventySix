@@ -3,8 +3,10 @@
 // </copyright>
 
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using SeventySix.Identity.Constants;
+using SeventySix.Shared.Extensions;
 
 namespace SeventySix.Identity.Commands.CreatePermissionRequest;
 
@@ -131,9 +133,16 @@ public static class CreatePermissionRequestCommandHandler
 					CreatedBy = command.Username,
 				};
 
-			await repository.CreateAsync(
-				entity,
-				cancellationToken);
+			try
+			{
+				await repository.CreateAsync(
+					entity,
+					cancellationToken);
+			}
+			catch (DbUpdateException exception) when (exception.IsDuplicateKeyViolation())
+			{
+				// Concurrent request already inserted this role — skip gracefully (idempotent)
+			}
 		}
 
 		// Invalidate caches, requests are updated.

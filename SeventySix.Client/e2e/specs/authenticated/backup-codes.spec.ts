@@ -11,7 +11,7 @@ import {
 	ROUTES,
 	PAGE_TEXT,
 	TIMEOUTS
-} from "../../fixtures";
+} from "@e2e-fixtures";
 import type { Page } from "@playwright/test";
 
 /**

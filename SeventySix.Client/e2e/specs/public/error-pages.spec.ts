@@ -5,7 +5,7 @@ import {
 	SELECTORS,
 	PAGE_TEXT,
 	TIMEOUTS
-} from "../../fixtures";
+} from "@e2e-fixtures";
 
 /**
  * E2E Tests for Error Pages

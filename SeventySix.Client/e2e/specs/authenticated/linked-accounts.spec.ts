@@ -10,7 +10,7 @@ import {
 	SELECTORS,
 	PAGE_TEXT,
 	expectAccessible
-} from "../../fixtures";
+} from "@e2e-fixtures";
 
 /**
  * E2E Tests for Linked Accounts Section (Profile Page)

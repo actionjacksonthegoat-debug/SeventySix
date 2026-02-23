@@ -33,37 +33,45 @@ Ask user which category this test belongs to:
 | authenticated | `e2e/specs/authenticated/` | User role      | General authenticated access |
 | admin         | `e2e/specs/admin/`         | Admin role     | Admin-only features          |
 | developer     | `e2e/specs/developer/`     | Developer role | Developer tools/features     |
+| home          | `e2e/specs/home/`          | User role      | Landing/home page features   |
 
 ## E2E Structure
 
 ```
 
 SeventySix.Client/e2e/
-├── global-setup.ts # Creates auth states before all tests
+├── global-setup.ts                  # Creates auth states before all tests
 ├── fixtures/
-│ ├── index.ts # Barrel export - ALWAYS import from here
-│ ├── auth.fixture.ts # Role-based authenticated pages
-│ ├── fresh-login.fixture.ts # For destructive auth tests (logout)
-│ ├── unauthenticated.fixture.ts
-│ ├── page-helpers.fixture.ts # Page helper fixtures
-│ ├── pages/ # Page Object Model classes
-│ │ ├── index.ts
-│ │ ├── auth.page.ts
-│ │ ├── home.page.ts
-│ │ └── admin-dashboard.page.ts
-│ ├── selectors.constant.ts # Centralized CSS selectors
-│ ├── routes.constant.ts # Application routes
-│ ├── page-text.constant.ts # UI text constants
-│ ├── timeouts.constant.ts # Timeout values
-│ ├── test-users.constant.ts # Seeded test user credentials
-│ └── assertions.helper.ts # Custom assertion helpers
+│   ├── index.ts                     # Barrel export - ALWAYS import from here
+│   ├── diagnostics.fixture.ts       # Auto-failure diagnostics (photos, console, network)
+│   ├── auth.fixture.ts              # Role-based authenticated pages
+│   ├── fresh-login.fixture.ts       # For destructive auth tests (logout)
+│   ├── unauthenticated.fixture.ts
+│   ├── page-helpers.fixture.ts      # Page helper fixtures
+│   ├── helpers/
+│   │   ├── scroll.helper.ts         # scrollUntilVisible, triggerAllDeferBlocks
+│   │   └── user-create.helper.ts    # fillUserCreateStepper
+│   ├── pages/                       # Page Object Model classes
+│   │   ├── index.ts
+│   │   ├── auth.page.ts
+│   │   ├── home.page.ts
+│   │   └── admin-dashboard.page.ts
+│   ├── selectors.constant.ts        # Centralized CSS selectors
+│   ├── routes.constant.ts           # Application routes
+│   ├── page-text.constant.ts        # UI text constants
+│   ├── timeouts.constant.ts         # Timeout values
+│   ├── test-users.constant.ts       # Seeded test user credentials
+│   └── assertions.helper.ts         # Custom assertion helpers
 └── specs/
-├── public/ # No auth required
-├── authenticated/ # User role auth
-├── admin/ # Admin role auth
-└── developer/ # Developer role auth
+    ├── public/                      # No auth required
+    ├── authenticated/               # User role auth
+    ├── admin/                       # Admin role auth
+    ├── developer/                   # Developer role auth
+    └── home/                        # Home/landing page (User role)
 
 ```
+
+> **Auto-Failure Diagnostics**: Every test automatically captures a screenshot, current URL, console errors, and failed network requests on failure. These appear in the reporter output. No extra code needed — it's injected via `diagnostics.fixture.ts`.
 
 ## Import Rules
 
@@ -193,12 +201,62 @@ Use `freshLoginTest` for tests that modify authentication state:
 ```typescript
 import { freshLoginTest } from "../../fixtures";
 
-freshLoginTest.describe("Logout Flow", () => {
-	freshLoginTest("should log out and redirect to login", async ({ userPage }) => {
-		// userPage has fresh login, safe to log out
-	});
+freshLoginTest.describe("Logout Flow", () =>
+{
+    freshLoginTest("should log out and redirect to login", async ({ userPage }) =>
+    {
+        // userPage has fresh login, safe to log out
+    });
 });
 ```
+
+### Isolated Fresh Context (Approve/Reject as Different User)
+
+Use `loginInFreshContext` when a test step must run as a **different user** while the main test page remains active:
+
+```typescript
+import { test, loginInFreshContext, ISOLATED_USER } from "../../fixtures";
+
+test("should approve request",
+    async ({ userPage, browser }) =>
+    {
+        // 2 logins + isolated context creation
+        test.setTimeout(90_000);
+
+        // ... userPage performs setup actions ...
+
+        const { page: adminPage, context: adminContext } =
+            await loginInFreshContext(browser, ISOLATED_USER);
+        try
+        {
+            // ... adminPage performs state-changing action ...
+        }
+        finally
+        {
+            await adminContext.close();
+        }
+    });
+```
+
+### Multi-Step Test Timeouts
+
+Add `test.setTimeout()` with a comment when a test has multiple sequential steps:
+
+```typescript
+test("should complete wizard",
+    async ({ adminPage }) =>
+    {
+        // 4-step stepper + API validation + search verification
+        test.setTimeout(60_000);
+        // ...
+    });
+```
+
+| Scenario | Timeout |
+|----------|---------|
+| Default single-flow | 45s (no override needed) |
+| Multi-step wizard/stepper | 60s |
+| 2+ logins or ALTCHA solves | 90s |
 
 ## Formatting & CLI
 

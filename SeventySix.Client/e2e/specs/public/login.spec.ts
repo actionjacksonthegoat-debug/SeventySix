@@ -11,7 +11,7 @@ import {
 	PAGE_TEXT,
 	TIMEOUTS,
 	COOKIE_NAMES
-} from "../../fixtures";
+} from "@e2e-fixtures";
 
 /**
  * E2E Tests for Login Page

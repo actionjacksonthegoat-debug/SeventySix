@@ -1,15 +1,75 @@
-import { Browser, BrowserContext, Page } from "@playwright/test";
+import type { Page } from "@playwright/test";
 import {
 	test,
 	expect,
+	loginInFreshContext,
 	ROUTES,
 	SELECTORS,
 	PAGE_TEXT,
 	TIMEOUTS,
-	E2E_CONFIG,
-	PERM_APPROVE_USER,
-	loginAsUser
-} from "../../fixtures";
+	PERM_APPROVE_USER
+} from "@e2e-fixtures";
+
+/**
+ * Creates a permission request via the UI as an isolated user so it appears
+ * in the admin permission request list for approve/reject workflow testing.
+ * Uses PERM_APPROVE_USER to avoid polluting shared e2e_user with granted roles.
+ *
+ * @param {Page} isolatedPage
+ * A page logged in as the isolated permission user.
+ *
+ * @returns {Promise<void>}
+ */
+async function createPermissionRequestViaUi(
+	isolatedPage: Page): Promise<void>
+{
+	await isolatedPage.goto(ROUTES.account.permissions);
+
+	// Wait for roles to load
+	const roleCheckbox =
+		isolatedPage.locator(SELECTORS.requestPermissions.roleCheckbox).first();
+	const noRolesMessage =
+		isolatedPage.locator(SELECTORS.requestPermissions.noRolesMessage);
+
+	await expect(roleCheckbox.or(noRolesMessage))
+		.toBeVisible({ timeout: TIMEOUTS.api });
+
+	// Only proceed if roles are available
+	const hasRoles =
+		await roleCheckbox.isVisible();
+
+	if (!hasRoles)
+	{
+		throw new Error(
+			"PERM_APPROVE_USER has no requestable roles — "
+			+ "prior run may have granted them. "
+			+ "The E2E seeder should reset this user's roles between runs.");
+	}
+
+	// Click the internal input to reliably trigger (change) event
+	await roleCheckbox.locator("input").check();
+
+	// Fill in a unique message
+	const messageTextarea =
+		isolatedPage.locator(SELECTORS.requestPermissions.messageTextarea);
+	await messageTextarea.fill(`E2E test ${Date.now()}`);
+
+	// Submit and wait for API response
+	const submitButton =
+		isolatedPage.locator(SELECTORS.requestPermissions.submitButton);
+	await expect(submitButton)
+		.toBeEnabled();
+
+	const responsePromise =
+		isolatedPage.waitForResponse(
+			(response) =>
+				response.url().includes("/permission-requests")
+				&& response.request().method() === "POST"
+				&& response.status() === 204);
+
+	await submitButton.click();
+	await responsePromise;
+}
 
 /**
  * E2E Tests for Permission Request List Page
@@ -113,81 +173,18 @@ test.describe("Permission Request List Page",
 		test.describe("Approve Workflow",
 			() =>
 			{
-				/**
-				 * Creates a permission request via the UI as an isolated user so it appears
-				 * in the admin permission request list for approval testing.
-				 * Uses PERM_APPROVE_USER to avoid polluting shared e2e_user with granted roles.
-				 *
-				 * @param {Page} isolatedPage
-				 * A fresh page logged in as the isolated permission-approve user.
-				 *
-				 * @returns {Promise<void>}
-				 */
-				async function createPermissionRequestViaUi(
-					isolatedPage: Page): Promise<void>
-				{
-					await isolatedPage.goto(ROUTES.account.permissions);
-
-					// Wait for roles to load
-					const roleCheckbox =
-						isolatedPage.locator(SELECTORS.requestPermissions.roleCheckbox).first();
-					const noRolesMessage =
-						isolatedPage.locator(SELECTORS.requestPermissions.noRolesMessage);
-
-					await expect(roleCheckbox.or(noRolesMessage))
-						.toBeVisible({ timeout: TIMEOUTS.api });
-
-					// Only proceed if roles are available
-					const hasRoles =
-						await roleCheckbox.isVisible();
-
-					if (!hasRoles)
-					{
-						return;
-					}
-
-					// Click the internal input to reliably trigger (change) event
-					await roleCheckbox.locator("input").check();
-
-					// Fill in a unique message
-					const messageTextarea =
-						isolatedPage.locator(SELECTORS.requestPermissions.messageTextarea);
-					await messageTextarea.fill(`E2E approve test ${Date.now()}`);
-
-					// Submit and wait for API response
-					const submitButton =
-						isolatedPage.locator(SELECTORS.requestPermissions.submitButton);
-					await expect(submitButton)
-						.toBeEnabled();
-
-					const responsePromise =
-						isolatedPage.waitForResponse(
-							(response) =>
-								response.url().includes("/permission-requests")
-								&& response.request().method() === "POST"
-								&& response.status() === 204);
-
-					await submitButton.click();
-					await responsePromise;
-				}
-
 				test("should approve a permission request and show notification",
-					async ({ browser, adminPage }: { browser: Browser; adminPage: Page }) =>
+					async ({ browser, adminPage }) =>
 					{
+						// Fresh context + login + UI request creation + admin action
+						test.setTimeout(90_000);
+
 						// Step 1: Create an isolated page without inherited storage state
-						const isolatedContext: BrowserContext =
-							await browser.newContext({
-								baseURL: E2E_CONFIG.clientBaseUrl,
-								storageState: undefined,
-								ignoreHTTPSErrors: true
-							});
-						const isolatedPage: Page =
-							await isolatedContext.newPage();
+						const { page: isolatedPage, context: isolatedContext } =
+							await loginInFreshContext(browser, PERM_APPROVE_USER);
 
 						try
 						{
-							await loginAsUser(isolatedPage, PERM_APPROVE_USER);
-
 							// Step 2: Create a permission request as the isolated user
 							await createPermissionRequestViaUi(isolatedPage);
 
@@ -236,71 +233,13 @@ test.describe("Permission Request List Page",
 		test.describe("Reject Workflow",
 			() =>
 			{
-				/**
-				 * Creates a permission request via the UI as e2e_user.
-				 * Uses the authenticated userPage to navigate to the permissions page
-				 * and submit a request through the form (page.request.post() cannot carry
-				 * Bearer tokens since they live in Angular's memory).
-				 *
-				 * @param {Page} userPage
-				 * The page authenticated as the user role.
-				 *
-				 * @returns {Promise<void>}
-				 */
-				async function createPermissionRequestViaUi(
-					userPage: Page): Promise<void>
-				{
-					await userPage.goto(ROUTES.account.permissions);
-
-					// Wait for roles to load
-					const roleCheckbox =
-						userPage.locator(SELECTORS.requestPermissions.roleCheckbox).first();
-					const noRolesMessage =
-						userPage.locator(SELECTORS.requestPermissions.noRolesMessage);
-
-					await expect(roleCheckbox.or(noRolesMessage))
-						.toBeVisible({ timeout: TIMEOUTS.api });
-
-					// Only proceed if roles are available
-					const hasRoles =
-						await roleCheckbox.isVisible();
-
-					if (!hasRoles)
-					{
-						return;
-					}
-
-					// Click the internal input to reliably trigger (change) event
-					await roleCheckbox.locator("input").check();
-
-					// Fill in a unique message
-					const messageTextarea =
-						userPage.locator(SELECTORS.requestPermissions.messageTextarea);
-					await messageTextarea.fill(`E2E reject test ${Date.now()}`);
-
-					// Submit and wait for API response
-					const submitButton =
-						userPage.locator(SELECTORS.requestPermissions.submitButton);
-					await expect(submitButton)
-						.toBeEnabled();
-
-					const responsePromise =
-						userPage.waitForResponse(
-							(response) =>
-								response.url().includes("/permission-requests")
-								&& response.request().method() === "POST"
-								&& response.status() === 204);
-
-					await submitButton.click();
-					await responsePromise;
-				}
-
 				test("should reject a permission request via row action menu",
-					async ({ userPage, adminPage }: { userPage: Page; adminPage: Page }) =>
+					async ({ userPage, adminPage }) =>
 					{
-						// Step 1: Create a permission request via UI
-						await createPermissionRequestViaUi(userPage);
-
+						// Fresh context + login + UI request creation + admin rejection
+						test.setTimeout(90_000);
+					// Step 1: Create a permission request via UI
+					await createPermissionRequestViaUi(userPage);
 						// Step 2: Navigate admin to permission requests
 						await adminPage.goto(ROUTES.admin.permissionRequests);
 

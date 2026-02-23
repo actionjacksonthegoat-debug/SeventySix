@@ -13,13 +13,13 @@
 		margin-bottom: vars.$spacing-lg;
 
 		mat-checkbox {
-			align-items: flex-start; // Align checkbox indicator to top of multi-line label
+			align-items: center;
 		}
 
 		.role-label {
 			display: flex;
 			flex-direction: column;
-			gap: vars.$spacing-xs;
+			gap: 0;
 		}
 
 		.role-description {

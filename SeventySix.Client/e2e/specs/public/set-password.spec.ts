@@ -9,7 +9,7 @@ import {
 	ROUTES,
 	PAGE_TEXT,
 	TIMEOUTS
-} from "../../fixtures";
+} from "@e2e-fixtures";
 
 /**
  * E2E Tests for Set Password Page

@@ -11,14 +11,19 @@
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
+		gap: vars.$spacing-lg;
 		margin-bottom: vars.$spacing-2xl;
 
 		h1 {
 			margin: 0;
+			flex: 1;
+			min-width: 0;
+			@include vars.truncate-text();
 		}
 
 		.page-actions {
 			display: flex;
+			flex-shrink: 0;
 			gap: vars.$spacing-md;
 			align-items: center;
 
@@ -28,8 +33,6 @@
 					display: inline-flex;
 					align-items: center;
 					vertical-align: middle;
-					height: vars.$chip-height-sm;
-					line-height: vars.$chip-height-sm;
 				}
 			}
 		}
@@ -114,7 +117,7 @@
 			}
 
 			.no-roles {
-				color: var(--color-text-secondary);
+				color: var(--mat-sys-on-surface-variant);
 				font-style: italic;
 			}
 		}

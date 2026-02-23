@@ -11,7 +11,7 @@ import {
 	PAGE_TEXT,
 	TIMEOUTS,
 	E2E_CONFIG
-} from "../../fixtures";
+} from "@e2e-fixtures";
 
 /**
  * E2E Tests for Forgot Password Flow

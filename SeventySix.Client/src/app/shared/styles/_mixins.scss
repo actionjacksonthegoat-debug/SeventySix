@@ -747,11 +747,14 @@
 	$max-width: vars.$container-width-sm,
 	$content-gap: vars.$spacing-xl
 ) {
+	display: flex;
+	flex: 1;
+
 	.error-page {
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		min-height: 100vh;
+		flex: 1;
 		padding: vars.$spacing-2xl;
 
 		.error-container {

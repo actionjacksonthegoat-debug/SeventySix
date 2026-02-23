@@ -13,7 +13,7 @@
 				<mat-icon aria-hidden="true">{{ themeService.isDark() ? "light_mode" : "dark_mode" }}</mat-icon>
 				{{ themeService.isDark() ? "Light" : "Dark" }} Mode
 			</button>
-			<mat-form-field appearance="outline">
+			<mat-form-field appearance="outline" subscriptSizing="dynamic">
 				<mat-label>Color Scheme</mat-label>
 				<mat-select
 					[value]="themeService.colorScheme()"

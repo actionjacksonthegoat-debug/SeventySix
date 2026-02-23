@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+import * as fs from "fs";
 import type {
 	FullConfig,
 	FullResult,
@@ -135,6 +136,7 @@ class ConciseReporter implements Reporter
 			`    ${COLORS.red}${errorMessage}${COLORS.reset}`);
 		console.log(
 			`    ${COLORS.dim}at ${fileLocation}${COLORS.reset}`);
+		this.printDiagnostics(result);
 	}
 
 	onEnd(result: FullResult): void
@@ -195,11 +197,47 @@ class ConciseReporter implements Reporter
 			?? "Unknown error";
 
 		// Truncate long messages
-		const maxLength: number = 120;
+		const maxLength: number = 200;
 
 		return firstLine.length > maxLength
 			? `${firstLine.substring(0, maxLength)}...`
 			: firstLine;
+	}
+
+	/**
+	 * Prints diagnostics attachment content (console errors, network failures)
+	 * to the terminal when a test fails.
+	 * @param result
+	 * The test result to read diagnostics from.
+	 */
+	private printDiagnostics(result: TestResult): void
+	{
+		const attachment =
+			result.attachments.find(
+				(attachment) => attachment.name === "diagnostics" && attachment.path != null);
+
+		if (!attachment?.path || !fs.existsSync(attachment.path))
+		{
+			return;
+		}
+
+		const content: string =
+			fs.readFileSync(attachment.path, "utf8");
+
+		const lines: string[] =
+			content.split("\n").filter((line) => line.trim().length > 0);
+
+		if (lines.length === 0)
+		{
+			return;
+		}
+
+		console.log(`    ${COLORS.dim}── Diagnostics ──${COLORS.reset}`);
+
+		for (const line of lines)
+		{
+			console.log(`    ${COLORS.dim}${line}${COLORS.reset}`);
+		}
 	}
 
 	/**

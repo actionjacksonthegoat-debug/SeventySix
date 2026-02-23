@@ -53,6 +53,10 @@
 > All tests must also be verified to pass in an environment matching CI/CD (`ubuntu-latest`, Linux Docker).
 > This applies to ALL plan completion gates — E2E, load tests, server tests, and client tests.
 
+## [CRITICAL] Security Review Gate
+
+> Before running the final test gate, execute the `/security-review` prompt to perform a comprehensive OWASP/PII/Auth security audit. Fix ALL Critical and High findings before proceeding to tests. This gate is mandatory for all plan executions — the workflow is: **Implementation phases → `/security-review` → `npm run format` → Test Gate**.
+
 ## [CRITICAL] Tests MUST Pass (GATE CONDITION)
 
 | Suite        | Command              | Must See                            |
@@ -255,9 +259,18 @@ npm run test:e2e -- specs/auth/login.spec.ts
 
 # Filter by test name
 npm run test:e2e -- --grep "should display login form"
+
+# Keep environment alive for Playwright MCP debugging
+npm run test:e2e -- --keepalive specs/failing-test.spec.ts
 ```
 
 Only run the full `npm run test:e2e` suite for final validation.
+
+### Auto-Failure Diagnostics
+
+The E2E test reporter automatically prints failure diagnostics (screenshot path, URL, console errors, failed network requests) for every failed test. No extra instrumentation needed — it's built into the fixture chain via `diagnostics.fixture.ts`.
+
+Use the Playwright MCP server for interactive selector debugging when the E2E environment is kept alive with `--keepalive`.
 
 ---
 
@@ -282,13 +295,35 @@ npm run test:e2e -- --keepalive
 
 | File                             | Scope                                          |
 | -------------------------------- | ---------------------------------------------- |
-| `formatting.instructions.md`     | `**/SeventySix.Client/src/**,**/SeventySix.Server/**` � naming, structure, operators  |
+| `formatting.instructions.md`     | `**/SeventySix.Client/src/**/*.{ts,html,scss,css},**/SeventySix.Server/**/*.cs` — naming, structure, operators  |
 | `angular.instructions.md`        | `**/SeventySix.Client/src/**/*.ts`             |
 | `csharp.instructions.md`         | `**/SeventySix.Server/**/*.cs`                 |
-| `security.instructions.md`       | `**/SeventySix.Client/src/**,**/SeventySix.Server/**` � ProblemDetails, auth errors   |
+| `security.instructions.md`       | `**/SeventySix.Client/src/**/*.ts,**/SeventySix.Server/**/*.cs` — ProblemDetails, auth errors   |
 | `accessibility.instructions.md`  | `**/SeventySix.Client/src/**/*.{ts,html,scss}` |
 | `testing-server.instructions.md` | `**/SeventySix.Server/Tests/**/*.cs`           |
 | `testing-client.instructions.md` | `**/SeventySix.Client/src/**/*.spec.ts`        |
 | `e2e.instructions.md`            | `**/SeventySix.Client/e2e/**/*.ts`             |
-| `new-domain.instructions.md`     | Manual reference � domain blueprints           |
-| `load-testing.instructions.md`   | `**/SeventySix.Client/load-testing/**/*.js` � k6 load test patterns |
+| `new-domain.instructions.md`     | Manual reference — domain blueprints           |
+| `load-testing.instructions.md`   | `**/SeventySix.Client/load-testing/**/*.js` — k6 load test patterns |
+
+## Prompt Index (Invoked via `/prompt-name` in Chat)
+
+| Prompt | Description |
+| ------ | ----------- |
+| `/code-review` | Review and auto-fix staged changes against all project rules |
+| `/create-plan` | Create a new Implementation.md plan for upcoming work |
+| `/execute-plan` | Execute all remaining phases in Implementation.md |
+| `/fix-warnings` | Find and fix all build/lint warnings across client and server |
+| `/new-angular-service` | Generate Angular service with correct scoping for SeventySix domains |
+| `/new-client-domain` | Scaffold a complete new client-side Angular domain |
+| `/new-component` | Generate Angular component following SeventySix patterns |
+| `/new-domain-feature` | Scaffold full-stack feature with Angular client and .NET server |
+| `/new-e2e-test` | Generate E2E tests using Playwright following SeventySix patterns |
+| `/new-load-test` | Add a new k6 load test scenario to SeventySix.Client/load-testing |
+| `/new-server-domain` | Scaffold a complete new server-side bounded context domain |
+| `/new-service` | Generate .NET service with repository following SeventySix patterns |
+| `/review-plan` | Review an Implementation.md plan against all project rules |
+| `/review-solution` | Deep review of entire codebase against all rules and best practices |
+| `/run-site-base` | Automated full-site walkthrough using Chrome DevTools MCP with screenshots |
+| `/security-review` | Comprehensive OWASP/PII/Auth security audit of the entire codebase |
+| `/update-documentation` | Study and align all READMEs and documentation across the project |

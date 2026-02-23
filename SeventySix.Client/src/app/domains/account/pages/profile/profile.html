@@ -1,3 +1,5 @@
+<app-page-header title="My Profile" icon="person" />
+
 <div class="profile-page">
 	@if (isLoading()) {
 	<mat-card>
@@ -43,7 +45,7 @@
 					</mat-error>
 				</mat-form-field>
 
-				<mat-form-field appearance="outline">
+				<mat-form-field appearance="outline" subscriptSizing="dynamic">
 					<mat-label>Full Name</mat-label>
 					<input
 						matInput

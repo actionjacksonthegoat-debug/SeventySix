@@ -1,6 +1,6 @@
 ---
 description: Secure exception handling, ProblemDetails, and auth error patterns
-applyTo: "**/SeventySix.Client/src/**/*.{ts,cs},**/SeventySix.Server/**/*.{ts,cs}"
+applyTo: "**/SeventySix.Client/src/**/*.ts,**/SeventySix.Server/**/*.cs"
 ---
 
 # Security Patterns

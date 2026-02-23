@@ -3,7 +3,7 @@
 // </copyright>
 
 import {
-	unauthenticatedTest as test,
+	unauthenticatedTest,
 	expect,
 	FORCE_PASSWORD_CHANGE_USER,
 	FORCE_PASSWORD_CHANGE_LIFECYCLE_USER,
@@ -15,7 +15,7 @@ import {
 	API_ROUTES,
 	loginAsUser,
 	ChangePasswordPageHelper
-} from "../../fixtures";
+} from "@e2e-fixtures";
 
 /**
  * E2E Tests for Forced Password Change Flow
@@ -31,7 +31,7 @@ import {
  * Uses `e2e_force_pw` user (read-only tests) and `e2e_force_pw_lifecycle` user
  * (password change lifecycle test) to prevent state interference.
  */
-test.describe("Forced Password Change",
+unauthenticatedTest.describe("Forced Password Change",
 	() =>
 	{
 		/**
@@ -56,7 +56,7 @@ test.describe("Forced Password Change",
 				});
 		}
 
-		test("should redirect to change password after login",
+		unauthenticatedTest("should redirect to change password after login",
 			async ({ unauthenticatedPage }) =>
 			{
 				await loginAsForcedUser(unauthenticatedPage);
@@ -65,7 +65,7 @@ test.describe("Forced Password Change",
 					.toHaveURL(/change-password.*required=true/);
 			});
 
-		test("should show required password change notice",
+		unauthenticatedTest("should show required password change notice",
 			async ({ unauthenticatedPage }) =>
 			{
 				await loginAsForcedUser(unauthenticatedPage);
@@ -81,7 +81,7 @@ test.describe("Forced Password Change",
 						PAGE_TEXT.changePassword.requiredNotice);
 			});
 
-		test("should block navigation to account route via guard",
+		unauthenticatedTest("should block navigation to account route via guard",
 			async ({ unauthenticatedPage }) =>
 			{
 				await loginAsForcedUser(unauthenticatedPage);
@@ -94,7 +94,7 @@ test.describe("Forced Password Change",
 						{ timeout: TIMEOUTS.auth });
 			});
 
-		test("should display change password form fields",
+		unauthenticatedTest("should display change password form fields",
 			async ({ unauthenticatedPage }) =>
 			{
 				await loginAsForcedUser(unauthenticatedPage);
@@ -113,7 +113,7 @@ test.describe("Forced Password Change",
 					.toBeVisible();
 			});
 
-		test("should block navigation to admin route via guard",
+		unauthenticatedTest("should block navigation to admin route via guard",
 			async ({ unauthenticatedPage }) =>
 			{
 				await loginAsForcedUser(unauthenticatedPage);
@@ -126,7 +126,7 @@ test.describe("Forced Password Change",
 						{ timeout: TIMEOUTS.auth });
 			});
 
-		test("should block navigation to developer route via guard",
+		unauthenticatedTest("should block navigation to developer route via guard",
 			async ({ unauthenticatedPage }) =>
 			{
 				await loginAsForcedUser(unauthenticatedPage);
@@ -139,7 +139,7 @@ test.describe("Forced Password Change",
 						{ timeout: TIMEOUTS.auth });
 			});
 
-		test("should receive 403 from protected API while password change pending",
+		unauthenticatedTest("should receive 403 from protected API while password change pending",
 			async ({ unauthenticatedPage }) =>
 			{
 				// Capture access token from login API response.
@@ -189,7 +189,7 @@ test.describe("Forced Password Change",
 
 		// Uses a dedicated lifecycle user so password changes
 		// cannot interfere with the read-only tests above.
-		test("should complete forced password change and login with new password",
+		unauthenticatedTest("should complete forced password change and login with new password",
 			async ({ unauthenticatedPage }) =>
 			{
 				const originalPassword: string =

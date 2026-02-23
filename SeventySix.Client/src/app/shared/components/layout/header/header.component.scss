@@ -39,16 +39,6 @@
 	}
 }
 
-.theme-indicator {
-	font-size: vars.$font-size-sm;
-	opacity: 0.9;
-	margin: 0 vars.$spacing-md;
-
-	@media (max-width: vars.$breakpoint-md-max) {
-		display: none;
-	}
-}
-
 .breadcrumb-container {
 	padding: 0 vars.$spacing-md;
 	background-color: var(--mat-sys-surface);

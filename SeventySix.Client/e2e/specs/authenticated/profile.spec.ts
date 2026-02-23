@@ -10,7 +10,7 @@ import {
 	createRouteRegex,
 	PROFILE_EDIT_USER,
 	loginInFreshContext
-} from "../../fixtures";
+} from "@e2e-fixtures";
 
 /**
  * E2E Tests for Profile Page
