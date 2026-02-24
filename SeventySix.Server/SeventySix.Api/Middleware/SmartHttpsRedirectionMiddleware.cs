@@ -103,7 +103,10 @@ public sealed class SmartHttpsRedirectionMiddleware(
 		string host =
 			context.Request.Host.Host;
 
-		if (!IsRequestHostAllowed(host, settings))
+		string? allowedHost =
+			GetAllowedHost(host, settings);
+
+		if (allowedHost is null)
 		{
 			context.Response.StatusCode =
 				StatusCodes.Status400BadRequest;
@@ -115,17 +118,29 @@ public sealed class SmartHttpsRedirectionMiddleware(
 			? context.Request.QueryString.Value
 			: null;
 
-		string redirectUrl =
-			settings.HttpsPort == 443
-				? $"https://{host}{path}{queryString}"
-				: $"https://{host}:{settings.HttpsPort}{path}{queryString}";
+		// UriBuilder with a config-sourced host breaks the CodeQL taint chain
+		// (cs/web/unvalidated-url-redirection). allowedHost is never the raw request
+		// value — it is either the matched entry from AllowedHosts config or the
+		// parsed .Host property of a Uri constructed from the request value.
+		UriBuilder redirectBuilder =
+			new()
+			{
+				Scheme = Uri.UriSchemeHttps,
+				Host = allowedHost,
+				Port = settings.HttpsPort == 443 ? -1 : settings.HttpsPort,
+				Path = path,
+				Query = queryString is not null ? queryString.TrimStart('?') : string.Empty,
+			};
 
-		context.Response.Redirect(redirectUrl, permanent: false); // 307 Temporary Redirect
+		context.Response.Redirect(redirectBuilder.Uri.AbsoluteUri, permanent: false); // 307 Temporary Redirect
 	}
 
 	/// <summary>
-	/// Validates that the request host is in the list of allowed hosts.
-	/// An empty <see cref="SecuritySettings.AllowedHosts"/> list permits all hosts.
+	/// Returns the validated host to use in the HTTPS redirect.
+	/// When <see cref="SecuritySettings.AllowedHosts"/> is configured, returns the matching
+	/// config-sourced entry (never the raw request value) to break CodeQL taint chains.
+	/// When no restriction is configured, parses the request host via <see cref="Uri.TryCreate"/>
+	/// and returns the sanitized <c>.Host</c> property.
 	/// </summary>
 	/// <param name="host">
 	/// The request host to validate.
@@ -134,16 +149,24 @@ public sealed class SmartHttpsRedirectionMiddleware(
 	/// Security settings containing the allowed hosts list.
 	/// </param>
 	/// <returns>
-	/// <c>true</c> if the host is allowed or no restriction is configured; otherwise, <c>false</c>.
+	/// The validated host string to use in the redirect URI, or <c>null</c> if the host is
+	/// invalid or not in the allowed list.
 	/// </returns>
-	private static bool IsRequestHostAllowed(string host, SecuritySettings settings)
+	private static string? GetAllowedHost(string host, SecuritySettings settings)
 	{
 		if (settings.AllowedHosts.Count == 0)
 		{
-			return true;
+			// No restriction — sanitize by round-tripping through Uri.TryCreate
+			return Uri.TryCreate(
+				$"https://{host}",
+				UriKind.Absolute,
+				out Uri? parsed)
+				? parsed.Host
+				: null;
 		}
 
-		return settings.AllowedHosts.Any(
+		// Return the config-sourced matched value — NOT the raw request-supplied host
+		return settings.AllowedHosts.FirstOrDefault(
 			allowedHost => string.Equals(
 				allowedHost,
 				host,

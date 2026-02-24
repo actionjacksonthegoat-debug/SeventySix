@@ -486,10 +486,10 @@ test.describe("Login Page",
 				test("should lockout account after repeated failed attempts",
 					async ({ page, authPage }) =>
 					{
-					// 6 ALTCHA solves (~5–8 s each in Docker CI) + form fills + API
-					// round-trips + snackbar waits per attempt can exceed the 45 s global
-					// config timeout. test.setTimeout must be the first statement so it
-					// applies before any awaited operations begin.
+						// 6 ALTCHA solves (~5–8 s each in Docker CI) + form fills + API
+						// round-trips + snackbar waits per attempt can exceed the 45 s global
+						// config timeout. test.setTimeout must be the first statement so it
+						// applies before any awaited operations begin.
 						test.setTimeout(120_000);
 
 						const failedAttempts: number = 6;
