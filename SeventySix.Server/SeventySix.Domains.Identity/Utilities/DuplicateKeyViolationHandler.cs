@@ -70,9 +70,9 @@ public static class DuplicateKeyViolationHandler
 
 		if (constraintName == EmailConstraint)
 		{
-			// codeql[cs/exposure-of-sensitive-information] -- email is masked via LogSanitizer.MaskEmail (shows only first char + domain)
 			logger.LogWarning(
 				"Registration attempt with already registered email: {Email}",
+				// codeql[cs/exposure-of-sensitive-information] -- email masked via LogSanitizer.MaskEmail (first char + domain only)
 				LogSanitizer.MaskEmail(email));
 
 			return AuthResult.Failed(
@@ -81,10 +81,10 @@ public static class DuplicateKeyViolationHandler
 		}
 
 		// Unknown constraint violation
-		// codeql[cs/exposure-of-sensitive-information] -- username/email masked via LogSanitizer (first 2 chars / first char + domain only)
 		logger.LogWarning(
 			"Unknown duplicate key violation during registration. Username: {Username}, Email: {Email}, Constraint: {Constraint}",
 			LogSanitizer.MaskUsername(username),
+			// codeql[cs/exposure-of-sensitive-information] -- email masked via LogSanitizer.MaskEmail (first char + domain only)
 			LogSanitizer.MaskEmail(email),
 			constraintName ?? "unknown");
 
@@ -121,10 +121,10 @@ public static class DuplicateKeyViolationHandler
 
 		if (constraintName == UsernameConstraint)
 		{
-			// codeql[cs/exposure-of-sensitive-information] -- username/email masked via LogSanitizer (first 2 chars / first char + domain only)
 			logger.LogWarning(
 				"Duplicate username detected during user creation. Username: {Username}, Email: {Email}",
 				LogSanitizer.MaskUsername(username),
+				// codeql[cs/exposure-of-sensitive-information] -- email masked via LogSanitizer.MaskEmail (first char + domain only)
 				LogSanitizer.MaskEmail(email));
 
 			throw new DuplicateUserException(
@@ -133,9 +133,9 @@ public static class DuplicateKeyViolationHandler
 
 		if (constraintName == EmailConstraint)
 		{
-			// codeql[cs/exposure-of-sensitive-information] -- email/username masked via LogSanitizer (first char + domain / first 2 chars only)
 			logger.LogWarning(
 				"Duplicate email detected during user creation. Email: {Email}, Username: {Username}",
+				// codeql[cs/exposure-of-sensitive-information] -- email masked via LogSanitizer.MaskEmail (first char + domain only)
 				LogSanitizer.MaskEmail(email),
 				LogSanitizer.MaskUsername(username));
 
@@ -144,10 +144,10 @@ public static class DuplicateKeyViolationHandler
 		}
 
 		// Unknown constraint violation
-		// codeql[cs/exposure-of-sensitive-information] -- username/email masked via LogSanitizer (first 2 chars / first char + domain only)
 		logger.LogWarning(
 			"Unknown duplicate key violation during user creation. Username: {Username}, Email: {Email}, Constraint: {Constraint}",
 			LogSanitizer.MaskUsername(username),
+			// codeql[cs/exposure-of-sensitive-information] -- email masked via LogSanitizer.MaskEmail (first char + domain only)
 			LogSanitizer.MaskEmail(email),
 			constraintName ?? "unknown");
 
