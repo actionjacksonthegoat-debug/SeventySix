@@ -87,6 +87,83 @@ npm run scan:codeql:ts
 Results open in VS Code via `github.vscode-codeql`. Use Command Palette →
 **CodeQL: Open SARIF File** to view results inline.
 
+### C# Scan — `--build-mode=none` + Pre-Build Required
+
+The C# scan uses `--build-mode=none` (build-tracing disabled) to avoid VBCSCompiler lock
+issues on Windows. A `dotnet build` must run **before** `codeql database create` to ensure
+binaries and generated code exist for analysis. See `scripts/run-codeql-scan.ps1`.
+
+### CodeQL Alert Dismissal
+
+**Do NOT use `// codeql[rule-id]` inline suppression comments** — they do not reliably suppress
+taint-tracking alerts in C# or JS. Instead, dismiss false-positive alerts directly in the
+GitHub Security tab (`Security → Code scanning → Dismiss alert → False positive`).
+Dismissals persist across future scans and do not require code changes.
+
+## PII Masking in Structured Logs (CRITICAL)
+
+> **RULE**: Personal Identifiable Information (PII) and user-controlled strings MUST NEVER
+> appear verbatim in structured log parameters. Use `LogSanitizer` for all log arguments
+> that could contain user data.
+
+| Input Type | Method | Output Example |
+|---|---|---|
+| User-controlled string (provider name, raw input) | `LogSanitizer.Sanitize(value)` | `"github"` → `"github"` (stripped of newlines/CR) |
+| Email address | `LogSanitizer.MaskEmail(email)` | `"user@example.com"` → `"u***@example.com"` |
+| Username | `LogSanitizer.MaskUsername(username)` | `"johnsmith"` → `"jo***"` |
+| Email subject | `LogSanitizer.MaskEmailSubject(subject)` | `"Password Reset"` → `"password-reset"` |
+
+```csharp
+// [NEVER] — logs PII directly
+logger.LogWarning("OAuth failed for {Provider}. Error: {Error}", provider, result.Error);
+logger.LogWarning("Email sent to {To}: {Subject}", to, subject);
+logger.LogWarning("Registration attempt with {Email}", email);
+
+// [ALWAYS] — mask with LogSanitizer
+using SeventySix.Shared.Utilities;
+
+logger.LogWarning(
+    "OAuth failed for {Provider}. Error: {Error}",
+    LogSanitizer.Sanitize(provider),
+    LogSanitizer.Sanitize(result.Error));
+logger.LogWarning(
+    "Email sent to {To}: {Subject}",
+    LogSanitizer.MaskEmail(to),
+    LogSanitizer.MaskEmailSubject(subject));
+logger.LogWarning(
+    "Registration attempt with {Email}",
+    LogSanitizer.MaskEmail(email));
+```
+
+`LogSanitizer` lives in `SeventySix.Shared.Utilities` — available to all server projects.
+
+## Open Redirect Validation
+
+OAuth redirects MUST be validated against the configured authorization endpoint host before
+issuing a `Redirect()` response:
+
+```csharp
+// [ALWAYS] — validate redirect target before issuing redirect
+if (!IsAllowedOAuthRedirect(authorizationUrl, providerSettings))
+{
+    Logger.LogWarning(
+        "OAuth authorization URL failed host validation for provider {Provider}",
+        LogSanitizer.Sanitize(provider));
+    return BadRequest(new ProblemDetails { ... });
+}
+return Redirect(authorizationUrl);
+
+// [ALWAYS] — compare URI hosts, not string contains
+private static bool IsAllowedOAuthRedirect(string url, OAuthProviderSettings providerSettings)
+{
+    if (!Uri.TryCreate(url, UriKind.Absolute, out Uri? redirectUri)) return false;
+    if (!Uri.TryCreate(providerSettings.AuthorizationEndpoint, UriKind.Absolute, out Uri? allowedUri)) return false;
+    return string.Equals(redirectUri.Host, allowedUri.Host, StringComparison.OrdinalIgnoreCase);
+}
+```
+
+**NEVER** use `string.Contains("github.com")` — always parse the URI and compare `.Host`.
+
 ## Cookie Consent Security Patterns
 
 ```typescript

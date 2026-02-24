@@ -1,0 +1,15 @@
+name: "SeventySix CodeQL Configuration"
+
+paths-ignore:
+  - "SeventySix.Client/dist"
+  - "SeventySix.Client/coverage"
+  - "SeventySix.Client/.angular"
+  - "SeventySix.Client/playwright-report"
+  - "SeventySix.Client/test-results"
+  - "SeventySix.Client/load-testing"
+  - "**/node_modules"
+  - "SeventySix.Server/**/bin"
+  - "SeventySix.Server/**/obj"
+
+queries:
+  - uses: security-and-quality

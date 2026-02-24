@@ -1,7 +1,8 @@
-import { ChangeDetectionStrategy, Component } from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject } from "@angular/core";
 import { MatButtonModule } from "@angular/material/button";
 import { RouterLink } from "@angular/router";
 import { PageHeaderComponent } from "@shared/components";
+import { CookieConsentService } from "@shared/services/cookie-consent.service";
 
 @Component(
 	{
@@ -16,10 +17,22 @@ import { PageHeaderComponent } from "@shared/components";
  */
 export class PrivacyPolicyPage
 {
+	private readonly consentService: CookieConsentService =
+		inject(CookieConsentService);
+
 	/**
 	 * Last-updated string displayed on the page.
 	 * @type {string}
 	 * @protected
 	 */
 	protected readonly lastUpdated: string = "February 2026";
+
+	/**
+	 * Re-opens the cookie consent banner so the user can update preferences.
+	 * @returns {void}
+	 */
+	protected openCookieSettings(): void
+	{
+		this.consentService.reopenBanner();
+	}
 }

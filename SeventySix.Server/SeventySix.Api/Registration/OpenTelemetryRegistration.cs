@@ -64,6 +64,16 @@ public static class OpenTelemetryExtensions
 		Uri otlpEndpointUri =
 			new(otlpEndpoint);
 
+		string samplingType =
+			configuration.GetValue<string>("OpenTelemetry:Sampling:Type") ?? "AlwaysOn";
+
+		// double is required here: TraceIdRatioBasedSampler(double) is an external API signature
+		// that requires double. This is a justified external-API exception per csharp.instructions.md.
+		double samplingProbability =
+			configuration.GetValue<double>(
+				"OpenTelemetry:Sampling:Probability",
+				1.0);
+
 		services
 			.AddOpenTelemetry()
 			.ConfigureResource(resource =>
@@ -76,22 +86,35 @@ public static class OpenTelemetryExtensions
 						{
 							["deployment.environment"] = environment,
 						}))
-			.WithTracing(tracing =>
-				tracing
-					.AddAspNetCoreInstrumentation(
-						options =>
+			.WithTracing(
+				tracing =>
+				{
+					tracing.SetSampler(
+						samplingType switch
 						{
-							options.RecordException = true;
-						})
-					.AddHttpClientInstrumentation()
-					.AddFusionCacheInstrumentation()
-					.AddOtlpExporter(
-						options =>
-						{
-							options.Endpoint = otlpEndpointUri;
-						}))
+							"RatioBasedSampling" => new TraceIdRatioBasedSampler(samplingProbability),
+							"AlwaysOff" => new AlwaysOffSampler(),
+							_ => new AlwaysOnSampler(),
+						});
+
+					tracing
+						.AddAspNetCoreInstrumentation(
+							options =>
+							{
+								options.RecordException = true;
+							})
+						.AddHttpClientInstrumentation()
+						.AddEntityFrameworkCoreInstrumentation()
+						.AddFusionCacheInstrumentation()
+						.AddOtlpExporter(
+							options =>
+							{
+								options.Endpoint = otlpEndpointUri;
+							});
+				})
 			.WithMetrics(metrics =>
 				metrics
+					.AddMeter("SeventySix.Api")
 					.AddAspNetCoreInstrumentation()
 					.AddHttpClientInstrumentation()
 					.AddRuntimeInstrumentation()

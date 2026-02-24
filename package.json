@@ -18,19 +18,19 @@
 		"clean:docker": "node scripts/run-pwsh.mjs -File scripts/cleanup-docker.ps1",
 		"clean:docker:full": "node scripts/run-pwsh.mjs -File scripts/cleanup-docker.ps1 -IncludeVolumes",
 		"db:reset": "node scripts/run-pwsh.mjs -File scripts/reset-database.ps1 -Environment dev",
-		"generate:dataprotection-cert": "node scripts/run-pwsh.mjs -File scripts/generate-dataprotection-cert.ps1",
-		"generate:ssl-cert": "node scripts/run-pwsh.mjs -File scripts/generate-dev-ssl-cert.ps1 -Force",
 		"secrets:init": "node scripts/run-pwsh.mjs -File scripts/manage-user-secrets.ps1 -Action init",
 		"secrets:list": "node scripts/run-pwsh.mjs -File scripts/manage-user-secrets.ps1 -Action list",
 		"secrets:set": "node scripts/run-pwsh.mjs -File scripts/manage-user-secrets.ps1 -Action set",
 		"secrets:delete": "node scripts/run-pwsh.mjs -File scripts/manage-user-secrets.ps1 -Action delete",
-		"generate:icons": "cd SeventySix.Client && npm run generate:icons",
 		"loadtest:quick": "node scripts/run-pwsh.mjs -File SeventySix.Client/load-testing/scripts/run-load-tests.ps1 -Profile quick",
 		"loadtest:smoke": "node scripts/run-pwsh.mjs -File SeventySix.Client/load-testing/scripts/run-load-tests.ps1 -Profile smoke",
 		"loadtest:load": "node scripts/run-pwsh.mjs -File SeventySix.Client/load-testing/scripts/run-load-tests.ps1 -Profile load",
 		"loadtest:stress": "node scripts/run-pwsh.mjs -File SeventySix.Client/load-testing/scripts/run-load-tests.ps1 -Profile stress",
 		"scan:codeql": "node scripts/run-pwsh.mjs -File scripts/run-codeql-scan.ps1",
 		"scan:codeql:cs": "node scripts/run-pwsh.mjs -File scripts/run-codeql-scan.ps1 -LanguageFilter csharp",
-		"scan:codeql:ts": "node scripts/run-pwsh.mjs -File scripts/run-codeql-scan.ps1 -LanguageFilter typescript"
+		"scan:codeql:ts": "node scripts/run-pwsh.mjs -File scripts/run-codeql-scan.ps1 -LanguageFilter typescript",
+		"generate:dataprotection-cert": "node scripts/run-pwsh.mjs -File scripts/generate-dataprotection-cert.ps1",
+		"generate:ssl-cert": "node scripts/run-pwsh.mjs -File scripts/generate-dev-ssl-cert.ps1 -Force",
+		"generate:icons": "cd SeventySix.Client && npm run generate:icons"
 	}
 }

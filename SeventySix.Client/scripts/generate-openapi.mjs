@@ -35,8 +35,12 @@ const MAX_POLL_ATTEMPTS =
 const POLL_DELAY_MS =
 	2000;
 
-// Disable TLS certificate validation for self-signed development certificates
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+// Development-only: disable TLS cert validation for self-signed dev certificate.
+// This script only runs at dev time to generate OpenAPI client code, never in production.
+if (process.env.NODE_ENV !== "production")
+{
+	process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+}
 
 /**
  * Runs a command synchronously and returns the exit code.

@@ -453,6 +453,7 @@ A seeded administrator account is automatically created on first startup in deve
 
 This account is created by `AdminSeederService` and is **not** created in production environments.
 To set the password: `npm run secrets:set -- AdminSeeder:InitialPassword "YourSecurePassword"`
+To set the email: `npm run secrets:set -- AdminSeeder:Email "YourSecureEmail"`
 
 ### Terminal Font Recommendation
 

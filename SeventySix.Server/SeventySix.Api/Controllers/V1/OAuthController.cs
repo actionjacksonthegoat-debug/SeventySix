@@ -12,6 +12,7 @@ using SeventySix.Api.Infrastructure;
 using SeventySix.Identity;
 using SeventySix.Shared.Constants;
 using SeventySix.Shared.Extensions;
+using SeventySix.Shared.Utilities;
 using Wolverine;
 
 namespace SeventySix.Api.Controllers;
@@ -95,6 +96,21 @@ public sealed class OAuthController(
 				state,
 				codeVerifier);
 
+		if (!IsAllowedOAuthRedirect(authorizationUrl, providerSettings))
+		{
+			Logger.LogWarning(
+				"OAuth authorization URL failed host validation for provider {Provider}",
+				LogSanitizer.Sanitize(provider));
+
+			return BadRequest(
+				new ProblemDetails
+				{
+					Title = ProblemDetailConstants.Titles.BadRequest,
+					Detail = ProblemDetailConstants.Details.BadRequest,
+					Status = StatusCodes.Status400BadRequest,
+				});
+		}
+
 		return Redirect(authorizationUrl);
 	}
 
@@ -147,7 +163,7 @@ public sealed class OAuthController(
 		{
 			Logger.LogWarning(
 				"OAuth state mismatch for provider {Provider}",
-				provider);
+				LogSanitizer.Sanitize(provider));
 			return CreateOAuthErrorResponse(OAuthProviderConstants.ErrorMessages.InvalidOAuthState);
 		}
 
@@ -159,7 +175,7 @@ public sealed class OAuthController(
 		{
 			Logger.LogWarning(
 				"OAuth code verifier missing for provider {Provider}",
-				provider);
+				LogSanitizer.Sanitize(provider));
 			return CreateOAuthErrorResponse(OAuthProviderConstants.ErrorMessages.MissingCodeVerifier);
 		}
 
@@ -183,8 +199,8 @@ public sealed class OAuthController(
 		{
 			Logger.LogWarning(
 				"OAuth failed for provider {Provider}. Error: {Error}",
-				provider,
-				result.Error);
+				LogSanitizer.Sanitize(provider),
+				LogSanitizer.Sanitize(result.Error));
 
 			if (result.Error is null)
 			{
@@ -493,6 +509,45 @@ public sealed class OAuthController(
 				providerConfig.Provider,
 				provider,
 				StringComparison.OrdinalIgnoreCase));
+	}
+
+	/// <summary>
+	/// Validates that an OAuth redirect URL's host matches the configured authorization endpoint.
+	/// Prevents open redirect attacks by ensuring redirects only go to known OAuth provider hosts.
+	/// </summary>
+	/// <param name="url">
+	/// The authorization URL to validate.
+	/// </param>
+	/// <param name="providerSettings">
+	/// The OAuth provider settings containing the expected authorization endpoint.
+	/// </param>
+	/// <returns>
+	/// <c>true</c> if the URL's host matches the configured endpoint host; otherwise, <c>false</c>.
+	/// </returns>
+	private static bool IsAllowedOAuthRedirect(
+		string url,
+		OAuthProviderSettings providerSettings)
+	{
+		if (!Uri.TryCreate(
+			url,
+			UriKind.Absolute,
+			out Uri? redirectUri))
+		{
+			return false;
+		}
+
+		if (!Uri.TryCreate(
+			providerSettings.AuthorizationEndpoint,
+			UriKind.Absolute,
+			out Uri? allowedUri))
+		{
+			return false;
+		}
+
+		return string.Equals(
+			redirectUri.Host,
+			allowedUri.Host,
+			StringComparison.OrdinalIgnoreCase);
 	}
 
 	/// <summary>

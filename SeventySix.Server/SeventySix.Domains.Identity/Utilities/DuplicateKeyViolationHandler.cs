@@ -5,6 +5,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Npgsql;
+using SeventySix.Shared.Utilities;
 
 namespace SeventySix.Identity;
 
@@ -60,7 +61,7 @@ public static class DuplicateKeyViolationHandler
 		{
 			logger.LogWarning(
 				"Registration attempt with existing username: {Username}",
-				username);
+				LogSanitizer.MaskUsername(username));
 
 			return AuthResult.Failed(
 				"Username is already taken.",
@@ -71,7 +72,7 @@ public static class DuplicateKeyViolationHandler
 		{
 			logger.LogWarning(
 				"Registration attempt with already registered email: {Email}",
-				email);
+				LogSanitizer.MaskEmail(email));
 
 			return AuthResult.Failed(
 				"This email is already registered.",
@@ -81,8 +82,8 @@ public static class DuplicateKeyViolationHandler
 		// Unknown constraint violation
 		logger.LogWarning(
 			"Unknown duplicate key violation during registration. Username: {Username}, Email: {Email}, Constraint: {Constraint}",
-			username,
-			email,
+			LogSanitizer.MaskUsername(username),
+			LogSanitizer.MaskEmail(email),
 			constraintName ?? "unknown");
 
 		return AuthResult.Failed(
@@ -120,8 +121,8 @@ public static class DuplicateKeyViolationHandler
 		{
 			logger.LogWarning(
 				"Duplicate username detected during user creation. Username: {Username}, Email: {Email}",
-				username,
-				email);
+				LogSanitizer.MaskUsername(username),
+				LogSanitizer.MaskEmail(email));
 
 			throw new DuplicateUserException(
 				$"Failed to create user: Username '{username}' is already taken");
@@ -131,8 +132,8 @@ public static class DuplicateKeyViolationHandler
 		{
 			logger.LogWarning(
 				"Duplicate email detected during user creation. Email: {Email}, Username: {Username}",
-				email,
-				username);
+				LogSanitizer.MaskEmail(email),
+				LogSanitizer.MaskUsername(username));
 
 			throw new DuplicateUserException(
 				$"Failed to create user: Email '{email}' is already registered");
@@ -141,8 +142,8 @@ public static class DuplicateKeyViolationHandler
 		// Unknown constraint violation
 		logger.LogWarning(
 			"Unknown duplicate key violation during user creation. Username: {Username}, Email: {Email}, Constraint: {Constraint}",
-			username,
-			email,
+			LogSanitizer.MaskUsername(username),
+			LogSanitizer.MaskEmail(email),
 			constraintName ?? "unknown");
 
 		throw new DuplicateUserException(

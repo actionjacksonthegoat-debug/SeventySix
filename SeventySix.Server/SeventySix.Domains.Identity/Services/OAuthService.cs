@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SeventySix.Identity.Constants;
 using SeventySix.Shared.Constants;
+using SeventySix.Shared.Utilities;
 
 namespace SeventySix.Identity;
 
@@ -112,7 +113,7 @@ public sealed class OAuthService(
 			logger.LogError(
 				ex,
 				"OAuth callback failed for provider {Provider}",
-				provider);
+				LogSanitizer.Sanitize(provider));
 
 			return AuthResult.Failed(
 				OAuthProviderConstants.ErrorMessages.AuthenticationFailed(
@@ -124,7 +125,7 @@ public sealed class OAuthService(
 			logger.LogError(
 				ex,
 				"OAuth callback failed for provider {Provider}",
-				provider);
+				LogSanitizer.Sanitize(provider));
 
 			return AuthResult.Failed(
 				OAuthProviderConstants.ErrorMessages.AuthenticationFailed(
@@ -136,7 +137,7 @@ public sealed class OAuthService(
 			logger.LogError(
 				ex,
 				"OAuth callback failed for provider {Provider}",
-				provider);
+				LogSanitizer.Sanitize(provider));
 
 			return AuthResult.Failed(
 				OAuthProviderConstants.ErrorMessages.AuthenticationFailed(
@@ -187,7 +188,7 @@ public sealed class OAuthService(
 			logger.LogError(
 				ex,
 				"Failed to exchange code for user info from provider {Provider}",
-				provider);
+				LogSanitizer.Sanitize(provider));
 
 			return null;
 		}
@@ -196,7 +197,7 @@ public sealed class OAuthService(
 			logger.LogError(
 				ex,
 				"Failed to exchange code for user info from provider {Provider}",
-				provider);
+				LogSanitizer.Sanitize(provider));
 
 			return null;
 		}
@@ -205,7 +206,7 @@ public sealed class OAuthService(
 			logger.LogError(
 				ex,
 				"Failed to exchange code for user info from provider {Provider}",
-				provider);
+				LogSanitizer.Sanitize(provider));
 
 			return null;
 		}

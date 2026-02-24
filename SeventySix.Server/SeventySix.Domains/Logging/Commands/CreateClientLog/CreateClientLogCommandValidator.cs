@@ -3,6 +3,7 @@
 // </copyright>
 
 using FluentValidation;
+using SeventySix.Shared.Constants;
 
 namespace SeventySix.Logging.Commands.CreateClientLog;
 
@@ -55,7 +56,7 @@ public sealed class CreateClientLogCommandValidator
 			.WithMessage("UserAgent must not exceed 1000 characters");
 
 		RuleFor(request => request.CorrelationId)
-			.MaximumLength(64)
-			.WithMessage("CorrelationId must not exceed 64 characters");
+			.MaximumLength(ValidationConstants.CorrelationIdMaxLength)
+			.WithMessage($"CorrelationId must not exceed {ValidationConstants.CorrelationIdMaxLength} characters");
 	}
 }

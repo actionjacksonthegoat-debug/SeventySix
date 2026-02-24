@@ -1,0 +1,30 @@
+# Auto-generated code — never hand-edited; read on demand via read_file when needed
+**/generated-open-api/generated-open-api.ts
+**/Migrations/*.Designer.cs
+**/*ModelSnapshot.cs
+
+# User-facing documentation — large files read on demand when updating, not needed for code authoring
+docs/**
+README.md
+SeventySix.Client/README.md
+SeventySix.Server/README.md
+SeventySix.Client/e2e/README.md
+SeventySix.Client/load-testing/README.md
+
+# Build artifacts and reports — no value in code context
+**/coverage/**
+**/playwright-report/**
+**/test-results/**
+**/TestResults/**
+**/bin/**
+**/obj/**
+
+# Infrastructure scripts (read on demand when needed)
+scripts/internal/**
+
+# Load test results
+**/load-testing/reports/**
+**/load-testing/results/**
+
+# SSL certificates
+**/ssl/**

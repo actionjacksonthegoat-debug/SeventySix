@@ -3,6 +3,7 @@
 // </copyright>
 
 using Serilog;
+using Serilog.Enrichers.Span;
 using Serilog.Events;
 using Serilog.Exceptions;
 using SeventySix.Api.Logging;
@@ -136,7 +137,9 @@ public static class SerilogExtensions
 			.Enrich
 			.WithThreadId()
 			.Enrich
-			.WithExceptionDetails();
+			.WithExceptionDetails()
+			.Enrich
+			.WithSpan();
 	}
 
 	/// <summary>

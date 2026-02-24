@@ -1,0 +1,19 @@
+# Build and generated output — excluded from local CodeQL databases.
+# GitHub Actions auto-respects .gitignore, so this only affects local CLI scans.
+
+# Angular build outputs, cache, and test artifacts
+SeventySix.Client/dist/
+SeventySix.Client/coverage/
+SeventySix.Client/.angular/
+SeventySix.Client/playwright-report/
+SeventySix.Client/test-results/
+
+# Node modules
+**/node_modules/
+
+# .NET build outputs
+SeventySix.Server/**/bin/
+SeventySix.Server/**/obj/
+
+# k6 load tests — test-only code, Math.random() is not a security concern here
+SeventySix.Client/load-testing/

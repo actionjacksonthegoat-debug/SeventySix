@@ -209,7 +209,7 @@ public static class CompleteRegistrationCommandHandler
 		{
 			logger.LogWarning(
 				"Attempted to complete registration for non-existent email: {Email}",
-				decodedEmail);
+				LogSanitizer.MaskEmail(decodedEmail));
 
 			return
 			(
@@ -231,7 +231,7 @@ public static class CompleteRegistrationCommandHandler
 			string errors = confirmResult.ToErrorString();
 			logger.LogWarning(
 				"Email confirmation failed for {Email}: {Errors}",
-				decodedEmail,
+				LogSanitizer.MaskEmail(decodedEmail),
 				errors);
 
 			return
