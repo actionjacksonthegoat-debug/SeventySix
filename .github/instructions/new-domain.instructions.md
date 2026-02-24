@@ -180,15 +180,7 @@ Tests/SeventySix.Domains.{NewDomain}.Tests/
     └── {Entity}Builder.cs                        # Fluent builder for test data
 ```
 
-**Test priority (highest → lowest):**
-
-1. Command handlers with mutations and business rules
-2. FluentValidation validators (edge cases, boundary values)
-3. Services with conditional logic or external dependencies
-4. Authorization policy enforcement
-5. Query handlers ONLY if they contain transformations or joins
-
-**Skip tests for:** Simple property-to-property mapping, DTOs, constants, entities with no behavior.
+> See `testing-server.instructions.md` → "80/20 Test Priority" for the full server-side priority list.
 
 ---
 

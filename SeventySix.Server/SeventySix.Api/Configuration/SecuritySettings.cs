@@ -79,4 +79,10 @@ public sealed record SecuritySettings
 	/// Useful for development and testing environments.
 	/// </summary>
 	public bool AllowHttpForOpenApi { get; init; }
+
+	/// <summary>
+	/// Gets the list of allowed hostnames for HTTPS redirect validation.
+	/// An empty list permits all hosts (ASP.NET Core AllowedHosts middleware is the primary defense).
+	/// </summary>
+	public IReadOnlyList<string> AllowedHosts { get; init; } = [];
 }

@@ -8,13 +8,11 @@ applyTo: "**/SeventySix.Client/load-testing/**/*.js"
 
 ## Load Test Environment Isolation (CRITICAL)
 
-Load tests run in a **fully isolated Docker environment** (`docker-compose.loadtest.yml`). You do NOT need to start the dev environment (`npm start`) for load tests. The load test scripts handle all infrastructure automatically.
+Load tests run in a **fully isolated Docker environment** (`docker-compose.loadtest.yml`). You do NOT need to start the dev environment (`npm start`) for load tests.
 
-| Environment | Docker Compose File | Ports (DB / Cache / API / Client) |
-|-------------|--------------------|-----------------------------|
-| Dev | `docker-compose.yml` | 5433 / 6379 / 7074 / 4200 |
-| E2E | `docker-compose.e2e.yml` | 5434 / 6380 / 7174 / 4201 |
-| Load Test | `docker-compose.loadtest.yml` | 5435 / 6381 / 7175 / 4202 |
+> Port mapping: see `copilot-instructions.md` → "E2E and Load Test Environment Isolation".
+
+<!-- original port table removed (single source of truth is copilot-instructions.md) -->
 
 ## File Locations
 
@@ -244,41 +242,11 @@ cd SeventySix.Client && npm run format
 
 ## Docker Environment
 
-The load test environment runs in isolation with dedicated ports:
+> Port mapping: see `copilot-instructions.md` → "E2E and Load Test Environment Isolation".
 
-| Service | Port |
-|---------|------|
-| PostgreSQL | 5435 |
-| Valkey | 6381 |
-| API | 7175 |
-| Client | 4202 |
-
-Start: `docker compose -f docker-compose.loadtest.yml up -d`
-Stop: `docker compose -f docker-compose.loadtest.yml down`
-
-## Auth Helpers
-
-```javascript
-// Admin auth — for user management, permissions
-import { loginAsAdmin } from "../../lib/auth.js";
-const authData = loginAsAdmin();
-
-// User auth — for permission requests, general flows
-import { loginAsUser } from "../../lib/auth.js";
-const authData = loginAsUser();
-
-// Token is in authData.accessToken, cookie jar in authData.jar
+```bash
+docker compose -f docker-compose.loadtest.yml up -d   # start
+docker compose -f docker-compose.loadtest.yml down     # stop
 ```
 
-## HTTP Helpers
-
-```javascript
-import { authenticatedGet, authenticatedPost } from "../../lib/http-helpers.js";
-
-// GET with auth
-const response = authenticatedGet(url, accessToken, params);
-
-// POST with auth + JSON body
-const response = authenticatedPost(url, accessToken, body, params);
-```
 ````

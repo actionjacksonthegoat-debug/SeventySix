@@ -17,9 +17,7 @@ applyTo: "**/SeventySix.Client/src/**/*.{ts,html,scss,css},**/SeventySix.Server/
 | Run `npx dprint fmt` | `npm run format:client` (ESLint → dprint → ESLint) |
 | Run `dprint` as a pre-step | Manually fix formatting during development |
 
-**Why**: `npm run format:client` runs ESLint → dprint → ESLint in that exact order. Running `dprint` directly bypasses the ESLint pre/post passes and leaves lint violations unfixed.
-
-**When to run format**: Only at the end of implementation phases, right before running the test gate. During active development, manually correct formatting in source files rather than running the format command mid-phase.
+**Why**: `npm run format:client` runs ESLint → dprint → ESLint in that exact order. Running `dprint` directly bypasses the ESLint pre/post passes. Run format only at the end of implementation phases, right before the test gate.
 
 ## End-of-File Newlines (CRITICAL — NO TRAILING NEWLINE)
 
@@ -31,9 +29,7 @@ applyTo: "**/SeventySix.Client/src/**/*.{ts,html,scss,css},**/SeventySix.Server/
 | C# | `.editorconfig` `insert_final_newline = false` | `dotnet format whitespace` strips final newlines |
 | All files | `.editorconfig` `insert_final_newline = false` + `.vscode/settings.json` `"files.insertFinalNewline": false` | Both layers agree — VS Code's explicit setting prevents it from overriding EditorConfig |
 
-**Why dprint doesn't conflict**: dprint unconditionally adds a trailing newline, but it runs
-BETWEEN the two ESLint passes. The second `eslint --fix` pass removes it. **Never add
-`insert_final_newline` back to `.editorconfig`.** Never add `finalNewline` to `dprint.json`.
+**Why dprint doesn't conflict**: dprint runs between the two ESLint passes; the second `eslint --fix` removes the trailing newline dprint adds. **Never add `insert_final_newline` back to `.editorconfig`.**
 
 ## Variable Naming (CRITICAL - 3+ Characters)
 
@@ -56,32 +52,6 @@ BETWEEN the two ESLint passes. The second `eslint --fix` pass removes it. **Neve
 | Assignment `=` | New line after `=`, value indented | Value on same line     |
 | Chains         | New line BEFORE `.`, indented      | One line               |
 | Closing `)`    | On same line as last param/arg     | Alone on its own line  |
-
-## Examples
-
-```csharp
-// [CORRECT] C#
-User? user =
-    await repo.GetByIdAsync(id);
-
-builder
-    .Property(
-        user => user.Username)
-    .HasMaxLength(100);
-
-await bus.InvokeAsync<UserDto?>(
-    new GetUserByIdQuery(id),
-    cancellationToken);
-```
-
-```typescript
-// [CORRECT] TypeScript
-const userData: UserDto = await this.userService.getById(userId);
-
-this.users.filter((user) => user.isActive).map((user) => user.name);
-
-const isValid: boolean = isPresent(value) && value.length > 0;
-```
 
 ## Null Coercion (BANNED)
 
@@ -136,33 +106,9 @@ All TypeScript method and function declarations MUST have explicit return types.
 
 `color-mix()` is already used throughout `_base.scss` and is fully supported in all modern browsers.
 
-## Documentation Style
+### Documentation Style
 
-### C# XML (tags on own lines)
-
-```xml
-/// <param name="userId">
-/// The unique identifier for the user.
-/// </param>
-///
-/// <returns>
-/// The user DTO when found; otherwise null.
-/// </returns>
-```
-
-### TypeScript JSDoc
-
-```typescript
-/**
- * @param {string} userId
- * The unique identifier.
- *
- * @returns {UserDto | null}
- * The user when found.
- */
-```
-
-> **Reminder**: Do NOT create documentation files in `/docs/`. Update existing READMEs and instruction files instead. See `copilot-instructions.md` for the full documentation rules.
+C# XML doc: tags on their own lines. TypeScript: JSDoc with `@param`/`@returns` on separate lines.
 
 ## SCSS / CSS Rules (CRITICAL — Required for ALL Style Changes)
 
@@ -201,12 +147,3 @@ All TypeScript method and function declarations MUST have explicit return types.
 3. **No `!important` in components** — if a Material override requires force, use the Material theming mixin API.
 4. **Responsive breakpoints**: always use `vars.$breakpoint-*` variables; never hard-code `max-width` pixel values.
 5. **No trailing `!important`** in component files — the formatter (ESLint pass) will flag this as a violation.
-
-### Review Checklist for Every SCSS PR
-
-- [ ] No new hard-coded colors or pixel values (use tokens / variables)
-- [ ] No duplicated rule blocks (use mixin or shared class)
-- [ ] No `!important` outside `_utilities.scss`
-- [ ] No `::ng-deep` (use Material theming API)
-- [ ] `@use "variables" as vars;` and/or `@use "mixins";` declared at top of file
-- [ ] New shared patterns added to `_mixins.scss` or `_utilities.scss`, not duplicated in components

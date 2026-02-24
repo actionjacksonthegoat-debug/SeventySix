@@ -13,6 +13,7 @@ import { provideRouter } from "@angular/router";
 import { environment } from "@environments/environment";
 import { AuthResponse } from "@shared/models";
 import { DateService } from "@shared/services";
+import { CookieConsentService } from "@shared/services/cookie-consent.service";
 import { createTestQueryClient } from "@shared/testing";
 import {
 	provideTanStackQuery,
@@ -316,6 +317,29 @@ describe("AuthService",
 							.toBe(false);
 						expect(service.user())
 							.toBeNull();
+					});
+
+				it(
+					"should call clearConsentForNextUser on logout to prevent consent leaking between users on shared devices",
+					() =>
+					{
+						const cookieConsentService: CookieConsentService =
+							TestBed.inject(CookieConsentService);
+						const clearConsentSpy: ReturnType<typeof vi.spyOn> =
+							vi.spyOn(
+								cookieConsentService,
+								"clearConsentForNextUser");
+
+						loginAndFlush(service, httpMock);
+						service.logout();
+
+						const logoutReq: TestRequest =
+							httpMock.expectOne(
+								`${environment.apiUrl}/auth/logout`);
+						logoutReq.flush({});
+
+						expect(clearConsentSpy)
+							.toHaveBeenCalledOnce();
 					});
 			});
 

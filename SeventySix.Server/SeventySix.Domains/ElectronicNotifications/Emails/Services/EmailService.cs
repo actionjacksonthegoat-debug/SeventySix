@@ -280,8 +280,8 @@ public sealed class EmailService(
 		{
 			logger.LogWarning(
 				"[EMAIL DISABLED] Would send to {To}: {Subject}",
-				to,
-				subject);
+				LogSanitizer.MaskEmail(to),
+				LogSanitizer.MaskEmailSubject(subject));
 			return;
 		}
 
@@ -302,15 +302,15 @@ public sealed class EmailService(
 			logger.LogError(
 				exception,
 				"SMTP send failed for {To}: {Subject}. Rate limit slot released.",
-				to,
-				subject);
+				LogSanitizer.MaskEmail(to),
+				LogSanitizer.MaskEmailSubject(subject));
 			throw;
 		}
 
 		logger.LogWarning(
 			"Email sent to {To}: {Subject}",
-			to,
-			subject);
+			LogSanitizer.MaskEmail(to),
+			LogSanitizer.MaskEmailSubject(subject));
 	}
 
 	/// <summary>

@@ -130,9 +130,21 @@ test.describe("OAuth Login (GitHub)",
 							const url: string =
 								request.url();
 
-							if (url.includes("github.com"))
+							try
 							{
-								capturedGitHubUrl = url;
+								const parsedUrl: URL =
+									new URL(url);
+
+								if (
+									parsedUrl.hostname === "github.com"
+										|| parsedUrl.hostname.endsWith(".github.com"))
+								{
+									capturedGitHubUrl = url;
+								}
+							}
+							catch
+							{
+								// Non-parseable URLs (about:blank, data:, etc.) — not GitHub, skip
 							}
 						});
 

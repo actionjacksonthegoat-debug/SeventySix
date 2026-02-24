@@ -143,17 +143,27 @@ export const ROUTE_GROUPS: RouteGroups =
 	} as const;
 
 /**
+ * Escapes all regex special characters in a string.
+ * @param str
+ * The string to escape.
+ * @returns
+ * The string with all regex metacharacters escaped.
+ */
+function escapeRegExpSpecialChars(str: string): string
+{
+	// Escape all regex metacharacters: . * + ? ^ $ { } ( ) | [ ] \
+	return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/**
  * Creates a regex pattern for route matching.
- * Escapes forward slashes for use in toHaveURL assertions.
+ * Escapes all regex special characters in the route path to prevent injection.
  * @param route
  * The route path to convert.
  * @returns
- * Regex pattern matching the route.
+ * Regex pattern matching the route exactly.
  */
 export function createRouteRegex(route: string): RegExp
 {
-	const escapedRoute: string =
-		route.replace(/\//g, "\\/");
-
-	return new RegExp(escapedRoute);
+	return new RegExp(escapeRegExpSpecialChars(route));
 }

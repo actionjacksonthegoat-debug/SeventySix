@@ -199,13 +199,4 @@ export function roleGuard(...requiredRoles: string[]): CanMatchFn {
 
 ## Chrome DevTools Verification (REQUIRED)
 
-After any component/service change, verify via Chrome DevTools MCP — see `copilot-instructions.md` Chrome DevTools section. Take screenshot + check console at minimum.
-
-Use `chrome-devtools` MCP for verifying deployed component behavior:
-- `mcp_chrome-devtoo_take_snapshot` — verify DOM structure and accessibility
-- `mcp_chrome-devtoo_list_console_messages` — check for runtime errors
-- `mcp_chrome-devtoo_list_network_requests` — verify API call patterns
-- `mcp_chrome-devtoo_take_screenshot` — visual verification
-- `mcp_chrome-devtoo_evaluate_script` — test signal values and component state
-
-> **Reminder**: Do NOT create documentation files in `/docs/`. Update existing READMEs and instruction files instead. See `copilot-instructions.md` for the full documentation rules.
+After any component/service change, verify via Chrome DevTools MCP — see `copilot-instructions.md` → Chrome DevTools Verification section.

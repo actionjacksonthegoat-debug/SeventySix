@@ -203,54 +203,7 @@ ISoftDeletable (+IsDeleted, +DeletedAt, +DeletedBy)  — separate mixin
 
 ## Controller Pattern (Thin CQRS Dispatcher)
 
-Controllers are thin dispatchers — NO business logic. Use `IMessageBus.InvokeAsync` for CQRS. Evict cache on mutations.
-
-```csharp
-[ApiController]
-[Authorize(Policy = PolicyConstants.AdminOnly)]
-[Route(ApiVersionConfig.VersionedRoutePrefix + "/logs")]
-public class LogsController(
-	IMessageBus messageBus,
-	IOutputCacheStore outputCacheStore) : ControllerBase
-{
-	[HttpGet]
-	[OutputCache(PolicyName = CachePolicyConstants.Logs)]
-	public async Task<ActionResult<PagedResult<LogDto>>> GetPagedAsync(
-		[FromQuery] LogQueryRequest request,
-		CancellationToken cancellationToken = default)
-	{
-		PagedResult<LogDto> result =
-			await messageBus.InvokeAsync<
-				PagedResult<LogDto>>(
-					new GetLogsPagedQuery(request),
-					cancellationToken);
-
-		return Ok(result);
-	}
-
-	[HttpDelete("{id}")]
-	public async Task<IActionResult> DeleteLogAsync(
-		long id,
-		CancellationToken cancellationToken = default)
-	{
-		Result deleted =
-			await messageBus.InvokeAsync<Result>(
-				new DeleteLogCommand(id),
-				cancellationToken);
-
-		if (!deleted.IsSuccess)
-		{
-			return NotFound();
-		}
-
-		await outputCacheStore.EvictByTagAsync(
-			CachePolicyConstants.Logs,
-			cancellationToken);
-
-		return NoContent();
-	}
-}
-```
+Controllers are thin dispatchers — NO business logic. `IMessageBus.InvokeAsync<T>` for CQRS, `outputCacheStore.EvictByTagAsync` on mutations. See existing controllers for reference (`LogsController`, `UsersController`, etc.).
 
 ## EF Core Migrations (CRITICAL)
 
@@ -292,4 +245,4 @@ Migration files must pass the same formatting rules as all other code — **no e
 - `Remove{Feature}` — Removing tables or columns
 - `Update{Entity}{Property}` — Modifying existing columns
 
-> **Reminder**: Do NOT create documentation files in `/docs/`. Update existing READMEs and instruction files instead. See `copilot-instructions.md` for the full documentation rules.
+

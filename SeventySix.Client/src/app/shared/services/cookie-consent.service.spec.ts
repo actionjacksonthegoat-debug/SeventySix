@@ -1,6 +1,7 @@
-import { TestBed } from "@angular/core/testing";
+import { NavigationEnd, Router } from "@angular/router";
 import { DateService } from "@shared/services/date.service";
 import { setupSimpleServiceTest } from "@shared/testing";
+import { Subject } from "rxjs";
 import { vi } from "vitest";
 import { CookieConsentService } from "./cookie-consent.service";
 
@@ -65,11 +66,40 @@ describe("CookieConsentService",
 				clearConsentCookie();
 			});
 
-		function createService(): CookieConsentService
+		function createMockRouter(initialUrl: string = "/"): {
+			router: Partial<Router>;
+			navigate: (url: string) => void;
+		}
 		{
+			const events$: Subject<NavigationEnd> =
+				new Subject<NavigationEnd>();
+			let currentUrl: string = initialUrl;
+			const router: Partial<Router> =
+				{
+					get url()
+					{
+						return currentUrl;
+					},
+					events: events$.asObservable() as Router["events"]
+				};
+			return {
+				router,
+				navigate: (url: string) =>
+				{
+					currentUrl = url;
+					events$.next(new NavigationEnd(0, url, url));
+				}
+			};
+		}
+
+		function createService(mockRouter?: Partial<Router>): CookieConsentService
+		{
+			const routerToUse: Partial<Router> =
+				mockRouter ?? createMockRouter().router;
 			return setupSimpleServiceTest(CookieConsentService,
 				[
-					{ provide: DateService, useValue: mockDateService }
+					{ provide: DateService, useValue: mockDateService },
+					{ provide: Router, useValue: routerToUse }
 				]);
 		}
 
@@ -77,8 +107,10 @@ describe("CookieConsentService",
 			() =>
 			{
 				// Arrange — no cookie set (cleared in beforeEach)
+				const { router } =
+					createMockRouter("/auth/login");
 				const service: CookieConsentService =
-					createService();
+					createService(router);
 
 				// Assert
 				expect(service.showBanner())
@@ -174,8 +206,10 @@ describe("CookieConsentService",
 				// Arrange — set a cookie with old version
 				setConsentCookie(buildConsentCookie(
 					{ version: "0.9" }));
+				const { router } =
+					createMockRouter("/auth/login");
 				const service: CookieConsentService =
-					createService();
+					createService(router);
 
 				// Assert — stale version clears consent
 				expect(service.showBanner())
@@ -209,8 +243,10 @@ describe("CookieConsentService",
 				// Arrange — set a cookie with malformed JSON
 				document.cookie =
 					`${CONSENT_COOKIE_NAME}=NOT_VALID_JSON; path=/`;
+				const { router } =
+					createMockRouter("/auth/login");
 				const service: CookieConsentService =
-					createService();
+					createService(router);
 
 				// Assert — no throw, falls back to pending
 				expect(service.status())
@@ -235,6 +271,267 @@ describe("CookieConsentService",
 					.toBe(false);
 			});
 
-		TestBed.resetTestingModule();
-		vi.restoreAllMocks();
+		describe("auth-route banner — shown only on /auth/* entry points",
+			() =>
+			{
+				// ── Routes where banner IS shown (auth entry points) ───────────
+
+				it("showBanner() is true on /auth/login when pending",
+					() =>
+					{
+						const { router } =
+							createMockRouter("/auth/login");
+						const service: CookieConsentService =
+							createService(router);
+
+						expect(service.showBanner())
+							.toBe(true);
+					});
+
+				it("showBanner() is true on /auth/register when pending",
+					() =>
+					{
+						const { router } =
+							createMockRouter("/auth/register");
+						const service: CookieConsentService =
+							createService(router);
+
+						expect(service.showBanner())
+							.toBe(true);
+					});
+
+				it("showBanner() is true on /auth/forgot-password when pending",
+					() =>
+					{
+						const { router } =
+							createMockRouter("/auth/forgot-password");
+						const service: CookieConsentService =
+							createService(router);
+
+						expect(service.showBanner())
+							.toBe(true);
+					});
+
+				it("showBanner() is true on /auth/change-password when pending",
+					() =>
+					{
+						const { router } =
+							createMockRouter("/auth/change-password");
+						const service: CookieConsentService =
+							createService(router);
+
+						expect(service.showBanner())
+							.toBe(true);
+					});
+
+				// ── Routes where banner is suppressed (not /auth/*) ────────────
+
+				it("showBanner() is false on home route when pending",
+					() =>
+					{
+						const { router } =
+							createMockRouter("/");
+						const service: CookieConsentService =
+							createService(router);
+
+						expect(service.status())
+							.toBe("pending");
+						expect(service.showBanner())
+							.toBe(false);
+					});
+
+				it("showBanner() is false on /privacy-policy when pending",
+					() =>
+					{
+						const { router } =
+							createMockRouter("/privacy-policy");
+						const service: CookieConsentService =
+							createService(router);
+
+						expect(service.showBanner())
+							.toBe(false);
+					});
+
+				it("showBanner() is false on /sandbox when pending",
+					() =>
+					{
+						const { router } =
+							createMockRouter("/sandbox");
+						const service: CookieConsentService =
+							createService(router);
+
+						expect(service.showBanner())
+							.toBe(false);
+					});
+
+				// ── Boundary: prefix must be exact — /authX is not /auth/ ──────
+
+				it("showBanner() is false on /authtoken (similar prefix, not /auth/) when pending",
+					() =>
+					{
+						const { router } =
+							createMockRouter("/authtoken");
+						const service: CookieConsentService =
+							createService(router);
+
+						expect(service.showBanner())
+							.toBe(false);
+					});
+
+				// ── Reactivity ─────────────────────────────────────────────────
+
+				it("showBanner() updates reactively when navigating from non-auth to auth route",
+					() =>
+					{
+						const { router, navigate } =
+							createMockRouter("/");
+						const service: CookieConsentService =
+							createService(router);
+
+						expect(service.showBanner())
+							.toBe(false);
+
+						navigate("/auth/login");
+
+						expect(service.showBanner())
+							.toBe(true);
+					});
+
+				it("showBanner() updates reactively when navigating back from auth to non-auth route",
+					() =>
+					{
+						const { router, navigate } =
+							createMockRouter("/auth/login");
+						const service: CookieConsentService =
+							createService(router);
+
+						expect(service.showBanner())
+							.toBe(true);
+
+						navigate("/");
+
+						expect(service.showBanner())
+							.toBe(false);
+					});
+
+				// ── Manual trigger (footer "Cookie Settings") ──────────────────
+
+				it("reopenBanner() shows banner even on a non-auth route (manual trigger)",
+					() =>
+					{
+						const { router } =
+							createMockRouter("/");
+						const service: CookieConsentService =
+							createService(router);
+
+						expect(service.showBanner())
+							.toBe(false);
+
+						service.reopenBanner();
+
+						expect(service.showBanner())
+							.toBe(true);
+					});
+
+				it("acceptAll() on manually-triggered banner clears manual flag",
+					() =>
+					{
+						const { router } =
+							createMockRouter("/");
+						const service: CookieConsentService =
+							createService(router);
+
+						service.reopenBanner();
+						expect(service.showBanner())
+							.toBe(true);
+
+						service.acceptAll();
+
+						expect(service.showBanner())
+							.toBe(false);
+						expect(service.status())
+							.toBe("accepted");
+					});
+
+				it("rejectNonEssential() on manually-triggered banner clears manual flag",
+					() =>
+					{
+						const { router } =
+							createMockRouter("/");
+						const service: CookieConsentService =
+							createService(router);
+
+						service.reopenBanner();
+						service.rejectNonEssential();
+
+						expect(service.showBanner())
+							.toBe(false);
+					});
+			});
+
+		describe("clearConsentForNextUser",
+			() =>
+			{
+				it("clears the consent cookie and resets status to pending",
+					() =>
+					{
+						const { router } =
+							createMockRouter("/auth/login");
+						const service: CookieConsentService =
+							createService(router);
+
+						service.acceptAll();
+						expect(service.status())
+							.toBe("accepted");
+
+						service.clearConsentForNextUser();
+
+						expect(service.status())
+							.toBe("pending");
+						expect(service.preferences())
+							.toBeNull();
+					});
+
+				it("does NOT set _manuallyShown — banner only appears on /auth/* routes",
+					() =>
+					{
+						// Start on a non-auth route (home)
+						const { router } =
+							createMockRouter("/");
+						const service: CookieConsentService =
+							createService(router);
+
+						service.acceptAll();
+						service.clearConsentForNextUser();
+
+						// Status is pending but route is not /auth/* — banner must NOT show
+						expect(service.status())
+							.toBe("pending");
+						expect(service.showBanner())
+							.toBe(false);
+					});
+
+				it("banner naturally reappears when the next user navigates to an /auth/* route",
+					() =>
+					{
+						const { router, navigate } =
+							createMockRouter("/");
+						const service: CookieConsentService =
+							createService(router);
+
+						service.acceptAll();
+						service.clearConsentForNextUser();
+
+						// Still on public route — no banner
+						expect(service.showBanner())
+							.toBe(false);
+
+						// Next user navigates to auth route
+						navigate("/auth/login");
+
+						// Banner now visible
+						expect(service.showBanner())
+							.toBe(true);
+					});
+			});
 	});

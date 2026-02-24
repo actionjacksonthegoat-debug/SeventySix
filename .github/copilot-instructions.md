@@ -1,4 +1,4 @@
-# SeventySix Copilot Instructions
+﻿# SeventySix Copilot Instructions
 
 > **Context-specific rules** are in `.github/instructions/*.instructions.md` files (auto-applied by `applyTo` globs).
 > This file contains **global rules only**. Each concept lives in exactly ONE file � never duplicated.
@@ -146,30 +146,17 @@ All code MUST work on both **Windows** and **Linux** (CI runs on `ubuntu-latest`
 | `playwright`      | Browser automation for E2E test debugging               | On-demand — needs E2E environment running |
 Use **context7** when unsure about current API for Angular, Wolverine, TanStack Query, or Playwright. Not needed for stable APIs like `Path.Combine` or standard HTTP.
 
-## MCP Activation Rules (CRITICAL � ABSOLUTE REQUIREMENT)
+## MCP Server Usage
 
-> **RULE**: ALL MCP servers listed above MUST remain enabled at all times. NEVER disable individual MCP tools in the VS Code chat panel. Before performing a task that an MCP server supports, ALWAYS activate and use that MCP server. Never perform the task manually when an MCP tool exists for it.
+Use all configured MCP servers in `.vscode/mcp.json`. If a server needs credentials, ask the user to provide them. After VS Code restart, MCP tool toggles may need re-enabling in the Chat panel (workspace settings already grant full access).
 
-> **TOOL AVAILABILITY**: All MCP tools MUST be kept toggled ON in the VS Code chat panel. If any MCP tool appears disabled, RE-ENABLE it immediately � do not proceed without it. Disabling MCP tools is PROHIBITED.
-
-| Task | Required MCP | Tool Examples |
-|------|-------------|---------------|
-| Verify client-side changes visually | `chrome-devtools` | `take_screenshot`, `evaluate_script`, `list_console_messages` |
-| Check network requests/responses | `chrome-devtools` | `list_network_requests` |
-| Verify accessibility tree | `chrome-devtools` | `take_snapshot` |
-| Look up library API patterns | `context7` | `resolve-library-id`, `query-docs` |
-| Create/update PRs and issues | `github` | `create_pull_request`, `list_issues` |
-| Inspect database schema/data | `postgresql` | `query` |
-| Fine-tune E2E test selectors/flows | `playwright` | Browser automation tools |
-
-**If an MCP server is not running when needed, start it. If it prompts for credentials, ask the user to provide them. NEVER skip the MCP and do the task manually or theoretically. If a tool reports "disabled by the user", STOP and ask the user to re-enable it in the VS Code chat panel before continuing.**
-
-## Known Issue: MCP Tools Reset on VS Code Restart
-
-VS Code may reset MCP tool toggles in the Chat panel on restart. This is a known VS Code behavior � the `chat.mcp.access` and `chat.agent.allowedTools` settings control **authorization** (whether tools are allowed), not **activation** (whether toggles are on in the UI). Additionally, the `github` and `postgresql` servers require credential prompts (`${input:...}`) that VS Code intentionally does not persist across sessions for security.
-
-**Workaround**: After opening VS Code, open the Chat panel and re-enable any disabled MCP tools. The workspace settings already grant full access (`chat.mcp.access: "all"`, `chat.agent.allowedTools: ["*"]`), so re-enabling is a single click per tool.
-
+| Task | Server |
+|------|--------|
+| Library API docs (Angular, Wolverine, TanStack, Playwright) | `context7` |
+| Visual verification of client changes | `chrome-devtools` — `take_screenshot` + `list_console_messages` |
+| Database inspection | `postgresql` |
+| E2E test selector debugging (with `--keepalive`) | `playwright` |
+| GitHub PRs/issues | `github` |
 ## Chrome DevTools Verification (REQUIRED for Client Changes)
 
 > **RULE**: After any client-side code change (component, service, route, style, template), use Chrome DevTools MCP to verify the change works. NEVER rely on "it should work" � prove it.
@@ -215,42 +202,9 @@ VS Code may reset MCP tool toggles in the Chat panel on restart. This is a known
 
 ## Package.json Commands Reference
 
-> **RULE**: Always use these `npm run` commands instead of running raw scripts or building manually.
-
-| Command | Purpose |
-|---------|---------|
-| `npm start` | Start full dev stack (API + Client + Infrastructure) |
-| `npm stop` | Stop all dev services |
-| `npm test` | Run server + client tests sequentially |
-| `npm run test:server` | Run server tests only (starts Docker if needed) |
-| `npm run test:client` | Run client tests only |
-| `npm run test:e2e` | Run Playwright E2E tests |
-| `npm run test:e2e:keepalive` | Run E2E tests, keep environment alive for debugging |
-| `npm run start:client` | Start Angular dev server only |
-| `npm run start:api-debug` | Start infrastructure (DB, cache) for API debugging |
-| `npm run stop:api` | Stop API and infrastructure containers |
-| `npm run format` | Format server + client code — **USE THIS, never run dprint directly** |
-| `npm run format:server` | Format server code (analyzers + dotnet format) |
-| `npm run format:client` | Format client code (ESLint → dprint → ESLint — required order) |
-| `npm run loadtest:quick` | Quick load test profile |
-| `npm run loadtest:smoke` | Smoke load test profile |
-| `npm run loadtest:load` | Standard load test profile |
-| `npm run loadtest:stress` | Stress load test profile |
-| `npm run scan:codeql` | Run full CodeQL security scan (C# + TypeScript) locally |
-| `npm run scan:codeql:cs` | Run CodeQL scan for C# only |
-| `npm run scan:codeql:ts` | Run CodeQL scan for TypeScript only |
-| `npm run secrets:init` | Initialize user secrets |
-| `npm run secrets:list` | List current user secrets |
-| `npm run secrets:set` | Set a user secret value |
-| `npm run secrets:delete` | Delete a user secret |
-| `npm run generate:ssl-cert` | Generate dev SSL certificate |
-| `npm run generate:dataprotection-cert` | Generate data protection certificate |
-| `npm run generate:icons` | Generate PWA icons |
-| `npm run clean:docker` | Clean Docker containers and images |
-| `npm run clean:docker:full` | Clean Docker including volumes |
-| `npm run db:reset` | **USER ONLY � NEVER run via Copilot** |
-
----
+> Use `npm run <script>` commands defined in `package.json`. Read `package.json` for the full list.
+> **CRITICAL**: `npm run db:reset` is **USER ONLY — NEVER run via Copilot**.
+> **`npm run format` is the ONLY format command** — never run `dprint` directly.
 
 ## E2E Debugging Note
 

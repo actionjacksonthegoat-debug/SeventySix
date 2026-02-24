@@ -74,8 +74,34 @@ export default function(data)
 			"returns 302 redirect": (response) =>
 				response.status === HTTP_STATUS.FOUND,
 			"redirect targets github.com": (response) =>
-				response.headers[HTTP_HEADER.LOCATION] != null
-					&& response.headers[HTTP_HEADER.LOCATION].includes("github.com"),
+			{
+				const location =
+					response.headers[HTTP_HEADER.LOCATION];
+				if (location == null || location === "")
+				{
+					return false;
+				}
+				// Parse host from absolute URL without using the URL constructor
+				// (not globally available in all k6 environments)
+				const schemeEnd =
+					location.indexOf("//");
+				if (schemeEnd === -1)
+				{
+					return false;
+				}
+				const hostStart =
+					schemeEnd + 2;
+				const slashAfterHost =
+					location.indexOf("/", hostStart);
+				const hostWithPort =
+					slashAfterHost === -1
+						? location.slice(hostStart)
+						: location.slice(hostStart, slashAfterHost);
+				const host =
+					hostWithPort.split(":")[0];
+				return host === "github.com"
+					|| host.endsWith(".github.com");
+			},
 			"includes state parameter": (response) =>
 				response.headers[HTTP_HEADER.LOCATION] != null
 					&& response.headers[HTTP_HEADER.LOCATION].includes("state="),

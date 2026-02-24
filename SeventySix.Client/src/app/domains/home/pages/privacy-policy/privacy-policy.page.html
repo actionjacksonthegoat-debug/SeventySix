@@ -91,9 +91,14 @@
 				</thead>
 				<tbody>
 					<tr>
-						<td>auth_session</td>
-						<td>Authentication session</td>
-						<td>Session</td>
+						<td>X-Refresh-Token</td>
+						<td>Authentication refresh token</td>
+						<td>1&#8211;14 days</td>
+					</tr>
+					<tr>
+						<td>__TD</td>
+						<td>Trusted device token (MFA bypass)</td>
+						<td>30 days</td>
 					</tr>
 					<tr>
 						<td>seventysix_consent</td>
@@ -124,8 +129,7 @@
 					mat-button
 					class="legal-page__inline-btn"
 					type="button"
-					routerLink="/"
-					[queryParams]="{ 'cookie-settings': 1 }"
+					(click)="openCookieSettings()"
 					aria-label="Open cookie settings">
 					Cookie Settings
 				</button>
@@ -150,7 +154,7 @@
 			</ul>
 			<p>
 				To exercise these rights, contact us at
-				<a href="mailto:privacy@seventysix.app">privacy@seventysix.app</a>.
+				<a href="mailto:contactseventysix@gmail.com">contactseventysix@gmail.com</a>.
 				We will respond within 30 days.
 			</p>
 		</section>
@@ -170,7 +174,7 @@
 			<p>
 				<strong>We do not sell your personal information.</strong>
 				To submit a Do Not Sell or Share My Personal Information request,
-				contact <a href="mailto:privacy@seventysix.app">privacy@seventysix.app</a>.
+				contact <a href="mailto:contactseventysix@gmail.com">contactseventysix@gmail.com</a>.
 			</p>
 		</section>
 
@@ -206,7 +210,7 @@
 			<p>
 				If you have questions about this Privacy Policy or your data rights,
 				contact us at:
-				<a href="mailto:privacy@seventysix.app">privacy@seventysix.app</a>
+				<a href="mailto:contactseventysix@gmail.com">contactseventysix@gmail.com</a>.
 			</p>
 		</section>
 	</div>

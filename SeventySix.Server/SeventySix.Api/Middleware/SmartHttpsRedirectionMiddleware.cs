@@ -102,6 +102,14 @@ public sealed class SmartHttpsRedirectionMiddleware(
 		// Not exempted - redirect to HTTPS
 		string host =
 			context.Request.Host.Host;
+
+		if (!IsRequestHostAllowed(host, settings))
+		{
+			context.Response.StatusCode =
+				StatusCodes.Status400BadRequest;
+			return;
+		}
+
 		string? queryString =
 			context.Request.QueryString.HasValue
 			? context.Request.QueryString.Value
@@ -113,5 +121,32 @@ public sealed class SmartHttpsRedirectionMiddleware(
 				: $"https://{host}:{settings.HttpsPort}{path}{queryString}";
 
 		context.Response.Redirect(redirectUrl, permanent: false); // 307 Temporary Redirect
+	}
+
+	/// <summary>
+	/// Validates that the request host is in the list of allowed hosts.
+	/// An empty <see cref="SecuritySettings.AllowedHosts"/> list permits all hosts.
+	/// </summary>
+	/// <param name="host">
+	/// The request host to validate.
+	/// </param>
+	/// <param name="settings">
+	/// Security settings containing the allowed hosts list.
+	/// </param>
+	/// <returns>
+	/// <c>true</c> if the host is allowed or no restriction is configured; otherwise, <c>false</c>.
+	/// </returns>
+	private static bool IsRequestHostAllowed(string host, SecuritySettings settings)
+	{
+		if (settings.AllowedHosts.Count == 0)
+		{
+			return true;
+		}
+
+		return settings.AllowedHosts.Any(
+			allowedHost => string.Equals(
+				allowedHost,
+				host,
+				StringComparison.OrdinalIgnoreCase));
 	}
 }

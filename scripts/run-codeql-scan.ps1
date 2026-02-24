@@ -67,12 +67,36 @@ the CLI for you: Ctrl+Shift+P > CodeQL: Install CLI
 $codeqlVersion = codeql --version 2>&1 | Select-Object -First 1
 Write-Host "[OK] CodeQL CLI: $codeqlVersion`n" -ForegroundColor Green
 
+# -- Ensure query packs are available -----------------------------------------
+Write-Host "Checking query packs..." -ForegroundColor Gray
+
+$packsToCheck = @()
+if ($LanguageFilter -eq "all" -or $LanguageFilter -eq "csharp") {
+	$packsToCheck += "codeql/csharp-queries"
+}
+if ($LanguageFilter -eq "all" -or $LanguageFilter -eq "typescript") {
+	$packsToCheck += "codeql/javascript-queries"
+}
+
+foreach ($pack in $packsToCheck) {
+	codeql pack download $pack 2>&1 | Out-Null
+}
+
+Write-Host "[OK] Query packs ready`n" -ForegroundColor Green
+
 # -- Setup output dirs --------------------------------------------------------
 New-Item -ItemType Directory -Force -Path $ResultsDir | Out-Null
 
 # -- C# Scan ------------------------------------------------------------------
 function Invoke-CsharpScan {
-	Write-Host "[C#] Creating database..." -ForegroundColor Yellow
+	Write-Host "[C#] Building solution (required before --build-mode=none extraction)..." -ForegroundColor Yellow
+
+	# Pre-build required: --build-mode=none needs DLLs present so the Roslyn extractor
+	# can resolve analyzer DLLs (SeventySix.Analyzers.dll) and framework references.
+	# Without this, the extractor may crash on missing assemblies.
+	dotnet build (Join-Path $CsharpRoot "SeventySix.Server.slnx") --configuration Release
+
+	Write-Host "[C#] Creating database (build-mode: none)..." -ForegroundColor Yellow
 
 	if (Test-Path $CsharpDb) {
 		Remove-Item -Recurse -Force $CsharpDb
@@ -80,10 +104,14 @@ function Invoke-CsharpScan {
 
 	Push-Location $CsharpRoot
 	try {
+		# Use --build-mode=none (buildless/standalone extraction) instead of a traced
+		# build. The traced build (--command) fails on Windows with .NET 10 because
+		# the CodeQL C# tracer cannot intercept the VBCSCompiler shared build server.
+		# Buildless mode uses Roslyn directly to parse source files.
 		codeql database create $CsharpDb `
 			--language=csharp `
+			--build-mode=none `
 			--source-root=. `
-			--command="dotnet build SeventySix.Server.slnx --configuration Release" `
 			--overwrite
 
 		Write-Host "[C#] Analyzing..." -ForegroundColor Yellow
@@ -92,7 +120,7 @@ function Invoke-CsharpScan {
 			--format=sarif-latest `
 			--output=$CsharpSarif `
 			--sarif-add-file-contents `
-			csharp-code-scanning.qls
+			codeql/csharp-queries:codeql-suites/csharp-code-scanning.qls
 
 		Write-Host "[OK] C# results: $CsharpSarif" -ForegroundColor Green
 	}
@@ -120,7 +148,7 @@ function Invoke-TypescriptScan {
 		--format=sarif-latest `
 		--output=$TsSarif `
 		--sarif-add-file-contents `
-		javascript-code-scanning.qls
+		codeql/javascript-queries:codeql-suites/javascript-code-scanning.qls
 
 	Write-Host "[OK] TypeScript results: $TsSarif" -ForegroundColor Green
 }
