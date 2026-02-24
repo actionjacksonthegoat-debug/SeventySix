@@ -280,9 +280,7 @@ public sealed class EmailService(
 		{
 			logger.LogWarning(
 				"[EMAIL DISABLED] Would send to {To}: {Subject}",
-				// codeql[cs/exposure-of-sensitive-information] -- email masked via LogSanitizer.MaskEmail (first char + domain only)
 				LogSanitizer.MaskEmail(to),
-				// codeql[cs/exposure-of-sensitive-information] -- subject mapped to a safe category label by LogSanitizer.MaskEmailSubject, no PII
 				LogSanitizer.MaskEmailSubject(subject));
 			return;
 		}
@@ -304,18 +302,14 @@ public sealed class EmailService(
 			logger.LogError(
 				exception,
 				"SMTP send failed for {To}: {Subject}. Rate limit slot released.",
-				// codeql[cs/exposure-of-sensitive-information] -- email masked via LogSanitizer.MaskEmail (first char + domain only)
 				LogSanitizer.MaskEmail(to),
-				// codeql[cs/exposure-of-sensitive-information] -- subject mapped to a safe category label by LogSanitizer.MaskEmailSubject, no PII
 				LogSanitizer.MaskEmailSubject(subject));
 			throw;
 		}
 
 		logger.LogWarning(
 			"Email sent to {To}: {Subject}",
-			// codeql[cs/exposure-of-sensitive-information] -- email masked via LogSanitizer.MaskEmail (first char + domain only)
 			LogSanitizer.MaskEmail(to),
-			// codeql[cs/exposure-of-sensitive-information] -- subject mapped to a safe category label by LogSanitizer.MaskEmailSubject, no PII
 			LogSanitizer.MaskEmailSubject(subject));
 	}
 

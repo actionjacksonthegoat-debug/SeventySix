@@ -209,7 +209,6 @@ public static class CompleteRegistrationCommandHandler
 		{
 			logger.LogWarning(
 				"Attempted to complete registration for non-existent email: {Email}",
-				// codeql[cs/exposure-of-sensitive-information] -- email masked via LogSanitizer.MaskEmail (first char + domain only)
 				LogSanitizer.MaskEmail(decodedEmail));
 
 			return
@@ -232,7 +231,6 @@ public static class CompleteRegistrationCommandHandler
 			string errors = confirmResult.ToErrorString();
 			logger.LogWarning(
 				"Email confirmation failed for {Email}: {Errors}",
-				// codeql[cs/exposure-of-sensitive-information] -- email masked via LogSanitizer.MaskEmail (first char + domain only)
 				LogSanitizer.MaskEmail(decodedEmail),
 				errors);
 

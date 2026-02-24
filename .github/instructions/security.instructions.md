@@ -93,14 +93,12 @@ The C# scan uses `--build-mode=none` (build-tracing disabled) to avoid VBCSCompi
 issues on Windows. A `dotnet build` must run **before** `codeql database create` to ensure
 binaries and generated code exist for analysis. See `scripts/run-codeql-scan.ps1`.
 
-### CodeQL Suppression Syntax
+### CodeQL Alert Dismissal
 
-Use `// codeql[rule-id]` on the line **before** the flagged statement — never `// lgtm[...]`:
-
-```csharp
-// codeql[cs/exposure-of-sensitive-information] -- apiName is a configured constant, never user-controlled
-logger.LogWarning("Rate limit exceeded for API: {ApiName}", apiName, ...);
-```
+**Do NOT use `// codeql[rule-id]` inline suppression comments** — they do not reliably suppress
+taint-tracking alerts in C# or JS. Instead, dismiss false-positive alerts directly in the
+GitHub Security tab (`Security → Code scanning → Dismiss alert → False positive`).
+Dismissals persist across future scans and do not require code changes.
 
 ## PII Masking in Structured Logs (CRITICAL)
 

@@ -39,7 +39,6 @@ const POLL_DELAY_MS =
 // This script only runs at dev time to generate OpenAPI client code, never in production.
 if (process.env.NODE_ENV !== "production")
 {
-	// codeql[js/disabling-certificate-validation] -- dev-only script for localhost OpenAPI codegen with self-signed cert, never runs in production
 	process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 }
 

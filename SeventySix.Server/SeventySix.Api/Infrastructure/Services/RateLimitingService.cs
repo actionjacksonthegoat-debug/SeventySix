@@ -71,7 +71,6 @@ public sealed class RateLimitingService(
 
 		if (!canMakeRequest)
 		{
-			// codeql[cs/exposure-of-sensitive-information] -- apiName is a configured API constant, never user-controlled
 			logger.LogWarning(
 				"Rate limit exceeded for API: {ApiName}. Count: {Count}/{Limit}. Interval: {Interval}. Resets in: {TimeUntilReset}",
 				apiName,
@@ -142,7 +141,6 @@ public sealed class RateLimitingService(
 
 			if (monthlyCount >= limit)
 			{
-				// codeql[cs/exposure-of-sensitive-information] -- apiName is a configured API constant, never user-controlled
 				logger.LogWarning(
 					"Cannot increment request count for {ApiName}. Monthly limit reached: {Count}/{Limit}",
 					apiName,
