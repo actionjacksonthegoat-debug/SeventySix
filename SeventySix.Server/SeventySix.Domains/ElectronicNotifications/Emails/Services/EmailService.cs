@@ -278,6 +278,7 @@ public sealed class EmailService(
 	{
 		if (!settings.Value.Enabled)
 		{
+			// codeql[cs/exposure-of-sensitive-information] -- email masked via MaskEmail (first char + domain), subject mapped to category label by MaskEmailSubject
 			logger.LogWarning(
 				"[EMAIL DISABLED] Would send to {To}: {Subject}",
 				LogSanitizer.MaskEmail(to),
@@ -299,6 +300,7 @@ public sealed class EmailService(
 			// SMTP failed — release the reserved slot (best-effort)
 			await TryReleaseRateLimitSlotAsync(cancellationToken);
 
+			// codeql[cs/exposure-of-sensitive-information] -- email masked via MaskEmail (first char + domain), subject mapped to category label by MaskEmailSubject
 			logger.LogError(
 				exception,
 				"SMTP send failed for {To}: {Subject}. Rate limit slot released.",
@@ -307,6 +309,7 @@ public sealed class EmailService(
 			throw;
 		}
 
+		// codeql[cs/exposure-of-sensitive-information] -- email masked via MaskEmail (first char + domain), subject mapped to category label by MaskEmailSubject
 		logger.LogWarning(
 			"Email sent to {To}: {Subject}",
 			LogSanitizer.MaskEmail(to),

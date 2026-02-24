@@ -37,9 +37,9 @@ const POLL_DELAY_MS =
 
 // Development-only: disable TLS cert validation for self-signed dev certificate.
 // This script only runs at dev time to generate OpenAPI client code, never in production.
-// codeql[js/disabling-certificate-validation]
 if (process.env.NODE_ENV !== "production")
 {
+	// codeql[js/disabling-certificate-validation] -- dev-only script for localhost OpenAPI codegen with self-signed cert, never runs in production
 	process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 }
 

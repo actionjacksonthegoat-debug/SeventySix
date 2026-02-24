@@ -93,7 +93,7 @@ public static class OpenTelemetryExtensions
 						samplingType switch
 						{
 							"RatioBasedSampling" => new TraceIdRatioBasedSampler(samplingProbability),
-							"AlwaysOff" => (Sampler)new AlwaysOffSampler(),
+							"AlwaysOff" => new AlwaysOffSampler(),
 							_ => new AlwaysOnSampler(),
 						});
 
