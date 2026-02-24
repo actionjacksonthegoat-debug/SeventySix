@@ -41,10 +41,11 @@ test.describe("OAuth Login (GitHub)",
 		test("should trigger OAuth redirect when clicking GitHub button",
 			async ({ page, authPage }) =>
 			{
-				// OAuth now opens a popup; capture the popup or fallback navigation
+				// OAuth opens a popup; capture it or fall back to main-page navigation detection
 				let oauthRequestMade: boolean = false;
 
-				// Also listen for requests on main page (fallback if popup blocked)
+				// Listen for requests on main page in case popup is blocked and app falls back
+				// to full-page navigation instead
 				page.on(
 					"request",
 					(request) =>
@@ -60,7 +61,6 @@ test.describe("OAuth Login (GitHub)",
 						}
 					});
 
-				// Either popup opens or main page navigates; register listener and click concurrently
 				try
 				{
 					const [popup] =
@@ -68,27 +68,26 @@ test.describe("OAuth Login (GitHub)",
 							[
 								page.waitForEvent(
 									"popup",
-									{ timeout: TIMEOUTS.navigation }),
+									// Use element timeout (5 s): if no popup appears in 5 s we fall
+									// through to the catch and rely on the request listener instead
+									{ timeout: TIMEOUTS.element }),
 								authPage.githubButton.click()
 							]);
-					oauthRequestMade =
-						popup
-							.url()
-							.includes("oauth")
-							|| popup
-								.url()
-								.includes("github")
-							|| popup
-								.url()
-								.includes("about:blank");
-					await popup.close();
+
+					// Any popup opening confirms the OAuth redirect was initiated
+					oauthRequestMade = true;
+
+					// Do NOT await popup.close() — the popup redirects to GitHub.com which is
+					// unreachable in CI, causing close() to hang until the test timeout fires
+					void popup.close();
 				}
 				catch
 				{
-					// Popup was blocked; oauthRequestMade set by request listener
+					// No popup within 5 s — oauthRequestMade set by request listener above
+					// if the app fell back to full-page navigation
 				}
 
-				// Verify an OAuth request was initiated (popup or fallback)
+				// Verify an OAuth request was initiated (popup or fallback navigation)
 				expect(oauthRequestMade)
 					.toBeTruthy();
 			});
