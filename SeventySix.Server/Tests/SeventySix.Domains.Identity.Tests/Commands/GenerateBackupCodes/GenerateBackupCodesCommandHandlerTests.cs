@@ -44,7 +44,7 @@ public sealed class GenerateBackupCodesCommandHandlerTests
 		// Arrange
 		UserManager
 			.FindByIdAsync(TestUserId.ToString())
-			.Returns((ApplicationUser?)null);
+			.Returns(default(ApplicationUser?));
 
 		GenerateBackupCodesCommand command =
 			new(TestUserId);

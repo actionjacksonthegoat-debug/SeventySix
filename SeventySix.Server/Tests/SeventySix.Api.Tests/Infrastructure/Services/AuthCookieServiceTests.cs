@@ -96,9 +96,6 @@ public sealed class AuthCookieServiceTests
 		service.SetRefreshTokenCookie(TestRefreshToken);
 
 		// Assert
-		IResponseCookies responseCookies =
-			HttpContext.Response.Cookies;
-
 		// Read the Set-Cookie header directly to verify expiration
 		string? setCookieHeader =
 			HttpContext.Response.Headers.SetCookie

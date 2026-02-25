@@ -108,7 +108,7 @@ public sealed class RateLimitingServiceTests
 				apiName,
 				Arg.Any<DateOnly>(),
 				Arg.Any<CancellationToken>())
-			.Returns((ThirdPartyApiRequest?)null);
+			.Returns(default(ThirdPartyApiRequest?));
 
 		bool result =
 			await sut.CanMakeRequestAsync(apiName);
@@ -204,7 +204,7 @@ public sealed class RateLimitingServiceTests
 				apiName,
 				today,
 				Arg.Any<CancellationToken>())
-			.Returns((ThirdPartyApiRequest?)null);
+			.Returns(default(ThirdPartyApiRequest?));
 
 		Repository
 			.CreateAsync(
@@ -328,7 +328,7 @@ public sealed class RateLimitingServiceTests
 				apiName,
 				Arg.Any<DateOnly>(),
 				Arg.Any<CancellationToken>())
-			.Returns((ThirdPartyApiRequest?)null);
+			.Returns(default(ThirdPartyApiRequest?));
 
 		int count =
 			await sut.GetRequestCountAsync(apiName);
@@ -347,7 +347,7 @@ public sealed class RateLimitingServiceTests
 				apiName,
 				Arg.Any<DateOnly>(),
 				Arg.Any<CancellationToken>())
-			.Returns((ThirdPartyApiRequest?)null);
+			.Returns(default(ThirdPartyApiRequest?));
 
 		int remaining =
 			await sut.GetRemainingQuotaAsync(apiName);
@@ -510,7 +510,7 @@ public sealed class RateLimitingServiceTests
 				apiName,
 				today,
 				Arg.Any<CancellationToken>())
-			.Returns((ThirdPartyApiRequest?)null);
+			.Returns(default(ThirdPartyApiRequest?));
 
 		// Act
 		bool result =

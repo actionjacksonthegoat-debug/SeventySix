@@ -360,27 +360,24 @@ public sealed class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 			timeProvider);
 
 		// Act - Create tokens up to and beyond limit
-		string firstToken =
-			await service.GenerateRefreshTokenAsync(
-				user.Id,
-				"192.168.1.1",
-				rememberMe: false,
-				CancellationToken.None);
+		await service.GenerateRefreshTokenAsync(
+			user.Id,
+			"192.168.1.1",
+			rememberMe: false,
+			CancellationToken.None);
 
-		string secondToken =
-			await service.GenerateRefreshTokenAsync(
-				user.Id,
-				"192.168.1.2",
-				rememberMe: false,
-				CancellationToken.None);
+		await service.GenerateRefreshTokenAsync(
+			user.Id,
+			"192.168.1.2",
+			rememberMe: false,
+			CancellationToken.None);
 
 		// This should trigger revocation of the oldest (first) token
-		string thirdToken =
-			await service.GenerateRefreshTokenAsync(
-				user.Id,
-				"192.168.1.3",
-				rememberMe: false,
-				CancellationToken.None);
+		await service.GenerateRefreshTokenAsync(
+			user.Id,
+			"192.168.1.3",
+			rememberMe: false,
+			CancellationToken.None);
 
 		// Assert - First token should be revoked
 		List<RefreshToken> tokens =

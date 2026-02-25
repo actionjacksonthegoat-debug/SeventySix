@@ -61,6 +61,11 @@ if (typeof window !== "undefined")
 	window.ResizeObserver =
 		class MockResizeObserver
 		{
+			constructor(_callback?: ResizeObserverCallback)
+			{
+			// Accept callback to match real ResizeObserver constructor signature
+			}
+
 			observe: () => void =
 				vi.fn();
 			unobserve: () => void =

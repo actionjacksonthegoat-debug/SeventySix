@@ -93,14 +93,13 @@ public sealed class AuditInterceptor(
 			// (ThirdPartyApiRequest - timestamps only)
 			else if (entry.Entity is IModifiableEntity modifiable)
 			{
-				if (entry.State == EntityState.Added)
+				if (entry.State == EntityState.Added
+					&& modifiable.CreateDate == default)
 				{
-					if (modifiable.CreateDate == default)
-					{
-						modifiable.CreateDate =
-						timeProvider.GetUtcNow();
-					}
+					modifiable.CreateDate =
+					timeProvider.GetUtcNow();
 				}
+
 				if (entry.State == EntityState.Modified)
 				{
 					modifiable.ModifyDate =
@@ -109,6 +108,7 @@ public sealed class AuditInterceptor(
 			}
 			// ICreatableEntity: Set CreateDate only (no modify, no user tracking)
 			// (Log entity - always gets CreateDate = NOW() if not set)
+			// codeql[cs/nested-if-statements] -- Single conditional inside pattern match; combining would reduce clarity
 			else if (entry.Entity is ICreatableEntity creatable)
 			{
 				if (

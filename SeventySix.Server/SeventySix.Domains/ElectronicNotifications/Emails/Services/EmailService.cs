@@ -364,7 +364,7 @@ public sealed class EmailService(
 				BREVO_API_NAME,
 				cancellationToken);
 		}
-		catch (Exception decrementException)
+		catch (InvalidOperationException decrementException)
 		{
 			// Log but don't throw — the email wasn't sent, count is 1 too high, which is safe
 			logger.LogWarning(

@@ -118,6 +118,7 @@ internal class LogRepository(
 
 		if (!string.IsNullOrWhiteSpace(request.SearchTerm))
 		{
+			// codeql[cs/complex-condition] -- EF Core LINQ expression; must be inline for SQL translation
 			query =
 				query.Where(log =>
 					(

@@ -20,7 +20,7 @@ namespace SeventySix.Shared.Tests.Registration;
 public sealed class DataProtectionRegistrationTests
 {
 	private static readonly string NonExistentCertPath =
-		Path.Combine(
+		Path.Join(
 			Path.GetTempPath(),
 			"nonexistent",
 			"cert.pfx");
@@ -30,7 +30,7 @@ public sealed class DataProtectionRegistrationTests
 	{
 		// Arrange
 		string tempKeysDirectory =
-			Path.Combine(
+			Path.Join(
 				Path.GetTempPath(),
 				$"dp-test-{Guid.NewGuid():N}");
 
@@ -116,7 +116,7 @@ public sealed class DataProtectionRegistrationTests
 	{
 		// Arrange
 		string tempKeysDirectory =
-			Path.Combine(
+			Path.Join(
 				Path.GetTempPath(),
 				$"dp-test-{Guid.NewGuid():N}");
 

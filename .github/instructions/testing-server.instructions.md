@@ -234,6 +234,11 @@ Focus coverage on the **20% of code that carries 80% of risk**:
 
 **Skip tests for:** Simple property-to-property mapping, DTOs, constants, entities with no behavior.
 
+## Test Failure Rule (CRITICAL)
+
+> **NEVER** attribute a failing test to "another change" to skip fixing it.
+> ALL failing tests in `dotnet test` MUST be fixed before claiming completion — regardless of when or how they were introduced.
+
 ## Definition of Done Checklist
 
 - [ ] Failing test written first (TDD)
@@ -243,4 +248,4 @@ Focus coverage on the **20% of code that carries 80% of risk**:
 - [ ] All public members have XML documentation
 - [ ] No magic strings (constants extracted)
 - [ ] No single/two-letter variable names
-- [ ] `dotnet test` passes all suites
+- [ ] `dotnet test` passes all suites — **0 failures, regardless of origin**

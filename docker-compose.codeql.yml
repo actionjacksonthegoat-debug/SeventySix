@@ -1,0 +1,47 @@
+# docker-compose.codeql.yml
+# Runs CodeQL analysis in containers that mirror GitHub Actions exactly:
+#   - ubuntu-latest Linux base
+#   - .NET 10 SDK (C# job)
+#   - Node 22 (TypeScript job)
+#   - CodeQL CLI — same bundle version as codeql-action@v4
+#   - build-mode: manual (traced build — full inter-procedural data flow for C#)
+#   - Same security-and-quality suite and codeql-config.yml
+#
+# Usage (run from repo root):
+#   npm run scan:codeql:ci           full scan: C# + TypeScript (sequential)
+#   npm run scan:codeql:ci:csharp    C# only (~15-20 min)
+#   npm run scan:codeql:ci:typescript TypeScript only (~5 min)
+#
+# Results written to .codeql/results/:
+#   csharp-ci-parity.sarif
+#   typescript-ci-parity.sarif
+name: codeql-ci
+
+services:
+  codeql-csharp:
+    image: mcr.microsoft.com/dotnet/sdk:10.0
+    working_dir: /repo
+    volumes:
+      - .:/repo
+      - codeql-cache:/root/.codeql
+    environment:
+      - DOTNET_CLI_TELEMETRY_OPTOUT=1
+      - DOTNET_NOLOGO=1
+    command: bash /repo/scripts/codeql-ci-scan.sh csharp
+    profiles:
+      - csharp
+      - full
+
+  codeql-typescript:
+    image: node:22-bookworm-slim
+    working_dir: /repo
+    volumes:
+      - .:/repo
+      - codeql-cache:/root/.codeql
+    command: bash /repo/scripts/codeql-ci-scan.sh typescript
+    profiles:
+      - typescript
+      - full
+
+volumes:
+  codeql-cache: {}

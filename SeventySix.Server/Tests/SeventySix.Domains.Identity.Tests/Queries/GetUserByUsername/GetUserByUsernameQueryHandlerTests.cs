@@ -93,7 +93,7 @@ public sealed class GetUserByUsernameQueryHandlerTests
 
 		UserManager
 			.FindByNameAsync(Username)
-			.Returns((ApplicationUser?)null);
+			.Returns(default(ApplicationUser?));
 
 		// Act
 		UserDto? result =
@@ -121,7 +121,7 @@ public sealed class GetUserByUsernameQueryHandlerTests
 
 		UserManager
 			.FindByNameAsync(Username)
-			.Returns((ApplicationUser?)null);
+			.Returns(default(ApplicationUser?));
 
 		// Act
 		await GetUserByUsernameQueryHandler.HandleAsync(

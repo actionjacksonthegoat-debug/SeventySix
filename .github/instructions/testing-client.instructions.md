@@ -107,6 +107,11 @@ Focus coverage on the **20% of code that carries 80% of risk**:
 
 **Skip tests for:** Simple template bindings, pass-through services, DTOs, constants.
 
+## Test Failure Rule (CRITICAL)
+
+> **NEVER** attribute a failing test to "another change" to skip fixing it.
+> ALL failing tests in `npm test` MUST be fixed before claiming completion — regardless of when or how they were introduced.
+
 ## Chrome DevTools Verification (REQUIRED)
 
 After unit tests pass, verify in real browser via Chrome DevTools MCP — see `copilot-instructions.md` Chrome DevTools section.

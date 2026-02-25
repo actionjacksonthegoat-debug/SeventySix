@@ -116,7 +116,7 @@ public sealed class GetUserProfileQueryHandlerTests
 
 		UserManager
 			.FindByIdAsync(userId.ToString())
-			.Returns((ApplicationUser?)null);
+			.Returns(default(ApplicationUser?));
 
 		GetUserProfileQuery query =
 			new(userId);

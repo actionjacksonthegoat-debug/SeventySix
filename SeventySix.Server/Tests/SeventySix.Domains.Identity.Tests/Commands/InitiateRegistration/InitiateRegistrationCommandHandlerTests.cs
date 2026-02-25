@@ -99,7 +99,7 @@ public sealed class InitiateRegistrationCommandHandlerTests
 
 		UserManager
 			.FindByEmailAsync(Email)
-			.Returns((ApplicationUser?)null);
+			.Returns(default(ApplicationUser?));
 
 		UserManager
 			.CreateAsync(Arg.Any<ApplicationUser>())
@@ -146,7 +146,7 @@ public sealed class InitiateRegistrationCommandHandlerTests
 
 		UserManager
 			.FindByEmailAsync(Email)
-			.Returns((ApplicationUser?)null);
+			.Returns(default(ApplicationUser?));
 
 		UserManager
 			.CreateAsync(Arg.Any<ApplicationUser>())
@@ -185,7 +185,7 @@ public sealed class InitiateRegistrationCommandHandlerTests
 
 		UserManager
 			.FindByEmailAsync(Email)
-			.Returns((ApplicationUser?)null);
+			.Returns(default(ApplicationUser?));
 
 		UserManager
 			.CreateAsync(Arg.Do<ApplicationUser>(

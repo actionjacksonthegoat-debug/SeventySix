@@ -725,6 +725,20 @@ describe("AuthService",
 		describe("cross-tab logout",
 			() =>
 			{
+				function createStorageEvent(
+					options: { key: string; newValue: string | null; oldValue?: string | null; }): StorageEvent
+				{
+					const event: StorageEvent =
+						new StorageEvent("storage");
+					Object.defineProperties(event,
+						{
+							key: { value: options.key },
+							newValue: { value: options.newValue },
+							oldValue: { value: options.oldValue ?? null }
+						});
+					return event;
+				}
+
 				it("should call forceLogoutLocally when auth_has_session removed in another tab",
 					() =>
 					{
@@ -737,15 +751,8 @@ describe("AuthService",
 							.toBe(true);
 
 						// Simulate StorageEvent from another tab (session marker removed)
-						const storageEvent: StorageEvent =
-							new StorageEvent(
-								"storage",
-								{
-									key: SESSION_KEY,
-									newValue: null,
-									oldValue: "true"
-								});
-						window.dispatchEvent(storageEvent);
+						window.dispatchEvent(createStorageEvent(
+							{ key: SESSION_KEY, newValue: null, oldValue: "true" }));
 
 						expect(service.isAuthenticated())
 							.toBe(false);
@@ -760,14 +767,8 @@ describe("AuthService",
 						loginAndFlush(service, httpMock);
 
 						// Simulate unrelated storage event
-						const storageEvent: StorageEvent =
-							new StorageEvent(
-								"storage",
-								{
-									key: "unrelated_key",
-									newValue: null
-								});
-						window.dispatchEvent(storageEvent);
+						window.dispatchEvent(createStorageEvent(
+							{ key: "unrelated_key", newValue: null }));
 
 						expect(service.isAuthenticated())
 							.toBe(true);
@@ -782,15 +783,8 @@ describe("AuthService",
 						loginAndFlush(service, httpMock);
 
 						// Simulate session marker being SET (not removed)
-						const storageEvent: StorageEvent =
-							new StorageEvent(
-								"storage",
-								{
-									key: SESSION_KEY,
-									newValue: "true",
-									oldValue: null
-								});
-						window.dispatchEvent(storageEvent);
+						window.dispatchEvent(createStorageEvent(
+							{ key: SESSION_KEY, newValue: "true", oldValue: null }));
 
 						expect(service.isAuthenticated())
 							.toBe(true);

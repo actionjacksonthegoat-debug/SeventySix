@@ -94,7 +94,7 @@ public sealed class DeleteUserCommandHandlerTests
 
 		UserManager
 			.FindByIdAsync(Arg.Any<string>())
-			.Returns((ApplicationUser?)null);
+			.Returns(default(ApplicationUser?));
 
 		// Act
 		Result result =

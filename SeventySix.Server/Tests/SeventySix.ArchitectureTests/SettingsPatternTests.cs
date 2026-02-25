@@ -53,9 +53,8 @@ public sealed class SettingsPatternTests : SourceCodeArchitectureTest
 				string relativePath =
 					GetRelativePath(file);
 
-				foreach (Match match in matches)
+				foreach (string className in matches.Select(match => match.Groups[1].Value))
 				{
-					string className = match.Groups[1].Value;
 
 					violations.Add(
 						$"{relativePath}: {className} (should be record)");
@@ -150,10 +149,8 @@ public sealed class SettingsPatternTests : SourceCodeArchitectureTest
 			MatchCollection matches =
 				recordPattern.Matches(content);
 
-			foreach (Match match in matches)
+			foreach (string settingsName in matches.Select(match => match.Groups[1].Value))
 			{
-				string settingsName =
-					match.Groups[1].Value;
 
 				if (ExcludedFromValidation.Contains(settingsName))
 				{
@@ -168,7 +165,7 @@ public sealed class SettingsPatternTests : SourceCodeArchitectureTest
 					$"{settingsName}Validator.cs";
 
 				bool validatorExists =
-					File.Exists(Path.Combine(directory, validatorFileName));
+					File.Exists(Path.Join(directory, validatorFileName));
 
 				if (!validatorExists)
 				{

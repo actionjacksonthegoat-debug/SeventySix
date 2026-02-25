@@ -113,7 +113,7 @@ public sealed class UsersControllerTests
 			.InvokeAsync<UserDto?>(
 				Arg.Any<GetUserByIdQuery>(),
 				Arg.Any<CancellationToken>())
-			.Returns((UserDto?)null);
+			.Returns(default(UserDto?));
 
 		// Act
 		ActionResult<UserDto> result =
@@ -528,7 +528,7 @@ public sealed class UsersControllerTests
 			.InvokeAsync<UserDto?>(
 				Arg.Any<GetUserByUsernameQuery>(),
 				Arg.Any<CancellationToken>())
-			.Returns((UserDto?)null);
+			.Returns(default(UserDto?));
 
 		// Act
 		ActionResult<UserDto> result =

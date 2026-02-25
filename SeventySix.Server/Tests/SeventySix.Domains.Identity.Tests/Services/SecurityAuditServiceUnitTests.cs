@@ -191,8 +191,8 @@ public sealed class SecurityAuditServiceUnitTests
 
 		IClientInfoService clientInfoService =
 			Substitute.For<IClientInfoService>();
-		clientInfoService.ExtractClientIp().Returns((string?)null);
-		clientInfoService.ExtractUserAgent().Returns((string?)null);
+		clientInfoService.ExtractClientIp().Returns(default(string?));
+		clientInfoService.ExtractUserAgent().Returns(default(string?));
 
 		ILogger<SecurityAuditService> logger =
 			Substitute.For<ILogger<SecurityAuditService>>();

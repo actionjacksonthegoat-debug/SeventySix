@@ -51,6 +51,7 @@ public static class SharedContainerManager
 		await InitLock.WaitAsync();
 		try
 		{
+			// codeql[cs/constant-condition] -- Double-checked locking pattern: intentional re-check inside lock
 			if (MasterConnectionString is not null)
 			{
 				return MasterConnectionString;
@@ -159,6 +160,7 @@ public static class SharedContainerManager
 		await TemplateLock.WaitAsync();
 		try
 		{
+			// codeql[cs/constant-condition] -- Double-checked locking pattern: intentional re-check inside lock
 			if (TemplateCreated)
 			{
 				return;

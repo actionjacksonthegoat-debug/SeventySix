@@ -214,7 +214,7 @@ public sealed class LoginCommandHandlerTests
 			.FindByUsernameOrEmailAsync(
 				Arg.Any<string>(),
 				Arg.Any<CancellationToken>())
-			.Returns((ApplicationUser?)null);
+			.Returns(default(ApplicationUser?));
 
 		// Act
 		AuthResult result =
@@ -407,7 +407,7 @@ public sealed class LoginCommandHandlerTests
 				Arg.Any<LoginCommand>(),
 				Arg.Any<ApplicationUser>(),
 				Arg.Any<CancellationToken>())
-			.Returns((AuthResult?)null);
+			.Returns(default(AuthResult?));
 		MfaOrchestrator
 			.InitiateChallengeAsync(
 				Arg.Any<ApplicationUser>(),

@@ -30,7 +30,7 @@ public static class ApiTrackingMockFactory
 				Arg.Any<string>(),
 				Arg.Any<DateOnly>(),
 				Arg.Any<CancellationToken>())
-			.Returns((ThirdPartyApiRequest?)null);
+			.Returns(default(ThirdPartyApiRequest?));
 
 		// Default: return empty list for GetByApiName
 		repository

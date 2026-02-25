@@ -125,7 +125,7 @@ public sealed class UpdateUserCommandHandlerTests
 
 		UserManager
 			.FindByIdAsync(UserId.ToString())
-			.Returns((ApplicationUser?)null);
+			.Returns(default(ApplicationUser?));
 
 		// Act & Assert
 		await Should.ThrowAsync<UserNotFoundException>(async () =>

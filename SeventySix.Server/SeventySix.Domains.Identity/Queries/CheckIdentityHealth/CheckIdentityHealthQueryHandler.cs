@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using System.Data.Common;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -44,7 +45,7 @@ public static class CheckIdentityHealthQueryHandler
 
 			return true;
 		}
-		catch
+		catch (DbException)
 		{
 			return false;
 		}

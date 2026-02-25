@@ -132,7 +132,7 @@ public sealed class GetExternalLoginsQueryHandlerTests
 		// Arrange
 		UserManager
 			.FindByIdAsync(Arg.Any<string>())
-			.Returns((ApplicationUser?)null);
+			.Returns(default(ApplicationUser?));
 
 		GetExternalLoginsQuery query =
 			new(UserId: 999);

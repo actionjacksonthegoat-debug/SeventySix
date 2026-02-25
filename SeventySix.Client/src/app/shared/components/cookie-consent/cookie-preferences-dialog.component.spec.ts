@@ -1,12 +1,12 @@
 import { ComponentFixture } from "@angular/core/testing";
 import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material/dialog";
 import { CookieConsentPreferences } from "@shared/models/cookie-consent.model";
+import { DateService } from "@shared/services";
 import { CookieConsentService } from "@shared/services/cookie-consent.service";
 import { createMockDialogRef } from "@testing/mock-factories";
 import { ComponentTestBed } from "@testing/test-bed-builders";
 import { vi } from "vitest";
 import { CookiePreferencesDialogComponent } from "./cookie-preferences-dialog.component";
-import { DateService } from "@shared/services";
 
 describe("CookiePreferencesDialogComponent",
 	() =>
@@ -21,9 +21,8 @@ describe("CookiePreferencesDialogComponent",
 				functional: false,
 				analytics: false,
 				version: "1.0",
-				consentDate:
-					new DateService()
-						.now()
+				consentDate: new DateService()
+					.now()
 			};
 
 		async function buildComponent(

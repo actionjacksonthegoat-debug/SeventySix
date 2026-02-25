@@ -94,8 +94,6 @@ public sealed class ThirdPartyApiRequestTests
 				timeProvider.GetUtcNow().UtcDateTime),
 			};
 		DateTimeOffset? lastCalledBefore = request.LastCalledAt;
-		DateTimeOffset beforeTimestamp =
-			timeProvider.GetUtcNow();
 
 		// Act
 		request.ResetCallCount();

@@ -539,11 +539,11 @@ public sealed class OAuthServiceTests
 			.FindByLoginAsync(
 				Arg.Any<string>(),
 				Arg.Any<string>())
-			.Returns((ApplicationUser?)null);
+			.Returns(default(ApplicationUser?));
 
 		UserManager
 			.FindByNameAsync(Arg.Any<string>())
-			.Returns((ApplicationUser?)null);
+			.Returns(default(ApplicationUser?));
 
 		UserManager
 			.CreateAsync(Arg.Any<ApplicationUser>())

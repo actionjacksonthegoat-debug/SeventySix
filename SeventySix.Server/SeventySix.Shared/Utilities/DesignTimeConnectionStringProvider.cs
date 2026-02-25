@@ -117,7 +117,7 @@ public static class DesignTimeConnectionStringProvider
 		while (!string.IsNullOrEmpty(currentDirectory))
 		{
 			string apiProjectPath =
-				Path.Combine(
+				Path.Join(
 					currentDirectory,
 					"SeventySix.Api");
 
@@ -127,7 +127,7 @@ public static class DesignTimeConnectionStringProvider
 			}
 
 			string nestedApiProjectPath =
-				Path.Combine(
+				Path.Join(
 					currentDirectory,
 					"SeventySix.Server",
 					"SeventySix.Api");
