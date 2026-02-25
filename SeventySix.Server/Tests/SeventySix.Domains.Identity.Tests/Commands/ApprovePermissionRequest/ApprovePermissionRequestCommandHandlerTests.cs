@@ -134,7 +134,7 @@ public sealed class ApprovePermissionRequestCommandHandlerTests
 			.GetByIdAsync(
 				NonExistentRequestId,
 				Arg.Any<CancellationToken>())
-			.Returns((PermissionRequest?)null);
+			.Returns(default(PermissionRequest?));
 
 		// Act
 		Result result =
@@ -178,7 +178,7 @@ public sealed class ApprovePermissionRequestCommandHandlerTests
 
 		UserManager
 			.FindByIdAsync(UserId.ToString())
-			.Returns((ApplicationUser?)null);
+			.Returns(default(ApplicationUser?));
 
 		// Act
 		Result result =

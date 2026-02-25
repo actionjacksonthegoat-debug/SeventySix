@@ -233,8 +233,7 @@ async function main()
 			icon.size,
 			outputPath);
 
-		const stats =
-			await sharp(outputPath).metadata();
+		await sharp(outputPath).metadata();
 
 		console.log(`  [OK] ${icon.name} (${icon.size}x${icon.size})`);
 	}

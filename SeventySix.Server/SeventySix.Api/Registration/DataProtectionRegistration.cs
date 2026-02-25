@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using FluentValidation;
 using Microsoft.AspNetCore.DataProtection;
@@ -149,10 +150,10 @@ public static class DataProtectionExtensions
 
 		// All environments are Docker-based; use /app/keys in containers
 		return environment.IsDevelopment()
-			? Path.Combine(
+			? Path.Join(
 				Directory.GetCurrentDirectory(),
 				DefaultKeysDirectory)
-			: Path.Combine("/app", DefaultKeysDirectory);
+			: Path.Join("/app", DefaultKeysDirectory);
 	}
 
 	/// <summary>
@@ -268,7 +269,16 @@ public static class DataProtectionExtensions
 
 			return true;
 		}
-		catch (Exception certificateException)
+		catch (CryptographicException certificateException)
+		{
+			Serilog.Log.Warning(
+				certificateException,
+				"Failed to load Data Protection certificate from {Path}",
+				resolvedCertificatePath);
+
+			return false;
+		}
+		catch (IOException certificateException)
 		{
 			Serilog.Log.Warning(
 				certificateException,
@@ -312,7 +322,7 @@ public static class DataProtectionExtensions
 
 		// Fallback: check local keys directory (F5 / local debugging)
 		string localCertificatePath =
-			Path.Combine(
+			Path.Join(
 				Directory.GetCurrentDirectory(),
 				DefaultKeysDirectory,
 				DefaultCertificateFilename);

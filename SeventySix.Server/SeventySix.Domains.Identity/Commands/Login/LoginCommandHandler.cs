@@ -198,7 +198,7 @@ public static class LoginCommandHandler
 				command.Request.UsernameOrEmail,
 				cancellationToken);
 
-		if (!user.IsValidForAuthentication())
+		if (user is null || !user.IsValidForAuthentication())
 		{
 			await securityAuditService.LogEventAsync(
 				SecurityEventType.LoginFailed,

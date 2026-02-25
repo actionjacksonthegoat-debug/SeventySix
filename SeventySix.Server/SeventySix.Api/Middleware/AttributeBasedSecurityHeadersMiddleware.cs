@@ -91,6 +91,27 @@ public sealed class AttributeBasedSecurityHeadersMiddleware(
 	/// </returns>
 	public async Task InvokeAsync(HttpContext context)
 	{
+		// Register OnStarting callback to apply security headers just before
+		// the response is sent. This ensures headers survive Response.Clear()
+		// called by the ExceptionHandlerMiddleware on error responses.
+		context.Response.OnStarting(
+			() =>
+			{
+				ApplySecurityHeaders(context);
+				return Task.CompletedTask;
+			});
+
+		await next(context);
+	}
+
+	/// <summary>
+	/// Applies all security headers to the response based on attribute configuration.
+	/// </summary>
+	/// <param name="context">
+	/// The HTTP context.
+	/// </param>
+	private void ApplySecurityHeaders(HttpContext context)
+	{
 		// Get security header configuration from attributes
 		SecurityHeadersAttribute config =
 			GetSecurityHeadersConfig(context);
@@ -124,10 +145,9 @@ public sealed class AttributeBasedSecurityHeadersMiddleware(
 			{
 				hstsValue += "; includeSubDomains";
 			}
+
 			context.Response.Headers.StrictTransportSecurity = hstsValue;
 		}
-
-		await next(context);
 	}
 
 	/// <summary>

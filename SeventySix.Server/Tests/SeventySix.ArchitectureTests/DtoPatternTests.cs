@@ -3,6 +3,7 @@
 // </copyright>
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using Shouldly;
 using Xunit;
@@ -86,9 +87,8 @@ public sealed class DtoPatternTests : SourceCodeArchitectureTest
 				string relativePath =
 					GetRelativePath(file);
 
-				foreach (Match match in matches)
+				foreach (string dtoName in matches.Select(match => match.Groups[1].Value))
 				{
-					string dtoName = match.Groups[1].Value;
 
 					violations.Add(
 						$"{relativePath}: {dtoName} (should use positional parameters)");

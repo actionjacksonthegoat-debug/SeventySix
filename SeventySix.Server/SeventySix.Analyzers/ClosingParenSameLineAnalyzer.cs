@@ -236,33 +236,21 @@ public sealed class ClosingParenSameLineAnalyzer : DiagnosticAnalyzer
 
 		if (!previousToken.IsMissing)
 		{
-			foreach (SyntaxTrivia trivia in previousToken.TrailingTrivia)
+			if (previousToken.TrailingTrivia.Any(trivia => trivia.RawKind == (int)SyntaxKind.EndOfLineTrivia))
 			{
-				if (trivia.RawKind == (int)SyntaxKind.EndOfLineTrivia)
+				// Previous token has trailing newline, check if our leading
+				// trivia is only whitespace (indentation)
+				if (leadingTrivia.Count == 0)
 				{
-					// Previous token has trailing newline, check if our leading
-					// trivia is only whitespace (indentation)
-					if (leadingTrivia.Count == 0)
-					{
-						return true;
-					}
+					return true;
+				}
 
-					bool onlyWhitespace = true;
+				bool onlyWhitespace =
+					leadingTrivia.All(lt => lt.RawKind == (int)SyntaxKind.WhitespaceTrivia);
 
-					foreach (SyntaxTrivia lt in leadingTrivia)
-					{
-						if (lt.RawKind != (int)SyntaxKind.WhitespaceTrivia)
-						{
-							onlyWhitespace = false;
-
-							break;
-						}
-					}
-
-					if (onlyWhitespace)
-					{
-						return true;
-					}
+				if (onlyWhitespace)
+				{
+					return true;
 				}
 			}
 		}

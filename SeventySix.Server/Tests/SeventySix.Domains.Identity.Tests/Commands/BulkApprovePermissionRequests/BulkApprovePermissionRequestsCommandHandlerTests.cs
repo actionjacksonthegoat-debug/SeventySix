@@ -177,7 +177,7 @@ public sealed class BulkApprovePermissionRequestsCommandHandlerTests
 
 		UserManager
 			.FindByIdAsync("99")
-			.Returns((ApplicationUser?)null);
+			.Returns(default(ApplicationUser?));
 
 		UserManager
 			.AddToRoleAsync(

@@ -3,6 +3,7 @@
 // </copyright>
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using Shouldly;
 using Xunit;
@@ -182,14 +183,11 @@ public sealed class GodMethodTests : SourceCodeArchitectureTest
 		MatchCollection matches =
 			MethodDeclarationRegex.Matches(fileContent);
 
-		foreach (Match match in matches)
+		foreach (MethodInfo method in matches
+			.Select(TryCreateMethodInfo)
+			.OfType<MethodInfo>())
 		{
-			MethodInfo? method =
-				TryCreateMethodInfo(match);
-			if (method != null)
-			{
-				methods.Add(method);
-			}
+			methods.Add(method);
 		}
 
 		return methods;

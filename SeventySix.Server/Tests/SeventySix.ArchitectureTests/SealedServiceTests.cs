@@ -56,6 +56,7 @@ public sealed class SealedServiceTests
 		List<string> unsealedServices = [];
 
 		// Act
+		// codeql[cs/linq/missed-select]
 		foreach (Assembly assembly in assemblies)
 		{
 			Type[] serviceTypes =

@@ -29,6 +29,9 @@
 		"scan:codeql": "node scripts/run-pwsh.mjs -File scripts/run-codeql-scan.ps1",
 		"scan:codeql:cs": "node scripts/run-pwsh.mjs -File scripts/run-codeql-scan.ps1 -LanguageFilter csharp",
 		"scan:codeql:ts": "node scripts/run-pwsh.mjs -File scripts/run-codeql-scan.ps1 -LanguageFilter typescript",
+		"scan:codeql:ci": "docker compose -f docker-compose.codeql.yml --profile full up --abort-on-container-exit && docker compose -f docker-compose.codeql.yml down",
+		"scan:codeql:ci:csharp": "docker compose -f docker-compose.codeql.yml --profile csharp up --abort-on-container-exit && docker compose -f docker-compose.codeql.yml down",
+		"scan:codeql:ci:typescript": "docker compose -f docker-compose.codeql.yml --profile typescript up --abort-on-container-exit && docker compose -f docker-compose.codeql.yml down",
 		"generate:dataprotection-cert": "node scripts/run-pwsh.mjs -File scripts/generate-dataprotection-cert.ps1",
 		"generate:ssl-cert": "node scripts/run-pwsh.mjs -File scripts/generate-dev-ssl-cert.ps1 -Force",
 		"generate:icons": "cd SeventySix.Client && npm run generate:icons"

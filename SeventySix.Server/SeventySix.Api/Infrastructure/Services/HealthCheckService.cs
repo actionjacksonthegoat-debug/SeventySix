@@ -202,7 +202,11 @@ public sealed class HealthCheckService(
 				Math.Min(cpuUsagePercent, 100m),
 				2);
 		}
-		catch
+		catch (InvalidOperationException)
+		{
+			return 0m;
+		}
+		catch (PlatformNotSupportedException)
 		{
 			return 0m;
 		}
@@ -250,7 +254,11 @@ public sealed class HealthCheckService(
 
 			return 0m;
 		}
-		catch
+		catch (IOException)
+		{
+			return 0m;
+		}
+		catch (UnauthorizedAccessException)
 		{
 			return 0m;
 		}

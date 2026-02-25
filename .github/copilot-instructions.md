@@ -69,8 +69,8 @@
 > **All required test suites MUST RUN AND PASS. NO SKIPPING. NO EXCEPTIONS. REGARDLESS OF TIME NEEDED OR CURRENT STATE OF THE CODE.**
 > - E2E and load tests CAN run in parallel to save time
 > - Saying "tests will pass when infrastructure is running" is **NOT acceptable**
-> - If infrastructure is not running, **start it** � do not skip the suite
-> - **NEVER** claim "done" or "complete" without actually running and passing all required test suites
+> - If infrastructure is not running, **start it** � do not skip the suite>
+> - **NEVER** skip a failing test because it "wasn't caused by this change" — if the test suite is broken, fix it before proceeding> - **NEVER** claim "done" or "complete" without actually running and passing all required test suites
 > **UBUNTU CI/CD ENVIRONMENT (CRITICAL — REQUIRED FOR COMPLETION)**
 > All tests must ALSO pass in an environment matching GitHub Actions CI (`ubuntu-latest` / Linux).
 > A passing local Windows run is a good sign, but NOT sufficient to declare a plan complete.

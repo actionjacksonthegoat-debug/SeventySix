@@ -91,7 +91,7 @@ public sealed class GetUserByIdQueryHandlerTests
 
 		UserManager
 			.FindByIdAsync(userId.ToString())
-			.Returns((ApplicationUser?)null);
+			.Returns(default(ApplicationUser?));
 
 		GetUserByIdQuery query =
 			new(userId);

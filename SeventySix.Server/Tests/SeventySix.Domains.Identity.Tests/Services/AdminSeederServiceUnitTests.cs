@@ -53,7 +53,7 @@ public sealed class AdminSeederServiceUnitTests
 
 		userManager
 			.FindByNameAsync(settings.Username)
-			.Returns((ApplicationUser?)null);
+			.Returns(default(ApplicationUser?));
 		userManager
 			.GetUsersInRoleAsync(RoleConstants.Admin)
 			.Returns(new List<ApplicationUser>());
@@ -88,9 +88,9 @@ public sealed class AdminSeederServiceUnitTests
 			.CreateAsync(
 				Arg.Is<ApplicationUser>(
 					adminUser =>
-						adminUser.RequiresPasswordChange == false
-							&& adminUser.LockoutEnabled == true
-							&& adminUser.EmailConfirmed == true),
+						!adminUser.RequiresPasswordChange
+							&& adminUser.LockoutEnabled
+							&& adminUser.EmailConfirmed),
 				settings.InitialPassword!);
 		await userManager
 			.Received(1)

@@ -96,7 +96,16 @@ public sealed class BreachedPasswordService(
 			// Legitimate cancellation, rethrow
 			throw;
 		}
-		catch (Exception exception)
+		catch (HttpRequestException exception)
+		{
+			// Graceful degradation: fail open on any error
+			logger.LogWarning(
+				exception,
+				"Breach check failed, allowing password (graceful degradation)");
+
+			return BreachCheckResult.CheckFailed();
+		}
+		catch (OperationCanceledException exception)
 		{
 			// Graceful degradation: fail open on any error
 			logger.LogWarning(

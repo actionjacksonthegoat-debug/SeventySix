@@ -245,7 +245,7 @@ public sealed class DatabaseLogSinkTests : IAsyncLifetime
 		{
 			throw new InvalidOperationException("Test exception message");
 		}
-		catch (Exception exception)
+		catch (InvalidOperationException exception)
 		{
 			caughtException = exception;
 		}
@@ -302,7 +302,7 @@ public sealed class DatabaseLogSinkTests : IAsyncLifetime
 				throw new InvalidOperationException("Outer exception", inner);
 			}
 		}
-		catch (Exception exception)
+		catch (InvalidOperationException exception)
 		{
 			nestedException = exception;
 		}

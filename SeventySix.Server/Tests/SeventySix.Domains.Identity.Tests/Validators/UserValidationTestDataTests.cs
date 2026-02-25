@@ -23,7 +23,7 @@ public sealed class UserValidationTestDataTests
 	public void TooShortUsernames_ShouldNotBeEmpty()
 	{
 		// Assert
-		((IEnumerable<object[]>)UserValidationTestData.TooShortUsernames).ShouldNotBeEmpty();
+		UserValidationTestData.TooShortUsernames.Count.ShouldBeGreaterThan(0);
 	}
 
 	[Theory]
@@ -47,7 +47,7 @@ public sealed class UserValidationTestDataTests
 	public void InvalidUsernameCharacters_ShouldNotBeEmpty()
 	{
 		// Assert
-		((IEnumerable<object[]>)UserValidationTestData.InvalidUsernameCharacters).ShouldNotBeEmpty();
+		UserValidationTestData.InvalidUsernameCharacters.Count.ShouldBeGreaterThan(0);
 	}
 
 	[Theory]
@@ -76,7 +76,7 @@ public sealed class UserValidationTestDataTests
 	public void ValidUsernames_ShouldNotBeEmpty()
 	{
 		// Assert
-		((IEnumerable<object[]>)UserValidationTestData.ValidUsernames).ShouldNotBeEmpty();
+		UserValidationTestData.ValidUsernames.Count.ShouldBeGreaterThan(0);
 	}
 
 	[Theory]
@@ -102,7 +102,7 @@ public sealed class UserValidationTestDataTests
 	public void InvalidEmails_ShouldNotBeEmpty()
 	{
 		// Assert
-		((IEnumerable<object[]>)UserValidationTestData.InvalidEmails).ShouldNotBeEmpty();
+		UserValidationTestData.InvalidEmails.Count.ShouldBeGreaterThan(0);
 	}
 
 	[Theory]
@@ -133,7 +133,7 @@ public sealed class UserValidationTestDataTests
 	public void ValidEmails_ShouldNotBeEmpty()
 	{
 		// Assert
-		((IEnumerable<object[]>)UserValidationTestData.ValidEmails).ShouldNotBeEmpty();
+		UserValidationTestData.ValidEmails.Count.ShouldBeGreaterThan(0);
 	}
 
 	[Theory]

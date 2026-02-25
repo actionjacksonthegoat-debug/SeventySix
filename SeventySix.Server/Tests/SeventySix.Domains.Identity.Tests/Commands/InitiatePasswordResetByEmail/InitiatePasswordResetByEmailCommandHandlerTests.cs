@@ -94,7 +94,7 @@ public sealed class InitiatePasswordResetByEmailCommandHandlerTests
 			.InvokeAsync<UserDto?>(
 				Arg.Is<GetUserByEmailQuery>(query => query.Email == Email),
 				Arg.Any<CancellationToken>())
-			.Returns((UserDto?)null);
+			.Returns(default(UserDto?));
 
 		// Act
 		await InitiatePasswordResetByEmailCommandHandler.HandleAsync(
@@ -225,7 +225,7 @@ public sealed class InitiatePasswordResetByEmailCommandHandlerTests
 			.InvokeAsync<UserDto?>(
 				Arg.Any<GetUserByEmailQuery>(),
 				Arg.Any<CancellationToken>())
-			.Returns((UserDto?)null);
+			.Returns(default(UserDto?));
 
 		// Act
 		await InitiatePasswordResetByEmailCommandHandler.HandleAsync(

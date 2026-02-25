@@ -72,7 +72,7 @@ public sealed class TestLocationAlignmentTests : SourceCodeArchitectureTest
 					: "SeventySix.Domains.Tests";
 
 			string testsDirectory =
-				Path.Combine(
+				Path.Join(
 					SolutionRoot,
 					"Tests",
 					testProjectName);
@@ -88,12 +88,12 @@ public sealed class TestLocationAlignmentTests : SourceCodeArchitectureTest
 
 			string expectedTestPath =
 				string.IsNullOrEmpty(testDomainFolder)
-					? Path.Combine(
+					? Path.Join(
 						testsDirectory,
 						"Commands",
 						commandName,
 						expectedTestName)
-					: Path.Combine(
+					: Path.Join(
 						testsDirectory,
 						testDomainFolder,
 						"Commands",
@@ -103,11 +103,11 @@ public sealed class TestLocationAlignmentTests : SourceCodeArchitectureTest
 			// Also check without the command subfolder
 			string alternativeTestPath =
 				string.IsNullOrEmpty(testDomainFolder)
-					? Path.Combine(
+					? Path.Join(
 						testsDirectory,
 						"Commands",
 						expectedTestName)
-					: Path.Combine(
+					: Path.Join(
 						testsDirectory,
 						testDomainFolder,
 						"Commands",
@@ -178,7 +178,7 @@ public sealed class TestLocationAlignmentTests : SourceCodeArchitectureTest
 					: "SeventySix.Domains.Tests";
 
 			string testsDirectory =
-				Path.Combine(
+				Path.Join(
 					SolutionRoot,
 					"Tests",
 					testProjectName);
@@ -194,12 +194,12 @@ public sealed class TestLocationAlignmentTests : SourceCodeArchitectureTest
 
 			string expectedTestPath =
 				string.IsNullOrEmpty(testDomainFolder)
-					? Path.Combine(
+					? Path.Join(
 						testsDirectory,
 						"Queries",
 						queryName,
 						expectedTestName)
-					: Path.Combine(
+					: Path.Join(
 						testsDirectory,
 						testDomainFolder,
 						"Queries",
@@ -209,11 +209,11 @@ public sealed class TestLocationAlignmentTests : SourceCodeArchitectureTest
 			// Also check without the query subfolder
 			string alternativeTestPath =
 				string.IsNullOrEmpty(testDomainFolder)
-					? Path.Combine(
+					? Path.Join(
 						testsDirectory,
 						"Queries",
 						expectedTestName)
-					: Path.Combine(
+					: Path.Join(
 						testsDirectory,
 						testDomainFolder,
 						"Queries",
@@ -291,13 +291,13 @@ public sealed class TestLocationAlignmentTests : SourceCodeArchitectureTest
 					: relativePath;
 
 			string testsDirectory =
-				Path.Combine(
+				Path.Join(
 					SolutionRoot,
 					"Tests",
 					testProjectName);
 
 			string expectedTestPath =
-				Path.Combine(
+				Path.Join(
 					testsDirectory,
 					testRelativePath,
 					expectedTestName);
@@ -335,7 +335,7 @@ public sealed class TestLocationAlignmentTests : SourceCodeArchitectureTest
 				.ToArray();
 
 		string testsDirectory =
-			Path.Combine(
+			Path.Join(
 				SolutionRoot,
 				"Tests",
 				"SeventySix.Domains.Tests");
@@ -357,7 +357,7 @@ public sealed class TestLocationAlignmentTests : SourceCodeArchitectureTest
 			}
 
 			string expectedTestPath =
-				Path.Combine(
+				Path.Join(
 					testsDirectory,
 					domainFolder,
 					"Repositories",

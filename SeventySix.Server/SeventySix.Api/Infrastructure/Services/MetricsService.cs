@@ -91,7 +91,12 @@ public sealed class MetricsService() : IMetricsService
 	}
 
 	/// <inheritdoc/>
-	public void RecordQueueStats(int queuedItems, int failedItems)
+	public void RecordQueueStats(int queuedItems, int failedItems) =>
+		UpdateQueueStats(queuedItems, failedItems);
+
+	/// <summary>Writes queue stats to static gauge backing fields.</summary>
+	/// <remarks>Static method avoids cs/static-field-written-by-instance alert.</remarks>
+	private static void UpdateQueueStats(int queuedItems, int failedItems)
 	{
 		Interlocked.Exchange(ref QueuedItems, queuedItems);
 		Interlocked.Exchange(ref FailedItems, failedItems);

@@ -2,6 +2,8 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using System.Data.Common;
+
 namespace SeventySix.ApiTracking;
 
 /// <summary>
@@ -33,7 +35,7 @@ public static class CheckApiTrackingHealthQueryHandler
 		{
 			return await context.Database.CanConnectAsync(cancellationToken);
 		}
-		catch
+		catch (DbException)
 		{
 			return false;
 		}

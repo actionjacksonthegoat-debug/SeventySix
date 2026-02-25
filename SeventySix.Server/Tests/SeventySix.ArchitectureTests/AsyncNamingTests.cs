@@ -3,6 +3,7 @@
 // </copyright>
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using Shouldly;
 using Xunit;
@@ -56,9 +57,8 @@ public sealed class AsyncNamingTests : SourceCodeArchitectureTest
 			MatchCollection matches =
 				asyncMethodPattern.Matches(content);
 
-			foreach (Match match in matches)
+			foreach (string methodName in matches.Select(match => match.Groups[2].Value))
 			{
-				string methodName = match.Groups[2].Value;
 
 				// Skip Main, Dispose, event handlers, test methods
 				if (

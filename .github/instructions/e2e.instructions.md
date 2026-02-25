@@ -262,6 +262,14 @@ finally
 | Form validation (no submit) | No | No server state change |
 | Fill form without saving | No | Client-side only |
 
+## Test Failure Rule (CRITICAL)
+
+> **NEVER** attribute a failing E2E test to "another change" to skip fixing it.
+> **ALL** failing tests in `npm run test:e2e` MUST be fixed before claiming completion — regardless of when or how they were introduced.
+> If a test suite is broken, fix it. Do not say "this failure predates my change."
+
+---
+
 ## Playwright CLI (Test Running)
 
 Always use Playwright CLI — never Playwright MCP — for running tests.

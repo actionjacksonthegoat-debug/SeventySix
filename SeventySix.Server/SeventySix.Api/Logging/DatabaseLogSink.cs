@@ -42,7 +42,7 @@ public sealed class DatabaseLogSink(
 	private readonly ConcurrentQueue<LogEvent> LogQueue = new();
 	private readonly SemaphoreSlim ProcessingSemaphore =
 		new(1, 1);
-	private Timer? BatchTimer;
+	private volatile Timer? BatchTimer;
 	private const int BatchSize = 50;
 	private const int BatchIntervalMs = 5000;
 	private bool Disposed;
@@ -419,16 +419,11 @@ public sealed class DatabaseLogSink(
 				.. lines.Where(line => line.Contains("SeventySix")),
 			];
 
-			if (ourLines.Count > 0)
-			{
-				stackTrace =
-					string.Join(System.Environment.NewLine, ourLines);
-			}
-			else
-			{
-				// If no SeventySix lines found, include all (edge case)
-				stackTrace = exception.StackTrace;
-			}
+			// If no SeventySix-specific lines found, include all (edge case)
+			stackTrace =
+				ourLines.Count > 0
+					? string.Join(System.Environment.NewLine, ourLines)
+					: exception.StackTrace;
 		}
 
 		return (exceptionMessage, baseExceptionMessage, stackTrace);

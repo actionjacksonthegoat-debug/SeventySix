@@ -78,7 +78,7 @@ public sealed class ConfirmTotpEnrollmentCommandHandlerTests
 		// Arrange
 		UserManager
 			.FindByIdAsync(TestUserId.ToString())
-			.Returns((ApplicationUser?)null);
+			.Returns(default(ApplicationUser?));
 
 		ConfirmTotpEnrollmentCommand command =
 			CreateCommand(TestValidCode);

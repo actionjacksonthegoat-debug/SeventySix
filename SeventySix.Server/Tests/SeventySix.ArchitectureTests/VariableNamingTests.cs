@@ -101,9 +101,8 @@ public sealed class VariableNamingTests : SourceCodeArchitectureTest
 			MatchCollection matches =
 				forLoopPattern.Matches(content);
 
-			foreach (Match match in matches)
+			foreach (string loopVariable in matches.Select(match => match.Groups[1].Value))
 			{
-				string loopVariable = match.Groups[1].Value;
 
 				violations.Add(
 					$"{relativePath}: for loop with '{loopVariable}' (use foreach or descriptive name)");

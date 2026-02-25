@@ -12,9 +12,10 @@ paths-ignore:
   - "SeventySix.Client/dist/test-out"
   # Dependencies
   - "**/node_modules"
-  # Server build outputs
-  - "SeventySix.Server/**/bin"
-  - "SeventySix.Server/**/obj"
+  # Server build outputs — use /**/** to match all CONTENT inside bin/obj directories.
+  # Without the trailing /**, the pattern only matches the directory node itself, not files within it.
+  - "**/bin/**"
+  - "**/obj/**"
 
 queries:
   - uses: security-and-quality

@@ -79,12 +79,11 @@ public static class DuplicateKeyViolationHandler
 				AuthErrorCodes.EmailExists);
 		}
 
-		// Unknown constraint violation
+		// Unknown constraint violation — do not log constraint name to avoid leaking schema info
 		logger.LogWarning(
-			"Unknown duplicate key violation during registration. Username: {Username}, Email: {Email}, Constraint: {Constraint}",
+			"Unknown duplicate key violation during registration. Username: {Username}, Email: {Email}",
 			LogSanitizer.MaskUsername(username),
-			LogSanitizer.MaskEmail(email),
-			constraintName ?? "unknown");
+			LogSanitizer.MaskEmail(email));
 
 		return AuthResult.Failed(
 			"Username or email already exists.",
@@ -139,12 +138,11 @@ public static class DuplicateKeyViolationHandler
 				"Email already registered.");
 		}
 
-		// Unknown constraint violation
+		// Unknown constraint violation — do not log constraint name to avoid leaking schema info
 		logger.LogWarning(
-			"Unknown duplicate key violation during user creation. Username: {Username}, Email: {Email}, Constraint: {Constraint}",
+			"Unknown duplicate key violation during user creation. Username: {Username}, Email: {Email}",
 			LogSanitizer.MaskUsername(username),
-			LogSanitizer.MaskEmail(email),
-			constraintName ?? "unknown");
+			LogSanitizer.MaskEmail(email));
 
 		throw new DuplicateUserException(
 			"Failed to create user: Username or email already exists");

@@ -80,6 +80,7 @@ public sealed class PrimaryConstructorTests
 					productionClass.GetConstructors(
 						BindingFlags.Public | BindingFlags.Instance);
 
+				// codeql[cs/linq/missed-select]
 				foreach (ConstructorInfo constructor in constructors)
 				{
 					ParameterInfo[] constructorParameters =

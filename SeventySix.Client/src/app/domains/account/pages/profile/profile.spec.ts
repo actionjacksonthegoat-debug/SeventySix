@@ -8,7 +8,8 @@ import { provideRouter } from "@angular/router";
 import { FeatureFlagsService } from "@shared/services";
 import { ApiService } from "@shared/services/api.service";
 import { AuthService } from "@shared/services/auth.service";
-import { ExternalLoginDto, OAuthProvider } from "@shared/services/auth.types";
+import { ExternalLoginDto } from "@shared/services/auth.types";
+import type { OAuthProvider } from "@shared/services/auth.types";
 import {
 	createMockApiService,
 	createMockFeatureFlagsService,
