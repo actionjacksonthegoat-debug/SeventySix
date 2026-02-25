@@ -169,9 +169,20 @@ async function fetchAndSaveSpec()
 		const specText =
 			await response.text();
 
-		// Parse and re-stringify with formatting
+		// Parse and validate that the response is a genuine OpenAPI 3.x spec
+		// before writing anything to disk (sanitizes the network-sourced content).
+		// Note: this only runs in development and is never deployed.
 		const specObject =
 			JSON.parse(specText);
+
+		if (typeof specObject !== "object"
+			|| specObject === null
+			|| typeof specObject.openapi !== "string"
+			|| !specObject.openapi.startsWith("3."))
+		{
+			console.error("[FAIL] API response is not a valid OpenAPI 3.x spec");
+			return false;
+		}
 
 		const formattedSpec =
 			JSON.stringify(specObject, null, "\t");

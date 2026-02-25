@@ -218,8 +218,8 @@ public sealed class AdminSeederServiceUnitTests
 		// Arrange
 		(
 			IServiceScopeFactory scopeFactory,
-			IServiceProvider serviceProvider,
-			UserManager<ApplicationUser> userManager
+			_,
+			_
 		) = CreateScopeWithManagers();
 
 		AdminSeederSettings settings =
