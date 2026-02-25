@@ -23,12 +23,10 @@ internal static class SyntaxHelpers
 	/// </returns>
 	public static bool HasNewlineAfterToken(SyntaxToken token)
 	{
-		foreach (SyntaxTrivia trivia in token.TrailingTrivia)
+		foreach (SyntaxTrivia trivia in token.TrailingTrivia.Where(
+			triviaItem => triviaItem.RawKind == (int)SyntaxKind.EndOfLineTrivia))
 		{
-			if (trivia.RawKind == (int)SyntaxKind.EndOfLineTrivia)
-			{
-				return true;
-			}
+			return true;
 		}
 
 		return false;
@@ -45,12 +43,10 @@ internal static class SyntaxHelpers
 	/// </returns>
 	public static string GetLeadingWhitespace(SyntaxToken token)
 	{
-		foreach (SyntaxTrivia trivia in token.LeadingTrivia)
+		foreach (SyntaxTrivia trivia in token.LeadingTrivia.Where(
+			triviaItem => triviaItem.RawKind == (int)SyntaxKind.WhitespaceTrivia))
 		{
-			if (trivia.RawKind == (int)SyntaxKind.WhitespaceTrivia)
-			{
-				return trivia.ToString();
-			}
+			return trivia.ToString();
 		}
 
 		return string.Empty;

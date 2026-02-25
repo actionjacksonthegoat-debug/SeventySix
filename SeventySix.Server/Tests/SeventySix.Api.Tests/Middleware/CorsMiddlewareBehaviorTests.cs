@@ -51,7 +51,7 @@ public sealed class CorsMiddlewareBehaviorTests : IDisposable
 		using HttpClient client = Factory.CreateClient();
 
 		// 1) Preflight OPTIONS returns 204 and CORS headers
-		HttpRequestMessage preflight =
+		using HttpRequestMessage preflight =
 			new(
 				HttpMethod.Options,
 				ApiEndpoints.Logs.Base);
@@ -66,7 +66,7 @@ public sealed class CorsMiddlewareBehaviorTests : IDisposable
 			.ShouldBeTrue();
 
 		// 2) Error response includes CORS headers
-		HttpRequestMessage errorRequest =
+		using HttpRequestMessage errorRequest =
 			new(
 				HttpMethod.Get,
 				"/api/v1/nonexistent");
@@ -90,7 +90,7 @@ public sealed class CorsMiddlewareBehaviorTests : IDisposable
 		using HttpClient client = Factory.CreateClient();
 
 		// CORS preflight requesting Cache-Control and Pragma headers
-		HttpRequestMessage preflight =
+		using HttpRequestMessage preflight =
 			new(
 				HttpMethod.Options,
 				ApiEndpoints.Logs.Base);

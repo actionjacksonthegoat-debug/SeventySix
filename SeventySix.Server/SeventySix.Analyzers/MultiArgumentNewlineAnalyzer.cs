@@ -91,13 +91,13 @@ public sealed class MultiArgumentNewlineAnalyzer : DiagnosticAnalyzer
 	{
 		int? firstLine = null;
 
-		foreach (ArgumentSyntax argument in argumentList.Arguments)
+		foreach (int argumentLine in argumentList.Arguments.Select(
+			argument =>
+				argument
+					.GetLocation()
+					.GetLineSpan()
+					.StartLinePosition.Line))
 		{
-			int argumentLine = argument
-				.GetLocation()
-				.GetLineSpan()
-				.StartLinePosition.Line;
-
 			if (firstLine is null)
 			{
 				firstLine = argumentLine;
@@ -119,11 +119,10 @@ public sealed class MultiArgumentNewlineAnalyzer : DiagnosticAnalyzer
 	{
 		int totalLength = 0;
 
-		foreach (ArgumentSyntax argument in argumentList.Arguments)
+		foreach (ExpressionSyntax expression in argumentList.Arguments.Select(
+			argument => argument.Expression))
 		{
 			// Only simple identifiers and literals qualify
-			ExpressionSyntax expression = argument.Expression;
-
 			bool isSimple = expression switch
 			{
 				IdentifierNameSyntax => true,

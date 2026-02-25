@@ -305,7 +305,7 @@ public sealed class TransactionManagerTests : IDisposable
 	public async Task ExecuteInTransactionAsync_WithCancellation_ThrowsOperationCanceledExceptionAsync()
 	{
 		// Arrange
-		CancellationTokenSource cancellationTokenSource = new();
+		using CancellationTokenSource cancellationTokenSource = new();
 		cancellationTokenSource.Cancel();
 
 		// Act

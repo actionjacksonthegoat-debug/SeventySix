@@ -79,11 +79,6 @@ public static class AuthenticationExtensions
 			?? throw new InvalidOperationException(
 				$"JWT configuration section '{JwtSettings.SectionName}' is missing.");
 
-		AuthSettings authSettings =
-			configuration.GetSection(AuthSettings.SectionName).Get<AuthSettings>()
-			?? throw new InvalidOperationException(
-				$"Auth configuration section '{AuthSettings.SectionName}' is missing.");
-
 		services
 			.AddAuthentication(
 				options =>

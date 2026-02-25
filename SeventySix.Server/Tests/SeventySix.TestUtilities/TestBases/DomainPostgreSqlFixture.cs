@@ -64,12 +64,9 @@ public class DomainPostgreSqlFixture : BasePostgreSqlFixture
 	/// <inheritdoc/>
 	public override async Task DisposeAsync()
 	{
-		foreach (object factory in CachedFactories.Values)
+		foreach (IDisposable disposable in CachedFactories.Values.OfType<IDisposable>())
 		{
-			if (factory is IDisposable disposable)
-			{
-				disposable.Dispose();
-			}
+			disposable.Dispose();
 		}
 
 		CachedFactories.Clear();

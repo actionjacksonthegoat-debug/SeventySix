@@ -134,9 +134,7 @@ test.describe("OAuth Login (GitHub)",
 								const parsedUrl: URL =
 									new URL(url);
 
-								if (
-									parsedUrl.hostname === "github.com"
-										|| parsedUrl.hostname.endsWith(".github.com"))
+								if (parsedUrl.hostname === "github.com")
 								{
 									capturedGitHubUrl = url;
 								}

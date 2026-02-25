@@ -99,8 +99,7 @@ export default function(data)
 						: location.slice(hostStart, slashAfterHost);
 				const host =
 					hostWithPort.split(":")[0];
-				return host === "github.com"
-					|| host.endsWith(".github.com");
+				return host === "github.com";
 			},
 			"includes state parameter": (response) =>
 				response.headers[HTTP_HEADER.LOCATION] != null

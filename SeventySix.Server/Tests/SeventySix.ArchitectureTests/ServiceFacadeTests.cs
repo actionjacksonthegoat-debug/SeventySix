@@ -73,13 +73,10 @@ public sealed class ServiceFacadeTests
 			.ToArray();
 
 		List<string> publicRepositoryNames = [];
-		foreach (Type repositoryType in repositoryTypes)
+		foreach (Type repositoryType in repositoryTypes.Where(t => t.IsPublic))
 		{
-			if (repositoryType.IsPublic)
-			{
-				publicRepositoryNames.Add(
-					$"{repositoryType.Namespace}.{repositoryType.Name}");
-			}
+			publicRepositoryNames.Add(
+				$"{repositoryType.Namespace}.{repositoryType.Name}");
 		}
 
 		publicRepositoryNames.ShouldBeEmpty();
@@ -114,13 +111,11 @@ public sealed class ServiceFacadeTests
 			{
 				ParameterInfo[] constructorParameters =
 					constructor.GetParameters();
-				foreach (ParameterInfo parameter in constructorParameters)
+				foreach (ParameterInfo parameter in constructorParameters.Where(
+					p => repositoryInterfaces.Contains(p.ParameterType)))
 				{
-					if (repositoryInterfaces.Contains(parameter.ParameterType))
-					{
-						dependencyViolations.Add(
-							$"{controllerType.Name} injects {parameter.ParameterType.Name} (repository) instead of a service");
-					}
+					dependencyViolations.Add(
+						$"{controllerType.Name} injects {parameter.ParameterType.Name} (repository) instead of a service");
 				}
 			}
 		}

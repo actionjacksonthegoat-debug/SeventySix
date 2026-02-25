@@ -8,8 +8,8 @@
  * export const handleSummary = createSummaryHandler("login-test");
  */
 
-import { textSummary } from "https://jslib.k6.io/k6-summary/0.0.2/index.js";
-import { htmlReport } from "https://raw.githubusercontent.com/benc-uk/k6-reporter/2.4.0/dist/bundle.js";
+import { htmlReport } from "./vendor/k6-reporter.js";
+import { textSummary } from "./vendor/k6-summary.js";
 
 /**
  * Creates a handleSummary function for the given scenario name.

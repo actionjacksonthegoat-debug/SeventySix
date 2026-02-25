@@ -303,6 +303,6 @@ export default [
 		}
 	},
 	{
-		ignores: ["dist/**", "node_modules/**", "coverage/**", ".angular/**", "vite.config.ts", "load-testing/node_modules/**", "load-testing/reports/**", "load-testing/results/**"]
+		ignores: ["dist/**", "node_modules/**", "coverage/**", ".angular/**", "vite.config.ts", "load-testing/node_modules/**", "load-testing/reports/**", "load-testing/results/**", "load-testing/lib/vendor/**"]
 	}
 ];

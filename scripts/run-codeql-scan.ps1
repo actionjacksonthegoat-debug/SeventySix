@@ -8,8 +8,28 @@
     the github.vscode-codeql extension.
 
     Results are written to:
-        .codeql/results/csharp.sarif
+        .codeql/results/csharp.sarif          (security rules)
+        .codeql/results/csharp-quality.sarif  (quality/recommendation rules)
         .codeql/results/typescript.sarif
+
+    LOCAL vs CI PARITY
+    ------------------
+    This script uses the same `security-and-quality` suite as GitHub Actions CI
+    (.github/codeql/codeql-config.yml). One inherent difference remains:
+
+      C# build mode: CI uses `build-mode: manual` (traced Linux build) for richer
+      data-flow. Local uses `--build-mode=none` (buildless Roslyn) to avoid the
+      VBCSCompiler lock issue on Windows with .NET 10.
+
+      For SECURITY rules: both modes produce equivalent results.
+
+      For QUALITY rules: recommendation-level results (MissedWhere, NoDisposeCall,
+      etc.) are filtered from the main SARIF by the suite selector. A SEPARATE
+      quality pass (.github/codeql/csharp-quality-local.qls) replicates what CI
+      surfaces via its SARIF processing pipeline.
+
+    Bottom line: `npm run scan:codeql` locally finds all the same violation
+    categories as CI. Minor count differences are expected due to build mode.
 
 .EXAMPLE
     .\scripts\run-codeql-scan.ps1
@@ -46,6 +66,7 @@ $ResultsDir = Join-Path $CodeqlDir "results"
 $CsharpDb = Join-Path $CodeqlDir "db-csharp"
 $TsDb = Join-Path $CodeqlDir "db-typescript"
 $CsharpSarif = Join-Path $ResultsDir "csharp.sarif"
+$CsharpQualitySarif = Join-Path $ResultsDir "csharp-quality.sarif"
 $TsSarif = Join-Path $ResultsDir "typescript.sarif"
 
 # -- Prerequisite check -------------------------------------------------------
@@ -151,9 +172,27 @@ function Invoke-CsharpScan {
 			--format=sarif-latest `
 			--output=$CsharpSarif `
 			--sarif-add-file-contents `
-			codeql/csharp-queries:codeql-suites/csharp-code-scanning.qls
+			codeql/csharp-queries:codeql-suites/csharp-security-and-quality.qls
 
 		Write-Host "[OK] C# results: $CsharpSarif" -ForegroundColor Green
+
+		# -- Quality pass: recommendation-level rules silenced by the main suite selector --
+		# The csharp-security-and-quality.qls suite applies security-and-frozen-quality-selectors.yml
+		# which filters 'recommendation' severity results from the SARIF output. GitHub Actions CI
+		# surfaces these via its own pipeline. This separate pass replicates that locally.
+		$QlsPath = Join-Path $RepoRoot ".github\codeql\csharp-quality-local.qls"
+		if (Test-Path $QlsPath) {
+			Write-Host "[C#] Running quality analysis (CI-equivalent recommendation rules)..." -ForegroundColor Yellow
+			codeql database analyze $CsharpDb `
+				--format=sarif-latest `
+				--output=$CsharpQualitySarif `
+				--sarif-add-file-contents `
+				$QlsPath
+			Write-Host "[OK] C# quality results: $CsharpQualitySarif" -ForegroundColor Green
+		}
+		else {
+			Write-Host "[WARN] Quality suite file not found, skipping quality pass: $QlsPath" -ForegroundColor Yellow
+		}
 	}
 	finally {
 		Pop-Location
@@ -179,7 +218,7 @@ function Invoke-TypescriptScan {
 		--format=sarif-latest `
 		--output=$TsSarif `
 		--sarif-add-file-contents `
-		codeql/javascript-queries:codeql-suites/javascript-code-scanning.qls
+		codeql/javascript-queries:codeql-suites/javascript-security-and-quality.qls
 
 	Write-Host "[OK] TypeScript results: $TsSarif" -ForegroundColor Green
 }
@@ -195,39 +234,43 @@ switch ($LanguageFilter) {
 }
 
 # -- Summary ------------------------------------------------------------------
-# Helper: count and categorise results from a SARIF file
+# Helper: count and categorise results from a SARIF file.
+# Applies the same paths-ignore as codeql-config.yml so local counts match CI.
+# (GitHub Actions filters paths-ignore before uploading; the raw local SARIF includes them.)
 function Show-SarifSummary {
 	param([string]$SarifPath, [string]$Label)
 	if (-not (Test-Path $SarifPath)) { return }
 	try {
 		$sarif = Get-Content $SarifPath -Raw | ConvertFrom-Json
-		$results = $sarif.runs[0].results
+		$allResults = $sarif.runs[0].results
+
+		# Mirror the paths-ignore from .github/codeql/codeql-config.yml.
+		# These patterns are applied by GitHub Actions before uploading; local CLI
+		# includes them in the raw SARIF, so we filter them out here to match CI counts.
+		$ignoredPathFragments = @(
+			"/obj/",
+			"/bin/",
+			"/node_modules/",
+			"SeventySix.Client/dist",
+			"SeventySix.Client/coverage",
+			"SeventySix.Client/.angular",
+			"SeventySix.Client/playwright-report",
+			"SeventySix.Client/test-results",
+			"SeventySix.Client/load-testing"
+		)
+
+		$results = $allResults | Where-Object {
+			$uri = $_.locations[0].physicalLocation.artifactLocation.uri
+			$ignored = $false
+			foreach ($fragment in $ignoredPathFragments) {
+				if ($uri -like "*$fragment*") { $ignored = $true; break }
+			}
+			-not $ignored
+		}
 		$total = $results.Count
 
-		# Known false positives suppressed via // lgtm[...] inline annotations.
-		# These are real code patterns (HTTPS redirect path pass-through, OAuth
-		# authorization URL redirect) where CodeQL's taint analysis cannot prove
-		# that ASP.NET Core path/query components cannot contain scheme+host, or
-		# that the OAuth redirect_uri is a query parameter not the destination.
-		# The // lgtm[...] annotations are honoured by GitHub Code Scanning when
-		# the SARIF is uploaded — they appear here only because the local CLI
-		# doesn't apply server-side suppression to the raw SARIF count.
-		$knownFp = @(
-			@{ Rule = "cs/web/unvalidated-url-redirection"; Count = 2 }
-		)
-		$fpTotal = ($knownFp | Measure-Object -Property Count -Sum).Sum
-
-		$realTotal = $total - $fpTotal
-		if ($realTotal -lt 0) { $realTotal = 0 }
-
-		$color = if ($realTotal -eq 0) { "Green" } elseif ($realTotal -le 3) { "Yellow" } else { "Red" }
-		Write-Host "  $Label`: $total result(s)" -ForegroundColor $color -NoNewline
-		if ($fpTotal -gt 0) {
-			Write-Host " ($fpTotal known false positive(s) suppressed via lgtm annotations on GitHub CI)" -ForegroundColor DarkGray
-		}
-		else {
-			Write-Host ""
-		}
+		$color = if ($total -eq 0) { "Green" } elseif ($total -le 3) { "Yellow" } else { "Red" }
+		Write-Host "  $Label`: $total result(s)" -ForegroundColor $color
 	}
 	catch {
 		Write-Host "  $Label`: [could not parse SARIF]" -ForegroundColor DarkGray
@@ -238,7 +281,8 @@ Write-Host "`nScan Complete!" -ForegroundColor Cyan
 Write-Host ""
 
 if ($LanguageFilter -eq "all" -or $LanguageFilter -eq "csharp") {
-	Show-SarifSummary -SarifPath $CsharpSarif -Label "C#"
+	Show-SarifSummary -SarifPath $CsharpSarif -Label "C# (security)"
+	Show-SarifSummary -SarifPath $CsharpQualitySarif -Label "C# (quality)"
 }
 if ($LanguageFilter -eq "all" -or $LanguageFilter -eq "typescript") {
 	Show-SarifSummary -SarifPath $TsSarif -Label "TypeScript"
@@ -249,7 +293,8 @@ Write-Host "View results in VS Code:" -ForegroundColor White
 Write-Host "  Right-click a SARIF file in Explorer > 'Open with CodeQL SARIF Viewer'" -ForegroundColor DarkGray
 
 if ($LanguageFilter -eq "all" -or $LanguageFilter -eq "csharp") {
-	Write-Host "  C#:         $CsharpSarif" -ForegroundColor Gray
+	Write-Host "  C# Security: $CsharpSarif" -ForegroundColor Gray
+	Write-Host "  C# Quality:  $CsharpQualitySarif" -ForegroundColor Gray
 }
 if ($LanguageFilter -eq "all" -or $LanguageFilter -eq "typescript") {
 	Write-Host "  TypeScript: $TsSarif" -ForegroundColor Gray

@@ -13,6 +13,7 @@ import { spawn, spawnSync } from "child_process";
 import { writeFileSync, existsSync } from "fs";
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
+import { Agent as UndiciAgent } from "undici";
 
 const SCRIPT_DIR =
 	dirname(fileURLToPath(import.meta.url));
@@ -35,12 +36,14 @@ const MAX_POLL_ATTEMPTS =
 const POLL_DELAY_MS =
 	2000;
 
-// Development-only: disable TLS cert validation for self-signed dev certificate.
+// Development-only HTTPS agent: disables TLS cert validation for self-signed dev certificate.
+// Scoped to this script's fetch calls only — does not affect other HTTPS connections process-wide.
 // This script only runs at dev time to generate OpenAPI client code, never in production.
-if (process.env.NODE_ENV !== "production")
-{
-	process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
-}
+const DEV_HTTPS_AGENT = new UndiciAgent({
+	connect: {
+		rejectUnauthorized: false,
+	},
+});
 
 /**
  * Runs a command synchronously and returns the exit code.
@@ -98,7 +101,7 @@ async function isApiRunning()
 	try
 	{
 		const response =
-			await fetch(API_OPENAPI_URL);
+			await fetch(API_OPENAPI_URL, { dispatcher: DEV_HTTPS_AGENT });
 		return response.ok;
 	}
 	catch
@@ -121,7 +124,7 @@ async function waitForOpenApi()
 		try
 		{
 			const response =
-				await fetch(API_OPENAPI_URL);
+				await fetch(API_OPENAPI_URL, { dispatcher: DEV_HTTPS_AGENT });
 
 			if (response.ok)
 			{
@@ -155,7 +158,7 @@ async function fetchAndSaveSpec()
 	try
 	{
 		const response =
-			await fetch(API_OPENAPI_URL);
+			await fetch(API_OPENAPI_URL, { dispatcher: DEV_HTTPS_AGENT });
 
 		if (!response.ok)
 		{
