@@ -80,41 +80,33 @@ public sealed class PrimaryConstructorTests
 					productionClass.GetConstructors(
 						BindingFlags.Public | BindingFlags.Instance);
 
-				// codeql[cs/linq/missed-select]
-				foreach (ConstructorInfo constructor in constructors)
-				{
-					ParameterInfo[] constructorParameters =
-						constructor.GetParameters();
-
-					if (constructorParameters.Length > 0)
-					{
-						// Only flag if field names match parameter names (traditional pattern)
-						// This allows internal state fields like Queue, Semaphore, etc.
-						foreach (FieldInfo field in privateReadonlyFields)
+				// Only flag if field names match parameter names (case-insensitive)
+				// This allows internal state fields like Queue, Semaphore, etc.
+				violations.AddRange(
+					constructors
+					.Where(ctor => ctor.GetParameters().Length > 0)
+					.SelectMany(
+						ctor =>
 						{
-							// Check if field name matches any constructor parameter (case-insensitive)
-							bool matchesParameter =
-								constructorParameters.Any(
-								param =>
-									field.Name.Equals(
-										param.Name,
-										StringComparison.OrdinalIgnoreCase)
-									|| field
-										.Name.TrimStart('_')
-										.Equals(
-											param.Name,
-											StringComparison.OrdinalIgnoreCase));
+							ParameterInfo[] ctorParams =
+								ctor.GetParameters();
 
-							if (matchesParameter)
-							{
-								violations.Add(
+							return privateReadonlyFields
+								.Where(field =>
+									ctorParams.Any(param =>
+										field.Name.Equals(
+											param.Name,
+											StringComparison.OrdinalIgnoreCase)
+										|| field
+											.Name.TrimStart('_')
+											.Equals(
+												param.Name,
+												StringComparison.OrdinalIgnoreCase)))
+								.Select(field =>
 									$"{productionClass.FullName} has private readonly field "
 										+ $"'{field.Name}' matching constructor parameter. "
 										+ "Use primary constructor pattern instead.");
-							}
-						}
-					}
-				}
+						}));
 			}
 		}
 

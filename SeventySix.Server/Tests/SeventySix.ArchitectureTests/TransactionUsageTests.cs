@@ -62,44 +62,46 @@ public sealed class TransactionUsageTests
 				@"ExecuteInTransactionAsync\s*\(\s*(?:async\s+\w+\s*=>)?\s*await\s+repository\.\w+Async\([^)]*\)",
 				RegexOptions.Singleline);
 
-			// codeql[cs/linq/missed-select] - match has multiple properties used (Index, not just one value map)
-			foreach (Match match in transactionBlocks)
-			{
-				// Extract method name from surrounding context
-				int methodStart =
-					sourceCode.LastIndexOf(
-					"public async Task",
-					match.Index);
+			Regex methodNameRegex =
+				new(@"Task(?:<[^>]+>)?\s+(\w+)");
 
-				if (methodStart != -1)
-				{
-					int methodNameEnd =
-						sourceCode.IndexOf('(', methodStart);
-
-					string methodSignature =
-						sourceCode[
-						methodStart..methodNameEnd
-					];
-
-					Regex methodNameRegex =
-						new(@"Task(?:<[^>]+>)?\s+(\w+)");
-
-					Match methodNameMatch =
-						methodNameRegex.Match(
-						methodSignature);
-
-					if (methodNameMatch.Success)
+			violations.AddRange(
+				transactionBlocks
+				.Select(
+					match =>
 					{
+						int methodStart =
+							sourceCode.LastIndexOf(
+							"public async Task",
+							match.Index);
+
+						if (methodStart == -1)
+						{
+							return null;
+						}
+
+						int methodNameEnd =
+							sourceCode.IndexOf('(', methodStart);
+
+						string methodSignature =
+							sourceCode[methodStart..methodNameEnd];
+
+						Match methodNameMatch =
+							methodNameRegex.Match(methodSignature);
+
+						if (!methodNameMatch.Success)
+						{
+							return null;
+						}
+
 						string methodName =
 							methodNameMatch.Groups[1].Value;
 
-						violations.Add(
-							$"{serviceType.Name}.{methodName}: "
-								+ $"Wraps single repository call in transaction (unnecessary - "
-								+ $"EF Core's SaveChangesAsync is already atomic)");
-					}
-				}
-			}
+						return $"{serviceType.Name}.{methodName}: "
+							+ $"Wraps single repository call in transaction (unnecessary - "
+							+ $"EF Core's SaveChangesAsync is already atomic)";
+					})
+				.OfType<string>());
 		}
 
 		violations.ShouldBeEmpty();

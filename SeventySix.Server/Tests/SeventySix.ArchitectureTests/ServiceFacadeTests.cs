@@ -33,27 +33,40 @@ public sealed class ServiceFacadeTests
 			.Distinct()
 			.ToArray();
 
-		// codeql[cs/linq/missed-select]
-		foreach (string contextName in boundedContextNames)
-		{
-			string repositoryNamespace =
-				$"SeventySix.{contextName}.Repositories";
+		Assembly controllerAssembly =
+			typeof(SeventySix.Api.Controllers.UsersController).Assembly;
 
-			TestResult architectureTestResult =
-				Types
-				.InAssembly(
-					typeof(SeventySix.Api.Controllers.UsersController).Assembly)
-				.That()
-				.ResideInNamespace("SeventySix.Api.Controllers")
-				.ShouldNot()
-				.HaveDependencyOn(repositoryNamespace)
-				.GetResult();
+		List<string> repositoryDependencyViolations =
+			boundedContextNames
+			.Select(
+				contextName =>
+				{
+					string repositoryNamespace =
+						$"SeventySix.{contextName}.Repositories";
 
-			architectureTestResult.IsSuccessful.ShouldBeTrue(
-				$"Controllers must not depend on {repositoryNamespace} directly. Found violations: {string.Join(
-					", ",
-					architectureTestResult.FailingTypeNames ?? [])}");
-		}
+					TestResult result =
+						Types
+						.InAssembly(controllerAssembly)
+						.That()
+						.ResideInNamespace("SeventySix.Api.Controllers")
+						.ShouldNot()
+						.HaveDependencyOn(repositoryNamespace)
+						.GetResult();
+
+					if (result.IsSuccessful)
+					{
+						return null;
+					}
+
+					return $"Controllers must not depend on {repositoryNamespace} directly. "
+						+ $"Found violations: {string.Join(
+							", ",
+							result.FailingTypeNames ?? [])}";
+				})
+			.OfType<string>()
+			.ToList();
+
+		repositoryDependencyViolations.ShouldBeEmpty();
 	}
 
 	[Fact]
@@ -103,24 +116,18 @@ public sealed class ServiceFacadeTests
 			.Where(type => type.IsInterface && type.Name.EndsWith("Repository"))
 			.ToArray();
 
-		List<string> dependencyViolations = [];
-		// codeql[cs/linq/missed-select]
-		foreach (Type controllerType in controllerTypes)
-		{
-			ConstructorInfo[] constructors =
-				controllerType.GetConstructors();
-			foreach (ConstructorInfo constructor in constructors)
-			{
-				ParameterInfo[] constructorParameters =
-					constructor.GetParameters();
-				foreach (ParameterInfo parameter in constructorParameters.Where(
-					p => repositoryInterfaces.Contains(p.ParameterType)))
-				{
-					dependencyViolations.Add(
-						$"{controllerType.Name} injects {parameter.ParameterType.Name} (repository) instead of a service");
-				}
-			}
-		}
+		List<string> dependencyViolations =
+			controllerTypes
+			.SelectMany(controllerType =>
+				controllerType
+					.GetConstructors()
+					.SelectMany(constructor =>
+						constructor
+							.GetParameters()
+						.Where(parameter => repositoryInterfaces.Contains(parameter.ParameterType))
+								.Select(parameter =>
+									$"{controllerType.Name} injects {parameter.ParameterType.Name} (repository) instead of a service")))
+			.ToList();
 
 		dependencyViolations.ShouldBeEmpty();
 	}

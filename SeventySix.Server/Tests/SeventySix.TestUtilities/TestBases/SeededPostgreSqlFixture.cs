@@ -73,15 +73,9 @@ public sealed class SeededPostgreSqlFixture : BasePostgreSqlFixture
 	/// </returns>
 	public async Task EnsureSeededAsync(Func<Task> seedAction)
 	{
-		if (IsSeeded)
-		{
-			return;
-		}
-
 		await SeedLock.WaitAsync();
 		try
 		{
-			// codeql[cs/constant-condition] -- Double-checked locking pattern: intentional re-check inside lock
 			if (IsSeeded)
 			{
 				return;

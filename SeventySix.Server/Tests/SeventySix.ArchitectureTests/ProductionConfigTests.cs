@@ -3,6 +3,7 @@
 // </copyright>
 
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using Shouldly;
 using Xunit;
@@ -51,18 +52,18 @@ public sealed class ProductionConfigTests : SourceCodeArchitectureTest
 				"AllowedOrigins",
 				out JsonElement allowedOriginsElement))
 		{
-			// codeql[cs/linq/missed-select]
-			foreach (JsonElement origin in allowedOriginsElement.EnumerateArray())
-			{
-				string? originValue =
-					origin.GetString();
+			string[] origins =
+				allowedOriginsElement.EnumerateArray()
+				.Select(origin => origin.GetString() ?? string.Empty)
+				.ToArray();
 
-				(originValue?.Contains("localhost") == true).ShouldBeFalse(
-					$"Production CORS should not contain localhost. Found: {originValue}");
+			origins
+				.Where(origin => origin.Contains("localhost"))
+				.ShouldBeEmpty("Production CORS should not contain localhost");
 
-				(originValue?.Contains("127.0.0.1") == true).ShouldBeFalse(
-					$"Production CORS should not contain 127.0.0.1. Found: {originValue}");
-			}
+			origins
+				.Where(origin => origin.Contains("127.0.0.1"))
+				.ShouldBeEmpty("Production CORS should not contain 127.0.0.1");
 		}
 
 		// Check AllowedHosts

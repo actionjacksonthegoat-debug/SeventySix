@@ -118,24 +118,16 @@ internal class LogRepository(
 
 		if (!string.IsNullOrWhiteSpace(request.SearchTerm))
 		{
-			// codeql[cs/complex-condition] -- EF Core LINQ expression; must be inline for SQL translation
+			string searchTerm =
+				request.SearchTerm;
+
 			query =
-				query.Where(log =>
-					(
-						log.Message != null
-						&& log.Message.Contains(request.SearchTerm))
-					|| (
-						log.ExceptionMessage != null
-						&& log.ExceptionMessage.Contains(request.SearchTerm))
-					|| (
-						log.SourceContext != null
-						&& log.SourceContext.Contains(request.SearchTerm))
-					|| (
-						log.RequestPath != null
-						&& log.RequestPath.Contains(request.SearchTerm))
-					|| (
-						log.StackTrace != null
-						&& log.StackTrace.Contains(request.SearchTerm)));
+				query
+					.Where(log => log.Message!.Contains(searchTerm))
+					.Union(query.Where(log => log.ExceptionMessage!.Contains(searchTerm)))
+					.Union(query.Where(log => log.SourceContext!.Contains(searchTerm)))
+					.Union(query.Where(log => log.RequestPath!.Contains(searchTerm)))
+					.Union(query.Where(log => log.StackTrace!.Contains(searchTerm)));
 		}
 
 		return query;
