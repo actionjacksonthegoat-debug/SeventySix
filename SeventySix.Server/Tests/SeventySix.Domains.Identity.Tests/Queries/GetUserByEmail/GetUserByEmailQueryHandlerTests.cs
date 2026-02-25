@@ -93,7 +93,7 @@ public sealed class GetUserByEmailQueryHandlerTests
 
 		UserManager
 			.FindByEmailAsync(Email)
-			.Returns((ApplicationUser?)null);
+			.Returns(default(ApplicationUser?));
 
 		// Act
 		UserDto? result =
@@ -121,7 +121,7 @@ public sealed class GetUserByEmailQueryHandlerTests
 
 		UserManager
 			.FindByEmailAsync(Email)
-			.Returns((ApplicationUser?)null);
+			.Returns(default(ApplicationUser?));
 
 		// Act
 		await GetUserByEmailQueryHandler.HandleAsync(

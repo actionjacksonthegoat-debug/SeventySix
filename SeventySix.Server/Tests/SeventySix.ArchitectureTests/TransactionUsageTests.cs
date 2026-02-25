@@ -62,6 +62,7 @@ public sealed class TransactionUsageTests
 				@"ExecuteInTransactionAsync\s*\(\s*(?:async\s+\w+\s*=>)?\s*await\s+repository\.\w+Async\([^)]*\)",
 				RegexOptions.Singleline);
 
+			// codeql[cs/linq/missed-select] - match has multiple properties used (Index, not just one value map)
 			foreach (Match match in transactionBlocks)
 			{
 				// Extract method name from surrounding context
@@ -123,7 +124,7 @@ public sealed class TransactionUsageTests
 	{
 		string baseDir =
 			Path.GetFullPath(
-			Path.Combine(
+			Path.Join(
 				AppContext.BaseDirectory,
 				"..",
 				"..",

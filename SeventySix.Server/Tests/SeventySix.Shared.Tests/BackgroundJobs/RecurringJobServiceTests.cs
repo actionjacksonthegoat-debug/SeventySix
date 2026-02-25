@@ -55,7 +55,7 @@ public sealed class RecurringJobServiceTests
 			.GetLastExecutionAsync(
 				Arg.Any<string>(),
 				Arg.Any<CancellationToken>())
-			.Returns((RecurringJobExecution?)null);
+			.Returns(default(RecurringJobExecution?));
 
 		// Act
 		await Service.EnsureScheduledAsync<TestJob>(

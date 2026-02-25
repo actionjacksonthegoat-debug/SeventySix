@@ -83,7 +83,7 @@ public sealed class LinkExternalLoginCommandHandlerTests
 			.FindByLoginAsync(
 				Arg.Any<string>(),
 				Arg.Any<string>())
-			.Returns((ApplicationUser?)null);
+			.Returns(default(ApplicationUser?));
 
 		UserManager
 			.AddLoginAsync(
@@ -128,7 +128,7 @@ public sealed class LinkExternalLoginCommandHandlerTests
 		// Arrange
 		UserManager
 			.FindByIdAsync(Arg.Any<string>())
-			.Returns((ApplicationUser?)null);
+			.Returns(default(ApplicationUser?));
 
 		LinkExternalLoginCommand command =
 			new(
@@ -270,7 +270,7 @@ public sealed class LinkExternalLoginCommandHandlerTests
 			.FindByLoginAsync(
 				Arg.Any<string>(),
 				Arg.Any<string>())
-			.Returns((ApplicationUser?)null);
+			.Returns(default(ApplicationUser?));
 
 		UserManager
 			.AddLoginAsync(
@@ -333,7 +333,7 @@ public sealed class LinkExternalLoginCommandHandlerTests
 			.FindByLoginAsync(
 				Arg.Any<string>(),
 				Arg.Any<string>())
-			.Returns((ApplicationUser?)null);
+			.Returns(default(ApplicationUser?));
 
 		UserManager
 			.AddLoginAsync(

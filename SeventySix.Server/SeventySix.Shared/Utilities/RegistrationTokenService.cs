@@ -69,7 +69,15 @@ public static class RegistrationTokenService
 			return JsonSerializer.Deserialize<CombinedRegistrationTokenDto>(
 				jsonPayload);
 		}
-		catch
+		catch (FormatException)
+		{
+			return null;
+		}
+		catch (JsonException)
+		{
+			return null;
+		}
+		catch (ArgumentException)
 		{
 			return null;
 		}

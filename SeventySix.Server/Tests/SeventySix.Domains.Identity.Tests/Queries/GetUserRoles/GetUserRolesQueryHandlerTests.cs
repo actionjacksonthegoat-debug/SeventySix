@@ -137,7 +137,7 @@ public sealed class GetUserRolesQueryHandlerTests
 
 		UserManager
 			.FindByIdAsync(userId.ToString())
-			.Returns((ApplicationUser?)null);
+			.Returns(default(ApplicationUser?));
 
 		GetUserRolesQuery query =
 			new(userId);

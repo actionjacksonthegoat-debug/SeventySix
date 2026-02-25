@@ -109,7 +109,7 @@ public sealed class RejectPermissionRequestCommandHandlerTests
 			.GetByIdAsync(
 				NonExistentRequestId,
 				Arg.Any<CancellationToken>())
-			.Returns((PermissionRequest?)null);
+			.Returns(default(PermissionRequest?));
 
 		// Act
 		Result result =

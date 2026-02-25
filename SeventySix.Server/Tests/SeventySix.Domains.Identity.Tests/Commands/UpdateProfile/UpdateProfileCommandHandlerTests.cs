@@ -140,7 +140,7 @@ public sealed class UpdateProfileCommandHandlerTests
 
 		UserManager
 			.FindByIdAsync(Arg.Any<string>())
-			.Returns((ApplicationUser?)null);
+			.Returns(default(ApplicationUser?));
 
 		// Act
 		UserProfileDto? result =

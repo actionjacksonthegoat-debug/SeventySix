@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using System.Data.Common;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -85,7 +86,7 @@ public static class WebApplicationExtensions
 			logger.LogInformation(
 				"Database initialization completed successfully");
 		}
-		catch (Exception exception)
+		catch (DbException exception)
 		{
 			logger.LogCritical(
 				exception,
@@ -371,7 +372,11 @@ public static class WebApplicationExtensions
 
 			return true;
 		}
-		catch (Exception)
+		catch (SocketException)
+		{
+			return false;
+		}
+		catch (OperationCanceledException)
 		{
 			return false;
 		}

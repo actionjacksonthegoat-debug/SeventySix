@@ -138,7 +138,7 @@ public static class CreateUserCommandHandler
 					}),
 				cancellationToken);
 		}
-		catch (Exception exception)
+		catch (InvalidOperationException exception)
 		{
 			// Log but don't fail - user was created, email can be resent manually
 			logger.LogWarning(

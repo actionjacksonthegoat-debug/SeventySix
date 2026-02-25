@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using System.Data.Common;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -176,7 +177,13 @@ public sealed class EmailQueueProcessJobHandler(
 					failCount);
 			}
 		}
-		catch (Exception exception)
+		catch (DbException exception)
+		{
+			logger.LogError(
+				exception,
+				"Unhandled exception during email batch processing. Job will reschedule normally.");
+		}
+		catch (InvalidOperationException exception)
 		{
 			logger.LogError(
 				exception,
@@ -264,7 +271,7 @@ public sealed class EmailQueueProcessJobHandler(
 		{
 			throw;
 		}
-		catch (Exception exception)
+		catch (InvalidOperationException exception)
 		{
 			logger.LogError(
 				exception,

@@ -81,6 +81,7 @@ public sealed class SeededPostgreSqlFixture : BasePostgreSqlFixture
 		await SeedLock.WaitAsync();
 		try
 		{
+			// codeql[cs/constant-condition] -- Double-checked locking pattern: intentional re-check inside lock
 			if (IsSeeded)
 			{
 				return;

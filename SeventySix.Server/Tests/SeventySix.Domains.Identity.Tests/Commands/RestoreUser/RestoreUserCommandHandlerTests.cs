@@ -112,7 +112,7 @@ public sealed class RestoreUserCommandHandlerTests
 
 		UserManager
 			.FindByIdAsync(UserId.ToString())
-			.Returns((ApplicationUser?)null);
+			.Returns(default(ApplicationUser?));
 
 		// Act
 		Result result =

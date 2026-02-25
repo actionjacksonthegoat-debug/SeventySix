@@ -21,7 +21,7 @@ public abstract class SourceCodeArchitectureTest
 	/// </summary>
 	protected static readonly string SolutionRoot =
 		Path.GetFullPath(
-		Path.Combine(
+		Path.Join(
 			AppContext.BaseDirectory,
 			"..",
 			"..",

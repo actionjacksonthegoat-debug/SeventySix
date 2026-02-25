@@ -160,7 +160,7 @@ public sealed class SetPasswordCommandHandlerTests
 
 		UserManager
 			.FindByIdAsync("123")
-			.Returns((ApplicationUser?)null);
+			.Returns(default(ApplicationUser?));
 
 		// Act & Assert
 		InvalidOperationException exception =
@@ -308,7 +308,7 @@ public sealed class SetPasswordCommandHandlerTests
 		await UserManager
 			.Received(1)
 			.UpdateAsync(Arg.Is<ApplicationUser>(
-				user => user.RequiresPasswordChange == false));
+				user => !user.RequiresPasswordChange));
 	}
 
 	[Fact]

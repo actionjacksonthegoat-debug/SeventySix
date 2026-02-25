@@ -2,6 +2,8 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using System.Data.Common;
+
 namespace SeventySix.Logging;
 
 /// <summary>
@@ -45,7 +47,11 @@ public static class CheckLoggingHealthQueryHandler
 
 			return true;
 		}
-		catch
+		catch (DbException)
+		{
+			return false;
+		}
+		catch (InvalidOperationException)
 		{
 			return false;
 		}

@@ -26,7 +26,7 @@ public sealed class ProductionConfigTests : SourceCodeArchitectureTest
 	public void Production_Config_Should_Not_Contain_Localhost_Origins()
 	{
 		string productionConfigPath =
-			Path.Combine(
+			Path.Join(
 				SolutionRoot,
 				"SeventySix.Api",
 				"appsettings.Production.json");
@@ -51,6 +51,7 @@ public sealed class ProductionConfigTests : SourceCodeArchitectureTest
 				"AllowedOrigins",
 				out JsonElement allowedOriginsElement))
 		{
+			// codeql[cs/linq/missed-select]
 			foreach (JsonElement origin in allowedOriginsElement.EnumerateArray())
 			{
 				string? originValue =
@@ -85,7 +86,7 @@ public sealed class ProductionConfigTests : SourceCodeArchitectureTest
 	public void Production_Database_Should_Not_Use_Localhost()
 	{
 		string productionConfigPath =
-			Path.Combine(
+			Path.Join(
 				SolutionRoot,
 				"SeventySix.Api",
 				"appsettings.Production.json");

@@ -271,7 +271,7 @@ public sealed class UnlinkExternalLoginCommandHandlerTests
 		// Arrange
 		UserManager
 			.FindByIdAsync(Arg.Any<string>())
-			.Returns((ApplicationUser?)null);
+			.Returns(default(ApplicationUser?));
 
 		UnlinkExternalLoginCommand command =
 			new(UserId: 999, Provider: TestProvider);

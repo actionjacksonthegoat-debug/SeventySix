@@ -149,7 +149,7 @@ public sealed class AddUserRoleCommandHandlerTests
 
 		UserManager
 			.FindByIdAsync(NonExistentUserId.ToString())
-			.Returns((ApplicationUser?)null);
+			.Returns(default(ApplicationUser?));
 
 		// Act & Assert
 		UserNotFoundException exception =

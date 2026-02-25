@@ -84,7 +84,7 @@ public sealed class AltchaService(
 
 			return AltchaValidationResult.Succeeded();
 		}
-		catch (Exception exception)
+		catch (InvalidOperationException exception)
 		{
 			logger.LogError(
 				exception,

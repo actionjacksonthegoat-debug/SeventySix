@@ -14,22 +14,36 @@
 
     LOCAL vs CI PARITY
     ------------------
-    This script uses the same `security-and-quality` suite as GitHub Actions CI
-    (.github/codeql/codeql-config.yml). One inherent difference remains:
+    This script is designed to produce the SAME results as GitHub Actions CI:
+
+      Config file:  --codescanning-config is passed to `database create` for both
+                    languages. This applies `paths-ignore` at extraction time, exactly
+                    as GitHub's `codeql-action/init` step does. Files in
+                    `paths-ignore` are never extracted into the database — they do
+                    not appear in results at all.
+
+      Source root:  Both C# and TypeScript use the repo root (`$RepoRoot`) as
+                    --source-root. This ensures SARIF artifact URIs are prefixed
+                    correctly (e.g. `SeventySix.Client/load-testing/...`) so the
+                    `paths-ignore` patterns in codeql-config.yml match exactly as
+                    they do in CI. Using a subdirectory as source-root produces
+                    unprefixed URIs that bypass paths-ignore filtering.
 
       C# build mode: CI uses `build-mode: manual` (traced Linux build) for richer
-      data-flow. Local uses `--build-mode=none` (buildless Roslyn) to avoid the
-      VBCSCompiler lock issue on Windows with .NET 10.
+                    inter-procedural data-flow. Local uses `--build-mode=none`
+                    (buildless Roslyn) because the CodeQL C# tracer cannot intercept
+                    the Windows VBCSCompiler shared build server with .NET 10.
+                    This causes minor count differences for data-flow-dependent
+                    rules (e.g. `cs/useless-assignment-to-local`). A Docker-based
+                    CI-parity scan (`npm run scan:codeql:ci`) resolves this for
+                    final verification; the local scan is the fast dev-loop tool.
 
-      For SECURITY rules: both modes produce equivalent results.
+      TypeScript:   No build needed — CodeQL uses a source extractor. With the
+                    correct source-root and codescanning-config, local TS results
+                    exactly match CI.
 
-      For QUALITY rules: recommendation-level results (MissedWhere, NoDisposeCall,
-      etc.) are filtered from the main SARIF by the suite selector. A SEPARATE
-      quality pass (.github/codeql/csharp-quality-local.qls) replicates what CI
-      surfaces via its SARIF processing pipeline.
-
-    Bottom line: `npm run scan:codeql` locally finds all the same violation
-    categories as CI. Minor count differences are expected due to build mode.
+    Bottom line: TypeScript results match CI exactly. C# security results match CI
+    exactly. C# quality/data-flow counts may differ slightly due to build mode.
 
 .EXAMPLE
     .\scripts\run-codeql-scan.ps1
@@ -62,6 +76,7 @@ $RepoRoot = Split-Path -Parent $PSScriptRoot
 $CsharpRoot = Join-Path $RepoRoot "SeventySix.Server"
 $TsRoot = Join-Path $RepoRoot "SeventySix.Client"
 $CodeqlDir = Join-Path $RepoRoot ".codeql"
+$CodeqlConfig = Join-Path $RepoRoot ".github" "codeql" "codeql-config.yml"
 $ResultsDir = Join-Path $CodeqlDir "results"
 $CsharpDb = Join-Path $CodeqlDir "db-csharp"
 $TsDb = Join-Path $CodeqlDir "db-typescript"
@@ -160,10 +175,19 @@ function Invoke-CsharpScan {
 		# build. The traced build (--command) fails on Windows with .NET 10 because
 		# the CodeQL C# tracer cannot intercept the VBCSCompiler shared build server.
 		# Buildless mode uses Roslyn directly to parse source files.
+		#
+		# --source-root=$RepoRoot (not "."/CsharpRoot): SARIF URIs are prefixed with
+		# "SeventySix.Server/" so paths-ignore patterns like "SeventySix.Server/**/bin"
+		# match correctly — identical to how GitHub CI produces URIs from the repo root.
+		#
+		# --codescanning-config: applies paths-ignore at extraction time, exactly as
+		# GitHub's codeql-action/init step does. Files in paths-ignore are never
+		# extracted into the database.
 		codeql database create $CsharpDb `
 			--language=csharp `
 			--build-mode=none `
-			--source-root=. `
+			--source-root=$RepoRoot `
+			--codescanning-config=$CodeqlConfig `
 			--overwrite
 
 		Write-Host "[C#] Analyzing..." -ForegroundColor Yellow
@@ -207,9 +231,18 @@ function Invoke-TypescriptScan {
 		Remove-Item -Recurse -Force $TsDb
 	}
 
+	# --source-root=$RepoRoot (not $TsRoot/SeventySix.Client): this is the critical
+	# CI-parity fix. GitHub CI checks out at repo root, so SARIF URIs are prefixed
+	# "SeventySix.Client/...". Using $TsRoot as source-root produces un-prefixed URIs
+	# ("load-testing/...") which bypass paths-ignore patterns that expect the prefix,
+	# inflating local TS counts from 8 (GitHub) to ~119.
+	#
+	# --codescanning-config: applies paths-ignore at extraction time so excluded
+	# directories (load-testing, e2e artifacts, node_modules) are never in the DB.
 	codeql database create $TsDb `
 		--language=javascript-typescript `
-		--source-root=$TsRoot `
+		--source-root=$RepoRoot `
+		--codescanning-config=$CodeqlConfig `
 		--overwrite
 
 	Write-Host "[TypeScript] Analyzing..." -ForegroundColor Yellow
@@ -244,12 +277,13 @@ function Show-SarifSummary {
 		$sarif = Get-Content $SarifPath -Raw | ConvertFrom-Json
 		$allResults = $sarif.runs[0].results
 
-		# Mirror the paths-ignore from .github/codeql/codeql-config.yml.
-		# These patterns are applied by GitHub Actions before uploading; local CLI
-		# includes them in the raw SARIF, so we filter them out here to match CI counts.
+		# With --codescanning-config passed to database create, paths-ignore is applied
+		# at extraction time — these fragments should already be absent from the SARIF.
+		# This filter is kept as a belt-and-suspenders check for any edge cases where
+		# the extractor includes a file before the config is fully applied.
 		$ignoredPathFragments = @(
-			"/obj/",
-			"/bin/",
+			"SeventySix.Server/obj/",
+			"SeventySix.Server/bin/",
 			"/node_modules/",
 			"SeventySix.Client/dist",
 			"SeventySix.Client/coverage",

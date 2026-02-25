@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using System.Data.Common;
 using Microsoft.Extensions.Logging;
 
 namespace SeventySix.Identity;
@@ -72,7 +73,7 @@ public sealed class SecurityAuditService(
 
 			await dbContext.SaveChangesAsync(cancellationToken);
 		}
-		catch (Exception exception)
+		catch (DbException exception)
 		{
 			// Log but don't propagate - audit logging should not disrupt primary operations
 			logger.LogWarning(

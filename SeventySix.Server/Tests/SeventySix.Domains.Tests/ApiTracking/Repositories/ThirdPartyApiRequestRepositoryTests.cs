@@ -445,8 +445,6 @@ public sealed class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase
 		DateOnly today =
 			DateOnly.FromDateTime(
 			timeProvider.GetUtcNow().UtcDateTime);
-		DateOnly yesterday =
-			today.AddDays(-1);
 
 		await Repository.CreateAsync(
 			new ThirdPartyApiRequest
@@ -459,8 +457,7 @@ public sealed class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase
 		// Act - delete records older than 100 days ago (none should exist for this specific test)
 		DateOnly cutoffDate =
 			today.AddDays(-100);
-		int deletedCount =
-			await Repository.DeleteOlderThanAsync(cutoffDate);
+		await Repository.DeleteOlderThanAsync(cutoffDate);
 
 		// Assert - We can only verify our specific record wasn't deleted
 		IEnumerable<ThirdPartyApiRequest> remaining =

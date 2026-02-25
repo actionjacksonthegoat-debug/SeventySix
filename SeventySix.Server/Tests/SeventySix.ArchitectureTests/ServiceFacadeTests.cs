@@ -33,6 +33,7 @@ public sealed class ServiceFacadeTests
 			.Distinct()
 			.ToArray();
 
+		// codeql[cs/linq/missed-select]
 		foreach (string contextName in boundedContextNames)
 		{
 			string repositoryNamespace =
@@ -103,6 +104,7 @@ public sealed class ServiceFacadeTests
 			.ToArray();
 
 		List<string> dependencyViolations = [];
+		// codeql[cs/linq/missed-select]
 		foreach (Type controllerType in controllerTypes)
 		{
 			ConstructorInfo[] constructors =

@@ -1,24 +1,27 @@
 # CodeQL Models-as-Data: SeventySix.Shared.Utilities.LogSanitizer taint sanitizers.
 #
-# Declares MaskEmail, MaskEmailSubject, and MaskUsername as taint-sanitizers for
-# CodeQL's cs/exposure-of-sensitive-information rule. These are purpose-built PII
-# masking functions — their output does not carry sensitive taint from their input.
+# Declares MaskEmail, MaskEmailSubject, MaskUsername, and Sanitize as neutral
+# (no-flow-through) methods for CodeQL's cs/exposure-of-sensitive-information rule.
+# These are purpose-built PII masking functions — their output does not carry sensitive
+# taint from their input.
 #
-# Without this model, CodeQL cannot infer that the return value of MaskEmail("user@x.com")
-# is safe to log; it sees the input as tainted (email) and conservatively flags log calls
-# that use the return value.
+# A neutralModel with kind "summary" tells CodeQL that calling the method does not
+# propagate taint from its arguments to its return value, effectively breaking the
+# taint-tracking chain at the point where PII is masked before logging.
 #
 # Reference:
-#   https://codeql.github.com/docs/codeql-language-guides/using-customizations-for-csharp/
-#   Format: ["fully-qualified-type", "method-name", "input-spec", "output-spec", "kind", "provenance"]
+#   https://codeql.github.com/docs/codeql-language-guides/customizing-library-models-for-csharp/
+#   neutralModel format: ["namespace", "type", "method-name", "signature", "kind", "provenance"]
 extensions:
   - addsTo:
       pack: codeql/csharp-all
-      extensible: summaryModel
+      extensible: neutralModel
     data:
       # MaskEmail(string?) → safe masked string — taint does NOT flow through
-      - ["SeventySix.Shared.Utilities.LogSanitizer", "MaskEmail", "Argument[0]", "ReturnValue", "taint", "manual"]
+      - ["SeventySix.Shared.Utilities", "LogSanitizer", "MaskEmail", "(System.String)", "summary", "manual"]
       # MaskUsername(string?) → safe masked string
-      - ["SeventySix.Shared.Utilities.LogSanitizer", "MaskUsername", "Argument[0]", "ReturnValue", "taint", "manual"]
-      # MaskEmailSubject(string?) → safe category label
-      - ["SeventySix.Shared.Utilities.LogSanitizer", "MaskEmailSubject", "Argument[0]", "ReturnValue", "taint", "manual"]
+      - ["SeventySix.Shared.Utilities", "LogSanitizer", "MaskUsername", "(System.String)", "summary", "manual"]
+      # MaskEmailSubject(string?) → safe category label (no PII, maps to category)
+      - ["SeventySix.Shared.Utilities", "LogSanitizer", "MaskEmailSubject", "(System.String)", "summary", "manual"]
+      # Sanitize(string?) → safe sanitized string for log output
+      - ["SeventySix.Shared.Utilities", "LogSanitizer", "Sanitize", "(System.String)", "summary", "manual"]

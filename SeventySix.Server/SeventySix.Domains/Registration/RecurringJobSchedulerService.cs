@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using System.Data.Common;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -117,7 +118,23 @@ public sealed class RecurringJobSchedulerService(
 				logger.LogInformation("Job scheduler startup cancelled");
 				return; // CANCELLED - exit method
 			}
-			catch (Exception exception) when (attemptNumber < MaxRetryAttempts)
+			catch (DbException exception) when (attemptNumber < MaxRetryAttempts)
+			{
+				int retryDelaySeconds =
+					attemptNumber * 2; // 2s, 4s
+
+				logger.LogWarning(
+					exception,
+					"Job scheduling attempt {AttemptNumber}/{MaxAttempts} failed, retrying in {RetryDelaySeconds}s",
+					attemptNumber,
+					MaxRetryAttempts,
+					retryDelaySeconds);
+
+				await Task.Delay(
+					TimeSpan.FromSeconds(retryDelaySeconds),
+					stoppingToken);
+			}
+			catch (InvalidOperationException exception) when (attemptNumber < MaxRetryAttempts)
 			{
 				int retryDelaySeconds =
 					attemptNumber * 2; // 2s, 4s

@@ -90,7 +90,7 @@ public sealed class LogoutCommandHandlerTests
 			.ValidateRefreshTokenAsync(
 				InvalidToken,
 				Arg.Any<CancellationToken>())
-			.Returns((long?)null);
+			.Returns(default(long?));
 
 		TokenService
 			.RevokeRefreshTokenAsync(

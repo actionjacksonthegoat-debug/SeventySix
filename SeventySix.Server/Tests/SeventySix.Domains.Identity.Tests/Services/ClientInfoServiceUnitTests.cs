@@ -42,7 +42,7 @@ public sealed class ClientInfoServiceUnitTests
 	public void ExtractClientIp_WhenHttpContextNull_ReturnsNull()
 	{
 		// Arrange
-		HttpContextAccessor.HttpContext.Returns((HttpContext?)null);
+		HttpContextAccessor.HttpContext.Returns(default(HttpContext?));
 
 		// Act
 		string? result =
@@ -81,7 +81,7 @@ public sealed class ClientInfoServiceUnitTests
 	public void ExtractUserAgent_WhenHttpContextNull_ReturnsNull()
 	{
 		// Arrange
-		HttpContextAccessor.HttpContext.Returns((HttpContext?)null);
+		HttpContextAccessor.HttpContext.Returns(default(HttpContext?));
 
 		// Act
 		string? result =

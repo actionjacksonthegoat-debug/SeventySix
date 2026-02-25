@@ -51,19 +51,20 @@ public sealed class DatabaseHealthCheckTests
 			Type? healthCheckImplementation =
 				dbContextType
 				.Assembly.GetTypes()
-				.FirstOrDefault(type =>
-					type.Namespace != null
-					&& type.Namespace.Contains(contextName)
-					&& (
-						(
-							type.IsInterface
-							&& type.GetInterfaces()
-								.Contains(typeof(IDatabaseHealthCheck)))
-						|| (
-							type.IsClass
-							&& !type.IsAbstract
-							&& type.GetInterfaces()
-								.Contains(typeof(IDatabaseHealthCheck)))));
+				.FirstOrDefault(
+					type =>
+				{
+					if (type.Namespace == null || !type.Namespace.Contains(contextName))
+					{
+						return false;
+					}
+
+					bool implementsHealthCheck =
+						type.GetInterfaces().Contains(typeof(IDatabaseHealthCheck));
+
+					return implementsHealthCheck
+						&& (type.IsInterface || (type.IsClass && !type.IsAbstract));
+				});
 
 			if (healthCheckImplementation == null)
 			{

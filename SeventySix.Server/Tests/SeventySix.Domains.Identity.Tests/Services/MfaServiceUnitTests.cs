@@ -141,7 +141,7 @@ public sealed class MfaServiceUnitTests
 			.GetByTokenAsync(
 				Arg.Any<string>(),
 				Arg.Any<CancellationToken>())
-			.Returns((MfaChallenge?)null);
+			.Returns(default(MfaChallenge?));
 
 		// Act
 		MfaVerificationResult result =

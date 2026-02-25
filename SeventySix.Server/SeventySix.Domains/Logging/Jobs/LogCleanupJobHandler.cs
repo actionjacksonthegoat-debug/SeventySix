@@ -116,7 +116,7 @@ public sealed class LogCleanupJobHandler(
 		DateTimeOffset cutoffDate)
 	{
 		string logDirectory =
-			Path.Combine(
+			Path.Join(
 				AppContext.BaseDirectory,
 				config.LogDirectory);
 

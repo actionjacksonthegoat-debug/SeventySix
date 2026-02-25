@@ -106,9 +106,9 @@ public sealed class HealthCheckServiceTests
 		// Verify all bounded contexts are checked
 		result.Database.ContextResults.ShouldNotBeNull();
 		result.Database.ContextResults.Count.ShouldBe(3);
-		result.Database.ContextResults.ContainsKey("Identity").ShouldBeTrue();
-		result.Database.ContextResults.ContainsKey("Logging").ShouldBeTrue();
-		result.Database.ContextResults.ContainsKey("ApiTracking").ShouldBeTrue();
+		result.Database.ContextResults.ShouldContainKey("Identity");
+		result.Database.ContextResults.ShouldContainKey("Logging");
+		result.Database.ContextResults.ShouldContainKey("ApiTracking");
 		result.Database.ContextResults["Identity"].ShouldBeTrue();
 		result.Database.ContextResults["Logging"].ShouldBeTrue();
 		result.Database.ContextResults["ApiTracking"].ShouldBeTrue();

@@ -121,7 +121,7 @@ public sealed class RemoveUserRoleCommandHandlerTests
 
 		UserManager
 			.FindByIdAsync(NonExistentUserId.ToString())
-			.Returns((ApplicationUser?)null);
+			.Returns(default(ApplicationUser?));
 
 		// Act
 		Result result =

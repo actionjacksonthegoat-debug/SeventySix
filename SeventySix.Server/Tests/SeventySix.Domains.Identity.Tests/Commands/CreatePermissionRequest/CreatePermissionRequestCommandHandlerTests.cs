@@ -99,7 +99,7 @@ public sealed class CreatePermissionRequestCommandHandlerTests
 
 		UserManager
 			.FindByIdAsync("999")
-			.Returns((ApplicationUser?)null);
+			.Returns(default(ApplicationUser?));
 
 		// Act & Assert
 		await Should.ThrowAsync<UserNotFoundException>(

@@ -173,14 +173,12 @@ public static class SetPasswordCommandHandler
 					IdentityResult updateResult =
 						await userManager.UpdateAsync(user);
 
-					if (!updateResult.Succeeded)
-					{
-						if (updateResult.Errors.Any(
+					if (!updateResult.Succeeded
+						&& updateResult.Errors.Any(
 							error => error.Code == "ConcurrencyFailure"))
-						{
-							throw new DbUpdateConcurrencyException(
-								"Concurrency conflict clearing password change flag. Will retry.");
-						}
+					{
+						throw new DbUpdateConcurrencyException(
+							"Concurrency conflict clearing password change flag. Will retry.");
 					}
 				}
 			},

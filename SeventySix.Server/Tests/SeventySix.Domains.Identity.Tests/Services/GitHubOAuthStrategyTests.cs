@@ -127,13 +127,15 @@ public sealed class GitHubOAuthStrategyTests
 			JsonSerializer.Serialize(
 				new { access_token = "gho_test_token_123" });
 
+		using HttpResponseMessage tokenResponse =
+			new(HttpStatusCode.OK)
+			{
+				Content = new StringContent(tokenJson),
+			};
+
 		using MockHttpMessageHandler mockHandler =
 			new((request, cancellationToken) =>
-				Task.FromResult(
-					new HttpResponseMessage(HttpStatusCode.OK)
-					{
-						Content = new StringContent(tokenJson),
-					}));
+				Task.FromResult(tokenResponse));
 
 		using HttpClient httpClient =
 			new(mockHandler);
@@ -165,10 +167,12 @@ public sealed class GitHubOAuthStrategyTests
 	public async Task ExchangeCodeForTokenAsync_ErrorResponse_ThrowsExceptionAsync()
 	{
 		// Arrange
+		using HttpResponseMessage badRequestResponse =
+			new(HttpStatusCode.BadRequest);
+
 		using MockHttpMessageHandler mockHandler =
 			new((request, cancellationToken) =>
-				Task.FromResult(
-					new HttpResponseMessage(HttpStatusCode.BadRequest)));
+				Task.FromResult(badRequestResponse));
 
 		using HttpClient httpClient =
 			new(mockHandler);
@@ -208,13 +212,15 @@ public sealed class GitHubOAuthStrategyTests
 					avatar_url = "https://avatars.githubusercontent.com/u/12345678",
 				});
 
+		using HttpResponseMessage userInfoResponse =
+			new(HttpStatusCode.OK)
+			{
+				Content = new StringContent(userJson),
+			};
+
 		using MockHttpMessageHandler mockHandler =
 			new((request, cancellationToken) =>
-				Task.FromResult(
-					new HttpResponseMessage(HttpStatusCode.OK)
-					{
-						Content = new StringContent(userJson),
-					}));
+				Task.FromResult(userInfoResponse));
 
 		using HttpClient httpClient =
 			new(mockHandler);
@@ -258,16 +264,18 @@ public sealed class GitHubOAuthStrategyTests
 					login = "user",
 				});
 
+		using HttpResponseMessage userAgentResponse =
+			new(HttpStatusCode.OK)
+			{
+				Content = new StringContent(userJson),
+			};
+
 		using MockHttpMessageHandler mockHandler =
 			new(
 				(request, cancellationToken) =>
 			{
 				capturedRequest = request;
-				return Task.FromResult(
-					new HttpResponseMessage(HttpStatusCode.OK)
-					{
-						Content = new StringContent(userJson),
-					});
+				return Task.FromResult(userAgentResponse);
 			});
 
 		using HttpClient httpClient =

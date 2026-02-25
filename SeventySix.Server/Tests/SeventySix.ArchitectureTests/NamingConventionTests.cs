@@ -51,9 +51,8 @@ public sealed class NamingConventionTests : SourceCodeArchitectureTest
 				navigationPropertyPattern.Matches(
 				content);
 
-			foreach (Match match in matches)
+			foreach (string propertyName in matches.Select(match => match.Groups[1].Value))
 			{
-				string propertyName = match.Groups[1].Value;
 
 				// Skip if it's Id property itself or already ends with Id
 				if (propertyName == PropertyConstants.Id

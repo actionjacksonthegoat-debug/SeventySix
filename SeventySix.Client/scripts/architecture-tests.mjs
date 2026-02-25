@@ -1174,7 +1174,7 @@ test("services should have less than 12 public methods", async () =>
 		if (methodCount > maxMethodsPerService)
 		{
 			const displayMethods = methodNames.slice(0, 5).join(", ");
-			const additional = methodCount > 5 ? ` and ${methodCount - 5} more` : "";
+			const additional = ` and ${methodCount - 5} more`;
 			violations.push(
 				`${
 					path.relative(SRC_DIR, file)
@@ -1211,7 +1211,7 @@ test("components should have less than 12 public methods", async () =>
 		if (methodCount > maxMethodsPerComponent)
 		{
 			const displayMethods = methodNames.slice(0, 5).join(", ");
-			const additional = methodCount > 5 ? ` and ${methodCount - 5} more` : "";
+			const additional = ` and ${methodCount - 5} more`;
 			violations.push(
 				`${
 					path.relative(SRC_DIR, file)
