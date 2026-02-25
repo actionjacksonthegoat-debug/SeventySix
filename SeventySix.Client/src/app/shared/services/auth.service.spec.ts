@@ -728,12 +728,22 @@ describe("AuthService",
 				function createStorageEvent(
 					options: { key: string; newValue: string | null; oldValue?: string | null; }): StorageEvent
 				{
-					return new StorageEvent("storage",
-						{
-							key: options.key,
-							newValue: options.newValue,
-							oldValue: options.oldValue ?? null
-						});
+					const event: StorageEvent =
+						new Event("storage") as StorageEvent;
+					Object.defineProperty(
+						event,
+						"key",
+						{ value: options.key });
+					Object.defineProperty(
+						event,
+						"newValue",
+						{ value: options.newValue });
+					Object.defineProperty(
+						event,
+						"oldValue",
+						{ value: options.oldValue ?? null });
+
+					return event;
 				}
 
 				it("should call forceLogoutLocally when auth_has_session removed in another tab",
