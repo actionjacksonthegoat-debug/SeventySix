@@ -5,7 +5,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Npgsql;
-using SeventySix.Shared.Utilities;
 
 namespace SeventySix.Identity;
 
@@ -36,12 +35,6 @@ public static class DuplicateKeyViolationHandler
 	/// <param name="exception">
 	/// The database update exception.
 	/// </param>
-	/// <param name="username">
-	/// The username attempted (for logging).
-	/// </param>
-	/// <param name="email">
-	/// The email attempted (for logging).
-	/// </param>
 	/// <param name="logger">
 	/// Logger instance.
 	/// </param>
@@ -50,8 +43,6 @@ public static class DuplicateKeyViolationHandler
 	/// </returns>
 	public static AuthResult HandleAsAuthResult(
 		DbUpdateException exception,
-		string username,
-		string email,
 		ILogger logger)
 	{
 		string? constraintName =
@@ -60,8 +51,7 @@ public static class DuplicateKeyViolationHandler
 		if (constraintName == UsernameConstraint)
 		{
 			logger.LogWarning(
-				"Registration attempt with existing username: {Username}",
-				LogSanitizer.MaskUsername(username));
+				"Registration attempt with existing username.");
 
 			return AuthResult.Failed(
 				"Username is already taken.",
@@ -71,8 +61,7 @@ public static class DuplicateKeyViolationHandler
 		if (constraintName == EmailConstraint)
 		{
 			logger.LogWarning(
-				"Registration attempt with already registered email: {Email}",
-				LogSanitizer.MaskEmail(email));
+				"Registration attempt with already registered email.");
 
 			return AuthResult.Failed(
 				"This email is already registered.",
@@ -81,9 +70,7 @@ public static class DuplicateKeyViolationHandler
 
 		// Unknown constraint violation — do not log constraint name to avoid leaking schema info
 		logger.LogWarning(
-			"Unknown duplicate key violation during registration. Username: {Username}, Email: {Email}",
-			LogSanitizer.MaskUsername(username),
-			LogSanitizer.MaskEmail(email));
+			"Unknown duplicate key violation during registration.");
 
 		return AuthResult.Failed(
 			"Username or email already exists.",
@@ -97,20 +84,12 @@ public static class DuplicateKeyViolationHandler
 	/// <param name="exception">
 	/// The database update exception.
 	/// </param>
-	/// <param name="username">
-	/// The username attempted (for logging and exception message).
-	/// </param>
-	/// <param name="email">
-	/// The email attempted (for logging and exception message).
-	/// </param>
 	/// <param name="logger">
 	/// Logger instance.
 	/// </param>
 	/// <exception cref="DuplicateUserException">Always thrown with appropriate message.</exception>
 	public static void HandleAsException(
 		DbUpdateException exception,
-		string username,
-		string email,
 		ILogger logger)
 	{
 		string? constraintName =
@@ -119,9 +98,7 @@ public static class DuplicateKeyViolationHandler
 		if (constraintName == UsernameConstraint)
 		{
 			logger.LogWarning(
-				"Duplicate username detected during user creation. Username: {Username}, Email: {Email}",
-				LogSanitizer.MaskUsername(username),
-				LogSanitizer.MaskEmail(email));
+				"Duplicate username detected during user creation.");
 
 			throw new DuplicateUserException(
 				"Username already taken.");
@@ -130,9 +107,7 @@ public static class DuplicateKeyViolationHandler
 		if (constraintName == EmailConstraint)
 		{
 			logger.LogWarning(
-				"Duplicate email detected during user creation. Email: {Email}, Username: {Username}",
-				LogSanitizer.MaskEmail(email),
-				LogSanitizer.MaskUsername(username));
+				"Duplicate email detected during user creation.");
 
 			throw new DuplicateUserException(
 				"Email already registered.");
@@ -140,9 +115,7 @@ public static class DuplicateKeyViolationHandler
 
 		// Unknown constraint violation — do not log constraint name to avoid leaking schema info
 		logger.LogWarning(
-			"Unknown duplicate key violation during user creation. Username: {Username}, Email: {Email}",
-			LogSanitizer.MaskUsername(username),
-			LogSanitizer.MaskEmail(email));
+			"Unknown duplicate key violation during user creation.");
 
 		throw new DuplicateUserException(
 			"Failed to create user: Username or email already exists");

@@ -133,8 +133,6 @@ public static class CompleteRegistrationCommandHandler
 					earlyResult =
 						DuplicateKeyViolationHandler.HandleAsAuthResult(
 							exception,
-							command.Request.Username,
-							capturedDecodedEmail!,
 							logger);
 				}
 			},
