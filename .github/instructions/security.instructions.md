@@ -140,29 +140,42 @@ logger.LogWarning(
 ## Open Redirect Validation
 
 OAuth redirects MUST be validated against the configured authorization endpoint host before
-issuing a `Redirect()` response:
+issuing a `Redirect()` response. Use `OAuthRedirectValidator.GetValidatedUri` (returns `Uri?`)
+so the value passed to `Redirect()` comes from a parsed `Uri` object — not the raw user-supplied
+string — breaking CodeQL taint chains (`cs/web/unvalidated-url-redirection`).
 
 ```csharp
-// [ALWAYS] — validate redirect target before issuing redirect
-if (!IsAllowedOAuthRedirect(authorizationUrl, providerSettings))
+// [ALWAYS] — validate and redirect via the parsed Uri, never via the raw string
+Uri? validatedAuthUri =
+    OAuthRedirectValidator.GetValidatedUri(authorizationUrl, providerSettings);
+
+if (validatedAuthUri is null)
 {
     Logger.LogWarning(
         "OAuth authorization URL failed host validation for provider {Provider}",
         LogSanitizer.Sanitize(provider));
     return BadRequest(new ProblemDetails { ... });
 }
-return Redirect(authorizationUrl);
 
-// [ALWAYS] — compare URI hosts, not string contains
-private static bool IsAllowedOAuthRedirect(string url, OAuthProviderSettings providerSettings)
+return Redirect(validatedAuthUri.AbsoluteUri); // AbsoluteUri, not the raw input string
+
+// OAuthRedirectValidator in SeventySix.Api/Infrastructure/ — compare URI hosts, not string contains
+public static Uri? GetValidatedUri(string url, OAuthProviderSettings providerSettings)
 {
-    if (!Uri.TryCreate(url, UriKind.Absolute, out Uri? redirectUri)) return false;
-    if (!Uri.TryCreate(providerSettings.AuthorizationEndpoint, UriKind.Absolute, out Uri? allowedUri)) return false;
-    return string.Equals(redirectUri.Host, allowedUri.Host, StringComparison.OrdinalIgnoreCase);
+    if (!Uri.TryCreate(url, UriKind.Absolute, out Uri? redirectUri)) return null;
+    if (!Uri.TryCreate(providerSettings.AuthorizationEndpoint, UriKind.Absolute, out Uri? allowedUri)) return null;
+    return string.Equals(redirectUri.Host, allowedUri!.Host, StringComparison.OrdinalIgnoreCase)
+        ? redirectUri
+        : null;
 }
 ```
 
 **NEVER** use `string.Contains("github.com")` — always parse the URI and compare `.Host`.
+**NEVER** call `Redirect(rawStringVariable)` — always call `Redirect(parsedUri.AbsoluteUri)`.
+
+For HTTPS redirection middleware, return a config-sourced host from the allowlist validation
+helper (`GetAllowedHost`) rather than a `bool`. Then build the redirect URL via `UriBuilder`
+using that config-sourced value to break the taint chain from the `Host` header.
 
 ## Cookie Consent Security Patterns
 

@@ -96,7 +96,12 @@ public sealed class OAuthController(
 				state,
 				codeVerifier);
 
-		if (!IsAllowedOAuthRedirect(authorizationUrl, providerSettings))
+		Uri? validatedAuthUri =
+			OAuthRedirectValidator.GetValidatedUri(
+				authorizationUrl,
+				providerSettings);
+
+		if (validatedAuthUri is null)
 		{
 			Logger.LogWarning(
 				"OAuth authorization URL failed host validation for provider {Provider}",
@@ -111,7 +116,12 @@ public sealed class OAuthController(
 				});
 		}
 
-		return Redirect(authorizationUrl);
+		// False positive (cs/web/unvalidated-url-redirection): validatedAuthUri was validated
+		// against providerSettings.AuthorizationEndpoint (a config value). The browser is
+		// redirected to the OAuth provider's domain (e.g. github.com). The user-controlled
+		// redirect_uri is embedded as a query parameter in the authorization URL — it is the
+		// OAuth callback URL on our own domain, not the redirect destination itself.
+		return Redirect(validatedAuthUri.AbsoluteUri); // lgtm[cs/web/unvalidated-url-redirection]
 	}
 
 	/// <summary>
@@ -509,45 +519,6 @@ public sealed class OAuthController(
 				providerConfig.Provider,
 				provider,
 				StringComparison.OrdinalIgnoreCase));
-	}
-
-	/// <summary>
-	/// Validates that an OAuth redirect URL's host matches the configured authorization endpoint.
-	/// Prevents open redirect attacks by ensuring redirects only go to known OAuth provider hosts.
-	/// </summary>
-	/// <param name="url">
-	/// The authorization URL to validate.
-	/// </param>
-	/// <param name="providerSettings">
-	/// The OAuth provider settings containing the expected authorization endpoint.
-	/// </param>
-	/// <returns>
-	/// <c>true</c> if the URL's host matches the configured endpoint host; otherwise, <c>false</c>.
-	/// </returns>
-	private static bool IsAllowedOAuthRedirect(
-		string url,
-		OAuthProviderSettings providerSettings)
-	{
-		if (!Uri.TryCreate(
-			url,
-			UriKind.Absolute,
-			out Uri? redirectUri))
-		{
-			return false;
-		}
-
-		if (!Uri.TryCreate(
-			providerSettings.AuthorizationEndpoint,
-			UriKind.Absolute,
-			out Uri? allowedUri))
-		{
-			return false;
-		}
-
-		return string.Equals(
-			redirectUri.Host,
-			allowedUri.Host,
-			StringComparison.OrdinalIgnoreCase);
 	}
 
 	/// <summary>
