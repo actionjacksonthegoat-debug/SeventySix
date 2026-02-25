@@ -248,7 +248,7 @@ After installing the **GitHub CodeQL** extension, you will be prompted to accept
 These databases enable inline alert display and local scanning without having to build databases from scratch. You can also load them manually via:
 `Ctrl+Shift+P` → **CodeQL: Download Database from GitHub** → select `actionjacksonthegoat-debug/SeventySix`
 
-> **Tip**: To run a full local scan at any time, use `npm run scan:codeql` (requires CodeQL CLI — see [CodeQL CLI setup](https://github.com/github/codeql-action/releases/latest)).
+> **Tip**: To run a full local scan at any time, use `npm run scan:codeql`. The GitHub CodeQL VS Code extension (recommended above) downloads and manages the CLI automatically — no PATH changes or manual downloads needed. Installing the extension is all that's required.
 
 ### Trust the Workspace
 

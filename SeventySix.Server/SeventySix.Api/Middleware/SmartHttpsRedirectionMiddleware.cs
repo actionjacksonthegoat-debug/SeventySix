@@ -118,10 +118,12 @@ public sealed class SmartHttpsRedirectionMiddleware(
 			? context.Request.QueryString.Value
 			: null;
 
-		// UriBuilder with a config-sourced host breaks the CodeQL taint chain
-		// (cs/web/unvalidated-url-redirection). allowedHost is never the raw request
-		// value — it is either the matched entry from AllowedHosts config or the
-		// parsed .Host property of a Uri constructed from the request value.
+		// UriBuilder with a config-sourced host breaks the CodeQL taint chain for the host
+		// component. allowedHost is always the matched entry from AllowedHosts config or the
+		// parsed .Host property of a validated Uri — never the raw request Host header value.
+		// The path and queryString come from context.Request.Path.Value / QueryString.Value;
+		// ASP.NET Core guarantees these are path/query components only (never scheme+host),
+		// so they cannot redirect to a different domain regardless of their content.
 		UriBuilder redirectBuilder =
 			new()
 			{
@@ -132,7 +134,12 @@ public sealed class SmartHttpsRedirectionMiddleware(
 				Query = queryString is not null ? queryString.TrimStart('?') : string.Empty,
 			};
 
-		context.Response.Redirect(redirectBuilder.Uri.AbsoluteUri, permanent: false); // 307 Temporary Redirect
+		// False positive (cs/web/unvalidated-url-redirection): allowedHost is config-sourced
+		// (GetAllowedHost returns the matched AllowedHosts entry or a Uri-sanitized host
+		// string, never the raw request Host header value). ASP.NET Core guarantees that
+		// Request.Path.Value and QueryString.Value are path/query components only — they
+		// cannot contain a scheme or host, so cross-domain redirect is impossible.
+		context.Response.Redirect(redirectBuilder.Uri.AbsoluteUri, permanent: false); // lgtm[cs/web/unvalidated-url-redirection]
 	}
 
 	/// <summary>

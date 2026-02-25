@@ -145,3 +145,32 @@ if ($LASTEXITCODE -ne 0) {
 	Write-Host "  Or start Docker Desktop manually now, then press Enter to continue."
 	Read-Host
 }
+
+# CodeQL CLI check — optional. The github.vscode-codeql VS Code extension manages
+# the CLI automatically; this check surfaces its status early so devs know upfront
+# whether 'npm run scan:codeql' will work without needing to run it first.
+$codeqlOnPath = Get-Command codeql -ErrorAction SilentlyContinue
+$vsCodeStorageBases = @(
+	"$env:APPDATA\Code\User\globalStorage\github.vscode-codeql",
+	"$env:APPDATA\Code - Insiders\User\globalStorage\github.vscode-codeql",
+	"$env:APPDATA\Cursor\User\globalStorage\github.vscode-codeql"
+)
+$extensionCli = $null
+foreach ($base in $vsCodeStorageBases) {
+	$found = Get-ChildItem "$base\distribution*\codeql\codeql.exe" -ErrorAction SilentlyContinue |
+	Sort-Object FullName -Descending | Select-Object -First 1
+	if ($null -ne $found) { $extensionCli = $found; break }
+}
+
+if ($null -ne $codeqlOnPath) {
+	Write-Host "[OK] CodeQL CLI (on PATH)"
+}
+elseif ($null -ne $extensionCli) {
+	Write-Host "[OK] CodeQL CLI (GitHub CodeQL VS Code extension)"
+}
+else {
+	Write-Host "[OPTIONAL] CodeQL CLI — not found."
+	Write-Host "  Install the 'GitHub CodeQL' VS Code extension to get it automatically:"
+	Write-Host "  Ctrl+Shift+X -> search 'GitHub CodeQL' (publisher: GitHub) -> Install"
+	Write-Host "  'npm run scan:codeql' will work once the extension downloads the CLI."
+}
