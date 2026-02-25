@@ -23,13 +23,8 @@ internal static class SyntaxHelpers
 	/// </returns>
 	public static bool HasNewlineAfterToken(SyntaxToken token)
 	{
-		foreach (SyntaxTrivia trivia in token.TrailingTrivia.Where(
-			triviaItem => triviaItem.RawKind == (int)SyntaxKind.EndOfLineTrivia))
-		{
-			return true;
-		}
-
-		return false;
+		return token.TrailingTrivia.Any(
+			triviaItem => triviaItem.RawKind == (int)SyntaxKind.EndOfLineTrivia);
 	}
 
 	/// <summary>

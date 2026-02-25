@@ -275,12 +275,7 @@ public sealed class AssignmentNewlineAnalyzer : DiagnosticAnalyzer
 	/// </summary>
 	private static bool HasDescendantArgumentList(SyntaxNode node)
 	{
-		foreach (SyntaxNode descendant in node.DescendantNodes().Where(
-			descendant => descendant is ArgumentListSyntax))
-		{
-			return true;
-		}
-
-		return false;
+		return node.DescendantNodes().Any(
+			descendant => descendant is ArgumentListSyntax);
 	}
 }
