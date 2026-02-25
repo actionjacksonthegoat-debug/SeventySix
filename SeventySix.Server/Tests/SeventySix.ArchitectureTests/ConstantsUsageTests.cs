@@ -64,17 +64,15 @@ public sealed class ConstantsUsageTests : SourceCodeArchitectureTest
 				string.Empty,
 				RegexOptions.Multiline);
 
-			foreach (string hardcodedRole in HardcodedRoles)
+			foreach (string hardcodedRole in HardcodedRoles.Where(
+				role => codeWithoutComments.Contains(role)))
 			{
-				if (codeWithoutComments.Contains(hardcodedRole))
-				{
-					string relativePath =
-						GetRelativePath(file);
+				string relativePath =
+					GetRelativePath(file);
 
-					violations.Add(
-						$"{relativePath}: Contains {hardcodedRole} (use RoleConstants)");
-					break; // Only report once per file
-				}
+				violations.Add(
+					$"{relativePath}: Contains {hardcodedRole} (use RoleConstants)");
+				break; // Only report once per file
 			}
 		}
 

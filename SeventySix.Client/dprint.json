@@ -51,7 +51,8 @@
 		"src/app/infrastructure/api/generated-api.ts",
 		"load-testing/node_modules",
 		"load-testing/reports",
-		"load-testing/results"
+		"load-testing/results",
+		"load-testing/lib/vendor"
 	],
 	"plugins": [
 		"https://plugins.dprint.dev/typescript-0.95.13.wasm",

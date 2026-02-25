@@ -1,0 +1,28 @@
+# Custom quality suite for local CodeQL scanning.
+# GitHub Actions CI surfaces recommendation-level quality results via its own
+# SARIF processing pipeline. This suite explicitly includes the quality rules
+# WITHOUT the severity-filtering selector used by csharp-security-and-quality.qls,
+# so local scans surface the same violations that CI reports.
+#
+# Syntax reference: https://codeql.github.com/docs/codeql-cli/creating-codeql-query-suites/
+- description: "Quality queries for local CodeQL scan (CI-equivalent recommendation rules)"
+- qlpack: codeql/csharp-queries
+  include:
+    id:
+      - cs/useless-assignment-to-local
+      - cs/local-not-disposed
+      - cs/dispose-not-called-on-throw
+      - cs/linq/missed-where
+      - cs/linq/missed-select
+      - cs/linq/missed-all
+      - cs/linq/missed-cast
+      - cs/linq/missed-oftype
+      - cs/path-combine
+      - cs/missed-using-statement
+      - cs/missed-readonly-modifier
+      - cs/missed-ternary-operator
+      - cs/empty-block
+      - cs/empty-catch-block
+      - cs/constant-condition
+      - cs/useless-cast-to-self
+      - cs/null-argument-to-equals

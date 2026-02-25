@@ -74,12 +74,9 @@ public sealed class TestcontainersPostgreSqlFixture : BasePostgreSqlFixture
 	public override async Task DisposeAsync()
 	{
 		// Dispose all cached WebApplicationFactory instances
-		foreach (object factory in CachedFactories.Values)
+		foreach (IDisposable disposable in CachedFactories.Values.OfType<IDisposable>())
 		{
-			if (factory is IDisposable disposable)
-			{
-				disposable.Dispose();
-			}
+			disposable.Dispose();
 		}
 
 		CachedFactories.Clear();

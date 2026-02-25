@@ -118,12 +118,10 @@ public sealed class AssignmentNewlineCodeFixProvider : CodeFixProvider
 			// Get the indentation of the property name (left side of assignment)
 			SyntaxToken leftToken = assignment.Left.GetFirstToken();
 
-			foreach (SyntaxTrivia trivia in leftToken.LeadingTrivia)
+			foreach (SyntaxTrivia trivia in leftToken.LeadingTrivia.Where(
+				triviaItem => triviaItem.RawKind == (int)SyntaxKind.WhitespaceTrivia))
 			{
-				if (trivia.RawKind == (int)SyntaxKind.WhitespaceTrivia)
-				{
-					return trivia.ToString();
-				}
+				return trivia.ToString();
 			}
 		}
 

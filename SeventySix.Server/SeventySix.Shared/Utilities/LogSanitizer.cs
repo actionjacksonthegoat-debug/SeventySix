@@ -5,14 +5,16 @@
 namespace SeventySix.Shared.Utilities;
 
 /// <summary>
-/// Utility methods for sanitizing and masking user-controlled or PII values before
-/// writing to logs. Covers two concerns:
-/// <list type="bullet">
-/// <item>Log-injection prevention — strips newlines from user-controlled route/query params</item>
-/// <item>PII masking — reduces email addresses and usernames to partial representations
-/// that preserve diagnostic value without exposing the full value in log streams</item>
-/// </list>
+/// PII sanitizer for structured log messages.
+/// All masking methods remove personally identifiable information (PII)
+/// before values reach any external sink (Serilog, structured log streams, SIEM).
 /// </summary>
+/// <remarks>
+/// CodeQL declares these methods as taint-sanitizers via
+/// <c>.github/codeql/csharp-sanitizer-models.yml</c> — the output of
+/// <see cref="MaskEmail"/>, <see cref="MaskUsername"/>, and
+/// <see cref="MaskEmailSubject"/> does not carry sensitive taint.
+/// </remarks>
 public static class LogSanitizer
 {
 	/// <summary>

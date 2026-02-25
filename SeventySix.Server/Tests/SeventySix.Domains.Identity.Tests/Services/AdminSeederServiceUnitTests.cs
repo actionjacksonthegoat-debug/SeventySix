@@ -29,9 +29,10 @@ public sealed class AdminSeederServiceUnitTests
 		(
 			IServiceScopeFactory? scopeFactory,
 			IServiceProvider? serviceProvider,
-			UserManager<ApplicationUser>? userManager,
-			RoleManager<ApplicationRole>? roleManager
+			UserManager<ApplicationUser>? userManager
 		) = CreateScopeWithManagers();
+
+		using RoleManager<ApplicationRole> roleManager = CreateRoleManager();
 
 		AdminSeederSettings settings = CreateDefaultSettings();
 		IOptions<AdminSeederSettings> options =
@@ -108,9 +109,10 @@ public sealed class AdminSeederServiceUnitTests
 		(
 			IServiceScopeFactory? scopeFactory,
 			IServiceProvider? serviceProvider,
-			UserManager<ApplicationUser>? userManager,
-			RoleManager<ApplicationRole>? roleManager
+			UserManager<ApplicationUser>? userManager
 		) = CreateScopeWithManagers();
+
+		using RoleManager<ApplicationRole> roleManager = CreateRoleManager();
 
 		AdminSeederSettings settings = CreateDefaultSettings();
 		IOptions<AdminSeederSettings> options =
@@ -163,8 +165,7 @@ public sealed class AdminSeederServiceUnitTests
 	private static (
 		IServiceScopeFactory scopeFactory,
 		IServiceProvider serviceProvider,
-		UserManager<ApplicationUser> userManager,
-		RoleManager<ApplicationRole> roleManager
+		UserManager<ApplicationUser> userManager
 	) CreateScopeWithManagers()
 	{
 		IServiceScopeFactory scopeFactory =
@@ -175,27 +176,26 @@ public sealed class AdminSeederServiceUnitTests
 		UserManager<ApplicationUser> userManager =
 			IdentityMockFactory.CreateUserManager();
 
-		RoleManager<ApplicationRole> roleManager =
-			new RoleManager<ApplicationRole>(
-				Substitute.For<IRoleStore<ApplicationRole>>(),
-				Enumerable.Empty<IRoleValidator<ApplicationRole>>(),
-				Substitute.For<ILookupNormalizer>(),
-				new IdentityErrorDescriber(),
-				Substitute.For<ILogger<RoleManager<ApplicationRole>>>());
-
 		IServiceProvider serviceProvider =
 			Substitute.For<IServiceProvider>();
 		serviceProvider
 			.GetService(typeof(UserManager<ApplicationUser>))
 			.Returns(userManager);
-		serviceProvider
-			.GetService(typeof(RoleManager<ApplicationRole>))
-			.Returns(roleManager);
 
 		scopeFactory.CreateScope().Returns(scope);
 		scope.ServiceProvider.Returns(serviceProvider);
 
-		return (scopeFactory, serviceProvider, userManager, roleManager);
+		return (scopeFactory, serviceProvider, userManager);
+	}
+
+	private static RoleManager<ApplicationRole> CreateRoleManager()
+	{
+		return new RoleManager<ApplicationRole>(
+			Substitute.For<IRoleStore<ApplicationRole>>(),
+			Enumerable.Empty<IRoleValidator<ApplicationRole>>(),
+			Substitute.For<ILookupNormalizer>(),
+			new IdentityErrorDescriber(),
+			Substitute.For<ILogger<RoleManager<ApplicationRole>>>());
 	}
 
 	private static AdminSeederSettings CreateDefaultSettings()
@@ -218,9 +218,8 @@ public sealed class AdminSeederServiceUnitTests
 		// Arrange
 		(
 			IServiceScopeFactory scopeFactory,
-			IServiceProvider serviceProvider,
-			UserManager<ApplicationUser> userManager,
-			RoleManager<ApplicationRole> roleManager
+			_,
+			_
 		) = CreateScopeWithManagers();
 
 		AdminSeederSettings settings =

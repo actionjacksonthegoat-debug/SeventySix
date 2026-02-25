@@ -151,8 +151,10 @@ export const ROUTE_GROUPS: RouteGroups =
  */
 function escapeRegExpSpecialChars(str: string): string
 {
-	// Escape all regex metacharacters: . * + ? ^ $ { } ( ) | [ ] \
-	return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+	// Escape backslash first to prevent double-escaping, then all other metacharacters
+	return str
+		.replace(/\\/g, "\\\\")
+		.replace(/[.*+?^${}()|[\]]/g, "\\$&");
 }
 
 /**

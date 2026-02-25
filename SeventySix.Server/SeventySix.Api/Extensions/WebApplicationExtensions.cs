@@ -447,33 +447,41 @@ public static class WebApplicationExtensions
 				ForwardLimit = settings.ForwardLimit,
 			};
 
-		foreach (string proxy in settings.KnownProxies)
+		foreach (IPAddress? ip in settings.KnownProxies
+			.Select(
+				proxy =>
+					IPAddress.TryParse(
+						proxy,
+						out IPAddress? parsed)
+						? parsed
+						: null)
+			.Where(ip => ip is not null))
 		{
-			if (IPAddress.TryParse(
-				proxy,
-				out IPAddress? ip))
-			{
-				options.KnownProxies.Add(ip);
-			}
+			options.KnownProxies.Add(ip!);
 		}
 
-		foreach (string network in settings.KnownNetworks)
+		foreach (System.Net.IPNetwork network in settings.KnownNetworks
+			.Select(
+				networkStr =>
+				{
+					string[] parts =
+						networkStr.Split('/');
+					return parts.Length == 2
+						&& IPAddress.TryParse(
+							parts[0],
+							out IPAddress? prefix)
+						&& int.TryParse(
+							parts[1],
+							out int prefixLength)
+						? (System.Net.IPNetwork?)new System.Net.IPNetwork(
+							prefix,
+							prefixLength)
+						: null;
+				})
+			.Where(networkCandidate => networkCandidate.HasValue)
+			.Select(networkCandidate => networkCandidate!.Value))
 		{
-			string[] parts =
-				network.Split('/');
-
-			if (
-				parts.Length == 2
-				&& IPAddress.TryParse(
-					parts[0],
-					out IPAddress? prefix)
-				&& int.TryParse(
-					parts[1],
-					out int prefixLength))
-			{
-				options.KnownIPNetworks.Add(
-					new System.Net.IPNetwork(prefix, prefixLength));
-			}
+			options.KnownIPNetworks.Add(network);
 		}
 
 		app.UseForwardedHeaders(options);

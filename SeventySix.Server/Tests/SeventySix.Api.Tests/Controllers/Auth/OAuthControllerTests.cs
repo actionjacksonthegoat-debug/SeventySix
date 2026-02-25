@@ -130,7 +130,7 @@ public sealed class OAuthControllerTests(IdentityAuthApiPostgreSqlFixture fixtur
 		string queryState =
 			stateTampered ? "tampered-state" : validState;
 
-		HttpRequestMessage request =
+		using HttpRequestMessage request =
 			new(
 			HttpMethod.Get,
 			$"{ApiEndpoints.Auth.OAuth.GitHubCallback}?code=test&state={queryState}");

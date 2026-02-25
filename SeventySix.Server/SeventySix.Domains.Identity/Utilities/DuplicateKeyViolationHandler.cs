@@ -125,7 +125,7 @@ public static class DuplicateKeyViolationHandler
 				LogSanitizer.MaskEmail(email));
 
 			throw new DuplicateUserException(
-				$"Failed to create user: Username '{username}' is already taken");
+				"Username already taken.");
 		}
 
 		if (constraintName == EmailConstraint)
@@ -136,7 +136,7 @@ public static class DuplicateKeyViolationHandler
 				LogSanitizer.MaskUsername(username));
 
 			throw new DuplicateUserException(
-				$"Failed to create user: Email '{email}' is already registered");
+				"Email already registered.");
 		}
 
 		// Unknown constraint violation

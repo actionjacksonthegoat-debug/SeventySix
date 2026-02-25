@@ -52,15 +52,13 @@ public sealed class EntityConfigurationTests : SourceCodeArchitectureTest
 			string content =
 				ReadFileContent(file);
 
-			foreach (string annotation in DataAnnotations)
+			foreach (string annotation in DataAnnotations.Where(
+				a => content.Contains(a)))
 			{
-				if (content.Contains(annotation))
-				{
-					string relativePath =
-						GetRelativePath(file);
+				string relativePath =
+					GetRelativePath(file);
 
-					violations.Add($"{relativePath}: Contains {annotation}");
-				}
+				violations.Add($"{relativePath}: Contains {annotation}");
 			}
 		}
 

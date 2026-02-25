@@ -71,13 +71,10 @@ public sealed class SealedServiceTests
 						&& !ExcludedServices.Contains(type.Name))
 					.ToArray();
 
-			foreach (Type serviceType in serviceTypes)
+			foreach (Type serviceType in serviceTypes.Where(t => !t.IsSealed))
 			{
-				if (!serviceType.IsSealed)
-				{
-					unsealedServices.Add(
-						$"{serviceType.Namespace}.{serviceType.Name}");
-				}
+				unsealedServices.Add(
+					$"{serviceType.Namespace}.{serviceType.Name}");
 			}
 		}
 

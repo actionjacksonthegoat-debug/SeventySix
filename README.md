@@ -156,6 +156,7 @@ Domain-driven modules with enforced isolation via architecture tests
 - [Docker Environments](#docker-environments)
 - [Cost Model](#cost-model)
 - [Code Quality](#code-quality)
+- [CI/CD](#cicd)
 - [Testing](#testing)
 - [License](#license)
 
@@ -957,6 +958,56 @@ Formatting is **never a concern** — the CI gate and architecture tests catch v
 ### Shared Enforcement
 
 All rules — Roslyn analyzers, ESLint configs, architecture tests, instruction files — are committed to the repository. No per-developer setup needed.
+
+## CI/CD
+
+Every pull request runs nine required checks before merge is allowed — spanning builds, tests, code scanning, and quality gates. All checks must pass; none can be bypassed.
+
+![All checks passed on a pull request — 9 successful checks including CI, CodeQL, and Codecov](docs/screenshots/ci-checks-passed.png)
+
+### GitHub Actions Workflows
+
+| Workflow | File | Trigger | Purpose |
+|---|---|---|---|
+| **CI** | `ci.yml` | Push / PR | Full quality pipeline — build, test, lint, coverage |
+| **CodeQL** | `codeql.yml` | Push / PR / schedule | Static analysis for C# and JavaScript/TypeScript |
+
+### Required CI Checks
+
+| Check | Time | What It Runs |
+|---|---|---|
+| **CI / Client Build & Test** | ~2 min | Angular build (zero warnings), Vitest unit tests, architecture tests |
+| **CI / E2E Tests** | ~7 min | Playwright across all auth roles (public, authenticated, admin, developer) with axe-core WCAG 2.2 AA scanning |
+| **CI / Load Tests** | ~4 min | k6 quick profile in isolated Docker environment — all scenarios must pass thresholds |
+| **CI / Quality Gate** | ~4 sec | Meta-check that all required jobs passed; blocks merge if any gate fails |
+| **CI / Server Build & Test** | ~1 min | .NET build (`TreatWarningsAsErrors=true`), xUnit tests, Roslyn analyzer enforcement |
+| **CI / Test Results** | ~3 min 43s | Aggregates all test suites with [dorny/test-reporter](https://github.com/dorny/test-reporter) — publishes `1,487 tests pass` summary to the PR |
+
+### Code Scanning
+
+| Check | Time | What It Covers |
+|---|---|---|
+| **CodeQL / Analyze C#** | ~4 min | Security and quality queries across all C# source — `csharp-security-and-quality.qls` |
+| **CodeQL / Analyze JavaScript/TypeScript** | ~1 min | Security and quality queries across the Angular client — `javascript-security-and-quality.qls` |
+| **Code scanning results / CodeQL** | ~3 sec | GitHub native gate — blocks merge if any new CodeQL alert is introduced by the PR |
+
+### Coverage
+
+[Codecov](https://codecov.io/gh/actionjacksonthegoat-debug/SeventySix) aggregates coverage from both the .NET server (`dotnet test --collect:"XPlat Code Coverage"`) and Angular client (Vitest V8 provider). Coverage reports upload on every CI run. The `codecov.yml` at the repo root configures patch and project thresholds. The badge in the header reflects the current coverage level.
+
+### Local Equivalents
+
+Every CI check has a local counterpart — no waiting for GitHub Actions to catch problems:
+
+| CI Check | Local Command |
+|---|---|
+| Client Build & Test | `npm run test:client` |
+| Server Build & Test | `npm run test:server` |
+| E2E Tests | `npm run test:e2e` |
+| Load Tests | `npm run loadtest:quick` |
+| CodeQL C# | `scripts\run-codeql-scan.ps1 -LanguageFilter csharp` |
+| CodeQL JS/TS | `scripts\run-codeql-scan.ps1 -LanguageFilter javascript` |
+| Format (lint gate) | `npm run format` |
 
 ## Testing
 

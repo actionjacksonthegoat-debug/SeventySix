@@ -119,12 +119,10 @@ public sealed class LambdaArgumentNewlineCodeFixProvider : CodeFixProvider
 		SyntaxTriviaList leadingTrivia = firstToken.LeadingTrivia;
 
 		// Look for whitespace trivia that represents indentation
-		foreach (SyntaxTrivia trivia in leadingTrivia)
+		foreach (SyntaxTrivia trivia in leadingTrivia.Where(
+				triviaItem => triviaItem.IsKind(SyntaxKind.WhitespaceTrivia)))
 		{
-			if (trivia.IsKind(SyntaxKind.WhitespaceTrivia))
-			{
-				return trivia.ToString();
-			}
+			return trivia.ToString();
 		}
 
 		return string.Empty;

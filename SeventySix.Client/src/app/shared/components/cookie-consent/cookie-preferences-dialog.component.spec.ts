@@ -6,6 +6,7 @@ import { createMockDialogRef } from "@testing/mock-factories";
 import { ComponentTestBed } from "@testing/test-bed-builders";
 import { vi } from "vitest";
 import { CookiePreferencesDialogComponent } from "./cookie-preferences-dialog.component";
+import { DateService } from "@shared/services";
 
 describe("CookiePreferencesDialogComponent",
 	() =>
@@ -20,7 +21,9 @@ describe("CookiePreferencesDialogComponent",
 				functional: false,
 				analytics: false,
 				version: "1.0",
-				timestamp: 0
+				consentDate:
+					new DateService()
+						.now()
 			};
 
 		async function buildComponent(

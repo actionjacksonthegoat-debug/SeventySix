@@ -85,19 +85,15 @@ public sealed class AssignmentContinuationIndentCodeFixProvider
 		string expectedIndent = CalculateExpectedIndent(valueToken);
 
 		// Build new leading trivia with correct indentation
-		List<SyntaxTrivia> newLeadingTrivia = new();
-
 		// Keep non-whitespace trivia (like comments)
-		foreach (SyntaxTrivia trivia in valueToken.LeadingTrivia)
-		{
-			if (
-				trivia.RawKind
-				is not ((int)SyntaxKind.WhitespaceTrivia)
-					and not ((int)SyntaxKind.EndOfLineTrivia))
-			{
-				newLeadingTrivia.Add(trivia);
-			}
-		}
+		List<SyntaxTrivia> newLeadingTrivia =
+			valueToken.LeadingTrivia
+				.Where(
+					trivia =>
+						trivia.RawKind
+							is not ((int)SyntaxKind.WhitespaceTrivia)
+								and not ((int)SyntaxKind.EndOfLineTrivia))
+				.ToList();
 
 		// Add correct whitespace
 		newLeadingTrivia.Add(SyntaxFactory.Whitespace(expectedIndent));

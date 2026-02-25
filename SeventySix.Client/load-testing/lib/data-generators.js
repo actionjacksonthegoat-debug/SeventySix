@@ -19,7 +19,10 @@ import { RANDOM_INT_MAX } from "./constants/index.js";
  */
 function randomInt()
 {
-	return Math.floor(Math.random() * RANDOM_INT_MAX);
+	const buffer =
+		new Uint32Array(1);
+	crypto.getRandomValues(buffer);
+	return buffer[0] % RANDOM_INT_MAX;
 }
 
 /**

@@ -101,8 +101,7 @@ async function getFiles(
  */
 async function getTestInfraFiles(
 	directory,
-	extensions
-)
+	extensions)
 {
 	const files = [];
 
@@ -114,7 +113,10 @@ async function getTestInfraFiles(
 		{
 			const fullPath = path.join(directory, entry.name);
 
-			if (entry.isDirectory() && !entry.name.startsWith(".") && entry.name !== "node_modules")
+			if (entry.isDirectory()
+				&& !entry.name.startsWith(".")
+				&& entry.name !== "node_modules"
+				&& entry.name !== "vendor")
 			{
 				files.push(...(await getTestInfraFiles(fullPath, extensions)));
 			}

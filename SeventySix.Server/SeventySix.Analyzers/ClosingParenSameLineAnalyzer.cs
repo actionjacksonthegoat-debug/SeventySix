@@ -211,10 +211,8 @@ public sealed class ClosingParenSameLineAnalyzer : DiagnosticAnalyzer
 			bool hasNewline = false;
 			bool hasOnlyWhitespace = true;
 
-			foreach (SyntaxTrivia trivia in leadingTrivia)
+			foreach (int kind in leadingTrivia.Select(trivia => trivia.RawKind))
 			{
-				int kind = trivia.RawKind;
-
 				if (kind == (int)SyntaxKind.EndOfLineTrivia)
 				{
 					hasNewline = true;

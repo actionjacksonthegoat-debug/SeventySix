@@ -1,15 +1,23 @@
 name: "SeventySix CodeQL Configuration"
 
 paths-ignore:
+  # Client build outputs
   - "SeventySix.Client/dist"
   - "SeventySix.Client/coverage"
   - "SeventySix.Client/.angular"
   - "SeventySix.Client/playwright-report"
   - "SeventySix.Client/test-results"
   - "SeventySix.Client/load-testing"
+  # E2E test runner output (Vite/Vitest build artifacts — not source code)
+  - "SeventySix.Client/dist/test-out"
+  # Dependencies
   - "**/node_modules"
+  # Server build outputs
   - "SeventySix.Server/**/bin"
   - "SeventySix.Server/**/obj"
 
 queries:
   - uses: security-and-quality
+
+models:
+  - uses: ".github/codeql/csharp-sanitizer-models.yml"

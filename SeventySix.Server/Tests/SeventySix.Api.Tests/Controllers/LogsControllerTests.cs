@@ -309,7 +309,7 @@ public sealed class LogsControllerTests(LoggingApiPostgreSqlFixture fixture)
 			[log1.Id, log2.Id];
 
 		// Act
-		HttpRequestMessage deleteRequest =
+		using HttpRequestMessage deleteRequest =
 			new(
 			HttpMethod.Delete,
 			ApiEndpoints.Logs.Batch)
@@ -338,7 +338,7 @@ public sealed class LogsControllerTests(LoggingApiPostgreSqlFixture fixture)
 		int[] emptyIds = [];
 
 		// Act
-		HttpRequestMessage deleteRequest =
+		using HttpRequestMessage deleteRequest =
 			new(
 			HttpMethod.Delete,
 			ApiEndpoints.Logs.Batch)

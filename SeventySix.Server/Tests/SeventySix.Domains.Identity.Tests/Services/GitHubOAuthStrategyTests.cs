@@ -127,7 +127,7 @@ public sealed class GitHubOAuthStrategyTests
 			JsonSerializer.Serialize(
 				new { access_token = "gho_test_token_123" });
 
-		MockHttpMessageHandler mockHandler =
+		using MockHttpMessageHandler mockHandler =
 			new((request, cancellationToken) =>
 				Task.FromResult(
 					new HttpResponseMessage(HttpStatusCode.OK)
@@ -135,7 +135,7 @@ public sealed class GitHubOAuthStrategyTests
 						Content = new StringContent(tokenJson),
 					}));
 
-		HttpClient httpClient =
+		using HttpClient httpClient =
 			new(mockHandler);
 
 		HttpClientFactory
@@ -165,12 +165,12 @@ public sealed class GitHubOAuthStrategyTests
 	public async Task ExchangeCodeForTokenAsync_ErrorResponse_ThrowsExceptionAsync()
 	{
 		// Arrange
-		MockHttpMessageHandler mockHandler =
+		using MockHttpMessageHandler mockHandler =
 			new((request, cancellationToken) =>
 				Task.FromResult(
 					new HttpResponseMessage(HttpStatusCode.BadRequest)));
 
-		HttpClient httpClient =
+		using HttpClient httpClient =
 			new(mockHandler);
 
 		HttpClientFactory
@@ -208,7 +208,7 @@ public sealed class GitHubOAuthStrategyTests
 					avatar_url = "https://avatars.githubusercontent.com/u/12345678",
 				});
 
-		MockHttpMessageHandler mockHandler =
+		using MockHttpMessageHandler mockHandler =
 			new((request, cancellationToken) =>
 				Task.FromResult(
 					new HttpResponseMessage(HttpStatusCode.OK)
@@ -216,7 +216,7 @@ public sealed class GitHubOAuthStrategyTests
 						Content = new StringContent(userJson),
 					}));
 
-		HttpClient httpClient =
+		using HttpClient httpClient =
 			new(mockHandler);
 
 		HttpClientFactory
@@ -258,7 +258,7 @@ public sealed class GitHubOAuthStrategyTests
 					login = "user",
 				});
 
-		MockHttpMessageHandler mockHandler =
+		using MockHttpMessageHandler mockHandler =
 			new(
 				(request, cancellationToken) =>
 			{
@@ -270,7 +270,7 @@ public sealed class GitHubOAuthStrategyTests
 					});
 			});
 
-		HttpClient httpClient =
+		using HttpClient httpClient =
 			new(mockHandler);
 
 		HttpClientFactory

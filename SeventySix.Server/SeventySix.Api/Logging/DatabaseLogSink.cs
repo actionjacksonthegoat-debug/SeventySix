@@ -363,25 +363,22 @@ public sealed class DatabaseLogSink(
 				KeyValuePair<
 					string,
 					LogEventPropertyValue
-				> property in logEvent.Properties)
+				> property in logEvent.Properties.Where(
+					prop => !IsStandardProperty(prop.Key)))
 			{
-				if (!IsStandardProperty(property.Key))
+				if (!first)
 				{
-					if (!first)
-					{
-						properties.Append(',');
-					}
-
-					properties.Append($"\"{property.Key}\":{property.Value}");
-					first = false;
+					properties.Append(',');
 				}
+
+				properties.Append($"\"{property.Key}\":{property.Value}");
+				first = false;
 			}
 
 			properties.Append('}');
 			log.Properties = properties.ToString();
 		}
 	}
-
 	/// <summary>
 	/// Formats exception information according to requirements.
 	/// </summary>

@@ -75,15 +75,10 @@ public sealed class AssignmentContinuationIndentAnalyzer : DiagnosticAnalyzer
 		VariableDeclarationSyntax declaration = (VariableDeclarationSyntax)
 			context.Node;
 
-		foreach (VariableDeclaratorSyntax declarator in declaration.Variables)
+		foreach (EqualsValueClauseSyntax initializer in declaration.Variables
+			.Select(declarator => declarator.Initializer)
+			.OfType<EqualsValueClauseSyntax>())
 		{
-			EqualsValueClauseSyntax? initializer = declarator.Initializer;
-
-			if (initializer is null)
-			{
-				continue;
-			}
-
 			CheckContinuationIndent(
 				context,
 				initializer.EqualsToken,
@@ -366,12 +361,10 @@ public sealed class AssignmentContinuationIndentAnalyzer : DiagnosticAnalyzer
 
 		if (node is not null)
 		{
-			foreach (SyntaxTrivia trivia in node.GetLeadingTrivia().Reverse())
+			foreach (SyntaxTrivia trivia in node.GetLeadingTrivia().Reverse().Where(
+				triviaItem => triviaItem.RawKind == (int)SyntaxKind.WhitespaceTrivia))
 			{
-				if (trivia.RawKind == (int)SyntaxKind.WhitespaceTrivia)
-				{
-					return trivia.ToString();
-				}
+				return trivia.ToString();
 			}
 		}
 

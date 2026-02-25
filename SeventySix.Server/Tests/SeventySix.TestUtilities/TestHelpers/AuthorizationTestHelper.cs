@@ -236,7 +236,7 @@ public sealed class AuthorizationTestHelper
 		string endpoint,
 		HttpContent? content)
 	{
-		HttpRequestMessage request =
+		using HttpRequestMessage request =
 			new(method, endpoint)
 			{
 				Content = content,
