@@ -234,27 +234,22 @@ public sealed class ClosingParenSameLineAnalyzer : DiagnosticAnalyzer
 		// This handles cases where the newline is attached to the previous token
 		SyntaxToken previousToken = token.GetPreviousToken();
 
-		if (!previousToken.IsMissing)
+		if (previousToken.IsMissing)
 		{
-			if (previousToken.TrailingTrivia.Any(trivia => trivia.RawKind == (int)SyntaxKind.EndOfLineTrivia))
-			{
-				// Previous token has trailing newline, check if our leading
-				// trivia is only whitespace (indentation)
-				if (leadingTrivia.Count == 0)
-				{
-					return true;
-				}
-
-				bool onlyWhitespace =
-					leadingTrivia.All(lt => lt.RawKind == (int)SyntaxKind.WhitespaceTrivia);
-
-				if (onlyWhitespace)
-				{
-					return true;
-				}
-			}
+			return false;
 		}
 
-		return false;
+		if (!previousToken.TrailingTrivia.Any(trivia => trivia.RawKind == (int)SyntaxKind.EndOfLineTrivia))
+		{
+			return false;
+		}
+
+		// Previous token has trailing newline — check if our leading trivia is only whitespace (indentation)
+		if (leadingTrivia.Count == 0)
+		{
+			return true;
+		}
+
+		return leadingTrivia.All(lt => lt.RawKind == (int)SyntaxKind.WhitespaceTrivia);
 	}
 }

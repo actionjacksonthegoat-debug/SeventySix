@@ -40,27 +40,25 @@ public sealed class SettingsPatternTests : SourceCodeArchitectureTest
 		List<string> violations = [];
 
 		// Act
-		foreach (string file in settingsFiles)
-		{
-			string content =
-				ReadFileContent(file);
-
-			MatchCollection matches =
-				classPattern.Matches(content);
-
-			if (matches.Count > 0)
-			{
-				string relativePath =
-					GetRelativePath(file);
-
-				foreach (string className in matches.Select(match => match.Groups[1].Value))
+		violations.AddRange(
+			settingsFiles.SelectMany(
+				file =>
 				{
+					MatchCollection matches =
+						classPattern.Matches(ReadFileContent(file));
 
-					violations.Add(
-						$"{relativePath}: {className} (should be record)");
-				}
-			}
-		}
+					if (matches.Count == 0)
+					{
+						return [];
+					}
+
+					string relativePath =
+						GetRelativePath(file);
+
+					return matches.Select(
+						match =>
+							$"{relativePath}: {match.Groups[1].Value} (should be record)");
+				}));
 
 		// Assert
 		violations.ShouldBeEmpty();
@@ -76,27 +74,15 @@ public sealed class SettingsPatternTests : SourceCodeArchitectureTest
 		List<string> violations = [];
 
 		// Act
-		foreach (string file in settingsFiles)
-		{
-			string relativePath =
-				GetRelativePath(file);
-
-			// Valid locations:
-			// 1. SeventySix.Api/Configuration/ (API-only settings)
-			// 2. SeventySix/{Context}/Settings/ (bounded context settings)
-			bool isInSettingsFolder =
-				relativePath.Contains("/Settings/");
-
-			bool isInApiConfiguration =
-				relativePath.Contains("SeventySix.Api")
-				&& relativePath.Contains("/Configuration/");
-
-			if (!isInSettingsFolder && !isInApiConfiguration)
-			{
-				violations.Add(
-					$"{relativePath}: Settings must be in Settings/ folder (or Api/Configuration/)");
-			}
-		}
+		violations.AddRange(
+			settingsFiles
+				.Select(file => GetRelativePath(file))
+				.Where(relativePath =>
+					!relativePath.Contains("/Settings/")
+					&& !(relativePath.Contains("SeventySix.Api")
+						&& relativePath.Contains("/Configuration/")))
+				.Select(relativePath =>
+					$"{relativePath}: Settings must be in Settings/ folder (or Api/Configuration/)"));
 
 		// Assert
 		violations.ShouldBeEmpty();
@@ -141,42 +127,28 @@ public sealed class SettingsPatternTests : SourceCodeArchitectureTest
 		List<string> settingsWithoutValidators = [];
 
 		// Act
-		foreach (string settingsFile in settingsFiles)
-		{
-			string content =
-				ReadFileContent(settingsFile);
-
-			MatchCollection matches =
-				recordPattern.Matches(content);
-
-			foreach (string settingsName in matches.Select(match => match.Groups[1].Value))
-			{
-
-				if (ExcludedFromValidation.Contains(settingsName))
+		settingsWithoutValidators.AddRange(
+			settingsFiles.SelectMany(
+				settingsFile =>
 				{
-					continue;
-				}
+					string directory =
+						Path.GetDirectoryName(settingsFile)!;
 
-				// Look for a corresponding validator file in the same directory
-				string directory =
-					Path.GetDirectoryName(settingsFile)!;
-
-				string validatorFileName =
-					$"{settingsName}Validator.cs";
-
-				bool validatorExists =
-					File.Exists(Path.Join(directory, validatorFileName));
-
-				if (!validatorExists)
-				{
 					string relativePath =
 						GetRelativePath(settingsFile);
 
-					settingsWithoutValidators.Add(
-						$"{relativePath}: {settingsName} (missing {validatorFileName})");
-				}
-			}
-		}
+					return recordPattern
+						.Matches(ReadFileContent(settingsFile))
+						.Select(match => match.Groups[1].Value)
+						.Where(settingsName => !ExcludedFromValidation.Contains(settingsName))
+						.Where(settingsName =>
+							!File.Exists(
+								Path.Join(
+									directory,
+									$"{settingsName}Validator.cs")))
+						.Select(settingsName =>
+							$"{relativePath}: {settingsName} (missing {settingsName}Validator.cs)");
+				}));
 
 		// Assert
 		settingsWithoutValidators.ShouldBeEmpty();

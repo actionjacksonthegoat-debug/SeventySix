@@ -108,8 +108,6 @@ public static class CreateUserCommandHandler
 		{
 			DuplicateKeyViolationHandler.HandleAsException(
 				exception,
-				request.Username,
-				request.Email,
 				logger);
 
 			// Unreachable because HandleAsException always throws

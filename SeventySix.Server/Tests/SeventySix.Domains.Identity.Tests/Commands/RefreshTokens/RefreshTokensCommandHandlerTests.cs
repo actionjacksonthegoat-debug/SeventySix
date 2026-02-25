@@ -234,12 +234,13 @@ public sealed class RefreshTokensCommandHandlerTests
 			.Returns(user);
 
 		// Token rotation returns null → reuse detected
+		string? rotatedToken = null;
 		tokenService
 			.RotateRefreshTokenAsync(
 				reuseRefreshToken,
 				clientIpAddress,
 				Arg.Any<CancellationToken>())
-			.Returns(((string?)null, false));
+			.Returns((rotatedToken, false));
 
 		RefreshTokensCommand command =
 			new(reuseRefreshToken, clientIpAddress);
