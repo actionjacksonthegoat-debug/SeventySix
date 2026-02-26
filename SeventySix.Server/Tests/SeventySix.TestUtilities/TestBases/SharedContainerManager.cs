@@ -43,15 +43,9 @@ public static class SharedContainerManager
 	/// </returns>
 	public static async Task<string> GetOrCreateContainerAsync()
 	{
-		if (MasterConnectionString is not null)
-		{
-			return MasterConnectionString;
-		}
-
 		await InitLock.WaitAsync();
 		try
 		{
-			// codeql[cs/constant-condition] -- Double-checked locking pattern: intentional re-check inside lock
 			if (MasterConnectionString is not null)
 			{
 				return MasterConnectionString;
@@ -152,15 +146,9 @@ public static class SharedContainerManager
 	/// </summary>
 	private static async Task EnsureTemplateCreatedAsync(string masterConnection)
 	{
-		if (TemplateCreated)
-		{
-			return;
-		}
-
 		await TemplateLock.WaitAsync();
 		try
 		{
-			// codeql[cs/constant-condition] -- Double-checked locking pattern: intentional re-check inside lock
 			if (TemplateCreated)
 			{
 				return;

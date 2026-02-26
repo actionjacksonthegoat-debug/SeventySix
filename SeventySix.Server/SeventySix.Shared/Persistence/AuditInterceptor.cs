@@ -108,16 +108,12 @@ public sealed class AuditInterceptor(
 			}
 			// ICreatableEntity: Set CreateDate only (no modify, no user tracking)
 			// (Log entity - always gets CreateDate = NOW() if not set)
-			// codeql[cs/nested-if-statements] -- Single conditional inside pattern match; combining would reduce clarity
-			else if (entry.Entity is ICreatableEntity creatable)
+			else if (entry.Entity is ICreatableEntity creatable
+				&& entry.State == EntityState.Added
+				&& creatable.CreateDate == default)
 			{
-				if (
-					entry.State == EntityState.Added
-					&& creatable.CreateDate == default)
-				{
-					creatable.CreateDate =
-						timeProvider.GetUtcNow();
-				}
+				creatable.CreateDate =
+					timeProvider.GetUtcNow();
 			}
 		}
 

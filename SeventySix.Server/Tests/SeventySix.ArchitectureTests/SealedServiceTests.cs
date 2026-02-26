@@ -53,31 +53,23 @@ public sealed class SealedServiceTests
 				sharedAssembly,
 			];
 
-		List<string> unsealedServices = [];
-
 		// Act
-		// codeql[cs/linq/missed-select]
-		foreach (Assembly assembly in assemblies)
-		{
-			Type[] serviceTypes =
+		List<string> unsealedServices =
+			assemblies
+			.SelectMany(assembly =>
 				assembly
 					.GetTypes()
 					.Where(type =>
 						type.IsClass
 						&& !type.IsAbstract
+						&& !type.IsSealed
 						&& type.Name.EndsWith("Service")
 						&& type.Namespace != null
 						&& type.Namespace.StartsWith("SeventySix.")
 						&& !type.Namespace.Contains("Tests")
 						&& !ExcludedServices.Contains(type.Name))
-					.ToArray();
-
-			foreach (Type serviceType in serviceTypes.Where(t => !t.IsSealed))
-			{
-				unsealedServices.Add(
-					$"{serviceType.Namespace}.{serviceType.Name}");
-			}
-		}
+					.Select(type => $"{type.Namespace}.{type.Name}"))
+			.ToList();
 
 		// Assert
 		unsealedServices.ShouldBeEmpty(
