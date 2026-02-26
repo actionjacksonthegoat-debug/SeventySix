@@ -1,0 +1,31 @@
+name: "SeventySix CodeQL Create Configuration"
+# This file is used ONLY by `codeql database create --codescanning-config`.
+#
+# It contains ONLY the paths-ignore section. The `queries:` and `models:` keys from
+# codeql-config.yml are GitHub-Actions-only directives — when passed to `database create`
+# locally, they cause the CLI to try to resolve query suites at extraction time, fail with
+# "Query pack csharp-security-and-quality cannot be found," and silently abort database
+# creation while PowerShell continues executing, producing stale SARIF results.
+#
+# Queries are specified directly in the `codeql database analyze` command.
+# Sanitizer models are applied via `--model-packs` in the analyze command.
+# See run-codeql-scan.ps1 for the full pipeline.
+
+paths-ignore:
+  # Client build outputs
+  - "SeventySix.Client/dist"
+  - "SeventySix.Client/coverage"
+  - "SeventySix.Client/.angular"
+  - "SeventySix.Client/playwright-report"
+  - "SeventySix.Client/test-results"
+  - "SeventySix.Client/load-testing"
+  # E2E test runner output (Vite/Vitest build artifacts — not source code)
+  - "SeventySix.Client/dist/test-out"
+  # Dependencies
+  - "**/node_modules"
+  # Server build outputs
+  - "**/bin/**"
+  - "**/obj/**"
+  # CodeQL local scan working directory — contains .NET SDK template files that generate
+  # false-positive findings (e.g. BlazorWasm.web.config → cs/web/missing-x-frame-options).
+  - ".codeql/**"

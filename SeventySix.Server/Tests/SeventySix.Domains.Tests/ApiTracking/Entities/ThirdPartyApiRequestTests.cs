@@ -41,7 +41,10 @@ public sealed class ThirdPartyApiRequestTests
 		// Assert
 		request.CallCount.ShouldBe(6);
 		request.LastCalledAt.ShouldNotBeNull();
-		request.LastCalledAt.Value.ShouldBeGreaterThanOrEqualTo(beforeTimestamp);
+		DateTimeOffset lastCalledAt =
+			request.LastCalledAt
+				?? throw new InvalidOperationException("LastCalledAt should not be null");
+		lastCalledAt.ShouldBeGreaterThanOrEqualTo(beforeTimestamp);
 	}
 
 	[Fact]
@@ -73,7 +76,11 @@ public sealed class ThirdPartyApiRequestTests
 		request.CallCount.ShouldBe(2);
 		firstCallTime.ShouldNotBeNull();
 		secondCallTime.ShouldNotBeNull();
-		secondCallTime.Value.ShouldBeGreaterThan(firstCallTime.Value);
+		DateTimeOffset firstCallTimeValue =
+			firstCallTime ?? throw new InvalidOperationException("firstCallTime should not be null");
+		DateTimeOffset secondCallTimeValue =
+			secondCallTime ?? throw new InvalidOperationException("secondCallTime should not be null");
+		secondCallTimeValue.ShouldBeGreaterThan(firstCallTimeValue);
 	}
 
 	[Fact]

@@ -124,6 +124,18 @@ MaxMind provides the GeoIP database for Fail2Ban country-level IP blocking. The 
 3. After login, go to **My Account** → **Manage License Keys** → **Generate New License Key**
 4. Note your **Account ID** and **License Key**
 
+### Codecov (Optional — for code coverage in CI)
+
+Codecov displays test coverage reports and diffs on every pull request. Free for public repositories.
+
+1. Go to [app.codecov.io](https://app.codecov.io) and sign in with GitHub
+2. Click **+ Add a repository** and select your SeventySix fork
+3. Copy the **CODECOV_TOKEN** shown on the setup page
+4. In your GitHub repository, go to **Settings** → **Secrets and variables** → **Actions**
+5. Click **New repository secret**, name it `CODECOV_TOKEN`, paste the value, and save
+
+You do not need to do this before running bootstrap — it only affects CI runs on GitHub. See [Set Up Optional Services](#7-set-up-optional-services) for more detail.
+
 ---
 
 ## 2. Install Required Software
@@ -370,6 +382,22 @@ Already covered in Step 6 above. Without this, the "Login with GitHub" button on
 ### MaxMind GeoIP
 
 If you created a MaxMind account, add the credentials to `docker-compose.override.yml` or set environment variables. Without this, the `geoipupdate` service will log errors but everything else works.
+
+### Codecov (Code Coverage on Pull Requests)
+
+Codecov shows coverage diffs and trends directly on GitHub pull requests. It is free for public repositories and does not require any local setup.
+
+**Setup** (can be done at any time — does not block local development):
+
+1. Sign in at [app.codecov.io](https://app.codecov.io) with your GitHub account
+2. Click **+ Add a repository** and select your SeventySix fork
+3. Copy the **CODECOV_TOKEN** from the Codecov setup page
+4. In your GitHub repository, go to **Settings** → **Secrets and variables** → **Actions**
+5. Click **New repository secret**, set the name to `CODECOV_TOKEN`, paste the token, and click **Add secret**
+
+Once the token is set, every CI run on `master` or a pull request will upload coverage reports and post a coverage diff comment on the PR.
+
+**To verify it is working**: After your next push, open the **Actions** tab on GitHub, open the `Client Build & Test` job, and look for the `Upload client coverage to Codecov` step showing `Successfully uploaded reports`.
 
 ---
 

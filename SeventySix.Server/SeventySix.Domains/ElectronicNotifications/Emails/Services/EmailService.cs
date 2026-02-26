@@ -276,12 +276,17 @@ public sealed class EmailService(
 		string htmlBody,
 		CancellationToken cancellationToken)
 	{
+		string maskedTo =
+			LogSanitizer.MaskEmail(to);
+		string maskedSubject =
+			LogSanitizer.MaskEmailSubject(subject);
+
 		if (!settings.Value.Enabled)
 		{
 			logger.LogWarning(
 				"[EMAIL DISABLED] Would send to {To}: {Subject}",
-				LogSanitizer.MaskEmail(to),
-				LogSanitizer.MaskEmailSubject(subject));
+				maskedTo,
+				maskedSubject);
 			return;
 		}
 
@@ -302,15 +307,15 @@ public sealed class EmailService(
 			logger.LogError(
 				exception,
 				"SMTP send failed for {To}: {Subject}. Rate limit slot released.",
-				LogSanitizer.MaskEmail(to),
-				LogSanitizer.MaskEmailSubject(subject));
+				maskedTo,
+				maskedSubject);
 			throw;
 		}
 
 		logger.LogWarning(
 			"Email sent to {To}: {Subject}",
-			LogSanitizer.MaskEmail(to),
-			LogSanitizer.MaskEmailSubject(subject));
+			maskedTo,
+			maskedSubject);
 	}
 
 	/// <summary>

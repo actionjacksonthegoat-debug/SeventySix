@@ -232,3 +232,18 @@ Write-Host "[INFO] The seeded admin user (username: 'admin') will use:" -Foregro
 Write-Host "  Email:    $adminEmail" -ForegroundColor Cyan
 Write-Host "  Password: (as entered above)" -ForegroundColor Cyan
 Write-Host "[INFO] These credentials are used for Chrome DevTools testing." -ForegroundColor Cyan
+
+Write-Host ""
+Write-Host "--- [OPTIONAL] Codecov — GitHub Actions Code Coverage ---" -ForegroundColor Cyan
+Write-Host "  Codecov displays code coverage on pull requests and the repository dashboard."
+Write-Host "  This is a GitHub Actions secret — not a local user secret — so it is set"
+Write-Host "  on your GitHub repository, not here."
+Write-Host ""
+Write-Host "  Setup steps (can be done later at any time):"
+Write-Host "    1. Sign in at https://app.codecov.io (free for public repositories — no credit card)"
+Write-Host "    2. Authorize with GitHub and add your SeventySix repository"
+Write-Host "    3. Copy the CODECOV_TOKEN from the Codecov repository settings page"
+Write-Host "    4. In your GitHub repository, go to Settings > Secrets and variables > Actions"
+Write-Host "    5. Click 'New repository secret', name it CODECOV_TOKEN, paste the value"
+Write-Host "  Once set, coverage reports will appear automatically on every CI run." -ForegroundColor Green
+Write-Host ""

@@ -71,12 +71,32 @@ param
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
+# PowerShell does not throw on non-zero exit codes from external programs by default,
+# even with $ErrorActionPreference = 'Stop'. This helper enforces explicit exit-code
+# checking after every codeql call so failures are surfaced immediately — preventing
+# the script from continuing with a failed/partial database and reading stale SARIF files.
+function Assert-CodeQL {
+	param([string]$Step)
+	if ($LASTEXITCODE -ne 0) {
+		throw "CodeQL failed at step '$Step' (exit $LASTEXITCODE). Aborting — do not read stale SARIF."
+	}
+}
+
 # -- Paths --------------------------------------------------------------------
 $RepoRoot = Split-Path -Parent $PSScriptRoot
 $CsharpRoot = Join-Path $RepoRoot "SeventySix.Server"
 $TsRoot = Join-Path $RepoRoot "SeventySix.Client"
 $CodeqlDir = Join-Path $RepoRoot ".codeql"
 $CodeqlConfig = Join-Path $RepoRoot ".github" "codeql" "codeql-config.yml"
+# Paths-only config used for `database create`. The full codeql-config.yml includes
+# `queries:` and `models:` keys that are GitHub-Actions-only — passing them to
+# `database create --codescanning-config` causes the CLI to fail trying to resolve
+# the query suite at extraction time, silently aborting database creation.
+$CodeqlConfigCreate = Join-Path $RepoRoot ".github" "codeql" "codeql-config-create.yml"
+# Local CodeQL pack search directory. CodeQL resolves --model-packs="csharp-sanitizer-models"
+# by looking for {dir}/csharp-sanitizer-models/codeql-pack.yml.
+# This mirrors the `models:` directive that GitHub Actions CI applies from codeql-config.yml.
+$CsharpModelPackDir = Join-Path $RepoRoot ".github" "codeql"
 $ResultsDir = Join-Path $CodeqlDir "results"
 $CsharpDb = Join-Path $CodeqlDir "db-csharp"
 $TsDb = Join-Path $CodeqlDir "db-typescript"
@@ -165,6 +185,11 @@ function Invoke-CsharpScan {
 
 	Write-Host "[C#] Creating database (build-mode: none)..." -ForegroundColor Yellow
 
+	# Remove stale SARIF output files before running. Show-SarifSummary reads whatever
+	# files are on disk — without this, a failed scan silently reports old results.
+	if (Test-Path $CsharpSarif) { Remove-Item -Force $CsharpSarif }
+	if (Test-Path $CsharpQualitySarif) { Remove-Item -Force $CsharpQualitySarif }
+
 	if (Test-Path $CsharpDb) {
 		Remove-Item -Recurse -Force $CsharpDb
 	}
@@ -180,23 +205,35 @@ function Invoke-CsharpScan {
 		# "SeventySix.Server/" so paths-ignore patterns like "SeventySix.Server/**/bin"
 		# match correctly — identical to how GitHub CI produces URIs from the repo root.
 		#
-		# --codescanning-config: applies paths-ignore at extraction time, exactly as
-		# GitHub's codeql-action/init step does. Files in paths-ignore are never
-		# extracted into the database.
+		# --codescanning-config: uses the paths-only create config (NOT the full codeql-config.yml).
+		# The full config contains queries:/models: keys that are GitHub-Actions-only directives.
+		# Passing them to database create causes the CLI to fail resolving query suites at
+		# extraction time. Queries are specified on the analyze command; models via --model-packs.
 		codeql database create $CsharpDb `
 			--language=csharp `
 			--build-mode=none `
 			--source-root=$RepoRoot `
-			--codescanning-config=$CodeqlConfig `
+			--codescanning-config=$CodeqlConfigCreate `
 			--overwrite
+		Assert-CodeQL "C# database create"
 
 		Write-Host "[C#] Analyzing..." -ForegroundColor Yellow
 
+		# --additional-packs: adds .github/codeql to pack search path so CodeQL can find
+		# the csharp-sanitizer-models pack by name. CodeQL resolves the name by looking
+		# for {search-dir}/csharp-sanitizer-models/codeql-pack.yml.
+		# --model-packs: applies the SeventySix sanitizer taint models locally, mirroring
+		# the `models:` directive that GitHub Actions CI applies from codeql-config.yml.
+		# Without this, LogSanitizer.MaskEmail/MaskEmailSubject calls are false-positively
+		# flagged as cs/exposure-of-sensitive-information.
 		codeql database analyze $CsharpDb `
 			--format=sarif-latest `
 			--output=$CsharpSarif `
 			--sarif-add-file-contents `
+			--additional-packs=$CsharpModelPackDir `
+			--model-packs="csharp-sanitizer-models" `
 			codeql/csharp-queries:codeql-suites/csharp-security-and-quality.qls
+		Assert-CodeQL "C# analyze (security)"
 
 		Write-Host "[OK] C# results: $CsharpSarif" -ForegroundColor Green
 
@@ -211,7 +248,10 @@ function Invoke-CsharpScan {
 				--format=sarif-latest `
 				--output=$CsharpQualitySarif `
 				--sarif-add-file-contents `
+				--additional-packs=$CsharpModelPackDir `
+				--model-packs="csharp-sanitizer-models" `
 				$QlsPath
+			Assert-CodeQL "C# analyze (quality)"
 			Write-Host "[OK] C# quality results: $CsharpQualitySarif" -ForegroundColor Green
 		}
 		else {
@@ -227,6 +267,9 @@ function Invoke-CsharpScan {
 function Invoke-TypescriptScan {
 	Write-Host "[TypeScript] Creating database..." -ForegroundColor Yellow
 
+	# Remove stale SARIF before running — see C# scan comment.
+	if (Test-Path $TsSarif) { Remove-Item -Force $TsSarif }
+
 	if (Test-Path $TsDb) {
 		Remove-Item -Recurse -Force $TsDb
 	}
@@ -237,13 +280,13 @@ function Invoke-TypescriptScan {
 	# ("load-testing/...") which bypass paths-ignore patterns that expect the prefix,
 	# inflating local TS counts from 8 (GitHub) to ~119.
 	#
-	# --codescanning-config: applies paths-ignore at extraction time so excluded
-	# directories (load-testing, e2e artifacts, node_modules) are never in the DB.
+	# --codescanning-config: uses paths-only create config (see C# scan comment).
 	codeql database create $TsDb `
 		--language=javascript-typescript `
 		--source-root=$RepoRoot `
-		--codescanning-config=$CodeqlConfig `
+		--codescanning-config=$CodeqlConfigCreate `
 		--overwrite
+	Assert-CodeQL "TypeScript database create"
 
 	Write-Host "[TypeScript] Analyzing..." -ForegroundColor Yellow
 
@@ -252,6 +295,7 @@ function Invoke-TypescriptScan {
 		--output=$TsSarif `
 		--sarif-add-file-contents `
 		codeql/javascript-queries:codeql-suites/javascript-security-and-quality.qls
+	Assert-CodeQL "TypeScript analyze"
 
 	Write-Host "[OK] TypeScript results: $TsSarif" -ForegroundColor Green
 }

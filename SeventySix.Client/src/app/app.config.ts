@@ -1,7 +1,6 @@
 import {
 	provideHttpClient,
-	withInterceptors,
-	withXsrfConfiguration
+	withInterceptors
 } from "@angular/common/http";
 import {
 	ApplicationConfig,
@@ -27,7 +26,6 @@ import {
 import { provideNgxSkeletonLoader } from "ngx-skeleton-loader";
 
 import { environment } from "@environments/environment";
-import { HTTP_HEADER_XSRF_TOKEN } from "@shared/constants/http.constants";
 import {
 	authInterceptor,
 	cacheBypassInterceptor,
@@ -168,13 +166,7 @@ export const appConfig: ApplicationConfig =
 						authInterceptor,
 						loggingInterceptor,
 						errorInterceptor
-					]),
-				// Enable XSRF protection
-				withXsrfConfiguration(
-					{
-						cookieName: "XSRF-TOKEN",
-						headerName: HTTP_HEADER_XSRF_TOKEN
-					})),
+					])),
 			provideBrowserGlobalErrorListeners(),
 			provideZonelessChangeDetection(),
 			provideRouter(routes, withPreloading(SelectivePreloadingStrategy)),

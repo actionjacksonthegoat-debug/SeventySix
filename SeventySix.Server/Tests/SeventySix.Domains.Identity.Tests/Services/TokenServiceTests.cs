@@ -197,7 +197,9 @@ public sealed class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 		if (shouldReturnUserId)
 		{
 			actualUserId.ShouldNotBeNull();
-			actualUserId.Value.ShouldBe(user.Id);
+			long userId =
+				actualUserId ?? throw new InvalidOperationException("actualUserId should not be null");
+			userId.ShouldBe(user.Id);
 		}
 		else
 		{

@@ -121,7 +121,7 @@ public sealed class OAuthController(
 		// redirected to the OAuth provider's domain (e.g. github.com). The user-controlled
 		// redirect_uri is embedded as a query parameter in the authorization URL — it is the
 		// OAuth callback URL on our own domain, not the redirect destination itself.
-		return Redirect(validatedAuthUri.AbsoluteUri); // lgtm[cs/web/unvalidated-url-redirection]
+		return Redirect(validatedAuthUri.AbsoluteUri); // codeql[cs/web/unvalidated-url-redirection]
 	}
 
 	/// <summary>
