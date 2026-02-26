@@ -1,16 +1,14 @@
 import { ChangeDetectionStrategy, Component, inject } from "@angular/core";
-import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
 import { MatToolbarModule } from "@angular/material/toolbar";
 import { RouterLink } from "@angular/router";
 import { environment } from "@environments/environment";
 import { DateService } from "@shared/services";
-import { CookieConsentService } from "@shared/services/cookie-consent.service";
 
 @Component(
 	{
 		selector: "app-footer",
-		imports: [MatToolbarModule, MatIconModule, MatButtonModule, RouterLink],
+		imports: [MatToolbarModule, MatIconModule, RouterLink],
 		templateUrl: "./footer.component.html",
 		styleUrl: "./footer.component.scss",
 		changeDetection: ChangeDetectionStrategy.OnPush
@@ -25,15 +23,6 @@ import { CookieConsentService } from "@shared/services/cookie-consent.service";
  */
 export class FooterComponent
 {
-	/**
-	 * Cookie consent service for reopening the banner.
-	 * @type {CookieConsentService}
-	 * @private
-	 * @readonly
-	 */
-	private readonly consentService: CookieConsentService =
-		inject(CookieConsentService);
-
 	/**
 	 * Date service for generating the current year timestamp.
 	 * @type {DateService}
@@ -61,13 +50,4 @@ export class FooterComponent
 	 */
 	protected readonly version: string =
 		environment.version;
-
-	/**
-	 * Reopen the cookie consent banner so the user can update their preferences.
-	 * @returns {void}
-	 */
-	protected openCookieSettings(): void
-	{
-		this.consentService.reopenBanner();
-	}
 }

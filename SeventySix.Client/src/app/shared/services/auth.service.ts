@@ -40,7 +40,6 @@ import {
 	OAuthEvent,
 	OAuthProvider
 } from "@shared/services/auth.types";
-import { CookieConsentService } from "@shared/services/cookie-consent.service";
 import { FeatureFlagsService } from "@shared/services/feature-flags.service";
 import { IdleDetectionService } from "@shared/services/idle-detection.service";
 import { OAuthFlowService } from "@shared/services/oauth-flow.service";
@@ -108,9 +107,6 @@ export class AuthService
 
 	private readonly registrationFlowService: RegistrationFlowService =
 		inject(RegistrationFlowService);
-
-	private readonly cookieConsentService: CookieConsentService =
-		inject(CookieConsentService);
 
 	private readonly authUrl: string =
 		`${environment.apiUrl}/auth`;
@@ -670,7 +666,6 @@ export class AuthService
 		this.userSignal.set(null);
 		this.requiresPasswordChangeSignal.set(false);
 		this.clearHasSession();
-		this.cookieConsentService.clearConsentForNextUser();
 
 		// Clear error queue to prevent data leakage between users
 		this.storageService.removeItem(STORAGE_KEYS.ERROR_QUEUE);
