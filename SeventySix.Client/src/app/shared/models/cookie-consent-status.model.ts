@@ -1,1 +1,0 @@
-export type CookieConsentStatus = "pending" | "accepted" | "rejected" | "customized";

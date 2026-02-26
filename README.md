@@ -606,11 +606,9 @@ All error responses follow ProblemDetails (RFC 9457). Exception messages are nev
 
 The .NET Data Protection API uses certificate-based key encryption. HTTPS is enforced in all environments (development, E2E, production) via self-signed or real certificates.
 
-### Cookie Consent & Legal Pages
+### Legal Pages
 
-Cookie consent banner on first visit with granular Functional/Analytics toggles. Consent stored in `seventysix_consent` (1-year, SameSite=Lax, Secure). Legal pages `/privacy-policy`, `/terms-of-service`, `/license` are accessible without authentication, WCAG 2.2 AA compliant, and covered by E2E tests.
-
-This cookie consent banner will not show on landing or sandbox pages, this will only be shown when the user enters the authentication flow or authenticated sections, which is when session/functional cookies first become relevant. We all hate those.
+Legal pages `/privacy-policy`, `/terms-of-service`, `/license` are accessible without authentication, WCAG 2.2 AA compliant, and covered by E2E tests. All cookies used by the application (`X-Refresh-Token`, `__TD`, `XSRF-TOKEN`) are strictly necessary and exempt from GDPR consent requirements.
 
 For security vulnerability reporting, see [SECURITY.md](SECURITY.md).
 

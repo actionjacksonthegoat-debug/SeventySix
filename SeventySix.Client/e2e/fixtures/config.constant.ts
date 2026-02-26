@@ -48,13 +48,11 @@ export const E2E_CONFIG: E2eConfig =
  */
 type CookieNames = {
 	refreshToken: string;
-	cookieConsent: string;
 };
 
 export const COOKIE_NAMES: CookieNames =
 	{
-		refreshToken: "X-Refresh-Token",
-		cookieConsent: "seventysix_consent"
+		refreshToken: "X-Refresh-Token"
 	} as const;
 
 /**

@@ -67,7 +67,7 @@ test.describe("Legal Pages",
 								{ name: /Cookie Policy/i }))
 							.toBeVisible();
 
-						// Cookie table should list seventysix_consent
+						// Cookie table lists strictly-necessary cookies (X-Refresh-Token, XSRF-TOKEN)
 						await expect(
 							page.getByRole("table"))
 							.toBeVisible();
@@ -154,17 +154,6 @@ test.describe("Legal Pages",
 					{
 						await page.goto(ROUTES.auth.login);
 
-						// Dismiss banner — wait for it to fully disappear before checking footer.
-						const banner: Locator =
-							page.getByRole("region",
-								{ name: "Cookie consent" });
-						await page
-							.getByRole("button",
-								{ name: "Accept All Cookies" })
-							.click();
-						await expect(banner)
-							.toBeHidden();
-
 						// Scope to footer (contentinfo) to avoid any page-level ambiguity.
 						const footer: Locator =
 							page.getByRole("contentinfo");
@@ -183,17 +172,6 @@ test.describe("Legal Pages",
 					{
 						await page.goto(ROUTES.auth.login);
 
-						// Dismiss banner — wait for it to fully disappear before checking footer.
-						const banner: Locator =
-							page.getByRole("region",
-								{ name: "Cookie consent" });
-						await page
-							.getByRole("button",
-								{ name: "Accept All Cookies" })
-							.click();
-						await expect(banner)
-							.toBeHidden();
-
 						// Scope to footer (contentinfo) to avoid any page-level ambiguity.
 						const footer: Locator =
 							page.getByRole("contentinfo");
@@ -205,35 +183,6 @@ test.describe("Legal Pages",
 						await tosLink.click();
 						await expect(page)
 							.toHaveURL(/terms-of-service/);
-					});
-
-				test("footer contains Cookie Preferences button that shows banner",
-					async ({ page }) =>
-					{
-						await page.goto(ROUTES.auth.login);
-
-						// Dismiss banner — wait for it to fully disappear before re-opening.
-						const banner: Locator =
-							page.getByRole("region",
-								{ name: "Cookie consent" });
-						await page
-							.getByRole("button",
-								{ name: "Accept All Cookies" })
-							.click();
-						await expect(banner)
-							.toBeHidden();
-
-						// Click Cookie Preferences in footer — should reopen banner.
-						// Scope to footer (contentinfo) to target the footer button specifically.
-						const footer: Locator =
-							page.getByRole("contentinfo");
-						await footer
-							.getByRole("button",
-								{ name: "Manage cookie preferences" })
-							.click();
-
-						await expect(banner)
-							.toBeVisible();
 					});
 			});
 	});
