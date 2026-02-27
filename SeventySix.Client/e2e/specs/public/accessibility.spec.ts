@@ -119,6 +119,10 @@ test.describe("WCAG Accessibility Compliance",
 					{
 						await page.goto(ROUTES.home);
 
+						// Wait for Angular to finish rendering before keyboard interaction
+						// eslint-disable-next-line playwright/no-networkidle
+						await page.waitForLoadState("networkidle");
+
 						// Press Tab to focus skip link
 						await page.keyboard.press("Tab");
 

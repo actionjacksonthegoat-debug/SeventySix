@@ -21,7 +21,7 @@
 				}
 			</div>
 			} @else {
-			<div class="roles-list">
+			<div class="roles-list" data-testid="role-checkboxes-list">
 				@for (role of availableRoles(); track role.name) {
 				<mat-checkbox
 					[checked]="selectedRoles().has(role.name)"
@@ -32,7 +32,7 @@
 					</span>
 				</mat-checkbox>
 				} @empty {
-				<p class="no-roles">No additional roles available</p>
+				<p class="no-roles" data-testid="no-roles-message">No additional roles available</p>
 				}
 			</div>
 
@@ -51,6 +51,7 @@
 					<button
 						mat-stroked-button
 						color="primary"
+						data-testid="request-permissions-submit"
 						type="submit"
 						[disabled]="
 								selectedRoles().size === 0 || isSubmitting()

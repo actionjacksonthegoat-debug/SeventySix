@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using SeventySix.Shared.Constants;
@@ -18,6 +19,7 @@ namespace SeventySix.ElectronicNotifications;
 /// Runtime context instances are created via dependency injection in Program.cs.
 /// Connection string is loaded from appsettings.json and User Secrets.
 /// </remarks>
+[ExcludeFromCodeCoverage]
 public class ElectronicNotificationsDbContextFactory
 	: IDesignTimeDbContextFactory<ElectronicNotificationsDbContext>
 {

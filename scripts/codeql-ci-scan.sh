@@ -21,13 +21,19 @@ CONFIG_FILE="${REPO_ROOT}/.github/codeql/codeql-config.yml"
 
 mkdir -p "${DB_DIR}" "${RESULTS_DIR}"
 
+# ─── Ensure curl is available (node:*-slim images omit it) ──────────────────
+if ! command -v curl &>/dev/null; then
+  echo ">>> Installing curl..."
+  apt-get update -qq && apt-get install -y --no-install-recommends curl ca-certificates
+fi
+
 # ─── Install CodeQL CLI ───────────────────────────────────────────────────────
-CODEQL_VERSION="2.21.2"
+CODEQL_VERSION="2.24.2"
 CODEQL_CACHE_BIN="${CODEQL_DIR}/codeql-${CODEQL_VERSION}/codeql"
 
 if [[ ! -f "${CODEQL_CACHE_BIN}" ]]; then
   echo ">>> Downloading CodeQL CLI ${CODEQL_VERSION}..."
-  CODEQL_BUNDLE="codeql-linux64.tar.gz"
+  CODEQL_BUNDLE="codeql-bundle-linux64.tar.gz"
   CODEQL_URL="https://github.com/github/codeql-action/releases/download/codeql-bundle-v${CODEQL_VERSION}/${CODEQL_BUNDLE}"
   CODEQL_EXTRACT_DIR="${CODEQL_DIR}/codeql-${CODEQL_VERSION}"
   mkdir -p "${CODEQL_EXTRACT_DIR}"

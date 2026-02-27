@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using System.Diagnostics.CodeAnalysis;
 using FluentValidation;
 using Microsoft.Extensions.Caching.StackExchangeRedis;
 using Microsoft.Extensions.Configuration;
@@ -24,6 +25,7 @@ namespace SeventySix.Shared.Registration;
 /// - Production/Development: Full FusionCache with Valkey L2 cache, backplane, and MemoryPack serialization
 /// - Test: Memory-only FusionCache without external dependencies (no Valkey connection timeouts)
 /// </remarks>
+[ExcludeFromCodeCoverage]
 public static class FusionCacheRegistration
 {
 	/// <summary>

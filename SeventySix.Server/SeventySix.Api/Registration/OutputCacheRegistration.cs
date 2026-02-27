@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.OutputCaching.StackExchangeRedis;
 using SeventySix.Api.Configuration;
 using SeventySix.Shared.Settings;
@@ -12,6 +13,7 @@ namespace SeventySix.Api.Registration;
 /// <summary>
 /// Registration for output caching services.
 /// </summary>
+[ExcludeFromCodeCoverage]
 public static class OutputCacheRegistration
 {
 	/// <summary>

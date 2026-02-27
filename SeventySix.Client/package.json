@@ -9,7 +9,7 @@
     "build": "ng build",
     "test": "node scripts/architecture-tests.mjs && vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage",
+    "test:coverage": "node scripts/architecture-tests.mjs && vitest run --coverage",
     "lint": "eslint .",
     "format": "eslint . --fix && dprint fmt && eslint . --fix",
     "format:check": "eslint .",

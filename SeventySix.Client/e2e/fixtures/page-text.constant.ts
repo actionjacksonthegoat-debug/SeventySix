@@ -79,7 +79,11 @@ type PageTextConfig = {
 	};
 	userManagement: { title: string; subtitle: string; createUser: string; activeFilter: string; };
 	userCreate: { failedToCreate: string; };
-	logManagement: { title: string; subtitle: string; };
+	logManagement: {
+		title: string;
+		subtitle: string;
+		chips: { warnings: string; errors: string; };
+	};
 	permissionRequests: { title: string; subtitle: string; };
 	profile: {
 		saveChanges: string;
@@ -327,7 +331,11 @@ export const PAGE_TEXT: PageTextConfig =
 	 */
 		logManagement: {
 			title: "Log Management",
-			subtitle: "View and manage application logs"
+			subtitle: "View and manage application logs",
+			chips: {
+				warnings: "Warnings",
+				errors: "Errors"
+			}
 		},
 
 		/**

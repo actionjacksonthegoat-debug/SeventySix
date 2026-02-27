@@ -38,9 +38,11 @@ public static class CheckEmailExistsQueryHandler
 
 		if (query.ExcludeUserId.HasValue)
 		{
+			long excludeId =
+				query.ExcludeUserId.Value;
 			usersQuery =
 				usersQuery.Where(user =>
-					user.Id != query.ExcludeUserId.Value);
+					user.Id != excludeId);
 		}
 
 		return await usersQuery.AnyAsync(cancellationToken);

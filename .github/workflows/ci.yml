@@ -48,16 +48,17 @@ jobs:
             - name: Build
               run: npm run build
 
-            - name: Test
-              run: npm test
+            - name: Test with coverage
+              run: npm run test:coverage
 
             - name: Upload client coverage to Codecov
-              uses: codecov/codecov-action@v4
+              uses: codecov/codecov-action@v5
               with:
                   token: ${{ secrets.CODECOV_TOKEN }}
+                  files: coverage/lcov.info
                   flags: client
                   name: client-coverage
-                  fail_ci_if_error: false
+                  fail_ci_if_error: true
 
             - name: Upload client artifact
               uses: actions/upload-artifact@v4
@@ -98,6 +99,7 @@ jobs:
                   --no-build
                   --verbosity normal
                   --collect:"XPlat Code Coverage"
+                  --settings ./coverlet.runsettings
                   --results-directory ./TestResults
                   --logger "trx"
 
@@ -108,13 +110,13 @@ jobs:
                   files: SeventySix.Server/TestResults/**/*.trx
 
             - name: Upload server coverage to Codecov
-              uses: codecov/codecov-action@v4
+              uses: codecov/codecov-action@v5
               with:
                   token: ${{ secrets.CODECOV_TOKEN }}
                   files: SeventySix.Server/TestResults/**/coverage.cobertura.xml
                   flags: server
                   name: server-coverage
-                  fail_ci_if_error: false
+                  fail_ci_if_error: true
 
             - name: Upload coverage artifact
               uses: actions/upload-artifact@v4
@@ -311,11 +313,12 @@ jobs:
                   echo "  Checks enforced:"
                   echo "    - ESLint (client lint — zero errors)"
                   echo "    - Angular production build (zero warnings)"
-                  echo "    - Vitest (all client tests pass)"
+                  echo "    - Vitest (all client tests pass + ≥80% coverage threshold)"
                   echo "    - dotnet build Release (TreatWarningsAsErrors)"
-                  echo "    - dotnet test (all server tests pass, coverage collected)"
+                  echo "    - dotnet test (all server tests pass + ≥80% line coverage via coverlet.runsettings)"
                   echo "    - Playwright E2E (all tests pass)"
                   echo "    - k6 load tests (all scenarios pass thresholds)"
+                  echo "    - Codecov (PR status checks post ≥80% project coverage)"
                   echo ""
                   echo "============================================"
 

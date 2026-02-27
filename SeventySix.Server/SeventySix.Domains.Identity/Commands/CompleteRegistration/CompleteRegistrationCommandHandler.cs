@@ -198,6 +198,8 @@ public static class CompleteRegistrationCommandHandler
 
 		string decodedEmail =
 			decodedToken.Email;
+		string maskedEmail =
+			LogSanitizer.MaskEmail(decodedEmail);
 
 		ApplicationUser? existingUser =
 			await userManager.FindByEmailAsync(
@@ -207,7 +209,7 @@ public static class CompleteRegistrationCommandHandler
 		{
 			logger.LogWarning(
 				"Attempted to complete registration for non-existent email: {Email}",
-				LogSanitizer.MaskEmail(decodedEmail));
+				maskedEmail);
 
 			return
 			(
@@ -229,7 +231,7 @@ public static class CompleteRegistrationCommandHandler
 			string errors = confirmResult.ToErrorString();
 			logger.LogWarning(
 				"Email confirmation failed for {Email}: {Errors}",
-				LogSanitizer.MaskEmail(decodedEmail),
+				maskedEmail,
 				errors);
 
 			return

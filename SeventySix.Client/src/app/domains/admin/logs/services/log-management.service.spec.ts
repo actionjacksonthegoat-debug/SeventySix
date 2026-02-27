@@ -298,4 +298,52 @@ describe("LogManagementService",
 							.toBe(initialValue + 1);
 					});
 			});
+
+		describe("getSelectedIds",
+			() =>
+			{
+				it("should return current selected IDs set",
+					() =>
+					{
+						service.toggleSelection(5);
+						service.toggleSelection(10);
+
+						const selected: Set<number> =
+							service.getSelectedIds();
+
+						expect(selected.has(5))
+							.toBe(true);
+						expect(selected.has(10))
+							.toBe(true);
+						expect(selected.size)
+							.toBe(2);
+					});
+			});
+
+		describe("deleteSelected",
+			() =>
+			{
+				it("should initiate delete mutation with selected IDs",
+					() =>
+					{
+						mockApiService.delete.mockReturnValue(of(2));
+						service.toggleSelection(3);
+						service.toggleSelection(7);
+
+						expect(
+							() =>
+							{
+								TestBed.runInInjectionContext(
+									() =>
+									{
+										service.deleteSelected();
+									});
+							})
+							.not
+							.toThrow();
+
+						expect(service.getSelectedIds().size)
+							.toBe(2);
+					});
+			});
 	});

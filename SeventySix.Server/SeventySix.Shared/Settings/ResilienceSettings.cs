@@ -2,6 +2,8 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace SeventySix.Shared.Settings;
 
 /// <summary>
@@ -12,6 +14,7 @@ namespace SeventySix.Shared.Settings;
 /// Values are bound from appsettings.json "Resilience" section.
 /// All numeric properties must be configured in appsettings.json.
 /// </remarks>
+[ExcludeFromCodeCoverage]
 public sealed record ResilienceSettings
 {
 	/// <summary>

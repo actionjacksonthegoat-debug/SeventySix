@@ -87,7 +87,9 @@ public sealed class MarkEmailSentCommandHandlerTests
 		updatedEntry.ShouldNotBeNull();
 		updatedEntry.Status.ShouldBe(EmailQueueStatus.Sent);
 		updatedEntry.SentAt.ShouldNotBeNull();
-		updatedEntry.SentAt.Value.ShouldBe(
+		DateTimeOffset sentAt =
+			updatedEntry.SentAt ?? throw new InvalidOperationException("SentAt should not be null");
+		sentAt.ShouldBe(
 			TimeProvider.GetUtcNow());
 	}
 

@@ -1,4 +1,4 @@
-import { NavigationEnd, NavigationStart, Router } from "@angular/router";
+import { NavigationCancel, NavigationEnd, NavigationError, NavigationStart, Router } from "@angular/router";
 import { setupSimpleServiceTest } from "@shared/testing";
 import { Subject } from "rxjs";
 import { LoadingService } from "./loading.service";
@@ -7,7 +7,7 @@ describe("LoadingService",
 	() =>
 	{
 		let service: LoadingService;
-		let mockRouter: { events: Subject<NavigationEnd | NavigationStart>; };
+		let mockRouter: { events: Subject<NavigationCancel | NavigationEnd | NavigationError | NavigationStart>; };
 
 		beforeEach(
 			() =>
@@ -79,6 +79,24 @@ describe("LoadingService",
 					{
 						mockRouter.events.next(new NavigationStart(1, "/test"));
 						mockRouter.events.next(new NavigationEnd(1, "/test", "/test"));
+						expect(service.isLoading())
+							.toBe(false);
+					});
+
+				it("should hide loading on NavigationCancel",
+					() =>
+					{
+						mockRouter.events.next(new NavigationStart(1, "/test"));
+						mockRouter.events.next(new NavigationCancel(1, "/test", ""));
+						expect(service.isLoading())
+							.toBe(false);
+					});
+
+				it("should hide loading on NavigationError",
+					() =>
+					{
+						mockRouter.events.next(new NavigationStart(1, "/test"));
+						mockRouter.events.next(new NavigationError(1, "/test", new Error("nav error")));
 						expect(service.isLoading())
 							.toBe(false);
 					});

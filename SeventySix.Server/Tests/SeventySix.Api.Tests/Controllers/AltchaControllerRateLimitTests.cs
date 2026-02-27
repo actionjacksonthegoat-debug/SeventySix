@@ -131,6 +131,8 @@ public sealed class AltchaControllerRateLimitTests(IdentityAuthApiPostgreSqlFixt
 
 		// Assert
 		rateLimitedResponse.ShouldNotBeNull();
-		rateLimitedResponse.Headers.Contains("Retry-After").ShouldBeTrue();
+		HttpResponseMessage limitedResponse =
+			rateLimitedResponse ?? throw new InvalidOperationException("Expected 429 Too Many Requests response");
+		limitedResponse.Headers.Contains("Retry-After").ShouldBeTrue();
 	}
 }

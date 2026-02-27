@@ -99,6 +99,7 @@
 							<div class="observability-links">
 								<button
 									mat-stroked-button
+									data-testid="jaeger-button"
 									aria-label="Open Jaeger distributed tracing"
 									(click)="openJaeger()">
 									<mat-icon aria-hidden="true">bug_report</mat-icon>
@@ -106,6 +107,7 @@
 								</button>
 								<button
 									mat-stroked-button
+									data-testid="prometheus-button"
 									aria-label="Open Prometheus metrics"
 									(click)="openPrometheus()">
 									<mat-icon aria-hidden="true">analytics</mat-icon>
@@ -113,6 +115,7 @@
 								</button>
 								<button
 									mat-stroked-button
+									data-testid="grafana-button"
 									aria-label="Open Grafana dashboards"
 									(click)="openGrafana()">
 									<mat-icon aria-hidden="true">open_in_new</mat-icon>

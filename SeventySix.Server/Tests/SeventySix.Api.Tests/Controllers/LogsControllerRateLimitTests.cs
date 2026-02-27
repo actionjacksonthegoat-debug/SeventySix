@@ -159,6 +159,8 @@ public sealed class LogsControllerRateLimitTests(LoggingApiPostgreSqlFixture fix
 
 		// Assert
 		rateLimitedResponse.ShouldNotBeNull();
-		rateLimitedResponse.Headers.Contains("Retry-After").ShouldBeTrue();
+		HttpResponseMessage limitedResponse =
+			rateLimitedResponse ?? throw new InvalidOperationException("Expected 429 Too Many Requests response");
+		limitedResponse.Headers.Contains("Retry-After").ShouldBeTrue();
 	}
 }

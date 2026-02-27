@@ -1,0 +1,29 @@
+# Makes this directory a valid CodeQL pack so it can be referenced by name
+# when passed via `--model-packs` and discovered via `--additional-packs`.
+#
+# Used by the CI-equivalent Docker scan (`npm run scan:codeql:ci`).
+# See docker-compose.codeql.yml for the full scan pipeline.
+#
+# CodeQL resolves this by looking for:
+#   {additional-packs-dir}/{pack-name}/codeql-pack.yml
+#   = .github/codeql/csharp-sanitizer-models/codeql-pack.yml
+#
+# This pack declares the SeventySix sanitizer taint models as data extensions,
+# telling CodeQL that LogSanitizer.MaskEmail, MaskEmailSubject, MaskUsername, and
+# Sanitize are taint-neutral (no-flow-through) — exactly matching the `models:`
+# directive in codeql-config.yml that GitHub Actions applies in CI.
+#
+# Without this pack applied via --model-packs, the local scan generates
+# false-positive cs/exposure-of-sensitive-information alerts for every log
+# statement that correctly uses MaskEmail/MaskEmailSubject.
+#
+# Reference:
+#   https://codeql.github.com/docs/codeql-language-guides/customizing-library-models-for-csharp/
+name: csharp-sanitizer-models
+version: 0.0.1
+library: true
+extensionTargets:
+  codeql/csharp-all: "*"
+dataExtensions:
+  # The authoritative models file lives inside this pack directory.
+  - csharp-sanitizer-models.yml

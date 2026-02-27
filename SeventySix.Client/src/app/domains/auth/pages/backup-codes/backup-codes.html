@@ -19,7 +19,7 @@
 			your authenticator app.
 		</p>
 
-		<div class="warning-box">
+		<div class="warning-box" data-testid="warning-box">
 			<mat-icon class="warning-icon" aria-hidden="true">warning</mat-icon>
 			<div class="warning-content">
 				<strong>Important</strong>
@@ -76,6 +76,7 @@
 			@for (code of codes(); track code; let index = $index) {
 			<div
 				class="code-item"
+				data-testid="code-item"
 				role="listitem">
 				<span class="code-number">{{ index + 1 }}.</span>
 				<code class="code-value">{{ code }}</code>

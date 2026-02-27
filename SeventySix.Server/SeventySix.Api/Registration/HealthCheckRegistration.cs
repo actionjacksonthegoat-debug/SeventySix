@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using SeventySix.Api.HealthChecks;
 using SeventySix.ApiTracking;
@@ -12,6 +13,7 @@ using StackExchange.Redis;
 namespace SeventySix.Api.Registration;
 
 /// <summary>Extension methods for health check configuration.</summary>
+[ExcludeFromCodeCoverage]
 public static class HealthCheckExtensions
 {
 	/// <summary>Adds comprehensive health checks for all bounded contexts.</summary>

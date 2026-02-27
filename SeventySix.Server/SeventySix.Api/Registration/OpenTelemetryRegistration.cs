@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using System.Diagnostics.CodeAnalysis;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -10,6 +11,7 @@ using SeventySix.Shared.Exceptions;
 namespace SeventySix.Api.Registration;
 
 /// <summary>Extension methods for OpenTelemetry configuration.</summary>
+[ExcludeFromCodeCoverage]
 public static class OpenTelemetryExtensions
 {
 	/// <summary>Adds OpenTelemetry with OTLP export for traces and metrics.</summary>

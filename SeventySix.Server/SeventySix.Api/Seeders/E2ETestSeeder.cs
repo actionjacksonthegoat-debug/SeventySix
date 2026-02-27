@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using SeventySix.Identity;
@@ -31,6 +32,7 @@ namespace SeventySix.Api.Seeders;
 /// <param name="logger">
 /// The logger instance.
 /// </param>
+[ExcludeFromCodeCoverage]
 public sealed class E2ETestSeeder(
 	UserManager<ApplicationUser> userManager,
 	IOptions<E2ESeederSettings> options,
@@ -384,6 +386,7 @@ public sealed class E2ETestSeeder(
 /// Constants for E2E test seeder.
 /// Known values that Playwright tests use to compute TOTP codes and backup codes.
 /// </summary>
+[ExcludeFromCodeCoverage]
 public static class E2ESeederConstants
 {
 	/// <summary>

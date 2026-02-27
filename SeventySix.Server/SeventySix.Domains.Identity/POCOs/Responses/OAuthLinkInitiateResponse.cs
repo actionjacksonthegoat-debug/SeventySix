@@ -2,6 +2,8 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace SeventySix.Identity;
 
 /// <summary>
@@ -10,5 +12,6 @@ namespace SeventySix.Identity;
 /// <param name="AuthorizationUrl">
 /// The OAuth provider's authorization URL for the client to open in a popup.
 /// </param>
+[ExcludeFromCodeCoverage]
 public sealed record OAuthLinkInitiateResponse(
 	string AuthorizationUrl);

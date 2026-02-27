@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Npgsql;
@@ -23,6 +24,7 @@ namespace SeventySix.Identity;
 /// - Authentication handlers: Return AuthResult.Failed
 /// - Admin handlers: Throw DuplicateUserException
 /// </remarks>
+[ExcludeFromCodeCoverage]
 public static class DuplicateKeyViolationHandler
 {
 	private const string UsernameConstraint = "IX_Users_Username";

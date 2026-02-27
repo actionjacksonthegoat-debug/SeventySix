@@ -187,6 +187,7 @@ async function fetchAndSaveSpec()
 		const formattedSpec =
 			JSON.stringify(specObject, null, "\t");
 
+		// codeql[js/http-to-file-access] - Writing to a project-internal config file; OPENAPI_JSON_PATH is a module-level constant, not derived from user or network input.
 		writeFileSync(OPENAPI_JSON_PATH, formattedSpec + "\n");
 		console.log(`[OK] Saved OpenAPI spec to ${OPENAPI_JSON_PATH}`);
 		return true;

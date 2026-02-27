@@ -53,4 +53,63 @@ describe("getValidationError",
 				expect(result)
 					.toBe("Username must be at least 3 characters");
 			});
+
+		it("should return null when control has empty errors object",
+			() =>
+			{
+				// Arrange
+				const control: FormControl =
+					new FormControl("");
+				control.setErrors({});
+
+				// Act
+				const result: string | null =
+					getValidationError(control, "Field");
+
+				// Assert
+				expect(result)
+					.toBeNull();
+			});
+
+		it("should return custom message from errorValue.message property",
+			() =>
+			{
+				// Arrange
+				const control: FormControl =
+					new FormControl("");
+				control.setErrors(
+					{
+						customValidator: {
+							message: "Custom validation failed"
+						}
+					});
+
+				// Act
+				const result: string | null =
+					getValidationError(control, "Field");
+
+				// Assert
+				expect(result)
+					.toBe("Custom validation failed");
+			});
+
+		it("should return fallback invalid message for unknown error without message property",
+			() =>
+			{
+				// Arrange
+				const control: FormControl =
+					new FormControl("");
+				control.setErrors(
+					{
+						unknownError: true
+					});
+
+				// Act
+				const result: string | null =
+					getValidationError(control, "Email");
+
+				// Assert
+				expect(result)
+					.toBe("Email is invalid");
+			});
 	});

@@ -73,25 +73,16 @@ After auth/security changes, verify via Chrome DevTools MCP `list_network_reques
 
 > Run before every push to catch security issues before CI.
 
-```powershell
-# Full scan (C# + TypeScript)
-npm run scan:codeql
+Use the CI-equivalent Docker variants — these produce results identical to GitHub Actions:
 
-# C# only
-npm run scan:codeql:cs
-
-# TypeScript only
-npm run scan:codeql:ts
+```bash
+npm run scan:codeql:ci            # TypeScript then C# (sequential, ~25 min total)
+npm run scan:codeql:ci:csharp    # C# only (~15-20 min)
+npm run scan:codeql:ci:typescript # TypeScript only (~5 min)
 ```
 
-Results open in VS Code via `github.vscode-codeql`. Use Command Palette →
-**CodeQL: Open SARIF File** to view results inline.
-
-### C# Scan — `--build-mode=none` + Pre-Build Required
-
-The C# scan uses `--build-mode=none` (build-tracing disabled) to avoid VBCSCompiler lock
-issues on Windows. A `dotnet build` must run **before** `codeql database create` to ensure
-binaries and generated code exist for analysis. See `scripts/run-codeql-scan.ps1`.
+Results written to `.codeql/results/`. Open with Command Palette →
+**CodeQL: Open SARIF File** to view results inline in VS Code.
 
 ### CodeQL Alert Dismissal
 

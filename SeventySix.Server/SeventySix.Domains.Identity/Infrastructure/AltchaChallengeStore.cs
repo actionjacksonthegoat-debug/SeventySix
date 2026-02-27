@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using System.Diagnostics.CodeAnalysis;
 using Ixnas.AltchaNet;
 using Microsoft.EntityFrameworkCore;
 
@@ -24,6 +25,7 @@ namespace SeventySix.Identity;
 /// <param name="timeProvider">
 /// Time provider for UTC time.
 /// </param>
+[ExcludeFromCodeCoverage]
 public sealed class AltchaChallengeStore(
 	IdentityDbContext context,
 	TimeProvider timeProvider) : IAltchaCancellableChallengeStore

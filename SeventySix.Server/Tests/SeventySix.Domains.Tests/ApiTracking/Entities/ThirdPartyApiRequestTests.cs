@@ -4,6 +4,7 @@
 
 using Microsoft.Extensions.Time.Testing;
 using SeventySix.ApiTracking;
+using SeventySix.TestUtilities.Builders;
 using Shouldly;
 
 namespace SeventySix.Domains.Tests.ApiTracking.Entities;
@@ -41,7 +42,10 @@ public sealed class ThirdPartyApiRequestTests
 		// Assert
 		request.CallCount.ShouldBe(6);
 		request.LastCalledAt.ShouldNotBeNull();
-		request.LastCalledAt.Value.ShouldBeGreaterThanOrEqualTo(beforeTimestamp);
+		DateTimeOffset lastCalledAt =
+			request.LastCalledAt
+				?? throw new InvalidOperationException("LastCalledAt should not be null");
+		lastCalledAt.ShouldBeGreaterThanOrEqualTo(beforeTimestamp);
 	}
 
 	[Fact]
@@ -73,7 +77,11 @@ public sealed class ThirdPartyApiRequestTests
 		request.CallCount.ShouldBe(2);
 		firstCallTime.ShouldNotBeNull();
 		secondCallTime.ShouldNotBeNull();
-		secondCallTime.Value.ShouldBeGreaterThan(firstCallTime.Value);
+		DateTimeOffset firstCallTimeValue =
+			firstCallTime ?? throw new InvalidOperationException("firstCallTime should not be null");
+		DateTimeOffset secondCallTimeValue =
+			secondCallTime ?? throw new InvalidOperationException("secondCallTime should not be null");
+		secondCallTimeValue.ShouldBeGreaterThan(firstCallTimeValue);
 	}
 
 	[Fact]
@@ -257,5 +265,35 @@ public sealed class ThirdPartyApiRequestTests
 
 		// Assert
 		request.CallCount.ShouldBe(0);
+	}
+
+	/// <summary>
+	/// Verifies that ToDto maps all entity fields correctly to the DTO.
+	/// </summary>
+	[Fact]
+	public void ToDto_PopulatedEntity_MapsAllFieldsCorrectly()
+	{
+		// Arrange
+		FakeTimeProvider timeProvider = new();
+		DateTimeOffset lastCalledAt =
+			timeProvider.GetUtcNow().AddHours(-1);
+		ThirdPartyApiRequest entity =
+			new ThirdPartyApiRequestBuilder(timeProvider)
+				.WithApiName("GitHub")
+				.WithBaseUrl("https://api.github.com")
+				.WithCallCount(42)
+				.WithLastCalledAt(lastCalledAt)
+				.Build();
+
+		// Act
+		ThirdPartyApiRequestDto dto = entity.ToDto();
+
+		// Assert
+		dto.Id.ShouldBe(entity.Id);
+		dto.ApiName.ShouldBe(entity.ApiName);
+		dto.BaseUrl.ShouldBe(entity.BaseUrl);
+		dto.CallCount.ShouldBe(entity.CallCount);
+		dto.LastCalledAt.ShouldBe(entity.LastCalledAt);
+		dto.ResetDate.ShouldBe(entity.ResetDate);
 	}
 }

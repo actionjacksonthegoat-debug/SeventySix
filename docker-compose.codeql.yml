@@ -3,7 +3,7 @@
 #   - ubuntu-latest Linux base
 #   - .NET 10 SDK (C# job)
 #   - Node 22 (TypeScript job)
-#   - CodeQL CLI — same bundle version as codeql-action@v4
+#   - CodeQL CLI 2.24.2 — same bundle version as codeql-action@v4
 #   - build-mode: manual (traced build — full inter-procedural data flow for C#)
 #   - Same security-and-quality suite and codeql-config.yml
 #
@@ -18,30 +18,28 @@
 name: codeql-ci
 
 services:
-  codeql-csharp:
-    image: mcr.microsoft.com/dotnet/sdk:10.0
-    working_dir: /repo
-    volumes:
-      - .:/repo
-      - codeql-cache:/root/.codeql
-    environment:
-      - DOTNET_CLI_TELEMETRY_OPTOUT=1
-      - DOTNET_NOLOGO=1
-    command: bash /repo/scripts/codeql-ci-scan.sh csharp
-    profiles:
-      - csharp
-      - full
+    codeql-csharp:
+        image: mcr.microsoft.com/dotnet/sdk:10.0
+        working_dir: /repo
+        volumes:
+            - .:/repo
+            - codeql-cache:/root/.codeql
+        environment:
+            - DOTNET_CLI_TELEMETRY_OPTOUT=1
+            - DOTNET_NOLOGO=1
+        command: bash /repo/scripts/codeql-ci-scan.sh csharp
+        profiles:
+            - csharp
 
-  codeql-typescript:
-    image: node:22-bookworm-slim
-    working_dir: /repo
-    volumes:
-      - .:/repo
-      - codeql-cache:/root/.codeql
-    command: bash /repo/scripts/codeql-ci-scan.sh typescript
-    profiles:
-      - typescript
-      - full
+    codeql-typescript:
+        image: node:22-bookworm-slim
+        working_dir: /repo
+        volumes:
+            - .:/repo
+            - codeql-cache:/root/.codeql
+        command: bash /repo/scripts/codeql-ci-scan.sh typescript
+        profiles:
+            - typescript
 
 volumes:
-  codeql-cache: {}
+    codeql-cache: {}

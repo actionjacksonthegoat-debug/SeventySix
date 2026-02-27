@@ -7,6 +7,7 @@ using SeventySix.ApiTracking;
 using SeventySix.Shared;
 using SeventySix.Shared.Enums;
 using SeventySix.Shared.Interfaces;
+using SeventySix.Shared.Utilities;
 
 namespace SeventySix.Api.Infrastructure;
 
@@ -71,9 +72,11 @@ public sealed class RateLimitingService(
 
 		if (!canMakeRequest)
 		{
+			string sanitizedApiName =
+				LogSanitizer.Sanitize(apiName) ?? string.Empty;
 			logger.LogWarning(
 				"Rate limit exceeded for API: {ApiName}. Count: {Count}/{Limit}. Interval: {Interval}. Resets in: {TimeUntilReset}",
-				apiName,
+				sanitizedApiName,
 				currentCount,
 				limit,
 				interval,

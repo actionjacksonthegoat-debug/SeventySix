@@ -105,15 +105,19 @@ internal class LogRepository(
 
 		if (request.StartDate.HasValue)
 		{
+			DateTimeOffset startDate =
+				request.StartDate.Value;
 			query =
 				query.Where(log =>
-					log.CreateDate >= request.StartDate.Value);
+					log.CreateDate >= startDate);
 		}
 
 		if (request.EndDate.HasValue)
 		{
+			DateTimeOffset endDate =
+				request.EndDate.Value;
 			query =
-				query.Where(log => log.CreateDate <= request.EndDate.Value);
+				query.Where(log => log.CreateDate <= endDate);
 		}
 
 		if (!string.IsNullOrWhiteSpace(request.SearchTerm))

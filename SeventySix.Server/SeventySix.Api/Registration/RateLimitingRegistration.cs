@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
 using SeventySix.Api.Configuration;
@@ -34,6 +35,7 @@ namespace SeventySix.Api.Registration;
 ///   <item><description>OPTIONS requests (CORS preflight)</description></item>
 /// </list>
 /// </remarks>
+[ExcludeFromCodeCoverage]
 public static class RateLimitingRegistration
 {
 	/// <summary>

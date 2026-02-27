@@ -139,7 +139,7 @@ public sealed class SmartHttpsRedirectionMiddleware(
 		// string, never the raw request Host header value). ASP.NET Core guarantees that
 		// Request.Path.Value and QueryString.Value are path/query components only — they
 		// cannot contain a scheme or host, so cross-domain redirect is impossible.
-		context.Response.Redirect(redirectBuilder.Uri.AbsoluteUri, permanent: false); // lgtm[cs/web/unvalidated-url-redirection]
+		context.Response.Redirect(redirectBuilder.Uri.AbsoluteUri, permanent: false); // codeql[cs/web/unvalidated-url-redirection]
 	}
 
 	/// <summary>

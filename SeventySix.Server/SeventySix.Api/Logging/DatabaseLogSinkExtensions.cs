@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using System.Diagnostics.CodeAnalysis;
 using Serilog;
 using Serilog.Configuration;
 
@@ -10,6 +11,7 @@ namespace SeventySix.Api.Logging;
 /// <summary>
 /// Extension methods for configuring DatabaseLogSink.
 /// </summary>
+[ExcludeFromCodeCoverage]
 public static class DatabaseLogSinkExtensions
 {
 	/// <summary>

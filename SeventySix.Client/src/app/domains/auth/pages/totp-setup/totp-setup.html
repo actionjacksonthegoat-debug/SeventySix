@@ -38,6 +38,7 @@
 			<button
 				type="button"
 				class="link-button"
+				data-testid="cant-scan-button"
 				(click)="onToggleManualEntry()">
 				Can't scan? Enter manually
 			</button>
@@ -84,6 +85,7 @@
 			<button
 				mat-stroked-button
 				type="button"
+				data-testid="scanned-code-button"
 				(click)="onProceedToVerify()">
 				I've scanned the code
 			</button>
@@ -141,6 +143,7 @@
 				<button
 					mat-stroked-button
 					type="submit"
+					data-testid="verify-enable-button"
 					[disabled]="isLoading() || !isCodeValid()"
 					[attr.aria-busy]="isLoading()">
 					@if (isLoading()) {

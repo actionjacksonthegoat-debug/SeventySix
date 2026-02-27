@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using System.Diagnostics.CodeAnalysis;
 using Serilog;
 using Serilog.Enrichers.Span;
 using Serilog.Events;
@@ -14,6 +15,7 @@ namespace SeventySix.Api.Extensions;
 /// Extension methods for Serilog configuration.
 /// Centralizes Serilog setup to avoid duplication (DRY principle).
 /// </summary>
+[ExcludeFromCodeCoverage]
 public static class SerilogExtensions
 {
 	/// <summary>

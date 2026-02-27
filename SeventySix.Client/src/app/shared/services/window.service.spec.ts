@@ -270,4 +270,61 @@ describe("WindowService",
 								testUrl);
 					});
 			});
+
+		describe("openWindow",
+			() =>
+			{
+				it("should call window.open with url and default target",
+					() =>
+					{
+						const mockWindow: Window =
+							{} as Window;
+						const openSpy: ReturnType<typeof vi.fn> =
+							vi
+								.fn()
+								.mockReturnValue(mockWindow);
+						Object.defineProperty(
+							window,
+							"open",
+							{
+								value: openSpy,
+								writable: true
+							});
+
+						const result: Window | null =
+							service.openWindow("https://example.com");
+
+						expect(openSpy)
+							.toHaveBeenCalledWith(
+								"https://example.com",
+								"_blank");
+						expect(result)
+							.toBe(mockWindow);
+					});
+
+				it("should call window.open with custom target",
+					() =>
+					{
+						const openSpy: ReturnType<typeof vi.fn> =
+							vi
+								.fn()
+								.mockReturnValue(null);
+						Object.defineProperty(
+							window,
+							"open",
+							{
+								value: openSpy,
+								writable: true
+							});
+
+						service.openWindow(
+							"https://example.com",
+							"_self");
+
+						expect(openSpy)
+							.toHaveBeenCalledWith(
+								"https://example.com",
+								"_self");
+					});
+			});
 	});

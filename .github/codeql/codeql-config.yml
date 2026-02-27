@@ -16,9 +16,12 @@ paths-ignore:
   # Without the trailing /**, the pattern only matches the directory node itself, not files within it.
   - "**/bin/**"
   - "**/obj/**"
+  # CodeQL local scan working directory — contains .NET SDK template files that generate
+  # false-positive findings (e.g. BlazorWasm.web.config → cs/web/missing-x-frame-options).
+  - ".codeql/**"
 
 queries:
   - uses: security-and-quality
 
 models:
-  - uses: ".github/codeql/csharp-sanitizer-models.yml"
+  - uses: ".github/codeql/csharp-sanitizer-models/csharp-sanitizer-models.yml"

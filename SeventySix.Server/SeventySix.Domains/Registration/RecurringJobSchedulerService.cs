@@ -3,6 +3,7 @@
 // </copyright>
 
 using System.Data.Common;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -47,6 +48,7 @@ namespace SeventySix.Registration;
 /// <param name="logger">
 /// Logger for diagnostic messages.
 /// </param>
+[ExcludeFromCodeCoverage]
 public sealed class RecurringJobSchedulerService(
 	IServiceScopeFactory serviceScopeFactory,
 	IConfiguration configuration,

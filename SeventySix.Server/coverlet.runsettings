@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Coverlet DataCollector settings used with the XPlat Code Coverage data collector.
+
+  Threshold enforcement:
+    Requires 80 percent average LINE coverage across all test assemblies.
+    If any run falls below this, dotnet test exits non-zero and the CI job fails.
+
+  See: https://github.com/coverlet-coverage/coverlet/blob/master/Documentation/CoverletDataCollector.md
+-->
+<RunSettings>
+    <DataCollectionRunSettings>
+        <DataCollectors>
+            <DataCollector friendlyName="XPlat Code Coverage">
+                <Configuration>
+                    <!-- Output format consumed by Codecov and ReportGenerator -->
+                    <Format>cobertura</Format>
+
+                    <!-- Hard 80% line-coverage floor — job fails if below this -->
+                    <Threshold>80</Threshold>
+                    <ThresholdType>line</ThresholdType>
+                    <ThresholdStat>average</ThresholdStat>
+
+                    <!-- Mirror the exclusions in Directory.Build.props -->
+                    <ExcludeByAttribute>
+                        ExcludeFromCodeCoverage,GeneratedCodeAttribute,CompilerGeneratedAttribute
+                    </ExcludeByAttribute>
+
+                    <!-- Exclude migration files and generated clients -->
+                    <Exclude>[*]*.Migrations.*</Exclude>
+                </Configuration>
+            </DataCollector>
+        </DataCollectors>
+    </DataCollectionRunSettings>
+</RunSettings>

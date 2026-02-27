@@ -197,6 +197,26 @@ Thread.Sleep(500);        // FORBIDDEN
 [Collection("DatabaseTests")]
 ```
 
+## File Structure Requirements (CRITICAL)
+
+Every test file MUST start with a copyright header, followed by a `/// <summary>` class comment:
+
+```csharp
+// <copyright file="MyServiceTests.cs" company="SeventySix">
+// Copyright (c) SeventySix. All rights reserved.
+// </copyright>
+
+using Shouldly;
+
+namespace SeventySix.SomeProject.Tests.Services;
+
+/// <summary>
+/// Unit tests for <see cref="MyService"/>.
+/// </summary>
+public sealed class MyServiceTests
+{
+```
+
 ## Test Method Structure (AAA Pattern)
 
 ```csharp
@@ -222,6 +242,93 @@ public async Task Handle_ValidInput_SucceedsAsync()
 }
 ```
 
+## Parameterized Tests ([Theory], [InlineData], [MemberData]) — REQUIRED where applicable
+
+When multiple test cases share the same logic with different inputs, use `[Theory]` instead of duplicate `[Fact]` methods. This is the project-standard approach to keeping tests DRY.
+
+### [InlineData] — for simple scalar inputs (strings, ints, enums, null)
+
+```csharp
+[Theory]
+[InlineData("")]
+[InlineData(null)]
+[InlineData("   ")]
+public async Task Handle_EmptyOrNullInput_ReturnsValidationErrorAsync(
+	string? input)
+{
+	// Arrange
+	MyCommand command = new(input!);
+
+	// Act
+	ValidationResult result =
+		await Validator.ValidateAsync(command);
+
+	// Assert
+	result.IsValid.ShouldBeFalse();
+	result.Errors.ShouldContain(error => error.PropertyName == "Input");
+}
+```
+
+### [MemberData] with TheoryData<T> — for complex or reusable inputs
+
+Create a static `*TestData.cs` class in the same namespace when the data set is reused across multiple test classes:
+
+```csharp
+// MyValidationTestData.cs
+public static class MyValidationTestData
+{
+	public static TheoryData<string> InvalidInputs =>
+		[
+			"",
+			"   ",
+			new string('a', 256), // too long
+		];
+}
+
+// In the test class:
+[Theory]
+[MemberData(
+	nameof(MyValidationTestData.InvalidInputs),
+	MemberType = typeof(MyValidationTestData)
+)]
+public void Validate_InvalidInput_FailsValidation(string input)
+{
+	ValidationResult result =
+		Validator.Validate(input);
+
+	result.IsValid.ShouldBeFalse();
+}
+```
+
+### When to use [Theory] vs [Fact]
+
+| Use `[Fact]`                          | Use `[Theory]`                                          |
+| ------------------------------------- | ------------------------------------------------------- |
+| Single scenario, no input variation   | Same logic tested with ≥ 2 different input values       |
+| Complex arrange with unique setup     | Simple input variations (null/empty/boundary/invalid)   |
+| Error paths with distinct side effects | Equivalent error paths that differ only in their trigger |
+
+### FluentValidation.TestHelper pattern (PREFERRED for validators)
+
+Always use `TestValidateAsync` with `ShouldHaveValidationErrorFor` / `ShouldNotHaveValidationErrorFor` from `FluentValidation.TestHelper`:
+
+```csharp
+// [ALWAYS] — Fluent validator assertion
+TestValidationResult<LoginRequest> result =
+	await Validator.TestValidateAsync(request);
+
+result
+	.ShouldHaveValidationErrorFor(request => request.Username)
+	.WithErrorMessage("Username is required");
+
+// [ALLOWED] — when testing the full ValidationResult object
+ValidationResult result =
+	await Validator.ValidateAsync(command);
+
+result.IsValid.ShouldBeFalse();
+result.Errors.ShouldContain(error => error.PropertyName == "Username");
+```
+
 ## 80/20 Test Priority
 
 Focus coverage on the **20% of code that carries 80% of risk**:
@@ -245,7 +352,9 @@ Focus coverage on the **20% of code that carries 80% of risk**:
 - [ ] Implementation passes test
 - [ ] No compiler warnings
 - [ ] Code follows `.editorconfig` formatting
-- [ ] All public members have XML documentation
-- [ ] No magic strings (constants extracted)
-- [ ] No single/two-letter variable names
+- [ ] Every test file starts with copyright header (`// <copyright file="..." company="SeventySix">`)
+- [ ] All public members (test classes and methods) have XML documentation (`/// <summary>`)
+- [ ] No magic strings (constants extracted — no inline GUIDs, URLs, role names, URLs, etc.)
+- [ ] No single/two-letter variable names (lambda params, loop vars — 3+ characters)
+- [ ] Multi-case scenarios use `[Theory]`/`[InlineData]` or `[MemberData]`/`TheoryData<T>` — never duplicate `[Fact]` methods with identical logic
 - [ ] `dotnet test` passes all suites — **0 failures, regardless of origin**

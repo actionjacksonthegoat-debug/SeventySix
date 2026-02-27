@@ -67,7 +67,9 @@ public sealed class AuthRepositoryTests : DataPostgreSqlTestBase
 
 		updatedUser.ShouldNotBeNull();
 		updatedUser.LastLoginAt.ShouldNotBeNull();
-		updatedUser.LastLoginAt.Value.ShouldBe(
+		DateTimeOffset lastLoginAt =
+			updatedUser.LastLoginAt ?? throw new InvalidOperationException("LastLoginAt should not be null");
+		lastLoginAt.ShouldBe(
 			loginTime,
 			TimeSpan.FromSeconds(1));
 		updatedUser.LastLoginIp.ShouldBe(clientIp);
@@ -116,7 +118,9 @@ public sealed class AuthRepositoryTests : DataPostgreSqlTestBase
 
 		updatedUser.ShouldNotBeNull();
 		updatedUser.LastLoginAt.ShouldNotBeNull();
-		updatedUser.LastLoginAt.Value.ShouldBe(
+		DateTimeOffset lastLoginAt =
+			updatedUser.LastLoginAt ?? throw new InvalidOperationException("LastLoginAt should not be null");
+		lastLoginAt.ShouldBe(
 			loginTime,
 			TimeSpan.FromSeconds(1));
 		updatedUser.LastLoginIp.ShouldBeNull();

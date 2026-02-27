@@ -83,6 +83,7 @@ test.describe("Request Permissions Page",
 						// Wait for roles to load
 						const roleCheckbox: Locator =
 							userPage
+								.locator(SELECTORS.requestPermissions.roleCheckboxesList)
 								.locator(SELECTORS.requestPermissions.roleCheckbox)
 								.first();
 
@@ -106,7 +107,9 @@ test.describe("Request Permissions Page",
 					{
 						// e2e_user has only User role, so Developer/Admin should be requestable
 						const roleCheckboxes: Locator =
-							userPage.locator(SELECTORS.requestPermissions.roleCheckbox);
+							userPage
+								.locator(SELECTORS.requestPermissions.roleCheckboxesList)
+								.locator(SELECTORS.requestPermissions.roleCheckbox);
 
 						await expect(roleCheckboxes.first())
 							.toBeVisible(
@@ -125,6 +128,7 @@ test.describe("Request Permissions Page",
 						// e2e_user has only User role, so Developer/Admin should be available
 						const roleCheckbox: Locator =
 							userPage
+								.locator(SELECTORS.requestPermissions.roleCheckboxesList)
 								.locator(SELECTORS.requestPermissions.roleCheckbox)
 								.first();
 
@@ -159,6 +163,7 @@ test.describe("Request Permissions Page",
 						// e2e_user has only User role, so Developer/Admin should be available
 						const roleCheckbox: Locator =
 							userPage
+								.locator(SELECTORS.requestPermissions.roleCheckboxesList)
 								.locator(SELECTORS.requestPermissions.roleCheckbox)
 								.first();
 
