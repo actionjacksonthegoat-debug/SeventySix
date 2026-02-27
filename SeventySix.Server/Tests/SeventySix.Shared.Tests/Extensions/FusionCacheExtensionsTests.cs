@@ -43,7 +43,7 @@ public sealed class FusionCacheExtensionsTests
 	{
 		IFusionCacheProvider provider =
 			Substitute.For<IFusionCacheProvider>();
-		provider.GetCacheOrNull(Arg.Any<string>()).Returns((IFusionCache?)null);
+		provider.GetCacheOrNull(Arg.Any<string>()).Returns(null as IFusionCache);
 
 		InvalidOperationException exception =
 			Should.Throw<InvalidOperationException>(
