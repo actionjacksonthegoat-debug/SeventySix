@@ -1003,8 +1003,9 @@ Every CI check has a local counterpart — no waiting for GitHub Actions to catc
 | Server Build & Test | `npm run test:server` |
 | E2E Tests | `npm run test:e2e` |
 | Load Tests | `npm run loadtest:quick` |
-| CodeQL C# | `scripts\run-codeql-scan.ps1 -LanguageFilter csharp` |
-| CodeQL JS/TS | `scripts\run-codeql-scan.ps1 -LanguageFilter javascript` |
+| CodeQL C# | `npm run scan:codeql:ci:csharp` |
+| CodeQL JS/TS | `npm run scan:codeql:ci:typescript` |
+| CodeQL (both) | `npm run scan:codeql:ci` |
 | Format (lint gate) | `npm run format` |
 
 ## Testing

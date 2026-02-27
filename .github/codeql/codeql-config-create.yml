@@ -9,7 +9,7 @@ name: "SeventySix CodeQL Create Configuration"
 #
 # Queries are specified directly in the `codeql database analyze` command.
 # Sanitizer models are applied via `--model-packs` in the analyze command.
-# See run-codeql-scan.ps1 for the full pipeline.
+# See docker-compose.codeql.yml for the full CI-equivalent scan pipeline.
 
 paths-ignore:
   # Client build outputs

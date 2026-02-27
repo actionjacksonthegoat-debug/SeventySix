@@ -1,9 +1,8 @@
 # Makes this directory a valid CodeQL pack so it can be referenced by name
 # when passed via `--model-packs` and discovered via `--additional-packs`.
 #
-# Usage in run-codeql-scan.ps1:
-#   --additional-packs=$RepoRoot\.github\codeql
-#   --model-packs="csharp-sanitizer-models"
+# Used by the CI-equivalent Docker scan (`npm run scan:codeql:ci`).
+# See docker-compose.codeql.yml for the full scan pipeline.
 #
 # CodeQL resolves this by looking for:
 #   {additional-packs-dir}/{pack-name}/codeql-pack.yml

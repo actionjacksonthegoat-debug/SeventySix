@@ -198,9 +198,13 @@ Review EVERY file in `SeventySix.Domains.Identity/` and the `auth/` client domai
 
 ### A) Run Local Scan (if not already done)
 
-```powershell
-# From repo root
-npm run scan:codeql
+```bash
+# From repo root — TypeScript first (fast), then C#
+npm run scan:codeql:ci
+
+# Or individual languages:
+npm run scan:codeql:ci:typescript
+npm run scan:codeql:ci:csharp
 ```
 
 ### B) Review GitHub Code Scanning Alerts
