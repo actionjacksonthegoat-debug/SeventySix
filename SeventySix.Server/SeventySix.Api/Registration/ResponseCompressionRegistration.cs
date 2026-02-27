@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using System.Diagnostics.CodeAnalysis;
 using System.IO.Compression;
 using Microsoft.AspNetCore.ResponseCompression;
 
@@ -10,6 +11,7 @@ namespace SeventySix.Api.Registration;
 /// <summary>
 /// Registration for response compression services.
 /// </summary>
+[ExcludeFromCodeCoverage]
 public static class ResponseCompressionRegistration
 {
 	/// <summary>

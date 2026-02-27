@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using System.Diagnostics.CodeAnalysis;
 using SeventySix.Api.Seeders;
 
 namespace SeventySix.Api.Registration;
@@ -10,6 +11,7 @@ namespace SeventySix.Api.Registration;
 /// Registration for E2E test seeder.
 /// Only runs when E2ESeeder:Enabled is true (Test environment).
 /// </summary>
+[ExcludeFromCodeCoverage]
 public static class E2ESeederRegistration
 {
 	/// <summary>

@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using System.Diagnostics.CodeAnalysis;
 using SeventySix.Shared.BackgroundJobs;
 using Wolverine;
 
@@ -14,6 +15,7 @@ namespace SeventySix.Registration;
 /// <param name="messageBus">
 /// The Wolverine message bus.
 /// </param>
+[ExcludeFromCodeCoverage]
 public sealed class WolverineMessageScheduler(
 	IMessageBus messageBus) : IMessageScheduler
 {

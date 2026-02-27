@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Configuration;
 
 namespace SeventySix.Shared.Utilities;
@@ -13,6 +14,7 @@ namespace SeventySix.Shared.Utilities;
 /// Used by DbContext factories during migration generation (dotnet ef commands).
 /// Loads connection details from appsettings.json and User Secrets.
 /// </remarks>
+[ExcludeFromCodeCoverage]
 public static class DesignTimeConnectionStringProvider
 {
 	/// <summary>

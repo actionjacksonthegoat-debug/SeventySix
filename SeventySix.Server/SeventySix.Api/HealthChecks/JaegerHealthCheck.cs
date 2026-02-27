@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Sockets;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using SeventySix.Shared.Constants;
@@ -23,6 +24,7 @@ namespace SeventySix.Api.HealthChecks;
 /// <param name="logger">
 /// Logger instance.
 /// </param>
+[ExcludeFromCodeCoverage]
 public sealed class JaegerHealthCheck(
 	IConfiguration configuration,
 	ILogger<JaegerHealthCheck> logger) : IHealthCheck

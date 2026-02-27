@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 
 namespace SeventySix.Logging.Jobs;
@@ -12,6 +13,7 @@ namespace SeventySix.Logging.Jobs;
 /// <param name="loggingDbContext">
 /// Database context for executing maintenance commands.
 /// </param>
+[ExcludeFromCodeCoverage]
 public sealed class DatabaseMaintenanceService(LoggingDbContext loggingDbContext) : IDatabaseMaintenanceService
 {
 	/// <inheritdoc/>

@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using FluentValidation;
@@ -28,6 +29,7 @@ namespace SeventySix.Api.Registration;
 /// as a Docker volume for persistence across container restarts.
 /// </para>
 /// </remarks>
+[ExcludeFromCodeCoverage]
 public static class DataProtectionExtensions
 {
 	/// <summary>

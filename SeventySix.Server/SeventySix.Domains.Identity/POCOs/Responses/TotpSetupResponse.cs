@@ -2,6 +2,8 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace SeventySix.Identity;
 
 /// <summary>
@@ -13,6 +15,7 @@ namespace SeventySix.Identity;
 /// <param name="QrCodeUri">
 /// The otpauth:// URI for QR code generation.
 /// </param>
+[ExcludeFromCodeCoverage]
 public record TotpSetupResponse(
 	string Secret,
 	string QrCodeUri);

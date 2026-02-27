@@ -2,6 +2,8 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace SeventySix.Api.Configuration;
 
 /// <summary>
@@ -15,6 +17,7 @@ namespace SeventySix.Api.Configuration;
 /// - Easy to support multiple concurrent versions
 /// - Can be extended to read from configuration
 /// </remarks>
+[ExcludeFromCodeCoverage]
 public static class ApiVersionConfig
 {
 	/// <summary>

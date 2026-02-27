@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -11,6 +12,7 @@ namespace SeventySix.Shared.Extensions;
 /// Extension methods for EF Core PropertyBuilder configuration.
 /// Reduces duplication in entity configurations.
 /// </summary>
+[ExcludeFromCodeCoverage]
 public static class PropertyBuilderExtensions
 {
 	/// <summary>

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Coverlet DataCollector settings for "dotnet test --collect:'XPlat Code Coverage'"
+  Coverlet DataCollector settings used with the XPlat Code Coverage data collector.
 
   Threshold enforcement:
-    - Requires ≥80% average LINE coverage across all test assemblies.
-    - If any run falls below this, dotnet test exits non-zero and the CI job fails.
+    Requires 80 percent average LINE coverage across all test assemblies.
+    If any run falls below this, dotnet test exits non-zero and the CI job fails.
 
   See: https://github.com/coverlet-coverage/coverlet/blob/master/Documentation/CoverletDataCollector.md
 -->

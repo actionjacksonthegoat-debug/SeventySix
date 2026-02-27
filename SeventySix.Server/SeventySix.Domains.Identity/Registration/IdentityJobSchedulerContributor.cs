@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Configuration;
 using SeventySix.Identity.Jobs;
 using SeventySix.Identity.Settings;
@@ -17,6 +18,7 @@ namespace SeventySix.Identity.Registration;
 /// <param name="configuration">
 /// Application configuration for reading job settings.
 /// </param>
+[ExcludeFromCodeCoverage]
 public sealed class IdentityJobSchedulerContributor(
 	IConfiguration configuration) : IJobSchedulerContributor
 {
