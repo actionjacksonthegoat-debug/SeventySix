@@ -93,13 +93,30 @@ export default defineConfig(({ mode }) => {
 				"src/app/shared/testing/**",
 				"src/**/*.mock.ts",
 				"src/**/index.ts",
+				// ─ Route arrays (no executable statements worth branching on) ─────────────
+				"src/app/**/*.routes.ts",
+				// ─ Pure model / interface files ───────────────────────────────────────────
+				"src/app/**/models/*.model.ts",
+				// ─ Angular app bootstrap (platform-specific, tested by E2E) ──────────────
+				"src/app/app.config.ts",
+				// ─ Material re-export barrel (no logic) ──────────────────────────────────
+				"src/app/shared/material.ts",
+				// ─ Auto-generated OpenAPI client ─────────────────────────────────────────
+				"src/app/shared/generated-open-api/**",
+				// ─ Static informational pages (no component logic) ───────────────────────
+				"src/app/domains/home/pages/privacy-policy/**",
+				"src/app/domains/home/pages/terms-of-service/**",
+				// ─ Browser-native analytics integrations (PerformanceObserver, ReportingObserver)
+				// These cannot be meaningfully unit-tested in happy-dom ───────────────────
+				"src/app/shared/services/telemetry.service.ts",
+				"src/app/shared/services/web-vitals.service.ts",
 			],
 			thresholds:
 			{
-				statements: 60,
-				branches: 60,
-				functions: 60,
-				lines: 60,
+				statements: 80,
+				branches: 80,
+				functions: 80,
+				lines: 80,
 			},
 		},
 	},

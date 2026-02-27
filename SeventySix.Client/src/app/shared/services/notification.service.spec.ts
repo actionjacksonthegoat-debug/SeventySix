@@ -513,6 +513,89 @@ describe("NotificationService",
 							.toBeUndefined();
 					});
 			});
+
+		describe("warningWithAction",
+			() =>
+			{
+				it("should create a warning notification with action label and callback",
+					() =>
+					{
+						const onAction: ReturnType<typeof vi.fn> =
+							vi.fn();
+
+						service.warningWithAction(
+							"Operation conflict",
+							"Refresh",
+							onAction);
+
+						const notifications: Notification[] =
+							service.readonlyNotifications();
+						expect(notifications.length)
+							.toBe(1);
+						expect(notifications[0].level)
+							.toBe(NotificationLevel.Warning);
+						expect(notifications[0].message)
+							.toBe("Operation conflict");
+						expect(notifications[0].actionLabel)
+							.toBe("Refresh");
+					});
+
+				it("should invoke callback when onAction is called",
+					() =>
+					{
+						const onAction: ReturnType<typeof vi.fn> =
+							vi.fn();
+
+						service.warningWithAction(
+							"Conflict",
+							"Retry",
+							onAction);
+
+						const notification: Notification =
+							service.readonlyNotifications()[0];
+
+						notification.onAction?.();
+
+						expect(onAction)
+							.toHaveBeenCalled();
+					});
+			});
+
+		describe("maxVisible cap",
+			() =>
+			{
+				it("should evict oldest notification when maxVisible is exceeded",
+					() =>
+					{
+						// Add 5 notifications (maxVisible = 5)
+						service.success("Msg 1");
+						service.success("Msg 2");
+						service.success("Msg 3");
+						service.success("Msg 4");
+						service.success("Msg 5");
+
+						expect(service.readonlyNotifications().length)
+							.toBe(5);
+
+						const oldestId: string =
+							service.readonlyNotifications()[0].id;
+
+						// Adding a 6th should evict the oldest
+						service.success("Msg 6");
+
+						const updated: Notification[] =
+							service.readonlyNotifications();
+						expect(updated.length)
+							.toBe(5);
+						expect(
+							updated.find(
+								(notification) =>
+									notification.id === oldestId))
+							.toBeUndefined();
+						expect(updated[4].message)
+							.toBe("Msg 6");
+					});
+			});
 	});
 
 describe("NotificationService copyToClipboard",

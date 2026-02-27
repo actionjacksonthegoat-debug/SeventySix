@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
+import { Notification } from "@shared/models";
 import { NotificationService } from "@shared/services";
 import { ComponentTestBed } from "@testing/test-bed-builders";
 import { vi } from "vitest";
@@ -323,6 +324,47 @@ describe("NotificationToastComponent",
 
 						expect(
 							fixture.nativeElement.querySelectorAll(".toast").length)
+							.toBe(0);
+					});
+			});
+
+		describe("executeAction",
+			() =>
+			{
+				it("should invoke onAction callback and dismiss the notification",
+					() =>
+					{
+						const actionCallback: () => void =
+							vi.fn();
+						notificationService.warningWithAction(
+							"Test warning",
+							"Undo",
+							actionCallback);
+						fixture.detectChanges();
+
+						const toastNotifications: Notification[] =
+							notificationService.readonlyNotifications();
+						component.executeAction(toastNotifications[0]);
+
+						expect(actionCallback)
+							.toHaveBeenCalled();
+						fixture.detectChanges();
+						expect(notificationService.readonlyNotifications().length)
+							.toBe(0);
+					});
+
+				it("should dismiss notification when onAction is not defined",
+					() =>
+					{
+						notificationService.info("Test info");
+						fixture.detectChanges();
+
+						const toastNotifications: Notification[] =
+							notificationService.readonlyNotifications();
+						component.executeAction(toastNotifications[0]);
+
+						fixture.detectChanges();
+						expect(notificationService.readonlyNotifications().length)
 							.toBe(0);
 					});
 			});

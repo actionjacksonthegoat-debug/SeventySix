@@ -190,7 +190,7 @@ test.describe("Log Management Page",
 							adminPage
 								.locator(SELECTORS.dataTable.chipOption)
 								.filter(
-									{ hasText: "Warnings" });
+									{ hasText: PAGE_TEXT.logManagement.chips.warnings });
 
 						await expect(warningsChip)
 							.toBeVisible();
@@ -233,7 +233,7 @@ test.describe("Log Management Page",
 							adminPage
 								.locator(SELECTORS.dataTable.chipOption)
 								.filter(
-									{ hasText: "Errors" });
+									{ hasText: PAGE_TEXT.logManagement.chips.errors });
 
 						await expect(errorsChip)
 							.toBeVisible();

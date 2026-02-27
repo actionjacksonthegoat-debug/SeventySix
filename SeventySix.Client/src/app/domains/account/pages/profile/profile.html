@@ -38,6 +38,7 @@
 					<input
 						matInput
 						formControlName="email"
+						data-testid="email-input"
 						type="email"
 					/>
 					<mat-error>
@@ -50,6 +51,7 @@
 					<input
 						matInput
 						formControlName="fullName"
+						data-testid="full-name-input"
 					/>
 				</mat-form-field>
 
@@ -57,6 +59,7 @@
 					<button
 						mat-stroked-button
 						color="primary"
+						data-testid="save-button"
 						type="submit"
 						[disabled]="
 								profileForm.invalid ||

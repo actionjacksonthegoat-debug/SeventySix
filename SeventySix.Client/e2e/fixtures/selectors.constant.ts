@@ -130,6 +130,7 @@ type SelectorsConfig = {
 		disconnectButton: string;
 	};
 	requestPermissions: {
+		roleCheckboxesList: string;
 		roleCheckbox: string;
 		messageTextarea: string;
 		submitButton: string;
@@ -243,9 +244,9 @@ export const SELECTORS: SelectorsConfig =
 			qrCodeImage: "[data-testid='qr-code-image']",
 			secretCode: "[data-testid='secret-code']",
 			verificationCodeInput: "#verificationCode",
-			cantScanButton: "button.link-button",
-			scannedCodeButton: "button",
-			verifyEnableButton: "button"
+			cantScanButton: "[data-testid='cant-scan-button']",
+			scannedCodeButton: "[data-testid='scanned-code-button']",
+			verifyEnableButton: "[data-testid='verify-enable-button']"
 		},
 
 		/**
@@ -253,8 +254,8 @@ export const SELECTORS: SelectorsConfig =
 	 */
 		backupCodes: {
 			codesGrid: "[data-testid='codes-grid']",
-			codeItem: ".code-item",
-			warningBox: ".warning-box"
+			codeItem: "[data-testid='code-item']",
+			warningBox: "[data-testid='warning-box']"
 		},
 
 		/**
@@ -272,9 +273,9 @@ export const SELECTORS: SelectorsConfig =
 	 */
 		userCreate: {
 			createUserButton: "[data-testid='create-user-button']",
-			usernameInput: "input[formcontrolname='username']",
-			emailInput: "input[formcontrolname='email']",
-			fullNameInput: "input[formcontrolname='fullName']",
+			usernameInput: "[data-testid='username-input']",
+			emailInput: "[data-testid='email-input']",
+			fullNameInput: "[data-testid='full-name-input']",
 			saveErrorBanner: "[data-testid='save-error-banner']"
 		},
 
@@ -283,9 +284,9 @@ export const SELECTORS: SelectorsConfig =
 	 */
 		userDetail: {
 			saveChangesButton: "[data-testid='save-changes-button']",
-			usernameInput: "input[formcontrolname='username']",
-			emailInput: "input[formcontrolname='email']",
-			fullNameInput: "input[formcontrolname='fullName']"
+			usernameInput: "[data-testid='username-input']",
+			emailInput: "[data-testid='email-input']",
+			fullNameInput: "[data-testid='full-name-input']"
 		},
 
 		/**
@@ -301,7 +302,7 @@ export const SELECTORS: SelectorsConfig =
 		layout: {
 			pageHeading: "h1",
 			userMenuButton: "[data-testid='user-menu-button']",
-			logoutButton: "button:has-text('Logout')"
+			logoutButton: "[data-testid='logout-button']"
 		},
 
 		/**
@@ -339,9 +340,9 @@ export const SELECTORS: SelectorsConfig =
 			observabilityCard: "[data-testid='observability-card']",
 			dataCard: "[data-testid='data-card']",
 			observabilityButtons: ".observability-links button",
-			jaegerButton: "button:has-text('Jaeger Tracing')",
-			prometheusButton: "button:has-text('Prometheus Metrics')",
-			grafanaButton: "button:has-text('Grafana Full View')",
+			jaegerButton: "[data-testid='jaeger-button']",
+			prometheusButton: "[data-testid='prometheus-button']",
+			grafanaButton: "[data-testid='grafana-button']",
 			pgAdminButton: "[data-testid='pgadmin-button']",
 			redisInsightButton: "[data-testid='redisinsight-button']"
 		},
@@ -392,9 +393,9 @@ export const SELECTORS: SelectorsConfig =
 	 */
 		profile: {
 			profileCard: "mat-card",
-			emailInput: "input[formcontrolname='email']",
-			fullNameInput: "input[formcontrolname='fullName']",
-			saveButton: "button[type='submit']",
+			emailInput: "[data-testid='email-input']",
+			fullNameInput: "[data-testid='full-name-input']",
+			saveButton: "[data-testid='save-button']",
 			requestPermissionsLink: "a[routerlink='permissions']",
 			linkedAccountsSection: "[data-testid='linked-accounts']",
 			linkedAccountsHeading: "#linked-accounts-heading",
@@ -406,10 +407,11 @@ export const SELECTORS: SelectorsConfig =
 	 * Request permissions page selectors.
 	 */
 		requestPermissions: {
+			roleCheckboxesList: "[data-testid='role-checkboxes-list']",
 			roleCheckbox: "mat-checkbox",
 			messageTextarea: "textarea[formcontrolname='requestMessage']",
-			submitButton: "button[type='submit']",
-			noRolesMessage: ".no-roles"
+			submitButton: "[data-testid='request-permissions-submit']",
+			noRolesMessage: "[data-testid='no-roles-message']"
 		},
 
 		/**
@@ -437,7 +439,7 @@ export const SELECTORS: SelectorsConfig =
 		errorPage: {
 			container: ".error-page",
 			errorTitle: "#error-title",
-			homeButton: "button:has-text('Go to Home')"
+			homeButton: "[data-testid='go-home-button']"
 		},
 
 		/**

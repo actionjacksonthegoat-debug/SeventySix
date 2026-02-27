@@ -1,60 +1,74 @@
 codecov:
-  require_ci_to_pass: true
+    require_ci_to_pass: true
 
 coverage:
-  precision: 2
-  round: down
-  range: "60...90"
+    precision: 1
+    round: down
+    # Color mapping: red below 70%, yellow 70-89%, green ≥90%
+    range: "70...90"
 
-  status:
-    project:
-      default:
-        target: auto
-        threshold: 2%
-        if_ci_failed: error
-      server:
-        flags:
-          - server
-        target: auto
-        threshold: 2%
-      client:
-        flags:
-          - client
-        target: auto
-        threshold: 2%
+    status:
+        # ── Project-level gate ──────────────────────────────────────────
+        # Posts a FAILED status check on the PR if overall coverage drops
+        # below 80%. Wire this into branch protection rules under:
+        #   Settings → Branches → master → Require status checks →
+        #     "codecov/project" (and the flag-scoped ones below)
+        project:
+            default:
+                target: 80%
+                threshold: 1%
+                if_ci_failed: error
+                if_not_found: success
+            server:
+                flags:
+                    - server
+                target: 80%
+                threshold: 1%
+                if_not_found: success
+            client:
+                flags:
+                    - client
+                target: 80%
+                threshold: 1%
+                if_not_found: success
 
-    patch:
-      default:
-        target: 70%
-        threshold: 5%
-        if_ci_failed: error
+        # ── Patch-level gate ────────────────────────────────────────────
+        # New/changed lines in the PR must be ≥75% covered.
+        patch:
+            default:
+                target: 75%
+                threshold: 5%
+                if_ci_failed: error
+                if_not_found: success
 
 flags:
-  server:
-    paths:
-      - SeventySix.Server/
-    carryforward: true
-  client:
-    paths:
-      - SeventySix.Client/src/
-    carryforward: true
+    server:
+        paths:
+            - SeventySix.Server/
+        carryforward: true
+    client:
+        paths:
+            - SeventySix.Client/src/
+        carryforward: true
 
 ignore:
-  - "**/*.spec.ts"
-  - "**/testing/**"
-  - "**/test-results/**"
-  - "**/coverage/**"
-  - "**/node_modules/**"
-  - "**/Migrations/**"
-  - "**/generated-open-api.ts"
-  - "SeventySix.Client/e2e/**"
-  - "SeventySix.Client/load-testing/**"
-  - "scripts/**"
-  - "docs/**"
+    - "**/*.spec.ts"
+    - "**/testing/**"
+    - "**/test-results/**"
+    - "**/coverage/**"
+    - "**/node_modules/**"
+    - "**/Migrations/**"
+    - "**/generated-open-api.ts"
+    - "SeventySix.Client/e2e/**"
+    - "SeventySix.Client/load-testing/**"
+    - "scripts/**"
+    - "docs/**"
 
+# ── PR comment ──────────────────────────────────────────────────────────────
+# Posts a coverage summary comment on every PR that changes tested code.
 comment:
-  layout: "header, diff, flags, components"
-  behavior: default
-  require_changes: true
-  require_base: false
-  require_head: true
+    layout: "header, reach, diff, flags, components, tree"
+    behavior: default
+    require_changes: true
+    require_base: false
+    require_head: true

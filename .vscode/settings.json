@@ -87,7 +87,7 @@
 
 	// Enable mcp — all tools always available, no per-tool confirmation
 	"chat.mcp.access": "all",
-	"chat.agent.maxRequests": 50,
+	"chat.agent.maxRequests": 250,
 
 	// CodeQL extension settings
 	"codeQL.runningQueries.maxQueries": 20,
