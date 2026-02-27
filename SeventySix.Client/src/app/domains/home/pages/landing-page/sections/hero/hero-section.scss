@@ -77,7 +77,7 @@
 	opacity: 0.15;
 
 	@media (prefers-reduced-motion: reduce) {
-		animation: none !important;
+		animation: none;
 	}
 }
 
@@ -173,7 +173,7 @@
 }
 
 .hero-cta--primary {
-	font-weight: 700;
+	font-weight: vars.$font-weight-bold;
 }
 
 // ============================================================================

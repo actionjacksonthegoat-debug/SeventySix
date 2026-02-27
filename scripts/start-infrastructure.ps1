@@ -170,7 +170,7 @@ try {
 			Write-Host "Starting Angular client in new window..." -ForegroundColor Cyan
 			$clientPath =
 			Join-Path $PSScriptRoot "..\SeventySix.Client"
-			Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd '$clientPath'; npm start"
+			Start-Process pwsh -ArgumentList "-NoExit", "-Command", "cd '$clientPath'; npm start"
 		}
 
 		Write-Host ""

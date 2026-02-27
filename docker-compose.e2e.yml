@@ -50,7 +50,7 @@ services:
 
   # MailDev - Email Capture
   maildev:
-    image: maildev/maildev:latest
+    image: maildev/maildev:2.2.1
     container_name: seventysix-maildev-e2e
     ports:
       - "1080:1080" # Web UI

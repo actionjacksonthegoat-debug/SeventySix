@@ -1,0 +1,41 @@
+@use "variables" as vars;
+
+.session-warning
+{
+	position: fixed;
+	bottom: vars.$spacing-xl;
+	right: vars.$spacing-xl;
+	z-index: vars.$z-index-notification;
+	display: flex;
+	align-items: center;
+	gap: vars.$spacing-md;
+	padding: vars.$spacing-md vars.$spacing-lg;
+	border-radius: vars.$border-radius-lg;
+	background-color: var(--mat-sys-error-container);
+	color: var(--mat-sys-on-error-container);
+	box-shadow: var(--mat-sys-elevation-3);
+	animation: slideIn vars.$transition-duration-base ease-out;
+}
+
+.countdown
+{
+	font-weight: vars.$font-weight-bold;
+	font-size: 1.25rem;
+	font-variant-numeric: tabular-nums;
+	min-width: 3ch;
+	text-align: center;
+}
+
+@keyframes slideIn
+{
+	from
+	{
+		transform: translateY(20px);
+		opacity: 0;
+	}
+	to
+	{
+		transform: translateY(0);
+		opacity: 1;
+	}
+}

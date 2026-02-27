@@ -19,13 +19,13 @@ mat-card-header {
 	flex-shrink: 0;
 }
 
-mat-card-content {
+:host ::ng-deep mat-card-content {
 	display: flex;
 	flex-direction: column;
 	flex: 1;
 	min-height: 0;
 	overflow: hidden;
-	padding: 0 !important;
+	padding: 0;
 }
 
 .grafana-embed {

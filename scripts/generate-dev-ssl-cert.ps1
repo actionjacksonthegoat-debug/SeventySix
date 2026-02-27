@@ -566,7 +566,7 @@ Read-Host 'Press Enter to close'
 "@
 
 				try {
-					Start-Process powershell.exe -Verb RunAs -ArgumentList "-NoProfile", "-Command", $elevatedScript -Wait
+					Start-Process pwsh.exe -Verb RunAs -ArgumentList "-NoProfile", "-Command", $elevatedScript -Wait
 
 					# Verify trust after elevation
 					Start-Sleep -Seconds 1

@@ -60,7 +60,7 @@
 	border-radius: vars.$border-radius-xl;
 	min-height: vars.$button-height-sm;
 	font-size: vars.$font-size-base;
-	font-weight: 500;
+	font-weight: vars.$font-weight-medium;
 	text-transform: none;
 	border: 1px solid color-mix(in srgb, var(--mat-sys-outline) 38%, transparent);
 	color: color-mix(in srgb, var(--mat-sys-on-surface) 87%, transparent);
@@ -101,7 +101,7 @@
 	background-color: color-mix(in srgb, var(--mat-sys-primary) 12%, transparent);
 	color: var(--mat-sys-primary);
 	font-size: vars.$font-size-base;
-	font-weight: 500;
+	font-weight: vars.$font-weight-medium;
 	line-height: 1;
 	white-space: nowrap;
 }

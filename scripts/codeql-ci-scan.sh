@@ -60,12 +60,7 @@ if [[ "${LANGUAGE}" == "csharp" ]]; then
     --source-root="${REPO_ROOT}" \
     --codescanning-config="${CONFIG_FILE}" \
     --build-mode=manual \
-    -- \
-    dotnet build "${REPO_ROOT}/SeventySix.Server/SeventySix.Server.slnx" \
-      --configuration Release \
-      -p:SkipAnalyzers=true \
-      --nologo \
-      -v:q
+    --command="dotnet build ${REPO_ROOT}/SeventySix.Server/SeventySix.Server.slnx --configuration Release -p:SkipAnalyzers=true --nologo -v:q"
 
   echo ">>> [C#] Running security-and-quality queries..."
   "${CODEQL}" database analyze "${DB}" \

@@ -164,11 +164,11 @@ unauthenticatedTest.describe("Forced Password Change",
 				const capturedToken: string =
 					responseBody.accessToken;
 
-				// Make direct API request to a protected endpoint.
-				// Must use absolute API URL since the E2E nginx serves
-				// the client app and has no /api/ proxy.
+				// Make API request to a protected endpoint via the nginx /api/ proxy.
+				// Uses the client base URL so the request is same-origin, avoiding
+				// CSP connect-src restrictions that block cross-origin fetches.
 				const apiUrl: string =
-					`${E2E_CONFIG.apiBaseUrl}${API_ROUTES.auth.trustedDevices}`;
+					`${E2E_CONFIG.clientBaseUrl}${API_ROUTES.auth.trustedDevices}`;
 
 				const apiStatus: number =
 					await unauthenticatedPage.evaluate(

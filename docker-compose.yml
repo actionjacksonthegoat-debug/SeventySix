@@ -210,7 +210,7 @@ services:
 
   # Redis Exporter - Prometheus metrics for Valkey monitoring
   redis-exporter:
-    image: oliver006/redis_exporter:latest
+    image: oliver006/redis_exporter:v1.67.0
     container_name: seventysix-redis-exporter-dev
     environment:
       REDIS_ADDR: "valkey:6379"
@@ -295,7 +295,7 @@ services:
 
   # Fail2Ban - Intrusion prevention (bans IPs after repeated violations)
   fail2ban:
-    image: crazymax/fail2ban:latest
+    image: crazymax/fail2ban:1.1.0
     container_name: seventysix-fail2ban-dev
     network_mode: host
     cap_add:
@@ -309,7 +309,7 @@ services:
 
   # GeoIP Updater - Downloads MaxMind GeoLite2-Country database for Fail2Ban
   geoipupdate:
-    image: ghcr.io/maxmind/geoipupdate:latest
+    image: ghcr.io/maxmind/geoipupdate:v7.0.1
     container_name: seventysix-geoipupdate-dev
     environment:
       GEOIPUPDATE_ACCOUNT_ID: "${MAXMIND_ACCOUNT_ID:-}"
