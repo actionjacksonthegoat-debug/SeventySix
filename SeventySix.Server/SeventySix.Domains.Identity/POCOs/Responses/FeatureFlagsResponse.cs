@@ -26,10 +26,15 @@ namespace SeventySix.Identity;
 /// Seconds before access token expiry at which the client should proactively refresh.
 /// Derived from server-side JWT settings so the client stays in sync with the token lifetime.
 /// </param>
+/// <param name="SiteEmail">
+/// Public contact email shown on legal pages (Privacy Policy, Terms of Service).
+/// Sourced from <c>Site:Email</c> configuration — never hardcoded.
+/// </param>
 public record FeatureFlagsResponse(
 	bool MfaEnabled,
 	bool TotpEnabled,
 	bool OAuthEnabled,
 	IReadOnlyList<string> OAuthProviders,
 	bool AltchaEnabled,
-	int TokenRefreshBufferSeconds);
+	int TokenRefreshBufferSeconds,
+	string SiteEmail);

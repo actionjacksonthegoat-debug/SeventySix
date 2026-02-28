@@ -21,6 +21,7 @@ export function createMockQueryResult<TData, TError = Error>(
 		isLoading?: boolean;
 		isError?: boolean;
 		error?: TError | null;
+		isFetching?: boolean;
 	} = {}): CreateQueryResult<TData, TError>
 {
 	const dataSignal: Signal<TData | undefined> =
@@ -36,6 +37,8 @@ export function createMockQueryResult<TData, TError = Error>(
 			!options.isLoading && !options.isError && data !== undefined);
 	const isPendingSignal: Signal<boolean> =
 		signal(options.isLoading ?? false);
+	const isFetchingSignal: Signal<boolean> =
+		signal(options.isFetching ?? false);
 
 	const refetchSpy: Mock =
 		vi
@@ -55,6 +58,7 @@ export function createMockQueryResult<TData, TError = Error>(
 		error: errorSignal,
 		isSuccess: isSuccessSignal,
 		isPending: isPendingSignal,
+		isFetching: isFetchingSignal,
 		refetch: refetchSpy,
 		queryKey: ["mock-key"]
 	} as unknown as CreateQueryResult<TData, TError>;

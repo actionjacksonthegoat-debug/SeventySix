@@ -1,0 +1,118 @@
+name: Deploy to Production
+
+on:
+    workflow_run:
+        workflows: [CI]
+        types: [completed]
+        branches: [master]
+
+concurrency:
+    group: deploy-production
+    cancel-in-progress: false  # Never cancel an in-progress deploy
+
+jobs:
+    deploy:
+        name: Deploy to Production
+        runs-on: ubuntu-latest
+        if: github.event.workflow_run.conclusion == 'success'
+
+        steps:
+            - name: Deploy via SSH
+              uses: appleboy/ssh-action@v1
+              # All production secrets are injected from GitHub Secrets/Variables.
+              # No .env file is used on the server — docker compose reads from the shell environment
+              # which appleboy/ssh-action populates via the envs: parameter below.
+              env:
+                  DB_NAME: ${{ vars.DB_NAME || 'seventysix' }}
+                  DB_USER: ${{ vars.DB_USER || 'postgres' }}
+                  DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+                  JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+                  GITHUB_CLIENT_ID: ${{ secrets.GITHUB_CLIENT_ID }}
+                  GITHUB_CLIENT_SECRET: ${{ secrets.GITHUB_CLIENT_SECRET }}
+                  EMAIL_SMTP_USERNAME: ${{ secrets.EMAIL_SMTP_USERNAME }}
+                  EMAIL_SMTP_PASSWORD: ${{ secrets.EMAIL_SMTP_PASSWORD }}
+                  EMAIL_FROM_ADDRESS: ${{ secrets.EMAIL_FROM_ADDRESS }}
+                  SITE_EMAIL: ${{ secrets.SITE_EMAIL }}
+                  ALTCHA_HMAC_KEY: ${{ secrets.ALTCHA_HMAC_KEY }}
+                  ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+                  ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+                  ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
+                  ADMIN_FULLNAME: ${{ vars.ADMIN_FULLNAME || 'System Administrator' }}
+                  ADMIN_SEEDER_ENABLED: ${{ vars.ADMIN_SEEDER_ENABLED || 'true' }}
+                  DATA_PROTECTION_CERTIFICATE_PASSWORD: ${{ secrets.DATA_PROTECTION_CERTIFICATE_PASSWORD }}
+                  CORS_ORIGIN_0: ${{ secrets.CORS_ORIGIN_0 }}
+                  CORS_ORIGIN_1: ${{ vars.CORS_ORIGIN_1 || '' }}
+                  VALKEY_PASSWORD: ${{ secrets.VALKEY_PASSWORD }}
+                  GRAFANA_ADMIN_USER: ${{ vars.GRAFANA_ADMIN_USER || 'admin' }}
+                  GRAFANA_ADMIN_PASSWORD: ${{ secrets.GRAFANA_ADMIN_PASSWORD }}
+                  MAXMIND_ACCOUNT_ID: ${{ secrets.MAXMIND_ACCOUNT_ID }}
+                  MAXMIND_LICENSE_KEY: ${{ secrets.MAXMIND_LICENSE_KEY }}
+                  ALLOWED_HOSTS: ${{ secrets.ALLOWED_HOSTS }}
+                  CLIENT_BASE_URL: ${{ secrets.CLIENT_BASE_URL }}
+                  OAUTH_CALLBACK_URL: ${{ secrets.OAUTH_CALLBACK_URL }}
+                  OAUTH_REDIRECT_URI: ${{ secrets.OAUTH_REDIRECT_URI }}
+              with:
+                  host: ${{ secrets.PROD_HOST }}
+                  username: ${{ secrets.PROD_USER }}
+                  key: ${{ secrets.PROD_SSH_KEY }}
+                  # Forward all env vars above into the remote shell session
+                  envs: DB_NAME,DB_USER,DB_PASSWORD,JWT_SECRET_KEY,GITHUB_CLIENT_ID,GITHUB_CLIENT_SECRET,EMAIL_SMTP_USERNAME,EMAIL_SMTP_PASSWORD,EMAIL_FROM_ADDRESS,SITE_EMAIL,ALTCHA_HMAC_KEY,ADMIN_EMAIL,ADMIN_PASSWORD,ADMIN_USERNAME,ADMIN_FULLNAME,ADMIN_SEEDER_ENABLED,DATA_PROTECTION_CERTIFICATE_PASSWORD,CORS_ORIGIN_0,CORS_ORIGIN_1,VALKEY_PASSWORD,GRAFANA_ADMIN_USER,GRAFANA_ADMIN_PASSWORD,MAXMIND_ACCOUNT_ID,MAXMIND_LICENSE_KEY,ALLOWED_HOSTS,CLIENT_BASE_URL,OAUTH_CALLBACK_URL,OAUTH_REDIRECT_URI
+                  script_stop: true
+                  script: |
+                      set -euo pipefail
+
+                      APP_DIR="/srv/seventysix"
+                      cd "$APP_DIR"
+
+                      echo "=== Pulling latest code ==="
+                      git pull origin master --ff-only
+
+                      echo "=== Pulling pre-built images from GHCR ==="
+                      docker compose -f docker-compose.production.yml pull api client
+
+                      echo "=== Restarting containers ==="
+                      docker compose -f docker-compose.production.yml up -d --remove-orphans
+
+                      echo "=== Cleaning up old images ==="
+                      docker image prune -f
+
+                      echo "=== Waiting for API health check ==="
+                      for i in $(seq 1 30); do
+                          if curl -sf http://localhost:5085/health > /dev/null 2>&1; then
+                              echo "API is healthy (attempt $i)"
+                              break
+                          fi
+                          if [ "$i" -eq 30 ]; then
+                              echo "ERROR: API health check failed after 30 attempts"
+                              docker compose -f docker-compose.production.yml logs --tail=50 api
+                              exit 1
+                          fi
+                          sleep 5
+                      done
+
+                      echo "=== Waiting for Client health check ==="
+                      for i in $(seq 1 10); do
+                          if curl -sf http://localhost:8080 > /dev/null 2>&1; then
+                              echo "Client is healthy (attempt $i)"
+                              break
+                          fi
+                          if [ "$i" -eq 10 ]; then
+                              echo "ERROR: Client health check failed after 10 attempts"
+                              docker compose -f docker-compose.production.yml logs --tail=50 client
+                              exit 1
+                          fi
+                          sleep 3
+                      done
+
+                      echo "=== Checking observability stack (non-blocking) ==="
+                      for svc in "Grafana:3000/api/health" "Prometheus:9090/-/healthy" "Jaeger:16686"; do
+                          name="${svc%%:*}"
+                          path="${svc#*:}"
+                          if curl -sf "http://localhost:${path}" > /dev/null 2>&1; then
+                              echo "${name} is healthy"
+                          else
+                              echo "WARNING: ${name} health check failed (non-blocking — deploy continues)"
+                          fi
+                      done
+
+                      echo "=== Deploy complete ==="

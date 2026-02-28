@@ -1,11 +1,13 @@
 import { ScrollingModule } from "@angular/cdk/scrolling";
 import { DatePipe } from "@angular/common";
 import {
+	afterNextRender,
 	ChangeDetectionStrategy,
 	Component,
 	computed,
 	DestroyRef,
 	effect,
+	ElementRef,
 	inject,
 	input,
 	InputSignal,
@@ -13,6 +15,7 @@ import {
 	OutputEmitterRef,
 	Signal,
 	signal,
+	untracked,
 	WritableSignal
 } from "@angular/core";
 import { FormsModule } from "@angular/forms";
@@ -107,6 +110,22 @@ export class DataTableComponent<T extends { id: number; }>
 	 * @private
 	 */
 	private static readonly SKELETON_ROW_ID: number = -1;
+
+	/**
+	 * Minimum height (px) reserved for the CDK viewport during initial load (CLS prevention).
+	 * @type {number}
+	 * @private
+	 */
+	private static readonly TABLE_VIEWPORT_MIN_HEIGHT: number = 400;
+
+	/**
+	 * Height of the Angular Material sticky header row in pixels.
+	 * The header lives inside the CDK viewport (sticky: true), so its height
+	 * must be added to the data content height when sizing the viewport.
+	 * @type {number}
+	 * @private
+	 */
+	private static readonly TABLE_HEADER_HEIGHT: number = 56;
 
 	/**
 	 * Table data source - shows skeleton placeholder row when loading.
@@ -284,6 +303,14 @@ export class DataTableComponent<T extends { id: number; }>
 	readonly bulkActions: InputSignal<BulkAction[]> =
 		input<BulkAction[]>([]);
 
+	/**
+	 * Whether the query is currently refetching in the background (stale data being refreshed).
+	 * Drives the progress bar and spinning refresh icon.
+	 * @type {InputSignal<boolean>}
+	 */
+	readonly isRefetching: InputSignal<boolean> =
+		input<boolean>(false);
+
 	// ========================================
 	// Outputs
 	// ========================================
@@ -432,6 +459,35 @@ export class DataTableComponent<T extends { id: number; }>
 	readonly selectionManager: DataTableSelectionManager<T> =
 		new DataTableSelectionManager<T>(inject(DestroyRef));
 
+	/**
+	 * Host element reference — used by ResizeObserver to measure available height.
+	 * @type {ElementRef<HTMLElement>}
+	 * @private
+	 * @readonly
+	 */
+	private readonly elementRef: ElementRef<HTMLElement> =
+		inject(ElementRef);
+
+	/**
+	 * Destroy ref for cleanup registration of the ResizeObserver.
+	 * Captured here (injection context) to use inside afterNextRender callback.
+	 * @type {DestroyRef}
+	 * @private
+	 * @readonly
+	 */
+	private readonly destroyRef: DestroyRef =
+		inject(DestroyRef);
+
+	/**
+	 * Explicit height for the CDK virtual-scroll viewport.
+	 * Drives `[style.height]` binding in the template.
+	 * Default of 400px prevents CLS before the ResizeObserver fires.
+	 * @type {WritableSignal<string>}
+	 * @protected
+	 */
+	protected readonly viewportHeight: WritableSignal<string> =
+		signal("400px");
+
 	// ========================================
 	// Computed Signals (delegated to managers)
 	// ========================================
@@ -518,6 +574,64 @@ export class DataTableComponent<T extends { id: number; }>
 			() => this.loadColumnPreferences());
 		effect(
 			() => this.clearSelectionOnDataChange());
+
+		// Recalculate viewport height whenever data or loading state changes
+		effect(
+			() =>
+			{
+				// Read reactive dependencies to register with the effect, then
+				// recalculate outside the reactive context to avoid a feedback loop
+				// where viewportHeight.set() re-triggers the effect via DOM changes.
+				this.data();
+				this.isLoading();
+				untracked(() => this.updateViewportHeight());
+			});
+
+		afterNextRender(() => this.setupViewportResizeObserver());
+	}
+
+	/**
+	 * Registers a debounced ResizeObserver on the host element so the CDK
+	 * viewport height is recalculated whenever the container is resized.
+	 * Debouncing prevents the ResizeObserver → viewportHeight.set() → DOM resize
+	 * → ResizeObserver re-entry loop that causes scroll oscillation.
+	 * @returns {void}
+	 * @private
+	 */
+	private setupViewportResizeObserver(): void
+	{
+		let resizeTimer: ReturnType<typeof setTimeout> | null = null;
+		const observer: ResizeObserver =
+			new ResizeObserver(
+				() =>
+				{
+					if (resizeTimer !== null)
+					{
+						clearTimeout(resizeTimer);
+					}
+					resizeTimer =
+						setTimeout(
+							() =>
+							{
+								resizeTimer = null;
+								this.updateViewportHeight();
+							},
+							50);
+				});
+		observer.observe(this.elementRef.nativeElement);
+		this.destroyRef
+			.onDestroy(
+				() =>
+				{
+					observer.disconnect();
+					if (resizeTimer !== null)
+					{
+						clearTimeout(resizeTimer);
+					}
+				});
+
+		// Run once immediately so the height is correct from the first render.
+		this.updateViewportHeight();
 	}
 
 	/**
@@ -589,6 +703,97 @@ export class DataTableComponent<T extends { id: number; }>
 	{
 		this.data();
 		this.selectionManager.clear();
+	}
+
+	/**
+	 * Computes and sets the CDK viewport height based on available host height and data count.
+	 *
+	 * The header row lives inside the CDK viewport with sticky: true. Its height
+	 * (TABLE_HEADER_HEIGHT) is therefore included in the viewport height so both
+	 * the header and data rows are fully visible.
+	 *
+	 * Three cases:
+	 * 1. Initial load (isLoading=true, no data yet): reserve TABLE_VIEWPORT_MIN_HEIGHT
+	 *    for skeleton rows — prevents CLS on first paint.
+	 * 2. Empty (not loading, no data): 0px — collapses viewport; empty-state message shows in flow.
+	 * 3. Has data: min(headerH + contentH, availableH) — fills available space but shrinks for sparse data.
+	 *
+	 * @returns {void}
+	 */
+	updateViewportHeight(): void
+	{
+		const host: HTMLElement =
+			this.elementRef.nativeElement;
+
+		// Guard: bail out immediately if the host has no layout yet.
+		if (host.offsetHeight === 0)
+		{
+			return;
+		}
+		const toolbar: HTMLElement | null =
+			host.querySelector<HTMLElement>(".table-toolbar");
+		const filterToolbar: HTMLElement | null =
+			host.querySelector<HTMLElement>(".filter-toolbar");
+		const selectionPanel: HTMLElement | null =
+			host.querySelector<HTMLElement>(".selection-panel");
+		const paginator: HTMLElement | null =
+			host.querySelector<HTMLElement>("mat-paginator");
+		const nonTableHeight: number =
+			(toolbar?.offsetHeight ?? 0)
+				+ (filterToolbar?.offsetHeight ?? 0)
+				+ (selectionPanel?.offsetHeight ?? 0)
+				+ (paginator?.offsetHeight ?? 0);
+
+		const availableHeight: number =
+			Math.max(0, host.offsetHeight - nonTableHeight);
+		const dataLength: number =
+			untracked(() => this.data().length);
+		const loading: boolean =
+			untracked(() => this.isLoading());
+		const itemSize: number =
+			untracked(() => this.virtualScrollItemSize());
+		const newHeight: string =
+			this.computeViewportHeight(availableHeight, dataLength, loading, itemSize);
+
+		// Only write the signal when the value actually changes — prevents the
+		// ResizeObserver → viewportHeight.set() → DOM resize → ResizeObserver
+		// feedback loop that caused the scroll oscillation.
+		if (newHeight !== this.viewportHeight())
+		{
+			this.viewportHeight.set(newHeight);
+		}
+	}
+
+	/**
+	 * Computes the CDK viewport height string from the current data state.
+	 * Extracted to keep updateViewportHeight within the 50-line limit.
+	 *
+	 * @param {number} availableHeight Total pixels available for the viewport.
+	 * @param {number} dataLength Number of data rows (0 during loading or when empty).
+	 * @param {boolean} loading True while the initial query is pending.
+	 * @param {number} itemSize Virtual-scroll row height in pixels.
+	 * @returns {string} CSS height value to apply to the CDK viewport.
+	 * @private
+	 */
+	private computeViewportHeight(
+		availableHeight: number,
+		dataLength: number,
+		loading: boolean,
+		itemSize: number): string
+	{
+		if (loading && dataLength === 0)
+		{
+			// Initial load: reserve height for skeleton rows (CLS prevention)
+			return `${Math.max(availableHeight, DataTableComponent.TABLE_VIEWPORT_MIN_HEIGHT)}px`;
+		}
+		if (dataLength === 0)
+		{
+			// Empty: collapse viewport so empty-state message renders in flow below
+			return "0px";
+		}
+		// Has data: shrink to content height but never exceed available height.
+		// Add TABLE_HEADER_HEIGHT because the sticky header lives inside the CDK viewport.
+		return `${Math.min(DataTableComponent.TABLE_HEADER_HEIGHT + dataLength * itemSize, availableHeight)}px`;
 	}
 
 	// ========================================

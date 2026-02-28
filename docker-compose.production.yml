@@ -67,7 +67,8 @@ services:
       - "127.0.0.1:4318:4318" # OTLP HTTP receiver — internal only
       - "127.0.0.1:8889:8889" # Prometheus metrics export — internal only
     depends_on:
-      - jaeger
+      jaeger:
+        condition: service_healthy
     healthcheck:
       test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:13133/" ]
       interval: 30s
@@ -116,6 +117,7 @@ services:
 
   # .NET API Service - Runs migrations on startup
   api:
+    image: ${API_IMAGE:-ghcr.io/actionjacksonthegoat-debug/seventysix-api:latest}
     build:
       context: ./SeventySix.Server
       dockerfile: Dockerfile.production
@@ -145,6 +147,8 @@ services:
       - Email__SmtpUsername=${EMAIL_SMTP_USERNAME:?EMAIL_SMTP_USERNAME must be set}
       - Email__SmtpPassword=${EMAIL_SMTP_PASSWORD:?EMAIL_SMTP_PASSWORD must be set}
       - Email__FromAddress=${EMAIL_FROM_ADDRESS:?EMAIL_FROM_ADDRESS must be set}
+      # Site — contact email for legal pages (never hardcoded in client)
+      - Site__Email=${SITE_EMAIL:?SITE_EMAIL must be set}
       # ALTCHA (Proof-of-Work) - enabled by default, uses self-hosted verification
       - Altcha__Enabled=true
       - Altcha__HmacKeyBase64=${ALTCHA_HMAC_KEY:?ALTCHA_HMAC_KEY must be set}
@@ -155,8 +159,19 @@ services:
       - DataProtection__UseCertificate=${DATA_PROTECTION_USE_CERTIFICATE:-true}
       - DataProtection__CertificatePath=${DATA_PROTECTION_CERTIFICATE_PATH:-/app/keys/dataprotection.pfx}
       - DataProtection__CertificatePassword=${DATA_PROTECTION_CERTIFICATE_PASSWORD:?DATA_PROTECTION_CERTIFICATE_PASSWORD must be set}
+      # Host Filtering — MUST NOT be wildcard in production (StartupValidator rejects '*')
+      - AllowedHosts=${ALLOWED_HOSTS:?ALLOWED_HOSTS must be set - e.g. seventysixsandbox.com;www.seventysixsandbox.com;api.seventysixsandbox.com}
+      # OAuth Callback URLs — must match GitHub OAuth App settings
+      - Auth__OAuth__ClientCallbackUrl=${OAUTH_CALLBACK_URL:?OAUTH_CALLBACK_URL must be set - e.g. https://seventysixsandbox.com/auth/callback}
+      - Auth__OAuth__Providers__0__RedirectUri=${OAUTH_REDIRECT_URI:?OAUTH_REDIRECT_URI must be set - e.g. https://api.seventysixsandbox.com/api/v1/auth/oauth/github/callback}
+      # Email — public URL for email links (password reset, verification, etc.)
+      - Email__ClientBaseUrl=${CLIENT_BASE_URL:?CLIENT_BASE_URL must be set - e.g. https://seventysixsandbox.com}
+      # Admin Seeder — customize username/fullname; disable after first login + password change
+      - AdminSeeder__Username=${ADMIN_USERNAME:-admin}
+      - AdminSeeder__FullName=${ADMIN_FULLNAME:-System Administrator}
+      - AdminSeeder__Enabled=${ADMIN_SEEDER_ENABLED:-true}
       # CORS - Use HTTPS for all external origins
-      - Cors__AllowedOrigins__0=${CORS_ORIGIN_0:?CORS_ORIGIN_0 is required - set to your production domain e.g. https://yourdomain.com}
+      - Cors__AllowedOrigins__0=${CORS_ORIGIN_0:?CORS_ORIGIN_0 is required - set to your production domain e.g. https://seventysixsandbox.com}
       - Cors__AllowedOrigins__1=${CORS_ORIGIN_1:-}
       # Valkey Cache Connection
       - Cache__Valkey__ConnectionString=valkey:6379,password=${VALKEY_PASSWORD:?VALKEY_PASSWORD must be set}
@@ -192,6 +207,7 @@ services:
 
   # Angular Client Service
   client:
+    image: ${CLIENT_IMAGE:-ghcr.io/actionjacksonthegoat-debug/seventysix-client:latest}
     build:
       context: ./SeventySix.Client
       dockerfile: Dockerfile.production

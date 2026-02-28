@@ -652,7 +652,7 @@ describe("DataTableComponent",
 							.toBeTruthy();
 
 						const wrapper: HTMLElement | null =
-							fixture.nativeElement.querySelector(".table-wrapper");
+							fixture.nativeElement.querySelector(".table-content");
 
 						expect(wrapper)
 							.toBeTruthy();

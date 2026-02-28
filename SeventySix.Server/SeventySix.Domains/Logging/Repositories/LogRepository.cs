@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SeventySix.Shared.Constants;
@@ -153,10 +154,17 @@ internal class LogRepository(
 		IQueryable<Log> query,
 		LogQueryRequest request)
 	{
+		// Resolve the case-insensitive SortBy to the exact C# property name required by EF.Property.
+		// The validator accepts case-insensitive values (e.g. "logLevel"), but EF.Property is case-sensitive.
 		string sortProperty =
 			string.IsNullOrWhiteSpace(request.SortBy)
 			? nameof(Log.CreateDate)
-			: request.SortBy;
+			: typeof(Log)
+				.GetProperty(
+					request.SortBy,
+					BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase)
+				?.Name
+				?? nameof(Log.CreateDate);
 
 		query =
 			request.SortDescending

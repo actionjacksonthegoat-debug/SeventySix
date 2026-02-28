@@ -14,6 +14,7 @@
 #   Jwt:SecretKey                                 → JWT signing key (auto-generated)
 #   Auth:OAuth:Providers:0:ClientId/ClientSecret  → GitHub OAuth
 #   Email:SmtpUsername/SmtpPassword/FromAddress    → Brevo SMTP
+#   Site:Email                                    → Public contact email for legal pages
 #   AdminSeeder:Email/InitialPassword             → Admin account seeding
 #   Altcha:HmacKeyBase64                          → ALTCHA HMAC key (auto-generated)
 #   DataProtection:*                              → Key protection settings + certificate
@@ -70,6 +71,9 @@ switch ($Action) {
 		dotnet user-secrets set "Email:SmtpUsername" "your-smtp-username" --project $projectPath
 		dotnet user-secrets set "Email:SmtpPassword" "your-smtp-password" --project $projectPath
 		dotnet user-secrets set "Email:FromAddress" "your-email@example.com" --project $projectPath
+
+		# Site — public contact email for legal/privacy pages
+		dotnet user-secrets set "Site:Email" "contact@seventysix.local" --project $projectPath
 
 		# Admin Seeder
 		dotnet user-secrets set "AdminSeeder:Email" "admin@seventysix.local" --project $projectPath

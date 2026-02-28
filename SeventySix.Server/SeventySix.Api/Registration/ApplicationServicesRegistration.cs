@@ -43,6 +43,7 @@ public static class ApplicationServicesRegistration
 		services.AddSingleton<IValidator<RequestLimitsSettings>, RequestLimitsSettingsValidator>();
 		services.AddSingleton<IValidator<ResilienceSettings>, ResilienceSettingsValidator>();
 		services.AddSingleton<IValidator<OutputCacheSettings>, OutputCacheSettingsValidator>();
+		services.AddSingleton<IValidator<SiteSettings>, SiteSettingsValidator>();
 
 		// Configuration options with FluentValidation + ValidateOnStart
 		services
@@ -75,6 +76,12 @@ public static class ApplicationServicesRegistration
 		// - AddLoggingDomain()
 		// - AddApiTrackingDomain()
 		// - AddInfrastructure()
+
+		services
+			.AddOptions<SiteSettings>()
+			.BindConfiguration(SiteSettings.SectionName)
+			.ValidateWithFluentValidation()
+			.ValidateOnStart();
 
 		// Memory cache
 		services.AddMemoryCache();

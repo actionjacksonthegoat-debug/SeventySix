@@ -57,22 +57,24 @@
 
 .toast-header {
 	display: flex;
-	align-items: flex-start;
+	align-items: center;
 	gap: vars.$spacing-sm;
 
 	> mat-icon:first-child {
-		margin-top: vars.$spacing-xs; // Aligns icon with first text line
+		flex-shrink: 0;
 	}
 }
 
 .toast-message {
 	flex: 1;
 	font-weight: vars.$font-weight-medium;
+	word-break: break-word;
+	white-space: normal;
 }
 
 .toast-actions {
 	display: flex;
-	align-items: flex-start;
+	align-items: center;
 	gap: vars.$spacing-xs;
 	flex-shrink: 0;
 }

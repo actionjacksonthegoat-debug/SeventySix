@@ -436,6 +436,35 @@ dotnet ef migrations add MigrationName -c ElectronicNotificationsDbContext -o El
 
 Sensitive values (connection strings, JWT keys, API secrets) are stored in .NET User Secrets during development and Docker environment variables in production.
 
+### User Secrets Reference
+
+All dev secrets are managed via `scripts/manage-user-secrets.ps1` (run `npm run secrets:init` to initialise). The following keys must be set and are exported to Docker Compose by `scripts/internal/load-user-secrets.ps1`:
+
+| Secret Key | Docker Env Var | Description |
+|---|---|---|
+| `Database:Password` | `DB_PASSWORD` | PostgreSQL password |
+| `Database:Name` | `DB_NAME` | PostgreSQL database name |
+| `Database:User` | `DB_USER` | PostgreSQL username |
+| `Jwt:SecretKey` | `JWT_SECRET_KEY` | JWT signing key |
+| `Auth:OAuth:Providers:0:ClientId` | `GITHUB_CLIENT_ID` | GitHub OAuth client ID |
+| `Auth:OAuth:Providers:0:ClientSecret` | `GITHUB_CLIENT_SECRET` | GitHub OAuth client secret |
+| `Email:SmtpUsername` | `EMAIL_SMTP_USERNAME` | Brevo SMTP login |
+| `Email:SmtpPassword` | `EMAIL_SMTP_PASSWORD` | Brevo SMTP key/password |
+| `Email:FromAddress` | `EMAIL_FROM_ADDRESS` | Envelope sender address for all outgoing emails |
+| `Site:Email` | `SITE_EMAIL` | Public contact email shown on legal pages (Privacy Policy, Terms of Service); served to the client via `/api/v1/config/features` |
+| `AdminSeeder:Email` | `ADMIN_EMAIL` | Dev admin account email |
+| `AdminSeeder:InitialPassword` | `ADMIN_PASSWORD` | Dev admin initial password |
+| `Altcha:HmacKeyBase64` | `ALTCHA_HMAC_KEY` | ALTCHA HMAC key (auto-generated) |
+| `Grafana:AdminUser` | `GRAFANA_ADMIN_USER` | Grafana admin username |
+| `Grafana:AdminPassword` | `GRAFANA_ADMIN_PASSWORD` | Grafana admin password |
+| `PgAdmin:DefaultEmail` | `PGADMIN_DEFAULT_EMAIL` | pgAdmin web UI email |
+| `PgAdmin:DefaultPassword` | `PGADMIN_DEFAULT_PASSWORD` | pgAdmin web UI password |
+| `DataProtection:UseCertificate` | `DATA_PROTECTION_USE_CERTIFICATE` | Enable certificate-based key protection |
+| `DataProtection:CertificatePath` | `DATA_PROTECTION_CERTIFICATE_PATH` | Path to DataProtection PFX file |
+| `DataProtection:CertificatePassword` | `DATA_PROTECTION_CERTIFICATE_PASSWORD` | DataProtection PFX password |
+
+> `Email:FromAddress` and `Site:Email` are two distinct values. `FromAddress` is the SMTP envelope sender. `Site:Email` is the publicly displayed contact address on legal pages — it is never used as a sender.
+
 ### Optional Features (disable via appsettings)
 
 The following features are optional and can be turned off in `appsettings.Development.json` without modifying the base `appsettings.json`:

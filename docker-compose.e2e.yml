@@ -99,6 +99,7 @@ services:
       - Email__SmtpUsername=
       - Email__SmtpPassword=
       - Email__FromAddress=noreply@test.local
+      - Site__Email=contact@test.local
       - Email__ClientBaseUrl=https://localhost:4201
       - Email__Queue__Enabled=true
       - Email__Queue__ProcessingIntervalSeconds=1

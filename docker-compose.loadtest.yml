@@ -101,6 +101,7 @@ services:
       - Email__SmtpUsername=
       - Email__SmtpPassword=
       - Email__FromAddress=noreply@loadtest.local
+      - Site__Email=contact@loadtest.local
       - Email__ClientBaseUrl=https://localhost:4202
       - Email__Queue__Enabled=true
       - Email__Queue__ProcessingIntervalSeconds=5

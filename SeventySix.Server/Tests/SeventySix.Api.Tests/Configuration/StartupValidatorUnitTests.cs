@@ -87,6 +87,7 @@ public sealed class StartupValidatorUnitTests
 				["Email:SmtpPassword"] = "smtp-pass",
 				["Email:FromAddress"] = "test@example.com",
 				["Altcha:HmacKeyBase64"] = "dGVzdGtleQ==",
+				["Site:Email"] = "contact@example.com",
 			};
 
 		IConfiguration configuration =
@@ -154,6 +155,7 @@ public sealed class StartupValidatorUnitTests
 				["Email:SmtpPassword"] = "smtp-pass",
 				["Email:FromAddress"] = "test@example.com",
 				["Altcha:HmacKeyBase64"] = "dGVzdGtleQ==",
+				["Site:Email"] = "contact@example.com",
 			};
 
 		IConfiguration configuration =
@@ -255,6 +257,43 @@ public sealed class StartupValidatorUnitTests
 			() => StartupValidator.ValidateAllowedHosts(
 				configuration,
 				environment));
+	}
+
+	[Fact]
+	public void ValidateConfiguration_Production_MissingSiteEmail_ThrowsInvalidOperationException()
+	{
+		// Arrange — all required secrets present except Site:Email
+		Dictionary<string, string?> configValues =
+			new()
+			{
+				["Jwt:SecretKey"] = "xK7mQ2pWvN8jR4tY6uH9bE3dF5gA1cZ0",
+				["Database:Password"] = "realpassword",
+				["Auth:OAuth:Providers:0:ClientId"] = "client-id",
+				["Auth:OAuth:Providers:0:ClientSecret"] = "client-secret",
+				["Email:SmtpUsername"] = "smtp-user",
+				["Email:SmtpPassword"] = "smtp-pass",
+				["Email:FromAddress"] = "test@example.com",
+				["Altcha:HmacKeyBase64"] = "dGVzdGtleQ==",
+				// Site:Email intentionally absent
+			};
+
+		IConfiguration configuration =
+			new ConfigurationBuilder()
+				.AddInMemoryCollection(configValues)
+				.Build();
+
+		IHostEnvironment environment =
+			CreateEnvironment(Environments.Production);
+
+		// Act & Assert
+		InvalidOperationException exception =
+			Should.Throw<InvalidOperationException>(
+				() => StartupValidator.ValidateConfiguration(
+					configuration,
+					environment,
+					Logger));
+
+		exception.Message.ShouldContain("Configuration validation failed");
 	}
 
 	private static IHostEnvironment CreateEnvironment(string environmentName)

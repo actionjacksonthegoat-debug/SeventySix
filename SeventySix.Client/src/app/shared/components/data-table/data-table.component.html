@@ -39,7 +39,7 @@
 				matTooltip="Refresh"
 				aria-label="Refresh table data"
 			>
-				<mat-icon aria-hidden="true">refresh</mat-icon>
+				<mat-icon aria-hidden="true" [class.spinning]="isRefetching() && !isLoading()">refresh</mat-icon>
 			</button>
 		}
 
@@ -201,6 +201,16 @@
 
 	<!-- Table with Error Overlay (CLS Prevention) -->
 	<div class="table-content-wrapper">
+		<!-- Refetch progress bar: visible during background refresh (keepPreviousData) -->
+		@if (isRefetching() && !isLoading())
+		{
+			<mat-progress-bar
+				mode="indeterminate"
+				class="refetch-indicator"
+				aria-label="Refreshing data"
+			></mat-progress-bar>
+		}
+
 		<!-- Error Overlay -->
 		@if (error() && !isLoading())
 		{
@@ -218,98 +228,93 @@
 
 		<!-- Table Content (always rendered for CLS prevention) -->
 		<div class="table-content">
-			<div class="table-wrapper">
-				<cdk-virtual-scroll-viewport
-					[itemSize]="virtualScrollItemSize()"
-					class="table-viewport"
+			<!-- Single mat-table with fixedLayout + sticky header inside CDK virtual scroll.
+			     [fixedLayout]="true" enforces table-layout:fixed so <colgroup> widths apply
+			     identically to both header and data cells — the only correct alignment approach
+			     in Angular Material. The sticky header stays pinned inside the CDK viewport. -->
+			<cdk-virtual-scroll-viewport
+				[itemSize]="virtualScrollItemSize()"
+				[style.height]="viewportHeight()"
+				class="table-viewport"
+			>
+				<table
+					mat-table
+					[fixedLayout]="true"
+					[dataSource]="tableDataSource()"
+					matSort
+					(matSortChange)="onSortChange($event)"
 				>
-					<table
-						mat-table
-						[dataSource]="tableDataSource()"
-						matSort
-						(matSortChange)="onSortChange($event)"
-					>
-						<!-- Select Column -->
+					<colgroup>
 						@if (selectable())
 						{
-							<ng-container matColumnDef="select">
-								<th mat-header-cell *matHeaderCellDef>
-									@if (showSelectAll())
-									{
-										<mat-checkbox
-											[checked]="isAllSelected()"
-											[indeterminate]="
-												hasSelection() &&
-												!isAllSelected()
-											"
-											(change)="toggleAllRows()"
-											aria-label="Select all rows"
-										>
-										</mat-checkbox>
-									}
-								</th>
-								<td mat-cell *matCellDef="let row">
-									@if (row.id < 0) {
-									<ngx-skeleton-loader
-										[theme]="skeletonCheckbox"
-									/>
-									} @else {
-									<mat-checkbox
-										[checked]="selectionManager.selection.isSelected(row)"
-										(change)="selectionManager.selection.toggle(row)"
-										[aria-label]="'Select row ' + row.id"
-									>
-									</mat-checkbox>
-									}
-								</td>
-							</ng-container>
+							<col class="col-select" />
 						}
-
-						<!-- Data Columns -->
 						@for (column of visibleColumns(); track column.key)
 						{
-							<ng-container [matColumnDef]="column.key">
-								<th
-									mat-header-cell
-									*matHeaderCellDef
-									[mat-sort-header]="
-										column.sortable ? column.key : ''
-									"
-									[disabled]="!column.sortable"
+							<col [style.width]="column.width ?? null" />
+						}
+						@if (rowActions().length > 0)
+						{
+							<col class="col-actions" />
+						}
+					</colgroup>
+
+					<!-- Select Column -->
+					@if (selectable())
+					{
+						<ng-container matColumnDef="select">
+							<th mat-header-cell *matHeaderCellDef>
+								@if (showSelectAll())
+								{
+									<mat-checkbox
+										[checked]="isAllSelected()"
+										[indeterminate]="
+											hasSelection() && !isAllSelected()
+										"
+										(change)="toggleAllRows()"
+										aria-label="Select all rows"
+									>
+									</mat-checkbox>
+								}
+							</th>
+							<td mat-cell *matCellDef="let row">
+								@if (row.id < 0) {
+								<ngx-skeleton-loader
+									[theme]="skeletonCheckbox"
+								/>
+								} @else {
+								<mat-checkbox
+									[checked]="selectionManager.selection.isSelected(row)"
+									(change)="selectionManager.selection.toggle(row)"
+									[aria-label]="'Select row ' + row.id"
 								>
-									{{ column.label }}
-								</th>
-								<td mat-cell *matCellDef="let row">
-									@if (row.id < 0) {
-									<ngx-skeleton-loader
-										[theme]="skeletonTableCell"
-									/>
-									} @else if (column.type === "badge") {
-										<mat-chip>
-											{{
-												column.formatter
-													? column.formatter(
-															row[column.key],
-															row
-														)
-													: row[column.key]
-											}}
-										</mat-chip>
-									}
-									@else if (column.type === "date")
-									{
-										{{
-											column.formatter
-												? column.formatter(
-														row[column.key],
-														row
-													)
-												: (row[column.key]
-													| date: "short")
-										}}
-									}
-									@else
-									{
+								</mat-checkbox>
+								}
+							</td>
+						</ng-container>
+					}
+
+					<!-- Data Columns -->
+					@for (column of visibleColumns(); track column.key)
+					{
+						<ng-container [matColumnDef]="column.key">
+							<th
+								mat-header-cell
+								*matHeaderCellDef
+								[mat-sort-header]="
+									column.sortable ? column.key : ''
+								"
+								[disabled]="!column.sortable"
+							>
+								{{ column.label }}
+							</th>
+							<td mat-cell *matCellDef="let row">
+								@if (row.id < 0) {
+								<ngx-skeleton-loader
+									[theme]="skeletonTableCell"
+								/>
+								} @else if (column.type === "badge") {
+									<mat-chip>
 										{{
 											column.formatter
 												? column.formatter(
@@ -318,115 +323,134 @@
 													)
 												: row[column.key]
 										}}
-									}
-								</td>
-							</ng-container>
-						}
-
-						<!-- Actions Column -->
-						@if (rowActions().length > 0)
-						{
-							<ng-container matColumnDef="actions">
-								<th mat-header-cell *matHeaderCellDef>
-									Actions
-								</th>
-								<td mat-cell *matCellDef="let row">
-									@if (row.id < 0) {
-									<ngx-skeleton-loader
-										[theme]="skeletonIconButton"
-									/>
-									} @else if (rowActions().length === 1) {
-										<!-- Single action: show icon directly -->
-										<button
-											mat-icon-button
-											(click)="
-												onRowAction(
-													rowActions()[0].key,
+									</mat-chip>
+								}
+								@else if (column.type === "date")
+								{
+									{{
+										column.formatter
+											? column.formatter(
+													row[column.key],
 													row
-												);
-												$event.stopPropagation()
-											"
-											[matTooltip]="rowActions()[0].label"
-											[class.warn-action]="
-												rowActions()[0].color === 'warn'
-											"
-											aria-label="Row action"
+												)
+											: (row[column.key]
+												| date: "short")
+									}}
+								}
+								@else
+								{
+									{{
+										column.formatter
+											? column.formatter(
+													row[column.key],
+													row
+												)
+											: row[column.key]
+									}}
+								}
+							</td>
+						</ng-container>
+					}
+
+					<!-- Actions Column -->
+					@if (rowActions().length > 0)
+					{
+						<ng-container matColumnDef="actions">
+							<th mat-header-cell *matHeaderCellDef>Actions</th>
+							<td mat-cell *matCellDef="let row">
+								@if (row.id < 0) {
+								<ngx-skeleton-loader
+									[theme]="skeletonIconButton"
+								/>
+								} @else if (rowActions().length === 1) {
+									<!-- Single action: show icon directly -->
+									<button
+										mat-icon-button
+										(click)="
+											onRowAction(
+												rowActions()[0].key,
+												row
+											);
+											$event.stopPropagation()
+										"
+										[matTooltip]="rowActions()[0].label"
+										[class.warn-action]="
+											rowActions()[0].color === 'warn'
+										"
+										aria-label="Row action"
+									>
+										<mat-icon aria-hidden="true">{{
+											rowActions()[0].icon
+										}}</mat-icon>
+									</button>
+								}
+								@else
+								{
+									<!-- Multiple actions: show menu -->
+									<button
+										mat-icon-button
+										[matMenuTriggerFor]="actionMenu"
+										(click)="$event.stopPropagation()"
+										aria-label="Row actions"
+									>
+										<mat-icon aria-hidden="true"
+											>more_vert</mat-icon
 										>
-											<mat-icon aria-hidden="true">{{
-												rowActions()[0].icon
-											}}</mat-icon>
-										</button>
-									}
-									@else
-									{
-										<!-- Multiple actions: show menu -->
-										<button
-											mat-icon-button
-											[matMenuTriggerFor]="actionMenu"
-											(click)="$event.stopPropagation()"
-											aria-label="Row actions"
-										>
-											<mat-icon aria-hidden="true"
-												>more_vert</mat-icon
-											>
-										</button>
-										<mat-menu #actionMenu="matMenu">
-											@for (
-												action of rowActions();
-												track action.key
+									</button>
+									<mat-menu #actionMenu="matMenu">
+										@for (
+											action of rowActions();
+											track action.key
+										)
+										{
+											@if (
+												shouldShowAction(
+													action,
+													row
+												)
 											)
 											{
-												@if (
-													shouldShowAction(
-														action,
-														row
-													)
-												)
-												{
-													<button
-														mat-menu-item
-														(click)="
-															onRowAction(
-																action.key,
-																row
-															)
-														"
-														[class.warn-action]="
-															action.color ===
-															'warn'
-														"
+												<button
+													mat-menu-item
+													(click)="
+														onRowAction(
+															action.key,
+															row
+														)
+													"
+													[class.warn-action]="
+														action.color ===
+														'warn'
+													"
+												>
+													<mat-icon
+														aria-hidden="true"
+														>{{
+															action.icon
+														}}</mat-icon
 													>
-														<mat-icon
-															aria-hidden="true"
-															>{{
-																action.icon
-															}}</mat-icon
-														>
-														{{ action.label }}
-													</button>
-												}
+													{{ action.label }}
+												</button>
 											}
-										</mat-menu>
-									}
-								</td>
-							</ng-container>
-						}
+										}
+									</mat-menu>
+								}
+							</td>
+						</ng-container>
+					}
 
-						<tr
-							mat-header-row
-							*matHeaderRowDef="displayedColumns()"
-						></tr>
+					<!-- Header Row (sticky: true — stays pinned at top of CDK viewport) -->
+					<tr mat-header-row *matHeaderRowDef="displayedColumns(); sticky: true"></tr>
 
-						<!-- Data Rows (with inline skeleton support via tableDataSource) -->
-						<tr
-							mat-row
-							*matRowDef="let row; columns: displayedColumns()"
-							(click)="onRowClick(row)"
-							class="data-row"
-						></tr>
-					</table>
-				</cdk-virtual-scroll-viewport>
-			</div>
+					<!-- Data Rows (with inline skeleton support via tableDataSource) -->
+					<tr
+						mat-row
+						*matRowDef="let row; columns: displayedColumns()"
+						(click)="onRowClick(row)"
+						class="data-row"
+					></tr>
+				</table>
+			</cdk-virtual-scroll-viewport>
 
 			<!-- Empty State (shown when no data and not loading) -->
 			@if (!isLoading() && data().length === 0 && !error())

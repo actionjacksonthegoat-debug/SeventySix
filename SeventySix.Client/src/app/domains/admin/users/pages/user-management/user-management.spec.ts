@@ -18,6 +18,8 @@ describe("UserManagementPage",
 						{
 							data: () => ({ items: [], totalCount: 0, page: 1, pageSize: 50 }),
 							isLoading: () => false,
+							isPending: () => false,
+							isFetching: () => false,
 							error: () => null,
 							isSuccess: () => true
 						}),

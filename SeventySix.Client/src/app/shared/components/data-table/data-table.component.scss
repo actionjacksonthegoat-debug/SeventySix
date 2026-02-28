@@ -138,32 +138,51 @@
 	}
 }
 
-// CLS Prevention: Reserve minimum height and use overlay pattern for errors only
+// CLS Prevention: handled by viewportHeight signal default (see data-table.component.ts)
 .table-content-wrapper {
 	position: relative;
-	min-height: vars.$cls-table-min-height;
 	display: flex;
 	flex-direction: column;
 	flex: 1;
+	overflow: hidden;
 
 	.error-overlay {
 		@include mixins.cls-loading-overlay();
 	}
 }
 
-.table-wrapper {
-	overflow: hidden;
-	flex: 1;
-	min-height: 0;
+.table-content {
 	display: flex;
 	flex-direction: column;
+	flex: 0 0 auto;
+}
 
-	.table-viewport {
-		flex: 1;
-		min-height: vars.$cls-table-min-height;
-		overflow-y: auto;
+.table-viewport {
+	// Always reserve the scrollbar gutter so the content area width
+	// never changes when the scrollbar appears or disappears.
+	// This prevents column widths from reflowing during virtual scroll.
+	overflow-y: auto;
+	scrollbar-gutter: stable;
+	width: 100%;
+	@include vars.custom-scrollbar();
+
+	// CDK virtual scroll positions its content wrapper with `position: absolute`
+	// and no width constraint. Without this, the table's `width: 100%` resolves
+	// to its intrinsic content width instead of the viewport width — causing
+	// `table-layout: fixed` to distribute columns over the wrong total width
+	// and column widths to reflow as different rows render during scroll.
+	/* stylelint-disable-next-line selector-class-pattern */
+	::ng-deep .cdk-virtual-scroll-content-wrapper {
 		width: 100%;
-		@include vars.custom-scrollbar();
+	}
+
+	// Angular Material sets `min-width: 100%` on the table — NOT `width: 100%`.
+	// With `table-layout: fixed`, a `min-width` allows the table to grow beyond
+	// the viewport based on cell content, defeating fixed layout. Override with
+	// an explicit `width: 100%` so the fixed algorithm has a definite total width
+	// and columns without explicit widths get a stable share of the remainder.
+	table.mat-mdc-table {
+		width: 100%;
 	}
 }
 
@@ -185,7 +204,7 @@
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
-	padding: vars.$spacing-3xl vars.$spacing-lg;
+	padding: vars.$spacing-2xl vars.$spacing-lg;
 	color: var(--mat-sys-on-surface-variant);
 	gap: vars.$spacing-sm;
 
@@ -198,4 +217,55 @@
 		margin: 0;
 		font-size: vars.$font-size-base;
 	}
+}
+
+// Column fixed widths for select checkbox and actions button columns
+.col-select {
+	width: 56px;
+}
+
+.col-actions {
+	width: 80px;
+}
+
+// Column width stability: truncate long HEADER cell content rather than expanding
+.mat-mdc-header-cell {
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+// Sticky header: opaque background prevents rows bleeding through during scroll
+.mat-mdc-header-row {
+	background-color: var(--mat-table-background-color);
+}
+
+// Column width stability: truncate long cell content rather than expanding columns
+.mat-mdc-cell {
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+// Refetch progress bar — sits flush at the top of the table content wrapper
+.refetch-indicator {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	z-index: 1;
+}
+
+@keyframes spin {
+	from {
+		transform: rotate(0deg);
+	}
+
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+.spinning {
+	animation: spin vars.$transition-duration-slow linear infinite;
 }

@@ -210,4 +210,86 @@ public sealed class ScheduledJobServiceTests
 
 		refreshTokenJob.Status.ShouldBe(HealthStatusConstants.Degraded);
 	}
+
+	[Fact]
+	public async Task GetAllJobStatusesAsync_ReturnsHealthyStatus_ForShortIntervalJobWithinMinimumGraceAsync()
+	{
+		// Arrange
+		// EmailQueueProcessJob interval = 30 s (from EmailQueueSettings in test base).
+		// 10 % grace = 3 s — far below the 5-min minimum.
+		// 2 minutes ago is within the 5-min minimum grace period → Healthy.
+		DateTimeOffset now =
+			TimeProviderFake.GetUtcNow();
+
+		DateTimeOffset lastExecutedAt =
+			now.AddMinutes(-2);
+
+		RecurringJobExecution execution =
+			new()
+			{
+				JobName = "EmailQueueProcessJob",
+				LastExecutedAt = lastExecutedAt,
+				NextScheduledAt = now.AddMinutes(-1),
+				LastExecutedBy = "System",
+			};
+
+		RecurringJobRepository
+			.GetAllAsync(Arg.Any<CancellationToken>())
+			.Returns([execution]);
+
+		ScheduledJobService service =
+			CreateSut();
+
+		// Act
+		IReadOnlyList<RecurringJobStatusResponse> result =
+			await service.GetAllJobStatusesAsync(CancellationToken.None);
+
+		// Assert
+		RecurringJobStatusResponse emailJob =
+			result.Single(
+				job => job.JobName == "EmailQueueProcessJob");
+
+		emailJob.Status.ShouldBe(HealthStatusConstants.Healthy);
+	}
+
+	[Fact]
+	public async Task GetAllJobStatusesAsync_ReturnsDegradedStatus_ForShortIntervalJobExceedingMinimumGraceAsync()
+	{
+		// Arrange
+		// EmailQueueProcessJob interval = 30 s (from EmailQueueSettings in test base).
+		// 10 % grace = 3 s — far below the 5-min minimum.
+		// 10 minutes ago exceeds the 5-min+30s maximum allowed interval → Degraded.
+		DateTimeOffset now =
+			TimeProviderFake.GetUtcNow();
+
+		DateTimeOffset lastExecutedAt =
+			now.AddMinutes(-10);
+
+		RecurringJobExecution execution =
+			new()
+			{
+				JobName = "EmailQueueProcessJob",
+				LastExecutedAt = lastExecutedAt,
+				NextScheduledAt = now.AddMinutes(-9),
+				LastExecutedBy = "System",
+			};
+
+		RecurringJobRepository
+			.GetAllAsync(Arg.Any<CancellationToken>())
+			.Returns([execution]);
+
+		ScheduledJobService service =
+			CreateSut();
+
+		// Act
+		IReadOnlyList<RecurringJobStatusResponse> result =
+			await service.GetAllJobStatusesAsync(CancellationToken.None);
+
+		// Assert
+		RecurringJobStatusResponse emailJob =
+			result.Single(
+				job => job.JobName == "EmailQueueProcessJob");
+
+		emailJob.Status.ShouldBe(HealthStatusConstants.Degraded);
+	}
 }

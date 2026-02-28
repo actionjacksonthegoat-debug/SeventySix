@@ -130,6 +130,8 @@ services:
       - Email__SmtpUsername=${EMAIL_SMTP_USERNAME:-}
       - Email__SmtpPassword=${EMAIL_SMTP_PASSWORD:-}
       - Email__FromAddress=${EMAIL_FROM_ADDRESS:-}
+      # Site — public contact email for legal pages
+      - Site__Email=${SITE_EMAIL:-contact@seventysix.local}
       # Altcha HMAC key
       - Altcha__HmacKeyBase64=${ALTCHA_HMAC_KEY:-}
       # Admin Seeding

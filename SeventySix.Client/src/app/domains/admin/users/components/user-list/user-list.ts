@@ -92,6 +92,16 @@ export class UserList
 		this.userService.getPagedUsers();
 
 	/**
+	 * True when the query is refetching in the background with previous data still visible.
+	 * Used to show the progress bar and spinning refresh icon in the data table.
+	 * @type {Signal<boolean>}
+	 */
+	protected readonly isFetching: Signal<boolean> =
+		computed(
+			() =>
+				this.usersQuery.isFetching() && !this.usersQuery.isPending());
+
+	/**
 	 * Mutation for updating user records.
 	 * @type {ReturnType<typeof this.userService.updateUser>}
 	 * @private

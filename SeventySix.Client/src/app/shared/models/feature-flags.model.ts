@@ -25,4 +25,7 @@ export interface FeatureFlags
 	 * the server-configured token lifetime.
 	 */
 	tokenRefreshBufferSeconds: number;
+
+	/** Public contact email shown on legal pages. Empty string when unavailable. */
+	siteEmail: string;
 }
