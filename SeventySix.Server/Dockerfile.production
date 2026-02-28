@@ -8,7 +8,10 @@ WORKDIR /src
 COPY ["SeventySix.Server.slnx", "./"]
 COPY ["SeventySix.Shared/SeventySix.Shared.csproj", "SeventySix.Shared/"]
 COPY ["SeventySix.Domains/SeventySix.Domains.csproj", "SeventySix.Domains/"]
+COPY ["SeventySix.Domains.Identity/SeventySix.Domains.Identity.csproj", "SeventySix.Domains.Identity/"]
 COPY ["SeventySix.Api/SeventySix.Api.csproj", "SeventySix.Api/"]
+COPY ["SeventySix.Analyzers/SeventySix.Analyzers.csproj", "SeventySix.Analyzers/"]
+COPY ["SeventySix.Analyzers.CodeFixes/SeventySix.Analyzers.CodeFixes.csproj", "SeventySix.Analyzers.CodeFixes/"]
 
 # Restore dependencies
 RUN dotnet restore "SeventySix.Api/SeventySix.Api.csproj"
@@ -32,7 +35,7 @@ RUN dotnet publish "SeventySix.Api.csproj" \
 # Generate SQL migration scripts for all DbContexts
 WORKDIR /src
 RUN dotnet tool install --global dotnet-ef --version 10.0.0 && \
-	/root/.dotnet/tools/dotnet-ef migrations script --project SeventySix.Domains/SeventySix.Domains.csproj \
+	/root/.dotnet/tools/dotnet-ef migrations script --project SeventySix.Domains.Identity/SeventySix.Domains.Identity.csproj \
 	--startup-project SeventySix.Api/SeventySix.Api.csproj \
 	--context IdentityDbContext \
 	--idempotent \
@@ -46,7 +49,12 @@ RUN dotnet tool install --global dotnet-ef --version 10.0.0 && \
 	--startup-project SeventySix.Api/SeventySix.Api.csproj \
 	--context ApiTrackingDbContext \
 	--idempotent \
-	--output /app/apitracking-migrations.sql
+	--output /app/apitracking-migrations.sql && \
+	/root/.dotnet/tools/dotnet-ef migrations script --project SeventySix.Domains/SeventySix.Domains.csproj \
+	--startup-project SeventySix.Api/SeventySix.Api.csproj \
+	--context ElectronicNotificationsDbContext \
+	--idempotent \
+	--output /app/electronicnotifications-migrations.sql
 
 # Stage 3: Runtime
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
@@ -66,6 +74,7 @@ COPY --from=publish /app/publish .
 COPY --from=publish /app/identity-migrations.sql .
 COPY --from=publish /app/logging-migrations.sql .
 COPY --from=publish /app/apitracking-migrations.sql .
+COPY --from=publish /app/electronicnotifications-migrations.sql .
 
 # Create logs and data protection keys directories with proper permissions
 # The keys directory should be mounted as a Docker volume for persistence across container restarts
@@ -85,6 +94,7 @@ RUN echo '#!/bin/bash\n\
 	PGPASSWORD=$DB_PASSWORD psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" -f /app/identity-migrations.sql\n\
 	PGPASSWORD=$DB_PASSWORD psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" -f /app/logging-migrations.sql\n\
 	PGPASSWORD=$DB_PASSWORD psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" -f /app/apitracking-migrations.sql\n\
+	PGPASSWORD=$DB_PASSWORD psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" -f /app/electronicnotifications-migrations.sql\n\
 	\n\
 	echo "Starting application"\n\
 	exec dotnet SeventySix.Api.dll' > /app/entrypoint.sh

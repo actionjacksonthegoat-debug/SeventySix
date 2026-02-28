@@ -72,7 +72,7 @@ public sealed class PermissionRequestExtensionsTests
 					},
 				RequestMessage = null,
 				CreatedBy = "system",
-				CreateDate = DateTimeOffset.UtcNow,
+				CreateDate = new DateTimeOffset(2025, 1, 1, 12, 0, 0, TimeSpan.Zero),
 			};
 
 		// Act

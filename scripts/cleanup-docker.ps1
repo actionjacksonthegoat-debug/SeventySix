@@ -63,15 +63,12 @@ else {
 	Write-Host "  No stopped containers to remove" -ForegroundColor DarkGray
 }
 
-# Remove dangling SeventySix images only
+# Remove dangling images (dangling = unused intermediate layers with <none> tag)
 Write-Host ""
-Write-Host "Removing dangling SeventySix images..." -ForegroundColor Yellow
-$danglingImages =
-docker images --filter "dangling=true" --format "{{.Repository}}|{{.ID}}" |
-Where-Object { $_ -match "seventysix" }
+Write-Host "Removing dangling images..." -ForegroundColor Yellow
+$danglingImages = docker images --filter "dangling=true" --format "{{.ID}}"
 if ($danglingImages) {
-	foreach ($image in $danglingImages) {
-		$imageId = ($image -split "\|")[1]
+	foreach ($imageId in $danglingImages) {
 		docker rmi $imageId -f 2>$null | Out-Null
 	}
 	Write-Host "  Removed $($danglingImages.Count) dangling image(s)" -ForegroundColor DarkYellow
@@ -80,22 +77,11 @@ else {
 	Write-Host "  No dangling images to remove" -ForegroundColor DarkGray
 }
 
-# Remove SeventySix images older than 7 days
+# Remove images older than 7 days using docker image prune
 Write-Host ""
-Write-Host "Removing SeventySix images older than 7 days..." -ForegroundColor Yellow
-$oldImages =
-docker images --filter "until=168h" --format "{{.Repository}}|{{.ID}}" |
-Where-Object { $_ -match "seventysix" }
-if ($oldImages) {
-	foreach ($image in $oldImages) {
-		$imageId = ($image -split "\|")[1]
-		docker rmi $imageId -f 2>$null | Out-Null
-	}
-	Write-Host "  Removed $($oldImages.Count) old image(s)" -ForegroundColor DarkYellow
-}
-else {
-	Write-Host "  No old images to remove" -ForegroundColor DarkGray
-}
+Write-Host "Removing images older than 7 days..." -ForegroundColor Yellow
+docker image prune -f --filter "until=168h" | Out-Null
+Write-Host "  Done" -ForegroundColor DarkYellow
 
 # Remove build cache, keeping 2GB
 Write-Host ""

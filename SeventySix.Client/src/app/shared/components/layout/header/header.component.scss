@@ -50,8 +50,8 @@
 	}
 }
 
-.user-menu-header {
+:host .user-menu-header {
 	color: var(--mat-sys-on-surface);
 	font-weight: vars.$font-weight-medium;
-	opacity: 1 !important;
+	opacity: 1;
 }

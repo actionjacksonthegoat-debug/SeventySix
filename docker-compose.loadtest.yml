@@ -52,7 +52,7 @@ services:
 
   # MailDev - Email Capture
   maildev-loadtest:
-    image: maildev/maildev:latest
+    image: maildev/maildev:2.2.1
     container_name: seventysix-maildev-loadtest
     ports:
       - "1081:1081" # Web UI

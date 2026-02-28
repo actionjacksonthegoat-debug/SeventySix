@@ -16,6 +16,21 @@ Dockerfile* text eol=lf
 *.yaml text eol=lf
 
 ###############################################################################
+# Force LF line endings for front-end source files.
+# .editorconfig sets end_of_line = lf for these extensions; .gitattributes
+# takes precedence during Git operations, so without these rules files check
+# out with CRLF on Windows despite .editorconfig settings, causing ESLint
+# failures on Linux CI.
+###############################################################################
+*.ts text eol=lf
+*.js text eol=lf
+*.mjs text eol=lf
+*.json text eol=lf
+*.css text eol=lf
+*.scss text eol=lf
+*.html text eol=lf
+
+###############################################################################
 # Set default behavior for command prompt diff.
 #
 # This is need for earlier builds of msysgit that does not have it on by

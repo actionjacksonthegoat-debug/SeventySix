@@ -10,6 +10,7 @@ using SeventySix.Shared.BackgroundJobs;
 using SeventySix.Shared.Constants;
 using SeventySix.Shared.Contracts.Emails;
 using SeventySix.Shared.Interfaces;
+using SeventySix.Shared.Utilities;
 using Wolverine;
 
 namespace SeventySix.ElectronicNotifications.Emails.Jobs;
@@ -277,10 +278,12 @@ public sealed class EmailQueueProcessJobHandler(
 				exception,
 				"Failed to send email {EmailId} to {Recipient}",
 				entry.Id,
-				entry.RecipientEmail);
+				LogSanitizer.MaskEmail(entry.RecipientEmail));
 
 			await messageBus.InvokeAsync(
-				new MarkEmailFailedCommand(entry.Id, exception.Message),
+				new MarkEmailFailedCommand(
+					entry.Id,
+					"Email send failed — see application logs for details"),
 				cancellationToken);
 
 			return false;

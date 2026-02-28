@@ -45,47 +45,7 @@ import { IdleDetectionService } from "@shared/services/idle-detection.service";
 				</div>
 			}
 		`,
-		styles: `
-			.session-warning
-			{
-				position: fixed;
-				bottom: 24px;
-				right: 24px;
-				z-index: 1000;
-				display: flex;
-				align-items: center;
-				gap: 12px;
-				padding: 12px 16px;
-				border-radius: 12px;
-				background-color: var(--mat-sys-error-container);
-				color: var(--mat-sys-on-error-container);
-				box-shadow: var(--mat-sys-elevation-3);
-				animation: slideIn 200ms ease-out;
-			}
-
-			.countdown
-			{
-				font-weight: 700;
-				font-size: 1.25rem;
-				font-variant-numeric: tabular-nums;
-				min-width: 3ch;
-				text-align: center;
-			}
-
-			@keyframes slideIn
-			{
-				from
-				{
-					transform: translateY(20px);
-					opacity: 0;
-				}
-				to
-				{
-					transform: translateY(0);
-					opacity: 1;
-				}
-			}
-		`,
+		styleUrl: "./session-warning.component.scss",
 		host: {
 			"class": "session-warning-host"
 		}

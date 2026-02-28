@@ -6,6 +6,8 @@
 # (GitHub Actions Secrets, Docker Swarm secrets, Kubernetes secrets, etc.).
 # No .env file is used. All ${VAR:?...} references must be set externally.
 
+name: seventysix-prod
+
 services:
   # Valkey - Open Source Redis-Compatible Cache (BSD licensed, Linux Foundation)
   valkey:
@@ -13,9 +15,9 @@ services:
     container_name: seventysix-valkey-prod
     volumes:
       - valkey_data:/data
-    command: valkey-server --save 60 1 --loglevel warning --appendonly yes
+    command: valkey-server --save 60 1 --loglevel warning --appendonly yes --requirepass ${VALKEY_PASSWORD:?VALKEY_PASSWORD must be set}
     healthcheck:
-      test: [ "CMD", "valkey-cli", "ping" ]
+      test: [ "CMD", "valkey-cli", "-a", "${VALKEY_PASSWORD}", "ping" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -34,12 +36,13 @@ services:
 
   # Redis Exporter - Prometheus metrics for Valkey monitoring
   redis-exporter:
-    image: oliver006/redis_exporter:latest
+    image: oliver006/redis_exporter:v1.67.0
     container_name: seventysix-redis-exporter-prod
     environment:
       REDIS_ADDR: "valkey:6379"
+      REDIS_PASSWORD: "${VALKEY_PASSWORD:?VALKEY_PASSWORD must be set}"
     ports:
-      - "9121:9121"
+      - "127.0.0.1:9121:9121" # Redis metrics — internal only
     depends_on:
       valkey:
         condition: service_healthy
@@ -60,9 +63,9 @@ services:
     volumes:
       - ./observability/otel-collector.yaml:/etc/otel-collector.yaml:ro
     ports:
-      - "4317:4317" # OTLP gRPC receiver
-      - "4318:4318" # OTLP HTTP receiver
-      - "8889:8889" # Prometheus metrics export
+      - "127.0.0.1:4317:4317" # OTLP gRPC receiver — internal only
+      - "127.0.0.1:4318:4318" # OTLP HTTP receiver — internal only
+      - "127.0.0.1:8889:8889" # Prometheus metrics export — internal only
     depends_on:
       - jaeger
     healthcheck:
@@ -156,7 +159,7 @@ services:
       - Cors__AllowedOrigins__0=${CORS_ORIGIN_0:?CORS_ORIGIN_0 is required - set to your production domain e.g. https://yourdomain.com}
       - Cors__AllowedOrigins__1=${CORS_ORIGIN_1:-}
       # Valkey Cache Connection
-      - Cache__Valkey__ConnectionString=valkey:6379
+      - Cache__Valkey__ConnectionString=valkey:6379,password=${VALKEY_PASSWORD:?VALKEY_PASSWORD must be set}
       # OpenTelemetry - send to collector
       - OpenTelemetry__OtlpEndpoint=http://otel-collector:4317
       - OpenTelemetry__Enabled=true
@@ -279,10 +282,9 @@ services:
       - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:?GRAFANA_ADMIN_PASSWORD must be set}
       - GF_USERS_DEFAULT_THEME=dark
-      - GF_AUTH_ANONYMOUS_ENABLED=true
-      - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
+      - GF_AUTH_ANONYMOUS_ENABLED=false
       - GF_SECURITY_ALLOW_EMBEDDING=true
-      - GF_SECURITY_COOKIE_SAMESITE=none
+      - GF_SECURITY_COOKIE_SAMESITE=lax
       - GF_SECURITY_COOKIE_SECURE=true
       - GF_ANALYTICS_REPORTING_ENABLED=false
     volumes:
@@ -307,7 +309,7 @@ services:
 
   # Fail2Ban - Intrusion prevention (bans IPs after repeated violations)
   fail2ban:
-    image: crazymax/fail2ban:latest
+    image: crazymax/fail2ban:1.1.0
     container_name: seventysix-fail2ban-prod
     network_mode: host
     cap_add:
@@ -326,7 +328,7 @@ services:
 
   # GeoIP Updater - Downloads MaxMind GeoLite2-Country database for Fail2Ban
   geoipupdate:
-    image: ghcr.io/maxmind/geoipupdate:latest
+    image: ghcr.io/maxmind/geoipupdate:v7.0.1
     container_name: seventysix-geoipupdate-prod
     environment:
       GEOIPUPDATE_ACCOUNT_ID: "${MAXMIND_ACCOUNT_ID:?MAXMIND_ACCOUNT_ID must be set}"
