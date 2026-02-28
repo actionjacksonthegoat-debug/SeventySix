@@ -196,7 +196,7 @@ Domain-driven modules with enforced isolation via architecture tests
 
 | Technology | Version | License | Purpose |
 |---|---|---|---|
-- Docker Compose | latest | Apache-2.0 | Container orchestration (multiple environment configs)
+| Docker Compose | latest | Apache-2.0 | Container orchestration (multiple environment configs) |
 | nginx | latest | BSD-2-Clause | HTTPS reverse proxy for observability tools |
 | Jaeger | latest | Apache-2.0 | Distributed tracing |
 | Prometheus | latest | Apache-2.0 | Metrics collection |
@@ -210,40 +210,43 @@ Domain-driven modules with enforced isolation via architecture tests
 ## Architecture Overview
 
 ```mermaid
-graph TB
+flowchart LR
     subgraph Client["Angular 21 Client"]
-        direction LR
-        AppDomains["Domains<br/><sub>admin · auth · account<br/>developer · home · sandbox</sub>"]
-        AppShared["Shared<br/><sub>services · guards<br/>interceptors · components</sub>"]
+        direction TB
+        AppDomains["Domains<br/>admin · auth · account<br/>developer · home · sandbox"]
+        AppShared["Shared<br/>services · guards<br/>interceptors · components"]
     end
 
     subgraph Server[".NET 10 Server"]
         direction TB
-        Api["Api Layer<br/><sub>HTTP endpoints · health checks<br/>OpenTelemetry · output cache</sub>"]
-        DomainLayer["Domains<br/><sub>Logging · ApiTracking<br/>ElectronicNotifications</sub>"]
-        Identity["Domains.Identity<br/><sub>Auth · Users · Roles · MFA · OAuth</sub>"]
-        SharedServer["Shared<br/><sub>base abstractions · persistence helpers<br/>cache registration · data protection</sub>"]
+        Api["Api Layer<br/>HTTP endpoints · health checks<br/>OpenTelemetry · output cache"]
+        subgraph DomainGroup["Domain Services"]
+            direction LR
+            DomainLayer["Domains<br/>Logging · ApiTracking<br/>ElectronicNotifications"]
+            Identity["Domains.Identity<br/>Auth · Users · Roles · MFA · OAuth"]
+        end
+        SharedServer["Shared<br/>base abstractions · persistence helpers<br/>cache registration · data protection"]
+        Api --> DomainLayer
+        Api --> Identity
+        DomainLayer --> SharedServer
+        Identity --> SharedServer
     end
 
     subgraph Infra["Docker Infrastructure"]
-        direction LR
-        PG[("PostgreSQL 18<br/><sub>DbContexts</sub>")]
-        VK[("Valkey 9<br/><sub>L1 + L2 cache</sub>")]
-        OT["OTel Collector<br/><sub>traces + metrics</sub>"]
-        F2B["Fail2Ban<br/><sub>intrusion prevention</sub>"]
+        direction TB
+        PG[("PostgreSQL 18<br/>DbContexts")]
+        VK[("Valkey 9<br/>L1 + L2 cache")]
+        OT["OTel Collector<br/>traces + metrics"]
+        F2B["Fail2Ban<br/>intrusion prevention"]
     end
 
-    Client -- "HTTPS" --> Api
-    Api --> DomainLayer
-    Api --> Identity
-    DomainLayer --> SharedServer
-    Identity --> SharedServer
-    DomainLayer -- "EF Core" --> PG
-    Identity -- "EF Core" --> PG
-    DomainLayer -- "FusionCache" --> VK
-    Identity -- "FusionCache" --> VK
-    Api -- "OTLP" --> OT
-    F2B -. "monitors logs" .-> Api
+    Client -->|HTTPS| Api
+    DomainLayer -->|EF Core| PG
+    Identity -->|EF Core| PG
+    DomainLayer -->|FusionCache| VK
+    Identity -->|FusionCache| VK
+    Api -->|OTLP| OT
+    F2B -.->|monitors logs| Api
 ```
 
 **Server** follows Clean Architecture with a strict `Shared <- Domains <- Api` dependency flow — never reversed. Wolverine dispatches commands and queries to static handlers with method-injected dependencies. Bounded contexts (Identity, Logging, ApiTracking, ElectronicNotifications) each own their database schema, migrations, and EF Core `DbContext`.
