@@ -82,31 +82,60 @@ jobs:
                       echo "=== Cleaning up old images ==="
                       docker image prune -f
 
-                      echo "=== Waiting for API health check ==="
+                      # --- Helper: dump diagnostics for a failed service ---
+                      dump_diagnostics() {
+                          local svc="$1"
+                          echo ""
+                          echo "=========================================="
+                          echo "DIAGNOSTICS: $svc"
+                          echo "=========================================="
+                          echo "--- Container status ---"
+                          docker compose -f docker-compose.production.yml ps "$svc" 2>&1 || true
+                          echo ""
+                          echo "--- Container inspect (State) ---"
+                          docker inspect --format '{{json .State}}' "seventysix-${svc}-prod" 2>&1 | python3 -m json.tool 2>/dev/null || true
+                          echo ""
+                          echo "--- Last 100 lines of logs ---"
+                          docker compose -f docker-compose.production.yml logs --tail=100 --no-color "$svc" 2>&1 || true
+                          echo ""
+                          echo "--- Health check result ---"
+                          docker inspect --format '{{json .State.Health}}' "seventysix-${svc}-prod" 2>&1 | python3 -m json.tool 2>/dev/null || true
+                          echo "=========================================="
+                      }
+
+                      echo "=== Waiting for API health check (max 150s) ==="
                       for i in $(seq 1 30); do
                           if curl -sf http://localhost:5085/health > /dev/null 2>&1; then
-                              echo "API is healthy (attempt $i)"
+                              echo "API is healthy (attempt $i/30)"
                               break
                           fi
                           if [ "$i" -eq 30 ]; then
-                              echo "ERROR: API health check failed after 30 attempts"
-                              docker compose -f docker-compose.production.yml logs --tail=50 api
+                              echo "ERROR: API health check failed after 30 attempts (150s)"
+                              echo "--- HTTP response from health endpoint ---"
+                              curl -sv http://localhost:5085/health 2>&1 || true
+                              dump_diagnostics "api"
+                              echo "--- All container statuses ---"
+                              docker compose -f docker-compose.production.yml ps -a 2>&1 || true
                               exit 1
                           fi
+                          echo "  Waiting for API... (attempt $i/30)"
                           sleep 5
                       done
 
-                      echo "=== Waiting for Client health check ==="
+                      echo "=== Waiting for Client health check (max 30s) ==="
                       for i in $(seq 1 10); do
                           if curl -sf http://localhost:8080 > /dev/null 2>&1; then
-                              echo "Client is healthy (attempt $i)"
+                              echo "Client is healthy (attempt $i/10)"
                               break
                           fi
                           if [ "$i" -eq 10 ]; then
-                              echo "ERROR: Client health check failed after 10 attempts"
-                              docker compose -f docker-compose.production.yml logs --tail=50 client
+                              echo "ERROR: Client health check failed after 10 attempts (30s)"
+                              echo "--- HTTP response from client ---"
+                              curl -sv http://localhost:8080 2>&1 || true
+                              dump_diagnostics "client"
                               exit 1
                           fi
+                          echo "  Waiting for Client... (attempt $i/10)"
                           sleep 3
                       done
 
@@ -121,4 +150,9 @@ jobs:
                           fi
                       done
 
+                      echo ""
+                      echo "=== Final container status ==="
+                      docker compose -f docker-compose.production.yml ps -a
+
+                      echo ""
                       echo "=== Deploy complete ==="
