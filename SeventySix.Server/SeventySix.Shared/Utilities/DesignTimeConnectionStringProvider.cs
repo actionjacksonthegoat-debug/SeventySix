@@ -12,7 +12,9 @@ namespace SeventySix.Shared.Utilities;
 /// </summary>
 /// <remarks>
 /// Used by DbContext factories during migration generation (dotnet ef commands).
-/// Loads connection details from appsettings.json and User Secrets.
+/// Loads connection details from appsettings.json, User Secrets, and environment variables.
+/// Environment variables (e.g. <c>Database__Host</c>) take highest precedence, enabling
+/// Docker builds and CI pipelines to supply values via GitHub Actions secrets/variables.
 /// </remarks>
 [ExcludeFromCodeCoverage]
 public static class DesignTimeConnectionStringProvider
@@ -80,8 +82,12 @@ public static class DesignTimeConnectionStringProvider
 	}
 
 	/// <summary>
-	/// Builds configuration from appsettings.json, appsettings.Development.json, and User Secrets.
+	/// Builds configuration from appsettings.json, User Secrets, and environment variables.
 	/// </summary>
+	/// <remarks>
+	/// Precedence (highest wins): environment variables → User Secrets → appsettings.Development.json → appsettings.json.
+	/// Environment variables use the <c>__</c> separator (e.g. <c>Database__Host</c> maps to <c>Database:Host</c>).
+	/// </remarks>
 	/// <returns>
 	/// The built configuration root.
 	/// </returns>
@@ -102,6 +108,7 @@ public static class DesignTimeConnectionStringProvider
 				"appsettings.Development.json",
 				optional: true)
 			.AddUserSecrets(UserSecretsId)
+			.AddEnvironmentVariables()
 			.Build();
 	}
 

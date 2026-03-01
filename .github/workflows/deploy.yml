@@ -27,8 +27,8 @@ jobs:
                   DB_USER: ${{ vars.DB_USER || 'postgres' }}
                   DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
                   JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
-                  GITHUB_CLIENT_ID: ${{ secrets.GITHUB_CLIENT_ID }}
-                  GITHUB_CLIENT_SECRET: ${{ secrets.GITHUB_CLIENT_SECRET }}
+                  GITHUB_CLIENT_ID: ${{ secrets.OAUTH_CLIENT_ID }}
+                  GITHUB_CLIENT_SECRET: ${{ secrets.OAUTH_CLIENT_SECRET }}
                   EMAIL_SMTP_USERNAME: ${{ secrets.EMAIL_SMTP_USERNAME }}
                   EMAIL_SMTP_PASSWORD: ${{ secrets.EMAIL_SMTP_PASSWORD }}
                   EMAIL_FROM_ADDRESS: ${{ secrets.EMAIL_FROM_ADDRESS }}

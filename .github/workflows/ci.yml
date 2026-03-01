@@ -375,6 +375,12 @@ jobs:
                       ghcr.io/${{ github.repository_owner }}/seventysix-api:latest
                       ghcr.io/${{ github.repository_owner }}/seventysix-api:${{ github.sha }}
                       ghcr.io/${{ github.repository_owner }}/seventysix-api:${{ steps.meta.outputs.date }}-${{ steps.meta.outputs.sha_short }}
+                  build-args: |
+                      DB_DESIGN_HOST=${{ vars.DB_HOST }}
+                      DB_DESIGN_PORT=${{ vars.DB_PORT }}
+                      DB_DESIGN_NAME=${{ vars.DB_NAME }}
+                      DB_DESIGN_USER=${{ vars.DB_USER }}
+                      DB_DESIGN_PASSWORD=${{ secrets.DB_PASSWORD }}
                   cache-from: type=gha
                   cache-to: type=gha,mode=max
 

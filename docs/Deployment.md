@@ -342,7 +342,7 @@ rm /tmp/dataprotection.pfx
 > | `DATA_PROTECTION_CERTIFICATE_PASSWORD` | Must match the newly generated production cert (not the dev cert) |
 > | `ADMIN_PASSWORD` | One-time seed password — generate random: `openssl rand -base64 24` |
 > | `GRAFANA_ADMIN_PASSWORD` | Dev password is in user secrets; regenerate: `openssl rand -base64 20` |
-> | `GITHUB_CLIENT_ID/SECRET` | **Register a NEW production OAuth App** — dev app has localhost callback URLs |
+> | `OAUTH_CLIENT_ID/SECRET` | **Register a NEW production OAuth App** — dev app has localhost callback URLs. Note: GitHub reserves the `GITHUB_` prefix for its own secrets — use `OAUTH_` instead. |
 > | `EMAIL_SMTP_USERNAME/PASSWORD` | Use production-specific SMTP credentials if possible |
 
 In your GitHub repository → **Settings → Secrets and variables → Actions**, add:
@@ -356,8 +356,8 @@ In your GitHub repository → **Settings → Secrets and variables → Actions**
 | `PROD_SSH_KEY` | Ed25519 private key (see Section 9) | `ssh-keygen -t ed25519` |
 | `DB_PASSWORD` | Database password | `openssl rand -base64 32` |
 | `JWT_SECRET_KEY` | JWT signing key (64+ chars) | `openssl rand -base64 64` |
-| `GITHUB_CLIENT_ID` | Production GitHub OAuth App client ID | [github.com/settings/developers](https://github.com/settings/developers) |
-| `GITHUB_CLIENT_SECRET` | Production GitHub OAuth App client secret | Same OAuth App |
+| `OAUTH_CLIENT_ID` | Production GitHub OAuth App client ID (GitHub reserves the `GITHUB_` prefix) | [github.com/settings/developers](https://github.com/settings/developers) |
+| `OAUTH_CLIENT_SECRET` | Production GitHub OAuth App client secret | Same OAuth App |
 | `EMAIL_SMTP_USERNAME` | SMTP username (e.g., Brevo) | Your SMTP provider |
 | `EMAIL_SMTP_PASSWORD` | SMTP password | Your SMTP provider |
 | `EMAIL_FROM_ADDRESS` | Sender address (e.g., `noreply@seventysixsandbox.com`) | — |
@@ -381,14 +381,111 @@ In your GitHub repository → **Settings → Secrets and variables → Actions**
 
 | Variable Name | Default | Notes |
 |---|---|---|
-| `DB_NAME` | `seventysix` | Database name |
-| `DB_USER` | `postgres` | Database user |
+| `DB_HOST` | `database` | Docker Compose service name for PostgreSQL |
+| `DB_PORT` | `5432` | PostgreSQL port (internal to Docker network) |
+| `DB_NAME` | `seventysix_db_name` | Database name (distinct from dev `seventysix`) |
+| `DB_USER` | `seventysix_db_user_` | Database user (distinct from default `postgres`) |
 | `ADMIN_FULLNAME` | `System Administrator` | Admin display name |
 | `ADMIN_SEEDER_ENABLED` | `true` | **Set to `false` after first deploy + password change** |
 | `CORS_ORIGIN_1` | *(empty)* | Optional www variant: `https://www.seventysixsandbox.com` |
-| `GRAFANA_ADMIN_USER` | `admin` | Grafana login username |
+| `GRAFANA_ADMIN_USER` | `seventysix_grafana_admin_user` | Grafana login username (distinct from default `admin`) |
 
 > **Setting `ADMIN_SEEDER_ENABLED` to `false`:** After the first successful deploy and admin password change, update this Variable to `false` and trigger a re-deploy via `gh workflow run deploy.yml` or push any commit to master.
+
+### Quick Setup via `gh` CLI
+
+> **Copilot can set these for you.** In VS Code Agent mode, ask:
+> *"Set all GitHub secrets and variables for SeventySix production deployment"*
+> and provide your real values when prompted. The commands below are the same ones Copilot runs.
+>
+> **Where to find these after they're set:** GitHub repo → **Settings** → **Secrets and variables** → **Actions**.
+> Secrets tab shows all secret names (values are hidden). Variables tab shows names and values.
+
+#### Set Secrets
+
+```bash
+REPO="actionjacksonthegoat-debug/SeventySix"
+
+# ── Infrastructure (set after server provisioning — see Section 9) ──
+gh secret set PROD_HOST --body "<SERVER_IP>" --repo $REPO
+gh secret set PROD_USER --body "deploy" --repo $REPO
+gh secret set PROD_SSH_KEY --body "$(cat ~/.ssh/seventysix-deploy)" --repo $REPO
+
+# ── Database ──
+gh secret set DB_PASSWORD --body "<GENERATED_DB_PASSWORD>" --repo $REPO
+
+# ── Authentication ──
+gh secret set JWT_SECRET_KEY --body "<GENERATED_JWT_KEY>" --repo $REPO
+# Note: GitHub reserves the GITHUB_ prefix — use OAUTH_ for secret names
+# deploy.yml maps these to GITHUB_CLIENT_ID/SECRET env vars for docker-compose
+gh secret set OAUTH_CLIENT_ID --body "<YOUR_OAUTH_APP_CLIENT_ID>" --repo $REPO
+gh secret set OAUTH_CLIENT_SECRET --body "<YOUR_OAUTH_APP_CLIENT_SECRET>" --repo $REPO
+
+# ── Email (SMTP provider credentials) ──
+gh secret set EMAIL_SMTP_USERNAME --body "<YOUR_SMTP_USERNAME>" --repo $REPO
+gh secret set EMAIL_SMTP_PASSWORD --body "<YOUR_SMTP_PASSWORD>" --repo $REPO
+gh secret set EMAIL_FROM_ADDRESS --body "<YOUR_FROM_ADDRESS>" --repo $REPO
+gh secret set SITE_EMAIL --body "<YOUR_SITE_CONTACT_EMAIL>" --repo $REPO
+
+# ── Security ──
+gh secret set ALTCHA_HMAC_KEY --body "<GENERATED_ALTCHA_KEY>" --repo $REPO
+gh secret set DATA_PROTECTION_CERTIFICATE_PASSWORD --body "<GENERATED_CERT_PASSWORD>" --repo $REPO
+
+# ── Admin Seeder (one-time bootstrap) ──
+gh secret set ADMIN_EMAIL --body "<YOUR_ADMIN_EMAIL>" --repo $REPO
+gh secret set ADMIN_PASSWORD --body "<GENERATED_ADMIN_PASSWORD>" --repo $REPO
+gh secret set ADMIN_USERNAME --body "<YOUR_ADMIN_USERNAME>" --repo $REPO
+
+# ── CORS / Hosts ──
+gh secret set CORS_ORIGIN_0 --body "https://<YOUR_DOMAIN>" --repo $REPO
+gh secret set ALLOWED_HOSTS --body "<YOUR_DOMAIN>;www.<YOUR_DOMAIN>;api.<YOUR_DOMAIN>" --repo $REPO
+gh secret set CLIENT_BASE_URL --body "https://<YOUR_DOMAIN>" --repo $REPO
+gh secret set OAUTH_CALLBACK_URL --body "https://<YOUR_DOMAIN>/auth/callback" --repo $REPO
+gh secret set OAUTH_REDIRECT_URI --body "https://api.<YOUR_DOMAIN>/api/v1/auth/oauth/github/callback" --repo $REPO
+
+# ── Cache ──
+gh secret set VALKEY_PASSWORD --body "<GENERATED_VALKEY_PASSWORD>" --repo $REPO
+
+# ── Observability ──
+gh secret set GRAFANA_ADMIN_PASSWORD --body "<GENERATED_GRAFANA_PASSWORD>" --repo $REPO
+
+# ── MaxMind GeoLite2 (free) — required for Fail2Ban GeoIP country blocking ──
+# Sign up: https://www.maxmind.com/en/geolite2/signup (free, no obligation)
+# After login: Account > Manage License Keys > Generate New License Key
+gh secret set MAXMIND_ACCOUNT_ID --body "<YOUR_MAXMIND_NUMERIC_ACCOUNT_ID>" --repo $REPO
+gh secret set MAXMIND_LICENSE_KEY --body "<YOUR_MAXMIND_LICENSE_KEY>" --repo $REPO
+```
+
+> **Generating cryptographic values:** Use `openssl rand -base64 N` or PowerShell:
+> ```powershell
+> # PowerShell equivalent (no OpenSSL needed)
+> function New-RandomBase64([int]$bytes) {
+>     $buf = [byte[]]::new($bytes)
+>     [System.Security.Cryptography.RandomNumberGenerator]::Fill($buf)
+>     [Convert]::ToBase64String($buf)
+> }
+> New-RandomBase64 32  # DB_PASSWORD, ALTCHA, VALKEY, DATA_PROTECTION_CERT
+> New-RandomBase64 64  # JWT_SECRET_KEY
+> New-RandomBase64 24  # ADMIN_PASSWORD
+> New-RandomBase64 20  # GRAFANA_ADMIN_PASSWORD
+> ```
+
+#### Set Variables
+
+```bash
+REPO="actionjacksonthegoat-debug/SeventySix"
+
+gh variable set DB_HOST --body "database" --repo $REPO
+gh variable set DB_PORT --body "5432" --repo $REPO
+gh variable set DB_NAME --body "<YOUR_PROD_DB_NAME>" --repo $REPO
+gh variable set DB_USER --body "<YOUR_PROD_DB_USER>" --repo $REPO
+gh variable set ADMIN_FULLNAME --body "System Administrator" --repo $REPO
+gh variable set ADMIN_SEEDER_ENABLED --body "true" --repo $REPO
+gh variable set CORS_ORIGIN_1 --body "https://www.<YOUR_DOMAIN>" --repo $REPO
+gh variable set GRAFANA_ADMIN_USER --body "<YOUR_GRAFANA_USERNAME>" --repo $REPO
+```
+
+> **IMPORTANT:** Save `ADMIN_PASSWORD` and `DATA_PROTECTION_CERTIFICATE_PASSWORD` to a password manager immediately — generated values are only shown once.
 
 ### Clone the Repository on the Server
 
@@ -669,14 +766,14 @@ git pull origin master --ff-only
 
 # Export all required env vars (retrieve values from your password manager)
 export DB_PASSWORD="..." JWT_SECRET_KEY="..." VALKEY_PASSWORD="..."
-export DB_NAME=seventysix DB_USER=postgres
+export DB_NAME=seventysix_db_name DB_USER=seventysix_db_user
 export GITHUB_CLIENT_ID="..." GITHUB_CLIENT_SECRET="..."
 export EMAIL_SMTP_USERNAME="..." EMAIL_SMTP_PASSWORD="..." EMAIL_FROM_ADDRESS="..."
 export SITE_EMAIL="..."
 export ALTCHA_HMAC_KEY="..." ADMIN_EMAIL="..." ADMIN_PASSWORD="..." ADMIN_USERNAME="..."
 export ADMIN_SEEDER_ENABLED=false DATA_PROTECTION_CERTIFICATE_PASSWORD="..."
 export CORS_ORIGIN_0="https://seventysixsandbox.com" CORS_ORIGIN_1="https://www.seventysixsandbox.com"
-export GRAFANA_ADMIN_USER=admin GRAFANA_ADMIN_PASSWORD="..."
+export GRAFANA_ADMIN_USER=seventysix_grafana_admin_user GRAFANA_ADMIN_PASSWORD="..."
 export MAXMIND_ACCOUNT_ID="..." MAXMIND_LICENSE_KEY="..."
 export ALLOWED_HOSTS="seventysixsandbox.com;www.seventysixsandbox.com;api.seventysixsandbox.com"
 export CLIENT_BASE_URL="https://seventysixsandbox.com"
@@ -774,7 +871,7 @@ sleep 60  # Wait for containers to start
 
 # Restore database
 DB_CONTAINER=$(docker ps -qf "name=seventysix-postgres-prod")
-gunzip -c /tmp/db_latest.sql.gz | docker exec -i "$DB_CONTAINER" psql -U postgres seventysix
+gunzip -c /tmp/db_latest.sql.gz | docker exec -i "$DB_CONTAINER" psql -U "$DB_USER" "$DB_NAME"
 
 # 4. Update PROD_HOST GitHub Secret to the new server IP, then update DNS in Cloudflare
 gh secret set PROD_HOST --body "NEW_IP" --repo actionjacksonthegoat-debug/SeventySix
