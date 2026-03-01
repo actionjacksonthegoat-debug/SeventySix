@@ -84,46 +84,54 @@ test.describe("Developer Routes - RBAC",
 			() =>
 			{
 				ROUTE_GROUPS.developerRoutes.forEach(
-					(route) =>
-					{
-						test(`should redirect user role from ${route}`,
-							async ({ userPage }: { userPage: Page; }) =>
-							{
-								await userPage.goto(route);
+				(route) =>
+				{
+					test(`should redirect user role from ${route}`,
+						async ({ userPage }: { userPage: Page; }) =>
+						{
+							// Use 'commit' so goto resolves as soon as the server responds,
+							// before Angular bootstraps. Without this, goto may complete with
+							// the page at about:blank when the canMatch guard redirects
+							// client-side during the load event, causing waitForURL to time out.
+							await userPage.goto(route, { waitUntil: "commit" });
 
-								// Role guard redirects users without Developer/Admin role.
-								// CI Docker is slower — use waitForURL with navigation timeout
-								// rather than the global expect.timeout (10 s) to give Angular
-								// time to run the canMatch guard and complete the redirect.
-								await userPage.waitForURL(
-									(url: URL) =>
-										!url.pathname.startsWith("/developer"),
-									{ timeout: TIMEOUTS.navigation });
+							// Role guard redirects users without Developer/Admin role.
+							// CI Docker is slower — use waitForURL with navigation timeout
+							// rather than the global expect.timeout (10 s) to give Angular
+							// time to run the canMatch guard and complete the redirect.
+							await userPage.waitForURL(
+								(url: URL) =>
+									!url.pathname.startsWith("/developer"),
+								{ timeout: TIMEOUTS.navigation });
 
-								// Confirm the redirect completed (satisfies playwright/expect-expect).
-								await expect(userPage)
-									.not
-									.toHaveURL(createRouteRegex(route));
+							// Confirm the redirect completed (satisfies playwright/expect-expect).
+							await expect(userPage)
+								.not
+								.toHaveURL(createRouteRegex(route));
 							});
 					});
 
 				test("should redirect user role to home from developer area",
 					async ({ userPage }: { userPage: Page; }) =>
 					{
-						await userPage.goto(ROUTES.developer.styleGuide);
+					// Use 'commit' so goto resolves before Angular bootstraps and the
+					// canMatch guard fires. Without this, the guard's immediate client-side
+					// redirect can leave the page at about:blank, causing waitForURL to
+					// time out in CI where Docker is slower to process the redirect.
+					await userPage.goto(ROUTES.developer.styleGuide, { waitUntil: "commit" });
 
-						// Should redirect to home (insufficient permissions).
-						// Use TIMEOUTS.navigation (15 s) instead of TIMEOUTS.api (10 s) —
-						// CI Docker environments are slower to process the canMatch redirect.
-						await userPage.waitForURL(
-							(url: URL) =>
-								!url.pathname.startsWith("/developer"),
-							{ timeout: TIMEOUTS.navigation });
+				// Should redirect to home (insufficient permissions).
+				// Use TIMEOUTS.navigation (15 s) instead of TIMEOUTS.api (10 s) —
+				// CI Docker environments are slower to process the canMatch redirect.
+				await userPage.waitForURL(
+					(url: URL) =>
+						!url.pathname.startsWith("/developer"),
+					{ timeout: TIMEOUTS.navigation });
 
-						// Verify not on developer area
-						await expect(userPage)
-							.not
-							.toHaveURL(/\/developer/);
+				// Verify not on developer area
+				await expect(userPage)
+					.not
+					.toHaveURL(/\/developer/);
 					});
 			});
 
