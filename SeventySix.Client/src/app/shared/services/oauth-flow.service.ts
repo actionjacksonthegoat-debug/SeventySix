@@ -197,9 +197,14 @@ export class OAuthFlowService
 		const oauthHandler: (event: MessageEvent) => void =
 			(event: MessageEvent): void =>
 			{
-			// Validate origin matches our API
+			// Validate origin matches our API.
+			// Guard against relative apiUrl (production uses '/api/v1') which would
+			// throw 'TypeError: Invalid URL' inside new URL(). Fall back to the
+			// current window origin when the URL is relative.
 				const allowedOrigin: string =
-					new URL(environment.apiUrl).origin;
+					environment.apiUrl.startsWith("http")
+						? new URL(environment.apiUrl).origin
+						: window.location.origin;
 
 				if (event.origin !== allowedOrigin)
 				{

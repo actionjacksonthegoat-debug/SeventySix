@@ -90,7 +90,7 @@ export class ClientErrorLoggerService
 					message: formattedMessage,
 					clientTimestamp: this.dateService.now(),
 					exceptionMessage: error?.message,
-					stackTrace: error instanceof Error ? error.stack : undefined,
+					stackTrace: error instanceof Error ? error.stack?.substring(0, 7900) : undefined,
 					sourceContext: this.extractSourceContext(error),
 					requestUrl: extractRequestUrl(error),
 					requestMethod: extractRequestMethod(error),
@@ -133,7 +133,7 @@ export class ClientErrorLoggerService
 					clientTimestamp: this.dateService.now(),
 					exceptionMessage: errorDetails.httpError.message,
 					stackTrace: errorDetails.httpError.error instanceof Error
-						? errorDetails.httpError.error.stack
+						? errorDetails.httpError.error.stack?.substring(0, 7900)
 						: undefined,
 					sourceContext: this.extractSourceContext(
 						errorDetails.httpError.error),
@@ -176,7 +176,7 @@ export class ClientErrorLoggerService
 					message: formattedMessage,
 					clientTimestamp: this.dateService.now(),
 					exceptionMessage: errorDetails.error?.message,
-					stackTrace: errorDetails.error?.stack,
+					stackTrace: errorDetails.error?.stack?.substring(0, 7900),
 					sourceContext: this.extractSourceContext(errorDetails.error),
 					requestUrl: extractRequestUrl(),
 					userAgent: navigator.userAgent,

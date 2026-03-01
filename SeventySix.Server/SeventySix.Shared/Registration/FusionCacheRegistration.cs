@@ -86,28 +86,29 @@ public static class FusionCacheRegistration
 						ILogger<IConnectionMultiplexer>>();
 
 				ConfigurationOptions options =
-					new()
-					{
-						AbortOnConnectFail = false,
-						ConnectTimeout =
-							cacheSettings.Valkey.ConnectTimeoutMs,
-						SyncTimeout =
-							cacheSettings.Valkey.SyncTimeoutMs,
-						AsyncTimeout =
-							cacheSettings.Valkey.AsyncTimeoutMs,
-						ConnectRetry =
-							cacheSettings.Valkey.ConnectRetry,
-						KeepAlive =
-							cacheSettings.Valkey.KeepAliveSeconds,
-						ReconnectRetryPolicy =
-							new ExponentialRetry(cacheSettings.Valkey.RetryBaseMs),
-						AllowAdmin = false,
-						Ssl =
-							cacheSettings.Valkey.UseSsl,
-					};
+					ConfigurationOptions.Parse(cacheSettings.Valkey.ConnectionString);
 
-				// Parse connection string (host:port or host:port,password=xxx)
-				options.EndPoints.Add(cacheSettings.Valkey.ConnectionString);
+				// Overlay explicit resilience settings — these take precedence over the
+				// parsed connection string values. ConfigurationOptions.Parse() correctly
+				// extracts both the endpoint and password from the full connection string
+				// format ("host:port,password=xxx"). EndPointCollection.Add() only accepts
+				// bare "host:port" and throws ArgumentException for full connection strings.
+				options.AbortOnConnectFail = false;
+				options.ConnectTimeout =
+					cacheSettings.Valkey.ConnectTimeoutMs;
+				options.SyncTimeout =
+					cacheSettings.Valkey.SyncTimeoutMs;
+				options.AsyncTimeout =
+					cacheSettings.Valkey.AsyncTimeoutMs;
+				options.ConnectRetry =
+					cacheSettings.Valkey.ConnectRetry;
+				options.KeepAlive =
+					cacheSettings.Valkey.KeepAliveSeconds;
+				options.ReconnectRetryPolicy =
+					new ExponentialRetry(cacheSettings.Valkey.RetryBaseMs);
+				options.AllowAdmin = false;
+				options.Ssl =
+					cacheSettings.Valkey.UseSsl;
 
 				IConnectionMultiplexer multiplexer =
 					ConnectionMultiplexer.Connect(options);

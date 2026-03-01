@@ -324,5 +324,48 @@ describe("OAuthFlowService",
 						expect(events)
 							.toHaveLength(0);
 					});
+
+				it("should accept messages from window.location.origin when apiUrl is relative",
+					() =>
+					{
+						// Simulate production where apiUrl is relative ('/api/v1') and verify
+						// the guard falls back to window.location.origin instead of throwing
+						// TypeError: Invalid URL inside new URL(relativeUrl).
+						const originalApiUrl: string =
+							environment.apiUrl;
+
+						try
+						{
+							environment.apiUrl = "/api/v1";
+
+							const events: unknown[] = [];
+							service.events$.subscribe(
+								(event: unknown) => events.push(event));
+
+							window.dispatchEvent(
+								new MessageEvent(
+									"message",
+									{
+										origin: window.location.origin,
+										data: {
+											type: "oauth_success",
+											code: "relative-url-test"
+										}
+									}));
+
+							expect(events)
+								.toHaveLength(1);
+							expect(events[0])
+								.toEqual(
+									{
+										type: "code_received",
+										code: "relative-url-test"
+									});
+						}
+						finally
+						{
+							environment.apiUrl = originalApiUrl;
+						}
+					});
 			});
 	});
