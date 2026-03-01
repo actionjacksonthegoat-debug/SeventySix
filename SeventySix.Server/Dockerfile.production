@@ -33,10 +33,21 @@ RUN dotnet publish "SeventySix.Api.csproj" \
 	/p:UseAppHost=false
 
 # Generate SQL migration scripts for all DbContexts
-# Use --no-build --configuration Release to reuse publish artifacts (avoids Debug rebuild
-# which fails due to TreatWarningsAsErrors in Directory.Build.props)
+# DB config is injected via Docker build args from GitHub Actions secrets/variables.
+# The DesignTimeConnectionStringProvider reads these as Database__* environment variables.
+# No actual DB connection is made — migrations script generates host-agnostic DDL.
+ARG DB_DESIGN_HOST=database
+ARG DB_DESIGN_PORT=5432
+ARG DB_DESIGN_NAME=seventysix
+ARG DB_DESIGN_USER=postgres
+ARG DB_DESIGN_PASSWORD=unused
 WORKDIR /src
-RUN dotnet tool install --global dotnet-ef && \
+RUN export Database__Host="$DB_DESIGN_HOST" && \
+	export Database__Port="$DB_DESIGN_PORT" && \
+	export Database__Name="$DB_DESIGN_NAME" && \
+	export Database__User="$DB_DESIGN_USER" && \
+	export Database__Password="$DB_DESIGN_PASSWORD" && \
+	dotnet tool install --global dotnet-ef && \
 	/root/.dotnet/tools/dotnet-ef migrations script --project SeventySix.Domains.Identity/SeventySix.Domains.Identity.csproj \
 	--startup-project SeventySix.Api/SeventySix.Api.csproj \
 	--context IdentityDbContext \
