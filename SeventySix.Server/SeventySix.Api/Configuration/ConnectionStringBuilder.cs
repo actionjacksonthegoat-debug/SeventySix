@@ -57,8 +57,19 @@ public static class ConnectionStringBuilder
 			configuration[ConfigurationSectionConstants.Database.Password]
 			?? throw new RequiredConfigurationException(ConfigurationSectionConstants.Database.Password);
 
-		return $"Host={host};Port={port};Database={database};Username={username};"
+		string? sslMode =
+			configuration[ConfigurationSectionConstants.Database.SslMode];
+
+		string connectionString =
+			$"Host={host};Port={port};Database={database};Username={username};"
 			+ $"Password={password};Pooling=true;Minimum Pool Size=5;Maximum Pool Size=100;"
 			+ "Connection Lifetime=0;";
+
+		if (!string.IsNullOrWhiteSpace(sslMode))
+		{
+			connectionString += $"SSL Mode={sslMode};Trust Server Certificate=true;";
+		}
+
+		return connectionString;
 	}
 }

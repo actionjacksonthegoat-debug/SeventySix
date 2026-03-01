@@ -94,6 +94,10 @@ services:
             - "127.0.0.1:5433:5432"
         volumes:
             - postgres_data:/var/lib/postgresql/data
+            - ./postgres-ssl/server.crt:/var/lib/postgresql/server.crt:ro
+            - ./postgres-ssl/server.key:/var/lib/postgresql/server.key:ro
+        command: >
+            -c ssl=on -c ssl_cert_file=/var/lib/postgresql/server.crt -c ssl_key_file=/var/lib/postgresql/server.key
         healthcheck:
             test: [ "CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}" ]
             interval: 10s
@@ -171,6 +175,13 @@ services:
             # CORS - Use HTTPS for all external origins
             - Cors__AllowedOrigins__0=${CORS_ORIGIN_0:?CORS_ORIGIN_0 is required - set to your production domain e.g. https://seventysixsandbox.com}
             - Cors__AllowedOrigins__1=${CORS_ORIGIN_1:-}
+            # ForwardedHeaders — trust Docker bridge + private networks for X-Forwarded-* from Caddy
+            - ForwardedHeaders__KnownNetworks__0=10.0.0.0/8
+            - ForwardedHeaders__KnownNetworks__1=172.16.0.0/12
+            - ForwardedHeaders__KnownNetworks__2=192.168.0.0/16
+            - ForwardedHeaders__ForwardLimit=2
+            # Database SSL — require encrypted connections to PostgreSQL
+            - Database__SslMode=Require
             # Valkey Cache Connection
             - Cache__Valkey__ConnectionString=valkey:6379,password=${VALKEY_PASSWORD:?VALKEY_PASSWORD must be set}
             # OpenTelemetry - send to collector

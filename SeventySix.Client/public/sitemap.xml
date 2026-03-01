@@ -6,7 +6,7 @@
 
 	<!-- Landing Page (Home) -->
 	<url>
-		<loc>https://seventysix.app/</loc>
+		<loc>https://seventysixsandbox.com/</loc>
 		<lastmod>2026-02-15</lastmod>
 		<changefreq>weekly</changefreq>
 		<priority>1.0</priority>
@@ -14,7 +14,7 @@
 
 	<!-- Sandbox (Public Demo Area) -->
 	<url>
-		<loc>https://seventysix.app/sandbox</loc>
+		<loc>https://seventysixsandbox.com/sandbox</loc>
 		<lastmod>2026-02-15</lastmod>
 		<changefreq>monthly</changefreq>
 		<priority>0.8</priority>

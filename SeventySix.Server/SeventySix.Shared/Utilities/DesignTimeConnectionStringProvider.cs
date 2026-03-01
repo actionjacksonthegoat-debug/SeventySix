@@ -76,9 +76,20 @@ public static class DesignTimeConnectionStringProvider
 				"Database:Password must be set in User Secrets or appsettings.json for design-time operations. "
 					+ $"Run: dotnet user-secrets set \"Database:Password\" \"your-password\" --project SeventySix.Api");
 
-		return $"Host={databaseHost};Port={databasePort};Database={databaseName};Username={databaseUser};"
+		string? sslMode =
+			databaseSection["SslMode"];
+
+		string connectionString =
+			$"Host={databaseHost};Port={databasePort};Database={databaseName};Username={databaseUser};"
 			+ $"Password={databasePassword};Pooling=true;Minimum Pool Size=5;Maximum Pool Size=100;"
 			+ "Connection Lifetime=0;";
+
+		if (!string.IsNullOrWhiteSpace(sslMode))
+		{
+			connectionString += $"SSL Mode={sslMode};Trust Server Certificate=true;";
+		}
+
+		return connectionString;
 	}
 
 	/// <summary>

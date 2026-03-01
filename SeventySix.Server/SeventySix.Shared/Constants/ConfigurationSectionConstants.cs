@@ -42,6 +42,11 @@ public static class ConfigurationSectionConstants
 		/// Database password setting.
 		/// </summary>
 		public const string Password = "Database:Password";
+
+		/// <summary>
+		/// Database SSL mode setting (optional — Npgsql SSL Mode values: Disable, Prefer, Require, VerifyCA, VerifyFull).
+		/// </summary>
+		public const string SslMode = "Database:SslMode";
 	}
 
 	/// <summary>
