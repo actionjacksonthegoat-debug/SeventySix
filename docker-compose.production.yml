@@ -9,380 +9,380 @@
 name: seventysix-prod
 
 services:
-  # Valkey - Open Source Redis-Compatible Cache (BSD licensed, Linux Foundation)
-  valkey:
-    image: valkey/valkey:9.0-alpine
-    container_name: seventysix-valkey-prod
-    volumes:
-      - valkey_data:/data
-    command: valkey-server --save 60 1 --loglevel warning --appendonly yes --requirepass ${VALKEY_PASSWORD:?VALKEY_PASSWORD must be set}
-    healthcheck:
-      test: [ "CMD", "valkey-cli", "-a", "${VALKEY_PASSWORD}", "ping" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
-    networks:
-      - seventysix-network
-    restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 256M
-        reservations:
-          cpus: '0.25'
-          memory: 128M
+    # Valkey - Open Source Redis-Compatible Cache (BSD licensed, Linux Foundation)
+    valkey:
+        image: valkey/valkey:9.0-alpine
+        container_name: seventysix-valkey-prod
+        volumes:
+            - valkey_data:/data
+        command: valkey-server --save 60 1 --loglevel warning --appendonly yes --requirepass ${VALKEY_PASSWORD:?VALKEY_PASSWORD must be set}
+        healthcheck:
+            test: [ "CMD", "valkey-cli", "-a", "${VALKEY_PASSWORD}", "ping" ]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+            start_period: 10s
+        networks:
+            - seventysix-network
+        restart: unless-stopped
+        deploy:
+            resources:
+                limits:
+                    cpus: '0.5'
+                    memory: 256M
+                reservations:
+                    cpus: '0.25'
+                    memory: 128M
 
-  # Redis Exporter - Prometheus metrics for Valkey monitoring
-  redis-exporter:
-    image: oliver006/redis_exporter:v1.67.0
-    container_name: seventysix-redis-exporter-prod
-    environment:
-      REDIS_ADDR: "valkey:6379"
-      REDIS_PASSWORD: "${VALKEY_PASSWORD:?VALKEY_PASSWORD must be set}"
-    ports:
-      - "127.0.0.1:9121:9121" # Redis metrics — internal only
-    depends_on:
-      valkey:
-        condition: service_healthy
-    networks:
-      - seventysix-network
-    restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          cpus: '0.25'
-          memory: 64M
+    # Redis Exporter - Prometheus metrics for Valkey monitoring
+    redis-exporter:
+        image: oliver006/redis_exporter:v1.67.0
+        container_name: seventysix-redis-exporter-prod
+        environment:
+            REDIS_ADDR: "valkey:6379"
+            REDIS_PASSWORD: "${VALKEY_PASSWORD:?VALKEY_PASSWORD must be set}"
+        ports:
+            - "127.0.0.1:9121:9121" # Redis metrics — internal only
+        depends_on:
+            valkey:
+                condition: service_healthy
+        networks:
+            - seventysix-network
+        restart: unless-stopped
+        deploy:
+            resources:
+                limits:
+                    cpus: '0.25'
+                    memory: 64M
 
-  # OpenTelemetry Collector - Receives telemetry from API, exports to Prometheus/Jaeger
-  otel-collector:
-    image: otel/opentelemetry-collector-contrib:0.123.0
-    container_name: seventysix-otel-collector-prod
-    command: [ "--config=/etc/otel-collector.yaml" ]
-    volumes:
-      - ./observability/otel-collector.yaml:/etc/otel-collector.yaml:ro
-    ports:
-      - "127.0.0.1:4317:4317" # OTLP gRPC receiver — internal only
-      - "127.0.0.1:4318:4318" # OTLP HTTP receiver — internal only
-      - "127.0.0.1:8889:8889" # Prometheus metrics export — internal only
-    depends_on:
-      jaeger:
-        condition: service_healthy
-    healthcheck:
-      # Image is scratch-based (no wget/curl/shell) — healthcheck runs from host via depends_on
-      disable: true
-    networks:
-      - seventysix-network
-    restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 256M
+    # OpenTelemetry Collector - Receives telemetry from API, exports to Prometheus/Jaeger
+    otel-collector:
+        image: otel/opentelemetry-collector-contrib:0.123.0
+        container_name: seventysix-otel-collector-prod
+        command: [ "--config=/etc/otel-collector.yaml" ]
+        volumes:
+            - ./observability/otel-collector.yaml:/etc/otel-collector.yaml:ro
+        ports:
+            - "127.0.0.1:4317:4317" # OTLP gRPC receiver — internal only
+            - "127.0.0.1:4318:4318" # OTLP HTTP receiver — internal only
+            - "127.0.0.1:8889:8889" # Prometheus metrics export — internal only
+        depends_on:
+            jaeger:
+                condition: service_healthy
+        healthcheck:
+            # Image is scratch-based (no wget/curl/shell) — healthcheck runs from host via depends_on
+            disable: true
+        networks:
+            - seventysix-network
+        restart: unless-stopped
+        deploy:
+            resources:
+                limits:
+                    cpus: '0.5'
+                    memory: 256M
 
-  # PostgreSQL Database - Persistent storage for production
-  database:
-    image: postgres:18-alpine
-    container_name: seventysix-postgres-prod
-    environment:
-      POSTGRES_DB: ${DB_NAME:-seventysix}
-      POSTGRES_USER: ${DB_USER:-postgres}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set}
-      PGDATA: /var/lib/postgresql/data/pgdata
-    ports:
-      - "127.0.0.1:5433:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
-    networks:
-      - seventysix-network
-    restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          cpus: '1.0'
-          memory: 1G
-        reservations:
-          cpus: '0.5'
-          memory: 512M
+    # PostgreSQL Database - Persistent storage for production
+    database:
+        image: postgres:18-alpine
+        container_name: seventysix-postgres-prod
+        environment:
+            POSTGRES_DB: ${DB_NAME:-seventysix}
+            POSTGRES_USER: ${DB_USER:-postgres}
+            POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set}
+            PGDATA: /var/lib/postgresql/data/pgdata
+        ports:
+            - "127.0.0.1:5433:5432"
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+        healthcheck:
+            test: [ "CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}" ]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+            start_period: 10s
+        networks:
+            - seventysix-network
+        restart: unless-stopped
+        deploy:
+            resources:
+                limits:
+                    cpus: '1.0'
+                    memory: 1G
+                reservations:
+                    cpus: '0.5'
+                    memory: 512M
 
-  # .NET API Service - Runs migrations on startup
-  api:
-    image: ${API_IMAGE:-ghcr.io/actionjacksonthegoat-debug/seventysix-api:latest}
-    build:
-      context: ./SeventySix.Server
-      dockerfile: Dockerfile.production
-    container_name: seventysix-api-prod
-    ports:
-      - "5085:8080"
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Production
-      - ASPNETCORE_URLS=http://+:8080
-      # PostgreSQL Connection (uses Database:* configuration mapped from DB_* env vars)
-      - Database__Host=database
-      - Database__Port=5432
-      - Database__Name=${DB_NAME:-seventysix}
-      - Database__User=${DB_USER:-postgres}
-      - Database__Password=${DB_PASSWORD:?DB_PASSWORD must be set}
-      # Migration entrypoint uses $DB_HOST, $DB_NAME, $DB_USER, $DB_PASSWORD for psql
-      - DB_HOST=database
-      - DB_NAME=${DB_NAME:-seventysix}
-      - DB_USER=${DB_USER:-postgres}
-      - DB_PASSWORD=${DB_PASSWORD:?DB_PASSWORD must be set}
-      # JWT Authentication
-      - Jwt__SecretKey=${JWT_SECRET_KEY:?JWT_SECRET_KEY must be set}
-      # GitHub OAuth
-      - Auth__OAuth__Providers__0__ClientId=${GITHUB_CLIENT_ID:?GITHUB_CLIENT_ID must be set}
-      - Auth__OAuth__Providers__0__ClientSecret=${GITHUB_CLIENT_SECRET:?GITHUB_CLIENT_SECRET must be set}
-      # Email Configuration
-      - Email__SmtpUsername=${EMAIL_SMTP_USERNAME:?EMAIL_SMTP_USERNAME must be set}
-      - Email__SmtpPassword=${EMAIL_SMTP_PASSWORD:?EMAIL_SMTP_PASSWORD must be set}
-      - Email__FromAddress=${EMAIL_FROM_ADDRESS:?EMAIL_FROM_ADDRESS must be set}
-      # Site — contact email for legal pages (never hardcoded in client)
-      - Site__Email=${SITE_EMAIL:?SITE_EMAIL must be set}
-      # ALTCHA (Proof-of-Work) - enabled by default, uses self-hosted verification
-      - Altcha__Enabled=true
-      - Altcha__HmacKeyBase64=${ALTCHA_HMAC_KEY:?ALTCHA_HMAC_KEY must be set}
-      # Admin Seeding
-      - AdminSeeder__Email=${ADMIN_EMAIL:?ADMIN_EMAIL is required in production}
-      - AdminSeeder__InitialPassword=${ADMIN_PASSWORD:?ADMIN_PASSWORD must be set}
-      # Data Protection
-      - DataProtection__UseCertificate=${DATA_PROTECTION_USE_CERTIFICATE:-true}
-      - DataProtection__CertificatePath=${DATA_PROTECTION_CERTIFICATE_PATH:-/app/keys/dataprotection.pfx}
-      - DataProtection__CertificatePassword=${DATA_PROTECTION_CERTIFICATE_PASSWORD:?DATA_PROTECTION_CERTIFICATE_PASSWORD must be set}
-      # Host Filtering — MUST NOT be wildcard in production (StartupValidator rejects '*')
-      - AllowedHosts=${ALLOWED_HOSTS:?ALLOWED_HOSTS must be set - e.g. seventysixsandbox.com;www.seventysixsandbox.com;api.seventysixsandbox.com}
-      # OAuth Callback URLs — must match GitHub OAuth App settings
-      - Auth__OAuth__ClientCallbackUrl=${OAUTH_CALLBACK_URL:?OAUTH_CALLBACK_URL must be set - e.g. https://seventysixsandbox.com/auth/callback}
-      - Auth__OAuth__Providers__0__RedirectUri=${OAUTH_REDIRECT_URI:?OAUTH_REDIRECT_URI must be set - e.g. https://api.seventysixsandbox.com/api/v1/auth/oauth/github/callback}
-      # Email — public URL for email links (password reset, verification, etc.)
-      - Email__ClientBaseUrl=${CLIENT_BASE_URL:?CLIENT_BASE_URL must be set - e.g. https://seventysixsandbox.com}
-      # Admin Seeder — customize username/fullname; disable after first login + password change
-      - AdminSeeder__Username=${ADMIN_USERNAME:-admin}
-      - AdminSeeder__FullName=${ADMIN_FULLNAME:-System Administrator}
-      - AdminSeeder__Enabled=${ADMIN_SEEDER_ENABLED:-true}
-      # CORS - Use HTTPS for all external origins
-      - Cors__AllowedOrigins__0=${CORS_ORIGIN_0:?CORS_ORIGIN_0 is required - set to your production domain e.g. https://seventysixsandbox.com}
-      - Cors__AllowedOrigins__1=${CORS_ORIGIN_1:-}
-      # Valkey Cache Connection
-      - Cache__Valkey__ConnectionString=valkey:6379,password=${VALKEY_PASSWORD:?VALKEY_PASSWORD must be set}
-      # OpenTelemetry - send to collector
-      - OpenTelemetry__OtlpEndpoint=http://otel-collector:4317
-      - OpenTelemetry__Enabled=true
-    volumes:
-      - dataprotection_keys:/app/keys
-    depends_on:
-      database:
-        condition: service_healthy
-      valkey:
-        condition: service_healthy
-      otel-collector:
-        condition: service_started # scratch image — no in-container healthcheck available
-    healthcheck:
-      test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/health" ]
-      interval: 30s
-      timeout: 3s
-      retries: 3
-      start_period: 60s # Allow time for migrations
-    networks:
-      - seventysix-network
-    restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          cpus: '1.0'
-          memory: 512M
-        reservations:
-          cpus: '0.5'
-          memory: 256M
+    # .NET API Service - Runs migrations on startup
+    api:
+        image: ${API_IMAGE:-ghcr.io/actionjacksonthegoat-debug/seventysix-api:latest}
+        build:
+            context: ./SeventySix.Server
+            dockerfile: Dockerfile.production
+        container_name: seventysix-api-prod
+        ports:
+            - "5085:8080"
+        environment:
+            - ASPNETCORE_ENVIRONMENT=Production
+            - ASPNETCORE_URLS=http://+:8080
+            # PostgreSQL Connection (uses Database:* configuration mapped from DB_* env vars)
+            - Database__Host=database
+            - Database__Port=5432
+            - Database__Name=${DB_NAME:-seventysix}
+            - Database__User=${DB_USER:-postgres}
+            - Database__Password=${DB_PASSWORD:?DB_PASSWORD must be set}
+            # Migration entrypoint uses $DB_HOST, $DB_NAME, $DB_USER, $DB_PASSWORD for psql
+            - DB_HOST=database
+            - DB_NAME=${DB_NAME:-seventysix}
+            - DB_USER=${DB_USER:-postgres}
+            - DB_PASSWORD=${DB_PASSWORD:?DB_PASSWORD must be set}
+            # JWT Authentication
+            - Jwt__SecretKey=${JWT_SECRET_KEY:?JWT_SECRET_KEY must be set}
+            # GitHub OAuth
+            - Auth__OAuth__Providers__0__ClientId=${GITHUB_CLIENT_ID:?GITHUB_CLIENT_ID must be set}
+            - Auth__OAuth__Providers__0__ClientSecret=${GITHUB_CLIENT_SECRET:?GITHUB_CLIENT_SECRET must be set}
+            # Email Configuration
+            - Email__SmtpUsername=${EMAIL_SMTP_USERNAME:?EMAIL_SMTP_USERNAME must be set}
+            - Email__SmtpPassword=${EMAIL_SMTP_PASSWORD:?EMAIL_SMTP_PASSWORD must be set}
+            - Email__FromAddress=${EMAIL_FROM_ADDRESS:?EMAIL_FROM_ADDRESS must be set}
+            # Site — contact email for legal pages (never hardcoded in client)
+            - Site__Email=${SITE_EMAIL:?SITE_EMAIL must be set}
+            # ALTCHA (Proof-of-Work) - enabled by default, uses self-hosted verification
+            - Altcha__Enabled=true
+            - Altcha__HmacKeyBase64=${ALTCHA_HMAC_KEY:?ALTCHA_HMAC_KEY must be set}
+            # Admin Seeding
+            - AdminSeeder__Email=${ADMIN_EMAIL:?ADMIN_EMAIL is required in production}
+            - AdminSeeder__InitialPassword=${ADMIN_PASSWORD:?ADMIN_PASSWORD must be set}
+            # Data Protection
+            - DataProtection__UseCertificate=${DATA_PROTECTION_USE_CERTIFICATE:-true}
+            - DataProtection__CertificatePath=${DATA_PROTECTION_CERTIFICATE_PATH:-/app/keys/dataprotection.pfx}
+            - DataProtection__CertificatePassword=${DATA_PROTECTION_CERTIFICATE_PASSWORD:?DATA_PROTECTION_CERTIFICATE_PASSWORD must be set}
+            # Host Filtering — MUST NOT be wildcard in production (StartupValidator rejects '*')
+            - AllowedHosts=${ALLOWED_HOSTS:?ALLOWED_HOSTS must be set - e.g. seventysixsandbox.com;www.seventysixsandbox.com;api.seventysixsandbox.com}
+            # OAuth Callback URLs — must match GitHub OAuth App settings
+            - Auth__OAuth__ClientCallbackUrl=${OAUTH_CALLBACK_URL:?OAUTH_CALLBACK_URL must be set - e.g. https://seventysixsandbox.com/auth/callback}
+            - Auth__OAuth__Providers__0__RedirectUri=${OAUTH_REDIRECT_URI:?OAUTH_REDIRECT_URI must be set - e.g. https://api.seventysixsandbox.com/api/v1/auth/oauth/github/callback}
+            # Email — public URL for email links (password reset, verification, etc.)
+            - Email__ClientBaseUrl=${CLIENT_BASE_URL:?CLIENT_BASE_URL must be set - e.g. https://seventysixsandbox.com}
+            # Admin Seeder — customize username/fullname; disable after first login + password change
+            - AdminSeeder__Username=${ADMIN_USERNAME:-admin}
+            - AdminSeeder__FullName=${ADMIN_FULLNAME:-System Administrator}
+            - AdminSeeder__Enabled=${ADMIN_SEEDER_ENABLED:-true}
+            # CORS - Use HTTPS for all external origins
+            - Cors__AllowedOrigins__0=${CORS_ORIGIN_0:?CORS_ORIGIN_0 is required - set to your production domain e.g. https://seventysixsandbox.com}
+            - Cors__AllowedOrigins__1=${CORS_ORIGIN_1:-}
+            # Valkey Cache Connection
+            - Cache__Valkey__ConnectionString=valkey:6379,password=${VALKEY_PASSWORD:?VALKEY_PASSWORD must be set}
+            # OpenTelemetry - send to collector
+            - OpenTelemetry__OtlpEndpoint=http://otel-collector:4317
+            - OpenTelemetry__Enabled=true
+        volumes:
+            - dataprotection_keys:/app/keys
+        depends_on:
+            database:
+                condition: service_healthy
+            valkey:
+                condition: service_healthy
+            otel-collector:
+                condition: service_started # scratch image — no in-container healthcheck available
+        healthcheck:
+            test: [ "CMD", "curl", "--fail", "--silent", "http://localhost:8080/health" ]
+            interval: 30s
+            timeout: 3s
+            retries: 3
+            start_period: 60s # Allow time for migrations
+        networks:
+            - seventysix-network
+        restart: unless-stopped
+        deploy:
+            resources:
+                limits:
+                    cpus: '1.0'
+                    memory: 512M
+                reservations:
+                    cpus: '0.5'
+                    memory: 256M
 
-  # Angular Client Service
-  client:
-    image: ${CLIENT_IMAGE:-ghcr.io/actionjacksonthegoat-debug/seventysix-client:latest}
-    build:
-      context: ./SeventySix.Client
-      dockerfile: Dockerfile.production
-    container_name: seventysix-client-prod
-    ports:
-      - "8080:8080"
-    environment:
-      - API_URL=http://api:8080
-    depends_on:
-      api:
-        condition: service_healthy
-    healthcheck:
-      test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080" ]
-      interval: 30s
-      timeout: 3s
-      retries: 3
-      start_period: 10s
-    networks:
-      - seventysix-network
-    restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 256M
-        reservations:
-          cpus: '0.25'
-          memory: 128M
+    # Angular Client Service
+    client:
+        image: ${CLIENT_IMAGE:-ghcr.io/actionjacksonthegoat-debug/seventysix-client:latest}
+        build:
+            context: ./SeventySix.Client
+            dockerfile: Dockerfile.production
+        container_name: seventysix-client-prod
+        ports:
+            - "8080:8080"
+        environment:
+            - API_URL=http://api:8080
+        depends_on:
+            api:
+                condition: service_healthy
+        healthcheck:
+            test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080" ]
+            interval: 30s
+            timeout: 3s
+            retries: 3
+            start_period: 10s
+        networks:
+            - seventysix-network
+        restart: unless-stopped
+        deploy:
+            resources:
+                limits:
+                    cpus: '0.5'
+                    memory: 256M
+                reservations:
+                    cpus: '0.25'
+                    memory: 128M
 
-  # Prometheus - Metrics collection
-  prometheus:
-    image: prom/prometheus:v2.54.1
-    container_name: seventysix-prometheus-prod
-    ports:
-      - "127.0.0.1:9090:9090"
-    volumes:
-      - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-      - prometheus_data:/prometheus
-    command:
-      - "--config.file=/etc/prometheus/prometheus.yml"
-      - "--storage.tsdb.path=/prometheus"
-    healthcheck:
-      test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9090/-/healthy" ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 10s
-    networks:
-      - seventysix-network
-    restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 512M
+    # Prometheus - Metrics collection
+    prometheus:
+        image: prom/prometheus:v2.54.1
+        container_name: seventysix-prometheus-prod
+        ports:
+            - "127.0.0.1:9090:9090"
+        volumes:
+            - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+            - prometheus_data:/prometheus
+        command:
+            - "--config.file=/etc/prometheus/prometheus.yml"
+            - "--storage.tsdb.path=/prometheus"
+        healthcheck:
+            test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9090/-/healthy" ]
+            interval: 30s
+            timeout: 10s
+            retries: 3
+            start_period: 10s
+        networks:
+            - seventysix-network
+        restart: unless-stopped
+        deploy:
+            resources:
+                limits:
+                    cpus: '0.5'
+                    memory: 512M
 
-  # Jaeger - Distributed tracing
-  # Note: Receives traces from otel-collector, NOT directly from API
-  jaeger:
-    image: jaegertracing/all-in-one:1.62.0
-    container_name: seventysix-jaeger-prod
-    ports:
-      - "127.0.0.1:16686:16686" # Jaeger UI only - OTLP ports handled by otel-collector
-    environment:
-      - COLLECTOR_OTLP_ENABLED=true
-    healthcheck:
-      test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:14269/" ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 10s
-    networks:
-      - seventysix-network
-    restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 256M
+    # Jaeger - Distributed tracing
+    # Note: Receives traces from otel-collector, NOT directly from API
+    jaeger:
+        image: jaegertracing/all-in-one:1.62.0
+        container_name: seventysix-jaeger-prod
+        ports:
+            - "127.0.0.1:16686:16686" # Jaeger UI only - OTLP ports handled by otel-collector
+        environment:
+            - COLLECTOR_OTLP_ENABLED=true
+        healthcheck:
+            test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:14269/" ]
+            interval: 30s
+            timeout: 10s
+            retries: 3
+            start_period: 10s
+        networks:
+            - seventysix-network
+        restart: unless-stopped
+        deploy:
+            resources:
+                limits:
+                    cpus: '0.5'
+                    memory: 256M
 
-  # Grafana - Metrics visualization
-  grafana:
-    image: grafana/grafana:11.4.0
-    container_name: seventysix-grafana-prod
-    ports:
-      - "127.0.0.1:3000:3000"
-    environment:
-      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
-      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:?GRAFANA_ADMIN_PASSWORD must be set}
-      - GF_USERS_DEFAULT_THEME=dark
-      - GF_AUTH_ANONYMOUS_ENABLED=false
-      - GF_SECURITY_ALLOW_EMBEDDING=true
-      - GF_SECURITY_COOKIE_SAMESITE=lax
-      - GF_SECURITY_COOKIE_SECURE=true
-      - GF_ANALYTICS_REPORTING_ENABLED=false
-    volumes:
-      - grafana_data:/var/lib/grafana
-      - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
-    depends_on:
-      - prometheus
-    healthcheck:
-      test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/api/health" ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 10s
-    networks:
-      - seventysix-network
-    restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          cpus: "0.5"
-          memory: 256M
+    # Grafana - Metrics visualization
+    grafana:
+        image: grafana/grafana:11.4.0
+        container_name: seventysix-grafana-prod
+        ports:
+            - "127.0.0.1:3000:3000"
+        environment:
+            - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
+            - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:?GRAFANA_ADMIN_PASSWORD must be set}
+            - GF_USERS_DEFAULT_THEME=dark
+            - GF_AUTH_ANONYMOUS_ENABLED=false
+            - GF_SECURITY_ALLOW_EMBEDDING=true
+            - GF_SECURITY_COOKIE_SAMESITE=lax
+            - GF_SECURITY_COOKIE_SECURE=true
+            - GF_ANALYTICS_REPORTING_ENABLED=false
+        volumes:
+            - grafana_data:/var/lib/grafana
+            - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
+        depends_on:
+            - prometheus
+        healthcheck:
+            test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/api/health" ]
+            interval: 30s
+            timeout: 10s
+            retries: 3
+            start_period: 10s
+        networks:
+            - seventysix-network
+        restart: unless-stopped
+        deploy:
+            resources:
+                limits:
+                    cpus: "0.5"
+                    memory: 256M
 
-  # Fail2Ban - Intrusion prevention (bans IPs after repeated violations)
-  fail2ban:
-    image: crazymax/fail2ban:1.1.0
-    container_name: seventysix-fail2ban-prod
-    network_mode: host
-    cap_add:
-      - NET_ADMIN
-      - NET_RAW
-    volumes:
-      - ./fail2ban/jail.d:/etc/fail2ban/jail.d:ro
-      - ./fail2ban/filter.d:/etc/fail2ban/filter.d:ro
-      - ./logs:/var/log/seventysix:ro
-      - geoip_data:/usr/share/GeoIP:ro
-    restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          cpus: '0.25'
-          memory: 64M
+    # Fail2Ban - Intrusion prevention (bans IPs after repeated violations)
+    fail2ban:
+        image: crazymax/fail2ban:1.1.0
+        container_name: seventysix-fail2ban-prod
+        network_mode: host
+        cap_add:
+            - NET_ADMIN
+            - NET_RAW
+        volumes:
+            - ./fail2ban/jail.d:/etc/fail2ban/jail.d:ro
+            - ./fail2ban/filter.d:/etc/fail2ban/filter.d:ro
+            - ./logs:/var/log/seventysix:ro
+            - geoip_data:/usr/share/GeoIP:ro
+        restart: unless-stopped
+        deploy:
+            resources:
+                limits:
+                    cpus: '0.25'
+                    memory: 64M
 
-  # GeoIP Updater - Downloads MaxMind GeoLite2-Country database for Fail2Ban
-  geoipupdate:
-    image: ghcr.io/maxmind/geoipupdate:v7.0.1
-    container_name: seventysix-geoipupdate-prod
-    environment:
-      GEOIPUPDATE_ACCOUNT_ID: "${MAXMIND_ACCOUNT_ID:?MAXMIND_ACCOUNT_ID must be set}"
-      GEOIPUPDATE_LICENSE_KEY: "${MAXMIND_LICENSE_KEY:?MAXMIND_LICENSE_KEY must be set}"
-      GEOIPUPDATE_EDITION_IDS: "GeoLite2-Country"
-      GEOIPUPDATE_FREQUENCY: "24"
-    volumes:
-      - geoip_data:/usr/share/GeoIP
-    restart: unless-stopped
-    networks:
-      - seventysix-network
-    deploy:
-      resources:
-        limits:
-          cpus: '0.25'
-          memory: 64M
+    # GeoIP Updater - Downloads MaxMind GeoLite2-Country database for Fail2Ban
+    geoipupdate:
+        image: ghcr.io/maxmind/geoipupdate:v7.0.1
+        container_name: seventysix-geoipupdate-prod
+        environment:
+            GEOIPUPDATE_ACCOUNT_ID: "${MAXMIND_ACCOUNT_ID:?MAXMIND_ACCOUNT_ID must be set}"
+            GEOIPUPDATE_LICENSE_KEY: "${MAXMIND_LICENSE_KEY:?MAXMIND_LICENSE_KEY must be set}"
+            GEOIPUPDATE_EDITION_IDS: "GeoLite2-Country"
+            GEOIPUPDATE_FREQUENCY: "24"
+        volumes:
+            - geoip_data:/usr/share/GeoIP
+        restart: unless-stopped
+        networks:
+            - seventysix-network
+        deploy:
+            resources:
+                limits:
+                    cpus: '0.25'
+                    memory: 64M
 
 # Named volumes for data persistence across container lifecycle
 # Data survives: docker-compose down, docker-compose up, container restarts
 volumes:
-  valkey_data:
-    driver: local
-    name: seventysix_valkey_prod_data
-  postgres_data:
-    driver: local
-    name: seventysix_postgres_prod_data
-  prometheus_data:
-    driver: local
-    name: seventysix_prometheus_prod_data
-  grafana_data:
-    driver: local
-    name: seventysix_grafana_prod_data
-  dataprotection_keys:
-    driver: local
-    name: seventysix_dataprotection_prod_keys
-  geoip_data:
-    driver: local
-    name: seventysix_geoip_prod_data
+    valkey_data:
+        driver: local
+        name: seventysix_valkey_prod_data
+    postgres_data:
+        driver: local
+        name: seventysix_postgres_prod_data
+    prometheus_data:
+        driver: local
+        name: seventysix_prometheus_prod_data
+    grafana_data:
+        driver: local
+        name: seventysix_grafana_prod_data
+    dataprotection_keys:
+        driver: local
+        name: seventysix_dataprotection_prod_keys
+    geoip_data:
+        driver: local
+        name: seventysix_geoip_prod_data
 
 networks:
-  seventysix-network:
-    driver: bridge
-    name: seventysix_prod_network
+    seventysix-network:
+        driver: bridge
+        name: seventysix_prod_network
