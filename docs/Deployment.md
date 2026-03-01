@@ -419,7 +419,7 @@ rm /tmp/dataprotection.pfx
 > | `DB_PASSWORD` | Dev PostgreSQL password is in user secrets / well-known |
 > | `JWT_SECRET_KEY` | Dev placeholder value is in `appsettings.json`; regenerate: `openssl rand -base64 64` |
 > | `VALKEY_PASSWORD` | Dev password is in user secrets; regenerate: `openssl rand -base64 32` |
-> | `ALTCHA_HMAC_KEY` | Dev key is in user secrets. **MUST be exactly `openssl rand -base64 32` (32 bytes / 256 bits minimum).** A shorter or malformed key throws `InvalidKeyException` during DI container startup — every endpoint returns 500 until the secret is rotated and the service re-deployed. See A.2. |
+> | `ALTCHA_HMAC_KEY` | Dev key is in user secrets. **MUST be exactly `openssl rand -base64 64` (64 bytes / 256 bits minimum).** A shorter or malformed key throws `InvalidKeyException` during DI container startup — every endpoint returns 500 until the secret is rotated and the service re-deployed. See A.2. |
 > | `DATA_PROTECTION_CERTIFICATE_PASSWORD` | Must match the newly generated production cert (not the dev cert) |
 > | `ADMIN_PASSWORD` | One-time seed password — generate random: `openssl rand -base64 24` |
 > | `GRAFANA_ADMIN_PASSWORD` | Dev password is in user secrets; regenerate: `openssl rand -base64 20` |
@@ -443,7 +443,7 @@ In your GitHub repository → **Settings → Secrets and variables → Actions**
 | `EMAIL_SMTP_PASSWORD` | SMTP password | Your SMTP provider |
 | `EMAIL_FROM_ADDRESS` | Sender address (e.g., `noreply@seventysixsandbox.com`) | — |
 | `SITE_EMAIL` | Public contact email shown on Privacy Policy and Terms of Service pages (e.g., `hello@yourdomain.com`) | — |
-| `ALTCHA_HMAC_KEY` | ALTCHA PoW key (base64) | `openssl rand -base64 32` |
+| `ALTCHA_HMAC_KEY` | ALTCHA PoW key (base64, **must decode to exactly 64 bytes**) | `openssl rand -base64 64` |
 | `ADMIN_EMAIL` | Admin account email | — |
 | `ADMIN_PASSWORD` | Admin account initial password (one-time) | `openssl rand -base64 24` |
 | `ADMIN_USERNAME` | Admin account username (**not** `admin`) | — |
@@ -509,9 +509,9 @@ gh secret set EMAIL_FROM_ADDRESS --body "<YOUR_FROM_ADDRESS>" --repo $REPO
 gh secret set SITE_EMAIL --body "<YOUR_SITE_CONTACT_EMAIL>" --repo $REPO
 
 # ── Security ──
-# CRITICAL: Must decode to ≥16 bytes (≥24 base64 chars). Use exactly 32 bytes to match SHA-256.
-# A short or malformed key causes InvalidKeyException at startup → every endpoint returns 500.
-ALTCHA_HMAC_KEY=$(openssl rand -base64 32)
+# CRITICAL: Must decode to EXACTLY 64 bytes. Ixnas.AltchaNet rejects any other size.
+# A wrong-size key causes InvalidKeyException at DI resolution → every endpoint returns 500.
+ALTCHA_HMAC_KEY=$(openssl rand -base64 64)
 gh secret set ALTCHA_HMAC_KEY --body "$ALTCHA_HMAC_KEY" --repo $REPO
 unset ALTCHA_HMAC_KEY  # don't leave it in shell history
 gh secret set DATA_PROTECTION_CERTIFICATE_PASSWORD --body "<GENERATED_CERT_PASSWORD>" --repo $REPO
@@ -1017,8 +1017,8 @@ Hetzner EU (Germany) adds ~180ms RTT for US West Coast users on every uncached A
 **GHCR login on the server needs a PAT with `read:packages`.**
 The `docker login ghcr.io` on the production server requires a GitHub Personal Access Token. This PAT is separate from `PROD_SSH_KEY` — it only needs the `read:packages` scope. The token is stored in `/home/deploy/.docker/config.json` and persists across reboots.
 
-**`ALTCHA_HMAC_KEY` too short or malformed → entire API returns 500 on startup.**
-`Ixnas.AltchaNet` validates the HMAC key length during DI container construction at startup. If the decoded key is fewer than 16 bytes (or the value is not valid base64), it throws `Ixnas.AltchaNet.Exceptions.InvalidKeyException` before the app even starts handling requests. The result: **every single endpoint returns 500**, including `/api/v1/config/features`, which the Angular client calls immediately on load. The browser just shows 500s — the root cause only appears in `docker logs seventysix-api-prod`. To fix: generate a new key with `openssl rand -base64 32`, update the GitHub Secret, and re-deploy.
+**`ALTCHA_HMAC_KEY` wrong size → entire API returns 500.**
+`Ixnas.AltchaNet` requires the HMAC key to be **exactly 64 bytes** (512 bits) when decoded from base64. Any other size — including 32 bytes — throws `Ixnas.AltchaNet.Exceptions.InvalidKeyException` during DI resolution at request time. The result: **every single endpoint returns 500**, including `/api/v1/config/features`, which the Angular client calls immediately on load. The browser just shows 500s — the root cause only appears in `docker logs seventysix-api-prod`. The `AltchaSettingsValidator` also validates key length at startup and will fail fast with a clear message. To fix: generate a new 64-byte key with `openssl rand -base64 64`, update the GitHub Secret via `gh secret set ALTCHA_HMAC_KEY`, and re-deploy.
 
 **OutputCache + Valkey cold start can cause 500s.**
 If the first API request arrives before Valkey is healthy, `OutputCache` middleware throws 500 instead of falling back. Ensure the `api` service has `depends_on: valkey: condition: service_healthy` (not just `service_started`).
@@ -1044,7 +1044,7 @@ On a fresh deploy, you may see these errors in the browser console. They form a 
 
 ```
 GET /api/v1/config/features → 500                ← Root cause: check docker logs seventysix-api-prod
-                                                     Most common cause: ALTCHA_HMAC_KEY too short/malformed
+                                                     Most common cause: ALTCHA_HMAC_KEY not exactly 64 bytes
                                                      (InvalidKeyException during DI startup — see A.2)
                                                      Fix: rotate GitHub Secret, re-deploy
   └─► TypeError: Invalid URL (client init)        ← oauth-flow.service.ts cascades from the 500 above

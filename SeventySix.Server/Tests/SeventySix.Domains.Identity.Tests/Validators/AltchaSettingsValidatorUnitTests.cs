@@ -92,11 +92,85 @@ public sealed class AltchaSettingsValidatorUnitTests
 			altcha => altcha.ExpirySeconds);
 	}
 
+	[Fact]
+	public void Validate_EnabledWithKeyTooShort_FailsValidation()
+	{
+		// Arrange — 32-byte key (Ixnas.AltchaNet requires exactly 64)
+		AltchaSettings settings =
+			CreateValidSettings() with
+			{
+				HmacKeyBase64 = "QUJDREVGR0hJSktMTU5PUFFSU1RVVldYWVpBQkNERUY="
+			};
+
+		// Act
+		TestValidationResult<AltchaSettings> result =
+			Validator.TestValidate(settings);
+
+		// Assert
+		result.ShouldHaveValidationErrorFor(
+			altcha => altcha.HmacKeyBase64);
+	}
+
+	[Fact]
+	public void Validate_EnabledWithInvalidBase64_FailsValidation()
+	{
+		// Arrange
+		AltchaSettings settings =
+			CreateValidSettings() with { HmacKeyBase64 = "not-valid-base64!!!" };
+
+		// Act
+		TestValidationResult<AltchaSettings> result =
+			Validator.TestValidate(settings);
+
+		// Assert
+		result.ShouldHaveValidationErrorFor(
+			altcha => altcha.HmacKeyBase64);
+	}
+
+	[Fact]
+	public void Validate_EnabledWithExactly64ByteKey_PassesValidation()
+	{
+		// Arrange — exactly 64 bytes
+		AltchaSettings settings =
+			CreateValidSettings();
+
+		// Act
+		TestValidationResult<AltchaSettings> result =
+			Validator.TestValidate(settings);
+
+		// Assert
+		result.ShouldNotHaveValidationErrorFor(
+			altcha => altcha.HmacKeyBase64);
+	}
+
+	[Fact]
+	public void Validate_DisabledWithShortKey_PassesValidation()
+	{
+		// Arrange — disabled skips key length validation
+		AltchaSettings settings =
+			CreateValidSettings() with
+			{
+				Enabled = false,
+				HmacKeyBase64 = "c2hvcnQ="
+			};
+
+		// Act
+		TestValidationResult<AltchaSettings> result =
+			Validator.TestValidate(settings);
+
+		// Assert
+		result.ShouldNotHaveAnyValidationErrors();
+	}
+
+	/// <summary>
+	/// Creates valid settings with a proper 64-byte HMAC key.
+	/// </summary>
 	private static AltchaSettings CreateValidSettings() =>
 		new()
 		{
 			Enabled = true,
-			HmacKeyBase64 = "dGVzdC1obWFjLWtleS10aGF0LWlzLWF0LWxlYXN0LTMyLWJ5dGVzLWxvbmc=",
+			HmacKeyBase64 =
+				"QUJDREVGR0hJSktMTU5PUFFSU1RVVldYWVpBQkNERUZHSElKS0xNTk9QUVJTVFVWV1hZWkFCQ0RFRkdISUpLTA==",
 			ComplexityMin = 1,
 			ComplexityMax = 10,
 			ExpirySeconds = 300,
