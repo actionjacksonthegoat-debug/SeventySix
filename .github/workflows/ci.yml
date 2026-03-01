@@ -9,8 +9,6 @@ on:
 
 permissions:
     contents: read
-    checks: write
-    pull-requests: write
 
 concurrency:
     group: ci-${{ github.ref }}
@@ -30,10 +28,10 @@ jobs:
 
         steps:
             - name: Checkout code
-              uses: actions/checkout@v4
+              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
             - name: Setup Node.js
-              uses: actions/setup-node@v4
+              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
               with:
                   node-version: "22.x"
                   cache: "npm"
@@ -52,7 +50,7 @@ jobs:
               run: npm run test:coverage
 
             - name: Upload client coverage to Codecov
-              uses: codecov/codecov-action@v5
+              uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de # v5
               with:
                   token: ${{ secrets.CODECOV_TOKEN }}
                   files: coverage/lcov.info
@@ -61,7 +59,7 @@ jobs:
                   fail_ci_if_error: true
 
             - name: Upload client artifact
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
               with:
                   name: client-dist
                   path: SeventySix.Client/dist
@@ -73,16 +71,21 @@ jobs:
         # NOTE: Server tests use Testcontainers (requires Docker).
         # ubuntu-latest includes Docker by default.
 
+        permissions:
+            contents: read
+            checks: write
+            pull-requests: write
+
         defaults:
             run:
                 working-directory: SeventySix.Server
 
         steps:
             - name: Checkout code
-              uses: actions/checkout@v4
+              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
             - name: Setup .NET
-              uses: actions/setup-dotnet@v4
+              uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
               with:
                   dotnet-version: "10.0.x"
 
@@ -104,13 +107,13 @@ jobs:
                   --logger "trx"
 
             - name: Publish server test results
-              uses: EnricoMi/publish-unit-test-result-action@v2
+              uses: EnricoMi/publish-unit-test-result-action@c950f6fb443cb5af20a377fd0dfaa78838901040 # v2
               if: always()
               with:
                   files: SeventySix.Server/TestResults/**/*.trx
 
             - name: Upload server coverage to Codecov
-              uses: codecov/codecov-action@v5
+              uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de # v5
               with:
                   token: ${{ secrets.CODECOV_TOKEN }}
                   files: SeventySix.Server/TestResults/**/coverage.cobertura.xml
@@ -119,7 +122,7 @@ jobs:
                   fail_ci_if_error: true
 
             - name: Upload coverage artifact
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
               with:
                   name: server-coverage
                   path: SeventySix.Server/TestResults/**/coverage.cobertura.xml
@@ -142,10 +145,10 @@ jobs:
 
         steps:
             - name: Checkout code
-              uses: actions/checkout@v4
+              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
             - name: Setup Node.js
-              uses: actions/setup-node@v4
+              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
               with:
                   node-version: "22.x"
                   cache: "npm"
@@ -192,7 +195,7 @@ jobs:
                   echo "============================================"
 
             - name: Upload Playwright report
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
               if: always()
               with:
                   name: playwright-report
@@ -200,7 +203,7 @@ jobs:
                   retention-days: 7
 
             - name: Upload test results
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
               if: always()
               with:
                   name: e2e-test-results
@@ -217,10 +220,10 @@ jobs:
 
         steps:
             - name: Checkout code
-              uses: actions/checkout@v4
+              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
             - name: Setup Node.js
-              uses: actions/setup-node@v4
+              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
               with:
                   node-version: "22.x"
 
@@ -228,7 +231,7 @@ jobs:
               run: |
                   sudo gpg -k
                   sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg \
-                      --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+                      --keyserver hkps://keyserver.ubuntu.com --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
                   echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" \
                       | sudo tee /etc/apt/sources.list.d/k6.list
                   sudo apt-get update
@@ -264,7 +267,7 @@ jobs:
                   echo "============================================"
 
             - name: Upload load test report
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
               if: always()
               with:
                   name: load-test-report
@@ -343,16 +346,13 @@ jobs:
 
         steps:
             - name: Checkout code
-              uses: actions/checkout@v4
-
-            - name: Set up QEMU
-              uses: docker/setup-qemu-action@v3
+              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
             - name: Set up Docker Buildx
-              uses: docker/setup-buildx-action@v3
+              uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
 
             - name: Log in to GHCR
-              uses: docker/login-action@v3
+              uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
               with:
                   registry: ghcr.io
                   username: ${{ github.actor }}
@@ -365,11 +365,11 @@ jobs:
                   echo "date=$(date -u +%Y%m%d)" >> $GITHUB_OUTPUT
 
             - name: Build and push API image
-              uses: docker/build-push-action@v6
+              uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
               with:
                   context: ./SeventySix.Server
                   file: ./SeventySix.Server/Dockerfile.production
-                  platforms: linux/amd64,linux/arm64
+                  platforms: linux/amd64
                   push: true
                   tags: |
                       ghcr.io/${{ github.repository_owner }}/seventysix-api:latest
@@ -379,11 +379,11 @@ jobs:
                   cache-to: type=gha,mode=max
 
             - name: Build and push Client image
-              uses: docker/build-push-action@v6
+              uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
               with:
                   context: ./SeventySix.Client
                   file: ./SeventySix.Client/Dockerfile.production
-                  platforms: linux/amd64,linux/arm64
+                  platforms: linux/amd64
                   push: true
                   tags: |
                       ghcr.io/${{ github.repository_owner }}/seventysix-client:latest
