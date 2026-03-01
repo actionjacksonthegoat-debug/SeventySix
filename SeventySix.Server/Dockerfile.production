@@ -33,27 +33,37 @@ RUN dotnet publish "SeventySix.Api.csproj" \
 	/p:UseAppHost=false
 
 # Generate SQL migration scripts for all DbContexts
+# Use --no-build --configuration Release to reuse publish artifacts (avoids Debug rebuild
+# which fails due to TreatWarningsAsErrors in Directory.Build.props)
 WORKDIR /src
 RUN dotnet tool install --global dotnet-ef && \
 	/root/.dotnet/tools/dotnet-ef migrations script --project SeventySix.Domains.Identity/SeventySix.Domains.Identity.csproj \
 	--startup-project SeventySix.Api/SeventySix.Api.csproj \
 	--context IdentityDbContext \
 	--idempotent \
+	--no-build \
+	--configuration Release \
 	--output /app/identity-migrations.sql && \
 	/root/.dotnet/tools/dotnet-ef migrations script --project SeventySix.Domains/SeventySix.Domains.csproj \
 	--startup-project SeventySix.Api/SeventySix.Api.csproj \
 	--context LoggingDbContext \
 	--idempotent \
+	--no-build \
+	--configuration Release \
 	--output /app/logging-migrations.sql && \
 	/root/.dotnet/tools/dotnet-ef migrations script --project SeventySix.Domains/SeventySix.Domains.csproj \
 	--startup-project SeventySix.Api/SeventySix.Api.csproj \
 	--context ApiTrackingDbContext \
 	--idempotent \
+	--no-build \
+	--configuration Release \
 	--output /app/apitracking-migrations.sql && \
 	/root/.dotnet/tools/dotnet-ef migrations script --project SeventySix.Domains/SeventySix.Domains.csproj \
 	--startup-project SeventySix.Api/SeventySix.Api.csproj \
 	--context ElectronicNotificationsDbContext \
 	--idempotent \
+	--no-build \
+	--configuration Release \
 	--output /app/electronicnotifications-migrations.sql
 
 # Stage 3: Runtime
