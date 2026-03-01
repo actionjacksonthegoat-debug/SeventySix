@@ -619,7 +619,8 @@ export class DataTableComponent<T extends { id: number; }>
 							50);
 				});
 		observer.observe(this.elementRef.nativeElement);
-		this.destroyRef
+		this
+			.destroyRef
 			.onDestroy(
 				() =>
 				{

@@ -1,6 +1,8 @@
 import { LogDto, PagedResultOfLogDto } from "@admin/logs/models";
 import { LogManagementService } from "@admin/logs/services";
 import { ComponentFixture } from "@angular/core/testing";
+import { MatDialog } from "@angular/material/dialog";
+import { DateService } from "@shared/services";
 import { DialogService } from "@shared/services/dialog.service";
 import { NotificationService } from "@shared/services/notification.service";
 import {
@@ -200,6 +202,7 @@ describe("LogList action handlers",
 		let mockBatchDeleteMutation: ReturnType<typeof createMockMutationResult<number, Error, number[]>>;
 		let mockDialogService: { confirmDelete: Mock; };
 		let mockNotificationService: MockNotificationService;
+		let mockMatDialog: { open: Mock; };
 
 		beforeEach(
 			async () =>
@@ -251,6 +254,26 @@ describe("LogList action handlers",
 				mockNotificationService =
 					createMockNotificationService();
 
+				mockMatDialog =
+					{
+						open: vi
+							.fn()
+							.mockReturnValue(
+								{
+									componentInstance: {
+										deleteLog: {
+											subscribe: vi
+												.fn()
+												.mockReturnValue(
+													{ unsubscribe: vi.fn() })
+										}
+									},
+									afterClosed: vi
+										.fn()
+										.mockReturnValue(of(undefined))
+								})
+					};
+
 				fixture =
 					await new ComponentTestBed<LogList>()
 						.withAdminDefaults()
@@ -268,6 +291,11 @@ describe("LogList action handlers",
 							{
 								provide: NotificationService,
 								useValue: mockNotificationService
+							})
+						.withProvider(
+							{
+								provide: MatDialog,
+								useValue: mockMatDialog
 							})
 						.build(LogList);
 
@@ -438,7 +466,7 @@ describe("LogList action handlers",
 				it("should show success notification when bulk delete succeeds",
 					() =>
 					{
-						mockBatchDeleteMutation.mutate.mockImplementation(
+						(mockBatchDeleteMutation.mutate as unknown as Mock).mockImplementation(
 							(
 								_ids: number[],
 								options?: { onSuccess?: () => void; }) =>
@@ -460,7 +488,7 @@ describe("LogList action handlers",
 				it("should show error notification when bulk delete fails",
 					() =>
 					{
-						mockBatchDeleteMutation.mutate.mockImplementation(
+						(mockBatchDeleteMutation.mutate as unknown as Mock).mockImplementation(
 							(
 								_ids: number[],
 								options?: { onError?: (error: Error) => void; }) =>
@@ -482,7 +510,7 @@ describe("LogList action handlers",
 				it("should show success notification when single delete succeeds",
 					() =>
 					{
-						mockDeleteMutation.mutate.mockImplementation(
+						(mockDeleteMutation.mutate as unknown as Mock).mockImplementation(
 							(
 								_id: number,
 								options?: { onSuccess?: () => void; }) =>
@@ -500,7 +528,7 @@ describe("LogList action handlers",
 				it("should show error notification when single delete fails",
 					() =>
 					{
-						mockDeleteMutation.mutate.mockImplementation(
+						(mockDeleteMutation.mutate as unknown as Mock).mockImplementation(
 							(
 								_id: number,
 								options?: { onError?: (error: Error) => void; }) =>
@@ -512,6 +540,317 @@ describe("LogList action handlers",
 							{ action: "delete", row: TEST_LOG });
 
 						expect(mockNotificationService.error)
+							.toHaveBeenCalled();
+					});
+			});
+
+		describe("column formatters",
+			() =>
+			{
+				describe("badgeColor formatter",
+					() =>
+					{
+						it("should return warn for Error level",
+							() =>
+							{
+								expect(component.columns[0].badgeColor!("Error"))
+									.toBe("warn");
+							});
+
+						it("should return warn for Fatal level",
+							() =>
+							{
+								expect(component.columns[0].badgeColor!("Fatal"))
+									.toBe("warn");
+							});
+
+						it("should return accent for Warning level",
+							() =>
+							{
+								expect(component.columns[0].badgeColor!("Warning"))
+									.toBe("accent");
+							});
+
+						it("should return primary for Information level",
+							() =>
+							{
+								expect(component.columns[0].badgeColor!("Information"))
+									.toBe("primary");
+							});
+					});
+
+				describe("message formatter",
+					() =>
+					{
+						it("should return exceptionMessage when present",
+							() =>
+							{
+								const result: string =
+									component.columns[2].formatter!(
+										null,
+										{ ...TEST_LOG, exceptionMessage: "ex error", message: "msg" });
+
+								expect(result)
+									.toBe("ex error");
+							});
+
+						it("should return message when exceptionMessage is null",
+							() =>
+							{
+								const result: string =
+									component.columns[2].formatter!(
+										null,
+										{ ...TEST_LOG, exceptionMessage: null, message: "fallback" });
+
+								expect(result)
+									.toBe("fallback");
+							});
+
+						it("should return empty string when row is undefined",
+							() =>
+							{
+								const result: string =
+									component.columns[2].formatter!(
+										null,
+										undefined);
+
+								expect(result)
+									.toBe("");
+							});
+					});
+			});
+
+		describe("onDateRangeChange",
+			() =>
+			{
+				it("should pass start and end dates from event to updateFilter",
+					() =>
+					{
+						const dateService: DateService =
+							new DateService();
+						const startDate: Date =
+							dateService.nowDate();
+						const endDate: Date =
+							dateService.nowDate();
+
+						component.onDateRangeChange(
+							{ preset: "30d", startDate, endDate });
+
+						expect(mockLogService.updateFilter)
+							.toHaveBeenCalledWith(
+								{ startDate, endDate });
+					});
+
+				it("should pass undefined dates when preset has no date range",
+					() =>
+					{
+						component.onDateRangeChange(
+							{ preset: "all" });
+
+						expect(mockLogService.updateFilter)
+							.toHaveBeenCalledWith(
+								{ startDate: undefined, endDate: undefined });
+					});
+			});
+
+		describe("onSortChange",
+			() =>
+			{
+				it("should update filter with sort parameters",
+					() =>
+					{
+						component.onSortChange(
+							{
+								sortBy: "logLevel",
+								sortDescending: true
+							});
+
+						expect(mockLogService.updateFilter)
+							.toHaveBeenCalledWith(
+								{
+									sortBy: "logLevel",
+									sortDescending: true
+								});
+					});
+			});
+
+		describe("onPageSizeChange",
+			() =>
+			{
+				it("should call setPageSize with new size",
+					() =>
+					{
+						component.onPageSizeChange(25);
+
+						expect(mockLogService.setPageSize)
+							.toHaveBeenCalledWith(25);
+					});
+			});
+
+		describe("onRowClick",
+			() =>
+			{
+				it("should open log detail dialog",
+					() =>
+					{
+						component.onRowClick(TEST_LOG);
+
+						expect(mockMatDialog.open)
+							.toHaveBeenCalled();
+					});
+			});
+
+		describe("onRowAction view",
+			() =>
+			{
+				it("should open log detail dialog",
+					() =>
+					{
+						component.onRowAction(
+							{ action: "view", row: TEST_LOG });
+
+						expect(mockMatDialog.open)
+							.toHaveBeenCalled();
+					});
+			});
+
+		describe("singular bulk delete message",
+			() =>
+			{
+				it("should use singular entry when deleting exactly one log",
+					() =>
+					{
+						(mockBatchDeleteMutation.mutate as unknown as Mock).mockImplementation(
+							(
+								_ids: number[],
+								options?: { onSuccess?: () => void; }) =>
+							{
+								options?.onSuccess?.();
+							});
+
+						component.onBulkAction(
+							{
+								action: "delete",
+								selectedRows: [],
+								selectedIds: [42]
+							});
+
+						expect(mockNotificationService.success)
+							.toHaveBeenCalledWith(
+								"Successfully deleted 1 log entry");
+					});
+			});
+
+		describe("logLevel formatter",
+			() =>
+			{
+				it("should format Error level to string",
+					() =>
+					{
+						const result: string =
+							component.columns[0].formatter!("Error");
+
+						expect(result)
+							.toBe("Error");
+					});
+
+				it("should format Warning level to string",
+					() =>
+					{
+						const result: string =
+							component.columns[0].formatter!("Warning");
+
+						expect(result)
+							.toBe("Warning");
+					});
+
+				it("should format Information level to string",
+					() =>
+					{
+						const result: string =
+							component.columns[0].formatter!("Information");
+
+						expect(result)
+							.toBe("Information");
+					});
+			});
+
+		describe("createDate formatter",
+			() =>
+			{
+				it("should format date value",
+					() =>
+					{
+						const result: string =
+							component.columns[1].formatter!("2024-01-01T00:00:00Z");
+
+						expect(result)
+							.toBeTruthy();
+					});
+			});
+
+		describe("onRefresh",
+			() =>
+			{
+				it("should call forceRefresh on the log service",
+					() =>
+					{
+						component.onRefresh();
+
+						expect(mockLogService.forceRefresh)
+							.toHaveBeenCalled();
+					});
+			});
+
+		describe("onBulkAction delete cancellation",
+			() =>
+			{
+				it("should not mutate when bulk delete is cancelled",
+					() =>
+					{
+						mockDialogService.confirmDelete.mockReturnValue(of(false));
+
+						component.onBulkAction(
+							{
+								action: "delete",
+								selectedRows: [],
+								selectedIds: [1, 2]
+							});
+
+						expect(mockBatchDeleteMutation.mutate)
+							.not
+							.toHaveBeenCalled();
+					});
+			});
+
+		describe("viewLogDetails dialog interaction",
+			() =>
+			{
+				it("should subscribe to deleteLog event from dialog",
+					() =>
+					{
+						component.onRowClick(TEST_LOG);
+
+						const dialogRef: { componentInstance: { deleteLog: { subscribe: Mock; }; }; } =
+							mockMatDialog
+								.open
+								.mock
+								.results[0]
+								.value;
+
+						expect(dialogRef.componentInstance.deleteLog.subscribe)
+							.toHaveBeenCalled();
+					});
+
+				it("should clean up subscription when dialog closes",
+					() =>
+					{
+						component.onRowClick(TEST_LOG);
+
+						const dialogRef: { afterClosed: Mock; } =
+							mockMatDialog.open.mock.results[0].value;
+
+						expect(dialogRef.afterClosed)
 							.toHaveBeenCalled();
 					});
 			});

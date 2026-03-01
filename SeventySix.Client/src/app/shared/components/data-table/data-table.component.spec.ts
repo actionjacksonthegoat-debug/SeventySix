@@ -3,10 +3,12 @@ import {
 	BulkAction,
 	BulkActionEvent,
 	CellValue,
+	DateRangeEvent,
 	FilterChangeEvent,
 	QuickFilter,
 	RowAction,
 	RowActionEvent,
+	SortChangeEvent,
 	TableColumn
 } from "@shared/models";
 import { DateService } from "@shared/services";
@@ -342,6 +344,87 @@ describe("DataTableComponent",
 								.has("active"))
 							.toBe(false);
 					});
+				describe("single-selection mode",
+					() =>
+					{
+						const singleFilters: QuickFilter<TestEntity>[] =
+							[
+								{ key: "all", label: "All", icon: "people" },
+								{ key: "active", label: "Active", icon: "check_circle" }
+							];
+
+						it("should auto-activate first filter in single-selection mode", () =>
+							new Promise<void>(
+								(resolve) =>
+								{
+									component.filterChange.subscribe(
+										(event: FilterChangeEvent) =>
+										{
+											expect(event.filterKey)
+												.toBe("all");
+											expect(event.active)
+												.toBe(true);
+											resolve();
+										});
+
+									builder.withInputs(fixture,
+										{
+											...defaultInputs,
+											quickFilters: singleFilters,
+											quickFiltersSingleSelection: true
+										});
+									fixture.detectChanges();
+								}));
+
+						it("should not auto-activate filter in multi-selection mode (default)",
+							() =>
+							{
+								let emitted: boolean = false;
+								component.filterChange.subscribe(
+									() =>
+									{
+										emitted = true;
+									});
+
+								builder.withInputs(fixture,
+									{
+										...defaultInputs,
+										quickFilters: singleFilters,
+										quickFiltersSingleSelection: false
+									});
+								fixture.detectChanges();
+
+								expect(emitted)
+									.toBe(false);
+								expect(component.activeFilters().size)
+									.toBe(0);
+							});
+
+						it("should replace active filter in single-selection mode on toggle",
+							() =>
+							{
+								builder.withInputs(fixture,
+									{
+										...defaultInputs,
+										quickFilters: singleFilters,
+										quickFiltersSingleSelection: true
+									});
+								fixture.detectChanges();
+
+								component.onFilterToggle("active");
+
+								expect(
+									component
+										.activeFilters()
+										.has("active"))
+									.toBe(true);
+								expect(
+									component
+										.activeFilters()
+										.has("all"))
+									.toBe(false);
+							});
+					});
 			});
 
 		describe("Row Actions",
@@ -479,6 +562,27 @@ describe("DataTableComponent",
 						expect(component.selectionManager.selection.selected.length)
 							.toBe(0);
 					});
+				it("should compute isAllSelected as true when all rows are selected",
+					() =>
+					{
+						component.selectionManager.selection.select(mockData[0]);
+						component.selectionManager.selection.select(mockData[1]);
+						component.selectionManager.selection.select(mockData[2]);
+						fixture.detectChanges();
+
+						expect(component.isAllSelected())
+							.toBe(true);
+					});
+
+				it("should compute isAllSelected as false when not all rows are selected",
+					() =>
+					{
+						component.selectionManager.selection.select(mockData[0]);
+						fixture.detectChanges();
+
+						expect(component.isAllSelected())
+							.toBe(false);
+					});
 			});
 
 		describe("Pagination",
@@ -522,6 +626,40 @@ describe("DataTableComponent",
 							component.onPageChange(
 								{ pageIndex: 0, pageSize: 50, length: 100 });
 						}));
+
+				it("should not emit pageChange when pageIndex is unchanged",
+					() =>
+					{
+						let pageChangeEmitted: boolean = false;
+						component.pageChange.subscribe(
+							() =>
+							{
+								pageChangeEmitted = true;
+							});
+
+						component.onPageChange(
+							{ pageIndex: 0, pageSize: 25, length: 100 });
+
+						expect(pageChangeEmitted)
+							.toBe(false);
+					});
+
+				it("should not emit pageSizeChange when pageSize is unchanged",
+					() =>
+					{
+						let pageSizeChangeEmitted: boolean = false;
+						component.pageSizeChange.subscribe(
+							() =>
+							{
+								pageSizeChangeEmitted = true;
+							});
+
+						component.onPageChange(
+							{ pageIndex: 0, pageSize: 25, length: 100 });
+
+						expect(pageSizeChangeEmitted)
+							.toBe(false);
+					});
 			});
 
 		describe("Column Visibility",
@@ -572,6 +710,25 @@ describe("DataTableComponent",
 						expect(visibleKeys).not.toContain("name");
 
 						localStorage.removeItem(storageKey);
+					});
+				it("should return true for visible column",
+					() =>
+					{
+						expect(
+							(component as unknown as { columnVisible(key: string): boolean; })
+								.columnVisible("id"))
+							.toBe(true);
+					});
+
+				it("should return false after column is toggled hidden",
+					() =>
+					{
+						component.toggleColumn("id");
+
+						expect(
+							(component as unknown as { columnVisible(key: string): boolean; })
+								.columnVisible("id"))
+							.toBe(false);
 					});
 			});
 
@@ -717,6 +874,259 @@ describe("DataTableComponent",
 						expect(dataSource[0].id)
 							.toBeLessThan(0);
 					});
+			});
+
+		describe("computeViewportHeight",
+			() =>
+			{
+				type ViewportHelper = { computeViewportHeight(a: number, d: number, l: boolean, s: number): string; };
+
+				it("should return min-height when loading with no data (CLS prevention)",
+					() =>
+					{
+						const result: string =
+							(component as unknown as ViewportHelper)
+								.computeViewportHeight(200, 0, true, 48);
+						expect(result)
+							.toBe("400px");
+					});
+
+				it("should return available height when loading and available exceeds min",
+					() =>
+					{
+						const result: string =
+							(component as unknown as ViewportHelper)
+								.computeViewportHeight(600, 0, true, 48);
+						expect(result)
+							.toBe("600px");
+					});
+
+				it("should return 0px when not loading and data is empty",
+					() =>
+					{
+						const result: string =
+							(component as unknown as ViewportHelper)
+								.computeViewportHeight(400, 0, false, 48);
+						expect(result)
+							.toBe("0px");
+					});
+
+				it("should return content height when data fits in available space",
+					() =>
+					{
+						const result: string =
+							(component as unknown as ViewportHelper)
+								.computeViewportHeight(500, 3, false, 48);
+						expect(result)
+							.toBe("200px");
+					});
+
+				it("should cap at available height when data exceeds available space",
+					() =>
+					{
+						const result: string =
+							(component as unknown as ViewportHelper)
+								.computeViewportHeight(400, 100, false, 48);
+						expect(result)
+							.toBe("400px");
+					});
+			});
+
+		describe("shouldShowAction",
+			() =>
+			{
+				const testRow: TestEntity =
+					{
+						id: 1,
+						name: "Test",
+						status: "active",
+						createdAt: new DateService()
+							.parseUTC("2024-01-01")
+					};
+
+				beforeEach(
+					() =>
+					{
+						builder.withInputs(fixture, defaultInputs);
+					});
+
+				it("should return true when action has no showIf",
+					() =>
+					{
+						const action: RowAction<TestEntity> =
+							{ key: "edit", label: "Edit", icon: "edit" };
+						expect(component.shouldShowAction(action, testRow))
+							.toBe(true);
+					});
+
+				it("should return true when showIf returns true",
+					() =>
+					{
+						const action: RowAction<TestEntity> =
+							{
+								key: "edit",
+								label: "Edit",
+								icon: "edit",
+								showIf: (_row: TestEntity) => true
+							};
+						expect(component.shouldShowAction(action, testRow))
+							.toBe(true);
+					});
+
+				it("should return false when showIf returns false",
+					() =>
+					{
+						const action: RowAction<TestEntity> =
+							{
+								key: "delete",
+								label: "Delete",
+								icon: "delete",
+								showIf: (_row: TestEntity) => false
+							};
+						expect(component.shouldShowAction(action, testRow))
+							.toBe(false);
+					});
+			});
+
+		describe("Date Range",
+			() =>
+			{
+				it("should emit initial date range when dateRangeEnabled is true", () =>
+					new Promise<void>(
+						(resolve) =>
+						{
+							component.dateRangeChange.subscribe(
+								(event: DateRangeEvent) =>
+								{
+									expect(event)
+										.toBeTruthy();
+									resolve();
+								});
+
+							builder.withInputs(fixture,
+								{ ...defaultInputs, dateRangeEnabled: true });
+							fixture.detectChanges();
+						}));
+
+				it("should not emit date range when dateRangeEnabled is false",
+					() =>
+					{
+						let emitted: boolean = false;
+						component.dateRangeChange.subscribe(
+							() =>
+							{
+								emitted = true;
+							});
+
+						builder.withInputs(fixture,
+							{ ...defaultInputs, dateRangeEnabled: false });
+						fixture.detectChanges();
+
+						expect(emitted)
+							.toBe(false);
+					});
+
+				it("should not emit dateRangeChange for unknown range key",
+					() =>
+					{
+						let emitted: boolean = false;
+						component.dateRangeChange.subscribe(
+							() =>
+							{
+								emitted = true;
+							});
+
+						builder.withInputs(fixture, defaultInputs);
+						component.onDateRangeChange("UNKNOWN_RANGE_KEY");
+
+						expect(emitted)
+							.toBe(false);
+					});
+
+				it("should emit dateRangeChange when valid range selected", () =>
+					new Promise<void>(
+						(resolve) =>
+						{
+							builder.withInputs(fixture, defaultInputs);
+
+							component.dateRangeChange.subscribe(
+								(event: DateRangeEvent) =>
+								{
+									expect(event)
+										.toBeTruthy();
+									resolve();
+								});
+
+							component.onDateRangeChange("24h");
+						}));
+			});
+
+		describe("defaultDateRange input",
+			() =>
+			{
+				it("should update selectedDateRange when custom defaultDateRange provided",
+					() =>
+					{
+						builder.withInputs(fixture,
+							{ ...defaultInputs, defaultDateRange: "7d" });
+						fixture.detectChanges();
+
+						expect(component.selectedDateRange())
+							.toBe("7d");
+					});
+
+				it("should keep 24h as default when defaultDateRange is 24h",
+					() =>
+					{
+						builder.withInputs(fixture,
+							{ ...defaultInputs, defaultDateRange: "24h" });
+						fixture.detectChanges();
+
+						expect(component.selectedDateRange())
+							.toBe("24h");
+					});
+			});
+
+		describe("Sort Change",
+			() =>
+			{
+				it("should emit sortChange with sortDescending true for desc sort", () =>
+					new Promise<void>(
+						(resolve) =>
+						{
+							builder.withInputs(fixture, defaultInputs);
+
+							component.sortChange.subscribe(
+								(event: SortChangeEvent) =>
+								{
+									expect(event.sortBy)
+										.toBe("name");
+									expect(event.sortDescending)
+										.toBe(true);
+									resolve();
+								});
+
+							component.onSortChange(
+								{ active: "name", direction: "desc" });
+						}));
+
+				it("should emit sortChange with sortDescending false for asc sort", () =>
+					new Promise<void>(
+						(resolve) =>
+						{
+							builder.withInputs(fixture, defaultInputs);
+
+							component.sortChange.subscribe(
+								(event: SortChangeEvent) =>
+								{
+									expect(event.sortDescending)
+										.toBe(false);
+									resolve();
+								});
+
+							component.onSortChange(
+								{ active: "name", direction: "asc" });
+						}));
 			});
 
 		describe("Empty State",
