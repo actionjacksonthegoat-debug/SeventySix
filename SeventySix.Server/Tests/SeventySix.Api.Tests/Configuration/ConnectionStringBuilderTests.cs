@@ -128,4 +128,59 @@ public sealed class ConnectionStringBuilderTests
 
 		exception.SettingName.ShouldBe(ConfigurationSectionConstants.Database.Password);
 	}
+
+	[Fact]
+	public void BuildPostgresConnectionString_WithSslMode_AppendsSslParameters()
+	{
+		// Arrange
+		IConfiguration configuration =
+			new ConfigurationBuilder()
+				.AddInMemoryCollection(
+					new Dictionary<string, string?>
+					{
+						["Database:Host"] = "myhost",
+						["Database:Port"] = "5432",
+						["Database:Name"] = "mydb",
+						["Database:User"] = "myuser",
+						["Database:Password"] = "mypassword",
+						["Database:SslMode"] = "Require",
+					})
+				.Build();
+
+		// Act
+		string result =
+			ConnectionStringBuilder.BuildPostgresConnectionString(
+				configuration);
+
+		// Assert
+		result.ShouldContain("SSL Mode=Require");
+		result.ShouldContain("Trust Server Certificate=true");
+	}
+
+	[Fact]
+	public void BuildPostgresConnectionString_WithoutSslMode_DoesNotAppendSslParameters()
+	{
+		// Arrange
+		IConfiguration configuration =
+			new ConfigurationBuilder()
+				.AddInMemoryCollection(
+					new Dictionary<string, string?>
+					{
+						["Database:Host"] = "myhost",
+						["Database:Port"] = "5432",
+						["Database:Name"] = "mydb",
+						["Database:User"] = "myuser",
+						["Database:Password"] = "mypassword",
+					})
+				.Build();
+
+		// Act
+		string result =
+			ConnectionStringBuilder.BuildPostgresConnectionString(
+				configuration);
+
+		// Assert
+		result.ShouldNotContain("SSL Mode");
+		result.ShouldNotContain("Trust Server Certificate");
+	}
 }

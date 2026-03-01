@@ -34,4 +34,4 @@ Disallow: /auth/
 Crawl-delay: 1
 
 # Sitemap location
-Sitemap: https://seventysix.app/sitemap.xml
+Sitemap: https://seventysixsandbox.com/sitemap.xml
