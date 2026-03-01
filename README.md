@@ -1075,13 +1075,13 @@ All four suites must pass before any work is considered complete:
 See [docs/Deployment.md](docs/Deployment.md) for the complete production deployment guide.
 
 **Quick summary:**
-- **Target:** Hetzner CX43 (8 vCPU / 16 GB) + Cloudflare free
-- **Cost:** ~€12/month
+- **Target:** Hetzner CCX23 (4 dedicated AMD vCPU / 16 GB) @ US West Hillsboro + Cloudflare free
+- **Cost:** ~$35/month (server $28.99 + backups $5.80, 2 TB traffic included)
 - **Deploy:** Push to master → CI tests → images publish to GHCR → CD deploys via SSH
 - **Secrets:** All production secrets stored in GitHub repository Secrets/Variables — no `.env` file on server
 - **Backups:** Daily to Cloudflare R2 (free 10 GB)
 
-See [docs/ScalingPlan.md](docs/ScalingPlan.md) for the full scaling roadmap (vertical scale, dedicated metal, multi-server, K3s).
+See [docs/Scaling-Plan.md](docs/Scaling-Plan.md) for the full scaling roadmap (vertical scale, dedicated CPU, multi-server, K3s).
 
 ## License
 

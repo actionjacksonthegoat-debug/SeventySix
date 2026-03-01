@@ -4,6 +4,13 @@
 > It covers infrastructure growth from a single-server launch to a multi-node cluster, at each step describing what changes, what it costs, and what information you need to generate a migration plan.
 >
 > **The application code, Docker images, and CI/CD pipeline are unchanged at every phase.** Only the infrastructure running those images changes.
+>
+> **Location:** All pricing below is for **Hetzner US West — Hillsboro, Oregon (`hil`)**. US locations offer the **CPX series (AMD shared Regular Performance)** and **CCX series (AMD dedicated General Purpose)** — the CX/CAX Intel series is EU-only.
+> Traffic included varies by tier: CCX13=1 TB, CCX23=2 TB, CCX33=3 TB, CCX43=4 TB; overage is $1.00/TB. (CPX at US is also 1–5 TB depending on tier.)
+>
+> **Why CCX over CPX for production:** The dedicated CCX series is actually *cheaper* than the equivalent shared CPX tier at US West while guaranteeing CPU resources. CCX23 ($28.99/mo, 4 dedicated AMD vCPU / 16 GB) beats CPX41 ($33.49/mo, 8 shared AMD vCPU / 16 GB) on both price and reliability. The full scaling path uses CCX.
+>
+> **⚠️ CX31 users:** The CX31 is deprecated hardware (2 vCPU / 8 GB RAM). Running the full SeventySix stack (API, PostgreSQL, Valkey, full observability) on 8 GB will cause OOM pressure. Migrate to CCX23 immediately — it is cheaper per month and provides dedicated CPUs.
 
 ---
 
@@ -11,11 +18,11 @@
 
 | Phase | Infrastructure | Monthly Cost | Traffic Target | Trigger |
 |---|---|---|---|---|
-| **A — Launch** | CX43 + Cloudflare | ~€12 | < 500 concurrent users | You are here |
-| **B — Scale Up** | CX53 + Cloudflare | ~€21 | < 2,000 concurrent users | CPU/RAM consistently > 70% |
-| **C — Dedicated Metal** | AX41 + Cloudflare | ~€43 | < 10,000 concurrent users | Shared vCPU becomes a bottleneck |
-| **D — Separated DB** | AX41 + Hetzner DBaaS | ~€70–90 | < 25,000 concurrent users | DB I/O saturating disk or needing HA |
-| **E — K3s Cluster** | 3-node K3s + DBaaS | ~€130–170 | 25,000+ concurrent users | Zero-downtime deploys + horizontal scale |
+| **A — Launch** | CCX23 + Cloudflare | ~$35 | < 500 concurrent users | You are here |
+| **B — Scale Up** | CCX33 + Cloudflare | ~$67 | < 2,000 concurrent users | CPU/RAM consistently > 70% |
+| **C — More Dedicated** | CCX43 + Cloudflare | ~$133 | < 10,000 concurrent users | Need more vCPU / RAM headroom |
+| **D — Separated DB** | CCX43 + Hetzner DBaaS | ~$180–220 | < 25,000 concurrent users | DB I/O saturating disk or needing HA |
+| **E — K3s Cluster** | 3-node K3s + DBaaS | ~$190–230 | 25,000+ concurrent users | Zero-downtime deploys + horizontal scale |
 
 > **Rule of thumb:** Move to the next phase when the current phase's CPU or memory is consistently above 70% at peak, or when downtime during deploys becomes unacceptable.
 
@@ -23,10 +30,12 @@
 
 ## Phase A — Launch
 
-**Target:** Single CX43, all services on one host, deployed via Docker Compose.
+**Target:** Single CCX23, all services on one host, deployed via Docker Compose.
 
 ### Specs
-- **Server:** Hetzner CX43 — 8 vCPU (shared), 16 GB RAM, 160 GB SSD
+- **Server:** Hetzner CCX23 (US West `hil`) — 4 vCPU AMD (**dedicated**), 16 GB RAM, 160 GB SSD, 2 TB traffic — **$28.99/mo** + ~$5.80 backups = **~$35/mo**
+
+> **Why CCX23 instead of CPX41?** CCX23 costs $4.50/mo *less* than CPX41 while providing dedicated (not shared) CPU. The CCX General Purpose series is Hetzner's recommendation for production workloads. Yearly savings over CPX41: ~$54 on server + ~$11 on backups = **~$65/year**.
 - **CDN/TLS:** Cloudflare free tier + Caddy (Let's Encrypt)
 - **Services running on this server:** API, Client, PostgreSQL, Valkey, Grafana, Prometheus, Jaeger, OTel Collector, Fail2Ban, GeoIPUpdate
 - **Backups:** Daily pg_dump → Cloudflare R2 via `scripts/backup.sh`
@@ -36,7 +45,7 @@
 
 Phase A is fully documented in [Deployment.md](Deployment.md). The condensed path:
 
-1. Provision CX43 via `hcloud server create` (§2)
+1. Provision CCX23 at `hil` via `hcloud server create --type ccx23 --location hil` (§2)
 2. Harden server: Docker, deploy user, SSH hardening, kernel tuning, 4 GB swap (§3)
 3. Install Caddy reverse proxy (§4)
 4. Configure Cloudflare DNS + SSL/TLS Full Strict (§5)
@@ -53,7 +62,7 @@ Phase A is fully documented in [Deployment.md](Deployment.md). The condensed pat
 
 At this tier:
 - Angular SPA is served statically from nginx in the `client` container, cached by Cloudflare. Virtually unlimited static capacity.
-- API request throughput: ~500–1,000 req/s (8 shared vCPU, .NET Kestrel)
+- API request throughput: ~500–1,000 req/s (4 dedicated AMD vCPU, .NET Kestrel — dedicated CPUs give more consistent throughput than shared)
 - Concurrent WebSocket connections: not applicable (no WS in current stack)
 - PostgreSQL: single writer, single reader, no connection pooling (EF Core default pool)
 - Valkey cache reduces DB load for hot paths
@@ -79,7 +88,7 @@ pg_stat_activity_count
 
 ---
 
-## Phase B — Scale Up (CX43 → CX53)
+## Phase B — Scale Up (CCX23 → CCX33)
 
 **Trigger:** Phase A CPU/RAM consistently over 70% at peak. No architectural change needed.
 
@@ -87,12 +96,14 @@ pg_stat_activity_count
 
 | Item | Phase A | Phase B |
 |---|---|---|
-| Server type | CX43 — 8 vCPU / 16 GB / 160 GB | CX53 — 16 vCPU / 32 GB / 240 GB |
-| Monthly cost | ~€9.49 + ~€1.90 backups | ~€19.79 + backups |
+| Server type | CCX23 — 4 dedicated AMD vCPU / 16 GB / 160 GB | CCX33 — 8 dedicated AMD vCPU / 32 GB / 160 GB |
+| Monthly cost | $28.99 + ~$5.80 backups ≈ **$35** | $55.49 + ~$11.10 backups ≈ **$67** |
 | Downtime | — | ~10 minutes (server reboot) |
 | Code changes | None | None |
 | Docker Compose | Unchanged | Unchanged |
 | CD pipeline | Unchanged | Unchanged |
+
+> **vs. CPX51:** CCX33 ($55.49) is **$11.50/mo cheaper** than CPX51 ($66.99) and provides dedicated CPUs. Yearly savings: ~$138.
 
 ### What Stays the Same
 
@@ -102,7 +113,7 @@ Everything: same Docker images, same Compose file, same GitHub Secrets, same Cad
 
 ```bash
 # Run from local machine — requires hcloud CLI authenticated
-hcloud server change-type seventysix-prod cx53
+hcloud server change-type seventysix-prod ccx33
 
 # The server reboots automatically (~5 min)
 # All containers restart via restart: unless-stopped
@@ -114,33 +125,35 @@ curl http://localhost:5085/health
 
 **Required information to generate a migration plan:**
 - Current server name in hcloud: `seventysix-prod`
-- Current type: `cx43`
-- Target type: `cx53`
+- Current type: `ccx23`
+- Target type: `ccx33`
 - Estimated downtime tolerance (default: 10 min for a type change)
 - Whether to notify users (UptimeRobot will detect downtime unless a maintenance window notification is set)
 
 ### Capacity at Phase B
 
-- API throughput: ~1,500–3,000 req/s (16 shared vCPU)
+- API throughput: ~1,500–3,000 req/s (8 dedicated AMD vCPU)
 - The doubling of RAM allows larger Valkey cache and more EF Core connection pool headroom
 
 ---
 
-## Phase C — Dedicated Metal (CX53 → AX41)
+## Phase C — More Headroom (CCX33 → CCX43)
 
-**Trigger:** Shared vCPU becomes a bottleneck (noisy neighbour effect), OR you need predictable latency at peak, OR you're approaching 5,000–10,000 concurrent users.
+**Trigger:** 8 vCPU / 32 GB on CCX33 is consistently at 70%+ under peak, OR you need more RAM for PostgreSQL tuning or Valkey cache expansion.
+
+> **All phases use dedicated AMD CPUs.** From Phase A onward you already have dedicated CPUs — Phase C simply adds more vCPU and RAM.
 
 ### What Changes
 
 | Item | Phase B | Phase C |
 |---|---|---|
-| Server type | CX53 — 16 shared vCPU / 32 GB | AX41 — 6 dedicated Zen4 cores / 64 GB / 2×512 GB NVMe RAID |
-| Monthly cost | ~€21 | ~€43 |
-| Downtime | — | ~2 hours (data migration + DNS TTL) |
+| Server type | CCX33 — 8 dedicated AMD vCPU / 32 GB / 160 GB | CCX43 — 16 dedicated AMD vCPU / 64 GB / 160 GB |
+| Monthly cost | $55.49 + ~$11.10 backups ≈ **$67** | $110.99 + ~$22.20 backups ≈ **$133** |
+| Downtime | — | ~10 minutes (server reboot via type change) |
 | Code changes | None | None |
 | Architecture | Single server | Single server (same Docker Compose) |
 
-> The AX41's 6 dedicated Zen4 cores outperform 16 shared cloud vCPUs at sustained load. The 64 GB RAM allows much larger Valkey cache and PostgreSQL `shared_buffers`.
+> CCX43's 64 GB RAM allows substantial PostgreSQL tuning (`shared_buffers = 16 GB`) and a large Valkey cache, substantially deferring the need to separate the database tier.
 
 ### What Stays the Same
 
@@ -151,7 +164,7 @@ Same Docker images, same Compose file, same GitHub Secrets, same Caddy config, s
 This is a **new server provisioning + data migration**, not a type change. ~2 hours total.
 
 **High-level procedure:**
-1. Provision AX41 dedicated server (from Hetzner Robot or Cloud Dedicated)
+1. Provision CCX43 server at `hil` via `hcloud server change-type seventysix-prod ccx43` (in-place reboot, ~10 min) — or provision a new server and migrate data if preferred
 2. Run server hardening steps from [Deployment.md §3](Deployment.md#3-server-hardening) on the new server
 3. Install Caddy, clone repo (all secrets stay in GitHub — no `.env` file needed)
 4. Restore database from latest backup (R2 → pg_restore)
@@ -160,17 +173,15 @@ This is a **new server provisioning + data migration**, not a type change. ~2 ho
 7. Smoke test on the new server IP before DNS switch
 8. Update Cloudflare DNS A records to new IP
 9. Wait for TTL propagation (set TTL to 60s before the migration, revert after)
-10. Verify production, then terminate the old CX43/CX53
+10. Verify production, then terminate the old CCX23/CCX33 (if you chose new-server migration over type change)
 
 **Required information to generate a migration plan:**
-- New AX41 IP address (provisioned in advance) — will replace `PROD_HOST` GitHub Secret
-- Current backup location in R2 (bucket: `seventysix-backups`)
-- All secrets already live in GitHub Secrets/Variables — no `.env` file exists on the old server
-- DNS TTL currently set in Cloudflare (adjust to 60s 24h before migration)
-- List of Cloudflare records to update (A: @, www, api, grafana, jaeger)
-- Caddy admin IP to update (if your admin IP has changed)
+- Current server name in hcloud: `seventysix-prod`
+- Current type: `ccx33`
+- Target type: `ccx43`
+- If doing a new-server migration instead of a type change: new CCX43 IP, DNS TTL + Cloudflare records to update (A: @, www, api, grafana, jaeger)
 
-### PostgreSQL Tuning for AX41
+### PostgreSQL Tuning for CCX43
 
 With 64 GB RAM, tune PostgreSQL for better performance by setting env vars or a mounted `postgresql.conf`:
 
@@ -195,9 +206,9 @@ max_connections = 200
 
 | Item | Phase C | Phase D |
 |---|---|---|
-| Database location | Docker container on AX41 | Separate server or managed DBaaS |
+| Database location | Docker container on CCX43 | Separate server or managed DBaaS |
 | PostgreSQL HA | None (single container) | Optional: streaming replication or managed failover |
-| Monthly cost | ~€43 | ~€70–90 (AX41 + Hetzner managed PostgreSQL ~€25–45) |
+| Monthly cost | ~$130–160 | ~$180–220 (CCX43 + Hetzner managed PostgreSQL ~$50–60) |
 | Code changes | None (just connection string) | None |
 | Downtime for migration | ~30–60 min | — |
 
@@ -219,7 +230,7 @@ DB_PASSWORD=<managed-pg-password>
 
 ### Option 2: Dedicated DB Server (Self-Managed)
 
-Provision a second Hetzner server (CX21 or CX32) dedicated to PostgreSQL. Run PostgreSQL directly (not in Docker) for maximum I/O efficiency.
+Provision a second Hetzner server (CCX13 $14.49 or CCX23 $28.99) at `hil` dedicated to PostgreSQL. Run PostgreSQL directly (not in Docker) for maximum I/O efficiency.
 
 ### Migration Steps (for plan generation)
 
@@ -249,7 +260,7 @@ Provision a second Hetzner server (CX21 or CX32) dedicated to PostgreSQL. Run Po
 | Item | Phase D | Phase E |
 |---|---|---|
 | Orchestration | Docker Compose (single server) | K3s (3-node cluster) |
-| Monthly cost | ~€90 | ~€130–170 (3× CX43 + managed DB) |
+| Monthly cost | ~$180–220 | ~$175–220 (3× CCX23 + managed DB) |
 | Zero-downtime deploys | No (container restart = brief downtime) | Yes (rolling update) |
 | Horizontal scaling | No | Yes (HPA) |
 | Code changes | None | None (same Docker images) |
@@ -260,7 +271,7 @@ Provision a second Hetzner server (CX21 or CX32) dedicated to PostgreSQL. Run Po
 ```
 Internet → Cloudflare → Caddy (on each node OR LoadBalancer)
                            ↓
-              K3s cluster (3 × CX43)
+              K3s cluster (3 × CCX23, hil)
               ┌─────────────────────────┐
               │  API Deployment (3 pods) │
               │  Client Deployment (3 pods) │
@@ -279,7 +290,7 @@ Internet → Cloudflare → Caddy (on each node OR LoadBalancer)
 
 ### K3s Setup Overview
 
-**Node provisioning (3× CX43):**
+**Node provisioning (3× CCX23 at `hil`):**
 1. Provision `seventysix-k3s-master`, `seventysix-k3s-worker-1`, `seventysix-k3s-worker-2`
 2. Install K3s on master: `curl -sfL https://get.k3s.io | sh -`
 3. Join workers with the node token
@@ -304,7 +315,7 @@ Internet → Cloudflare → Caddy (on each node OR LoadBalancer)
 
 ### Required Information to Generate a Migration Plan
 
-- Number of nodes and server types (default: 3× CX43)
+- Number of nodes and server types (default: 3× CCX23 at `hil`)
 - Whether to self-manage Ingress (Caddy/NGINX) or use Cloudflare tunnel
 - Whether to use Kubernetes Secrets or an external secrets manager (Vault, sealed-secrets)
 - Whether Valkey should stay in-cluster or move to a managed Redis-compatible service
@@ -318,33 +329,37 @@ Internet → Cloudflare → Caddy (on each node OR LoadBalancer)
 ```
 Start: "Is my server consistently above 70% CPU or RAM at peak?"
 │
-├── No → Stay at Phase A (CX43) — monitor
+├── No → Stay at Phase A (CCX23) — monitor
 │
-└── Yes → "Is the cause shared CPU throttling or genuine load?"
+└── Yes → "Do I need zero-downtime deploys?"
     │
-    ├── Shared CPU throttling → Move to Phase C (AX41 dedicated)
+    ├── No → Move to Phase B (CCX33 — type change, 10 min downtime)
+    │   └── Still maxed? → Move to Phase C (CCX43 — type change, 10 min downtime)
     │
-    └── Genuine load → "Do I need zero-downtime deploys?"
-        │
-        ├── No → Move to Phase B (CX53) first, then Phase C if needed
-        │
-        └── Yes → Evaluate Phase E (K3s) — jump straight if load is very high
+    └── Yes → Evaluate Phase E (K3s) — jump straight if load is very high
 
 Separately:
 "Is PostgreSQL the bottleneck (high iowait, slow queries, long backup windows)?"
 └── Yes → Phase D (separate DB tier) — can be done at any phase A–E
+
+Note: All phases A–C use dedicated AMD CPUs (CCX series).
+The old "shared CPU throttling" branch is eliminated — there are no shared CPUs in this path.
 ```
 
 ---
 
 ## Cost Summary
 
-| Phase | Infrastructure | Est. Monthly | When |
-|---|---|---|---|
-| A | Hetzner CX43 + Cloudflare | ~€12 | Launch |
-| B | Hetzner CX53 + Cloudflare | ~€21 | 500–2,000 concurrent |
-| C | Hetzner AX41 + Cloudflare | ~€43 | 2,000–10,000 concurrent |
-| D | AX41 + Hetzner Managed PG | ~€70–90 | DB bottleneck or HA needed |
-| E | 3× CX43 K3s + Managed PG | ~€130–170 | 25,000+ concurrent, zero-downtime needed |
+> All prices are for **Hetzner US West — Hillsboro, OR (`hil`)**, in USD, excluding VAT, as of March 2026. Confirm current rates in the [Hetzner Cloud Console](https://console.hetzner.com/) (select US West location).
 
-> All prices are approximate Hetzner list prices as of 2025. Use [Hetzner Cloud Pricing](https://www.hetzner.com/cloud/) for current rates.
+| Phase | Infrastructure | Server/mo | Backup (+20%)/mo | Est. Total/mo | Yearly | When |
+|---|---|---|---|---|---|---|
+| A | CCX23 + Cloudflare | $28.99 | ~$5.80 | **~$35** | **~$420** | Launch |
+| B | CCX33 + Cloudflare | $55.49 | ~$11.10 | **~$67** | **~$804** | 500–2,000 concurrent |
+| C | CCX43 + Cloudflare | $110.99 | ~$22.20 | **~$133** | **~$1,596** | 2,000–10,000 concurrent |
+| D | CCX43 + Hetzner Managed PG | $110.99 + ~$50–60 | ~$22.20 | **~$183–203** | — | DB bottleneck or HA needed |
+| E | 3× CCX23 K3s + Managed PG | 3× $28.99 + ~$55 | — | **~$175–220** | — | 25,000+ concurrent, zero-downtime needed |
+
+> **All prices confirmed from Hetzner Cloud Console, US West (`hil`), March 2026.** Dedicated AMD pricing is not shown on the public pricing page — check the console directly.
+> **Traffic**: CCX23 includes 2 TB/mo, CCX33 includes 3 TB/mo, CCX43 includes 4 TB/mo. Additional traffic: $1.00/TB. For reference, CPX41 was used previously with 4 TB included — CCX23's 2 TB is sufficient for most early-stage SaaS apps when Cloudflare caches static assets.
+> **vs. CPX path**: CCX23 ($28.99) saves $4.50/mo vs CPX41 ($33.49). CCX33 ($55.49) saves $11.50/mo vs CPX51 ($66.99). Over two years at Phase A+B: **~$400 saved** — and with better dedicated CPU performance throughout.

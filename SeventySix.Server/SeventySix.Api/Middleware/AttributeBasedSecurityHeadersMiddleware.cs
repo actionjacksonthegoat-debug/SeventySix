@@ -51,13 +51,15 @@ public sealed class AttributeBasedSecurityHeadersMiddleware(
 	// - frame-src 'self': No external frames allowed in production; configure via
 	//   appsettings.json "SecurityHeaders:ProductionFrameSrc" if Grafana embedding is needed
 	// - upgrade-insecure-requests: Auto-upgrade any accidental HTTP to HTTPS
+	// - connect-src includes CDN + font origins because the Angular service worker (ngsw)
+	//   proxies all fetches via fetch(), which is governed by connect-src
 	private const string ProductionCsp =
 		"default-src 'self'; "
-		+ "script-src 'self'; "
+		+ "script-src 'self' https://static.cloudflareinsights.com; "
 		+ "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
 		+ "font-src 'self' https://fonts.gstatic.com; "
 		+ "img-src 'self' data: https:; "
-		+ "connect-src 'self' wss: https://cloudflareinsights.com; "
+		+ "connect-src 'self' wss: https://cloudflareinsights.com https://cdn.jsdelivr.net https://fonts.googleapis.com https://fonts.gstatic.com; "
 		+ "frame-src 'self'; "
 		+ "frame-ancestors 'none'; "
 		+ "base-uri 'self'; "
