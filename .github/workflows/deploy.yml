@@ -18,7 +18,7 @@ jobs:
 
         steps:
             - name: Deploy via SSH
-              uses: appleboy/ssh-action@v1
+              uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1
               # All production secrets are injected from GitHub Secrets/Variables.
               # No .env file is used on the server — docker compose reads from the shell environment
               # which appleboy/ssh-action populates via the envs: parameter below.
