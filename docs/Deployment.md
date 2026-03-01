@@ -1,9 +1,9 @@
 # SeventySix — Production Deployment Guide
 
-> **Target:** Hetzner CX43 (8 vCPU / 16 GB) + Cloudflare free tier
-> **Cost:** ~€12/month (server: €9.49 + automated backups: ~€1.90 + Cloudflare: $0)
+> **Target:** Hetzner CCX23 (4 dedicated AMD vCPU / 16 GB) @ US West Hillsboro (`hil`) + Cloudflare free tier
+> **Cost:** ~$35/month (server: $28.99 + automated backups: ~$5.80 + Cloudflare: $0 — 2 TB traffic included)
 > **Domain:** SeventySixSandbox.com
-> **Scaling:** This guide covers the "Launch" tier. The same setup vertically scales to CX53 (~€21/mo) via a single Hetzner API call, or migrates to dedicated metal (AX41 ~€43/mo) in ~2 hours. See [ScalingPlan.md](ScalingPlan.md) for all future paths.
+> **Why CCX23 over CPX41:** CCX23 is $4.50/mo *cheaper* than CPX41 and provides **dedicated** AMD CPUs — no noisy neighbours, consistent performance. Scales vertically to CCX33 (~$67/mo) or CCX43 (~$133/mo) via a single `hcloud server change-type` call. See [Scaling-Plan.md](Scaling-Plan.md) for all future paths.
 
 ---
 
@@ -49,13 +49,14 @@ Before starting, ensure you have:
 # Create Hetzner Cloud context
 hcloud context create seventysix
 
-# Create CX43 server (8 vCPU / 16 GB / 160 GB SSD)
-# Locations: nbg1 (Nuremberg), fsn1 (Falkenstein), hel1 (Helsinki), ash (Ashburn US), sin (Singapore)
+# Create CCX23 server (4 dedicated AMD vCPU / 16 GB / 160 GB SSD) at US West Hillsboro
+# CCX23 = $28.99/mo — cheaper than CPX41 ($33.49) with dedicated (not shared) CPUs
+# Other US/global locations: ash (Ashburn US East), sin (Singapore), nbg1/fsn1/hel1 (EU)
 hcloud server create \
   --name seventysix-prod \
-  --type cx43 \
+  --type ccx23 \
   --image ubuntu-24.04 \
-  --location nbg1 \
+  --location hil \
   --ssh-key YOUR_KEY_NAME
 
 # Note the IP address from the output
@@ -69,7 +70,7 @@ hcloud firewall add-rule seventysix-fw --direction in --port 80  --protocol tcp 
 hcloud firewall add-rule seventysix-fw --direction in --port 443 --protocol tcp --source-ips 0.0.0.0/0
 hcloud firewall apply-to-server seventysix-fw --server seventysix-prod
 
-# Enable automated backups (+20% = ~€1.90/mo — server snapshot every night)
+# Enable automated backups (+20% = ~$5.80/mo — server snapshot every night)
 hcloud server enable-backup seventysix-prod
 ```
 
@@ -202,8 +203,15 @@ cat > /etc/caddy/Caddyfile << 'CEOF'
 }
 
 # Angular SPA — served from Docker container port 8080
+# API calls (/api/*) are routed to the API container so the Angular client
+# can use relative URLs (apiUrl: '/api/v1') without cross-origin issues.
 seventysixsandbox.com {
-    reverse_proxy localhost:8080
+    handle /api/* {
+        reverse_proxy localhost:5085
+    }
+    handle {
+        reverse_proxy localhost:8080
+    }
     @static {
         path *.js *.css *.woff2 *.woff *.ttf *.svg *.png *.ico *.webp
     }
@@ -280,15 +288,74 @@ In the Cloudflare dashboard for your domain:
 
 ### 5.3 Caching
 
-Create a Cache Rule:
-- **If matching:** `URI Path contains .js` OR `.css` OR `.woff2` OR `.png` OR `.svg` OR `.ico` OR `.webp`
-- **Then:** Cache Everything, Edge TTL = 1 month
+Create **two** Cache Rules (Cloudflare Dashboard → Caching → Cache Rules → Create rule):
+
+**Rule 1 — No-cache for API responses** *(create first — evaluated in order)*
+1. Rule name: `No-cache for API responses`
+2. Click **"Edit expression"** and paste:
+   ```
+   (http.host eq "seventysixsandbox.com") and (starts_with(http.request.uri.path, "/api/"))
+   ```
+3. Cache eligibility: **Bypass cache**
+4. Place at: **First**
+5. Deploy
+
+**Rule 2 — Cache Angular static files (1 month)**
+1. Rule name: `Cache Angular static files`
+2. Click **"Edit expression"** and paste:
+   ```
+   (http.host eq "seventysixsandbox.com") and (http.request.uri.path.extension in {"js" "css" "woff2" "woff" "ttf" "svg" "png" "ico" "webp"})
+   ```
+3. Cache eligibility: **Eligible for cache**
+4. Edge TTL: Click **"+ Add setting"** → **Edge TTL** → select **"Ignore cache-control header and use this TTL"** → set to `1 month`
+5. Place at: **Last**
+6. Deploy
+
+> **Note on "Origin Cache Control"**: This option only appears after selecting "Eligible for cache", then clicking "+ Add setting". It is not needed here because rule 2 sets the Edge TTL explicitly, and Caddy already sends `Cache-Control: public, max-age=31536000, immutable` for static assets.
+
+> **Why "Edit expression" instead of the button rows?**: The simple filter builder has no "matches regex" operator (that requires Pro+). The `.extension` field in the custom expression is Cloudflare's built-in extension matcher — no regex needed and no false positives from paths like `/javascript/app`.
 
 ### 5.4 Security
 
 - **Under Attack Mode:** OFF (turn ON if under DDoS — Cloudflare adds JS challenge)
 - **Bot Fight Mode:** ON
 - **Browser Integrity Check:** ON
+
+---
+
+## 5.5. Generate PostgreSQL SSL Certificates
+
+PostgreSQL is configured with `ssl=on` in `docker-compose.production.yml` and the API connects with `Database__SslMode=Require`. Self-signed certificates are sufficient because the connection is internal (Docker bridge network only — never exposed to the internet).
+
+**These must exist before the first `docker compose up`.** Without them PostgreSQL will fail to start and the entire stack will crash.
+
+On the **production server**:
+
+```bash
+ssh deploy@$SERVER_IP
+
+mkdir -p /srv/seventysix/postgres-ssl
+
+# Generate a self-signed cert valid for 10 years
+openssl req -x509 -nodes -days 3650 -newkey rsa:2048 \
+  -keyout /srv/seventysix/postgres-ssl/server.key \
+  -out /srv/seventysix/postgres-ssl/server.crt \
+  -subj "/CN=postgres"
+
+# PostgreSQL requires the key to be owned by UID 70 (postgres user inside the container)
+# and have strict permissions
+sudo chown 70:70 /srv/seventysix/postgres-ssl/server.key /srv/seventysix/postgres-ssl/server.crt
+sudo chmod 600 /srv/seventysix/postgres-ssl/server.key /srv/seventysix/postgres-ssl/server.crt
+```
+
+Verify:
+
+```bash
+ls -la /srv/seventysix/postgres-ssl/
+# Should show server.crt and server.key owned by UID 70 with 600 permissions
+```
+
+> **On server migration:** These certs do NOT need to be preserved across servers — generate fresh ones on each new server. They only encrypt the internal Docker network connection between the API container and the PostgreSQL container.
 
 ---
 
@@ -597,7 +664,7 @@ gh secret set PROD_USER --body "deploy" --repo actionjacksonthegoat-debug/Sevent
 Push a commit to master. The pipeline should:
 1. CI runs (lint → build → test → e2e → load-test → quality-gate)
 2. `publish` job (`.github/workflows/ci.yml`) builds and pushes Docker images to GHCR
-   > **Image architecture:** The CI publish job builds `linux/amd64` images only (Hetzner CX43 is x86_64).
+   > **Image architecture:** The CI publish job builds `linux/amd64` images only (Hetzner CPX41 is x86_64).
    > To add ARM support for Hetzner CAX servers, re-add `linux/arm64` to the `platforms:` field in
    > `.github/workflows/ci.yml` and add the `docker/setup-qemu-action@v3` step before the build step.
 3. `deploy` workflow (`.github/workflows/deploy.yml`) SSHs to the server, passes all secrets as env vars, pulls images, restarts containers, checks health
@@ -809,11 +876,12 @@ docker compose -f docker-compose.production.yml logs api 2>&1 | grep -i error
 docker compose -f docker-compose.production.yml restart api
 ```
 
-### Vertical Scale (CX43 → CX53)
+### Vertical Scale (CCX23 → CCX33)
 
 ```bash
 # From your local machine — ~10 minutes downtime
-hcloud server change-type seventysix-prod cx53
+hcloud server change-type seventysix-prod ccx33
+# $55.49/mo — 8 dedicated AMD vCPU / 32 GB. Next: ccx43 ($110.99/mo, 16 vCPU / 64 GB)
 
 # The server reboots automatically. All containers restart via restart: unless-stopped.
 # Verify: ssh deploy@$SERVER_IP && docker compose ps
@@ -881,3 +949,86 @@ gunzip -c /tmp/db_latest.sql.gz | docker exec -i "$DB_CONTAINER" psql -U "$DB_US
 gh secret set PROD_HOST --body "NEW_IP" --repo actionjacksonthegoat-debug/SeventySix
 # 5. Wait 24h, verify, terminate old server
 ```
+
+---
+
+## Appendix A — Deployment Notes & Gotchas
+
+Lessons learned from the initial deployment. Intended for the deploying human **and** for Copilot so it knows what it can and cannot do.
+
+### A.1 Who Does What
+
+Most deployment phases require SSH, Cloudflare dashboard, or credential management that **only the user** can execute. Copilot's role is limited to:
+
+| Copilot Can Do | User Must Do |
+|---|---|
+| Code changes (compose files, CI/CD workflows, nginx configs) | SSH into production server |
+| Documentation updates | Cloudflare dashboard configuration |
+| Generating `gh secret set` / `gh variable set` command lists | Running those commands (they contain secrets) |
+| Diagnosing issues from pasted logs | Creating OAuth Apps, SMTP accounts, MaxMind accounts |
+| Writing Caddyfile / firewall rules for user to paste | Uploading certs, configuring rclone, running backups |
+
+### A.2 Critical Gotchas
+
+**GitHub Secret naming — `GITHUB_` prefix is reserved.**
+GitHub Actions silently refuses secrets named `GITHUB_*`. OAuth secrets must use the `OAUTH_` prefix (e.g., `OAUTH_CLIENT_ID`). The `deploy.yml` workflow then maps these to `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` env vars that `docker-compose.production.yml` expects.
+
+**hcloud CLI on Windows — not in winget.**
+Download the `hcloud-windows-amd64.zip` binary directly from [github.com/hetznercloud/cli/releases](https://github.com/hetznercloud/cli/releases) and place `hcloud.exe` on PATH. This is already noted in Prerequisites but is easy to miss.
+
+**Ubuntu 24.04 SSH service name is `ssh`, not `sshd`.**
+The hardening step uses `systemctl reload ssh` (not `sshd`). If you use `sshd`, the command silently fails and your SSH config changes don't apply.
+
+**Cloudflare Cache Rules — no regex on Free tier.**
+The simple filter builder has no "matches regex" operator (requires Pro+). Use "Edit expression" with Cloudflare's built-in `.extension` field in the wire filter expression — no regex needed.
+
+**CSP blocks Cloudflare's auto-injected analytics beacon.**
+Cloudflare injects `beacon.min.js` from `static.cloudflareinsights.com` when Browser Insights / Web Analytics is enabled. The production `Content-Security-Policy` blocks it unless you add `https://static.cloudflareinsights.com` to `script-src` and `https://cloudflareinsights.com` to `connect-src`. Alternatively, disable Browser Insights in the Cloudflare dashboard.
+
+**`new URL("/api/v1")` throws in production.**
+Client code using `new URL(environment.apiUrl)` works in dev (where `apiUrl` is a full URL) but throws `TypeError: Invalid URL` in production (where `apiUrl` is the relative path `"/api/v1"`). Guard with `environment.apiUrl.startsWith("http") ? new URL(environment.apiUrl).origin : window.location.origin`.
+
+**Data Protection cert must be generated locally, not on the server.**
+The `npm run generate:dataprotection-cert` script requires the .NET SDK. Generate on your dev machine, then `scp` the `.pfx` to the server. The password must match the `DATA_PROTECTION_CERTIFICATE_PASSWORD` GitHub Secret exactly.
+
+**PostgreSQL SSL certs must exist before first `docker compose up`.**
+Without `postgres-ssl/server.crt` and `server.key`, PostgreSQL fails to start and cascades to the entire stack. See Section 5.5.
+
+**Server location matters for latency.**
+Hetzner EU (Germany) adds ~180ms RTT for US West Coast users on every uncached API call. Hetzner US West (Hillsboro, Oregon) drops this to ~20-40ms. Cloudflare caches static assets at edge PoPs regardless, so the latency hit is API-only. Choose location based on where your users are.
+
+**GHCR login on the server needs a PAT with `read:packages`.**
+The `docker login ghcr.io` on the production server requires a GitHub Personal Access Token. This PAT is separate from `PROD_SSH_KEY` — it only needs the `read:packages` scope. The token is stored in `/home/deploy/.docker/config.json` and persists across reboots.
+
+**OutputCache + Valkey cold start can cause 500s.**
+If the first API request arrives before Valkey is healthy, `OutputCache` middleware throws 500 instead of falling back. Ensure the `api` service has `depends_on: valkey: condition: service_healthy` (not just `service_started`).
+
+### A.3 Recommended Cloudflare Dashboard Settings
+
+These are manual dashboard-only settings discovered during deployment — not automatable:
+
+| Setting | Location | Value |
+|---|---|---|
+| SSL/TLS mode | SSL/TLS → Overview | Full (Strict) |
+| Always Use HTTPS | SSL/TLS → Edge Certificates | ON |
+| Minimum TLS Version | SSL/TLS → Edge Certificates | 1.2 |
+| Bot Fight Mode | Security → Bots | ON |
+| Browser Integrity Check | Security → Settings | ON |
+| HTTP/3 (QUIC) | Network | ON |
+| Brotli | Speed → Optimization | ON |
+| Rocket Loader | Speed → Optimization | OFF (breaks Angular bootstrap) |
+
+### A.4 Post-Deploy Console Errors to Expect
+
+On a fresh deploy, you may see these errors in the browser console. They form a cascade — fix the root cause and downstream errors resolve:
+
+```
+GET /api/v1/config/features → 500              ← Root cause (investigate API logs)
+  └─► TypeError: Invalid URL (client init)      ← oauth-flow.service.ts bug
+        └─► POST /api/v1/logs/client/batch → 400  ← error batch exceeds validation limits
+[Report Only] Permissions-Policy: picture-in-picture  ← Cloudflare beacon (expected, harmless)
+```
+
+### A.5 File Security — Never Commit Plan Files
+
+Implementation plan files (`implementation-*.md`, `deploy-*.md`, `my-next-up.md`) may contain real production secrets (OAuth credentials, SMTP passwords, API keys, PATs). **Always add them to `.gitignore` or delete them before committing.** If secrets were ever committed, rotate them immediately — Git history retains the values forever.
