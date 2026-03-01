@@ -70,11 +70,8 @@ services:
       jaeger:
         condition: service_healthy
     healthcheck:
-      test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:13133/" ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 10s
+      # Image is scratch-based (no wget/curl/shell) — healthcheck runs from host via depends_on
+      disable: true
     networks:
       - seventysix-network
     restart: unless-stopped
@@ -186,7 +183,7 @@ services:
       valkey:
         condition: service_healthy
       otel-collector:
-        condition: service_healthy
+        condition: service_started # scratch image — no in-container healthcheck available
     healthcheck:
       test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/health" ]
       interval: 30s
@@ -334,6 +331,7 @@ services:
     volumes:
       - ./fail2ban/jail.d:/etc/fail2ban/jail.d:ro
       - ./fail2ban/filter.d:/etc/fail2ban/filter.d:ro
+      - ./logs:/var/log/seventysix:ro
       - geoip_data:/usr/share/GeoIP:ro
     restart: unless-stopped
     deploy:

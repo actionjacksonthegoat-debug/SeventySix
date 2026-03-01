@@ -38,7 +38,8 @@ Before starting, ensure you have:
 - [ ] An SMTP provider account (e.g., [Brevo](https://www.brevo.com/) free: 300 emails/day)
 - [ ] A [MaxMind GeoLite2](https://www.maxmind.com/en/geolite2/signup) account (free — for GeoIP/Fail2Ban)
 - [ ] GitHub CI has run at least once on master with the `publish` job (images exist in GHCR)
-- [ ] `hcloud` CLI installed locally: `brew install hcloud` or `apt install hcloud`
+- [ ] `hcloud` CLI installed locally: `brew install hcloud` (macOS) or `apt install hcloud` (Linux)
+  - **Windows:** winget does not carry hcloud — download `hcloud-windows-amd64.zip` from [github.com/hetznercloud/cli/releases](https://github.com/hetznercloud/cli/releases) and copy `hcloud.exe` to `C:\Windows\System32\` (as Administrator)
 
 ---
 
@@ -596,6 +597,9 @@ gh secret set PROD_USER --body "deploy" --repo actionjacksonthegoat-debug/Sevent
 Push a commit to master. The pipeline should:
 1. CI runs (lint → build → test → e2e → load-test → quality-gate)
 2. `publish` job (`.github/workflows/ci.yml`) builds and pushes Docker images to GHCR
+   > **Image architecture:** The CI publish job builds `linux/amd64` images only (Hetzner CX43 is x86_64).
+   > To add ARM support for Hetzner CAX servers, re-add `linux/arm64` to the `platforms:` field in
+   > `.github/workflows/ci.yml` and add the `docker/setup-qemu-action@v3` step before the build step.
 3. `deploy` workflow (`.github/workflows/deploy.yml`) SSHs to the server, passes all secrets as env vars, pulls images, restarts containers, checks health
 
 ---

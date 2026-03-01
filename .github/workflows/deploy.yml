@@ -1,6 +1,7 @@
 name: Deploy to Production
 
 on:
+    workflow_dispatch: # Allow manual trigger for retries/rollbacks
     workflow_run:
         workflows: [CI]
         types: [completed]
@@ -14,7 +15,9 @@ jobs:
     deploy:
         name: Deploy to Production
         runs-on: ubuntu-latest
-        if: github.event.workflow_run.conclusion == 'success'
+        if: >-
+            github.event_name == 'workflow_dispatch' ||
+            github.event.workflow_run.conclusion == 'success'
 
         steps:
             - name: Deploy via SSH
@@ -57,12 +60,15 @@ jobs:
                   key: ${{ secrets.PROD_SSH_KEY }}
                   # Forward all env vars above into the remote shell session
                   envs: DB_NAME,DB_USER,DB_PASSWORD,JWT_SECRET_KEY,GITHUB_CLIENT_ID,GITHUB_CLIENT_SECRET,EMAIL_SMTP_USERNAME,EMAIL_SMTP_PASSWORD,EMAIL_FROM_ADDRESS,SITE_EMAIL,ALTCHA_HMAC_KEY,ADMIN_EMAIL,ADMIN_PASSWORD,ADMIN_USERNAME,ADMIN_FULLNAME,ADMIN_SEEDER_ENABLED,DATA_PROTECTION_CERTIFICATE_PASSWORD,CORS_ORIGIN_0,CORS_ORIGIN_1,VALKEY_PASSWORD,GRAFANA_ADMIN_USER,GRAFANA_ADMIN_PASSWORD,MAXMIND_ACCOUNT_ID,MAXMIND_LICENSE_KEY,ALLOWED_HOSTS,CLIENT_BASE_URL,OAUTH_CALLBACK_URL,OAUTH_REDIRECT_URI
-                  script_stop: true
                   script: |
                       set -euo pipefail
 
                       APP_DIR="/srv/seventysix"
                       cd "$APP_DIR"
+
+                      echo "=== Ensuring log directory exists ==="
+                      mkdir -p "$APP_DIR/logs"
+                      touch "$APP_DIR/logs/api.log"
 
                       echo "=== Pulling latest code ==="
                       git pull origin master --ff-only
