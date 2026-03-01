@@ -148,6 +148,11 @@ public sealed class AttributeBasedSecurityHeadersMiddleware(
 				hstsValue += "; includeSubDomains";
 			}
 
+			if (config.HstsPreload)
+			{
+				hstsValue += "; preload";
+			}
+
 			context.Response.Headers.StrictTransportSecurity = hstsValue;
 		}
 	}

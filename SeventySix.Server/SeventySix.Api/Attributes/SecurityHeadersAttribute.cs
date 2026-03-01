@@ -82,6 +82,14 @@ public sealed class SecurityHeadersAttribute : Attribute
 	public bool HstsIncludeSubDomains { get; set; } = true;
 
 	/// <summary>
+	/// Gets or sets a value indicating whether to include the preload directive in HSTS.
+	/// When enabled, the domain can be submitted to the browser HSTS preload list,
+	/// ensuring HTTPS is used even on the very first visit.
+	/// </summary>
+	/// <value>Default: true.</value>
+	public bool HstsPreload { get; set; } = true;
+
+	/// <summary>
 	/// Initializes a new instance of the <see cref="SecurityHeadersAttribute"/> class.
 	/// </summary>
 	public SecurityHeadersAttribute() { }
