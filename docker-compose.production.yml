@@ -115,12 +115,13 @@ services:
     # .NET API Service - Runs migrations on startup
     api:
         image: ${API_IMAGE:-ghcr.io/actionjacksonthegoat-debug/seventysix-api:latest}
+        pull_policy: always # Always pull from GHCR — never use cached local image
         build:
             context: ./SeventySix.Server
             dockerfile: Dockerfile.production
         container_name: seventysix-api-prod
         ports:
-            - "5085:8080"
+            - "127.0.0.1:5085:8080" # Localhost-only — Caddy reverse proxy is the only entry point
         environment:
             - ASPNETCORE_ENVIRONMENT=Production
             - ASPNETCORE_URLS=http://+:8080
@@ -205,19 +206,20 @@ services:
     # Angular Client Service
     client:
         image: ${CLIENT_IMAGE:-ghcr.io/actionjacksonthegoat-debug/seventysix-client:latest}
+        pull_policy: always # Always pull from GHCR — never use cached local image
         build:
             context: ./SeventySix.Client
             dockerfile: Dockerfile.production
         container_name: seventysix-client-prod
         ports:
-            - "8080:8080"
+            - "127.0.0.1:8080:8080" # Localhost-only — Caddy reverse proxy is the only entry point
         environment:
             - API_URL=http://api:8080
         depends_on:
             api:
                 condition: service_healthy
         healthcheck:
-            test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080" ]
+            test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://127.0.0.1:8080" ]
             interval: 30s
             timeout: 3s
             retries: 3
