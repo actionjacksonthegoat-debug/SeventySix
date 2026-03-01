@@ -2523,6 +2523,9 @@ export interface components
 			oAuthEnabled: boolean;
 			oAuthProviders: string[];
 			altchaEnabled: boolean;
+			/** Format: int32 */
+			tokenRefreshBufferSeconds: number;
+			siteEmail?: null | string;
 		};
 		ForgotPasswordRequest: {
 			email: string;

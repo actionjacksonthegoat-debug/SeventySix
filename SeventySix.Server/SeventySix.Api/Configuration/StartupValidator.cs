@@ -29,7 +29,8 @@ public static class StartupValidator
 		"Email:SmtpPassword",
 		"Email:FromAddress",
 		"Altcha:HmacKeyBase64",
-	];
+		"Site:Email",
+		];
 
 	/// <summary>
 	/// Placeholder prefix that indicates a value has not been configured.

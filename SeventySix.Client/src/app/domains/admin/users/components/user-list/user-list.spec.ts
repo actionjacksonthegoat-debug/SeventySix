@@ -5,8 +5,10 @@ import {
 	UserService
 } from "@admin/users/services";
 import { DatePipe } from "@angular/common";
+import { WritableSignal } from "@angular/core";
 import { ComponentFixture } from "@angular/core/testing";
 import { Router } from "@angular/router";
+import type { CellValue, RowAction } from "@shared/models";
 import { DialogService } from "@shared/services/dialog.service";
 import { NotificationService } from "@shared/services/notification.service";
 import {
@@ -117,6 +119,132 @@ describe("UserList",
 				expect(resetPasswordAction?.icon)
 					.toBe("lock_reset");
 			});
+
+		describe("column formatters",
+			() =>
+			{
+				describe("isActive formatter",
+					() =>
+					{
+						let formatter: ((value: CellValue, row?: UserDto) => string) | undefined;
+
+						beforeEach(
+							() =>
+							{
+								formatter =
+									component
+										.columns
+										.find(
+											(col) => col.key === "isActive")
+										?.formatter;
+							});
+
+						it("should return 'Deleted' when row is deleted",
+							() =>
+							{
+								const deletedUser: Partial<UserDto> =
+									{ isDeleted: true };
+								expect(formatter?.(true, deletedUser as UserDto))
+									.toBe("Deleted");
+							});
+
+						it("should return 'Active' for active non-deleted user",
+							() =>
+							{
+								const activeUser: Partial<UserDto> =
+									{ isDeleted: false };
+								expect(formatter?.(true, activeUser as UserDto))
+									.toBe("Active");
+							});
+
+						it("should return 'Inactive' for inactive non-deleted user",
+							() =>
+							{
+								const inactiveUser: Partial<UserDto> =
+									{ isDeleted: false };
+								expect(formatter?.(false, inactiveUser as UserDto))
+									.toBe("Inactive");
+							});
+					});
+
+				describe("isActive badgeColor",
+					() =>
+					{
+						let badgeColor: ((value: CellValue, row?: UserDto) => "primary" | "accent" | "warn") | undefined;
+
+						beforeEach(
+							() =>
+							{
+								badgeColor =
+									component
+										.columns
+										.find(
+											(col) => col.key === "isActive")
+										?.badgeColor;
+							});
+
+						it("should return 'warn' when row is deleted",
+							() =>
+							{
+								const deletedUser: Partial<UserDto> =
+									{ isDeleted: true };
+								expect(badgeColor?.(true, deletedUser as UserDto))
+									.toBe("warn");
+							});
+
+						it("should return 'primary' for active non-deleted user",
+							() =>
+							{
+								const activeUser: Partial<UserDto> =
+									{ isDeleted: false };
+								expect(badgeColor?.(true, activeUser as UserDto))
+									.toBe("primary");
+							});
+
+						it("should return 'accent' for inactive non-deleted user",
+							() =>
+							{
+								const inactiveUser: Partial<UserDto> =
+									{ isDeleted: false };
+								expect(badgeColor?.(false, inactiveUser as UserDto))
+									.toBe("accent");
+							});
+					});
+
+				describe("lastLoginAt formatter",
+					() =>
+					{
+						let lastLoginFormatter: ((value: CellValue) => string) | undefined;
+
+						beforeEach(
+							() =>
+							{
+								lastLoginFormatter =
+									component
+										.columns
+										.find(
+											(col) => col.key === "lastLoginAt")
+										?.formatter;
+							});
+
+						it("should return 'Never' when value is null",
+							() =>
+							{
+								expect(lastLoginFormatter?.(null))
+									.toBe("Never");
+							});
+
+						it("should return formatted date when value is present",
+							() =>
+							{
+								const result: string =
+									lastLoginFormatter?.("2024-01-15T10:00:00Z") ?? "";
+								expect(result).not.toBe("Never");
+								expect(result.length)
+									.toBeGreaterThan(0);
+							});
+					});
+			});
 	});
 
 describe("UserList action handlers",
@@ -133,6 +261,7 @@ describe("UserList action handlers",
 			getCurrentFilter: Mock;
 			setPage: Mock;
 			setPageSize: Mock;
+			forceRefresh: Mock;
 		};
 		let mockDialogService: { confirm: Mock; confirmDeactivate: Mock; };
 		let mockNotificationService: MockNotificationService;
@@ -173,7 +302,8 @@ describe("UserList action handlers",
 							.mockReturnValue(
 								{ includeDeleted: false }),
 						setPage: vi.fn(),
-						setPageSize: vi.fn()
+						setPageSize: vi.fn(),
+						forceRefresh: vi.fn()
 					};
 
 				mockDialogService =
@@ -240,7 +370,7 @@ describe("UserList action handlers",
 					() =>
 					{
 						component.onFilterChange(
-							{ filterKey: "active", active: true });
+							{ filterKey: "active" });
 
 						expect(mockUserService.updateFilter)
 							.toHaveBeenCalledWith(
@@ -254,7 +384,7 @@ describe("UserList action handlers",
 					() =>
 					{
 						component.onFilterChange(
-							{ filterKey: "inactive", active: true });
+							{ filterKey: "inactive" });
 
 						expect(mockUserService.updateFilter)
 							.toHaveBeenCalledWith(
@@ -271,7 +401,7 @@ describe("UserList action handlers",
 							{ includeDeleted: false });
 
 						component.onFilterChange(
-							{ filterKey: "deleted", active: true });
+							{ filterKey: "deleted" });
 
 						expect(mockUserService.updateFilter)
 							.toHaveBeenCalledWith(
@@ -285,7 +415,7 @@ describe("UserList action handlers",
 					() =>
 					{
 						component.onFilterChange(
-							{ filterKey: "all", active: true });
+							{ filterKey: "all" });
 
 						expect(mockUserService.updateFilter)
 							.toHaveBeenCalledWith(
@@ -431,13 +561,14 @@ describe("UserList action handlers",
 					{
 						const updateMutation: ReturnType<typeof createMockMutationResult> =
 							mockUserService.updateUser();
-						updateMutation.mutate.mockImplementation(
-							(
-								_input: unknown,
-								options?: { onSuccess?: () => void; }) =>
-							{
-								options?.onSuccess?.();
-							});
+						(updateMutation.mutate as unknown as Mock)
+							.mockImplementation(
+								(
+									_input: unknown,
+									options?: { onSuccess?: () => void; }) =>
+								{
+									options?.onSuccess?.();
+								});
 
 						component.onRowAction(
 							{ action: "deactivate", row: TEST_USER });
@@ -451,19 +582,192 @@ describe("UserList action handlers",
 					{
 						const updateMutation: ReturnType<typeof createMockMutationResult> =
 							mockUserService.updateUser();
-						updateMutation.mutate.mockImplementation(
-							(
-								_input: unknown,
-								options?: { onError?: (error: Error) => void; }) =>
-							{
-								options?.onError?.(new Error("Server error"));
-							});
+						(updateMutation.mutate as unknown as Mock)
+							.mockImplementation(
+								(
+									_input: unknown,
+									options?: { onError?: (error: Error) => void; }) =>
+								{
+									options?.onError?.(new Error("Server error"));
+								});
 
 						component.onRowAction(
 							{ action: "deactivate", row: TEST_USER });
 
 						expect(mockNotificationService.error)
 							.toHaveBeenCalled();
+					});
+			});
+
+		describe("rowActions showIf",
+			() =>
+			{
+				const activeUser: UserDto =
+					{ ...TEST_USER, isDeleted: false };
+				const deletedUser: UserDto =
+					{ ...TEST_USER, isDeleted: true };
+
+				it("should show edit action for non-deleted users",
+					() =>
+					{
+						const editAction: RowAction<UserDto> | undefined =
+							component.rowActions.find((action) =>
+								action.key === "edit");
+						expect(editAction?.showIf?.(activeUser))
+							.toBe(true);
+					});
+
+				it("should hide edit action for deleted users",
+					() =>
+					{
+						const editAction: RowAction<UserDto> | undefined =
+							component.rowActions.find((action) =>
+								action.key === "edit");
+						expect(editAction?.showIf?.(deletedUser))
+							.toBe(false);
+					});
+
+				it("should show resetPassword action for non-deleted users",
+					() =>
+					{
+						const resetAction: RowAction<UserDto> | undefined =
+							component.rowActions.find((action) =>
+								action.key === "resetPassword");
+						expect(resetAction?.showIf?.(activeUser))
+							.toBe(true);
+					});
+
+				it("should hide resetPassword action for deleted users",
+					() =>
+					{
+						const resetAction: RowAction<UserDto> | undefined =
+							component.rowActions.find((action) =>
+								action.key === "resetPassword");
+						expect(resetAction?.showIf?.(deletedUser))
+							.toBe(false);
+					});
+
+				it("should show restore action only for deleted users",
+					() =>
+					{
+						const restoreAction: RowAction<UserDto> | undefined =
+							component.rowActions.find((action) =>
+								action.key === "restore");
+						expect(restoreAction?.showIf?.(deletedUser))
+							.toBe(true);
+					});
+
+				it("should hide restore action for non-deleted users",
+					() =>
+					{
+						const restoreAction: RowAction<UserDto> | undefined =
+							component.rowActions.find((action) =>
+								action.key === "restore");
+						expect(restoreAction?.showIf?.(activeUser))
+							.toBe(false);
+					});
+
+				it("should show deactivate action for non-deleted users",
+					() =>
+					{
+						const deactivateAction: RowAction<UserDto> | undefined =
+							component.rowActions.find((action) =>
+								action.key === "deactivate");
+						expect(deactivateAction?.showIf?.(activeUser))
+							.toBe(true);
+					});
+
+				it("should hide deactivate action for deleted users",
+					() =>
+					{
+						const deactivateAction: RowAction<UserDto> | undefined =
+							component.rowActions.find((action) =>
+								action.key === "deactivate");
+						expect(deactivateAction?.showIf?.(deletedUser))
+							.toBe(false);
+					});
+			});
+
+		describe("onSearch",
+			() =>
+			{
+				it("should call updateFilter with undefined when search term is empty",
+					() =>
+					{
+						component.onSearch("");
+
+						expect(mockUserService.updateFilter)
+							.toHaveBeenCalledWith(
+								{ searchTerm: undefined });
+					});
+			});
+
+		describe("onSortChange",
+			() =>
+			{
+				it("should call updateFilter with sort params",
+					() =>
+					{
+						component.onSortChange(
+							{ sortBy: "username", sortDescending: true });
+
+						expect(mockUserService.updateFilter)
+							.toHaveBeenCalledWith(
+								{ sortBy: "username", sortDescending: true });
+					});
+			});
+
+		describe("onCreateClick",
+			() =>
+			{
+				it("should navigate to create user route",
+					() =>
+					{
+						component.onCreateClick();
+
+						expect(router.navigate)
+							.toHaveBeenCalled();
+					});
+			});
+
+		describe("onRefresh",
+			() =>
+			{
+				it("should call userService forceRefresh",
+					() =>
+					{
+						component.onRefresh();
+
+						expect(mockUserService.forceRefresh)
+							.toHaveBeenCalled();
+					});
+			});
+
+		describe("computed signals",
+			() =>
+			{
+				it("should return null error when query succeeds",
+					() =>
+					{
+						expect(component.error())
+							.toBeNull();
+					});
+
+				it("should return error message when query has an error",
+					() =>
+					{
+						(component.usersQuery.error as unknown as WritableSignal<Error | null>)
+							.set(new Error("Network failure"));
+
+						expect(component.error());
+					});
+
+				it("should return false for isFetching when not refetching",
+					() =>
+					{
+						expect(
+							(component as unknown as { isFetching(): boolean; }).isFetching())
+							.toBe(false);
 					});
 			});
 	});

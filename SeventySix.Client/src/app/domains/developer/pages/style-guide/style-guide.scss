@@ -31,7 +31,7 @@
 	.theme-controls {
 		display: flex;
 		gap: vars.$spacing-lg;
-		align-items: center;
+		align-items: stretch;
 		flex-wrap: wrap;
 
 		button[mat-stroked-button] {

@@ -28,7 +28,8 @@ import { toggleSetItem } from "@shared/utilities/selection.utility";
 import {
 	CreateMutationResult,
 	CreateQueryResult,
-	injectQuery
+	injectQuery,
+	keepPreviousData
 } from "@tanstack/angular-query-experimental";
 import { lastValueFrom, Observable } from "rxjs";
 
@@ -132,7 +133,8 @@ export class LogManagementService extends BaseQueryService<LogQueryRequest>
 					.concat(this.forceRefreshTrigger()),
 				queryFn: () =>
 					lastValueFrom(this.getPaged(this.getCurrentFilter(), this.getForceRefreshContext())),
-				...this.queryConfig
+				...this.queryConfig,
+				placeholderData: keepPreviousData
 			}));
 	}
 

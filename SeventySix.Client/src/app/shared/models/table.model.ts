@@ -60,6 +60,14 @@ export interface TableColumn<T = unknown>
 	 * Optional row context.
 	 */
 	badgeColor?: (value: CellValue, row?: T) => "primary" | "accent" | "warn";
+
+	/**
+	 * Explicit CSS width for the column (e.g. "120px", "20%").
+	 * Applied via colgroup so both the header and data tables align.
+	 * Columns without a width share the remaining space equally.
+	 * @type {string | undefined}
+	 */
+	width?: string;
 }
 
 /**

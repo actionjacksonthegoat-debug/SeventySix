@@ -23,7 +23,8 @@ import { QueryKeys } from "@shared/utilities/query-keys.utility";
 import {
 	CreateMutationResult,
 	CreateQueryResult,
-	injectQuery
+	injectQuery,
+	keepPreviousData
 } from "@tanstack/angular-query-experimental";
 import { lastValueFrom, Observable } from "rxjs";
 
@@ -99,7 +100,8 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 					.concat(this.forceRefreshTrigger()),
 				queryFn: () =>
 					lastValueFrom(this.getPaged(this.getCurrentFilter(), this.getForceRefreshContext())),
-				...this.queryConfig
+				...this.queryConfig,
+				placeholderData: keepPreviousData
 			}));
 	}
 

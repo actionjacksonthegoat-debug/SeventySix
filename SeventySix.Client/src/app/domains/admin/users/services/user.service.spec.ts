@@ -5,6 +5,7 @@ import {
 	UserDto
 } from "@admin/users/models";
 import { TestBed } from "@angular/core/testing";
+import { ROLE_ADMIN, ROLE_DEVELOPER } from "@shared/constants/role.constants";
 import { ApiService } from "@shared/services/api.service";
 // QueryClient not used in these tests
 import {
@@ -368,6 +369,177 @@ describe("UserService",
 						// Counter should have incremented
 						expect(newValue)
 							.toBe(initialValue + 1);
+					});
+			});
+
+		describe("checkUsernameAvailability",
+			() =>
+			{
+				it("should check availability without excludeUserId",
+					async () =>
+					{
+						mockApiService.get.mockReturnValue(of(true));
+
+						const result: boolean =
+							await service.checkUsernameAvailability(
+								"testuser");
+
+						expect(result)
+							.toBe(true);
+						expect(mockApiService.get)
+							.toHaveBeenCalledWith(
+								"users/check/username/testuser",
+								undefined);
+					});
+
+				it("should check availability with excludeUserId",
+					async () =>
+					{
+						mockApiService.get.mockReturnValue(of(false));
+
+						const result: boolean =
+							await service.checkUsernameAvailability(
+								"testuser",
+								42);
+
+						expect(result)
+							.toBe(false);
+						expect(mockApiService.get)
+							.toHaveBeenCalledWith(
+								"users/check/username/testuser",
+								expect.any(Object));
+					});
+			});
+
+		describe("bulkActivateUsers",
+			() =>
+			{
+				it("should bulk activate users",
+					async () =>
+					{
+						mockApiService.post.mockReturnValue(of(2));
+
+						const mutation: ReturnType<typeof service.bulkActivateUsers> =
+							TestBed.runInInjectionContext(
+								() => service.bulkActivateUsers());
+						const count: number =
+							await mutation.mutateAsync(
+								[1, 2]);
+
+						expect(count)
+							.toBe(2);
+						expect(mockApiService.post)
+							.toHaveBeenCalledWith(
+								"users/bulk/activate",
+								[1, 2]);
+					});
+			});
+
+		describe("bulkDeactivateUsers",
+			() =>
+			{
+				it("should bulk deactivate users",
+					async () =>
+					{
+						mockApiService.post.mockReturnValue(of(3));
+
+						const mutation: ReturnType<typeof service.bulkDeactivateUsers> =
+							TestBed.runInInjectionContext(
+								() => service.bulkDeactivateUsers());
+						const count: number =
+							await mutation.mutateAsync(
+								[1, 2, 3]);
+
+						expect(count)
+							.toBe(3);
+						expect(mockApiService.post)
+							.toHaveBeenCalledWith(
+								"users/bulk/deactivate",
+								[1, 2, 3]);
+					});
+			});
+
+		describe("getUserRoles",
+			() =>
+			{
+				it("should fetch user roles",
+					async () =>
+					{
+						const roles: string[] =
+							[ROLE_ADMIN, ROLE_DEVELOPER];
+						mockApiService.get.mockReturnValue(of(roles));
+
+						const query: ReturnType<typeof service.getUserRoles> =
+							TestBed.runInInjectionContext(
+								() => service.getUserRoles(1));
+						const result: Awaited<ReturnType<typeof query.refetch>> =
+							await query.refetch();
+
+						expect(result.data)
+							.toEqual(roles);
+						expect(mockApiService.get)
+							.toHaveBeenCalledWith("users/1/roles");
+					});
+			});
+
+		describe("getAdminCount",
+			() =>
+			{
+				it("should fetch admin count",
+					async () =>
+					{
+						mockApiService.get.mockReturnValue(of(3));
+
+						const query: ReturnType<typeof service.getAdminCount> =
+							TestBed.runInInjectionContext(
+								() => service.getAdminCount());
+						const result: Awaited<ReturnType<typeof query.refetch>> =
+							await query.refetch();
+
+						expect(result.data)
+							.toBe(3);
+						expect(mockApiService.get)
+							.toHaveBeenCalledWith("users/admin-count");
+					});
+			});
+
+		describe("addRole",
+			() =>
+			{
+				it("should add role to user",
+					async () =>
+					{
+						mockApiService.post.mockReturnValue(of(undefined));
+
+						const mutation: ReturnType<typeof service.addRole> =
+							TestBed.runInInjectionContext(
+								() => service.addRole());
+						await mutation.mutateAsync(
+							{ userId: 1, roleName: ROLE_DEVELOPER });
+
+						expect(mockApiService.post)
+							.toHaveBeenCalledWith(
+								`users/1/roles/${ROLE_DEVELOPER}`,
+								{});
+					});
+			});
+
+		describe("removeRole",
+			() =>
+			{
+				it("should remove role from user",
+					async () =>
+					{
+						mockApiService.delete.mockReturnValue(of(undefined));
+
+						const mutation: ReturnType<typeof service.removeRole> =
+							TestBed.runInInjectionContext(
+								() => service.removeRole());
+						await mutation.mutateAsync(
+							{ userId: 1, roleName: ROLE_DEVELOPER });
+
+						expect(mockApiService.delete)
+							.toHaveBeenCalledWith(`users/1/roles/${ROLE_DEVELOPER}`);
 					});
 			});
 	});

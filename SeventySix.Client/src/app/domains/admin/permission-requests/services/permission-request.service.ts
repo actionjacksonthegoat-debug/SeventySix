@@ -14,7 +14,8 @@ import { QueryKeys } from "@shared/utilities/query-keys.utility";
 import {
 	CreateMutationResult,
 	CreateQueryResult,
-	injectQuery
+	injectQuery,
+	keepPreviousData
 } from "@tanstack/angular-query-experimental";
 import { lastValueFrom } from "rxjs";
 
@@ -68,7 +69,8 @@ export class PermissionRequestService extends BaseMutationService
 				queryFn: () =>
 					lastValueFrom(
 						this.apiService.get<PermissionRequestDto[]>(`${this.endpoint}/permission-requests`)),
-				...this.queryConfig
+				...this.queryConfig,
+				placeholderData: keepPreviousData
 			}));
 	}
 

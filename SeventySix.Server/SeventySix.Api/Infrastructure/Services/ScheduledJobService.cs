@@ -57,6 +57,16 @@ public sealed class ScheduledJobService(
 	private const decimal GracePeriodMultiplier = 0.1m;
 
 	/// <summary>
+	/// Minimum absolute grace period to prevent false-degraded status for
+	/// high-frequency short-interval jobs (e.g., EmailQueueProcessJob at 10 s).
+	/// Without a floor the 10 % multiplier gives only 1 s of grace — less than
+	/// any realistic client cache window — causing permanently degraded display
+	/// even when the job executes normally.
+	/// </summary>
+	private static readonly TimeSpan MinimumGracePeriod =
+		TimeSpan.FromMinutes(5);
+
+	/// <summary>
 	/// Metadata for each known scheduled job, keyed by job name.
 	/// Contains display information and expected execution intervals.
 	/// </summary>
@@ -232,8 +242,16 @@ public sealed class ScheduledJobService(
 		TimeSpan timeSinceLastExecution =
 			now2 - execution.LastExecutedAt;
 
+		TimeSpan percentageGrace =
+			expectedInterval * (double)GracePeriodMultiplier;
+
+		TimeSpan effectiveGrace =
+			percentageGrace > MinimumGracePeriod
+				? percentageGrace
+				: MinimumGracePeriod;
+
 		TimeSpan maximumAllowedInterval =
-			expectedInterval * (1 + (double)GracePeriodMultiplier);
+			expectedInterval + effectiveGrace;
 
 		return timeSinceLastExecution <= maximumAllowedInterval
 			? HealthStatusConstants.Healthy

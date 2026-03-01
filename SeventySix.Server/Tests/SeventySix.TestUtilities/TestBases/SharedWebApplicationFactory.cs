@@ -72,6 +72,7 @@ public sealed class SharedWebApplicationFactory<TProgram>
 						["SkipMigrationCheck"] = "true",
 						["Auth:OAuth:Enabled"] = "true",
 						["Auth:Totp:Enabled"] = "true",
+						["Site:Email"] = "contact@test.seventysix.local",
 					});
 			});
 

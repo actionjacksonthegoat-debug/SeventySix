@@ -68,6 +68,16 @@ export class PermissionRequestListPage
 		PermissionRequestService["getAllRequests"]> =
 		this.service.getAllRequests();
 
+	/**
+	 * True when the query is refetching in the background with previous data still visible.
+	 * Used to show the progress bar and spinning refresh icon in the data table.
+	 * @type {Signal<boolean>}
+	 */
+	protected readonly isFetching: Signal<boolean> =
+		computed(
+			() =>
+				this.requestsQuery.isFetching() && !this.requestsQuery.isPending());
+
 	// Mutations
 	/**
 	 * Mutation for approving a single permission request.

@@ -97,6 +97,16 @@ export class LogList
 		this.logService.getLogs();
 
 	/**
+	 * True when the query is refetching in the background with previous data still visible.
+	 * Used to show the progress bar and spinning refresh icon in the data table.
+	 * @type {Signal<boolean>}
+	 */
+	protected readonly isFetching: Signal<boolean> =
+		computed(
+			() =>
+				this.logsQuery.isFetching() && !this.logsQuery.isPending());
+
+	/**
 	 * Mutation for deleting a single log entry.
 	 * @type {ReturnType<typeof this.logService.deleteLog>}
 	 * @private
@@ -127,6 +137,7 @@ export class LogList
 				sortable: true,
 				visible: true,
 				type: "badge",
+				width: "110px",
 				formatter: (value: unknown): string =>
 				{
 					const level: LogLevel =
@@ -154,6 +165,7 @@ export class LogList
 				sortable: true,
 				visible: true,
 				type: "date",
+				width: "155px",
 				formatter: (value: unknown): string =>
 					this.datePipe.transform(value as Date, "short") ?? ""
 			},
@@ -163,6 +175,7 @@ export class LogList
 				sortable: false,
 				visible: true,
 				type: "text",
+				width: "360px",
 				formatter: (_value: unknown, row?: LogDto): string =>
 					row?.exceptionMessage ?? row?.message ?? ""
 			},

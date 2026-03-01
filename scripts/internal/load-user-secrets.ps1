@@ -11,6 +11,7 @@
 #   GITHUB_CLIENT_ID / CLIENT_SECRET     → GitHub OAuth (docker-compose.yml)
 #   EMAIL_SMTP_USERNAME / PASSWORD        → Brevo SMTP (docker-compose.yml)
 #   EMAIL_FROM_ADDRESS                   → Sender address (docker-compose.yml)
+#   SITE_EMAIL                           → Public contact email for legal pages (docker-compose.yml)
 #   ALTCHA_HMAC_KEY                      → ALTCHA HMAC (docker-compose.yml)
 #   ADMIN_EMAIL / ADMIN_PASSWORD         → Admin seeding (docker-compose.yml)
 #   GRAFANA_ADMIN_USER / PASSWORD        → Grafana dashboard (docker-compose.yml)
@@ -43,6 +44,7 @@ $secretToEnvMapping =
 	"Email:SmtpUsername"                  = "EMAIL_SMTP_USERNAME"
 	"Email:SmtpPassword"                  = "EMAIL_SMTP_PASSWORD"
 	"Email:FromAddress"                   = "EMAIL_FROM_ADDRESS"
+	"Site:Email"                          = "SITE_EMAIL"
 	"Altcha:HmacKeyBase64"                = "ALTCHA_HMAC_KEY"
 	"AdminSeeder:Email"                   = "ADMIN_EMAIL"
 	"AdminSeeder:InitialPassword"         = "ADMIN_PASSWORD"

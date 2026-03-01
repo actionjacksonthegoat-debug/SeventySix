@@ -26,7 +26,8 @@ const DEFAULT_FLAGS: FeatureFlags =
 		oAuthEnabled: false,
 		oAuthProviders: [],
 		altchaEnabled: true,
-		tokenRefreshBufferSeconds: 60
+		tokenRefreshBufferSeconds: 60,
+		siteEmail: ""
 	};
 
 /**
@@ -61,6 +62,9 @@ export class FeatureFlagsService
 		signal(
 			DEFAULT_FLAGS.tokenRefreshBufferSeconds);
 
+	private readonly _siteEmail: WritableSignal<string> =
+		signal(DEFAULT_FLAGS.siteEmail);
+
 	/** Whether email/code-based MFA is enabled on the server. */
 	readonly mfaEnabled: Signal<boolean> =
 		this._mfaEnabled.asReadonly();
@@ -88,6 +92,10 @@ export class FeatureFlagsService
 	readonly tokenRefreshBufferSeconds: Signal<number> =
 		this._tokenRefreshBufferSeconds.asReadonly();
 
+	/** Public contact email for legal pages. Empty string until flags are loaded. */
+	readonly siteEmail: Signal<string> =
+		this._siteEmail.asReadonly();
+
 	/**
 	 * Loads feature flags from the API. Called once on app startup.
 	 * On network or API error, safe defaults are used and the app continues normally.
@@ -110,5 +118,6 @@ export class FeatureFlagsService
 		this._altchaEnabled.set(flags.altchaEnabled ?? DEFAULT_FLAGS.altchaEnabled);
 		this._tokenRefreshBufferSeconds.set(
 			flags.tokenRefreshBufferSeconds ?? DEFAULT_FLAGS.tokenRefreshBufferSeconds);
+		this._siteEmail.set(flags.siteEmail ?? "");
 	}
 }

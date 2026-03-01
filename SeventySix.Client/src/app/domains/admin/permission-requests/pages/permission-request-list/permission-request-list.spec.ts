@@ -56,6 +56,8 @@ describe("PermissionRequestListPage",
 						{
 							data: () => mockPermissionRequests,
 							isLoading: () => false,
+							isPending: () => false,
+							isFetching: () => false,
 							error: () => null,
 							isSuccess: () => true,
 							refetch: vi.fn()

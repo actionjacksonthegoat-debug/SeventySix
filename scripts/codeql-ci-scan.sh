@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+﻿#!/usr/bin/env bash
 # scripts/codeql-ci-scan.sh
 # ─────────────────────────────────────────────────────────────────────────────
 # Runs a single CodeQL analysis language pass inside the Docker container

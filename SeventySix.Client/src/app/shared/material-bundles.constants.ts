@@ -52,7 +52,7 @@ import { MatStepperModule } from "@angular/material/stepper";
 // import { MatToolbarModule } from "@angular/material/toolbar";
 
 // Progress Imports
-// import { MatProgressBarModule } from "@angular/material/progress-bar";
+import { MatProgressBarModule } from "@angular/material/progress-bar";
 
 /**
  * Common Material Modules
@@ -98,7 +98,7 @@ export const FORM_MATERIAL_MODULES: readonly Type<unknown>[] =
  *
  * Includes:
  * - Table, pagination, sorting
- * - Progress spinners for loading
+ * - Progress spinners for loading, progress bar for background refresh
  * - Chips for tags/status
  * - Tooltips and menus
  *
@@ -115,7 +115,8 @@ export const TABLE_MATERIAL_MODULES: readonly Type<unknown>[] =
 		MatMenuModule,
 		MatFormFieldModule,
 		MatInputModule,
-		MatCheckboxModule
+		MatCheckboxModule,
+		MatProgressBarModule
 	] as const;
 
 /**

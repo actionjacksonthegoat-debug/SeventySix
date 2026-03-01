@@ -342,6 +342,16 @@ npm run secrets:set -- -Key "Email:SmtpPassword" -Value "your-brevo-smtp-key"
 npm run secrets:set -- -Key "Email:FromAddress" -Value "noreply@yourdomain.com"
 ```
 
+**Site Contact Email** (shown on Privacy Policy and Terms of Service pages — served to the client at runtime):
+
+```bash
+npm run secrets:set -- -Key "Site:Email" -Value "hello@yourdomain.com"
+```
+
+> `Email:FromAddress` is the envelope sender used in outgoing emails.
+> `Site:Email` is the public contact address displayed on legal pages.
+> They are typically different addresses but can be the same.
+
 **Admin Account** (the seeded admin user — change the password to something personal):
 
 ```bash

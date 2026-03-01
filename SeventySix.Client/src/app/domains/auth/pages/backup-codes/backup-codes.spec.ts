@@ -258,6 +258,102 @@ describe("BackupCodesComponent",
 					});
 			});
 
+		describe("print codes",
+			() =>
+			{
+				beforeEach(
+					() =>
+					{
+						component["onGenerateCodes"]();
+					});
+
+				it("should show error notification when print window cannot open",
+					() =>
+					{
+						vi
+							.spyOn(window, "open")
+							.mockReturnValue(null);
+
+						component["onPrintCodes"]();
+
+						expect(mockNotificationService.error)
+							.toHaveBeenCalledWith(
+								"Could not open print window. Please allow pop-ups.");
+					});
+
+				it("should write html and print when window opens successfully",
+					() =>
+					{
+						const mockWindow: {
+							document: { write: ReturnType<typeof vi.fn>; close: ReturnType<typeof vi.fn>; };
+							print: ReturnType<typeof vi.fn>;
+						} =
+							{
+								document: {
+									write: vi.fn(),
+									close: vi.fn()
+								},
+								print: vi.fn()
+							};
+						vi
+							.spyOn(window, "open")
+							.mockReturnValue(mockWindow as unknown as Window);
+
+						component["onPrintCodes"]();
+
+						expect(mockWindow.document.write)
+							.toHaveBeenCalled();
+						expect(mockWindow.print)
+							.toHaveBeenCalled();
+					});
+			});
+
+		describe("download codes",
+			() =>
+			{
+				beforeEach(
+					() =>
+					{
+						component["onGenerateCodes"]();
+					});
+
+				afterEach(
+					() =>
+					{
+						vi.restoreAllMocks();
+					});
+
+				it("should download codes as text file",
+					() =>
+					{
+						const mockUrl: string = "blob:mock-url";
+						const mockLink: HTMLAnchorElement =
+							document.createElement("a");
+
+						vi
+							.spyOn(URL, "createObjectURL")
+							.mockReturnValue(mockUrl);
+						vi
+							.spyOn(URL, "revokeObjectURL")
+							.mockReturnValue(undefined);
+						vi
+							.spyOn(document, "createElement")
+							.mockReturnValue(mockLink);
+						vi.spyOn(document.body, "appendChild");
+						vi.spyOn(document.body, "removeChild");
+						vi.spyOn(mockLink, "click");
+
+						component["onDownloadCodes"]();
+
+						expect(mockLink.href)
+							.toContain("mock-url");
+						expect(mockLink.click)
+							.toHaveBeenCalled();
+						expect(mockNotificationService.success)
+							.toHaveBeenCalledWith("Backup codes downloaded");
+					});
+			});
+
 		describe("navigation",
 			() =>
 			{

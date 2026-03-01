@@ -13,7 +13,8 @@ const EXPECTED_DEFAULTS: FeatureFlags =
 		oAuthEnabled: false,
 		oAuthProviders: [],
 		altchaEnabled: true,
-		tokenRefreshBufferSeconds: 60
+		tokenRefreshBufferSeconds: 60,
+		siteEmail: ""
 	};
 
 const FEATURE_FLAGS_URL: string = "/api/v1/config/features";
@@ -92,6 +93,13 @@ describe("FeatureFlagsService",
 						expect(service.tokenRefreshBufferSeconds())
 							.toBe(EXPECTED_DEFAULTS.tokenRefreshBufferSeconds);
 					});
+
+				it("should default siteEmail to empty string",
+					() =>
+					{
+						expect(service.siteEmail())
+							.toBe("");
+					});
 			});
 
 		describe("initialize()",
@@ -107,7 +115,8 @@ describe("FeatureFlagsService",
 								oAuthEnabled: true,
 								oAuthProviders: ["github"],
 								altchaEnabled: false,
-								tokenRefreshBufferSeconds: 30
+								tokenRefreshBufferSeconds: 30,
+								siteEmail: "contact@test.local"
 							};
 
 						const initPromise: Promise<void> =
@@ -134,6 +143,8 @@ describe("FeatureFlagsService",
 							.toBe(false);
 						expect(service.tokenRefreshBufferSeconds())
 							.toBe(30);
+						expect(service.siteEmail())
+							.toBe("contact@test.local");
 					});
 
 				it("should fall back to defaults when the API request fails",
@@ -165,6 +176,48 @@ describe("FeatureFlagsService",
 							.toBe(EXPECTED_DEFAULTS.altchaEnabled);
 						expect(service.tokenRefreshBufferSeconds())
 							.toBe(EXPECTED_DEFAULTS.tokenRefreshBufferSeconds);
+						expect(service.siteEmail())
+							.toBe(EXPECTED_DEFAULTS.siteEmail);
+					});
+
+				it("should expose siteEmail from API response",
+					async () =>
+					{
+						const testFlags: FeatureFlags =
+							{
+								...EXPECTED_DEFAULTS,
+								siteEmail: "contact@test.local"
+							};
+
+						const initPromise: Promise<void> =
+							service.initialize();
+
+						const req: ReturnType<typeof httpMock.expectOne> =
+							httpMock.expectOne(
+								(request) =>
+									request.url.endsWith(FEATURE_FLAGS_URL));
+						req.flush(testFlags);
+						await initPromise;
+
+						expect(service.siteEmail())
+							.toBe("contact@test.local");
+					});
+
+				it("should default siteEmail to empty string on error",
+					async () =>
+					{
+						const initPromise: Promise<void> =
+							service.initialize();
+
+						const req: ReturnType<typeof httpMock.expectOne> =
+							httpMock.expectOne(
+								(request) =>
+									request.url.endsWith(FEATURE_FLAGS_URL));
+						req.error(new ProgressEvent("error"));
+						await initPromise;
+
+						expect(service.siteEmail())
+							.toBe("");
 					});
 			});
 	});

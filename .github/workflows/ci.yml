@@ -330,3 +330,64 @@ jobs:
 
                   echo "  Quality Gate: PASSED"
                   echo "============================================"
+
+    publish:
+        name: Publish Docker Images
+        needs: [quality-gate]
+        runs-on: ubuntu-latest
+        if: github.ref == 'refs/heads/master' && github.event_name == 'push' && needs.quality-gate.result == 'success'
+
+        permissions:
+            contents: read
+            packages: write
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Set up QEMU
+              uses: docker/setup-qemu-action@v3
+
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@v3
+
+            - name: Log in to GHCR
+              uses: docker/login-action@v3
+              with:
+                  registry: ghcr.io
+                  username: ${{ github.actor }}
+                  password: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Extract metadata
+              id: meta
+              run: |
+                  echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+                  echo "date=$(date -u +%Y%m%d)" >> $GITHUB_OUTPUT
+
+            - name: Build and push API image
+              uses: docker/build-push-action@v6
+              with:
+                  context: ./SeventySix.Server
+                  file: ./SeventySix.Server/Dockerfile.production
+                  platforms: linux/amd64,linux/arm64
+                  push: true
+                  tags: |
+                      ghcr.io/${{ github.repository_owner }}/seventysix-api:latest
+                      ghcr.io/${{ github.repository_owner }}/seventysix-api:${{ github.sha }}
+                      ghcr.io/${{ github.repository_owner }}/seventysix-api:${{ steps.meta.outputs.date }}-${{ steps.meta.outputs.sha_short }}
+                  cache-from: type=gha
+                  cache-to: type=gha,mode=max
+
+            - name: Build and push Client image
+              uses: docker/build-push-action@v6
+              with:
+                  context: ./SeventySix.Client
+                  file: ./SeventySix.Client/Dockerfile.production
+                  platforms: linux/amd64,linux/arm64
+                  push: true
+                  tags: |
+                      ghcr.io/${{ github.repository_owner }}/seventysix-client:latest
+                      ghcr.io/${{ github.repository_owner }}/seventysix-client:${{ github.sha }}
+                      ghcr.io/${{ github.repository_owner }}/seventysix-client:${{ steps.meta.outputs.date }}-${{ steps.meta.outputs.sha_short }}
+                  cache-from: type=gha
+                  cache-to: type=gha,mode=max

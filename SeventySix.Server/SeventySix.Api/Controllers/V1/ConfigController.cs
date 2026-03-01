@@ -29,6 +29,9 @@ namespace SeventySix.Api.Controllers;
 /// <param name="altchaService">
 /// ALTCHA service providing enabled state and challenge endpoint.
 /// </param>
+/// <param name="siteSettings">
+/// Site-level settings containing the public contact email for legal pages.
+/// </param>
 [ApiController]
 [Route(ApiVersionConfig.VersionedRoutePrefix + "/config")]
 public sealed class ConfigController(
@@ -36,7 +39,8 @@ public sealed class ConfigController(
 	IOptions<TotpSettings> totpSettings,
 	IOptions<AuthSettings> authSettings,
 	IOptions<JwtSettings> jwtSettings,
-	IAltchaService altchaService) : ControllerBase
+	IAltchaService altchaService,
+	IOptions<SiteSettings> siteSettings) : ControllerBase
 {
 	/// <summary>
 	/// Returns feature flag values for client-side conditional rendering.
@@ -68,6 +72,7 @@ public sealed class ConfigController(
 				OAuthEnabled: oAuthEnabled,
 				OAuthProviders: oAuthProviders,
 				AltchaEnabled: altchaService.IsEnabled,
-				TokenRefreshBufferSeconds: jwtSettings.Value.TokenRefreshBufferSeconds));
+				TokenRefreshBufferSeconds: jwtSettings.Value.TokenRefreshBufferSeconds,
+				SiteEmail: siteSettings.Value.Email));
 	}
 }

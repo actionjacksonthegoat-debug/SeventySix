@@ -165,9 +165,38 @@ describe("LoginComponent",
 				it("should not redirect when not authenticated",
 					() =>
 					{
-						// The default setup has isAuthenticated = false
-						// Verify navigateByUrl was not called
 						expect(router.navigateByUrl).not.toHaveBeenCalled();
+					});
+
+				it("should redirect to returnUrl when already authenticated",
+					() =>
+					{
+						mockAuthService.isAuthenticated.set(true);
+						fixture =
+							TestBed.createComponent(LoginComponent);
+						component =
+							fixture.componentInstance;
+						vi.spyOn(router, "navigateByUrl");
+						fixture.detectChanges();
+
+						expect(router.navigateByUrl)
+							.toHaveBeenCalledWith("/");
+					});
+
+				it("should use sanitized returnUrl that is not an open redirect",
+					() =>
+					{
+						mockAuthService.isAuthenticated.set(true);
+						fixture =
+							TestBed.createComponent(LoginComponent);
+						component =
+							fixture.componentInstance;
+						vi.spyOn(router, "navigateByUrl");
+						fixture.detectChanges();
+
+						const calledWith: string =
+							(router.navigateByUrl as ReturnType<typeof vi.fn>).mock.calls[0]?.[0] ?? "";
+						expect(calledWith).not.toMatch(/^https?:\/\//);
 					});
 			});
 
@@ -529,6 +558,38 @@ describe("LoginComponent",
 						expect((component as unknown as { isLoading(): boolean; }).isLoading())
 							.toBe(false);
 					});
+
+				it("should navigate to MFA verify when response requires MFA",
+					() =>
+					{
+						const mfaResponse: AuthResponse =
+							{
+								...mockAuthResponse,
+								requiresMfa: true,
+								mfaChallengeToken: "challenge-token-123",
+								email: "test@example.com"
+							};
+						mockAuthService.login.mockReturnValue(of(mfaResponse));
+						component["loginForm"].patchValue(
+							{
+								usernameOrEmail: "testuser",
+								password: "password123",
+								rememberMe: false
+							});
+
+						(component as unknown as { onLocalLogin(): void; }).onLocalLogin();
+
+						expect(mockMfaService.setMfaState)
+							.toHaveBeenCalledWith(
+								expect.objectContaining(
+									{
+										challengeToken: "challenge-token-123",
+										email: "test@example.com"
+									}));
+						expect(router.navigate)
+							.toHaveBeenCalledWith(
+								[APP_ROUTES.AUTH.MFA_VERIFY]);
+					});
 			});
 
 		describe("onOAuthLogin",
@@ -699,6 +760,170 @@ describe("LoginComponent",
 							mockStorageService.removeSessionItem)
 							.toHaveBeenCalledWith(
 								STORAGE_KEYS.AUTH_INACTIVITY_LOGOUT);
+					});
+			});
+
+		describe("canSubmit",
+			() =>
+			{
+				it("should return false when form is invalid",
+					() =>
+					{
+						expect(
+							(component as unknown as { canSubmit(): boolean; }).canSubmit())
+							.toBe(false);
+					});
+
+				it("should return true when form is valid and ALTCHA is not enabled",
+					() =>
+					{
+						component["loginForm"].patchValue(
+							{
+								usernameOrEmail: "testuser",
+								password: "password123",
+								rememberMe: false
+							});
+						fixture.detectChanges();
+
+						expect(
+							(component as unknown as { canSubmit(): boolean; }).canSubmit())
+							.toBe(true);
+					});
+
+				it("should return false when isLoading is true",
+					() =>
+					{
+						component["loginForm"].patchValue(
+							{
+								usernameOrEmail: "testuser",
+								password: "password123",
+								rememberMe: false
+							});
+						component["isLoading"].set(true);
+
+						expect(
+							(component as unknown as { canSubmit(): boolean; }).canSubmit())
+							.toBe(false);
+					});
+			});
+
+		describe("ALTCHA-enabled behavior",
+			() =>
+			{
+				let altchaEnabledFixture: ComponentFixture<LoginComponent>;
+				let altchaEnabledComponent: LoginComponent;
+
+				beforeEach(
+					async () =>
+					{
+						TestBed.resetTestingModule();
+
+						const enabledAltchaService: MockAltchaService =
+							createMockAltchaService(true);
+
+						await TestBed
+							.configureTestingModule(
+								{
+									imports: [LoginComponent],
+									providers: [
+										provideZonelessChangeDetection(),
+										provideRouter([]),
+										{ provide: AuthService, useValue: mockAuthService },
+										{ provide: MfaService, useValue: mockMfaService },
+										{
+											provide: NotificationService,
+											useValue: mockNotificationService
+										},
+										{ provide: AltchaService, useValue: enabledAltchaService },
+										{ provide: StorageService, useValue: mockStorageService },
+										{
+											provide: FeatureFlagsService,
+											useValue: mockFeatureFlagsService
+										}
+									]
+								})
+							.compileComponents();
+
+						registerOAuthIcons(
+							TestBed.inject(MatIconRegistry),
+							TestBed.inject(DomSanitizer));
+
+						altchaEnabledFixture =
+							TestBed.createComponent(LoginComponent);
+						altchaEnabledComponent =
+							altchaEnabledFixture.componentInstance;
+						altchaEnabledFixture.detectChanges();
+					});
+
+				it("should show error when ALTCHA is enabled and payload is missing",
+					() =>
+					{
+						altchaEnabledComponent["loginForm"].patchValue(
+							{
+								usernameOrEmail: "testuser",
+								password: "password123",
+								rememberMe: false
+							});
+
+						(altchaEnabledComponent as unknown as { onLocalLogin(): void; })
+							.onLocalLogin();
+
+						expect(mockNotificationService.error)
+							.toHaveBeenCalledWith(
+								"Please complete the verification challenge.");
+						expect(mockAuthService.login).not.toHaveBeenCalled();
+					});
+
+				it("should allow login when ALTCHA payload is present",
+					() =>
+					{
+						mockAuthService.login.mockReturnValue(of(mockAuthResponse));
+						altchaEnabledComponent["loginForm"].patchValue(
+							{
+								usernameOrEmail: "testuser",
+								password: "password123",
+								rememberMe: false
+							});
+						(altchaEnabledComponent as unknown as { onAltchaVerified(p: string): void; })
+							.onAltchaVerified("altcha-payload-xyz");
+
+						(altchaEnabledComponent as unknown as { onLocalLogin(): void; })
+							.onLocalLogin();
+
+						expect(mockAuthService.login)
+							.toHaveBeenCalledWith(
+								expect.objectContaining(
+									{ altchaPayload: "altcha-payload-xyz" }));
+					});
+
+				it("canSubmit should return false when ALTCHA is enabled but payload is null",
+					() =>
+					{
+						altchaEnabledComponent["loginForm"].patchValue(
+							{
+								usernameOrEmail: "testuser",
+								password: "password123",
+								rememberMe: false
+							});
+
+						expect(
+							(altchaEnabledComponent as unknown as { canSubmit(): boolean; }).canSubmit())
+							.toBe(false);
+					});
+			});
+
+		describe("onAltchaVerified",
+			() =>
+			{
+				it("should set altchaPayload signal",
+					() =>
+					{
+						(component as unknown as { onAltchaVerified(payload: string): void; })
+							.onAltchaVerified("test-altcha-payload");
+
+						expect(
+							(component as unknown as { altchaPayload(): string | null; }).altchaPayload())
+							.toBe("test-altcha-payload");
 					});
 			});
 	});

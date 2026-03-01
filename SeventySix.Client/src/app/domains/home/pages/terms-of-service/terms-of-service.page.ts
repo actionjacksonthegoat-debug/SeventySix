@@ -1,6 +1,7 @@
-import { ChangeDetectionStrategy, Component } from "@angular/core";
+import { ChangeDetectionStrategy, Component, computed, inject, Signal } from "@angular/core";
 import { RouterLink } from "@angular/router";
 import { PageHeaderComponent } from "@shared/components";
+import { FeatureFlagsService } from "@shared/services";
 
 @Component(
 	{
@@ -17,6 +18,17 @@ import { PageHeaderComponent } from "@shared/components";
  */
 export class TermsOfServicePage
 {
+	private readonly featureFlagsService: FeatureFlagsService =
+		inject(FeatureFlagsService);
+
+	/** Contact email driven by server-side SiteSettings — never hardcoded. */
+	protected readonly siteEmail: Signal<string> =
+		this.featureFlagsService.siteEmail;
+
+	/** Pre-built mailto href for template binding. */
+	protected readonly siteEmailHref: Signal<string> =
+		computed(() => `mailto:${this.siteEmail()}`);
+
 	/**
 	 * Last-updated string displayed on the page.
 	 * @type {string}

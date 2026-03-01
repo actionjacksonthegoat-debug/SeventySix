@@ -106,9 +106,14 @@ SeventySix uses a layered configuration system. This document provides a high-le
 | Setting | Source | Notes |
 |---------|--------|-------|
 | `Jwt:SecretKey` | User Secrets / Env Var | **Never** in `appsettings.json` |
+| `Auth:OAuth:Providers:*:ClientId` | User Secrets / Env Var | GitHub OAuth client ID |
 | `Auth:OAuth:Providers:*:ClientSecret` | User Secrets / Env Var | GitHub OAuth secret |
-| `Email:Smtp:Password` | User Secrets / Env Var | Brevo API key |
-| `AdminSeeder:InitialPassword` | User Secrets | Dev admin password |
+| `Email:SmtpUsername` | User Secrets / Env Var | Brevo SMTP login |
+| `Email:SmtpPassword` | User Secrets / Env Var | Brevo API key |
+| `Email:FromAddress` | User Secrets / Env Var | Sender address (e.g. `noreply@yourdomain.com`) — used in all outgoing emails |
+| `Site:Email` | User Secrets / Env Var | Public contact email shown on Privacy Policy and Terms of Service pages (e.g. `hello@yourdomain.com`) — served to client via `/api/v1/config/features` |
+| `AdminSeeder:Email` | User Secrets / Env Var | Dev admin account email |
+| `AdminSeeder:InitialPassword` | User Secrets | Dev admin initial password |
 | `Grafana:AdminPassword` | User Secrets | Grafana admin password |
 | `Altcha:HmacKeyBase64` | User Secrets / Env Var | CAPTCHA signing key |
 | All other settings | `appsettings.json` | Safe to commit |

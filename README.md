@@ -196,7 +196,7 @@ Domain-driven modules with enforced isolation via architecture tests
 
 | Technology | Version | License | Purpose |
 |---|---|---|---|
-- Docker Compose | latest | Apache-2.0 | Container orchestration (multiple environment configs)
+| Docker Compose | latest | Apache-2.0 | Container orchestration (multiple environment configs) |
 | nginx | latest | BSD-2-Clause | HTTPS reverse proxy for observability tools |
 | Jaeger | latest | Apache-2.0 | Distributed tracing |
 | Prometheus | latest | Apache-2.0 | Metrics collection |
@@ -210,40 +210,43 @@ Domain-driven modules with enforced isolation via architecture tests
 ## Architecture Overview
 
 ```mermaid
-graph TB
+flowchart LR
     subgraph Client["Angular 21 Client"]
-        direction LR
-        AppDomains["Domains<br/><sub>admin · auth · account<br/>developer · home · sandbox</sub>"]
-        AppShared["Shared<br/><sub>services · guards<br/>interceptors · components</sub>"]
+        direction TB
+        AppDomains["Domains<br/>admin · auth · account<br/>developer · home · sandbox"]
+        AppShared["Shared<br/>services · guards<br/>interceptors · components"]
     end
 
     subgraph Server[".NET 10 Server"]
         direction TB
-        Api["Api Layer<br/><sub>HTTP endpoints · health checks<br/>OpenTelemetry · output cache</sub>"]
-        DomainLayer["Domains<br/><sub>Logging · ApiTracking<br/>ElectronicNotifications</sub>"]
-        Identity["Domains.Identity<br/><sub>Auth · Users · Roles · MFA · OAuth</sub>"]
-        SharedServer["Shared<br/><sub>base abstractions · persistence helpers<br/>cache registration · data protection</sub>"]
+        Api["Api Layer<br/>HTTP endpoints · health checks<br/>OpenTelemetry · output cache"]
+        subgraph DomainGroup["Domain Services"]
+            direction LR
+            DomainLayer["Domains<br/>Logging · ApiTracking<br/>ElectronicNotifications"]
+            Identity["Domains.Identity<br/>Auth · Users · Roles · MFA · OAuth"]
+        end
+        SharedServer["Shared<br/>base abstractions · persistence helpers<br/>cache registration · data protection"]
+        Api --> DomainLayer
+        Api --> Identity
+        DomainLayer --> SharedServer
+        Identity --> SharedServer
     end
 
     subgraph Infra["Docker Infrastructure"]
-        direction LR
-        PG[("PostgreSQL 18<br/><sub>DbContexts</sub>")]
-        VK[("Valkey 9<br/><sub>L1 + L2 cache</sub>")]
-        OT["OTel Collector<br/><sub>traces + metrics</sub>"]
-        F2B["Fail2Ban<br/><sub>intrusion prevention</sub>"]
+        direction TB
+        PG[("PostgreSQL 18<br/>DbContexts")]
+        VK[("Valkey 9<br/>L1 + L2 cache")]
+        OT["OTel Collector<br/>traces + metrics"]
+        F2B["Fail2Ban<br/>intrusion prevention"]
     end
 
-    Client -- "HTTPS" --> Api
-    Api --> DomainLayer
-    Api --> Identity
-    DomainLayer --> SharedServer
-    Identity --> SharedServer
-    DomainLayer -- "EF Core" --> PG
-    Identity -- "EF Core" --> PG
-    DomainLayer -- "FusionCache" --> VK
-    Identity -- "FusionCache" --> VK
-    Api -- "OTLP" --> OT
-    F2B -. "monitors logs" .-> Api
+    Client -->|HTTPS| Api
+    DomainLayer -->|EF Core| PG
+    Identity -->|EF Core| PG
+    DomainLayer -->|FusionCache| VK
+    Identity -->|FusionCache| VK
+    Api -->|OTLP| OT
+    F2B -.->|monitors logs| Api
 ```
 
 **Server** follows Clean Architecture with a strict `Shared <- Domains <- Api` dependency flow — never reversed. Wolverine dispatches commands and queries to static handlers with method-injected dependencies. Bounded contexts (Identity, Logging, ApiTracking, ElectronicNotifications) each own their database schema, migrations, and EF Core `DbContext`.
@@ -333,7 +336,7 @@ SeventySix uses a layered configuration system:
 | Base | `appsettings.json` | Default settings for all environments |
 | Development | `appsettings.Development.json` | Dev-specific overrides |
 | User Secrets | `secrets.json` (not committed) | Sensitive values (API keys, passwords) |
-| Environment Variables | Docker Compose `.env` - Only for K6 | Container-level overrides |
+| Environment Variables | Docker Compose `environment:` blocks | Container-level overrides (dev) or GitHub Secrets via CD pipeline (production) |
 
 > See [docs/Settings.md](docs/Settings.md) for a complete reference of all settings.
 
@@ -863,9 +866,22 @@ Secrets flow through .NET user-secrets — never committed to the repository:
 
 1. Developer runs `npm run secrets:init` (one-time)
 2. `manage-user-secrets.ps1` stores secrets in the .NET user-secrets store
-3. `npm start` calls `start-dev.ps1`, which exports secrets as environment variables
+3. `npm start` calls `start-dev.ps1`, which exports secrets as environment variables via `scripts/internal/load-user-secrets.ps1`
 4. Docker Compose reads environment variables via `${VAR}` substitution
 5. For F5 debugging (API outside Docker), secrets load directly via user-secrets
+
+Key secrets and their Docker Compose environment variable names:
+
+| User Secret Key | Docker Env Var | Purpose |
+|---|---|---|
+| `Email:FromAddress` | `EMAIL_FROM_ADDRESS` | Envelope sender on all outgoing emails |
+| `Site:Email` | `SITE_EMAIL` | Public contact email on legal pages (served to client via `/api/v1/config/features`) |
+| `AdminSeeder:Email` | `ADMIN_EMAIL` | Dev admin account email |
+| `Jwt:SecretKey` | `JWT_SECRET_KEY` | JWT signing key |
+
+> **`Email:FromAddress` vs `Site:Email`:** These are two distinct addresses. `FromAddress` appears in the SMTP `From:` header on every email sent. `Site:Email` is the publicly visible contact address on the Privacy Policy and Terms of Service pages. Set both via user secrets; they will not populate into Docker unless `SITE_EMAIL` is exported (handled by `load-user-secrets.ps1`).
+
+See [Server README — User Secrets Reference](SeventySix.Server/README.md) for the full secrets table.
 
 ## Cost Model
 
@@ -1053,6 +1069,19 @@ All four suites must pass before any work is considered complete:
 | Load (quick) | `npm run loadtest:quick` | All scenarios pass thresholds |
 
 > **Note:** Load quick tests require the load-testing Docker environment (`docker compose -f docker-compose.loadtest.yml up -d`). Full load and stress profiles can take 10-30+ minutes — use `npm run loadtest:smoke` for a fast health-only sanity check.
+
+## Production Deployment
+
+See [docs/Deployment.md](docs/Deployment.md) for the complete production deployment guide.
+
+**Quick summary:**
+- **Target:** Hetzner CX43 (8 vCPU / 16 GB) + Cloudflare free
+- **Cost:** ~€12/month
+- **Deploy:** Push to master → CI tests → images publish to GHCR → CD deploys via SSH
+- **Secrets:** All production secrets stored in GitHub repository Secrets/Variables — no `.env` file on server
+- **Backups:** Daily to Cloudflare R2 (free 10 GB)
+
+See [docs/ScalingPlan.md](docs/ScalingPlan.md) for the full scaling roadmap (vertical scale, dedicated metal, multi-server, K3s).
 
 ## License
 

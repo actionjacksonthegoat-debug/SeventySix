@@ -4,6 +4,7 @@
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using SeventySix.Api.Configuration;
 using SeventySix.Api.Controllers;
 using SeventySix.Identity;
 using SeventySix.TestUtilities.Mocks;
@@ -55,13 +56,17 @@ public sealed class ConfigControllerTests
 		IAltchaService altchaService =
 			IdentityMockFactory.CreateAltchaService(isEnabled: true);
 
+		IOptions<SiteSettings> siteSettings =
+			Options.Create(new SiteSettings { Email = "contact@test.seventysix.local" });
+
 		ConfigController controller =
 			new(
 				mfaSettings,
 				totpSettings,
 				authSettings,
 				jwtSettings,
-				altchaService);
+				altchaService,
+				siteSettings);
 
 		// Act
 		ActionResult<FeatureFlagsResponse> result =
@@ -79,6 +84,7 @@ public sealed class ConfigControllerTests
 		flags.OAuthProviders.ShouldBeEmpty();
 		flags.AltchaEnabled.ShouldBeTrue();
 		flags.TokenRefreshBufferSeconds.ShouldBe(60);
+		flags.SiteEmail.ShouldBe("contact@test.seventysix.local");
 	}
 
 	/// <summary>
@@ -115,7 +121,8 @@ public sealed class ConfigControllerTests
 					OAuth = new OAuthSettings { Enabled = false, Providers = [] }
 				}),
 				jwtSettings,
-				IdentityMockFactory.CreateAltchaService());
+				IdentityMockFactory.CreateAltchaService(),
+				Options.Create(new SiteSettings { Email = "contact@test.seventysix.local" }));
 
 		// Act
 		ActionResult<FeatureFlagsResponse> result =
@@ -168,7 +175,8 @@ public sealed class ConfigControllerTests
 					ClockSkewMinutes = 1,
 					TokenRefreshBufferSeconds = 60
 				}),
-				IdentityMockFactory.CreateAltchaService());
+				IdentityMockFactory.CreateAltchaService(),
+				Options.Create(new SiteSettings { Email = "contact@test.seventysix.local" }));
 
 		// Act
 		ActionResult<FeatureFlagsResponse> result =
@@ -182,5 +190,51 @@ public sealed class ConfigControllerTests
 
 		flags.OAuthEnabled.ShouldBeTrue();
 		flags.OAuthProviders.ShouldBe(["GitHub", "Google"]);
+	}
+
+	/// <summary>
+	/// Tests that SiteEmail in the response exactly matches the value in SiteSettings.
+	/// Ensures the client receives the configured contact email, never a hardcoded value.
+	/// </summary>
+	[Fact]
+	public void GetFeatureFlags_ShouldReturn_ConfiguredSiteEmail()
+	{
+		// Arrange
+		const string expectedEmail = "contact@test.seventysix.local";
+
+		ConfigController controller =
+			new(
+				Options.Create(new MfaSettings { Enabled = true }),
+				Options.Create(new TotpSettings { Enabled = false }),
+				Options.Create(new AuthSettings
+				{
+					OAuth = new OAuthSettings { Enabled = false, Providers = [] }
+				}),
+				Options.Create(new JwtSettings
+				{
+					SecretKey = new string('x', 32),
+					Issuer = "test-issuer",
+					Audience = "test-audience",
+					AccessTokenExpirationMinutes = 15,
+					RefreshTokenExpirationDays = 1,
+					RefreshTokenRememberMeExpirationDays = 14,
+					AbsoluteSessionTimeoutDays = 30,
+					ClockSkewMinutes = 1,
+					TokenRefreshBufferSeconds = 60
+				}),
+				IdentityMockFactory.CreateAltchaService(),
+				Options.Create(new SiteSettings { Email = expectedEmail }));
+
+		// Act
+		ActionResult<FeatureFlagsResponse> result =
+			controller.GetFeatureFlags();
+
+		// Assert
+		OkObjectResult okResult =
+			result.Result.ShouldBeOfType<OkObjectResult>();
+		FeatureFlagsResponse flags =
+			okResult.Value.ShouldBeOfType<FeatureFlagsResponse>();
+
+		flags.SiteEmail.ShouldBe(expectedEmail);
 	}
 }

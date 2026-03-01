@@ -12,9 +12,16 @@ import { APP_ROUTES } from "@shared/constants";
 import { TotpSetupResponse } from "@shared/models";
 import { NotificationService } from "@shared/services";
 import { createMockNotificationService } from "@shared/testing";
+import * as QRCode from "qrcode";
 import { of, throwError } from "rxjs";
 import { vi } from "vitest";
 import { TotpSetupComponent } from "./totp-setup";
+
+vi.mock("qrcode", () => ({
+	toDataURL: vi
+		.fn()
+		.mockResolvedValue("data:image/png;base64,MOCKQR")
+}));
 
 interface MockTotpService
 {
@@ -246,6 +253,9 @@ describe("TotpSetupComponent",
 				expect(mockTotpService.confirmSetup)
 					.not
 					.toHaveBeenCalled();
+
+				expect(component["errorMessage"]())
+					.toContain("6-digit");
 			});
 
 		it("should navigate to backup codes setup",
@@ -282,5 +292,96 @@ describe("TotpSetupComponent",
 				expect(router.navigate)
 					.toHaveBeenCalledWith(
 						[APP_ROUTES.HOME]);
+			});
+
+		it("should fall back to manual entry when QR code generation fails",
+			async () =>
+			{
+				vi
+					.mocked(QRCode.toDataURL)
+					.mockRejectedValue(
+						new Error("Canvas error"));
+
+				fixture.detectChanges();
+				await Promise.resolve();
+				await Promise.resolve();
+
+				expect(component["showManualEntry"]())
+					.toBe(true);
+
+				vi
+					.mocked(QRCode.toDataURL)
+					.mockImplementation(
+						() =>
+							Promise.resolve("data:image/png;base64,MOCKQR"));
+			});
+
+		describe("onCopySecret",
+			() =>
+			{
+				it("should show success notification when copy succeeds",
+					() =>
+					{
+						fixture.detectChanges();
+						mockClipboard.copy.mockReturnValue(true);
+						component["secret"].set("JBSWY3DPEHPK3PXP");
+
+						component["onCopySecret"]();
+
+						expect(mockNotificationService.success)
+							.toHaveBeenCalledWith("Secret copied to clipboard");
+					});
+
+				it("should show error notification when copy fails",
+					() =>
+					{
+						fixture.detectChanges();
+						mockClipboard.copy.mockReturnValue(false);
+						component["secret"].set("JBSWY3DPEHPK3PXP");
+
+						component["onCopySecret"]();
+
+						expect(mockNotificationService.error)
+							.toHaveBeenCalledWith("Failed to copy to clipboard");
+					});
+
+				it("should set secretCopied signal to true on successful copy",
+					() =>
+					{
+						fixture.detectChanges();
+						mockClipboard.copy.mockReturnValue(true);
+
+						component["onCopySecret"]();
+
+						expect(component["secretCopied"]())
+							.toBe(true);
+					});
+			});
+
+		describe("isCodeValid",
+			() =>
+			{
+				it("should return false when verification form is empty",
+					() =>
+					{
+						fixture.detectChanges();
+
+						expect(
+							(component as unknown as { isCodeValid(): boolean; }).isCodeValid())
+							.toBe(false);
+					});
+
+				it("should return true when verification form has valid 6-digit code",
+					() =>
+					{
+						fixture.detectChanges();
+						component["onProceedToVerify"]();
+						component["verifyForm"].patchValue(
+							{ verificationCode: "654321" });
+
+						expect(
+							(component as unknown as { isCodeValid(): boolean; }).isCodeValid())
+							.toBe(true);
+					});
 			});
 	});
