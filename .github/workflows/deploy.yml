@@ -77,7 +77,12 @@ jobs:
                       docker compose -f docker-compose.production.yml pull api client
 
                       echo "=== Restarting containers ==="
-                      docker compose -f docker-compose.production.yml up -d --remove-orphans
+                      # Don't let compose failure skip diagnostics — capture exit code
+                      compose_exit=0
+                      docker compose -f docker-compose.production.yml up -d --remove-orphans 2>&1 || compose_exit=$?
+                      if [ "$compose_exit" -ne 0 ]; then
+                          echo "WARNING: docker compose up exited with code $compose_exit (will diagnose below)"
+                      fi
 
                       echo "=== Cleaning up old images ==="
                       docker image prune -f
