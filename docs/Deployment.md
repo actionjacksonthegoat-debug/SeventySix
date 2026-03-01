@@ -149,7 +149,23 @@ swapon /swapfile
 echo '/swapfile none swap sw 0 0' >> /etc/fstab
 ```
 
-### 3.6 Verify and Logout
+### 3.6 UFW Firewall
+
+The Hetzner cloud firewall (Section 2) only applies at the network edge. UFW provides a second, independent layer of defense directly on the OS — if the cloud firewall is misconfigured or bypassed, UFW blocks direct access to internal services.
+
+```bash
+ufw default deny incoming
+ufw default allow outgoing
+ufw allow 22/tcp comment 'SSH'
+ufw allow 80/tcp comment 'HTTP (Caddy redirect)'
+ufw allow 443/tcp comment 'HTTPS (Caddy)'
+echo "y" | ufw enable
+ufw status verbose
+```
+
+> **Important:** UFW does **not** intercept Docker's `iptables` rules. All Docker container ports in `docker-compose.production.yml` **must** be bound to `127.0.0.1` (e.g., `127.0.0.1:8080->8080/tcp`) — not `0.0.0.0`. A port published on `0.0.0.0` is accessible from the internet regardless of UFW.
+
+### 3.7 Verify and Logout
 
 ```bash
 # Verify Docker works
@@ -157,6 +173,9 @@ docker run --rm hello-world
 
 # Verify log rotation
 cat /etc/docker/daemon.json
+
+# Verify UFW is active
+ufw status verbose
 
 # Logout from root
 exit
@@ -205,6 +224,8 @@ cat > /etc/caddy/Caddyfile << 'CEOF'
 # Angular SPA — served from Docker container port 8080
 # API calls (/api/*) are routed to the API container so the Angular client
 # can use relative URLs (apiUrl: '/api/v1') without cross-origin issues.
+# Cache and security headers are handled by nginx inside the client container,
+# so no Caddy-level header overrides are needed here.
 seventysixsandbox.com {
     handle /api/* {
         reverse_proxy localhost:5085
@@ -212,10 +233,6 @@ seventysixsandbox.com {
     handle {
         reverse_proxy localhost:8080
     }
-    @static {
-        path *.js *.css *.woff2 *.woff *.ttf *.svg *.png *.ico *.webp
-    }
-    header @static Cache-Control "public, max-age=31536000, immutable"
 }
 
 # www redirect to apex
@@ -224,14 +241,10 @@ www.seventysixsandbox.com {
 }
 
 # API — served from Docker container port 5085
+# Security headers are handled by the API middleware (AttributeBasedSecurityHeadersMiddleware),
+# so no Caddy-level header overrides are needed here.
 api.seventysixsandbox.com {
     reverse_proxy localhost:5085
-    header {
-        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
-        X-Content-Type-Options nosniff
-        X-Frame-Options DENY
-        Referrer-Policy strict-origin-when-cross-origin
-    }
 }
 
 # Grafana — IP-restricted to admin only (proxy OFF in Cloudflare)
@@ -406,7 +419,7 @@ rm /tmp/dataprotection.pfx
 > | `DB_PASSWORD` | Dev PostgreSQL password is in user secrets / well-known |
 > | `JWT_SECRET_KEY` | Dev placeholder value is in `appsettings.json`; regenerate: `openssl rand -base64 64` |
 > | `VALKEY_PASSWORD` | Dev password is in user secrets; regenerate: `openssl rand -base64 32` |
-> | `ALTCHA_HMAC_KEY` | Dev key is in user secrets; regenerate: `openssl rand -base64 32` |
+> | `ALTCHA_HMAC_KEY` | Dev key is in user secrets. **MUST be exactly `openssl rand -base64 32` (32 bytes / 256 bits minimum).** A shorter or malformed key throws `InvalidKeyException` during DI container startup — every endpoint returns 500 until the secret is rotated and the service re-deployed. See A.2. |
 > | `DATA_PROTECTION_CERTIFICATE_PASSWORD` | Must match the newly generated production cert (not the dev cert) |
 > | `ADMIN_PASSWORD` | One-time seed password — generate random: `openssl rand -base64 24` |
 > | `GRAFANA_ADMIN_PASSWORD` | Dev password is in user secrets; regenerate: `openssl rand -base64 20` |
@@ -496,7 +509,11 @@ gh secret set EMAIL_FROM_ADDRESS --body "<YOUR_FROM_ADDRESS>" --repo $REPO
 gh secret set SITE_EMAIL --body "<YOUR_SITE_CONTACT_EMAIL>" --repo $REPO
 
 # ── Security ──
-gh secret set ALTCHA_HMAC_KEY --body "<GENERATED_ALTCHA_KEY>" --repo $REPO
+# CRITICAL: Must decode to ≥16 bytes (≥24 base64 chars). Use exactly 32 bytes to match SHA-256.
+# A short or malformed key causes InvalidKeyException at startup → every endpoint returns 500.
+ALTCHA_HMAC_KEY=$(openssl rand -base64 32)
+gh secret set ALTCHA_HMAC_KEY --body "$ALTCHA_HMAC_KEY" --repo $REPO
+unset ALTCHA_HMAC_KEY  # don't leave it in shell history
 gh secret set DATA_PROTECTION_CERTIFICATE_PASSWORD --body "<GENERATED_CERT_PASSWORD>" --repo $REPO
 
 # ── Admin Seeder (one-time bootstrap) ──
@@ -1000,6 +1017,9 @@ Hetzner EU (Germany) adds ~180ms RTT for US West Coast users on every uncached A
 **GHCR login on the server needs a PAT with `read:packages`.**
 The `docker login ghcr.io` on the production server requires a GitHub Personal Access Token. This PAT is separate from `PROD_SSH_KEY` — it only needs the `read:packages` scope. The token is stored in `/home/deploy/.docker/config.json` and persists across reboots.
 
+**`ALTCHA_HMAC_KEY` too short or malformed → entire API returns 500 on startup.**
+`Ixnas.AltchaNet` validates the HMAC key length during DI container construction at startup. If the decoded key is fewer than 16 bytes (or the value is not valid base64), it throws `Ixnas.AltchaNet.Exceptions.InvalidKeyException` before the app even starts handling requests. The result: **every single endpoint returns 500**, including `/api/v1/config/features`, which the Angular client calls immediately on load. The browser just shows 500s — the root cause only appears in `docker logs seventysix-api-prod`. To fix: generate a new key with `openssl rand -base64 32`, update the GitHub Secret, and re-deploy.
+
 **OutputCache + Valkey cold start can cause 500s.**
 If the first API request arrives before Valkey is healthy, `OutputCache` middleware throws 500 instead of falling back. Ensure the `api` service has `depends_on: valkey: condition: service_healthy` (not just `service_started`).
 
@@ -1023,12 +1043,27 @@ These are manual dashboard-only settings discovered during deployment — not au
 On a fresh deploy, you may see these errors in the browser console. They form a cascade — fix the root cause and downstream errors resolve:
 
 ```
-GET /api/v1/config/features → 500              ← Root cause (investigate API logs)
-  └─► TypeError: Invalid URL (client init)      ← oauth-flow.service.ts bug
+GET /api/v1/config/features → 500                ← Root cause: check docker logs seventysix-api-prod
+                                                     Most common cause: ALTCHA_HMAC_KEY too short/malformed
+                                                     (InvalidKeyException during DI startup — see A.2)
+                                                     Fix: rotate GitHub Secret, re-deploy
+  └─► TypeError: Invalid URL (client init)        ← oauth-flow.service.ts cascades from the 500 above
         └─► POST /api/v1/logs/client/batch → 400  ← error batch exceeds validation limits
 [Report Only] Permissions-Policy: picture-in-picture  ← Cloudflare beacon (expected, harmless)
 ```
 
-### A.5 File Security — Never Commit Plan Files
+### A.5 HSTS Preload — Hardcoding HTTPS in Browsers
+
+The `Strict-Transport-Security` header (set by nginx and the API middleware) instructs browsers that have previously visited your site to always use HTTPS. The `preload` directive goes further: it allows your domain to be embedded in browsers' built-in HSTS lists, so HTTPS is enforced even on the **very first visit** — before any header has ever been seen.
+
+This is already configured (`max-age=31536000; includeSubDomains; preload`) but submission to the preload list is a one-time manual step:
+
+1. Verify your domain is live with the full HSTS header: `curl -sI https://seventysixsandbox.com | grep -i strict`
+2. Submit at **[hstspreload.org](https://hstspreload.org)** — enter your domain and click "Check eligibility and submit".
+3. Propagation takes weeks to months, but once listed, removal is difficult. Only submit when the domain is permanent.
+
+> **Warning:** Including `includeSubDomains` means **all** subdomains (`api.`, `grafana.`, `jaeger.`, etc.) must also serve valid HTTPS. All current subdomains do — but any new subdomain must have TLS configured before it is reachable.
+
+### A.6 File Security — Never Commit Plan Files
 
 Implementation plan files (`implementation-*.md`, `deploy-*.md`, `my-next-up.md`) may contain real production secrets (OAuth credentials, SMTP passwords, API keys, PATs). **Always add them to `.gitignore` or delete them before committing.** If secrets were ever committed, rotate them immediately — Git history retains the values forever.
