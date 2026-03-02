@@ -266,8 +266,12 @@ test.describe("Log Management Page",
 			() =>
 			{
 				/**
-		 * Opens the log detail dialog by clicking the first data row
-		 * and waits for the Angular component to fully render.
+		 * Opens the log detail dialog by clicking the first data row that has
+		 * a non-empty Message column, and waits for the Angular component to
+		 * fully render. Using the first row blindly is unreliable because some
+		 * log entries (e.g. framework events) have an empty `message` field.
+		 * Angular Material sets `mat-column-{key}` on every table cell, so
+		 * `.mat-column-message` targets the Message column specifically.
 		 */
 				async function openLogDetailDialog(adminPage: Page): Promise<Locator>
 				{
@@ -277,9 +281,19 @@ test.describe("Log Management Page",
 						.toBeVisible(
 							{ timeout: TIMEOUTS.api });
 
-					await dataRows
-						.first()
-						.click();
+					// Prefer rows whose Message cell has visible text so the detail
+					// dialog's message-content section is guaranteed non-empty.
+					// Falls back to the first row when the table has no text-bearing rows.
+					const rowWithMessage: Locator =
+						dataRows.filter(
+							{ has: adminPage.locator(".mat-column-message",
+								{ hasText: /\S/ }) });
+					const targetRow: Locator =
+						(await rowWithMessage.count()) > 0
+							? rowWithMessage.first()
+							: dataRows.first();
+
+					await targetRow.click();
 
 					const dialog: Locator =
 						adminPage.locator(SELECTORS.dialog.container);
