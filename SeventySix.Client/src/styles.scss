@@ -22,6 +22,78 @@
 @include theme.apply-base-theme;
 
 // =============================================================================
+// SELF-HOSTED FONTS
+// =============================================================================
+// Replaces Google Fonts CDN dependencies. Both font CSS files previously
+// returned HTTP 504 from the Angular Service Worker, blocking first paint.
+// Self-hosting ensures fonts load from 'self' origin, are cached by the SW,
+// and never cause render-blocking failures.
+// =============================================================================
+
+// --- Roboto (body text, 3 weights: 300 = light, 400 = regular, 500 = medium) ---
+
+@font-face {
+	font-family: Roboto;
+	font-style: normal;
+	font-weight: 300;
+	font-display: swap;
+	src:
+		url("/fonts/roboto/roboto-latin-300-normal.woff2") format("woff2"),
+		url("/fonts/roboto/roboto-latin-300-normal.woff") format("woff");
+}
+
+@font-face {
+	font-family: Roboto;
+	font-style: normal;
+	font-weight: 400;
+	font-display: swap;
+	src:
+		url("/fonts/roboto/roboto-latin-400-normal.woff2") format("woff2"),
+		url("/fonts/roboto/roboto-latin-400-normal.woff") format("woff");
+}
+
+@font-face {
+	font-family: Roboto;
+	font-style: normal;
+	font-weight: 500;
+	font-display: swap;
+	src:
+		url("/fonts/roboto/roboto-latin-500-normal.woff2") format("woff2"),
+		url("/fonts/roboto/roboto-latin-500-normal.woff") format("woff");
+}
+
+// --- Material Icons (icon font) ---
+// font-display: block — hides icons briefly then renders correctly.
+// 'swap' would flash garbled fallback glyphs (UI chrome, not content text).
+
+@font-face {
+	font-family: "Material Icons";
+	font-style: normal;
+	font-weight: 400;
+	font-display: block;
+	src:
+		url("/fonts/material-icons/material-icons.woff2") format("woff2"),
+		url("/fonts/material-icons/material-icons.woff") format("woff");
+}
+
+.material-icons {
+	font-family: "Material Icons";
+	font-weight: normal;
+	font-style: normal;
+	font-size: 24px;
+	line-height: 1;
+	letter-spacing: normal;
+	text-transform: none;
+	display: inline-block;
+	white-space: nowrap;
+	word-wrap: normal;
+	direction: ltr;
+	-webkit-font-feature-settings: "liga";
+	font-feature-settings: "liga";
+	-webkit-font-smoothing: antialiased;
+}
+
+// =============================================================================
 // GLOBAL RESET & BASE STYLES
 // =============================================================================
 
