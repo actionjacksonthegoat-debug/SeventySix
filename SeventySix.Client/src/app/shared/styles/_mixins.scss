@@ -1061,8 +1061,7 @@
 		transparent 40%
 	),
 		var(--landing-section-bg);
-	background-size: 200% 200%;
-	animation: gradient-shift vars.$animation-duration-gradient ease infinite;
+	will-change: transform; // Promotes element to GPU layer — isolates child paints
 }
 
 /// Hidden state for scroll-reveal animation (before intersection).
