@@ -29,6 +29,9 @@ namespace SeventySix.Domains.Tests.ElectronicNotifications.Emails;
 /// </remarks>
 public sealed class EmailServiceTests
 {
+	private static readonly Uri BrevoBaseAddress =
+		new("https://api.brevo.com");
+
 	private readonly ILogger<EmailService> Logger =
 		Substitute.For<ILogger<EmailService>>();
 
@@ -64,20 +67,14 @@ public sealed class EmailServiceTests
 	}
 
 	/// <summary>
-	/// Creates a mock <see cref="IHttpClientFactory"/> returning an HttpClient
-	/// backed by the given <see cref="MockHttpMessageHandler"/>.
+	/// Creates a mock <see cref="IHttpClientFactory"/> returning the given
+	/// <see cref="HttpClient"/>. The caller owns disposal of the HttpClient.
 	/// </summary>
 	private static IHttpClientFactory CreateMockHttpClientFactory(
-		HttpMessageHandler handler)
+		HttpClient httpClient)
 	{
 		IHttpClientFactory factory =
 			Substitute.For<IHttpClientFactory>();
-
-		HttpClient httpClient =
-			new(handler)
-			{
-				BaseAddress = new Uri("https://api.brevo.com"),
-			};
 
 		factory
 			.CreateClient(EmailService.BrevoHttpClientName)
@@ -88,17 +85,27 @@ public sealed class EmailServiceTests
 
 	/// <summary>
 	/// Creates a <see cref="MockHttpMessageHandler"/> that returns a 201 Created
-	/// response with a Brevo-style message ID.
+	/// response with a Brevo-style message ID. Both returned objects must be
+	/// disposed by the caller.
 	/// </summary>
-	private static MockHttpMessageHandler CreateSuccessHandler() =>
-		new((request, cancellationToken) =>
-			Task.FromResult(new HttpResponseMessage(HttpStatusCode.Created)
+	private static (MockHttpMessageHandler Handler, HttpResponseMessage Response)
+		CreateSuccessHandler()
+	{
+		HttpResponseMessage response =
+			new(HttpStatusCode.Created)
 			{
 				Content = new StringContent(
-					"""{"messageId": "test-123"}""",
+					"""{ "messageId": "test-123"}""",
 					System.Text.Encoding.UTF8,
 					"application/json"),
-			}));
+			};
+
+		MockHttpMessageHandler handler =
+			new((request, cancellationToken) =>
+				Task.FromResult(response));
+
+		return (handler, response);
+	}
 
 	#region SendWelcomeEmailAsync Tests
 
@@ -111,9 +118,14 @@ public sealed class EmailServiceTests
 		// Arrange
 		IOptions<EmailSettings> options =
 			CreateOptions(enabled: false);
-		using MockHttpMessageHandler handler = CreateSuccessHandler();
+		(MockHttpMessageHandler handlerValue, HttpResponseMessage responseValue) =
+			CreateSuccessHandler();
+		using MockHttpMessageHandler handler = handlerValue;
+		using HttpResponseMessage successResponse = responseValue;
+		using HttpClient httpClient =
+			new(handler) { BaseAddress = BrevoBaseAddress };
 		IHttpClientFactory httpClientFactory =
-			CreateMockHttpClientFactory(handler);
+			CreateMockHttpClientFactory(httpClient);
 		EmailService service =
 			new(
 				options,
@@ -140,9 +152,14 @@ public sealed class EmailServiceTests
 	{
 		// Arrange
 		IOptions<EmailSettings> options = CreateOptions();
-		using MockHttpMessageHandler handler = CreateSuccessHandler();
+		(MockHttpMessageHandler handlerValue, HttpResponseMessage responseValue) =
+			CreateSuccessHandler();
+		using MockHttpMessageHandler handler = handlerValue;
+		using HttpResponseMessage successResponse = responseValue;
+		using HttpClient httpClient =
+			new(handler) { BaseAddress = BrevoBaseAddress };
 		IHttpClientFactory httpClientFactory =
-			CreateMockHttpClientFactory(handler);
+			CreateMockHttpClientFactory(httpClient);
 		EmailService service =
 			new(
 				options,
@@ -167,9 +184,14 @@ public sealed class EmailServiceTests
 	{
 		// Arrange
 		IOptions<EmailSettings> options = CreateOptions();
-		using MockHttpMessageHandler handler = CreateSuccessHandler();
+		(MockHttpMessageHandler handlerValue, HttpResponseMessage responseValue) =
+			CreateSuccessHandler();
+		using MockHttpMessageHandler handler = handlerValue;
+		using HttpResponseMessage successResponse = responseValue;
+		using HttpClient httpClient =
+			new(handler) { BaseAddress = BrevoBaseAddress };
 		IHttpClientFactory httpClientFactory =
-			CreateMockHttpClientFactory(handler);
+			CreateMockHttpClientFactory(httpClient);
 		EmailService service =
 			new(
 				options,
@@ -194,9 +216,14 @@ public sealed class EmailServiceTests
 	{
 		// Arrange
 		IOptions<EmailSettings> options = CreateOptions();
-		using MockHttpMessageHandler handler = CreateSuccessHandler();
+		(MockHttpMessageHandler handlerValue, HttpResponseMessage responseValue) =
+			CreateSuccessHandler();
+		using MockHttpMessageHandler handler = handlerValue;
+		using HttpResponseMessage successResponse = responseValue;
+		using HttpClient httpClient =
+			new(handler) { BaseAddress = BrevoBaseAddress };
 		IHttpClientFactory httpClientFactory =
-			CreateMockHttpClientFactory(handler);
+			CreateMockHttpClientFactory(httpClient);
 		EmailService service =
 			new(
 				options,
@@ -226,9 +253,14 @@ public sealed class EmailServiceTests
 		// Arrange
 		IOptions<EmailSettings> options =
 			CreateOptions(enabled: false);
-		using MockHttpMessageHandler handler = CreateSuccessHandler();
+		(MockHttpMessageHandler handlerValue, HttpResponseMessage responseValue) =
+			CreateSuccessHandler();
+		using MockHttpMessageHandler handler = handlerValue;
+		using HttpResponseMessage successResponse = responseValue;
+		using HttpClient httpClient =
+			new(handler) { BaseAddress = BrevoBaseAddress };
 		IHttpClientFactory httpClientFactory =
-			CreateMockHttpClientFactory(handler);
+			CreateMockHttpClientFactory(httpClient);
 		EmailService service =
 			new(
 				options,
@@ -255,9 +287,14 @@ public sealed class EmailServiceTests
 	{
 		// Arrange
 		IOptions<EmailSettings> options = CreateOptions();
-		using MockHttpMessageHandler handler = CreateSuccessHandler();
+		(MockHttpMessageHandler handlerValue, HttpResponseMessage responseValue) =
+			CreateSuccessHandler();
+		using MockHttpMessageHandler handler = handlerValue;
+		using HttpResponseMessage successResponse = responseValue;
+		using HttpClient httpClient =
+			new(handler) { BaseAddress = BrevoBaseAddress };
 		IHttpClientFactory httpClientFactory =
-			CreateMockHttpClientFactory(handler);
+			CreateMockHttpClientFactory(httpClient);
 		EmailService service =
 			new(
 				options,
@@ -282,9 +319,14 @@ public sealed class EmailServiceTests
 	{
 		// Arrange
 		IOptions<EmailSettings> options = CreateOptions();
-		using MockHttpMessageHandler handler = CreateSuccessHandler();
+		(MockHttpMessageHandler handlerValue, HttpResponseMessage responseValue) =
+			CreateSuccessHandler();
+		using MockHttpMessageHandler handler = handlerValue;
+		using HttpResponseMessage successResponse = responseValue;
+		using HttpClient httpClient =
+			new(handler) { BaseAddress = BrevoBaseAddress };
 		IHttpClientFactory httpClientFactory =
-			CreateMockHttpClientFactory(handler);
+			CreateMockHttpClientFactory(httpClient);
 		EmailService service =
 			new(
 				options,
@@ -309,9 +351,14 @@ public sealed class EmailServiceTests
 	{
 		// Arrange
 		IOptions<EmailSettings> options = CreateOptions();
-		using MockHttpMessageHandler handler = CreateSuccessHandler();
+		(MockHttpMessageHandler handlerValue, HttpResponseMessage responseValue) =
+			CreateSuccessHandler();
+		using MockHttpMessageHandler handler = handlerValue;
+		using HttpResponseMessage successResponse = responseValue;
+		using HttpClient httpClient =
+			new(handler) { BaseAddress = BrevoBaseAddress };
 		IHttpClientFactory httpClientFactory =
-			CreateMockHttpClientFactory(handler);
+			CreateMockHttpClientFactory(httpClient);
 		EmailService service =
 			new(
 				options,
@@ -363,9 +410,14 @@ public sealed class EmailServiceTests
 			.GetTimeUntilReset()
 			.Returns(TimeSpan.FromHours(12));
 
-		using MockHttpMessageHandler handler = CreateSuccessHandler();
+		(MockHttpMessageHandler handlerValue, HttpResponseMessage responseValue) =
+			CreateSuccessHandler();
+		using MockHttpMessageHandler handler = handlerValue;
+		using HttpResponseMessage successResponse = responseValue;
+		using HttpClient httpClient =
+			new(handler) { BaseAddress = BrevoBaseAddress };
 		IHttpClientFactory httpClientFactory =
-			CreateMockHttpClientFactory(handler);
+			CreateMockHttpClientFactory(httpClient);
 		EmailService service =
 			new(
 				options,
@@ -416,9 +468,14 @@ public sealed class EmailServiceTests
 			.GetTimeUntilReset()
 			.Returns(TimeSpan.FromHours(6));
 
-		using MockHttpMessageHandler handler = CreateSuccessHandler();
+		(MockHttpMessageHandler handlerValue, HttpResponseMessage responseValue) =
+			CreateSuccessHandler();
+		using MockHttpMessageHandler handler = handlerValue;
+		using HttpResponseMessage successResponse = responseValue;
+		using HttpClient httpClient =
+			new(handler) { BaseAddress = BrevoBaseAddress };
 		IHttpClientFactory httpClientFactory =
-			CreateMockHttpClientFactory(handler);
+			CreateMockHttpClientFactory(httpClient);
 		EmailService service =
 			new(
 				options,
@@ -468,8 +525,10 @@ public sealed class EmailServiceTests
 						"Connection refused",
 						new SocketException()));
 
+		using HttpClient httpClient =
+			new(handler) { BaseAddress = BrevoBaseAddress };
 		IHttpClientFactory httpClientFactory =
-			CreateMockHttpClientFactory(handler);
+			CreateMockHttpClientFactory(httpClient);
 
 		EmailService service =
 			new(
@@ -515,19 +574,24 @@ public sealed class EmailServiceTests
 				Arg.Any<CancellationToken>())
 			.Returns(true);
 
+		using HttpResponseMessage badResponse =
+			new(HttpStatusCode.BadRequest)
+			{
+				Content = new StringContent(
+					"""{ "code":"invalid","message":"bad"}""",
+					System.Text.Encoding.UTF8,
+					"application/json"),
+			};
+
 		using MockHttpMessageHandler handler =
 			new(
 				(request, cancellationToken) =>
-					Task.FromResult(new HttpResponseMessage(HttpStatusCode.BadRequest)
-					{
-						Content = new StringContent(
-							"""{"code":"invalid","message":"bad"}""",
-							System.Text.Encoding.UTF8,
-							"application/json"),
-					}));
+					Task.FromResult(badResponse));
 
+		using HttpClient httpClient =
+			new(handler) { BaseAddress = BrevoBaseAddress };
 		IHttpClientFactory httpClientFactory =
-			CreateMockHttpClientFactory(handler);
+			CreateMockHttpClientFactory(httpClient);
 
 		EmailService service =
 			new(
@@ -573,20 +637,21 @@ public sealed class EmailServiceTests
 				Arg.Any<CancellationToken>())
 			.Returns(true);
 
+		using HttpResponseMessage tooManyResponse =
+			new(HttpStatusCode.TooManyRequests);
+		tooManyResponse.Headers.TryAddWithoutValidation(
+			"x-sib-ratelimit-reset",
+			"120");
+
 		using MockHttpMessageHandler handler =
 			new(
 				(request, cancellationToken) =>
-				{
-					HttpResponseMessage response =
-						new(HttpStatusCode.TooManyRequests);
-					response.Headers.TryAddWithoutValidation(
-						"x-sib-ratelimit-reset",
-						"120");
-					return Task.FromResult(response);
-				});
+					Task.FromResult(tooManyResponse));
 
+		using HttpClient httpClient =
+			new(handler) { BaseAddress = BrevoBaseAddress };
 		IHttpClientFactory httpClientFactory =
-			CreateMockHttpClientFactory(handler);
+			CreateMockHttpClientFactory(httpClient);
 
 		EmailService service =
 			new(
@@ -632,9 +697,14 @@ public sealed class EmailServiceTests
 				Arg.Any<CancellationToken>())
 			.Returns(true);
 
-		using MockHttpMessageHandler handler = CreateSuccessHandler();
+		(MockHttpMessageHandler handlerValue, HttpResponseMessage responseValue) =
+			CreateSuccessHandler();
+		using MockHttpMessageHandler handler = handlerValue;
+		using HttpResponseMessage successResponse = responseValue;
+		using HttpClient httpClient =
+			new(handler) { BaseAddress = BrevoBaseAddress };
 		IHttpClientFactory httpClientFactory =
-			CreateMockHttpClientFactory(handler);
+			CreateMockHttpClientFactory(httpClient);
 
 		EmailService service =
 			new(

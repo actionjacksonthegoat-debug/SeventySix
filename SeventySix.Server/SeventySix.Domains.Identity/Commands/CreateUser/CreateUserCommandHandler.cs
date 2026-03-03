@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SeventySix.Shared.Contracts.Emails;
 using SeventySix.Shared.Extensions;
+using SeventySix.Shared.Utilities;
 using Wolverine;
 
 namespace SeventySix.Identity;
@@ -142,7 +143,7 @@ public static class CreateUserCommandHandler
 			logger.LogWarning(
 				exception,
 				"Failed to enqueue welcome email for user {Email} (ID: {UserId}). User was created successfully.",
-				createdUser.Email,
+				LogSanitizer.MaskEmail(createdUser.Email),
 				createdUser.Id);
 		}
 
