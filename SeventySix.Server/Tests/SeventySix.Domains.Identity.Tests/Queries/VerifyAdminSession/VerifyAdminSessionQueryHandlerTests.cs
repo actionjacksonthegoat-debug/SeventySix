@@ -89,7 +89,7 @@ public sealed class VerifyAdminSessionQueryHandlerTests
 			.ValidateRefreshTokenAsync(
 				"invalid-token",
 				Arg.Any<CancellationToken>())
-			.Returns((long?)null);
+			.Returns(default(long?));
 
 		VerifyAdminSessionQuery query =
 			new("invalid-token");
@@ -228,7 +228,7 @@ public sealed class VerifyAdminSessionQueryHandlerTests
 		userManager
 			.FindByIdAsync(AdminUserId.ToString(
 				System.Globalization.CultureInfo.InvariantCulture))
-			.Returns((ApplicationUser?)null);
+			.Returns(default(ApplicationUser));
 
 		VerifyAdminSessionQuery query =
 			new(ValidRefreshToken);
