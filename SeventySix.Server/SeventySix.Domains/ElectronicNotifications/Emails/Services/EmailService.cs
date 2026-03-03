@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using System.Net.Sockets;
 using MailKit.Net.Smtp;
 using MailKit.Security;
 using Microsoft.Extensions.Logging;
@@ -300,9 +301,24 @@ public sealed class EmailService(
 			await SendViaSMtpAsync(message, cancellationToken);
 		}
 		catch (Exception exception)
+			when (exception is SocketException
+				or TimeoutException)
 		{
-			// SMTP failed — release the reserved slot (best-effort)
-			await TryReleaseRateLimitSlotAsync(cancellationToken);
+			// SMTP connection failed — likely firewall block; release slot then rethrow
+			await TryReleaseRateLimitSlotAsync();
+
+			logger.LogError(
+				exception,
+				"SMTP connection failed to {SmtpHost}:{SmtpPort} — possible firewall block. Verify outbound TCP port {SmtpPort} is allowed",
+				settings.Value.SmtpHost,
+				settings.Value.SmtpPort,
+				settings.Value.SmtpPort);
+			throw;
+		}
+		catch (Exception exception)
+		{
+			// SMTP failed — release the reserved slot (best-effort, cancellation-safe)
+			await TryReleaseRateLimitSlotAsync();
 
 			logger.LogError(
 				exception,
@@ -356,24 +372,26 @@ public sealed class EmailService(
 	/// <summary>
 	/// Best-effort release of a previously reserved rate limit slot.
 	/// If this fails, the count stays 1 too high (conservative/safe).
+	/// Uses CancellationToken.None so cleanup always completes even if the
+	/// original request was cancelled.
 	/// </summary>
-	/// <param name="cancellationToken">
-	/// Cancellation token.
-	/// </param>
-	private async Task TryReleaseRateLimitSlotAsync(
-		CancellationToken cancellationToken)
+	private async Task TryReleaseRateLimitSlotAsync()
 	{
 		try
 		{
+			// Use CancellationToken.None — cleanup must complete regardless of
+			// whether the caller's token has been cancelled.
 			await rateLimitingService.TryDecrementRequestCountAsync(
 				BREVO_API_NAME,
-				cancellationToken);
+				CancellationToken.None);
 		}
-		catch (InvalidOperationException decrementException)
+		catch (Exception releaseException)
+			when (releaseException is InvalidOperationException
+				or OperationCanceledException)
 		{
 			// Log but don't throw — the email wasn't sent, count is 1 too high, which is safe
 			logger.LogWarning(
-				decrementException,
+				releaseException,
 				"Failed to release rate limit slot for {ApiName}. Count may be 1 too high (safe/conservative).",
 				BREVO_API_NAME);
 		}

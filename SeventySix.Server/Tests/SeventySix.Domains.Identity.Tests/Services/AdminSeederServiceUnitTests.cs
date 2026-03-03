@@ -4,6 +4,7 @@
 
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NSubstitute;
@@ -39,6 +40,9 @@ public sealed class AdminSeederServiceUnitTests
 			Options.Create(settings);
 		TimeProvider timeProvider =
 			Substitute.For<TimeProvider>();
+		IHostEnvironment hostEnvironment =
+			Substitute.For<IHostEnvironment>();
+		hostEnvironment.EnvironmentName.Returns("Production");
 		ILogger<AdminSeederService> logger =
 			Substitute.For<
 			ILogger<AdminSeederService>
@@ -76,6 +80,7 @@ public sealed class AdminSeederServiceUnitTests
 			new(
 			scopeFactory,
 			options,
+			hostEnvironment,
 			timeProvider,
 			logger);
 
@@ -88,7 +93,7 @@ public sealed class AdminSeederServiceUnitTests
 			.CreateAsync(
 				Arg.Is<ApplicationUser>(
 					adminUser =>
-						!adminUser.RequiresPasswordChange
+						adminUser.RequiresPasswordChange
 							&& adminUser.LockoutEnabled
 							&& adminUser.EmailConfirmed),
 				settings.InitialPassword!);
@@ -119,6 +124,9 @@ public sealed class AdminSeederServiceUnitTests
 			Options.Create(settings);
 		TimeProvider timeProvider =
 			Substitute.For<TimeProvider>();
+		IHostEnvironment hostEnvironment =
+			Substitute.For<IHostEnvironment>();
+		hostEnvironment.EnvironmentName.Returns("Production");
 		ILogger<AdminSeederService> logger =
 			Substitute.For<
 			ILogger<AdminSeederService>
@@ -146,6 +154,7 @@ public sealed class AdminSeederServiceUnitTests
 			new(
 			scopeFactory,
 			options,
+			hostEnvironment,
 			timeProvider,
 			logger);
 
@@ -157,6 +166,83 @@ public sealed class AdminSeederServiceUnitTests
 		await userManager
 			.DidNotReceive()
 			.UpdateAsync(Arg.Any<ApplicationUser>());
+	}
+
+	[Fact]
+	/// <summary>
+	/// In E2E environment, admin should be created without RequiresPasswordChange for test automation.
+	/// </summary>
+	public async Task SeedAdminUserAsync_InE2EEnvironment_CreatesAdminWithoutPasswordChangeRequirementAsync()
+	{
+		// Arrange
+		(
+			IServiceScopeFactory? scopeFactory,
+			IServiceProvider? serviceProvider,
+			UserManager<ApplicationUser>? userManager
+		) = CreateScopeWithManagers();
+
+		using RoleManager<ApplicationRole> roleManager = CreateRoleManager();
+
+		AdminSeederSettings settings = CreateDefaultSettings();
+		IOptions<AdminSeederSettings> options =
+			Options.Create(settings);
+		TimeProvider timeProvider =
+			Substitute.For<TimeProvider>();
+		IHostEnvironment hostEnvironment =
+			Substitute.For<IHostEnvironment>();
+		hostEnvironment.EnvironmentName.Returns("E2E");
+		ILogger<AdminSeederService> logger =
+			Substitute.For<ILogger<AdminSeederService>>();
+
+		serviceProvider
+			.GetService(typeof(UserManager<ApplicationUser>))
+			.Returns(userManager);
+		serviceProvider
+			.GetService(typeof(RoleManager<ApplicationRole>))
+			.Returns(roleManager);
+
+		userManager
+			.FindByNameAsync(settings.Username)
+			.Returns(default(ApplicationUser?));
+		userManager
+			.GetUsersInRoleAsync(RoleConstants.Admin)
+			.Returns(new List<ApplicationUser>());
+		roleManager
+			.FindByNameAsync(RoleConstants.Admin)
+			.Returns(new ApplicationRole { Name = RoleConstants.Admin });
+
+		userManager
+			.CreateAsync(
+				Arg.Any<ApplicationUser>(),
+				Arg.Any<string>())
+			.Returns(IdentityResult.Success);
+		userManager
+			.AddToRoleAsync(
+				Arg.Any<ApplicationUser>(),
+				RoleConstants.Admin)
+			.Returns(IdentityResult.Success);
+
+		AdminSeederService service =
+			new(
+			scopeFactory,
+			options,
+			hostEnvironment,
+			timeProvider,
+			logger);
+
+		// Act
+		await service.SeedAdminUserAsync(CancellationToken.None);
+
+		// Assert — E2E environment should NOT require password change
+		await userManager
+			.Received(1)
+			.CreateAsync(
+				Arg.Is<ApplicationUser>(
+					adminUser =>
+						!adminUser.RequiresPasswordChange
+							&& adminUser.LockoutEnabled
+							&& adminUser.EmailConfirmed),
+				settings.InitialPassword!);
 	}
 
 	/// <summary>
@@ -234,6 +320,9 @@ public sealed class AdminSeederServiceUnitTests
 			Options.Create(settings);
 		TimeProvider timeProvider =
 			Substitute.For<TimeProvider>();
+		IHostEnvironment hostEnvironment =
+			Substitute.For<IHostEnvironment>();
+		hostEnvironment.EnvironmentName.Returns("Production");
 		ILogger<AdminSeederService> logger =
 			Substitute.For<ILogger<AdminSeederService>>();
 
@@ -241,6 +330,7 @@ public sealed class AdminSeederServiceUnitTests
 			new(
 				scopeFactory,
 				options,
+				hostEnvironment,
 				timeProvider,
 				logger);
 
