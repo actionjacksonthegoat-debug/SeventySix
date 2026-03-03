@@ -14,7 +14,7 @@
  *   lighthouse-reports/report.json  (machine-readable, for CI)
  */
 
-import { execSync, spawn } from "child_process";
+import { execSync, execFileSync, spawn } from "child_process";
 import { existsSync, mkdirSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
@@ -110,16 +110,17 @@ console.log("✅  Server ready.");
 console.log(`\n🔦  Running Lighthouse against ${url}…`);
 const reportBase = join(reportsDir, "report");
 try {
-  execSync(
+  execFileSync(
+    "npx",
     [
-      "npx lighthouse",
+      "lighthouse",
       url,
       "--output=html,json",
       `--output-path=${reportBase}`,
-      '--chrome-flags="--headless --no-sandbox --disable-dev-shm-usage"',
+      "--chrome-flags=--headless --no-sandbox --disable-dev-shm-usage",
       "--quiet",
-    ].join(" "),
-    { cwd: clientRoot, stdio: "inherit" },
+    ],
+    { cwd: clientRoot, stdio: "inherit", shell: true },
   );
 } catch (err) {
   // Lighthouse may exit non-zero on Windows due to an EPERM error deleting its
