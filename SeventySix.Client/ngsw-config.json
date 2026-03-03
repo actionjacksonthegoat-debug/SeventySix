@@ -22,6 +22,14 @@
 			}
 		},
 		{
+			"name": "landing-icons",
+			"installMode": "prefetch",
+			"updateMode": "prefetch",
+			"resources": {
+				"files": ["/icons/simple-icons/*.svg"]
+			}
+		},
+		{
 			"name": "lazy-chunks",
 			"installMode": "lazy",
 			"updateMode": "lazy",

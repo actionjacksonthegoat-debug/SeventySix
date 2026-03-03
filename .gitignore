@@ -495,3 +495,9 @@ desktop.ini
 .codeql/
 codeql-*.sarif
 
+#################################
+# Lighthouse audit reports (auto-generated)
+#################################
+lighthouse-reports/
+SeventySix.Client/lighthouse-reports/
+

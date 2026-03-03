@@ -39,6 +39,9 @@ The dev server runs at `https://localhost:4200` with hot reload.
 | `npm run format` | ESLint fix + dprint fmt + ESLint fix |
 | `npm run test:e2e` | Full E2E suite (Docker + Playwright) |
 | `npm run generate:openapi` | Regenerate typed API client from server spec |
+| `npm run lighthouse:build-run` | Build production bundle and run Lighthouse (mobile, ≥70 Performance) |
+| `npm run lighthouse:rerun` | Re-run Lighthouse against previous build (skip rebuild) |
+| `npm run lighthouse:threshold` | Build + run Lighthouse with 70/100 pass threshold (local pre-PR gate) |
 
 ## Architecture
 

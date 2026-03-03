@@ -315,19 +315,19 @@ export const TECH_STACK_CATEGORIES: readonly TechStackCategory[] =
 export const STAT_ITEMS: readonly StatItem[] =
 	[
 		{
-			value: 1400,
+			value: 1600,
 			suffix: "+",
 			label: "Server Test Assertions",
 			icon: "verified"
 		},
 		{
-			value: 1200,
+			value: 1500,
 			suffix: "+",
 			label: "Client Test Assertions",
 			icon: "check_circle"
 		},
 		{
-			value: 270,
+			value: 260,
 			suffix: "+",
 			label: "E2E Test Cases",
 			icon: "integration_instructions"

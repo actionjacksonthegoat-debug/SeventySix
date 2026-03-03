@@ -344,6 +344,11 @@ mat-icon {
 	vertical-align: middle;
 	line-height: 1;
 	flex-shrink: 0;
+	// Reserve icon dimensions before the icon font loads (prevents CLS)
+	font-size: vars.$icon-size-base;
+	width: vars.$icon-size-base;
+	height: vars.$icon-size-base;
+	overflow: hidden;
 }
 
 // Buttons with icons - ensure icon aligns with button text
@@ -457,4 +462,16 @@ select[aria-invalid="true"] {
 // LANDING PAGE KEYFRAMES
 // =============================================================================
 
+@keyframes gradient-shift {
+	0% {
+		background-position: 0% 50%;
+	}
 
+	50% {
+		background-position: 100% 50%;
+	}
+
+	100% {
+		background-position: 0% 50%;
+	}
+}

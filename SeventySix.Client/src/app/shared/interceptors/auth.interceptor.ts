@@ -29,10 +29,13 @@ export const authInterceptor: HttpInterceptorFn =
 		const authService: AuthService =
 			inject(AuthService);
 
-		// Skip auth header for external URLs (CDN, third-party APIs)
-		// and public auth endpoints (login, refresh, logout, OAuth)
+		// Skip auth header for external URLs (third-party APIs),
+		// static asset requests (self-hosted icons), and public auth endpoints
 		// Note: change-password requires authentication
-		if (isExternalUrl(req.url) || isPublicAuthEndpoint(req.url))
+		if (
+			isExternalUrl(req.url)
+				|| isStaticAsset(req.url)
+				|| isPublicAuthEndpoint(req.url))
 		{
 			return next(req);
 		}
@@ -99,8 +102,12 @@ function isExternalUrl(url: string): boolean
 	{
 		const requestOrigin: string =
 			new URL(url).origin;
+		const apiBaseUrl: string =
+			environment.apiUrl.startsWith("http")
+				? environment.apiUrl
+				: `${window.location.origin}${environment.apiUrl}`;
 		const apiOrigin: string =
-			new URL(environment.apiUrl).origin;
+			new URL(apiBaseUrl).origin;
 		return requestOrigin !== window.location.origin
 			&& requestOrigin !== apiOrigin;
 	}
@@ -108,6 +115,19 @@ function isExternalUrl(url: string): boolean
 	{
 		return false;
 	}
+}
+
+/**
+ * Checks if the URL targets a self-hosted static asset (e.g. icons).
+ * These requests don't need auth headers.
+ * @param {string} url
+ * The request URL to check.
+ * @returns {boolean}
+ * True if the URL is a static asset path.
+ */
+function isStaticAsset(url: string): boolean
+{
+	return url.startsWith("/icons/");
 }
 
 /**

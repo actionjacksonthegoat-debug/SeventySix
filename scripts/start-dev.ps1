@@ -19,6 +19,12 @@ Write-Host "  SeventySix Development Startup" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 
+# Export user secrets as environment variables for Docker Compose
+# MUST happen BEFORE cert checks so DATA_PROTECTION_CERTIFICATE_PASSWORD is available
+Write-Host "Loading secrets from user-secrets store..." -ForegroundColor Yellow
+& (Join-Path $PSScriptRoot "internal" "load-user-secrets.ps1")
+if ($LASTEXITCODE -ne 0) { exit 1 }
+
 # Check SSL certificate exists before starting
 $certificatePath =
 "$PSScriptRoot\..\SeventySix.Client\ssl\dev-certificate.crt"
@@ -34,6 +40,7 @@ if (-not (Test-Path $certificatePath)) {
 }
 
 # Check DataProtection certificate exists before starting
+# See docs/Startup-Instructions.md > "Regenerating the DataProtection Certificate" for cleanup steps
 $dataProtectionCertPath =
 "$PSScriptRoot\..\SeventySix.Server\SeventySix.Api\keys\dataprotection.pfx"
 
@@ -46,16 +53,50 @@ if (-not (Test-Path $dataProtectionCertPath)) {
 		exit 1
 	}
 }
+else {
+	# Certificate exists — verify it can be read with the current password
+	# If password mismatch, delete and regenerate (prevents unencrypted key fallback)
+	$certPassword = $env:DATA_PROTECTION_CERTIFICATE_PASSWORD
+	if ($certPassword) {
+		try {
+			$certBytes = [System.IO.File]::ReadAllBytes(
+				(Resolve-Path $dataProtectionCertPath).Path)
+			$null = [System.Security.Cryptography.X509Certificates.X509Certificate2]::new(
+				$certBytes,
+				$certPassword,
+				[System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::EphemeralKeySet)
+			Write-Host "DataProtection certificate password verified." -ForegroundColor Green
+		}
+		catch {
+			Write-Host "DataProtection certificate password mismatch detected. Regenerating..." -ForegroundColor Yellow
+			Remove-Item -Path $dataProtectionCertPath -Force
+
+			# Clear stale encrypted keys from the local keys directory
+			$localKeysDir = "$PSScriptRoot\..\SeventySix.Server\SeventySix.Api\keys"
+			Get-ChildItem -Path $localKeysDir -Filter "key-*.xml" -ErrorAction SilentlyContinue |
+			Remove-Item -Force
+			Write-Host "Cleared stale DataProtection key XML files from local keys directory." -ForegroundColor Yellow
+			Write-Host "NOTE: If using Docker volume 'dataprotection_keys', run:" -ForegroundColor Cyan
+			Write-Host "  docker volume rm seventysix-dev_dataprotection_keys" -ForegroundColor Cyan
+			Write-Host "  (Users already logged in will need to sign in again after this.)" -ForegroundColor Cyan
+
+			& "$PSScriptRoot\generate-dataprotection-cert.ps1"
+
+			if (-not (Test-Path $dataProtectionCertPath)) {
+				Write-Host "Failed to regenerate DataProtection certificate!" -ForegroundColor Red
+				exit 1
+			}
+		}
+	}
+	else {
+		Write-Host "[WARN] DATA_PROTECTION_CERTIFICATE_PASSWORD not set - skipping cert validation." -ForegroundColor Yellow
+	}
+}
 
 # Clean up orphaned processes before starting (prevents port conflicts)
 if (-not $SkipCleanup) {
 	& (Join-Path $PSScriptRoot "internal" "cleanup-ports.ps1")
 }
-
-# Export user secrets as environment variables for Docker Compose
-Write-Host "Loading secrets from user-secrets store..." -ForegroundColor Yellow
-& (Join-Path $PSScriptRoot "internal" "load-user-secrets.ps1")
-if ($LASTEXITCODE -ne 0) { exit 1 }
 
 # Start Docker Desktop if not running (Windows only — on Linux Docker runs as a service)
 $dockerRunning = $false

@@ -1,3 +1,4 @@
+import { TestBed } from "@angular/core/testing";
 import { APP_BREAKPOINTS } from "@shared/constants";
 import { setupSimpleServiceTest } from "@shared/testing";
 import { Mock, vi } from "vitest";
@@ -265,12 +266,34 @@ describe("LayoutService",
 		describe("initial sidebar state",
 			() =>
 			{
-				it("should start open when sessionStorage is empty (fresh load)",
+				it("should start open on desktop when sessionStorage is empty (fresh load)",
 					() =>
 					{
-						// Already mocked sessionStorage.getItem to return null
-						expect(service.sidebarExpanded())
+						// Simulate desktop viewport (>= 960px)
+						setupMatchMediaMock(
+							{ "(min-width: 960px)": true, [APP_BREAKPOINTS.Medium]: true });
+
+						TestBed.resetTestingModule();
+						const desktopService: LayoutService =
+							setupSimpleServiceTest(LayoutService);
+
+						expect(desktopService.sidebarExpanded())
 							.toBe(true);
+					});
+
+				it("should start closed on mobile when sessionStorage is empty (fresh load)",
+					() =>
+					{
+						// Simulate mobile viewport (< 960px) — overlay mode
+						setupMatchMediaMock(
+							{ [APP_BREAKPOINTS.XSmall]: true });
+
+						TestBed.resetTestingModule();
+						const mobileService: LayoutService =
+							setupSimpleServiceTest(LayoutService);
+
+						expect(mobileService.sidebarExpanded())
+							.toBe(false);
 					});
 			});
 	});

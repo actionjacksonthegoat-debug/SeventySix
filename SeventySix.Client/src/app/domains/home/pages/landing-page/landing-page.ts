@@ -28,6 +28,7 @@ import {
 	StatsSectionComponent,
 	TechStackSectionComponent
 } from "@home/pages/landing-page/sections";
+import { SITE_CONSTANTS } from "@shared/constants/site.constants";
 
 /**
  * Landing page component — dual-theme parallax showcase.
@@ -266,8 +267,8 @@ export class LandingPageComponent
 			"@context": "https://schema.org",
 			"@type": "Organization",
 			"name": "SeventySix",
-			"url": "https://seventysix.app",
-			"logo": "https://seventysix.app/icons/icon-512x512.png",
+			"url": SITE_CONSTANTS.url,
+			"logo": SITE_CONSTANTS.iconUrl,
 			"sameAs": [GITHUB_REPO_URL]
 		};
 	}
@@ -279,7 +280,7 @@ export class LandingPageComponent
 			"@context": "https://schema.org",
 			"@type": "BreadcrumbList",
 			"itemListElement": [
-				{ "@type": "ListItem", "position": 1, "name": "Home", "item": "https://seventysix.app" }
+				{ "@type": "ListItem", "position": 1, "name": "Home", "item": SITE_CONSTANTS.url }
 			]
 		};
 	}
@@ -346,7 +347,7 @@ export class LandingPageComponent
 		this.meta.updateTag(
 			{ property: "og:type", content: "website" });
 		this.meta.updateTag(
-			{ property: "og:url", content: "https://seventysix.app/" });
+			{ property: "og:url", content: `${SITE_CONSTANTS.url}/` });
 		this.meta.updateTag(
 			{ property: "og:title", content: "SeventySix - Production-Ready .NET 10 + Angular 21 Monorepo" });
 		this.meta.updateTag(
@@ -356,7 +357,7 @@ export class LandingPageComponent
 					"A full-stack monorepo demonstrating DDD, Hexagonal Architecture, CQRS, Wolverine, TanStack Query, and comprehensive testing. MIT licensed, free forever."
 			});
 		this.meta.updateTag(
-			{ property: "og:image", content: "https://seventysix.app/icons/icon-512x512.png" });
+			{ property: "og:image", content: SITE_CONSTANTS.iconUrl });
 		this.meta.updateTag(
 			{ property: "og:image:width", content: "512" });
 		this.meta.updateTag(
@@ -373,7 +374,7 @@ export class LandingPageComponent
 		this.meta.updateTag(
 			{ name: "twitter:card", content: "summary_large_image" });
 		this.meta.updateTag(
-			{ name: "twitter:url", content: "https://seventysix.app/" });
+			{ name: "twitter:url", content: `${SITE_CONSTANTS.url}/` });
 		this.meta.updateTag(
 			{ name: "twitter:title", content: "SeventySix - Production-Ready .NET 10 + Angular 21 Monorepo" });
 		this.meta.updateTag(
@@ -383,7 +384,7 @@ export class LandingPageComponent
 					"A full-stack monorepo demonstrating DDD, Hexagonal Architecture, CQRS, Wolverine, TanStack Query, and comprehensive testing. MIT licensed, free forever."
 			});
 		this.meta.updateTag(
-			{ name: "twitter:image", content: "https://seventysix.app/icons/icon-512x512.png" });
+			{ name: "twitter:image", content: SITE_CONSTANTS.iconUrl });
 	}
 
 	/** Sets the canonical URL link element for SEO deduplication. */
@@ -394,14 +395,16 @@ export class LandingPageComponent
 
 		if (existingCanonical)
 		{
-			existingCanonical.href = "https://seventysix.app/";
+			existingCanonical.href =
+				`${SITE_CONSTANTS.url}/`;
 		}
 		else
 		{
 			const canonical: HTMLLinkElement =
 				this.document.createElement("link");
 			canonical.rel = "canonical";
-			canonical.href = "https://seventysix.app/";
+			canonical.href =
+				`${SITE_CONSTANTS.url}/`;
 			this.document.head.appendChild(canonical);
 		}
 	}

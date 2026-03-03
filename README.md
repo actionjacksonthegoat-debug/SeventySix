@@ -359,6 +359,7 @@ A set of npm scripts handle the full development lifecycle from the repo root. A
 
 | Command | Description | Output Highlights |
 |---|---|---|
+| `npm run bootstrap` | Run initial project setup (prerequisites, secrets, certs, builds, tests) | Full setup wizard with interactive prompts |
 | `npm start` | Start full development environment (Docker + API + Client) | Container health status, API readiness check, all service URLs |
 | `npm stop` | Stop all running services | Graceful shutdown confirmation, cleanup summary |
 | `npm run start:client` | Start Angular dev server only (assumes infrastructure running) | Dev server URL, compilation status, HMR enabled |
@@ -372,7 +373,11 @@ A set of npm scripts handle the full development lifecycle from the repo root. A
 | `npm test` | Run server + client unit tests | Combined test summary, pass/fail counts, coverage metrics |
 | `npm run test:server` | Run .NET test suite (`dotnet test`) | Per-project results, total tests, duration, architecture test validation |
 | `npm run test:client` | Run Angular test suite (Vitest + architecture tests) | Test file count, domain isolation violations, performance |
+| `npm run test:coverage` | Run server + client tests with coverage reports | Combined coverage metrics from both stacks |
+| `npm run test:coverage:server` | Run .NET tests with Coverlet coverage | Per-project coverage, line/branch percentages |
+| `npm run test:coverage:client` | Run Vitest with V8 coverage provider | Coverage report, lcov output |
 | `npm run test:e2e` | Run Playwright E2E tests across auth roles with accessibility | Role-based test results, axe-core violations, screenshots on failure |
+| `npm run test:e2e:keepalive` | Run E2E tests and keep Docker environment alive for debugging | Environment stays running for Playwright MCP inspection |
 | `npm run loadtest:quick` | Run quick load test profile | RPS (requests/sec), p95/p99 latency, error rate, summary HTML report |
 | `npm run loadtest:smoke` | Run smoke load test profile | Endpoint availability, baseline performance, early error detection |
 | `npm run loadtest:load` | Run standard load test profile | Sustained load metrics, resource usage, bottleneck identification |
@@ -403,12 +408,27 @@ A set of npm scripts handle the full development lifecycle from the repo root. A
 |---|---|---|
 | `npm run clean:docker` | Remove Docker containers | Containers stopped, networks removed, volumes preserved |
 | `npm run clean:docker:full` | Remove Docker containers AND volumes (excludes PostgreSQL) | Volumes removed except postgres, confirmation required |
+| `npm run db:reset` | **⚠️ USER ONLY** — Reset database to clean state (destroys all data) | Fresh migrations, seeded admin user restored |
+
+### Security Scanning
+
+| Command | Description | Output Highlights |
+|---|---|---|
+| `npm run scan:codeql:ci` | Run CodeQL analysis for both C# and TypeScript (Docker) | SARIF results in `.codeql/results/` |
+| `npm run scan:codeql:ci:csharp` | Run CodeQL analysis for C# only (~15-20 min) | C# security findings |
+| `npm run scan:codeql:ci:typescript` | Run CodeQL analysis for TypeScript only (~5 min) | JS/TS security findings |
 
 ### Generation
 
 | Command | Description | Output Highlights |
 |---|---|---|
 | `npm run generate:icons` | Generate all PWA icons from source image ([sharp](https://sharp.pixelplumbing.com/)) | 9 standard + 2 maskable icons + favicon.ico from `icon-source-file.png` |
+
+### Performance
+
+| Command | Description | Output Highlights |
+|---|---|---|
+| `npm run lighthouse` | Build production bundle and run Lighthouse audit (mobile, ≥70 Performance) | Performance, accessibility, best practices, SEO scores |
 
 ### Sample Output — `npm start`
 

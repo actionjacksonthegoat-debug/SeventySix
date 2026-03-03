@@ -1,8 +1,9 @@
 /**
  * Home Feature Routes
- * Lazy-loaded routes for home/landing features
+ * Eagerly-loaded routes for home/landing features (landing page is on the critical render path).
  */
 import { Routes } from "@angular/router";
+import { HomeComponent } from "@home/pages/home/home.component";
 
 /**
  * Home feature routes (landing page and public home routes).
@@ -12,9 +13,8 @@ export const HOME_ROUTES: Routes =
 	[
 		{
 			path: "",
-			loadComponent: () =>
-				import("./pages/home/home.component").then(
-					(module) => module.HomeComponent),
+			// Eager — part of initial bundle so landing page renders in the first Angular cycle
+			component: HomeComponent,
 			title: "SeventySix - Home",
 			data: { breadcrumb: "Home" }
 		},

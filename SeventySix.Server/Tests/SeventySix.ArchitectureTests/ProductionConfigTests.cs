@@ -41,7 +41,7 @@ public sealed class ProductionConfigTests : SourceCodeArchitectureTest
 		string configContent =
 			File.ReadAllText(productionConfigPath);
 
-		JsonDocument document =
+		using JsonDocument document =
 			JsonDocument.Parse(configContent);
 
 		// Check Cors:AllowedOrigins if it exists
@@ -76,7 +76,7 @@ public sealed class ProductionConfigTests : SourceCodeArchitectureTest
 
 			(allowedHosts != "*").ShouldBeTrue(
 				"Production AllowedHosts should not be wildcard '*'. "
-					+ "Specify explicit hosts like 'seventysix.app;www.seventysix.app'");
+					+ "Specify explicit hosts like 'seventysixsandbox.com;www.seventysixsandbox.com'");
 		}
 	}
 
@@ -101,7 +101,7 @@ public sealed class ProductionConfigTests : SourceCodeArchitectureTest
 		string configContent =
 			File.ReadAllText(productionConfigPath);
 
-		JsonDocument document =
+		using JsonDocument document =
 			JsonDocument.Parse(configContent);
 
 		// Check ConnectionStrings if present
