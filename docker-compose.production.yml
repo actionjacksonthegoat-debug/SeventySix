@@ -165,7 +165,7 @@ services:
             - AllowedHosts=${ALLOWED_HOSTS:?ALLOWED_HOSTS must be set - e.g. seventysixsandbox.com;www.seventysixsandbox.com;api.seventysixsandbox.com}
             # OAuth Callback URLs — must match GitHub OAuth App settings
             - Auth__OAuth__ClientCallbackUrl=${OAUTH_CALLBACK_URL:?OAUTH_CALLBACK_URL must be set - e.g. https://seventysixsandbox.com/auth/callback}
-            - Auth__OAuth__Providers__0__RedirectUri=${OAUTH_REDIRECT_URI:?OAUTH_REDIRECT_URI must be set - e.g. https://api.seventysixsandbox.com/api/v1/auth/oauth/github/callback}
+            - Auth__OAuth__Providers__0__RedirectUri=${OAUTH_REDIRECT_URI:?OAUTH_REDIRECT_URI must be set - e.g. https://seventysixsandbox.com/api/v1/auth/oauth/github/callback}
             # Email — public URL for email links (password reset, verification, etc.)
             - Email__ClientBaseUrl=${CLIENT_BASE_URL:?CLIENT_BASE_URL must be set - e.g. https://seventysixsandbox.com}
             # Admin Seeder — customize username/fullname; disable after first login + password change
@@ -229,6 +229,12 @@ services:
         depends_on:
             api:
                 condition: service_healthy
+            grafana:
+                condition: service_healthy
+            jaeger:
+                condition: service_healthy
+            prometheus:
+                condition: service_healthy
         healthcheck:
             test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://127.0.0.1:8080" ]
             interval: 30s
@@ -251,16 +257,17 @@ services:
     prometheus:
         image: prom/prometheus:v2.54.1
         container_name: seventysix-prometheus-prod
-        ports:
-            - "127.0.0.1:9090:9090"
+        # No port binding — accessed only via nginx reverse proxy (auth_request-protected)
         volumes:
             - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
             - prometheus_data:/prometheus
         command:
             - "--config.file=/etc/prometheus/prometheus.yml"
             - "--storage.tsdb.path=/prometheus"
+            - "--web.external-url=/prometheus/"
+            - "--web.route-prefix=/prometheus/"
         healthcheck:
-            test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9090/-/healthy" ]
+            test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9090/prometheus/-/healthy" ]
             interval: 30s
             timeout: 10s
             retries: 3
@@ -279,10 +286,10 @@ services:
     jaeger:
         image: jaegertracing/all-in-one:1.62.0
         container_name: seventysix-jaeger-prod
-        ports:
-            - "127.0.0.1:16686:16686" # Jaeger UI only - OTLP ports handled by otel-collector
+        # No port binding — accessed only via nginx reverse proxy (auth_request-protected)
         environment:
             - COLLECTOR_OTLP_ENABLED=true
+            - QUERY_BASE_PATH=/jaeger
         healthcheck:
             test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:14269/" ]
             interval: 30s
@@ -302,17 +309,22 @@ services:
     grafana:
         image: grafana/grafana:11.4.0
         container_name: seventysix-grafana-prod
-        ports:
-            - "127.0.0.1:3000:3000"
+        # No port binding — accessed only via nginx reverse proxy (auth_request-protected)
         environment:
             - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
             - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:?GRAFANA_ADMIN_PASSWORD must be set}
             - GF_USERS_DEFAULT_THEME=dark
-            - GF_AUTH_ANONYMOUS_ENABLED=false
+            # Anonymous viewer — nginx auth_request validates admin session before
+            # requests reach Grafana, so anonymous access here is safe (pre-authenticated).
+            - GF_AUTH_ANONYMOUS_ENABLED=true
+            - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
             - GF_SECURITY_ALLOW_EMBEDDING=true
             - GF_SECURITY_COOKIE_SAMESITE=lax
             - GF_SECURITY_COOKIE_SECURE=true
             - GF_ANALYTICS_REPORTING_ENABLED=false
+            # Sub-path serving — Grafana is proxied under /grafana/
+            - GF_SERVER_ROOT_URL=%(protocol)s://%(domain)s/grafana/
+            - GF_SERVER_SERVE_FROM_SUB_PATH=true
         volumes:
             - grafana_data:/var/lib/grafana
             - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro

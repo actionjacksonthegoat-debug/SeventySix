@@ -125,4 +125,30 @@ public sealed class AuthControllerAuthorizationTests(
 		// Assert - No refresh token cookie = 401
 		response.StatusCode.ShouldBe(System.Net.HttpStatusCode.Unauthorized);
 	}
+
+	// ============================================
+	// GET /api/v1/auth/verify-admin - Cookie-based, no [Authorize]
+	// Used by nginx auth_request to gate observability UIs.
+	// ============================================
+
+	/// <summary>
+	/// Tests that GET /api/v1/auth/verify-admin returns 401 without a refresh token cookie.
+	/// This endpoint is called by nginx auth_request subrequests, which forward cookies
+	/// but not Authorization headers.
+	/// </summary>
+	[Fact]
+	public async Task VerifyAdmin_WithoutRefreshToken_ReturnsUnauthorizedAsync()
+	{
+		// Arrange
+		HttpClient client =
+			CreateClient();
+
+		// Act
+		HttpResponseMessage response =
+			await client.GetAsync(
+				ApiEndpoints.Auth.VerifyAdmin);
+
+		// Assert - No refresh token cookie = 401
+		response.StatusCode.ShouldBe(System.Net.HttpStatusCode.Unauthorized);
+	}
 }

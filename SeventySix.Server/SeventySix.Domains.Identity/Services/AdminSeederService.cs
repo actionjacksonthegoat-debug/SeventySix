@@ -22,12 +22,14 @@ namespace SeventySix.Identity;
 /// Design Principles:
 /// - Runs once at startup (not periodic)
 /// - Idempotent: Safe to run multiple times
-/// - Creates admin with the configured initial password (no forced change)
+/// - Creates admin with RequiresPasswordChange=true (forces password change on first login)
+/// - Exception: E2E environment sets RequiresPasswordChange=false for test automation
 /// - Only creates if configured and no admin user exists
 /// </remarks>
 public sealed class AdminSeederService(
 	IServiceScopeFactory scopeFactory,
 	IOptions<AdminSeederSettings> settings,
+	IHostEnvironment hostEnvironment,
 	TimeProvider timeProvider,
 	ILogger<AdminSeederService> logger) : BackgroundService
 {
@@ -143,7 +145,7 @@ public sealed class AdminSeederService(
 				CreateDate = now,
 				CreatedBy =
 					AuditConstants.SystemUser,
-				RequiresPasswordChange = false,
+				RequiresPasswordChange = !hostEnvironment.IsEnvironment("E2E"),
 				EmailConfirmed = true,
 				LockoutEnabled = true,
 			};

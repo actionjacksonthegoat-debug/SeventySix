@@ -247,27 +247,12 @@ api.seventysixsandbox.com {
     reverse_proxy localhost:5085
 }
 
-# Grafana — IP-restricted to admin only (proxy OFF in Cloudflare)
-grafana.seventysixsandbox.com {
-    @allowed remote_ip YOUR.ADMIN.IP.HERE
-    handle @allowed {
-        reverse_proxy localhost:3000
-    }
-    respond "Access Denied" 403
-}
-
-# Jaeger — IP-restricted to admin only (proxy OFF in Cloudflare)
-jaeger.seventysixsandbox.com {
-    @allowed remote_ip YOUR.ADMIN.IP.HERE
-    handle @allowed {
-        reverse_proxy localhost:16686
-    }
-    respond "Access Denied" 403
-}
+# Observability tools (Grafana, Jaeger, Prometheus) are served via nginx
+# reverse proxy routes at /grafana/, /jaeger/, /prometheus/ — protected by
+# nginx auth_request that validates the admin session cookie (X-Refresh-Token)
+# via the API before allowing access. No Caddy subdomain blocks needed.
 CEOF
 ```
-
-> **Replace `YOUR.ADMIN.IP.HERE` with your actual admin IP.** Find it: `curl ifconfig.me`
 
 ```bash
 caddy validate --config /etc/caddy/Caddyfile
@@ -288,8 +273,15 @@ In the Cloudflare dashboard for your domain:
 | A | `@` (root) | `SERVER_IP` | **Proxied** (orange cloud) |
 | A | `www` | `SERVER_IP` | **Proxied** (orange cloud) |
 | A | `api` | `SERVER_IP` | **Proxied** (orange cloud) |
-| A | `grafana` | `SERVER_IP` | **DNS only** (grey cloud) |
-| A | `jaeger` | `SERVER_IP` | **DNS only** (grey cloud) |
+
+> **Observability access**: Grafana, Jaeger, and Prometheus are served via same-origin nginx proxy routes,
+> protected by `auth_request` that validates the `X-Refresh-Token` cookie against the API (`/api/v1/auth/verify-admin`).
+> Only authenticated Admin users can access them. Unauthenticated or non-admin users receive 401.
+> - `https://seventysixsandbox.com/grafana/`
+> - `https://seventysixsandbox.com/jaeger/`
+> - `https://seventysixsandbox.com/prometheus/`
+>
+> No additional DNS records are needed for these services.
 
 > **TLS Note:** Cloudflare terminates TLS towards the end user. Set **SSL/TLS encryption mode to "Full (Strict)"** so Cloudflare also validates the origin server's certificate (provided by Caddy/Let's Encrypt). "Flexible" mode skips origin TLS entirely — never use it.
 
@@ -760,7 +752,7 @@ Set up alerts: Email + Discord/Slack webhook.
 
 ### 11.2 Grafana Access
 
-Open `https://grafana.seventysixsandbox.com` from your admin IP. Log in with the `GRAFANA_ADMIN_USER` (Variable) and `GRAFANA_ADMIN_PASSWORD` (Secret) values you set in GitHub.
+Open `https://seventysixsandbox.com/grafana/`. Access is protected by nginx `auth_request` — you must be logged into the Angular app as an Admin user (the `X-Refresh-Token` cookie is validated automatically). Grafana uses anonymous viewer access behind the auth gate, so no separate Grafana login is needed for read-only viewing. To make admin changes, log in to Grafana directly with `GRAFANA_ADMIN_USER` / `GRAFANA_ADMIN_PASSWORD`.
 
 Useful Prometheus queries:
 - API request rate: `rate(http_server_request_duration_seconds_count[5m])`
@@ -769,35 +761,26 @@ Useful Prometheus queries:
 
 ### 11.3 Jaeger Access
 
-Open `https://jaeger.seventysixsandbox.com` from your admin IP. Select the `SeventySix.Api` service to view distributed traces.
+Open `https://seventysixsandbox.com/jaeger/` — select the `SeventySix.Api` service to view distributed traces. Requires admin login (same auth_request protection).
 
-### 11.4 Prometheus Access (SSH Tunnel / Server Only)
+### 11.4 Prometheus Access
 
-Prometheus has **no Caddy subdomain** and is not accessible via a public browser URL.
-It is accessible only:
-
-- **From the server itself** (for ad-hoc queries):
-  ```bash
-  ssh deploy@PROD_HOST
-  curl http://localhost:9090/api/v1/targets | jq '.data.activeTargets[] | {scrapePool, health}'
-  ```
-- **Via SSH tunnel** (for browser access):
-  ```bash
-  ssh -N -L 9090:127.0.0.1:9090 deploy@PROD_HOST
-  # Then open: http://localhost:9090
-  ```
-
-Do not add a Prometheus Caddy subdomain. Grafana already provides all required dashboards over Prometheus data.
+Open `https://seventysixsandbox.com/prometheus/`. Requires admin login (same auth_request protection).
 
 ### 11.5 Observability Security Model
 
-All observability services are protected by two independent layers:
+All observability services are accessed via same-origin nginx reverse proxy routes, protected by `auth_request`.
+Each request triggers a subrequest to `GET /api/v1/auth/verify-admin`, which validates the `X-Refresh-Token`
+HttpOnly cookie and confirms the user has Admin role. Results are cached by nginx for 30s to avoid DB hits
+on every static asset. Observability containers have **no host port bindings** — they are only reachable
+via the Docker internal network through nginx.
 
 | Layer | Mechanism | Protects |
 |-------|-----------|----------|
 | 1 | Hetzner Cloud Firewall: only ports 22, 80, 443 inbound | External network |
-| 2 | Docker `127.0.0.1` host binding on all observability ports | Host network stack |
-| 3 | Caddy `remote_ip` restriction (Grafana + Jaeger only) | Application layer |
+| 2 | Docker internal network (no host port bindings for observability) | Host network stack |
+| 3 | nginx `auth_request` → API `verify-admin` (Admin role required) | Authentication + authorization |
+| 4 | nginx `proxy_cache` on auth subrequest (30s TTL) | Performance |
 
 pgAdmin and RedisInsight are **not deployed in production** — they are dev-environment-only tools.
 
@@ -816,13 +799,13 @@ Run through this checklist after the first deploy:
 - [ ] Admin login works with the `ADMIN_USERNAME` and `ADMIN_PASSWORD` values from GitHub Secrets
 - [ ] **Admin password changed** via account settings (before disabling the seeder)
 - [ ] `ADMIN_SEEDER_ENABLED` Variable set to `false` and re-deploy triggered
-- [ ] Grafana accessible from admin IP: `https://grafana.seventysixsandbox.com`
+- [ ] Grafana accessible: `https://seventysixsandbox.com/grafana/` (requires admin login)
 - [ ] Grafana shows request rate and latency graphs
-- [ ] Jaeger accessible from admin IP: `https://jaeger.seventysixsandbox.com`
+- [ ] Jaeger accessible: `https://seventysixsandbox.com/jaeger/` (requires admin login)
 - [ ] Jaeger shows traces from API calls
-- [ ] Prometheus targets all healthy: `curl http://localhost:9090/api/v1/targets | jq '.data.activeTargets[] | {scrapePool, health}'`
-- [ ] Prometheus NOT accessible from a public URL (verify: `curl -sf https://prometheus.seventysixsandbox.com` should fail)
-- [ ] Grafana returns 403 from a non-admin IP (verify from a different browser/IP)
+- [ ] Prometheus accessible: `https://seventysixsandbox.com/prometheus/` (requires admin login)
+- [ ] Prometheus targets all healthy
+- [ ] Observability returns 401 when not logged in as admin
 - [ ] Fail2Ban running: `docker exec seventysix-fail2ban-prod fail2ban-client status`
 - [ ] GeoIP database downloaded: `docker logs seventysix-geoipupdate-prod`
 - [ ] Backup runs successfully: `/srv/seventysix/scripts/backup.sh`

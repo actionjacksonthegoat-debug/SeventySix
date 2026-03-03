@@ -112,8 +112,10 @@ public sealed class OAuthService(
 		{
 			logger.LogError(
 				ex,
-				"OAuth callback failed for provider {Provider}",
-				LogSanitizer.Sanitize(provider));
+				"OAuth network error for provider {Provider} "
+					+ "— possible firewall block or DNS failure. Status: {StatusCode}",
+				LogSanitizer.Sanitize(provider),
+				ex.StatusCode);
 
 			return AuthResult.Failed(
 				OAuthProviderConstants.ErrorMessages.AuthenticationFailed(
@@ -124,7 +126,7 @@ public sealed class OAuthService(
 		{
 			logger.LogError(
 				ex,
-				"OAuth callback failed for provider {Provider}",
+				"OAuth response parsing failed for provider {Provider} — unexpected response format",
 				LogSanitizer.Sanitize(provider));
 
 			return AuthResult.Failed(
@@ -136,7 +138,8 @@ public sealed class OAuthService(
 		{
 			logger.LogError(
 				ex,
-				"OAuth callback failed for provider {Provider}",
+				"OAuth configuration error for provider {Provider} "
+					+ "— check ClientId, ClientSecret, and RedirectUri",
 				LogSanitizer.Sanitize(provider));
 
 			return AuthResult.Failed(
@@ -187,8 +190,9 @@ public sealed class OAuthService(
 		{
 			logger.LogError(
 				ex,
-				"Failed to exchange code for user info from provider {Provider}",
-				LogSanitizer.Sanitize(provider));
+				"OAuth network error exchanging code for provider {Provider} — possible firewall block or DNS failure. Status: {StatusCode}",
+				LogSanitizer.Sanitize(provider),
+				ex.StatusCode);
 
 			return null;
 		}
@@ -196,7 +200,7 @@ public sealed class OAuthService(
 		{
 			logger.LogError(
 				ex,
-				"Failed to exchange code for user info from provider {Provider}",
+				"OAuth response parsing failed exchanging code for provider {Provider} — unexpected response format",
 				LogSanitizer.Sanitize(provider));
 
 			return null;
@@ -205,7 +209,8 @@ public sealed class OAuthService(
 		{
 			logger.LogError(
 				ex,
-				"Failed to exchange code for user info from provider {Provider}",
+				"OAuth configuration error exchanging code for provider {Provider} "
+					+ "— check ClientId, ClientSecret, and RedirectUri",
 				LogSanitizer.Sanitize(provider));
 
 			return null;
