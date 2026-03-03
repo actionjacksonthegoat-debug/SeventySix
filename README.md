@@ -39,7 +39,7 @@ chmod +x scripts/bootstrap.sh
 ### What the bootstrap does
 
 1. **Installs prerequisites** — PowerShell 7 and Node.js (via winget/apt) if not present, then verifies Git, .NET 10 SDK, Docker Desktop
-2. **Collects your secrets** — admin email/password, database password, Brevo SMTP credentials, GitHub OAuth keys, data protection cert password
+2. **Collects your secrets** — admin email/password, database password, Brevo API key, GitHub OAuth keys, data protection cert password
 3. **Installs all dependencies** — `npm install` (root + client + load-testing), `dotnet restore`
 4. **Generates certificates** — SSL dev cert (localhost) and ASP.NET Core Data Protection cert
 5. **Builds and verifies** — .NET server build + Angular client build
@@ -286,7 +286,7 @@ SeventySix/
 ├── fail2ban/                     Intrusion prevention filters and jails
 ├── scripts/                      PowerShell dev scripts (start, stop, secrets, certs)
 ├── docker-compose.yml            Development (services)
-├── docker-compose.e2e.yml        E2E testing (isolated ports + MailDev)
+├── docker-compose.e2e.yml        E2E testing (isolated ports + mock Brevo API)
 ├── docker-compose.loadtest.yml   Load testing
 ├── docker-compose.production.yml Production deployment
 └── package.json                  Root orchestration scripts
@@ -347,7 +347,7 @@ SeventySix uses a layered configuration system:
 | Authentication | JWT, OAuth, MFA, password policy, lockout |
 | Background Jobs | Log cleanup, token cleanup, DB maintenance, GDPR anonymization |
 | Caching | FusionCache tiers, output cache policies |
-| Email | Brevo SMTP, queue settings |
+| Email | Brevo HTTP API, queue settings |
 | Observability | OpenTelemetry, Serilog, tracing |
 | Security | Rate limiting, CORS, HTTPS enforcement |
 
@@ -736,9 +736,9 @@ Jobs use two scheduling strategies: **preferred-time** jobs (Identity, Logging) 
 Queue-based email delivery in the `ElectronicNotifications` domain:
 
 - **Email queue**: `EmailQueueEntry` entities with status tracking, idempotency keys, and retry logic
-- **SMTP**: Brevo SMTP with configurable settings
+- **Email API**: Brevo HTTP API with configurable settings
 - **CQRS**: Send, retry, and query email status
-- **Settings**: Sender address, SMTP credentials, retry policies — `EmailSettings` with FluentValidation
+- **Settings**: Sender address, API key, retry policies — `EmailSettings` with FluentValidation
 
 The queue decouples sending from request processing. Failed emails retry automatically.
 
@@ -856,7 +856,7 @@ Four Docker Compose configurations cover all environments:
 | File | Purpose | Services | Key Ports |
 |---|---|---|---|
 | `docker-compose.yml` + `override` | Development | development services (full stack) | API: 7074, Client: 4200, DB: 5433 |
-| `docker-compose.e2e.yml` | E2E testing | Isolated stack + MailDev | API: 7174, Client: 4201, DB: 5434 |
+| `docker-compose.e2e.yml` | E2E testing | Isolated stack + mock Brevo API | API: 7174, Client: 4201, DB: 5434 |
 | `docker-compose.loadtest.yml` | Load testing | API + infrastructure | Isolated from dev |
 | `docker-compose.production.yml` | Production | API + infrastructure | Resource limits, external secrets |
 
@@ -899,7 +899,7 @@ Key secrets and their Docker Compose environment variable names:
 | `AdminSeeder:Email` | `ADMIN_EMAIL` | Dev admin account email |
 | `Jwt:SecretKey` | `JWT_SECRET_KEY` | JWT signing key |
 
-> **`Email:FromAddress` vs `Site:Email`:** These are two distinct addresses. `FromAddress` appears in the SMTP `From:` header on every email sent. `Site:Email` is the publicly visible contact address on the Privacy Policy and Terms of Service pages. Set both via user secrets; they will not populate into Docker unless `SITE_EMAIL` is exported (handled by `load-user-secrets.ps1`).
+> **`Email:FromAddress` vs `Site:Email`:** These are two distinct addresses. `FromAddress` is the sender on every outgoing email. `Site:Email` is the publicly visible contact address on the Privacy Policy and Terms of Service pages. Set both via user secrets; they will not populate into Docker unless `SITE_EMAIL` is exported (handled by `load-user-secrets.ps1`).
 
 See [Server README — User Secrets Reference](SeventySix.Server/README.md) for the full secrets table.
 
@@ -916,10 +916,10 @@ Everything is free except transactional email:
 | Fail2Ban + GeoIP | Free | GeoLite2 free tier (MaxMind account required) |
 | MCP servers | Free | No credit card, no auto-upgrade, no metered API calls |
 | VS Code + Copilot | Copilot subscription | Required for AI-assisted features |
-| **SMTP (Brevo)** | **Free tier** | **300 emails/day** — sufficient for development and small production |
+| **Brevo HTTP API** | **Free tier** | **300 emails/day** — sufficient for development and small production |
 
 ### Third Party Api Tracking Domain
-The `ApiTracking` domain provides cost breakpoint visibility — this is used to monitor third-party API usage and set alerts ot completely block calls before hitting paid tiers. In the case of Brevo SMTP, the email queue system will stop sending emails as soon as 250 emails are sent in a 24 hour period, so the site should never accidentally go over limits.
+The `ApiTracking` domain provides cost breakpoint visibility — this is used to monitor third-party API usage and set alerts ot completely block calls before hitting paid tiers. In the case of the Brevo HTTP API, the email queue system will stop sending emails as soon as 250 emails are sent in a 24 hour period, so the site should never accidentally go over limits.
 
 In this case, we back off of checking emails for 30 minute chunks as a fail-fast option once the rate limit is hit, then when 24 hours at midnight local have passed this will process the queued emails, allowing heavier load handling without adding cost.
 
@@ -1052,7 +1052,7 @@ Multiple test suites provide automated checks across the full stack:
 |---|---|---|---|---|
 | Server | xUnit + NSubstitute + Shouldly | 1,400+ | `npm run test:server` | Server projects: API, Domains, Identity, Shared, Architecture, Analyzers |
 | Client | Vitest | 1,200+ | `npm run test:client` | Unit/integration tests across 100+ spec files + architecture enforcement |
-| E2E | Playwright | 270+ | `npm run test:e2e` | Specs across auth roles (public, authenticated, admin, developer), WCAG 2.2 AA accessibility scanning per role, MailDev virtual email |
+| E2E | Playwright | 270+ | `npm run test:e2e` | Specs across auth roles (public, authenticated, admin, developer), WCAG 2.2 AA accessibility scanning per role, mock Brevo API |
 | Load | k6 (Grafana) | scenarios | `npm run loadtest:quick` | Auth, users, permissions, logging, and health across multiple profiles (smoke, quick, stress, load) |
 
 ### E2E Coverage by Role

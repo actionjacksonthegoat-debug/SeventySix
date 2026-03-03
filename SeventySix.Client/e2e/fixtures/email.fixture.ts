@@ -5,9 +5,9 @@
 import { E2E_CONFIG } from "./config.constant";
 
 /**
- * Email from MailDev API.
+ * Email captured by the mock Brevo API.
  */
-export interface MailDevEmail
+export interface CapturedEmail
 {
 	/**
 	 * Unique email ID.
@@ -41,21 +41,21 @@ export interface MailDevEmail
 }
 
 /**
- * MailDev API client for E2E email testing.
+ * Mock Brevo API client for E2E email testing.
  * Provides methods to query captured emails.
  */
 export class EmailTestHelper
 {
-	private static readonly MAILDEV_API_URL: string =
-		E2E_CONFIG.mailDevUrl;
+	private static readonly EMAIL_CAPTURE_URL: string =
+		E2E_CONFIG.emailCaptureUrl;
 
 	/**
-	 * Polls MailDev until it responds or the timeout expires.
-	 * Use in `beforeAll` to ensure MailDev is ready before email tests run.
+	 * Polls mock Brevo API until it responds or the timeout expires.
+	 * Use in `beforeAll` to ensure the email capture server is ready before email tests run.
 	 * @param timeoutMs
 	 * Maximum time to wait in milliseconds.
 	 * @throws
-	 * Error if MailDev does not respond within the timeout.
+	 * Error if email capture server does not respond within the timeout.
 	 */
 	static async waitUntilReady(timeoutMs: number = 15000): Promise<void>
 	{
@@ -68,7 +68,7 @@ export class EmailTestHelper
 			try
 			{
 				const response: Response =
-					await fetch(`${this.MAILDEV_API_URL}/email`);
+					await fetch(`${this.EMAIL_CAPTURE_URL}/email`);
 
 				if (response.ok)
 				{
@@ -77,7 +77,7 @@ export class EmailTestHelper
 			}
 			catch
 			{
-				// MailDev not ready yet — retry
+				// Email capture server not ready yet — retry
 			}
 
 			await new Promise(
@@ -86,7 +86,7 @@ export class EmailTestHelper
 		}
 
 		throw new Error(
-			`MailDev did not become available within ${timeoutMs}ms at ${this.MAILDEV_API_URL}`);
+			`Email capture server did not become available within ${timeoutMs}ms at ${this.EMAIL_CAPTURE_URL}`);
 	}
 
 	/**
@@ -94,10 +94,10 @@ export class EmailTestHelper
 	 * @returns
 	 * Array of captured emails.
 	 */
-	static async getAllEmails(): Promise<MailDevEmail[]>
+	static async getAllEmails(): Promise<CapturedEmail[]>
 	{
 		const response: Response =
-			await fetch(`${this.MAILDEV_API_URL}/email`);
+			await fetch(`${this.EMAIL_CAPTURE_URL}/email`);
 
 		return response.json();
 	}
@@ -109,9 +109,9 @@ export class EmailTestHelper
 	 * @returns
 	 * Array of emails sent to the recipient.
 	 */
-	static async getEmailsForRecipient(recipientEmail: string): Promise<MailDevEmail[]>
+	static async getEmailsForRecipient(recipientEmail: string): Promise<CapturedEmail[]>
 	{
-		const allEmails: MailDevEmail[] =
+		const allEmails: CapturedEmail[] =
 			await this.getAllEmails();
 
 		return allEmails.filter(
@@ -136,7 +136,7 @@ export class EmailTestHelper
 	 */
 	static async waitForEmail(
 		recipientEmail: string,
-		options: { timeout?: number; } = {}): Promise<MailDevEmail>
+		options: { timeout?: number; } = {}): Promise<CapturedEmail>
 	{
 		const timeoutMs: number =
 			options.timeout ?? 10000;
@@ -145,7 +145,7 @@ export class EmailTestHelper
 
 		while (Date.now() - startTime < timeoutMs)
 		{
-			const emails: MailDevEmail[] =
+			const emails: CapturedEmail[] =
 				await this.getEmailsForRecipient(recipientEmail);
 
 			if (emails.length > 0)
@@ -167,7 +167,7 @@ export class EmailTestHelper
 	static async clearAllEmails(): Promise<void>
 	{
 		await fetch(
-			`${this.MAILDEV_API_URL}/email/all`,
+			`${this.EMAIL_CAPTURE_URL}/email/all`,
 			{ method: "DELETE" });
 	}
 
@@ -181,7 +181,7 @@ export class EmailTestHelper
 	 * The extracted URL or null if not found.
 	 */
 	static extractLinkFromEmail(
-		email: MailDevEmail,
+		email: CapturedEmail,
 		linkPattern: RegExp): string | null
 	{
 		const match: RegExpMatchArray | null =

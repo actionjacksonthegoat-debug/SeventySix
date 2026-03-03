@@ -9,8 +9,8 @@ namespace SeventySix.ElectronicNotifications.Emails;
 /// </summary>
 /// <remarks>
 /// Configuration should be stored in appsettings.json under the "Email" section.
-/// Sensitive values (SmtpPassword) should use user secrets or environment variables.
-/// When Enabled=true, all required fields (SmtpHost, FromAddress, ClientBaseUrl)
+/// Sensitive values (ApiKey) should use user secrets or environment variables.
+/// When Enabled=true, all required fields (ApiKey, ApiUrl, FromAddress, ClientBaseUrl)
 /// must be set; validator will catch missing values.
 /// </remarks>
 public sealed record EmailSettings
@@ -21,37 +21,20 @@ public sealed record EmailSettings
 	public const string SectionName = "Email";
 
 	/// <summary>
-	/// Gets the SMTP server hostname.
+	/// Gets the Brevo HTTP API key for transactional emails.
 	/// </summary>
 	/// <remarks>
 	/// Must be set when Enabled=true; validator will catch missing values.
 	/// </remarks>
-	public string SmtpHost { get; init; } =
+	public string ApiKey { get; init; } =
 		string.Empty;
 
 	/// <summary>
-	/// Gets the SMTP server port. Default: 587 (TLS submission port).
+	/// Gets the Brevo API base URL. Defaults to production Brevo.
+	/// Override to mock Brevo API URL in E2E/LoadTest environments.
 	/// </summary>
-	public int SmtpPort { get; init; } =
-		587;
-
-	/// <summary>
-	/// Gets the SMTP username for authentication.
-	/// </summary>
-	public string SmtpUsername { get; init; } =
-		string.Empty;
-
-	/// <summary>
-	/// Gets the SMTP password for authentication.
-	/// </summary>
-	public string SmtpPassword { get; init; } =
-		string.Empty;
-
-	/// <summary>
-	/// Gets whether to use SSL/TLS for the connection.
-	/// </summary>
-	public bool UseSsl { get; init; } =
-		true;
+	public string ApiUrl { get; init; } =
+		"https://api.brevo.com";
 
 	/// <summary>
 	/// Gets the sender email address.
@@ -81,6 +64,5 @@ public sealed record EmailSettings
 	/// Gets whether email sending is enabled.
 	/// When false, emails are logged but not actually sent (development mode).
 	/// </summary>
-	public bool Enabled { get; init; } =
-		false;
+	public bool Enabled { get; init; }
 }

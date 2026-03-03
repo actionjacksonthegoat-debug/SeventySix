@@ -2,24 +2,24 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using System.Net;
+using System.Net.Http.Json;
 using System.Net.Sockets;
-using MailKit.Net.Smtp;
-using MailKit.Security;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using MimeKit;
+using SeventySix.Shared.Constants;
 using SeventySix.Shared.Interfaces;
 using SeventySix.Shared.Utilities;
 
 namespace SeventySix.ElectronicNotifications.Emails;
 
 /// <summary>
-/// Email service implementation using MailKit.
+/// Email service implementation using Brevo HTTP API.
 /// </summary>
 /// <remarks>
 /// <para>
 /// When Enabled=false, logs email details without sending (development mode).
-/// When Enabled=true, sends via configured SMTP server.
+/// When Enabled=true, sends via Brevo HTTP API using IHttpClientFactory.
 /// Enforces daily rate limit via IRateLimitingService to prevent exceeding external API quotas.
 /// </para>
 /// <para>
@@ -36,16 +36,22 @@ namespace SeventySix.ElectronicNotifications.Emails;
 /// <param name="rateLimitingService">
 /// Rate limiting service for API quota management.
 /// </param>
+/// <param name="httpClientFactory">
+/// HTTP client factory for creating named Brevo API clients.
+/// </param>
 /// <param name="logger">
 /// Logger for email operations.
 /// </param>
 public sealed class EmailService(
 	IOptions<EmailSettings> settings,
 	IRateLimitingService rateLimitingService,
+	IHttpClientFactory httpClientFactory,
 	ILogger<EmailService> logger) : IEmailService
 {
-	private const string BREVO_API_NAME = "BrevoEmail";
-	private const string BREVO_BASE_URL = "smtp-relay.brevo.com";
+	internal const string BrevoHttpClientName = "BrevoApi";
+	private const string BREVO_API_NAME =
+		ExternalApiConstants.BrevoEmail;
+	private const string BREVO_BASE_URL = "api.brevo.com";
 
 	/// <summary>
 	/// Sends a welcome email with a password setup link to the specified user.
@@ -247,7 +253,7 @@ public sealed class EmailService(
 	/// <summary>
 	/// Sends an email with the specified parameters.
 	/// </summary>
-	/// <param name="to">
+	/// <param name="recipientEmail">
 	/// Recipient email address.
 	/// </param>
 	/// <param name="subject">
@@ -261,78 +267,172 @@ public sealed class EmailService(
 	/// </param>
 	/// <exception cref="EmailRateLimitException">Thrown when email daily limit is exceeded.</exception>
 	/// <remarks>
-	/// <para>
-	/// Uses a reserve-then-execute pattern to guarantee the rate limit count is always
-	/// greater than or equal to the number of actual SMTP sends:
-	/// </para>
+	/// Uses a reserve-then-execute pattern:
 	/// <list type="number">
 	/// <item>Reserve a rate limit slot (atomic increment via transaction with retry)</item>
-	/// <item>Send the email via SMTP</item>
-	/// <item>On SMTP failure: best-effort decrement (count staying 1 too high is safe)</item>
+	/// <item>Send the email via Brevo HTTP API</item>
+	/// <item>On network failure (call never reached Brevo): release the reserved slot</item>
+	/// <item>On ANY Brevo response (success OR error): slot stays consumed — Brevo charged us</item>
 	/// </list>
+	/// This ensures the rate limit count accurately reflects API calls that reached Brevo,
+	/// regardless of whether the response was success (201), client error (400/401),
+	/// rate limit (429), or server error (500+).
 	/// </remarks>
 	private async Task SendEmailAsync(
-		string to,
+		string recipientEmail,
 		string subject,
 		string htmlBody,
 		CancellationToken cancellationToken)
 	{
-		string maskedTo =
-			LogSanitizer.MaskEmail(to);
-		string maskedSubject =
-			LogSanitizer.MaskEmailSubject(subject);
-
 		if (!settings.Value.Enabled)
 		{
 			logger.LogWarning(
-				"[EMAIL DISABLED] Would send to {To}: {Subject}",
-				maskedTo,
-				maskedSubject);
+				"Email sending disabled. Would send to {Email}: {Subject}",
+				LogSanitizer.MaskEmail(recipientEmail),
+				LogSanitizer.MaskEmailSubject(subject));
 			return;
 		}
 
-		// RESERVE the rate limit slot BEFORE sending — atomic, transactional with retry
 		await ReserveRateLimitSlotAsync(cancellationToken);
 
 		try
 		{
-			using MimeMessage message =
-				BuildMimeMessage(to, subject, htmlBody);
-			await SendViaSMtpAsync(message, cancellationToken);
+			await SendViaBrevoApiAsync(
+				recipientEmail,
+				subject,
+				htmlBody,
+				cancellationToken);
 		}
-		catch (Exception exception)
-			when (exception is SocketException
-				or TimeoutException)
+		catch (HttpRequestException exception)
+			when (IsConnectionFailure(exception))
 		{
-			// SMTP connection failed — likely firewall block; release slot then rethrow
+			// Network/DNS failure — HTTP call never reached Brevo. Release the slot.
 			await TryReleaseRateLimitSlotAsync();
-
 			logger.LogError(
 				exception,
-				"SMTP connection failed to {SmtpHost}:{SmtpPort} — possible firewall block. Verify outbound TCP port {SmtpPort} is allowed",
-				settings.Value.SmtpHost,
-				settings.Value.SmtpPort,
-				settings.Value.SmtpPort);
+				"Connection to Brevo API failed (never reached server). Rate limit slot released.");
 			throw;
 		}
-		catch (Exception exception)
+		catch (TaskCanceledException exception)
+			when (!cancellationToken.IsCancellationRequested)
 		{
-			// SMTP failed — release the reserved slot (best-effort, cancellation-safe)
+			// HttpClient timeout — request may not have reached Brevo. Release conservatively.
+			// Note: If Brevo DID receive it, count will be 1 too low. But timeouts are rare
+			// and under-counting on timeout is safer than blocking all future sends.
 			await TryReleaseRateLimitSlotAsync();
-
 			logger.LogError(
 				exception,
-				"SMTP send failed for {To}: {Subject}. Rate limit slot released.",
-				maskedTo,
-				maskedSubject);
+				"Brevo API request timed out. Rate limit slot released.");
 			throw;
 		}
+		// ALL other exceptions (HttpRequestException from bad status codes, EmailRateLimitException,
+		// TaskCanceledException from caller cancellation) — Brevo was contacted or we're shutting down.
+		// The slot stays consumed. This is correct: Brevo charges per API call regardless of response.
 
 		logger.LogWarning(
 			"Email sent to {To}: {Subject}",
-			maskedTo,
-			maskedSubject);
+			LogSanitizer.MaskEmail(recipientEmail),
+			LogSanitizer.MaskEmailSubject(subject));
 	}
+
+	/// <summary>
+	/// Sends an email via Brevo HTTP API.
+	/// </summary>
+	/// <param name="recipientEmail">
+	/// Recipient email address.
+	/// </param>
+	/// <param name="subject">
+	/// Email subject.
+	/// </param>
+	/// <param name="htmlBody">
+	/// HTML email body.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	private async Task SendViaBrevoApiAsync(
+		string recipientEmail,
+		string subject,
+		string htmlBody,
+		CancellationToken cancellationToken)
+	{
+		HttpClient httpClient =
+			httpClientFactory.CreateClient(BrevoHttpClientName);
+
+		BrevoSendEmailRequest requestBody =
+			new(
+				Sender: new BrevoEmailAddress(
+					settings.Value.FromAddress,
+					settings.Value.FromName),
+				To: [new BrevoEmailAddress(recipientEmail, null)],
+				Subject: subject,
+				HtmlContent: htmlBody);
+
+		using HttpResponseMessage response =
+			await httpClient.PostAsJsonAsync(
+				"v3/smtp/email",
+				requestBody,
+				BrevoJsonContext.Default.BrevoSendEmailRequest,
+				cancellationToken);
+
+		if (response.StatusCode == HttpStatusCode.TooManyRequests)
+		{
+			string resetHeader =
+				response.Headers.TryGetValues(
+					"x-sib-ratelimit-reset",
+					out IEnumerable<string>? values)
+					? values.First()
+					: "60";
+
+			int resetSeconds =
+				int.TryParse(
+					resetHeader,
+					out int parsed)
+					? parsed
+					: 60;
+
+			throw new EmailRateLimitException(
+				TimeSpan.FromSeconds(resetSeconds),
+				0);
+		}
+
+		if (!response.IsSuccessStatusCode)
+		{
+			string errorBody =
+				await response.Content.ReadAsStringAsync(cancellationToken);
+
+			const int maxErrorLogLength = 500;
+			string truncatedError =
+				errorBody.Length > maxErrorLogLength
+					? errorBody[..maxErrorLogLength] + "…[truncated]"
+					: errorBody;
+
+			logger.LogError(
+				"Brevo API returned {StatusCode}: {Error}",
+				(int)response.StatusCode,
+				LogSanitizer.Sanitize(truncatedError));
+
+			throw new HttpRequestException(
+				$"Brevo API returned status code {(int)response.StatusCode}",
+				null,
+				response.StatusCode);
+		}
+	}
+
+	/// <summary>
+	/// Determines if an <see cref="HttpRequestException"/> represents a connection-level failure
+	/// where the HTTP request never reached the remote server.
+	/// </summary>
+	/// <param name="exception">
+	/// The exception to evaluate.
+	/// </param>
+	/// <returns>
+	/// True if the exception indicates a connection failure; otherwise false.
+	/// </returns>
+	private static bool IsConnectionFailure(HttpRequestException exception) =>
+		exception.HttpRequestError is HttpRequestError.ConnectionError
+			or HttpRequestError.NameResolutionError
+		|| exception.InnerException is SocketException;
 
 	/// <summary>
 	/// Atomically reserves a rate limit slot. Throws if the limit is reached.
@@ -395,78 +495,6 @@ public sealed class EmailService(
 				"Failed to release rate limit slot for {ApiName}. Count may be 1 too high (safe/conservative).",
 				BREVO_API_NAME);
 		}
-	}
-
-	/// <summary>
-	/// Builds a <see cref="MimeMessage"/> with the configured sender, recipient, subject and HTML body.
-	/// </summary>
-	/// <param name="to">
-	/// Recipient email address.
-	/// </param>
-	/// <param name="subject">
-	/// Email subject.
-	/// </param>
-	/// <param name="htmlBody">
-	/// HTML body content for the email.
-	/// </param>
-	/// <returns>
-	/// A populated <see cref="MimeMessage"/> ready for sending.
-	/// </returns>
-	private MimeMessage BuildMimeMessage(
-		string to,
-		string subject,
-		string htmlBody)
-	{
-		MimeMessage message = new();
-		message.From.Add(
-			new MailboxAddress(
-				settings.Value.FromName,
-				settings.Value.FromAddress));
-		message.To.Add(MailboxAddress.Parse(to));
-		message.Subject = subject;
-		message.Body =
-			new BodyBuilder { HtmlBody = htmlBody }.ToMessageBody();
-		return message;
-	}
-
-	/// <summary>
-	/// Sends the provided <see cref="MimeMessage"/> via SMTP using the configured <see cref="EmailSettings"/>.
-	/// </summary>
-	/// <param name="message">
-	/// The message to send.
-	/// </param>
-	/// <param name="cancellationToken">
-	/// Cancellation token.
-	/// </param>
-	/// <exception cref="Exception">
-	/// Thrown when SMTP connection, authentication or send operations fail.
-	/// </exception>
-	private async Task SendViaSMtpAsync(
-		MimeMessage message,
-		CancellationToken cancellationToken)
-	{
-		using SmtpClient client = new();
-		SecureSocketOptions securityOptions =
-			settings.Value.UseSsl
-			? SecureSocketOptions.StartTls
-			: SecureSocketOptions.None;
-
-		await client.ConnectAsync(
-			settings.Value.SmtpHost,
-			settings.Value.SmtpPort,
-			securityOptions,
-			cancellationToken);
-
-		if (!string.IsNullOrEmpty(settings.Value.SmtpUsername))
-		{
-			await client.AuthenticateAsync(
-				settings.Value.SmtpUsername,
-				settings.Value.SmtpPassword,
-				cancellationToken);
-		}
-
-		await client.SendAsync(message, cancellationToken);
-		await client.DisconnectAsync(quit: true, cancellationToken);
 	}
 
 	/// <summary>

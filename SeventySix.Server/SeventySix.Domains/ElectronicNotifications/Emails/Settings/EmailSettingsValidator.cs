@@ -12,26 +12,16 @@ namespace SeventySix.ElectronicNotifications.Emails;
 /// </summary>
 /// <remarks>
 /// Validates:
-/// - SmtpHost is configured when email is enabled
+/// - ApiKey is configured when email is enabled
+/// - ApiUrl is a valid absolute URI when enabled
 /// - FromAddress is a valid email address when enabled
 /// - ClientBaseUrl is a valid absolute URI when enabled
-/// - SmtpPort is within valid range
 ///
 /// This validator is used at application startup to fail fast
 /// if email configuration is invalid.
 /// </remarks>
 public sealed class EmailSettingsValidator : AbstractValidator<EmailSettings>
 {
-	/// <summary>
-	/// Minimum valid SMTP port.
-	/// </summary>
-	public const int MinSmtpPort = 1;
-
-	/// <summary>
-	/// Maximum valid SMTP port.
-	/// </summary>
-	public const int MaxSmtpPort = 65535;
-
 	/// <summary>
 	/// Initializes a new instance of the <see cref="EmailSettingsValidator"/> class.
 	/// </summary>
@@ -41,15 +31,14 @@ public sealed class EmailSettingsValidator : AbstractValidator<EmailSettings>
 			settings => settings.Enabled,
 			() =>
 			{
-				RuleFor(settings => settings.SmtpHost)
+				RuleFor(settings => settings.ApiKey)
 					.NotEmpty()
-					.WithMessage("SmtpHost is required when email is enabled");
+					.WithMessage("ApiKey is required when email is enabled");
 
-				RuleFor(settings => settings.SmtpPort)
-					.InclusiveBetween(
-						MinSmtpPort,
-						MaxSmtpPort)
-					.WithMessage($"SmtpPort must be between {MinSmtpPort} and {MaxSmtpPort}");
+				RuleFor(settings => settings.ApiUrl)
+					.NotEmpty()
+					.Must(IsValidAbsoluteUri)
+					.WithMessage("Valid ApiUrl URI is required when email is enabled");
 
 				RuleFor(settings => settings.FromAddress)
 					.NotEmpty()

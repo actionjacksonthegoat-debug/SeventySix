@@ -146,8 +146,7 @@ services:
             - Auth__OAuth__Providers__0__ClientId=${GITHUB_CLIENT_ID:?GITHUB_CLIENT_ID must be set}
             - Auth__OAuth__Providers__0__ClientSecret=${GITHUB_CLIENT_SECRET:?GITHUB_CLIENT_SECRET must be set}
             # Email Configuration
-            - Email__SmtpUsername=${EMAIL_SMTP_USERNAME:?EMAIL_SMTP_USERNAME must be set}
-            - Email__SmtpPassword=${EMAIL_SMTP_PASSWORD:?EMAIL_SMTP_PASSWORD must be set}
+            - Email__ApiKey=${EMAIL_API_KEY:?EMAIL_API_KEY must be set}
             - Email__FromAddress=${EMAIL_FROM_ADDRESS:?EMAIL_FROM_ADDRESS must be set}
             # Site — contact email for legal pages (never hardcoded in client)
             - Site__Email=${SITE_EMAIL:?SITE_EMAIL must be set}
@@ -163,7 +162,9 @@ services:
             - DataProtection__CertificatePassword=${DATA_PROTECTION_CERTIFICATE_PASSWORD:?DATA_PROTECTION_CERTIFICATE_PASSWORD must be set}
             # Host Filtering — MUST NOT be wildcard in production (StartupValidator rejects '*')
             - AllowedHosts=${ALLOWED_HOSTS:?ALLOWED_HOSTS must be set - e.g. seventysixsandbox.com;www.seventysixsandbox.com;api.seventysixsandbox.com}
-            # OAuth Callback URLs — must match GitHub OAuth App settings
+            # OAuth Callback URLs — MUST use the same domain as the client (not the API subdomain)
+            # The OAuth popup opens through nginx on the client domain. Cookies are set on that domain.
+            # If the redirect goes to a different domain (e.g. api.example.com), cookies are lost.
             - Auth__OAuth__ClientCallbackUrl=${OAUTH_CALLBACK_URL:?OAUTH_CALLBACK_URL must be set - e.g. https://seventysixsandbox.com/auth/callback}
             - Auth__OAuth__Providers__0__RedirectUri=${OAUTH_REDIRECT_URI:?OAUTH_REDIRECT_URI must be set - e.g. https://seventysixsandbox.com/api/v1/auth/oauth/github/callback}
             # Email — public URL for email links (password reset, verification, etc.)

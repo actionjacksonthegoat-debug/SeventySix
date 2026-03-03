@@ -144,7 +144,7 @@ public interface IRateLimitingService
 
 	/// <summary>
 	/// Best-effort decrement of today's call count for rollback scenarios.
-	/// Used when an API call was reserved but the actual call failed (e.g., SMTP error).
+	/// Used when an API call was reserved but the actual call failed (e.g., connection error).
 	/// </summary>
 	/// <param name="apiName">
 	/// The API name to decrement.

@@ -397,7 +397,7 @@ public sealed class RateLimitingServiceTests
 			{
 				ApiName =
 					ExternalApiConstants.BrevoEmail,
-				BaseUrl = "smtp-relay.brevo.com",
+				BaseUrl = "api.brevo.com",
 				CallCount = 249,
 				LastCalledAt =
 					timeProvider.GetUtcNow().AddMinutes(-5),

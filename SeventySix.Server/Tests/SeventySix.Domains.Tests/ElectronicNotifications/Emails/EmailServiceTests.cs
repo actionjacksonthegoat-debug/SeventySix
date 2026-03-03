@@ -2,13 +2,15 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using System.Net;
+using System.Net.Sockets;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NSubstitute;
-using NSubstitute.ExceptionExtensions;
 using SeventySix.ElectronicNotifications.Emails;
 using SeventySix.Shared.Constants;
 using SeventySix.Shared.Interfaces;
+using SeventySix.TestUtilities.TestHelpers;
 using Shouldly;
 
 namespace SeventySix.Domains.Tests.ElectronicNotifications.Emails;
@@ -21,14 +23,17 @@ namespace SeventySix.Domains.Tests.ElectronicNotifications.Emails;
 /// - SendWelcomeEmailAsync (enabled/disabled modes)
 /// - SendPasswordResetEmailAsync (enabled/disabled modes)
 /// - Argument validation
-/// - URL building with token encoding.
+/// - URL building with token encoding
+/// - Brevo HTTP API integration
+/// - Rate limiting: slot consumed on Brevo response, released on connection failure.
 /// </remarks>
 public sealed class EmailServiceTests
 {
+	private static readonly Uri BrevoBaseAddress =
+		new("https://api.brevo.com");
+
 	private readonly ILogger<EmailService> Logger =
-		Substitute.For<
-		ILogger<EmailService>
-	>();
+		Substitute.For<ILogger<EmailService>>();
 
 	private readonly IRateLimitingService RateLimitingService =
 		Substitute.For<IRateLimitingService>();
@@ -56,10 +61,50 @@ public sealed class EmailServiceTests
 				ClientBaseUrl = clientBaseUrl,
 				FromAddress = "test@example.com",
 				FromName = "Test Sender",
-				SmtpHost = "localhost",
-				SmtpPort = 587,
-				UseSsl = true,
+				ApiKey = "test-api-key",
+				ApiUrl = "https://api.brevo.com",
 			});
+	}
+
+	/// <summary>
+	/// Creates a mock <see cref="IHttpClientFactory"/> returning the given
+	/// <see cref="HttpClient"/>. The caller owns disposal of the HttpClient.
+	/// </summary>
+	private static IHttpClientFactory CreateMockHttpClientFactory(
+		HttpClient httpClient)
+	{
+		IHttpClientFactory factory =
+			Substitute.For<IHttpClientFactory>();
+
+		factory
+			.CreateClient(EmailService.BrevoHttpClientName)
+			.Returns(httpClient);
+
+		return factory;
+	}
+
+	/// <summary>
+	/// Creates a <see cref="MockHttpMessageHandler"/> that returns a 201 Created
+	/// response with a Brevo-style message ID. Both returned objects must be
+	/// disposed by the caller.
+	/// </summary>
+	private static (MockHttpMessageHandler Handler, HttpResponseMessage Response)
+		CreateSuccessHandler()
+	{
+		HttpResponseMessage response =
+			new(HttpStatusCode.Created)
+			{
+				Content = new StringContent(
+					"""{ "messageId": "test-123"}""",
+					System.Text.Encoding.UTF8,
+					"application/json"),
+			};
+
+		MockHttpMessageHandler handler =
+			new((request, cancellationToken) =>
+				Task.FromResult(response));
+
+		return (handler, response);
 	}
 
 	#region SendWelcomeEmailAsync Tests
@@ -73,8 +118,20 @@ public sealed class EmailServiceTests
 		// Arrange
 		IOptions<EmailSettings> options =
 			CreateOptions(enabled: false);
+		(MockHttpMessageHandler handlerValue, HttpResponseMessage responseValue) =
+			CreateSuccessHandler();
+		using MockHttpMessageHandler handler = handlerValue;
+		using HttpResponseMessage successResponse = responseValue;
+		using HttpClient httpClient =
+			new(handler) { BaseAddress = BrevoBaseAddress };
+		IHttpClientFactory httpClientFactory =
+			CreateMockHttpClientFactory(httpClient);
 		EmailService service =
-			new(options, RateLimitingService, Logger);
+			new(
+				options,
+				RateLimitingService,
+				httpClientFactory,
+				Logger);
 
 		// Act
 		await service.SendWelcomeEmailAsync(
@@ -95,8 +152,20 @@ public sealed class EmailServiceTests
 	{
 		// Arrange
 		IOptions<EmailSettings> options = CreateOptions();
+		(MockHttpMessageHandler handlerValue, HttpResponseMessage responseValue) =
+			CreateSuccessHandler();
+		using MockHttpMessageHandler handler = handlerValue;
+		using HttpResponseMessage successResponse = responseValue;
+		using HttpClient httpClient =
+			new(handler) { BaseAddress = BrevoBaseAddress };
+		IHttpClientFactory httpClientFactory =
+			CreateMockHttpClientFactory(httpClient);
 		EmailService service =
-			new(options, RateLimitingService, Logger);
+			new(
+				options,
+				RateLimitingService,
+				httpClientFactory,
+				Logger);
 
 		// Act & Assert
 		await Should.ThrowAsync<ArgumentException>(() =>
@@ -115,8 +184,20 @@ public sealed class EmailServiceTests
 	{
 		// Arrange
 		IOptions<EmailSettings> options = CreateOptions();
+		(MockHttpMessageHandler handlerValue, HttpResponseMessage responseValue) =
+			CreateSuccessHandler();
+		using MockHttpMessageHandler handler = handlerValue;
+		using HttpResponseMessage successResponse = responseValue;
+		using HttpClient httpClient =
+			new(handler) { BaseAddress = BrevoBaseAddress };
+		IHttpClientFactory httpClientFactory =
+			CreateMockHttpClientFactory(httpClient);
 		EmailService service =
-			new(options, RateLimitingService, Logger);
+			new(
+				options,
+				RateLimitingService,
+				httpClientFactory,
+				Logger);
 
 		// Act & Assert
 		await Should.ThrowAsync<ArgumentException>(() =>
@@ -135,8 +216,20 @@ public sealed class EmailServiceTests
 	{
 		// Arrange
 		IOptions<EmailSettings> options = CreateOptions();
+		(MockHttpMessageHandler handlerValue, HttpResponseMessage responseValue) =
+			CreateSuccessHandler();
+		using MockHttpMessageHandler handler = handlerValue;
+		using HttpResponseMessage successResponse = responseValue;
+		using HttpClient httpClient =
+			new(handler) { BaseAddress = BrevoBaseAddress };
+		IHttpClientFactory httpClientFactory =
+			CreateMockHttpClientFactory(httpClient);
 		EmailService service =
-			new(options, RateLimitingService, Logger);
+			new(
+				options,
+				RateLimitingService,
+				httpClientFactory,
+				Logger);
 
 		// Act & Assert
 		await Should.ThrowAsync<ArgumentException>(() =>
@@ -160,8 +253,20 @@ public sealed class EmailServiceTests
 		// Arrange
 		IOptions<EmailSettings> options =
 			CreateOptions(enabled: false);
+		(MockHttpMessageHandler handlerValue, HttpResponseMessage responseValue) =
+			CreateSuccessHandler();
+		using MockHttpMessageHandler handler = handlerValue;
+		using HttpResponseMessage successResponse = responseValue;
+		using HttpClient httpClient =
+			new(handler) { BaseAddress = BrevoBaseAddress };
+		IHttpClientFactory httpClientFactory =
+			CreateMockHttpClientFactory(httpClient);
 		EmailService service =
-			new(options, RateLimitingService, Logger);
+			new(
+				options,
+				RateLimitingService,
+				httpClientFactory,
+				Logger);
 
 		// Act
 		await service.SendPasswordResetEmailAsync(
@@ -182,8 +287,20 @@ public sealed class EmailServiceTests
 	{
 		// Arrange
 		IOptions<EmailSettings> options = CreateOptions();
+		(MockHttpMessageHandler handlerValue, HttpResponseMessage responseValue) =
+			CreateSuccessHandler();
+		using MockHttpMessageHandler handler = handlerValue;
+		using HttpResponseMessage successResponse = responseValue;
+		using HttpClient httpClient =
+			new(handler) { BaseAddress = BrevoBaseAddress };
+		IHttpClientFactory httpClientFactory =
+			CreateMockHttpClientFactory(httpClient);
 		EmailService service =
-			new(options, RateLimitingService, Logger);
+			new(
+				options,
+				RateLimitingService,
+				httpClientFactory,
+				Logger);
 
 		// Act & Assert
 		await Should.ThrowAsync<ArgumentException>(() =>
@@ -202,8 +319,20 @@ public sealed class EmailServiceTests
 	{
 		// Arrange
 		IOptions<EmailSettings> options = CreateOptions();
+		(MockHttpMessageHandler handlerValue, HttpResponseMessage responseValue) =
+			CreateSuccessHandler();
+		using MockHttpMessageHandler handler = handlerValue;
+		using HttpResponseMessage successResponse = responseValue;
+		using HttpClient httpClient =
+			new(handler) { BaseAddress = BrevoBaseAddress };
+		IHttpClientFactory httpClientFactory =
+			CreateMockHttpClientFactory(httpClient);
 		EmailService service =
-			new(options, RateLimitingService, Logger);
+			new(
+				options,
+				RateLimitingService,
+				httpClientFactory,
+				Logger);
 
 		// Act & Assert
 		await Should.ThrowAsync<ArgumentException>(() =>
@@ -222,8 +351,20 @@ public sealed class EmailServiceTests
 	{
 		// Arrange
 		IOptions<EmailSettings> options = CreateOptions();
+		(MockHttpMessageHandler handlerValue, HttpResponseMessage responseValue) =
+			CreateSuccessHandler();
+		using MockHttpMessageHandler handler = handlerValue;
+		using HttpResponseMessage successResponse = responseValue;
+		using HttpClient httpClient =
+			new(handler) { BaseAddress = BrevoBaseAddress };
+		IHttpClientFactory httpClientFactory =
+			CreateMockHttpClientFactory(httpClient);
 		EmailService service =
-			new(options, RateLimitingService, Logger);
+			new(
+				options,
+				RateLimitingService,
+				httpClientFactory,
+				Logger);
 
 		// Act & Assert
 		await Should.ThrowAsync<ArgumentException>(() =>
@@ -269,11 +410,23 @@ public sealed class EmailServiceTests
 			.GetTimeUntilReset()
 			.Returns(TimeSpan.FromHours(12));
 
+		(MockHttpMessageHandler handlerValue, HttpResponseMessage responseValue) =
+			CreateSuccessHandler();
+		using MockHttpMessageHandler handler = handlerValue;
+		using HttpResponseMessage successResponse = responseValue;
+		using HttpClient httpClient =
+			new(handler) { BaseAddress = BrevoBaseAddress };
+		IHttpClientFactory httpClientFactory =
+			CreateMockHttpClientFactory(httpClient);
 		EmailService service =
-			new(options, rateLimiterMock, Logger);
+			new(
+				options,
+				rateLimiterMock,
+				httpClientFactory,
+				Logger);
 
 		// Act & Assert
-		EmailRateLimitException ex =
+		EmailRateLimitException exception =
 			await Should.ThrowAsync<EmailRateLimitException>(() =>
 				service.SendWelcomeEmailAsync(
 					"test@example.com",
@@ -281,7 +434,7 @@ public sealed class EmailServiceTests
 					"token123",
 					CancellationToken.None));
 
-		ex.Message.ShouldContain("Email daily limit exceeded");
+		exception.Message.ShouldContain("Email daily limit exceeded");
 	}
 
 	/// <summary>
@@ -315,11 +468,23 @@ public sealed class EmailServiceTests
 			.GetTimeUntilReset()
 			.Returns(TimeSpan.FromHours(6));
 
+		(MockHttpMessageHandler handlerValue, HttpResponseMessage responseValue) =
+			CreateSuccessHandler();
+		using MockHttpMessageHandler handler = handlerValue;
+		using HttpResponseMessage successResponse = responseValue;
+		using HttpClient httpClient =
+			new(handler) { BaseAddress = BrevoBaseAddress };
+		IHttpClientFactory httpClientFactory =
+			CreateMockHttpClientFactory(httpClient);
 		EmailService service =
-			new(options, rateLimiterMock, Logger);
+			new(
+				options,
+				rateLimiterMock,
+				httpClientFactory,
+				Logger);
 
 		// Act & Assert
-		EmailRateLimitException ex =
+		EmailRateLimitException exception =
 			await Should.ThrowAsync<EmailRateLimitException>(() =>
 				service.SendPasswordResetEmailAsync(
 					"test@example.com",
@@ -327,22 +492,16 @@ public sealed class EmailServiceTests
 					"token456",
 					CancellationToken.None));
 
-		ex.Message.ShouldContain("Email daily limit exceeded");
+		exception.Message.ShouldContain("Email daily limit exceeded");
 	}
 
 	/// <summary>
-	/// Verifies that when SMTP send fails (e.g., connection refused), the service
-	/// calls <see cref="IRateLimitingService.TryDecrementRequestCountAsync"/> to release
-	/// the previously reserved rate limit slot, then rethrows the original exception.
+	/// Verifies that when a connection failure occurs (HTTP request never reached Brevo),
+	/// the service releases the previously reserved rate limit slot via
+	/// <see cref="IRateLimitingService.TryDecrementRequestCountAsync"/>.
 	/// </summary>
-	/// <remarks>
-	/// The test sets <c>enabled: true</c> with <c>SmtpHost = "localhost"</c> port 587.
-	/// No SMTP server is running in the test environment, so MailKit's ConnectAsync
-	/// throws a <see cref="System.Net.Sockets.SocketException"/>. This naturally
-	/// exercises the catch block in <c>SendEmailAsync</c>.
-	/// </remarks>
 	[Fact]
-	public async Task SendWelcomeEmailAsync_SmtpFailure_CallsTryDecrementAsync()
+	public async Task SendWelcomeEmailAsync_ConnectionFailure_ReleasesRateLimitSlotAsync()
 	{
 		// Arrange
 		IOptions<EmailSettings> options =
@@ -358,11 +517,28 @@ public sealed class EmailServiceTests
 				Arg.Any<CancellationToken>())
 			.Returns(true);
 
-		EmailService service =
-			new(options, rateLimiterMock, Logger);
+		using MockHttpMessageHandler handler =
+			new(
+				(request, cancellationToken) =>
+					throw new HttpRequestException(
+						HttpRequestError.ConnectionError,
+						"Connection refused",
+						new SocketException()));
 
-		// Act — SMTP will fail because no server is listening on localhost:587
-		await Should.ThrowAsync<Exception>(() =>
+		using HttpClient httpClient =
+			new(handler) { BaseAddress = BrevoBaseAddress };
+		IHttpClientFactory httpClientFactory =
+			CreateMockHttpClientFactory(httpClient);
+
+		EmailService service =
+			new(
+				options,
+				rateLimiterMock,
+				httpClientFactory,
+				Logger);
+
+		// Act
+		await Should.ThrowAsync<HttpRequestException>(() =>
 			service.SendWelcomeEmailAsync(
 				"test@example.com",
 				"testuser",
@@ -378,12 +554,11 @@ public sealed class EmailServiceTests
 	}
 
 	/// <summary>
-	/// Verifies that when both SMTP send and the decrement rollback fail,
-	/// the original SMTP exception is thrown (not the decrement exception)
-	/// and the decrement failure is logged as a warning.
+	/// Verifies that when Brevo returns a 400 Bad Request (API was contacted),
+	/// the rate limit slot stays consumed — Brevo has counted the call.
 	/// </summary>
 	[Fact]
-	public async Task SendWelcomeEmailAsync_SmtpFailAndDecrementFail_ThrowsOriginalExceptionAsync()
+	public async Task SendWelcomeEmailAsync_BrevoReturns400_KeepsRateLimitSlotConsumedAsync()
 	{
 		// Arrange
 		IOptions<EmailSettings> options =
@@ -399,28 +574,157 @@ public sealed class EmailServiceTests
 				Arg.Any<CancellationToken>())
 			.Returns(true);
 
-		rateLimiterMock
-			.TryDecrementRequestCountAsync(
-				ExternalApiConstants.BrevoEmail,
-				Arg.Any<CancellationToken>())
-			.ThrowsAsync(new InvalidOperationException("DB connection lost"));
+		using HttpResponseMessage badResponse =
+			new(HttpStatusCode.BadRequest)
+			{
+				Content = new StringContent(
+					"""{ "code":"invalid","message":"bad"}""",
+					System.Text.Encoding.UTF8,
+					"application/json"),
+			};
+
+		using MockHttpMessageHandler handler =
+			new(
+				(request, cancellationToken) =>
+					Task.FromResult(badResponse));
+
+		using HttpClient httpClient =
+			new(handler) { BaseAddress = BrevoBaseAddress };
+		IHttpClientFactory httpClientFactory =
+			CreateMockHttpClientFactory(httpClient);
 
 		EmailService service =
-			new(options, rateLimiterMock, Logger);
+			new(
+				options,
+				rateLimiterMock,
+				httpClientFactory,
+				Logger);
 
-		// Act — SMTP fails (no server), then decrement also fails
-		await Should.ThrowAsync<Exception>(() =>
+		// Act & Assert
+		await Should.ThrowAsync<HttpRequestException>(() =>
 			service.SendWelcomeEmailAsync(
 				"test@example.com",
 				"testuser",
 				"token123",
 				CancellationToken.None));
 
-		// Assert — Decrement was attempted despite failure
+		// Slot was NOT released — Brevo received the call
 		await rateLimiterMock
-			.Received(1)
+			.DidNotReceive()
 			.TryDecrementRequestCountAsync(
+				Arg.Any<string>(),
+				Arg.Any<CancellationToken>());
+	}
+
+	/// <summary>
+	/// Verifies that when Brevo returns 429 Too Many Requests, an
+	/// <see cref="EmailRateLimitException"/> is thrown and the slot stays consumed.
+	/// </summary>
+	[Fact]
+	public async Task SendWelcomeEmailAsync_BrevoReturns429_ThrowsEmailRateLimitExceptionAsync()
+	{
+		// Arrange
+		IOptions<EmailSettings> options =
+			CreateOptions(enabled: true);
+
+		IRateLimitingService rateLimiterMock =
+			Substitute.For<IRateLimitingService>();
+
+		rateLimiterMock
+			.TryIncrementRequestCountAsync(
 				ExternalApiConstants.BrevoEmail,
+				Arg.Any<string>(),
+				Arg.Any<CancellationToken>())
+			.Returns(true);
+
+		using HttpResponseMessage tooManyResponse =
+			new(HttpStatusCode.TooManyRequests);
+		tooManyResponse.Headers.TryAddWithoutValidation(
+			"x-sib-ratelimit-reset",
+			"120");
+
+		using MockHttpMessageHandler handler =
+			new(
+				(request, cancellationToken) =>
+					Task.FromResult(tooManyResponse));
+
+		using HttpClient httpClient =
+			new(handler) { BaseAddress = BrevoBaseAddress };
+		IHttpClientFactory httpClientFactory =
+			CreateMockHttpClientFactory(httpClient);
+
+		EmailService service =
+			new(
+				options,
+				rateLimiterMock,
+				httpClientFactory,
+				Logger);
+
+		// Act & Assert
+		await Should.ThrowAsync<EmailRateLimitException>(() =>
+			service.SendWelcomeEmailAsync(
+				"test@example.com",
+				"testuser",
+				"token123",
+				CancellationToken.None));
+
+		// Slot was NOT released — Brevo counted the call
+		await rateLimiterMock
+			.DidNotReceive()
+			.TryDecrementRequestCountAsync(
+				Arg.Any<string>(),
+				Arg.Any<CancellationToken>());
+	}
+
+	/// <summary>
+	/// Verifies that a successful Brevo API call (201 Created) completes
+	/// without exceptions and the rate limit slot stays consumed.
+	/// </summary>
+	[Fact]
+	public async Task SendWelcomeEmailAsync_BrevoReturns201_CompletesSuccessfullyAsync()
+	{
+		// Arrange
+		IOptions<EmailSettings> options =
+			CreateOptions(enabled: true);
+
+		IRateLimitingService rateLimiterMock =
+			Substitute.For<IRateLimitingService>();
+
+		rateLimiterMock
+			.TryIncrementRequestCountAsync(
+				ExternalApiConstants.BrevoEmail,
+				Arg.Any<string>(),
+				Arg.Any<CancellationToken>())
+			.Returns(true);
+
+		(MockHttpMessageHandler handlerValue, HttpResponseMessage responseValue) =
+			CreateSuccessHandler();
+		using MockHttpMessageHandler handler = handlerValue;
+		using HttpResponseMessage successResponse = responseValue;
+		using HttpClient httpClient =
+			new(handler) { BaseAddress = BrevoBaseAddress };
+		IHttpClientFactory httpClientFactory =
+			CreateMockHttpClientFactory(httpClient);
+
+		EmailService service =
+			new(
+				options,
+				rateLimiterMock,
+				httpClientFactory,
+				Logger);
+
+		// Act — should not throw
+		await service.SendWelcomeEmailAsync(
+			"test@example.com",
+			"testuser",
+			"token123",
+			CancellationToken.None);
+
+		// Assert — slot NOT released (Brevo received the call)
+		await rateLimiterMock
+			.DidNotReceive()
+			.TryDecrementRequestCountAsync(
+				Arg.Any<string>(),
 				Arg.Any<CancellationToken>());
 	}
 

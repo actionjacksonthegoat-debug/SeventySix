@@ -10,8 +10,7 @@ namespace SeventySix.ElectronicNotifications.Emails;
 /// <remarks>
 /// Design Notes:
 /// - Service-only bounded context (no database)
-/// - Current implementation is a stub that logs emails
-/// - Future: Will integrate with SMTP provider (SendGrid, AWS SES, etc.).
+/// - Sends transactional emails via Brevo HTTP API.
 /// </remarks>
 public interface IEmailService
 {

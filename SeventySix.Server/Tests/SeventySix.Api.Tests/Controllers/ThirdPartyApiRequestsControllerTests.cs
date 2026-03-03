@@ -40,7 +40,7 @@ public sealed class ThirdPartyApiRequestsControllerTests
 				Id = 1,
 				ApiName =
 					ExternalApiConstants.BrevoEmail,
-				BaseUrl = "smtp-relay.brevo.com",
+				BaseUrl = "api.brevo.com",
 				CallCount = 150,
 				LastCalledAt =
 					timeProvider

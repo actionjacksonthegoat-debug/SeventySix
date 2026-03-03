@@ -87,14 +87,9 @@ public static class PortConstants
 		public const int Valkey = 6380;
 
 		/// <summary>
-		/// MailDev web UI port.
+		/// Mock Brevo API port (email capture for E2E/LoadTest).
 		/// </summary>
-		public const int MailDevWeb = 1080;
-
-		/// <summary>
-		/// MailDev SMTP port.
-		/// </summary>
-		public const int MailDevSmtp = 1025;
+		public const int MockBrevoApi = 1080;
 	}
 
 	/// <summary>

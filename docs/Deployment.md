@@ -35,7 +35,7 @@ Before starting, ensure you have:
 - [ ] A **production** [GitHub OAuth App](https://github.com/settings/developers) registered (**NOT the dev app**):
   - Homepage URL: `https://seventysixsandbox.com`
   - Authorization callback URL: `https://api.seventysixsandbox.com/api/v1/auth/oauth/github/callback`
-- [ ] An SMTP provider account (e.g., [Brevo](https://www.brevo.com/) free: 300 emails/day)
+- [ ] A [Brevo](https://www.brevo.com/) account with API key (free tier: 300 emails/day)
 - [ ] A [MaxMind GeoLite2](https://www.maxmind.com/en/geolite2/signup) account (free — for GeoIP/Fail2Ban)
 - [ ] GitHub CI has run at least once on master with the `publish` job (images exist in GHCR)
 - [ ] `hcloud` CLI installed locally: `brew install hcloud` (macOS) or `apt install hcloud` (Linux)
@@ -416,7 +416,7 @@ rm /tmp/dataprotection.pfx
 > | `ADMIN_PASSWORD` | One-time seed password — generate random: `openssl rand -base64 24` |
 > | `GRAFANA_ADMIN_PASSWORD` | Dev password is in user secrets; regenerate: `openssl rand -base64 20` |
 > | `OAUTH_CLIENT_ID/SECRET` | **Register a NEW production OAuth App** — dev app has localhost callback URLs. Note: GitHub reserves the `GITHUB_` prefix for its own secrets — use `OAUTH_` instead. |
-> | `EMAIL_SMTP_USERNAME/PASSWORD` | Use production-specific SMTP credentials if possible |
+> | `EMAIL_API_KEY` | Use a production-specific Brevo API key |
 
 In your GitHub repository → **Settings → Secrets and variables → Actions**, add:
 
@@ -431,8 +431,7 @@ In your GitHub repository → **Settings → Secrets and variables → Actions**
 | `JWT_SECRET_KEY` | JWT signing key (64+ chars) | `openssl rand -base64 64` |
 | `OAUTH_CLIENT_ID` | Production GitHub OAuth App client ID (GitHub reserves the `GITHUB_` prefix) | [github.com/settings/developers](https://github.com/settings/developers) |
 | `OAUTH_CLIENT_SECRET` | Production GitHub OAuth App client secret | Same OAuth App |
-| `EMAIL_SMTP_USERNAME` | SMTP username (e.g., Brevo) | Your SMTP provider |
-| `EMAIL_SMTP_PASSWORD` | SMTP password | Your SMTP provider |
+| `EMAIL_API_KEY` | Brevo API key | [Brevo dashboard](https://app.brevo.com/settings/keys/api) |
 | `EMAIL_FROM_ADDRESS` | Sender address (e.g., `noreply@seventysixsandbox.com`) | — |
 | `SITE_EMAIL` | Public contact email shown on Privacy Policy and Terms of Service pages (e.g., `hello@yourdomain.com`) | — |
 | `ALTCHA_HMAC_KEY` | ALTCHA PoW key (base64, **must decode to exactly 64 bytes**) | `openssl rand -base64 64` |
@@ -494,9 +493,8 @@ gh secret set JWT_SECRET_KEY --body "<GENERATED_JWT_KEY>" --repo $REPO
 gh secret set OAUTH_CLIENT_ID --body "<YOUR_OAUTH_APP_CLIENT_ID>" --repo $REPO
 gh secret set OAUTH_CLIENT_SECRET --body "<YOUR_OAUTH_APP_CLIENT_SECRET>" --repo $REPO
 
-# ── Email (SMTP provider credentials) ──
-gh secret set EMAIL_SMTP_USERNAME --body "<YOUR_SMTP_USERNAME>" --repo $REPO
-gh secret set EMAIL_SMTP_PASSWORD --body "<YOUR_SMTP_PASSWORD>" --repo $REPO
+# ── Email (Brevo API key) ──
+gh secret set EMAIL_API_KEY --body "<YOUR_BREVO_API_KEY>" --repo $REPO
 gh secret set EMAIL_FROM_ADDRESS --body "<YOUR_FROM_ADDRESS>" --repo $REPO
 gh secret set SITE_EMAIL --body "<YOUR_SITE_CONTACT_EMAIL>" --repo $REPO
 
@@ -839,7 +837,7 @@ git pull origin master --ff-only
 export DB_PASSWORD="..." JWT_SECRET_KEY="..." VALKEY_PASSWORD="..."
 export DB_NAME=seventysix_db_name DB_USER=seventysix_db_user
 export GITHUB_CLIENT_ID="..." GITHUB_CLIENT_SECRET="..."
-export EMAIL_SMTP_USERNAME="..." EMAIL_SMTP_PASSWORD="..." EMAIL_FROM_ADDRESS="..."
+export EMAIL_API_KEY="..." EMAIL_FROM_ADDRESS="..."
 export SITE_EMAIL="..."
 export ALTCHA_HMAC_KEY="..." ADMIN_EMAIL="..." ADMIN_PASSWORD="..." ADMIN_USERNAME="..."
 export ADMIN_SEEDER_ENABLED=false DATA_PROTECTION_CERTIFICATE_PASSWORD="..."
@@ -965,7 +963,7 @@ Most deployment phases require SSH, Cloudflare dashboard, or credential manageme
 | Code changes (compose files, CI/CD workflows, nginx configs) | SSH into production server |
 | Documentation updates | Cloudflare dashboard configuration |
 | Generating `gh secret set` / `gh variable set` command lists | Running those commands (they contain secrets) |
-| Diagnosing issues from pasted logs | Creating OAuth Apps, SMTP accounts, MaxMind accounts |
+| Diagnosing issues from pasted logs | Creating OAuth Apps, Brevo API keys, MaxMind accounts |
 | Writing Caddyfile / firewall rules for user to paste | Uploading certs, configuring rclone, running backups |
 
 ### A.2 Critical Gotchas
@@ -1049,4 +1047,4 @@ This is already configured (`max-age=31536000; includeSubDomains; preload`) but 
 
 ### A.6 File Security — Never Commit Plan Files
 
-Implementation plan files (`implementation-*.md`, `deploy-*.md`, `my-next-up.md`) may contain real production secrets (OAuth credentials, SMTP passwords, API keys, PATs). **Always add them to `.gitignore` or delete them before committing.** If secrets were ever committed, rotate them immediately — Git history retains the values forever.
+Implementation plan files (`implementation-*.md`, `deploy-*.md`, `my-next-up.md`) may contain real production secrets (OAuth credentials, API keys, PATs). **Always add them to `.gitignore` or delete them before committing.** If secrets were ever committed, rotate them immediately — Git history retains the values forever.

@@ -18,7 +18,7 @@ export { unauthenticatedTest } from "./unauthenticated.fixture";
 
 // Email testing
 export { EmailTestHelper } from "./email.fixture";
-export type { MailDevEmail } from "./email.fixture";
+export type { CapturedEmail } from "./email.fixture";
 
 // TOTP helper
 export {

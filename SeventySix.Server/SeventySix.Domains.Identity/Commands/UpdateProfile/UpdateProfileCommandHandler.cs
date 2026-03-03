@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using SeventySix.Shared.Extensions;
 using SeventySix.Shared.Interfaces;
+using SeventySix.Shared.Utilities;
 using Wolverine;
 
 namespace SeventySix.Identity;
@@ -79,7 +80,7 @@ public static class UpdateProfileCommandHandler
 					when (exception.IsDuplicateKeyViolation())
 				{
 					throw new DuplicateUserException(
-						$"Email '{command.Request.Email}' is already registered");
+						$"Email '{LogSanitizer.MaskEmail(command.Request.Email)}' is already registered");
 				}
 			},
 			cancellationToken: cancellationToken);
@@ -119,7 +120,7 @@ public static class UpdateProfileCommandHandler
 		if (result.Errors.Any(error => error.Code == "DuplicateEmail"))
 		{
 			throw new DuplicateUserException(
-				$"Email '{email}' is already registered");
+				$"Email '{LogSanitizer.MaskEmail(email)}' is already registered");
 		}
 
 		if (result.Errors.Any(error => error.Code == "ConcurrencyFailure"))

@@ -9,8 +9,7 @@
 # - Client: 4202 HTTPS (dev: 4200, E2E: 4201)
 # - PostgreSQL: 5435 (dev: 5433, E2E: 5434)
 # - Valkey: 6381 (dev: 6379, E2E: 6380)
-# - MailDev Web: 1081 (E2E: 1080)
-# - MailDev SMTP: 1026 (E2E: 1025)
+# - Mock Brevo API: 1081 (E2E: 1080)
 
 name: seventysix-loadtest
 
@@ -50,16 +49,19 @@ services:
     networks:
       - loadtest-network
 
-  # MailDev - Email Capture
-  maildev-loadtest:
-    image: maildev/maildev:2.2.1
-    container_name: seventysix-maildev-loadtest
+  # Mock Brevo API - Email Capture
+  mock-brevo-api-loadtest:
+    build:
+      context: ./mock-brevo-api
+      dockerfile: Dockerfile
+    container_name: seventysix-mock-brevo-loadtest
     ports:
-      - "1081:1081" # Web UI
-      - "1026:1026" # SMTP
-    environment:
-      - MAILDEV_SMTP_PORT=1026
-      - MAILDEV_WEB_PORT=1081
+      - "1081:3000"
+    healthcheck:
+      test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health" ]
+      interval: 5s
+      timeout: 3s
+      retries: 3
     networks:
       - loadtest-network
 
@@ -93,13 +95,10 @@ services:
       - Cache__OutputCache__Policies__health__Enabled=false
       - Cache__OutputCache__Policies__thirdpartyrequests__Enabled=false
       - Cache__OutputCache__Policies__features__Enabled=false
-      # Email (MailDev — no auth required)
+      # Email (Mock Brevo API — validates api-key header presence)
       - Email__Enabled=true
-      - Email__UseSsl=false
-      - Email__SmtpHost=maildev-loadtest
-      - Email__SmtpPort=1026
-      - Email__SmtpUsername=
-      - Email__SmtpPassword=
+      - Email__ApiKey=test-api-key-loadtest
+      - Email__ApiUrl=http://mock-brevo-api-loadtest:3000
       - Email__FromAddress=noreply@loadtest.local
       - Site__Email=contact@loadtest.local
       - Email__ClientBaseUrl=https://localhost:4202
@@ -154,8 +153,8 @@ services:
         condition: service_healthy
       valkey-loadtest:
         condition: service_healthy
-      maildev-loadtest:
-        condition: service_started
+      mock-brevo-api-loadtest:
+        condition: service_healthy
     healthcheck:
       test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "--no-check-certificate", "https://localhost:8081/health" ]
       interval: 10s

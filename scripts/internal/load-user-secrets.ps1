@@ -9,7 +9,7 @@
 #   DB_PASSWORD                          → PostgreSQL (docker-compose.yml)
 #   JWT_SECRET_KEY                       → API authentication (docker-compose.yml)
 #   GITHUB_CLIENT_ID / CLIENT_SECRET     → GitHub OAuth (docker-compose.yml)
-#   EMAIL_SMTP_USERNAME / PASSWORD        → Brevo SMTP (docker-compose.yml)
+#   EMAIL_API_KEY                        → Brevo HTTP API (docker-compose.yml)
 #   EMAIL_FROM_ADDRESS                   → Sender address (docker-compose.yml)
 #   SITE_EMAIL                           → Public contact email for legal pages (docker-compose.yml)
 #   ALTCHA_HMAC_KEY                      → ALTCHA HMAC (docker-compose.yml)
@@ -41,8 +41,7 @@ $secretToEnvMapping =
 	"Jwt:SecretKey"                       = "JWT_SECRET_KEY"
 	"Auth:OAuth:Providers:0:ClientId"     = "GITHUB_CLIENT_ID"
 	"Auth:OAuth:Providers:0:ClientSecret" = "GITHUB_CLIENT_SECRET"
-	"Email:SmtpUsername"                  = "EMAIL_SMTP_USERNAME"
-	"Email:SmtpPassword"                  = "EMAIL_SMTP_PASSWORD"
+	"Email:ApiKey"                        = "EMAIL_API_KEY"
 	"Email:FromAddress"                   = "EMAIL_FROM_ADDRESS"
 	"Site:Email"                          = "SITE_EMAIL"
 	"Altcha:HmacKeyBase64"                = "ALTCHA_HMAC_KEY"

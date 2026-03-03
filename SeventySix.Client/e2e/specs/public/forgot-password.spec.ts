@@ -11,7 +11,7 @@ import {
 	test,
 	TIMEOUTS
 } from "@e2e-fixtures";
-import type { MailDevEmail, TestUser } from "@e2e-fixtures";
+import type { CapturedEmail, TestUser } from "@e2e-fixtures";
 import { Locator } from "@playwright/test";
 
 /**
@@ -22,8 +22,8 @@ import { Locator } from "@playwright/test";
  * - Page structure and accessibility
  * - Form validation
  * - Successful submission (always shows confirmation for security)
- * - Email delivery via MailDev
- * - Full end-to-end: request reset → MailDev → set password → login with new password → restore
+ * - Email delivery via mock Brevo API
+ * - Full end-to-end: request reset → email capture → set password → login with new password → restore
  */
 test.describe("Forgot Password Flow",
 	() =>
@@ -248,14 +248,16 @@ test.describe("Forgot Password Flow",
 				test("should navigate to login when clicking back link",
 					async ({ page }) =>
 					{
-						await page.click(SELECTORS.auth.signInLink);
+						await page
+							.locator(SELECTORS.auth.signInLink)
+							.click();
 
 						await expect(page)
 							.toHaveURL(ROUTES.auth.login);
 					});
 			});
 
-		test.describe("Email Delivery (with MailDev)",
+		test.describe("Email Delivery (with mock Brevo API)",
 			() =>
 			{
 				test.beforeAll(
@@ -283,8 +285,8 @@ test.describe("Forgot Password Flow",
 								PAGE_TEXT.confirmation.checkYourEmail,
 								{ timeout: TIMEOUTS.api });
 
-						// Check MailDev for the email
-						const resetEmail: MailDevEmail =
+						// Check email capture for the email
+						const resetEmail: CapturedEmail =
 							await EmailTestHelper.waitForEmail(
 								testUser.email,
 								{ timeout: TIMEOUTS.email });
@@ -363,8 +365,8 @@ test.describe("Forgot Password Flow",
 								PAGE_TEXT.confirmation.checkYourEmail,
 								{ timeout: TIMEOUTS.api });
 
-						// Step 2: Get reset email from MailDev
-						const resetEmail: MailDevEmail =
+						// Step 2: Get reset email from email capture
+						const resetEmail: CapturedEmail =
 							await EmailTestHelper.waitForEmail(
 								testUser.email,
 								{ timeout: TIMEOUTS.email });

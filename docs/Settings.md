@@ -15,7 +15,7 @@ SeventySix uses a layered configuration system. This document provides a high-le
 | Authentication & Security | JWT, OAuth, MFA, passwords, lockout | `appsettings.json` + user secrets |
 | Background Jobs | Scheduled maintenance tasks | `appsettings.json` |
 | Caching | FusionCache + Output Cache | `appsettings.json` |
-| Email | SMTP and queue settings | `appsettings.json` + user secrets |
+| Email | Brevo HTTP API and queue settings | `appsettings.json` + user secrets |
 | Observability | Logging, tracing, metrics | `appsettings.json` |
 | Infrastructure | CORS, rate limiting, resilience | `appsettings.json` |
 
@@ -70,8 +70,7 @@ SeventySix uses a layered configuration system. This document provides a high-le
 
 | Setting | Purpose | Default |
 |---------|---------|---------|
-| `Email:Smtp:Host` | SMTP server | `smtp-relay.brevo.com` |
-| `Email:Smtp:Port` | SMTP port | 587 |
+| `Email:ApiUrl` | Brevo HTTP API endpoint | `https://api.brevo.com/v3/smtp/email` |
 | `Email:Queue:IntervalSeconds` | Queue processing frequency | 30s |
 | `Email:Queue:BatchSize` | Emails per batch | 50 |
 | `Email:Queue:MaxRetries` | Retry count per email | 3 |
@@ -108,8 +107,7 @@ SeventySix uses a layered configuration system. This document provides a high-le
 | `Jwt:SecretKey` | User Secrets / Env Var | **Never** in `appsettings.json` |
 | `Auth:OAuth:Providers:*:ClientId` | User Secrets / Env Var | GitHub OAuth client ID |
 | `Auth:OAuth:Providers:*:ClientSecret` | User Secrets / Env Var | GitHub OAuth secret |
-| `Email:SmtpUsername` | User Secrets / Env Var | Brevo SMTP login |
-| `Email:SmtpPassword` | User Secrets / Env Var | Brevo API key |
+| `Email:ApiKey` | User Secrets / Env Var | Brevo HTTP API key |
 | `Email:FromAddress` | User Secrets / Env Var | Sender address (e.g. `noreply@yourdomain.com`) — used in all outgoing emails |
 | `Site:Email` | User Secrets / Env Var | Public contact email shown on Privacy Policy and Terms of Service pages (e.g. `hello@yourdomain.com`) — served to client via `/api/v1/config/features` |
 | `AdminSeeder:Email` | User Secrets / Env Var | Dev admin account email |

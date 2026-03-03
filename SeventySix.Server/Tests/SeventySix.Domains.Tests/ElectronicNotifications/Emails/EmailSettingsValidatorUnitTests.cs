@@ -24,8 +24,11 @@ public sealed class EmailSettingsValidatorUnitTests
 	/// <param name="enabled">
 	/// Whether email sending is enabled.
 	/// </param>
-	/// <param name="smtpHost">
-	/// The SMTP host.
+	/// <param name="apiKey">
+	/// The Brevo API key.
+	/// </param>
+	/// <param name="apiUrl">
+	/// The Brevo API base URL.
 	/// </param>
 	/// <param name="fromAddress">
 	/// The sender email address.
@@ -38,46 +41,96 @@ public sealed class EmailSettingsValidatorUnitTests
 	/// </returns>
 	private static EmailSettings CreateValidSettings(
 		bool enabled = true,
-		string smtpHost = "smtp.test.com",
+		string apiKey = "test-api-key",
+		string apiUrl = "https://api.brevo.com",
 		string fromAddress = "noreply@test.com",
 		string clientBaseUrl = "https://app.test.com") =>
 		new()
 		{
 			Enabled = enabled,
-			SmtpHost = smtpHost,
-			SmtpPort = 587,
+			ApiKey = apiKey,
+			ApiUrl = apiUrl,
 			FromAddress = fromAddress,
 			FromName = "Test App",
 			ClientBaseUrl = clientBaseUrl,
 		};
 
 	[Fact]
-	public void Validate_EnabledWithMissingSmtpHost_FailsValidation()
+	public void Validate_EnabledWithMissingApiKey_FailsValidation()
 	{
 		// Arrange
 		EmailSettings settings =
 			CreateValidSettings(
 				enabled: true,
-				smtpHost: string.Empty);
+				apiKey: string.Empty);
 
 		// Act
 		TestValidationResult<EmailSettings> result =
 			Validator.TestValidate(settings);
 
 		// Assert
-		result
-			.ShouldHaveValidationErrorFor(settings => settings.SmtpHost)
-			.WithErrorMessage("SmtpHost is required when email is enabled");
+		result.ShouldHaveValidationErrorFor(settings => settings.ApiKey);
 	}
 
 	[Fact]
-	public void Validate_DisabledWithMissingSmtpHost_PassesValidation()
+	public void Validate_EnabledWithMissingApiUrl_FailsValidation()
+	{
+		// Arrange
+		EmailSettings settings =
+			CreateValidSettings(
+				enabled: true,
+				apiUrl: string.Empty);
+
+		// Act
+		TestValidationResult<EmailSettings> result =
+			Validator.TestValidate(settings);
+
+		// Assert
+		result.ShouldHaveValidationErrorFor(settings => settings.ApiUrl);
+	}
+
+	[Fact]
+	public void Validate_EnabledWithInvalidApiUrl_FailsValidation()
+	{
+		// Arrange
+		EmailSettings settings =
+			CreateValidSettings(
+				enabled: true,
+				apiUrl: "not-a-url");
+
+		// Act
+		TestValidationResult<EmailSettings> result =
+			Validator.TestValidate(settings);
+
+		// Assert
+		result.ShouldHaveValidationErrorFor(settings => settings.ApiUrl);
+	}
+
+	[Fact]
+	public void Validate_EnabledWithHttpApiUrl_PassesValidation()
+	{
+		// Arrange — HTTP scheme is valid for mock Brevo API in E2E/LoadTest
+		EmailSettings settings =
+			CreateValidSettings(
+				enabled: true,
+				apiUrl: "http://mock-brevo-api:3000");
+
+		// Act
+		TestValidationResult<EmailSettings> result =
+			Validator.TestValidate(settings);
+
+		// Assert
+		result.ShouldNotHaveValidationErrorFor(settings => settings.ApiUrl);
+	}
+
+	[Fact]
+	public void Validate_DisabledWithMissingApiKey_PassesValidation()
 	{
 		// Arrange
 		EmailSettings settings =
 			CreateValidSettings(
 				enabled: false,
-				smtpHost: string.Empty);
+				apiKey: string.Empty);
 
 		// Act
 		TestValidationResult<EmailSettings> result =
@@ -162,7 +215,8 @@ public sealed class EmailSettingsValidatorUnitTests
 		EmailSettings settings =
 			CreateValidSettings(
 				enabled: true,
-				smtpHost: "smtp.example.com",
+				apiKey: "test-api-key",
+				apiUrl: "https://api.brevo.com",
 				fromAddress: "noreply@example.com",
 				clientBaseUrl: "https://app.example.com");
 

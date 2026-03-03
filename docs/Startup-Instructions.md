@@ -25,7 +25,7 @@ SeventySix runs fully functional without any third-party service accounts. The o
 | Docker Desktop | **Yes** | Cannot run — database, cache, and API run in Docker |
 | PostgreSQL password | **Yes** | Set during bootstrap — used for local Docker database |
 | Admin email/password | **Yes** | Set during bootstrap — seeds the first admin account |
-| Brevo SMTP credentials | No | MFA email codes won't send — disable MFA to bypass (see below) |
+| Brevo API key | No | MFA email codes won't send — disable MFA to bypass (see below) |
 | GitHub OAuth app keys | No | OAuth login button hidden — email/password login works |
 | Grafana/pgAdmin passwords | No | Defaults used (`admin`/`admin` and `pgadmin@example.com`/`pgadmin`) |
 
@@ -53,10 +53,9 @@ With these settings:
 
 You can configure these services at any time without re-running bootstrap:
 
-**Brevo SMTP (enables MFA email codes)**:
+**Brevo API Key (enables MFA email codes)**:
 ```bash
-npm run secrets:set -- Email:SmtpUsername "your-brevo-login"
-npm run secrets:set -- Email:SmtpPassword "your-brevo-api-key"
+npm run secrets:set -- Email:ApiKey "xkeysib-your-key-here"
 npm run secrets:set -- Email:FromAddress "you@yourdomain.com"
 ```
 Then remove the `"Mfa": { "Enabled": false }` override from `appsettings.Development.json` and restart.
@@ -105,15 +104,15 @@ GitHub hosts the repository and provides OAuth login for the application.
 
 ### Brevo (Optional — for email delivery)
 
-Brevo provides the SMTP service for transactional emails (registration verification, password reset, MFA codes). The application works without it, but emails will fail to send. Important: Please look for any other options at startup, this appealed as a reasonable amount of free support before I would want to consider going paid and their track record is clean as of this documentation date. Third Party API tracking can be set to lock down at monthly or daily locks, when those locks are up it will retry in the email queue service.
+Brevo provides the HTTP API for transactional emails (registration verification, password reset, MFA codes). The application works without it, but emails will fail to send. Important: Please look for any other options at startup, this appealed as a reasonable amount of free support before I would want to consider going paid and their track record is clean as of this documentation date. Third Party API tracking can be set to lock down at monthly or daily locks, when those locks are up it will retry in the email queue service.
 
 > **Skipping email entirely**: To run without any email requirement at all, set `"Mfa": { "Enabled": false }` in `appsettings.Development.json`. This disables the MFA email code step so login works with only email + password. See [Optional Feature Flags](#optional-feature-flags) for the full list.
 
 1. Go to [app.brevo.com/account/register](https://app.brevo.com/account/register)
 2. Create a free account (300 emails/day included — no credit card required)
-3. After login, go to **Settings** → **SMTP & API** → [SMTP Keys](https://app.brevo.com/settings/keys/smtp)
-4. Note your **SMTP Username** (looks like an email) and generate an **SMTP Key** (this is your password)
-5. Keep these values — you will enter them during the secrets configuration step
+3. After login, go to **Settings** → **SMTP & API** → [API Keys](https://app.brevo.com/settings/keys/api)
+4. Generate a new API key
+5. Keep this value — you will enter it during the secrets configuration step
 
 ### MaxMind GeoIP (Optional — for geo-blocking)
 
@@ -303,7 +302,7 @@ This installs all Angular, testing, and build dependencies. The first run may ta
 
 ## 6. Configure Secrets
 
-SeventySix uses .NET user secrets to store sensitive values like database passwords, API keys, and SMTP credentials. These are stored locally on your machine and never committed to the repository.
+SeventySix uses .NET user secrets to store sensitive values like database passwords, API keys, and email API key. These are stored locally on your machine and never committed to the repository.
 
 ### Initialize Default Secrets
 
@@ -337,8 +336,7 @@ npm run secrets:set -- -Key "Auth:OAuth:Providers:0:ClientSecret" -Value "your-g
 **Brevo Email** (if you created a Brevo account in Step 1):
 
 ```bash
-npm run secrets:set -- -Key "Email:SmtpUsername" -Value "your-brevo-smtp-login"
-npm run secrets:set -- -Key "Email:SmtpPassword" -Value "your-brevo-smtp-key"
+npm run secrets:set -- -Key "Email:ApiKey" -Value "xkeysib-your-key-here"
 npm run secrets:set -- -Key "Email:FromAddress" -Value "noreply@yourdomain.com"
 ```
 
@@ -561,7 +559,7 @@ The following features are fully optional and can be disabled via `appsettings.D
 
 ### Minimal local setup (no email or OAuth required)
 
-To run the full application without Brevo SMTP credentials or OAuth app keys:
+To run the full application without a Brevo API key or OAuth app keys:
 
 ```json
 {
@@ -645,9 +643,9 @@ Run `npm run secrets:init` again to reinitialize defaults, then re-apply your cu
 
 ### Brevo emails not sending
 
-1. Verify your SMTP credentials: `npm run secrets:list` — check `Email:SmtpUsername` and `Email:SmtpPassword`
+1. Verify your API key: `npm run secrets:list` — check `Email:ApiKey`
 2. Check the API logs for email errors: `docker logs seventysix-api | findstr Email`
-3. Without valid Brevo credentials, registration and password reset flows will complete but the verification email will not arrive
+3. Without a valid Brevo API key, registration and password reset flows will complete but the verification email will not arrive
 
 ### MFA code not arriving
 

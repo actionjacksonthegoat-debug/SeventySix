@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SeventySix.Shared.Extensions;
 using SeventySix.Shared.Interfaces;
+using SeventySix.Shared.Utilities;
 
 namespace SeventySix.Identity;
 
@@ -181,11 +182,11 @@ public static class UpdateUserCommandHandler
 		{
 			logger.LogWarning(
 				"Duplicate email during update. Email: {Email}, UserId: {UserId}",
-				request.Email,
+				LogSanitizer.MaskEmail(request.Email),
 				request.Id);
 
 			throw new DuplicateUserException(
-				$"Failed to update user: Email '{request.Email}' is already registered");
+				$"Failed to update user: Email '{LogSanitizer.MaskEmail(request.Email)}' is already registered");
 		}
 
 		string errors =
@@ -250,17 +251,17 @@ public static class UpdateUserCommandHandler
 		{
 			logger.LogWarning(
 				"Duplicate email constraint. Email: {Email}, UserId: {UserId}",
-				request.Email,
+				LogSanitizer.MaskEmail(request.Email),
 				request.Id);
 
 			throw new DuplicateUserException(
-				$"Failed to update user: Email '{request.Email}' is already registered");
+				$"Failed to update user: Email '{LogSanitizer.MaskEmail(request.Email)}' is already registered");
 		}
 
 		logger.LogWarning(
 			"Unknown duplicate key violation. Username: {Username}, Email: {Email}",
 			request.Username,
-			request.Email);
+			LogSanitizer.MaskEmail(request.Email));
 
 		throw new DuplicateUserException(
 			"Failed to update user: Username or email already exists");

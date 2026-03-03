@@ -30,10 +30,10 @@ Scan the ENTIRE repository (all tracked files) for:
 ### A) Hardcoded Secrets
 - API keys, tokens, passwords, connection strings
 - JWT signing keys, HMAC secrets, encryption keys
-- OAuth client secrets, SMTP credentials
+- OAuth client secrets, API credentials (Brevo, GitHub)
 - Database credentials (usernames, passwords, hosts)
 - Certificate passwords, PFX passphrases
-- Any string matching patterns: `password`, `secret`, `apikey`, `token`, `connectionstring`, `smtp`, `credential`
+- Any string matching patterns: `password`, `secret`, `apikey`, `token`, `connectionstring`, `api-key`, `credential`
 
 ### B) PII Exposure
 - Developer names, emails, machine names, usernames in code or comments

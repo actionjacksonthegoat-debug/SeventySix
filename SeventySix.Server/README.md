@@ -13,7 +13,7 @@
 ### Build and Run
 
 ```bash
-# Start infrastructure (PostgreSQL, Valkey, MailDev)
+# Start infrastructure (PostgreSQL, Valkey)
 npm run start:infrastructure
 
 # Build the solution
@@ -139,7 +139,7 @@ graph TB
 
 **ApiTracking** — Monitors third-party API consumption for cost control. The `ThirdPartyApiRequest` entity records daily call counts per external API (ApiName, RequestDate, RequestCount, DailyLimit, IsLocked). When `RequestCount` reaches `DailyLimit`, the API is automatically locked to prevent overage charges — for example, the Brevo email integration holds queued emails until the next day's free allocation resets. `ThirdPartyApiStatisticsDto` aggregates this data for the admin dashboard's External Systems tab. Statistics are cached with a 5-minute TTL via FusionCache.
 
-**ElectronicNotifications** — Queue-based email delivery using Brevo SMTP. `EmailQueueEntry` entities track status (Pending, Sent, Failed) with idempotency keys and configurable retry logic. Template-based emails store structured data as `TemplateData` JSON payloads. The `EmailQueueProcessJob` runs every 10 seconds, fetching pending emails in configurable batches and sending them via `IEmailService` with rate limiting and automatic retry. The queue decouples email sending from request processing — failed sends are retried without blocking the original request.
+**ElectronicNotifications** — Queue-based email delivery using Brevo HTTP API. `EmailQueueEntry` entities track status (Pending, Sent, Failed) with idempotency keys and configurable retry logic. Template-based emails store structured data as `TemplateData` JSON payloads. The `EmailQueueProcessJob` runs every 10 seconds, fetching pending emails in configurable batches and sending them via `IEmailService` with rate limiting and automatic retry. The queue decouples email sending from request processing — failed sends are retried without blocking the original request.
 
 ### Health Checks
 
@@ -448,8 +448,7 @@ All dev secrets are managed via `scripts/manage-user-secrets.ps1` (run `npm run 
 | `Jwt:SecretKey` | `JWT_SECRET_KEY` | JWT signing key |
 | `Auth:OAuth:Providers:0:ClientId` | `GITHUB_CLIENT_ID` | GitHub OAuth client ID |
 | `Auth:OAuth:Providers:0:ClientSecret` | `GITHUB_CLIENT_SECRET` | GitHub OAuth client secret |
-| `Email:SmtpUsername` | `EMAIL_SMTP_USERNAME` | Brevo SMTP login |
-| `Email:SmtpPassword` | `EMAIL_SMTP_PASSWORD` | Brevo SMTP key/password |
+| `Email:ApiKey` | `EMAIL_API_KEY` | Brevo HTTP API key |
 | `Email:FromAddress` | `EMAIL_FROM_ADDRESS` | Envelope sender address for all outgoing emails |
 | `Site:Email` | `SITE_EMAIL` | Public contact email shown on legal pages (Privacy Policy, Terms of Service); served to the client via `/api/v1/config/features` |
 | `AdminSeeder:Email` | `ADMIN_EMAIL` | Dev admin account email |
@@ -463,7 +462,7 @@ All dev secrets are managed via `scripts/manage-user-secrets.ps1` (run `npm run 
 | `DataProtection:CertificatePath` | `DATA_PROTECTION_CERTIFICATE_PATH` | Path to DataProtection PFX file |
 | `DataProtection:CertificatePassword` | `DATA_PROTECTION_CERTIFICATE_PASSWORD` | DataProtection PFX password |
 
-> `Email:FromAddress` and `Site:Email` are two distinct values. `FromAddress` is the SMTP envelope sender. `Site:Email` is the publicly displayed contact address on legal pages — it is never used as a sender.
+> `Email:FromAddress` and `Site:Email` are two distinct values. `FromAddress` is the sender email used in Brevo API requests (must be verified in Brevo). `Site:Email` is the publicly displayed contact address on legal pages — it is never used as a sender.
 
 ### Optional Features (disable via appsettings)
 
