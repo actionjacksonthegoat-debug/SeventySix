@@ -72,7 +72,7 @@
 		/>
 		<meta
 			property="og:url"
-			content="https://seventysix.app/"
+			content="https://seventysixsandbox.com/"
 		/>
 		<meta
 			property="og:title"
@@ -94,7 +94,7 @@
 		/>
 		<meta
 			property="twitter:url"
-			content="https://seventysix.app/"
+			content="https://seventysixsandbox.com/"
 		/>
 		<meta
 			property="twitter:title"
@@ -109,8 +109,31 @@
 			content="/icons/icon-512x512.png"
 		/>
 
-		<!-- Structured data (JSON-LD) injected dynamically by LandingPageComponent -->
-		<!-- This ensures fresh data on every page load and allows for dynamic updates -->
+		<!-- Structured data (JSON-LD) — primary schema in <head> for Lighthouse SEO audit -->
+		<script type="application/ld+json">
+		{
+			"@context": "https://schema.org",
+			"@type": "WebApplication",
+			"name": "SeventySix",
+			"url": "https://seventysixsandbox.com",
+			"description": "Production-ready .NET 10 + Angular 21 monorepo demonstrating DDD, Hexagonal Architecture, CQRS, Wolverine, TanStack Query, and comprehensive testing.",
+			"applicationCategory": "DeveloperApplication",
+			"operatingSystem": "Web",
+			"offers": {
+				"@type": "Offer",
+				"price": "0",
+				"priceCurrency": "USD"
+			},
+			"author": {
+				"@type": "Organization",
+				"name": "SeventySix Team",
+				"url": "https://seventysixsandbox.com"
+			}
+		}
+		</script>
+
+		<!-- Canonical URL -->
+		<link rel="canonical" href="https://seventysixsandbox.com/" />
 
 		<!-- PWA -->
 		<link
@@ -182,7 +205,7 @@
 			})();
 		</script>
 
-		<!-- Resource hints for reCAPTCHA external domains -->
+		<!-- Resource hints for external origins -->
 		<link
 			rel="dns-prefetch"
 			href="https://www.google.com"

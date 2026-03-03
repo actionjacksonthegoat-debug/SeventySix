@@ -431,6 +431,36 @@ npm run generate:dataprotection-cert
 
 This generates the certificate used by .NET's Data Protection API to encrypt sensitive data at rest.
 
+### Regenerating the DataProtection Certificate
+
+If you need to regenerate the DataProtection certificate (e.g., after running `npm run secrets:init`
+and changing the `Data Protection Certificate Password`), you must also clear the old encrypted keys
+from the Docker volume, otherwise the API will log `CryptographicException` warnings on startup and
+all existing user sessions will be invalid.
+
+1. Stop all containers:
+   ```bash
+   npm run stop
+   ```
+
+2. Remove the stale DataProtection keys volume:
+   ```bash
+   docker volume rm seventysix-dev_dataprotection_keys
+   ```
+
+3. Delete the old certificate:
+   ```bash
+   Remove-Item SeventySix.Server/SeventySix.Api/keys/dataprotection.pfx
+   ```
+
+4. Restart the dev stack (will auto-generate a new cert with the correct password):
+   ```bash
+   npm run start
+   ```
+
+> **Note**: All users will need to sign in again after this process because their session cookies
+> are encrypted with the old DataProtection keys, which will no longer be accessible.
+
 ---
 
 ## 9. Start the Application

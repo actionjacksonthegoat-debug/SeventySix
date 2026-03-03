@@ -1,4 +1,5 @@
 import { Routes } from "@angular/router";
+import { HOME_ROUTES } from "@home/home.routes";
 import {
 	ROLE_ADMIN,
 	ROLE_DEVELOPER
@@ -21,10 +22,9 @@ export const routes: Routes =
 	// ══════════════════════════════════════════════════════════════
 		{
 			path: "",
-			loadChildren: () =>
-				import("./domains/home/home.routes").then(
-					(module) => module.HOME_ROUTES),
-			data: { preload: true }
+			// Eagerly loaded — no lazy-load hop so the landing page renders in the first Angular render cycle.
+			// This ensures LCP (hero section) coincides with FCP rather than adding a network round-trip delay.
+			children: HOME_ROUTES
 		},
 		{
 		// Intentionally public — future landing/demo page (no auth guard needed)

@@ -34,6 +34,7 @@
 		"scan:codeql:ci:typescript": "docker compose -f docker-compose.codeql.yml --profile typescript up --abort-on-container-exit && docker compose -f docker-compose.codeql.yml down",
 		"generate:dataprotection-cert": "node scripts/run-pwsh.mjs -File scripts/generate-dataprotection-cert.ps1",
 		"generate:ssl-cert": "node scripts/run-pwsh.mjs -File scripts/generate-dev-ssl-cert.ps1 -Force",
-		"generate:icons": "cd SeventySix.Client && npm run generate:icons"
+		"generate:icons": "cd SeventySix.Client && npm run generate:icons",
+		"lighthouse": "cd SeventySix.Client && npm run lighthouse:build-run"
 	}
 }

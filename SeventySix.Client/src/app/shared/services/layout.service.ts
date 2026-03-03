@@ -56,8 +56,8 @@ export class LayoutService
 
 	/**
 	 * Sidebar expanded state.
-	 * Always starts open on fresh page load/refresh.
-	 * Only persists closed state within the same session.
+	 * On fresh load: open in side mode (≥ 960px), closed in overlay mode (< 960px).
+	 * Within a session: persists the user's last explicit toggle.
 	 * @type {WritableSignal<boolean>}
 	 */
 	sidebarExpanded: WritableSignal<boolean> =
@@ -343,8 +343,9 @@ export class LayoutService
 
 	/**
 	 * Get sidebar state for current session.
-	 * Always returns true (open) on fresh page load/refresh.
-	 * Uses sessionStorage to track the user's explicit close action within the session.
+	 * On fresh page load: open when viewport is laptop-or-larger (side mode),
+	 * closed when below laptop (overlay mode) to avoid covering content.
+	 * Uses sessionStorage to track the user's explicit toggle within the session.
 	 * @returns {boolean}
 	 * True when sidebar is considered open for the current session.
 	 */
@@ -354,10 +355,12 @@ export class LayoutService
 			this.storageService.getSessionItem(
 				STORAGE_KEYS.SIDEBAR_SESSION);
 
-		// If no session value, this is a fresh load - start open
+		// If no session value, this is a fresh load.
+		// Start closed when viewport is below the laptop threshold (< 960px)
+		// to avoid an overlay panel immediately covering page content.
 		if (isNullOrUndefined(sessionValue))
 		{
-			return true;
+			return window.matchMedia("(min-width: 960px)").matches;
 		}
 
 		// Return the session-stored value

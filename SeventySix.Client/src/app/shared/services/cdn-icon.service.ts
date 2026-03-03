@@ -4,29 +4,25 @@ import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
 import DOMPurify from "dompurify";
 import { catchError, map, Observable, of, shareReplay } from "rxjs";
 
-/** CDN icon source configuration */
-interface CdnIconSource
+/** Icon source configuration */
+interface IconSource
 {
 	readonly baseUrl: string;
 	readonly pathTemplate: string;
 }
 
-const CDN_SOURCES: Record<string, CdnIconSource> =
+const ICON_SOURCES: Record<string, IconSource> =
 	{
 		simpleIcons: {
-			baseUrl: "https://cdn.jsdelivr.net/npm/simple-icons@latest",
-			pathTemplate: "/icons/{slug}.svg"
-		},
-		devicon: {
-			baseUrl: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons",
-			pathTemplate: "/{slug}/{slug}-original.svg"
+			baseUrl: "/icons/simple-icons",
+			pathTemplate: "/{slug}.svg"
 		}
 	};
 
 /**
- * Service for loading library/brand icons from CDN.
- * Caches loaded SVGs in memory to avoid duplicate requests.
- * Uses Simple Icons (jsdelivr) as primary source.
+ * Service for loading library/brand SVG icons from local assets.
+ * Icons are self-hosted in `public/icons/` and cached at the Cloudflare edge.
+ * In-memory `shareReplay` prevents duplicate requests within a session.
  */
 @Injectable(
 	{
@@ -44,13 +40,13 @@ export class CdnIconService
 		new Map();
 
 	/**
-	 * Load an SVG icon from CDN by slug.
+	 * Load an SVG icon from local assets by slug.
 	 *
 	 * @param {string} slug
 	 * Icon slug (e.g., "angular", "dotnet", "postgresql")
 	 *
 	 * @param {string} source
-	 * CDN source key (default: "simpleIcons")
+	 * Icon source key (default: "simpleIcons")
 	 *
 	 * @returns {Observable<SafeHtml>}
 	 * Sanitized SVG markup
@@ -67,10 +63,10 @@ export class CdnIconService
 			return this.cache.get(cacheKey)!;
 		}
 
-		const cdnSource: CdnIconSource =
-			CDN_SOURCES[source] ?? CDN_SOURCES["simpleIcons"];
+		const iconSource: IconSource =
+			ICON_SOURCES[source] ?? ICON_SOURCES["simpleIcons"];
 		const iconUrl: string =
-			cdnSource.baseUrl + cdnSource.pathTemplate.replace(/\{slug\}/g, slug);
+			iconSource.baseUrl + iconSource.pathTemplate.replace(/\{slug\}/g, slug);
 
 		const icon$: Observable<SafeHtml> =
 			this

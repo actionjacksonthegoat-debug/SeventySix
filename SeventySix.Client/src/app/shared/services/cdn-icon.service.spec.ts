@@ -45,20 +45,20 @@ describe("CdnIconService",
 
 				const request: ReturnType<typeof httpController.expectOne> =
 					httpController.expectOne(
-						"https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/angular.svg");
+						"/icons/simple-icons/angular.svg");
 				request.flush("<svg></svg>");
 			});
 
-		it("should construct correct URL for devicon source",
+		it("should fall back to simpleIcons for unknown source",
 			() =>
 			{
 				service
-					.loadIcon("angular", "devicon")
+					.loadIcon("angular", "unknownSource")
 					.subscribe();
 
 				const request: ReturnType<typeof httpController.expectOne> =
 					httpController.expectOne(
-						"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/angular/angular-original.svg");
+						"/icons/simple-icons/angular.svg");
 				request.flush("<svg></svg>");
 			});
 
@@ -74,7 +74,7 @@ describe("CdnIconService",
 
 				httpController
 					.expectOne(
-						"https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/angular.svg")
+						"/icons/simple-icons/angular.svg")
 					.flush("<svg></svg>");
 
 				// Only one request should have been made
@@ -89,7 +89,7 @@ describe("CdnIconService",
 
 				httpController
 					.expectOne(
-						"https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/angular.svg")
+						"/icons/simple-icons/angular.svg")
 					.flush("<svg><path d='M0 0'/></svg>");
 
 				const result: SafeHtml =
@@ -106,7 +106,7 @@ describe("CdnIconService",
 
 				httpController
 					.expectOne(
-						"https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/nonexistent.svg")
+						"/icons/simple-icons/nonexistent.svg")
 					.flush(
 						"",
 						{ status: 404, statusText: "Not Found" });
@@ -127,7 +127,7 @@ describe("CdnIconService",
 
 				httpController
 					.expectOne(
-						"https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/evil.svg")
+						"/icons/simple-icons/evil.svg")
 					.flush(maliciousSvg);
 
 				const result: SafeHtml =

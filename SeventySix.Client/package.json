@@ -18,7 +18,10 @@
     "generate:openapi": "node scripts/generate-openapi.mjs",
     "generate:openapi:types-only": "openapi-typescript ../openapi.json -o src/app/shared/generated-open-api/generated-open-api.ts",
     "generate:icons": "node scripts/generate-icons.mjs",
-    "update:deps": "npx npm-check-updates -u --reject eslint && npm install"
+    "update:deps": "npx npm-check-updates -u --reject eslint && npm install",
+    "lighthouse:build-run": "node scripts/run-lighthouse.mjs",
+    "lighthouse:rerun": "node scripts/run-lighthouse.mjs --skip-build",
+    "lighthouse:threshold": "node scripts/run-lighthouse.mjs --threshold=70"
   },
   "private": true,
   "dependencies": {
@@ -73,9 +76,11 @@
     "eslint-plugin-playwright": "^2.7.0",
     "happy-dom": "20.7.0",
     "jiti": "latest",
+    "lighthouse": "^13.0.3",
     "openapi-typescript": "^7.13.0",
     "otpauth": "^9.5.0",
     "playwright": "^1.58.2",
+    "serve": "^14.2.5",
     "sharp": "^0.34.5",
     "typescript": "~5.9.3",
     "vite-tsconfig-paths": "^6.1.1",
