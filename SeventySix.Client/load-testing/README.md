@@ -212,8 +212,7 @@ The load test environment is completely isolated with its own ports:
 | Valkey     | 6381  |
 | API        | 7175  |
 | Client     | 4202  |
-| MailDev UI | 1081  |
-| MailDev SMTP| 1026 |
+| Mock Brevo API | 1081  |
 
 Start manually:
 

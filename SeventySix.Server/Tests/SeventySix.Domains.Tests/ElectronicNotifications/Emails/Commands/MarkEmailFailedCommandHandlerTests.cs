@@ -73,7 +73,7 @@ public sealed class MarkEmailFailedCommandHandlerTests
 		MarkEmailFailedCommand command =
 			new(
 				entry.Id,
-				"SMTP connection failed");
+				"API connection failed");
 
 		// Act
 		Result result =
@@ -92,7 +92,7 @@ public sealed class MarkEmailFailedCommandHandlerTests
 		updatedEntry.ShouldNotBeNull();
 		updatedEntry.Attempts.ShouldBe(1);
 		updatedEntry.Status.ShouldBe(EmailQueueStatus.Failed);
-		updatedEntry.ErrorMessage.ShouldBe("SMTP connection failed");
+		updatedEntry.ErrorMessage.ShouldBe("API connection failed");
 		updatedEntry.LastAttemptAt.ShouldNotBeNull();
 	}
 

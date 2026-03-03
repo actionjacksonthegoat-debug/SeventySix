@@ -13,7 +13,7 @@
 type E2eConfig = {
 	clientBaseUrl: string;
 	apiBaseUrl: string;
-	mailDevUrl: string;
+	emailCaptureUrl: string;
 	totpTimeStepSeconds: number;
 };
 
@@ -30,10 +30,10 @@ export const E2E_CONFIG: E2eConfig =
 		apiBaseUrl: "https://localhost:7174",
 
 		/**
-	 * MailDev web UI URL for email testing.
+	 * Mock Brevo API URL for email testing.
 	 * HTTP only - no sensitive data.
 	 */
-		mailDevUrl: "http://localhost:1080",
+		emailCaptureUrl: "http://localhost:1080",
 
 		/**
 	 * TOTP time step in seconds.

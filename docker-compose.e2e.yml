@@ -48,16 +48,19 @@ services:
     networks:
       - e2e-network
 
-  # MailDev - Email Capture
-  maildev:
-    image: maildev/maildev:2.2.1
-    container_name: seventysix-maildev-e2e
+  # Mock Brevo API - Email Capture
+  mock-brevo-api:
+    build:
+      context: ./mock-brevo-api
+      dockerfile: Dockerfile
+    container_name: seventysix-mock-brevo-e2e
     ports:
-      - "1080:1080" # Web UI
-      - "1025:1025" # SMTP
-    environment:
-      - MAILDEV_SMTP_PORT=1025
-      - MAILDEV_WEB_PORT=1080
+      - "1080:3000"
+    healthcheck:
+      test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health" ]
+      interval: 5s
+      timeout: 3s
+      retries: 3
     networks:
       - e2e-network
 
@@ -91,13 +94,10 @@ services:
       - Cache__OutputCache__Policies__health__Enabled=false
       - Cache__OutputCache__Policies__thirdpartyrequests__Enabled=false
       - Cache__OutputCache__Policies__features__Enabled=false
-      # Email (MailDev — no auth required, empty credentials skip SMTP authentication)
+      # Email (Mock Brevo API — validates api-key header presence)
       - Email__Enabled=true
-      - Email__UseSsl=false
-      - Email__SmtpHost=maildev
-      - Email__SmtpPort=1025
-      - Email__SmtpUsername=
-      - Email__SmtpPassword=
+      - Email__ApiKey=test-api-key-e2e
+      - Email__ApiUrl=http://mock-brevo-api:3000
       - Email__FromAddress=noreply@test.local
       - Site__Email=contact@test.local
       - Email__ClientBaseUrl=https://localhost:4201
@@ -158,8 +158,8 @@ services:
         condition: service_healthy
       valkey-e2e:
         condition: service_healthy
-      maildev:
-        condition: service_started
+      mock-brevo-api:
+        condition: service_healthy
     healthcheck:
       test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "--no-check-certificate", "https://localhost:8081/health" ]
       interval: 3s

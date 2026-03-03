@@ -115,20 +115,18 @@ Write-Host ""
 $dbPassword = Read-Prompt -Prompt "  Database Container Password (min 8 chars)" -MinLength 8
 
 Write-Host ""
-Write-Host "--- [OPTIONAL] Email (Brevo SMTP) ---" -ForegroundColor Cyan
+Write-Host "--- [OPTIONAL] Email (Brevo HTTP API) ---" -ForegroundColor Cyan
 Write-Host "  Press Enter to skip — login will work with email + password only (no MFA email codes)."
 Write-Host "  You can add these later by running: npm run secrets:set"
 Write-Host "  Free tier: 300 emails/day (the app self-limits to 250/day)."
 Write-Host "  Sign up: https://app.brevo.com/account/register"
-Write-Host "  Find keys at: Settings > SMTP & API > SMTP Keys"
+Write-Host "  Find keys at: Settings > SMTP & API > API Keys"
 Write-Host ""
 
-$smtpUsername = Read-Prompt -Prompt "  Brevo SMTP Username (e.g. 123abc@smtp-brevo.com)"
-$smtpPassword = Read-Prompt -Prompt "  Brevo SMTP Password / API Key (the long xsmtpsib-... key)"
+$brevoApiKey = Read-Prompt -Prompt "  Brevo API Key (the long xkeysib-... key)"
 $fromAddress = Read-Prompt -Prompt "  Sender Email Address (the From: address for outbound mail)"
 
-if ([string]::IsNullOrWhiteSpace($smtpUsername)) { $smtpUsername = "PLACEHOLDER_USE_USER_SECRETS" }
-if ([string]::IsNullOrWhiteSpace($smtpPassword)) { $smtpPassword = "PLACEHOLDER_USE_USER_SECRETS" }
+if ([string]::IsNullOrWhiteSpace($brevoApiKey)) { $brevoApiKey = "PLACEHOLDER_USE_USER_SECRETS" }
 if ([string]::IsNullOrWhiteSpace($fromAddress)) { $fromAddress = "PLACEHOLDER_USE_USER_SECRETS" }
 
 Write-Host ""
@@ -168,8 +166,8 @@ Write-Host "========================================" -ForegroundColor Green
 
 $maskedAdminPw = if ($adminPassword.Length -gt 3) { "$($adminPassword.Substring(0,3))****" } else { "****" }
 $maskedDbPw = if ($dbPassword.Length -gt 3) { "$($dbPassword.Substring(0,3))****" }    else { "****" }
-$maskedSmtpPw = if ($smtpPassword -eq "PLACEHOLDER_USE_USER_SECRETS") { "[skipped]" }
-elseif ($smtpPassword.Length -gt 6) { "$($smtpPassword.Substring(0,6))****" }
+$maskedApiKey = if ($brevoApiKey -eq "PLACEHOLDER_USE_USER_SECRETS") { "[skipped]" }
+elseif ($brevoApiKey.Length -gt 6) { "$($brevoApiKey.Substring(0,6))****" }
 else { "****" }
 $maskedOAuthSec = if ($githubClientSecret -eq "PLACEHOLDER_USE_USER_SECRETS") { "[skipped]" }
 elseif ($githubClientSecret.Length -gt 6) { "$($githubClientSecret.Substring(0,6))****" }
@@ -179,8 +177,7 @@ $maskedDpPw = if ($dataProtectionPassword.Length -gt 3) { "$($dataProtectionPass
 Write-Host "  Admin User Email:              $adminEmail"
 Write-Host "  Admin User Password:           $maskedAdminPw"
 Write-Host "  Database Container Password:   $maskedDbPw"
-Write-Host "  Brevo SMTP Username:           $smtpUsername"
-Write-Host "  Brevo SMTP Password/Key:       $maskedSmtpPw"
+Write-Host "  Brevo API Key:                 $maskedApiKey"
 Write-Host "  Sender Email Address:          $fromAddress"
 Write-Host "  GitHub OAuth Client ID:        $githubClientId"
 Write-Host "  GitHub OAuth Client Secret:    $maskedOAuthSec"
@@ -207,8 +204,7 @@ $secrets = @{
 	"Jwt:SecretKey"                       = $jwtSecretKey
 	"Auth:OAuth:Providers:0:ClientId"     = $githubClientId
 	"Auth:OAuth:Providers:0:ClientSecret" = $githubClientSecret
-	"Email:SmtpUsername"                  = $smtpUsername
-	"Email:SmtpPassword"                  = $smtpPassword
+	"Email:ApiKey"                        = $brevoApiKey
 	"Email:FromAddress"                   = $fromAddress
 	"Altcha:HmacKeyBase64"                = $altchaHmacKey
 	"DataProtection:UseCertificate"       = "true"
