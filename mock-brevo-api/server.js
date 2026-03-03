@@ -44,8 +44,16 @@ app.post("/v3/smtp/email", (req, res) => {
     emails = emails.slice(-MAX_STORED_EMAILS);
   }
 
+  const sanitize = (value) =>
+    String(value).replace(/[\r\n\t]/g, "").slice(0, 200);
+
+  const safeSubject = sanitize(subject);
+  const safeRecipients = to
+    .map((t) => sanitize(t.email).replace(/(?<=.{2}).+(?=@)/, "***"))
+    .join(", ");
+
   console.log(
-    `[mock-brevo] Captured: "${subject}" → ${to.map((t) => t.email).join(", ")}`
+    `[mock-brevo] Captured: "${safeSubject}" → ${safeRecipients}`
   );
 
   res.status(201).json({ messageId });

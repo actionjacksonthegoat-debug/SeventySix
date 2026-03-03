@@ -229,7 +229,9 @@ test.describe("Registration Flow",
 						test("should navigate to login when clicking sign in link",
 							async ({ page }) =>
 							{
-								await page.click(SELECTORS.auth.signInLink);
+								await page
+									.locator(SELECTORS.auth.signInLink)
+									.click();
 
 								await expect(page)
 									.toHaveURL(ROUTES.auth.login);

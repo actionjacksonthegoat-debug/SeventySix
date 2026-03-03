@@ -248,7 +248,9 @@ test.describe("Forgot Password Flow",
 				test("should navigate to login when clicking back link",
 					async ({ page }) =>
 					{
-						await page.click(SELECTORS.auth.signInLink);
+						await page
+							.locator(SELECTORS.auth.signInLink)
+							.click();
 
 						await expect(page)
 							.toHaveURL(ROUTES.auth.login);
