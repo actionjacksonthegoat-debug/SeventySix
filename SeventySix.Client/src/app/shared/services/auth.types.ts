@@ -128,4 +128,8 @@ export type OAuthEvent =
 	}
 	| {
 		readonly type: "link_success";
+	}
+	| {
+		readonly type: "error";
+		readonly error: string;
 	};

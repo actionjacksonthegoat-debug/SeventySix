@@ -15,10 +15,3 @@ internal sealed record BrevoSendEmailRequest(
 	[property: JsonPropertyName("to")] BrevoEmailAddress[] To,
 	[property: JsonPropertyName("subject")] string Subject,
 	[property: JsonPropertyName("htmlContent")] string HtmlContent);
-
-internal sealed record BrevoSendEmailResponse(
-	[property: JsonPropertyName("messageId")] string MessageId);
-
-[JsonSerializable(typeof(BrevoSendEmailRequest))]
-[JsonSerializable(typeof(BrevoSendEmailResponse))]
-internal sealed partial class BrevoJsonContext : JsonSerializerContext;

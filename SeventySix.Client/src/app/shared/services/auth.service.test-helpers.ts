@@ -63,6 +63,7 @@ export function createMockAuthResponse(
 		requiresMfa: false,
 		sessionInactivityMinutes: 0,
 		sessionWarningSeconds: 0,
+		isFirstLogin: false,
 		...responseOverrides
 	};
 }

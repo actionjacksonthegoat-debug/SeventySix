@@ -336,13 +336,17 @@ public sealed class OAuthController(
 			result.RefreshToken,
 			rememberMe: false);
 
-		return Ok(
-			new AuthResponse(
-				AccessToken: result.AccessToken,
-				ExpiresAt: result.ExpiresAt,
-				Email: result.Email,
-				FullName: result.FullName,
-				RequiresPasswordChange: result.RequiresPasswordChange));
+		ValidatedAuthResult validatedResult =
+			new(
+				result.AccessToken,
+				result.RefreshToken,
+				result.ExpiresAt,
+				result.Email,
+				result.FullName,
+				result.RequiresPasswordChange,
+				result.IsFirstLogin);
+
+		return Ok(CreateAuthResponse(validatedResult));
 	}
 
 	/// <summary>

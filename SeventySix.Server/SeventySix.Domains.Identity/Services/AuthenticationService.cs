@@ -69,6 +69,10 @@ public class AuthenticationService(
 		bool rememberMe,
 		CancellationToken cancellationToken)
 	{
+		// Detect first login BEFORE updating LastLoginAt
+		bool isFirstLogin =
+			user.LastLoginAt is null;
+
 		AuthResult accessTokenResult =
 			await GenerateAccessTokenResultAsync(
 				user,
@@ -96,7 +100,8 @@ public class AuthenticationService(
 			accessTokenResult.Email!,
 			accessTokenResult.FullName,
 			requiresPasswordChange,
-			rememberMe);
+			rememberMe,
+			isFirstLogin);
 	}
 
 	/// <summary>

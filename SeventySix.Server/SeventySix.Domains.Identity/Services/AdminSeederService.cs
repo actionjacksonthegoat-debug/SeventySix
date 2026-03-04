@@ -143,6 +143,7 @@ public sealed class AdminSeederService(
 				FullName = settings.Value.FullName,
 				IsActive = true,
 				CreateDate = now,
+				LastLoginAt = now,
 				CreatedBy =
 					AuditConstants.SystemUser,
 				RequiresPasswordChange = !hostEnvironment.IsEnvironment("E2E"),

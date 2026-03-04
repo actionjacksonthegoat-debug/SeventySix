@@ -115,18 +115,27 @@ describe("OAuthFlowService",
 							.toBe(true);
 					});
 
-				it("should fall back to full-page navigation when popup is blocked",
+				it("should emit error event when popup is blocked",
 					() =>
 					{
 						mockWindowService.openWindow.mockReturnValue(null);
 
+						const events: unknown[] = [];
+						service.events$.subscribe(
+							(event: unknown) => events.push(event));
+
 						service.openLoginPopup("github");
 
-						expect(mockWindowService.navigateTo)
-							.toHaveBeenCalledWith(
-								`${environment.apiUrl}/auth/oauth/github`);
 						expect(service.isOAuthInProgress())
 							.toBe(false);
+						expect(events)
+							.toHaveLength(1);
+						expect(events[0])
+							.toEqual(
+								{
+									type: "error",
+									error: "popup_blocked"
+								});
 					});
 
 				it("should sanitize absolute return URL to /",
@@ -323,6 +332,63 @@ describe("OAuthFlowService",
 
 						expect(events)
 							.toHaveLength(0);
+					});
+
+				it("should emit error event for oauth_error message",
+					() =>
+					{
+						const events: unknown[] = [];
+						service.events$.subscribe(
+							(event: unknown) => events.push(event));
+
+						const allowedOrigin: string =
+							new URL(environment.apiUrl).origin;
+						window.dispatchEvent(
+							new MessageEvent(
+								"message",
+								{
+									origin: allowedOrigin,
+									data: {
+										type: "oauth_error",
+										error: "provider_denied"
+									}
+								}));
+
+						expect(events)
+							.toHaveLength(1);
+						expect(events[0])
+							.toEqual(
+								{
+									type: "error",
+									error: "provider_denied"
+								});
+					});
+
+				it("should use default error message when oauth_error has no error field",
+					() =>
+					{
+						const events: unknown[] = [];
+						service.events$.subscribe(
+							(event: unknown) => events.push(event));
+
+						const allowedOrigin: string =
+							new URL(environment.apiUrl).origin;
+						window.dispatchEvent(
+							new MessageEvent(
+								"message",
+								{
+									origin: allowedOrigin,
+									data: { type: "oauth_error" }
+								}));
+
+						expect(events)
+							.toHaveLength(1);
+						expect(events[0])
+							.toEqual(
+								{
+									type: "error",
+									error: "OAuth login failed"
+								});
 					});
 
 				it("should accept messages from window.location.origin when apiUrl is relative",

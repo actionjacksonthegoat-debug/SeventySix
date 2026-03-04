@@ -17,34 +17,13 @@ public interface IOAuthCodeExchangeService
 	/// <summary>
 	/// Stores tokens and returns a short-lived authorization code.
 	/// </summary>
-	/// <param name="accessToken">
-	/// The JWT access token.
-	/// </param>
-	/// <param name="refreshToken">
-	/// The refresh token.
-	/// </param>
-	/// <param name="expiresAt">
-	/// Access token expiration time.
-	/// </param>
-	/// <param name="email">
-	/// User's email address.
-	/// </param>
-	/// <param name="fullName">
-	/// User's full name (optional).
-	/// </param>
-	/// <param name="requiresPasswordChange">
-	/// Whether user must change password.
+	/// <param name="tokenData">
+	/// The token data to store for later exchange.
 	/// </param>
 	/// <returns>
 	/// A one-time authorization code (60 seconds TTL).
 	/// </returns>
-	public string StoreTokens(
-		string accessToken,
-		string refreshToken,
-		DateTimeOffset expiresAt,
-		string email,
-		string? fullName,
-		bool requiresPasswordChange);
+	public string StoreTokens(OAuthCodeExchangeResult tokenData);
 
 	/// <summary>
 	/// Exchanges a one-time code for tokens.
