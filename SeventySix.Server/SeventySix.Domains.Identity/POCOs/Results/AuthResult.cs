@@ -54,6 +54,10 @@ namespace SeventySix.Identity;
 /// Whether the user selected the "Remember Me" option during authentication.
 /// Used by cookie service to set appropriate cookie expiration.
 /// </param>
+/// <param name="IsFirstLogin">
+/// Whether this is the user's first-ever login (no prior LastLoginAt).
+/// Used by the client to redirect first-time users to the Profile page.
+/// </param>
 public record AuthResult(
 	bool Success,
 	string? AccessToken = null,
@@ -69,7 +73,8 @@ public record AuthResult(
 	string? Error = null,
 	string? ErrorCode = null,
 	string? TrustedDeviceToken = null,
-	bool RememberMe = false)
+	bool RememberMe = false,
+	bool IsFirstLogin = false)
 {
 	/// <summary>
 	/// Creates a successful result without tokens (e.g., password change).
@@ -103,6 +108,9 @@ public record AuthResult(
 	/// <param name="rememberMe">
 	/// Whether the user selected "Remember Me" during authentication.
 	/// </param>
+	/// <param name="isFirstLogin">
+	/// Whether this is the user's first-ever login.
+	/// </param>
 	/// <returns>
 	/// Success result with tokens.
 	/// </returns>
@@ -113,7 +121,8 @@ public record AuthResult(
 		string email,
 		string? fullName,
 		bool requiresPasswordChange = false,
-		bool rememberMe = false) =>
+		bool rememberMe = false,
+		bool isFirstLogin = false) =>
 		new(
 			Success: true,
 			AccessToken: accessToken,
@@ -122,7 +131,8 @@ public record AuthResult(
 			Email: email,
 			FullName: fullName,
 			RequiresPasswordChange: requiresPasswordChange,
-			RememberMe: rememberMe);
+			RememberMe: rememberMe,
+			IsFirstLogin: isFirstLogin);
 
 	/// <summary>
 	/// Creates a result requiring MFA verification.

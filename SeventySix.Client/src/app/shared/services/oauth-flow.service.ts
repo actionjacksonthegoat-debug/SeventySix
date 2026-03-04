@@ -110,9 +110,14 @@ export class OAuthFlowService
 		{
 			this.isOAuthInProgress.set(false);
 
-			// Popup blocked — fall back to full-page navigation
-			this.windowService.navigateTo(
-				`${this.authUrl}/oauth/${provider}`);
+			// Popup blocked — emit error event instead of navigating away.
+			// Full-page navigation leaves the user on a dead HTML page
+			// because the server's postMessage response has no opener.
+			this.oauthEventsSubject.next(
+				{
+					type: "error",
+					error: "popup_blocked"
+				});
 
 			return;
 		}
@@ -197,41 +202,9 @@ export class OAuthFlowService
 		const oauthHandler: (event: MessageEvent) => void =
 			(event: MessageEvent): void =>
 			{
-			// Validate origin matches our API.
-			// Guard against relative apiUrl (production uses '/api/v1') which would
-			// throw 'TypeError: Invalid URL' inside new URL(). Fall back to the
-			// current window origin when the URL is relative.
-				const allowedOrigin: string =
-					environment.apiUrl.startsWith("http")
-						? new URL(environment.apiUrl).origin
-						: window.location.origin;
-
-				if (event.origin !== allowedOrigin)
+				if (this.isValidOAuthOrigin(event.origin))
 				{
-					return;
-				}
-
-				if (
-					event.data?.type === "oauth_success"
-						&& isPresent(event.data?.code))
-				{
-					this.clearPopupPollTimer();
-					this.isOAuthInProgress.set(false);
-					this.oauthEventsSubject.next(
-						{
-							type: "code_received",
-							code: event.data.code as string
-						});
-				}
-
-				if (event.data?.type === "oauth_link_success")
-				{
-					this.clearPopupPollTimer();
-					this.isOAuthInProgress.set(false);
-					this.oauthEventsSubject.next(
-						{
-							type: "link_success"
-						});
+					this.handleOAuthMessage(event.data);
 				}
 			};
 
@@ -242,5 +215,78 @@ export class OAuthFlowService
 			{
 				window.removeEventListener("message", oauthHandler);
 			});
+	}
+
+	/**
+	 * Validates whether a message origin matches the API server origin.
+	 * @param {string} origin
+	 * The origin from the MessageEvent.
+	 * @returns {boolean}
+	 * True if the origin is allowed.
+	 * @private
+	 */
+	private isValidOAuthOrigin(origin: string): boolean
+	{
+		// Guard against relative apiUrl (production uses '/api/v1') which would
+		// throw 'TypeError: Invalid URL' inside new URL(). Fall back to the
+		// current window origin when the URL is relative.
+		const allowedOrigin: string =
+			environment.apiUrl.startsWith("http")
+				? new URL(environment.apiUrl).origin
+				: window.location.origin;
+
+		return origin === allowedOrigin;
+	}
+
+	/**
+	 * Processes a validated OAuth postMessage payload.
+	 * @param {Record<string, unknown>} data
+	 * The message event data.
+	 * @private
+	 */
+	private handleOAuthMessage(
+		data: Record<string, unknown>): void
+	{
+		const messageType: unknown = data?.["type"];
+
+		if (
+			messageType === "oauth_success"
+				&& isPresent(data?.["code"]))
+		{
+			this.completeOAuthFlow(
+				{
+					type: "code_received",
+					code: data["code"] as string
+				});
+		}
+		else if (messageType === "oauth_link_success")
+		{
+			this.completeOAuthFlow(
+				{
+					type: "link_success"
+				});
+		}
+		else if (messageType === "oauth_error")
+		{
+			this.completeOAuthFlow(
+				{
+					type: "error",
+					error: (data?.["error"] as string)
+						?? "OAuth login failed"
+				});
+		}
+	}
+
+	/**
+	 * Clears popup state and emits an OAuth event.
+	 * @param {OAuthEvent} event
+	 * The event to emit.
+	 * @private
+	 */
+	private completeOAuthFlow(event: OAuthEvent): void
+	{
+		this.clearPopupPollTimer();
+		this.isOAuthInProgress.set(false);
+		this.oauthEventsSubject.next(event);
 	}
 }

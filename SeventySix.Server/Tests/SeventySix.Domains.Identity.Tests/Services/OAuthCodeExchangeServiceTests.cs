@@ -58,12 +58,14 @@ public sealed class OAuthCodeExchangeServiceTests
 		// Act
 		string code =
 			service.StoreTokens(
-			"access-token",
-			"refresh-token",
-			FixedExpiresAt,
-			TestEmail,
-			TestFullName,
-			false);
+				new OAuthCodeExchangeResult(
+					"access-token",
+					"refresh-token",
+					FixedExpiresAt,
+					TestEmail,
+					TestFullName,
+					false,
+					false));
 
 		// Assert
 		code.ShouldNotBeNull();
@@ -82,21 +84,25 @@ public sealed class OAuthCodeExchangeServiceTests
 		// Act
 		string code1 =
 			service.StoreTokens(
-			"access-token-1",
-			"refresh-token-1",
-			FixedExpiresAt,
-			TestEmail,
-			TestFullName,
-			false);
+				new OAuthCodeExchangeResult(
+					"access-token-1",
+					"refresh-token-1",
+					FixedExpiresAt,
+					TestEmail,
+					TestFullName,
+					false,
+					false));
 
 		string code2 =
 			service.StoreTokens(
-			"access-token-2",
-			"refresh-token-2",
-			FixedExpiresAt,
-			TestEmail,
-			TestFullName,
-			false);
+				new OAuthCodeExchangeResult(
+					"access-token-2",
+					"refresh-token-2",
+					FixedExpiresAt,
+					TestEmail,
+					TestFullName,
+					false,
+					false));
 
 		// Assert
 		code1.ShouldNotBe(code2);
@@ -114,12 +120,14 @@ public sealed class OAuthCodeExchangeServiceTests
 		// Act
 		string code =
 			service.StoreTokens(
-			"access-token",
-			"refresh-token",
-			FixedExpiresAt,
-			TestEmail,
-			TestFullName,
-			false);
+				new OAuthCodeExchangeResult(
+					"access-token",
+					"refresh-token",
+					FixedExpiresAt,
+					TestEmail,
+					TestFullName,
+					false,
+					false));
 
 		// Assert - Base64url uses only these characters
 		code.ShouldMatch("^[A-Za-z0-9_-]+$");
@@ -143,12 +151,14 @@ public sealed class OAuthCodeExchangeServiceTests
 
 		string code =
 			service.StoreTokens(
-			accessToken,
-			refreshToken,
-			FixedExpiresAt,
-			TestEmail,
-			TestFullName,
-			false);
+				new OAuthCodeExchangeResult(
+					accessToken,
+					refreshToken,
+					FixedExpiresAt,
+					TestEmail,
+					TestFullName,
+					false,
+					false));
 
 		// Act
 		OAuthCodeExchangeResult? result =
@@ -192,12 +202,14 @@ public sealed class OAuthCodeExchangeServiceTests
 
 		string code =
 			service.StoreTokens(
-			"access-token",
-			"refresh-token",
-			FixedExpiresAt,
-			TestEmail,
-			TestFullName,
-			false);
+				new OAuthCodeExchangeResult(
+					"access-token",
+					"refresh-token",
+					FixedExpiresAt,
+					TestEmail,
+					TestFullName,
+					false,
+					false));
 
 		// Act
 		OAuthCodeExchangeResult? firstResult =
@@ -244,12 +256,14 @@ public sealed class OAuthCodeExchangeServiceTests
 		// Act
 		string code =
 			service.StoreTokens(
-			"access-token",
-			"refresh-token",
-			FixedExpiresAt,
-			TestEmail,
-			TestFullName,
-			false);
+				new OAuthCodeExchangeResult(
+					"access-token",
+					"refresh-token",
+					FixedExpiresAt,
+					TestEmail,
+					TestFullName,
+					false,
+					false));
 
 		// Assert - 32 bytes = 43 base64url characters (no padding)
 		code.Length.ShouldBe(43);
@@ -271,12 +285,14 @@ public sealed class OAuthCodeExchangeServiceTests
 		{
 			string code =
 				service.StoreTokens(
-				$"access-token-{index}",
-				$"refresh-token-{index}",
-				FixedExpiresAt,
-				TestEmail,
-				TestFullName,
-				false);
+					new OAuthCodeExchangeResult(
+						$"access-token-{index}",
+						$"refresh-token-{index}",
+						FixedExpiresAt,
+						TestEmail,
+						TestFullName,
+						false,
+						false));
 
 			codes.Add(code);
 		}

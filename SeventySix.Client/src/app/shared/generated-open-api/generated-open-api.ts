@@ -2458,6 +2458,8 @@ export interface components
 			 * @default 0
 			 */
 			sessionWarningSeconds: number | string;
+			/** @default false */
+			isFirstLogin: boolean;
 		};
 		AvailableRoleDto: {
 			name: string;

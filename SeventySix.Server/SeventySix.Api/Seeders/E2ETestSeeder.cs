@@ -173,6 +173,9 @@ public sealed class E2ETestSeeder(
 			return;
 		}
 
+		DateTimeOffset now =
+			timeProvider.GetUtcNow();
+
 		ApplicationUser newUser =
 			new()
 			{
@@ -180,7 +183,8 @@ public sealed class E2ETestSeeder(
 				Email = email,
 				EmailConfirmed = true,
 				LockoutEnabled = true,
-				CreateDate = timeProvider.GetUtcNow(),
+				CreateDate = now,
+				LastLoginAt = now,
 
 				// E2E non-MFA users: explicitly opt out (entity default is true)
 				MfaEnabled = false,
@@ -255,6 +259,7 @@ public sealed class E2ETestSeeder(
 				EmailConfirmed = true,
 				LockoutEnabled = true,
 				CreateDate = timeProvider.GetUtcNow(),
+				LastLoginAt = timeProvider.GetUtcNow(),
 				RequiresPasswordChange = true,
 
 				// E2E forced-pw users: explicitly opt out of MFA (entity default is true)
@@ -313,6 +318,7 @@ public sealed class E2ETestSeeder(
 				EmailConfirmed = true,
 				LockoutEnabled = true,
 				CreateDate = now,
+				LastLoginAt = now,
 				MfaEnabled = true,
 				TotpSecret =
 					totpSecretProtector.Protect(

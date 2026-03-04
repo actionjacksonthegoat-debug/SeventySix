@@ -162,7 +162,8 @@ public abstract class AuthControllerBase(
 			result.ExpiresAt.Value,
 			result.Email,
 			result.FullName,
-			result.RequiresPasswordChange);
+			result.RequiresPasswordChange,
+			result.IsFirstLogin);
 	}
 
 	/// <summary>
@@ -191,7 +192,8 @@ public abstract class AuthControllerBase(
 				: 0,
 			SessionWarningSeconds: inactivity.Enabled
 				? inactivity.WarningSeconds
-				: 0);
+				: 0,
+			IsFirstLogin: validatedResult.IsFirstLogin);
 	}
 
 	/// <summary>
@@ -221,7 +223,8 @@ public abstract class AuthControllerBase(
 		DateTimeOffset ExpiresAt,
 		string Email,
 		string? FullName,
-		bool RequiresPasswordChange);
+		bool RequiresPasswordChange,
+		bool IsFirstLogin);
 
 	/// <summary>
 	/// Creates HTML response that posts OAuth authorization code to parent window.
@@ -246,12 +249,14 @@ public abstract class AuthControllerBase(
 		// Store tokens and get one-time code (60 second TTL)
 		string code =
 			oauthCodeExchange.StoreTokens(
-				validatedResult.AccessToken,
-				validatedResult.RefreshToken,
-				validatedResult.ExpiresAt,
-				validatedResult.Email,
-				validatedResult.FullName,
-				validatedResult.RequiresPasswordChange);
+				new OAuthCodeExchangeResult(
+					validatedResult.AccessToken,
+					validatedResult.RefreshToken,
+					validatedResult.ExpiresAt,
+					validatedResult.Email,
+					validatedResult.FullName,
+					validatedResult.RequiresPasswordChange,
+					validatedResult.IsFirstLogin));
 
 		string html =
 			$$"""

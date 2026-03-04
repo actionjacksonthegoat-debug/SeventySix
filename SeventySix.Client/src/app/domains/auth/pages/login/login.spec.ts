@@ -76,7 +76,8 @@ describe("LoginComponent",
 				requiresPasswordChange: false,
 				requiresMfa: false,
 				sessionInactivityMinutes: 0,
-				sessionWarningSeconds: 0
+				sessionWarningSeconds: 0,
+				isFirstLogin: false
 			};
 
 		beforeEach(
@@ -344,6 +345,33 @@ describe("LoginComponent",
 							.toHaveBeenCalledWith(
 								[APP_ROUTES.AUTH.CHANGE_PASSWORD],
 								{ queryParams: { required: "true", returnUrl: "/" } });
+					});
+
+				it("should redirect to profile on first login",
+					() =>
+					{
+						// Arrange
+						const firstLoginResponse: AuthResponse =
+							{
+								...mockAuthResponse,
+								isFirstLogin: true
+							};
+						mockAuthService.login.mockReturnValue(
+							of(firstLoginResponse));
+						component["loginForm"].patchValue(
+							{
+								usernameOrEmail: "testuser",
+								password: "password123",
+								rememberMe: false
+							});
+
+						// Act
+						(component as unknown as { onLocalLogin(): void; }).onLocalLogin();
+
+						// Assert
+						expect(router.navigate)
+							.toHaveBeenCalledWith(
+								[APP_ROUTES.ACCOUNT.PROFILE]);
 					});
 
 				it("should show detailed error for 401 unauthorized",

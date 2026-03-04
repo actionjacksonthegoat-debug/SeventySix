@@ -40,6 +40,10 @@ namespace SeventySix.Identity;
 /// <param name="SessionWarningSeconds">
 /// Seconds before inactivity timeout to display warning.
 /// </param>
+/// <param name="IsFirstLogin">
+/// Whether this is the user's first-ever login.
+/// Used by the client to redirect first-time users to the Profile page.
+/// </param>
 public record AuthResponse(
 	string? AccessToken,
 	DateTimeOffset? ExpiresAt,
@@ -51,7 +55,8 @@ public record AuthResponse(
 	MfaMethod? MfaMethod = null,
 	IReadOnlyList<MfaMethod>? AvailableMfaMethods = null,
 	int SessionInactivityMinutes = 0,
-	int SessionWarningSeconds = 0)
+	int SessionWarningSeconds = 0,
+	bool IsFirstLogin = false)
 {
 	/// <summary>
 	/// Creates an AuthResponse from an AuthResult.
@@ -74,5 +79,6 @@ public record AuthResponse(
 			MfaMethod: result.MfaMethod,
 			AvailableMfaMethods: result.AvailableMfaMethods,
 			SessionInactivityMinutes: 0,
-			SessionWarningSeconds: 0);
+			SessionWarningSeconds: 0,
+			IsFirstLogin: result.IsFirstLogin);
 }

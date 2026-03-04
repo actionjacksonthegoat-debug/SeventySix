@@ -379,4 +379,106 @@ public sealed class AuthenticationServiceTests
 				Arg.Any<string?>(),
 				Arg.Any<CancellationToken>());
 	}
+
+	/// <summary>
+	/// Verifies IsFirstLogin is true when user has never logged in before (LastLoginAt is null).
+	/// </summary>
+	[Fact]
+	public async Task GenerateAuthResultAsync_WhenLastLoginAtIsNull_SetsIsFirstLoginTrueAsync()
+	{
+		// Arrange
+		ApplicationUser user =
+			new()
+			{
+				Id = 6,
+				UserName = "firstloginuser",
+				Email = "firstlogin@example.com",
+				LastLoginAt = null,
+			};
+
+		UserManager
+			.GetRolesAsync(Arg.Any<ApplicationUser>())
+			.Returns(Array.Empty<string>());
+
+		TokenService
+			.GenerateAccessToken(
+				Arg.Any<long>(),
+				Arg.Any<string>(),
+				Arg.Any<IEnumerable<string>>(),
+				Arg.Any<bool>())
+			.Returns("token");
+
+		TokenService
+			.GenerateRefreshTokenAsync(
+				Arg.Any<long>(),
+				Arg.Any<string?>(),
+				Arg.Any<bool>(),
+				Arg.Any<CancellationToken>())
+			.Returns("refresh");
+
+		TimeProvider.GetUtcNow().Returns(TestTimeProviderBuilder.DefaultTime);
+
+		// Act
+		AuthResult result =
+			await ServiceUnderTest.GenerateAuthResultAsync(
+			user,
+			"192.168.1.1",
+			requiresPasswordChange: false,
+			rememberMe: false,
+			CancellationToken.None);
+
+		// Assert
+		result.IsFirstLogin.ShouldBeTrue();
+	}
+
+	/// <summary>
+	/// Verifies IsFirstLogin is false when user has logged in before (LastLoginAt has a value).
+	/// </summary>
+	[Fact]
+	public async Task GenerateAuthResultAsync_WhenLastLoginAtHasValue_SetsIsFirstLoginFalseAsync()
+	{
+		// Arrange
+		ApplicationUser user =
+			new()
+			{
+				Id = 7,
+				UserName = "returninguser",
+				Email = "returning@example.com",
+				LastLoginAt = TestDates.DefaultUtc,
+			};
+
+		UserManager
+			.GetRolesAsync(Arg.Any<ApplicationUser>())
+			.Returns(Array.Empty<string>());
+
+		TokenService
+			.GenerateAccessToken(
+				Arg.Any<long>(),
+				Arg.Any<string>(),
+				Arg.Any<IEnumerable<string>>(),
+				Arg.Any<bool>())
+			.Returns("token");
+
+		TokenService
+			.GenerateRefreshTokenAsync(
+				Arg.Any<long>(),
+				Arg.Any<string?>(),
+				Arg.Any<bool>(),
+				Arg.Any<CancellationToken>())
+			.Returns("refresh");
+
+		TimeProvider.GetUtcNow().Returns(TestTimeProviderBuilder.DefaultTime);
+
+		// Act
+		AuthResult result =
+			await ServiceUnderTest.GenerateAuthResultAsync(
+			user,
+			"192.168.1.1",
+			requiresPasswordChange: false,
+			rememberMe: false,
+			CancellationToken.None);
+
+		// Assert
+		result.IsFirstLogin.ShouldBeFalse();
+	}
 }

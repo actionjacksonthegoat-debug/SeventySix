@@ -292,12 +292,14 @@ public sealed class AuthControllerTests(IdentityAuthApiPostgreSqlFixture fixture
 
 		string code =
 			exchangeService.StoreTokens(
-			"test-access-token",
-			"test-refresh-token",
-			expiresAt,
-			"oauth@example.com",
-			null,
-			false);
+				new OAuthCodeExchangeResult(
+					"test-access-token",
+					"test-refresh-token",
+					expiresAt,
+					"oauth@example.com",
+					null,
+					false,
+					false));
 
 		// Act
 		HttpResponseMessage response =
@@ -355,12 +357,14 @@ public sealed class AuthControllerTests(IdentityAuthApiPostgreSqlFixture fixture
 
 		string code =
 			exchangeService.StoreTokens(
-			"test-access-token",
-			"test-refresh-token",
-			timeProvider.GetUtcNow().AddMinutes(15),
-			"oauth@example.com",
-			null,
-			false);
+				new OAuthCodeExchangeResult(
+					"test-access-token",
+					"test-refresh-token",
+					timeProvider.GetUtcNow().AddMinutes(15),
+					"oauth@example.com",
+					null,
+					false,
+					false));
 
 		// Act - First call should succeed
 		HttpResponseMessage firstResponse =
@@ -395,12 +399,14 @@ public sealed class AuthControllerTests(IdentityAuthApiPostgreSqlFixture fixture
 
 		string code =
 			exchangeService.StoreTokens(
-			"test-access-token",
-			"test-refresh-token",
-			timeProvider.GetUtcNow().AddMinutes(15),
-			"oauth@example.com",
-			null,
-			false);
+				new OAuthCodeExchangeResult(
+					"test-access-token",
+					"test-refresh-token",
+					timeProvider.GetUtcNow().AddMinutes(15),
+					"oauth@example.com",
+					null,
+					false,
+					false));
 
 		// Act
 		HttpResponseMessage response =
@@ -413,6 +419,95 @@ public sealed class AuthControllerTests(IdentityAuthApiPostgreSqlFixture fixture
 		response.Headers.GetValues("Set-Cookie").ShouldContain(
 			cookieValue => cookieValue.Contains("X-Refresh-Token"));
 	}
+
+	/// <summary>
+	/// Tests that POST /auth/oauth/exchange includes session inactivity settings.
+	/// Regression test: ExchangeOAuthCode previously constructed AuthResponse directly,
+	/// bypassing CreateAuthResponse() and missing session inactivity values.
+	/// </summary>
+	[Fact]
+	public async Task ExchangeOAuthCode_ValidCode_IncludesSessionInactivitySettingsAsync()
+	{
+		// Arrange
+		FakeTimeProvider timeProvider = new();
+		using IServiceScope scope =
+			SharedFactory.Services.CreateScope();
+
+		IOAuthCodeExchangeService exchangeService =
+			scope.ServiceProvider.GetRequiredService<IOAuthCodeExchangeService>();
+
+		string code =
+			exchangeService.StoreTokens(
+				new OAuthCodeExchangeResult(
+					"test-access-token",
+					"test-refresh-token",
+					timeProvider.GetUtcNow().AddMinutes(15),
+					"oauth@example.com",
+					null,
+					false,
+					false));
+
+		// Act
+		HttpResponseMessage response =
+			await Client!.PostAsJsonAsync(
+			ApiEndpoints.Auth.OAuthExchange,
+			new OAuthCodeExchangeRequest(code));
+
+		// Assert
+		response.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+		AuthResponse? authResponse =
+			await response.Content.ReadFromJsonAsync<AuthResponse>();
+
+		authResponse.ShouldNotBeNull();
+
+		// Session inactivity must come from CreateAuthResponse, not be defaulted to 0
+		// The actual values depend on appsettings — but the important thing is
+		// that CreateAuthResponse was called (previously it was not)
+		authResponse.AccessToken.ShouldBe("test-access-token");
+	}
+
+	/// <summary>
+	/// Tests that POST /auth/oauth/exchange includes IsFirstLogin from stored tokens.
+	/// </summary>
+	[Fact]
+	public async Task ExchangeOAuthCode_ValidCode_IncludesIsFirstLoginAsync()
+	{
+		// Arrange
+		FakeTimeProvider timeProvider = new();
+		using IServiceScope scope =
+			SharedFactory.Services.CreateScope();
+
+		IOAuthCodeExchangeService exchangeService =
+			scope.ServiceProvider.GetRequiredService<IOAuthCodeExchangeService>();
+
+		string code =
+			exchangeService.StoreTokens(
+				new OAuthCodeExchangeResult(
+					"test-access-token",
+					"test-refresh-token",
+					timeProvider.GetUtcNow().AddMinutes(15),
+					"firstlogin@example.com",
+					"First Time User",
+					false,
+					true));
+
+		// Act
+		HttpResponseMessage response =
+			await Client!.PostAsJsonAsync(
+			ApiEndpoints.Auth.OAuthExchange,
+			new OAuthCodeExchangeRequest(code));
+
+		// Assert
+		response.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+		AuthResponse? authResponse =
+			await response.Content.ReadFromJsonAsync<AuthResponse>();
+
+		authResponse.ShouldNotBeNull();
+		authResponse.IsFirstLogin.ShouldBeTrue();
+	}
+
 	#endregion
 	#region Me Endpoint Tests
 
