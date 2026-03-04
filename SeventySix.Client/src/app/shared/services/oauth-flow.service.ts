@@ -239,7 +239,19 @@ export class OAuthFlowService
 	}
 
 	/**
+	 * Allowlist of valid OAuth postMessage types.
+	 * Only messages whose `type` field matches one of these values are
+	 * processed. This prevents user-controlled payloads from bypassing
+	 * the security check — CodeQL "User-controlled bypass of security check".
+	 */
+	private static readonly VALID_OAUTH_MESSAGE_TYPES: ReadonlySet<string> =
+		new Set<string>(
+			["oauth_success", "oauth_link_success", "oauth_error"]);
+
+	/**
 	 * Processes a validated OAuth postMessage payload.
+	 * The message type is checked against an explicit allowlist before
+	 * dispatching to prevent user-controlled bypass (CodeQL High).
 	 * @param {Record<string, unknown>} data
 	 * The message event data.
 	 * @private
@@ -247,11 +259,23 @@ export class OAuthFlowService
 	private handleOAuthMessage(
 		data: Record<string, unknown>): void
 	{
-		const messageType: unknown =
+		const rawType: unknown =
 			data?.["type"];
 
+		// Validate that the message type is a string and belongs to the
+		// known allowlist before using it for any security-sensitive branching.
+		if (typeof rawType !== "string"
+			|| !OAuthFlowService.VALID_OAUTH_MESSAGE_TYPES.has(rawType))
+		{
+			return;
+		}
+
+		// `validatedType` is now a known-good value from the allowlist.
+		const validatedType: string =
+			rawType;
+
 		if (
-			messageType === "oauth_success"
+			validatedType === "oauth_success"
 				&& isPresent(data?.["code"]))
 		{
 			this.completeOAuthFlow(
@@ -260,14 +284,14 @@ export class OAuthFlowService
 					code: data["code"] as string
 				});
 		}
-		else if (messageType === "oauth_link_success")
+		else if (validatedType === "oauth_link_success")
 		{
 			this.completeOAuthFlow(
 				{
 					type: "link_success"
 				});
 		}
-		else if (messageType === "oauth_error")
+		else if (validatedType === "oauth_error")
 		{
 			this.completeOAuthFlow(
 				{
