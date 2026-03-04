@@ -372,7 +372,6 @@ public sealed class EmailService(
 			await httpClient.PostAsJsonAsync(
 				"v3/smtp/email",
 				requestBody,
-				BrevoJsonContext.Default.BrevoSendEmailRequest,
 				cancellationToken);
 
 		if (response.StatusCode == HttpStatusCode.TooManyRequests)
@@ -489,11 +488,13 @@ public sealed class EmailService(
 			when (releaseException is InvalidOperationException
 				or OperationCanceledException)
 		{
-			// Log but don't throw — the email wasn't sent, count is 1 too high, which is safe
+			// Log but don't throw — the email wasn't sent, count is 1 too high, which is safe.
+			// Only log exception type — never the full exception object, which may
+			// contain internal paths or connection details in its stack trace.
 			logger.LogWarning(
-				releaseException,
-				"Failed to release rate limit slot for {ApiName}. Count may be 1 too high (safe/conservative).",
-				BREVO_API_NAME);
+				"Failed to release rate limit slot for {ApiName}. Count may be 1 too high (safe/conservative). Error: {ErrorType}",
+				BREVO_API_NAME,
+				releaseException.GetType().Name);
 		}
 	}
 
