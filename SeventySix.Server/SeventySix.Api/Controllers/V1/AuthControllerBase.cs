@@ -7,6 +7,7 @@ using Microsoft.Extensions.Options;
 using SeventySix.Api.Infrastructure;
 using SeventySix.Identity;
 using SeventySix.Shared.Constants;
+using SeventySix.Shared.Utilities;
 
 namespace SeventySix.Api.Controllers;
 
@@ -66,8 +67,8 @@ public abstract class AuthControllerBase(
 		Logger.LogWarning(
 			"{Operation} failed. Error: {Error}, Code: {ErrorCode}",
 			operationName,
-			result.Error,
-			result.ErrorCode);
+			LogSanitizer.Sanitize(result.Error),
+			LogSanitizer.Sanitize(result.ErrorCode));
 
 		return StatusCode(
 			statusCode,

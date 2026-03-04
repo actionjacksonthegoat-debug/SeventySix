@@ -247,7 +247,8 @@ export class OAuthFlowService
 	private handleOAuthMessage(
 		data: Record<string, unknown>): void
 	{
-		const messageType: unknown = data?.["type"];
+		const messageType: unknown =
+			data?.["type"];
 
 		if (
 			messageType === "oauth_success"
