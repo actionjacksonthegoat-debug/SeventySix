@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using System.Data.Common;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SeventySix.Shared.BackgroundJobs;
@@ -100,11 +101,18 @@ public sealed class DatabaseMaintenanceJobHandler(
 			logger.LogInformation(
 				"Database maintenance completed: VACUUM ANALYZE executed on all schemas");
 		}
-		catch (Exception exception)
+		catch (DbException exception)
 		{
 			logger.LogError(
 				exception,
-				"Unhandled exception during {JobName}. Job will reschedule normally.",
+				"Database error during {JobName}. Job will reschedule normally.",
+				nameof(DatabaseMaintenanceJob));
+		}
+		catch (InvalidOperationException exception)
+		{
+			logger.LogError(
+				exception,
+				"Operation error during {JobName}. Job will reschedule normally.",
 				nameof(DatabaseMaintenanceJob));
 		}
 	}

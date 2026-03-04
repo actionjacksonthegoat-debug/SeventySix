@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using System.Data.Common;
 using SeventySix.Shared.Constants;
 
 namespace SeventySix.Api.Infrastructure;
@@ -95,7 +96,13 @@ public sealed class ScheduledJobHealthCheckService(
 				}
 			}
 		}
-		catch (Exception exception)
+		catch (DbException exception)
+		{
+			logger.LogError(
+				exception,
+				"Failed to check scheduled job health status.");
+		}
+		catch (InvalidOperationException exception)
 		{
 			logger.LogError(
 				exception,

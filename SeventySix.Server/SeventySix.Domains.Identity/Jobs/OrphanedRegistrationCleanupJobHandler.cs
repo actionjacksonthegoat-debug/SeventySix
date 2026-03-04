@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using System.Data.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -113,11 +114,25 @@ public sealed class OrphanedRegistrationCleanupJobHandler(
 					deletedCount);
 			}
 		}
-		catch (Exception exception)
+		catch (DbUpdateException exception)
 		{
 			logger.LogError(
 				exception,
-				"Unhandled exception during {JobName}. Job will reschedule normally.",
+				"Database update error during {JobName}. Job will reschedule normally.",
+				nameof(OrphanedRegistrationCleanupJob));
+		}
+		catch (DbException exception)
+		{
+			logger.LogError(
+				exception,
+				"Database error during {JobName}. Job will reschedule normally.",
+				nameof(OrphanedRegistrationCleanupJob));
+		}
+		catch (InvalidOperationException exception)
+		{
+			logger.LogError(
+				exception,
+				"Operation error during {JobName}. Job will reschedule normally.",
 				nameof(OrphanedRegistrationCleanupJob));
 		}
 	}
