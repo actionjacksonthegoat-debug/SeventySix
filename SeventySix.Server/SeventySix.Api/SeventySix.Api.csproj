@@ -44,6 +44,7 @@
 		<PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
 		<PackageReference Include="Serilog.Sinks.PostgreSQL" Version="2.3.0" />
 		<PackageReference Include="Polly.Extensions" Version="8.6.5" />
+		<PackageReference Include="WolverineFx.Postgresql" Version="5.17.0" />
 	</ItemGroup>
 
 	<ItemGroup>

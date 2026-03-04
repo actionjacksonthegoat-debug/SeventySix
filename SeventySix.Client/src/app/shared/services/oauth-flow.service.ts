@@ -264,15 +264,15 @@ export class OAuthFlowService
 
 		// Validate that the message type is a string and belongs to the
 		// known allowlist before using it for any security-sensitive branching.
-		if (typeof rawType !== "string"
-			|| !OAuthFlowService.VALID_OAUTH_MESSAGE_TYPES.has(rawType))
+		if (
+			typeof rawType !== "string"
+				|| !OAuthFlowService.VALID_OAUTH_MESSAGE_TYPES.has(rawType))
 		{
 			return;
 		}
 
 		// `validatedType` is now a known-good value from the allowlist.
-		const validatedType: string =
-			rawType;
+		const validatedType: string = rawType;
 
 		if (
 			validatedType === "oauth_success"

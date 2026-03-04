@@ -52,42 +52,14 @@ public sealed class LogCleanupJobHandler(
 		LogCleanupSettings config =
 			settings.Value;
 
-		if (!config.Enabled)
+		if (config.Enabled)
 		{
-			return;
+			await ExecuteCleanupAsync(config, cancellationToken);
 		}
 
+		// ALWAYS reschedule — never break the chain
 		DateTimeOffset now =
 			timeProvider.GetUtcNow();
-
-		DateTimeOffset cutoffDate =
-			now.AddDays(-config.RetentionDays).UtcDateTime;
-
-		// Database cleanup
-		int deletedDatabaseLogs =
-			await logRepository.DeleteOlderThanAsync(
-				cutoffDate,
-				cancellationToken);
-
-		if (deletedDatabaseLogs > 0)
-		{
-			logger.LogInformation(
-				"Database log cleanup completed: {DeletedCount} logs removed",
-				deletedDatabaseLogs);
-		}
-
-		// File system cleanup
-		int deletedLogFiles =
-			CleanupLogFiles(
-				config,
-				cutoffDate);
-
-		if (deletedLogFiles > 0)
-		{
-			logger.LogInformation(
-				"File log cleanup completed: {DeletedCount} files removed",
-				deletedLogFiles);
-		}
 
 		TimeSpan interval =
 			TimeSpan.FromHours(config.IntervalHours);
@@ -97,6 +69,66 @@ public sealed class LogCleanupJobHandler(
 			now,
 			interval,
 			cancellationToken);
+	}
+
+	/// <summary>
+	/// Executes the cleanup work in a try/catch to ensure rescheduling
+	/// always occurs even when errors happen.
+	/// </summary>
+	/// <param name="config">
+	/// The log cleanup settings.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// The cancellation token.
+	/// </param>
+	/// <returns>
+	/// A task representing the asynchronous operation.
+	/// </returns>
+	private async Task ExecuteCleanupAsync(
+		LogCleanupSettings config,
+		CancellationToken cancellationToken)
+	{
+		try
+		{
+			DateTimeOffset now =
+				timeProvider.GetUtcNow();
+
+			DateTimeOffset cutoffDate =
+				now.AddDays(-config.RetentionDays).UtcDateTime;
+
+			// Database cleanup
+			int deletedDatabaseLogs =
+				await logRepository.DeleteOlderThanAsync(
+					cutoffDate,
+					cancellationToken);
+
+			if (deletedDatabaseLogs > 0)
+			{
+				logger.LogInformation(
+					"Database log cleanup completed: {DeletedCount} logs removed",
+					deletedDatabaseLogs);
+			}
+
+			// File system cleanup
+			int deletedLogFiles =
+				CleanupLogFiles(
+					config,
+					cutoffDate);
+
+			if (deletedLogFiles > 0)
+			{
+				logger.LogInformation(
+					"File log cleanup completed: {DeletedCount} files removed",
+					deletedLogFiles);
+			}
+		}
+		catch (Exception exception)
+		{
+			logger.LogError(
+				exception,
+				"Unhandled exception during {JobName}. Job will reschedule normally.",
+				nameof(LogCleanupJob));
+		}
 	}
 
 	/// <summary>

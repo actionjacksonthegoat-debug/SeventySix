@@ -42,15 +42,18 @@ public sealed class RecurringJobServiceTests
 	}
 
 	/// <summary>
-	/// When a job has never been executed, it should be scheduled immediately.
+	/// When a job has never been executed, it should be scheduled one full interval from now.
 	/// </summary>
 	/// <returns>
 	/// A task representing the asynchronous operation.
 	/// </returns>
 	[Fact]
-	public async Task EnsureScheduledAsync_WhenNeverExecuted_SchedulesImmediatelyAsync()
+	public async Task EnsureScheduledAsync_WhenNeverExecuted_SchedulesAfterOneIntervalAsync()
 	{
 		// Arrange
+		TimeSpan interval =
+			TimeSpan.FromHours(24);
+
 		Repository
 			.GetLastExecutionAsync(
 				Arg.Any<string>(),
@@ -60,30 +63,50 @@ public sealed class RecurringJobServiceTests
 		// Act
 		await Service.EnsureScheduledAsync<TestJob>(
 			"TestJob",
-			TimeSpan.FromHours(24),
+			interval,
 			CancellationToken.None);
 
-		// Assert - schedules 1 second in the future to avoid race conditions
+		// Assert - schedules one full interval from now (not immediately)
+		DateTimeOffset expectedNextRun =
+			TimeProvider.GetUtcNow().Add(interval);
+
 		await Scheduler
 			.Received(1)
 			.ScheduleAsync(
 				Arg.Any<TestJob>(),
-				TimeProvider.GetUtcNow().AddSeconds(1),
+				expectedNextRun,
+				Arg.Any<CancellationToken>());
+
+		// Assert - DB updated with NextScheduledAt
+		await Repository
+			.Received(1)
+			.UpsertExecutionAsync(
+				Arg.Is<RecurringJobExecution>(execution =>
+					execution.JobName == "TestJob"
+					&& execution.LastExecutedAt == DateTimeOffset.MinValue
+					&& execution.NextScheduledAt == expectedNextRun
+					&& execution.LastExecutedBy == "Not yet run"),
 				Arg.Any<CancellationToken>());
 	}
 
 	/// <summary>
-	/// When a job is overdue, it should be scheduled immediately.
+	/// When a job is overdue, it should advance to the next interval-aligned time.
 	/// </summary>
 	/// <returns>
 	/// A task representing the asynchronous operation.
 	/// </returns>
 	[Fact]
-	public async Task EnsureScheduledAsync_WhenOverdue_SchedulesImmediatelyAsync()
+	public async Task EnsureScheduledAsync_WhenOverdue_AdvancesToNextIntervalAsync()
 	{
 		// Arrange - last execution 2 days ago, interval is 1 day
+		DateTimeOffset now =
+			TimeProvider.GetUtcNow();
+
 		DateTimeOffset lastExecuted =
-			TimeProvider.GetUtcNow().AddDays(-2);
+			now.AddDays(-2);
+
+		TimeSpan interval =
+			TimeSpan.FromDays(1);
 
 		Repository
 			.GetLastExecutionAsync(
@@ -98,15 +121,30 @@ public sealed class RecurringJobServiceTests
 		// Act
 		await Service.EnsureScheduledAsync<TestJob>(
 			"TestJob",
-			TimeSpan.FromDays(1),
+			interval,
 			CancellationToken.None);
 
-		// Assert - schedules 1 second in the future since it's overdue (avoids race conditions)
+		// Assert - advances to next interval boundary (lastExecuted + 3d = now + 1d)
+		DateTimeOffset expectedNextRun =
+			lastExecuted.AddDays(3);
+
+		expectedNextRun.ShouldBeGreaterThan(now);
+
 		await Scheduler
 			.Received(1)
 			.ScheduleAsync(
 				Arg.Any<TestJob>(),
-				TimeProvider.GetUtcNow().AddSeconds(1),
+				expectedNextRun,
+				Arg.Any<CancellationToken>());
+
+		// Assert - DB updated with NextScheduledAt and original LastExecutedAt preserved
+		await Repository
+			.Received(1)
+			.UpsertExecutionAsync(
+				Arg.Is<RecurringJobExecution>(execution =>
+					execution.JobName == "TestJob"
+					&& execution.LastExecutedAt == lastExecuted
+					&& execution.NextScheduledAt == expectedNextRun),
 				Arg.Any<CancellationToken>());
 	}
 
@@ -148,6 +186,16 @@ public sealed class RecurringJobServiceTests
 			.ScheduleAsync(
 				Arg.Any<TestJob>(),
 				expectedNextRun,
+				Arg.Any<CancellationToken>());
+
+		// Assert - DB updated with NextScheduledAt
+		await Repository
+			.Received(1)
+			.UpsertExecutionAsync(
+				Arg.Is<RecurringJobExecution>(execution =>
+					execution.JobName == "TestJob"
+					&& execution.LastExecutedAt == lastExecuted
+					&& execution.NextScheduledAt == expectedNextRun),
 				Arg.Any<CancellationToken>());
 	}
 
@@ -292,6 +340,96 @@ public sealed class RecurringJobServiceTests
 
 		// Assert - time has passed, schedule for tomorrow
 		result.ShouldBe(new DateTimeOffset(2026, 1, 31, 8, 10, 0, TimeSpan.Zero));
+	}
+
+	/// <summary>
+	/// When computed next time is in the past, RecordAndScheduleNextAsync should
+	/// advance to the next interval boundary rather than firing immediately.
+	/// </summary>
+	/// <returns>
+	/// A task representing the asynchronous operation.
+	/// </returns>
+	[Fact]
+	public async Task RecordAndScheduleNextAsync_WhenComputedTimeInPast_AdvancesToNextIntervalAsync()
+	{
+		// Arrange - executed 15 seconds ago, interval is 10 seconds
+		// Computed next = 15s ago + 10s = 5 seconds ago (IN THE PAST)
+		// AdvanceToNextInterval: elapsed 15s / 10s = 1, +1 = 2 periods
+		// Next = executedAt + 20s = now + 5s (FUTURE)
+		DateTimeOffset now =
+			TimeProvider.GetUtcNow();
+
+		DateTimeOffset executedAt =
+			now.AddSeconds(-15);
+
+		TimeSpan interval =
+			TimeSpan.FromSeconds(10);
+
+		// Act
+		await Service.RecordAndScheduleNextAsync<TestJob>(
+			"TestJob",
+			executedAt,
+			interval,
+			CancellationToken.None);
+
+		// Assert - advanced to next interval boundary (executedAt + 20s = now + 5s)
+		DateTimeOffset expectedNextRun =
+			executedAt.AddSeconds(20);
+
+		expectedNextRun.ShouldBeGreaterThan(now);
+
+		await Repository
+			.Received(1)
+			.UpsertExecutionAsync(
+				Arg.Is<RecurringJobExecution>(execution =>
+					execution.JobName == "TestJob"
+					&& execution.LastExecutedAt == executedAt
+					&& execution.NextScheduledAt == expectedNextRun),
+				Arg.Any<CancellationToken>());
+
+		await Scheduler
+			.Received(1)
+			.ScheduleAsync(
+				Arg.Any<TestJob>(),
+				expectedNextRun,
+				Arg.Any<CancellationToken>());
+	}
+
+	/// <summary>
+	/// AdvanceToNextInterval skips exactly enough periods to land after now.
+	/// </summary>
+	[Theory]
+	[InlineData(-3, 1, 1)]
+	[InlineData(-2.5, 1, 0.5)]
+	[InlineData(-7, 3, 2)]
+	public void AdvanceToNextInterval_ReturnsNextIntervalBoundaryAfterNow(
+		double elapsedDays,
+		double intervalDays,
+		double expectedFutureDays)
+	{
+		// Arrange
+		DateTimeOffset now =
+			TimeProvider.GetUtcNow();
+
+		DateTimeOffset baseTime =
+			now.AddDays(elapsedDays);
+
+		TimeSpan interval =
+			TimeSpan.FromDays(intervalDays);
+
+		// Act
+		DateTimeOffset result =
+			RecurringJobService.AdvanceToNextInterval(
+				baseTime,
+				interval,
+				now);
+
+		// Assert
+		DateTimeOffset expected =
+			now.AddDays(expectedFutureDays);
+
+		result.ShouldBe(expected);
+		result.ShouldBeGreaterThan(now);
 	}
 
 	/// <summary>

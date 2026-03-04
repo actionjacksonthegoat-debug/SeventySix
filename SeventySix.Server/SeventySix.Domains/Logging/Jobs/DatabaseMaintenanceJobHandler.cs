@@ -62,17 +62,13 @@ public sealed class DatabaseMaintenanceJobHandler(
 	{
 		DatabaseMaintenanceSettings config = settings.Value;
 
-		if (!config.Enabled)
+		if (config.Enabled)
 		{
-			return;
+			await ExecuteMaintenanceAsync(cancellationToken);
 		}
 
+		// ALWAYS reschedule — never break the chain
 		DateTimeOffset now = timeProvider.GetUtcNow();
-
-		await databaseMaintenanceService.ExecuteVacuumAnalyzeAsync(cancellationToken);
-
-		logger.LogInformation(
-			"Database maintenance completed: VACUUM ANALYZE executed on all schemas");
 
 		TimeSpan interval =
 			TimeSpan.FromHours(config.IntervalHours);
@@ -82,5 +78,34 @@ public sealed class DatabaseMaintenanceJobHandler(
 			now,
 			interval,
 			cancellationToken);
+	}
+
+	/// <summary>
+	/// Executes the maintenance work in a try/catch to ensure rescheduling
+	/// always occurs even when errors happen.
+	/// </summary>
+	/// <param name="cancellationToken">
+	/// The cancellation token.
+	/// </param>
+	/// <returns>
+	/// A task representing the asynchronous operation.
+	/// </returns>
+	private async Task ExecuteMaintenanceAsync(
+		CancellationToken cancellationToken)
+	{
+		try
+		{
+			await databaseMaintenanceService.ExecuteVacuumAnalyzeAsync(cancellationToken);
+
+			logger.LogInformation(
+				"Database maintenance completed: VACUUM ANALYZE executed on all schemas");
+		}
+		catch (Exception exception)
+		{
+			logger.LogError(
+				exception,
+				"Unhandled exception during {JobName}. Job will reschedule normally.",
+				nameof(DatabaseMaintenanceJob));
+		}
 	}
 }

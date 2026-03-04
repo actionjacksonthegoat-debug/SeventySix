@@ -57,26 +57,11 @@ public sealed class OrphanedRegistrationCleanupJobHandler(
 		OrphanedRegistrationCleanupSettings config =
 			settings.Value;
 
+		await ExecuteCleanupAsync(config, cancellationToken);
+
+		// ALWAYS reschedule — never break the chain
 		DateTimeOffset now =
 			timeProvider.GetUtcNow();
-
-		DateTimeOffset cutoffDate =
-			now.AddHours(-config.RetentionHours).UtcDateTime;
-
-		int deletedCount =
-			await dbContext.Users
-				.Where(user =>
-					!user.IsActive
-					&& !user.EmailConfirmed
-					&& user.CreateDate < cutoffDate)
-				.ExecuteDeleteAsync(cancellationToken);
-
-		if (deletedCount > 0)
-		{
-			logger.LogInformation(
-				"Orphaned registration cleanup completed: {DeletedCount} orphaned users removed",
-				deletedCount);
-		}
 
 		TimeSpan interval =
 			TimeSpan.FromHours(config.IntervalHours);
@@ -86,5 +71,54 @@ public sealed class OrphanedRegistrationCleanupJobHandler(
 			now,
 			interval,
 			cancellationToken);
+	}
+
+	/// <summary>
+	/// Executes the cleanup work in a try/catch to ensure rescheduling
+	/// always occurs even when errors happen.
+	/// </summary>
+	/// <param name="config">
+	/// The orphaned registration cleanup settings.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// The cancellation token.
+	/// </param>
+	/// <returns>
+	/// A task representing the asynchronous operation.
+	/// </returns>
+	private async Task ExecuteCleanupAsync(
+		OrphanedRegistrationCleanupSettings config,
+		CancellationToken cancellationToken)
+	{
+		try
+		{
+			DateTimeOffset now =
+				timeProvider.GetUtcNow();
+
+			DateTimeOffset cutoffDate =
+				now.AddHours(-config.RetentionHours).UtcDateTime;
+
+			int deletedCount =
+				await dbContext.Users
+					.Where(user =>
+						!user.IsActive
+						&& !user.EmailConfirmed
+						&& user.CreateDate < cutoffDate)
+					.ExecuteDeleteAsync(cancellationToken);
+
+			if (deletedCount > 0)
+			{
+				logger.LogInformation(
+					"Orphaned registration cleanup completed: {DeletedCount} orphaned users removed",
+					deletedCount);
+			}
+		}
+		catch (Exception exception)
+		{
+			logger.LogError(
+				exception,
+				"Unhandled exception during {JobName}. Job will reschedule normally.",
+				nameof(OrphanedRegistrationCleanupJob));
+		}
 	}
 }
