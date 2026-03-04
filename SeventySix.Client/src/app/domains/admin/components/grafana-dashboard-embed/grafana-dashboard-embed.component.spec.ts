@@ -168,6 +168,30 @@ describe("GrafanaDashboardEmbedComponent",
 					.toBe("800px");
 			});
 
+		it("should render iframe with referrerpolicy for security",
+			() =>
+			{
+				const iframe: HTMLIFrameElement =
+					fixture.nativeElement.querySelector("iframe");
+
+				expect(iframe)
+					.toBeTruthy();
+				expect(iframe.getAttribute("referrerpolicy"))
+					.toBe("strict-origin-when-cross-origin");
+			});
+
+		it("should not have sandbox attribute on iframe",
+			() =>
+			{
+				const iframe: HTMLIFrameElement =
+					fixture.nativeElement.querySelector("iframe");
+
+				expect(iframe)
+					.toBeTruthy();
+				expect(iframe.getAttribute("sandbox"))
+					.toBeNull();
+			});
+
 		describe("Accessibility",
 			() =>
 			{

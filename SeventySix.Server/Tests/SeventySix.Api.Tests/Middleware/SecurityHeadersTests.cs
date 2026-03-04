@@ -275,6 +275,32 @@ public sealed class SecurityHeadersTests : IDisposable
 			new System.Net.Http.Headers.NameValueHeaderValue("no-cache"));
 	}
 
+	/// <summary>
+	/// Tests that CSP includes frame-ancestors 'self' directive.
+	/// Allows same-origin iframe embedding (Grafana dashboards) while preventing external framing.
+	/// </summary>
+	[Fact]
+	public async Task Csp_ContainsFrameAncestorsSelfDirectiveAsync()
+	{
+		// Arrange
+		using HttpClient httpClient =
+			Factory.CreateClient();
+
+		// Act
+		HttpResponseMessage response =
+			await httpClient.GetAsync(ApiEndpoints.Health.Base);
+
+		// Assert
+		response.Headers.TryGetValues(
+			SecurityHeaderConstants.Names.ContentSecurityPolicy,
+			out IEnumerable<string>? cspValues).ShouldBeTrue();
+		cspValues.ShouldNotBeNull();
+		string cspHeader =
+			cspValues.First();
+		cspHeader.ShouldContain("frame-ancestors 'self'");
+		cspHeader.ShouldNotContain("frame-ancestors 'none'");
+	}
+
 	/// <inheritdoc/>
 	public void Dispose() =>
 		Factory.Dispose();
