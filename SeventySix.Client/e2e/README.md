@@ -98,7 +98,7 @@ e2e/
 ├── fixtures/                      # Test infrastructure
 │   ├── index.ts                   # Barrel export — single import point
 │   ├── auth.fixture.ts            # Extends Playwright test with auth state
-│   ├── email.fixture.ts           # MailDev email verification helpers
+│   ├── email.fixture.ts           # Email capture verification helpers
 │   ├── fresh-login.fixture.ts     # Tests requiring fresh login (not cached)
 │   ├── page-helpers.fixture.ts    # Page object fixture injection
 │   ├── unauthenticated.fixture.ts # Tests that need explicit unauthenticated state

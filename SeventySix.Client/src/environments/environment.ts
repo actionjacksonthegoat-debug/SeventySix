@@ -21,12 +21,10 @@ export const environment: Environment =
 			circuitBreakerTimeout: 30000 // 30 seconds
 		},
 		observability: {
-		// Observability URLs — empty by default in production.
-		// Set to your deployed Jaeger/Prometheus/Grafana URLs if the observability stack is deployed.
-		// These URLs are displayed in the developer tools page; they are not called by the app itself.
-			jaegerUrl: "",
-			prometheusUrl: "",
-			grafanaUrl: "",
+		// Same-origin reverse proxy routes — protected by nginx auth_request (admin only)
+			jaegerUrl: "/jaeger",
+			prometheusUrl: "/prometheus",
+			grafanaUrl: "/grafana",
 			// pgAdminUrl and redisInsightUrl omitted — services not deployed in production
 			dashboards: {
 				systemOverview: "seventysix-system-overview",

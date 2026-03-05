@@ -133,9 +133,9 @@ html.light-theme {
 	--color-success: var(--mat-sys-primary);
 	--color-on-success: var(--mat-sys-on-primary);
 
-	// Warning: Error Container - softer for caution states
-	--color-warning: var(--mat-sys-error-container);
-	--color-on-warning: var(--mat-sys-on-error-container);
+	// Warning: Error Primary - vibrant for better visibility on light backgrounds
+	--color-warning: var(--mat-sys-error);
+	--color-on-warning: var(--mat-sys-on-error);
 
 	// Error: Error Primary - vibrant for errors
 	--color-error: var(--mat-sys-error);

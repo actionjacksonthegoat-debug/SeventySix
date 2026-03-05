@@ -48,36 +48,37 @@ public sealed class AttributeBasedSecurityHeadersMiddleware(
 	// Production CSP: Strict policy without unsafe-eval
 	// - script-src 'self': No inline scripts or eval needed for Angular AOT builds
 	// - style-src 'unsafe-inline': Required for Angular style bindings ([style.x])
-	// - frame-src 'self': No external frames allowed in production; configure via
-	//   appsettings.json "SecurityHeaders:ProductionFrameSrc" if Grafana embedding is needed
+	// - frame-src 'self': Same-origin iframes only (Grafana dashboards via reverse proxy)
+	// - frame-ancestors 'self': Allow same-origin embedding (admin dashboard embeds Grafana)
 	// - upgrade-insecure-requests: Auto-upgrade any accidental HTTP to HTTPS
-	// - connect-src includes CDN + font origins because the Angular service worker (ngsw)
+	// - connect-src includes CDN origins because the Angular service worker (ngsw)
 	//   proxies all fetches via fetch(), which is governed by connect-src
 	private const string ProductionCsp =
 		"default-src 'self'; "
 		+ "script-src 'self' https://static.cloudflareinsights.com; "
-		+ "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
-		+ "font-src 'self' https://fonts.gstatic.com; "
+		+ "style-src 'self' 'unsafe-inline'; "
+		+ "font-src 'self'; "
 		+ "img-src 'self' data: https:; "
-		+ "connect-src 'self' wss: https://cloudflareinsights.com https://fonts.googleapis.com https://fonts.gstatic.com; "
+		+ "connect-src 'self' https://cloudflareinsights.com https://static.cloudflareinsights.com; "
 		+ "frame-src 'self'; "
-		+ "frame-ancestors 'none'; "
+		+ "frame-ancestors 'self'; "
 		+ "base-uri 'self'; "
 		+ "form-action 'self'; "
 		+ "upgrade-insecure-requests";
 
 	// Development CSP: Relaxed for debugging, hot reload, etc.
 	// frame-src allows Grafana iframe embedding via HTTPS proxy
+	// frame-ancestors 'self': Allow same-origin embedding (admin dashboard embeds Grafana)
 	// upgrade-insecure-requests auto-upgrades any accidental HTTP requests
 	private const string DevelopmentCsp =
 		"default-src 'self'; "
 		+ "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
-		+ "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
-		+ "font-src 'self' https://fonts.gstatic.com; "
+		+ "style-src 'self' 'unsafe-inline'; "
+		+ "font-src 'self'; "
 		+ "img-src 'self' data: https:; "
 		+ "connect-src 'self' wss: https://localhost:7074 https://localhost:4319; "
 		+ "frame-src 'self' https://localhost:3443; "
-		+ "frame-ancestors 'none'; "
+		+ "frame-ancestors 'self'; "
 		+ "base-uri 'self'; "
 		+ "form-action 'self'; "
 		+ "upgrade-insecure-requests";

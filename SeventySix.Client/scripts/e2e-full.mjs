@@ -225,7 +225,7 @@ function dumpDiagnostics(phase)
 
 	// Individual container logs (most useful → least useful order)
 	const containers =
-		["seventysix-api-e2e", "seventysix-client-e2e", "seventysix-postgres-e2e", "seventysix-valkey-e2e", "seventysix-maildev-e2e"];
+		["seventysix-api-e2e", "seventysix-client-e2e", "seventysix-postgres-e2e", "seventysix-valkey-e2e", "seventysix-mock-brevo-e2e"];
 
 	for (const container of containers)
 	{

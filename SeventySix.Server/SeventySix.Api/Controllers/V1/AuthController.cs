@@ -249,4 +249,46 @@ public sealed class AuthController(
 
 		return Ok(profile);
 	}
+
+	/// <summary>
+	/// Verifies the caller is an authenticated admin via refresh token cookie.
+	/// Used internally by nginx auth_request to protect observability endpoints
+	/// (Grafana, Jaeger, Prometheus). Returns 200 for valid admin sessions, 401 otherwise.
+	/// </summary>
+	/// <remarks>
+	/// This endpoint uses cookie-based auth (not JWT) because nginx auth_request
+	/// subrequests forward cookies but not Authorization headers. The existing
+	/// X-Refresh-Token HttpOnly cookie is validated against the token store,
+	/// and the associated user must have the Admin role.
+	/// </remarks>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// 200 OK if valid admin session; 401 Unauthorized otherwise.
+	/// </returns>
+	/// <response code="200">Valid admin session.</response>
+	/// <response code="401">No valid admin session.</response>
+	[HttpGet("verify-admin")]
+	[AllowAnonymous]
+	[ProducesResponseType(StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+	public async Task<IActionResult> VerifyAdminAsync(
+		CancellationToken cancellationToken)
+	{
+		string? refreshToken =
+			CookieService.GetRefreshToken();
+
+		if (string.IsNullOrEmpty(refreshToken))
+		{
+			return Unauthorized();
+		}
+
+		bool isAdmin =
+			await messageBus.InvokeAsync<bool>(
+				new VerifyAdminSessionQuery(refreshToken),
+				cancellationToken);
+
+		return isAdmin ? Ok() : Unauthorized();
+	}
 }

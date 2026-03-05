@@ -25,10 +25,14 @@ namespace SeventySix.Identity;
 /// <param name="RequiresPasswordChange">
 /// Whether user must change password before accessing resources.
 /// </param>
+/// <param name="IsFirstLogin">
+/// Whether this is the user's first-ever login.
+/// </param>
 public record OAuthCodeExchangeResult(
 	string AccessToken,
 	string RefreshToken,
 	DateTimeOffset ExpiresAt,
 	string Email,
 	string? FullName,
-	bool RequiresPasswordChange);
+	bool RequiresPasswordChange,
+	bool IsFirstLogin);

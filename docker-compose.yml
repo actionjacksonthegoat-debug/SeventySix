@@ -126,9 +126,8 @@ services:
       - Cache__Valkey__ConnectionString=valkey:6379
       # OpenTelemetry - otel-collector is the single ingestion point for traces AND metrics
       - OpenTelemetry__OtlpEndpoint=http://otel-collector:4317
-      # Email SMTP credentials
-      - Email__SmtpUsername=${EMAIL_SMTP_USERNAME:-}
-      - Email__SmtpPassword=${EMAIL_SMTP_PASSWORD:-}
+      # Email API credentials
+      - Email__ApiKey=${EMAIL_API_KEY:-}
       - Email__FromAddress=${EMAIL_FROM_ADDRESS:-}
       # Site — public contact email for legal pages
       - Site__Email=${SITE_EMAIL:-contact@seventysix.local}

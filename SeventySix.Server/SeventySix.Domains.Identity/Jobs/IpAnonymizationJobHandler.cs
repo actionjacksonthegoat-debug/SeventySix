@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using System.Data.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -54,30 +55,11 @@ public sealed class IpAnonymizationJobHandler(
 		IpAnonymizationSettings config =
 			settings.Value;
 
+		await ExecuteAnonymizationAsync(config, cancellationToken);
+
+		// ALWAYS reschedule — never break the chain
 		DateTimeOffset now =
 			timeProvider.GetUtcNow();
-
-		DateTimeOffset cutoffDate =
-			now.AddDays(-config.RetentionDays).UtcDateTime;
-
-		int anonymizedCount =
-			await dbContext.Users
-				.Where(
-					user => user.LastLoginIp != null)
-				.Where(
-					user => user.LastLoginAt <= cutoffDate)
-				.ExecuteUpdateAsync(
-					setter => setter.SetProperty(
-						user => user.LastLoginIp,
-						(string?)null),
-					cancellationToken);
-
-		if (anonymizedCount > 0)
-		{
-			logger.LogInformation(
-				"IP anonymization completed: {AnonymizedCount} user IP addresses anonymized",
-				anonymizedCount);
-		}
 
 		TimeSpan interval =
 			TimeSpan.FromDays(config.IntervalDays);
@@ -87,5 +69,73 @@ public sealed class IpAnonymizationJobHandler(
 			now,
 			interval,
 			cancellationToken);
+	}
+
+	/// <summary>
+	/// Executes the anonymization work in a try/catch to ensure rescheduling
+	/// always occurs even when errors happen. This is GDPR-critical —
+	/// the rescheduling chain must never break.
+	/// </summary>
+	/// <param name="config">
+	/// The IP anonymization settings.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// The cancellation token.
+	/// </param>
+	/// <returns>
+	/// A task representing the asynchronous operation.
+	/// </returns>
+	private async Task ExecuteAnonymizationAsync(
+		IpAnonymizationSettings config,
+		CancellationToken cancellationToken)
+	{
+		try
+		{
+			DateTimeOffset now =
+				timeProvider.GetUtcNow();
+
+			DateTimeOffset cutoffDate =
+				now.AddDays(-config.RetentionDays).UtcDateTime;
+
+			int anonymizedCount =
+				await dbContext.Users
+					.Where(
+						user => user.LastLoginIp != null)
+					.Where(
+						user => user.LastLoginAt <= cutoffDate)
+					.ExecuteUpdateAsync(
+						setter => setter.SetProperty(
+							user => user.LastLoginIp,
+							(string?)null),
+						cancellationToken);
+
+			if (anonymizedCount > 0)
+			{
+				logger.LogInformation(
+					"IP anonymization completed: {AnonymizedCount} user IP addresses anonymized",
+					anonymizedCount);
+			}
+		}
+		catch (DbUpdateException exception)
+		{
+			logger.LogError(
+				exception,
+				"Database update error during {JobName}. Job will reschedule normally.",
+				nameof(IpAnonymizationJob));
+		}
+		catch (DbException exception)
+		{
+			logger.LogError(
+				exception,
+				"Database error during {JobName}. Job will reschedule normally.",
+				nameof(IpAnonymizationJob));
+		}
+		catch (InvalidOperationException exception)
+		{
+			logger.LogError(
+				exception,
+				"Operation error during {JobName}. Job will reschedule normally.",
+				nameof(IpAnonymizationJob));
+		}
 	}
 }

@@ -9,7 +9,7 @@ import {
 	test,
 	TIMEOUTS
 } from "@e2e-fixtures";
-import type { MailDevEmail } from "@e2e-fixtures";
+import type { CapturedEmail } from "@e2e-fixtures";
 import { Locator } from "@playwright/test";
 
 /**
@@ -19,7 +19,7 @@ import { Locator } from "@playwright/test";
  * Tests the two-step registration flow:
  * 1. Email entry (register-email page)
  * 2. Complete registration (register-complete page - via email link)
- * 3. Full end-to-end: email → MailDev → complete → authenticated
+ * 3. Full end-to-end: email → mock Brevo API → complete → authenticated
  */
 test.describe("Registration Flow",
 	() =>
@@ -229,7 +229,9 @@ test.describe("Registration Flow",
 						test("should navigate to login when clicking sign in link",
 							async ({ page }) =>
 							{
-								await page.click(SELECTORS.auth.signInLink);
+								await page
+									.locator(SELECTORS.auth.signInLink)
+									.click();
 
 								await expect(page)
 									.toHaveURL(ROUTES.auth.login);
@@ -237,7 +239,7 @@ test.describe("Registration Flow",
 					});
 			});
 
-		test.describe("Email Verification (with MailDev)",
+		test.describe("Email Verification (with mock Brevo API)",
 			() =>
 			{
 				test(
@@ -260,8 +262,8 @@ test.describe("Registration Flow",
 								PAGE_TEXT.confirmation.checkYourEmail,
 								{ timeout: TIMEOUTS.api });
 
-						// Check MailDev for the email
-						const verificationEmail: MailDevEmail =
+						// Check email capture for the email
+						const verificationEmail: CapturedEmail =
 							await EmailTestHelper.waitForEmail(
 								uniqueEmail,
 								{ timeout: TIMEOUTS.email });
@@ -306,8 +308,8 @@ test.describe("Registration Flow",
 								PAGE_TEXT.confirmation.checkYourEmail,
 								{ timeout: TIMEOUTS.api });
 
-						// Step 2: Get verification email from MailDev
-						const verificationEmail: MailDevEmail =
+						// Step 2: Get verification email from email capture
+						const verificationEmail: CapturedEmail =
 							await EmailTestHelper.waitForEmail(
 								uniqueEmail,
 								{ timeout: TIMEOUTS.email });

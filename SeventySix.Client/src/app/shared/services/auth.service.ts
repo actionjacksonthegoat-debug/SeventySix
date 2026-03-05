@@ -34,7 +34,7 @@ import {
 	LoginRequest,
 	UserProfileDto
 } from "@shared/models";
-import { DateService, StorageService, TokenService, WindowService } from "@shared/services";
+import { DateService, NotificationService, StorageService, TokenService, WindowService } from "@shared/services";
 import {
 	JwtClaims,
 	OAuthEvent,
@@ -85,6 +85,9 @@ export class AuthService
 
 	private readonly windowService: WindowService =
 		inject(WindowService);
+
+	private readonly notificationService: NotificationService =
+		inject(NotificationService);
 
 	private readonly idleDetectionService: IdleDetectionService =
 		inject(IdleDetectionService);
@@ -173,13 +176,24 @@ export class AuthService
 					{
 						this.exchangeOAuthCode(event.code);
 					}
-
-					if (event.type === "link_success")
+					else if (event.type === "link_success")
 					{
 						this.queryClient.invalidateQueries(
 							{
 								queryKey: QueryKeys.account.all
 							});
+					}
+					else if (event.type === "error")
+					{
+						if (event.error === "popup_blocked")
+						{
+							this.notificationService.error(
+								"Popup was blocked. Please allow popups for this site and try again.");
+						}
+						else
+						{
+							this.notificationService.error(event.error);
+						}
 					}
 				});
 	}
@@ -564,6 +578,16 @@ export class AuthService
 						this.markHasSession();
 						this.invalidatePostLogin();
 						this.startIdleDetection(response);
+
+						// First-time login → redirect to Profile page
+						if (response.isFirstLogin)
+						{
+							this.storageService.removeSessionItem(
+								STORAGE_KEYS.AUTH_RETURN_URL);
+							this.router.navigate(
+								[APP_ROUTES.ACCOUNT.PROFILE]);
+							return;
+						}
 
 						// Navigate to stored return URL
 						// [SECURITY] Re-validate at point of use — session storage is a

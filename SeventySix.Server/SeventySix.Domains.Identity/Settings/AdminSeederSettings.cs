@@ -14,8 +14,9 @@ namespace SeventySix.Identity.Settings;
 /// and will be validated against weak password patterns.
 /// </para>
 /// <para>
-/// The seeded admin user is marked with RequiresPasswordChange=true, forcing
-/// a password change on first login regardless of initial password strength.
+/// The seeded admin user is created with RequiresPasswordChange=true, forcing
+/// a password change on first login. Exception: E2E environments set this to false
+/// for test automation compatibility.
 /// </para>
 /// </remarks>
 public sealed record AdminSeederSettings

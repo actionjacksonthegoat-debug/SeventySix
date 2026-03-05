@@ -292,11 +292,10 @@ test.describe("Landing Page",
 						const externalLinks: Locator =
 							cta.locator("a[target='_blank']");
 
-						const linkCount: number =
-							await externalLinks.count();
+						const linkCount: number = externalLinks;
 
-						expect(linkCount)
-							.toBe(2);
+						await expect(linkCount)
+							.toHaveCount(2);
 
 						for (let idx: number = 0; idx < linkCount; idx++)
 						{
@@ -313,12 +312,11 @@ test.describe("Landing Page",
 					async ({ page }: { page: Page; }) =>
 					{
 						const h1Count: number =
-							await page
-								.locator("h1")
-								.count();
+							page
+								.locator("h1");
 
-						expect(h1Count)
-							.toBe(1);
+						await expect(h1Count)
+							.toHaveCount(1);
 
 						const h2Elements: Locator =
 							page.locator("h2");

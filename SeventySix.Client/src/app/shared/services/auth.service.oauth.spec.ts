@@ -9,8 +9,10 @@ import {
 } from "@angular/common/http/testing";
 import { PLATFORM_ID, provideZonelessChangeDetection } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
+import { Router } from "@angular/router";
 import { provideRouter } from "@angular/router";
 import { environment } from "@environments/environment";
+import { APP_ROUTES } from "@shared/constants";
 import { createTestQueryClient } from "@shared/testing";
 import {
 	provideTanStackQuery,
@@ -76,6 +78,7 @@ describe("AuthService OAuth",
 		let service: AuthService;
 		let httpMock: HttpTestingController;
 		let mockWindowService: MockWindowService;
+		let router: Router;
 
 		beforeEach(
 			() =>
@@ -105,6 +108,11 @@ describe("AuthService OAuth",
 					TestBed.inject(AuthService);
 				httpMock =
 					TestBed.inject(HttpTestingController);
+				router =
+					TestBed.inject(Router);
+
+				vi.spyOn(router, "navigate");
+				vi.spyOn(router, "navigateByUrl");
 			});
 
 		afterEach(
@@ -138,7 +146,7 @@ describe("AuthService OAuth",
 								"oauth_popup");
 					});
 
-				it("should fall back to navigation when popup blocked",
+				it("should not call navigateTo when popup blocked",
 					() =>
 					{
 						mockWindowService.openWindow.mockReturnValue(null);
@@ -146,8 +154,8 @@ describe("AuthService OAuth",
 						service.loginWithProvider("github");
 
 						expect(mockWindowService.navigateTo)
-							.toHaveBeenCalledWith(
-								`${environment.apiUrl}/auth/oauth/github`);
+							.not
+							.toHaveBeenCalled();
 						expect(service.isOAuthInProgress())
 							.toBe(false);
 					});
@@ -295,6 +303,75 @@ describe("AuthService OAuth",
 						req.flush(
 							{ error: "Invalid code" },
 							{ status: 400, statusText: "Bad Request" });
+					});
+
+				it("should redirect to profile on first login",
+					() =>
+					{
+						service
+							.initialize()
+							.subscribe();
+
+						const allowedOrigin: string =
+							new URL(environment.apiUrl).origin;
+						window.dispatchEvent(
+							new MessageEvent(
+								"message",
+								{
+									origin: allowedOrigin,
+									data: {
+										type: "oauth_success",
+										code: "first-login-code"
+									}
+								}));
+
+						const req: TestRequest =
+							httpMock.expectOne(
+								`${environment.apiUrl}/auth/oauth/exchange`);
+						req.flush(
+							createMockAuthResponse(
+								{},
+								{ isFirstLogin: true }));
+
+						expect(router.navigate)
+							.toHaveBeenCalledWith(
+								[APP_ROUTES.ACCOUNT.PROFILE]);
+					});
+
+				it("should navigate to return URL when not first login",
+					() =>
+					{
+						service
+							.initialize()
+							.subscribe();
+
+						const allowedOrigin: string =
+							new URL(environment.apiUrl).origin;
+						window.dispatchEvent(
+							new MessageEvent(
+								"message",
+								{
+									origin: allowedOrigin,
+									data: {
+										type: "oauth_success",
+										code: "returning-user-code"
+									}
+								}));
+
+						const req: TestRequest =
+							httpMock.expectOne(
+								`${environment.apiUrl}/auth/oauth/exchange`);
+						req.flush(
+							createMockAuthResponse(
+								{},
+								{ isFirstLogin: false }));
+
+						expect(router.navigate)
+							.not
+							.toHaveBeenCalledWith(
+								[APP_ROUTES.ACCOUNT.PROFILE]);
+						expect(router.navigateByUrl)
+							.toHaveBeenCalledWith("/");
 					});
 			});
 

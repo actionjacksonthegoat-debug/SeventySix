@@ -13,7 +13,7 @@
 #   Database:Host/Port/Name/User/Password        → PostgreSQL connection
 #   Jwt:SecretKey                                 → JWT signing key (auto-generated)
 #   Auth:OAuth:Providers:0:ClientId/ClientSecret  → GitHub OAuth
-#   Email:SmtpUsername/SmtpPassword/FromAddress    → Brevo SMTP
+#   Email:ApiKey/FromAddress                     → Brevo HTTP API
 #   Site:Email                                    → Public contact email for legal pages
 #   AdminSeeder:Email/InitialPassword             → Admin account seeding
 #   Altcha:HmacKeyBase64                          → ALTCHA HMAC key (auto-generated)
@@ -67,9 +67,8 @@ switch ($Action) {
 		dotnet user-secrets set "Auth:OAuth:Providers:0:ClientId" "your-github-client-id" --project $projectPath
 		dotnet user-secrets set "Auth:OAuth:Providers:0:ClientSecret" "your-github-client-secret" --project $projectPath
 
-		# Email (Brevo SMTP — replace with real credentials from https://app.brevo.com/settings/keys/smtp)
-		dotnet user-secrets set "Email:SmtpUsername" "your-smtp-username" --project $projectPath
-		dotnet user-secrets set "Email:SmtpPassword" "your-smtp-password" --project $projectPath
+		# Email (Brevo HTTP API — get API key from https://app.brevo.com/settings/keys/api)
+		dotnet user-secrets set "Email:ApiKey" "your-brevo-api-key" --project $projectPath
 		dotnet user-secrets set "Email:FromAddress" "your-email@example.com" --project $projectPath
 
 		# Site — public contact email for legal/privacy pages

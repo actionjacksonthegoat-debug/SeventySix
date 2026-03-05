@@ -28,6 +28,9 @@ public static class ApiEndpoints
 		/// <summary>Current user endpoint.</summary>
 		public const string Me = "/api/v1/auth/me";
 
+		/// <summary>Verify admin session endpoint (cookie-based, nginx auth_request).</summary>
+		public const string VerifyAdmin = "/api/v1/auth/verify-admin";
+
 		/// <summary>OAuth code exchange endpoint.</summary>
 		public const string OAuthExchange = "/api/v1/auth/oauth/exchange";
 

@@ -22,6 +22,7 @@
 /// </remarks>
 
 using FluentValidation;
+using JasperFx.Resources;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Scalar.AspNetCore;
 using Serilog;
@@ -34,6 +35,7 @@ using SeventySix.Registration;
 using SeventySix.Shared.Registration;
 using Wolverine;
 using Wolverine.FluentValidation;
+using Wolverine.Postgresql;
 
 WebApplicationBuilder builder =
 			WebApplication.CreateBuilder(args);
@@ -121,6 +123,18 @@ Log.Logger =
 
 builder.Host.UseSerilog();
 
+// Build connection string early — needed for Wolverine PostgreSQL persistence
+// and domain registrations below. Uses Database:* configuration values.
+string connectionString =
+			ConnectionStringBuilder.BuildPostgresConnectionString(
+				builder.Configuration);
+
+// Read background jobs flag — gates Wolverine persistence.
+// In Test environment, BackgroundJobs:Enabled = false, so Wolverine
+// stays in-memory (tests use Testcontainers on random ports).
+bool isBackgroundJobsEnabled =
+			builder.Configuration.GetValue<bool>("BackgroundJobs:Enabled");
+
 // Configure Wolverine for CQRS handlers
 // ExtensionDiscovery.ManualOnly disables automatic assembly scanning messages
 builder.Host.UseWolverine(
@@ -134,8 +148,26 @@ builder.Host.UseWolverine(
 
 		// Use FluentValidation for command validation
 		options.UseFluentValidation();
+
+		if (isBackgroundJobsEnabled)
+		{
+			// Enable durable message persistence with PostgreSQL.
+			// Scheduled messages (recurring jobs) survive container restarts.
+			// Tables are auto-created in the 'wolverine' schema.
+			options.PersistMessagesWithPostgresql(connectionString, "wolverine");
+
+			// Poll for scheduled messages every 5 seconds
+			options.Durability.ScheduledJobPollingTime =
+				TimeSpan.FromSeconds(5);
+		}
 	},
 	ExtensionDiscovery.ManualOnly);
+
+// Auto-create/rebuild Wolverine envelope tables on startup
+if (isBackgroundJobsEnabled)
+{
+	builder.Host.UseResourceSetupOnStartup();
+}
 
 // Services
 builder.Services.AddHttpContextAccessor();
@@ -161,13 +193,6 @@ builder.Services.AddControllers(
 // This includes: repositories, business logic services, validators, HTTP clients, and configuration
 builder.Services.AddApplicationServices(builder.Configuration);
 
-// Build connection string from Database:* configuration values
-// These are provided via User Secrets (Development), appsettings (Test/E2E),
-// or environment variables (Production).
-string connectionString =
-			ConnectionStringBuilder.BuildPostgresConnectionString(
-				builder.Configuration);
-
 // Infrastructure must be registered first (provides AuditInterceptor for DbContexts)
 builder.Services.AddInfrastructure();
 builder.Services.AddIdentityDomain(
@@ -188,6 +213,13 @@ builder.Services.AddCacheServices();
 
 // Register all background jobs (single registration point)
 builder.Services.AddBackgroundJobs(builder.Configuration);
+
+// Register proactive job health monitoring (logs warnings/errors for stale jobs)
+if (isBackgroundJobsEnabled)
+{
+	builder.Services
+		.AddHostedService<SeventySix.Api.Infrastructure.ScheduledJobHealthCheckService>();
+}
 
 // E2E test seeder (only runs when E2ESeeder:Enabled is true)
 builder.Services.AddE2ESeeder(builder.Configuration);

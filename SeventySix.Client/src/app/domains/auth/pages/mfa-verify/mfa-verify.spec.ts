@@ -45,7 +45,8 @@ const mockAuthResponse: AuthResponse =
 		requiresMfa: false,
 		requiresPasswordChange: false,
 		sessionInactivityMinutes: 0,
-		sessionWarningSeconds: 0
+		sessionWarningSeconds: 0,
+		isFirstLogin: false
 	};
 
 const mockMfaState: MfaState =
@@ -212,6 +213,29 @@ describe("MfaVerifyComponent",
 							.toHaveBeenCalledWith(mockAuthResponse);
 						expect(router.navigateByUrl)
 							.toHaveBeenCalledWith("/");
+					});
+
+				it("should redirect to profile on first login",
+					() =>
+					{
+						const firstLoginResponse: AuthResponse =
+							{
+								...mockAuthResponse,
+								isFirstLogin: true
+							};
+						mockMfaService.verifyMfa.mockReturnValue(
+							of(firstLoginResponse));
+
+						component["mfaForm"].patchValue(
+							{ code: "123456" });
+
+						component["onVerify"]();
+
+						expect(mockAuthService.handleMfaSuccess)
+							.toHaveBeenCalledWith(firstLoginResponse);
+						expect(router.navigate)
+							.toHaveBeenCalledWith(
+								[APP_ROUTES.ACCOUNT.PROFILE]);
 					});
 
 				it("should show error on verification failure",

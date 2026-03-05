@@ -471,6 +471,14 @@ export class MfaVerifyComponent implements OnInit
 		// Set tokens in AuthService
 		this.authService.handleMfaSuccess(response);
 
+		if (response.isFirstLogin)
+		{
+			this.router.navigate(
+				[APP_ROUTES.ACCOUNT.PROFILE]);
+
+			return;
+		}
+
 		const returnUrl: string =
 			this.mfaState?.returnUrl ?? "/";
 

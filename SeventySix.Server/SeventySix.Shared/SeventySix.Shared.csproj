@@ -15,68 +15,32 @@
 
 	<!-- MINIMAL dependencies - only what ALL domains need -->
 	<ItemGroup>
-		<PackageReference
-			Include="Microsoft.EntityFrameworkCore"
-			Version="10.0.2"
-		/>
-		<PackageReference
-			Include="Microsoft.EntityFrameworkCore.Relational"
-			Version="10.0.2"
-		/>
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.3" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.3">
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		  <PrivateAssets>all</PrivateAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.3" />
 		<PackageReference Include="FluentValidation" Version="12.1.1" />
-		<PackageReference
-			Include="FluentValidation.DependencyInjectionExtensions"
-			Version="12.1.1"
-		/>
-		<PackageReference
-			Include="Npgsql.EntityFrameworkCore.PostgreSQL"
-			Version="10.0.0"
-		/>
-		<PackageReference
-			Include="Microsoft.Extensions.Configuration.Json"
-			Version="10.0.2"
-		/>
-		<PackageReference
-			Include="Microsoft.Extensions.Configuration.UserSecrets"
-			Version="10.0.2"
-		/>
-		<PackageReference Include="WolverineFx" Version="5.14.0" />
-		<PackageReference
-			Include="Roslynator.Formatting.Analyzers"
-			Version="4.15.0"
-		>
+		<PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
+		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.3" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.3" />
+		<PackageReference Include="WolverineFx" Version="5.17.0" />
+		<PackageReference Include="Roslynator.Formatting.Analyzers" Version="4.15.0">
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 			<PrivateAssets>all</PrivateAssets>
 		</PackageReference>
-		<ProjectReference
-			Include="..\SeventySix.Analyzers.CodeFixes\SeventySix.Analyzers.CodeFixes.csproj"
-			OutputItemType="Analyzer"
-			ReferenceOutputAssembly="false"
-		/>
+		<ProjectReference Include="..\SeventySix.Analyzers.CodeFixes\SeventySix.Analyzers.CodeFixes.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
 	</ItemGroup>
 
 	<!-- FusionCache with Valkey Backend and MemoryPack Serialization -->
 	<ItemGroup>
-		<PackageReference
-			Include="ZiggyCreatures.FusionCache"
-			Version="2.5.0"
-		/>
-		<PackageReference
-			Include="ZiggyCreatures.FusionCache.Backplane.StackExchangeRedis"
-			Version="2.5.0"
-		/>
-		<PackageReference
-			Include="ZiggyCreatures.FusionCache.OpenTelemetry"
-			Version="2.5.0"
-		/>
-		<PackageReference
-			Include="Microsoft.Extensions.Caching.StackExchangeRedis"
-			Version="10.0.2"
-		/>
+		<PackageReference Include="ZiggyCreatures.FusionCache" Version="2.5.0" />
+		<PackageReference Include="ZiggyCreatures.FusionCache.Backplane.StackExchangeRedis" Version="2.5.0" />
+		<PackageReference Include="ZiggyCreatures.FusionCache.OpenTelemetry" Version="2.5.0" />
+		<PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="10.0.3" />
 		<PackageReference Include="MemoryPack" Version="1.21.4" />
-		<PackageReference
-			Include="ZiggyCreatures.FusionCache.Serialization.CysharpMemoryPack"
-			Version="2.5.0"
-		/>
+		<PackageReference Include="ZiggyCreatures.FusionCache.Serialization.CysharpMemoryPack" Version="2.5.0" />
 	</ItemGroup>
 </Project>

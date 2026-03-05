@@ -35,7 +35,7 @@ export const TIMEOUTS: TimeoutsConfig =
 		navigation: 15000,
 
 		/**
-	 * Email delivery timeout via MailDev.
+	 * Email delivery timeout via mock Brevo API.
 	 * Extended to account for email queue processing interval.
 	 */
 		email: 15000,

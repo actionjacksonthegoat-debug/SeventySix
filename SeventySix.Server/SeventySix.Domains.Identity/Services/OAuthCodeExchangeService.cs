@@ -38,25 +38,10 @@ public sealed class OAuthCodeExchangeService(IFusionCacheProvider cacheProvider)
 		cacheProvider.GetCache(CacheNames.Identity);
 
 	/// <inheritdoc/>
-	public string StoreTokens(
-		string accessToken,
-		string refreshToken,
-		DateTimeOffset expiresAt,
-		string email,
-		string? fullName,
-		bool requiresPasswordChange)
+	public string StoreTokens(OAuthCodeExchangeResult tokenData)
 	{
 		string code =
 			GenerateSecureCode();
-
-		OAuthCodeExchangeResult tokenData =
-			new(
-				accessToken,
-				refreshToken,
-				expiresAt,
-				email,
-				fullName,
-				requiresPasswordChange);
 
 		// Memory-only for OAuth codes: short-lived, security-sensitive
 		IdentityCache.Set(

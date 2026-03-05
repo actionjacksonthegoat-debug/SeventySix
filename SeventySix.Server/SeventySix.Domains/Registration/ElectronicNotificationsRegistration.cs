@@ -29,7 +29,7 @@ namespace SeventySix.Registration;
 /// - ElectronicNotificationsDbContext: Database context for email queue
 /// - EmailSettings: Email configuration from appsettings.json
 /// - EmailQueueSettings: Queue processor configuration
-/// - IEmailService → EmailService: Email notification service using MailKit.
+/// - IEmailService → EmailService: Email notification service using Brevo HTTP API.
 /// </remarks>
 public static class ElectronicNotificationsRegistration
 {
@@ -53,7 +53,7 @@ public static class ElectronicNotificationsRegistration
 	/// - EmailSettings: Singleton (bound from configuration)
 	/// - EmailQueueSettings: Singleton (bound from configuration)
 	/// - ElectronicNotificationsDbContext: Scoped (EF Core convention)
-	/// - EmailService: Scoped (creates new SMTP connection per request).
+	/// - EmailService: Scoped (uses IHttpClientFactory for Brevo API calls).
 	/// </remarks>
 	public static IServiceCollection AddElectronicNotificationsDomain(
 		this IServiceCollection services,
@@ -82,6 +82,30 @@ public static class ElectronicNotificationsRegistration
 			.Bind(configuration.GetSection(EmailQueueSettings.SectionName))
 			.ValidateWithFluentValidation()
 			.ValidateOnStart();
+
+		// Register named HttpClient for Brevo API — read from bound EmailSettings
+		// to ensure single source of truth for ApiUrl/ApiKey defaults
+		EmailSettings emailSettings =
+			configuration
+				.GetSection(EmailSettings.SectionName)
+				.Get<EmailSettings>()!;
+
+		services
+			.AddHttpClient(
+				EmailService.BrevoHttpClientName,
+				httpClient =>
+				{
+					httpClient.BaseAddress =
+						new Uri(emailSettings.ApiUrl);
+					httpClient.DefaultRequestHeaders.Add(
+						"api-key",
+						emailSettings.ApiKey);
+					httpClient.DefaultRequestHeaders.Add(
+						"Accept",
+						"application/json");
+					httpClient.Timeout =
+					TimeSpan.FromSeconds(30);
+				});
 
 		// Register transaction manager for notifications context
 		services.AddTransactionManagerFor<ElectronicNotificationsDbContext>();

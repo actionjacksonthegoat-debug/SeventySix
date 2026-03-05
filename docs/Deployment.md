@@ -35,7 +35,7 @@ Before starting, ensure you have:
 - [ ] A **production** [GitHub OAuth App](https://github.com/settings/developers) registered (**NOT the dev app**):
   - Homepage URL: `https://seventysixsandbox.com`
   - Authorization callback URL: `https://api.seventysixsandbox.com/api/v1/auth/oauth/github/callback`
-- [ ] An SMTP provider account (e.g., [Brevo](https://www.brevo.com/) free: 300 emails/day)
+- [ ] A [Brevo](https://www.brevo.com/) account with API key (free tier: 300 emails/day)
 - [ ] A [MaxMind GeoLite2](https://www.maxmind.com/en/geolite2/signup) account (free — for GeoIP/Fail2Ban)
 - [ ] GitHub CI has run at least once on master with the `publish` job (images exist in GHCR)
 - [ ] `hcloud` CLI installed locally: `brew install hcloud` (macOS) or `apt install hcloud` (Linux)
@@ -247,27 +247,12 @@ api.seventysixsandbox.com {
     reverse_proxy localhost:5085
 }
 
-# Grafana — IP-restricted to admin only (proxy OFF in Cloudflare)
-grafana.seventysixsandbox.com {
-    @allowed remote_ip YOUR.ADMIN.IP.HERE
-    handle @allowed {
-        reverse_proxy localhost:3000
-    }
-    respond "Access Denied" 403
-}
-
-# Jaeger — IP-restricted to admin only (proxy OFF in Cloudflare)
-jaeger.seventysixsandbox.com {
-    @allowed remote_ip YOUR.ADMIN.IP.HERE
-    handle @allowed {
-        reverse_proxy localhost:16686
-    }
-    respond "Access Denied" 403
-}
+# Observability tools (Grafana, Jaeger, Prometheus) are served via nginx
+# reverse proxy routes at /grafana/, /jaeger/, /prometheus/ — protected by
+# nginx auth_request that validates the admin session cookie (X-Refresh-Token)
+# via the API before allowing access. No Caddy subdomain blocks needed.
 CEOF
 ```
-
-> **Replace `YOUR.ADMIN.IP.HERE` with your actual admin IP.** Find it: `curl ifconfig.me`
 
 ```bash
 caddy validate --config /etc/caddy/Caddyfile
@@ -288,8 +273,15 @@ In the Cloudflare dashboard for your domain:
 | A | `@` (root) | `SERVER_IP` | **Proxied** (orange cloud) |
 | A | `www` | `SERVER_IP` | **Proxied** (orange cloud) |
 | A | `api` | `SERVER_IP` | **Proxied** (orange cloud) |
-| A | `grafana` | `SERVER_IP` | **DNS only** (grey cloud) |
-| A | `jaeger` | `SERVER_IP` | **DNS only** (grey cloud) |
+
+> **Observability access**: Grafana, Jaeger, and Prometheus are served via same-origin nginx proxy routes,
+> protected by `auth_request` that validates the `X-Refresh-Token` cookie against the API (`/api/v1/auth/verify-admin`).
+> Only authenticated Admin users can access them. Unauthenticated or non-admin users receive 401.
+> - `https://seventysixsandbox.com/grafana/`
+> - `https://seventysixsandbox.com/jaeger/`
+> - `https://seventysixsandbox.com/prometheus/`
+>
+> No additional DNS records are needed for these services.
 
 > **TLS Note:** Cloudflare terminates TLS towards the end user. Set **SSL/TLS encryption mode to "Full (Strict)"** so Cloudflare also validates the origin server's certificate (provided by Caddy/Let's Encrypt). "Flexible" mode skips origin TLS entirely — never use it.
 
@@ -424,7 +416,7 @@ rm /tmp/dataprotection.pfx
 > | `ADMIN_PASSWORD` | One-time seed password — generate random: `openssl rand -base64 24` |
 > | `GRAFANA_ADMIN_PASSWORD` | Dev password is in user secrets; regenerate: `openssl rand -base64 20` |
 > | `OAUTH_CLIENT_ID/SECRET` | **Register a NEW production OAuth App** — dev app has localhost callback URLs. Note: GitHub reserves the `GITHUB_` prefix for its own secrets — use `OAUTH_` instead. |
-> | `EMAIL_SMTP_USERNAME/PASSWORD` | Use production-specific SMTP credentials if possible |
+> | `EMAIL_API_KEY` | Use a production-specific Brevo API key |
 
 In your GitHub repository → **Settings → Secrets and variables → Actions**, add:
 
@@ -439,8 +431,7 @@ In your GitHub repository → **Settings → Secrets and variables → Actions**
 | `JWT_SECRET_KEY` | JWT signing key (64+ chars) | `openssl rand -base64 64` |
 | `OAUTH_CLIENT_ID` | Production GitHub OAuth App client ID (GitHub reserves the `GITHUB_` prefix) | [github.com/settings/developers](https://github.com/settings/developers) |
 | `OAUTH_CLIENT_SECRET` | Production GitHub OAuth App client secret | Same OAuth App |
-| `EMAIL_SMTP_USERNAME` | SMTP username (e.g., Brevo) | Your SMTP provider |
-| `EMAIL_SMTP_PASSWORD` | SMTP password | Your SMTP provider |
+| `EMAIL_API_KEY` | Brevo API key | [Brevo dashboard](https://app.brevo.com/settings/keys/api) |
 | `EMAIL_FROM_ADDRESS` | Sender address (e.g., `noreply@seventysixsandbox.com`) | — |
 | `SITE_EMAIL` | Public contact email shown on Privacy Policy and Terms of Service pages (e.g., `hello@yourdomain.com`) | — |
 | `ALTCHA_HMAC_KEY` | ALTCHA PoW key (base64, **must decode to exactly 64 bytes**) | `openssl rand -base64 64` |
@@ -502,9 +493,8 @@ gh secret set JWT_SECRET_KEY --body "<GENERATED_JWT_KEY>" --repo $REPO
 gh secret set OAUTH_CLIENT_ID --body "<YOUR_OAUTH_APP_CLIENT_ID>" --repo $REPO
 gh secret set OAUTH_CLIENT_SECRET --body "<YOUR_OAUTH_APP_CLIENT_SECRET>" --repo $REPO
 
-# ── Email (SMTP provider credentials) ──
-gh secret set EMAIL_SMTP_USERNAME --body "<YOUR_SMTP_USERNAME>" --repo $REPO
-gh secret set EMAIL_SMTP_PASSWORD --body "<YOUR_SMTP_PASSWORD>" --repo $REPO
+# ── Email (Brevo API key) ──
+gh secret set EMAIL_API_KEY --body "<YOUR_BREVO_API_KEY>" --repo $REPO
 gh secret set EMAIL_FROM_ADDRESS --body "<YOUR_FROM_ADDRESS>" --repo $REPO
 gh secret set SITE_EMAIL --body "<YOUR_SITE_CONTACT_EMAIL>" --repo $REPO
 
@@ -760,7 +750,7 @@ Set up alerts: Email + Discord/Slack webhook.
 
 ### 11.2 Grafana Access
 
-Open `https://grafana.seventysixsandbox.com` from your admin IP. Log in with the `GRAFANA_ADMIN_USER` (Variable) and `GRAFANA_ADMIN_PASSWORD` (Secret) values you set in GitHub.
+Open `https://seventysixsandbox.com/grafana/`. Access is protected by nginx `auth_request` — you must be logged into the Angular app as an Admin user (the `X-Refresh-Token` cookie is validated automatically). Grafana uses anonymous viewer access behind the auth gate, so no separate Grafana login is needed for read-only viewing. To make admin changes, log in to Grafana directly with `GRAFANA_ADMIN_USER` / `GRAFANA_ADMIN_PASSWORD`.
 
 Useful Prometheus queries:
 - API request rate: `rate(http_server_request_duration_seconds_count[5m])`
@@ -769,35 +759,26 @@ Useful Prometheus queries:
 
 ### 11.3 Jaeger Access
 
-Open `https://jaeger.seventysixsandbox.com` from your admin IP. Select the `SeventySix.Api` service to view distributed traces.
+Open `https://seventysixsandbox.com/jaeger/` — select the `SeventySix.Api` service to view distributed traces. Requires admin login (same auth_request protection).
 
-### 11.4 Prometheus Access (SSH Tunnel / Server Only)
+### 11.4 Prometheus Access
 
-Prometheus has **no Caddy subdomain** and is not accessible via a public browser URL.
-It is accessible only:
-
-- **From the server itself** (for ad-hoc queries):
-  ```bash
-  ssh deploy@PROD_HOST
-  curl http://localhost:9090/api/v1/targets | jq '.data.activeTargets[] | {scrapePool, health}'
-  ```
-- **Via SSH tunnel** (for browser access):
-  ```bash
-  ssh -N -L 9090:127.0.0.1:9090 deploy@PROD_HOST
-  # Then open: http://localhost:9090
-  ```
-
-Do not add a Prometheus Caddy subdomain. Grafana already provides all required dashboards over Prometheus data.
+Open `https://seventysixsandbox.com/prometheus/`. Requires admin login (same auth_request protection).
 
 ### 11.5 Observability Security Model
 
-All observability services are protected by two independent layers:
+All observability services are accessed via same-origin nginx reverse proxy routes, protected by `auth_request`.
+Each request triggers a subrequest to `GET /api/v1/auth/verify-admin`, which validates the `X-Refresh-Token`
+HttpOnly cookie and confirms the user has Admin role. Results are cached by nginx for 30s to avoid DB hits
+on every static asset. Observability containers have **no host port bindings** — they are only reachable
+via the Docker internal network through nginx.
 
 | Layer | Mechanism | Protects |
 |-------|-----------|----------|
 | 1 | Hetzner Cloud Firewall: only ports 22, 80, 443 inbound | External network |
-| 2 | Docker `127.0.0.1` host binding on all observability ports | Host network stack |
-| 3 | Caddy `remote_ip` restriction (Grafana + Jaeger only) | Application layer |
+| 2 | Docker internal network (no host port bindings for observability) | Host network stack |
+| 3 | nginx `auth_request` → API `verify-admin` (Admin role required) | Authentication + authorization |
+| 4 | nginx `proxy_cache` on auth subrequest (30s TTL) | Performance |
 
 pgAdmin and RedisInsight are **not deployed in production** — they are dev-environment-only tools.
 
@@ -816,13 +797,13 @@ Run through this checklist after the first deploy:
 - [ ] Admin login works with the `ADMIN_USERNAME` and `ADMIN_PASSWORD` values from GitHub Secrets
 - [ ] **Admin password changed** via account settings (before disabling the seeder)
 - [ ] `ADMIN_SEEDER_ENABLED` Variable set to `false` and re-deploy triggered
-- [ ] Grafana accessible from admin IP: `https://grafana.seventysixsandbox.com`
+- [ ] Grafana accessible: `https://seventysixsandbox.com/grafana/` (requires admin login)
 - [ ] Grafana shows request rate and latency graphs
-- [ ] Jaeger accessible from admin IP: `https://jaeger.seventysixsandbox.com`
+- [ ] Jaeger accessible: `https://seventysixsandbox.com/jaeger/` (requires admin login)
 - [ ] Jaeger shows traces from API calls
-- [ ] Prometheus targets all healthy: `curl http://localhost:9090/api/v1/targets | jq '.data.activeTargets[] | {scrapePool, health}'`
-- [ ] Prometheus NOT accessible from a public URL (verify: `curl -sf https://prometheus.seventysixsandbox.com` should fail)
-- [ ] Grafana returns 403 from a non-admin IP (verify from a different browser/IP)
+- [ ] Prometheus accessible: `https://seventysixsandbox.com/prometheus/` (requires admin login)
+- [ ] Prometheus targets all healthy
+- [ ] Observability returns 401 when not logged in as admin
 - [ ] Fail2Ban running: `docker exec seventysix-fail2ban-prod fail2ban-client status`
 - [ ] GeoIP database downloaded: `docker logs seventysix-geoipupdate-prod`
 - [ ] Backup runs successfully: `/srv/seventysix/scripts/backup.sh`
@@ -856,7 +837,7 @@ git pull origin master --ff-only
 export DB_PASSWORD="..." JWT_SECRET_KEY="..." VALKEY_PASSWORD="..."
 export DB_NAME=seventysix_db_name DB_USER=seventysix_db_user
 export GITHUB_CLIENT_ID="..." GITHUB_CLIENT_SECRET="..."
-export EMAIL_SMTP_USERNAME="..." EMAIL_SMTP_PASSWORD="..." EMAIL_FROM_ADDRESS="..."
+export EMAIL_API_KEY="..." EMAIL_FROM_ADDRESS="..."
 export SITE_EMAIL="..."
 export ALTCHA_HMAC_KEY="..." ADMIN_EMAIL="..." ADMIN_PASSWORD="..." ADMIN_USERNAME="..."
 export ADMIN_SEEDER_ENABLED=false DATA_PROTECTION_CERTIFICATE_PASSWORD="..."
@@ -982,7 +963,7 @@ Most deployment phases require SSH, Cloudflare dashboard, or credential manageme
 | Code changes (compose files, CI/CD workflows, nginx configs) | SSH into production server |
 | Documentation updates | Cloudflare dashboard configuration |
 | Generating `gh secret set` / `gh variable set` command lists | Running those commands (they contain secrets) |
-| Diagnosing issues from pasted logs | Creating OAuth Apps, SMTP accounts, MaxMind accounts |
+| Diagnosing issues from pasted logs | Creating OAuth Apps, Brevo API keys, MaxMind accounts |
 | Writing Caddyfile / firewall rules for user to paste | Uploading certs, configuring rclone, running backups |
 
 ### A.2 Critical Gotchas
@@ -1066,4 +1047,4 @@ This is already configured (`max-age=31536000; includeSubDomains; preload`) but 
 
 ### A.6 File Security — Never Commit Plan Files
 
-Implementation plan files (`implementation-*.md`, `deploy-*.md`, `my-next-up.md`) may contain real production secrets (OAuth credentials, SMTP passwords, API keys, PATs). **Always add them to `.gitignore` or delete them before committing.** If secrets were ever committed, rotate them immediately — Git history retains the values forever.
+Implementation plan files (`implementation-*.md`, `deploy-*.md`, `my-next-up.md`) may contain real production secrets (OAuth credentials, API keys, PATs). **Always add them to `.gitignore` or delete them before committing.** If secrets were ever committed, rotate them immediately — Git history retains the values forever.

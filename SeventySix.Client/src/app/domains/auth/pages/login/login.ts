@@ -368,11 +368,18 @@ export class LoginComponent implements OnInit
 						returnUrl: this.returnUrl
 					}
 				});
+			return;
 		}
-		else
+
+		// First-time login → redirect to Profile page
+		if (response.isFirstLogin)
 		{
-			this.router.navigateByUrl(this.returnUrl);
+			this.router.navigate(
+				[APP_ROUTES.ACCOUNT.PROFILE]);
+			return;
 		}
+
+		this.router.navigateByUrl(this.returnUrl);
 	}
 
 	/**

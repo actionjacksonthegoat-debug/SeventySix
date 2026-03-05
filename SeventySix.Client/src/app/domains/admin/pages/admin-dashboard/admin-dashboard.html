@@ -52,40 +52,7 @@
 					<!-- Scheduled Background Jobs -->
 					<app-scheduled-jobs-table></app-scheduled-jobs-table>
 
-					<!-- Dev-only: Log Validations + Data Tools (hidden in production) -->
-					@if (!isProduction) {
-					<mat-card>
-						<mat-card-header>
-							<mat-card-title>
-								<mat-icon aria-hidden="true">science</mat-icon>
-								Log Validations
-							</mat-card-title>
-						</mat-card-header>
-						<mat-card-content>
-							<div class="log-validation-links">
-								<button
-									mat-stroked-button
-									(click)="sendInfoLog()">
-									<mat-icon aria-hidden="true">info</mat-icon>
-									Info
-								</button>
-								<button
-									mat-stroked-button
-									(click)="sendWarnLog()">
-									<mat-icon aria-hidden="true">warning</mat-icon>
-									Warn
-								</button>
-								<button
-									mat-stroked-button
-									(click)="sendErrorLog()">
-									<mat-icon aria-hidden="true">error</mat-icon>
-									Error
-								</button>
-							</div>
-						</mat-card-content>
-					</mat-card>
-
-					<!-- Observability Row -->
+					<!-- Observability Tools (available in all environments — protected by reverse proxy auth) -->
 					<mat-card
 						class="observability-card"
 						data-testid="observability-card">
@@ -120,6 +87,39 @@
 									(click)="openGrafana()">
 									<mat-icon aria-hidden="true">open_in_new</mat-icon>
 									Grafana Full View
+								</button>
+							</div>
+						</mat-card-content>
+					</mat-card>
+
+					<!-- Dev-only: Log Validations + Data Tools (hidden in production) -->
+					@if (!isProduction) {
+					<mat-card>
+						<mat-card-header>
+							<mat-card-title>
+								<mat-icon aria-hidden="true">science</mat-icon>
+								Log Validations
+							</mat-card-title>
+						</mat-card-header>
+						<mat-card-content>
+							<div class="log-validation-links">
+								<button
+									mat-stroked-button
+									(click)="sendInfoLog()">
+									<mat-icon aria-hidden="true">info</mat-icon>
+									Info
+								</button>
+								<button
+									mat-stroked-button
+									(click)="sendWarnLog()">
+									<mat-icon aria-hidden="true">warning</mat-icon>
+									Warn
+								</button>
+								<button
+									mat-stroked-button
+									(click)="sendErrorLog()">
+									<mat-icon aria-hidden="true">error</mat-icon>
+									Error
 								</button>
 							</div>
 						</mat-card-content>
