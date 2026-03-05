@@ -497,3 +497,11 @@ Cache invalidation is coordinated through `CacheCoordinationService`. After muta
 ### Architecture test failures
 
 `scripts/architecture-tests.mjs` checks import paths at the file system level. If a domain accidentally imports from another domain, fix the import to use `@shared/*` or move the shared code to the shared layer.
+
+### Login and Refresh are slow by Design
+
+The implementation of Altcha and Argon2 verifications do take a significant amount of time by design, this is to ensure that we are following OWasp best practices and expected. These heavier systems sacrifice speed for security which is the priority.
+
+### Landing page LCP is 3-4 seconds
+
+First-visit Largest Contentful Paint (LCP) of ~3-4s is expected for a CSR Angular SPA. The hero background image is small (~37 KB) and preloaded — the bottleneck is Angular JS bundle parse/execute + component bootstrap, not image delivery. SSR or SSG are out of scope for this current project.

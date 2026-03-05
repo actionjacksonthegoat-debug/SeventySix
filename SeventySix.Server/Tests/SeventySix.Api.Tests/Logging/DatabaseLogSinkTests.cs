@@ -338,6 +338,62 @@ public sealed class DatabaseLogSinkTests : IAsyncLifetime
 	}
 
 	/// <summary>
+	/// Verifies that HTTP request properties including DurationMs are extracted and persisted.
+	/// </summary>
+	[Fact]
+	public async Task Emit_WithHttpProperties_ExtractsDurationMsAsync()
+	{
+		// Arrange
+		await using DatabaseLogSink sink =
+			new(
+			ServiceProvider!,
+			"Test",
+			"TestMachine");
+		MessageTemplate messageTemplate =
+			new MessageTemplateParser().Parse(
+			"HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms");
+		LogEventProperty[] properties =
+			[
+				new(
+					"RequestMethod",
+					new ScalarValue("GET")),
+				new(
+					"RequestPath",
+					new ScalarValue(ApiEndpoints.Auth.Login)),
+				new(
+					"StatusCode",
+					new ScalarValue(200)),
+				new(
+					"Elapsed",
+					new ScalarValue(1234.5678m)),
+			];
+		LogEvent logEvent =
+			new(
+			new FakeTimeProvider().GetUtcNow(),
+			LogEventLevel.Warning,
+			null,
+			messageTemplate,
+			properties);
+
+		// Act
+		sink.Emit(logEvent);
+		await ((IAsyncDisposable)sink).DisposeAsync();
+
+		// Assert
+		LogQueryRequest request =
+			new() { SearchTerm = "responded" };
+		(IEnumerable<Log> logs, int _) =
+			await LogRepository!.GetPagedAsync(
+			request);
+		logs.ShouldHaveSingleItem();
+		Log log = logs.First();
+		log.RequestMethod.ShouldBe("GET");
+		log.RequestPath.ShouldBe(ApiEndpoints.Auth.Login);
+		log.StatusCode.ShouldBe(200);
+		log.DurationMs.ShouldBe(1234);
+	}
+
+	/// <summary>
 	/// Disposes test resources such as ServiceProvider and DbContext.
 	/// </summary>
 	public async Task DisposeAsync()

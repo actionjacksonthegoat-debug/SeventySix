@@ -28,7 +28,13 @@ import {
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { Router } from "@angular/router";
 import { environment } from "@environments/environment";
-import { APP_ROUTES, STORAGE_KEYS } from "@shared/constants";
+import {
+	APP_ROUTES,
+	BROADCAST_CHANNEL_NAME,
+	BROADCAST_MESSAGE_TYPE,
+	OAUTH_FLOW_EVENT_TYPE,
+	STORAGE_KEYS
+} from "@shared/constants";
 import {
 	AuthResponse,
 	LoginRequest,
@@ -131,6 +137,15 @@ export class AuthService
 	/** In-flight refresh observable for single-flight pattern. */
 	private refreshInProgress: Observable<AuthResponse | null> | null = null;
 
+	/** Cross-tab refresh coordination channel. */
+	private readonly refreshChannel: BroadcastChannel | null =
+		typeof BroadcastChannel !== "undefined"
+			? new BroadcastChannel(BROADCAST_CHANNEL_NAME)
+			: null;
+
+	/** Subscription for cross-tab refresh events. */
+	private readonly crossTabRefreshSubscription: (() => void) | null = null;
+
 	private readonly userSignal: WritableSignal<UserProfileDto | null> =
 		signal<UserProfileDto | null>(null);
 
@@ -172,20 +187,20 @@ export class AuthService
 			.subscribe(
 				(event: OAuthEvent) =>
 				{
-					if (event.type === "code_received")
+					if (event.type === OAUTH_FLOW_EVENT_TYPE.CODE_RECEIVED)
 					{
 						this.exchangeOAuthCode(event.code);
 					}
-					else if (event.type === "link_success")
+					else if (event.type === OAUTH_FLOW_EVENT_TYPE.LINK_SUCCESS)
 					{
 						this.queryClient.invalidateQueries(
 							{
 								queryKey: QueryKeys.account.all
 							});
 					}
-					else if (event.type === "error")
+					else if (event.type === OAUTH_FLOW_EVENT_TYPE.ERROR)
 					{
-						if (event.error === "popup_blocked")
+						if (event.error === OAUTH_FLOW_EVENT_TYPE.POPUP_BLOCKED)
 						{
 							this.notificationService.error(
 								"Popup was blocked. Please allow popups for this site and try again.");
@@ -352,6 +367,8 @@ export class AuthService
 								response.requiresPasswordChange);
 							this.markHasSession();
 							this.startIdleDetection(response);
+							this.refreshChannel?.postMessage(
+								{ type: BROADCAST_MESSAGE_TYPE.TOKEN_REFRESHED });
 						}),
 					catchError(
 						(error: HttpErrorResponse) =>
@@ -361,6 +378,8 @@ export class AuthService
 							if (error.status === 401)
 							{
 								this.clearAuth();
+								this.refreshChannel?.postMessage(
+									{ type: BROADCAST_MESSAGE_TYPE.LOGOUT });
 							}
 							return of(null);
 						}),
@@ -836,8 +855,8 @@ export class AuthService
 	}
 
 	/**
-	 * Listens for cross-tab logout via StorageEvent.
-	 * When another tab removes the session marker, forces local logout and navigates home.
+	 * Listens for cross-tab logout via StorageEvent and BroadcastChannel.
+	 * When another tab removes the session marker or broadcasts logout, forces local logout.
 	 * StorageEvent only fires in non-originating tabs, so no circular trigger risk.
 	 * @returns {void}
 	 */
@@ -862,10 +881,23 @@ export class AuthService
 
 		window.addEventListener("storage", storageHandler);
 
+		if (this.refreshChannel)
+		{
+			this.refreshChannel.onmessage =
+				(event: MessageEvent): void =>
+				{
+					if (event.data?.type === BROADCAST_MESSAGE_TYPE.LOGOUT)
+					{
+						this.forceLogoutLocally();
+					}
+				};
+		}
+
 		this.destroyRef.onDestroy(
 			() =>
 			{
 				window.removeEventListener("storage", storageHandler);
+				this.refreshChannel?.close();
 			});
 	}
 }

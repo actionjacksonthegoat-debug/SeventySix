@@ -5,6 +5,12 @@ import {
 	HttpInterceptorFn,
 	HttpRequest
 } from "@angular/common/http";
+import {
+	HTTP_CACHE_NO_CACHE,
+	HTTP_CACHE_NO_STORE,
+	HTTP_HEADER_CACHE_CONTROL,
+	HTTP_HEADER_PRAGMA
+} from "@shared/constants";
 import { Observable } from "rxjs";
 
 /**
@@ -38,8 +44,8 @@ export const cacheBypassInterceptor: HttpInterceptorFn =
 				request.clone(
 					{
 						setHeaders: {
-							"Cache-Control": "no-cache, no-store, must-revalidate",
-							Pragma: "no-cache"
+							[HTTP_HEADER_CACHE_CONTROL]: HTTP_CACHE_NO_STORE,
+							[HTTP_HEADER_PRAGMA]: HTTP_CACHE_NO_CACHE
 						}
 					});
 

@@ -159,6 +159,11 @@ builder.Host.UseWolverine(
 			// Poll for scheduled messages every 5 seconds
 			options.Durability.ScheduledJobPollingTime =
 				TimeSpan.FromSeconds(5);
+
+			// Reassign agents from stale/dead nodes every 30 seconds
+			// (default is 5 minutes — too slow for container restarts)
+			options.Durability.NodeReassignmentPollingTime =
+				TimeSpan.FromSeconds(30);
 		}
 	},
 	ExtensionDiscovery.ManualOnly);
@@ -219,6 +224,9 @@ if (isBackgroundJobsEnabled)
 {
 	builder.Services
 		.AddHostedService<SeventySix.Api.Infrastructure.ScheduledJobHealthCheckService>();
+
+	builder.Services
+		.AddHostedService<SeventySix.Api.Infrastructure.JobChainWatchdogService>();
 }
 
 // E2E test seeder (only runs when E2ESeeder:Enabled is true)

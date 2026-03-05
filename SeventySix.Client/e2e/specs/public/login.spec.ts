@@ -595,13 +595,13 @@ test.describe("Login Page",
 
 						const firstResponse: APIResponse =
 							await page.request.get(challengeUrl);
-						const firstBody: { challenge: string } =
-							await firstResponse.json() as { challenge: string };
+						const firstBody: { challenge: string; } =
+							await firstResponse.json() as { challenge: string; };
 
 						const secondResponse: APIResponse =
 							await page.request.get(challengeUrl);
-						const secondBody: { challenge: string } =
-							await secondResponse.json() as { challenge: string };
+						const secondBody: { challenge: string; } =
+							await secondResponse.json() as { challenge: string; };
 
 						expect(firstBody.challenge)
 							.not

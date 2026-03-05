@@ -22,7 +22,7 @@ import {
 	Validators
 } from "@angular/forms";
 import { RouterLink } from "@angular/router";
-import { AltchaWidgetComponent } from "@shared/components";
+import { AltchaWidgetComponent } from "@shared/components/altcha-widget/altcha-widget";
 import { FORM_MATERIAL_MODULES } from "@shared/material-bundles.constants";
 import { AltchaService } from "@shared/services/altcha.service";
 import { AuthService } from "@shared/services/auth.service";

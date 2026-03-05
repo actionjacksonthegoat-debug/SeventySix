@@ -5,6 +5,12 @@ import {
 	HttpRequest,
 	HttpResponse
 } from "@angular/common/http";
+import {
+	HTTP_CACHE_NO_CACHE,
+	HTTP_CACHE_NO_STORE,
+	HTTP_HEADER_CACHE_CONTROL,
+	HTTP_HEADER_PRAGMA
+} from "@shared/constants";
 import { Observable, of } from "rxjs";
 import {
 	cacheBypassInterceptor,
@@ -51,10 +57,10 @@ describe("cacheBypassInterceptor",
 					mockNext);
 
 				// Assert
-				expect(capturedRequest.headers.get("Cache-Control"))
-					.toBe("no-cache, no-store, must-revalidate");
-				expect(capturedRequest.headers.get("Pragma"))
-					.toBe("no-cache");
+				expect(capturedRequest.headers.get(HTTP_HEADER_CACHE_CONTROL))
+					.toBe(HTTP_CACHE_NO_STORE);
+				expect(capturedRequest.headers.get(HTTP_HEADER_PRAGMA))
+					.toBe(HTTP_CACHE_NO_CACHE);
 			});
 
 		it("should not modify request when FORCE_REFRESH is false",
@@ -78,9 +84,9 @@ describe("cacheBypassInterceptor",
 					mockNext);
 
 				// Assert
-				expect(capturedRequest.headers.has("Cache-Control"))
+				expect(capturedRequest.headers.has(HTTP_HEADER_CACHE_CONTROL))
 					.toBe(false);
-				expect(capturedRequest.headers.has("Pragma"))
+				expect(capturedRequest.headers.has(HTTP_HEADER_PRAGMA))
 					.toBe(false);
 			});
 
@@ -99,9 +105,9 @@ describe("cacheBypassInterceptor",
 					mockNext);
 
 				// Assert - default is false, so no headers should be added
-				expect(capturedRequest.headers.has("Cache-Control"))
+				expect(capturedRequest.headers.has(HTTP_HEADER_CACHE_CONTROL))
 					.toBe(false);
-				expect(capturedRequest.headers.has("Pragma"))
+				expect(capturedRequest.headers.has(HTTP_HEADER_PRAGMA))
 					.toBe(false);
 			});
 	});
