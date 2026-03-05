@@ -39,7 +39,8 @@ public sealed class RecurringJobService(
 
 		DateTimeOffset nextRun;
 
-		if (lastExecution is null)
+		if (lastExecution is null
+			|| lastExecution.LastExecutedAt == DateTimeOffset.MinValue)
 		{
 			// Never run before — schedule one full interval from now
 			nextRun =
@@ -141,6 +142,19 @@ public sealed class RecurringJobService(
 				jobName,
 				cancellationToken);
 
+		// If a valid future schedule already exists, just re-send the message
+		// (in case it was lost on restart) — don't overwrite the cadence
+		if (lastExecution is not null
+			&& lastExecution.NextScheduledAt > currentTime.AddSeconds(30))
+		{
+			await scheduler.ScheduleAsync(
+				new TJob(),
+				lastExecution.NextScheduledAt.Value,
+				cancellationToken);
+
+			return;
+		}
+
 		DateTimeOffset nextPreferredTime =
 			CalculateNextPreferredTime(
 				currentTime,
@@ -189,8 +203,13 @@ public sealed class RecurringJobService(
 		TimeSpan interval,
 		DateTimeOffset now)
 	{
+		// Ensure at least 30 seconds of margin so the scheduled time
+		// is never stale by the time the Wolverine message fires
+		DateTimeOffset threshold =
+			now.AddSeconds(30);
+
 		long elapsedTicks =
-			(now - baseTime).Ticks;
+			(threshold - baseTime).Ticks;
 
 		long intervalTicks =
 			interval.Ticks;

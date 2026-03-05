@@ -354,8 +354,10 @@ public sealed class RecurringJobServiceTests
 	{
 		// Arrange - executed 15 seconds ago, interval is 10 seconds
 		// Computed next = 15s ago + 10s = 5 seconds ago (IN THE PAST)
-		// AdvanceToNextInterval: elapsed 15s / 10s = 1, +1 = 2 periods
-		// Next = executedAt + 20s = now + 5s (FUTURE)
+		// AdvanceToNextInterval with 30s buffer: threshold = now+30s
+		// elapsed = (now+30s) - (now-15s) = 45s
+		// periods = 45s / 10s + 1 = 5
+		// Next = executedAt + 50s = now + 35s (≥30s margin ✓)
 		DateTimeOffset now =
 			TimeProvider.GetUtcNow();
 
@@ -372,9 +374,9 @@ public sealed class RecurringJobServiceTests
 			interval,
 			CancellationToken.None);
 
-		// Assert - advanced to next interval boundary (executedAt + 20s = now + 5s)
+		// Assert - advanced to next interval boundary (executedAt + 50s = now + 35s)
 		DateTimeOffset expectedNextRun =
-			executedAt.AddSeconds(20);
+			executedAt.AddSeconds(50);
 
 		expectedNextRun.ShouldBeGreaterThan(now);
 
@@ -430,6 +432,209 @@ public sealed class RecurringJobServiceTests
 
 		result.ShouldBe(expected);
 		result.ShouldBeGreaterThan(now);
+	}
+
+	/// <summary>
+	/// When LastExecutedAt is MinValue (startup upsert, never actually ran),
+	/// treat identically to null — schedule one full interval from now.
+	/// </summary>
+	/// <returns>
+	/// A task representing the asynchronous operation.
+	/// </returns>
+	[Fact]
+	public async Task EnsureScheduledAsync_WhenLastExecutedAtIsMinValue_SchedulesOneIntervalFromNowAsync()
+	{
+		// Arrange — simulates restart where job was registered but never ran
+		DateTimeOffset now =
+			TimeProvider.GetUtcNow();
+
+		TimeSpan interval =
+			TimeSpan.FromSeconds(30);
+
+		Repository
+			.GetLastExecutionAsync(
+				"TestJob",
+				Arg.Any<CancellationToken>())
+			.Returns(new RecurringJobExecution
+			{
+				JobName = "TestJob",
+				LastExecutedAt = DateTimeOffset.MinValue,
+				NextScheduledAt = now.AddDays(-1),
+				LastExecutedBy = "Not yet run"
+			});
+
+		// Act
+		await Service.EnsureScheduledAsync<TestJob>(
+			"TestJob",
+			interval,
+			CancellationToken.None);
+
+		// Assert — treated as never-executed, schedules one full interval from now
+		DateTimeOffset expectedNextRun =
+			now.Add(interval);
+
+		await Scheduler
+			.Received(1)
+			.ScheduleAsync(
+				Arg.Any<TestJob>(),
+				expectedNextRun,
+				Arg.Any<CancellationToken>());
+
+		await Repository
+			.Received(1)
+			.UpsertExecutionAsync(
+				Arg.Is<RecurringJobExecution>(execution =>
+					execution.JobName == "TestJob"
+					&& execution.LastExecutedAt == DateTimeOffset.MinValue
+					&& execution.NextScheduledAt == expectedNextRun
+					&& execution.LastExecutedBy == "Not yet run"),
+				Arg.Any<CancellationToken>());
+	}
+
+	/// <summary>
+	/// AdvanceToNextInterval with short intervals must guarantee at least
+	/// 30 seconds of margin while staying interval-aligned.
+	/// </summary>
+	[Fact]
+	public void AdvanceToNextInterval_WithShortInterval_GuaranteesThirtySecondMargin()
+	{
+		// Arrange — base time is 10 seconds ago, interval is 10 seconds
+		// Without buffer: result = now + 10s (only 10s margin — too tight)
+		// With buffer: threshold = now+30s, result = now + 40s (40s margin ✓)
+		DateTimeOffset now =
+			TimeProvider.GetUtcNow();
+
+		DateTimeOffset baseTime =
+			now.AddSeconds(-10);
+
+		TimeSpan interval =
+			TimeSpan.FromSeconds(10);
+
+		// Act
+		DateTimeOffset result =
+			RecurringJobService.AdvanceToNextInterval(
+				baseTime,
+				interval,
+				now);
+
+		// Assert — must be at least 30 seconds in the future
+		result.ShouldBeGreaterThanOrEqualTo(now.AddSeconds(30));
+
+		// Assert — must be interval-aligned from baseTime
+		TimeSpan fromBase =
+			result - baseTime;
+
+		(fromBase.Ticks % interval.Ticks).ShouldBe(0);
+	}
+
+	/// <summary>
+	/// On restart, if NextScheduledAt is already in the future (with 30s margin),
+	/// preserve the existing schedule and re-send the Wolverine message.
+	/// </summary>
+	/// <returns>
+	/// A task representing the asynchronous operation.
+	/// </returns>
+	[Fact]
+	public async Task EnsureScheduledAtPreferredTimeAsync_WhenNextScheduledAtIsInFuture_PreservesExistingScheduleAsync()
+	{
+		// Arrange — job ran 2 days ago, NextScheduledAt = 5 days from now
+		DateTimeOffset now =
+			TimeProvider.GetUtcNow();
+
+		DateTimeOffset nextMonday =
+			now.AddDays(5);
+
+		Repository
+			.GetLastExecutionAsync(
+				"TestJob",
+				Arg.Any<CancellationToken>())
+			.Returns(new RecurringJobExecution
+			{
+				JobName = "TestJob",
+				LastExecutedAt = now.AddDays(-2),
+				NextScheduledAt = nextMonday,
+				LastExecutedBy = Environment.MachineName
+			});
+
+		// Act
+		await Service.EnsureScheduledAtPreferredTimeAsync<TestJob>(
+			"TestJob",
+			new TimeOnly(3, 0),
+			TimeSpan.FromDays(7),
+			CancellationToken.None);
+
+		// Assert — scheduled at the EXISTING future time, NOT the next preferred time
+		await Scheduler
+			.Received(1)
+			.ScheduleAsync(
+				Arg.Any<TestJob>(),
+				nextMonday,
+				Arg.Any<CancellationToken>());
+
+		// Assert — DB NOT updated (no UpsertExecutionAsync call)
+		await Repository
+			.DidNotReceive()
+			.UpsertExecutionAsync(
+				Arg.Any<RecurringJobExecution>(),
+				Arg.Any<CancellationToken>());
+	}
+
+	/// <summary>
+	/// On restart with an overdue NextScheduledAt, compute a fresh preferred time
+	/// and update the DB.
+	/// </summary>
+	/// <returns>
+	/// A task representing the asynchronous operation.
+	/// </returns>
+	[Fact]
+	public async Task EnsureScheduledAtPreferredTimeAsync_WhenNextScheduledAtIsInPast_ComputesNewPreferredTimeAsync()
+	{
+		// Arrange — job is overdue, NextScheduledAt is 2 days ago
+		DateTimeOffset now =
+			TimeProvider.GetUtcNow();
+
+		TimeOnly preferredTimeUtc =
+			new(3, 0);
+
+		Repository
+			.GetLastExecutionAsync(
+				"TestJob",
+				Arg.Any<CancellationToken>())
+			.Returns(new RecurringJobExecution
+			{
+				JobName = "TestJob",
+				LastExecutedAt = now.AddDays(-9),
+				NextScheduledAt = now.AddDays(-2),
+				LastExecutedBy = Environment.MachineName
+			});
+
+		// Act
+		await Service.EnsureScheduledAtPreferredTimeAsync<TestJob>(
+			"TestJob",
+			preferredTimeUtc,
+			TimeSpan.FromDays(7),
+			CancellationToken.None);
+
+		// Assert — computed new preferred time (not the stale one)
+		DateTimeOffset expectedNextRun =
+			RecurringJobService.CalculateNextPreferredTime(
+				now,
+				preferredTimeUtc);
+
+		await Scheduler
+			.Received(1)
+			.ScheduleAsync(
+				Arg.Any<TestJob>(),
+				expectedNextRun,
+				Arg.Any<CancellationToken>());
+
+		// Assert — DB updated with new NextScheduledAt
+		await Repository
+			.Received(1)
+			.UpsertExecutionAsync(
+				Arg.Is<RecurringJobExecution>(execution =>
+					execution.NextScheduledAt == expectedNextRun),
+				Arg.Any<CancellationToken>());
 	}
 
 	/// <summary>
