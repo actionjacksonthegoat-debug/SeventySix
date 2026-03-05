@@ -6,8 +6,12 @@
     Detects/installs prerequisites, collects secrets, generates certificates,
     installs dependencies, and optionally runs all test suites.
 .NOTES
-    Run from the repository root: .\scripts\bootstrap.ps1
-    Or via: npm run bootstrap (after Node.js is available)
+    === WHERE TO START ===
+    Windows:                   .\scripts\bootstrap.cmd   (installs pwsh via winget, then calls this)
+    Linux / macOS / Codespace: bash scripts/bootstrap.sh (installs pwsh via apt/brew, then calls this)
+    After pwsh is installed:   pwsh -ExecutionPolicy Bypass -File scripts/bootstrap.ps1
+
+    On a GitHub Codespace, always start with:  bash scripts/bootstrap.sh
 #>
 [CmdletBinding()]
 param(
@@ -232,12 +236,49 @@ function Write-VersionSummary {
 		Write-Host "  To start developing:" -ForegroundColor Cyan
 		Write-Host "    npm start" -ForegroundColor White
 		Write-Host ""
-		Write-Host "  Seeded admin credentials (from your user-secrets):" -ForegroundColor Cyan
-		Write-Host "    Username: admin" -ForegroundColor White
-		Write-Host "    Email: (as entered during setup)" -ForegroundColor White
-		Write-Host "    Password: (as entered during setup)" -ForegroundColor White
+	}
+
+	# --- Critical notice if Brevo SMTP was not configured ---
+	$smtpUser = $env:EMAIL_SMTP_USERNAME
+	if ([string]::IsNullOrWhiteSpace($smtpUser) -or $smtpUser -eq "PLACEHOLDER_USE_USER_SECRETS") {
+		Write-Host ""
+		Write-Host "========================================" -ForegroundColor Red
+		Write-Host "  CRITICAL: No Email Provider Configured" -ForegroundColor Red
+		Write-Host "========================================" -ForegroundColor Red
+		Write-Host ""
+		Write-Host "  You skipped Brevo SMTP setup. MFA email codes CANNOT be delivered." -ForegroundColor Yellow
+		Write-Host "  Without email delivery, users will be blocked at the MFA verification step." -ForegroundColor Yellow
+		Write-Host ""
+		Write-Host "  ACTION REQUIRED — disable MFA and TOTP for local development:" -ForegroundColor Red
+		Write-Host "  File: SeventySix.Server/SeventySix.Api/appsettings.Development.json" -ForegroundColor White
+		Write-Host ""
+		Write-Host '  Change these values:' -ForegroundColor White
+		Write-Host '    "Mfa":  { "Enabled": false, "RequiredForAllUsers": false }' -ForegroundColor Yellow
+		Write-Host '    "Totp": { "Enabled": false }' -ForegroundColor Yellow
+		Write-Host ""
+		Write-Host "  Tip: appsettings.Development.json already has a comment block showing exactly" -ForegroundColor Cyan
+		Write-Host "  which keys to change. Search for '_comment_minimal_setup' in that file." -ForegroundColor Cyan
 		Write-Host ""
 	}
+
+	# --- Seeded admin credentials — ALWAYS shown in plain text, save before closing ---
+	$seedEmail = if ($env:ADMIN_EMAIL) { $env:ADMIN_EMAIL } else { "(see AdminSeeder:Email in user-secrets)" }
+	$seedPassword = if ($env:ADMIN_PASSWORD) { $env:ADMIN_PASSWORD } else { "(see AdminSeeder:InitialPassword in user-secrets)" }
+
+	Write-Host ""
+	Write-Host "========================================" -ForegroundColor Magenta
+	Write-Host "  SAVE THESE CREDENTIALS NOW" -ForegroundColor Magenta
+	Write-Host "========================================" -ForegroundColor Magenta
+	Write-Host ""
+	Write-Host "  Seeded admin account for local development:" -ForegroundColor White
+	Write-Host "    Username : admin" -ForegroundColor Green
+	Write-Host "    Email    : $seedEmail" -ForegroundColor Green
+	Write-Host "    Password : $seedPassword" -ForegroundColor Green
+	Write-Host ""
+	Write-Host "  These values are stored only in .NET user-secrets — never committed to git." -ForegroundColor Yellow
+	Write-Host "  Save them in a password manager or secure note before closing this terminal." -ForegroundColor Yellow
+	Write-Host ""
+	Read-Host "  Press Enter once you have saved these credentials"
 }
 
 Write-VersionSummary

@@ -202,14 +202,28 @@ if ($clientPortInUse -and $clientResponding) {
 	Write-Host "========================================" -ForegroundColor Yellow
 }
 else {
-	# Launch Angular client in new terminal window BEFORE streaming logs
-	Write-Host "Launching Angular client in new window..." -ForegroundColor Yellow
+	# Launch Angular client — in a new window on Windows, background process on Linux/macOS
+	# (-WindowStyle is a Windows-only parameter and throws on Linux PowerShell)
+	Write-Host "Launching Angular client..." -ForegroundColor Yellow
 
-	Start-Process pwsh -ArgumentList @(
-		"-NoExit",
-		"-Command",
-		"cd '$clientPath'; npm start"
-	) -WindowStyle Normal
+	if ($IsWindows) {
+		Start-Process pwsh -ArgumentList @(
+			"-NoExit",
+			"-Command",
+			"cd '$clientPath'; npm start"
+		) -WindowStyle Normal
+	}
+	else {
+		# On Linux/macOS (Codespace, CI): run Angular in background, log to file
+		$ngLogPath = Join-Path $clientPath "ng-serve.log"
+		$ngJob = Start-Job -ScriptBlock {
+			Set-Location $using:clientPath
+			& npm start 2>&1
+		}
+		Write-Host "  Angular client starting in background (job $($ngJob.Id))." -ForegroundColor Cyan
+		Write-Host "  Logs: $ngLogPath" -ForegroundColor Cyan
+		Write-Host "  Open https://localhost:4200 once ready." -ForegroundColor Cyan
+	}
 }
 
 # Stream API logs in the current console
