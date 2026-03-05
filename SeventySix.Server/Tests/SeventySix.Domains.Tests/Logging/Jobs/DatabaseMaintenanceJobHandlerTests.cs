@@ -59,19 +59,20 @@ public sealed class DatabaseMaintenanceJobHandlerTests
 	}
 
 	/// <summary>
-	/// Verifies handler does nothing when disabled.
+	/// Verifies handler skips work when disabled but still reschedules.
 	/// </summary>
 	/// <returns>
 	/// A task representing the asynchronous operation.
 	/// </returns>
 	[Fact]
-	public async Task HandleAsync_WhenDisabled_DoesNotScheduleNextRunAsync()
+	public async Task HandleAsync_WhenDisabled_SkipsWorkButReschedulesAsync()
 	{
 		// Arrange
 		IOptions<DatabaseMaintenanceSettings> disabledSettings =
 			Options.Create(new DatabaseMaintenanceSettings
 			{
-				Enabled = false
+				Enabled = false,
+				IntervalHours = 24
 			});
 
 		DatabaseMaintenanceJobHandler disabledHandler =
@@ -87,13 +88,14 @@ public sealed class DatabaseMaintenanceJobHandlerTests
 			new DatabaseMaintenanceJob(),
 			CancellationToken.None);
 
-		// Assert - Neither service nor scheduler should be called
+		// Assert - Work should be skipped
 		await DatabaseMaintenanceService
 			.DidNotReceive()
 			.ExecuteVacuumAnalyzeAsync(Arg.Any<CancellationToken>());
 
+		// Assert - Rescheduling should still occur
 		await RecurringJobService
-			.DidNotReceive()
+			.Received(1)
 			.RecordAndScheduleNextAsync<DatabaseMaintenanceJob>(
 				Arg.Any<string>(),
 				Arg.Any<DateTimeOffset>(),
@@ -186,17 +188,13 @@ public sealed class DatabaseMaintenanceJobHandlerTests
 	}
 
 	/// <summary>
-	/// Verifies that service exceptions propagate up for Wolverine error handling.
+	/// Verifies that service exceptions are caught and rescheduling still occurs.
 	/// </summary>
 	/// <returns>
 	/// A task representing the asynchronous operation.
 	/// </returns>
-	/// <remarks>
-	/// Job error handling is delegated to Wolverine's retry policies.
-	/// This test ensures exceptions aren't swallowed by the handler.
-	/// </remarks>
 	[Fact]
-	public async Task HandleAsync_PropagatesServiceExceptions_ForWolverineHandlingAsync()
+	public async Task HandleAsync_WhenServiceThrows_CatchesExceptionAndReschedulesAsync()
 	{
 		// Arrange
 		InvalidOperationException expectedException =
@@ -206,19 +204,14 @@ public sealed class DatabaseMaintenanceJobHandlerTests
 			.ExecuteVacuumAnalyzeAsync(Arg.Any<CancellationToken>())
 			.ThrowsAsync(expectedException);
 
-		// Act & Assert
-		InvalidOperationException thrownException =
-			await Should.ThrowAsync<InvalidOperationException>(
-				async () =>
-					await Handler.HandleAsync(
-						new DatabaseMaintenanceJob(),
-						CancellationToken.None));
+		// Act — should NOT throw
+		await Handler.HandleAsync(
+			new DatabaseMaintenanceJob(),
+			CancellationToken.None);
 
-		thrownException.Message.ShouldBe("VACUUM failed - database locked");
-
-		// Verify no rescheduling occurred (exception interrupted flow)
+		// Assert — rescheduling STILL occurred despite exception
 		await RecurringJobService
-			.DidNotReceive()
+			.Received(1)
 			.RecordAndScheduleNextAsync<DatabaseMaintenanceJob>(
 				Arg.Any<string>(),
 				Arg.Any<DateTimeOffset>(),

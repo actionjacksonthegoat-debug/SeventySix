@@ -155,19 +155,20 @@ public sealed class LogCleanupJobHandlerTests
 	}
 
 	/// <summary>
-	/// Verifies no cleanup when disabled.
+	/// Verifies no cleanup when disabled but rescheduling still occurs.
 	/// </summary>
 	/// <returns>
 	/// A task representing the asynchronous operation.
 	/// </returns>
 	[Fact]
-	public async Task HandleAsync_SkipsCleanupWhenDisabledAsync()
+	public async Task HandleAsync_WhenDisabled_SkipsWorkButReschedulesAsync()
 	{
 		// Arrange
 		IOptions<LogCleanupSettings> disabledSettings =
 			Options.Create(new LogCleanupSettings
 			{
-				Enabled = false
+				Enabled = false,
+				IntervalHours = 24
 			});
 
 		LogCleanupJobHandler disabledHandler =
@@ -183,15 +184,16 @@ public sealed class LogCleanupJobHandlerTests
 			new LogCleanupJob(),
 			CancellationToken.None);
 
-		// Assert - Neither repository nor scheduler should be called
+		// Assert - Work should be skipped
 		await LogRepository
 			.DidNotReceive()
 			.DeleteOlderThanAsync(
 				Arg.Any<DateTimeOffset>(),
 				Arg.Any<CancellationToken>());
 
+		// Assert - Rescheduling should still occur
 		await RecurringJobService
-			.DidNotReceive()
+			.Received(1)
 			.RecordAndScheduleNextAsync<LogCleanupJob>(
 				Arg.Any<string>(),
 				Arg.Any<DateTimeOffset>(),
@@ -200,17 +202,13 @@ public sealed class LogCleanupJobHandlerTests
 	}
 
 	/// <summary>
-	/// Verifies that repository exceptions propagate up for Wolverine error handling.
+	/// Verifies that repository exceptions are caught and rescheduling still occurs.
 	/// </summary>
 	/// <returns>
 	/// A task representing the asynchronous operation.
 	/// </returns>
-	/// <remarks>
-	/// Job error handling is delegated to Wolverine's retry policies.
-	/// This test ensures exceptions aren't swallowed by the handler.
-	/// </remarks>
 	[Fact]
-	public async Task HandleAsync_PropagatesRepositoryExceptions_ForWolverineHandlingAsync()
+	public async Task HandleAsync_WhenRepositoryThrows_CatchesExceptionAndReschedulesAsync()
 	{
 		// Arrange
 		InvalidOperationException expectedException =
@@ -222,19 +220,14 @@ public sealed class LogCleanupJobHandlerTests
 				Arg.Any<CancellationToken>())
 			.ThrowsAsync(expectedException);
 
-		// Act & Assert
-		InvalidOperationException thrownException =
-			await Should.ThrowAsync<InvalidOperationException>(
-				async () =>
-					await Handler.HandleAsync(
-						new LogCleanupJob(),
-						CancellationToken.None));
+		// Act — should NOT throw
+		await Handler.HandleAsync(
+			new LogCleanupJob(),
+			CancellationToken.None);
 
-		thrownException.Message.ShouldBe("Database connection lost");
-
-		// Verify no rescheduling occurred (exception interrupted flow)
+		// Assert — rescheduling STILL occurred despite exception
 		await RecurringJobService
-			.DidNotReceive()
+			.Received(1)
 			.RecordAndScheduleNextAsync<LogCleanupJob>(
 				Arg.Any<string>(),
 				Arg.Any<DateTimeOffset>(),

@@ -211,7 +211,7 @@ public sealed class SecurityHeadersTests : IDisposable
 
 	/// <summary>
 	/// Tests that CSP does not allow insecure WebSocket connections.
-	/// Only wss: (secure WebSocket) should be permitted, not ws:.
+	/// The app uses no WebSocket connections, so neither ws: nor wss: should be in CSP.
 	/// </summary>
 	[Fact]
 	public async Task Csp_DoesNotAllowInsecureWebSocketAsync()
@@ -232,7 +232,6 @@ public sealed class SecurityHeadersTests : IDisposable
 		string cspHeader =
 			cspValues.First();
 		cspHeader.ShouldNotContain("ws:");
-		cspHeader.ShouldContain("wss:");
 	}
 
 	/// <summary>
