@@ -1,5 +1,6 @@
 import {
 	COOKIE_NAMES,
+	E2E_CONFIG,
 	expect,
 	getTestUserByRole,
 	LOCKOUT_USER,
@@ -12,7 +13,7 @@ import {
 	TIMEOUTS
 } from "@e2e-fixtures";
 import type { TestUser } from "@e2e-fixtures";
-import type { Cookie, Locator, Page } from "@playwright/test";
+import type { APIResponse, Cookie, Locator, Page } from "@playwright/test";
 
 /**
  * E2E Tests for Login Page
@@ -550,6 +551,61 @@ test.describe("Login Page",
 						// Should remain on login page (login blocked)
 						await expect(page)
 							.toHaveURL(ROUTES.auth.login);
+					});
+			});
+
+		test.describe("Security: ALTCHA Anti-Cache",
+			() =>
+			{
+				/**
+		 * Regression test for ALTCHA challenge replay attack via browser caching.
+		 * Verifies the challenge endpoint returns Cache-Control: no-store so
+		 * browsers never serve a cached (already-used) challenge.
+		 * Without no-store, the user could solve the same challenge twice, and the
+		 * server rejects the second login with "Challenge has been verified before".
+		 */
+				test("should return no-store cache header on ALTCHA challenge endpoint",
+					async ({ page }) =>
+					{
+						const challengeUrl: string =
+							`${E2E_CONFIG.clientBaseUrl}/api/v1/altcha/challenge`;
+
+						const challengeResponse: APIResponse =
+							await page.request.get(challengeUrl);
+
+						expect(challengeResponse.status())
+							.toBe(200);
+
+						const cacheControl: string | null =
+							challengeResponse.headers()["cache-control"];
+
+						expect(cacheControl)
+							.toContain("no-store");
+					});
+
+				/**
+		 * Verifies consecutive ALTCHA challenge requests return distinct challenges.
+		 * Prevents replay attacks from returning the same challenge to the widget.
+		 */
+				test("should return unique challenges on consecutive requests",
+					async ({ page }) =>
+					{
+						const challengeUrl: string =
+							`${E2E_CONFIG.clientBaseUrl}/api/v1/altcha/challenge`;
+
+						const firstResponse: APIResponse =
+							await page.request.get(challengeUrl);
+						const firstBody: { challenge: string } =
+							await firstResponse.json() as { challenge: string };
+
+						const secondResponse: APIResponse =
+							await page.request.get(challengeUrl);
+						const secondBody: { challenge: string } =
+							await secondResponse.json() as { challenge: string };
+
+						expect(firstBody.challenge)
+							.not
+							.toBe(secondBody.challenge);
 					});
 			});
 	});
