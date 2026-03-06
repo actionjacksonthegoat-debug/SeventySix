@@ -153,7 +153,8 @@ unauthenticatedTest.describe("Forced Password Change",
 							response
 								.url()
 								.includes(API_ROUTES.auth.login)
-								&& response.status() === 200);
+								&& response.status() === 200,
+						{ timeout: TIMEOUTS.api });
 
 				await loginAsForcedUser(unauthenticatedPage);
 

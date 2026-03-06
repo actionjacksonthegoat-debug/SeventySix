@@ -55,10 +55,10 @@ export default defineConfig({
 		["html", { outputFolder: "playwright-report", open: "never" }],
 		["./e2e/reporters/concise-reporter.ts"]
 	],
-	timeout: 45000,
+	timeout: process.env.CI ? 60000 : 45000,
 	failOnFlakyTests: process.env.CI != null,
 	expect: {
-		timeout: 10000
+		timeout: process.env.CI ? 15000 : 10000
 	},
 
 	use: {

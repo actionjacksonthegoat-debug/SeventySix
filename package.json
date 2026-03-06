@@ -36,5 +36,8 @@
 		"generate:ssl-cert": "node scripts/run-pwsh.mjs -File scripts/generate-dev-ssl-cert.ps1 -Force",
 		"generate:icons": "cd SeventySix.Client && npm run generate:icons",
 		"lighthouse": "cd SeventySix.Client && npm run lighthouse:build-run"
+	},
+	"devDependencies": {
+		"@types/node": "^25.3.5"
 	}
 }

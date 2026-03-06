@@ -54,7 +54,8 @@ export async function fillUserCreateStepper(
 			(response) =>
 				response
 					.url()
-					.includes("/check/username/"));
+					.includes("/check/username/"),
+			{ timeout: TIMEOUTS.api });
 
 	// Step 1: Credentials
 	await page

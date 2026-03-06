@@ -196,7 +196,8 @@ test.describe("User Management Page",
 									response
 										.url()
 										.includes("/users")
-										&& response.status() === 200);
+										&& response.status() === 200,
+								{ timeout: TIMEOUTS.api });
 
 						await searchInput.press("Enter");
 						await searchResponse;
@@ -229,7 +230,8 @@ test.describe("User Management Page",
 									response
 										.url()
 										.includes("/users")
-										&& response.status() === 200);
+										&& response.status() === 200,
+								{ timeout: TIMEOUTS.api });
 
 						await searchInput.press("Enter");
 						await searchResponse;
@@ -324,7 +326,8 @@ test.describe("User Management Page",
 									response
 										.url()
 										.includes("/users")
-										&& response.status() === 200);
+										&& response.status() === 200,
+								{ timeout: TIMEOUTS.api });
 
 						await refreshButton.click();
 						await responsePromise;
