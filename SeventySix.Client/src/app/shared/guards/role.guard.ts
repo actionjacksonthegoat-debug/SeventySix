@@ -25,7 +25,7 @@ import {
 	Router,
 	UrlTree
 } from "@angular/router";
-import { APP_ROUTES } from "@shared/constants";
+import { APP_ROUTES, QUERY_PARAMS } from "@shared/constants";
 import { AuthService } from "@shared/services/auth.service";
 
 /**
@@ -57,7 +57,7 @@ export function roleGuard(...requiredRoles: string[]): CanMatchFn
 			const redirectUrl: UrlTree =
 				router.createUrlTree(
 					[APP_ROUTES.AUTH.LOGIN],
-					{ queryParams: { returnUrl: targetUrl } });
+					{ queryParams: { [QUERY_PARAMS.RETURN_URL]: targetUrl } });
 			return redirectUrl;
 		}
 

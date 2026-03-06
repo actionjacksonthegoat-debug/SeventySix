@@ -56,7 +56,6 @@ public sealed class OAuthService(
 		string code,
 		string redirectUri,
 		string codeVerifier,
-		string? clientIp,
 		CancellationToken cancellationToken = default)
 	{
 		OAuthProviderSettings? providerSettings =
@@ -103,7 +102,6 @@ public sealed class OAuthService(
 
 			return await authenticationService.GenerateAuthResultAsync(
 				user,
-				clientIp,
 				requiresPasswordChange: false,
 				rememberMe: false,
 				cancellationToken);

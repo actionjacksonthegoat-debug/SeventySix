@@ -145,6 +145,81 @@ public static class SerilogExtensions
 	}
 
 	/// <summary>
+	/// HTTP status code threshold for server errors (5xx).
+	/// </summary>
+	private const int ServerErrorThreshold = 500;
+
+	/// <summary>
+	/// HTTP status code threshold for client errors (4xx).
+	/// </summary>
+	private const int ClientErrorThreshold = 400;
+
+	/// <summary>
+	/// Configures Serilog HTTP request logging with status-aware log levels
+	/// and diagnostic context enrichment.
+	/// </summary>
+	/// <remarks>
+	/// Log levels are assigned by HTTP response status:
+	/// - 5xx or exception → Error
+	/// - 4xx → Warning
+	/// - All others → Information
+	///
+	/// Enriches each request log with RequestHost, RequestScheme, and UserAgent.
+	/// </remarks>
+	/// <param name="app">
+	/// The web application to configure.
+	/// </param>
+	/// <returns>
+	/// The web application for chaining.
+	/// </returns>
+	public static WebApplication UseRequestLogging(
+		this WebApplication app)
+	{
+		app.UseSerilogRequestLogging(
+			options =>
+			{
+				options.GetLevel =
+					(httpContext, elapsed, exception) =>
+					{
+						if (exception is not null)
+						{
+							return LogEventLevel.Error;
+						}
+
+						if (httpContext.Response.StatusCode >= ServerErrorThreshold)
+						{
+							return LogEventLevel.Error;
+						}
+
+						if (httpContext.Response.StatusCode >= ClientErrorThreshold)
+						{
+							return LogEventLevel.Warning;
+						}
+
+						return LogEventLevel.Information;
+					};
+
+				options.MessageTemplate =
+					"HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms";
+				options.EnrichDiagnosticContext =
+					(diagnosticContext, httpContext) =>
+					{
+						diagnosticContext.Set(
+							"RequestHost",
+							httpContext.Request.Host.Value ?? "unknown");
+						diagnosticContext.Set(
+							"RequestScheme",
+							httpContext.Request.Scheme);
+						diagnosticContext.Set(
+							"UserAgent",
+							httpContext.Request.Headers.UserAgent.ToString());
+					};
+			});
+
+		return app;
+	}
+
+	/// <summary>
 	/// Configures minimum level overrides for noisy framework namespaces.
 	/// </summary>
 	/// <param name="config">

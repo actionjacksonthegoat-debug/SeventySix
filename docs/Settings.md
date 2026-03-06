@@ -51,8 +51,6 @@ SeventySix uses a layered configuration system. This document provides a high-le
 | `Database:Maintenance:IntervalHours` | DB maintenance (VACUUM, REINDEX) | 24h |
 | `RefreshTokenCleanup:IntervalHours` | Expired token purge frequency | 24h |
 | `RefreshTokenCleanup:RetentionDays` | Keep expired tokens for | 7 days |
-| `IpAnonymization:IntervalDays` | GDPR IP anonymization frequency | 7 days |
-| `IpAnonymization:RetentionDays` | IP address retention before anonymization | 90 days |
 | `OrphanedRegistrationCleanup:RetentionHours` | Unconfirmed registration cleanup | 48h |
 
 ## Caching

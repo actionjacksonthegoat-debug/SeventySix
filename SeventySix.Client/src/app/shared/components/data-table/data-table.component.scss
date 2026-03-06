@@ -161,6 +161,7 @@
 	// Always reserve the scrollbar gutter so the content area width
 	// never changes when the scrollbar appears or disappears.
 	// This prevents column widths from reflowing during virtual scroll.
+	overflow-x: auto;
 	overflow-y: auto;
 	scrollbar-gutter: stable;
 	width: 100%;
@@ -183,6 +184,7 @@
 	// and columns without explicit widths get a stable share of the remainder.
 	table.mat-mdc-table {
 		width: 100%;
+		min-width: 480px;
 	}
 }
 

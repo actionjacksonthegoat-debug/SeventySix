@@ -1,5 +1,6 @@
 import {
 	HttpErrorResponse,
+	HttpEvent,
 	HttpRequest
 } from "@angular/common/http";
 import { provideHttpClient } from "@angular/common/http";
@@ -18,7 +19,7 @@ import {
 	createMockLogger,
 	type MockLoggerService
 } from "@shared/testing";
-import { firstValueFrom } from "rxjs";
+import { firstValueFrom, of } from "rxjs";
 import { throwError } from "rxjs";
 import { type Mock, vi } from "vitest";
 import { errorInterceptor } from "./error.interceptor";
@@ -28,6 +29,8 @@ interface MockAuthService
 	isAuthenticated: Mock;
 	logout: Mock;
 	markPasswordChangeRequired: Mock;
+	refreshToken: Mock;
+	getAccessToken: Mock;
 }
 
 interface MockHttpHandler
@@ -52,7 +55,9 @@ describe("errorInterceptor",
 					{
 						isAuthenticated: vi.fn(),
 						logout: vi.fn(),
-						markPasswordChangeRequired: vi.fn()
+						markPasswordChangeRequired: vi.fn(),
+						refreshToken: vi.fn(),
+						getAccessToken: vi.fn()
 					};
 				mockHandler =
 					{
@@ -285,10 +290,55 @@ describe("errorInterceptor",
 							});
 					});
 
-				it("should logout and redirect on 401 when authenticated",
+				it("should retry with new token when refresh succeeds on 401",
+					async () =>
+					{
+						const error: HttpErrorResponse =
+							new HttpErrorResponse(
+								{ status: 401 });
+						const successResponse: HttpEvent<unknown> =
+							{} as HttpEvent<unknown>;
+
+						// First call returns 401, retry call succeeds
+						mockHandler
+							.handle
+							.mockReturnValueOnce(throwError(
+								() => error))
+							.mockReturnValueOnce(of(successResponse));
+						mockAuthService.refreshToken.mockReturnValue(of(
+							{ accessToken: "new-token" }));
+						mockAuthService.getAccessToken.mockReturnValue("new-token");
+
+						const req: HttpRequest<unknown> =
+							new HttpRequest("GET", "/api/data");
+
+						await TestBed.runInInjectionContext(
+							async () =>
+							{
+								const result: HttpEvent<unknown> =
+									await firstValueFrom(
+										errorInterceptor(
+											req,
+											mockHandler.handle.bind(mockHandler)));
+
+								expect(result)
+									.toBeDefined();
+								expect(mockAuthService.refreshToken)
+									.toHaveBeenCalled();
+								expect(mockAuthService.logout)
+									.not
+									.toHaveBeenCalled();
+								expect(router.navigate)
+									.not
+									.toHaveBeenCalled();
+							});
+					});
+
+				it("should logout and redirect on 401 when refresh fails and authenticated",
 					async () =>
 					{
 						mockAuthService.isAuthenticated.mockReturnValue(true);
+						mockAuthService.refreshToken.mockReturnValue(of(null));
 						const error: HttpErrorResponse =
 							new HttpErrorResponse(
 								{ status: 401 });
@@ -300,18 +350,15 @@ describe("errorInterceptor",
 						await TestBed.runInInjectionContext(
 							async () =>
 							{
-								try
-								{
+								const result: null =
 									await firstValueFrom(
 										errorInterceptor(
 											req,
-											mockHandler.handle.bind(mockHandler)));
-								}
-								catch
-								{
-									// Expected to throw
-								}
+											mockHandler.handle.bind(mockHandler)),
+										{ defaultValue: null });
 
+								expect(result)
+									.toBeNull();
 								expect(mockAuthService.logout)
 									.toHaveBeenCalled();
 								expect(router.navigate)
@@ -319,10 +366,11 @@ describe("errorInterceptor",
 							});
 					});
 
-				it("should redirect without logout on 401 when not authenticated",
+				it("should redirect without logout on 401 when refresh fails and not authenticated",
 					async () =>
 					{
 						mockAuthService.isAuthenticated.mockReturnValue(false);
+						mockAuthService.refreshToken.mockReturnValue(of(null));
 						const error: HttpErrorResponse =
 							new HttpErrorResponse(
 								{ status: 401 });
@@ -334,18 +382,15 @@ describe("errorInterceptor",
 						await TestBed.runInInjectionContext(
 							async () =>
 							{
-								try
-								{
+								const result: null =
 									await firstValueFrom(
 										errorInterceptor(
 											req,
-											mockHandler.handle.bind(mockHandler)));
-								}
-								catch
-								{
-									// Expected to throw
-								}
+											mockHandler.handle.bind(mockHandler)),
+										{ defaultValue: null });
 
+								expect(result)
+									.toBeNull();
 								expect(mockAuthService.logout)
 									.not
 									.toHaveBeenCalled();

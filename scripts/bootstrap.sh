@@ -1,18 +1,29 @@
 ﻿#!/usr/bin/env bash
 set -euo pipefail
 
-# bootstrap.sh — Linux/macOS entry point. Works with bash only (no PowerShell required).
+# bootstrap.sh — Linux/macOS/GitHub Codespace entry point. Works with bash only (no PowerShell required).
 # Installs PowerShell 7 and Node.js LTS if missing, then delegates to bootstrap.ps1.
 #
-# USAGE (first-time setup, before npm is available):
+# ============================================================
+# ENTRY POINT (Linux / macOS / GitHub Codespace)
+# ============================================================
+# This is the correct first script to run in any non-Windows environment.
+# On a fresh Codespace or Linux machine, run:
+#
 #   bash scripts/bootstrap.sh
 #
+# ============================================================
 # After bootstrap completes, use npm commands:
 #   npm start / npm test / etc.
 
 install_pwsh() {
     if command -v apt-get &>/dev/null; then
-        # Debian / Ubuntu (includes GitHub Actions ubuntu-latest)
+        # Debian / Ubuntu (includes GitHub Actions ubuntu-latest and GitHub Codespaces)
+        # Remove the Yarn apt source list if present — its GPG key is frequently unavailable
+        # on fresh Codespace/Docker images and causes 'apt-get update' to abort with a
+        # signature verification error (NO_PUBKEY 62D54FD4003F6525). PowerShell is sourced
+        # from the Microsoft apt repo instead, so removing Yarn here is safe and harmless.
+        sudo rm -f /etc/apt/sources.list.d/yarn.list /etc/apt/sources.list.d/yarn.list.save 2>/dev/null || true
         sudo apt-get update -q && sudo apt-get install -y powershell
     elif command -v dnf &>/dev/null; then
         # Fedora / RHEL 8+

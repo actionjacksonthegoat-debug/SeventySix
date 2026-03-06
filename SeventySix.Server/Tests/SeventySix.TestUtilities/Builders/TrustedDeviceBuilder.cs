@@ -18,7 +18,6 @@ public sealed class TrustedDeviceBuilder
 	private long UserId = 1;
 	private string Token = "test-token-12345";
 	private string UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64)";
-	private string? IpAddress = "192.168.1.100";
 	private string? DeviceName = "Windows PC";
 	private int ExpirationDays = 30;
 
@@ -79,21 +78,6 @@ public sealed class TrustedDeviceBuilder
 	}
 
 	/// <summary>
-	/// Sets the IP address for fingerprinting.
-	/// </summary>
-	/// <param name="ipAddress">
-	/// The IP address.
-	/// </param>
-	/// <returns>
-	/// The builder instance.
-	/// </returns>
-	public TrustedDeviceBuilder WithIpAddress(string? ipAddress)
-	{
-		IpAddress = ipAddress;
-		return this;
-	}
-
-	/// <summary>
 	/// Sets the friendly device name.
 	/// </summary>
 	/// <param name="deviceName">
@@ -149,7 +133,7 @@ public sealed class TrustedDeviceBuilder
 		string tokenHash =
 			ComputeSha256Hash(Token);
 		string deviceFingerprint =
-			ComputeDeviceFingerprint(UserAgent, IpAddress);
+			ComputeDeviceFingerprint(UserAgent);
 
 		return new TrustedDevice
 		{
@@ -183,33 +167,8 @@ public sealed class TrustedDeviceBuilder
 	}
 
 	private static string ComputeDeviceFingerprint(
-		string userAgent,
-		string? ipAddress)
+		string userAgent)
 	{
-		string ipPrefix =
-			ExtractIpPrefix(ipAddress);
-
-		string fingerprintData =
-			$"{userAgent}|{ipPrefix}";
-
-		return ComputeSha256Hash(fingerprintData);
-	}
-
-	private static string ExtractIpPrefix(string? ipAddress)
-	{
-		if (string.IsNullOrEmpty(ipAddress))
-		{
-			return string.Empty;
-		}
-
-		string[] parts =
-			ipAddress.Split('.');
-
-		if (parts.Length >= 3)
-		{
-			return $"{parts[0]}.{parts[1]}.{parts[2]}";
-		}
-
-		return ipAddress;
+		return ComputeSha256Hash(userAgent);
 	}
 }

@@ -9,13 +9,21 @@ import { HttpErrorResponse, HttpInterceptorFn } from "@angular/common/http";
 import { inject } from "@angular/core";
 import { Router } from "@angular/router";
 import { environment } from "@environments/environment";
-import { HTTP_STATUS } from "@shared/constants";
+import {
+	AUTH_PATH_SEGMENT,
+	HTTP_BEARER_PREFIX,
+	HTTP_HEADER_AUTHORIZATION,
+	HTTP_STATUS,
+	QUERY_PARAM_VALUES,
+	QUERY_PARAMS
+} from "@shared/constants";
 import { AUTH_ERROR_CODES } from "@shared/constants/error-messages.constants";
 import { APP_ROUTES } from "@shared/constants/routes.constants";
 import { AuthService } from "@shared/services/auth.service";
 import { LoggerService } from "@shared/services/logger.service";
 import { convertToAppError } from "@shared/utilities/http-error.utility";
-import { catchError, EMPTY, throwError } from "rxjs";
+import { isNullOrUndefined } from "@shared/utilities/null-check.utility";
+import { catchError, EMPTY, switchMap, take, throwError } from "rxjs";
 
 /**
  * Intercepts HTTP errors and converts them to typed application errors.
@@ -46,8 +54,8 @@ export const errorInterceptor: HttpInterceptorFn =
 								[APP_ROUTES.AUTH.CHANGE_PASSWORD],
 								{
 									queryParams: {
-										required: "true",
-										returnUrl: router.url
+										[QUERY_PARAMS.REQUIRED]: QUERY_PARAM_VALUES.TRUE,
+										[QUERY_PARAMS.RETURN_URL]: router.url
 									}
 								});
 							return EMPTY;
@@ -61,22 +69,46 @@ export const errorInterceptor: HttpInterceptorFn =
 							return EMPTY;
 						}
 
-						// Handle 401 on protected routes - redirect to login
-						// Don't check isAuthenticated() because auth may have been cleared
-						// by failed token refresh before we get here
-						if (error.status === HTTP_STATUS.UNAUTHORIZED && !req.url.includes("/auth/"))
+						// Handle 401 on protected routes — attempt token refresh + retry before logout
+						if (error.status === HTTP_STATUS.UNAUTHORIZED && !req.url.includes(AUTH_PATH_SEGMENT))
 						{
-							logger.warning("Unauthorized access, redirecting to login");
-							// Clear any remaining auth state
-							if (authService.isAuthenticated())
-							{
-								authService.logout();
-							}
-							router.navigate(
-								[environment.auth.loginUrl],
-								{
-									queryParams: { returnUrl: router.url }
-								});
+							return authService
+								.refreshToken()
+								.pipe(
+									take(1),
+									switchMap(
+										(response) =>
+										{
+											if (isNullOrUndefined(response))
+											{
+											// Refresh failed — force logout and redirect
+												logger.warning("Unauthorized access, redirecting to login");
+												if (authService.isAuthenticated())
+												{
+													authService.logout();
+												}
+												router.navigate(
+													[environment.auth.loginUrl],
+													{
+														queryParams: { [QUERY_PARAMS.RETURN_URL]: router.url }
+													});
+												return EMPTY;
+											}
+
+											// Refresh succeeded — retry the original request with new token
+											const newToken: string | null =
+												authService.getAccessToken();
+											const retryReq: typeof req =
+												isNullOrUndefined(newToken)
+													? req
+													: req.clone(
+														{
+															headers: req.headers.set(
+																HTTP_HEADER_AUTHORIZATION,
+																`${HTTP_BEARER_PREFIX}${newToken}`)
+														});
+											return next(retryReq);
+										}));
 						}
 
 						logger.warning("HTTP request failed",

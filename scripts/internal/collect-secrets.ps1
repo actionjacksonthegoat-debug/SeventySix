@@ -53,6 +53,55 @@ function New-RandomBase64 {
 	return [Convert]::ToBase64String($bytes)
 }
 
+# Validates a password against the same rules enforced by the application.
+# Rules sourced from appsettings.json Auth:Password — must stay in sync.
+#   MinLength: 12, RequireUppercase, RequireLowercase, RequireDigit, RequireSpecialChar
+function Test-PasswordPolicy {
+	param([string]$Password)
+	$errors = [System.Collections.Generic.List[string]]::new()
+	if ($Password.Length -lt 12) { $errors.Add("At least 12 characters (got $($Password.Length))") }
+	if ($Password -cnotmatch '[A-Z]') { $errors.Add('At least one uppercase letter [A-Z]') }
+	if ($Password -cnotmatch '[a-z]') { $errors.Add('At least one lowercase letter [a-z]') }
+	if ($Password -notmatch '\d') { $errors.Add('At least one digit [0-9]') }
+	if ($Password -notmatch '[^a-zA-Z\d]') { $errors.Add('At least one special character (e.g. !@#$%^&*)') }
+	return $errors
+}
+
+# Generates a random password that always satisfies the application password policy.
+function New-ValidPassword {
+	$upper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+	$lower = 'abcdefghijklmnopqrstuvwxyz'
+	$digits = '0123456789'
+	$special = '!@#$%^&*-_=+?'
+	$all = $upper + $lower + $digits + $special
+	$rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
+	$toBytes = { param($n) $b = [byte[]]::new($n); $rng.GetBytes($b); return $b }
+	$pick = { param($pool) $pool[(& $toBytes 1)[0] % $pool.Length] }
+	# Guarantee at least one of each required class (2 each = 8 chars guaranteed)
+	$required = @(
+		(& $pick $upper),
+		(& $pick $upper),
+		(& $pick $lower),
+		(& $pick $lower),
+		(& $pick $digits),
+		(& $pick $digits),
+		(& $pick $special),
+		(& $pick $special)
+	)
+	# Fill remaining 8 chars from full pool to reach 16 total
+	$extra = (& $toBytes 8) | ForEach-Object { $all[$_ % $all.Length] }
+	# Fisher-Yates shuffle so required chars aren't always at the front
+	$chars = [System.Collections.Generic.List[char]]::new()
+	$required | ForEach-Object { $chars.Add($_) }
+	$extra | ForEach-Object { $chars.Add($_) }
+	$shuffleBytes = (& $toBytes $chars.Count)
+	for ($i = $chars.Count - 1; $i -gt 0; $i--) {
+		$j = $shuffleBytes[$i] % ($i + 1)
+		$tmp = $chars[$i]; $chars[$i] = $chars[$j]; $chars[$j] = $tmp
+	}
+	return -join $chars
+}
+
 # Check for existing secrets
 
 $existingSecrets = $null
@@ -105,7 +154,40 @@ Write-Host "  Use a real email address — MFA verification codes are sent here.
 Write-Host ""
 
 $adminEmail = Read-Prompt -Prompt "  Admin User Email"
-$adminPassword = Read-Prompt -Prompt "  Admin User Password (min 12 chars)" -MinLength 12
+
+# Generate a policy-compliant default the user can accept by pressing Enter.
+$generatedAdminPassword = New-ValidPassword
+
+Write-Host ""
+Write-Host "  Admin password must meet the application policy:" -ForegroundColor White
+Write-Host "    - Minimum 12 characters" -ForegroundColor Gray
+Write-Host "    - At least one uppercase letter [A-Z]" -ForegroundColor Gray
+Write-Host "    - At least one lowercase letter [a-z]" -ForegroundColor Gray
+Write-Host "    - At least one digit [0-9]" -ForegroundColor Gray
+Write-Host "    - At least one special character (e.g. !@#`$%^&*)" -ForegroundColor Gray
+Write-Host "  Press Enter to use the generated default shown in brackets." -ForegroundColor Cyan
+Write-Host ""
+
+$adminPassword = ""
+do {
+	$rawInput = Read-Host -Prompt "  Admin User Password [$generatedAdminPassword]"
+	if ([string]::IsNullOrWhiteSpace($rawInput)) {
+		$adminPassword = $generatedAdminPassword
+	}
+	else {
+		$adminPassword = $rawInput
+	}
+	$policyErrors = Test-PasswordPolicy -Password $adminPassword
+	if ($policyErrors.Count -gt 0) {
+		Write-Host ""
+		Write-Host "  [ERROR] Password does not meet the application policy:" -ForegroundColor Red
+		foreach ($err in $policyErrors) {
+			Write-Host "    - $err" -ForegroundColor Red
+		}
+		Write-Host "  Please try again, or press Enter to use the generated default." -ForegroundColor Yellow
+		Write-Host ""
+	}
+} while ($policyErrors.Count -gt 0)
 
 Write-Host ""
 Write-Host "--- Database ---" -ForegroundColor Cyan
@@ -128,6 +210,15 @@ $fromAddress = Read-Prompt -Prompt "  Sender Email Address (the From: address fo
 
 if ([string]::IsNullOrWhiteSpace($brevoApiKey)) { $brevoApiKey = "PLACEHOLDER_USE_USER_SECRETS" }
 if ([string]::IsNullOrWhiteSpace($fromAddress)) { $fromAddress = "PLACEHOLDER_USE_USER_SECRETS" }
+
+Write-Host ""
+Write-Host "--- Site Settings ---" -ForegroundColor Cyan
+Write-Host "  The public contact email shown on legal and privacy pages."
+Write-Host "  Press Enter to use the default (contact@seventysix.local)."
+Write-Host "  You can update this later by running: npm run secrets:set"
+Write-Host ""
+
+$siteEmail = Read-Prompt -Prompt "  Site Contact Email" -Default "contact@seventysix.local"
 
 Write-Host ""
 Write-Host "--- [OPTIONAL] GitHub OAuth App ---" -ForegroundColor Cyan
@@ -177,6 +268,7 @@ $maskedDpPw = if ($dataProtectionPassword.Length -gt 3) { "$($dataProtectionPass
 Write-Host "  Admin User Email:              $adminEmail"
 Write-Host "  Admin User Password:           $maskedAdminPw"
 Write-Host "  Database Container Password:   $maskedDbPw"
+Write-Host "  Site Contact Email:            $siteEmail"
 Write-Host "  Brevo API Key:                 $maskedApiKey"
 Write-Host "  Sender Email Address:          $fromAddress"
 Write-Host "  GitHub OAuth Client ID:        $githubClientId"
@@ -196,6 +288,7 @@ Push-Location $apiProjectPath
 $secrets = @{
 	"AdminSeeder:Email"                   = $adminEmail
 	"AdminSeeder:InitialPassword"         = $adminPassword
+	"Site:Email"                          = $siteEmail
 	"Database:Host"                       = "localhost"
 	"Database:Port"                       = "5433"
 	"Database:Name"                       = "seventysix"
@@ -224,10 +317,82 @@ Pop-Location
 
 Write-Host ""
 Write-Host "[SUCCESS] All secrets saved to .NET user-secrets." -ForegroundColor Green
-Write-Host "[INFO] The seeded admin user (username: 'admin') will use:" -ForegroundColor Cyan
-Write-Host "  Email:    $adminEmail" -ForegroundColor Cyan
-Write-Host "  Password: (as entered above)" -ForegroundColor Cyan
-Write-Host "[INFO] These credentials are used for Chrome DevTools testing." -ForegroundColor Cyan
+
+# ─── Brevo skipped: critical notice + offer to auto-patch appsettings ─────────
+if ($smtpUsername -eq "PLACEHOLDER_USE_USER_SECRETS") {
+	Write-Host ""
+	Write-Host "========================================" -ForegroundColor Red
+	Write-Host "  CRITICAL: No Email Provider Configured" -ForegroundColor Red
+	Write-Host "========================================" -ForegroundColor Red
+	Write-Host ""
+	Write-Host "  You skipped Brevo SMTP setup. MFA email codes CANNOT be delivered." -ForegroundColor Yellow
+	Write-Host "  Without email delivery, users will be blocked at the MFA verification step." -ForegroundColor Yellow
+	Write-Host ""
+	Write-Host "  ACTION REQUIRED — disable Email, MFA, and TOTP for local development:" -ForegroundColor Red
+	Write-Host "  File: SeventySix.Server/SeventySix.Api/appsettings.Development.json" -ForegroundColor White
+	Write-Host ""
+	Write-Host "  Change these values:" -ForegroundColor White
+	Write-Host '    "Email": { "Enabled": false }' -ForegroundColor Cyan
+	Write-Host '    "Mfa":  { "Enabled": false, "RequiredForAllUsers": false }' -ForegroundColor Cyan
+	Write-Host '    "Totp": { "Enabled": false }' -ForegroundColor Cyan
+	Write-Host ""
+	Write-Host "  Note: Email.Enabled MUST be false — a placeholder FromAddress causes a hard" -ForegroundColor Yellow
+	Write-Host "  startup crash (OptionsValidationException) even if MFA/TOTP are disabled." -ForegroundColor Yellow
+	Write-Host ""
+	Write-Host "  Tip: appsettings.Development.json already has a comment block showing exactly" -ForegroundColor Gray
+	Write-Host "  which keys to change. Search for '_comment_minimal_setup' in that file." -ForegroundColor Gray
+	Write-Host ""
+	$updateAppsettings = Read-Host "  Would you like to automatically apply these changes now? (Y/n)"
+	if ($updateAppsettings -notmatch '^[nN]') {
+		$appSettingsPath = Join-Path $repoRoot "SeventySix.Server" "SeventySix.Api" "appsettings.Development.json"
+		$lines = Get-Content $appSettingsPath -Encoding UTF8
+		$newLines = [System.Collections.Generic.List[string]]::new()
+		$inMfa = $false
+		$mfaDepth = 0
+		$inEmail = $false
+		$emailDepth = 0
+		$inTotp = $false
+		$totpEnabledInserted = $false
+		foreach ($line in $lines) {
+			if ($line -match '^\t"Email"\s*:') { $inEmail = $true; $emailDepth = 0 }
+			if ($line -match '^\t"Mfa"\s*:') { $inMfa = $true; $mfaDepth = 0 }
+			if ($line -match '^\t"Totp"\s*:') { $inTotp = $true }
+			if ($inEmail) {
+				if ($line.Contains('{')) { $emailDepth++ }
+				if ($line.Contains('}')) {
+					$emailDepth--
+					if ($emailDepth -le 0) { $inEmail = $false }
+				}
+				# Only flip the top-level Email.Enabled (depth 1), not nested Queue.Enabled
+				if ($emailDepth -eq 1 -and $line -match '^\t\t"Enabled"\s*:\s*true') {
+					$line = $line -replace '"Enabled"\s*:\s*true', '"Enabled": false'
+				}
+			}
+			if ($inMfa) {
+				if ($line.Contains('{')) { $mfaDepth++ }
+				if ($line.Contains('}')) {
+					$mfaDepth--
+					if ($mfaDepth -le 0) { $inMfa = $false }
+				}
+				$line = $line -replace '"Enabled"\s*:\s*true', '"Enabled": false'
+				$line = $line -replace '"RequiredForAllUsers"\s*:\s*true', '"RequiredForAllUsers": false'
+			}
+			if ($inTotp -and -not $totpEnabledInserted -and $line -match '^\t\t"IssuerName"') {
+				$newLines.Add("`t`t`"Enabled`": false,")
+				$totpEnabledInserted = $true
+				$inTotp = $false
+			}
+			$newLines.Add($line)
+		}
+		[System.IO.File]::WriteAllLines($appSettingsPath, $newLines, [System.Text.UTF8Encoding]::new($false))
+		Write-Host ""
+		Write-Host "  [OK] appsettings.Development.json updated — Email, MFA, and TOTP disabled for local dev." -ForegroundColor Green
+	}
+	else {
+		Write-Host ""
+		Write-Host "  [!] Remember to manually update appsettings.Development.json before starting the app." -ForegroundColor Yellow
+	}
+}
 
 Write-Host ""
 Write-Host "--- [OPTIONAL] Codecov — GitHub Actions Code Coverage ---" -ForegroundColor Cyan
@@ -243,3 +408,19 @@ Write-Host "    4. In your GitHub repository, go to Settings > Secrets and varia
 Write-Host "    5. Click 'New repository secret', name it CODECOV_TOKEN, paste the value"
 Write-Host "  Once set, coverage reports will appear automatically on every CI run." -ForegroundColor Green
 Write-Host ""
+
+# ─── ALWAYS: Show seeded admin credentials in plain text — user MUST save these ─
+Write-Host ""
+Write-Host "========================================" -ForegroundColor Yellow
+Write-Host "  SAVE THESE CREDENTIALS NOW" -ForegroundColor Yellow
+Write-Host "========================================" -ForegroundColor Yellow
+Write-Host ""
+Write-Host "  Seeded admin account for local development:" -ForegroundColor White
+Write-Host "    Username : admin" -ForegroundColor Cyan
+Write-Host "    Email    : $adminEmail" -ForegroundColor Cyan
+Write-Host "    Password : $adminPassword" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "  These values are stored only in .NET user-secrets — never committed to git." -ForegroundColor White
+Write-Host "  Save them in a password manager or secure note before closing this terminal." -ForegroundColor White
+Write-Host ""
+Read-Host "  Press Enter once saved to continue"

@@ -26,7 +26,6 @@ public sealed class VerifyTotpCodeCommandHandlerTests
 	private const string TestEmail = "totp@example.com";
 	private const string TestPlaintextSecret = "JBSWY3DPEHPK3PXP";
 	private const string TestValidCode = "123456";
-	private const string TestClientIp = "127.0.0.1";
 	private const string TestChallengeToken = "valid-challenge-token";
 
 	private readonly ITotpService TotpService;
@@ -279,7 +278,6 @@ public sealed class VerifyTotpCodeCommandHandlerTests
 		AuthService
 			.GenerateAuthResultAsync(
 				user,
-				TestClientIp,
 				false,
 				false,
 				Arg.Any<CancellationToken>())
@@ -297,8 +295,7 @@ public sealed class VerifyTotpCodeCommandHandlerTests
 		return new VerifyTotpCodeCommand(
 			new VerifyTotpRequest(
 				TestChallengeToken,
-				code),
-			TestClientIp);
+				code));
 	}
 
 	private Task<AuthResult> InvokeHandlerAsync(VerifyTotpCodeCommand command)

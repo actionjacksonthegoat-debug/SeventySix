@@ -48,9 +48,6 @@ public interface ITokenService
 	/// <param name="userId">
 	/// The user's ID.
 	/// </param>
-	/// <param name="clientIp">
-	/// The client's IP address.
-	/// </param>
 	/// <param name="rememberMe">
 	/// Whether to extend refresh token expiration.
 	/// </param>
@@ -62,7 +59,6 @@ public interface ITokenService
 	/// </returns>
 	public Task<string> GenerateRefreshTokenAsync(
 		long userId,
-		string? clientIp,
 		bool rememberMe = false,
 		CancellationToken cancellationToken = default);
 
@@ -105,9 +101,6 @@ public interface ITokenService
 	/// <param name="refreshToken">
 	/// The current plaintext refresh token.
 	/// </param>
-	/// <param name="clientIp">
-	/// The client's IP address.
-	/// </param>
 	/// <param name="cancellationToken">
 	/// Cancellation token.
 	/// </param>
@@ -119,7 +112,6 @@ public interface ITokenService
 	/// </returns>
 	public Task<(string? Token, bool RememberMe)> RotateRefreshTokenAsync(
 		string refreshToken,
-		string? clientIp,
 		CancellationToken cancellationToken = default);
 
 	/// <summary>

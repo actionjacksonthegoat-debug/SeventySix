@@ -20,9 +20,6 @@ namespace SeventySix.Api.Infrastructure;
 /// <param name="refreshTokenCleanupSettings">
 /// Configuration settings for the refresh token cleanup job.
 /// </param>
-/// <param name="ipAnonymizationSettings">
-/// Configuration settings for the IP anonymization job.
-/// </param>
 /// <param name="logCleanupSettings">
 /// Configuration settings for the log cleanup job.
 /// </param>
@@ -41,7 +38,6 @@ namespace SeventySix.Api.Infrastructure;
 public sealed class ScheduledJobService(
 	IRecurringJobRepository recurringJobRepository,
 	IOptions<RefreshTokenCleanupSettings> refreshTokenCleanupSettings,
-	IOptions<IpAnonymizationSettings> ipAnonymizationSettings,
 	IOptions<LogCleanupSettings> logCleanupSettings,
 	IOptions<EmailQueueSettings> emailQueueSettings,
 	IOptions<OrphanedRegistrationCleanupSettings> orphanedRegistrationCleanupSettings,
@@ -80,11 +76,6 @@ public sealed class ScheduledJobService(
 				(
 					"Refresh Token Cleanup",
 					TimeSpan.FromHours(refreshTokenCleanupSettings.Value.IntervalHours)
-				),
-			["IpAnonymizationJob"] =
-				(
-					"IP Anonymization",
-					TimeSpan.FromDays(ipAnonymizationSettings.Value.IntervalDays)
 				),
 			["LogCleanupJob"] =
 				(

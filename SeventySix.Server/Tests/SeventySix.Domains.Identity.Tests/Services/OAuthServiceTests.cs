@@ -47,7 +47,6 @@ public sealed class OAuthServiceTests
 	private const string TestProviderUserId = "12345";
 	private const string TestUsername = "testuser";
 	private const string TestEmail = "test@example.com";
-	private const string TestIpAddress = "127.0.0.1";
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="OAuthServiceTests"/> class.
@@ -213,7 +212,6 @@ public sealed class OAuthServiceTests
 				TestAuthorizationCode,
 				TestRedirectUri,
 				TestCodeVerifier,
-				TestIpAddress,
 				CancellationToken.None);
 
 		// Assert
@@ -248,7 +246,6 @@ public sealed class OAuthServiceTests
 				TestAuthorizationCode,
 				TestRedirectUri,
 				TestCodeVerifier,
-				TestIpAddress,
 				CancellationToken.None);
 
 		// Assert
@@ -295,7 +292,6 @@ public sealed class OAuthServiceTests
 				TestAuthorizationCode,
 				TestRedirectUri,
 				TestCodeVerifier,
-				TestIpAddress,
 				CancellationToken.None);
 
 		// Assert
@@ -356,7 +352,6 @@ public sealed class OAuthServiceTests
 				TestAuthorizationCode,
 				TestRedirectUri,
 				TestCodeVerifier,
-				TestIpAddress,
 				CancellationToken.None);
 
 		// Assert
@@ -412,7 +407,6 @@ public sealed class OAuthServiceTests
 			TestAuthorizationCode,
 			TestRedirectUri,
 			TestCodeVerifier,
-			TestIpAddress,
 			CancellationToken.None);
 
 		// Assert
@@ -466,7 +460,6 @@ public sealed class OAuthServiceTests
 			TestAuthorizationCode,
 			TestRedirectUri,
 			TestCodeVerifier,
-			TestIpAddress,
 			CancellationToken.None);
 
 		// Assert
@@ -493,7 +486,6 @@ public sealed class OAuthServiceTests
 				TestAuthorizationCode,
 				TestRedirectUri,
 				TestCodeVerifier,
-				TestIpAddress,
 				CancellationToken.None);
 
 		// Assert — provider not in settings → returns failure

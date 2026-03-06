@@ -53,9 +53,6 @@ public interface IMfaOrchestrator
 	/// <param name="user">
 	/// The authenticated user requiring MFA.
 	/// </param>
-	/// <param name="clientIp">
-	/// Client IP address for audit logging.
-	/// </param>
 	/// <param name="cancellationToken">
 	/// Cancellation token.
 	/// </param>
@@ -64,6 +61,5 @@ public interface IMfaOrchestrator
 	/// </returns>
 	public Task<AuthResult> InitiateChallengeAsync(
 		ApplicationUser user,
-		string? clientIp,
 		CancellationToken cancellationToken);
 }

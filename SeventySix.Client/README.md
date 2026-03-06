@@ -16,7 +16,7 @@ Angular 21 single-page application with Zoneless change detection, Signals, TanS
 cd SeventySix.Client
 npm install
 
-# Start dev server (proxies API calls to https://localhost:7180)
+# Start dev server (proxies API calls to https://localhost:7074)
 npm start
 
 # Run unit + architecture tests
@@ -476,7 +476,7 @@ Flags are controlled server-side in `appsettings.json`. See [Optional Feature Fl
 
 ### Dev server proxy errors
 
-The proxy configuration (`proxy.conf.json`) forwards API calls to `https://localhost:7180`. Ensure the server is running. See [Server README](../SeventySix.Server/README.md) for setup.
+The proxy configuration (`proxy.conf.json`) forwards API calls to `https://localhost:7074`. Ensure the server is running. See [Server README](../SeventySix.Server/README.md) for setup.
 
 ### SSL certificate errors
 
@@ -497,3 +497,11 @@ Cache invalidation is coordinated through `CacheCoordinationService`. After muta
 ### Architecture test failures
 
 `scripts/architecture-tests.mjs` checks import paths at the file system level. If a domain accidentally imports from another domain, fix the import to use `@shared/*` or move the shared code to the shared layer.
+
+### Login and Refresh are slow by Design
+
+The implementation of Altcha and Argon2 verifications do take a significant amount of time by design, this is to ensure that we are following OWasp best practices and expected. These heavier systems sacrifice speed for security which is the priority.
+
+### Landing page LCP is 3-4 seconds
+
+First-visit Largest Contentful Paint (LCP) of ~3-4s is expected for a CSR Angular SPA. The hero background image is small (~37 KB) and preloaded — the bottleneck is Angular JS bundle parse/execute + component bootstrap, not image delivery. SSR or SSG are out of scope for this current project.

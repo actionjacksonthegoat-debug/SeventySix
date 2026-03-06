@@ -15,11 +15,13 @@ import { environment } from "@environments/environment";
 import {
 	AUTH_PUBLIC_PATHS,
 	HTTP_BEARER_PREFIX,
-	HTTP_HEADER_AUTHORIZATION
+	HTTP_HEADER_AUTHORIZATION,
+	HTTP_PROTOCOL_PREFIX,
+	HTTP_STATIC_ASSET_PREFIX
 } from "@shared/constants";
 import { AuthService } from "@shared/services/auth.service";
 import { isNullOrUndefined } from "@shared/utilities/null-check.utility";
-import { catchError, switchMap, take, throwError } from "rxjs";
+import { catchError, switchMap, take, throwError, timer } from "rxjs";
 
 export const authInterceptor: HttpInterceptorFn =
 	(
@@ -59,11 +61,30 @@ export const authInterceptor: HttpInterceptorFn =
 					switchMap(
 						(response) =>
 						{
-						// If refresh failed (returned null), let the request proceed without token
-						// The server will return 401 which triggers login redirect
+						// Refresh returned null — may be transient (5xx/network). Retry once after delay.
 							if (isNullOrUndefined(response))
 							{
-								return next(req);
+								const retryDelayMs: number = 1000;
+								return timer(retryDelayMs)
+									.pipe(
+										switchMap(
+											() =>
+												authService
+													.refreshToken()
+													.pipe(
+														take(1),
+														switchMap(
+															(retryResponse) =>
+															{
+																if (isNullOrUndefined(retryResponse))
+																{
+																	return next(req);
+																}
+																const retryToken: string | null =
+																	authService
+																		.getAccessToken();
+																return next(addAuthHeader(req, retryToken));
+															}))));
 							}
 							const newToken: string | null =
 								authService.getAccessToken();
@@ -93,7 +114,7 @@ export const authInterceptor: HttpInterceptorFn =
  */
 function isExternalUrl(url: string): boolean
 {
-	if (!url.startsWith("http"))
+	if (!url.startsWith(HTTP_PROTOCOL_PREFIX))
 	{
 		return false;
 	}
@@ -103,7 +124,7 @@ function isExternalUrl(url: string): boolean
 		const requestOrigin: string =
 			new URL(url).origin;
 		const apiBaseUrl: string =
-			environment.apiUrl.startsWith("http")
+			environment.apiUrl.startsWith(HTTP_PROTOCOL_PREFIX)
 				? environment.apiUrl
 				: `${window.location.origin}${environment.apiUrl}`;
 		const apiOrigin: string =
@@ -127,7 +148,7 @@ function isExternalUrl(url: string): boolean
  */
 function isStaticAsset(url: string): boolean
 {
-	return url.startsWith("/icons/");
+	return url.startsWith(HTTP_STATIC_ASSET_PREFIX);
 }
 
 /**

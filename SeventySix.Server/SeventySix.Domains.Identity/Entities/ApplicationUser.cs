@@ -12,8 +12,8 @@ namespace SeventySix.Identity;
 /// Contains app-specific profile and audit fields.
 /// </summary>
 /// <remarks>
-/// Stores PII cautiously; follow GDPR retention and anonymization policies in the domain settings.
-/// Use `LastLoginIp` and `LastLoginAt` for security telemetry only; ensure cleanup per settings.
+/// Stores PII cautiously; follow GDPR retention policies in the domain settings.
+/// Use `LastLoginAt` for security telemetry only.
 /// </remarks>
 public sealed class ApplicationUser : IdentityUser<long>, IAuditableEntity
 {
@@ -66,11 +66,6 @@ public sealed class ApplicationUser : IdentityUser<long>, IAuditableEntity
 	/// Gets or sets the last login timestamp.
 	/// </summary>
 	public DateTimeOffset? LastLoginAt { get; set; }
-
-	/// <summary>
-	/// Gets or sets the last login IP address.
-	/// </summary>
-	public string? LastLoginIp { get; set; }
 
 	/// <summary>
 	/// Gets or sets whether the user must change their password on next login.

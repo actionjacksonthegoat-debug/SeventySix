@@ -11,7 +11,7 @@ import {
 	Signal
 } from "@angular/core";
 import { MatDialog, MatDialogRef } from "@angular/material/dialog";
-import { DataTableComponent } from "@shared/components";
+import { DataTableComponent } from "@shared/components/data-table/data-table.component";
 import {
 	BulkAction,
 	BulkActionEvent,

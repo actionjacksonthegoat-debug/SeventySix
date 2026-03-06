@@ -10,9 +10,6 @@ namespace SeventySix.Identity;
 /// <param name="Request">
 /// Login credentials.
 /// </param>
-/// <param name="ClientIp">
-/// Client IP for token tracking.
-/// </param>
 /// <param name="TrustedDeviceToken">
 /// Trusted device cookie token (null if not present).
 /// </param>
@@ -21,6 +18,5 @@ namespace SeventySix.Identity;
 /// </param>
 public record LoginCommand(
 	LoginRequest Request,
-	string? ClientIp,
 	string? TrustedDeviceToken = null,
 	string? UserAgent = null);

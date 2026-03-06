@@ -177,7 +177,6 @@ public static class IdentityMockFactory
 		authenticationService
 			.GenerateAuthResultAsync(
 				Arg.Any<ApplicationUser>(),
-				Arg.Any<string>(),
 				Arg.Any<bool>(),
 				Arg.Any<bool>(),
 				Arg.Any<CancellationToken>())

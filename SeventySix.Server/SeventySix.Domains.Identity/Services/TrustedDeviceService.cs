@@ -33,7 +33,6 @@ public sealed class TrustedDeviceService(
 	public async Task<string> CreateTrustedDeviceAsync(
 		long userId,
 		string userAgent,
-		string? ipAddress,
 		CancellationToken cancellationToken)
 	{
 		// Remove oldest devices if at limit
@@ -46,7 +45,7 @@ public sealed class TrustedDeviceService(
 		string tokenHash =
 			CryptoExtensions.ComputeSha256Hash(plainToken, useLowercase: true);
 		string deviceFingerprint =
-			ComputeDeviceFingerprint(userAgent, ipAddress);
+			ComputeDeviceFingerprint(userAgent);
 		string? deviceName =
 			ExtractDeviceName(userAgent);
 
@@ -76,7 +75,6 @@ public sealed class TrustedDeviceService(
 		long userId,
 		string token,
 		string userAgent,
-		string? ipAddress,
 		CancellationToken cancellationToken)
 	{
 		if (string.IsNullOrEmpty(token))
@@ -106,7 +104,7 @@ public sealed class TrustedDeviceService(
 
 		// Verify device fingerprint matches
 		string currentFingerprint =
-			ComputeDeviceFingerprint(userAgent, ipAddress);
+			ComputeDeviceFingerprint(userAgent);
 
 		// Use timing-safe comparison
 		bool fingerprintMatches =
@@ -228,69 +226,20 @@ public sealed class TrustedDeviceService(
 	}
 
 	/// <summary>
-	/// Computes a device fingerprint from User-Agent and IP prefix.
+	/// Computes a device fingerprint from User-Agent.
 	/// </summary>
 	/// <param name="userAgent">
 	/// The User-Agent header.
-	/// </param>
-	/// <param name="ipAddress">
-	/// The client IP address.
 	/// </param>
 	/// <returns>
 	/// A SHA256 hash of the fingerprint data.
 	/// </returns>
 	private static string ComputeDeviceFingerprint(
-		string userAgent,
-		string? ipAddress)
+		string userAgent)
 	{
-		// Use first three octets of IP (for IPv4) to allow for DHCP changes
-		string ipPrefix =
-			ExtractIpPrefix(ipAddress);
-
-		string fingerprintData =
-			$"{userAgent}|{ipPrefix}";
-
-		return CryptoExtensions.ComputeSha256Hash(fingerprintData, useLowercase: true);
-	}
-
-	/// <summary>
-	/// Extracts IP prefix for fingerprinting (first 3 octets for IPv4).
-	/// </summary>
-	/// <param name="ipAddress">
-	/// The full IP address.
-	/// </param>
-	/// <returns>
-	/// The IP prefix or empty string if null.
-	/// </returns>
-	private static string ExtractIpPrefix(string? ipAddress)
-	{
-		if (string.IsNullOrEmpty(ipAddress))
-		{
-			return string.Empty;
-		}
-
-		// For IPv4: take first 3 octets
-		string[] parts =
-			ipAddress.Split('.');
-
-		if (parts.Length >= 3)
-		{
-			return $"{parts[0]}.{parts[1]}.{parts[2]}";
-		}
-
-		// For IPv6 or other: use first half
-		if (ipAddress.Contains(':'))
-		{
-			int colonIndex =
-				ipAddress.LastIndexOf(':');
-
-			if (colonIndex > 0)
-			{
-				return ipAddress[..colonIndex];
-			}
-		}
-
-		return ipAddress;
+		return CryptoExtensions.ComputeSha256Hash(
+			userAgent,
+			useLowercase: true);
 	}
 
 	/// <summary>

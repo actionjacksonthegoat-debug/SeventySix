@@ -11,7 +11,7 @@ import { MatIconModule } from "@angular/material/icon";
 import { MatMenuModule } from "@angular/material/menu";
 import { MatToolbarModule } from "@angular/material/toolbar";
 import { MatTooltipModule } from "@angular/material/tooltip";
-import { Router } from "@angular/router";
+import { Router, RouterLink } from "@angular/router";
 import { BreadcrumbComponent } from "@shared/components";
 import { APP_ROUTES } from "@shared/constants";
 import { UserProfileDto } from "@shared/models";
@@ -32,7 +32,8 @@ import { isNullOrUndefined } from "@shared/utilities/null-check.utility";
 			MatTooltipModule,
 			MatMenuModule,
 			MatDividerModule,
-			BreadcrumbComponent
+			BreadcrumbComponent,
+			RouterLink
 		],
 		templateUrl: "./header.component.html",
 		styleUrl: "./header.component.scss",

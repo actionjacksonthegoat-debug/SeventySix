@@ -18,7 +18,7 @@ import {
 	UrlSegment,
 	UrlTree
 } from "@angular/router";
-import { APP_ROUTES } from "@shared/constants";
+import { APP_ROUTES, QUERY_PARAM_VALUES, QUERY_PARAMS } from "@shared/constants";
 import { AuthService } from "@shared/services/auth.service";
 
 /**
@@ -57,8 +57,8 @@ export function passwordChangeGuard(): CanMatchFn
 				[APP_ROUTES.AUTH.CHANGE_PASSWORD],
 				{
 					queryParams: {
-						required: "true",
-						returnUrl: `/${targetPath}`
+						[QUERY_PARAMS.REQUIRED]: QUERY_PARAM_VALUES.TRUE,
+						[QUERY_PARAMS.RETURN_URL]: `/${targetPath}`
 					}
 				});
 

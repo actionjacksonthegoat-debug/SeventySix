@@ -11,6 +11,7 @@
 #   .\scripts\generate-dataprotection-cert.ps1
 #   .\scripts\generate-dataprotection-cert.ps1 -Password "YourSecurePassword"
 #   .\scripts\generate-dataprotection-cert.ps1 -OutputPath ".\custom\path\cert.pfx"
+#   .\scripts\generate-dataprotection-cert.ps1 -Force    # Regenerate even if cert already exists
 
 #Requires -Version 7.4
 [CmdletBinding()]
@@ -18,11 +19,9 @@ param(
 	[Parameter(ValueFromPipelineByPropertyName = $true)]
 	[object]$Password = $null,
 	[string]$OutputPath = ".\SeventySix.Server\SeventySix.Api\keys\dataprotection.pfx",
-	[int]$ValidityYears = 5
+	[int]$ValidityYears = 5,
+	[switch]$Force
 )
-
-$ErrorActionPreference = "Stop"
-
 Write-Host ""
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host "  Data Protection Certificate Generator" -ForegroundColor Cyan
@@ -75,14 +74,14 @@ if (-not (Test-Path $outputDirectory)) {
 	Write-Host "Created directory: $outputDirectory" -ForegroundColor Green
 }
 
-# Check if certificate already exists
+# Check if certificate already exists — skip silently unless -Force was passed
 if (Test-Path $resolvedOutputPath) {
-	Write-Host "Certificate already exists at: $resolvedOutputPath" -ForegroundColor Yellow
-	$overwrite = Read-Host "Overwrite? (y/n)"
-	if ($overwrite -ne "y") {
-		Write-Host "Aborted." -ForegroundColor Yellow
+	if (-not $Force) {
+		Write-Host "  [OK] Data Protection certificate already exists — skipping." -ForegroundColor Green
+		Write-Host "       Use -Force to regenerate: pwsh scripts/generate-dataprotection-cert.ps1 -Force" -ForegroundColor Gray
 		exit 0
 	}
+	Write-Host "  [WARN] Overwriting existing certificate (-Force specified)." -ForegroundColor Yellow
 }
 
 # Temp files for intermediate key/cert
@@ -123,6 +122,11 @@ try {
 	Write-Host "NOTE: The path above is the local file path." -ForegroundColor Cyan
 	Write-Host "      The keys directory is volume-mounted into the container." -ForegroundColor Cyan
 	Write-Host ""
+
+	# Ensure the container (runs as non-root) can read the cert
+	if (-not $IsWindows) {
+		chmod 644 $resolvedOutputPath 2>$null
+	}
 }
 finally {
 	# Always clean up temp files

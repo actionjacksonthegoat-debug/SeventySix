@@ -36,9 +36,9 @@ const skipBuild = args.includes("--skip-build");
 // Ensure output directory exists
 if (!existsSync(reportsDir)) mkdirSync(reportsDir, { recursive: true });
 
-// ── Step 1: Build ─────────────────────────────────────────────────────────────
+// -- Step 1: Build -----------------------------------------------------------
 if (!skipBuild) {
-  console.log("\n📦  Building production bundle…");
+  console.log("\n[INFO] Building production bundle...");
   execSync("npx ng build --configuration production", {
     cwd: clientRoot,
     stdio: "inherit",
@@ -47,12 +47,12 @@ if (!skipBuild) {
 
 const distDir = join(clientRoot, "dist", "SeventySix.Client", "browser");
 if (!existsSync(distDir)) {
-  console.error(`\n❌  Build output not found at: ${distDir}`);
+  console.error(`\n[FAIL] Build output not found at: ${distDir}`);
   process.exit(1);
 }
 
-// ── Step 2: Start static server ───────────────────────────────────────────────
-console.log(`\n🌐  Starting static server on port ${port}…`);
+// -- Step 2: Start static server ----------------------------------------------
+console.log(`\n[INFO] Starting static server on port ${port}...`);
 const server = spawn(
   "npx",
   ["serve", distDir, "--listen", String(port), "--single"],
@@ -85,7 +85,7 @@ process.on("exit", killServer);
 process.on("SIGINT", () => { killServer(); process.exit(130); });
 
 // Wait for server to be ready (poll for up to 30 s)
-console.log("⏳  Waiting for server to be ready…");
+console.log("[INFO] Waiting for server to be ready...");
 await new Promise((resolve, reject) => {
   const start = Date.now();
   const check = async () => {
@@ -104,10 +104,10 @@ await new Promise((resolve, reject) => {
   };
   check();
 });
-console.log("✅  Server ready.");
+console.log("[PASS] Server ready.");
 
-// ── Step 3: Run Lighthouse ────────────────────────────────────────────────────
-console.log(`\n🔦  Running Lighthouse against ${url}…`);
+// -- Step 3: Run Lighthouse ---------------------------------------------------
+console.log(`\n[INFO] Running Lighthouse against ${url}...`);
 const reportBase = join(reportsDir, "report");
 try {
   execFileSync(
@@ -128,17 +128,17 @@ try {
   // The report files are written before cleanup, so we continue if they exist.
   const reportJsonPath = `${reportBase}.report.json`;
   if (!existsSync(reportJsonPath)) {
-    console.error("\n❌  Lighthouse failed and no report was produced.");
+    console.error("\n[FAIL] Lighthouse failed and no report was produced.");
     console.error(err.message);
     killServer();
     process.exit(1);
   }
-  console.warn("\n⚠️  Lighthouse exited with an error (likely EPERM temp-dir cleanup on Windows) — report was generated, continuing.");
+  console.warn("\n[WARN] Lighthouse exited with an error (likely EPERM temp-dir cleanup on Windows) -- report was generated, continuing.");
 } finally {
   killServer();
 }
 
-// ── Step 4: Parse + print results ─────────────────────────────────────────────
+// -- Step 4: Parse + print results --------------------------------------------
 const { readFileSync } = await import("fs");
 const reportJson = JSON.parse(readFileSync(`${reportBase}.report.json`, "utf8"));
 
@@ -150,28 +150,28 @@ const categories = {
   pwa: reportJson.categories.pwa?.score,
 };
 
-console.log("\n╔══════════════════════════════════════╗");
-console.log("║       LIGHTHOUSE SCORES              ║");
-console.log("╠══════════════════════════════════════╣");
+console.log("\n+--------------------------------------+");
+console.log("|       LIGHTHOUSE SCORES              |");
+console.log("+--------------------------------------+");
 
 let allPassed = true;
 for (const [cat, score] of Object.entries(categories)) {
   if (score == null) continue;
   const pct = Math.round(score * 100);
-  const icon = pct >= threshold ? "✅" : "❌";
+  const icon = pct >= threshold ? "PASS" : "FAIL";
   if (pct < threshold) allPassed = false;
-  console.log(`║  ${icon}  ${cat.padEnd(18)} ${String(pct).padStart(3)}/100  ║`);
+  console.log(`|  [${icon}]  ${cat.padEnd(18)} ${String(pct).padStart(3)}/100  |`);
 }
-console.log("╚══════════════════════════════════════╝");
+console.log("+--------------------------------------+");
 console.log(`\nThreshold: ${threshold}/100`);
 console.log(`\nFull report: ${reportBase}.report.html`);
 
 if (!allPassed) {
-  console.error(`\n❌  One or more categories are below ${threshold}. See report for details.`);
+  console.error(`\n[FAIL] One or more categories are below ${threshold}. See report for details.`);
   killServer();
   process.exit(1);
 }
 
-console.log(`\n✅  All categories ≥ ${threshold}!`);
+console.log(`\n[PASS] All categories >= ${threshold}!`);
 killServer();
 process.exit(0);

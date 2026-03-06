@@ -1,7 +1,7 @@
 import { ApiStatisticsTableComponent } from "@admin/components/api-statistics-table/api-statistics-table.component";
 import { GrafanaDashboardEmbedComponent } from "@admin/components/grafana-dashboard-embed/grafana-dashboard-embed.component";
 import { ScheduledJobsTableComponent } from "@admin/components/scheduled-jobs-table/scheduled-jobs-table.component";
-import { ChangeDetectionStrategy, Component, inject } from "@angular/core";
+import { ChangeDetectionStrategy, Component, DestroyRef, inject } from "@angular/core";
 import { MatTabsModule } from "@angular/material/tabs";
 import { MatToolbarModule } from "@angular/material/toolbar";
 import { environment } from "@environments/environment";
@@ -9,6 +9,7 @@ import { PageHeaderComponent } from "@shared/components";
 import { CARD_MATERIAL_MODULES } from "@shared/material-bundles.constants";
 import { LoggerService } from "@shared/services/logger.service";
 import { NotificationService } from "@shared/services/notification.service";
+import { WindowService } from "@shared/services/window.service";
 import { isPresent } from "@shared/utilities/null-check.utility";
 
 /**
@@ -64,6 +65,15 @@ export class AdminDashboardPage
 	private readonly loggerService: LoggerService =
 		inject(LoggerService);
 
+	private readonly windowService: WindowService =
+		inject(WindowService);
+
+	// Best-effort tracking of opened observability tabs.
+	// Closed on component destroy (which includes logout navigation).
+	// Cross-origin windows may deny programmatic close.
+	private readonly trackedWindows: Set<Window> =
+		new Set();
+
 	/**
 	 * System overview dashboard UID from environment configuration.
 	 * @type {string}
@@ -88,56 +98,52 @@ export class AdminDashboardPage
 	readonly valkeyCacheDashboard: string =
 		environment.observability.dashboards.valkeyCache;
 
+	constructor()
+	{
+		inject(DestroyRef)
+			.onDestroy(
+				() => this.closeTrackedWindows());
+	}
+
 	/**
 	 * Opens Jaeger distributed tracing UI in a new browser tab.
 	 * Opens to the search page pre-filtered for SeventySix.Api service.
-	 * @remarks
-	 * Pre-filtered to show traces for the SeventySix.Api service.
 	 * @returns {void}
 	 */
 	openJaeger(): void
 	{
 		const jaegerUrl: string =
 			environment.observability.jaegerUrl;
-		// Open to search view with SeventySix.Api service pre-selected
-		window.open(`${jaegerUrl}/search?service=SeventySix.Api`, "_blank");
+		this.openTracked(`${jaegerUrl}/search?service=SeventySix.Api`);
 	}
 
 	/**
 	 * Opens Prometheus metrics UI in a new browser tab.
 	 * Navigates to targets view showing all scrape endpoints and their health.
-	 * @remarks
-	 * Provides visibility into which metric endpoints are up/down.
 	 * @returns {void}
 	 */
 	openPrometheus(): void
 	{
 		const prometheusUrl: string =
 			environment.observability.prometheusUrl;
-		// Open to targets view to see scrape endpoint health
-		window.open(`${prometheusUrl}/targets`, "_blank");
+		this.openTracked(`${prometheusUrl}/targets`);
 	}
 
 	/**
 	 * Opens Grafana full UI in a new browser tab.
 	 * Navigates to dashboards list for quick access to all available dashboards.
-	 * @remarks
-	 * Shows all configured dashboards in the organization.
 	 * @returns {void}
 	 */
 	openGrafana(): void
 	{
 		const grafanaUrl: string =
 			environment.observability.grafanaUrl;
-		// Open to dashboards list view
-		window.open(`${grafanaUrl}/dashboards`, "_blank");
+		this.openTracked(`${grafanaUrl}/dashboards`);
 	}
 
 	/**
 	 * Opens pgAdmin PostgreSQL management UI in a new browser tab.
 	 * Only available in development (URL is undefined in production).
-	 * @remarks
-	 * Provides database administration capabilities for development.
 	 * @returns {void}
 	 */
 	openPgAdmin(): void
@@ -147,17 +153,13 @@ export class AdminDashboardPage
 
 		if (isPresent(pgAdminUrl))
 		{
-			window.open(
-				pgAdminUrl,
-				"_blank");
+			this.openTracked(pgAdminUrl);
 		}
 	}
 
 	/**
 	 * Opens RedisInsight Valkey cache visualization in a new browser tab.
 	 * Only available in development (URL is undefined in production).
-	 * @remarks
-	 * Provides cache data exploration and management for Valkey.
 	 * @returns {void}
 	 */
 	openRedisInsight(): void
@@ -167,17 +169,13 @@ export class AdminDashboardPage
 
 		if (isPresent(redisInsightUrl))
 		{
-			window.open(
-				redisInsightUrl,
-				"_blank");
+			this.openTracked(redisInsightUrl);
 		}
 	}
 
 	/**
 	 * Opens Scalar OpenAPI reference UI in a new browser tab.
 	 * Only available in development (endpoint mapped only when IsDevelopment()).
-	 * @remarks
-	 * Provides interactive API documentation and request testing.
 	 * @returns {void}
 	 */
 	openScalar(): void
@@ -187,9 +185,7 @@ export class AdminDashboardPage
 
 		if (isPresent(scalarUrl))
 		{
-			window.open(
-				scalarUrl,
-				"_blank");
+			this.openTracked(scalarUrl);
 		}
 	}
 
@@ -228,5 +224,32 @@ export class AdminDashboardPage
 		const result: number =
 			1 / zero;
 		throw new Error(`Division by zero test error. Result: ${result}`);
+	}
+
+	private openTracked(url: string): void
+	{
+		const win: Window | null =
+			this.windowService.openWindow(url, "_blank");
+
+		if (isPresent(win))
+		{
+			this.trackedWindows.add(win);
+		}
+	}
+
+	private closeTrackedWindows(): void
+	{
+		for (const win of this.trackedWindows)
+		{
+			try
+			{
+				win.close();
+			}
+			catch
+			{
+				// Cross-origin windows may deny programmatic close
+			}
+		}
+		this.trackedWindows.clear();
 	}
 }

@@ -108,7 +108,6 @@ public sealed class CompleteRegistrationCommandHandlerTests(
 		tokenService
 			.GenerateRefreshTokenAsync(
 				Arg.Any<long>(),
-				Arg.Any<string?>(),
 				Arg.Any<bool>(),
 				Arg.Any<CancellationToken>())
 			.Returns(Task.FromResult("refresh-token"));
@@ -161,8 +160,7 @@ public sealed class CompleteRegistrationCommandHandlerTests(
 				"P@ssword123!");
 		CompleteRegistrationCommand command =
 			new(
-				request,
-				ClientIp: null);
+				request);
 
 		AuthResult result =
 			await CompleteRegistrationCommandHandler.HandleAsync(
@@ -256,8 +254,7 @@ public sealed class CompleteRegistrationCommandHandlerTests(
 				"password"); // Common breached password
 		CompleteRegistrationCommand command =
 			new(
-				request,
-				ClientIp: null);
+				request);
 
 		AuthResult result =
 			await CompleteRegistrationCommandHandler.HandleAsync(
@@ -349,8 +346,7 @@ public sealed class CompleteRegistrationCommandHandlerTests(
 				new CompleteRegistrationRequest(
 					combinedToken,
 					duplicateUsername,
-					"P@ssword123!"),
-				ClientIp: null);
+					"P@ssword123!"));
 
 		// Act
 		AuthResult result =
@@ -388,7 +384,6 @@ public sealed class CompleteRegistrationCommandHandlerTests(
 		tokenService
 			.GenerateRefreshTokenAsync(
 				Arg.Any<long>(),
-				Arg.Any<string?>(),
 				Arg.Any<bool>(),
 				Arg.Any<CancellationToken>())
 			.Returns(Task.FromResult("refresh-token"));

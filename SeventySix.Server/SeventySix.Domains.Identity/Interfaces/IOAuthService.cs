@@ -52,9 +52,6 @@ public interface IOAuthService
 	/// <param name="codeVerifier">
 	/// PKCE code verifier.
 	/// </param>
-	/// <param name="clientIp">
-	/// Client IP for token tracking.
-	/// </param>
 	/// <param name="cancellationToken">
 	/// Cancellation token.
 	/// </param>
@@ -66,7 +63,6 @@ public interface IOAuthService
 		string code,
 		string redirectUri,
 		string codeVerifier,
-		string? clientIp,
 		CancellationToken cancellationToken = default);
 
 	/// <summary>

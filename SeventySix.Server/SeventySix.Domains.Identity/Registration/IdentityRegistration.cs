@@ -419,19 +419,12 @@ public static class IdentityRegistration
 	{
 		// Register job settings with FluentValidation + ValidateOnStart
 		services.AddSingleton<IValidator<RefreshTokenCleanupSettings>, RefreshTokenCleanupSettingsValidator>();
-		services.AddSingleton<IValidator<IpAnonymizationSettings>, IpAnonymizationSettingsValidator>();
 		services.AddSingleton<IValidator<AdminSeederSettings>, AdminSeederSettingsValidator>();
 		services.AddSingleton<IValidator<OrphanedRegistrationCleanupSettings>, OrphanedRegistrationCleanupSettingsValidator>();
 
 		services
 			.AddOptions<RefreshTokenCleanupSettings>()
 			.Bind(configuration.GetSection(RefreshTokenCleanupSettings.SectionName))
-			.ValidateWithFluentValidation()
-			.ValidateOnStart();
-
-		services
-			.AddOptions<IpAnonymizationSettings>()
-			.Bind(configuration.GetSection(IpAnonymizationSettings.SectionName))
 			.ValidateWithFluentValidation()
 			.ValidateOnStart();
 

@@ -60,19 +60,6 @@ public sealed class MfaChallenge : ICreatableEntity
 	public bool IsUsed { get; set; }
 
 	/// <summary>
-	/// Gets or sets the client IP that initiated the challenge.
-	/// </summary>
-	/// <remarks>
-	/// <para>
-	/// PII Classification: Personal Data (GDPR Article 4 - IP addresses).
-	/// </para>
-	/// <para>
-	/// Stored for security auditing purposes only.
-	/// </para>
-	/// </remarks>
-	public string? ClientIp { get; set; }
-
-	/// <summary>
 	/// Gets or sets the creation timestamp.
 	/// </summary>
 	public DateTimeOffset CreateDate { get; set; }

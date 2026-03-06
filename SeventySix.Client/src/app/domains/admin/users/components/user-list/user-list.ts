@@ -10,7 +10,7 @@ import {
 	Signal
 } from "@angular/core";
 import { Router } from "@angular/router";
-import { DataTableComponent } from "@shared/components";
+import { DataTableComponent } from "@shared/components/data-table/data-table.component";
 import type {
 	QuickFilter,
 	RowAction,

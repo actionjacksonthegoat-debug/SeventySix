@@ -29,7 +29,7 @@ cd SeventySix.Server
 dotnet test
 ```
 
-The API starts at `https://localhost:7180` with Scalar API documentation available in development mode.
+The API starts at `https://localhost:7074` with Scalar API documentation available in development mode.
 
 ## Architecture
 

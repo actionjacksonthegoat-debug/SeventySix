@@ -296,9 +296,10 @@ describe("authInterceptor",
 							.toBe("Bearer refreshed-token");
 					});
 
-				it("should proceed without token when refresh returns null",
-					() =>
+				it("should proceed without token after retry when refresh always returns null",
+					async () =>
 					{
+						vi.useFakeTimers();
 						mockAuthService.getAccessToken.mockReturnValue("expired-token");
 						mockAuthService.isTokenExpired.mockReturnValue(true);
 						mockAuthService.refreshToken.mockReturnValue(of(null));
@@ -306,12 +307,25 @@ describe("authInterceptor",
 						const req: HttpRequest<unknown> =
 							new HttpRequest("GET", "/api/data");
 
+						let resolved: boolean = false;
 						TestBed.runInInjectionContext(
 							() =>
 							{
 								authInterceptor(req, mockHandler.handle.bind(mockHandler))
-									.subscribe();
+									.subscribe(
+										() =>
+										{
+											resolved = true;
+										});
 							});
+
+						// Advance past the retry delay
+						await vi.advanceTimersByTimeAsync(1100);
+
+						expect(resolved)
+							.toBe(true);
+						expect(mockAuthService.refreshToken)
+							.toHaveBeenCalledTimes(2);
 
 						const callArgs: HttpRequest<unknown> =
 							mockHandler
@@ -321,6 +335,56 @@ describe("authInterceptor",
 								.at(-1)![0] as HttpRequest<unknown>;
 						expect(callArgs.headers.get("Authorization"))
 							.toBeNull();
+						vi.useRealTimers();
+					});
+
+				it("should use refreshed token on retry when second refresh succeeds",
+					async () =>
+					{
+						vi.useFakeTimers();
+						mockAuthService.getAccessToken.mockReturnValue("expired-token");
+						mockAuthService.isTokenExpired.mockReturnValue(true);
+						mockAuthService
+							.refreshToken
+							.mockReturnValueOnce(of(null))
+							.mockReturnValueOnce(of(
+								{ accessToken: "retry-token" }));
+						mockAuthService
+							.getAccessToken
+							.mockReturnValueOnce("expired-token")
+							.mockReturnValue("retry-token");
+
+						const req: HttpRequest<unknown> =
+							new HttpRequest("GET", "/api/data");
+
+						let resolved: boolean = false;
+						TestBed.runInInjectionContext(
+							() =>
+							{
+								authInterceptor(req, mockHandler.handle.bind(mockHandler))
+									.subscribe(
+										() =>
+										{
+											resolved = true;
+										});
+							});
+
+						await vi.advanceTimersByTimeAsync(1100);
+
+						expect(resolved)
+							.toBe(true);
+						expect(mockAuthService.refreshToken)
+							.toHaveBeenCalledTimes(2);
+
+						const callArgs: HttpRequest<unknown> =
+							mockHandler
+								.handle
+								.mock
+								.calls
+								.at(-1)![0] as HttpRequest<unknown>;
+						expect(callArgs.headers.get("Authorization"))
+							.toBe("Bearer retry-token");
+						vi.useRealTimers();
 					});
 
 				it("should propagate error when refresh fails",

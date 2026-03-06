@@ -157,7 +157,6 @@ public sealed class ChangePasswordCommandHandlerTests
 		AuthenticationService
 			.GenerateAuthResultAsync(
 				user,
-				Arg.Any<string?>(),
 				false,
 				false,
 				Arg.Any<CancellationToken>())

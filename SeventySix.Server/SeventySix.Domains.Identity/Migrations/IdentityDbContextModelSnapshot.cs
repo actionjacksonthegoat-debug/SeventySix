@@ -18,7 +18,7 @@ namespace SeventySix.Identity.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("Identity")
-                .HasAnnotation("ProductVersion", "10.0.2")
+                .HasAnnotation("ProductVersion", "10.0.3")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -274,10 +274,6 @@ namespace SeventySix.Identity.Migrations
                     b.Property<DateTimeOffset?>("LastLoginAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("LastLoginIp")
-                        .HasMaxLength(45)
-                        .HasColumnType("character varying(45)");
-
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("boolean");
 
@@ -415,10 +411,6 @@ namespace SeventySix.Identity.Migrations
                         .HasColumnType("integer")
                         .HasDefaultValue(0);
 
-                    b.Property<string>("ClientIp")
-                        .HasMaxLength(45)
-                        .HasColumnType("character varying(45)");
-
                     b.Property<string>("CodeHash")
                         .IsRequired()
                         .HasMaxLength(64)
@@ -511,10 +503,6 @@ namespace SeventySix.Identity.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("NOW()");
 
-                    b.Property<string>("CreatedByIp")
-                        .HasMaxLength(45)
-                        .HasColumnType("character varying(45)");
-
                     b.Property<DateTimeOffset>("ExpiresAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -572,10 +560,6 @@ namespace SeventySix.Identity.Migrations
 
                     b.Property<int>("EventType")
                         .HasColumnType("integer");
-
-                    b.Property<string>("IpAddress")
-                        .HasMaxLength(45)
-                        .HasColumnType("character varying(45)");
 
                     b.Property<bool>("Success")
                         .HasColumnType("boolean");

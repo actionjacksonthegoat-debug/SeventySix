@@ -97,7 +97,7 @@ public sealed class SetPasswordCommandHandlerTests
 				"NewPassword123!");
 
 		SetPasswordCommand command =
-			new(request, "127.0.0.1");
+			new(request);
 
 		// Act & Assert
 		ArgumentException exception =
@@ -128,7 +128,7 @@ public sealed class SetPasswordCommandHandlerTests
 				"NewPassword123!");
 
 		SetPasswordCommand command =
-			new(request, "127.0.0.1");
+			new(request);
 
 		// Act & Assert
 		ArgumentException exception =
@@ -156,7 +156,7 @@ public sealed class SetPasswordCommandHandlerTests
 			new("123:validtoken", "NewPassword123!");
 
 		SetPasswordCommand command =
-			new(request, "127.0.0.1");
+			new(request);
 
 		UserManager
 			.FindByIdAsync("123")
@@ -197,7 +197,7 @@ public sealed class SetPasswordCommandHandlerTests
 			new("123:validtoken", "NewPassword123!");
 
 		SetPasswordCommand command =
-			new(request, "127.0.0.1");
+			new(request);
 
 		UserManager
 			.FindByIdAsync("123")
@@ -241,7 +241,7 @@ public sealed class SetPasswordCommandHandlerTests
 				"NewSecurePassword123!");
 
 		SetPasswordCommand command =
-			new(request, "192.168.1.1");
+			new(request);
 
 		DateTimeOffset now =
 			TimeProvider.GetUtcNow();
@@ -273,7 +273,6 @@ public sealed class SetPasswordCommandHandlerTests
 		AuthenticationService
 			.GenerateAuthResultAsync(
 				user,
-				"192.168.1.1",
 				false,
 				false,
 				Arg.Any<CancellationToken>())
@@ -328,7 +327,7 @@ public sealed class SetPasswordCommandHandlerTests
 			new("789:expired-token", "NewPassword123!");
 
 		SetPasswordCommand command =
-			new(request, "127.0.0.1");
+			new(request);
 
 		UserManager
 			.FindByIdAsync("789")

@@ -39,10 +39,6 @@ public sealed class ApplicationUserConfiguration : IEntityTypeConfiguration<Appl
 			.HasMaxLength(ValidationConstants.UsernameMaxLength);
 
 		builder
-			.Property(user => user.LastLoginIp)
-			.HasMaxLength(ValidationConstants.IpAddressMaxLength);
-
-		builder
 			.Property(user => user.RequiresPasswordChange)
 			.HasColumnType("boolean")
 			.HasDefaultValue(false)

@@ -114,15 +114,6 @@ Brevo provides the HTTP API for transactional emails (registration verification,
 4. Generate a new API key
 5. Keep this value — you will enter it during the secrets configuration step
 
-### MaxMind GeoIP (Optional — for geo-blocking)
-
-MaxMind provides the GeoIP database for Fail2Ban country-level IP blocking. The application runs without it, but the `geoipupdate` Docker service will show errors.
-
-1. Go to [maxmind.com/en/geolite2/signup](https://www.maxmind.com/en/geolite2/signup)
-2. Create a free GeoLite2 account
-3. After login, go to **My Account** → **Manage License Keys** → **Generate New License Key**
-4. Note your **Account ID** and **License Key**
-
 ### Codecov (Optional — for code coverage in CI)
 
 Codecov displays test coverage reports and diffs on every pull request. Free for public repositories.
@@ -323,7 +314,7 @@ After initialization, update the following secrets with your real credentials. R
 3. Fill in:
    - Application name: `SeventySix Local`
    - Homepage URL: `https://localhost:4200`
-   - Authorization callback URL: `https://localhost:7180/api/v1/oauth/github/callback`
+   - Authorization callback URL: `https://localhost:7074/api/v1/auth/oauth/github/callback`
 4. Click **Register application**
 5. Copy the **Client ID** from the app page
 6. Click **Generate a new client secret** and copy the secret
@@ -386,10 +377,6 @@ This displays all configured secrets. Verify that the GitHub OAuth, Email, and A
 ### GitHub OAuth App
 
 Already covered in Step 6 above. Without this, the "Login with GitHub" button on the login page will not work, but email/password login will function normally.
-
-### MaxMind GeoIP
-
-If you created a MaxMind account, add the credentials to `docker-compose.override.yml` or set environment variables. Without this, the `geoipupdate` service will log errors but everything else works.
 
 ### Codecov (Code Coverage on Pull Requests)
 

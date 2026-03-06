@@ -148,7 +148,7 @@
 			},
 			"targets": [
 				{
-					"expr": "100 * (sum(rate(http_server_request_duration_seconds_count{job=\"seventysix-api\",http_response_status_code=~\"5..\"}[5m])) / sum(rate(http_server_request_duration_seconds_count{job=\"seventysix-api\"}[5m])))",
+					"expr": "100 * (sum(rate(http_server_request_duration_seconds_count{job=\"seventysix-api\",http_response_status_code=~\"5..\"}[5m])) / sum(rate(http_server_request_duration_seconds_count{job=\"seventysix-api\"}[5m]))) or on() vector(0)",
 					"refId": "A"
 				}
 			],
@@ -181,7 +181,8 @@
 					"unit": "percent",
 					"decimals": 2,
 					"min": 0,
-					"max": 100
+					"max": 100,
+					"noValue": "0"
 				}
 			},
 			"options": {

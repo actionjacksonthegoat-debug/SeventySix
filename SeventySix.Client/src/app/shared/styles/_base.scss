@@ -363,6 +363,13 @@ mat-icon {
 	}
 }
 
+// Icon buttons - center content so state layer circle aligns with icon
+.mat-mdc-icon-button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+}
+
 // Menu items with icons
 .mat-mdc-menu-item {
 	mat-icon {

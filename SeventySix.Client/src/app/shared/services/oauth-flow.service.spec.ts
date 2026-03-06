@@ -1,6 +1,7 @@
 import { PLATFORM_ID, provideZonelessChangeDetection } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
 import { environment } from "@environments/environment";
+import { OAUTH_FLOW_EVENT_TYPE, OAUTH_POPUP_NAME, OAUTH_POSTMESSAGE_TYPE } from "@shared/constants";
 import { afterEach, beforeEach, describe, expect, it, Mock, vi } from "vitest";
 import { OAuthFlowService } from "./oauth-flow.service";
 import { WindowService } from "./window.service";
@@ -99,7 +100,7 @@ describe("OAuthFlowService",
 						expect(mockWindowService.openWindow)
 							.toHaveBeenCalledWith(
 								`${environment.apiUrl}/auth/oauth/github`,
-								"oauth_popup");
+								OAUTH_POPUP_NAME.LOGIN);
 					});
 
 				it("should set isOAuthInProgress to true when popup opens",
@@ -133,8 +134,8 @@ describe("OAuthFlowService",
 						expect(events[0])
 							.toEqual(
 								{
-									type: "error",
-									error: "popup_blocked"
+									type: OAUTH_FLOW_EVENT_TYPE.ERROR,
+									error: OAUTH_FLOW_EVENT_TYPE.POPUP_BLOCKED
 								});
 					});
 
@@ -186,7 +187,7 @@ describe("OAuthFlowService",
 						expect(mockWindowService.openWindow)
 							.toHaveBeenCalledWith(
 								authorizationUrl,
-								"oauth_link_popup");
+								OAUTH_POPUP_NAME.LINK);
 						expect(service.isOAuthInProgress())
 							.toBe(true);
 					});
@@ -247,7 +248,7 @@ describe("OAuthFlowService",
 								{
 									origin: "https://evil.com",
 									data: {
-										type: "oauth_success",
+										type: OAUTH_POSTMESSAGE_TYPE.SUCCESS,
 										code: "fake-code"
 									}
 								}));
@@ -271,7 +272,7 @@ describe("OAuthFlowService",
 								{
 									origin: allowedOrigin,
 									data: {
-										type: "oauth_success",
+										type: OAUTH_POSTMESSAGE_TYPE.SUCCESS,
 										code: "test-code-123"
 									}
 								}));
@@ -281,7 +282,7 @@ describe("OAuthFlowService",
 						expect(events[0])
 							.toEqual(
 								{
-									type: "code_received",
+									type: OAUTH_FLOW_EVENT_TYPE.CODE_RECEIVED,
 									code: "test-code-123"
 								});
 					});
@@ -300,14 +301,14 @@ describe("OAuthFlowService",
 								"message",
 								{
 									origin: allowedOrigin,
-									data: { type: "oauth_link_success" }
+									data: { type: OAUTH_POSTMESSAGE_TYPE.LINK_SUCCESS }
 								}));
 
 						expect(events)
 							.toHaveLength(1);
 						expect(events[0])
 							.toEqual(
-								{ type: "link_success" });
+								{ type: OAUTH_FLOW_EVENT_TYPE.LINK_SUCCESS });
 					});
 
 				it("should not emit event when code is missing from oauth_success",
@@ -325,7 +326,7 @@ describe("OAuthFlowService",
 								{
 									origin: allowedOrigin,
 									data: {
-										type: "oauth_success",
+										type: OAUTH_POSTMESSAGE_TYPE.SUCCESS,
 										code: null
 									}
 								}));
@@ -349,7 +350,7 @@ describe("OAuthFlowService",
 								{
 									origin: allowedOrigin,
 									data: {
-										type: "oauth_error",
+										type: OAUTH_POSTMESSAGE_TYPE.ERROR,
 										error: "provider_denied"
 									}
 								}));
@@ -378,7 +379,7 @@ describe("OAuthFlowService",
 								"message",
 								{
 									origin: allowedOrigin,
-									data: { type: "oauth_error" }
+									data: { type: OAUTH_POSTMESSAGE_TYPE.ERROR }
 								}));
 
 						expect(events)
@@ -414,7 +415,7 @@ describe("OAuthFlowService",
 									{
 										origin: window.location.origin,
 										data: {
-											type: "oauth_success",
+											type: OAUTH_POSTMESSAGE_TYPE.SUCCESS,
 											code: "relative-url-test"
 										}
 									}));
@@ -424,7 +425,7 @@ describe("OAuthFlowService",
 							expect(events[0])
 								.toEqual(
 									{
-										type: "code_received",
+										type: OAUTH_FLOW_EVENT_TYPE.CODE_RECEIVED,
 										code: "relative-url-test"
 									});
 						}

@@ -39,7 +39,6 @@ public sealed class ScheduledJobHealthCheckService(
 	private static readonly HashSet<string> CriticalJobs =
 		new(StringComparer.OrdinalIgnoreCase)
 		{
-			"IpAnonymizationJob",
 			"OrphanedRegistrationCleanupJob",
 			"RefreshTokenCleanupJob",
 		};

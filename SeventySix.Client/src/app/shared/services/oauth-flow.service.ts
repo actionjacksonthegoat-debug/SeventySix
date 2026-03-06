@@ -16,7 +16,14 @@ import {
 	WritableSignal
 } from "@angular/core";
 import { environment } from "@environments/environment";
-import { POLL_INTERVAL, STORAGE_KEYS } from "@shared/constants";
+import {
+	HTTP_PROTOCOL_PREFIX,
+	OAUTH_FLOW_EVENT_TYPE,
+	OAUTH_POPUP_NAME,
+	OAUTH_POSTMESSAGE_TYPE,
+	POLL_INTERVAL,
+	STORAGE_KEYS
+} from "@shared/constants";
 import { StorageService, WindowService } from "@shared/services";
 import { OAuthEvent, OAuthProvider } from "@shared/services/auth.types";
 import { isNullOrUndefined, isPresent } from "@shared/utilities/null-check.utility";
@@ -104,7 +111,7 @@ export class OAuthFlowService
 		const popup: Window | null =
 			this.windowService.openWindow(
 				`${this.authUrl}/oauth/${provider}`,
-				"oauth_popup");
+				OAUTH_POPUP_NAME.LOGIN);
 
 		if (isNullOrUndefined(popup))
 		{
@@ -115,8 +122,8 @@ export class OAuthFlowService
 			// because the server's postMessage response has no opener.
 			this.oauthEventsSubject.next(
 				{
-					type: "error",
-					error: "popup_blocked"
+					type: OAUTH_FLOW_EVENT_TYPE.ERROR,
+					error: OAUTH_FLOW_EVENT_TYPE.POPUP_BLOCKED
 				});
 
 			return;
@@ -138,7 +145,7 @@ export class OAuthFlowService
 		const popup: Window | null =
 			this.windowService.openWindow(
 				authorizationUrl,
-				"oauth_link_popup");
+				OAUTH_POPUP_NAME.LINK);
 
 		if (isNullOrUndefined(popup))
 		{
@@ -231,7 +238,7 @@ export class OAuthFlowService
 		// throw 'TypeError: Invalid URL' inside new URL(). Fall back to the
 		// current window origin when the URL is relative.
 		const allowedOrigin: string =
-			environment.apiUrl.startsWith("http")
+			environment.apiUrl.startsWith(HTTP_PROTOCOL_PREFIX)
 				? new URL(environment.apiUrl).origin
 				: window.location.origin;
 
@@ -246,7 +253,7 @@ export class OAuthFlowService
 	 */
 	private static readonly VALID_OAUTH_MESSAGE_TYPES: ReadonlySet<string> =
 		new Set<string>(
-			["oauth_success", "oauth_link_success", "oauth_error"]);
+			[OAUTH_POSTMESSAGE_TYPE.SUCCESS, OAUTH_POSTMESSAGE_TYPE.LINK_SUCCESS, OAUTH_POSTMESSAGE_TYPE.ERROR]);
 
 	/**
 	 * Processes a validated OAuth postMessage payload.
@@ -275,23 +282,23 @@ export class OAuthFlowService
 		const validatedType: string = rawType;
 
 		if (
-			validatedType === "oauth_success"
+			validatedType === OAUTH_POSTMESSAGE_TYPE.SUCCESS
 				&& isPresent(data?.["code"]))
 		{
 			this.completeOAuthFlow(
 				{
-					type: "code_received",
+					type: OAUTH_FLOW_EVENT_TYPE.CODE_RECEIVED,
 					code: data["code"] as string
 				});
 		}
-		else if (validatedType === "oauth_link_success")
+		else if (validatedType === OAUTH_POSTMESSAGE_TYPE.LINK_SUCCESS)
 		{
 			this.completeOAuthFlow(
 				{
-					type: "link_success"
+					type: OAUTH_FLOW_EVENT_TYPE.LINK_SUCCESS
 				});
 		}
-		else if (validatedType === "oauth_error")
+		else if (validatedType === OAUTH_POSTMESSAGE_TYPE.ERROR)
 		{
 			this.completeOAuthFlow(
 				{

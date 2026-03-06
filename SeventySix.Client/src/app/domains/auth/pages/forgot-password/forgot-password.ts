@@ -21,7 +21,7 @@ import {
 	Validators
 } from "@angular/forms";
 import { RouterLink } from "@angular/router";
-import { AltchaWidgetComponent } from "@shared/components";
+import { AltchaWidgetComponent } from "@shared/components/altcha-widget/altcha-widget";
 import { FORM_MATERIAL_MODULES } from "@shared/material-bundles.constants";
 import { AltchaService, AuthService, NotificationService } from "@shared/services";
 import { getValidationError } from "@shared/utilities";

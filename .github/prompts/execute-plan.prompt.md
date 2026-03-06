@@ -21,6 +21,7 @@ Proceed through **all remaining phases** across all `implementation-N.md` files 
 4. Fix all IDE warnings — never suppress with `#pragma warning disable`, `// @ts-ignore`, or `[SuppressMessage]`
 5. **Do NOT send commits** — I will handle these
 6. **Do NOT run** `npm run db:reset`, `db:reset`, or any `reset-database` command
+7. **Do NOT modify** READMEs or `docs/*.md` unless the **active** `implementation-N.md` contains an explicit documentation phase — incidental doc edits during code phases cause merge noise and scope creep
 
 ## [CRITICAL] Security Review Gate — Runs Before Final Tests
 

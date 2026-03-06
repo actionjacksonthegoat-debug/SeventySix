@@ -11,7 +11,6 @@
 }
 
 .menu-toggle {
-	margin-right: vars.$spacing-sm;
 	flex-shrink: 0;
 }
 
@@ -21,8 +20,10 @@
 	gap: vars.$spacing-sm;
 	font-size: vars.$font-size-lg;
 	font-weight: vars.$font-weight-medium;
-	cursor: default;
+	cursor: pointer;
 	user-select: none;
+	text-decoration: none;
+	color: inherit;
 
 	.logo-icon {
 		width: vars.$icon-size-md;
@@ -52,6 +53,6 @@
 
 :host .user-menu-header {
 	color: var(--mat-sys-on-surface);
-	font-weight: vars.$font-weight-medium;
+	font-weight: vars.$font-weight-bold;
 	opacity: 1;
 }

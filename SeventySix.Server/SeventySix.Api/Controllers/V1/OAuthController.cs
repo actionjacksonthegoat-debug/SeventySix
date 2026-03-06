@@ -189,8 +189,6 @@ public sealed class OAuthController(
 			return CreateOAuthErrorResponse(OAuthProviderConstants.ErrorMessages.MissingCodeVerifier);
 		}
 
-		string? clientIp = GetClientIpAddress();
-
 		string redirectUri =
 			BuildRedirectUri(provider);
 
@@ -200,7 +198,6 @@ public sealed class OAuthController(
 				code,
 				redirectUri,
 				codeVerifier,
-				clientIp,
 				cancellationToken);
 
 		CookieService.ClearOAuthCookies();

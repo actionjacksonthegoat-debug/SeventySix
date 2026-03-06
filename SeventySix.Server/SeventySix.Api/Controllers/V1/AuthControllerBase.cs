@@ -124,16 +124,6 @@ public abstract class AuthControllerBase(
 	}
 
 	/// <summary>
-	/// Gets client IP address from HttpContext.
-	/// ForwardedHeadersMiddleware handles X-Forwarded-For validation.
-	/// </summary>
-	/// <returns>
-	/// The client IP address as string, or null if unavailable.
-	/// </returns>
-	protected string? GetClientIpAddress() =>
-		HttpContext.Connection.RemoteIpAddress?.ToString();
-
-	/// <summary>
 	/// Validates that a successful AuthResult contains all required fields.
 	/// </summary>
 	/// <param name="result">

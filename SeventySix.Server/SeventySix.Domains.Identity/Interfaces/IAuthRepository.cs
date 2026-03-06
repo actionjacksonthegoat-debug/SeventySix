@@ -15,7 +15,7 @@ namespace SeventySix.Identity;
 public interface IAuthRepository
 {
 	/// <summary>
-	/// Updates last login timestamp and IP address.
+	/// Updates last login timestamp.
 	/// </summary>
 	/// <param name="userId">
 	/// The user ID.
@@ -23,16 +23,12 @@ public interface IAuthRepository
 	/// <param name="loginTime">
 	/// The login timestamp.
 	/// </param>
-	/// <param name="clientIp">
-	/// The client IP address.
-	/// </param>
 	/// <param name="cancellationToken">
 	/// Cancellation token.
 	/// </param>
 	public Task UpdateLastLoginAsync(
 		long userId,
 		DateTimeOffset loginTime,
-		string? clientIp,
 		CancellationToken cancellationToken = default);
 
 	/// <summary>

@@ -367,7 +367,6 @@ public sealed class LoginCommandHandlerTests
 			.DidNotReceive()
 			.InitiateChallengeAsync(
 				Arg.Any<ApplicationUser>(),
-				Arg.Any<string?>(),
 				Arg.Any<CancellationToken>());
 	}
 
@@ -411,7 +410,6 @@ public sealed class LoginCommandHandlerTests
 		MfaOrchestrator
 			.InitiateChallengeAsync(
 				Arg.Any<ApplicationUser>(),
-				Arg.Any<string?>(),
 				Arg.Any<CancellationToken>())
 			.Returns(
 				AuthResult.MfaRequired(
@@ -445,6 +443,5 @@ public sealed class LoginCommandHandlerTests
 		new(
 			Request: new LoginRequest(
 				UsernameOrEmail: usernameOrEmail,
-				Password: password),
-			ClientIp: "127.0.0.1");
+				Password: password));
 }

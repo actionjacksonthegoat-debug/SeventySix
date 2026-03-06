@@ -90,7 +90,6 @@ public sealed class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 		string refreshToken =
 			await service.GenerateRefreshTokenAsync(
 			user.Id,
-			"127.0.0.1",
 			rememberMe,
 			CancellationToken.None);
 
@@ -104,7 +103,6 @@ public sealed class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 
 		storedToken.ShouldNotBeNull();
 		storedToken.IsRevoked.ShouldBeFalse();
-		storedToken.CreatedByIp.ShouldBe("127.0.0.1");
 
 		DateTimeOffset expectedExpiry =
 			FixedTime
@@ -141,7 +139,6 @@ public sealed class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 				tokenValue =
 					await service.GenerateRefreshTokenAsync(
 					user.Id,
-					"127.0.0.1",
 					rememberMe: false,
 					CancellationToken.None);
 				break;
@@ -175,7 +172,6 @@ public sealed class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 				tokenValue =
 					await service.GenerateRefreshTokenAsync(
 					user.Id,
-					"127.0.0.1",
 					rememberMe: false,
 					CancellationToken.None);
 				await service.RevokeRefreshTokenAsync(
@@ -231,7 +227,6 @@ public sealed class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 			tokenToRevoke =
 				await service.GenerateRefreshTokenAsync(
 				user.Id,
-				"127.0.0.1",
 				rememberMe: false,
 				CancellationToken.None);
 		}
@@ -286,7 +281,6 @@ public sealed class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 			{
 				await service.GenerateRefreshTokenAsync(
 					user.Id,
-					$"127.0.0.{index + 1}",
 					rememberMe: false,
 					CancellationToken.None);
 			}
@@ -364,20 +358,17 @@ public sealed class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 		// Act - Create tokens up to and beyond limit
 		await service.GenerateRefreshTokenAsync(
 			user.Id,
-			"192.168.1.1",
 			rememberMe: false,
 			CancellationToken.None);
 
 		await service.GenerateRefreshTokenAsync(
 			user.Id,
-			"192.168.1.2",
 			rememberMe: false,
 			CancellationToken.None);
 
 		// This should trigger revocation of the oldest (first) token
 		await service.GenerateRefreshTokenAsync(
 			user.Id,
-			"192.168.1.3",
 			rememberMe: false,
 			CancellationToken.None);
 
@@ -414,7 +405,6 @@ public sealed class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 		// Act
 		await service.GenerateRefreshTokenAsync(
 			user.Id,
-			"127.0.0.1",
 			rememberMe: false,
 			CancellationToken.None);
 
@@ -443,7 +433,6 @@ public sealed class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 		(string? newToken, bool _) =
 			await service.RotateRefreshTokenAsync(
 			originalToken,
-			"127.0.0.1",
 			CancellationToken.None);
 
 		// Assert
@@ -472,7 +461,6 @@ public sealed class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 		// Act
 		await service.RotateRefreshTokenAsync(
 			originalToken,
-			"127.0.0.1",
 			CancellationToken.None);
 
 		// Assert - Original token should be revoked
@@ -495,7 +483,6 @@ public sealed class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 		// Legitimate rotation - creates new token, revokes original
 		await service.RotateRefreshTokenAsync(
 			originalToken,
-			"127.0.0.1",
 			CancellationToken.None);
 
 		// Act - Attacker tries to use the revoked original token
@@ -520,7 +507,6 @@ public sealed class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 		(string? legitimateNewToken, bool _) =
 			await service.RotateRefreshTokenAsync(
 			originalToken,
-			"127.0.0.1",
 			CancellationToken.None);
 
 		legitimateNewToken.ShouldNotBeNull();
@@ -529,7 +515,6 @@ public sealed class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 		(string? attackerToken, bool _) =
 			await service.RotateRefreshTokenAsync(
 			originalToken,
-			"192.168.1.100", // Different IP - attacker
 			CancellationToken.None);
 
 		// Assert - Attack detected, returns null
@@ -572,7 +557,6 @@ public sealed class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 		(string? result, bool _) =
 			await service.RotateRefreshTokenAsync(
 			token,
-			"127.0.0.1",
 			CancellationToken.None);
 
 		// Assert
@@ -603,7 +587,6 @@ public sealed class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 		string initialToken =
 			await serviceAtSessionStart.GenerateRefreshTokenAsync(
 				user.Id,
-				"127.0.0.1",
 				rememberMe: true, // 14-day expiration, but session has 30-day absolute limit
 				CancellationToken.None);
 
@@ -613,7 +596,6 @@ public sealed class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 		(string? tokenDay10, bool _) =
 			await serviceAtSessionStart.RotateRefreshTokenAsync(
 				initialToken,
-				"127.0.0.1",
 				CancellationToken.None);
 
 		tokenDay10.ShouldNotBeNull();
@@ -623,7 +605,6 @@ public sealed class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 		(string? tokenDay20, bool _) =
 			await serviceAtSessionStart.RotateRefreshTokenAsync(
 				tokenDay10,
-				"127.0.0.1",
 				CancellationToken.None);
 
 		tokenDay20.ShouldNotBeNull();
@@ -635,7 +616,6 @@ public sealed class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 		(string? tokenDay31, bool _) =
 			await serviceAtSessionStart.RotateRefreshTokenAsync(
 				tokenDay20,
-				"127.0.0.1",
 				CancellationToken.None);
 
 		// Assert - Should be null because absolute session timeout exceeded
@@ -663,7 +643,6 @@ public sealed class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 		string? currentToken =
 			await serviceAtSessionStart.GenerateRefreshTokenAsync(
 				user.Id,
-				"127.0.0.1",
 				rememberMe: true,
 				CancellationToken.None);
 
@@ -672,7 +651,6 @@ public sealed class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 		(currentToken, _) =
 			await serviceAtSessionStart.RotateRefreshTokenAsync(
 				currentToken!,
-				"127.0.0.1",
 				CancellationToken.None);
 
 		currentToken.ShouldNotBeNull();
@@ -682,7 +660,6 @@ public sealed class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 		(currentToken, _) =
 			await serviceAtSessionStart.RotateRefreshTokenAsync(
 				currentToken!,
-				"127.0.0.1",
 				CancellationToken.None);
 
 		currentToken.ShouldNotBeNull();
@@ -692,7 +669,6 @@ public sealed class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 		(string? rotatedToken, bool _) =
 			await serviceAtSessionStart.RotateRefreshTokenAsync(
 				currentToken!,
-				"127.0.0.1",
 				CancellationToken.None);
 
 		// Assert - Should succeed because session is still within 30-day window
@@ -735,7 +711,6 @@ public sealed class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 		string token =
 			await service.GenerateRefreshTokenAsync(
 			user.Id,
-			"127.0.0.1",
 			rememberMe: false,
 			CancellationToken.None);
 

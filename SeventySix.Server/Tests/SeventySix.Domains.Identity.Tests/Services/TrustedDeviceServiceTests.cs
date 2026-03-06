@@ -26,15 +26,15 @@ public sealed class TrustedDeviceServiceTests(IdentityPostgreSqlFixture fixture)
 	private const string TestUserAgent =
 		"Mozilla/5.0 (Windows NT 10.0; Win64; x64)";
 
-	private const string TestIpAddress =
-		"192.168.1.100";
+	private const int TestTokenLifetimeDays = 30;
+	private const int TestMaxDevicesPerUser = 5;
 
 	private IOptions<TrustedDeviceSettings> DefaultSettings =>
 		Options.Create(
 			new TrustedDeviceSettings
 			{
-				TokenLifetimeDays = 30,
-				MaxDevicesPerUser = 5,
+				TokenLifetimeDays = TestTokenLifetimeDays,
+				MaxDevicesPerUser = TestMaxDevicesPerUser,
 				CookieName = "__TD"
 			});
 
@@ -68,7 +68,6 @@ public sealed class TrustedDeviceServiceTests(IdentityPostgreSqlFixture fixture)
 			await service.CreateTrustedDeviceAsync(
 				user.Id,
 				TestUserAgent,
-				TestIpAddress,
 				CancellationToken.None);
 
 		// Assert
@@ -94,7 +93,6 @@ public sealed class TrustedDeviceServiceTests(IdentityPostgreSqlFixture fixture)
 			await service.CreateTrustedDeviceAsync(
 				user.Id,
 				TestUserAgent,
-				TestIpAddress,
 				CancellationToken.None);
 
 		// Assert
@@ -121,13 +119,12 @@ public sealed class TrustedDeviceServiceTests(IdentityPostgreSqlFixture fixture)
 			CreateService(context, timeProvider);
 
 		DateTimeOffset expectedExpiration =
-			FixedTime.UtcDateTime.AddDays(30);
+			FixedTime.UtcDateTime.AddDays(TestTokenLifetimeDays);
 
 		// Act
 		await service.CreateTrustedDeviceAsync(
 			user.Id,
 			TestUserAgent,
-			TestIpAddress,
 			CancellationToken.None);
 
 		// Assert
@@ -153,12 +150,11 @@ public sealed class TrustedDeviceServiceTests(IdentityPostgreSqlFixture fixture)
 			CreateService(context, timeProvider);
 
 		// Create 5 devices (max limit)
-		for (int index = 0; index < 5; index++)
+		for (int index = 0; index < TestMaxDevicesPerUser; index++)
 		{
 			await service.CreateTrustedDeviceAsync(
 				user.Id,
 				$"Agent{index}",
-				$"192.168.1.{index}",
 				CancellationToken.None);
 		}
 
@@ -166,7 +162,6 @@ public sealed class TrustedDeviceServiceTests(IdentityPostgreSqlFixture fixture)
 		await service.CreateTrustedDeviceAsync(
 			user.Id,
 			"NewAgent",
-			"10.0.0.1",
 			CancellationToken.None);
 
 		// Assert - Should still have max 5 devices
@@ -175,7 +170,7 @@ public sealed class TrustedDeviceServiceTests(IdentityPostgreSqlFixture fixture)
 				.TrustedDevices
 				.CountAsync(device => device.UserId == user.Id);
 
-		deviceCount.ShouldBe(5);
+		deviceCount.ShouldBe(TestMaxDevicesPerUser);
 	}
 
 	#endregion
@@ -199,7 +194,6 @@ public sealed class TrustedDeviceServiceTests(IdentityPostgreSqlFixture fixture)
 			await service.CreateTrustedDeviceAsync(
 				user.Id,
 				TestUserAgent,
-				TestIpAddress,
 				CancellationToken.None);
 
 		// Act
@@ -208,7 +202,6 @@ public sealed class TrustedDeviceServiceTests(IdentityPostgreSqlFixture fixture)
 				user.Id,
 				token,
 				TestUserAgent,
-				TestIpAddress,
 				CancellationToken.None);
 
 		// Assert
@@ -231,7 +224,6 @@ public sealed class TrustedDeviceServiceTests(IdentityPostgreSqlFixture fixture)
 		await service.CreateTrustedDeviceAsync(
 			user.Id,
 			TestUserAgent,
-			TestIpAddress,
 			CancellationToken.None);
 
 		// Act
@@ -240,7 +232,6 @@ public sealed class TrustedDeviceServiceTests(IdentityPostgreSqlFixture fixture)
 				user.Id,
 				"invalid-token",
 				TestUserAgent,
-				TestIpAddress,
 				CancellationToken.None);
 
 		// Assert
@@ -264,7 +255,6 @@ public sealed class TrustedDeviceServiceTests(IdentityPostgreSqlFixture fixture)
 			await service.CreateTrustedDeviceAsync(
 				user.Id,
 				TestUserAgent,
-				TestIpAddress,
 				CancellationToken.None);
 
 		// Advance time beyond expiration
@@ -276,7 +266,6 @@ public sealed class TrustedDeviceServiceTests(IdentityPostgreSqlFixture fixture)
 				user.Id,
 				token,
 				TestUserAgent,
-				TestIpAddress,
 				CancellationToken.None);
 
 		// Assert
@@ -300,7 +289,6 @@ public sealed class TrustedDeviceServiceTests(IdentityPostgreSqlFixture fixture)
 			await service.CreateTrustedDeviceAsync(
 				user.Id,
 				TestUserAgent,
-				TestIpAddress,
 				CancellationToken.None);
 
 		// Act - Validate with different User-Agent
@@ -309,7 +297,6 @@ public sealed class TrustedDeviceServiceTests(IdentityPostgreSqlFixture fixture)
 				user.Id,
 				token,
 				"Different/Browser",
-				TestIpAddress,
 				CancellationToken.None);
 
 		// Assert
@@ -333,7 +320,6 @@ public sealed class TrustedDeviceServiceTests(IdentityPostgreSqlFixture fixture)
 			await service.CreateTrustedDeviceAsync(
 				user.Id,
 				TestUserAgent,
-				TestIpAddress,
 				CancellationToken.None);
 
 		// Advance time
@@ -346,7 +332,6 @@ public sealed class TrustedDeviceServiceTests(IdentityPostgreSqlFixture fixture)
 			user.Id,
 			token,
 			TestUserAgent,
-			TestIpAddress,
 			CancellationToken.None);
 
 		// Assert
@@ -381,7 +366,6 @@ public sealed class TrustedDeviceServiceTests(IdentityPostgreSqlFixture fixture)
 			await service.CreateTrustedDeviceAsync(
 				user.Id,
 				$"Agent{index}",
-				$"192.168.1.{index}",
 				CancellationToken.None);
 		}
 
@@ -419,7 +403,6 @@ public sealed class TrustedDeviceServiceTests(IdentityPostgreSqlFixture fixture)
 		await service.CreateTrustedDeviceAsync(
 			user.Id,
 			TestUserAgent,
-			TestIpAddress,
 			CancellationToken.None);
 
 		TrustedDevice device =
@@ -482,7 +465,6 @@ public sealed class TrustedDeviceServiceTests(IdentityPostgreSqlFixture fixture)
 		await service.CreateTrustedDeviceAsync(
 			user.Id,
 			TestUserAgent,
-			TestIpAddress,
 			CancellationToken.None);
 
 		// Act

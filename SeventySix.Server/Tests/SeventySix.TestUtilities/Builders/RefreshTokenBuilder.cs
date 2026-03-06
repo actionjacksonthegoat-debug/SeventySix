@@ -40,7 +40,6 @@ public sealed class RefreshTokenBuilder
 		Guid.NewGuid().ToString("N");
 	private Guid FamilyId =
 		Guid.NewGuid();
-	private string CreatedByIp = "127.0.0.1";
 	private bool IsRevoked = false;
 	private DateTimeOffset? RevokedAt = null;
 	private bool RememberMe = false;
@@ -101,21 +100,6 @@ public sealed class RefreshTokenBuilder
 	public RefreshTokenBuilder WithFamilyId(Guid familyId)
 	{
 		FamilyId = familyId;
-		return this;
-	}
-
-	/// <summary>
-	/// Sets the IP address that created this token.
-	/// </summary>
-	/// <param name="ipAddress">
-	/// The client IP address.
-	/// </param>
-	/// <returns>
-	/// The builder instance for method chaining.
-	/// </returns>
-	public RefreshTokenBuilder WithCreatedByIp(string ipAddress)
-	{
-		CreatedByIp = ipAddress;
 		return this;
 	}
 
@@ -221,7 +205,6 @@ public sealed class RefreshTokenBuilder
 			TokenHash = HashToken(PlainToken),
 			FamilyId = FamilyId,
 			CreateDate = now,
-			CreatedByIp = CreatedByIp,
 			ExpiresAt = expiresAt,
 			SessionStartedAt = sessionStartedAt,
 			IsRevoked = IsRevoked,

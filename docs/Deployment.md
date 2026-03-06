@@ -36,7 +36,6 @@ Before starting, ensure you have:
   - Homepage URL: `https://seventysixsandbox.com`
   - Authorization callback URL: `https://api.seventysixsandbox.com/api/v1/auth/oauth/github/callback`
 - [ ] A [Brevo](https://www.brevo.com/) account with API key (free tier: 300 emails/day)
-- [ ] A [MaxMind GeoLite2](https://www.maxmind.com/en/geolite2/signup) account (free — for GeoIP/Fail2Ban)
 - [ ] GitHub CI has run at least once on master with the `publish` job (images exist in GHCR)
 - [ ] `hcloud` CLI installed locally: `brew install hcloud` (macOS) or `apt install hcloud` (Linux)
   - **Windows:** winget does not carry hcloud — download `hcloud-windows-amd64.zip` from [github.com/hetznercloud/cli/releases](https://github.com/hetznercloud/cli/releases) and copy `hcloud.exe` to `C:\Windows\System32\` (as Administrator)
@@ -326,9 +325,122 @@ Create **two** Cache Rules (Cloudflare Dashboard → Caching → Cache Rules →
 - **Bot Fight Mode:** ON
 - **Browser Integrity Check:** ON
 
+### 5.5 WAF Custom Rules (Replaces Fail2Ban + GeoIP)
+
+> **Context:** The application previously used Fail2Ban for login brute-force protection and GeoIP for country-level blocking. These have been removed because Cloudflare handles both at the edge — blocking malicious traffic before it reaches the origin server. This is more effective (blocks at the CDN edge, not at the server) and simpler (no log parsing, no iptables chains, no MaxMind DB updates).
+
+Cloudflare free tier includes **5 WAF Custom Rules**. Create them in: **Cloudflare Dashboard → Security → WAF → Custom rules → Create rule**.
+
+#### Rule 1 — Block Countries (replaces fail2ban GeoIP jail)
+
+Blocks all traffic from high-risk countries that have no legitimate users.
+
+1. Rule name: `Block high-risk countries`
+2. Click **"Edit expression"** and paste:
+   ```
+   (ip.geoip.country in {"CN" "IN" "RU"})
+   ```
+3. Action: **Block**
+4. Place at: **First**
+5. Deploy
+
+> **To add/remove countries:** Edit the rule expression and add/remove ISO 3166-1 alpha-2 country codes to the set. Common additions: `"KP"` (North Korea), `"IR"` (Iran). Remove a code if you gain legitimate users from that country.
+
+#### Rule 2 — Rate Limit Login Endpoint (replaces fail2ban auth jail)
+
+Limits login attempts to prevent credential brute-forcing. The old fail2ban rule was: 5 attempts per 10 minutes → 1 hour ban with progressive escalation.
+
+1. Navigate to: **Security → WAF → Rate limiting rules → Create rule**
+2. Rule name: `Rate limit login`
+3. Click **"Edit expression"** and paste:
+   ```
+   (http.request.uri.path eq "/api/v1/auth/login" and http.request.method eq "POST")
+   ```
+4. Rate limit characteristics: **IP** (select "IP" from the dropdown)
+5. Requests: `5`
+6. Period: `10 minutes`
+7. Action: **Block**
+8. Duration: `1 hour`
+9. Deploy
+
+> **What this covers:** Any IP that sends more than 5 POST requests to `/api/v1/auth/login` within 10 minutes gets blocked for 1 hour. This matches the old fail2ban `maxretry=5, findtime=600, bantime=3600` configuration.
+
+#### Rule 3 — Rate Limit Registration Endpoint
+
+Prevents automated account creation spam.
+
+1. Navigate to: **Security → WAF → Rate limiting rules → Create rule**
+2. Rule name: `Rate limit registration`
+3. Click **"Edit expression"** and paste:
+   ```
+   (http.request.uri.path eq "/api/v1/auth/register" and http.request.method eq "POST")
+   ```
+4. Rate limit characteristics: **IP**
+5. Requests: `3`
+6. Period: `10 minutes`
+7. Action: **Block**
+8. Duration: `1 hour`
+9. Deploy
+
+#### Rule 4 — Rate Limit Password Reset
+
+Prevents password reset flooding (email enumeration).
+
+1. Navigate to: **Security → WAF → Rate limiting rules → Create rule**
+2. Rule name: `Rate limit password reset`
+3. Click **"Edit expression"** and paste:
+   ```
+   (http.request.uri.path eq "/api/v1/auth/forgot-password" and http.request.method eq "POST")
+   ```
+4. Rate limit characteristics: **IP**
+5. Requests: `3`
+6. Period: `10 minutes`
+7. Action: **Block**
+8. Duration: `1 hour`
+9. Deploy
+
+#### Rule 5 — General API Rate Limit (replaces fail2ban ratelimit jail)
+
+Catches any IP hammering the API overall. The old fail2ban rule was: 10 rate-limited (429) responses in 60 seconds → 30 minute ban.
+
+1. Navigate to: **Security → WAF → Rate limiting rules → Create rule**
+2. Rule name: `General API rate limit`
+3. Click **"Edit expression"** and paste:
+   ```
+   (starts_with(http.request.uri.path, "/api/"))
+   ```
+4. Rate limit characteristics: **IP**
+5. Requests: `100`
+6. Period: `1 minute`
+7. Action: **Block**
+8. Duration: `30 minutes`
+9. Deploy
+
+### 5.6 Manual IP Blocking
+
+To manually block a specific IP address (e.g., after reviewing logs):
+
+1. Navigate to: **Security → WAF → Tools → IP Access Rules**
+2. Enter the IP address or CIDR range (e.g., `1.2.3.4` or `1.2.3.0/24`)
+3. Action: **Block**
+4. Notes: Add reason (e.g., "Brute force attempt 2025-06-04")
+5. Click **Add**
+
+> **Tip:** Review blocked IPs periodically in **Security → Events** to see what Cloudflare is catching. If a legitimate user gets rate-limited, you can add their IP to the **Allow** list in IP Access Rules.
+
+### 5.7 Verification Checklist
+
+After configuring all rules, verify:
+
+- [ ] Visit the site from a non-blocked country — should load normally
+- [ ] Send 6+ rapid POST requests to `/api/v1/auth/login` — should get blocked after 5
+- [ ] Check **Security → Events** — blocked requests should appear with the rule name
+- [ ] Confirm **Bot Fight Mode** is ON (Security → Bots)
+- [ ] Confirm **Browser Integrity Check** is ON (Security → Settings)
+
 ---
 
-## 5.5. Generate PostgreSQL SSL Certificates
+## 5.8. Generate PostgreSQL SSL Certificates
 
 PostgreSQL is configured with `ssl=on` in `docker-compose.production.yml` and the API connects with `Database__SslMode=Require`. Self-signed certificates are sufficient because the connection is internal (Docker bridge network only — never exposed to the internet).
 
@@ -442,8 +554,6 @@ In your GitHub repository → **Settings → Secrets and variables → Actions**
 | `CORS_ORIGIN_0` | `https://seventysixsandbox.com` | — |
 | `VALKEY_PASSWORD` | Valkey/Redis password | `openssl rand -base64 32` |
 | `GRAFANA_ADMIN_PASSWORD` | Grafana admin password | `openssl rand -base64 20` |
-| `MAXMIND_ACCOUNT_ID` | MaxMind GeoLite2 account ID | [maxmind.com](https://www.maxmind.com) |
-| `MAXMIND_LICENSE_KEY` | MaxMind GeoLite2 license key | [maxmind.com](https://www.maxmind.com) |
 | `ALLOWED_HOSTS` | `seventysixsandbox.com;www.seventysixsandbox.com;api.seventysixsandbox.com` | — |
 | `CLIENT_BASE_URL` | `https://seventysixsandbox.com` | — |
 | `OAUTH_CALLBACK_URL` | `https://seventysixsandbox.com/auth/callback` | — |
@@ -524,11 +634,6 @@ gh secret set VALKEY_PASSWORD --body "<GENERATED_VALKEY_PASSWORD>" --repo $REPO
 # ── Observability ──
 gh secret set GRAFANA_ADMIN_PASSWORD --body "<GENERATED_GRAFANA_PASSWORD>" --repo $REPO
 
-# ── MaxMind GeoLite2 (free) — required for Fail2Ban GeoIP country blocking ──
-# Sign up: https://www.maxmind.com/en/geolite2/signup (free, no obligation)
-# After login: Account > Manage License Keys > Generate New License Key
-gh secret set MAXMIND_ACCOUNT_ID --body "<YOUR_MAXMIND_NUMERIC_ACCOUNT_ID>" --repo $REPO
-gh secret set MAXMIND_LICENSE_KEY --body "<YOUR_MAXMIND_LICENSE_KEY>" --repo $REPO
 ```
 
 > **Generating cryptographic values:** Use `openssl rand -base64 N` or PowerShell:
@@ -804,8 +909,6 @@ Run through this checklist after the first deploy:
 - [ ] Prometheus accessible: `https://seventysixsandbox.com/prometheus/` (requires admin login)
 - [ ] Prometheus targets all healthy
 - [ ] Observability returns 401 when not logged in as admin
-- [ ] Fail2Ban running: `docker exec seventysix-fail2ban-prod fail2ban-client status`
-- [ ] GeoIP database downloaded: `docker logs seventysix-geoipupdate-prod`
 - [ ] Backup runs successfully: `/srv/seventysix/scripts/backup.sh`
 - [ ] R2 has backup files: `rclone ls r2:seventysix-backups`
 - [ ] Data Protection key backup exists in R2

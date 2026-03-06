@@ -8,19 +8,10 @@ namespace SeventySix.Identity;
 /// Service for extracting client information from HTTP requests.
 /// </summary>
 /// <remarks>
-/// Provides a single source of truth for IP address and user agent extraction.
-/// Respects X-Forwarded-For headers when behind a reverse proxy.
+/// Provides a single source of truth for user agent extraction.
 /// </remarks>
 public interface IClientInfoService
 {
-	/// <summary>
-	/// Extracts the client IP address from the current HTTP context.
-	/// </summary>
-	/// <returns>
-	/// The client IP address, or null if unavailable.
-	/// </returns>
-	public string? ExtractClientIp();
-
 	/// <summary>
 	/// Extracts the user agent string from the current HTTP context.
 	/// </summary>

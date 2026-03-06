@@ -31,6 +31,7 @@ public sealed class AltchaController(
 	/// <response code="429">Rate limit exceeded.</response>
 	[HttpGet("challenge")]
 	[EnableRateLimiting(RateLimitPolicyConstants.AltchaChallenge)]
+	[ResponseCache(NoStore = true)]
 	[ProducesResponseType(typeof(AltchaChallengeDto), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status429TooManyRequests)]
 	public ActionResult<AltchaChallengeDto> GetChallenge()

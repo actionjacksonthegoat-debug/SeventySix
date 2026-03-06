@@ -27,7 +27,7 @@ import { ActivatedRoute, Router, RouterLink } from "@angular/router";
 import { AuthResponse, LoginRequest, MfaState } from "@auth/models";
 import { MfaService } from "@auth/services";
 import { sanitizeRedirectUrl } from "@auth/utilities";
-import { AltchaWidgetComponent } from "@shared/components";
+import { AltchaWidgetComponent } from "@shared/components/altcha-widget/altcha-widget";
 import { APP_ROUTES, AUTH_NOTIFICATION_MESSAGES, STORAGE_KEYS } from "@shared/constants";
 import { FORM_MATERIAL_MODULES } from "@shared/material-bundles.constants";
 import { AltchaService, AuthService, FeatureFlagsService, NotificationService, StorageService } from "@shared/services";

@@ -1018,9 +1018,12 @@
 /// Glassmorphism card effect using theme-aware custom properties.
 @mixin glassmorphism() {
 	background: var(--landing-glass-bg);
-	backdrop-filter: saturate(var(--landing-glass-saturate)) blur(20px);
 	border: 1px solid var(--landing-glass-border);
 	border-radius: vars.$border-radius-lg;
+
+	@supports (backdrop-filter: blur(1px)) {
+		backdrop-filter: saturate(var(--landing-glass-saturate)) blur(20px);
+	}
 }
 
 /// Frosted glass pill behind text for readability over image backgrounds.
@@ -1036,7 +1039,6 @@
 		position: absolute;
 		inset: calc(-1 * #{$v-pad}) calc(-1 * #{$h-pad});
 		background: var(--landing-glass-bg);
-		backdrop-filter: blur($blur) saturate(var(--landing-glass-saturate));
 		border-radius: vars.$border-radius-md;
 		z-index: -1;
 		mask-image: radial-gradient(
@@ -1044,6 +1046,10 @@
 			black 15%,
 			transparent 80%
 		);
+
+		@supports (backdrop-filter: blur(1px)) {
+			backdrop-filter: blur($blur) saturate(var(--landing-glass-saturate));
+		}
 	}
 }
 

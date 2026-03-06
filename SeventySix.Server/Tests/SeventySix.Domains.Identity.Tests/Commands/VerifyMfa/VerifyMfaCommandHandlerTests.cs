@@ -25,7 +25,6 @@ public sealed class VerifyMfaCommandHandlerTests
 	private const string TestEmail = "test@example.com";
 	private const string TestChallengeToken = "challenge-token-abc";
 	private const string TestCode = "123456";
-	private const string TestClientIp = "127.0.0.1";
 
 	private readonly IMfaService MfaService;
 	private readonly UserManager<ApplicationUser> UserManager;
@@ -71,7 +70,6 @@ public sealed class VerifyMfaCommandHandlerTests
 		AuthService
 			.GenerateAuthResultAsync(
 				user,
-				TestClientIp,
 				false,
 				false,
 				Arg.Any<CancellationToken>())
@@ -87,8 +85,7 @@ public sealed class VerifyMfaCommandHandlerTests
 			new(
 				new VerifyMfaRequest(
 					TestChallengeToken,
-					TestCode),
-				TestClientIp);
+					TestCode));
 
 		// Act
 		AuthResult result =
@@ -124,8 +121,7 @@ public sealed class VerifyMfaCommandHandlerTests
 			new(
 				new VerifyMfaRequest(
 					TestChallengeToken,
-					"wrong-code"),
-				TestClientIp);
+					"wrong-code"));
 
 		// Act
 		AuthResult result =
@@ -161,8 +157,7 @@ public sealed class VerifyMfaCommandHandlerTests
 			new(
 				new VerifyMfaRequest(
 					TestChallengeToken,
-					TestCode),
-				TestClientIp);
+					TestCode));
 
 		// Act
 		AuthResult result =

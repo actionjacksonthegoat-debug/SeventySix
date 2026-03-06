@@ -8,7 +8,8 @@ import {
 	inject,
 	Signal
 } from "@angular/core";
-import { DataTableComponent, PageHeaderComponent } from "@shared/components";
+import { PageHeaderComponent } from "@shared/components";
+import { DataTableComponent } from "@shared/components/data-table/data-table.component";
 import type {
 	BulkAction,
 	BulkActionEvent,

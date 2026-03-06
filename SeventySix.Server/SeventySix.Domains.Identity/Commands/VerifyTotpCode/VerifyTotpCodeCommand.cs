@@ -10,13 +10,9 @@ namespace SeventySix.Identity;
 /// <param name="Request">
 /// The verification request containing challenge token and TOTP code.
 /// </param>
-/// <param name="ClientIp">
-/// Client IP for token creation.
-/// </param>
 /// <param name="UserAgent">
 /// Browser User-Agent header for device fingerprinting.
 /// </param>
 public record VerifyTotpCodeCommand(
 	VerifyTotpRequest Request,
-	string? ClientIp,
 	string? UserAgent = null);

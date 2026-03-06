@@ -68,7 +68,6 @@ public sealed class MfaController(
 		[FromBody] VerifyMfaRequest request,
 		CancellationToken cancellationToken)
 	{
-		string? clientIp = GetClientIpAddress();
 		string? userAgent =
 			Request.Headers.UserAgent.ToString();
 
@@ -76,7 +75,6 @@ public sealed class MfaController(
 			await messageBus.InvokeAsync<AuthResult>(
 				new VerifyMfaCommand(
 					request,
-					clientIp,
 					userAgent),
 				cancellationToken);
 
@@ -174,7 +172,6 @@ public sealed class MfaController(
 		[FromBody] VerifyTotpRequest request,
 		CancellationToken cancellationToken)
 	{
-		string? clientIp = GetClientIpAddress();
 		string? userAgent =
 			Request.Headers.UserAgent.ToString();
 
@@ -182,7 +179,6 @@ public sealed class MfaController(
 			await messageBus.InvokeAsync<AuthResult>(
 				new VerifyTotpCodeCommand(
 					request,
-					clientIp,
 					userAgent),
 				cancellationToken);
 
@@ -231,7 +227,6 @@ public sealed class MfaController(
 		[FromBody] VerifyBackupCodeRequest request,
 		CancellationToken cancellationToken)
 	{
-		string? clientIp = GetClientIpAddress();
 		string? userAgent =
 			Request.Headers.UserAgent.ToString();
 
@@ -239,7 +234,6 @@ public sealed class MfaController(
 			await messageBus.InvokeAsync<AuthResult>(
 				new VerifyBackupCodeCommand(
 					request,
-					clientIp,
 					userAgent),
 				cancellationToken);
 

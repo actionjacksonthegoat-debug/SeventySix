@@ -72,7 +72,7 @@ switch ($Action) {
 		dotnet user-secrets set "Email:FromAddress" "your-email@example.com" --project $projectPath
 
 		# Site — public contact email for legal/privacy pages
-		dotnet user-secrets set "Site:Email" "contact@seventysix.local" --project $projectPath
+		dotnet user-secrets set "Site:Email" "support@seventysixsandbox.com" --project $projectPath
 
 		# Admin Seeder
 		dotnet user-secrets set "AdminSeeder:Email" "admin@seventysix.local" --project $projectPath
