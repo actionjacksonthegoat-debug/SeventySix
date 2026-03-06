@@ -6,6 +6,7 @@ import { STORAGE_KEYS } from "@shared/constants";
 import { CreateLogRequest } from "@shared/models";
 import { DateService } from "@shared/services/date.service";
 import { StorageService } from "@shared/services/storage.service";
+import { isPresent } from "@shared/utilities/null-check.utility";
 import { catchError, interval, of } from "rxjs";
 
 /**
@@ -205,6 +206,15 @@ export class ErrorQueueService
 	 */
 	enqueue(error: CreateLogRequest): void
 	{
+		// Always log to console regardless of remote logging state
+		console.error("[Client Error]", error);
+
+		// Skip remote logging if disabled
+		if (!environment.logging.enableRemoteLogging)
+		{
+			return;
+		}
+
 		// Check for duplicates
 		if (this.isDuplicate(error))
 		{
@@ -214,9 +224,6 @@ export class ErrorQueueService
 
 		// Add to queue
 		this.queue.push(error);
-
-		// Log to console (1:1 with database logs)
-		console.error("[Client Error]", error);
 
 		// Persist to localStorage
 		this.saveQueueToStorage();
@@ -231,6 +238,11 @@ export class ErrorQueueService
 		// Skip if circuit is open
 		if (this.isCircuitOpen())
 		{
+			if (this.queue.length > 0)
+			{
+				console.warn(
+					`[ErrorQueue] Circuit open \u2014 ${this.queue.length} error(s) pending, will retry after circuit resets`);
+			}
 			return;
 		}
 
@@ -298,8 +310,10 @@ export class ErrorQueueService
 		this.circuitBreakerState = "open";
 		this.circuitBreakerOpenTime =
 			this.dateService.nowTimestamp();
-		console.error(
-			"Circuit breaker opened. Pausing error logging for 30 seconds.");
+		console.warn(
+			`[ErrorQueue] Circuit breaker OPEN \u2014 dropping error logs for ${
+				this.circuitOpenDuration / 1000
+			}s after ${this.maxFailures} consecutive failures`);
 	}
 
 	/**
@@ -346,7 +360,7 @@ export class ErrorQueueService
 		const stored: CreateLogRequest[] | null =
 			this.storage.getItem<
 				CreateLogRequest[]>(this.localStorageKey);
-		if (stored)
+		if (isPresent(stored))
 		{
 			this.queue = stored;
 		}
@@ -404,7 +418,7 @@ export class ErrorQueueService
 		const lastSeen: number | undefined =
 			this.recentErrors.get(signature);
 
-		if (lastSeen && now - lastSeen < this.dedupeWindowMs)
+		if (isPresent(lastSeen) && now - lastSeen < this.dedupeWindowMs)
 		{
 			return true; // Duplicate within window
 		}

@@ -160,11 +160,11 @@ $generatedAdminPassword = New-ValidPassword
 
 Write-Host ""
 Write-Host "  Admin password must meet the application policy:" -ForegroundColor White
-Write-Host "    • Minimum 12 characters" -ForegroundColor Gray
-Write-Host "    • At least one uppercase letter [A-Z]" -ForegroundColor Gray
-Write-Host "    • At least one lowercase letter [a-z]" -ForegroundColor Gray
-Write-Host "    • At least one digit [0-9]" -ForegroundColor Gray
-Write-Host "    • At least one special character (e.g. !@#`$%^&*)" -ForegroundColor Gray
+Write-Host "    - Minimum 12 characters" -ForegroundColor Gray
+Write-Host "    - At least one uppercase letter [A-Z]" -ForegroundColor Gray
+Write-Host "    - At least one lowercase letter [a-z]" -ForegroundColor Gray
+Write-Host "    - At least one digit [0-9]" -ForegroundColor Gray
+Write-Host "    - At least one special character (e.g. !@#`$%^&*)" -ForegroundColor Gray
 Write-Host "  Press Enter to use the generated default shown in brackets." -ForegroundColor Cyan
 Write-Host ""
 
@@ -182,7 +182,7 @@ do {
 		Write-Host ""
 		Write-Host "  [ERROR] Password does not meet the application policy:" -ForegroundColor Red
 		foreach ($err in $policyErrors) {
-			Write-Host "    • $err" -ForegroundColor Red
+			Write-Host "    - $err" -ForegroundColor Red
 		}
 		Write-Host "  Please try again, or press Enter to use the generated default." -ForegroundColor Yellow
 		Write-Host ""

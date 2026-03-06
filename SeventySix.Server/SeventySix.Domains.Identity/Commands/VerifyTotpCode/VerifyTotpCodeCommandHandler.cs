@@ -139,7 +139,7 @@ public static class VerifyTotpCodeCommandHandler
 
 		return await GenerateResultWithOptionalTrustAsync(
 			user,
-			(command.Request.TrustDevice, command.ClientIp, command.UserAgent),
+			(command.Request.TrustDevice, command.UserAgent),
 			authenticationService,
 			trustedDeviceService,
 			cancellationToken);
@@ -192,7 +192,7 @@ public static class VerifyTotpCodeCommandHandler
 	/// </summary>
 	private static async Task<AuthResult> GenerateResultWithOptionalTrustAsync(
 		ApplicationUser user,
-		(bool TrustDevice, string? ClientIp, string? UserAgent) deviceDetails,
+		(bool TrustDevice, string? UserAgent) deviceDetails,
 		AuthenticationService authenticationService,
 		ITrustedDeviceService trustedDeviceService,
 		CancellationToken cancellationToken)
@@ -200,7 +200,6 @@ public static class VerifyTotpCodeCommandHandler
 		AuthResult authResult =
 			await authenticationService.GenerateAuthResultAsync(
 				user,
-				deviceDetails.ClientIp,
 				user.RequiresPasswordChange,
 				rememberMe: false,
 				cancellationToken);
@@ -211,7 +210,6 @@ public static class VerifyTotpCodeCommandHandler
 				await trustedDeviceService.CreateTrustedDeviceAsync(
 					user.Id,
 					deviceDetails.UserAgent ?? string.Empty,
-					deviceDetails.ClientIp,
 					cancellationToken);
 
 			return authResult with { TrustedDeviceToken = deviceToken };

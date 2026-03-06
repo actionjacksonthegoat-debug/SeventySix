@@ -22,6 +22,7 @@ export const GITHUB_CLONE_COMMAND: string = "git clone https://github.com/action
 
 const SERVER_TECH: readonly TechStackItem[] =
 	[
+	// --- .NET Platform ---
 		{
 			name: ".NET 10",
 			slug: "dotnet",
@@ -41,6 +42,16 @@ const SERVER_TECH: readonly TechStackItem[] =
 			description: "HTTP framework"
 		},
 		{
+			name: "EF Core",
+			slug: "dotnet",
+			cdnSource: "simpleIcons",
+			brandColor: "#512BD4",
+			url: "https://learn.microsoft.com/ef/core/",
+			license: "MIT",
+			description: "ORM and migrations"
+		},
+		// --- Middleware ---
+		{
 			name: "Wolverine",
 			slug: "wolverine",
 			cdnSource: "simpleIcons",
@@ -51,15 +62,7 @@ const SERVER_TECH: readonly TechStackItem[] =
 			useMaterialIcon: true,
 			materialIcon: "hub"
 		},
-		{
-			name: "EF Core",
-			slug: "dotnet",
-			cdnSource: "simpleIcons",
-			brandColor: "#512BD4",
-			url: "https://learn.microsoft.com/ef/core/",
-			license: "MIT",
-			description: "ORM and migrations"
-		},
+		// --- Data Layer ---
 		{
 			name: "PostgreSQL",
 			slug: "postgresql",
@@ -69,6 +72,7 @@ const SERVER_TECH: readonly TechStackItem[] =
 			license: "PostgreSQL",
 			description: "Primary database"
 		},
+		// --- Caching ---
 		{
 			name: "FusionCache",
 			slug: "fusioncache",
@@ -89,6 +93,7 @@ const SERVER_TECH: readonly TechStackItem[] =
 			license: "BSD-3-Clause",
 			description: "Distributed cache"
 		},
+		// --- Cross-Cutting ---
 		{
 			name: "FluentValidation",
 			slug: "fluentvalidation",
@@ -124,6 +129,7 @@ const SERVER_TECH: readonly TechStackItem[] =
 
 const CLIENT_TECH: readonly TechStackItem[] =
 	[
+	// --- Angular Ecosystem ---
 		{
 			name: "Angular 21",
 			slug: "angular",
@@ -134,15 +140,6 @@ const CLIENT_TECH: readonly TechStackItem[] =
 			description: "SPA framework (Zoneless, Signals)"
 		},
 		{
-			name: "TanStack Query",
-			slug: "reactquery",
-			cdnSource: "simpleIcons",
-			brandColor: "#FF4154",
-			url: "https://tanstack.com/query/latest",
-			license: "MIT",
-			description: "Server state management"
-		},
-		{
 			name: "Angular Material",
 			slug: "angular",
 			cdnSource: "simpleIcons",
@@ -151,6 +148,26 @@ const CLIENT_TECH: readonly TechStackItem[] =
 			license: "MIT",
 			description: "Material Design 3 components"
 		},
+		{
+			name: "Angular PWA",
+			slug: "pwa",
+			cdnSource: "simpleIcons",
+			brandColor: "#5A0FC8",
+			url: "https://angular.dev/ecosystem/service-workers",
+			license: "MIT",
+			description: "Offline support and updates"
+		},
+		// --- State Management ---
+		{
+			name: "TanStack Query",
+			slug: "reactquery",
+			cdnSource: "simpleIcons",
+			brandColor: "#FF4154",
+			url: "https://tanstack.com/query/latest",
+			license: "MIT",
+			description: "Server state management"
+		},
+		// --- Testing ---
 		{
 			name: "Vitest",
 			slug: "vitest",
@@ -178,6 +195,7 @@ const CLIENT_TECH: readonly TechStackItem[] =
 			license: "AGPL-3.0",
 			description: "Load and performance testing"
 		},
+		// --- Code Quality ---
 		{
 			name: "ESLint",
 			slug: "eslint",
@@ -197,20 +215,12 @@ const CLIENT_TECH: readonly TechStackItem[] =
 			description: "Code formatting",
 			useMaterialIcon: true,
 			materialIcon: "format_paint"
-		},
-		{
-			name: "Angular PWA",
-			slug: "pwa",
-			cdnSource: "simpleIcons",
-			brandColor: "#5A0FC8",
-			url: "https://angular.dev/ecosystem/service-workers",
-			license: "MIT",
-			description: "Offline support and updates"
 		}
 	];
 
 const INFRASTRUCTURE_TECH: readonly TechStackItem[] =
 	[
+	// --- Containers ---
 		{
 			name: "Docker Compose",
 			slug: "docker",
@@ -220,6 +230,7 @@ const INFRASTRUCTURE_TECH: readonly TechStackItem[] =
 			license: "Apache-2.0",
 			description: "Container orchestration"
 		},
+		// --- Reverse Proxies ---
 		{
 			name: "nginx",
 			slug: "nginx",
@@ -228,6 +239,25 @@ const INFRASTRUCTURE_TECH: readonly TechStackItem[] =
 			url: "https://nginx.org/",
 			license: "BSD-2-Clause",
 			description: "HTTPS reverse proxy"
+		},
+		{
+			name: "Caddy",
+			slug: "caddy",
+			cdnSource: "simpleIcons",
+			brandColor: "#1F88C0",
+			url: "https://caddyserver.com/",
+			license: "Apache-2.0",
+			description: "TLS termination and reverse proxy"
+		},
+		// --- Observability ---
+		{
+			name: "OpenTelemetry",
+			slug: "opentelemetry",
+			cdnSource: "simpleIcons",
+			brandColor: "#F5A800",
+			url: "https://opentelemetry.io/",
+			license: "Apache-2.0",
+			description: "Telemetry pipeline"
 		},
 		{
 			name: "Jaeger",
@@ -256,26 +286,7 @@ const INFRASTRUCTURE_TECH: readonly TechStackItem[] =
 			license: "AGPL-3.0",
 			description: "Metrics dashboards"
 		},
-		{
-			name: "OpenTelemetry",
-			slug: "opentelemetry",
-			cdnSource: "simpleIcons",
-			brandColor: "#000000",
-			url: "https://opentelemetry.io/",
-			license: "Apache-2.0",
-			description: "Telemetry pipeline"
-		},
-		{
-			name: "Fail2Ban",
-			slug: "fail2ban",
-			cdnSource: "simpleIcons",
-			brandColor: "#C5203E",
-			url: "https://www.fail2ban.org/",
-			license: "GPL-2.0",
-			description: "Intrusion prevention",
-			useMaterialIcon: true,
-			materialIcon: "shield"
-		},
+		// --- Database & Cache Tools ---
 		{
 			name: "pgAdmin",
 			slug: "postgresql",
@@ -284,6 +295,34 @@ const INFRASTRUCTURE_TECH: readonly TechStackItem[] =
 			url: "https://www.pgadmin.org/",
 			license: "PostgreSQL",
 			description: "Database web UI"
+		},
+		{
+			name: "RedisInsight",
+			slug: "redis",
+			cdnSource: "simpleIcons",
+			brandColor: "#DC382D",
+			url: "https://redis.io/insight/",
+			license: "SSPL",
+			description: "Cache management UI"
+		},
+		// --- Cloud & Hosting ---
+		{
+			name: "Cloudflare",
+			slug: "cloudflare",
+			cdnSource: "simpleIcons",
+			brandColor: "#F38020",
+			url: "https://www.cloudflare.com/",
+			license: "Free Plan",
+			description: "WAF, DDoS, and CDN"
+		},
+		{
+			name: "Hetzner",
+			slug: "hetzner",
+			cdnSource: "simpleIcons",
+			brandColor: "#D50C2D",
+			url: "https://www.hetzner.com/",
+			license: "Cost-Efficient Hosting",
+			description: "Docker cloud hosting"
 		}
 	];
 
@@ -333,9 +372,9 @@ export const STAT_ITEMS: readonly StatItem[] =
 			icon: "integration_instructions"
 		},
 		{
-			value: 4,
+			value: 14,
 			suffix: "",
-			label: "Load Test Profiles",
+			label: "Load Test Scenarios",
 			icon: "speed"
 		},
 		{
@@ -358,12 +397,12 @@ export const FEATURE_HIGHLIGHTS: readonly FeatureHighlight[] =
 			icon: "security",
 			tagline: "Defense in depth, zero compromises",
 			description:
-			"Multi-layered security with Argon2 hashing, Altcha CAPTCHA, MFA via TOTP, GitHub OAuth, Fail2Ban intrusion prevention, and role-based access control.",
+			"Multi-layered security with Argon2 hashing, Altcha CAPTCHA, MFA via TOTP, GitHub OAuth, Cloudflare WAF protection, and role-based access control.",
 			bullets: [
 				"Argon2 password hashing via .NET Core Identity",
-				"Altcha proof-of-work CAPTCHA — no third-party tracking",
+				"Altcha proof-of-work CAPTCHA \u2014 no third-party tracking",
 				"MFA with TOTP authenticator apps and backup codes",
-				"Fail2Ban with GeoIP blocking and rate-limit monitoring",
+				"Cloudflare WAF with DDoS protection, bot management, and GeoIP blocking",
 				"Role-based access control (User, Developer, Admin)"
 			]
 		},
@@ -420,7 +459,8 @@ export const FEATURE_HIGHLIGHTS: readonly FeatureHighlight[] =
 				"Bounded contexts: Identity, Logging, ApiTracking, Notifications",
 				"Admin user seeded from user secrets on first dev startup",
 				"Single .editorconfig source of truth; npm run format enforces formatting sitewide",
-				"Docker Compose: dev mirrors production 1:1"
+				"Hetzner cloud hosting with Docker Compose production deploys",
+				"Cloudflare free-tier edge security: WAF, DDoS protection, CDN caching"
 			]
 		}
 	];

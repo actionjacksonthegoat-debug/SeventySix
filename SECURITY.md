@@ -66,4 +66,4 @@ Once a fix has been released, we will publish a GitHub Security Advisory. Credit
 
 ## Security Best Practices for Deployers
 
-See the [deployment documentation](docs/Startup-Instructions.md) for recommended hardening steps including MFA enforcement, rate limiting via fail2ban, and TLS configuration.
+See the [deployment documentation](docs/Startup-Instructions.md) for recommended hardening steps including MFA enforcement, rate limiting (Cloudflare WAF + .NET rate limiting), and TLS configuration.

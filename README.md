@@ -78,7 +78,6 @@ For the full step-by-step manual setup, see [Startup Instructions](docs/Startup-
 - **Altcha proof-of-work CAPTCHA** on all public forms (no third-party tracking)
 - **Multi-factor authentication** via TOTP authenticator apps with backup codes
 - **GitHub OAuth** provider integration with account linking (connect/disconnect from profile page)
-- **Fail2Ban** intrusion prevention with GeoIP blocking and rate-limit monitoring
 - **Role-based access control** enforced server-side and client-side (User, Developer, Admin)
 
 ### Observability
@@ -120,7 +119,7 @@ Domain-driven modules with enforced isolation via architecture tests
 ### Infrastructure
 - **Databases**: PostgreSQL (primary) + Valkey (Redis-compatible distributed cache)
 - **Observability**: Jaeger (traces), Prometheus (metrics), Grafana (dashboards), OpenTelemetry Collector (pipeline)
-- **Security**: Fail2Ban with MaxMind GeoIP, nginx TLS termination
+- **Security**: Cloudflare WAF, .NET rate limiting, nginx TLS termination
 - **Management UIs**: pgAdmin (database), RedisInsight (cache), Scalar (API docs in dev mode)
 
 ### Quality Gates
@@ -202,8 +201,6 @@ Domain-driven modules with enforced isolation via architecture tests
 | Prometheus | latest | Apache-2.0 | Metrics collection |
 | Grafana | 11.4 | AGPL-3.0 | Metrics dashboards |
 | OpenTelemetry Collector | latest | Apache-2.0 | Telemetry pipeline (OTLP to Jaeger + Prometheus) |
-| Fail2Ban | latest | GPL-2.0 | Intrusion prevention (auth, rate limit, geo-blocking) |
-| MaxMind GeoIP | latest | Free tier | Country-level IP geolocation for Fail2Ban |
 | pgAdmin | latest | PostgreSQL License | PostgreSQL web UI |
 | RedisInsight | latest | SSPL | Valkey/Redis GUI for cache visualization |
 
@@ -237,7 +234,6 @@ flowchart LR
         PG[("PostgreSQL 18<br/>DbContexts")]
         VK[("Valkey 9<br/>L1 + L2 cache")]
         OT["OTel Collector<br/>traces + metrics"]
-        F2B["Fail2Ban<br/>intrusion prevention"]
     end
 
     Client -->|HTTPS| Api
@@ -246,14 +242,13 @@ flowchart LR
     DomainLayer -->|FusionCache| VK
     Identity -->|FusionCache| VK
     Api -->|OTLP| OT
-    F2B -.->|monitors logs| Api
 ```
 
 **Server** follows Clean Architecture with a strict `Shared <- Domains <- Api` dependency flow — never reversed. Wolverine dispatches commands and queries to static handlers with method-injected dependencies. Bounded contexts (Identity, Logging, ApiTracking, ElectronicNotifications) each own their database schema, migrations, and EF Core `DbContext`.
 
 **Client** enforces domain isolation — each of the client domains (admin, auth, account, developer, home, sandbox) imports only `@shared/*` and itself, never another domain. Zoneless change detection with Signals eliminates `zone.js`. TanStack Query manages all server state with coordinated cache invalidation via `CacheCoordinationService`. The HTTP interceptor pipeline (auth, cache-bypass, date-parser, error, logging) handles cross-cutting concerns.
 
-**Infrastructure** uses Docker Compose to orchestrate development services. All observability UIs are proxied through nginx with TLS termination. Fail2Ban monitors API logs in real-time with filter/jail combinations.
+**Infrastructure** uses Docker Compose to orchestrate development services. All observability UIs are proxied through nginx with TLS termination.
 
 ## Project Structure
 
@@ -283,7 +278,6 @@ SeventySix/
 │   ├── prompts/                  Copilot prompt files
 │   └── instructions/             instruction files (auto-applied by glob)
 ├── observability/                OpenTelemetry Collector, Prometheus, Grafana configs
-├── fail2ban/                     Intrusion prevention filters and jails
 ├── scripts/                      PowerShell dev scripts (start, stop, secrets, certs)
 ├── docker-compose.yml            Development (services)
 ├── docker-compose.e2e.yml        E2E testing (isolated ports + mock Brevo API)
@@ -601,18 +595,6 @@ The server uses .NET Core 10 Identity with Argon2 password hashing for credentia
 
 Altcha proof-of-work CAPTCHA protects registration, login, forgot password, and contact forms. Unlike reCAPTCHA or hCaptcha, Altcha requires no third-party services, no tracking cookies, and no external network calls. GDPR-compliant by design. The client uses a shared `altcha-widget` component.
 
-### Intrusion Prevention (Fail2Ban)
-
-Three Fail2Ban filter/jail combinations monitor the API in real-time:
-
-| Jail | Filter | Trigger | Threshold | Ban Duration |
-|---|---|---|---|---|
-| `seventysix-auth` | Failed login / account lockout | `Login failed` or `AccountLocked` in logs | 5 failures in 10 min | 1 hour |
-| `seventysix-ratelimit` | HTTP 429 responses | Rate limit exceeded | 10 in 1 min | 30 min |
-| `seventysix-geoip` | Requests from blocked countries | GeoLite2 country match | 1 request | Permanent until manual unban |
-
-GeoIP filtering uses MaxMind GeoLite2 databases, updated automatically by the `geoipupdate` Docker service.
-
 ### Rate Limiting
 
 .NET rate limiting middleware with per-endpoint and global policies configured through `RateLimitingSettings` and `RateLimitPolicyNames`. Runs in-process — no third-party services.
@@ -723,7 +705,6 @@ Full documentation: [Caching Strategy](docs/Caching-Strategy.md)
 | Job | Domain | Purpose | Schedule |
 |---|---|---|---|
 | `RefreshTokenCleanupJob` | Identity | Removes expired refresh tokens | Daily at preferred UTC time |
-| `IpAnonymizationJob` | Identity | Nullifies `LastLoginIp` for inactive users (GDPR Article 4 compliance) | Every 7 days |
 | `OrphanedRegistrationCleanupJob` | Identity | Deletes users who never completed email verification | Daily |
 | `EmailQueueProcessJob` | ElectronicNotifications | Sends pending emails in batches, handles rate limiting and retries | Every 10 seconds |
 | `LogCleanupJob` | Logging | Purges log entries and log files older than the configurable retention period | Daily |
@@ -877,8 +858,6 @@ The development stack (`docker-compose.yml`) orchestrates development services:
 | `redis-exporter` | Redis Exporter | Valkey metrics for Prometheus |
 | `grafana` | Grafana 11.4 | Metrics dashboards |
 | `nginx-proxy` | nginx | HTTPS reverse proxy |
-| `fail2ban` | Fail2Ban | Intrusion prevention |
-| `geoipupdate` | MaxMind GeoIP Updater | Automatic GeoIP database refresh |
 
 ### Secret Management
 
@@ -913,7 +892,7 @@ Everything is free except transactional email:
 | Valkey | Free | BSD-3-Clause, Linux Foundation |
 | PostgreSQL | Free | PostgreSQL License |
 | Observability stack | Free | Jaeger, Prometheus, Grafana, OTel Collector |
-| Fail2Ban + GeoIP | Free | GeoLite2 free tier (MaxMind account required) |
+| Cloudflare (Free plan) | Free | WAF, DDoS protection, bot management, CDN edge caching |
 | MCP servers | Free | No credit card, no auto-upgrade, no metered API calls |
 | VS Code + Copilot | Copilot subscription | Required for AI-assisted features |
 | **Brevo HTTP API** | **Free tier** | **300 emails/day** — sufficient for development and small production |
@@ -1015,7 +994,7 @@ Every pull request runs nine required checks before merge is allowed — spannin
 | **CI / Load Tests** | ~4 min | k6 quick profile in isolated Docker environment — all scenarios must pass thresholds |
 | **CI / Quality Gate** | ~4 sec | Meta-check that all required jobs passed; blocks merge if any gate fails |
 | **CI / Server Build & Test** | ~1 min | .NET build (`TreatWarningsAsErrors=true`), xUnit tests, Roslyn analyzer enforcement |
-| **CI / Test Results** | ~3 min 43s | Aggregates all test suites with [dorny/test-reporter](https://github.com/dorny/test-reporter) — publishes `1,487 tests pass` summary to the PR |
+| **CI / Test Results** | ~3 min 43s | Aggregates all test suites with [dorny/test-reporter](https://github.com/dorny/test-reporter) — publishes `3,100+ tests pass` summary to the PR |
 
 ### Code Scanning
 
@@ -1050,9 +1029,9 @@ Multiple test suites provide automated checks across the full stack:
 
 | Suite | Framework | Tests | Command | What It Covers |
 |---|---|---|---|---|
-| Server | xUnit + NSubstitute + Shouldly | 1,400+ | `npm run test:server` | Server projects: API, Domains, Identity, Shared, Architecture, Analyzers |
-| Client | Vitest | 1,200+ | `npm run test:client` | Unit/integration tests across 100+ spec files + architecture enforcement |
-| E2E | Playwright | 270+ | `npm run test:e2e` | Specs across auth roles (public, authenticated, admin, developer), WCAG 2.2 AA accessibility scanning per role, mock Brevo API |
+| Server | xUnit + NSubstitute + Shouldly | 1,600+ | `npm run test:server` | Server projects: API, Domains, Identity, Shared, Architecture, Analyzers |
+| Client | Vitest | 1,500+ | `npm run test:client` | Unit/integration tests across 100+ spec files + architecture enforcement |
+| E2E | Playwright | 260+ | `npm run test:e2e` | Specs across auth roles (public, authenticated, admin, developer), WCAG 2.2 AA accessibility scanning per role, mock Brevo API |
 | Load | k6 (Grafana) | scenarios | `npm run loadtest:quick` | Auth, users, permissions, logging, and health across multiple profiles (smoke, quick, stress, load) |
 
 ### E2E Coverage by Role

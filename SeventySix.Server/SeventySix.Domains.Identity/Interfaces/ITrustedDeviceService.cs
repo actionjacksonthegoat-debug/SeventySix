@@ -18,9 +18,6 @@ public interface ITrustedDeviceService
 	/// <param name="userAgent">
 	/// The browser's User-Agent string for fingerprinting.
 	/// </param>
-	/// <param name="ipAddress">
-	/// The client's IP address for fingerprinting.
-	/// </param>
 	/// <param name="cancellationToken">
 	/// Cancellation token.
 	/// </param>
@@ -30,7 +27,6 @@ public interface ITrustedDeviceService
 	public Task<string> CreateTrustedDeviceAsync(
 		long userId,
 		string userAgent,
-		string? ipAddress,
 		CancellationToken cancellationToken);
 
 	/// <summary>
@@ -45,9 +41,6 @@ public interface ITrustedDeviceService
 	/// <param name="userAgent">
 	/// The browser's User-Agent string for fingerprint verification.
 	/// </param>
-	/// <param name="ipAddress">
-	/// The client's IP address for fingerprint verification.
-	/// </param>
 	/// <param name="cancellationToken">
 	/// Cancellation token.
 	/// </param>
@@ -58,7 +51,6 @@ public interface ITrustedDeviceService
 		long userId,
 		string token,
 		string userAgent,
-		string? ipAddress,
 		CancellationToken cancellationToken);
 
 	/// <summary>

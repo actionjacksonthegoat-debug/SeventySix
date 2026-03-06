@@ -37,7 +37,7 @@
 
 > **Why CCX23 instead of CPX41?** CCX23 costs $4.50/mo *less* than CPX41 while providing dedicated (not shared) CPU. The CCX General Purpose series is Hetzner's recommendation for production workloads. Yearly savings over CPX41: ~$54 on server + ~$11 on backups = **~$65/year**.
 - **CDN/TLS:** Cloudflare free tier + Caddy (Let's Encrypt)
-- **Services running on this server:** API, Client, PostgreSQL, Valkey, Grafana, Prometheus, Jaeger, OTel Collector, Fail2Ban, GeoIPUpdate
+- **Services running on this server:** API, Client, PostgreSQL, Valkey, Grafana, Prometheus, Jaeger, OTel Collector
 - **Backups:** Daily pg_dump → Cloudflare R2 via `scripts/backup.sh`
 - **CD:** GitHub Actions → SSH → `docker compose pull + up -d`
 

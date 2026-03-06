@@ -95,7 +95,6 @@ public static class LoginCommandHandler
 
 			return await mfaOrchestrator.InitiateChallengeAsync(
 				user!,
-				command.ClientIp,
 				cancellationToken);
 		}
 
@@ -108,7 +107,6 @@ public static class LoginCommandHandler
 
 		return await authenticationService.GenerateAuthResultAsync(
 			user!,
-			command.ClientIp,
 			user!.RequiresPasswordChange,
 			command.Request.RememberMe,
 			cancellationToken);

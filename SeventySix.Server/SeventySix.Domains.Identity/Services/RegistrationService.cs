@@ -130,9 +130,6 @@ public sealed class RegistrationService(
 	/// <param name="user">
 	/// The authenticated user for whom to generate tokens.
 	/// </param>
-	/// <param name="clientIp">
-	/// The client IP address for audit and token generation.
-	/// </param>
 	/// <param name="requiresPasswordChange">
 	/// Whether the user must change their password on next login.
 	/// </param>
@@ -147,7 +144,6 @@ public sealed class RegistrationService(
 	/// </returns>
 	public Task<AuthResult> GenerateAuthResultAsync(
 		ApplicationUser user,
-		string? clientIp,
 		bool requiresPasswordChange,
 		bool rememberMe,
 		CancellationToken cancellationToken)
@@ -155,7 +151,6 @@ public sealed class RegistrationService(
 		// Delegate to AuthenticationService (DRY - single source of truth)
 		return authenticationService.GenerateAuthResultAsync(
 			user,
-			clientIp,
 			requiresPasswordChange,
 			rememberMe,
 			cancellationToken);

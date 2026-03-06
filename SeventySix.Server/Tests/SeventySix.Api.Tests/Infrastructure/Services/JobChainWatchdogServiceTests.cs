@@ -90,13 +90,6 @@ public sealed class JobChainWatchdogServiceTests
 					IntervalHours = 1
 				});
 
-		IOptions<IpAnonymizationSettings> ipAnonymizationSettings =
-			Options.Create(
-				new IpAnonymizationSettings
-				{
-					IntervalDays = 7
-				});
-
 		IOptions<OrphanedRegistrationCleanupSettings> orphanedRegistrationCleanupSettings =
 			Options.Create(
 				new OrphanedRegistrationCleanupSettings
@@ -117,7 +110,6 @@ public sealed class JobChainWatchdogServiceTests
 				emailQueueSettings,
 				logCleanupSettings,
 				refreshTokenCleanupSettings,
-				ipAnonymizationSettings,
 				orphanedRegistrationCleanupSettings,
 				databaseMaintenanceSettings,
 				TimeProvider,
@@ -204,9 +196,9 @@ public sealed class JobChainWatchdogServiceTests
 		// Act
 		await Service.CheckAndRebootstrapAsync(CancellationToken.None);
 
-		// Assert — all 6 jobs should produce warning logs
+		// Assert — all 5 jobs should produce warning logs
 		Logger
-			.Received(6)
+			.Received(5)
 			.Log(
 				LogLevel.Warning,
 				Arg.Any<EventId>(),

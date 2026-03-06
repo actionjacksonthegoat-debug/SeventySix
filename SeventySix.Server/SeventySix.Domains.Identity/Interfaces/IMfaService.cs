@@ -23,9 +23,6 @@ public interface IMfaService
 	/// <param name="userId">
 	/// The user's ID.
 	/// </param>
-	/// <param name="clientIp">
-	/// The client's IP address.
-	/// </param>
 	/// <param name="cancellationToken">
 	/// Cancellation token.
 	/// </param>
@@ -34,7 +31,6 @@ public interface IMfaService
 	/// </returns>
 	public Task<(string ChallengeToken, string Code)> CreateChallengeAsync(
 		long userId,
-		string? clientIp,
 		CancellationToken cancellationToken);
 
 	/// <summary>

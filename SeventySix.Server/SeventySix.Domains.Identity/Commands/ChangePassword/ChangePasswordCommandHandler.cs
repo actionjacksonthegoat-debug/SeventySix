@@ -117,7 +117,6 @@ public static class ChangePasswordCommandHandler
 
 		return await authenticationService.GenerateAuthResultAsync(
 			transactedUser!,
-			clientIp: null,
 			requiresPasswordChange: false,
 			rememberMe: false,
 			cancellationToken);

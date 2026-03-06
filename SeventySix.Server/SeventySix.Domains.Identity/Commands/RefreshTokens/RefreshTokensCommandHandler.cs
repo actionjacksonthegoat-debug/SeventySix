@@ -89,7 +89,6 @@ public static class RefreshTokensCommandHandler
 		(string? newRefreshToken, bool rememberMe) =
 			await tokenService.RotateRefreshTokenAsync(
 				command.RefreshToken,
-				command.ClientIp,
 				cancellationToken);
 
 		if (newRefreshToken == null)

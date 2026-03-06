@@ -87,7 +87,6 @@ public sealed class AuthenticationServiceTests
 			[RoleConstants.User];
 		string expectedAccessToken = "access_token_123";
 		string expectedRefreshToken = "refresh_token_456";
-		string clientIp = "192.168.1.1";
 		DateTimeOffset utcNow =
 			TestDates.DefaultUtc;
 
@@ -106,7 +105,6 @@ public sealed class AuthenticationServiceTests
 		TokenService
 			.GenerateRefreshTokenAsync(
 				user.Id,
-				clientIp,
 				false,
 				Arg.Any<CancellationToken>())
 			.Returns(expectedRefreshToken);
@@ -117,7 +115,6 @@ public sealed class AuthenticationServiceTests
 		AuthResult result =
 			await ServiceUnderTest.GenerateAuthResultAsync(
 			user,
-			clientIp,
 			requiresPasswordChange: false,
 			rememberMe: false,
 			CancellationToken.None);
@@ -136,7 +133,6 @@ public sealed class AuthenticationServiceTests
 			.UpdateLastLoginAsync(
 				user.Id,
 				utcNow,
-				clientIp,
 				Arg.Any<CancellationToken>());
 	}
 
@@ -170,7 +166,6 @@ public sealed class AuthenticationServiceTests
 		TokenService
 			.GenerateRefreshTokenAsync(
 				Arg.Any<long>(),
-				Arg.Any<string?>(),
 				true, // rememberMe
 				Arg.Any<CancellationToken>())
 			.Returns("refresh");
@@ -180,7 +175,6 @@ public sealed class AuthenticationServiceTests
 		// Act
 		await ServiceUnderTest.GenerateAuthResultAsync(
 			user,
-			"127.0.0.1",
 			requiresPasswordChange: false,
 			rememberMe: true,
 			CancellationToken.None);
@@ -190,7 +184,6 @@ public sealed class AuthenticationServiceTests
 			.Received(1)
 			.GenerateRefreshTokenAsync(
 				user.Id,
-				"127.0.0.1",
 				true, // Verify rememberMe was passed through
 				Arg.Any<CancellationToken>());
 	}
@@ -225,7 +218,6 @@ public sealed class AuthenticationServiceTests
 		TokenService
 			.GenerateRefreshTokenAsync(
 				Arg.Any<long>(),
-				Arg.Any<string?>(),
 				Arg.Any<bool>(),
 				Arg.Any<CancellationToken>())
 			.Returns("refresh");
@@ -236,7 +228,6 @@ public sealed class AuthenticationServiceTests
 		AuthResult result =
 			await ServiceUnderTest.GenerateAuthResultAsync(
 			user,
-			null,
 			requiresPasswordChange: true,
 			rememberMe: false,
 			CancellationToken.None);
@@ -283,7 +274,6 @@ public sealed class AuthenticationServiceTests
 		TokenService
 			.GenerateRefreshTokenAsync(
 				Arg.Any<long>(),
-				Arg.Any<string?>(),
 				Arg.Any<bool>(),
 				Arg.Any<CancellationToken>())
 			.Returns("refresh");
@@ -293,7 +283,6 @@ public sealed class AuthenticationServiceTests
 		// Act
 		await ServiceUnderTest.GenerateAuthResultAsync(
 			user,
-			null,
 			requiresPasswordChange: false,
 			rememberMe: false,
 			CancellationToken.None);
@@ -366,7 +355,6 @@ public sealed class AuthenticationServiceTests
 			.DidNotReceive()
 			.GenerateRefreshTokenAsync(
 				Arg.Any<long>(),
-				Arg.Any<string?>(),
 				Arg.Any<bool>(),
 				Arg.Any<CancellationToken>());
 
@@ -376,7 +364,6 @@ public sealed class AuthenticationServiceTests
 			.UpdateLastLoginAsync(
 				Arg.Any<long>(),
 				Arg.Any<DateTimeOffset>(),
-				Arg.Any<string?>(),
 				Arg.Any<CancellationToken>());
 	}
 
@@ -411,7 +398,6 @@ public sealed class AuthenticationServiceTests
 		TokenService
 			.GenerateRefreshTokenAsync(
 				Arg.Any<long>(),
-				Arg.Any<string?>(),
 				Arg.Any<bool>(),
 				Arg.Any<CancellationToken>())
 			.Returns("refresh");
@@ -422,7 +408,6 @@ public sealed class AuthenticationServiceTests
 		AuthResult result =
 			await ServiceUnderTest.GenerateAuthResultAsync(
 			user,
-			"192.168.1.1",
 			requiresPasswordChange: false,
 			rememberMe: false,
 			CancellationToken.None);
@@ -462,7 +447,6 @@ public sealed class AuthenticationServiceTests
 		TokenService
 			.GenerateRefreshTokenAsync(
 				Arg.Any<long>(),
-				Arg.Any<string?>(),
 				Arg.Any<bool>(),
 				Arg.Any<CancellationToken>())
 			.Returns("refresh");
@@ -473,7 +457,6 @@ public sealed class AuthenticationServiceTests
 		AuthResult result =
 			await ServiceUnderTest.GenerateAuthResultAsync(
 			user,
-			"192.168.1.1",
 			requiresPasswordChange: false,
 			rememberMe: false,
 			CancellationToken.None);

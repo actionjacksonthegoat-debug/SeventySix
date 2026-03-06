@@ -24,7 +24,6 @@ public sealed class VerifyBackupCodeCommandHandlerTests
 	private const long TestUserId = 42;
 	private const string TestEmail = "backup@example.com";
 	private const string TestValidCode = "ABCD-1234-EFGH";
-	private const string TestClientIp = "127.0.0.1";
 	private const string TestChallengeToken = "valid-challenge-token";
 
 	private readonly IBackupCodeService BackupCodeService;
@@ -242,7 +241,6 @@ public sealed class VerifyBackupCodeCommandHandlerTests
 		AuthService
 			.GenerateAuthResultAsync(
 				user,
-				TestClientIp,
 				false,
 				false,
 				Arg.Any<CancellationToken>())
@@ -260,8 +258,7 @@ public sealed class VerifyBackupCodeCommandHandlerTests
 		return new VerifyBackupCodeCommand(
 			new VerifyBackupCodeRequest(
 				TestChallengeToken,
-				code),
-			TestClientIp);
+				code));
 	}
 
 	private Task<AuthResult> InvokeHandlerAsync(VerifyBackupCodeCommand command)

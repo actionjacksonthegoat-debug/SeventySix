@@ -89,7 +89,6 @@ public static class VerifyMfaCommandHandler
 		AuthResult authResult =
 			await authenticationService.GenerateAuthResultAsync(
 				user,
-				command.ClientIp,
 				user.RequiresPasswordChange,
 				rememberMe: false,
 				cancellationToken);
@@ -100,7 +99,6 @@ public static class VerifyMfaCommandHandler
 				await trustedDeviceService.CreateTrustedDeviceAsync(
 					user.Id,
 					command.UserAgent ?? string.Empty,
-					command.ClientIp,
 					cancellationToken);
 
 			return authResult with { TrustedDeviceToken = deviceToken };

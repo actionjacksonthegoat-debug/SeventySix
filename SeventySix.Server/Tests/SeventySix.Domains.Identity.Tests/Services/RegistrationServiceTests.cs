@@ -340,7 +340,6 @@ public sealed class RegistrationServiceTests
 		AuthenticationService
 			.GenerateAuthResultAsync(
 				user,
-				"127.0.0.1",
 				false,
 				false,
 				Arg.Any<CancellationToken>())
@@ -353,7 +352,6 @@ public sealed class RegistrationServiceTests
 		AuthResult result =
 			await service.GenerateAuthResultAsync(
 				user,
-				"127.0.0.1",
 				requiresPasswordChange: false,
 				rememberMe: false,
 				CancellationToken.None);
@@ -363,7 +361,6 @@ public sealed class RegistrationServiceTests
 			.Received(1)
 			.GenerateAuthResultAsync(
 				user,
-				"127.0.0.1",
 				false,
 				false,
 				Arg.Any<CancellationToken>());

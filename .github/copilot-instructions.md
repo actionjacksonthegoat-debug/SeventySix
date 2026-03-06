@@ -29,11 +29,12 @@
 
 > **DO NOT** create files in the `/docs/` folder. Plans are written to `Implementation.md` (orchestrator) and `implementation-N.md` (individual plan files) at the repo root, and ONLY when the `/create-plan` prompt is invoked.
 
-- **`Implementation.md`** is the **orchestrator** � it tracks all `implementation-N.md` files and runs final validation after all complete
-- **`implementation-1.md`, `implementation-2.md`, etc.** are focused, completable plan files � each covers one logical unit of work
-- Writing throwaway docs is expensive � avoid unless `/create-plan` is explicitly run
+- **`Implementation.md`** is the **orchestrator** — it tracks all `implementation-N.md` files and runs final validation after all complete
+- **`implementation-1.md`, `implementation-2.md`, etc.** are focused, completable plan files — each covers one logical unit of work
+- Writing throwaway docs is expensive — avoid unless `/create-plan` is explicitly run
 - If a change is complex enough to need user-facing documentation, **ASK the user first** before writing it
-- `.github/instructions/*.instructions.md` files are the authoritative reference � keep them current, don't duplicate into `/docs/`
+- `.github/instructions/*.instructions.md` files are the authoritative reference — keep them current, don't duplicate into `/docs/`
+- **During `/execute-plan`**: Do NOT modify READMEs or `docs/*.md` unless the active `implementation-N.md` contains an explicit documentation phase. The orchestrator's final documentation gate verifies currency — incidental doc edits during code phases cause merge noise and scope creep.
 
 ---
 

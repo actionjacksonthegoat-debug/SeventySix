@@ -32,7 +32,6 @@ public sealed class RefreshTokensCommandHandlerTests
 	{
 		// Arrange
 		string refreshToken = "old-refresh";
-		string clientIpAddress = "127.0.0.1";
 
 		ITokenService tokenService =
 			Substitute.For<ITokenService>();
@@ -66,7 +65,6 @@ public sealed class RefreshTokensCommandHandlerTests
 		tokenService
 			.RotateRefreshTokenAsync(
 				refreshToken,
-				clientIpAddress,
 				Arg.Any<CancellationToken>())
 			.Returns(("new-token", false));
 
@@ -93,7 +91,7 @@ public sealed class RefreshTokensCommandHandlerTests
 			.Returns(Task.FromResult(expectedAccessTokenResult));
 
 		RefreshTokensCommand command =
-			new(refreshToken, clientIpAddress);
+			new(refreshToken);
 
 		// Act
 		AuthResult result =
@@ -117,7 +115,6 @@ public sealed class RefreshTokensCommandHandlerTests
 	{
 		// Arrange
 		string refreshToken = "old-refresh";
-		string clientIpAddress = "127.0.0.1";
 
 		ITokenService tokenService =
 			Substitute.For<ITokenService>();
@@ -151,7 +148,6 @@ public sealed class RefreshTokensCommandHandlerTests
 		tokenService
 			.RotateRefreshTokenAsync(
 				refreshToken,
-				clientIpAddress,
 				Arg.Any<CancellationToken>())
 			.Returns(("new-token", false));
 
@@ -178,7 +174,7 @@ public sealed class RefreshTokensCommandHandlerTests
 			.Returns(Task.FromResult(expectedAccessTokenResult));
 
 		RefreshTokensCommand command =
-			new(refreshToken, clientIpAddress);
+			new(refreshToken);
 
 		// Act
 		AuthResult result =
@@ -202,7 +198,6 @@ public sealed class RefreshTokensCommandHandlerTests
 	{
 		// Arrange
 		string reuseRefreshToken = "reused-refresh-token";
-		string clientIpAddress = "127.0.0.1";
 
 		ITokenService tokenService =
 			Substitute.For<ITokenService>();
@@ -238,12 +233,11 @@ public sealed class RefreshTokensCommandHandlerTests
 		tokenService
 			.RotateRefreshTokenAsync(
 				reuseRefreshToken,
-				clientIpAddress,
 				Arg.Any<CancellationToken>())
 			.Returns((rotatedToken, false));
 
 		RefreshTokensCommand command =
-			new(reuseRefreshToken, clientIpAddress);
+			new(reuseRefreshToken);
 
 		// Act
 		AuthResult result =
@@ -269,7 +263,6 @@ public sealed class RefreshTokensCommandHandlerTests
 		// Arrange
 		string oldRefreshToken = "old-refresh-token";
 		string newRefreshToken = "new-rotated-token";
-		string clientIpAddress = "127.0.0.1";
 
 		ITokenService tokenService =
 			Substitute.For<ITokenService>();
@@ -303,7 +296,6 @@ public sealed class RefreshTokensCommandHandlerTests
 		tokenService
 			.RotateRefreshTokenAsync(
 				oldRefreshToken,
-				clientIpAddress,
 				Arg.Any<CancellationToken>())
 			.Returns((newRefreshToken, false));
 
@@ -330,7 +322,7 @@ public sealed class RefreshTokensCommandHandlerTests
 			.Returns(Task.FromResult(expectedAccessTokenResult));
 
 		RefreshTokensCommand command =
-			new(oldRefreshToken, clientIpAddress);
+			new(oldRefreshToken);
 
 		// Act
 		AuthResult result =
@@ -350,7 +342,6 @@ public sealed class RefreshTokensCommandHandlerTests
 		await tokenService.Received(1)
 			.RotateRefreshTokenAsync(
 				oldRefreshToken,
-				clientIpAddress,
 				Arg.Any<CancellationToken>());
 	}
 
@@ -366,7 +357,6 @@ public sealed class RefreshTokensCommandHandlerTests
 		// Arrange
 		string oldRefreshToken = "old-token-for-orphan-test";
 		string newRefreshToken = "rotated-token";
-		string clientIpAddress = "10.0.0.1";
 
 		ITokenService tokenService =
 			Substitute.For<ITokenService>();
@@ -398,7 +388,6 @@ public sealed class RefreshTokensCommandHandlerTests
 		tokenService
 			.RotateRefreshTokenAsync(
 				oldRefreshToken,
-				clientIpAddress,
 				Arg.Any<CancellationToken>())
 			.Returns((newRefreshToken, false));
 
@@ -424,7 +413,7 @@ public sealed class RefreshTokensCommandHandlerTests
 			.Returns(Task.FromResult(expectedAccessTokenResult));
 
 		RefreshTokensCommand command =
-			new(oldRefreshToken, clientIpAddress);
+			new(oldRefreshToken);
 
 		// Act
 		AuthResult result =
@@ -441,7 +430,6 @@ public sealed class RefreshTokensCommandHandlerTests
 			.DidNotReceive()
 			.GenerateAuthResultAsync(
 				Arg.Any<ApplicationUser>(),
-				Arg.Any<string?>(),
 				Arg.Any<bool>(),
 				Arg.Any<bool>(),
 				Arg.Any<CancellationToken>());

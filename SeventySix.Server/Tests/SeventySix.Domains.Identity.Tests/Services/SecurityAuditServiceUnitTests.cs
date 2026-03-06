@@ -55,7 +55,6 @@ public sealed class SecurityAuditServiceUnitTests
 
 		IClientInfoService clientInfoService =
 			Substitute.For<IClientInfoService>();
-		clientInfoService.ExtractClientIp().Returns("192.168.1.100");
 		clientInfoService.ExtractUserAgent().Returns("Mozilla/5.0 Test Agent");
 
 		ILogger<SecurityAuditService> logger =
@@ -89,7 +88,6 @@ public sealed class SecurityAuditServiceUnitTests
 		savedEvent.UserId.ShouldBe(UserId);
 		savedEvent.Username.ShouldBe(Username);
 		savedEvent.Success.ShouldBeTrue();
-		savedEvent.IpAddress.ShouldBe("192.168.1.100");
 		savedEvent.UserAgent.ShouldBe("Mozilla/5.0 Test Agent");
 		savedEvent.CreateDate.ShouldBe(TimeProvider.GetUtcNow());
 	}
@@ -106,7 +104,6 @@ public sealed class SecurityAuditServiceUnitTests
 
 		IClientInfoService clientInfoService =
 			Substitute.For<IClientInfoService>();
-		clientInfoService.ExtractClientIp().Returns("10.0.0.1");
 		clientInfoService.ExtractUserAgent().Returns("Test Browser");
 
 		ILogger<SecurityAuditService> logger =
@@ -191,7 +188,6 @@ public sealed class SecurityAuditServiceUnitTests
 
 		IClientInfoService clientInfoService =
 			Substitute.For<IClientInfoService>();
-		clientInfoService.ExtractClientIp().Returns(default(string?));
 		clientInfoService.ExtractUserAgent().Returns(default(string?));
 
 		ILogger<SecurityAuditService> logger =
@@ -221,7 +217,6 @@ public sealed class SecurityAuditServiceUnitTests
 
 		savedEvent.ShouldNotBeNull();
 		savedEvent.Details.ShouldBe(Details);
-		savedEvent.IpAddress.ShouldBeNull();
 		savedEvent.UserAgent.ShouldBeNull();
 	}
 }

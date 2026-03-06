@@ -74,7 +74,6 @@ public sealed class AuthController(
 		[FromBody] LoginRequest request,
 		CancellationToken cancellationToken)
 	{
-		string? clientIp = GetClientIpAddress();
 		string? trustedDeviceToken =
 			CookieService.GetTrustedDeviceToken();
 		string? userAgent =
@@ -84,7 +83,6 @@ public sealed class AuthController(
 			await messageBus.InvokeAsync<AuthResult>(
 				new LoginCommand(
 					request,
-					clientIp,
 					trustedDeviceToken,
 					userAgent),
 				cancellationToken);
@@ -151,11 +149,9 @@ public sealed class AuthController(
 				});
 		}
 
-		string? clientIp = GetClientIpAddress();
-
 		AuthResult result =
 			await messageBus.InvokeAsync<AuthResult>(
-				new RefreshTokensCommand(refreshToken, clientIp),
+				new RefreshTokensCommand(refreshToken),
 				cancellationToken);
 
 		if (!result.Success)

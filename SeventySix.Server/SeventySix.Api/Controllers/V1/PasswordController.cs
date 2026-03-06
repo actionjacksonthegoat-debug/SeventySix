@@ -158,11 +158,9 @@ public sealed class PasswordController(
 		[FromBody] SetPasswordRequest request,
 		CancellationToken cancellationToken)
 	{
-		string? clientIp = GetClientIpAddress();
-
 		AuthResult result =
 			await messageBus.InvokeAsync<AuthResult>(
-				new SetPasswordCommand(request, clientIp),
+				new SetPasswordCommand(request),
 				cancellationToken);
 
 		if (!result.Success)

@@ -55,7 +55,6 @@ public sealed class MfaService(
 	/// <inheritdoc/>
 	public async Task<(string ChallengeToken, string Code)> CreateChallengeAsync(
 		long userId,
-		string? clientIp,
 		CancellationToken cancellationToken)
 	{
 		string code =
@@ -79,7 +78,6 @@ public sealed class MfaService(
 				ExpiresAt = now.AddMinutes(settings.Value.CodeExpirationMinutes),
 				Attempts = 0,
 				IsUsed = false,
-				ClientIp = clientIp,
 				CreateDate = now
 			};
 

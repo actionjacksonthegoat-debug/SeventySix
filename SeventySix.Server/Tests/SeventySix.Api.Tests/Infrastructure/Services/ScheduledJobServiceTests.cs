@@ -23,7 +23,6 @@ public sealed class ScheduledJobServiceTests
 {
 	private readonly IRecurringJobRepository RecurringJobRepository;
 	private readonly IOptions<RefreshTokenCleanupSettings> RefreshTokenCleanupSettingsOption;
-	private readonly IOptions<IpAnonymizationSettings> IpAnonymizationSettingsOption;
 	private readonly IOptions<LogCleanupSettings> LogCleanupSettingsOption;
 	private readonly IOptions<EmailQueueSettings> EmailQueueSettingsOption;
 	private readonly IOptions<OrphanedRegistrationCleanupSettings> OrphanedRegistrationCleanupSettingsOption;
@@ -38,10 +37,6 @@ public sealed class ScheduledJobServiceTests
 		RefreshTokenCleanupSettingsOption =
 			Options.Create(
 				new RefreshTokenCleanupSettings { IntervalHours = 24 });
-
-		IpAnonymizationSettingsOption =
-			Options.Create(
-				new IpAnonymizationSettings { IntervalDays = 7 });
 
 		LogCleanupSettingsOption =
 			Options.Create(
@@ -68,7 +63,6 @@ public sealed class ScheduledJobServiceTests
 		return new ScheduledJobService(
 			RecurringJobRepository,
 			RefreshTokenCleanupSettingsOption,
-			IpAnonymizationSettingsOption,
 			LogCleanupSettingsOption,
 			EmailQueueSettingsOption,
 			OrphanedRegistrationCleanupSettingsOption,
@@ -92,11 +86,9 @@ public sealed class ScheduledJobServiceTests
 			await service.GetAllJobStatusesAsync(CancellationToken.None);
 
 		// Assert
-		result.Count.ShouldBe(6);
+		result.Count.ShouldBe(5);
 		result.ShouldContain(
 			job => job.JobName == "RefreshTokenCleanupJob");
-		result.ShouldContain(
-			job => job.JobName == "IpAnonymizationJob");
 		result.ShouldContain(
 			job => job.JobName == "LogCleanupJob");
 		result.ShouldContain(

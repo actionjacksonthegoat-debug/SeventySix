@@ -26,8 +26,6 @@ public sealed class MfaChallengeBuilder
 		0;
 	private bool IsUsed =
 		false;
-	private string? ClientIp =
-		"127.0.0.1";
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="MfaChallengeBuilder"/> class.
@@ -140,21 +138,6 @@ public sealed class MfaChallengeBuilder
 	}
 
 	/// <summary>
-	/// Sets the client IP address.
-	/// </summary>
-	/// <param name="clientIp">
-	/// The client IP.
-	/// </param>
-	/// <returns>
-	/// The builder instance.
-	/// </returns>
-	public MfaChallengeBuilder WithClientIp(string? clientIp)
-	{
-		ClientIp = clientIp;
-		return this;
-	}
-
-	/// <summary>
 	/// Builds the MfaChallenge instance.
 	/// </summary>
 	/// <returns>
@@ -176,7 +159,6 @@ public sealed class MfaChallengeBuilder
 			ExpiresAt = now.AddMinutes(ExpirationMinutes),
 			Attempts = Attempts,
 			IsUsed = IsUsed,
-			ClientIp = ClientIp,
 			CreateDate = now
 		};
 	}

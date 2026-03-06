@@ -95,14 +95,12 @@ public sealed class TokenService(
 	/// <inheritdoc/>
 	public async Task<string> GenerateRefreshTokenAsync(
 		long userId,
-		string? clientIp,
 		bool rememberMe = false,
 		CancellationToken cancellationToken = default)
 	{
 		// Create new family for fresh token generation
 		return await GenerateRefreshTokenInternalAsync(
 			userId,
-			clientIp,
 			rememberMe,
 			familyId: Guid.NewGuid(),
 			sessionStartedAt: null,
@@ -112,7 +110,6 @@ public sealed class TokenService(
 	/// <inheritdoc/>
 	public async Task<(string? Token, bool RememberMe)> RotateRefreshTokenAsync(
 		string refreshToken,
-		string? clientIp,
 		CancellationToken cancellationToken = default)
 	{
 		string tokenHash =
@@ -200,7 +197,6 @@ public sealed class TokenService(
 		string newToken =
 			await GenerateRefreshTokenInternalAsync(
 				existingToken.UserId,
-				clientIp,
 				rememberMe,
 				existingToken.FamilyId,
 				existingToken.SessionStartedAt,
@@ -214,9 +210,6 @@ public sealed class TokenService(
 	/// </summary>
 	/// <param name="userId">
 	/// The user id the token belongs to.
-	/// </param>
-	/// <param name="clientIp">
-	/// Optional client IP address for auditing.
 	/// </param>
 	/// <param name="rememberMe">
 	/// Whether token should use long-lived expiration.
@@ -235,7 +228,6 @@ public sealed class TokenService(
 	/// </returns>
 	private async Task<string> GenerateRefreshTokenInternalAsync(
 		long userId,
-		string? clientIp,
 		bool rememberMe,
 		Guid familyId,
 		DateTimeOffset? sessionStartedAt = null,
@@ -271,7 +263,6 @@ public sealed class TokenService(
 					sessionStartedAt ?? now,
 				CreateDate = now,
 				IsRevoked = false,
-				CreatedByIp = clientIp,
 			};
 
 		await tokenRepository.CreateAsync(refreshToken, cancellationToken);

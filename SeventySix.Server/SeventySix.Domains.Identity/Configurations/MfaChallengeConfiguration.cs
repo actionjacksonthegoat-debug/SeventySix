@@ -75,11 +75,6 @@ public sealed class MfaChallengeConfiguration : IEntityTypeConfiguration<MfaChal
 			.IsRequired()
 			.HasDefaultValue(false);
 
-		// ClientIp - Optional, max 45 chars for IPv6
-		builder
-			.Property(challenge => challenge.ClientIp)
-			.HasMaxLength(45);
-
 		// CreateDate - Required
 		builder
 			.Property(challenge => challenge.CreateDate)

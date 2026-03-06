@@ -14,13 +14,12 @@ namespace SeventySix.Identity;
 /// Internal visibility enforces service facade pattern.
 /// Most operations now use UserManager; this handles custom fields.
 /// </remarks>
-internal class AuthRepository(IdentityDbContext context) : IAuthRepository
+internal sealed class AuthRepository(IdentityDbContext context) : IAuthRepository
 {
 	/// <inheritdoc/>
 	public async Task UpdateLastLoginAsync(
 		long userId,
 		DateTimeOffset loginTime,
-		string? clientIp,
 		CancellationToken cancellationToken = default) =>
 		await context
 			.Users
@@ -30,10 +29,7 @@ internal class AuthRepository(IdentityDbContext context) : IAuthRepository
 					setters
 						.SetProperty(
 							user => user.LastLoginAt,
-							loginTime)
-						.SetProperty(
-							user => user.LastLoginIp,
-							clientIp),
+							loginTime),
 				cancellationToken);
 
 	/// <inheritdoc/>

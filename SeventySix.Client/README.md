@@ -16,7 +16,7 @@ Angular 21 single-page application with Zoneless change detection, Signals, TanS
 cd SeventySix.Client
 npm install
 
-# Start dev server (proxies API calls to https://localhost:7180)
+# Start dev server (proxies API calls to https://localhost:7074)
 npm start
 
 # Run unit + architecture tests
@@ -476,7 +476,7 @@ Flags are controlled server-side in `appsettings.json`. See [Optional Feature Fl
 
 ### Dev server proxy errors
 
-The proxy configuration (`proxy.conf.json`) forwards API calls to `https://localhost:7180`. Ensure the server is running. See [Server README](../SeventySix.Server/README.md) for setup.
+The proxy configuration (`proxy.conf.json`) forwards API calls to `https://localhost:7074`. Ensure the server is running. See [Server README](../SeventySix.Server/README.md) for setup.
 
 ### SSL certificate errors
 

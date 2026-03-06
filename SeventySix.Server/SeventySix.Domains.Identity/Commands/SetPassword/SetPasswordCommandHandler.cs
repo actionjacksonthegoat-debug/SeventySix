@@ -195,7 +195,6 @@ public static class SetPasswordCommandHandler
 
 		return await authenticationService.GenerateAuthResultAsync(
 			transactedUser,
-			command.ClientIp,
 			requiresPasswordChange: false,
 			rememberMe: false,
 			cancellationToken);

@@ -294,30 +294,9 @@ SerilogExtensions.ReconfigureWithDatabaseSink(
 	app.Services,
 	app.Environment.EnvironmentName);
 
-// Serilog HTTP request logging - Captures request details
-// Enriches logs with RequestMethod, RequestPath, StatusCode, Elapsed time
-app.UseSerilogRequestLogging(
-	options =>
-	{
-		options.MessageTemplate =
-			"HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms";
-		options.EnrichDiagnosticContext =
-			(diagnosticContext, httpContext) =>
-		{
-			diagnosticContext.Set(
-				"RequestHost",
-				httpContext.Request.Host.Value ?? "unknown");
-			diagnosticContext.Set(
-				"RequestScheme",
-				httpContext.Request.Scheme);
-			diagnosticContext.Set(
-				"RemoteIpAddress",
-				httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown");
-			diagnosticContext.Set(
-				"UserAgent",
-				httpContext.Request.Headers.UserAgent.ToString());
-		};
-	});
+// Serilog HTTP request logging — status-aware levels (5xx→Error, 4xx→Warning)
+// Enriches logs with RequestHost, RequestScheme, UserAgent
+app.UseRequestLogging();
 
 // Middleware pipeline
 app.UseConfiguredForwardedHeaders(builder.Configuration);

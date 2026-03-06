@@ -323,7 +323,6 @@ public sealed class MfaServiceUnitTests
 	{
 		// Arrange
 		const long userId = 42;
-		const string clientIp = "192.168.1.1";
 		MfaChallenge? capturedChallenge = null;
 
 		ChallengeRepository
@@ -336,7 +335,6 @@ public sealed class MfaServiceUnitTests
 		(string challengeToken, string code) result =
 			await Service.CreateChallengeAsync(
 				userId,
-				clientIp,
 				CancellationToken.None);
 
 		// Assert
@@ -344,7 +342,6 @@ public sealed class MfaServiceUnitTests
 		result.code.Length.ShouldBe(6);
 		capturedChallenge.ShouldNotBeNull();
 		capturedChallenge.UserId.ShouldBe(userId);
-		capturedChallenge.ClientIp.ShouldBe(clientIp);
 		capturedChallenge.IsUsed.ShouldBeFalse();
 		capturedChallenge.Attempts.ShouldBe(0);
 	}

@@ -146,7 +146,6 @@ public static class CompleteRegistrationCommandHandler
 		// Generate auth tokens outside transaction (creates JWT access/refresh tokens)
 		return await authenticationService.GenerateAuthResultAsync(
 			transactedUser!,
-			command.ClientIp,
 			requiresPasswordChange: false,
 			rememberMe: false,
 			cancellationToken);

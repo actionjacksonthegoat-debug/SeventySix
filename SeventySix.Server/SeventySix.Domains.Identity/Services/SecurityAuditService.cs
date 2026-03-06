@@ -50,9 +50,6 @@ public sealed class SecurityAuditService(
 	{
 		try
 		{
-			string? ipAddress =
-				clientInfoService.ExtractClientIp();
-
 			string? userAgent =
 				clientInfoService.ExtractUserAgent();
 
@@ -62,7 +59,6 @@ public sealed class SecurityAuditService(
 					EventType = eventType,
 					UserId = userId,
 					Username = username,
-					IpAddress = ipAddress,
 					UserAgent = userAgent,
 					Details = details,
 					Success = success,

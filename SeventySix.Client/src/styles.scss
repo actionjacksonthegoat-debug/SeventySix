@@ -8,6 +8,9 @@
 // Import global variables and design tokens
 @use "./app/shared/styles/variables" as vars;
 
+// Import Angular Material theming API for component-level overrides
+@use "@angular/material" as mat;
+
 // Import Material theme configuration
 @use "./app/shared/styles/material-theme" as theme;
 
@@ -196,6 +199,23 @@ html:not(.light-theme):not(.dark-theme) {
 .mat-mdc-icon-button:focus-visible {
 	outline: 2px solid var(--mat-sys-primary);
 	outline-offset: 2px;
+}
+
+// =============================================================================
+// CHECKBOX HOVER & PRESSED STATE LAYER
+// =============================================================================
+// Match checkbox interaction feedback to icon-button quality.
+// Uses mat.checkbox-overrides() per formatting.instructions.md.
+
+html {
+	@include mat.checkbox-overrides(
+		(
+			selected-hover-state-layer-opacity: 0.08,
+			unselected-hover-state-layer-opacity: 0.08,
+			selected-pressed-state-layer-opacity: 0.12,
+			unselected-pressed-state-layer-opacity: 0.12
+		)
+	);
 }
 
 // =============================================================================

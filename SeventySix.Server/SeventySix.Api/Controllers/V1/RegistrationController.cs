@@ -105,11 +105,9 @@ public sealed class RegistrationController(
 		[FromBody] CompleteRegistrationRequest request,
 		CancellationToken cancellationToken)
 	{
-		string? clientIp = GetClientIpAddress();
-
 		AuthResult result =
 			await messageBus.InvokeAsync<AuthResult>(
-				new CompleteRegistrationCommand(request, clientIp),
+				new CompleteRegistrationCommand(request),
 				cancellationToken);
 
 		if (!result.Success)

@@ -10,9 +10,5 @@ namespace SeventySix.Identity;
 /// <param name="Request">
 /// The registration completion request.
 /// </param>
-/// <param name="ClientIp">
-/// Client IP for token tracking.
-/// </param>
 public record CompleteRegistrationCommand(
-	CompleteRegistrationRequest Request,
-	string? ClientIp);
+	CompleteRegistrationRequest Request);

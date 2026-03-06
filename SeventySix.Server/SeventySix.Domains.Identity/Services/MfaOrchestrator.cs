@@ -69,7 +69,6 @@ public sealed class MfaOrchestrator(
 				user.Id,
 				command.TrustedDeviceToken,
 				command.UserAgent ?? string.Empty,
-				command.ClientIp,
 				cancellationToken);
 
 		if (!isTrusted)
@@ -86,7 +85,6 @@ public sealed class MfaOrchestrator(
 
 		return await authenticationService.GenerateAuthResultAsync(
 			user,
-			command.ClientIp,
 			user.RequiresPasswordChange,
 			command.Request.RememberMe,
 			cancellationToken);
@@ -95,7 +93,6 @@ public sealed class MfaOrchestrator(
 	/// <inheritdoc />
 	public async Task<AuthResult> InitiateChallengeAsync(
 		ApplicationUser user,
-		string? clientIp,
 		CancellationToken cancellationToken)
 	{
 		bool hasTotpEnrolled =
@@ -105,25 +102,21 @@ public sealed class MfaOrchestrator(
 		{
 			return await InitiateTotpChallengeAsync(
 				user,
-				clientIp,
 				cancellationToken);
 		}
 
 		return await InitiateEmailChallengeAsync(
 			user,
-			clientIp,
 			cancellationToken);
 	}
 
 	private async Task<AuthResult> InitiateTotpChallengeAsync(
 		ApplicationUser user,
-		string? clientIp,
 		CancellationToken cancellationToken)
 	{
 		(string totpChallengeToken, string _) =
 			await mfaService.CreateChallengeAsync(
 				user.Id,
-				clientIp,
 				cancellationToken);
 
 		await securityAuditService.LogEventAsync(
@@ -145,7 +138,6 @@ public sealed class MfaOrchestrator(
 
 	private async Task<AuthResult> InitiateEmailChallengeAsync(
 		ApplicationUser user,
-		string? clientIp,
 		CancellationToken cancellationToken)
 	{
 		MfaSettings config =
@@ -154,7 +146,6 @@ public sealed class MfaOrchestrator(
 		(string challengeToken, string code) =
 			await mfaService.CreateChallengeAsync(
 				user.Id,
-				clientIp,
 				cancellationToken);
 
 		await messageBus.InvokeAsync(

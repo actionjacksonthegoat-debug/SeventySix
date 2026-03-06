@@ -2,7 +2,6 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using System.Net;
 using Microsoft.AspNetCore.Http;
 using NSubstitute;
 using Shouldly;
@@ -33,45 +32,6 @@ public sealed class ClientInfoServiceUnitTests
 
 		ServiceUnderTest =
 			new ClientInfoService(HttpContextAccessor);
-	}
-
-	/// <summary>
-	/// Verifies that ExtractClientIp returns null when HttpContext is null.
-	/// </summary>
-	[Fact]
-	public void ExtractClientIp_WhenHttpContextNull_ReturnsNull()
-	{
-		// Arrange
-		HttpContextAccessor.HttpContext.Returns(default(HttpContext?));
-
-		// Act
-		string? result =
-			ServiceUnderTest.ExtractClientIp();
-
-		// Assert
-		result.ShouldBeNull();
-	}
-
-	/// <summary>
-	/// Verifies that ExtractClientIp returns the remote IP address.
-	/// </summary>
-	[Fact]
-	public void ExtractClientIp_WithValidContext_ReturnsRemoteIpAddress()
-	{
-		// Arrange
-		DefaultHttpContext httpContext =
-			new();
-		httpContext.Connection.RemoteIpAddress =
-			IPAddress.Parse("203.0.113.42");
-
-		HttpContextAccessor.HttpContext.Returns(httpContext);
-
-		// Act
-		string? result =
-			ServiceUnderTest.ExtractClientIp();
-
-		// Assert
-		result.ShouldBe("203.0.113.42");
 	}
 
 	/// <summary>

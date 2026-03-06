@@ -99,11 +99,6 @@ public sealed class RefreshTokenConfiguration : IEntityTypeConfiguration<Refresh
 			.Property(refreshToken => refreshToken.RevokedAt)
 			.HasColumnType("timestamp with time zone");
 
-		// CreatedByIp - Optional, IPv6 max 45 chars
-		builder
-			.Property(refreshToken => refreshToken.CreatedByIp)
-			.HasMaxLength(45);
-
 		// FK relationship to User - cascade delete tokens when user is deleted
 		builder
 			.HasOne<ApplicationUser>()

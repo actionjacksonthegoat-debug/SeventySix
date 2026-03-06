@@ -47,9 +47,6 @@ public class AuthenticationService(
 	/// <param name="user">
 	/// The identity user to issue tokens for.
 	/// </param>
-	/// <param name="clientIp">
-	/// The client's IP address for auditing and token creation.
-	/// </param>
 	/// <param name="requiresPasswordChange">
 	/// Whether the user must change password on next login.
 	/// </param>
@@ -64,7 +61,6 @@ public class AuthenticationService(
 	/// </returns>
 	public virtual async Task<AuthResult> GenerateAuthResultAsync(
 		ApplicationUser user,
-		string? clientIp,
 		bool requiresPasswordChange,
 		bool rememberMe,
 		CancellationToken cancellationToken)
@@ -83,14 +79,12 @@ public class AuthenticationService(
 		string refreshToken =
 			await tokenService.GenerateRefreshTokenAsync(
 				user.Id,
-				clientIp,
 				rememberMe,
 				cancellationToken);
 
 		await authRepository.UpdateLastLoginAsync(
 			user.Id,
 			timeProvider.GetUtcNow(),
-			clientIp,
 			cancellationToken);
 
 		return AuthResult.Succeeded(
@@ -146,10 +140,8 @@ public class AuthenticationService(
 				requiresPasswordChange);
 
 		DateTimeOffset expiresAt =
-			timeProvider
-			.GetUtcNow()
-			.AddMinutes(jwtSettings.Value.AccessTokenExpirationMinutes)
-			.UtcDateTime;
+			timeProvider.GetUtcNow()
+				.AddMinutes(jwtSettings.Value.AccessTokenExpirationMinutes);
 
 		return AuthResult.Succeeded(
 			accessToken,

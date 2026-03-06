@@ -49,7 +49,6 @@ public sealed class UserBuilder
 	private uint? RowVersion = null;
 	private string? Preferences = null;
 	private DateTimeOffset? LastLoginAt = null;
-	private string? LastLoginIp = null;
 	private bool RequiresPasswordChange = false;
 	private bool MfaEnabled = true;
 	private string? TotpSecret = null;
@@ -247,18 +246,13 @@ public sealed class UserBuilder
 	/// <param name="lastLoginAt">
 	/// The last login CreateDate.
 	/// </param>
-	/// <param name="lastLoginIp">
-	/// The last login IP address.
-	/// </param>
 	/// <returns>
 	/// The builder instance for method chaining.
 	/// </returns>
 	public UserBuilder WithLastLogin(
-		DateTimeOffset lastLoginAt,
-		string? lastLoginIp = null)
+		DateTimeOffset lastLoginAt)
 	{
 		LastLoginAt = lastLoginAt;
-		LastLoginIp = lastLoginIp;
 		return this;
 	}
 
@@ -350,7 +344,6 @@ public sealed class UserBuilder
 				RowVersion = RowVersion,
 				Preferences = Preferences,
 				LastLoginAt = LastLoginAt,
-				LastLoginIp = LastLoginIp,
 				RequiresPasswordChange = RequiresPasswordChange,
 				MfaEnabled = MfaEnabled,
 				TotpSecret = TotpSecret,

@@ -10,13 +10,7 @@ namespace SeventySix.Identity;
 /// Extracts client information from HTTP requests.
 /// </summary>
 /// <remarks>
-/// <para>
-/// Centralizes IP address and user agent extraction to avoid duplication (DRY).
-/// </para>
-/// <para>
-/// IP extraction respects X-Forwarded-For when configured for reverse proxy scenarios.
-/// The actual forwarded header processing is done by ASP.NET Core's ForwardedHeadersMiddleware.
-/// </para>
+/// Centralizes user agent extraction to avoid duplication (DRY).
 /// </remarks>
 /// <param name="httpContextAccessor">
 /// The HTTP context accessor for accessing the current request.
@@ -29,22 +23,6 @@ public sealed class ClientInfoService(
 	/// Matches database column constraint.
 	/// </summary>
 	private const int MaxUserAgentLength = 500;
-
-	/// <inheritdoc/>
-	public string? ExtractClientIp()
-	{
-		HttpContext? httpContext =
-			httpContextAccessor.HttpContext;
-
-		if (httpContext is null)
-		{
-			return null;
-		}
-
-		// ForwardedHeadersMiddleware has already processed X-Forwarded-For
-		// RemoteIpAddress contains the correct client IP
-		return httpContext.Connection.RemoteIpAddress?.ToString();
-	}
 
 	/// <inheritdoc/>
 	public string? ExtractUserAgent()

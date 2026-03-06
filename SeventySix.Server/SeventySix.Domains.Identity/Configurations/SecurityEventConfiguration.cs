@@ -59,11 +59,6 @@ public sealed class SecurityEventConfiguration : IEntityTypeConfiguration<Securi
 			.Property(securityEvent => securityEvent.Username)
 			.HasMaxLength(ValidationConstants.UsernameMaxLength);
 
-		// IPv6 max length is 45 characters
-		builder
-			.Property(securityEvent => securityEvent.IpAddress)
-			.HasMaxLength(ValidationConstants.IpAddressMaxLength);
-
 		builder
 			.Property(securityEvent => securityEvent.UserAgent)
 			.HasMaxLength(ValidationConstants.LongTextMaxLength);

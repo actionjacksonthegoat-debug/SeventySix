@@ -31,9 +31,6 @@ namespace SeventySix.Api.Infrastructure;
 /// <param name="refreshTokenCleanupSettings">
 /// Refresh token cleanup interval settings.
 /// </param>
-/// <param name="ipAnonymizationSettings">
-/// IP anonymization interval settings.
-/// </param>
 /// <param name="orphanedRegistrationCleanupSettings">
 /// Orphaned registration cleanup interval settings.
 /// </param>
@@ -51,7 +48,6 @@ public sealed class JobChainWatchdogService(
 	IOptions<EmailQueueSettings> emailQueueSettings,
 	IOptions<LogCleanupSettings> logCleanupSettings,
 	IOptions<RefreshTokenCleanupSettings> refreshTokenCleanupSettings,
-	IOptions<IpAnonymizationSettings> ipAnonymizationSettings,
 	IOptions<OrphanedRegistrationCleanupSettings> orphanedRegistrationCleanupSettings,
 	IOptions<DatabaseMaintenanceSettings> databaseMaintenanceSettings,
 	TimeProvider timeProvider,
@@ -260,15 +256,6 @@ public sealed class JobChainWatchdogService(
 					service.EnsureScheduledAsync<RefreshTokenCleanupJob>(
 						nameof(RefreshTokenCleanupJob),
 						TimeSpan.FromHours(refreshTokenCleanupSettings.Value.IntervalHours),
-						cancellationToken)
-			),
-			(
-				nameof(IpAnonymizationJob),
-				TimeSpan.FromDays(ipAnonymizationSettings.Value.IntervalDays),
-				(service, cancellationToken) =>
-					service.EnsureScheduledAsync<IpAnonymizationJob>(
-						nameof(IpAnonymizationJob),
-						TimeSpan.FromDays(ipAnonymizationSettings.Value.IntervalDays),
 						cancellationToken)
 			),
 			(

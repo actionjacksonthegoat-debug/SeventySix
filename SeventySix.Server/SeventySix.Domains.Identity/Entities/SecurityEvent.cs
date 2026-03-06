@@ -44,20 +44,6 @@ public sealed class SecurityEvent : ICreatableEntity
 	public string? Username { get; set; }
 
 	/// <summary>
-	/// Gets or sets the client IP address.
-	/// </summary>
-	/// <remarks>
-	/// <para>
-	/// PII Classification: Personal Data (GDPR Article 4 - IP addresses).
-	/// </para>
-	/// <para>
-	/// Storage: Plaintext for security monitoring and anomaly detection.
-	/// Retention: Security events retained per compliance requirements.
-	/// </para>
-	/// </remarks>
-	public string? IpAddress { get; set; }
-
-	/// <summary>
 	/// Gets or sets the client user agent string.
 	/// </summary>
 	public string? UserAgent { get; set; }

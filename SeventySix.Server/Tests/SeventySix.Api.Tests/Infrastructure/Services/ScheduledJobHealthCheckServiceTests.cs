@@ -70,11 +70,11 @@ public sealed class ScheduledJobHealthCheckServiceTests
 			[
 				new RecurringJobStatusResponse
 				{
-					JobName = "IpAnonymizationJob",
-					DisplayName = "IP Anonymization",
+					JobName = "RefreshTokenCleanupJob",
+					DisplayName = "Refresh Token Cleanup",
 					Status = HealthStatusConstants.Degraded,
-					Interval = "7 days",
-					LastExecutedAt = DateTimeOffset.UtcNow.AddDays(-14),
+					Interval = "24 hours",
+					LastExecutedAt = DateTimeOffset.UtcNow.AddDays(-3),
 				},
 			];
 
@@ -198,10 +198,10 @@ public sealed class ScheduledJobHealthCheckServiceTests
 				},
 				new RecurringJobStatusResponse
 				{
-					JobName = "IpAnonymizationJob",
-					DisplayName = "IP Anonymization",
+					JobName = "OrphanedRegistrationCleanupJob",
+					DisplayName = "Orphaned Registration Cleanup",
 					Status = HealthStatusConstants.Healthy,
-					Interval = "7 days",
+					Interval = "24 hours",
 					LastExecutedAt = DateTimeOffset.UtcNow.AddDays(-1),
 				},
 			];

@@ -13,7 +13,7 @@ export const environment: Environment =
 		version: "1.0.0-test",
 		apiUrl: "http://localhost:1234/api/v1", // API v1 - Test-only port to prevent hitting real API
 		logging: {
-			enableRemoteLogging: false, // Disable remote logging in tests
+			enableRemoteLogging: true, // Enabled so error-queue tests exercise the full pipeline
 			consoleLogLevel: "debug", // Allow all log levels in tests for verification
 			batchSize: 10,
 			batchInterval: 250, // Fast enough for tests but prevents race conditions

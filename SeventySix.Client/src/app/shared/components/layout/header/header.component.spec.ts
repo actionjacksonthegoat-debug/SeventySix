@@ -295,5 +295,30 @@ describe("HeaderComponent",
 						expect(colorSchemeButton)
 							.toBeTruthy();
 					});
+
+				it("should render logo as a link with aria-label",
+					() =>
+					{
+						const logoLink: HTMLAnchorElement | null =
+							fixture.nativeElement.querySelector("a.app-logo");
+
+						expect(logoLink)
+							.toBeTruthy();
+						expect(logoLink?.getAttribute("aria-label"))
+							.toBe("SeventySix - Navigate to home");
+					});
+
+				it("should have logo image with empty alt (decorative)",
+					() =>
+					{
+						const logoImg: HTMLImageElement | null =
+							fixture.nativeElement.querySelector(
+								"a.app-logo img.logo-icon");
+
+						expect(logoImg)
+							.toBeTruthy();
+						expect(logoImg?.getAttribute("alt"))
+							.toBe("");
+					});
 			});
 	});
