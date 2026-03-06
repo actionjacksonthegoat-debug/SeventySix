@@ -17,33 +17,37 @@ type TimeoutsConfig = {
 	altchaSolve: number;
 };
 
+// CI environments (Docker + ubuntu-latest) are slower than local dev
+const CI_MULTIPLIER: number =
+	process.env.CI ? 1.5 : 1;
+
 export const TIMEOUTS: TimeoutsConfig =
 	{
 	/**
 	 * Standard element visibility timeout.
 	 */
-		element: 5000,
+		element: 5000 * CI_MULTIPLIER,
 
 		/**
 	 * Extended timeout for API-dependent operations.
 	 */
-		api: 10000,
+		api: 10000 * CI_MULTIPLIER,
 
 		/**
 	 * Navigation timeout for page loads.
 	 */
-		navigation: 15000,
+		navigation: 15000 * CI_MULTIPLIER,
 
 		/**
 	 * Email delivery timeout via mock Brevo API.
 	 * Extended to account for email queue processing interval.
 	 */
-		email: 15000,
+		email: 15000 * CI_MULTIPLIER,
 
 		/**
 	 * Authentication flow timeout.
 	 */
-		auth: 10000,
+		auth: 10000 * CI_MULTIPLIER,
 
 		/**
 	 * Short timeout for negative test cases.
@@ -55,11 +59,11 @@ export const TIMEOUTS: TimeoutsConfig =
 	 * Global setup timeout for authentication flow.
 	 * Used during initial login before tests run.
 	 */
-		globalSetup: 30000,
+		globalSetup: 30000 * CI_MULTIPLIER,
 
 		/**
 	 * Altcha proof-of-work challenge solve timeout.
 	 * Widget transitions: unverified → verifying → verified.
 	 */
-		altchaSolve: 30000
+		altchaSolve: 30000 * CI_MULTIPLIER
 	} as const;

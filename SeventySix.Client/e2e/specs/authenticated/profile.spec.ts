@@ -191,7 +191,8 @@ test.describe("Profile Page",
 												&& response
 													.request()
 													.method() === "PUT"
-												&& response.status() === 200),
+												&& response.status() === 200,
+										{ timeout: TIMEOUTS.api }),
 									saveButton.click()
 								]);
 
@@ -251,7 +252,8 @@ test.describe("Profile Page",
 												&& response
 													.request()
 													.method() === "PUT"
-												&& response.status() === 200),
+												&& response.status() === 200,
+										{ timeout: TIMEOUTS.api }),
 									saveButton.click()
 								]);
 

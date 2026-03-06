@@ -45,7 +45,8 @@ test.describe("User Detail",
 							response
 								.url()
 								.includes("/users")
-								&& response.status() === 200);
+								&& response.status() === 200,
+						{ timeout: TIMEOUTS.api });
 				await searchInput.fill("e2e_user");
 				await searchInput.press("Enter");
 				await searchResponse;

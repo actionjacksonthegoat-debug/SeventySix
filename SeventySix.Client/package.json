@@ -48,7 +48,7 @@
     "altcha": "^2.3.0",
     "date-fns": "^4.1.0",
     "date-fns-tz": "^3.2.0",
-    "dompurify": "^3.3.1",
+    "dompurify": "^3.3.2",
     "material-icons": "^1.13.14",
     "ngx-skeleton-loader": "^12.0.0",
     "qrcode": "^1.5.4",
@@ -87,8 +87,9 @@
   },
   "overrides": {
     "qs": "6.15.0",
-    "hono": "4.12.2",
-    "tar": "7.5.9",
+    "hono": "4.12.5",
+    "tar": "7.5.10",
+    "express-rate-limit": "8.3.0",
     "minimatch": ">=3.1.3"
   }
 }

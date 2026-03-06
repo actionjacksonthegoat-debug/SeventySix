@@ -202,7 +202,8 @@ test.describe("Log Management Page",
 									response
 										.url()
 										.includes("/logs")
-										&& response.status() === 200);
+										&& response.status() === 200,
+								{ timeout: TIMEOUTS.api });
 
 						await warningsChip.click();
 						await filterResponse;
@@ -245,7 +246,8 @@ test.describe("Log Management Page",
 									response
 										.url()
 										.includes("/logs")
-										&& response.status() === 200);
+										&& response.status() === 200,
+								{ timeout: TIMEOUTS.api });
 
 						await errorsChip.click();
 						await filterResponse;
@@ -382,7 +384,8 @@ test.describe("Log Management Page",
 									response
 										.url()
 										.includes("/logs")
-										&& response.status() === 200);
+										&& response.status() === 200,
+								{ timeout: TIMEOUTS.api });
 
 						await refreshButton.click();
 						await responsePromise;

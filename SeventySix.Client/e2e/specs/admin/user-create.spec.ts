@@ -187,7 +187,8 @@ test.describe("User Create",
 							response
 								.url()
 								.includes("/users")
-								&& response.status() === 200);
+								&& response.status() === 200,
+						{ timeout: TIMEOUTS.api });
 
 				await searchInput.press("Enter");
 				await searchResponse;

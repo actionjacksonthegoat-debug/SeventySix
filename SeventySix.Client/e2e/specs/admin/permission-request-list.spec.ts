@@ -74,7 +74,8 @@ async function createPermissionRequestViaUi(
 					&& response
 						.request()
 						.method() === "POST"
-					&& response.status() === 204);
+					&& response.status() === 204,
+			{ timeout: TIMEOUTS.api });
 
 	await submitButton.click();
 	await responsePromise;
