@@ -267,4 +267,78 @@ describe("ScheduledJobsTableComponent",
 				expect(component.getStatusClass("Degraded"))
 					.toBe("status-degraded");
 			});
+
+		it("should display 'Never' for null lastExecutedAt",
+			() =>
+			{
+				healthApiService.getScheduledJobs.mockReturnValue(
+					createMockQueryResult(mockJobData));
+
+				createComponent();
+
+				const unknownJob: { formattedLastExecuted: string; } =
+					component.dataSource().data[1];
+				expect(unknownJob.formattedLastExecuted)
+					.toBe("Never");
+			});
+
+		it("should show healthy status for scheduled-but-never-run job with future nextScheduledAt",
+			() =>
+			{
+				const scheduledNotRunData: RecurringJobStatusResponse[] =
+					[
+						{
+							jobName: "LogCleanupJob",
+							displayName: "Log Cleanup",
+							lastExecutedAt: null,
+							nextScheduledAt: "2026-12-01T08:00:00Z",
+							lastExecutedBy: "Not yet run",
+							status: "Healthy",
+							interval: "Every 24 hours"
+						}
+					];
+				healthApiService.getScheduledJobs.mockReturnValue(
+					createMockQueryResult(scheduledNotRunData));
+
+				createComponent();
+
+				const job: { formattedLastExecuted: string; statusIcon: string; statusClass: string; } =
+					component
+						.dataSource()
+						.data[0];
+				expect(job.formattedLastExecuted)
+					.toBe("Never");
+				expect(job.statusIcon)
+					.toBe("check_circle");
+				expect(job.statusClass)
+					.toBe("status-healthy");
+			});
+
+		it("should show degraded status icon and class for overdue job",
+			() =>
+			{
+				const degradedData: RecurringJobStatusResponse[] =
+					[
+						{
+							jobName: "EmailQueueProcessJob",
+							displayName: "Email Queue Processor",
+							lastExecutedAt: "2025-01-01T00:00:00Z",
+							nextScheduledAt: "2025-01-01T00:10:00Z",
+							lastExecutedBy: "System",
+							status: "Degraded",
+							interval: "Every 10 seconds"
+						}
+					];
+				healthApiService.getScheduledJobs.mockReturnValue(
+					createMockQueryResult(degradedData));
+
+				createComponent();
+
+				const job: { statusIcon: string; statusClass: string; } =
+					component.dataSource().data[0];
+				expect(job.statusIcon)
+					.toBe("warning");
+				expect(job.statusClass)
+					.toBe("status-degraded");
+			});
 	});

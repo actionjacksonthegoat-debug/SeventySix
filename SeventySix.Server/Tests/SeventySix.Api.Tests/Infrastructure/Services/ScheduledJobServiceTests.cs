@@ -284,4 +284,90 @@ public sealed class ScheduledJobServiceTests
 
 		emailJob.Status.ShouldBe(HealthStatusConstants.Degraded);
 	}
+
+	/// <summary>
+	/// When a job has MinValue LastExecutedAt but a future NextScheduledAt,
+	/// it is considered Healthy (scheduled but not yet run after startup).
+	/// </summary>
+	/// <returns>
+	/// A task representing the asynchronous operation.
+	/// </returns>
+	[Fact]
+	public async Task GetAllJobStatusesAsync_ReturnsHealthyStatus_WhenMinValueLastExecutedWithFutureScheduleAsync()
+	{
+		// Arrange — simulates a job registered at startup but not yet executed
+		DateTimeOffset now =
+			TimeProviderFake.GetUtcNow();
+
+		RecurringJobExecution execution =
+			new()
+			{
+				JobName = "LogCleanupJob",
+				LastExecutedAt = DateTimeOffset.MinValue,
+				NextScheduledAt = now.AddHours(6),
+				LastExecutedBy = "Not yet run",
+			};
+
+		RecurringJobRepository
+			.GetAllAsync(Arg.Any<CancellationToken>())
+			.Returns([execution]);
+
+		ScheduledJobService service =
+			CreateSut();
+
+		// Act
+		IReadOnlyList<RecurringJobStatusResponse> result =
+			await service.GetAllJobStatusesAsync(CancellationToken.None);
+
+		// Assert
+		RecurringJobStatusResponse logCleanupJob =
+			result.Single(
+				job => job.JobName == "LogCleanupJob");
+
+		logCleanupJob.Status.ShouldBe(HealthStatusConstants.Healthy);
+		logCleanupJob.LastExecutedAt.ShouldBeNull();
+		logCleanupJob.NextScheduledAt.ShouldBe(now.AddHours(6));
+	}
+
+	/// <summary>
+	/// When a job has MinValue LastExecutedAt and past/null NextScheduledAt,
+	/// it should show Unknown status.
+	/// </summary>
+	/// <returns>
+	/// A task representing the asynchronous operation.
+	/// </returns>
+	[Fact]
+	public async Task GetAllJobStatusesAsync_ReturnsUnknownStatus_WhenMinValueLastExecutedWithPastScheduleAsync()
+	{
+		// Arrange — simulates a job that was registered but NextScheduledAt is stale
+		DateTimeOffset now =
+			TimeProviderFake.GetUtcNow();
+
+		RecurringJobExecution execution =
+			new()
+			{
+				JobName = "LogCleanupJob",
+				LastExecutedAt = DateTimeOffset.MinValue,
+				NextScheduledAt = now.AddHours(-1),
+				LastExecutedBy = "Not yet run",
+			};
+
+		RecurringJobRepository
+			.GetAllAsync(Arg.Any<CancellationToken>())
+			.Returns([execution]);
+
+		ScheduledJobService service =
+			CreateSut();
+
+		// Act
+		IReadOnlyList<RecurringJobStatusResponse> result =
+			await service.GetAllJobStatusesAsync(CancellationToken.None);
+
+		// Assert
+		RecurringJobStatusResponse logCleanupJob =
+			result.Single(
+				job => job.JobName == "LogCleanupJob");
+
+		logCleanupJob.Status.ShouldBe(HealthStatusConstants.Unknown);
+	}
 }

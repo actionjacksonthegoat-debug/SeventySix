@@ -32,9 +32,10 @@ public sealed class LoggingDbContext : BaseDbContext<LoggingDbContext>
 	/// Initializes a new instance of the <see cref="LoggingDbContext"/> class.
 	/// </summary>
 	/// <remarks>
-	/// AutoDetectChangesEnabled is permanently disabled: this context is insert-only (Logs,
-	/// RecurringJobExecutions — no UPDATE operations), so change detection adds O(n²) overhead
-	/// with zero benefit.
+	/// AutoDetectChangesEnabled is permanently disabled for performance: this context is
+	/// primarily insert-heavy (Logs). RecurringJobExecutions requires UPDATE operations via
+	/// <see cref="RecurringJobRepository"/>, which explicitly sets EntityState.Modified
+	/// to bypass disabled change detection.
 	/// </remarks>
 	/// <param name="options">
 	/// The options for this context.

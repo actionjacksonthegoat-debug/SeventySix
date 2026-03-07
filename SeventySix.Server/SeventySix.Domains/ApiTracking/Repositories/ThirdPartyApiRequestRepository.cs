@@ -88,7 +88,12 @@ internal class ThirdPartyApiRequestRepository(
 	{
 		List<ThirdPartyApiRequest> requests =
 			await GetQueryable()
-				.OrderBy(request => request.ApiName)
+				.OrderByDescending(request =>
+					request.LastCalledAt.HasValue ? 1 : 0)
+				.ThenByDescending(request =>
+					request.LastCalledAt)
+				.ThenBy(request =>
+					request.ApiName)
 				.ToListAsync(cancellationToken);
 
 		return requests;

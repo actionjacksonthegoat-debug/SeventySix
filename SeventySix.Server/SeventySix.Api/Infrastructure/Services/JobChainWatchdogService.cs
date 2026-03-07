@@ -128,8 +128,8 @@ public sealed class JobChainWatchdogService(
 
 			foreach ((string jobName, TimeSpan interval, Func<IRecurringJobService, CancellationToken, Task> rebootstrapAsync) in watchedJobs)
 			{
-				bool isStale =
-					IsJobStale(
+				(bool isStale, string reason) =
+					GetStalenessInfo(
 						jobName,
 						interval,
 						executionsByName);
@@ -137,8 +137,9 @@ public sealed class JobChainWatchdogService(
 				if (isStale)
 				{
 					logger.LogWarning(
-						"Watchdog: re-bootstrapping stale job chain '{JobName}'",
-						jobName);
+						"Watchdog: re-bootstrapping stale job chain '{JobName}' — reason: {Reason}",
+						jobName,
+						reason);
 
 					await rebootstrapAsync(
 						recurringJobService,
@@ -182,16 +183,42 @@ public sealed class JobChainWatchdogService(
 		TimeSpan interval,
 		Dictionary<string, RecurringJobExecution> executionsByName)
 	{
+		return GetStalenessInfo(
+			jobName,
+			interval,
+			executionsByName).IsStale;
+	}
+
+	/// <summary>
+	/// Determines staleness with a diagnostic reason string.
+	/// </summary>
+	/// <param name="jobName">
+	/// The job identifier.
+	/// </param>
+	/// <param name="interval">
+	/// The expected execution interval.
+	/// </param>
+	/// <param name="executionsByName">
+	/// All known executions keyed by job name.
+	/// </param>
+	/// <returns>
+	/// A tuple of (IsStale, Reason) indicating staleness and the diagnostic reason.
+	/// </returns>
+	internal (bool IsStale, string Reason) GetStalenessInfo(
+		string jobName,
+		TimeSpan interval,
+		Dictionary<string, RecurringJobExecution> executionsByName)
+	{
 		if (!executionsByName.TryGetValue(
 			jobName,
 			out RecurringJobExecution? execution))
 		{
-			return true;
+			return (true, "no execution record found");
 		}
 
 		if (execution.LastExecutedAt == DateTimeOffset.MinValue)
 		{
-			return true;
+			return (true, "job registered but never executed");
 		}
 
 		DateTimeOffset now =
@@ -200,7 +227,7 @@ public sealed class JobChainWatchdogService(
 		if (execution.NextScheduledAt.HasValue
 			&& execution.NextScheduledAt.Value > now)
 		{
-			return false;
+			return (false, "scheduled in future");
 		}
 
 		TimeSpan stalenessThreshold =
@@ -215,7 +242,9 @@ public sealed class JobChainWatchdogService(
 		TimeSpan timeSinceLastExecution =
 			now - execution.LastExecutedAt;
 
-		return timeSinceLastExecution > stalenessThreshold;
+		return timeSinceLastExecution > stalenessThreshold
+			? (true, $"last executed {timeSinceLastExecution} ago, threshold {stalenessThreshold}")
+			: (false, "within staleness threshold");
 	}
 
 	/// <summary>
