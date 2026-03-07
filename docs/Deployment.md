@@ -63,6 +63,9 @@ SERVER_IP=$(hcloud server ip seventysix-prod)
 echo "Server IP: $SERVER_IP"
 
 # Create firewall: SSH from your IP, 80+443 world-open
+# Note: 80/443 are open at the Hetzner layer for simplicity (Hetzner API doesn't
+# easily script Cloudflare IP updates). The actual origin protection (restricting
+# 80/443 to Cloudflare IPs only) is enforced by UFW on the server — see Section 3.6.
 hcloud firewall create --name seventysix-fw
 hcloud firewall add-rule seventysix-fw --direction in --port 22  --protocol tcp --source-ips YOUR.IP.HERE/32
 hcloud firewall add-rule seventysix-fw --direction in --port 80  --protocol tcp --source-ips 0.0.0.0/0
@@ -123,7 +126,7 @@ apt-get install -y docker-compose-plugin rclone
 ```bash
 sed -i 's/^#*PermitRootLogin.*/PermitRootLogin no/' /etc/ssh/sshd_config
 sed -i 's/^#*PasswordAuthentication.*/PasswordAuthentication no/' /etc/ssh/sshd_config
-systemctl reload sshd
+systemctl reload ssh
 ```
 
 ### 3.4 Kernel Tuning
@@ -152,17 +155,39 @@ echo '/swapfile none swap sw 0 0' >> /etc/fstab
 
 The Hetzner cloud firewall (Section 2) only applies at the network edge. UFW provides a second, independent layer of defense directly on the OS — if the cloud firewall is misconfigured or bypassed, UFW blocks direct access to internal services.
 
+> **CRITICAL — Origin Protection:** Ports 80/443 are restricted to **Cloudflare IP ranges only**. This prevents attackers from bypassing Cloudflare by connecting directly to the origin server IP. Without this restriction, an attacker who discovers the server IP could send forged `CF-Connecting-IP` headers to Caddy, spoofing their IP address and bypassing all rate limiting. See Section 5.5 for the full security model.
+
 ```bash
 ufw default deny incoming
 ufw default allow outgoing
 ufw allow 22/tcp comment 'SSH'
-ufw allow 80/tcp comment 'HTTP (Caddy redirect)'
-ufw allow 443/tcp comment 'HTTPS (Caddy)'
+
+# Allow HTTP/HTTPS ONLY from Cloudflare IP ranges (origin protection)
+# Source: https://www.cloudflare.com/ips/
+# Cloudflare IPv4
+for ip in 173.245.48.0/20 103.21.244.0/22 103.22.200.0/22 103.31.4.0/22 141.101.64.0/18 108.162.192.0/18 190.93.240.0/20 188.114.96.0/20 197.234.240.0/22 198.41.128.0/17 162.158.0.0/15 104.16.0.0/13 104.24.0.0/14 172.64.0.0/13 131.0.72.0/22; do
+  ufw allow from $ip to any port 80,443 proto tcp comment 'Cloudflare IPv4'
+done
+
+# Cloudflare IPv6
+for ip in 2400:cb00::/32 2606:4700::/32 2803:f800::/32 2405:b500::/32 2405:8100::/32 2a06:98c0::/29 2c0f:f248::/32; do
+  ufw allow from $ip to any port 80,443 proto tcp comment 'Cloudflare IPv6'
+done
+
 echo "y" | ufw enable
 ufw status verbose
 ```
 
 > **Important:** UFW does **not** intercept Docker's `iptables` rules. All Docker container ports in `docker-compose.production.yml` **must** be bound to `127.0.0.1` (e.g., `127.0.0.1:8080->8080/tcp`) — not `0.0.0.0`. A port published on `0.0.0.0` is accessible from the internet regardless of UFW.
+
+> **Maintaining Cloudflare IPs:** Cloudflare publishes their IP ranges at [cloudflare.com/ips](https://www.cloudflare.com/ips/). They change rarely but do change. To update, SSH into the server and run:
+> ```bash
+> # Remove old Cloudflare rules
+> ufw status numbered | grep 'Cloudflare' | awk '{print $2}' | sort -rn | while read num; do echo "y" | ufw delete $num; done
+> # Re-run the for loops above with updated ranges
+> ufw reload
+> ```
+> Check Cloudflare's IP page quarterly or subscribe to their changelog.
 
 ### 3.7 Verify and Logout
 
@@ -225,9 +250,18 @@ cat > /etc/caddy/Caddyfile << 'CEOF'
 # can use relative URLs (apiUrl: '/api/v1') without cross-origin issues.
 # Cache and security headers are handled by nginx inside the client container,
 # so no Caddy-level header overrides are needed here.
+#
+# IMPORTANT: Cloudflare proxies all traffic, so the API never sees the real
+# client IP in the TCP connection. Cloudflare sets CF-Connecting-IP to the
+# real client IP. We override X-Forwarded-For with this value so ASP.NET
+# Core's ForwardedHeaders middleware resolves RemoteIpAddress correctly.
+# This is critical for per-IP rate limiting to work (without it, all users
+# share one rate-limit bucket keyed to 127.0.0.1).
 seventysixsandbox.com {
     handle /api/* {
-        reverse_proxy localhost:5085
+        reverse_proxy localhost:5085 {
+            header_up X-Forwarded-For {header.CF-Connecting-IP}
+        }
     }
     handle {
         reverse_proxy localhost:8080
@@ -243,7 +277,9 @@ www.seventysixsandbox.com {
 # Security headers are handled by the API middleware (AttributeBasedSecurityHeadersMiddleware),
 # so no Caddy-level header overrides are needed here.
 api.seventysixsandbox.com {
-    reverse_proxy localhost:5085
+    reverse_proxy localhost:5085 {
+        header_up X-Forwarded-For {header.CF-Connecting-IP}
+    }
 }
 
 # Observability tools (Grafana, Jaeger, Prometheus) are served via nginx
@@ -329,7 +365,25 @@ Create **two** Cache Rules (Cloudflare Dashboard → Caching → Cache Rules →
 
 > **Context:** The application previously used Fail2Ban for login brute-force protection and GeoIP for country-level blocking. These have been removed because Cloudflare handles both at the edge — blocking malicious traffic before it reaches the origin server. This is more effective (blocks at the CDN edge, not at the server) and simpler (no log parsing, no iptables chains, no MaxMind DB updates).
 
-Cloudflare free tier includes **5 WAF Custom Rules**. Create them in: **Cloudflare Dashboard → Security → WAF → Custom rules → Create rule**.
+> **Security Model — Defense in Depth (5 Layers):**
+>
+> The rate limiting and IP security model relies on multiple independent layers. Each layer is designed so that if one is bypassed, the others still protect the application:
+>
+> | # | Layer | What it does | Spoofing risk |
+> |---|-------|-------------|---------------|
+> | 1 | **Cloudflare WAF (edge)** | Blocks bots, geo-blocks countries, challenges leaked passwords, rate limits burst traffic (10-second windows), Free Managed Ruleset blocks common vulnerabilities | None — Cloudflare controls the edge |
+> | 2 | **UFW (OS firewall)** | Restricts ports 80/443 to Cloudflare IPs only (Section 3.6) | None — kernel-level enforcement |
+> | 3 | **Caddy (reverse proxy)** | Maps `CF-Connecting-IP` → `X-Forwarded-For` for real client IP | Protected by Layer 2 — only Cloudflare can connect, and Cloudflare always sets `CF-Connecting-IP` to the real client IP |
+> | 4 | **ASP.NET ForwardedHeaders** | Trusts only `127.0.0.1` (Caddy) to set `X-Forwarded-For`, resolves `RemoteIpAddress` | Protected by Layer 2+3 — even if an attacker reached the API directly, ForwardedHeaders only trusts loopback |
+> | 5 | **ASP.NET Rate Limiter** | Per-IP fixed-window limits: 15 login/min, 3 register/hr, 10 refresh/min, etc. Returns 429 + `Retry-After` | Correctly partitioned by real client IP thanks to Layers 2-4 |
+>
+> **Why Layer 2 (UFW) is critical:** Without it, an attacker who discovers the origin server IP (via DNS history, certificate transparency logs, or IP scanning) could bypass Cloudflare entirely and send forged `CF-Connecting-IP` headers. Caddy would blindly pass these to the API, allowing the attacker to spoof any IP — evading rate limits or causing legitimate users to be rate-limited.
+>
+> **How the server IP could leak:** DNS history (before Cloudflare was enabled), certificate transparency logs (`crt.sh`), or mass IPv4 scanning. UFW's Cloudflare-only restriction makes discovery of the IP irrelevant.
+
+> **Cloudflare free tier limitation:** Rate limiting periods are limited to **10 seconds** on the free plan. Longer windows (1 minute, 10 minutes) require a paid plan. The 10-second window is still effective against automated attacks (bots fire tens of requests/second), and the server-side rate limiter handles longer windows.
+
+Cloudflare free tier includes **5 WAF Custom Rules** and **1 Rate Limiting Rule**. Custom rules are created in: **Security → WAF → Custom rules → Create rule**. Rate limiting rules are created separately in: **Security → WAF → Rate limiting rules → Create rule**.
 
 #### Rule 1 — Block Countries (replaces fail2ban GeoIP jail)
 
@@ -338,85 +392,68 @@ Blocks all traffic from high-risk countries that have no legitimate users.
 1. Rule name: `Block high-risk countries`
 2. Click **"Edit expression"** and paste:
    ```
-   (ip.geoip.country in {"CN" "IN" "RU"})
+   (ip.geoip.country in {"CN" "RU" "IR" "KP"})
    ```
 3. Action: **Block**
 4. Place at: **First**
 5. Deploy
 
-> **To add/remove countries:** Edit the rule expression and add/remove ISO 3166-1 alpha-2 country codes to the set. Common additions: `"KP"` (North Korea), `"IR"` (Iran). Remove a code if you gain legitimate users from that country.
+> **To add/remove countries:** Edit the rule expression and add/remove ISO 3166-1 alpha-2 country codes to the set. Common additions: `"IN"` (India). Remove a code if you gain legitimate users from that country.
 
-#### Rule 2 — Rate Limit Login Endpoint (replaces fail2ban auth jail)
+#### Rule 2 — Block Leaked Passwords
 
-Limits login attempts to prevent credential brute-forcing. The old fail2ban rule was: 5 attempts per 10 minutes → 1 hour ban with progressive escalation.
+Blocks login attempts using passwords known to be compromised (from the Have I Been Pwned dataset). Cloudflare's leaked credentials detection is enabled by default on all plans and scans incoming auth requests automatically. This rule uses the `Password Leaked` field (available on free plan) to block requests with known-compromised passwords.
 
-1. Navigate to: **Security → WAF → Rate limiting rules → Create rule**
-2. Rule name: `Rate limit login`
-3. Click **"Edit expression"** and paste:
+1. Rule name: `Block leaked passwords`
+2. Click **"Edit expression"** and paste:
    ```
-   (http.request.uri.path eq "/api/v1/auth/login" and http.request.method eq "POST")
+   (cf.waf.credential_check.password_leaked)
    ```
-4. Rate limit characteristics: **IP** (select "IP" from the dropdown)
-5. Requests: `5`
-6. Period: `10 minutes`
-7. Action: **Block**
-8. Duration: `1 hour`
-9. Deploy
+3. Action: **Managed Challenge**
+4. Deploy
 
-> **What this covers:** Any IP that sends more than 5 POST requests to `/api/v1/auth/login` within 10 minutes gets blocked for 1 hour. This matches the old fail2ban `maxretry=5, findtime=600, bantime=3600` configuration.
+> **Why Managed Challenge instead of Block?** A legitimate user may unknowingly reuse a leaked password. A challenge lets them prove they're human and proceed, while stopping automated credential stuffing attacks. Consider switching to Block if you see abuse in Security → Events.
 
-#### Rule 3 — Rate Limit Registration Endpoint
+#### Rule 3 — General API Rate Limit (1 of 1 rate limiting rules on free plan)
 
-Prevents automated account creation spam.
-
-1. Navigate to: **Security → WAF → Rate limiting rules → Create rule**
-2. Rule name: `Rate limit registration`
-3. Click **"Edit expression"** and paste:
-   ```
-   (http.request.uri.path eq "/api/v1/auth/register" and http.request.method eq "POST")
-   ```
-4. Rate limit characteristics: **IP**
-5. Requests: `3`
-6. Period: `10 minutes`
-7. Action: **Block**
-8. Duration: `1 hour`
-9. Deploy
-
-#### Rule 4 — Rate Limit Password Reset
-
-Prevents password reset flooding (email enumeration).
-
-1. Navigate to: **Security → WAF → Rate limiting rules → Create rule**
-2. Rule name: `Rate limit password reset`
-3. Click **"Edit expression"** and paste:
-   ```
-   (http.request.uri.path eq "/api/v1/auth/forgot-password" and http.request.method eq "POST")
-   ```
-4. Rate limit characteristics: **IP**
-5. Requests: `3`
-6. Period: `10 minutes`
-7. Action: **Block**
-8. Duration: `1 hour`
-9. Deploy
-
-#### Rule 5 — General API Rate Limit (replaces fail2ban ratelimit jail)
-
-Catches any IP hammering the API overall. The old fail2ban rule was: 10 rate-limited (429) responses in 60 seconds → 30 minute ban.
+Catches any IP hammering the API overall at bot-like speeds. The free plan allows **1 rate limiting rule** — this is it. Use it wisely.
 
 1. Navigate to: **Security → WAF → Rate limiting rules → Create rule**
 2. Rule name: `General API rate limit`
-3. Click **"Edit expression"** and paste:
-   ```
-   (starts_with(http.request.uri.path, "/api/"))
-   ```
-4. Rate limit characteristics: **IP**
-5. Requests: `100`
-6. Period: `1 minute`
-7. Action: **Block**
-8. Duration: `30 minutes`
-9. Deploy
+3. Field: **URI Path** (only raw field available on free plan)
+4. Operator: **starts with**
+5. Value: `/api/`
+6. Rate limit characteristics: **IP** (only option on free plan)
+7. Requests: `50`
+8. Period: `10 seconds` (only period available on free plan)
+9. Action: **Block**
+10. Duration: `10 seconds` (only duration available on free plan)
+11. Deploy
 
-### 5.6 Manual IP Blocking
+> **Free plan available fields in rate limiting rules:** URI Path, Verified Bot, Verified Bot Category, and Password Leaked. Host, Method, Full URI, Query, and Source IP require Pro or higher.
+
+### 5.6 Managed Rulesets
+
+Deploy the **Cloudflare Free Managed Ruleset** — available on all plans at no cost, no custom rule slots consumed. It provides mitigation against high and wide-impacting vulnerabilities (zero-day exploits, common attack patterns).
+
+1. Navigate to: **Security → Settings** (new dashboard) or **Security → WAF → Managed rules** (old dashboard)
+2. Find **Cloudflare Free Managed Ruleset**
+3. Click **Deploy** (or toggle it on)
+4. Leave defaults — the ruleset is regularly updated by Cloudflare's security team
+
+> **Note:** If you later upgrade to a paid plan, also deploy the **Cloudflare Managed Ruleset** and **OWASP Core Ruleset** — these are significantly more comprehensive but require Pro or higher.
+
+### 5.7 Block AI Bots
+
+Block AI scrapers/crawlers (GPTBot, ChatGPT-User, Google-Extended, etc.) from indexing your site. This is a separate toggle from Bot Fight Mode.
+
+1. Navigate to: **Security → Settings** → filter by **Bot traffic**
+2. Find **Block AI Scrapers and Crawlers**
+3. Toggle **ON**
+
+> You can view blocked AI bot traffic in **Security → Events**.
+
+### 5.8 Manual IP Blocking
 
 To manually block a specific IP address (e.g., after reviewing logs):
 
@@ -428,19 +465,25 @@ To manually block a specific IP address (e.g., after reviewing logs):
 
 > **Tip:** Review blocked IPs periodically in **Security → Events** to see what Cloudflare is catching. If a legitimate user gets rate-limited, you can add their IP to the **Allow** list in IP Access Rules.
 
-### 5.7 Verification Checklist
+### 5.9 Verification Checklist
 
 After configuring all rules, verify:
 
+- [ ] **Origin protection:** From a non-Cloudflare IP (e.g., your local machine), run `curl -v https://SERVER_IP` — should timeout or be refused (UFW blocks it)
+- [ ] **Origin protection:** From your browser via the domain name — should load normally (traffic goes through Cloudflare)
 - [ ] Visit the site from a non-blocked country — should load normally
-- [ ] Send 6+ rapid POST requests to `/api/v1/auth/login` — should get blocked after 5
-- [ ] Check **Security → Events** — blocked requests should appear with the rule name
-- [ ] Confirm **Bot Fight Mode** is ON (Security → Bots)
+- [ ] Send 51+ rapid requests to any `/api/` endpoint within 10 seconds — should get blocked by Cloudflare rate limit rule
+- [ ] Send 16+ login requests over 1 minute — should get 429 from server after 15 (server-side limiter)
+- [ ] Check **Security → Events** — Cloudflare-blocked requests should appear with the rule name
+- [ ] Confirm **Bot Fight Mode** is ON (Security → Settings → Bot traffic)
 - [ ] Confirm **Browser Integrity Check** is ON (Security → Settings)
+- [ ] Confirm **Block AI Scrapers and Crawlers** is ON (Security → Settings → Bot traffic)
+- [ ] Confirm **Cloudflare Free Managed Ruleset** is deployed (Security → Settings → Managed rules)
+- [ ] Confirm **Leaked Credentials Detection** is enabled (Security → Settings → Detection tools — enabled by default on free plan)
 
 ---
 
-## 5.8. Generate PostgreSQL SSL Certificates
+## 5.10. Generate PostgreSQL SSL Certificates
 
 PostgreSQL is configured with `ssl=on` in `docker-compose.production.yml` and the API connects with `Database__SslMode=Require`. Self-signed certificates are sufficient because the connection is internal (Docker bridge network only — never exposed to the internet).
 
@@ -946,7 +989,6 @@ export ALTCHA_HMAC_KEY="..." ADMIN_EMAIL="..." ADMIN_PASSWORD="..." ADMIN_USERNA
 export ADMIN_SEEDER_ENABLED=false DATA_PROTECTION_CERTIFICATE_PASSWORD="..."
 export CORS_ORIGIN_0="https://seventysixsandbox.com" CORS_ORIGIN_1="https://www.seventysixsandbox.com"
 export GRAFANA_ADMIN_USER=seventysix_grafana_admin_user GRAFANA_ADMIN_PASSWORD="..."
-export MAXMIND_ACCOUNT_ID="..." MAXMIND_LICENSE_KEY="..."
 export ALLOWED_HOSTS="seventysixsandbox.com;www.seventysixsandbox.com;api.seventysixsandbox.com"
 export CLIENT_BASE_URL="https://seventysixsandbox.com"
 export OAUTH_CALLBACK_URL="https://seventysixsandbox.com/auth/callback"
@@ -1093,7 +1135,7 @@ Client code using `new URL(environment.apiUrl)` works in dev (where `apiUrl` is 
 The `npm run generate:dataprotection-cert` script requires the .NET SDK. Generate on your dev machine, then `scp` the `.pfx` to the server. The password must match the `DATA_PROTECTION_CERTIFICATE_PASSWORD` GitHub Secret exactly.
 
 **PostgreSQL SSL certs must exist before first `docker compose up`.**
-Without `postgres-ssl/server.crt` and `server.key`, PostgreSQL fails to start and cascades to the entire stack. See Section 5.5.
+Without `postgres-ssl/server.crt` and `server.key`, PostgreSQL fails to start and cascades to the entire stack. See Section 5.10.
 
 **Server location matters for latency.**
 Hetzner EU (Germany) adds ~180ms RTT for US West Coast users on every uncached API call. Hetzner US West (Hillsboro, Oregon) drops this to ~20-40ms. Cloudflare caches static assets at edge PoPs regardless, so the latency hit is API-only. Choose location based on where your users are.

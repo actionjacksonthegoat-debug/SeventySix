@@ -216,7 +216,7 @@ public sealed class RefreshTokenCleanupJobHandlerTests(
 		context.RefreshTokens.Add(expiredToken);
 		await context.SaveChangesAsync();
 
-		var tokenId = expiredToken.Id;
+		long tokenId = expiredToken.Id;
 
 		// Act
 		await handler.HandleAsync(

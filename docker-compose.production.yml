@@ -177,11 +177,13 @@ services:
             # CORS - Use HTTPS for all external origins
             - Cors__AllowedOrigins__0=${CORS_ORIGIN_0:?CORS_ORIGIN_0 is required - set to your production domain e.g. https://seventysixsandbox.com}
             - Cors__AllowedOrigins__1=${CORS_ORIGIN_1:-}
-            # ForwardedHeaders — trust Docker bridge + private networks for X-Forwarded-* from Caddy
+            # ForwardedHeaders — trust Caddy (loopback) + Docker bridge for X-Forwarded-* headers
+            - ForwardedHeaders__KnownProxies__0=127.0.0.1
+            - ForwardedHeaders__KnownProxies__1=::1
             - ForwardedHeaders__KnownNetworks__0=10.0.0.0/8
             - ForwardedHeaders__KnownNetworks__1=172.16.0.0/12
             - ForwardedHeaders__KnownNetworks__2=192.168.0.0/16
-            - ForwardedHeaders__ForwardLimit=2
+            - ForwardedHeaders__ForwardLimit=1
             # Database SSL — require encrypted connections to PostgreSQL
             - Database__SslMode=Require
             # Valkey Cache Connection
