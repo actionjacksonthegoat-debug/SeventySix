@@ -483,7 +483,7 @@ After configuring all rules, verify:
 
 ---
 
-## 5.10. Generate PostgreSQL SSL Certificates
+### 5.10 Generate PostgreSQL SSL Certificates
 
 PostgreSQL is configured with `ssl=on` in `docker-compose.production.yml` and the API connects with `Database__SslMode=Require`. Self-signed certificates are sufficient because the connection is internal (Docker bridge network only — never exposed to the internet).
 

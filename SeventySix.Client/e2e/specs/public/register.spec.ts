@@ -242,15 +242,18 @@ test.describe("Registration Flow",
 		test.describe("Email Verification (with mock Brevo API)",
 			() =>
 			{
+				test.beforeAll(
+					async () =>
+					{
+						await EmailTestHelper.waitUntilReady(TIMEOUTS.email);
+					});
+
 				test(
 					"should send verification email when registering",
 					async ({ page, authPage }) =>
 					{
 						const uniqueEmail: string =
 							`e2e_verify_${Date.now()}@test.local`;
-
-						// Clear any existing emails
-						await EmailTestHelper.clearAllEmails();
 
 						// Submit registration
 						await page.goto(ROUTES.auth.register);
@@ -294,9 +297,6 @@ test.describe("Registration Flow",
 						const username: string =
 							`e2e_fullreg_${timestamp}`;
 						const password: string = "E2E_FullReg_Password_123!";
-
-						// Clear emails for clean state
-						await EmailTestHelper.clearAllEmails();
 
 						// Step 1: Submit email on register page
 						await page.goto(ROUTES.auth.register);

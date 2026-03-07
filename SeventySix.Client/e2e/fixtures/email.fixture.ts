@@ -125,10 +125,11 @@ export class EmailTestHelper
 
 	/**
 	 * Waits for an email to arrive for a recipient.
+	 * Polls every 200 ms and retries on transient network errors until timeout.
 	 * @param recipientEmail
 	 * The email address to wait for.
-	 * @param timeoutMs
-	 * Maximum time to wait in milliseconds.
+	 * @param options
+	 * Optional configuration including `timeout` in milliseconds.
 	 * @returns
 	 * The first email found for the recipient.
 	 * @throws
@@ -142,22 +143,44 @@ export class EmailTestHelper
 			options.timeout ?? 10000;
 		const startTime: number =
 			Date.now();
+		let lastKnownCount: number = 0;
 
 		while (Date.now() - startTime < timeoutMs)
 		{
-			const emails: CapturedEmail[] =
-				await this.getEmailsForRecipient(recipientEmail);
-
-			if (emails.length > 0)
+			try
 			{
-				return emails[0];
+				const allEmails: CapturedEmail[] =
+					await this.getAllEmails();
+
+				lastKnownCount =
+					allEmails.length;
+
+				const match: CapturedEmail | undefined =
+					allEmails.find(
+						(email) =>
+							email
+								.to
+								.some(
+									(recipient) =>
+										recipient.address === recipientEmail));
+
+				if (match !== undefined)
+				{
+					return match;
+				}
+			}
+			catch
+			{
+				// Transient network error — retry within timeout
 			}
 
 			await new Promise(
 				(resolve) => setTimeout(resolve, 200));
 		}
 
-		throw new Error(`Timeout waiting for email to ${recipientEmail}`);
+		throw new Error(
+			`Timeout waiting for email to ${recipientEmail} after ${timeoutMs}ms. `
+				+ `Last known capture count: ${lastKnownCount}`);
 	}
 
 	/**
