@@ -339,7 +339,7 @@ SeventySix uses a layered configuration system:
 | Section | Controls |
 |---------|----------|
 | Authentication | JWT, OAuth, MFA, password policy, lockout |
-| Background Jobs | Log cleanup, token cleanup, DB maintenance, GDPR anonymization |
+| Background Jobs | Log cleanup, token cleanup, orphaned registration cleanup, email queue processing, DB maintenance |
 | Caching | FusionCache tiers, output cache policies |
 | Email | Brevo HTTP API, queue settings |
 | Observability | OpenTelemetry, Serilog, tracing |
@@ -666,7 +666,7 @@ Three dashboards are auto-provisioned on first `npm start` — no manual Grafana
 | Dashboard | Datasource | Key Panels |
 |---|---|---|
 | **System Overview** | Prometheus | API Health, Total Requests, Error Rate, Avg Response Time p95, Memory Usage, GC Collections, CPU Usage, Thread Pool Queue Length |
-| **API Endpoints** | Prometheus | Top 10 Slowest Endpoints, HTTP Status Code Distribution, Error Rate, 10 Per-Endpoint Performance panels |
+| **API Endpoints** | Prometheus | Top 10 Slowest Endpoints, HTTP Status Code Distribution, Error Rate by Endpoint, Per-Endpoint Response Time |
 | **Valkey Cache Monitoring** | Prometheus + Redis Exporter | Connected Clients, Memory Usage, Uptime, L2 Cache Hit Rate, Network I/O, Operations/sec, Total Keys, Commands Processed |
 
 All three dashboards are also embedded in the admin dashboard's first three tabs (see [Application Showcase](#admin-dashboard)), automatically syncing to the application's active light or dark theme.

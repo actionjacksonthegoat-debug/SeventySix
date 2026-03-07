@@ -125,7 +125,6 @@ graph TB
 | Job | Purpose |
 |---|---|
 | `RefreshTokenCleanupJob` | Removes expired refresh tokens older than the configurable retention period |
-| `IpAnonymizationJob` | Nullifies `LastLoginIp` for users who haven't logged in within retention window (GDPR Article 4 compliance) |
 | `OrphanedRegistrationCleanupJob` | Deletes users who never completed email verification |
 
 **Logging** — Ingests client-side logs via the `/logs` endpoint. The `Log` entity captures multiple fields including the full OpenTelemetry trace context — `TraceId`, `SpanId`, `ParentSpanId`, and `CorrelationId` — enabling the admin UI to construct direct Jaeger trace URLs from any logged event. Background jobs maintain the logging tables:
@@ -186,7 +185,7 @@ SeventySix.Server/
 │   ├── Repositories/                  # Auth, Token, MFA, Permission
 │   ├── Infrastructure/                # IdentityDbContext, UserContextAccessor
 │   ├── Settings/                      # settings records + validators
-│   ├── Jobs/                          # Token cleanup, IP anonymization, orphaned registrations
+│   ├── Jobs/                          # Token cleanup and orphaned registration cleanup
 │   ├── Constants/                     # Policy, role, JWT, OAuth, rate limit constants
 │   └── POCOs/                         # DTOs, Requests, Responses, Results
 ├── SeventySix.Shared/                 # Base abstractions (no domain references)
