@@ -240,6 +240,10 @@ apt-get update && apt-get install -y caddy
 Create the Caddyfile:
 
 ```bash
+# Recommended: copy the checked-in source-of-truth and adjust domain/cert paths if needed
+cp Caddyfile.production /etc/caddy/Caddyfile
+
+# Or create it manually:
 cat > /etc/caddy/Caddyfile << 'CEOF'
 {
     email admin@seventysixsandbox.com
@@ -264,7 +268,9 @@ seventysixsandbox.com {
         }
     }
     handle {
-        reverse_proxy localhost:8080
+        reverse_proxy localhost:8080 {
+            header_up X-Forwarded-For {header.CF-Connecting-IP}
+        }
     }
 }
 

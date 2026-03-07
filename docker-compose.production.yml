@@ -195,6 +195,8 @@ services:
             - TrustedDevices__TokenLifetimeDays=30
             - TrustedDevices__MaxDevicesPerUser=5
             - TrustedDevices__CookieName=__TD
+            # Global API per-IP limiter; must handle auth_request-heavy observability pages
+            - RateLimiting__PermitLimit=5000
         volumes:
             - dataprotection_keys:/app/keys
         depends_on:
