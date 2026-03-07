@@ -6,10 +6,12 @@ import {
 	ApplicationConfig,
 	ErrorHandler,
 	inject,
+	Injector,
 	isDevMode,
 	provideAppInitializer,
 	provideBrowserGlobalErrorListeners,
-	provideZonelessChangeDetection
+	provideZonelessChangeDetection,
+	runInInjectionContext
 } from "@angular/core";
 import { MatIconRegistry } from "@angular/material/icon";
 import { DomSanitizer } from "@angular/platform-browser";
@@ -39,13 +41,55 @@ import {
 	ErrorHandlerService,
 	FeatureFlagsService,
 	SelectivePreloadingStrategy,
-	TelemetryService,
-	ThemeService,
-	WebVitalsService
+	ThemeService
 } from "@shared/services";
 import { registerOAuthIcons } from "@shared/utilities/oauth-icons.utility";
 import { Observable } from "rxjs";
 import { routes } from "./app.routes";
+
+const NON_CRITICAL_INIT_TIMEOUT_MS: number = 3000;
+
+function scheduleNonCriticalInitialization(task: () => Promise<void> | void): void
+{
+	if (typeof window === "undefined")
+	{
+		void Promise.resolve(task());
+		return;
+	}
+
+	const runTask: () => void =
+		(): void =>
+		{
+			if ("requestIdleCallback" in window)
+			{
+				window.requestIdleCallback(
+					() =>
+					{
+						void Promise.resolve(task());
+					},
+					{ timeout: NON_CRITICAL_INIT_TIMEOUT_MS });
+				return;
+			}
+
+			globalThis.setTimeout(
+				() =>
+				{
+					void Promise.resolve(task());
+				},
+				NON_CRITICAL_INIT_TIMEOUT_MS);
+		};
+
+	if (document.readyState === "complete")
+	{
+		runTask();
+		return;
+	}
+
+	window.addEventListener(
+		"load",
+		runTask,
+		{ once: true });
+}
 
 /**
  * Initialize theme service on app startup.
@@ -62,25 +106,57 @@ function initializeTheme(): Promise<void>
 }
 
 /**
- * Initialize OpenTelemetry on app startup
- * This ensures tracing is active before any HTTP requests
+ * Defers OpenTelemetry initialization until after page load.
+ * Uses requestIdleCallback to avoid competing with first paint.
  */
 function initializeTelemetry(): Promise<void>
 {
-	const telemetryService: TelemetryService =
-		inject(TelemetryService);
-	telemetryService.initialize();
+	const injector: Injector =
+		inject(Injector);
+
+	scheduleNonCriticalInitialization(
+		async () =>
+		{
+			const telemetryModule: typeof import("@shared/services/telemetry.service") =
+				await import(
+					"@shared/services/telemetry.service");
+
+			runInInjectionContext(
+				injector,
+				() =>
+				{
+					inject(telemetryModule.TelemetryService)
+						.initialize();
+				});
+		});
+
 	return Promise.resolve();
 }
 
 /**
- * Initialize Web Vitals monitoring on app startup
- * The WebVitalsService constructor handles initialization automatically
+ * Defers Web Vitals monitoring initialization until after page load.
+ * Uses requestIdleCallback to avoid competing with first paint.
  */
 function initializeWebVitals(): Promise<void>
 {
-	inject(WebVitalsService);
-	// Web vitals service constructor handles initialization
+	const injector: Injector =
+		inject(Injector);
+
+	scheduleNonCriticalInitialization(
+		async () =>
+		{
+			const webVitalsModule: typeof import("@shared/services/web-vitals.service") =
+				await import(
+					"@shared/services/web-vitals.service");
+
+			runInInjectionContext(
+				injector,
+				() =>
+				{
+					inject(webVitalsModule.WebVitalsService);
+				});
+		});
+
 	return Promise.resolve();
 }
 

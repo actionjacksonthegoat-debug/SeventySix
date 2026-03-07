@@ -10,12 +10,21 @@ import {
 	timer
 } from "rxjs";
 
+interface NavigatorConnection
+{
+	saveData?: boolean;
+	effectiveType?: string;
+}
+
 /**
  * Delay in milliseconds before preloading routes (2 seconds).
  * Allows initial page render to complete before prefetching.
  * @type {number}
  */
 const PRELOAD_DELAY_MS: number = 2000;
+const MIN_PRELOAD_VIEWPORT_QUERY: string = "(min-width: 960px)";
+const SLOW_CONNECTION_TYPES: readonly string[] =
+	["slow-2g", "2g", "3g"];
 
 /**
  * Custom Angular PreloadingStrategy for selective route preloading.
@@ -60,7 +69,7 @@ export class SelectivePreloadingStrategy implements PreloadingStrategy
 		const shouldPreload: boolean =
 			route.data?.["preload"] === true;
 
-		if (!shouldPreload)
+		if (!shouldPreload || !this.shouldPreloadForCurrentDevice())
 		{
 			return of(null);
 		}
@@ -70,5 +79,37 @@ export class SelectivePreloadingStrategy implements PreloadingStrategy
 			.pipe(
 				mergeMap(
 					() => load()));
+	}
+
+	/**
+	 * Restrict route preloading to desktop-class devices on capable networks.
+	 * Mobile and data-saving connections benefit more from deferring route bundles.
+	 *
+	 * @returns {boolean}
+	 * True when route preloading should run for the current device/network.
+	 */
+	private shouldPreloadForCurrentDevice(): boolean
+	{
+		const isDesktopOrLarger: boolean =
+			globalThis.matchMedia?.(MIN_PRELOAD_VIEWPORT_QUERY)?.matches ?? true;
+
+		if (!isDesktopOrLarger)
+		{
+			return false;
+		}
+
+		const navigatorConnection: NavigatorConnection | undefined =
+			(globalThis.navigator as Navigator & { connection?: NavigatorConnection; })?.connection;
+
+		if (navigatorConnection?.saveData === true)
+		{
+			return false;
+		}
+
+		const effectiveType: string | undefined =
+			navigatorConnection?.effectiveType;
+
+		return effectiveType === undefined
+			|| !SLOW_CONNECTION_TYPES.includes(effectiveType);
 	}
 }
