@@ -197,6 +197,12 @@ public sealed class JobChainWatchdogService(
 		DateTimeOffset now =
 			timeProvider.GetUtcNow();
 
+		if (execution.NextScheduledAt.HasValue
+			&& execution.NextScheduledAt.Value > now)
+		{
+			return false;
+		}
+
 		TimeSpan stalenessThreshold =
 			interval * StalenessMultiplier;
 
@@ -220,53 +226,103 @@ public sealed class JobChainWatchdogService(
 	/// </returns>
 	private List<(string JobName, TimeSpan Interval, Func<IRecurringJobService, CancellationToken, Task> RebootstrapAsync)> BuildWatchedJobList()
 	{
-		return
-		[
-			(
-				nameof(EmailQueueProcessJob),
-				TimeSpan.FromSeconds(emailQueueSettings.Value.ProcessingIntervalSeconds),
-				static (service, cancellationToken) =>
-					service.EnsureScheduledAsync<EmailQueueProcessJob>(
-						nameof(EmailQueueProcessJob),
-						TimeSpan.FromSeconds(10),
-						cancellationToken)
-			),
-			(
-				nameof(LogCleanupJob),
-				TimeSpan.FromHours(logCleanupSettings.Value.IntervalHours),
-				(service, cancellationToken) =>
-					service.EnsureScheduledAsync<LogCleanupJob>(
-						nameof(LogCleanupJob),
-						TimeSpan.FromHours(logCleanupSettings.Value.IntervalHours),
-						cancellationToken)
-			),
-			(
-				nameof(DatabaseMaintenanceJob),
-				TimeSpan.FromHours(databaseMaintenanceSettings.Value.IntervalHours),
-				(service, cancellationToken) =>
-					service.EnsureScheduledAsync<DatabaseMaintenanceJob>(
-						nameof(DatabaseMaintenanceJob),
-						TimeSpan.FromHours(databaseMaintenanceSettings.Value.IntervalHours),
-						cancellationToken)
-			),
-			(
-				nameof(RefreshTokenCleanupJob),
-				TimeSpan.FromHours(refreshTokenCleanupSettings.Value.IntervalHours),
-				(service, cancellationToken) =>
-					service.EnsureScheduledAsync<RefreshTokenCleanupJob>(
-						nameof(RefreshTokenCleanupJob),
-						TimeSpan.FromHours(refreshTokenCleanupSettings.Value.IntervalHours),
-						cancellationToken)
-			),
-			(
-				nameof(OrphanedRegistrationCleanupJob),
-				TimeSpan.FromHours(orphanedRegistrationCleanupSettings.Value.IntervalHours),
-				(service, cancellationToken) =>
-					service.EnsureScheduledAsync<OrphanedRegistrationCleanupJob>(
-						nameof(OrphanedRegistrationCleanupJob),
-						TimeSpan.FromHours(orphanedRegistrationCleanupSettings.Value.IntervalHours),
-						cancellationToken)
-			),
-		];
+		List<(string JobName, TimeSpan Interval, Func<IRecurringJobService, CancellationToken, Task> RebootstrapAsync)> watchedJobs =
+			[];
+
+		if (emailQueueSettings.Value.Enabled)
+		{
+			watchedJobs.Add(
+				(
+					nameof(EmailQueueProcessJob),
+					TimeSpan.FromSeconds(emailQueueSettings.Value.ProcessingIntervalSeconds),
+					(service, cancellationToken) =>
+						service.EnsureScheduledAsync<EmailQueueProcessJob>(
+							nameof(EmailQueueProcessJob),
+							TimeSpan.FromSeconds(emailQueueSettings.Value.ProcessingIntervalSeconds),
+							cancellationToken)
+				));
+		}
+
+		if (logCleanupSettings.Value.Enabled)
+		{
+			TimeOnly logCleanupPreferredTimeUtc =
+				new(
+					logCleanupSettings.Value.PreferredStartHourUtc,
+					logCleanupSettings.Value.PreferredStartMinuteUtc);
+
+			watchedJobs.Add(
+				(
+					nameof(LogCleanupJob),
+					TimeSpan.FromHours(logCleanupSettings.Value.IntervalHours),
+					(service, cancellationToken) =>
+						service.EnsureScheduledAtPreferredTimeAsync<LogCleanupJob>(
+							nameof(LogCleanupJob),
+							logCleanupPreferredTimeUtc,
+							TimeSpan.FromHours(logCleanupSettings.Value.IntervalHours),
+							cancellationToken)
+				));
+		}
+
+		if (databaseMaintenanceSettings.Value.Enabled)
+		{
+			TimeOnly databaseMaintenancePreferredTimeUtc =
+				new(
+					databaseMaintenanceSettings.Value.PreferredStartHourUtc,
+					databaseMaintenanceSettings.Value.PreferredStartMinuteUtc);
+
+			watchedJobs.Add(
+				(
+					nameof(DatabaseMaintenanceJob),
+					TimeSpan.FromHours(databaseMaintenanceSettings.Value.IntervalHours),
+					(service, cancellationToken) =>
+						service.EnsureScheduledAtPreferredTimeAsync<DatabaseMaintenanceJob>(
+							nameof(DatabaseMaintenanceJob),
+							databaseMaintenancePreferredTimeUtc,
+							TimeSpan.FromHours(databaseMaintenanceSettings.Value.IntervalHours),
+							cancellationToken)
+				));
+		}
+
+		if (refreshTokenCleanupSettings.Value.Enabled)
+		{
+			TimeOnly refreshTokenPreferredTimeUtc =
+				new(
+					refreshTokenCleanupSettings.Value.PreferredStartHourUtc,
+					refreshTokenCleanupSettings.Value.PreferredStartMinuteUtc);
+
+			watchedJobs.Add(
+				(
+					nameof(RefreshTokenCleanupJob),
+					TimeSpan.FromHours(refreshTokenCleanupSettings.Value.IntervalHours),
+					(service, cancellationToken) =>
+						service.EnsureScheduledAtPreferredTimeAsync<RefreshTokenCleanupJob>(
+							nameof(RefreshTokenCleanupJob),
+							refreshTokenPreferredTimeUtc,
+							TimeSpan.FromHours(refreshTokenCleanupSettings.Value.IntervalHours),
+							cancellationToken)
+				));
+		}
+
+		if (orphanedRegistrationCleanupSettings.Value.Enabled)
+		{
+			TimeOnly orphanedRegistrationPreferredTimeUtc =
+				new(
+					orphanedRegistrationCleanupSettings.Value.PreferredStartHourUtc,
+					orphanedRegistrationCleanupSettings.Value.PreferredStartMinuteUtc);
+
+			watchedJobs.Add(
+				(
+					nameof(OrphanedRegistrationCleanupJob),
+					TimeSpan.FromHours(orphanedRegistrationCleanupSettings.Value.IntervalHours),
+					(service, cancellationToken) =>
+						service.EnsureScheduledAtPreferredTimeAsync<OrphanedRegistrationCleanupJob>(
+							nameof(OrphanedRegistrationCleanupJob),
+							orphanedRegistrationPreferredTimeUtc,
+							TimeSpan.FromHours(orphanedRegistrationCleanupSettings.Value.IntervalHours),
+							cancellationToken)
+				));
+		}
+
+		return watchedJobs;
 	}
 }

@@ -65,6 +65,39 @@ public interface IRecurringJobService
 		where TJob : class, new();
 
 	/// <summary>
+	/// Records a successful execution for an anchored schedule and schedules the next run
+	/// while preserving the configured UTC anchor window (daily/weekly/monthly cadence).
+	/// </summary>
+	/// <typeparam name="TJob">
+	/// The job message type.
+	/// </typeparam>
+	/// <param name="jobName">
+	/// The unique name of the job.
+	/// </param>
+	/// <param name="executedAt">
+	/// When the job execution completed.
+	/// </param>
+	/// <param name="preferredTimeUtc">
+	/// Preferred UTC time anchor for this job.
+	/// </param>
+	/// <param name="interval">
+	/// Recurrence interval between anchored schedule slots.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// The cancellation token.
+	/// </param>
+	/// <returns>
+	/// A task representing the asynchronous operation.
+	/// </returns>
+	public Task RecordAndScheduleNextAnchoredAsync<TJob>(
+		string jobName,
+		DateTimeOffset executedAt,
+		TimeOnly preferredTimeUtc,
+		TimeSpan interval,
+		CancellationToken cancellationToken = default)
+		where TJob : class, new();
+
+	/// <summary>
 	/// Ensures a job is scheduled to run at a preferred UTC time, then repeats at interval.
 	/// Ideal for daily/weekly maintenance jobs that should run during off-peak hours.
 	/// </summary>

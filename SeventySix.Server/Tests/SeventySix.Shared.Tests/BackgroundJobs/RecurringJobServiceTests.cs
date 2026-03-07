@@ -177,9 +177,9 @@ public sealed class RecurringJobServiceTests
 			TimeSpan.FromHours(24),
 			CancellationToken.None);
 
-		// Assert - schedules for 23 hours from now
+		// Assert - interval recovery schedules now + interval
 		DateTimeOffset expectedNextRun =
-			lastExecuted.AddHours(24);
+			TimeProvider.GetUtcNow().AddHours(24);
 
 		await Scheduler
 			.Received(1)
@@ -343,21 +343,16 @@ public sealed class RecurringJobServiceTests
 	}
 
 	/// <summary>
-	/// When computed next time is in the past, RecordAndScheduleNextAsync should
-	/// advance to the next interval boundary rather than firing immediately.
+	/// When recording interval jobs, stale timing should recover with rolling
+	/// now-plus-interval scheduling.
 	/// </summary>
 	/// <returns>
 	/// A task representing the asynchronous operation.
 	/// </returns>
 	[Fact]
-	public async Task RecordAndScheduleNextAsync_WhenComputedTimeInPast_AdvancesToNextIntervalAsync()
+	public async Task RecordAndScheduleNextAsync_WhenComputedTimeInPast_UsesRollingNowPlusIntervalAsync()
 	{
-		// Arrange - executed 15 seconds ago, interval is 10 seconds
-		// Computed next = 15s ago + 10s = 5 seconds ago (IN THE PAST)
-		// AdvanceToNextInterval with 30s buffer: threshold = now+30s
-		// elapsed = (now+30s) - (now-15s) = 45s
-		// periods = 45s / 10s + 1 = 5
-		// Next = executedAt + 50s = now + 35s (≥30s margin ✓)
+		// Arrange - executed in the past, interval is 10 seconds
 		DateTimeOffset now =
 			TimeProvider.GetUtcNow();
 
@@ -374,9 +369,9 @@ public sealed class RecurringJobServiceTests
 			interval,
 			CancellationToken.None);
 
-		// Assert - advanced to next interval boundary (executedAt + 50s = now + 35s)
+		// Assert - interval jobs use rolling now + interval behavior
 		DateTimeOffset expectedNextRun =
-			executedAt.AddSeconds(50);
+			now.AddSeconds(10);
 
 		expectedNextRun.ShouldBeGreaterThan(now);
 
@@ -492,15 +487,13 @@ public sealed class RecurringJobServiceTests
 	}
 
 	/// <summary>
-	/// AdvanceToNextInterval with short intervals must guarantee at least
-	/// 30 seconds of margin while staying interval-aligned.
+	/// AdvanceToNextInterval with short intervals should return the immediate
+	/// next boundary after now.
 	/// </summary>
 	[Fact]
-	public void AdvanceToNextInterval_WithShortInterval_GuaranteesThirtySecondMargin()
+	public void AdvanceToNextInterval_WithShortInterval_ReturnsImmediateNextBoundary()
 	{
 		// Arrange — base time is 10 seconds ago, interval is 10 seconds
-		// Without buffer: result = now + 10s (only 10s margin — too tight)
-		// With buffer: threshold = now+30s, result = now + 40s (40s margin ✓)
 		DateTimeOffset now =
 			TimeProvider.GetUtcNow();
 
@@ -517,8 +510,8 @@ public sealed class RecurringJobServiceTests
 				interval,
 				now);
 
-		// Assert — must be at least 30 seconds in the future
-		result.ShouldBeGreaterThanOrEqualTo(now.AddSeconds(30));
+		// Assert
+		result.ShouldBe(now.AddSeconds(10));
 
 		// Assert — must be interval-aligned from baseTime
 		TimeSpan fromBase =
@@ -528,8 +521,8 @@ public sealed class RecurringJobServiceTests
 	}
 
 	/// <summary>
-	/// On restart, if NextScheduledAt is already in the future (with 30s margin),
-	/// preserve the existing schedule and re-send the Wolverine message.
+	/// On restart, if NextScheduledAt is already in the future, preserve
+	/// the existing anchored schedule.
 	/// </summary>
 	/// <returns>
 	/// A task representing the asynchronous operation.
@@ -571,17 +564,19 @@ public sealed class RecurringJobServiceTests
 				nextMonday,
 				Arg.Any<CancellationToken>());
 
-		// Assert — DB NOT updated (no UpsertExecutionAsync call)
+		// Assert — DB updated with preserved schedule state
 		await Repository
-			.DidNotReceive()
+			.Received(1)
 			.UpsertExecutionAsync(
-				Arg.Any<RecurringJobExecution>(),
+				Arg.Is<RecurringJobExecution>(execution =>
+					execution.JobName == "TestJob"
+					&& execution.NextScheduledAt == nextMonday),
 				Arg.Any<CancellationToken>());
 	}
 
 	/// <summary>
-	/// On restart with an overdue NextScheduledAt, compute a fresh preferred time
-	/// and update the DB.
+	/// On restart with an overdue NextScheduledAt, advance by interval from the
+	/// existing anchor to keep the cadence stable.
 	/// </summary>
 	/// <returns>
 	/// A task representing the asynchronous operation.
@@ -615,11 +610,9 @@ public sealed class RecurringJobServiceTests
 			TimeSpan.FromDays(7),
 			CancellationToken.None);
 
-		// Assert — computed new preferred time (not the stale one)
+		// Assert — advanced from stale anchor by one interval
 		DateTimeOffset expectedNextRun =
-			RecurringJobService.CalculateNextPreferredTime(
-				now,
-				preferredTimeUtc);
+			now.AddDays(5);
 
 		await Scheduler
 			.Received(1)
@@ -634,6 +627,64 @@ public sealed class RecurringJobServiceTests
 			.UpsertExecutionAsync(
 				Arg.Is<RecurringJobExecution>(execution =>
 					execution.NextScheduledAt == expectedNextRun),
+				Arg.Any<CancellationToken>());
+	}
+
+	/// <summary>
+	/// Anchored recording should preserve cadence from the stored schedule anchor,
+	/// not drift based on actual execution completion time.
+	/// </summary>
+	/// <returns>
+	/// A task representing the asynchronous operation.
+	/// </returns>
+	[Fact]
+	public async Task RecordAndScheduleNextAnchoredAsync_UsesStoredAnchorInsteadOfExecutionTimeAsync()
+	{
+		// Arrange
+		DateTimeOffset now =
+			TimeProvider.GetUtcNow();
+
+		DateTimeOffset scheduledAnchor =
+			now.Date.AddHours(8);
+
+		DateTimeOffset executedAt =
+			scheduledAnchor.AddMinutes(7);
+
+		TimeSpan interval =
+			TimeSpan.FromDays(1);
+
+		Repository
+			.GetLastExecutionAsync(
+				"AnchoredJob",
+				Arg.Any<CancellationToken>())
+			.Returns(new RecurringJobExecution
+			{
+				JobName = "AnchoredJob",
+				LastExecutedAt = now.AddDays(-1),
+				NextScheduledAt = scheduledAnchor,
+				LastExecutedBy = Environment.MachineName,
+			});
+
+		// Act
+		await Service.RecordAndScheduleNextAnchoredAsync<TestJob>(
+			"AnchoredJob",
+			executedAt,
+			new TimeOnly(8, 0),
+			interval,
+			CancellationToken.None);
+
+		// Assert - next remains anchored at 08:00 next day, not 08:07
+		DateTimeOffset expectedNextRun =
+			RecurringJobService.GetNextAnchoredRunTime(
+				scheduledAnchor,
+				interval,
+				now);
+
+		await Scheduler
+			.Received(1)
+			.ScheduleAsync(
+				Arg.Any<TestJob>(),
+				expectedNextRun,
 				Arg.Any<CancellationToken>());
 	}
 

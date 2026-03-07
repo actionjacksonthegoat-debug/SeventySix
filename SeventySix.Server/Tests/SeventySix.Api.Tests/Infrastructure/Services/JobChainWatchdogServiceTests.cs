@@ -73,6 +73,7 @@ public sealed class JobChainWatchdogServiceTests
 			Options.Create(
 				new EmailQueueSettings
 				{
+					Enabled = true,
 					ProcessingIntervalSeconds = 10
 				});
 
@@ -80,28 +81,40 @@ public sealed class JobChainWatchdogServiceTests
 			Options.Create(
 				new LogCleanupSettings
 				{
-					IntervalHours = 24
+					Enabled = true,
+					IntervalHours = 24,
+					PreferredStartHourUtc = 2,
+					PreferredStartMinuteUtc = 30,
 				});
 
 		IOptions<RefreshTokenCleanupSettings> refreshTokenCleanupSettings =
 			Options.Create(
 				new RefreshTokenCleanupSettings
 				{
-					IntervalHours = 1
+					Enabled = true,
+					IntervalHours = 1,
+					PreferredStartHourUtc = 1,
+					PreferredStartMinuteUtc = 0,
 				});
 
 		IOptions<OrphanedRegistrationCleanupSettings> orphanedRegistrationCleanupSettings =
 			Options.Create(
 				new OrphanedRegistrationCleanupSettings
 				{
-					IntervalHours = 1
+					Enabled = true,
+					IntervalHours = 1,
+					PreferredStartHourUtc = 3,
+					PreferredStartMinuteUtc = 15,
 				});
 
 		IOptions<DatabaseMaintenanceSettings> databaseMaintenanceSettings =
 			Options.Create(
 				new DatabaseMaintenanceSettings
 				{
-					IntervalHours = 24
+					Enabled = true,
+					IntervalHours = 24,
+					PreferredStartHourUtc = 4,
+					PreferredStartMinuteUtc = 45,
 				});
 
 		Service =
@@ -114,6 +127,102 @@ public sealed class JobChainWatchdogServiceTests
 				databaseMaintenanceSettings,
 				TimeProvider,
 				Logger);
+	}
+
+	/// <summary>
+	/// Disabled jobs with invalid preferred times should not break watchdog execution.
+	/// </summary>
+	/// <returns>
+	/// A task representing the asynchronous operation.
+	/// </returns>
+	[Fact]
+	public async Task CheckAndRebootstrapAsync_WhenAnchoredJobsDisabledWithInvalidPreferredTime_DoesNotThrowAsync()
+	{
+		// Arrange
+		IServiceProvider serviceProvider =
+			Substitute.For<IServiceProvider>();
+
+		serviceProvider
+			.GetService(typeof(IRecurringJobRepository))
+			.Returns(Repository);
+
+		serviceProvider
+			.GetService(typeof(IRecurringJobService))
+			.Returns(RecurringJobService);
+
+		IServiceScope scope =
+			Substitute.For<IServiceScope>();
+
+		scope.ServiceProvider.Returns(serviceProvider);
+
+		IServiceScopeFactory scopeFactory =
+			Substitute.For<IServiceScopeFactory>();
+
+		scopeFactory
+			.CreateScope()
+			.Returns(scope);
+
+		JobChainWatchdogService serviceWithDisabledInvalidAnchors =
+			new(
+				scopeFactory,
+				Options.Create(
+					new EmailQueueSettings
+					{
+						Enabled = true,
+						ProcessingIntervalSeconds = 10,
+					}),
+				Options.Create(
+					new LogCleanupSettings
+					{
+						Enabled = false,
+						IntervalHours = 24,
+						PreferredStartHourUtc = 99,
+						PreferredStartMinuteUtc = 99,
+					}),
+				Options.Create(
+					new RefreshTokenCleanupSettings
+					{
+						Enabled = false,
+						IntervalHours = 24,
+						PreferredStartHourUtc = 99,
+						PreferredStartMinuteUtc = 99,
+					}),
+				Options.Create(
+					new OrphanedRegistrationCleanupSettings
+					{
+						Enabled = false,
+						IntervalHours = 24,
+						PreferredStartHourUtc = 99,
+						PreferredStartMinuteUtc = 99,
+					}),
+				Options.Create(
+					new DatabaseMaintenanceSettings
+					{
+						Enabled = false,
+						IntervalHours = 24,
+						PreferredStartHourUtc = 99,
+						PreferredStartMinuteUtc = 99,
+					}),
+				TimeProvider,
+				Logger);
+
+		Repository
+			.GetAllAsync(Arg.Any<CancellationToken>())
+			.Returns(new List<RecurringJobExecution>());
+
+		// Act
+		await serviceWithDisabledInvalidAnchors.CheckAndRebootstrapAsync(CancellationToken.None);
+
+		// Assert
+		Logger
+			.Received(1)
+			.Log(
+				LogLevel.Warning,
+				Arg.Any<EventId>(),
+				Arg.Is<object>(formattedLogValues =>
+					formattedLogValues.ToString()!.Contains("EmailQueueProcessJob")),
+				Arg.Any<Exception?>(),
+				Arg.Any<Func<object, Exception?, string>>());
 	}
 
 	/// <summary>
@@ -473,6 +582,39 @@ public sealed class JobChainWatchdogServiceTests
 				executionsByName);
 
 		// Assert — not stale because min threshold is 10 minutes
+		result.ShouldBeFalse();
+	}
+
+	/// <summary>
+	/// IsJobStale returns false when the next scheduled time is already in the future.
+	/// This prevents duplicate rebootstrap scheduling.
+	/// </summary>
+	[Fact]
+	public void IsJobStale_WhenNextScheduledAtIsFuture_ReturnsFalse()
+	{
+		// Arrange
+		DateTimeOffset now =
+			TimeProvider.GetUtcNow();
+
+		Dictionary<string, RecurringJobExecution> executionsByName =
+			new()
+			{
+				["TestJob"] = new RecurringJobExecution
+				{
+					JobName = "TestJob",
+					LastExecutedAt = now.AddDays(-2),
+					NextScheduledAt = now.AddMinutes(5),
+				},
+			};
+
+		// Act
+		bool result =
+			Service.IsJobStale(
+				"TestJob",
+				TimeSpan.FromHours(24),
+				executionsByName);
+
+		// Assert
 		result.ShouldBeFalse();
 	}
 }

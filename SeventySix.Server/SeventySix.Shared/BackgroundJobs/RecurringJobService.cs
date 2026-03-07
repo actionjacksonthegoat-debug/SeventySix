@@ -37,31 +37,11 @@ public sealed class RecurringJobService(
 				jobName,
 				cancellationToken);
 
-		DateTimeOffset nextRun;
-
-		if (lastExecution is null
-			|| lastExecution.LastExecutedAt == DateTimeOffset.MinValue)
-		{
-			// Never run before — schedule one full interval from now
-			nextRun =
-				now.Add(interval);
-		}
-		else
-		{
-			// Calculate when it should run next
-			nextRun =
-				lastExecution.LastExecutedAt.Add(interval);
-
-			// If overdue, advance to the next interval-aligned slot
-			if (nextRun <= now)
-			{
-				nextRun =
-					AdvanceToNextInterval(
-						lastExecution.LastExecutedAt,
-						interval,
-						now);
-			}
-		}
+		DateTimeOffset nextRun =
+			GetNextIntervalRunTime(
+				now,
+				interval,
+				lastExecution?.NextScheduledAt);
 
 		await scheduler.ScheduleAsync(
 			new TJob(),
@@ -95,17 +75,59 @@ public sealed class RecurringJobService(
 			timeProvider.GetUtcNow();
 
 		DateTimeOffset nextScheduledAt =
-			executedAt.Add(interval);
+			GetNextIntervalRunTime(
+				now,
+				interval,
+				null);
 
-		// If computed time is in the past, advance to the next interval boundary
-		if (nextScheduledAt <= now)
-		{
-			nextScheduledAt =
-				AdvanceToNextInterval(
-					executedAt,
-					interval,
-					now);
-		}
+		RecurringJobExecution execution =
+			new()
+			{
+				JobName = jobName,
+				LastExecutedAt = executedAt,
+				NextScheduledAt = nextScheduledAt,
+				LastExecutedBy = Environment.MachineName
+			};
+
+		await repository.UpsertExecutionAsync(
+			execution,
+			cancellationToken);
+
+		await scheduler.ScheduleAsync(
+			new TJob(),
+			nextScheduledAt,
+			cancellationToken);
+	}
+
+	/// <inheritdoc />
+	public async Task RecordAndScheduleNextAnchoredAsync<TJob>(
+		string jobName,
+		DateTimeOffset executedAt,
+		TimeOnly preferredTimeUtc,
+		TimeSpan interval,
+		CancellationToken cancellationToken = default)
+		where TJob : class, new()
+	{
+		DateTimeOffset now =
+			timeProvider.GetUtcNow();
+
+		RecurringJobExecution? lastExecution =
+			await repository.GetLastExecutionAsync(
+				jobName,
+				cancellationToken);
+
+		DateTimeOffset anchor =
+			ResolveAnchor(
+				now,
+				preferredTimeUtc,
+				lastExecution?.NextScheduledAt,
+				interval);
+
+		DateTimeOffset nextScheduledAt =
+			GetNextAnchoredRunTime(
+				anchor,
+				interval,
+				now);
 
 		RecurringJobExecution execution =
 			new()
@@ -142,23 +164,18 @@ public sealed class RecurringJobService(
 				jobName,
 				cancellationToken);
 
-		// If a valid future schedule already exists, just re-send the message
-		// (in case it was lost on restart) — don't overwrite the cadence
-		if (lastExecution is not null
-			&& lastExecution.NextScheduledAt > currentTime.AddSeconds(30))
-		{
-			await scheduler.ScheduleAsync(
-				new TJob(),
-				lastExecution.NextScheduledAt.Value,
-				cancellationToken);
-
-			return;
-		}
+		DateTimeOffset anchor =
+			ResolveAnchor(
+				currentTime,
+				preferredTimeUtc,
+				lastExecution?.NextScheduledAt,
+				interval);
 
 		DateTimeOffset nextPreferredTime =
-			CalculateNextPreferredTime(
-				currentTime,
-				preferredTimeUtc);
+			GetNextAnchoredRunTime(
+				anchor,
+				interval,
+				currentTime);
 
 		// Create or update execution record with scheduled time
 		// This ensures NextScheduledAt is always populated, even before first run
@@ -179,6 +196,55 @@ public sealed class RecurringJobService(
 			new TJob(),
 			nextPreferredTime,
 			cancellationToken);
+	}
+
+	internal static DateTimeOffset GetNextIntervalRunTime(
+		DateTimeOffset now,
+		TimeSpan interval,
+		DateTimeOffset? existingNextScheduledAt)
+	{
+		if (existingNextScheduledAt.HasValue
+			&& existingNextScheduledAt.Value > now)
+		{
+			return existingNextScheduledAt.Value;
+		}
+
+		return now.Add(interval);
+	}
+
+	internal static DateTimeOffset GetNextAnchoredRunTime(
+		DateTimeOffset anchor,
+		TimeSpan interval,
+		DateTimeOffset now)
+	{
+		if (anchor > now)
+		{
+			return anchor;
+		}
+
+		return AdvanceToNextInterval(
+			anchor,
+			interval,
+			now);
+	}
+
+	internal static DateTimeOffset ResolveAnchor(
+		DateTimeOffset now,
+		TimeOnly preferredTimeUtc,
+		DateTimeOffset? existingNextScheduledAt,
+		TimeSpan interval)
+	{
+		if (existingNextScheduledAt.HasValue)
+		{
+			return existingNextScheduledAt.Value;
+		}
+
+		DateTimeOffset nextPreferredTime =
+			CalculateNextPreferredTime(
+				now,
+				preferredTimeUtc);
+
+		return nextPreferredTime.AddTicks(-interval.Ticks);
 	}
 
 	/// <summary>
@@ -203,13 +269,8 @@ public sealed class RecurringJobService(
 		TimeSpan interval,
 		DateTimeOffset now)
 	{
-		// Ensure at least 30 seconds of margin so the scheduled time
-		// is never stale by the time the Wolverine message fires
-		DateTimeOffset threshold =
-			now.AddSeconds(30);
-
 		long elapsedTicks =
-			(threshold - baseTime).Ticks;
+			(now - baseTime).Ticks;
 
 		long intervalTicks =
 			interval.Ticks;

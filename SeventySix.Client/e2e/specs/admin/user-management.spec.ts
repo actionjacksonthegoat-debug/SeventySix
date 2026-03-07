@@ -141,20 +141,28 @@ test.describe("User Management Page",
 					{
 						const dataRows: Locator =
 							adminPage.locator(SELECTORS.dataTable.dataRow);
+						const loadingSpinner: Locator =
+							adminPage.locator(SELECTORS.dataTable.loadingSpinner);
 
 						await expect(dataRows.first())
 							.toBeVisible(
 								{ timeout: TIMEOUTS.api });
 
-						// Click the first user row to navigate to detail
-						await dataRows
-							.first()
-							.click();
+						await expect(loadingSpinner)
+							.toHaveCount(
+								0,
+								{ timeout: TIMEOUTS.api });
 
-						// Should navigate to a user detail URL (contains /admin/users/ followed by an ID)
-						await expect(adminPage)
-							.toHaveURL(/\/admin\/users\/\d+/,
-								{ timeout: TIMEOUTS.navigation });
+						// Click the first user row and wait for route transition in the same step.
+						await Promise.all(
+							[
+								adminPage.waitForURL(
+									/\/admin\/users\/\d+/,
+									{ timeout: TIMEOUTS.navigation }),
+								dataRows
+									.first()
+									.click()
+							]);
 					});
 			});
 

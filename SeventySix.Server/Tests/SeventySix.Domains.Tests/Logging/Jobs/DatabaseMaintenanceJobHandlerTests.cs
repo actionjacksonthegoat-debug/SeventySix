@@ -96,9 +96,10 @@ public sealed class DatabaseMaintenanceJobHandlerTests
 		// Assert - Rescheduling should still occur
 		await RecurringJobService
 			.Received(1)
-			.RecordAndScheduleNextAsync<DatabaseMaintenanceJob>(
+			.RecordAndScheduleNextAnchoredAsync<DatabaseMaintenanceJob>(
 				Arg.Any<string>(),
 				Arg.Any<DateTimeOffset>(),
+				Arg.Any<TimeOnly>(),
 				Arg.Any<TimeSpan>(),
 				Arg.Any<CancellationToken>());
 	}
@@ -120,9 +121,10 @@ public sealed class DatabaseMaintenanceJobHandlerTests
 		// Assert
 		await RecurringJobService
 			.Received(1)
-			.RecordAndScheduleNextAsync<DatabaseMaintenanceJob>(
+			.RecordAndScheduleNextAnchoredAsync<DatabaseMaintenanceJob>(
 				nameof(DatabaseMaintenanceJob),
 				TimeProvider.GetUtcNow(),
+				Arg.Any<TimeOnly>(),
 				TimeSpan.FromHours(24),
 				Arg.Any<CancellationToken>());
 	}
@@ -160,9 +162,10 @@ public sealed class DatabaseMaintenanceJobHandlerTests
 		// Assert
 		await RecurringJobService
 			.Received(1)
-			.RecordAndScheduleNextAsync<DatabaseMaintenanceJob>(
+			.RecordAndScheduleNextAnchoredAsync<DatabaseMaintenanceJob>(
 				nameof(DatabaseMaintenanceJob),
 				TimeProvider.GetUtcNow(),
+				Arg.Any<TimeOnly>(),
 				TimeSpan.FromHours(12),
 				Arg.Any<CancellationToken>());
 	}
@@ -212,9 +215,10 @@ public sealed class DatabaseMaintenanceJobHandlerTests
 		// Assert — rescheduling STILL occurred despite exception
 		await RecurringJobService
 			.Received(1)
-			.RecordAndScheduleNextAsync<DatabaseMaintenanceJob>(
+			.RecordAndScheduleNextAnchoredAsync<DatabaseMaintenanceJob>(
 				Arg.Any<string>(),
 				Arg.Any<DateTimeOffset>(),
+				Arg.Any<TimeOnly>(),
 				Arg.Any<TimeSpan>(),
 				Arg.Any<CancellationToken>());
 	}
@@ -239,9 +243,10 @@ public sealed class DatabaseMaintenanceJobHandlerTests
 		// Assert — rescheduling STILL occurred despite uncaught exception type
 		await RecurringJobService
 			.Received(1)
-			.RecordAndScheduleNextAsync<DatabaseMaintenanceJob>(
+			.RecordAndScheduleNextAnchoredAsync<DatabaseMaintenanceJob>(
 				Arg.Any<string>(),
 				Arg.Any<DateTimeOffset>(),
+				Arg.Any<TimeOnly>(),
 				Arg.Any<TimeSpan>(),
 				Arg.Any<CancellationToken>());
 	}

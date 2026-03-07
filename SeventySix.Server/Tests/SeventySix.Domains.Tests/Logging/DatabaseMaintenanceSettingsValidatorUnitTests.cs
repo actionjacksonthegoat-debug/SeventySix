@@ -76,6 +76,54 @@ public sealed class DatabaseMaintenanceSettingsValidatorUnitTests
 			maintenance => maintenance.InitialDelayMinutes);
 	}
 
+	[Fact]
+	public void Validate_EnabledWithMonthlyInterval_PassesValidation()
+	{
+		// Arrange
+		DatabaseMaintenanceSettings settings =
+			CreateValidSettings() with { IntervalHours = 720 };
+
+		// Act
+		TestValidationResult<DatabaseMaintenanceSettings> result =
+			Validator.TestValidate(settings);
+
+		// Assert
+		result.ShouldNotHaveValidationErrorFor(
+			maintenance => maintenance.IntervalHours);
+	}
+
+	[Fact]
+	public void Validate_EnabledWithInvalidPreferredHour_FailsValidation()
+	{
+		// Arrange
+		DatabaseMaintenanceSettings settings =
+			CreateValidSettings() with { PreferredStartHourUtc = -1 };
+
+		// Act
+		TestValidationResult<DatabaseMaintenanceSettings> result =
+			Validator.TestValidate(settings);
+
+		// Assert
+		result.ShouldHaveValidationErrorFor(
+			maintenance => maintenance.PreferredStartHourUtc);
+	}
+
+	[Fact]
+	public void Validate_EnabledWithInvalidPreferredMinute_FailsValidation()
+	{
+		// Arrange
+		DatabaseMaintenanceSettings settings =
+			CreateValidSettings() with { PreferredStartMinuteUtc = 61 };
+
+		// Act
+		TestValidationResult<DatabaseMaintenanceSettings> result =
+			Validator.TestValidate(settings);
+
+		// Assert
+		result.ShouldHaveValidationErrorFor(
+			maintenance => maintenance.PreferredStartMinuteUtc);
+	}
+
 	private static DatabaseMaintenanceSettings CreateValidSettings() =>
 		new()
 		{

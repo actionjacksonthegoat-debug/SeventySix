@@ -61,6 +61,54 @@ public sealed class RefreshTokenCleanupSettingsValidatorUnitTests
 			cleanup => cleanup.RetentionDays);
 	}
 
+	[Fact]
+	public void Validate_MonthlyInterval_PassesValidation()
+	{
+		// Arrange
+		RefreshTokenCleanupSettings settings =
+			CreateValidSettings() with { IntervalHours = 720 };
+
+		// Act
+		TestValidationResult<RefreshTokenCleanupSettings> result =
+			Validator.TestValidate(settings);
+
+		// Assert
+		result.ShouldNotHaveValidationErrorFor(
+			cleanup => cleanup.IntervalHours);
+	}
+
+	[Fact]
+	public void Validate_InvalidPreferredHour_FailsValidation()
+	{
+		// Arrange
+		RefreshTokenCleanupSettings settings =
+			CreateValidSettings() with { PreferredStartHourUtc = 24 };
+
+		// Act
+		TestValidationResult<RefreshTokenCleanupSettings> result =
+			Validator.TestValidate(settings);
+
+		// Assert
+		result.ShouldHaveValidationErrorFor(
+			cleanup => cleanup.PreferredStartHourUtc);
+	}
+
+	[Fact]
+	public void Validate_InvalidPreferredMinute_FailsValidation()
+	{
+		// Arrange
+		RefreshTokenCleanupSettings settings =
+			CreateValidSettings() with { PreferredStartMinuteUtc = 60 };
+
+		// Act
+		TestValidationResult<RefreshTokenCleanupSettings> result =
+			Validator.TestValidate(settings);
+
+		// Assert
+		result.ShouldHaveValidationErrorFor(
+			cleanup => cleanup.PreferredStartMinuteUtc);
+	}
+
 	private static RefreshTokenCleanupSettings CreateValidSettings() =>
 		new()
 		{

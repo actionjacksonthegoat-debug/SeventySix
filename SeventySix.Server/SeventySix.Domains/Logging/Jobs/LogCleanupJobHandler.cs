@@ -76,9 +76,15 @@ public sealed class LogCleanupJobHandler(
 		TimeSpan interval =
 			TimeSpan.FromHours(config.IntervalHours);
 
-		await recurringJobService.RecordAndScheduleNextAsync<LogCleanupJob>(
+		TimeOnly preferredTimeUtc =
+			new(
+				config.PreferredStartHourUtc,
+				config.PreferredStartMinuteUtc);
+
+		await recurringJobService.RecordAndScheduleNextAnchoredAsync<LogCleanupJob>(
 			nameof(LogCleanupJob),
 			now,
+			preferredTimeUtc,
 			interval,
 			cancellationToken);
 	}

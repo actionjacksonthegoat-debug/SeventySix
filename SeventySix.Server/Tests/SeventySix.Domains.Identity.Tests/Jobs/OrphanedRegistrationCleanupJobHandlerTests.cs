@@ -407,9 +407,10 @@ public sealed class OrphanedRegistrationCleanupJobHandlerTests(
 		// Assert — rescheduling should still occur
 		await recurringJobService
 			.Received(1)
-			.RecordAndScheduleNextAsync<OrphanedRegistrationCleanupJob>(
+			.RecordAndScheduleNextAnchoredAsync<OrphanedRegistrationCleanupJob>(
 				nameof(OrphanedRegistrationCleanupJob),
 				TestTime,
+				Arg.Any<TimeOnly>(),
 				TimeSpan.FromHours(24),
 				Arg.Any<CancellationToken>());
 	}
@@ -462,9 +463,10 @@ public sealed class OrphanedRegistrationCleanupJobHandlerTests(
 		// Assert — reschedule MUST still happen despite uncaught exception type
 		await recurringJobService
 			.Received(1)
-			.RecordAndScheduleNextAsync<OrphanedRegistrationCleanupJob>(
+			.RecordAndScheduleNextAnchoredAsync<OrphanedRegistrationCleanupJob>(
 				nameof(OrphanedRegistrationCleanupJob),
 				TestTime,
+				Arg.Any<TimeOnly>(),
 				TimeSpan.FromHours(24),
 				Arg.Any<CancellationToken>());
 	}

@@ -84,9 +84,15 @@ public sealed class DatabaseMaintenanceJobHandler(
 		TimeSpan interval =
 			TimeSpan.FromHours(config.IntervalHours);
 
-		await recurringJobService.RecordAndScheduleNextAsync<DatabaseMaintenanceJob>(
+		TimeOnly preferredTimeUtc =
+			new(
+				config.PreferredStartHourUtc,
+				config.PreferredStartMinuteUtc);
+
+		await recurringJobService.RecordAndScheduleNextAnchoredAsync<DatabaseMaintenanceJob>(
 			nameof(DatabaseMaintenanceJob),
 			now,
+			preferredTimeUtc,
 			interval,
 			cancellationToken);
 	}
