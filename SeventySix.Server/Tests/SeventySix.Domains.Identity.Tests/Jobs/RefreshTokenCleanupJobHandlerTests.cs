@@ -158,9 +158,10 @@ public sealed class RefreshTokenCleanupJobHandlerTests(
 		// Assert - Verify next execution was scheduled with correct interval
 		await recurringJobService
 			.Received(1)
-			.RecordAndScheduleNextAsync<RefreshTokenCleanupJob>(
+			.RecordAndScheduleNextAnchoredAsync<RefreshTokenCleanupJob>(
 				nameof(RefreshTokenCleanupJob),
 				TestTime,
+				Arg.Any<TimeOnly>(),
 				TimeSpan.FromHours(12),
 				Arg.Any<CancellationToken>());
 	}
@@ -233,9 +234,10 @@ public sealed class RefreshTokenCleanupJobHandlerTests(
 		// Assert — rescheduling should still occur
 		await recurringJobService
 			.Received(1)
-			.RecordAndScheduleNextAsync<RefreshTokenCleanupJob>(
+			.RecordAndScheduleNextAnchoredAsync<RefreshTokenCleanupJob>(
 				nameof(RefreshTokenCleanupJob),
 				TestTime,
+				Arg.Any<TimeOnly>(),
 				TimeSpan.FromHours(24),
 				Arg.Any<CancellationToken>());
 	}
@@ -288,9 +290,10 @@ public sealed class RefreshTokenCleanupJobHandlerTests(
 		// Assert — reschedule MUST still happen despite uncaught exception type
 		await recurringJobService
 			.Received(1)
-			.RecordAndScheduleNextAsync<RefreshTokenCleanupJob>(
+			.RecordAndScheduleNextAnchoredAsync<RefreshTokenCleanupJob>(
 				nameof(RefreshTokenCleanupJob),
 				TestTime,
+				Arg.Any<TimeOnly>(),
 				TimeSpan.FromHours(24),
 				Arg.Any<CancellationToken>());
 	}

@@ -80,9 +80,15 @@ public sealed class OrphanedRegistrationCleanupJobHandler(
 		TimeSpan interval =
 			TimeSpan.FromHours(config.IntervalHours);
 
-		await recurringJobService.RecordAndScheduleNextAsync<OrphanedRegistrationCleanupJob>(
+		TimeOnly preferredTimeUtc =
+			new(
+				config.PreferredStartHourUtc,
+				config.PreferredStartMinuteUtc);
+
+		await recurringJobService.RecordAndScheduleNextAnchoredAsync<OrphanedRegistrationCleanupJob>(
 			nameof(OrphanedRegistrationCleanupJob),
 			now,
+			preferredTimeUtc,
 			interval,
 			cancellationToken);
 	}

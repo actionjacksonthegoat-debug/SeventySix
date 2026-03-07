@@ -21,12 +21,20 @@ public sealed class DatabaseMaintenanceSettingsValidator : AbstractValidator<Dat
 			() =>
 			{
 				RuleFor(maintenance => maintenance.IntervalHours)
-					.InclusiveBetween(1, 168)
-					.WithMessage("Database:Maintenance:IntervalHours must be between 1 and 168");
+					.InclusiveBetween(1, 744)
+					.WithMessage("Database:Maintenance:IntervalHours must be between 1 and 744");
 
 				RuleFor(maintenance => maintenance.InitialDelayMinutes)
 					.GreaterThan(0)
 					.WithMessage("Database:Maintenance:InitialDelayMinutes must be greater than 0");
+
+				RuleFor(maintenance => maintenance.PreferredStartHourUtc)
+					.InclusiveBetween(0, 23)
+					.WithMessage("Database:Maintenance:PreferredStartHourUtc must be between 0 and 23");
+
+				RuleFor(maintenance => maintenance.PreferredStartMinuteUtc)
+					.InclusiveBetween(0, 59)
+					.WithMessage("Database:Maintenance:PreferredStartMinuteUtc must be between 0 and 59");
 			});
 	}
 }

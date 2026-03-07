@@ -58,6 +58,11 @@ public sealed class IdentityJobSchedulerContributor(
 				.Get<RefreshTokenCleanupSettings>()
 			?? throw new RequiredConfigurationException(RefreshTokenCleanupSettings.SectionName);
 
+		if (!settings.Enabled)
+		{
+			return;
+		}
+
 		TimeOnly preferredTimeUtc =
 			new(
 				settings.PreferredStartHourUtc,
@@ -95,6 +100,11 @@ public sealed class IdentityJobSchedulerContributor(
 				.GetSection(OrphanedRegistrationCleanupSettings.SectionName)
 				.Get<OrphanedRegistrationCleanupSettings>()
 			?? throw new RequiredConfigurationException(OrphanedRegistrationCleanupSettings.SectionName);
+
+		if (!settings.Enabled)
+		{
+			return;
+		}
 
 		TimeOnly preferredTimeUtc =
 			new(

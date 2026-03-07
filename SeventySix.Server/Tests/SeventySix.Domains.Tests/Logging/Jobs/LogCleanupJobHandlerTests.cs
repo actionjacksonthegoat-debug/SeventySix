@@ -77,9 +77,10 @@ public sealed class LogCleanupJobHandlerTests
 		// Assert
 		await RecurringJobService
 			.Received(1)
-			.RecordAndScheduleNextAsync<LogCleanupJob>(
+			.RecordAndScheduleNextAnchoredAsync<LogCleanupJob>(
 				nameof(LogCleanupJob),
 				TimeProvider.GetUtcNow(),
+				Arg.Any<TimeOnly>(),
 				TimeSpan.FromHours(24),
 				Arg.Any<CancellationToken>());
 	}
@@ -147,9 +148,10 @@ public sealed class LogCleanupJobHandlerTests
 		// Assert
 		await RecurringJobService
 			.Received(1)
-			.RecordAndScheduleNextAsync<LogCleanupJob>(
+			.RecordAndScheduleNextAnchoredAsync<LogCleanupJob>(
 				nameof(LogCleanupJob),
 				TimeProvider.GetUtcNow(),
+				Arg.Any<TimeOnly>(),
 				TimeSpan.FromHours(48),
 				Arg.Any<CancellationToken>());
 	}
@@ -194,9 +196,10 @@ public sealed class LogCleanupJobHandlerTests
 		// Assert - Rescheduling should still occur
 		await RecurringJobService
 			.Received(1)
-			.RecordAndScheduleNextAsync<LogCleanupJob>(
+			.RecordAndScheduleNextAnchoredAsync<LogCleanupJob>(
 				Arg.Any<string>(),
 				Arg.Any<DateTimeOffset>(),
+				Arg.Any<TimeOnly>(),
 				Arg.Any<TimeSpan>(),
 				Arg.Any<CancellationToken>());
 	}
@@ -228,9 +231,10 @@ public sealed class LogCleanupJobHandlerTests
 		// Assert — rescheduling STILL occurred despite exception
 		await RecurringJobService
 			.Received(1)
-			.RecordAndScheduleNextAsync<LogCleanupJob>(
+			.RecordAndScheduleNextAnchoredAsync<LogCleanupJob>(
 				Arg.Any<string>(),
 				Arg.Any<DateTimeOffset>(),
+				Arg.Any<TimeOnly>(),
 				Arg.Any<TimeSpan>(),
 				Arg.Any<CancellationToken>());
 	}
@@ -257,9 +261,10 @@ public sealed class LogCleanupJobHandlerTests
 		// Assert — rescheduling STILL occurred despite uncaught exception type
 		await RecurringJobService
 			.Received(1)
-			.RecordAndScheduleNextAsync<LogCleanupJob>(
+			.RecordAndScheduleNextAnchoredAsync<LogCleanupJob>(
 				Arg.Any<string>(),
 				Arg.Any<DateTimeOffset>(),
+				Arg.Any<TimeOnly>(),
 				Arg.Any<TimeSpan>(),
 				Arg.Any<CancellationToken>());
 	}

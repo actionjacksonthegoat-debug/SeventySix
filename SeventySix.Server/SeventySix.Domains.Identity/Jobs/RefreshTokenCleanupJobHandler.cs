@@ -77,9 +77,15 @@ public sealed class RefreshTokenCleanupJobHandler(
 		TimeSpan interval =
 			TimeSpan.FromHours(config.IntervalHours);
 
-		await recurringJobService.RecordAndScheduleNextAsync<RefreshTokenCleanupJob>(
+		TimeOnly preferredTimeUtc =
+			new(
+				config.PreferredStartHourUtc,
+				config.PreferredStartMinuteUtc);
+
+		await recurringJobService.RecordAndScheduleNextAnchoredAsync<RefreshTokenCleanupJob>(
 			nameof(RefreshTokenCleanupJob),
 			now,
+			preferredTimeUtc,
 			interval,
 			cancellationToken);
 	}

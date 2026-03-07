@@ -76,6 +76,54 @@ public sealed class LogCleanupSettingsValidatorUnitTests
 			cleanup => cleanup.RetentionDays);
 	}
 
+	[Fact]
+	public void Validate_EnabledWithMonthlyInterval_PassesValidation()
+	{
+		// Arrange
+		LogCleanupSettings settings =
+			CreateValidSettings() with { IntervalHours = 720 };
+
+		// Act
+		TestValidationResult<LogCleanupSettings> result =
+			Validator.TestValidate(settings);
+
+		// Assert
+		result.ShouldNotHaveValidationErrorFor(
+			cleanup => cleanup.IntervalHours);
+	}
+
+	[Fact]
+	public void Validate_EnabledWithInvalidPreferredHour_FailsValidation()
+	{
+		// Arrange
+		LogCleanupSettings settings =
+			CreateValidSettings() with { PreferredStartHourUtc = 24 };
+
+		// Act
+		TestValidationResult<LogCleanupSettings> result =
+			Validator.TestValidate(settings);
+
+		// Assert
+		result.ShouldHaveValidationErrorFor(
+			cleanup => cleanup.PreferredStartHourUtc);
+	}
+
+	[Fact]
+	public void Validate_EnabledWithInvalidPreferredMinute_FailsValidation()
+	{
+		// Arrange
+		LogCleanupSettings settings =
+			CreateValidSettings() with { PreferredStartMinuteUtc = 60 };
+
+		// Act
+		TestValidationResult<LogCleanupSettings> result =
+			Validator.TestValidate(settings);
+
+		// Assert
+		result.ShouldHaveValidationErrorFor(
+			cleanup => cleanup.PreferredStartMinuteUtc);
+	}
+
 	private static LogCleanupSettings CreateValidSettings() =>
 		new()
 		{

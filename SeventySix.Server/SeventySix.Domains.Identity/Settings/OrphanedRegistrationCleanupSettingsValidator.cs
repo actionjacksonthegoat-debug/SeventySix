@@ -29,6 +29,14 @@ public sealed class OrphanedRegistrationCleanupSettingsValidator
 				RuleFor(settings => settings.IntervalHours)
 					.GreaterThan(0)
 					.WithMessage("OrphanedRegistrationCleanup:IntervalHours must be greater than 0");
+
+				RuleFor(settings => settings.PreferredStartHourUtc)
+					.InclusiveBetween(0, 23)
+					.WithMessage("OrphanedRegistrationCleanup:PreferredStartHourUtc must be between 0 and 23");
+
+				RuleFor(settings => settings.PreferredStartMinuteUtc)
+					.InclusiveBetween(0, 59)
+					.WithMessage("OrphanedRegistrationCleanup:PreferredStartMinuteUtc must be between 0 and 59");
 			});
 	}
 }

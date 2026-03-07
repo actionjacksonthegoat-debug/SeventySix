@@ -21,8 +21,8 @@ public sealed class LogCleanupSettingsValidator : AbstractValidator<LogCleanupSe
 			() =>
 			{
 				RuleFor(cleanup => cleanup.IntervalHours)
-					.InclusiveBetween(1, 168)
-					.WithMessage("Logging:Cleanup:IntervalHours must be between 1 and 168");
+					.InclusiveBetween(1, 744)
+					.WithMessage("Logging:Cleanup:IntervalHours must be between 1 and 744");
 
 				RuleFor(cleanup => cleanup.RetentionDays)
 					.InclusiveBetween(1, 365)
@@ -35,6 +35,14 @@ public sealed class LogCleanupSettingsValidator : AbstractValidator<LogCleanupSe
 				RuleFor(cleanup => cleanup.LogFilePattern)
 					.NotEmpty()
 					.WithMessage("Logging:Cleanup:LogFilePattern is required when cleanup is enabled");
+
+				RuleFor(cleanup => cleanup.PreferredStartHourUtc)
+					.InclusiveBetween(0, 23)
+					.WithMessage("Logging:Cleanup:PreferredStartHourUtc must be between 0 and 23");
+
+				RuleFor(cleanup => cleanup.PreferredStartMinuteUtc)
+					.InclusiveBetween(0, 59)
+					.WithMessage("Logging:Cleanup:PreferredStartMinuteUtc must be between 0 and 59");
 			});
 	}
 }
