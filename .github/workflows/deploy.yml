@@ -67,8 +67,15 @@ jobs:
                       mkdir -p "$APP_DIR/logs"
                       touch "$APP_DIR/logs/api.log"
 
-                      echo "=== Pulling latest code ==="
-                      git pull origin master --ff-only
+                      echo "=== Syncing repo to origin/master (overwrite local drift) ==="
+                      git fetch origin master
+                      git reset --hard origin/master
+                      git clean -fd -e postgres-ssl/ -e logs/
+
+                      echo "=== Syncing Caddy from checked-in source-of-truth ==="
+                      sudo cp "$APP_DIR/Caddyfile.production" /etc/caddy/Caddyfile
+                      sudo caddy validate --config /etc/caddy/Caddyfile
+                      sudo systemctl reload caddy
 
                       echo "=== Pulling pre-built images from GHCR ==="
                       docker compose -f docker-compose.production.yml pull api client

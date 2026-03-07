@@ -1,0 +1,29 @@
+{
+    email admin@seventysixsandbox.com
+}
+
+seventysixsandbox.com {
+    tls /etc/caddy/certs/origin.crt /etc/caddy/certs/origin.key
+    handle /api/* {
+        reverse_proxy localhost:5085 {
+            header_up X-Forwarded-For {header.CF-Connecting-IP}
+        }
+    }
+    handle {
+        reverse_proxy localhost:8080 {
+            header_up X-Forwarded-For {header.CF-Connecting-IP}
+        }
+    }
+}
+
+www.seventysixsandbox.com {
+    tls /etc/caddy/certs/origin.crt /etc/caddy/certs/origin.key
+    redir https://seventysixsandbox.com{uri} permanent
+}
+
+api.seventysixsandbox.com {
+    tls /etc/caddy/certs/origin.crt /etc/caddy/certs/origin.key
+    reverse_proxy localhost:5085 {
+        header_up X-Forwarded-For {header.CF-Connecting-IP}
+    }
+}
