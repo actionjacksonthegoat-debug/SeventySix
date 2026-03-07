@@ -54,9 +54,19 @@ public sealed class LogCleanupJobHandler(
 		LogCleanupSettings config =
 			settings.Value;
 
-		if (config.Enabled)
+		try
 		{
-			await ExecuteCleanupAsync(config, cancellationToken);
+			if (config.Enabled)
+			{
+				await ExecuteCleanupAsync(config, cancellationToken);
+			}
+		}
+		catch (Exception exception) when (exception is not OperationCanceledException)
+		{
+			logger.LogError(
+				exception,
+				"Job {JobName} failed with unexpected exception",
+				nameof(LogCleanupJob));
 		}
 
 		// ALWAYS reschedule — never break the chain
@@ -96,7 +106,7 @@ public sealed class LogCleanupJobHandler(
 				timeProvider.GetUtcNow();
 
 			DateTimeOffset cutoffDate =
-				now.AddDays(-config.RetentionDays).UtcDateTime;
+				now.AddDays(-config.RetentionDays);
 
 			// Database cleanup
 			int deletedDatabaseLogs =

@@ -58,7 +58,20 @@ public sealed class OrphanedRegistrationCleanupJobHandler(
 		OrphanedRegistrationCleanupSettings config =
 			settings.Value;
 
-		await ExecuteCleanupAsync(config, cancellationToken);
+		try
+		{
+			if (config.Enabled)
+			{
+				await ExecuteCleanupAsync(config, cancellationToken);
+			}
+		}
+		catch (Exception exception) when (exception is not OperationCanceledException)
+		{
+			logger.LogError(
+				exception,
+				"Job {JobName} failed with unexpected exception",
+				nameof(OrphanedRegistrationCleanupJob));
+		}
 
 		// ALWAYS reschedule — never break the chain
 		DateTimeOffset now =
@@ -97,7 +110,7 @@ public sealed class OrphanedRegistrationCleanupJobHandler(
 				timeProvider.GetUtcNow();
 
 			DateTimeOffset cutoffDate =
-				now.AddHours(-config.RetentionHours).UtcDateTime;
+				now.AddHours(-config.RetentionHours);
 
 			int deletedCount =
 				await dbContext.Users

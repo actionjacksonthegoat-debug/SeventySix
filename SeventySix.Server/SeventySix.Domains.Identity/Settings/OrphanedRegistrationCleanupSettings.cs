@@ -15,6 +15,11 @@ public sealed record OrphanedRegistrationCleanupSettings
 	public const string SectionName = "OrphanedRegistrationCleanup";
 
 	/// <summary>
+	/// Gets whether cleanup is enabled.
+	/// </summary>
+	public bool Enabled { get; init; }
+
+	/// <summary>
 	/// Gets the number of hours before an unconfirmed user is considered orphaned.
 	/// </summary>
 	public int RetentionHours { get; init; }

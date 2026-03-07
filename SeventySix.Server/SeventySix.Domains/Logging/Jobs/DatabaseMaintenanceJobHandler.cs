@@ -63,9 +63,19 @@ public sealed class DatabaseMaintenanceJobHandler(
 	{
 		DatabaseMaintenanceSettings config = settings.Value;
 
-		if (config.Enabled)
+		try
 		{
-			await ExecuteMaintenanceAsync(cancellationToken);
+			if (config.Enabled)
+			{
+				await ExecuteMaintenanceAsync(cancellationToken);
+			}
+		}
+		catch (Exception exception) when (exception is not OperationCanceledException)
+		{
+			logger.LogError(
+				exception,
+				"Job {JobName} failed with unexpected exception",
+				nameof(DatabaseMaintenanceJob));
 		}
 
 		// ALWAYS reschedule — never break the chain

@@ -64,6 +64,7 @@ public sealed class RefreshTokenCleanupSettingsValidatorUnitTests
 	private static RefreshTokenCleanupSettings CreateValidSettings() =>
 		new()
 		{
+			Enabled = true,
 			IntervalHours = 24,
 			RetentionDays = 30,
 			UsedTokenRetentionHours = 48,
