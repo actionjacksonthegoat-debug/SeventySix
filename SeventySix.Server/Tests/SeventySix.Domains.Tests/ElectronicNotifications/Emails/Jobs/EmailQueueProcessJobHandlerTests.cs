@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using System.Net.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -429,6 +430,50 @@ public sealed class EmailQueueProcessJobHandlerTests
 			CancellationToken.None);
 
 		// Assert — job rescheduled despite exception, with the normal interval
+		await RecurringJobService
+			.Received(1)
+			.RecordAndScheduleNextAsync<EmailQueueProcessJob>(
+				nameof(EmailQueueProcessJob),
+				Arg.Any<DateTimeOffset>(),
+				TimeSpan.FromSeconds(10),
+				Arg.Any<CancellationToken>());
+	}
+
+	/// <summary>
+	/// Tests that an exception type NOT handled by the inner catch (e.g., HttpRequestException)
+	/// is caught by the outer try/catch and the job still reschedules normally.
+	/// </summary>
+	[Fact]
+	public async Task HandleAsync_UncaughtExceptionDuringWork_StillReschedulesNextRunAsync()
+	{
+		// Arrange
+		RateLimitingService
+			.CanMakeRequestAsync(
+				ExternalApiConstants.BrevoEmail,
+				Arg.Any<CancellationToken>())
+			.Returns(true);
+
+		MessageBus
+			.InvokeAsync<IReadOnlyList<EmailQueueEntry>>(
+				Arg.Any<GetPendingEmailsQuery>(),
+				Arg.Any<CancellationToken>())
+			.ThrowsAsync(new HttpRequestException("Transient failure"));
+
+		EmailQueueProcessJobHandler handler =
+			CreateHandler(
+				new() { Enabled = true },
+				new()
+				{
+					Enabled = true,
+					ProcessingIntervalSeconds = 10,
+				});
+
+		// Act — must not throw
+		await handler.HandleAsync(
+			new EmailQueueProcessJob(),
+			CancellationToken.None);
+
+		// Assert — job rescheduled despite uncaught exception type
 		await RecurringJobService
 			.Received(1)
 			.RecordAndScheduleNextAsync<EmailQueueProcessJob>(

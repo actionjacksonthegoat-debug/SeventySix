@@ -156,6 +156,11 @@ builder.Host.UseWolverine(
 			// Tables are auto-created in the 'wolverine' schema.
 			options.PersistMessagesWithPostgresql(connectionString, "wolverine");
 
+			// Make all local queues durable — messages are persisted to PostgreSQL
+			// until successfully processed. Without this, ScheduleAsync() uses
+			// in-memory buffering and messages are lost when the DI scope disposes.
+			options.Policies.UseDurableLocalQueues();
+
 			// Poll for scheduled messages every 5 seconds
 			options.Durability.ScheduledJobPollingTime =
 				TimeSpan.FromSeconds(5);

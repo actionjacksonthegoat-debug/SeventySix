@@ -21,7 +21,7 @@ import {
 } from "@shared/constants";
 import { AuthService } from "@shared/services/auth.service";
 import { isNullOrUndefined } from "@shared/utilities/null-check.utility";
-import { catchError, switchMap, take, throwError, timer } from "rxjs";
+import { catchError, switchMap, take, throwError } from "rxjs";
 
 export const authInterceptor: HttpInterceptorFn =
 	(
@@ -61,30 +61,11 @@ export const authInterceptor: HttpInterceptorFn =
 					switchMap(
 						(response) =>
 						{
-						// Refresh returned null — may be transient (5xx/network). Retry once after delay.
 							if (isNullOrUndefined(response))
 							{
-								const retryDelayMs: number = 1000;
-								return timer(retryDelayMs)
-									.pipe(
-										switchMap(
-											() =>
-												authService
-													.refreshToken()
-													.pipe(
-														take(1),
-														switchMap(
-															(retryResponse) =>
-															{
-																if (isNullOrUndefined(retryResponse))
-																{
-																	return next(req);
-																}
-																const retryToken: string | null =
-																	authService
-																		.getAccessToken();
-																return next(addAuthHeader(req, retryToken));
-															}))));
+							// Refresh failed after retries — proceed without auth
+							// (error interceptor will handle 401 if needed)
+								return next(req);
 							}
 							const newToken: string | null =
 								authService.getAccessToken();
@@ -165,6 +146,16 @@ function isPublicAuthEndpoint(url: string): boolean
 		(path: string) => url.includes(path));
 }
 
+/**
+ * Clones the request with an Authorization bearer header.
+ * Returns the original request unchanged if the token is null.
+ * @param {HttpRequest<unknown>} req
+ * The original HTTP request.
+ * @param {string | null} token
+ * The JWT access token to attach.
+ * @returns {HttpRequest<unknown>}
+ * The request with the Authorization header, or the original request.
+ */
 function addAuthHeader(
 	req: HttpRequest<unknown>,
 	token: string | null): HttpRequest<unknown>

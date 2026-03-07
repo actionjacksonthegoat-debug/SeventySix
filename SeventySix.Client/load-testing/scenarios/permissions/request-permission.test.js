@@ -50,6 +50,13 @@ export default function(data)
 		return;
 	}
 
+	// Break thundering herd on first iteration — cycles every 4 VUs so the
+	// maximum startup delay is 1.5 s regardless of total VU count.
+	if (__ITER === 0)
+	{
+		sleep(((__VU - 1) % 4) * SLEEP_DURATION.SHORT);
+	}
+
 	// Get available roles
 	const rolesResponse =
 		authenticatedGet(
@@ -77,9 +84,12 @@ export default function(data)
 					data.accessToken,
 					buildPermissionRequestPayload(
 						[requestedRole]),
-					buildTags(
-						FLOW_TAGS.PERMISSIONS,
-						OPERATION_TAGS.REQUEST_PERMISSION));
+					{
+						timeout: "15s",
+						...buildTags(
+							FLOW_TAGS.PERMISSIONS,
+							OPERATION_TAGS.REQUEST_PERMISSION)
+					});
 
 			check(
 				requestResponse,

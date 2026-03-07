@@ -55,7 +55,20 @@ public sealed class RefreshTokenCleanupJobHandler(
 		RefreshTokenCleanupSettings config =
 			settings.Value;
 
-		await ExecuteCleanupAsync(config, cancellationToken);
+		try
+		{
+			if (config.Enabled)
+			{
+				await ExecuteCleanupAsync(config, cancellationToken);
+			}
+		}
+		catch (Exception exception) when (exception is not OperationCanceledException)
+		{
+			logger.LogError(
+				exception,
+				"Job {JobName} failed with unexpected exception",
+				nameof(RefreshTokenCleanupJob));
+		}
 
 		// ALWAYS reschedule — never break the chain
 		DateTimeOffset now =
@@ -94,7 +107,7 @@ public sealed class RefreshTokenCleanupJobHandler(
 				timeProvider.GetUtcNow();
 
 			DateTimeOffset cutoffDate =
-				now.AddDays(-config.RetentionDays).UtcDateTime;
+				now.AddDays(-config.RetentionDays);
 
 			int deletedCount =
 				await dbContext.RefreshTokens

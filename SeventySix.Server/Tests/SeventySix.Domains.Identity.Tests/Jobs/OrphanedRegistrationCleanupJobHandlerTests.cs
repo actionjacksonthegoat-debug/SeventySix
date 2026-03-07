@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using System.Net.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -48,6 +49,7 @@ public sealed class OrphanedRegistrationCleanupJobHandlerTests(
 		OrphanedRegistrationCleanupSettings settings =
 			new()
 			{
+				Enabled = true,
 				RetentionHours = 48,
 				IntervalHours = 24,
 			};
@@ -73,7 +75,7 @@ public sealed class OrphanedRegistrationCleanupJobHandlerTests(
 		orphanedUser.IsActive = false;
 		orphanedUser.EmailConfirmed = false;
 		orphanedUser.CreateDate =
-			TestTime.AddHours(-72).UtcDateTime;
+			TestTime.AddHours(-72);
 
 		context.Users.Add(orphanedUser);
 		await context.SaveChangesAsync();
@@ -109,6 +111,7 @@ public sealed class OrphanedRegistrationCleanupJobHandlerTests(
 		OrphanedRegistrationCleanupSettings settings =
 			new()
 			{
+				Enabled = true,
 				RetentionHours = 48,
 				IntervalHours = 24,
 			};
@@ -134,7 +137,7 @@ public sealed class OrphanedRegistrationCleanupJobHandlerTests(
 		activeUser.IsActive = true;
 		activeUser.EmailConfirmed = true;
 		activeUser.CreateDate =
-			TestTime.AddHours(-72).UtcDateTime;
+			TestTime.AddHours(-72);
 
 		context.Users.Add(activeUser);
 		await context.SaveChangesAsync();
@@ -170,6 +173,7 @@ public sealed class OrphanedRegistrationCleanupJobHandlerTests(
 		OrphanedRegistrationCleanupSettings settings =
 			new()
 			{
+				Enabled = true,
 				RetentionHours = 48,
 				IntervalHours = 24,
 			};
@@ -195,7 +199,7 @@ public sealed class OrphanedRegistrationCleanupJobHandlerTests(
 		activeUnconfirmedUser.IsActive = true;
 		activeUnconfirmedUser.EmailConfirmed = false;
 		activeUnconfirmedUser.CreateDate =
-			TestTime.AddHours(-72).UtcDateTime;
+			TestTime.AddHours(-72);
 
 		context.Users.Add(activeUnconfirmedUser);
 		await context.SaveChangesAsync();
@@ -231,6 +235,7 @@ public sealed class OrphanedRegistrationCleanupJobHandlerTests(
 		OrphanedRegistrationCleanupSettings settings =
 			new()
 			{
+				Enabled = true,
 				RetentionHours = 48,
 				IntervalHours = 24,
 			};
@@ -256,7 +261,7 @@ public sealed class OrphanedRegistrationCleanupJobHandlerTests(
 		inactiveConfirmedUser.IsActive = false;
 		inactiveConfirmedUser.EmailConfirmed = true;
 		inactiveConfirmedUser.CreateDate =
-			TestTime.AddHours(-72).UtcDateTime;
+			TestTime.AddHours(-72);
 
 		context.Users.Add(inactiveConfirmedUser);
 		await context.SaveChangesAsync();
@@ -292,6 +297,7 @@ public sealed class OrphanedRegistrationCleanupJobHandlerTests(
 		OrphanedRegistrationCleanupSettings settings =
 			new()
 			{
+				Enabled = true,
 				RetentionHours = 48,
 				IntervalHours = 24,
 			};
@@ -317,7 +323,7 @@ public sealed class OrphanedRegistrationCleanupJobHandlerTests(
 		recentOrphan.IsActive = false;
 		recentOrphan.EmailConfirmed = false;
 		recentOrphan.CreateDate =
-			TestTime.AddHours(-12).UtcDateTime;
+			TestTime.AddHours(-12);
 
 		context.Users.Add(recentOrphan);
 		await context.SaveChangesAsync();
@@ -335,5 +341,131 @@ public sealed class OrphanedRegistrationCleanupJobHandlerTests(
 				.AnyAsync(user => user.Id == userId);
 
 		userExists.ShouldBeTrue();
+	}
+
+	/// <summary>
+	/// Verifies that no cleanup occurs when disabled, but rescheduling still happens.
+	/// </summary>
+	[Fact]
+	public async Task HandleAsync_WhenDisabled_SkipsWorkButReschedulesAsync()
+	{
+		// Arrange
+		FakeTimeProvider timeProvider =
+			new(TestTime);
+
+		await using IdentityDbContext context =
+			CreateIdentityDbContext();
+
+		OrphanedRegistrationCleanupSettings settings =
+			new()
+			{
+				Enabled = false,
+				RetentionHours = 48,
+				IntervalHours = 24,
+			};
+
+		IRecurringJobService recurringJobService =
+			Substitute.For<IRecurringJobService>();
+
+		OrphanedRegistrationCleanupJobHandler handler =
+			new(
+				context,
+				recurringJobService,
+				Options.Create(settings),
+				timeProvider,
+				NullLogger<OrphanedRegistrationCleanupJobHandler>.Instance);
+
+		// Create an orphaned user that WOULD be deleted if cleanup was enabled
+		ApplicationUser orphanedUser =
+			new UserBuilder(timeProvider)
+				.WithUsername($"disabled_{Guid.NewGuid():N}"[..16])
+				.WithEmail($"disabled+{Guid.NewGuid():N}@example.com")
+				.Build();
+
+		orphanedUser.IsActive = false;
+		orphanedUser.EmailConfirmed = false;
+		orphanedUser.CreateDate =
+			TestTime.AddHours(-72);
+
+		context.Users.Add(orphanedUser);
+		await context.SaveChangesAsync();
+
+		long userId = orphanedUser.Id;
+
+		// Act
+		await handler.HandleAsync(
+			new OrphanedRegistrationCleanupJob(),
+			CancellationToken.None);
+
+		// Assert — orphaned user should NOT be deleted when cleanup is disabled
+		bool userExists =
+			await context.Users
+				.AnyAsync(user => user.Id == userId);
+
+		userExists.ShouldBeTrue();
+
+		// Assert — rescheduling should still occur
+		await recurringJobService
+			.Received(1)
+			.RecordAndScheduleNextAsync<OrphanedRegistrationCleanupJob>(
+				nameof(OrphanedRegistrationCleanupJob),
+				TestTime,
+				TimeSpan.FromHours(24),
+				Arg.Any<CancellationToken>());
+	}
+
+	/// <summary>
+	/// Verifies that an exception type NOT handled by the inner catch (e.g., HttpRequestException)
+	/// is caught by the outer try/catch and rescheduling still occurs.
+	/// </summary>
+	[Fact]
+	public async Task HandleAsync_UncaughtExceptionDuringWork_StillReschedulesNextRunAsync()
+	{
+		// Arrange — TimeProvider throws on first call (inside ExecuteCleanupAsync),
+		// returns normal time on second call (for reschedule in HandleAsync)
+		TimeProvider timeProvider =
+			Substitute.For<TimeProvider>();
+
+		timeProvider
+			.GetUtcNow()
+			.Returns(
+				_ => throw new HttpRequestException("Transient failure"),
+				_ => TestTime);
+
+		await using IdentityDbContext context =
+			CreateIdentityDbContext();
+
+		OrphanedRegistrationCleanupSettings settings =
+			new()
+			{
+				Enabled = true,
+				RetentionHours = 48,
+				IntervalHours = 24,
+			};
+
+		IRecurringJobService recurringJobService =
+			Substitute.For<IRecurringJobService>();
+
+		OrphanedRegistrationCleanupJobHandler handler =
+			new(
+				context,
+				recurringJobService,
+				Options.Create(settings),
+				timeProvider,
+				NullLogger<OrphanedRegistrationCleanupJobHandler>.Instance);
+
+		// Act — must not throw
+		await handler.HandleAsync(
+			new OrphanedRegistrationCleanupJob(),
+			CancellationToken.None);
+
+		// Assert — reschedule MUST still happen despite uncaught exception type
+		await recurringJobService
+			.Received(1)
+			.RecordAndScheduleNextAsync<OrphanedRegistrationCleanupJob>(
+				nameof(OrphanedRegistrationCleanupJob),
+				TestTime,
+				TimeSpan.FromHours(24),
+				Arg.Any<CancellationToken>());
 	}
 }

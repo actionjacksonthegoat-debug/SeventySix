@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using System.Net.Http;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Time.Testing;
@@ -11,7 +12,6 @@ using SeventySix.Logging;
 using SeventySix.Logging.Jobs;
 using SeventySix.Shared.BackgroundJobs;
 using SeventySix.TestUtilities.Constants;
-using Shouldly;
 
 namespace SeventySix.Domains.Tests.Logging.Jobs;
 
@@ -95,7 +95,7 @@ public sealed class LogCleanupJobHandlerTests
 	{
 		// Arrange
 		DateTimeOffset expectedCutoff =
-			TimeProvider.GetUtcNow().AddDays(-30).UtcDateTime;
+			TimeProvider.GetUtcNow().AddDays(-30);
 
 		// Act
 		await Handler.HandleAsync(
@@ -226,6 +226,35 @@ public sealed class LogCleanupJobHandlerTests
 			CancellationToken.None);
 
 		// Assert — rescheduling STILL occurred despite exception
+		await RecurringJobService
+			.Received(1)
+			.RecordAndScheduleNextAsync<LogCleanupJob>(
+				Arg.Any<string>(),
+				Arg.Any<DateTimeOffset>(),
+				Arg.Any<TimeSpan>(),
+				Arg.Any<CancellationToken>());
+	}
+
+	/// <summary>
+	/// Verifies that an exception type NOT handled by the inner catch (e.g., HttpRequestException)
+	/// is caught by the outer try/catch and rescheduling still occurs.
+	/// </summary>
+	[Fact]
+	public async Task HandleAsync_UncaughtExceptionDuringWork_StillReschedulesNextRunAsync()
+	{
+		// Arrange
+		LogRepository
+			.DeleteOlderThanAsync(
+				Arg.Any<DateTimeOffset>(),
+				Arg.Any<CancellationToken>())
+			.ThrowsAsync(new HttpRequestException("Transient failure"));
+
+		// Act — should NOT throw
+		await Handler.HandleAsync(
+			new LogCleanupJob(),
+			CancellationToken.None);
+
+		// Assert — rescheduling STILL occurred despite uncaught exception type
 		await RecurringJobService
 			.Received(1)
 			.RecordAndScheduleNextAsync<LogCleanupJob>(

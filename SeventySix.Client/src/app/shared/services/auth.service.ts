@@ -32,6 +32,7 @@ import {
 	APP_ROUTES,
 	BROADCAST_CHANNEL_NAME,
 	BROADCAST_MESSAGE_TYPE,
+	HTTP_STATUS,
 	OAUTH_FLOW_EVENT_TYPE,
 	STORAGE_KEYS
 } from "@shared/constants";
@@ -60,9 +61,14 @@ import {
 	finalize,
 	Observable,
 	of,
+	retry,
 	shareReplay,
-	tap
+	tap,
+	timer
 } from "rxjs";
+
+const REFRESH_RETRY_COUNT: number = 2;
+const REFRESH_RETRY_BASE_DELAY_MS: number = 2000;
 
 /**
  * Provides authentication flows (local and OAuth), session restoration, and in-memory token management.
@@ -354,35 +360,26 @@ export class AuthService
 					{},
 					{ withCredentials: true })
 				.pipe(
+					retry(
+						{
+							count: REFRESH_RETRY_COUNT,
+							delay: (error: HttpErrorResponse, retryIndex: number) =>
+							{
+								if (!isTransientError(error.status))
+								{
+									throw error;
+								}
+								const delayMs: number =
+									REFRESH_RETRY_BASE_DELAY_MS * Math.pow(2, retryIndex - 1);
+								return timer(delayMs);
+							}
+						}),
 					tap(
 						(response: AuthResponse) =>
-						{
-						// Refresh always returns token fields (no MFA on refresh)
-							this.setAccessToken(
-								response.accessToken!,
-								response.expiresAt!,
-								response.email!,
-								response.fullName);
-							this.requiresPasswordChangeSignal.set(
-								response.requiresPasswordChange);
-							this.markHasSession();
-							this.startIdleDetection(response);
-							this.refreshChannel?.postMessage(
-								{ type: BROADCAST_MESSAGE_TYPE.TOKEN_REFRESHED });
-						}),
+							this.handleRefreshSuccess(response)),
 					catchError(
 						(error: HttpErrorResponse) =>
-						{
-						// Only clear auth on 401 (invalid/expired refresh token)
-						// Do NOT clear on 429 (rate limited) - try again later
-							if (error.status === 401)
-							{
-								this.clearAuth();
-								this.refreshChannel?.postMessage(
-									{ type: BROADCAST_MESSAGE_TYPE.LOGOUT });
-							}
-							return of(null);
-						}),
+							this.handleRefreshError(error)),
 					finalize(
 						() =>
 						{
@@ -393,6 +390,51 @@ export class AuthService
 					shareReplay(1));
 
 		return this.refreshInProgress;
+	}
+
+	/**
+	 * Processes a successful token refresh response.
+	 * Sets the new access token, updates session markers, and broadcasts to other tabs.
+	 * @param {AuthResponse} response
+	 * The auth response from the refresh endpoint.
+	 * @returns {void}
+	 */
+	private handleRefreshSuccess(response: AuthResponse): void
+	{
+		// Refresh always returns token fields (no MFA on refresh)
+		this.setAccessToken(
+			response.accessToken!,
+			response.expiresAt!,
+			response.email!,
+			response.fullName);
+		this.requiresPasswordChangeSignal.set(
+			response.requiresPasswordChange);
+		this.markHasSession();
+		this.startIdleDetection(response);
+		this.refreshChannel?.postMessage(
+			{ type: BROADCAST_MESSAGE_TYPE.TOKEN_REFRESHED });
+	}
+
+	/**
+	 * Handles a failed token refresh attempt.
+	 * Clears auth state on 401 (invalid token) but preserves state on 429 (rate limited)
+	 * to allow retry on next request.
+	 * @param {HttpErrorResponse} error
+	 * The HTTP error from the refresh endpoint.
+	 * @returns {Observable<null>}
+	 * Observable emitting null to signal refresh failure without throwing.
+	 */
+	private handleRefreshError(error: HttpErrorResponse): Observable<null>
+	{
+		// Only clear auth on 401 (invalid/expired refresh token)
+		// Do NOT clear on 429 (rate limited) - try again later
+		if (error.status === 401)
+		{
+			this.clearAuth();
+			this.refreshChannel?.postMessage(
+				{ type: BROADCAST_MESSAGE_TYPE.LOGOUT });
+		}
+		return of(null);
 	}
 
 	/**
@@ -900,4 +942,19 @@ export class AuthService
 				this.refreshChannel?.close();
 			});
 	}
+}
+/**
+ * Determines if an HTTP status code represents a transient server error
+ * that is safe to retry (502 Bad Gateway, 503 Service Unavailable, or
+ * network error status 0).
+ * @param {number} status
+ * The HTTP status code to evaluate.
+ * @returns {boolean}
+ * True if the error is transient and retryable.
+ */
+function isTransientError(status: number): boolean
+{
+	return status === HTTP_STATUS.BAD_GATEWAY
+		|| status === HTTP_STATUS.SERVICE_UNAVAILABLE
+		|| status === HTTP_STATUS.NETWORK_ERROR;
 }

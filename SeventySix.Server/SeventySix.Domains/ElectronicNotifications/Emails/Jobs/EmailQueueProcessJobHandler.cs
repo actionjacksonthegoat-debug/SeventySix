@@ -80,23 +80,33 @@ public sealed class EmailQueueProcessJobHandler(
 		TimeSpan finalInterval =
 			TimeSpan.FromSeconds(queueConfig.ProcessingIntervalSeconds);
 
-		if (emailConfig.Enabled && queueConfig.Enabled)
+		try
 		{
-			TimeSpan? backoff =
-				await HandleRateLimitCircuitBreakerAsync(
-					queueConfig,
-					cancellationToken);
+			if (emailConfig.Enabled && queueConfig.Enabled)
+			{
+				TimeSpan? backoff =
+					await HandleRateLimitCircuitBreakerAsync(
+						queueConfig,
+						cancellationToken);
 
-			if (backoff is not null)
-			{
-				finalInterval = backoff.Value;
+				if (backoff is not null)
+				{
+					finalInterval = backoff.Value;
+				}
+				else
+				{
+					await ProcessPendingEmailsBatchAsync(
+						queueConfig,
+						cancellationToken);
+				}
 			}
-			else
-			{
-				await ProcessPendingEmailsBatchAsync(
-					queueConfig,
-					cancellationToken);
-			}
+		}
+		catch (Exception exception) when (exception is not OperationCanceledException)
+		{
+			logger.LogError(
+				exception,
+				"Job {JobName} failed with unexpected exception",
+				nameof(EmailQueueProcessJob));
 		}
 
 		await recurringJobService.RecordAndScheduleNextAsync<EmailQueueProcessJob>(

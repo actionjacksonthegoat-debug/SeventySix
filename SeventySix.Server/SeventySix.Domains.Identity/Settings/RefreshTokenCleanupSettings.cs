@@ -16,6 +16,11 @@ public sealed record RefreshTokenCleanupSettings
 	public const string SectionName = "RefreshTokenCleanup";
 
 	/// <summary>
+	/// Gets whether cleanup is enabled.
+	/// </summary>
+	public bool Enabled { get; init; }
+
+	/// <summary>
 	/// Gets the interval in hours between cleanup runs.
 	/// Must be configured in appsettings.json.
 	/// </summary>

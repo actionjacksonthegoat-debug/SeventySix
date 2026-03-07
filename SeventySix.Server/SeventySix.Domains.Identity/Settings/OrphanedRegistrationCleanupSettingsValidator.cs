@@ -18,12 +18,17 @@ public sealed class OrphanedRegistrationCleanupSettingsValidator
 	/// </summary>
 	public OrphanedRegistrationCleanupSettingsValidator()
 	{
-		RuleFor(settings => settings.RetentionHours)
-			.GreaterThan(0)
-			.WithMessage("OrphanedRegistrationCleanup:RetentionHours must be greater than 0");
+		When(
+			settings => settings.Enabled,
+			() =>
+			{
+				RuleFor(settings => settings.RetentionHours)
+					.GreaterThan(0)
+					.WithMessage("OrphanedRegistrationCleanup:RetentionHours must be greater than 0");
 
-		RuleFor(settings => settings.IntervalHours)
-			.GreaterThan(0)
-			.WithMessage("OrphanedRegistrationCleanup:IntervalHours must be greater than 0");
+				RuleFor(settings => settings.IntervalHours)
+					.GreaterThan(0)
+					.WithMessage("OrphanedRegistrationCleanup:IntervalHours must be greater than 0");
+			});
 	}
 }

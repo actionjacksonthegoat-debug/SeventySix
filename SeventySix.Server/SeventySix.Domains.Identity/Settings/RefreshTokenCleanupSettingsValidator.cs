@@ -16,12 +16,17 @@ public sealed class RefreshTokenCleanupSettingsValidator : AbstractValidator<Ref
 	/// </summary>
 	public RefreshTokenCleanupSettingsValidator()
 	{
-		RuleFor(cleanup => cleanup.IntervalHours)
-			.InclusiveBetween(1, 168)
-			.WithMessage("RefreshTokenCleanup:IntervalHours must be between 1 and 168");
+		When(
+			cleanup => cleanup.Enabled,
+			() =>
+			{
+				RuleFor(cleanup => cleanup.IntervalHours)
+					.InclusiveBetween(1, 168)
+					.WithMessage("RefreshTokenCleanup:IntervalHours must be between 1 and 168");
 
-		RuleFor(cleanup => cleanup.RetentionDays)
-			.InclusiveBetween(1, 90)
-			.WithMessage("RefreshTokenCleanup:RetentionDays must be between 1 and 90");
+				RuleFor(cleanup => cleanup.RetentionDays)
+					.InclusiveBetween(1, 90)
+					.WithMessage("RefreshTokenCleanup:RetentionDays must be between 1 and 90");
+			});
 	}
 }
