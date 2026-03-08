@@ -281,7 +281,7 @@ public sealed class RateLimitingServiceTests
 				Arg.Any<DateTimeOffset>(),
 				Arg.Any<int>(),
 				Arg.Any<CancellationToken>())
-			.Returns((int?)null);
+			.Returns(default(int?));
 
 		bool result =
 			await sut.TryIncrementRequestCountAsync(apiName, baseUrl);

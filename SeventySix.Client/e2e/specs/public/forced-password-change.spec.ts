@@ -16,7 +16,7 @@ import {
 	TIMEOUTS,
 	unauthenticatedTest
 } from "@e2e-fixtures";
-import type { Locator, Response as PlaywrightResponse } from "@playwright/test";
+import type { Locator } from "@playwright/test";
 
 /**
  * E2E Tests for Forced Password Change Flow
@@ -145,23 +145,23 @@ unauthenticatedTest.describe("Forced Password Change",
 			async ({ unauthenticatedPage }) =>
 			{
 			// Capture access token from login API response.
-			// Filter must match the API URL specifically to avoid
-			// catching the page navigation HTML response.
-				const loginResponsePromise: Promise<PlaywrightResponse> =
+			// Chain .then(r => r.json()) eagerly so the body is read before the
+			// page navigates away and Playwright frees the network response buffer.
+				const loginBodyPromise: Promise<{ accessToken: string }> =
 					unauthenticatedPage.waitForResponse(
 						(response) =>
 							response
 								.url()
 								.includes(API_ROUTES.auth.login)
 								&& response.status() === 200,
-						{ timeout: TIMEOUTS.api });
+						{ timeout: TIMEOUTS.api })
+						.then(response =>
+							response.json() as Promise<{ accessToken: string }>);
 
 				await loginAsForcedUser(unauthenticatedPage);
 
-				const loginResponse: PlaywrightResponse =
-					await loginResponsePromise;
-				const responseBody: unknown =
-					await loginResponse.json();
+				const responseBody: { accessToken: string } =
+					await loginBodyPromise;
 				const capturedToken: string =
 					responseBody.accessToken;
 
