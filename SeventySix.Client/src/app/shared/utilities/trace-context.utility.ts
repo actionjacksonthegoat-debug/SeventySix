@@ -5,12 +5,12 @@ const INVALID_TRACE_ID: string = "00000000000000000000000000000000";
 
 /**
  * Returns the current OpenTelemetry trace ID if an active span exists,
- * otherwise generates a random 32-character hex string for correlation.
+ * otherwise returns null so the server can use its own trace ID.
  * Used by ClientErrorLoggerService and LoggerService for trace correlation.
- * @returns {string}
- * A 32-character lowercase hexadecimal string.
+ * @returns {string | null}
+ * A 32-character lowercase hexadecimal trace ID, or null if no active span.
  */
-export function getTraceCorrelationId(): string
+export function getTraceCorrelationId(): string | null
 {
 	try
 	{
@@ -26,18 +26,8 @@ export function getTraceCorrelationId(): string
 	}
 	catch
 	{
-		// OTEL API not initialized — fall through to random generation
+		// OTEL API not initialized — fall through
 	}
 
-	const bytes: Uint8Array =
-		new Uint8Array(16);
-	crypto.getRandomValues(bytes);
-
-	return Array
-		.from(bytes)
-		.map((byte) =>
-			byte
-				.toString(16)
-				.padStart(2, "0"))
-		.join("");
+	return null;
 }

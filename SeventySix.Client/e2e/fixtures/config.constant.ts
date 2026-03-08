@@ -61,6 +61,7 @@ export const COOKIE_NAMES: CookieNames =
 type ApiRoutes = {
 	auth: {
 		login: string;
+		refresh: string;
 		totpVerify: string;
 		totpDisable: string;
 		trustedDevices: string;
@@ -75,6 +76,7 @@ export const API_ROUTES: ApiRoutes =
 	{
 		auth: {
 			login: "/api/v1/auth/login",
+			refresh: "/api/v1/auth/refresh",
 			totpVerify: "/api/v1/auth/mfa/totp/verify",
 			totpDisable: "/api/v1/auth/mfa/totp/disable",
 			trustedDevices: "/api/v1/auth/trusted-devices"

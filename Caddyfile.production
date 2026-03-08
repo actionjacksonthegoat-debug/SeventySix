@@ -1,59 +1,59 @@
 {
-    email support@seventysixsandbox.com
-    log {
-        output file /var/log/caddy/access.log {
-            roll_size 100MiB
-            roll_keep 10
-            roll_keep_for 168h
-        }
-        format json
-        level INFO
-    }
+	email support@seventysixsandbox.com
+	log {
+		output file /var/log/caddy/access.log {
+			roll_size 100MiB
+			roll_keep 10
+			roll_keep_for 168h
+		}
+		format json
+		level INFO
+	}
 }
 
 seventysixsandbox.com {
-    tls /etc/caddy/certs/origin.crt /etc/caddy/certs/origin.key
+	tls /etc/caddy/certs/origin.crt /etc/caddy/certs/origin.key
 
-    # Browser telemetry ingestion — proxied to OTEL Collector HTTP receiver
-    # Auth: Client only initializes telemetry for authenticated users.
-    # Server-side: Cloudflare handles DDoS/rate limiting. POST-only + 512KB body limit.
-    # Recommend Cloudflare WAF rate limit rule on /telemetry/* for additional protection.
-    handle /telemetry/* {
-        @not_post not method POST
-        respond @not_post 405
+	# Browser telemetry ingestion — proxied to OTEL Collector HTTP receiver
+	# Auth: Client only initializes telemetry for authenticated users.
+	# Server-side: Cloudflare handles DDoS/rate limiting. POST-only + 512KB body limit.
+	# Recommend Cloudflare WAF rate limit rule on /telemetry/* for additional protection.
+	handle /telemetry/* {
+		@not_post not method POST
+		respond @not_post 405
 
-        request_body {
-            max_size 512KB
-        }
+		request_body {
+			max_size 512KB
+		}
 
-        uri strip_prefix /telemetry
-        reverse_proxy localhost:4318 {
-            header_up X-Forwarded-For {header.CF-Connecting-IP}
-            header_up -Cookie
-            header_up -Authorization
-        }
-    }
+		uri strip_prefix /telemetry
+		reverse_proxy localhost:4318 {
+			header_up X-Forwarded-For {header.CF-Connecting-IP}
+			header_up -Cookie
+			header_up -Authorization
+		}
+	}
 
-    handle /api/* {
-        reverse_proxy localhost:5085 {
-            header_up X-Forwarded-For {header.CF-Connecting-IP}
-        }
-    }
-    handle {
-        reverse_proxy localhost:8080 {
-            header_up X-Forwarded-For {header.CF-Connecting-IP}
-        }
-    }
+	handle /api/* {
+		reverse_proxy localhost:5085 {
+			header_up X-Forwarded-For {header.CF-Connecting-IP}
+		}
+	}
+	handle {
+		reverse_proxy localhost:8080 {
+			header_up X-Forwarded-For {header.CF-Connecting-IP}
+		}
+	}
 }
 
 www.seventysixsandbox.com {
-    tls /etc/caddy/certs/origin.crt /etc/caddy/certs/origin.key
-    redir https://seventysixsandbox.com{uri} permanent
+	tls /etc/caddy/certs/origin.crt /etc/caddy/certs/origin.key
+	redir https://seventysixsandbox.com{uri} permanent
 }
 
 api.seventysixsandbox.com {
-    tls /etc/caddy/certs/origin.crt /etc/caddy/certs/origin.key
-    reverse_proxy localhost:5085 {
-        header_up X-Forwarded-For {header.CF-Connecting-IP}
-    }
+	tls /etc/caddy/certs/origin.crt /etc/caddy/certs/origin.key
+	reverse_proxy localhost:5085 {
+		header_up X-Forwarded-For {header.CF-Connecting-IP}
+	}
 }

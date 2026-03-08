@@ -9,6 +9,10 @@
 >
 > This codebase is under active development and is **not yet suitable for production use**. APIs, database schemas, and configuration may change without notice.
 
+## Site Walkthrough
+
+<video src="https://github.com/actionjacksonthegoat-debug/SeventySix/releases/download/media-assets/Site_Walkthrough_SeventySix.mp4" controls width="100%"></video>
+
 ## Overview
 
 A full-stack monorepo demonstrating enterprise-grade patterns with .NET 10 and Angular 21. Built entirely through AI-assisted development using GitHub Copilot and Claude, this codebase serves as both a functional application and a reference implementation for secure, observable, well-tested systems.

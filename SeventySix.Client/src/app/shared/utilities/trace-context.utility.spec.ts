@@ -12,14 +12,14 @@ import { getTraceCorrelationId } from "./trace-context.utility";
 describe("getTraceCorrelationId",
 	() =>
 	{
-		it("should return a 32-character hex string",
+		it("should return null when no active span exists",
 			() =>
 			{
-				const result: string =
+				const result: string | null =
 					getTraceCorrelationId();
 
 				expect(result)
-					.toMatch(/^[0-9a-f]{32}$/);
+					.toBeNull();
 			});
 
 		it("should return trace ID from active span when available",
@@ -37,7 +37,7 @@ describe("getTraceCorrelationId",
 							})
 						} as otelApi.Span);
 
-				const result: string =
+				const result: string | null =
 					getTraceCorrelationId();
 
 				expect(result)
@@ -46,23 +46,23 @@ describe("getTraceCorrelationId",
 				vi.restoreAllMocks();
 			});
 
-		it("should return random ID when no active span exists",
+		it("should return null when active span is undefined",
 			() =>
 			{
 				vi
 					.spyOn(otelApi.trace, "getActiveSpan")
 					.mockReturnValue(undefined);
 
-				const result: string =
+				const result: string | null =
 					getTraceCorrelationId();
 
 				expect(result)
-					.toMatch(/^[0-9a-f]{32}$/);
+					.toBeNull();
 
 				vi.restoreAllMocks();
 			});
 
-		it("should return random ID when trace ID is all zeros",
+		it("should return null when trace ID is all zeros",
 			() =>
 			{
 				const invalidTraceId: string = "00000000000000000000000000000000";
@@ -77,19 +77,16 @@ describe("getTraceCorrelationId",
 							})
 						} as otelApi.Span);
 
-				const result: string =
+				const result: string | null =
 					getTraceCorrelationId();
 
 				expect(result)
-					.not
-					.toBe(invalidTraceId);
-				expect(result)
-					.toMatch(/^[0-9a-f]{32}$/);
+					.toBeNull();
 
 				vi.restoreAllMocks();
 			});
 
-		it("should return random ID when OTEL API throws",
+		it("should return null when OTEL API throws",
 			() =>
 			{
 				vi
@@ -100,30 +97,11 @@ describe("getTraceCorrelationId",
 							throw new Error("OTEL not initialized");
 						});
 
-				const result: string =
+				const result: string | null =
 					getTraceCorrelationId();
 
 				expect(result)
-					.toMatch(/^[0-9a-f]{32}$/);
-
-				vi.restoreAllMocks();
-			});
-
-		it("should generate unique IDs on consecutive calls without active span",
-			() =>
-			{
-				vi
-					.spyOn(otelApi.trace, "getActiveSpan")
-					.mockReturnValue(undefined);
-
-				const id1: string =
-					getTraceCorrelationId();
-				const id2: string =
-					getTraceCorrelationId();
-
-				expect(id1)
-					.not
-					.toBe(id2);
+					.toBeNull();
 
 				vi.restoreAllMocks();
 			});

@@ -480,6 +480,43 @@ describe("UserService",
 						expect(mockApiService.get)
 							.toHaveBeenCalledWith("users/1/roles");
 					});
+
+				it("should normalize string userId to number in query key",
+					async () =>
+					{
+						const roles: string[] =
+							[ROLE_ADMIN];
+						mockApiService.get.mockReturnValue(of(roles));
+
+						const query: ReturnType<typeof service.getUserRoles> =
+							TestBed.runInInjectionContext(
+								() => service.getUserRoles("5"));
+						const result: Awaited<ReturnType<typeof query.refetch>> =
+							await query.refetch();
+
+						expect(result.data)
+							.toEqual(roles);
+						expect(mockApiService.get)
+							.toHaveBeenCalledWith("users/5/roles");
+					});
+
+				it("should use same query key for string and number userId",
+					async () =>
+					{
+						const roles: string[] =
+							[ROLE_DEVELOPER];
+						mockApiService.get.mockReturnValue(of(roles));
+
+						const queryFromString: ReturnType<typeof service.getUserRoles> =
+							TestBed.runInInjectionContext(
+								() => service.getUserRoles("3"));
+						const queryFromNumber: ReturnType<typeof service.getUserRoles> =
+							TestBed.runInInjectionContext(
+								() => service.getUserRoles(3));
+
+						expect(queryFromString.queryKey())
+							.toEqual(queryFromNumber.queryKey());
+					});
 			});
 
 		describe("getAdminCount",

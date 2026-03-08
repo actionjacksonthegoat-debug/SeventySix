@@ -74,8 +74,13 @@ jobs:
 
                       echo "=== Syncing Caddy from checked-in source-of-truth ==="
                       sudo cp "$APP_DIR/Caddyfile.production" /etc/caddy/Caddyfile
+                      sudo caddy fmt --overwrite /etc/caddy/Caddyfile
                       sudo caddy validate --config /etc/caddy/Caddyfile
-                      sudo systemctl reload caddy
+                      # Use restart instead of reload — reload hangs when the running config
+                      # differs significantly (e.g. adding a global log block) because
+                      # caddy reload waits on the admin API while the process applies the new config.
+                      # restart does a clean stop+start which is more reliable for config changes.
+                      sudo systemctl restart caddy
 
                       echo "=== Pulling pre-built images from GHCR ==="
                       docker compose -f docker-compose.production.yml pull api client

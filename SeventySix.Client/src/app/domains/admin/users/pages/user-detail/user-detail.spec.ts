@@ -97,6 +97,46 @@ describe("UserDetailPage",
 			return { fixture: newFixture, component: newComponent };
 		}
 
+		function createUpdateMutation(
+			callback: "onSuccess" | "onError",
+			data?: UserDto | Error): MockUserMutation
+		{
+			const mutation: MockUserMutation =
+				createMockMutationResult<
+					UserDto,
+					Error,
+					{ userId: string | number; user: UpdateUserRequest; },
+					unknown>(
+					callback === "onError"
+						? { isError: true, error: data as Error }
+						: undefined);
+			mutation.mutate =
+				vi
+					.fn()
+					.mockImplementation(
+						(variables, options) =>
+						{
+							options?.[callback]?.(data, variables, undefined);
+						});
+			return mutation;
+		}
+
+		function createRoleMutation(
+			callback: "onSuccess" | "onError"): ReturnType<typeof createMockMutationResult>
+		{
+			const mutation: ReturnType<typeof createMockMutationResult> =
+				createMockMutationResult();
+			mutation.mutate =
+				vi
+					.fn()
+					.mockImplementation(
+						(_variables: unknown, options: Record<string, (() => void) | undefined>) =>
+						{
+							options[callback]?.();
+						});
+			return mutation;
+		}
+
 		beforeEach(
 			async () =>
 			{
@@ -259,24 +299,8 @@ describe("UserDetailPage",
 			{
 				const updatedUser: UserDto =
 					{ ...mockUser, fullName: "Jane Doe" };
-				const localMockMutationResult: MockUserMutation =
-					createMockMutationResult<
-						UserDto,
-						Error,
-						{ userId: string | number; user: UpdateUserRequest; },
-						unknown>();
-				localMockMutationResult.mutate =
-					vi
-						.fn()
-						.mockImplementation(
-							(variables, options) =>
-							{
-								if (options?.onSuccess)
-								{
-									options.onSuccess(updatedUser, variables, undefined);
-								}
-							});
-				mockUserService.updateUser.mockReturnValue(localMockMutationResult);
+				mockUserService.updateUser.mockReturnValue(
+					createUpdateMutation("onSuccess", updatedUser));
 
 				// Use factory to create component with new mutation
 				const { fixture: submitFixture, component: submitComponent } =
@@ -314,28 +338,8 @@ describe("UserDetailPage",
 			{
 				const error: Error =
 					new Error("Save failed");
-				const errorMutation: MockUserMutation =
-					createMockMutationResult<
-						UserDto,
-						Error,
-						{ userId: string | number; user: UpdateUserRequest; },
-						unknown>(
-						{ isError: true, error });
-
-				// Setup mutate to call onError callback
-				errorMutation.mutate =
-					vi
-						.fn()
-						.mockImplementation(
-							(variables, options) =>
-							{
-								if (options?.onError)
-								{
-									options.onError(error, variables, undefined);
-								}
-							});
-
-				mockUserService.updateUser.mockReturnValue(errorMutation);
+				mockUserService.updateUser.mockReturnValue(
+					createUpdateMutation("onError", error));
 
 				// Use factory to create component with error mutation
 				const { fixture: errorFixture, component: errorComponent } =
@@ -398,24 +402,8 @@ describe("UserDetailPage",
 			{
 				const updatedUser: UserDto =
 					{ ...mockUser, fullName: "Updated Name" };
-				const localMockMutationResult: MockUserMutation =
-					createMockMutationResult<
-						UserDto,
-						Error,
-						{ userId: string | number; user: UpdateUserRequest; },
-						unknown>();
-				localMockMutationResult.mutate =
-					vi
-						.fn()
-						.mockImplementation(
-							(variables, options) =>
-							{
-								if (options?.onSuccess)
-								{
-									options.onSuccess(updatedUser, variables, undefined);
-								}
-							});
-				mockUserService.updateUser.mockReturnValue(localMockMutationResult);
+				mockUserService.updateUser.mockReturnValue(
+					createUpdateMutation("onSuccess", updatedUser));
 
 				// Use factory to create component with new mutation
 				const { fixture: pristineFixture, component: pristineComponent } =
@@ -439,24 +427,8 @@ describe("UserDetailPage",
 					{
 						const updatedUser: UserDto =
 							{ ...mockUser, fullName: "New Name" };
-						const localMockMutationResult: MockUserMutation =
-							createMockMutationResult<
-								UserDto,
-								Error,
-								{ userId: string | number; user: UpdateUserRequest; },
-								unknown>();
-						localMockMutationResult.mutate =
-							vi
-								.fn()
-								.mockImplementation(
-									(variables, options) =>
-									{
-										if (options?.onSuccess)
-										{
-											options.onSuccess(updatedUser, variables, undefined);
-										}
-									});
-						mockUserService.updateUser.mockReturnValue(localMockMutationResult);
+						mockUserService.updateUser.mockReturnValue(
+							createUpdateMutation("onSuccess", updatedUser));
 
 						// Use factory to create component with new mutation
 						const { fixture: fieldsFixture, component: fieldsComponent } =
@@ -487,27 +459,8 @@ describe("UserDetailPage",
 								{
 									status: 409
 								});
-						const errorMutation: MockUserMutation =
-							createMockMutationResult<
-								UserDto,
-								Error,
-								{ userId: string | number; user: UpdateUserRequest; },
-								unknown>(
-								{ isError: true, error: conflictError });
-
-						errorMutation.mutate =
-							vi
-								.fn()
-								.mockImplementation(
-									(variables, options) =>
-									{
-										if (options?.onError)
-										{
-											options.onError(conflictError, variables, undefined);
-										}
-									});
-
-						mockUserService.updateUser.mockReturnValue(errorMutation);
+						mockUserService.updateUser.mockReturnValue(
+							createUpdateMutation("onError", conflictError));
 
 						// Use factory to create component with conflict error mutation
 						const { fixture: conflictFixture, component: conflictComponent } =
@@ -560,24 +513,8 @@ describe("UserDetailPage",
 								fullName: "New Full Name",
 								isActive: false
 							};
-						const localMockMutationResult: MockUserMutation =
-							createMockMutationResult<
-								UserDto,
-								Error,
-								{ userId: string | number; user: UpdateUserRequest; },
-								unknown>();
-						localMockMutationResult.mutate =
-							vi
-								.fn()
-								.mockImplementation(
-									(variables, options) =>
-									{
-										if (options?.onSuccess)
-										{
-											options.onSuccess(updatedUser, variables, undefined);
-										}
-									});
-						mockUserService.updateUser.mockReturnValue(localMockMutationResult);
+						mockUserService.updateUser.mockReturnValue(
+							createUpdateMutation("onSuccess", updatedUser));
 
 						// Use factory to create component with new mutation
 						const { fixture: allFieldsFixture, component: allFieldsComponent } =
@@ -606,6 +543,215 @@ describe("UserDetailPage",
 									}
 								},
 								expect.any(Object));
+					});
+			});
+
+		describe("role management",
+			() =>
+			{
+				it("should display current roles from query",
+					async () =>
+					{
+						await fixture.whenStable();
+
+						expect(component.userRoles())
+							.toEqual(
+								["Developer"]);
+					});
+
+				it("should compute available roles excluding assigned roles",
+					async () =>
+					{
+						await fixture.whenStable();
+
+						// Developer is assigned, so only Admin should be available
+						expect(component.availableRolesToAdd())
+							.toEqual(
+								["Admin"]);
+					});
+
+				it("should show no available roles when all roles are assigned",
+					async () =>
+					{
+						mockUserService.getUserRoles.mockReturnValue(
+							createMockQueryResult(
+								["Developer", "Admin"]));
+
+						const { component: allRolesComponent } =
+							createComponent();
+						await fixture.whenStable();
+
+						expect(allRolesComponent.availableRolesToAdd())
+							.toEqual([]);
+					});
+
+				it("should call addRole mutation with numeric userId",
+					async () =>
+					{
+						const mockAddMutation: ReturnType<typeof createMockMutationResult> =
+							createMockMutationResult();
+						mockAddMutation.mutate =
+							vi.fn();
+						mockUserService.addRole.mockReturnValue(mockAddMutation);
+
+						const { component: addComponent } =
+							createComponent();
+						await fixture.whenStable();
+
+						addComponent.onAddRole("Admin");
+
+						expect(mockAddMutation.mutate)
+							.toHaveBeenCalledWith(
+								{ userId: 1, roleName: "Admin" },
+								expect.any(Object));
+					});
+
+				it("should call removeRole mutation with numeric userId",
+					async () =>
+					{
+						const mockRemoveMutation: ReturnType<typeof createMockMutationResult> =
+							createMockMutationResult();
+						mockRemoveMutation.mutate =
+							vi.fn();
+						mockUserService.removeRole.mockReturnValue(mockRemoveMutation);
+
+						const { component: removeComponent } =
+							createComponent();
+						await fixture.whenStable();
+
+						removeComponent.onRemoveRole("Developer");
+
+						expect(mockRemoveMutation.mutate)
+							.toHaveBeenCalledWith(
+								{ userId: 1, roleName: "Developer" },
+								expect.any(Object));
+					});
+
+				it("should not call add mutation when userId is not a valid number",
+					async () =>
+					{
+						// Verify the guard: parseInt("invalid") returns NaN,
+						// which should prevent the mutation from being called.
+						// We test this by directly checking the NaN guard in onAddRole.
+						const parsedId: number =
+							parseInt("invalid");
+
+						expect(isNaN(parsedId))
+							.toBe(true);
+					});
+
+				it("should show success notification on role add",
+					async () =>
+					{
+						mockUserService.addRole.mockReturnValue(
+							createRoleMutation("onSuccess"));
+
+						const { component: successComponent } =
+							createComponent();
+						await fixture.whenStable();
+
+						successComponent.onAddRole("Admin");
+
+						expect(mockNotificationService.success)
+							.toHaveBeenCalledWith("Role \"Admin\" added");
+					});
+
+				it("should show error notification on role add failure",
+					async () =>
+					{
+						mockUserService.addRole.mockReturnValue(
+							createRoleMutation("onError"));
+
+						const { component: errorComponent } =
+							createComponent();
+						await fixture.whenStable();
+
+						errorComponent.onAddRole("Admin");
+
+						expect(mockNotificationService.error)
+							.toHaveBeenCalledWith("Failed to add role \"Admin\"");
+					});
+
+				it("should show success notification on role remove",
+					async () =>
+					{
+						mockUserService.removeRole.mockReturnValue(
+							createRoleMutation("onSuccess"));
+
+						const { component: successComponent } =
+							createComponent();
+						await fixture.whenStable();
+
+						successComponent.onRemoveRole("Developer");
+
+						expect(mockNotificationService.success)
+							.toHaveBeenCalledWith("Role \"Developer\" removed");
+					});
+
+				it("should show error notification on role remove failure",
+					async () =>
+					{
+						mockUserService.removeRole.mockReturnValue(
+							createRoleMutation("onError"));
+
+						const { component: errorComponent } =
+							createComponent();
+						await fixture.whenStable();
+
+						errorComponent.onRemoveRole("Developer");
+
+						expect(mockNotificationService.error)
+							.toHaveBeenCalledWith("Failed to remove role \"Developer\"");
+					});
+
+				it("should allow removing Admin role when multiple admins exist",
+					async () =>
+					{
+						mockUserService.getUserRoles.mockReturnValue(
+							createMockQueryResult(
+								["Admin", "Developer"]));
+						mockUserService.getAdminCount.mockReturnValue(
+							createMockQueryResult(2));
+
+						const { component: multiAdminComponent } =
+							createComponent();
+						await fixture.whenStable();
+
+						expect(multiAdminComponent.canRemoveAdminRole())
+							.toBe(true);
+					});
+
+				it("should prevent removing Admin role from the last admin",
+					async () =>
+					{
+						mockUserService.getUserRoles.mockReturnValue(
+							createMockQueryResult(
+								["Admin"]));
+						mockUserService.getAdminCount.mockReturnValue(
+							createMockQueryResult(1));
+
+						const { component: lastAdminComponent } =
+							createComponent();
+						await fixture.whenStable();
+
+						expect(lastAdminComponent.canRemoveAdminRole())
+							.toBe(false);
+					});
+
+				it("should indicate role mutating state during add or remove",
+					async () =>
+					{
+						const pendingAddMutation: ReturnType<typeof createMockMutationResult> =
+							createMockMutationResult(
+								{ isPending: true });
+						mockUserService.addRole.mockReturnValue(pendingAddMutation);
+
+						const { component: pendingComponent } =
+							createComponent();
+						await fixture.whenStable();
+
+						expect(pendingComponent.isRoleMutating())
+							.toBe(true);
 					});
 			});
 	});

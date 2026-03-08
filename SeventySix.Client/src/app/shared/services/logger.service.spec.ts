@@ -448,7 +448,7 @@ describe("LoggerService",
 							.toBe(context);
 					});
 
-				it("should include correlationId in remote log payload",
+				it("should include correlationId as null when no active span",
 					() =>
 					{
 						service.forceInfo("Test with correlation");
@@ -458,7 +458,7 @@ describe("LoggerService",
 								"http://localhost:1234/api/v1/logs/client");
 
 						expect(req.request.body.correlationId)
-							.toMatch(/^[0-9a-f]{32}$/);
+							.toBeNull();
 
 						req.flush({});
 					});

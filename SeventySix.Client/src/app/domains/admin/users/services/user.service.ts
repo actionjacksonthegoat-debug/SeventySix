@@ -300,11 +300,14 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 	 */
 	getUserRoles(userId: number | string): CreateQueryResult<string[]>
 	{
+		const numericId: number =
+			typeof userId === "string" ? parseInt(userId, 10) : userId;
+
 		return injectQuery(
 			() => ({
-				queryKey: QueryKeys.users.roles(userId),
+				queryKey: QueryKeys.users.roles(numericId),
 				queryFn: () =>
-					lastValueFrom(this.apiService.get<string[]>(`${this.endpoint}/${userId}/roles`)),
+					lastValueFrom(this.apiService.get<string[]>(`${this.endpoint}/${numericId}/roles`)),
 				...this.queryConfig
 			}));
 	}
@@ -328,34 +331,63 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 
 	/**
 	 * Mutation for adding a role to a User.
-	 * Invalidates both role and admin count queries on success.
-	 * @returns {CreateMutationResult<void, Error, { userId: number; roleName: string }>}
-	 * Mutation object.
+	 * Uses optimistic updates for instant UI feedback.
+	 * Rolls back on error; invalidates admin count queries on success.
+	 * @returns Mutation object with optimistic context.
 	 */
-	addRole(): CreateMutationResult<void, Error, { userId: number; roleName: string; }>
+	addRole(): CreateMutationResult<
+		void,
+		Error,
+		{ userId: number; roleName: string; },
+		{ previousRoles: string[]; userId: number; }>
 	{
-		return this.createMutation<
+		return createOptimisticMutation<
 			{
 				userId: number;
 				roleName: string;
 			},
-			void>(
+			void,
+			{
+				previousRoles: string[];
+				userId: number;
+			}>(
+			this.queryClient,
+			this.queryKeyPrefix,
 			(variables) =>
 				this.apiService.post<void, Record<string, never>>(
 					`${this.endpoint}/${variables.userId}/roles/${variables.roleName}`,
 					{}),
-			(_result, variables) =>
 			{
-				this.queryClient.invalidateQueries(
-					{
-						queryKey: QueryKeys.users.roles(variables.userId)
-					});
-				this.queryClient.invalidateQueries(
-					{
-						queryKey: QueryKeys.users.adminCount
-					});
-				// Cross-domain: invalidate account cache for affected user
-				this.cacheCoordination.invalidateUserAccountCache(variables.userId);
+				onMutate: (variables) =>
+				{
+					const queryKey: ReturnType<typeof QueryKeys.users.roles> =
+						QueryKeys.users.roles(variables.userId);
+					const previousRoles: string[] =
+						this.queryClient.getQueryData<string[]>(queryKey) ?? [];
+					this.queryClient.setQueryData<string[]>(
+						queryKey,
+						[...previousRoles, variables.roleName]);
+
+					return {
+						previousRoles,
+						userId: variables.userId
+					};
+				},
+				onError: (context) =>
+				{
+					this.queryClient.setQueryData<string[]>(
+						QueryKeys.users.roles(context.userId),
+						context.previousRoles);
+				},
+				onSuccess: (_result, variables) =>
+				{
+					this.queryClient.invalidateQueries(
+						{
+							queryKey: QueryKeys.users.adminCount
+						});
+					// Cross-domain: invalidate account cache for affected user
+					this.cacheCoordination.invalidateUserAccountCache(variables.userId);
+				}
 			});
 	}
 
@@ -412,6 +444,10 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 				},
 				onSuccess: (_result, variables) =>
 				{
+					this.queryClient.invalidateQueries(
+						{
+							queryKey: QueryKeys.users.adminCount
+						});
 					// Cross-domain: invalidate account cache for affected user
 					this.cacheCoordination.invalidateUserAccountCache(variables.userId);
 				}
