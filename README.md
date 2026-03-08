@@ -11,7 +11,7 @@
 
 ## Site Walkthrough
 
-<video src="https://github.com/actionjacksonthegoat-debug/SeventySix/releases/download/media-assets/Site_Walkthrough_SeventySix.mp4" controls width="100%"></video>
+<video src="https://github.com/actionjacksonthegoat-debug/SeventySix/releases/download/media-assets/Site_Walkthrough_SeventySix.mp4](https://github.com/user-attachments/assets/dfac2b4a-33e6-4de1-a6f7-6da7cf0c5c78" controls width="100%"></video>
 
 ## Overview
 
