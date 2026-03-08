@@ -99,7 +99,7 @@ public static class LogExtensions
 			RequestMethod = request.RequestMethod,
 			StatusCode = request.StatusCode,
 			CorrelationId =
-				request.CorrelationId ?? traceId,
+				traceId ?? request.CorrelationId,
 			SpanId = spanId,
 			ParentSpanId = parentSpanId,
 			Properties =

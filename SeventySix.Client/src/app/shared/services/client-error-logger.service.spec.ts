@@ -497,7 +497,7 @@ describe("ClientErrorLoggerService",
 		describe("correlationId",
 			() =>
 			{
-				it("should include correlationId in logError",
+				it("should include correlationId as null when no active span",
 					() =>
 					{
 						service.logError(
@@ -507,11 +507,11 @@ describe("ClientErrorLoggerService",
 							.toHaveBeenCalledWith(
 								expect.objectContaining(
 									{
-										correlationId: expect.stringMatching(/^[0-9a-f]{32}$/)
+										correlationId: null
 									}));
 					});
 
-				it("should include correlationId in logHttpError",
+				it("should include correlationId as null in logHttpError when no active span",
 					() =>
 					{
 						const httpError: HttpErrorResponse =
@@ -533,11 +533,11 @@ describe("ClientErrorLoggerService",
 							.toHaveBeenCalledWith(
 								expect.objectContaining(
 									{
-										correlationId: expect.stringMatching(/^[0-9a-f]{32}$/)
+										correlationId: null
 									}));
 					});
 
-				it("should include correlationId in logClientError",
+				it("should include correlationId as null in logClientError when no active span",
 					() =>
 					{
 						service.logClientError(
@@ -547,11 +547,11 @@ describe("ClientErrorLoggerService",
 							.toHaveBeenCalledWith(
 								expect.objectContaining(
 									{
-										correlationId: expect.stringMatching(/^[0-9a-f]{32}$/)
+										correlationId: null
 									}));
 					});
 
-				it("should include correlationId in logWarning",
+				it("should include correlationId as null in logWarning when no active span",
 					() =>
 					{
 						service.logWarning("Warning message");
@@ -560,11 +560,11 @@ describe("ClientErrorLoggerService",
 							.toHaveBeenCalledWith(
 								expect.objectContaining(
 									{
-										correlationId: expect.stringMatching(/^[0-9a-f]{32}$/)
+										correlationId: null
 									}));
 					});
 
-				it("should include correlationId in logInfo",
+				it("should include correlationId as null in logInfo when no active span",
 					() =>
 					{
 						service.logInfo("Info message");
@@ -573,7 +573,7 @@ describe("ClientErrorLoggerService",
 							.toHaveBeenCalledWith(
 								expect.objectContaining(
 									{
-										correlationId: expect.stringMatching(/^[0-9a-f]{32}$/)
+										correlationId: null
 									}));
 					});
 			});
