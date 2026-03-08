@@ -106,9 +106,49 @@ All TypeScript method and function declarations MUST have explicit return types.
 
 `color-mix()` is already used throughout `_base.scss` and is fully supported in all modern browsers.
 
-### Documentation Style
+### C# XML Doc — Multi-Line Tags (CRITICAL — FORBIDDEN to use single-line)
 
-C# XML doc: tags on their own lines. TypeScript: JSDoc with `@param`/`@returns` on separate lines.
+Every `<param>`, `<returns>`, `<typeparam>`, and `<summary>` tag MUST use multi-line format. Single-line tags are **FORBIDDEN**.
+
+```csharp
+// [ALWAYS] — open tag on own line, description indented, close tag on own line
+/// <param name="apiName">
+/// The external API name.
+/// </param>
+/// <returns>
+/// The matching record or <c>null</c>.
+/// </returns>
+
+// [NEVER] — single-line tags
+/// <param name="apiName">The external API name.</param>
+/// <returns>The matching record or null.</returns>
+```
+
+TypeScript: JSDoc with `@param`/`@returns` on separate lines.
+
+## TypeScript — Explicit Type Annotations (CRITICAL — ALWAYS Required)
+
+ESLint `@typescript-eslint/typedef` requires explicit types on all `const`/`let` declarations. **NEVER** omit the type — even when it could be inferred.
+
+```typescript
+// [ALWAYS] — explicit type annotation on every declaration
+const serverCategory: TechStackCategory | undefined =
+    TECH_STACK_CATEGORIES.find(
+        category => category.title === "Server");
+
+const isValid: boolean =
+    form.valid;
+
+const users: UserDto[] =
+    response.data;
+
+// [NEVER] — missing type (ESLint typedef error)
+const serverCategory =
+    TECH_STACK_CATEGORIES.find(
+        category => category.title === "Server");
+```
+
+This applies to every `const` and `let` — no exceptions, no "obvious" cases.
 
 ## SCSS / CSS Rules (CRITICAL — Required for ALL Style Changes)
 

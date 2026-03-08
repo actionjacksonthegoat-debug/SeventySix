@@ -1,8 +1,15 @@
 import { provideHttpClient } from "@angular/common/http";
 import { provideHttpClientTesting } from "@angular/common/http/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
-import { ComponentFixture, TestBed } from "@angular/core/testing";
+import {
+	ComponentFixture,
+	DeferBlockFixture,
+	DeferBlockState,
+	TestBed
+} from "@angular/core/testing";
 import { provideAnimations } from "@angular/platform-browser/animations";
+import { TECH_STACK_CATEGORIES } from "@home/constants/landing-page.constants";
+import { TechStackCategory, TechStackItem } from "@home/models";
 import { vi } from "vitest";
 import { LandingPageComponent } from "./landing-page";
 
@@ -89,8 +96,13 @@ describe("LandingPageComponent",
 			});
 
 		it("should contain tech stack section",
-			() =>
+			async () =>
 			{
+				const deferBlocks: DeferBlockFixture[] =
+					await fixture.getDeferBlocks();
+				await deferBlocks[0].render(DeferBlockState.Complete);
+				fixture.detectChanges();
+
 				const techSection: Element | null =
 					fixture.nativeElement.querySelector("app-tech-stack-section");
 				expect(techSection)
@@ -98,11 +110,35 @@ describe("LandingPageComponent",
 			});
 
 		it("should contain stats section",
-			() =>
+			async () =>
 			{
+				const deferBlocks: DeferBlockFixture[] =
+					await fixture.getDeferBlocks();
+				await deferBlocks[1].render(DeferBlockState.Complete);
+				fixture.detectChanges();
+
 				const statsSection: Element | null =
 					fixture.nativeElement.querySelector("app-stats-section");
 				expect(statsSection)
 					.toBeTruthy();
+			});
+
+		it("should include Have I Been Pwned in server tech stack",
+			() =>
+			{
+				const serverCategory: TechStackCategory | undefined =
+					TECH_STACK_CATEGORIES.find(
+						(category) =>
+							category.title === "Server");
+				const hibpEntry: TechStackItem | undefined =
+					serverCategory?.items.find(
+						(item) =>
+							item.name === "Have I Been Pwned");
+				expect(hibpEntry)
+					.toBeTruthy();
+				expect(hibpEntry?.useMaterialIcon)
+					.toBe(true);
+				expect(hibpEntry?.materialIcon)
+					.toBe("security");
 			});
 	});

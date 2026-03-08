@@ -106,21 +106,21 @@ public sealed class RateLimitingService(
 		LimitInterval interval =
 			RateLimitSettings.GetLimitInterval(apiName);
 
-		// Execute the entire operation in a transaction with automatic retry on conflicts
-		return await transactionManager.ExecuteInTransactionAsync(
-			cancellation =>
-				IncrementRequestCountCoreAsync(
-					apiName,
-					baseUrl,
-					limit,
-					interval,
-					cancellation),
-			maxRetries: 5,
-			cancellationToken); // Allow up to 5 retries for high-concurrency scenarios
+		// The UPSERT with WHERE clause provides atomic limit enforcement —
+		// no transaction wrapping needed.
+		return await IncrementRequestCountCoreAsync(
+			apiName,
+			baseUrl,
+			limit,
+			interval,
+			cancellationToken);
 	}
 
 	/// <summary>
-	/// Core logic for incrementing request count within a transaction.
+	/// Core logic for incrementing request count.
+	/// Uses PostgreSQL UPSERT with WHERE clause for atomic create-or-increment
+	/// with strict limit enforcement. The database row-level lock serializes
+	/// concurrent updates, preventing the count from ever exceeding the limit.
 	/// </summary>
 	private async Task<bool> IncrementRequestCountCoreAsync(
 		string apiName,
@@ -129,11 +129,8 @@ public sealed class RateLimitingService(
 		LimitInterval interval,
 		CancellationToken cancellation)
 	{
-		DateOnly today =
-			DateOnly.FromDateTime(
-				timeProvider.GetUtcNow().UtcDateTime);
-
-		// For monthly intervals, check the total across all days in the month
+		// For monthly intervals, check the total across all days in the month first.
+		// The daily UPSERT still enforces the per-day limit atomically.
 		if (interval == LimitInterval.Monthly)
 		{
 			int monthlyCount =
@@ -146,7 +143,7 @@ public sealed class RateLimitingService(
 			{
 				logger.LogWarning(
 					"Cannot increment request count for {ApiName}. Monthly limit reached: {Count}/{Limit}",
-					apiName,
+					LogSanitizer.Sanitize(apiName),
 					monthlyCount,
 					limit);
 
@@ -154,102 +151,51 @@ public sealed class RateLimitingService(
 			}
 		}
 
-		ThirdPartyApiRequest? request =
-			await repository.GetByApiNameAndDateAsync(
-				apiName,
-				today,
-				cancellation);
+		// Atomic UPSERT with limit enforcement:
+		// - INSERT: creates record with CallCount=1 (first call of the day)
+		// - ON CONFLICT + WHERE: increments only if CallCount < limit
+		// - Returns null when limit reached (WHERE clause blocks the update)
+		DateTimeOffset now =
+			timeProvider.GetUtcNow();
 
-		if (request == null)
-		{
-			return await CreateNewRequestRecordAsync(
+		int? currentCount =
+			await repository.UpsertCallCountAsync(
 				apiName,
 				baseUrl,
-				today);
-		}
+				DateOnly.FromDateTime(now.UtcDateTime),
+				now,
+				limit,
+				cancellation);
 
-		return await IncrementExistingRecordAsync(
-			request,
-			apiName,
-			limit,
-			interval,
-			cancellation);
-	}
-
-	/// <summary>
-	/// Creates a new request record when no record exists for today.
-	/// </summary>
-	private async Task<bool> CreateNewRequestRecordAsync(
-		string apiName,
-		string baseUrl,
-		DateOnly today)
-	{
-		ThirdPartyApiRequest request =
-			new()
-			{
-				ApiName = apiName,
-				BaseUrl = baseUrl,
-				ResetDate = today,
-			};
-
-		// Use domain method to increment (sets CallCount = 1 and LastCalledAt = now)
-		request.IncrementCallCount(
-			timeProvider.GetUtcNow());
-
-		await repository.CreateAsync(request);
-		return true;
-	}
-
-	/// <summary>
-	/// Increments an existing request record.
-	/// </summary>
-	private async Task<bool> IncrementExistingRecordAsync(
-		ThirdPartyApiRequest request,
-		string apiName,
-		int limit,
-		LimitInterval interval,
-		CancellationToken cancellation)
-	{
-		// For daily limits, check today's count
-		if (interval == LimitInterval.Daily && request.CallCount >= limit)
+		if (currentCount is null)
 		{
 			logger.LogWarning(
-				"Cannot increment request count for {ApiName}. Daily limit reached: {Count}/{Limit}",
-				apiName,
-				request.CallCount,
+				"Cannot increment request count for {ApiName}. Daily limit reached: {Limit}",
+				LogSanitizer.Sanitize(apiName),
 				limit);
 
 			return false;
 		}
 
-		// Increment counter using domain logic
-		request.IncrementCallCount(
-			timeProvider.GetUtcNow());
-
-		// Update the record
-		await repository.UpdateAsync(request);
-
-		// Get current count for logging (monthly needs recalculation)
-		int currentCount =
+		// Warn when approaching limit (90%)
+		int effectiveCount =
 			interval == LimitInterval.Monthly
 				? await GetCurrentCountAsync(
 					apiName,
 					interval,
 					cancellation)
-				: request.CallCount;
+				: currentCount.Value;
 
-		// Warn when approaching limit (90%)
-		if (currentCount >= limit * 0.9)
+		if (effectiveCount >= limit * 0.9)
 		{
 			logger.LogWarning(
 				"Approaching rate limit for {ApiName}: {Count}/{Limit} ({Percentage:F1}%) - {Interval}",
-				apiName,
-				currentCount,
+				LogSanitizer.Sanitize(apiName),
+				effectiveCount,
 				limit,
-				(decimal)currentCount / limit * 100,
+				(decimal)effectiveCount / limit * 100,
 				interval);
 		}
-
 
 		return true;
 	}

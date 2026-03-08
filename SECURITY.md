@@ -19,7 +19,7 @@ To report a vulnerability, use one of the following channels:
   Use the [Report a vulnerability](../../security/advisories/new) button on the Security tab of this repository. This keeps the report private until a fix is available.
 
 - **Email** (alternative):
-  Send a detailed report to **contactseventysix@gmail.com**.
+  Send a detailed report to **support@seventysixsandbox.com**.
   Include the words `[SECURITY]` in the subject line.
 
 ### What to Include

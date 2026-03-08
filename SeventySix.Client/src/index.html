@@ -2,28 +2,6 @@
 <html lang="en">
 	<head>
 		<meta charset="utf-8" />
-		<!-- Self-hosted font preloads (critical weights + icon font) -->
-		<link
-			rel="preload"
-			href="/fonts/roboto/roboto-latin-400-normal.woff2"
-			as="font"
-			type="font/woff2"
-			crossorigin
-		/>
-		<link
-			rel="preload"
-			href="/fonts/roboto/roboto-latin-500-normal.woff2"
-			as="font"
-			type="font/woff2"
-			crossorigin
-		/>
-		<link
-			rel="preload"
-			href="/fonts/material-icons/material-icons.woff2"
-			as="font"
-			type="font/woff2"
-			crossorigin
-		/>
 		<title>SeventySix - Production-Ready .NET 10 + Angular 21 | MIT Licensed</title>
 		<base href="/" />
 		<meta
@@ -154,12 +132,19 @@
 			href="/icons/icon-192x192.png"
 		/>
 
-		<!-- Preload hero background images for fast LCP -->
+		<!-- Preload hero background images for fast LCP & apply theme classes synchronously -->
 		<script>
 			(function () {
 				var brightness = localStorage.getItem('seventysix-theme-brightness');
 				var isDark = brightness === null || brightness === 'dark';
+				var colorScheme = localStorage.getItem('seventysix-color-scheme');
+				var isBlue = colorScheme === 'blue';
+				var html = document.documentElement;
 				var head = document.head;
+
+				// Apply theme classes synchronously to avoid FOUC
+				html.classList.add(isDark ? 'dark-theme' : 'light-theme');
+				html.classList.add(isBlue ? 'blue-scheme' : 'cyan-orange-scheme');
 
 				if (isDark) {
 					// dark-data-stream — responsive srcset
@@ -206,6 +191,11 @@
 		</script>
 
 		<!-- Resource hints for external origins -->
+		<link
+			rel="preconnect"
+			href="https://static.cloudflareinsights.com"
+			crossorigin
+		/>
 		<link
 			rel="dns-prefetch"
 			href="https://www.google.com"

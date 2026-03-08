@@ -493,4 +493,88 @@ describe("ClientErrorLoggerService",
 							.toHaveBeenCalled();
 					});
 			});
+
+		describe("correlationId",
+			() =>
+			{
+				it("should include correlationId in logError",
+					() =>
+					{
+						service.logError(
+							{ message: "Test error" });
+
+						expect(errorQueueService.enqueue)
+							.toHaveBeenCalledWith(
+								expect.objectContaining(
+									{
+										correlationId: expect.stringMatching(/^[0-9a-f]{32}$/)
+									}));
+					});
+
+				it("should include correlationId in logHttpError",
+					() =>
+					{
+						const httpError: HttpErrorResponse =
+							new HttpErrorResponse(
+								{
+									error: "Not found",
+									status: 404,
+									statusText: "Not Found",
+									url: "https://example.com/api/test"
+								});
+
+						service.logHttpError(
+							{
+								message: "HTTP error",
+								httpError
+							});
+
+						expect(errorQueueService.enqueue)
+							.toHaveBeenCalledWith(
+								expect.objectContaining(
+									{
+										correlationId: expect.stringMatching(/^[0-9a-f]{32}$/)
+									}));
+					});
+
+				it("should include correlationId in logClientError",
+					() =>
+					{
+						service.logClientError(
+							{ message: "Client error" });
+
+						expect(errorQueueService.enqueue)
+							.toHaveBeenCalledWith(
+								expect.objectContaining(
+									{
+										correlationId: expect.stringMatching(/^[0-9a-f]{32}$/)
+									}));
+					});
+
+				it("should include correlationId in logWarning",
+					() =>
+					{
+						service.logWarning("Warning message");
+
+						expect(errorQueueService.enqueue)
+							.toHaveBeenCalledWith(
+								expect.objectContaining(
+									{
+										correlationId: expect.stringMatching(/^[0-9a-f]{32}$/)
+									}));
+					});
+
+				it("should include correlationId in logInfo",
+					() =>
+					{
+						service.logInfo("Info message");
+
+						expect(errorQueueService.enqueue)
+							.toHaveBeenCalledWith(
+								expect.objectContaining(
+									{
+										correlationId: expect.stringMatching(/^[0-9a-f]{32}$/)
+									}));
+					});
+			});
 	});

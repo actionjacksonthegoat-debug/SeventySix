@@ -1,5 +1,7 @@
 <!-- Session Inactivity Warning Overlay -->
-<app-session-warning></app-session-warning>
+@defer (on idle) {
+	<app-session-warning></app-session-warning>
+}
 
 <!-- Skip to main content link for accessibility -->
 <a
@@ -7,7 +9,9 @@
 	class="skip-link">Skip to main content</a>
 
 <!-- Notification Toast Container -->
-<app-notification-toast></app-notification-toast>
+@defer (on idle) {
+	<app-notification-toast></app-notification-toast>
+}
 
 <mat-sidenav-container
 	class="app-container"

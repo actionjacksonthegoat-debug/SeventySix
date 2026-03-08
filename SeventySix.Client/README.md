@@ -134,7 +134,7 @@ The admin domain provides a full management interface for administrators. All da
 | Tab | Implementation | Content |
 |---|---|---|
 | System Overview | Grafana iframe (`seventysix-system-overview`) | API Health, Total Requests, Error Rate, Response Time p95, Memory, GC, CPU, Thread Pool |
-| API Metrics | Grafana iframe (`seventysix-api-endpoints`) | Top 10 Slowest Endpoints, HTTP Status Codes, Per-Endpoint Performance |
+| API Metrics | Grafana iframe (`seventysix-api-endpoints`) | Top 10 Slowest Endpoints, HTTP Status Code Distribution, Error Rate by Endpoint, Per-Endpoint Response Time |
 | Cache Metrics | Grafana iframe (`seventysix-valkey`) | Connected Clients, Memory, Uptime, L2 Hit Rate, Network I/O, Operations/sec |
 | External Systems | Angular components | Third-Party API Statistics table, Scheduled Jobs table, Observability tool links (dev), Data tool links (dev) |
 

@@ -29,7 +29,7 @@ services:
             resources:
                 limits:
                     cpus: '0.5'
-                    memory: 256M
+                    memory: 512M
                 reservations:
                     cpus: '0.25'
                     memory: 128M
@@ -110,11 +110,11 @@ services:
         deploy:
             resources:
                 limits:
-                    cpus: '1.0'
-                    memory: 1G
+                    cpus: '1.5'
+                    memory: 2G
                 reservations:
                     cpus: '0.5'
-                    memory: 512M
+                    memory: 1G
 
     # .NET API Service - Runs migrations on startup
     api:
@@ -221,11 +221,11 @@ services:
         deploy:
             resources:
                 limits:
-                    cpus: '1.0'
-                    memory: 512M
+                    cpus: '2.0'
+                    memory: 2G
                 reservations:
                     cpus: '0.5'
-                    memory: 256M
+                    memory: 512M
 
     # Angular Client Service
     client:
@@ -292,7 +292,7 @@ services:
             resources:
                 limits:
                     cpus: '0.5'
-                    memory: 512M
+                    memory: 1G
 
     # Jaeger - Distributed tracing
     # Note: Receives traces from otel-collector, NOT directly from API
@@ -316,7 +316,7 @@ services:
             resources:
                 limits:
                     cpus: '0.5'
-                    memory: 256M
+                    memory: 512M
 
     # Grafana - Metrics visualization
     grafana:
@@ -357,7 +357,10 @@ services:
             resources:
                 limits:
                     cpus: "0.5"
-                    memory: 256M
+                    memory: 512M
+                reservations:
+                    cpus: '0.25'
+                    memory: 128M
 
 # Named volumes for data persistence across container lifecycle
 # Data survives: docker-compose down, docker-compose up, container restarts

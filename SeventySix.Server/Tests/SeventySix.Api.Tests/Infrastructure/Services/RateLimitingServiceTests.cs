@@ -195,22 +195,16 @@ public sealed class RateLimitingServiceTests
 		RateLimitingService sut =
 			CreateSut(timeProvider);
 
-		DateOnly today =
-			DateOnly.FromDateTime(
-			timeProvider.GetUtcNow().UtcDateTime);
-
+		// UPSERT returns 1 (first call creates record with CallCount=1)
 		Repository
-			.GetByApiNameAndDateAsync(
+			.UpsertCallCountAsync(
 				apiName,
-				today,
+				baseUrl,
+				Arg.Any<DateOnly>(),
+				Arg.Any<DateTimeOffset>(),
+				Arg.Any<int>(),
 				Arg.Any<CancellationToken>())
-			.Returns(default(ThirdPartyApiRequest?));
-
-		Repository
-			.CreateAsync(
-				Arg.Any<ThirdPartyApiRequest>(),
-				Arg.Any<CancellationToken>())
-			.Returns(callInfo => callInfo.ArgAt<ThirdPartyApiRequest>(0));
+			.Returns(1);
 
 		bool result =
 			await sut.TryIncrementRequestCountAsync(apiName, baseUrl);
@@ -218,12 +212,19 @@ public sealed class RateLimitingServiceTests
 		result.ShouldBeTrue();
 		await Repository
 			.Received(1)
+			.UpsertCallCountAsync(
+				apiName,
+				baseUrl,
+				Arg.Any<DateOnly>(),
+				Arg.Any<DateTimeOffset>(),
+				Arg.Any<int>(),
+				Arg.Any<CancellationToken>());
+
+		// Verify CreateAsync is NOT called (old check-then-act pattern)
+		await Repository
+			.DidNotReceive()
 			.CreateAsync(
-				Arg.Is<ThirdPartyApiRequest>(req =>
-					req.ApiName == apiName
-					&& req.BaseUrl == baseUrl
-					&& req.CallCount == 1
-					&& req.ResetDate == today),
+				Arg.Any<ThirdPartyApiRequest>(),
 				Arg.Any<CancellationToken>());
 	}
 
@@ -236,42 +237,29 @@ public sealed class RateLimitingServiceTests
 		RateLimitingService sut =
 			CreateSut(timeProvider);
 
-		DateOnly today =
-			DateOnly.FromDateTime(
-			timeProvider.GetUtcNow().UtcDateTime);
-
-		ThirdPartyApiRequest request =
-			new()
-			{
-				Id = 1,
-				ApiName = apiName,
-				BaseUrl = baseUrl,
-				CallCount = 5,
-				ResetDate = today,
-			};
-
+		// UPSERT returns 6 (incremented from 5)
 		Repository
-			.GetByApiNameAndDateAsync(
+			.UpsertCallCountAsync(
 				apiName,
-				today,
+				baseUrl,
+				Arg.Any<DateOnly>(),
+				Arg.Any<DateTimeOffset>(),
+				Arg.Any<int>(),
 				Arg.Any<CancellationToken>())
-			.Returns(request);
-
-		Repository
-			.UpdateAsync(
-				Arg.Any<ThirdPartyApiRequest>(),
-				Arg.Any<CancellationToken>())
-			.Returns(callInfo => callInfo.ArgAt<ThirdPartyApiRequest>(0));
+			.Returns(6);
 
 		bool result =
 			await sut.TryIncrementRequestCountAsync(apiName, baseUrl);
 
 		result.ShouldBeTrue();
-		request.CallCount.ShouldBe(6);
 		await Repository
 			.Received(1)
-			.UpdateAsync(
-				request,
+			.UpsertCallCountAsync(
+				apiName,
+				baseUrl,
+				Arg.Any<DateOnly>(),
+				Arg.Any<DateTimeOffset>(),
+				Arg.Any<int>(),
 				Arg.Any<CancellationToken>());
 	}
 
@@ -284,37 +272,21 @@ public sealed class RateLimitingServiceTests
 		RateLimitingService sut =
 			CreateSut(timeProvider);
 
-		DateOnly today =
-			DateOnly.FromDateTime(
-			timeProvider.GetUtcNow().UtcDateTime);
-
-		ThirdPartyApiRequest request =
-			new()
-			{
-				Id = 1,
-				ApiName = apiName,
-				BaseUrl = baseUrl,
-				CallCount = 1000,
-				ResetDate = today,
-			};
-
+		// UPSERT returns null (WHERE clause blocked — limit reached)
 		Repository
-			.GetByApiNameAndDateAsync(
+			.UpsertCallCountAsync(
 				apiName,
-				today,
+				baseUrl,
+				Arg.Any<DateOnly>(),
+				Arg.Any<DateTimeOffset>(),
+				Arg.Any<int>(),
 				Arg.Any<CancellationToken>())
-			.Returns(request);
+			.Returns(default(int?));
 
 		bool result =
 			await sut.TryIncrementRequestCountAsync(apiName, baseUrl);
 
 		result.ShouldBeFalse();
-		request.CallCount.ShouldBe(1000);
-		await Repository
-			.DidNotReceive()
-			.UpdateAsync(
-				Arg.Any<ThirdPartyApiRequest>(),
-				Arg.Any<CancellationToken>());
 	}
 
 	[Fact]

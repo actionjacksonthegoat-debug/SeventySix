@@ -2,7 +2,10 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using System.Data;
+using System.Data.Common;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
 using SeventySix.Shared.Constants;
 using SeventySix.Shared.Persistence;
@@ -88,7 +91,12 @@ internal class ThirdPartyApiRequestRepository(
 	{
 		List<ThirdPartyApiRequest> requests =
 			await GetQueryable()
-				.OrderBy(request => request.ApiName)
+				.OrderByDescending(request =>
+					request.LastCalledAt.HasValue ? 1 : 0)
+				.ThenByDescending(request =>
+					request.LastCalledAt)
+				.ThenBy(request =>
+					request.ApiName)
 				.ToListAsync(cancellationToken);
 
 		return requests;
@@ -159,5 +167,82 @@ internal class ThirdPartyApiRequestRepository(
 					request => request.ApiName,
 					request => request.LastCalledAt),
 		};
+	}
+
+	/// <inheritdoc/>
+	public async Task<int?> UpsertCallCountAsync(
+		string apiName,
+		string baseUrl,
+		DateOnly resetDate,
+		DateTimeOffset lastCalledAt,
+		int limit,
+		CancellationToken cancellationToken = default)
+	{
+		ArgumentException.ThrowIfNullOrWhiteSpace(apiName);
+		ArgumentException.ThrowIfNullOrWhiteSpace(baseUrl);
+
+		// PostgreSQL UPSERT: atomically insert or increment.
+		// ON CONFLICT uses the unique index on (ApiName, ResetDate).
+		// WHERE clause prevents incrementing beyond the limit — PostgreSQL's
+		// row-level locking on conflict serializes concurrent updates, so the
+		// second transaction re-evaluates WHERE with committed values.
+		// RETURNING gives us the new CallCount, or zero rows if limit reached.
+		// Uses raw ADO.NET because EF Core's SqlQuery cannot compose over
+		// non-composable INSERT...RETURNING statements.
+		DbConnection connection =
+			context.Database.GetDbConnection();
+
+		if (connection.State != ConnectionState.Open)
+		{
+			await connection.OpenAsync(cancellationToken);
+		}
+
+		await using DbCommand command =
+			connection.CreateCommand();
+
+		if (context.Database.CurrentTransaction is not null)
+		{
+			command.Transaction =
+				context.Database.CurrentTransaction.GetDbTransaction();
+		}
+
+		command.CommandText =
+			"""
+			INSERT INTO "ApiTracking"."ThirdPartyApiRequests"
+				("ApiName", "BaseUrl", "ResetDate", "CallCount", "LastCalledAt", "CreateDate")
+			VALUES (@apiName, @baseUrl, @resetDate, 1, @lastCalledAt, NOW())
+			ON CONFLICT ("ApiName", "ResetDate")
+			DO UPDATE SET
+				"CallCount" = "ApiTracking"."ThirdPartyApiRequests"."CallCount" + 1,
+				"LastCalledAt" = EXCLUDED."LastCalledAt",
+				"ModifyDate" = NOW()
+			WHERE "ApiTracking"."ThirdPartyApiRequests"."CallCount" < @limit
+			RETURNING "CallCount"
+			""";
+
+		AddParameter(command, "@apiName", apiName);
+		AddParameter(command, "@baseUrl", baseUrl);
+		AddParameter(command, "@resetDate", resetDate);
+		AddParameter(command, "@lastCalledAt", lastCalledAt);
+		AddParameter(command, "@limit", limit);
+
+		object? result =
+			await command.ExecuteScalarAsync(cancellationToken);
+
+		// ExecuteScalar returns null when no rows (limit reached).
+		// Returns the CallCount value (>= 1) on success.
+		return result is int callCount ? callCount : null;
+	}
+
+	private static void AddParameter(
+		DbCommand command,
+		string name,
+		object value)
+	{
+		DbParameter parameter =
+			command.CreateParameter();
+		parameter.ParameterName = name;
+		parameter.Value = value;
+		command.Parameters.Add(parameter);
 	}
 }

@@ -4,6 +4,7 @@ import {
 } from "@angular/core";
 import { environment } from "@environments/environment";
 import { LoggerService } from "@shared/services/logger.service";
+import { isNullOrUndefined } from "@shared/utilities/null-check.utility";
 import {
 	take,
 	timer
@@ -41,6 +42,7 @@ interface TelemetryModules
 interface WebTracerProviderInstance
 {
 	register(): void;
+	shutdown(): Promise<void>;
 }
 
 /**
@@ -73,6 +75,13 @@ export class TelemetryService
 	private initialized: boolean = false;
 
 	/**
+	 * Reference to the active tracer provider for shutdown on logout.
+	 * @type {WebTracerProviderInstance | null}
+	 * @private
+	 */
+	private provider: WebTracerProviderInstance | null = null;
+
+	/**
 	 * Initializes OpenTelemetry tracing with automatic instrumentation.
 	 * Called by APP_INITIALIZER during application bootstrap.
 	 * Defers actual initialization to not block initial render.
@@ -87,9 +96,11 @@ export class TelemetryService
 
 		if (this.initialized)
 		{
-			this.logger.warning("Telemetry already initialized");
 			return;
 		}
+
+		// Set immediately to prevent race conditions from concurrent calls
+		this.initialized = true;
 
 		// Defer telemetry setup to not block initial render
 		timer(TELEMETRY_INIT_DELAY_MS)
@@ -99,6 +110,36 @@ export class TelemetryService
 				{
 					this.initializeTelemetryAsync();
 				});
+	}
+
+	/**
+	 * Shuts down telemetry tracing, flushing pending spans.
+	 * Called on logout so tracing stops for unauthenticated state.
+	 * Allows re-initialization on next login.
+	 * @returns {Promise<void>}
+	 */
+	public async shutdown(): Promise<void>
+	{
+		if (isNullOrUndefined(this.provider))
+		{
+			return;
+		}
+
+		try
+		{
+			await this.provider.shutdown();
+		}
+		catch (error: unknown)
+		{
+			this.logger.error(
+				"Failed to shutdown OpenTelemetry",
+				error instanceof Error ? error : undefined);
+		}
+		finally
+		{
+			this.provider = null;
+			this.initialized = false;
+		}
 	}
 
 	/**
@@ -113,17 +154,16 @@ export class TelemetryService
 			const modules: TelemetryModules =
 				await this.loadTelemetryModules();
 
-			const provider: WebTracerProviderInstance =
+			this.provider =
 				this.createTracerProvider(modules);
 
-			provider.register();
+			this.provider.register();
 
 			this.registerInstrumentations(modules);
-
-			this.initialized = true;
 		}
 		catch (error: unknown)
 		{
+			this.initialized = false;
 			this.logger.error(
 				"Failed to initialize OpenTelemetry",
 				error instanceof Error ? error : undefined);

@@ -55,7 +55,7 @@ export const environment: Environment =
 			enabled: true,
 			serviceName: "SeventySix.Client",
 			serviceVersion: "1.0.0",
-			otlpEndpoint: "https://localhost:4319/v1/traces",
+			otlpEndpoint: "/telemetry/v1/traces",
 			sampleRate: 1.0 // 100% sampling for development
 		},
 		auth: {

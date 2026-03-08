@@ -44,6 +44,8 @@ Study every README and documentation file in the project. Ensure all documentati
    - Log viewer
    - Developer tools
    - Account settings / TOTP setup
+10. **Email policy**: Update real contact destinations (security/support/reporting addresses) to the canonical support address, but keep setup/sample placeholder emails generic (`yourdomain.com` style) where docs are asking users to provide their own values
+11. **Charts/diagrams**: Verify Mermaid graphs, dashboard panel names, and chart descriptions match the current implementation before finalizing docs
 
 ## Output
 

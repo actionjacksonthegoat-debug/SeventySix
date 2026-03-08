@@ -29,11 +29,6 @@
 
 .nav-section-title:first-of-type {
 	padding-top: vars.$spacing-md;
-
-	// Extra space on mobile to clear the overlaid close button
-	@media (max-width: vars.$breakpoint-sm-max) {
-		padding-top: vars.$spacing-2xl;
-	}
 }
 
 .nav-section-title {

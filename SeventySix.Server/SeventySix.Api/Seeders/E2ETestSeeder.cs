@@ -58,6 +58,18 @@ public sealed class E2ETestSeeder(
 			return;
 		}
 
+		await SeedPrimaryE2EUsersAsync();
+		await SeedScenarioE2EUsersAsync();
+	}
+
+	/// <summary>
+	/// Seeds the core E2E users required across most authenticated test flows.
+	/// </summary>
+	/// <returns>
+	/// A task representing the async operation.
+	/// </returns>
+	private async Task SeedPrimaryE2EUsersAsync()
+	{
 		await CreateTestUserAsync(
 			"e2e_user",
 			"e2e_user@test.local",
@@ -82,7 +94,17 @@ public sealed class E2ETestSeeder(
 			"e2e_force_pw_lifecycle",
 			"e2e_force_pw_lifecycle@test.local",
 			"E2E_ForcePwLife_Password_123!");
+	}
 
+	/// <summary>
+	/// Seeds scenario-specific E2E users for password, MFA, lockout,
+	/// permission, and profile test cases.
+	/// </summary>
+	/// <returns>
+	/// A task representing the async operation.
+	/// </returns>
+	private async Task SeedScenarioE2EUsersAsync()
+	{
 		await CreateTestUserAsync(
 			"e2e_pw_change",
 			"e2e_pw_change@test.local",
@@ -131,6 +153,12 @@ public sealed class E2ETestSeeder(
 			"e2e_perm_approve",
 			"e2e_perm_approve@test.local",
 			"E2E_PermApprove_Password_123!",
+			[RoleConstants.User]);
+
+		await CreateTestUserAsync(
+			"e2e_perm_reject",
+			"e2e_perm_reject@test.local",
+			"E2E_PermReject_Password_123!",
 			[RoleConstants.User]);
 
 		await CreateTestUserAsync(

@@ -239,26 +239,6 @@ public sealed record PasswordSettings
 	public int MinLength { get; init; }
 
 	/// <summary>
-	/// Gets a value indicating whether uppercase is required.
-	/// </summary>
-	public bool RequireUppercase { get; init; }
-
-	/// <summary>
-	/// Gets a value indicating whether lowercase is required.
-	/// </summary>
-	public bool RequireLowercase { get; init; }
-
-	/// <summary>
-	/// Gets a value indicating whether digit is required.
-	/// </summary>
-	public bool RequireDigit { get; init; }
-
-	/// <summary>
-	/// Gets a value indicating whether special char is required.
-	/// </summary>
-	public bool RequireSpecialChar { get; init; }
-
-	/// <summary>
 	/// Gets Argon2id hashing configuration.
 	/// </summary>
 	public Argon2Settings Argon2 { get; init; } = new();

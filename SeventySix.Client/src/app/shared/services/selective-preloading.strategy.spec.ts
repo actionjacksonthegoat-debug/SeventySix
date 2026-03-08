@@ -9,6 +9,29 @@ import { SelectivePreloadingStrategy } from "./selective-preloading.strategy";
 
 type LoadFn = () => Observable<unknown>;
 
+function mockMatchMedia(matches: boolean): void
+{
+	Object.defineProperty(
+		globalThis,
+		"matchMedia",
+		{
+			configurable: true,
+			value: vi.fn(
+				() => ({ matches }))
+		});
+}
+
+function mockConnection(connection?: { saveData?: boolean; effectiveType?: string; }): void
+{
+	Object.defineProperty(
+		globalThis.navigator,
+		"connection",
+		{
+			configurable: true,
+			value: connection
+		});
+}
+
 describe("SelectivePreloadingStrategy",
 	() =>
 	{
@@ -17,8 +40,18 @@ describe("SelectivePreloadingStrategy",
 		beforeEach(
 			() =>
 			{
+				vi.useFakeTimers();
+				mockMatchMedia(true);
+				mockConnection(
+					{ effectiveType: "4g", saveData: false });
 				strategy =
 					new SelectivePreloadingStrategy();
+			});
+
+		afterEach(
+			() =>
+			{
+				vi.useRealTimers();
 			});
 
 		it("should preload routes with preload: true after delay",
@@ -31,11 +64,15 @@ describe("SelectivePreloadingStrategy",
 					vi.fn(() => of({}));
 
 				// Act
-				const result: unknown =
-					await firstValueFrom(
+				const resultPromise: Promise<unknown> =
+					firstValueFrom(
 						strategy.preload(
 							route,
 							loadFunction));
+
+				await vi.advanceTimersByTimeAsync(2000);
+				const result: unknown =
+					await resultPromise;
 
 				// Assert
 				expect(loadFunction)
@@ -83,6 +120,68 @@ describe("SelectivePreloadingStrategy",
 							loadFunction));
 
 				// Assert
+				expect(loadFunction).not.toHaveBeenCalled();
+				expect(result)
+					.toBeNull();
+			});
+
+		it("should NOT preload routes on mobile viewports",
+			async () =>
+			{
+				mockMatchMedia(false);
+				const route: Route =
+					{ data: { preload: true } };
+				const loadFunction: Mock<LoadFn> =
+					vi.fn();
+
+				const result: unknown =
+					await firstValueFrom(
+						strategy.preload(
+							route,
+							loadFunction));
+
+				expect(loadFunction).not.toHaveBeenCalled();
+				expect(result)
+					.toBeNull();
+			});
+
+		it("should NOT preload routes when data saver is enabled",
+			async () =>
+			{
+				mockConnection(
+					{ effectiveType: "4g", saveData: true });
+				const route: Route =
+					{ data: { preload: true } };
+				const loadFunction: Mock<LoadFn> =
+					vi.fn();
+
+				const result: unknown =
+					await firstValueFrom(
+						strategy.preload(
+							route,
+							loadFunction));
+
+				expect(loadFunction).not.toHaveBeenCalled();
+				expect(result)
+					.toBeNull();
+			});
+
+		it("should NOT preload routes on slow connections",
+			async () =>
+			{
+				mockConnection(
+					{ effectiveType: "3g", saveData: false });
+				const route: Route =
+					{ data: { preload: true } };
+				const loadFunction: Mock<LoadFn> =
+					vi.fn();
+
+				const result: unknown =
+					await firstValueFrom(
+						strategy.preload(
+							route,
+							loadFunction));
+
 				expect(loadFunction).not.toHaveBeenCalled();
 				expect(result)
 					.toBeNull();

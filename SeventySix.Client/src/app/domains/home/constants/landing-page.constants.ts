@@ -124,6 +124,19 @@ const SERVER_TECH: readonly TechStackItem[] =
 			url: "https://scalar.com/",
 			license: "MIT",
 			description: "API documentation"
+		},
+
+		// --- Security ---
+		{
+			name: "Have I Been Pwned",
+			slug: "haveibeenpwned",
+			cdnSource: "simpleIcons",
+			brandColor: "#2A6379",
+			url: "https://haveibeenpwned.com/",
+			license: "CC BY 4.0",
+			description: "Password breach API",
+			useMaterialIcon: true,
+			materialIcon: "security"
 		}
 	];
 

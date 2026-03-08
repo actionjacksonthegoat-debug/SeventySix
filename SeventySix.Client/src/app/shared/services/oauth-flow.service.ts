@@ -22,7 +22,8 @@ import {
 	OAUTH_POPUP_NAME,
 	OAUTH_POSTMESSAGE_TYPE,
 	POLL_INTERVAL,
-	STORAGE_KEYS
+	STORAGE_KEYS,
+	TYPEOF_RESULT
 } from "@shared/constants";
 import { StorageService, WindowService } from "@shared/services";
 import { OAuthEvent, OAuthProvider } from "@shared/services/auth.types";
@@ -201,7 +202,7 @@ export class OAuthFlowService
 	 */
 	private initializeOAuthMessageListener(): void
 	{
-		if (typeof window === "undefined")
+		if (typeof window === TYPEOF_RESULT.UNDEFINED)
 		{
 			return;
 		}

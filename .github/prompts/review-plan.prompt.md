@@ -16,10 +16,11 @@ Read `Implementation.md` (orchestrator) and ALL `implementation-N.md` files list
 1. **Read** `Implementation.md` and all `implementation-N.md` files fully — understand every phase across all files
 2. **Cross-reference** `.github/copilot-instructions.md` and every file in `.github/instructions/` — flag anything the plan misses or contradicts
 3. **Principles**: Confirm KISS, DRY, YAGNI are followed — no duplication, no speculative features
-4. **TDD 80/20**: Verify testing strategy focuses on the 20% of code carrying 80% of risk
+4. **TDD-First 80/20**: Verify testing strategy writes tests BEFORE implementation for the 20% of code carrying 80% of risk. Flag any phase that lists implementation before tests as a violation.
 5. **Naming & formatting**: Check proposed names, structure, and patterns match the instruction files
 6. **Architecture**: Server dependencies flow `Shared ← Domains ← Api` (never reverse). Client domains import only `@shared/*` + themselves
-7. **Final phase MUST run all required test suites — NO SKIPPING, NO EXCEPTIONS, REGARDLESS OF TIME NEEDED**:
+7. **Compaction checkpoints**: Verify compaction checkpoints exist at major domain/technology boundaries (e.g., server → client transitions). Each checkpoint must specify re-reading copilot-instructions.md and relevant instruction files.
+8. **Final phase MUST run all required test suites (this is final-phase only — intermediate phases use build + unit tests) — NO SKIPPING, NO EXCEPTIONS, REGARDLESS OF TIME NEEDED**:
     - `dotnet test` → `Test summary: total: X, failed: 0`
     - `npm test` → `X passed (X)`
     - `npm run test:e2e` → `[PASS] All E2E tests passed!`

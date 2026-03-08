@@ -16,18 +16,19 @@ Write a new `Implementation.md` plan for the following work:
 
 ## Plan Requirements
 
-1. **Read** `.github/copilot-instructions.md` and every file in `.github/instructions/` before drafting
-2. Add an explicit phase checkpoint step that links #file:../copilot-instructions.md before the start of **every** phase
-3. Add an explicit resume checkpoint step: after **every compaction**, re-read #file:../copilot-instructions.md before continuing
+1. **Read** `.github/copilot-instructions.md`, `formatting.instructions.md`, and every file in `.github/instructions/` before drafting
+2. Add an explicit phase checkpoint step that links #file:../copilot-instructions.md and #file:../instructions/formatting.instructions.md before the start of **every** phase
+3. Add an explicit resume checkpoint step: after **every compaction**, re-read #file:../copilot-instructions.md before continuing. Insert compaction checkpoints at major domain/technology boundaries (e.g., between server and client phases, between unrelated feature areas). Each compaction checkpoint: compact → re-read copilot-instructions.md → re-read relevant instruction files for next phase → continue.
 4. Follow the existing `Implementation.md` structure: Executive Summary → numbered Phases → Appendices
 5. Each phase must have clear **deliverables** and **verification steps**
 6. Follow **KISS, DRY, YAGNI** — no speculative features, no duplication
-7. Include a **TDD 80/20** testing strategy — tests on the 20% of code carrying 80% of risk
+7. Include a **TDD-First 80/20** testing strategy — write tests BEFORE implementation for the 20% of code carrying 80% of risk (Red → Green → Refactor). Each phase that adds new code MUST list test deliverables before implementation code.
 8. Architecture: server `Shared ← Domains ← Api` (never reverse), client domains import only `@shared/*` + themselves
 9. Add a mandatory runtime/browser verification gate before completion for client-impacting work:
     - Run `npm run stop` then `npm run start`
     - Verify visual/interaction changes using Chrome DevTools MCP browser before calling work complete
-10. **Final phase MUST run all required test suites — NO SKIPPING, NO EXCEPTIONS, REGARDLESS OF TIME NEEDED**:
+10. **Phase-level verification**: Intermediate phases should build and run unit tests for changed code (`dotnet build`, `ng build`, relevant unit tests). Do NOT run E2E or load tests mid-phase.
+11. **Final phase MUST run all required test suites — NO SKIPPING, NO EXCEPTIONS, REGARDLESS OF TIME NEEDED**:
     - `dotnet test` → `Test summary: total: X, failed: 0`
     - `npm test` → `X passed (X)`
     - `npm run test:e2e` → `[PASS] All E2E tests passed!`
@@ -36,6 +37,10 @@ Write a new `Implementation.md` plan for the following work:
     - If infrastructure is not running, **start it** — do not skip the suite
     - Use `--keepalive` for iterative E2E debugging: `npm run test:e2e -- --keepalive`
     - E2E and load tests run in **fully isolated Docker environments** — no dev environment needed
+
+## Optional: Pre-Plan Codebase Review
+
+If the work touches a broad area of the codebase (refactors, cross-domain features, migrations), consider running `/review-solution` first to understand the current state before drafting the plan. This surfaces hidden dead code, structural misalignment, and outdated patterns that should be addressed in the plan.
 
 ## Output
 

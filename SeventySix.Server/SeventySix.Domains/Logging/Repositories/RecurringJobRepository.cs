@@ -52,6 +52,12 @@ internal class RecurringJobRepository(
 				execution.NextScheduledAt;
 			existing.LastExecutedBy =
 				execution.LastExecutedBy;
+
+			// AutoDetectChangesEnabled is disabled on LoggingDbContext,
+			// so explicitly mark the entity as modified for SaveChangesAsync
+			// to generate the UPDATE SQL.
+			dbContext.Entry(existing).State =
+				EntityState.Modified;
 		}
 
 		await dbContext.SaveChangesAsync(cancellationToken);

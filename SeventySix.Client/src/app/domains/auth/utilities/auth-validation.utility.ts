@@ -88,38 +88,6 @@ export function validatePassword(password: string | undefined): ValidationResult
 		};
 	}
 
-	if (PASSWORD_VALIDATION.REQUIRE_UPPERCASE && !PASSWORD_VALIDATION.UPPERCASE_PATTERN.test(password))
-	{
-		return {
-			valid: false,
-			errorMessage: "Password must contain at least one uppercase letter."
-		};
-	}
-
-	if (PASSWORD_VALIDATION.REQUIRE_LOWERCASE && !PASSWORD_VALIDATION.LOWERCASE_PATTERN.test(password))
-	{
-		return {
-			valid: false,
-			errorMessage: "Password must contain at least one lowercase letter."
-		};
-	}
-
-	if (PASSWORD_VALIDATION.REQUIRE_DIGIT && !PASSWORD_VALIDATION.DIGIT_PATTERN.test(password))
-	{
-		return {
-			valid: false,
-			errorMessage: "Password must contain at least one digit."
-		};
-	}
-
-	if (PASSWORD_VALIDATION.REQUIRE_SPECIAL_CHAR && !PASSWORD_VALIDATION.SPECIAL_CHAR_PATTERN.test(password))
-	{
-		return {
-			valid: false,
-			errorMessage: "Password must contain at least one special character."
-		};
-	}
-
 	return { valid: true };
 }
 

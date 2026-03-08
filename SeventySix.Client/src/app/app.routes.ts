@@ -2,7 +2,8 @@ import { Routes } from "@angular/router";
 import { HOME_ROUTES } from "@home/home.routes";
 import {
 	ROLE_ADMIN,
-	ROLE_DEVELOPER
+	ROLE_DEVELOPER,
+	ROLE_USER
 } from "@shared/constants/role.constants";
 import {
 	passwordChangeGuard,
@@ -78,7 +79,7 @@ export const routes: Routes =
 			loadChildren: () =>
 				import("./domains/developer/developer.routes").then(
 					(module) => module.DEVELOPER_ROUTES),
-			canMatch: [passwordChangeGuard(), roleGuard(ROLE_DEVELOPER, ROLE_ADMIN)],
+			canMatch: [passwordChangeGuard(), roleGuard(ROLE_USER, ROLE_DEVELOPER, ROLE_ADMIN)],
 			data: { breadcrumb: "Developer" }
 		},
 

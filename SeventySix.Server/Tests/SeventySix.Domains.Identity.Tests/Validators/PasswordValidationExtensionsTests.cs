@@ -10,14 +10,13 @@ namespace SeventySix.Identity.Tests.Validators;
 
 /// <summary>
 /// Unit tests for PasswordValidationExtensions.
-/// Tests centralized password validation rules for DRY compliance.
+/// Tests centralized password validation rules per OWASP ASVS V2.1.9 (length-only).
 /// </summary>
 /// <remarks>
 /// Following TDD principles:
 /// - Test valid passwords (should pass)
 /// - Test invalid passwords (should fail with specific messages)
 /// - Test boundary conditions (minimum length, maximum length)
-/// - Test each complexity requirement independently
 ///
 /// Uses FluentValidation.TestHelper for cleaner test syntax.
 /// </remarks>
@@ -26,11 +25,7 @@ public sealed class PasswordValidationExtensionsTests
 	private static readonly PasswordSettings TestPasswordSettings =
 		new()
 		{
-			MinLength = 8,
-			RequireUppercase = true,
-			RequireLowercase = true,
-			RequireDigit = true,
-			RequireSpecialChar = false,
+			MinLength = 12,
 		};
 
 	private readonly TestPasswordValidator Validator =
@@ -41,7 +36,7 @@ public sealed class PasswordValidationExtensionsTests
 	{
 		// Arrange
 		TestPasswordRequest request =
-			new("ValidPass1");
+			new("validpassword");
 
 		// Act
 		TestValidationResult<TestPasswordRequest> result =
@@ -54,9 +49,9 @@ public sealed class PasswordValidationExtensionsTests
 	[Fact]
 	public void Password_ShouldNotHaveError_WhenExactlyMinimumLength()
 	{
-		// Arrange - 8 characters exactly
+		// Arrange - 12 characters exactly
 		TestPasswordRequest request =
-			new("Abcdef1!");
+			new("abcdefghijkl");
 
 		// Act
 		TestValidationResult<TestPasswordRequest> result =
@@ -70,11 +65,38 @@ public sealed class PasswordValidationExtensionsTests
 	public void Password_ShouldNotHaveError_WhenMaximumLength()
 	{
 		// Arrange - 100 characters
-		string longPassword =
-			new string('a', 97) + "A1!";
-
 		TestPasswordRequest request =
-			new(longPassword);
+			new(new string('a', 100));
+
+		// Act
+		TestValidationResult<TestPasswordRequest> result =
+			Validator.TestValidate(request);
+
+		// Assert
+		result.ShouldNotHaveValidationErrorFor(x => x.Password);
+	}
+
+	[Fact]
+	public void Password_ShouldNotHaveError_WhenAllLowercase()
+	{
+		// Arrange - no composition rules per OWASP ASVS V2.1.9
+		TestPasswordRequest request =
+			new("alllowercase!");
+
+		// Act
+		TestValidationResult<TestPasswordRequest> result =
+			Validator.TestValidate(request);
+
+		// Assert
+		result.ShouldNotHaveValidationErrorFor(x => x.Password);
+	}
+
+	[Fact]
+	public void Password_ShouldNotHaveError_WhenNoDigits()
+	{
+		// Arrange - no composition rules per OWASP ASVS V2.1.9
+		TestPasswordRequest request =
+			new("nodigitshere!");
 
 		// Act
 		TestValidationResult<TestPasswordRequest> result =
@@ -121,9 +143,9 @@ public sealed class PasswordValidationExtensionsTests
 	[Fact]
 	public void Password_ShouldHaveError_WhenTooShort()
 	{
-		// Arrange - 7 characters (below minimum of 8)
+		// Arrange - 11 characters (below minimum of 12)
 		TestPasswordRequest request =
-			new("Abc123!");
+			new("short12345!");
 
 		// Act
 		TestValidationResult<TestPasswordRequest> result =
@@ -132,18 +154,15 @@ public sealed class PasswordValidationExtensionsTests
 		// Assert
 		result
 			.ShouldHaveValidationErrorFor(x => x.Password)
-			.WithErrorMessage("Password must be at least 8 characters");
+			.WithErrorMessage("Password must be at least 12 characters");
 	}
 
 	[Fact]
 	public void Password_ShouldHaveError_WhenTooLong()
 	{
 		// Arrange - 101 characters (above maximum of 100)
-		string longPassword =
-			new string('a', 98) + "A1!";
-
 		TestPasswordRequest request =
-			new(longPassword);
+			new(new string('a', 101));
 
 		// Act
 		TestValidationResult<TestPasswordRequest> result =
@@ -153,59 +172,6 @@ public sealed class PasswordValidationExtensionsTests
 		result
 			.ShouldHaveValidationErrorFor(x => x.Password)
 			.WithErrorMessage("Password must not exceed 100 characters");
-	}
-
-	[Fact]
-	public void Password_ShouldHaveError_WhenNoUppercase()
-	{
-		// Arrange - Missing uppercase
-		TestPasswordRequest request =
-			new("lowercase1!");
-
-		// Act
-		TestValidationResult<TestPasswordRequest> result =
-			Validator.TestValidate(request);
-
-		// Assert
-		result
-			.ShouldHaveValidationErrorFor(x => x.Password)
-			.WithErrorMessage(
-				"Password must contain at least one uppercase letter");
-	}
-
-	[Fact]
-	public void Password_ShouldHaveError_WhenNoLowercase()
-	{
-		// Arrange - Missing lowercase
-		TestPasswordRequest request =
-			new("UPPERCASE1!");
-
-		// Act
-		TestValidationResult<TestPasswordRequest> result =
-			Validator.TestValidate(request);
-
-		// Assert
-		result
-			.ShouldHaveValidationErrorFor(x => x.Password)
-			.WithErrorMessage(
-				"Password must contain at least one lowercase letter");
-	}
-
-	[Fact]
-	public void Password_ShouldHaveError_WhenNoDigit()
-	{
-		// Arrange - Missing digit
-		TestPasswordRequest request =
-			new("NoDigitsHere!");
-
-		// Act
-		TestValidationResult<TestPasswordRequest> result =
-			Validator.TestValidate(request);
-
-		// Assert
-		result
-			.ShouldHaveValidationErrorFor(x => x.Password)
-			.WithErrorMessage("Password must contain at least one digit");
 	}
 
 	/// <summary>

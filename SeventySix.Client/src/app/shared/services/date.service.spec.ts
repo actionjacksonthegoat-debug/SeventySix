@@ -318,10 +318,13 @@ describe("DateService",
 				it("fromMillis() and parseUTC() should be consistent",
 					() =>
 					{
-						const nowMs: number =
-							service.nowTimestamp();
+						// Use a fixed UTC timestamp to avoid DST boundary flakiness.
+						// 2024-06-15T12:00:00.000Z — midsummer, unambiguous UTC offset.
+						const fixedMs: number =
+							new Date("2024-06-15T12:00:00.000Z")
+								.getTime();
 						const fromMsDate: Date =
-							service.fromMillis(nowMs);
+							service.fromMillis(fixedMs);
 						const parsedDate: Date =
 							service.parseUTC(service.toUTC(fromMsDate));
 						expect(parsedDate.getTime())

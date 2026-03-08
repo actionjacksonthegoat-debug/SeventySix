@@ -1,7 +1,7 @@
 ﻿# SeventySix Copilot Instructions
 
 > **Context-specific rules** are in `.github/instructions/*.instructions.md` files (auto-applied by `applyTo` globs).
-> This file contains **global rules only**. Each concept lives in exactly ONE file � never duplicated.
+> This file contains **global rules only**. Each concept lives in exactly ONE file — never duplicated.
 
 ---
 
@@ -40,25 +40,40 @@
 
 ## Core Principles
 
-- **KISS, DRY, YAGNI** � simplest solution, no duplication, no speculative features
-- **TDD 80/20** � focus tests on the 20% of code carrying 80% of risk
-- **IDE Warnings = MUST FIX** � never suppress with `#pragma warning disable`, `// @ts-ignore`, `[SuppressMessage]`, or `.editorconfig` severity overrides
+- **KISS, DRY, YAGNI** — simplest solution, no duplication, no speculative features
+- **TDD-First 80/20** — write tests first for the 20% of code carrying 80% of risk (Red → Green → Refactor)
+- **IDE Warnings = MUST FIX** — never suppress with `#pragma warning disable`, `// @ts-ignore`, `[SuppressMessage]`, or `.editorconfig` severity overrides
     - **Exceptions**: Generated OpenAPI clients
-    - **Format Violations**: NEVER add `.editorconfig` rules to suppress format violations (IDE1006, etc.). Always fix violations manually in source files. If `dotnet format` reports "Unable to fix [RULE]", manually correct all instances in the source code.- **`npm run format` is the ONLY format command** ― `dprint` must NEVER be run standalone outside this pipeline:
-    - `npm run format:client` runs: ESLint → dprint → ESLint (in this exact order)
-    - Running `dprint` directly bypasses ESLint pre/post passes and breaks the required flow
-    - Format runs at the end of implementation phases, right before running the test gate
-    - During active development, correct formatting manually rather than running format mid-phase- **All required test suites MUST pass** before claiming completion (see below)
+    - **Format Violations**: NEVER add `.editorconfig` rules to suppress format violations (IDE1006, etc.). Always fix violations manually. If `dotnet format` reports "Unable to fix [RULE]", manually correct all instances.
+- **`npm run format` is the ONLY format command** — `dprint` must NEVER be run standalone. `npm run format:client` runs: ESLint → dprint → ESLint. Run format at the end of implementation phases, right before the test gate.
+- **All required test suites MUST pass** in the final validation phase before claiming completion (see below)
+
+## [CRITICAL] Key Formatting Rules (ALWAYS FOLLOW)
+
+> Full examples in `formatting.instructions.md`, `csharp.instructions.md`, and `testing-server.instructions.md`. **NEVER skip — violation = blocker.**
+
+| Rule | [NEVER] | [ALWAYS] |
+| ---- | ------- | -------- |
+| C# XML doc tags | `<param name="x">text</param>` (single line) | Multi-line: open tag → indented description → close tag |
+| TS variable types | `const value = ...` | `const value: Type = ...` (`@typescript-eslint/typedef`) |
+| TS null checks | `!value`, `!!value`, `value \|\| "x"` | `isNullOrUndefined(value)`, `isPresent(value)`, `value ?? "x"` |
+| C# `var` | `var name = "test"` | `string name = "test"` (always explicit) |
+| C# `[InlineData]` multi-arg | All args on one line | Each arg on its own line — see `testing-server.instructions.md` |
 
 > **[CRITICAL] CI/CD ENVIRONMENT VERIFICATION**: Tests passing locally on Windows is necessary but NOT sufficient.
 > All tests must also be verified to pass in an environment matching CI/CD (`ubuntu-latest`, Linux Docker).
-> This applies to ALL plan completion gates — E2E, load tests, server tests, and client tests.
 
 ## [CRITICAL] Security Review Gate
 
 > Before running the final test gate, execute the `/security-review` prompt to perform a comprehensive OWASP/PII/Auth security audit. Fix ALL Critical and High findings before proceeding to tests. This gate is mandatory for all plan executions — the workflow is: **Implementation phases → `/security-review` → `npm run format` → Test Gate**.
 
-## [CRITICAL] Tests MUST Pass (GATE CONDITION)
+## [CRITICAL] Final Validation Gate (Plan Completion ONLY)
+
+This gate runs **once** at the end of a plan — not during every phase.
+
+**During implementation phases**: run relevant build/unit tests to verify your work (`dotnet build`, `ng build`, unit tests for changed code). Do NOT run E2E or load tests mid-phase.
+
+**Final validation** (after all implementation phases + security review + `npm run format`):
 
 | Suite        | Command              | Must See                            |
 | ------------ | -------------------- | ----------------------------------- |
@@ -67,21 +82,14 @@
 | E2E          | `npm run test:e2e`   | `[PASS] All E2E tests passed!`      |
 | Load (quick) | `npm run loadtest:quick` | All scenarios pass thresholds   |
 
-> **All required test suites MUST RUN AND PASS. NO SKIPPING. NO EXCEPTIONS. REGARDLESS OF TIME NEEDED OR CURRENT STATE OF THE CODE.**
+> **All required test suites MUST RUN AND PASS. NO SKIPPING. NO EXCEPTIONS.**
 > - E2E and load tests CAN run in parallel to save time
-> - Saying "tests will pass when infrastructure is running" is **NOT acceptable**
-> - If infrastructure is not running, **start it** � do not skip the suite>
-> - **NEVER** skip a failing test because it "wasn't caused by this change" — if the test suite is broken, fix it before proceeding> - **NEVER** claim "done" or "complete" without actually running and passing all required test suites
-> **UBUNTU CI/CD ENVIRONMENT (CRITICAL — REQUIRED FOR COMPLETION)**
-> All tests must ALSO pass in an environment matching GitHub Actions CI (`ubuntu-latest` / Linux).
-> A passing local Windows run is a good sign, but NOT sufficient to declare a plan complete.
+> - If infrastructure is not running, **start it** — do not skip the suite
+> - **NEVER** claim "done" without actually running and passing all required test suites
 >
-> Acceptable verification approaches (in order of preference):
-> 1. **Push to GitHub** and confirm all four CI jobs pass (`client-build`, `server-build`, `e2e`, `load-test`).
-> 2. **Run locally in WSL (Ubuntu)** — E2E and load tests in Docker on a Linux host.
-> 3. **Run in a Linux VM** or Docker dev container.
->
-> This is non-negotiable. The app is cross-platform and must run identically on Linux (CI) and Windows (dev).
+> **CI/CD verification**: Tests must also pass on `ubuntu-latest` (GitHub Actions CI).
+> Preferred: push to GitHub and confirm CI passes. Alternatives: WSL Ubuntu or Linux VM.
+
 ## Documentation MUST Be Current (GATE CONDITION)
 
 After all tests pass, verify:
@@ -94,7 +102,7 @@ After all tests pass, verify:
 
 ## Architecture (Quick Reference)
 
-- **Server**: `Shared ? Domains ? Api` (never reverse)
+- **Server**: `Shared ← Domains ← Api` (never reverse)
 - **Client**: Domains import ONLY `@shared/*` + itself, NEVER another domain
 
 ## Technology Stack
@@ -118,8 +126,8 @@ After all tests pass, verify:
 
 ## E2E Test Isolation Pattern
 
-> **PROHIBITED**: The "save original ? test ? restore" anti-pattern. Tests MUST create their own data, never borrow-and-return shared state.
-> State-changing E2E tests (approve/reject, MFA toggle, password change, profile edit) MUST use a **dedicated isolated user** + `browser.newContext({ storageState: undefined })` � never the shared `e2e_user`. See `e2e.instructions.md` � "Test Isolation" for the full pattern. Reference: `PERM_APPROVE_USER` in `permission-request-list.spec.ts`.
+> **PROHIBITED**: The "save original → test → restore" anti-pattern. Tests MUST create their own data.
+> State-changing E2E tests MUST use a **dedicated isolated user** + `browser.newContext({ storageState: undefined })` — never the shared `e2e_user`. See `e2e.instructions.md` for the full pattern.
 
 ## Cross-Platform Compatibility
 
@@ -136,59 +144,38 @@ All code MUST work on both **Windows** and **Linux** (CI runs on `ubuntu-latest`
 
 ---
 
-## MCP Servers (Available in Agent Mode)
+## MCP Servers
 
-| Server            | Purpose                                                | Activation                     |
-| ----------------- | ------------------------------------------------------ | ------------------------------ |
-| `github`          | Issues, PRs, repo operations                           | On-demand � needs PAT (first use) |
-| `postgresql`      | Read-only DB queries for debugging/exploration         | On-demand � needs connection string |
-| `chrome-devtools` | Live browser inspection, console, network, screenshots | On-demand � needs Chrome open  |
-| `context7`        | Up-to-date library documentation                       | On-demand — stateless          |
-| `playwright`      | Browser automation for E2E test debugging               | On-demand — needs E2E environment running |
-Use **context7** when unsure about current API for Angular, Wolverine, TanStack Query, or Playwright. Not needed for stable APIs like `Path.Combine` or standard HTTP.
+| Server | Purpose | Task |
+|--------|---------|------|
+| `context7` | Up-to-date library docs | Angular, Wolverine, TanStack, Playwright APIs |
+| `chrome-devtools` | Browser inspection, screenshots | Visual verification of client changes |
+| `postgresql` | Read-only DB queries | Debug/explore schema |
+| `playwright` | Browser automation | E2E test selector debugging (`--keepalive`) |
+| `github` | Issues, PRs, repo ops | PR context, issue tracking |
 
-## MCP Server Usage
-
-Use all configured MCP servers in `.vscode/mcp.json`. If a server needs credentials, ask the user to provide them. After VS Code restart, MCP tool toggles may need re-enabling in the Chat panel (workspace settings already grant full access).
-
-| Task | Server |
-|------|--------|
-| Library API docs (Angular, Wolverine, TanStack, Playwright) | `context7` |
-| Visual verification of client changes | `chrome-devtools` — `take_screenshot` + `list_console_messages` |
-| Database inspection | `postgresql` |
-| E2E test selector debugging (with `--keepalive`) | `playwright` |
-| GitHub PRs/issues | `github` |
+Use **context7** when unsure about current API for Angular, Wolverine, TanStack Query, or Playwright. Not needed for stable APIs like `Path.Combine`.
+If a server needs credentials, ask the user. After VS Code restart, MCP tool toggles may need re-enabling in the Chat panel.
 ## Chrome DevTools Verification (REQUIRED for Client Changes)
 
-> **RULE**: After any client-side code change (component, service, route, style, template), use Chrome DevTools MCP to verify the change works. NEVER rely on "it should work" � prove it.
-
-### Verification Checklist
+> After any client-side change (component, service, route, style, template), verify with Chrome DevTools MCP. Never rely on "it should work."
 
 | Check | Tool | When |
 |-------|------|------|
-| Visual state correct | `take_screenshot` | Always |
+| Visual state | `take_screenshot` | Always |
 | No console errors | `list_console_messages` | Always |
 | API calls succeed | `list_network_requests` | When change involves API |
-| Accessibility tree valid | `take_snapshot` | When change involves interactive elements |
-| Signal/state values correct | `evaluate_script` | When change involves reactive state |
+| Accessibility tree | `take_snapshot` | When change involves interactive elements |
 
-### When to Skip (only these cases)
+**Skip only for**: server-only changes, documentation-only changes, build/config changes with no rendered output.
 
-- Server-only changes (C# code with no client impact)
-- Documentation-only changes
-- Build/config changes that don't affect rendered output
+## Chrome DevTools Login
 
----
+> **ABSOLUTE PROHIBITION**: Chrome DevTools MCP must **NEVER** change the seeded admin user's password. If redirected to password change, STOP and ask the user.
 
-## Chrome DevTools Login Note
-
-> To verify client changes via Chrome DevTools MCP, the app must be running.
-
-> **ABSOLUTE PROHIBITION**: Chrome DevTools MCP must **NEVER** change the seeded admin user's password. The admin credential from user secrets must remain valid at all times. If the app redirects to a change-password page, STOP and ask the user — do NOT fill and submit a new password.
-
-1. Run `npm start` to start the full dev stack (API + Client + infrastructure)
+1. Run `npm start` to start the full dev stack
 2. Log in with seeded admin credentials from user secrets (`AdminSeeder:Email` / `AdminSeeder:InitialPassword`)
-3. Complete MFA — find the code via PostgreSQL MCP:
+3. For MFA, retrieve code via PostgreSQL MCP:
    ```sql
    SELECT "TemplateData"->>'code' AS "MfaCode"
    FROM "ElectronicNotifications"."EmailQueue"
@@ -196,10 +183,29 @@ Use all configured MCP servers in `.vscode/mcp.json`. If a server needs credenti
    ORDER BY "CreateDate" DESC
    LIMIT 1;
    ```
-4. These credentials are **dev-only** — never use in production
-5. If the user secret password does not work, ask the user for the current admin password
+4. If the user secret password does not work, ask the user for the current admin password
 
 ---
+
+## Test & Output Integrity (CRITICAL — NEVER VIOLATE)
+
+| Rule | Requirement |
+|------|-------------|
+| **No output truncation** | NEVER pipe build/test/E2E/load output through `Select-Object`, `Select-String`, `Where-Object`, or ANY filter. Run raw commands, full output, no exceptions. Use timeout `0` when unsure. |
+| **Zero broken tests** | A failing test MUST be fixed — no "pre-existing", "flaky", or "unrelated" excuses. STOP and fix before claiming done. A broken test is broken code. |
+| **Debug single specs** | Run only the failing spec: `npm run test:e2e -- specs/path/to.spec.ts` or `--grep "test name"` or `--keepalive specs/file.spec.ts`. If the failure can't reproduce standalone, re-run the full suite — it may be a cross-test corruption issue. |
+| **Full suite gate** | A full passing E2E suite run (`npm run test:e2e` with 0 failures) is REQUIRED before calling `/execute-plan` or `/code-review` complete. No exceptions. |
+
+## Context Compaction Strategy
+
+When executing multi-phase plans that span different technology boundaries:
+
+1. **When to compact**: At natural boundaries — switching from server to client work, switching between unrelated domains, or when context is heavily loaded with completed work
+2. **After every compaction**: Re-read `.github/copilot-instructions.md` and the relevant `.github/instructions/*.instructions.md` files for the upcoming work
+3. **What to preserve**: The current plan file, phase status, and any pending decisions
+4. **What to release**: Completed phase details, resolved debugging context, finished file contents
+
+Plans created by `/create-plan` include explicit compaction checkpoints at major boundaries.
 
 ## Package.json Commands Reference
 
@@ -207,47 +213,17 @@ Use all configured MCP servers in `.vscode/mcp.json`. If a server needs credenti
 > **CRITICAL**: `npm run db:reset` is **USER ONLY — NEVER run via Copilot**.
 > **`npm run format` is the ONLY format command** — never run `dprint` directly.
 
-## E2E Debugging Note
-
-> When debugging E2E test failures, run individual spec files or filter by test name � never run the full suite for debugging.
-
-```bash
-# Run a single spec file
-npm run test:e2e -- specs/auth/login.spec.ts
-
-# Filter by test name
-npm run test:e2e -- --grep "should display login form"
-
-# Keep environment alive for Playwright MCP debugging
-npm run test:e2e -- --keepalive specs/failing-test.spec.ts
-```
-
-Only run the full `npm run test:e2e` suite for final validation.
-
-### Auto-Failure Diagnostics
-
-The E2E test reporter automatically prints failure diagnostics (screenshot path, URL, console errors, failed network requests) for every failed test. No extra instrumentation needed — it's built into the fixture chain via `diagnostics.fixture.ts`.
-
-Use the Playwright MCP server for interactive selector debugging when the E2E environment is kept alive with `--keepalive`.
-
 ---
 
 ## E2E and Load Test Environment Isolation (CRITICAL)
 
-E2E tests (`npm run test:e2e`) and load tests (`npm run loadtest:*`) run in **fully isolated Docker environments** with their own database, cache, API, and client containers. You do NOT need to start the dev environment (`npm start`) for either.
+E2E and load tests run in **fully isolated Docker environments** — do NOT start the dev environment for either.
 
 | Environment | Docker Compose File | Ports (DB / Cache / API / Client) |
-|-------------|--------------------|------------------------------------|
+|-------------|--------------------|---------------------------------|
 | Dev | `docker-compose.yml` | 5433 / 6379 / 7074 / 4200 |
 | E2E | `docker-compose.e2e.yml` | 5434 / 6380 / 7174 / 4201 |
 | Load Test | `docker-compose.loadtest.yml` | 5435 / 6381 / 7175 / 4202 |
-
-Use `--keepalive` flag with E2E tests to keep the environment running for Playwright MCP debugging:
-```bash
-npm run test:e2e -- --keepalive
-```
-
----
 
 ## File Index (Auto-Applied via `applyTo` Globs)
 
@@ -266,22 +242,36 @@ npm run test:e2e -- --keepalive
 
 ## Prompt Index (Invoked via `/prompt-name` in Chat)
 
+### Core Workflow
+
+| Prompt | Description |
+| ------ | ----------- |
+| `/create-plan` | Create a new Implementation.md plan for upcoming work |
+| `/review-plan` | Review an Implementation.md plan against all project rules |
+| `/execute-plan` | Execute all remaining phases in Implementation.md |
+| `/security-review` | Comprehensive OWASP/PII/Auth security audit (mandatory gate before final tests) |
+
+**Workflow**: `/create-plan` → `/review-plan` → `/execute-plan` (which calls `/security-review` before final tests)
+
+### Scaffolding
+
+| Prompt | Description |
+| ------ | ----------- |
+| `/new-domain-feature` | Scaffold full-stack feature (Angular + .NET) |
+| `/new-server-domain` | Scaffold a new .NET bounded context |
+| `/new-client-domain` | Scaffold a new Angular domain module |
+| `/new-component` | Scaffold an Angular component with tests |
+| `/new-angular-service` | Scaffold an Angular service with domain scoping |
+| `/new-service` | Scaffold a .NET service with repository |
+| `/new-e2e-test` | Scaffold a Playwright E2E test |
+| `/new-load-test` | Scaffold a k6 load test scenario |
+
+### Quality & Verification
+
 | Prompt | Description |
 | ------ | ----------- |
 | `/code-review` | Review and auto-fix staged changes against all project rules |
-| `/create-plan` | Create a new Implementation.md plan for upcoming work |
-| `/execute-plan` | Execute all remaining phases in Implementation.md |
-| `/fix-warnings` | Find and fix all build/lint warnings across client and server |
-| `/new-angular-service` | Generate Angular service with correct scoping for SeventySix domains |
-| `/new-client-domain` | Scaffold a complete new client-side Angular domain |
-| `/new-component` | Generate Angular component following SeventySix patterns |
-| `/new-domain-feature` | Scaffold full-stack feature with Angular client and .NET server |
-| `/new-e2e-test` | Generate E2E tests using Playwright following SeventySix patterns |
-| `/new-load-test` | Add a new k6 load test scenario to SeventySix.Client/load-testing |
-| `/new-server-domain` | Scaffold a complete new server-side bounded context domain |
-| `/new-service` | Generate .NET service with repository following SeventySix patterns |
-| `/review-plan` | Review an Implementation.md plan against all project rules |
-| `/review-solution` | Deep review of entire codebase against all rules and best practices |
-| `/run-site-base` | Automated full-site walkthrough using Chrome DevTools MCP with screenshots |
-| `/security-review` | Comprehensive OWASP/PII/Auth security audit of the entire codebase |
-| `/update-documentation` | Study and align all READMEs and documentation across the project |
+| `/fix-warnings` | Find and fix all build/lint warnings (never suppress) |
+| `/review-solution` | Deep review of entire codebase against all rules |
+| `/run-site-base` | Full-site Chrome DevTools walkthrough with screenshots and report |
+| `/update-documentation` | Study and align all READMEs and documentation |

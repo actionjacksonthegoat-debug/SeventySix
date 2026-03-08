@@ -51,6 +51,13 @@
 	}
 }
 
+:host ::ng-deep mat-toolbar .mat-mdc-icon-button {
+	line-height: 1;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+}
+
 :host .user-menu-header {
 	color: var(--mat-sys-on-surface);
 	font-weight: vars.$font-weight-bold;
