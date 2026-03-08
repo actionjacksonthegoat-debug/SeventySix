@@ -643,8 +643,8 @@ describe("UserDetailPage",
 				it("should show success notification on role add",
 					async () =>
 					{
-mockUserService.addRole.mockReturnValue(
-						createRoleMutation("onSuccess"));
+						mockUserService.addRole.mockReturnValue(
+							createRoleMutation("onSuccess"));
 
 						const { component: successComponent } =
 							createComponent();
@@ -659,8 +659,8 @@ mockUserService.addRole.mockReturnValue(
 				it("should show error notification on role add failure",
 					async () =>
 					{
-mockUserService.addRole.mockReturnValue(
-						createRoleMutation("onError"));
+						mockUserService.addRole.mockReturnValue(
+							createRoleMutation("onError"));
 
 						const { component: errorComponent } =
 							createComponent();
@@ -675,8 +675,8 @@ mockUserService.addRole.mockReturnValue(
 				it("should show success notification on role remove",
 					async () =>
 					{
-mockUserService.removeRole.mockReturnValue(
-						createRoleMutation("onSuccess"));
+						mockUserService.removeRole.mockReturnValue(
+							createRoleMutation("onSuccess"));
 
 						const { component: successComponent } =
 							createComponent();
@@ -691,8 +691,8 @@ mockUserService.removeRole.mockReturnValue(
 				it("should show error notification on role remove failure",
 					async () =>
 					{
-mockUserService.removeRole.mockReturnValue(
-						createRoleMutation("onError"));
+						mockUserService.removeRole.mockReturnValue(
+							createRoleMutation("onError"));
 
 						const { component: errorComponent } =
 							createComponent();
