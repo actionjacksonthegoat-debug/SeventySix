@@ -1,9 +1,11 @@
 import {
 	provideHttpClient,
+	withFetch,
 	withInterceptors
 } from "@angular/common/http";
 import {
 	ApplicationConfig,
+	effect,
 	ErrorHandler,
 	inject,
 	Injector,
@@ -11,7 +13,8 @@ import {
 	provideAppInitializer,
 	provideBrowserGlobalErrorListeners,
 	provideZonelessChangeDetection,
-	runInInjectionContext
+	runInInjectionContext,
+	untracked
 } from "@angular/core";
 import { MatIconRegistry } from "@angular/material/icon";
 import { DomSanitizer } from "@angular/platform-browser";
@@ -22,12 +25,20 @@ import {
 } from "@angular/router";
 import { provideServiceWorker } from "@angular/service-worker";
 import {
+	MutationCache,
 	provideTanStackQuery,
+	QueryCache,
 	QueryClient
 } from "@tanstack/angular-query-experimental";
 import { provideNgxSkeletonLoader } from "ngx-skeleton-loader";
 
 import { environment } from "@environments/environment";
+import {
+	BROWSER_FEATURE,
+	DOCUMENT_READY_STATE,
+	TYPEOF_RESULT,
+	WINDOW_EVENT
+} from "@shared/constants";
 import {
 	authInterceptor,
 	cacheBypassInterceptor,
@@ -49,9 +60,15 @@ import { routes } from "./app.routes";
 
 const NON_CRITICAL_INIT_TIMEOUT_MS: number = 3000;
 
+/**
+ * Module-level reference to the ErrorHandler, captured during app initialization.
+ * Used by QueryCache/MutationCache onError callbacks which fire outside injection context.
+ */
+let cachedErrorHandler: ErrorHandler | undefined;
+
 function scheduleNonCriticalInitialization(task: () => Promise<void> | void): void
 {
-	if (typeof window === "undefined")
+	if (typeof window === TYPEOF_RESULT.UNDEFINED)
 	{
 		void Promise.resolve(task());
 		return;
@@ -60,7 +77,7 @@ function scheduleNonCriticalInitialization(task: () => Promise<void> | void): vo
 	const runTask: () => void =
 		(): void =>
 		{
-			if ("requestIdleCallback" in window)
+			if (BROWSER_FEATURE.IDLE_CALLBACK in window)
 			{
 				window.requestIdleCallback(
 					() =>
@@ -79,14 +96,14 @@ function scheduleNonCriticalInitialization(task: () => Promise<void> | void): vo
 				NON_CRITICAL_INIT_TIMEOUT_MS);
 		};
 
-	if (document.readyState === "complete")
+	if (document.readyState === DOCUMENT_READY_STATE.COMPLETE)
 	{
 		runTask();
 		return;
 	}
 
 	window.addEventListener(
-		"load",
+		WINDOW_EVENT.LOAD,
 		runTask,
 		{ once: true });
 }
@@ -102,12 +119,19 @@ function initializeTheme(): Promise<void>
 	const themeService: ThemeService =
 		inject(ThemeService);
 	themeService.initialize();
+
+	// Capture ErrorHandler for QueryCache/MutationCache callbacks
+	cachedErrorHandler =
+		inject(ErrorHandler);
+
 	return Promise.resolve();
 }
 
 /**
  * Defers OpenTelemetry initialization until after page load.
  * Uses requestIdleCallback to avoid competing with first paint.
+ * Only initializes for authenticated users to prevent telemetry abuse.
+ * Reactively watches auth state so telemetry activates after login.
  */
 function initializeTelemetry(): Promise<void>
 {
@@ -115,22 +139,56 @@ function initializeTelemetry(): Promise<void>
 		inject(Injector);
 
 	scheduleNonCriticalInitialization(
-		async () =>
+		() =>
 		{
-			const telemetryModule: typeof import("@shared/services/telemetry.service") =
-				await import(
-					"@shared/services/telemetry.service");
-
 			runInInjectionContext(
 				injector,
 				() =>
 				{
-					inject(telemetryModule.TelemetryService)
-						.initialize();
+					const authService: AuthService =
+						inject(AuthService);
+
+					// Reactively watch auth state.
+					// Activates telemetry when user becomes authenticated,
+					// whether at page load or after login.
+					effect(
+						() =>
+						{
+							if (!authService.isAuthenticated())
+							{
+								return;
+							}
+
+							// TelemetryService.initialized prevents double init
+							untracked(
+								() =>
+								{
+									void activateTelemetry(injector);
+								});
+						});
 				});
 		});
 
 	return Promise.resolve();
+}
+
+/**
+ * Dynamically imports and initializes the TelemetryService.
+ * Separated from the effect to keep async work untracked.
+ */
+async function activateTelemetry(injector: Injector): Promise<void>
+{
+	const telemetryModule: typeof import("@shared/services/telemetry.service") =
+		await import(
+			"@shared/services/telemetry.service");
+
+	runInInjectionContext(
+		injector,
+		() =>
+		{
+			inject(telemetryModule.TelemetryService)
+				.initialize();
+		});
 }
 
 /**
@@ -172,30 +230,55 @@ function initializeAuth(): Observable<AuthResponse | null>
 }
 
 /**
- * Loads feature flags from the API during app startup.
- * All APP_INITIALIZERs run in parallel, so this only adds latency beyond
- * the slowest other initializer (typically initializeAuth for returning users).
- * For first-time visitors, this adds ~50–200 ms but guarantees correct UI state
- * (OAuth buttons, ALTCHA, TOTP) on the very first render — no flicker.
+ * Loads feature flags from the API after initial render.
+ * Deferred via scheduleNonCriticalInitialization since the landing page
+ * doesn't use feature flags — only auth, account, and policy pages do.
  */
 function initializeFeatureFlags(): Promise<void>
 {
-	const featureFlagsService: FeatureFlagsService =
-		inject(FeatureFlagsService);
-	return featureFlagsService.initialize();
+	const injector: Injector =
+		inject(Injector);
+
+	scheduleNonCriticalInitialization(
+		async () =>
+		{
+			await runInInjectionContext(
+				injector,
+				() =>
+				{
+					const featureFlagsService: FeatureFlagsService =
+						inject(FeatureFlagsService);
+					return featureFlagsService.initialize();
+				});
+		});
+
+	return Promise.resolve();
 }
 
 /**
  * Register OAuth provider SVG icons with the Material icon registry.
- * Must run before any component references these icons.
+ * Deferred to after page load since these icons are only needed on auth pages.
  */
 function initializeOAuthIcons(): Promise<void>
 {
-	const iconRegistry: MatIconRegistry =
-		inject(MatIconRegistry);
-	const sanitizer: DomSanitizer =
-		inject(DomSanitizer);
-	registerOAuthIcons(iconRegistry, sanitizer);
+	const injector: Injector =
+		inject(Injector);
+
+	scheduleNonCriticalInitialization(
+		() =>
+		{
+			runInInjectionContext(
+				injector,
+				() =>
+				{
+					const iconRegistry: MatIconRegistry =
+						inject(MatIconRegistry);
+					const sanitizer: DomSanitizer =
+						inject(DomSanitizer);
+					registerOAuthIcons(iconRegistry, sanitizer);
+				});
+		});
+
 	return Promise.resolve();
 }
 
@@ -220,6 +303,20 @@ export const appConfig: ApplicationConfig =
 			provideTanStackQuery(
 				new QueryClient(
 					{
+						queryCache: new QueryCache(
+							{
+								onError: (error: Error): void =>
+								{
+									cachedErrorHandler?.handleError(error);
+								}
+							}),
+						mutationCache: new MutationCache(
+							{
+								onError: (error: Error): void =>
+								{
+									cachedErrorHandler?.handleError(error);
+								}
+							}),
 						defaultOptions: {
 							queries: {
 								staleTime: environment.cache.query.default.staleTime,
@@ -235,6 +332,7 @@ export const appConfig: ApplicationConfig =
 						}
 					})),
 			provideHttpClient(
+				withFetch(),
 				withInterceptors(
 					[
 						cacheBypassInterceptor,

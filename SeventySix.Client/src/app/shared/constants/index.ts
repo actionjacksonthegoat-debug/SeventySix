@@ -9,6 +9,7 @@ export * from "./accessibility.constants";
 export * from "./altcha.constants";
 export * from "./auth-events.constants";
 export * from "./breakpoint.constants";
+export * from "./browser.constants";
 export * from "./error-messages.constants";
 export * from "./health.constants";
 export * from "./http-status.constant";
