@@ -99,14 +99,13 @@ test.describe("Navigation",
 							.toHaveURL(/\/admin\/dashboard/);
 					});
 
-				test("should not allow user to access developer routes",
+				test("should allow user to access developer routes",
 					async ({ userPage }: { userPage: Page; }) =>
 					{
 						await userPage.goto(ROUTES.developer.styleGuide);
 
-						// User should be redirected away from developer
+						// User role now has access to developer routes
 						await expect(userPage)
-							.not
 							.toHaveURL(/\/developer\/style-guide/);
 					});
 			});
