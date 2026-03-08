@@ -55,6 +55,7 @@ jobs:
                   host: ${{ secrets.PROD_HOST }}
                   username: ${{ secrets.PROD_USER }}
                   key: ${{ secrets.PROD_SSH_KEY }}
+                  command_timeout: 20m
                   # Forward all env vars above into the remote shell session
                   envs: DB_NAME,DB_USER,DB_PASSWORD,JWT_SECRET_KEY,GITHUB_CLIENT_ID,GITHUB_CLIENT_SECRET,EMAIL_API_KEY,EMAIL_FROM_ADDRESS,SITE_EMAIL,ALTCHA_HMAC_KEY,ADMIN_EMAIL,ADMIN_PASSWORD,ADMIN_USERNAME,ADMIN_FULLNAME,ADMIN_SEEDER_ENABLED,DATA_PROTECTION_CERTIFICATE_PASSWORD,CORS_ORIGIN_0,CORS_ORIGIN_1,VALKEY_PASSWORD,GRAFANA_ADMIN_USER,GRAFANA_ADMIN_PASSWORD,ALLOWED_HOSTS,CLIENT_BASE_URL,OAUTH_CALLBACK_URL,OAUTH_REDIRECT_URI
                   script: |
@@ -74,8 +75,13 @@ jobs:
 
                       echo "=== Syncing Caddy from checked-in source-of-truth ==="
                       sudo cp "$APP_DIR/Caddyfile.production" /etc/caddy/Caddyfile
+                      sudo caddy fmt --overwrite /etc/caddy/Caddyfile
                       sudo caddy validate --config /etc/caddy/Caddyfile
-                      sudo systemctl reload caddy
+                      # Use restart instead of reload — reload hangs when the running config
+                      # differs significantly (e.g. adding a global log block) because
+                      # caddy reload waits on the admin API while the process applies the new config.
+                      # restart does a clean stop+start which is more reliable for config changes.
+                      sudo systemctl restart caddy
 
                       echo "=== Pulling pre-built images from GHCR ==="
                       docker compose -f docker-compose.production.yml pull api client
