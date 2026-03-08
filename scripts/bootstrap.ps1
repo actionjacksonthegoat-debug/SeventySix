@@ -64,6 +64,44 @@ Write-Host "  Running dotnet restore..."
 if ($LASTEXITCODE -ne 0) { Write-Error "dotnet restore failed."; exit 1 }
 Pop-Location
 
+# Install dprint globally if not already present
+# dprint is required for 'npm run format' (ESLint → dprint → ESLint pipeline).
+Write-Host "  Checking dprint..."
+$dprintCmd = Get-Command dprint -ErrorAction SilentlyContinue
+if (-not $dprintCmd) {
+	Write-Host "  dprint not found — installing..." -ForegroundColor Yellow
+	if ($IsWindows) {
+		if (Get-Command winget -ErrorAction SilentlyContinue) {
+			& winget install dprint.dprint --accept-source-agreements --accept-package-agreements
+		}
+		else {
+			# Fallback: PowerShell install script from dprint.dev
+			Invoke-Expression ((Invoke-WebRequest -Uri 'https://dprint.dev/install.ps1' -UseBasicParsing).Content)
+		}
+	}
+	else {
+		# Linux / macOS
+		& bash -c "curl -fsSL https://dprint.dev/install.sh | sh"
+		# Add ~/.dprint/bin to PATH for the remainder of this bootstrap session
+		$dprintBin = Join-Path $env:HOME ".dprint" "bin"
+		if (Test-Path $dprintBin) {
+			$env:PATH = "${dprintBin}$([System.IO.Path]::PathSeparator)$env:PATH"
+		}
+	}
+	$dprintCmd = Get-Command dprint -ErrorAction SilentlyContinue
+	if ($dprintCmd) {
+		Write-Host "  [OK] dprint installed: $(& dprint --version)" -ForegroundColor Green
+	}
+	else {
+		Write-Host "  [WARN] dprint installed but not yet on PATH." -ForegroundColor Yellow
+		Write-Host "         Restart your terminal or add ~/.dprint/bin to your PATH." -ForegroundColor Yellow
+	}
+}
+else {
+	$dprintVersion = & dprint --version 2>$null
+	Write-Host "  [OK] dprint already installed: $dprintVersion" -ForegroundColor Green
+}
+
 # Phase 6: Build verification
 Write-Host ""
 Write-Host "--- Build Verification ---" -ForegroundColor Cyan
