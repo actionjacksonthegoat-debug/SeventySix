@@ -98,4 +98,6 @@ Write a prioritized plan to `Implementation.md` with:
 3. **Medium** — Dead code, structural misalignment, unused dependencies
 4. **Low** — Style inconsistencies, documentation gaps
 
+> **After writing the plan**: Run `/create-plan` on the output if the scope is large enough to warrant phased execution. For smaller findings, fixes can be applied directly.
+
 Each item must include: file path, line number, rule violated, specific fix required.

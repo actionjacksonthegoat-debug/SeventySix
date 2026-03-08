@@ -35,7 +35,8 @@ Review all staged/unstaged changes against every rule in the `.github/instructio
 1. Scan every changed file for violations
 2. **Fix each violation immediately** by editing the source file
 3. After all fixes, run `npm run format` to ensure consistent formatting
-4. Run the **full validation suite** — ALL suites must pass before calling this complete:
+4. Run **`/fix-warnings`** — confirm zero build warnings across server and client
+5. Run the **full validation suite** — ALL suites must pass before calling this complete:
 
    | Suite | Command | Success Indicator |
    |-------|---------|-------------------|
@@ -45,11 +46,10 @@ Review all staged/unstaged changes against every rule in the `.github/instructio
    | Quick load test | `npm run loadtest:quick` | All scenarios pass thresholds |
 
    > **NO EXCEPTIONS.** If infrastructure is not running, start it. Do not skip any suite.
-
-5. Confirm **zero build warnings**:
-   - Server: `dotnet build` output must show `0 Warning(s)` — never add `#pragma warning disable` or `[SuppressMessage]`
-   - Client: TypeScript compilation must show no errors or `@ts-ignore` suppressions
-   - **If `dotnet format` reports "Unable to fix [RULE]"** — manually fix all instances in source, do not override in `.editorconfig`
+   > **NEVER** label a failure "pre-existing" or "unrelated" and move on — ALL failures must be fixed.
+   > **Debug single specs:** `npm run test:e2e -- specs/path/to/failing.spec.ts`. If it can't reproduce standalone, re-run the full suite — it may be cross-test corruption.
+   > **NEVER pipe or filter command output** — run raw commands, full output, no truncation.
+   > **A full passing E2E suite run is REQUIRED before calling this review complete.**
 
 6. Report a summary of what was fixed
 

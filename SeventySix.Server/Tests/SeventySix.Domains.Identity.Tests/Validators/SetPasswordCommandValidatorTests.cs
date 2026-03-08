@@ -20,11 +20,7 @@ public sealed class SetPasswordCommandValidatorTests
 	private static readonly PasswordSettings TestPasswordSettings =
 		new()
 		{
-			MinLength = 8,
-			RequireUppercase = true,
-			RequireLowercase = true,
-			RequireDigit = true,
-			RequireSpecialChar = false,
+			MinLength = 12,
 		};
 
 	private readonly SetPasswordCommandValidator Validator =
@@ -42,7 +38,7 @@ public sealed class SetPasswordCommandValidatorTests
 		SetPasswordRequest request =
 			new(
 			Token: validToken,
-			NewPassword: "Password123!");
+			NewPassword: "Password123!a");
 
 		// Act
 		TestValidationResult<SetPasswordRequest> result =
@@ -63,7 +59,7 @@ public sealed class SetPasswordCommandValidatorTests
 		SetPasswordRequest request =
 			new(
 			Token: "",
-			NewPassword: "Password123!");
+			NewPassword: "Password123!a");
 
 		// Act
 		TestValidationResult<SetPasswordRequest> result =
@@ -82,7 +78,7 @@ public sealed class SetPasswordCommandValidatorTests
 		SetPasswordRequest request =
 			new(
 			Token: null!,
-			NewPassword: "Password123!");
+			NewPassword: "Password123!a");
 
 		// Act
 		TestValidationResult<SetPasswordRequest> result =
@@ -101,7 +97,7 @@ public sealed class SetPasswordCommandValidatorTests
 		SetPasswordRequest request =
 			new(
 			Token: "not-valid-token!!!",
-			NewPassword: "Password123!");
+			NewPassword: "Password123!a");
 
 		// Act
 		TestValidationResult<SetPasswordRequest> result =
@@ -123,7 +119,7 @@ public sealed class SetPasswordCommandValidatorTests
 		SetPasswordRequest request =
 			new(
 			Token: invalidToken,
-			NewPassword: "Password123!");
+			NewPassword: "Password123!a");
 
 		// Act
 		TestValidationResult<SetPasswordRequest> result =
@@ -142,7 +138,7 @@ public sealed class SetPasswordCommandValidatorTests
 		SetPasswordRequest request =
 			new(
 			Token: "123:not-valid-base64!!!",
-			NewPassword: "Password123!");
+			NewPassword: "Password123!a");
 
 		// Act
 		TestValidationResult<SetPasswordRequest> result =
@@ -164,7 +160,7 @@ public sealed class SetPasswordCommandValidatorTests
 		SetPasswordRequest request =
 			new(
 			Token: validToken,
-			NewPassword: "Password123!");
+			NewPassword: "Password123!a");
 
 		// Act
 		TestValidationResult<SetPasswordRequest> result =
@@ -206,7 +202,7 @@ public sealed class SetPasswordCommandValidatorTests
 		SetPasswordRequest request =
 			new(
 			Token: validToken,
-			NewPassword: "Pass1!");
+			NewPassword: "Pass123!");
 
 		// Act
 		TestValidationResult<SetPasswordRequest> result =
@@ -217,7 +213,7 @@ public sealed class SetPasswordCommandValidatorTests
 	}
 
 	[Fact]
-	public async Task NewPassword_NoUppercase_FailsValidationAsync()
+	public async Task NewPassword_LowercaseOnlyWithMinimumLength_PassesValidationAsync()
 	{
 		// Arrange
 		string validToken =
@@ -226,54 +222,14 @@ public sealed class SetPasswordCommandValidatorTests
 		SetPasswordRequest request =
 			new(
 			Token: validToken,
-			NewPassword: "password123!");
+			NewPassword: "lowercase123");
 
 		// Act
 		TestValidationResult<SetPasswordRequest> result =
 			await Validator.TestValidateAsync(request);
 
 		// Assert
-		result.ShouldHaveValidationErrorFor(request => request.NewPassword);
-	}
-
-	[Fact]
-	public async Task NewPassword_NoLowercase_FailsValidationAsync()
-	{
-		// Arrange
-		string validToken =
-			$"123:{Convert.ToBase64String(new byte[64])}";
-
-		SetPasswordRequest request =
-			new(
-			Token: validToken,
-			NewPassword: "PASSWORD123!");
-
-		// Act
-		TestValidationResult<SetPasswordRequest> result =
-			await Validator.TestValidateAsync(request);
-
-		// Assert
-		result.ShouldHaveValidationErrorFor(request => request.NewPassword);
-	}
-
-	[Fact]
-	public async Task NewPassword_NoDigit_FailsValidationAsync()
-	{
-		// Arrange
-		string validToken =
-			$"123:{Convert.ToBase64String(new byte[64])}";
-
-		SetPasswordRequest request =
-			new(
-			Token: validToken,
-			NewPassword: "PasswordABC!");
-
-		// Act
-		TestValidationResult<SetPasswordRequest> result =
-			await Validator.TestValidateAsync(request);
-
-		// Assert
-		result.ShouldHaveValidationErrorFor(request => request.NewPassword);
+		result.ShouldNotHaveValidationErrorFor(request => request.NewPassword);
 	}
 
 	#endregion

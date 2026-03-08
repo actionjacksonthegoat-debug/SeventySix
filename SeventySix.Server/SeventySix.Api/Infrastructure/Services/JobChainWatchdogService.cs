@@ -216,11 +216,6 @@ public sealed class JobChainWatchdogService(
 			return (true, "no execution record found");
 		}
 
-		if (execution.LastExecutedAt == DateTimeOffset.MinValue)
-		{
-			return (true, "job registered but never executed");
-		}
-
 		DateTimeOffset now =
 			timeProvider.GetUtcNow();
 
@@ -228,6 +223,11 @@ public sealed class JobChainWatchdogService(
 			&& execution.NextScheduledAt.Value > now)
 		{
 			return (false, "scheduled in future");
+		}
+
+		if (execution.LastExecutedAt == DateTimeOffset.MinValue)
+		{
+			return (true, "job registered but never executed");
 		}
 
 		TimeSpan stalenessThreshold =

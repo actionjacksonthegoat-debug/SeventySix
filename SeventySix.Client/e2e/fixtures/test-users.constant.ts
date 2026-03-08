@@ -203,6 +203,19 @@ export const PERM_APPROVE_USER: TestUser =
 	} as const;
 
 /**
+ * Dedicated test user for permission-request reject workflow E2E tests.
+ * Isolated so the reject test has a guaranteed pending request to act on,
+ * independent of the approve workflow user.
+ */
+export const PERM_REJECT_USER: TestUser =
+	{
+		username: "e2e_perm_reject",
+		password: "E2E_PermReject_Password_123!",
+		role: "User",
+		email: "e2e_perm_reject@test.local"
+	} as const;
+
+/**
  * Dedicated test user for profile edit E2E tests.
  * Isolated because editing profile (fullName, email) permanently mutates
  * shared state and would corrupt other tests that depend on known user data.

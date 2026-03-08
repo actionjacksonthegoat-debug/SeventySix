@@ -115,50 +115,35 @@ describe("validatePassword",
 						`Password must not exceed ${PASSWORD_VALIDATION.MAX_LENGTH} characters.`);
 			});
 
-		it("should return invalid when password is missing uppercase letter",
+		it("should return valid for a password meeting the length rules",
 			() =>
 			{
 				const result: ValidationResult =
-					validatePassword("password1!");
+					validatePassword("ValidPass1abc");
 
 				expect(result.valid)
-					.toBe(false);
+					.toBe(true);
 				expect(result.errorMessage)
-					.toBe(
-						"Password must contain at least one uppercase letter.");
+					.toBeUndefined();
 			});
 
-		it("should return invalid when password is missing lowercase letter",
+		it("should return valid for a lowercase password when length requirement is met",
 			() =>
 			{
 				const result: ValidationResult =
-					validatePassword("PASSWORD1!");
+					validatePassword("lowercase123");
 
 				expect(result.valid)
-					.toBe(false);
+					.toBe(true);
 				expect(result.errorMessage)
-					.toBe(
-						"Password must contain at least one lowercase letter.");
+					.toBeUndefined();
 			});
 
-		it("should return invalid when password is missing digit",
+		it("should return valid for exact min length password",
 			() =>
 			{
 				const result: ValidationResult =
-					validatePassword("Passwords!");
-
-				expect(result.valid)
-					.toBe(false);
-				expect(result.errorMessage)
-					.toBe(
-						"Password must contain at least one digit.");
-			});
-
-		it("should return valid for a password meeting all rules",
-			() =>
-			{
-				const result: ValidationResult =
-					validatePassword("ValidPass1");
+					validatePassword("Abcdefghij1x");
 
 				expect(result.valid)
 					.toBe(true);
@@ -174,18 +159,6 @@ describe("validatePassword",
 
 				expect(result.valid)
 					.toBe(false);
-			});
-
-		it("should return valid for exact min length password meeting all rules",
-			() =>
-			{
-				const result: ValidationResult =
-					validatePassword("Abcdef1x");
-
-				expect(result.valid)
-					.toBe(true);
-				expect(result.errorMessage)
-					.toBeUndefined();
 			});
 	});
 

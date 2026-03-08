@@ -754,14 +754,20 @@ A set of Copilot prompts, instruction files, and MCP servers — committed to th
 
 Prompt files in `.github/prompts/` cover the full development lifecycle:
 
+**Core workflow** — `/create-plan` → `/review-plan` → `/execute-plan` (calls `/security-review` before final tests)
+
 | Prompt | Purpose |
 |---|---|
 | `/create-plan` | Write an `Implementation.md` plan for new work |
 | `/review-plan` | Validate `Implementation.md` against all project rules |
 | `/execute-plan` | Execute all phases in `Implementation.md`, run tests |
-| `/code-review` | Review staged changes against all project rules |
-| `/fix-warnings` | Find and fix all build/lint warnings (never suppress) |
-| `/new-feature` | Scaffold a full-stack feature (Angular + .NET) |
+| `/security-review` | OWASP/PII/Auth security audit (mandatory gate inside `/execute-plan`) |
+
+**Scaffolding** — called directly or referenced inside plans
+
+| Prompt | Purpose |
+|---|---|
+| `/new-domain-feature` | Scaffold a full-stack feature (Angular + .NET) |
 | `/new-server-domain` | Scaffold a new .NET bounded context |
 | `/new-client-domain` | Scaffold a new Angular domain module |
 | `/new-component` | Scaffold an Angular component with tests |
@@ -769,14 +775,16 @@ Prompt files in `.github/prompts/` cover the full development lifecycle:
 | `/new-service` | Scaffold a .NET service with repository |
 | `/new-e2e-test` | Scaffold a Playwright E2E test |
 | `/new-load-test` | Scaffold a k6 load test scenario |
-| `/new-domain-feature` | Scaffold a feature within an existing domain |
-| `/update-documentation` | Study and align all READMEs and documentation |
+
+**Quality & Verification** — standalone or wired into `/execute-plan`
+
+| Prompt | Purpose |
+|---|---|
+| `/code-review` | Review and auto-fix staged changes against all project rules |
+| `/fix-warnings` | Find and fix all build/lint warnings (never suppress) |
 | `/review-solution` | Deep review of entire codebase against all rules |
-| `/run-site-base` | Full-site Chrome DevTools walkthrough with screenshots and report |
-
-**Core workflow**: `/create-plan` → `/review-plan` → `/execute-plan` → `/code-review`
-
-**Site verification**: `/run-site-base` (standalone — runs against live dev environment)
+| `/run-site-base` | Full-site Chrome DevTools walkthrough with screenshots |
+| `/update-documentation` | Align all READMEs and docs with current implementation |
 
 ### Instruction Files
 

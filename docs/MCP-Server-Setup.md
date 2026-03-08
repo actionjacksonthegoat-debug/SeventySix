@@ -274,19 +274,24 @@ The `.vscode/mcp.json` file is committed to the repo but contains **zero secrets
 
 | Prompt/Agent                    | MCP Servers Used                      |
 | ------------------------------- | ------------------------------------- |
-| `code-review.prompt.md`         | github, context7                      |
 | `review.md` (agent)             | github, context7, postgresql          |
+| `create-plan.prompt.md`         | context7, postgresql                  |
 | `review-plan.prompt.md`         | context7                              |
 | `execute-plan.prompt.md`        | context7, postgresql, github          |
-| `create-plan.prompt.md`         | context7, postgresql                  |
+| `security-review.prompt.md`     | context7                              |
+| `code-review.prompt.md`         | github, context7                      |
 | `fix-warnings.prompt.md`        | context7                              |
+| `review-solution.prompt.md`     | context7, postgresql, github, chrome-devtools |
+| `run-site-base.prompt.md`       | chrome-devtools, postgresql           |
+| `update-documentation.prompt.md` | chrome-devtools, context7            |
+| `new-domain-feature.prompt.md`  | context7, postgresql                  |
 | `new-server-domain.prompt.md`   | context7, postgresql                  |
 | `new-client-domain.prompt.md`   | context7                              |
 | `new-component.prompt.md`       | context7                              |
 | `new-angular-service.prompt.md` | context7                              |
 | `new-service.prompt.md`         | context7, postgresql                  |
-| `new-feature.prompt.md`         | context7, postgresql                  |
-| `new-e2e-test.prompt.md`        | context7, chrome-devtools, playwright     |
+| `new-e2e-test.prompt.md`        | context7, chrome-devtools, playwright |
+| `new-load-test.prompt.md`       | context7                              |
 
 ---
 

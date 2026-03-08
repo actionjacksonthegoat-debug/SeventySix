@@ -20,7 +20,7 @@ import { MatTooltip } from "@angular/material/tooltip";
  * `MatTooltip.disabled` inside change detection.
  *
  * @example
- * <mat-hint appFieldMessage>At least 8 characters with uppercase, lowercase, and a digit</mat-hint>
+ * <mat-hint appFieldMessage>At least 12 characters</mat-hint>
  * <mat-error appFieldMessage>{{ errorMessage() }}</mat-error>
  */
 @Directive(
