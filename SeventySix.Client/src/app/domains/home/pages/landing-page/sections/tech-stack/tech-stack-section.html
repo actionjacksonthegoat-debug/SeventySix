@@ -24,7 +24,7 @@
 				</h3>
 				<div class="tech-category-items"
 					role="list">
-					@for (item of category.items; track item.slug; let index = $index) {
+					@for (item of category.items; track item.slug + '-' + item.name; let index = $index) {
 						<a class="tech-item"
 							role="listitem"
 							appScrollReveal

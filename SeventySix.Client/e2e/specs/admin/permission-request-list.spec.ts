@@ -3,6 +3,7 @@ import {
 	loginInFreshContext,
 	PAGE_TEXT,
 	PERM_APPROVE_USER,
+	PERM_REJECT_USER,
 	ROUTES,
 	SELECTORS,
 	test,
@@ -44,7 +45,7 @@ async function createPermissionRequestViaUi(
 	if (!hasRoles)
 	{
 		throw new Error(
-			"PERM_APPROVE_USER has no requestable roles — "
+			"Isolated user has no requestable roles — "
 				+ "prior run may have granted them. "
 				+ "The E2E seeder should reset this user's roles between runs.");
 	}
@@ -212,15 +213,19 @@ test.describe("Permission Request List Page",
 							const dataRows: Locator =
 								adminPage.locator(SELECTORS.dataTable.dataRow);
 
-							await expect(dataRows.first())
+							// Target this test's specific user row to avoid cross-test interference
+							const targetRow: Locator =
+								dataRows.filter(
+									{ hasText: PERM_APPROVE_USER.username });
+
+							await expect(targetRow)
 								.toBeVisible(
 									{ timeout: TIMEOUTS.api });
 
 							// Step 4: Open the action menu on the first row and click approve
 							// With 2 row actions (approve + reject), a menu button is rendered
 							const menuButton: Locator =
-								dataRows
-									.first()
+								targetRow
 									.locator(SELECTORS.dataTable.rowActionsButton);
 
 							await expect(menuButton)
@@ -258,47 +263,68 @@ test.describe("Permission Request List Page",
 			() =>
 			{
 				test("should reject a permission request via row action menu",
-					async ({ userPage, adminPage }) =>
+					async ({ browser, adminPage }) =>
 					{
 						// Fresh context + login + UI request creation + admin rejection
 						test.setTimeout(90_000);
-						// Step 1: Create a permission request via UI
-						await createPermissionRequestViaUi(userPage);
-						// Step 2: Navigate admin to permission requests
-						await adminPage.goto(ROUTES.admin.permissionRequests);
 
-						const dataRows: Locator =
-							adminPage.locator(SELECTORS.dataTable.dataRow);
+						// Step 1: Create an isolated page without inherited storage state
+						const { page: isolatedPage, context: isolatedContext } =
+							await loginInFreshContext(
+								browser,
+								PERM_REJECT_USER);
 
-						await expect(dataRows.first())
-							.toBeVisible(
-								{ timeout: TIMEOUTS.api });
+						try
+						{
+							// Step 2: Create a permission request as the isolated user
+							await createPermissionRequestViaUi(isolatedPage);
 
-						// Step 3: Open the action menu on the first row
-						// With 2 row actions (approve + reject), a menu button is rendered
-						const menuButton: Locator =
-							dataRows
-								.first()
-								.locator(SELECTORS.dataTable.rowActionsButton);
+							// Step 3: Navigate admin to permission requests and wait for data
+							await adminPage.goto(ROUTES.admin.permissionRequests);
 
-						await expect(menuButton)
-							.toBeVisible();
-						await menuButton.click();
+							const dataRows: Locator =
+								adminPage.locator(SELECTORS.dataTable.dataRow);
 
-						// Click the reject option (warn-colored menu item)
-						const rejectMenuItem: Locator =
-							adminPage.locator(SELECTORS.menu.warnMenuItem);
+							// Target this test's specific user row to avoid cross-test interference
+							const targetRow: Locator =
+								dataRows.filter(
+									{ hasText: PERM_REJECT_USER.username });
 
-						await expect(rejectMenuItem)
-							.toBeVisible();
-						await rejectMenuItem.click();
+							await expect(targetRow)
+								.toBeVisible(
+									{ timeout: TIMEOUTS.api });
 
-						// Step 4: Verify notification appears
-						const notification: Locator =
-							adminPage.locator(SELECTORS.notification.snackbar);
-						await expect(notification)
-							.toBeVisible(
-								{ timeout: TIMEOUTS.api });
+							// Step 4: Open the action menu on the first row and click reject
+							const menuButton: Locator =
+								targetRow
+									.locator(SELECTORS.dataTable.rowActionsButton);
+
+							await expect(menuButton)
+								.toBeVisible();
+
+							const notification: Locator =
+								adminPage.locator(SELECTORS.notification.snackbar);
+							const notificationPromise: Promise<void> =
+								expect(notification)
+									.toBeVisible(
+										{ timeout: TIMEOUTS.api });
+
+							await menuButton.click();
+
+							// Click the reject option (warn-colored menu item)
+							const rejectMenuItem: Locator =
+								adminPage.locator(SELECTORS.menu.warnMenuItem);
+
+							await expect(rejectMenuItem)
+								.toBeVisible();
+							await rejectMenuItem.click();
+
+							await notificationPromise;
+						}
+						finally
+						{
+							await isolatedContext.close();
+						}
 					});
 			});
 	});

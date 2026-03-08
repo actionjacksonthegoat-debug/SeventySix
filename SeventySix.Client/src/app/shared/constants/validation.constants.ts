@@ -58,28 +58,12 @@ export const FULL_NAME_VALIDATION: {
  * Server: PasswordValidationExtensions.ApplyPasswordRules()
  */
 export const PASSWORD_VALIDATION: {
-	readonly MIN_LENGTH: 8;
+	readonly MIN_LENGTH: 12;
 	readonly MAX_LENGTH: 100;
-	readonly REQUIRE_UPPERCASE: true;
-	readonly REQUIRE_LOWERCASE: true;
-	readonly REQUIRE_DIGIT: true;
-	readonly REQUIRE_SPECIAL_CHAR: false;
-	readonly UPPERCASE_PATTERN: RegExp;
-	readonly LOWERCASE_PATTERN: RegExp;
-	readonly DIGIT_PATTERN: RegExp;
-	readonly SPECIAL_CHAR_PATTERN: RegExp;
 } =
 	{
-		MIN_LENGTH: 8,
-		MAX_LENGTH: 100,
-		REQUIRE_UPPERCASE: true,
-		REQUIRE_LOWERCASE: true,
-		REQUIRE_DIGIT: true,
-		REQUIRE_SPECIAL_CHAR: false,
-		UPPERCASE_PATTERN: /[A-Z]/,
-		LOWERCASE_PATTERN: /[a-z]/,
-		DIGIT_PATTERN: /\d/,
-		SPECIAL_CHAR_PATTERN: /[^a-zA-Z\d]/
+		MIN_LENGTH: 12,
+		MAX_LENGTH: 100
 	};
 
 /**

@@ -37,52 +37,13 @@ public static class PasswordValidationExtensions
 		this IRuleBuilder<T, string> ruleBuilder,
 		PasswordSettings passwordSettings)
 	{
-		IRuleBuilderOptions<T, string> rules =
-			ruleBuilder
-				.NotEmpty()
-				.WithMessage("Password is required")
-				.MinimumLength(passwordSettings.MinLength)
-				.WithMessage(
-					$"Password must be at least {passwordSettings.MinLength} characters")
-				.MaximumLength(100)
-				.WithMessage("Password must not exceed 100 characters");
-
-		if (passwordSettings.RequireUppercase)
-		{
-			rules =
-				rules
-					.Matches(@"[A-Z]")
-					.WithMessage(
-						"Password must contain at least one uppercase letter");
-		}
-
-		if (passwordSettings.RequireLowercase)
-		{
-			rules =
-				rules
-					.Matches(@"[a-z]")
-					.WithMessage(
-						"Password must contain at least one lowercase letter");
-		}
-
-		if (passwordSettings.RequireDigit)
-		{
-			rules =
-				rules
-					.Matches(@"\d")
-					.WithMessage(
-						"Password must contain at least one digit");
-		}
-
-		if (passwordSettings.RequireSpecialChar)
-		{
-			rules =
-				rules
-					.Matches(@"[^a-zA-Z\d]")
-					.WithMessage(
-						"Password must contain at least one special character");
-		}
-
-		return rules;
+		return ruleBuilder
+			.NotEmpty()
+			.WithMessage("Password is required")
+			.MinimumLength(passwordSettings.MinLength)
+			.WithMessage(
+				$"Password must be at least {passwordSettings.MinLength} characters")
+			.MaximumLength(100)
+			.WithMessage("Password must not exceed 100 characters");
 	}
 }

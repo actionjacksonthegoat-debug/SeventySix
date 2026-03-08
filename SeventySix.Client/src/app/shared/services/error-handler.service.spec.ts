@@ -410,7 +410,7 @@ describe("ErrorHandlerService",
 										title: "Validation failed",
 										errors: {
 											email: ["Email is required"],
-											password: ["Password must be at least 8 characters"]
+											password: ["Password must be at least 12 characters"]
 										}
 									}
 								});

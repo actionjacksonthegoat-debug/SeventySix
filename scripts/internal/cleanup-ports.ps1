@@ -26,8 +26,7 @@ $ErrorActionPreference = "Continue"
 $portsToClean = @(4200, 5086)
 
 # Process names we're allowed to kill (safety - don't kill system processes)
-# Include 'cmd' since Angular is launched via `cmd /k npm start`
-$allowedProcessNames = @("node", "dotnet", "ng", "cmd")
+$allowedProcessNames = @("node", "dotnet", "ng", "cmd", "powershell", "pwsh")
 
 if (-not $Quiet) {
 	Write-Host ""
@@ -90,27 +89,27 @@ foreach ($port in $portsToClean) {
 	}
 }
 
-# Kill orphaned PowerShell/cmd windows running Angular client (Windows only)
+# Kill orphaned shell windows running Angular client (Windows only)
 # On Linux, Angular processes are caught by the lsof port cleanup above
 if ($IsWindows) {
-	$angularTerminals =
-	Get-Process powershell -ErrorAction SilentlyContinue |
+	$angularPowerShellTerminals =
+	Get-Process -Name @("powershell", "pwsh") -ErrorAction SilentlyContinue |
 	Where-Object {
 		$commandLine =
 		(Get-CimInstance Win32_Process -Filter "ProcessId = $($_.Id)" -ErrorAction SilentlyContinue).CommandLine
 		$commandLine -and ($commandLine -match "npm\s+start" -or $commandLine -match "ng\s+serve")
 	}
 
-	foreach ($terminal in $angularTerminals) {
+	foreach ($terminal in $angularPowerShellTerminals) {
 		if (-not $Quiet) {
-			Write-Host "Killing Angular PowerShell terminal (PID: $($terminal.Id))" -ForegroundColor Yellow
+			Write-Host "Killing Angular PowerShell terminal ($($terminal.ProcessName), PID: $($terminal.Id))" -ForegroundColor Yellow
 		}
 		Stop-Process -Id $terminal.Id -Force -ErrorAction SilentlyContinue
 		$killedAny = $true
 	}
 
-	# Kill orphaned cmd.exe windows running Angular client (spawned by start-dev.ps1)
-	# The script uses `cmd /k npm start` which creates a cmd.exe process
+	# Kill orphaned cmd.exe windows that may be hosting Angular client processes.
+	# start-dev.ps1 currently launches via pwsh, but npm tooling can still spawn cmd wrappers.
 	# Only match `npm start` — DO NOT match "SeventySix.Client" alone, as that
 	# would also kill the cmd.exe wrapper npm uses for E2E test scripts.
 	$angularCmdTerminals =

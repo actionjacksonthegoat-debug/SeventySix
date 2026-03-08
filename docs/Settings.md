@@ -29,8 +29,8 @@ SeventySix uses a layered configuration system. This document provides a high-le
 | `Jwt:RefreshTokenExpirationDays` | Refresh token lifetime | 1 day |
 | `Jwt:RefreshTokenRememberMeExpirationDays` | Extended refresh with "remember me" | 14 days |
 | `Jwt:AbsoluteSessionExpirationDays` | Maximum session duration | 30 days |
-| `Auth:PasswordPolicy:MinimumLength` | Minimum password length | 12 |
-| `Auth:PasswordPolicy:HashAlgorithm` | Password hashing algorithm | Argon2id |
+| `Auth:Password:MinLength` | Minimum password length | 12 |
+| `Auth:Password:Argon2` | Password hashing parameters | Argon2id |
 | `Auth:Lockout:MaxFailedAttempts` | Failed logins before lockout | 5 |
 | `Auth:Lockout:LockoutDurationMinutes` | Lockout duration | 15 min |
 | `Mfa:CodeLength` | TOTP code digits | 6 |

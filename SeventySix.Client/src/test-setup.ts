@@ -1,6 +1,7 @@
 import "@angular/compiler";
 import "@analogjs/vitest-angular/setup-snapshots";
 import { setupTestBed } from "@analogjs/vitest-angular/setup-testbed";
+import { TYPEOF_RESULT } from "@shared/constants";
 import { vi } from "vitest";
 
 vi.mock("@environments/environment",
@@ -11,14 +12,14 @@ vi.mock("@environments/environment",
 		return testEnv;
 	});
 
-if (typeof window !== "undefined")
+if (typeof window !== TYPEOF_RESULT.UNDEFINED)
 {
-	if (typeof window.confirm === "undefined")
+	if (typeof window.confirm === TYPEOF_RESULT.UNDEFINED)
 	{
 		window.confirm =
 			(): boolean => true;
 	}
-	if (typeof window.alert === "undefined")
+	if (typeof window.alert === TYPEOF_RESULT.UNDEFINED)
 	{
 		window.alert =
 			(): void =>

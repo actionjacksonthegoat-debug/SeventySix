@@ -79,10 +79,10 @@ export const environment: Environment =
 			runIntegrationTests: false
 		},
 		telemetry: {
-			enabled: false, // Enable only when a collector is deployed and otlpEndpoint is configured
+			enabled: true,
 			serviceName: "SeventySix.Client",
 			serviceVersion: "1.0.0",
-			otlpEndpoint: "", // Set to your OTLP collector URL when enabled
+			otlpEndpoint: "/telemetry/v1/traces",
 			sampleRate: 0.1 // 10% sampling
 		},
 		auth: {

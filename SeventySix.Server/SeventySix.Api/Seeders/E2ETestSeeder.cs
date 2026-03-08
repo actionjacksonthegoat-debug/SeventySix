@@ -134,6 +134,12 @@ public sealed class E2ETestSeeder(
 			[RoleConstants.User]);
 
 		await CreateTestUserAsync(
+			"e2e_perm_reject",
+			"e2e_perm_reject@test.local",
+			"E2E_PermReject_Password_123!",
+			[RoleConstants.User]);
+
+		await CreateTestUserAsync(
 			"e2e_profile_edit",
 			"e2e_profile_edit@test.local",
 			"E2E_ProfileEdit_Password_123!",

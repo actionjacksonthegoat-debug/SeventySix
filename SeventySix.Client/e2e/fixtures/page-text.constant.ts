@@ -178,7 +178,7 @@ export const PAGE_TEXT: PageTextConfig =
 			enterUsernamePassword: "Please enter username and password",
 			enterEmail: "Please enter an email address",
 			validEmail: "valid email",
-			minimumCharacters: "8 characters"
+			minimumCharacters: "12 characters"
 		},
 
 		/**
@@ -417,7 +417,7 @@ export const PAGE_TEXT: PageTextConfig =
 		registerComplete: {
 			heading: "Complete Registration",
 			linkExpired: "Link Expired",
-			passwordHint: "At least 8 characters with uppercase, lowercase, digit, and special character"
+			passwordHint: "At least 12 characters"
 		},
 
 		/**

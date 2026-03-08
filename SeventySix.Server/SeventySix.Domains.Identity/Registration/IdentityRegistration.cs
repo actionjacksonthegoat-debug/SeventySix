@@ -143,18 +143,14 @@ public static class IdentityRegistration
 			.AddIdentityCore<ApplicationUser>(
 				options =>
 				{
-					// Password settings bound from single source: AuthSettings (DRY)
-					// Validation only - Argon2 handles actual hashing
+					// Password: length-only per OWASP ASVS V2.1.9
+					// Composition rules disabled — breach checking is the primary defense
 					options.Password.RequiredLength =
 						passwordSettings.MinLength;
-					options.Password.RequireDigit =
-						passwordSettings.RequireDigit;
-					options.Password.RequireLowercase =
-						passwordSettings.RequireLowercase;
-					options.Password.RequireUppercase =
-						passwordSettings.RequireUppercase;
-					options.Password.RequireNonAlphanumeric =
-						passwordSettings.RequireSpecialChar;
+					options.Password.RequireDigit = false;
+					options.Password.RequireLowercase = false;
+					options.Password.RequireUppercase = false;
+					options.Password.RequireNonAlphanumeric = false;
 
 					// Lockout settings bound from single source: AuthSettings (DRY)
 					options.Lockout.DefaultLockoutTimeSpan =

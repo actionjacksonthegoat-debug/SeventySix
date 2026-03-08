@@ -466,7 +466,7 @@ describe("ChangePasswordComponent",
 						expect(hint)
 							.toBeTruthy();
 						expect(hint?.textContent)
-							.toContain("At least 8 characters");
+							.toContain("At least 12 characters");
 					});
 			});
 	});

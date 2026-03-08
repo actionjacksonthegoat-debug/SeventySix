@@ -418,7 +418,7 @@ test.describe("Registration Flow",
 							.toBeDisabled();
 					});
 
-				test("should accept password meeting all policy requirements",
+				test("should accept password meeting the minimum length requirement",
 					async ({ page }) =>
 					{
 						await page.goto(
@@ -432,15 +432,15 @@ test.describe("Registration Flow",
 							.locator(SELECTORS.registerComplete.usernameInput)
 							.fill("policy_test_user");
 
-						// Strong password: uppercase, lowercase, digit, special char, 8+ chars
+						// Length-only password policy: 12+ characters
 						await page
 							.locator(SELECTORS.registerComplete.passwordInput)
-							.fill("StrongP@ss123!");
+							.fill("longpassword1");
 						await page
 							.locator(SELECTORS.registerComplete.confirmPasswordInput)
-							.fill("StrongP@ss123!");
+							.fill("longpassword1");
 
-						// Submit should be enabled with a valid policy-compliant password
+						// Submit should be enabled with a valid length-compliant password
 						await expect(page.locator(SELECTORS.registerComplete.submitButton))
 							.toBeEnabled();
 					});

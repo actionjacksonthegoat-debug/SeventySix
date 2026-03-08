@@ -9,13 +9,14 @@
 
 - [What Are Prompts?](#what-are-prompts)
 - [How to Run a Prompt](#how-to-run-a-prompt)
-- [The 3 Core Workflow Prompts](#the-3-core-workflow-prompts)
-    - [/review-plan — Review an Implementation Plan](#review-plan--review-an-implementation-plan)
-    - [/execute-plan — Execute an Implementation Plan](#execute-plan--execute-an-implementation-plan)
-    - [/create-plan — Create a New Implementation Plan](#create-plan--create-a-new-implementation-plan)
+- [Core Workflow Prompts](#core-workflow-prompts)
+    - [/create-plan](#create-plan--create-a-new-implementation-plan)
+    - [/review-plan](#review-plan--review-an-implementation-plan)
+    - [/execute-plan](#execute-plan--execute-an-implementation-plan)
+    - [/security-review](#security-review--owasp-security-audit)
 - [Scaffolding Prompts](#scaffolding-prompts)
-- [Quality Prompts](#quality-prompts)
-- [Verification Prompts](#verification-prompts)
+- [Quality & Verification Prompts](#quality--verification-prompts)
+- [How Prompts Call Other Prompts](#how-prompts-call-other-prompts)
 - [What About Hooks?](#what-about-hooks)
 - [Expectations & Results](#expectations--results)
 - [Tips & FAQ](#tips--faq)
@@ -35,19 +36,23 @@ graph LR
     CP["/create-plan"]
     RP["/review-plan"]
     EP["/execute-plan"]
-    CR["/code-review"]
+    SR["/security-review"]
     FW["/fix-warnings"]
+    UD["/update-documentation"]
+    RS["/review-solution"]
 
+    RS -->|"Optional: pre-plan audit"| CP
     CP -->|"Creates Implementation.md"| RP
     RP -->|"Validates plan"| EP
-    EP -->|"Implements changes"| CR
-    CR -->|"Reviews quality"| FW
-    FW -->|"Fixes IDE warnings"| Done["All tests pass"]
+    EP -->|"Calls (mandatory)"| SR
+    EP -->|"Calls (after security fix)"| FW
+    EP -->|"Calls (after tests pass)"| UD
+    EP --> Done["All tests pass"]
 ```
 
 **Key facts**:
 
-- Prompts live in `.github/prompts/*.prompt.md` — they are committed to the repo so every team member has access
+- Prompts live in `.github/prompts/*.prompt.md` — committed to the repo so every team member has access
 - Each prompt has a **slash command** (`/prompt-name`) you type in Copilot chat
 - Prompts run in **agent mode** — Copilot can read files, run commands, edit code, and use MCP tools
 - Prompts are NOT custom models — they are instructions that any model (Claude, GPT, etc.) follows
@@ -68,9 +73,32 @@ graph LR
 
 ---
 
-## The 3 Core Workflow Prompts
+## Core Workflow Prompts
 
 These prompts handle the **plan → review → execute** development cycle. Use them together.
+
+### /create-plan — Create a New Implementation Plan
+
+**What it does**: Writes a full `Implementation.md` from scratch for new work you describe.
+
+**When to use**: Starting a new feature, refactor, or migration — before writing any code.
+
+**Sample usage**:
+
+```
+/create-plan Add user notification preferences — users can choose email, SMS, or push for each notification type. Server stores preferences in the ElectronicNotifications domain. Client adds a preferences page in the account domain.
+```
+
+**What you'll get back**:
+
+- A complete `Implementation.md` with numbered phases, file paths, code patterns, and verification steps
+- A final phase that runs all required test suites
+- Compaction checkpoints at major tech boundaries (server → client)
+- TDD-First strategy — each phase lists test deliverables before implementation code
+
+> **Tip**: For large refactors, run `/review-solution` first to understand the current codebase state, then use that output as context for `/create-plan`.
+
+---
 
 ### /review-plan — Review an Implementation Plan
 
@@ -95,13 +123,9 @@ That's all you need. The prompt knows to read `Implementation.md` and cross-refe
 
 **Example output** (abbreviated):
 
-> **Violation — Phase 3**: Plan creates a new service with `providedIn: 'root'`, but angular.instructions.md requires domain services use `providedIn` only in the domain's module.
+> **Violation — Phase 3**: Plan creates a new service with `providedIn: 'root'`, but angular.instructions.md requires domain services use route `providers` array.
 >
 > **Missing**: No phase addresses E2E test creation for the new feature.
->
-> **Suggestion**: Add a Phase 5 for E2E tests covering the happy path and one error case.
->
-> **Verdict**: FAIL — 2 violations, 1 gap
 
 ---
 
@@ -123,141 +147,94 @@ Or with extra context:
 /execute-plan Start from Phase 4 — Phases 1-3 are already done
 ```
 
-**What you'll get back**:
+**What happens internally** (prompt calls other prompts automatically):
 
-- Code changes for each phase (files created/modified)
-- Test runs after the final phase — all required test suites must pass:
-    - `dotnet test` → `failed: 0`
-    - `npm test` → `X passed`
-    - `npm run test:e2e` → `[PASS]`
+1. Implements all phases (TDD-First: tests before code)
+2. Runs `/security-review` — mandatory OWASP/PII/Auth audit
+3. Runs `/fix-warnings` — clears all build/lint warnings
+4. Runs all required test suites (server, client, E2E, load)
+5. Runs `/update-documentation` if docs are in scope
 
 **Built-in safety rules**:
 
 - Will NOT send commits (you handle those)
 - Will NOT run `db:reset` or `reset-database`
 - Will NOT suppress warnings — always fixes root causes
+- Will NOT truncate terminal output
 
 ---
 
-### /create-plan — Create a New Implementation Plan
+### /security-review — OWASP Security Audit
 
-**What it does**: Writes a full `Implementation.md` from scratch for new work you describe.
+**What it does**: Comprehensive security audit — OWASP Top 10, PII exposure, auth flows, infrastructure, client-side vulnerabilities.
 
-**When to use**: Starting a new feature, refactor, or migration — before writing any code.
-
-**Sample usage**:
-
-```
-/create-plan Add user notification preferences — users can choose email, SMS, or push for each notification type. Server stores preferences in the ElectronicNotifications domain. Client adds a preferences page in the account domain.
-```
-
-Or for a refactor:
-
-```
-/create-plan Migrate all remaining any types to strict TypeScript interfaces across the client codebase
-```
+**When to use**: Called automatically by `/execute-plan` before the final test gate. Can also be run standalone at any time.
 
 **What you'll get back**:
 
-- A complete `Implementation.md` with:
-    - **Executive Summary** (problem, goal, constraints)
-    - **Numbered phases** with file paths, code patterns, and verification steps
-    - **Final phase** that runs all required test suites
-    - **Appendices** with file inventories and checklists
-
-**The typical 3-step workflow**:
-
-```
-/create-plan <describe your work>     ← Step 1: Draft the plan
-/review-plan                          ← Step 2: Validate it
-/execute-plan                         ← Step 3: Build it
-```
+- Findings organized as Critical / High / Medium / Low
+- Critical and High findings are **blocking** — must be fixed before tests run
+- Medium findings are documented as GitHub issues if not immediately fixable
 
 ---
 
 ## Scaffolding Prompts
 
-These prompts generate code for specific components or domains. They handle file creation, naming, patterns, and test stubs.
+These prompts generate code for specific components or domains. They handle file creation, naming, patterns, and test stubs. They can be invoked directly or referenced inside `implementation-N.md` phases.
 
 | Command                | What It Creates                                  | Example Usage                                                               |
 | ---------------------- | ------------------------------------------------ | --------------------------------------------------------------------------- |
-| `/new-feature`         | Full-stack feature (Angular + .NET)              | `/new-feature User profile editing with avatar upload`                      |
+| `/new-domain-feature`  | Full-stack feature (Angular + .NET)              | `/new-domain-feature User profile editing with avatar upload`               |
 | `/new-server-domain`   | New .NET bounded context domain                  | `/new-server-domain Notifications`                                          |
 | `/new-client-domain`   | New Angular domain module                        | `/new-client-domain billing`                                                |
 | `/new-component`       | Angular component (with template, styles, tests) | `/new-component notification-preferences-card in the account domain`        |
 | `/new-angular-service` | Angular service with domain scoping              | `/new-angular-service NotificationPreferencesService in the account domain` |
 | `/new-service`         | .NET service + repository                        | `/new-service NotificationPreferencesService in ElectronicNotifications`    |
 | `/new-e2e-test`        | Playwright E2E test                              | `/new-e2e-test Test the notification preferences page`                      |
+| `/new-load-test`       | k6 load test scenario                            | `/new-load-test Load test the notification preferences API`                 |
 
 **All scaffolding prompts**:
 
 - Read the relevant `.github/instructions/` files before generating code
 - Follow the project architecture (server: `Shared ← Domains ← Api`, client: domains import only `@shared/*`)
 - Use the correct naming conventions (C# PascalCase, Angular kebab-case files, etc.)
-- Generate test stubs alongside production code
+- Generate tests alongside production code (TDD-First)
 - Use MCP tools (context7 for docs, postgresql for schema)
 
 ---
 
-## Quality Prompts
+## Quality & Verification Prompts
 
-| Command                  | What It Does                                     | Example Usage              |
-| ------------------------ | ------------------------------------------------ | -------------------------- |
-| `/code-review`           | Reviews staged changes against all project rules | `/code-review`             |
-| `/fix-warnings`          | Finds and fixes all build/lint warnings          | `/fix-warnings`            |
-| `/update-documentation`  | Studies and aligns all READMEs and documentation | `/update-documentation`    |
-| `/review-solution`       | Deep review of entire codebase against all rules | `/review-solution`         |
+| Command                  | What It Does                                              | When to Use                          |
+| ------------------------ | --------------------------------------------------------- | ------------------------------------ |
+| `/code-review`           | Reviews staged changes and auto-fixes violations          | Before committing a significant diff |
+| `/fix-warnings`          | Finds and fixes all build/lint warnings (never suppress)  | Called by `/execute-plan` + standalone |
+| `/review-solution`       | Deep review of entire codebase; outputs `Implementation.md` | Before large refactors or periodic health checks |
+| `/run-site-base`         | Full-site Chrome DevTools walkthrough with screenshots    | After deployments, before demos |
+| `/update-documentation`  | Aligns all READMEs and docs with current implementation   | Called by `/execute-plan` when docs are in scope + standalone |
 
-**`/code-review`** checks for: formatting violations, security issues, accessibility gaps, architecture violations, naming problems, and testing gaps. Output is a list of violations with file, line number, and the rule reference.
+**`/code-review`** checks for: formatting violations, security issues, accessibility gaps, architecture violations, naming problems, and testing gaps. It fixes every violation automatically, then runs `/fix-warnings` and the full test suite.
 
 **`/fix-warnings`** runs `dotnet build`, `ng build`, and ESLint, then fixes every warning. It never suppresses — always fixes root causes.
 
+**`/review-solution`** is the most comprehensive prompt — it reads every instruction file, cross-references every pattern with Context7 docs, and delegates Stage 2 (security) to `/security-review`. Output is a prioritized `Implementation.md` plan.
+
+**`/run-site-base`** automates a 21-step walkthrough: landing page → login → MFA → admin dashboard → user management → logs → permissions → profile → developer tools → error pages → logout. Generates a `walkthrough-report.md` and screenshots. Run it after any client-facing changes.
+
 ---
 
-## Verification Prompts
+## How Prompts Call Other Prompts
 
-### /run-site-base — Full Application Walkthrough
+Some prompts are designed to call others at key points in their workflow:
 
-**What it does**: Uses Chrome DevTools MCP to navigate every page of the application, exercise core features (create users, manage roles, view logs, edit profiles), capture screenshots, and generate a pass/fail report — all automated.
-
-**When to use**: After deploying changes, before a demo, or anytime you want a visual inspection of the entire application without manually clicking through every page.
-
-**Prerequisites**:
-- Dev environment must be running (`npm start`)
-- Chrome DevTools MCP must be enabled
-- PostgreSQL MCP recommended (for MFA code retrieval)
-
-**Sample usage**:
-```
-/run-site-base
-```
-
-No additional arguments needed. The prompt asks if your dev environment is running, then automates the entire walkthrough.
-
-**Output**:
-- `.dev-tools-output/walkthrough-report.md` — Step-by-step results with pass/fail status
-- `.dev-tools-output/screenshots/` — One screenshot per page visit
-- Error banners flagged at the top of the report (excluding intentional "Create Error Log" clicks)
-
-**What it covers**:
-1. All public pages (landing, sandbox, login, register, forgot password)
-2. Admin login + MFA verification
-3. Admin dashboard (all 4 tabs + log creation buttons)
-4. User management (list, create, edit, roles)
-5. Log management (view, sort, detail dialog)
-6. Permission requests (approve/reject if pending)
-7. Profile page (view, edit, linked accounts)
-8. Request permissions page
-9. Developer style guide (all 8 tabs)
-10. Error pages (401, 403, 404)
-11. Logout
-
-**Key behaviors**:
-- Always cleans `.dev-tools-output/` before each run (no stale data)
-- Continues on failure — never aborts if a single step fails
-- Error banner detection after every action
-- Screenshots use predictable names: `step-{N}-{slug}.png`
-- Asks for user input only when Chrome DevTools can't automate (e.g., MFA code if PostgreSQL MCP unavailable)
+| Parent Prompt | Calls | When |
+|---|---|---|
+| `/execute-plan` | `/security-review` | After all implementation phases, before test gate |
+| `/execute-plan` | `/fix-warnings` | After security fixes, before test gate |
+| `/execute-plan` | `/update-documentation` | After all tests pass, when docs are in scope |
+| `/review-solution` | `/security-review` | Stage 2 of the solution review |
+| `/create-plan` | — | Recommends `/review-solution` as optional pre-plan step |
+| `/code-review` | `/fix-warnings` | Step 4 of the review workflow |
 
 ---
 
@@ -331,8 +308,10 @@ This project has a `.vscode/copilot-hooks.json` file with **post-edit hooks** th
 ### "Which prompt should I start with?"
 
 If you're building something new → `/create-plan` → `/review-plan` → `/execute-plan`
+If you want a broad health check or pre-refactor audit → `/review-solution`
 If you're fixing up existing code → `/fix-warnings` or `/code-review`
 If you need one specific thing → `/new-component`, `/new-service`, etc.
+If you want to visually verify everything is working → `/run-site-base`
 
 ### "Can I chain prompts?"
 
@@ -341,8 +320,8 @@ Yes, that's the intended workflow. The typical flow:
 1. `/create-plan <describe work>` — generates `Implementation.md`
 2. `/review-plan` — validates the plan
 3. Fix any issues the review found (manually or ask Copilot)
-4. `/execute-plan` — builds everything
-5. `/code-review` — final quality check on the changes
+4. `/execute-plan` — builds everything (internally calls `/security-review`, `/fix-warnings`, `/update-documentation`)
+5. `/run-site-base` — optional visual verification after client changes
 
 ### "What if a prompt produces wrong code?"
 
@@ -357,18 +336,23 @@ Yes, that's the intended workflow. The typical flow:
 
 Each prompt declares which MCP servers it needs. You don't pick them — Copilot activates them automatically. Here's the mapping:
 
-| Prompt                                       | MCP Servers                           |
-| -------------------------------------------- | ------------------------------------- |
-| `/code-review`                               | github, context7                      |
-| `/review-plan`                               | context7                              |
-| `/execute-plan`                              | context7, postgresql, github          |
-| `/create-plan`                               | context7, postgresql                  |
-| `/fix-warnings`                              | context7                              |
-| `/new-feature`                               | context7, postgresql                  |
-| `/new-component`                             | context7                              |
-| `/new-server-domain`, `/new-service`         | context7, postgresql                  |
-| `/new-client-domain`, `/new-angular-service` | context7                              |
-| `/new-e2e-test`                              | context7, chrome-devtools             |
+| Prompt | MCP Servers |
+| ------ | ----------- |
+| `/create-plan` | context7, postgresql |
+| `/review-plan` | context7 |
+| `/execute-plan` | context7, postgresql, github |
+| `/security-review` | context7 |
+| `/code-review` | github, context7 |
+| `/fix-warnings` | context7 |
+| `/review-solution` | context7, postgresql, github, chrome-devtools |
+| `/run-site-base` | chrome-devtools, postgresql |
+| `/update-documentation` | chrome-devtools, context7 |
+| `/new-domain-feature` | context7, postgresql |
+| `/new-server-domain`, `/new-service` | context7, postgresql |
+| `/new-client-domain`, `/new-angular-service` | context7 |
+| `/new-component` | context7 |
+| `/new-e2e-test` | context7, chrome-devtools, playwright |
+| `/new-load-test` | context7 |
 
 ### "Will hooks run when I edit files manually?"
 

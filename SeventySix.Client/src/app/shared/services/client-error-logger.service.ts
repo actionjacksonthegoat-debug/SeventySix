@@ -11,6 +11,7 @@ import {
 } from "@shared/utilities/http-error.utility";
 import { logLevelToString } from "@shared/utilities/log-level.utility";
 import { isNullOrUndefined } from "@shared/utilities/null-check.utility";
+import { getTraceCorrelationId } from "@shared/utilities/trace-context.utility";
 
 /**
  * Client-side error logging service with automatic context extraction.
@@ -96,7 +97,8 @@ export class ClientErrorLoggerService
 					requestMethod: extractRequestMethod(error),
 					statusCode: extractStatusCode(error),
 					userAgent: navigator.userAgent,
-					additionalContext: errorDetails.context
+					additionalContext: errorDetails.context,
+					correlationId: getTraceCorrelationId()
 				};
 
 			this.errorQueue.enqueue(logRequest);
@@ -141,7 +143,8 @@ export class ClientErrorLoggerService
 					requestMethod: extractRequestMethod(errorDetails.httpError),
 					statusCode: extractStatusCode(errorDetails.httpError),
 					userAgent: navigator.userAgent,
-					additionalContext: errorDetails.context
+					additionalContext: errorDetails.context,
+					correlationId: getTraceCorrelationId()
 				};
 
 			this.errorQueue.enqueue(logRequest);
@@ -180,7 +183,8 @@ export class ClientErrorLoggerService
 					sourceContext: this.extractSourceContext(errorDetails.error),
 					requestUrl: extractRequestUrl(),
 					userAgent: navigator.userAgent,
-					additionalContext: errorDetails.context
+					additionalContext: errorDetails.context,
+					correlationId: getTraceCorrelationId()
 				};
 
 			this.errorQueue.enqueue(logRequest);
@@ -217,7 +221,8 @@ export class ClientErrorLoggerService
 					clientTimestamp: this.dateService.now(),
 					requestUrl: extractRequestUrl(),
 					userAgent: navigator.userAgent,
-					additionalContext: context
+					additionalContext: context,
+					correlationId: getTraceCorrelationId()
 				};
 
 			this.errorQueue.enqueue(logRequest);
@@ -253,7 +258,8 @@ export class ClientErrorLoggerService
 					clientTimestamp: this.dateService.now(),
 					requestUrl: extractRequestUrl(),
 					userAgent: navigator.userAgent,
-					additionalContext: context
+					additionalContext: context,
+					correlationId: getTraceCorrelationId()
 				};
 
 			this.errorQueue.enqueue(logRequest);

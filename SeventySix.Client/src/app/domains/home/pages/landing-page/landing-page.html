@@ -3,11 +3,24 @@
 	<app-hero-section
 		[githubUrl]="githubRepoUrl" />
 
-	<app-tech-stack-section
-		[categories]="techStackCategories" />
+	<!-- Below-the-fold on mobile — deferred to reduce initial JS bundle -->
+	@defer (on idle) {
+		<app-tech-stack-section
+			[categories]="techStackCategories" />
+	} @placeholder {
+		<div class="section-placeholder"
+			aria-hidden="true">
+		</div>
+	}
 
-	<app-stats-section
-		[stats]="statItems" />
+	@defer (on idle) {
+		<app-stats-section
+			[stats]="statItems" />
+	} @placeholder {
+		<div class="section-placeholder"
+			aria-hidden="true">
+		</div>
+	}
 
 	<!-- Below the fold — deferred until viewport -->
 	@defer (on viewport) {

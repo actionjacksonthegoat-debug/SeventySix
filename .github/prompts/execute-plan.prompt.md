@@ -17,11 +17,26 @@ Proceed through **all remaining phases** across all `implementation-N.md` files 
 
 1. **Read** `Implementation.md` (orchestrator) and ALL `implementation-N.md` files listed in it, plus all `.github/instructions/*.instructions.md` files before starting
 2. Follow **KISS, DRY, YAGNI** — simplest solution, no duplication, no speculative features
-3. Follow **TDD 80/20** — tests on the 20% of code carrying 80% of risk
+3. Follow **TDD-First 80/20** — write tests BEFORE implementation for the 20% of code carrying 80% of risk (Red → Green → Refactor)
 4. Fix all IDE warnings — never suppress with `#pragma warning disable`, `// @ts-ignore`, or `[SuppressMessage]`
 5. **Do NOT send commits** — I will handle these
 6. **Do NOT run** `npm run db:reset`, `db:reset`, or any `reset-database` command
-7. **Do NOT modify** READMEs or `docs/*.md` unless the **active** `implementation-N.md` contains an explicit documentation phase — incidental doc edits during code phases cause merge noise and scope creep
+7. **Do NOT modify** READMEs or `docs/*.md` unless the **active** `implementation-N.md` contains an explicit documentation phase. When a docs phase IS present, use `/update-documentation` to align all READMEs and docs.
+
+## Phase-Level Verification (During Implementation)
+
+- Build the affected project (`dotnet build` or `ng build`)
+- Run unit tests for changed code
+- Do NOT run E2E or load tests until the final gate
+- **[CRITICAL] NEVER** truncate terminal output — no `Select-Object -Last N`, `Select-Object -First N`, `Select-String`, or **any** filtering/piping of command output. Run raw commands and let them stream fully.
+
+## Context Compaction (Between Major Boundaries)
+
+At natural technology/domain boundaries (e.g., switching from server to client work):
+1. Compact context — release completed phase details
+2. Re-read `.github/copilot-instructions.md`
+3. Re-read relevant `.github/instructions/*.instructions.md` for the upcoming work
+4. Continue with the next phase
 
 ## [CRITICAL] Security Review Gate — Runs Before Final Tests
 
@@ -31,6 +46,7 @@ After completing ALL implementation phases but BEFORE running the final test gat
 2. **Fix ALL Critical and High findings** — these block release
 3. **Document Medium findings** as GitHub issues if not fixable immediately
 4. **Run `npm run format`** after any security fixes
+5. **Run `/fix-warnings`** to catch and fix any remaining build/lint warnings
 
 This security review is NON-NEGOTIABLE. The codebase must be verified clean of:
 - Hardcoded secrets, API keys, passwords, connection strings
@@ -56,5 +72,22 @@ After the security review passes, run all required test suites and confirm they 
 - E2E and load tests CAN run in parallel to save time
 - If infrastructure is not running, **start it** — do not skip the suite
 - Never claim "done" without running and passing all required test suites
-- Use `--keepalive` for iterative E2E debugging: `npm run test:e2e -- --keepalive`
+- **NEVER** label a test failure "pre-existing" or "unrelated" and move on — ALL failures must be fixed before claiming done
 - E2E and load tests run in **fully isolated Docker environments** — no dev environment needed
+
+**When an E2E test fails, run only the failing spec — never re-run the full suite to debug:**
+```bash
+npm run test:e2e -- specs/path/to/failing.spec.ts
+npm run test:e2e -- --grep "exact test name"
+npm run test:e2e -- --keepalive specs/failing.spec.ts  # keeps env alive for debugging
+```
+If the failure can't reproduce standalone, re-run the full suite — it may be a cross-test corruption issue.
+
+**A full passing E2E suite run (`npm run test:e2e` with 0 failures) is REQUIRED before calling this plan complete. No exceptions.**
+
+## Documentation Gate (After Tests Pass)
+
+Verify all documentation is current. If changes touched architecture, APIs, patterns, or configuration:
+- Run `/update-documentation` to align all READMEs and docs
+- Verify `.github/instructions/*.instructions.md` reflect current patterns
+- Verify all `docs/*.md` files reference correct file locations and commands

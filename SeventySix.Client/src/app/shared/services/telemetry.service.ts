@@ -87,9 +87,11 @@ export class TelemetryService
 
 		if (this.initialized)
 		{
-			this.logger.warning("Telemetry already initialized");
 			return;
 		}
+
+		// Set immediately to prevent race conditions from concurrent calls
+		this.initialized = true;
 
 		// Defer telemetry setup to not block initial render
 		timer(TELEMETRY_INIT_DELAY_MS)
@@ -119,11 +121,10 @@ export class TelemetryService
 			provider.register();
 
 			this.registerInstrumentations(modules);
-
-			this.initialized = true;
 		}
 		catch (error: unknown)
 		{
+			this.initialized = false;
 			this.logger.error(
 				"Failed to initialize OpenTelemetry",
 				error instanceof Error ? error : undefined);

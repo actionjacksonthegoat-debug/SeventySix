@@ -7,6 +7,7 @@ import { CreateLogRequest, LogEntry } from "@shared/models";
 import { DateService } from "@shared/services/date.service";
 import { WindowService } from "@shared/services/window.service";
 import { logLevelToString } from "@shared/utilities";
+import { getTraceCorrelationId } from "@shared/utilities/trace-context.utility";
 import { catchError, of } from "rxjs";
 
 /**
@@ -374,29 +375,6 @@ export class LoggerService
 	}
 
 	/**
-	 * Generates a 32-character hex string for W3C trace-id format.
-	 * Used as a client-side correlation ID to link log entries to the originating
-	 * user action — distinct from the server request trace ID.
-	 * @returns {string}
-	 * A 32-character lowercase hexadecimal string.
-	 */
-	private generateCorrelationId(): string
-	{
-		const bytes: Uint8Array =
-			new Uint8Array(16);
-
-		crypto.getRandomValues(bytes);
-
-		return Array
-			.from(bytes)
-			.map((byte) =>
-				byte
-					.toString(16)
-					.padStart(2, "0"))
-			.join("");
-	}
-
-	/**
 	 * Sends a log entry to the remote logging endpoint.
 	 * @param {LogEntry} entry
 	 * The log entry payload to send to the server.
@@ -424,7 +402,7 @@ export class LoggerService
 				userAgent: navigator.userAgent,
 				clientTimestamp: entry.timestamp,
 				additionalContext: entry.context,
-				correlationId: this.generateCorrelationId()
+				correlationId: getTraceCorrelationId()
 			};
 
 		this

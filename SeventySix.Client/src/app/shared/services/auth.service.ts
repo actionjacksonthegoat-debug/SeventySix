@@ -34,7 +34,8 @@ import {
 	BROADCAST_MESSAGE_TYPE,
 	HTTP_STATUS,
 	OAUTH_FLOW_EVENT_TYPE,
-	STORAGE_KEYS
+	STORAGE_KEYS,
+	TYPEOF_RESULT
 } from "@shared/constants";
 import {
 	AuthResponse,
@@ -904,7 +905,7 @@ export class AuthService
 	 */
 	private initializeCrossTabLogout(): void
 	{
-		if (typeof window === "undefined")
+		if (typeof window === TYPEOF_RESULT.UNDEFINED)
 		{
 			return;
 		}

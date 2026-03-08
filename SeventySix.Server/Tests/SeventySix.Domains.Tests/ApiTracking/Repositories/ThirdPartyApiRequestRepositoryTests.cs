@@ -590,4 +590,87 @@ public sealed class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase
 		result.CallsByApi.ShouldBeEmpty();
 		result.LastCalledByApi.ShouldBeEmpty();
 	}
+
+	/// <summary>
+	/// GetAllAsync should return records ordered by LastCalledAt descending,
+	/// with null-LastCalledAt records appearing at the end, and ties broken by ApiName.
+	/// </summary>
+	/// <returns>
+	/// A task representing the asynchronous operation.
+	/// </returns>
+	[Fact]
+	public async Task GetAllAsync_ReturnsRecords_OrderedByLastCalledAtDescendingWithNullsLastAsync()
+	{
+		// Arrange
+		FakeTimeProvider timeProvider = new();
+		string testId =
+			Guid.NewGuid().ToString("N")[..8];
+		DateTimeOffset now =
+			timeProvider.GetUtcNow();
+		DateOnly today =
+			DateOnly.FromDateTime(now.UtcDateTime);
+
+		// Record with oldest LastCalledAt
+		await Repository.CreateAsync(
+			new ThirdPartyApiRequest
+			{
+				ApiName = $"AlphaApi_{testId}",
+				BaseUrl = "https://api.alpha.com",
+				CallCount = 5,
+				LastCalledAt = now.AddHours(-10),
+				ResetDate = today,
+			});
+
+		// Record with most recent LastCalledAt (should appear first)
+		await Repository.CreateAsync(
+			new ThirdPartyApiRequest
+			{
+				ApiName = $"BetaApi_{testId}",
+				BaseUrl = "https://api.beta.com",
+				CallCount = 3,
+				LastCalledAt = now.AddMinutes(-5),
+				ResetDate = today,
+			});
+
+		// Record with no LastCalledAt (should appear last)
+		await Repository.CreateAsync(
+			new ThirdPartyApiRequest
+			{
+				ApiName = $"GammaApi_{testId}",
+				BaseUrl = "https://api.gamma.com",
+				CallCount = 0,
+				LastCalledAt = null,
+				ResetDate = today,
+			});
+
+		// Record with middle LastCalledAt
+		await Repository.CreateAsync(
+			new ThirdPartyApiRequest
+			{
+				ApiName = $"DeltaApi_{testId}",
+				BaseUrl = "https://api.delta.com",
+				CallCount = 8,
+				LastCalledAt = now.AddHours(-1),
+				ResetDate = today,
+			});
+
+		// Act
+		IEnumerable<ThirdPartyApiRequest> results =
+			await Repository.GetAllAsync();
+
+		// Assert — filter to our test records only
+		List<ThirdPartyApiRequest> testResults =
+			[.. results.Where(request => request.ApiName.EndsWith($"_{testId}"))];
+
+		testResults.Count.ShouldBe(4);
+
+		// Most recently called first
+		testResults[0].ApiName.ShouldBe($"BetaApi_{testId}");
+		// Second most recent
+		testResults[1].ApiName.ShouldBe($"DeltaApi_{testId}");
+		// Oldest
+		testResults[2].ApiName.ShouldBe($"AlphaApi_{testId}");
+		// Null LastCalledAt last
+		testResults[3].ApiName.ShouldBe($"GammaApi_{testId}");
+	}
 }

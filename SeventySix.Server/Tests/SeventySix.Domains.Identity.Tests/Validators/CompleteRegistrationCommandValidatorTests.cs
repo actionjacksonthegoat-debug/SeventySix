@@ -16,11 +16,7 @@ public sealed class CompleteRegistrationCommandValidatorTests
 	private static readonly PasswordSettings TestPasswordSettings =
 		new()
 		{
-			MinLength = 8,
-			RequireUppercase = true,
-			RequireLowercase = true,
-			RequireDigit = true,
-			RequireSpecialChar = false,
+			MinLength = 12,
 		};
 
 	private readonly CompleteRegistrationCommandValidator Validator =
@@ -34,7 +30,7 @@ public sealed class CompleteRegistrationCommandValidatorTests
 			new(
 				Token: "valid-token-123",
 				Username: "testuser",
-				Password: "SecurePass123!");
+				Password: "longpassword1");
 
 		// Act
 		ValidationResult result =
@@ -55,7 +51,7 @@ public sealed class CompleteRegistrationCommandValidatorTests
 			new(
 				Token: token!,
 				Username: "testuser",
-				Password: "SecurePass123!");
+				Password: "longpassword1");
 
 		// Act
 		ValidationResult result =
@@ -77,7 +73,7 @@ public sealed class CompleteRegistrationCommandValidatorTests
 			new(
 				Token: "valid-token",
 				Username: username!,
-				Password: "SecurePass123!");
+				Password: "longpassword1");
 
 		// Act
 		ValidationResult result =
@@ -99,7 +95,7 @@ public sealed class CompleteRegistrationCommandValidatorTests
 			new(
 				Token: "valid-token",
 				Username: username,
-				Password: "SecurePass123!");
+				Password: "longpassword1");
 
 		// Act
 		ValidationResult result =
@@ -121,7 +117,7 @@ public sealed class CompleteRegistrationCommandValidatorTests
 			new(
 				Token: "valid-token",
 				Username: longUsername,
-				Password: "SecurePass123!");
+				Password: "longpassword1");
 
 		// Act
 		ValidationResult result =
@@ -145,7 +141,7 @@ public sealed class CompleteRegistrationCommandValidatorTests
 			new(
 				Token: "valid-token",
 				Username: username,
-				Password: "SecurePass123!");
+				Password: "longpassword1");
 
 		// Act
 		ValidationResult result =
@@ -169,7 +165,7 @@ public sealed class CompleteRegistrationCommandValidatorTests
 			new(
 				Token: "valid-token",
 				Username: username,
-				Password: "SecurePass123!");
+				Password: "longpassword1");
 
 		// Act
 		ValidationResult result =
@@ -202,8 +198,8 @@ public sealed class CompleteRegistrationCommandValidatorTests
 	}
 
 	[Theory]
-	[InlineData("Short1!")]
-	[InlineData("1234567")]
+	[InlineData("ShortPass1")]
+	[InlineData("12345678901")]
 	public async Task ValidateAsync_ReturnsInvalid_WhenPasswordTooShortAsync(
 		string password)
 	{
@@ -224,67 +220,29 @@ public sealed class CompleteRegistrationCommandValidatorTests
 	}
 
 	[Fact]
-	public async Task ValidateAsync_ReturnsInvalid_WhenPasswordMissingUppercaseAsync()
+	public async Task ValidateAsync_ReturnsValid_WhenPasswordMeetsLengthRequirementAsync()
 	{
 		// Arrange
 		CompleteRegistrationRequest request =
 			new(
 				Token: "valid-token",
 				Username: "testuser",
-				Password: "securepass123!");
+				Password: "lowercase123");
 
 		// Act
 		ValidationResult result =
 			await Validator.ValidateAsync(request);
 
 		// Assert
-		result.IsValid.ShouldBeFalse();
-		result.Errors.ShouldContain(error => error.PropertyName == "Password");
-	}
-
-	[Fact]
-	public async Task ValidateAsync_ReturnsInvalid_WhenPasswordMissingLowercaseAsync()
-	{
-		// Arrange
-		CompleteRegistrationRequest request =
-			new(
-				Token: "valid-token",
-				Username: "testuser",
-				Password: "SECUREPASS123!");
-
-		// Act
-		ValidationResult result =
-			await Validator.ValidateAsync(request);
-
-		// Assert
-		result.IsValid.ShouldBeFalse();
-		result.Errors.ShouldContain(error => error.PropertyName == "Password");
-	}
-
-	[Fact]
-	public async Task ValidateAsync_ReturnsInvalid_WhenPasswordMissingDigitAsync()
-	{
-		// Arrange
-		CompleteRegistrationRequest request =
-			new(
-				Token: "valid-token",
-				Username: "testuser",
-				Password: "SecurePassword!");
-
-		// Act
-		ValidationResult result =
-			await Validator.ValidateAsync(request);
-
-		// Assert
-		result.IsValid.ShouldBeFalse();
-		result.Errors.ShouldContain(error => error.PropertyName == "Password");
+		result.IsValid.ShouldBeTrue();
 	}
 
 	[Theory]
 	[InlineData("SecurePass123!")]
-	[InlineData("MyP@ssw0rd")]
+	[InlineData("MyP@ssw0rd12")]
 	[InlineData("Test_User_123!")]
 	[InlineData("VeryL0ng&SecurePassword!")]
+	[InlineData("lowercase123")]
 	public async Task ValidateAsync_ReturnsValid_ForVariousValidPasswordsAsync(
 		string password)
 	{

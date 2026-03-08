@@ -381,6 +381,72 @@ public sealed class JobChainWatchdogServiceTests
 	}
 
 	/// <summary>
+	/// When a job has never executed but is already scheduled in the future,
+	/// it should not be treated as stale.
+	/// </summary>
+	/// <returns>
+	/// A task representing the asynchronous operation.
+	/// </returns>
+	[Fact]
+	public async Task CheckAndRebootstrapAsync_WhenJobNeverExecutedButScheduledInFuture_DoesNotRebootstrapAsync()
+	{
+		// Arrange
+		DateTimeOffset now =
+			TimeProvider.GetUtcNow();
+
+		Repository
+			.GetAllAsync(Arg.Any<CancellationToken>())
+			.Returns(
+			[
+				new RecurringJobExecution
+				{
+					JobName = "EmailQueueProcessJob",
+					LastExecutedAt = DateTimeOffset.MinValue,
+					NextScheduledAt = now.AddMinutes(5),
+				},
+				new RecurringJobExecution
+				{
+					JobName = "LogCleanupJob",
+					LastExecutedAt = now.AddHours(-1),
+				},
+				new RecurringJobExecution
+				{
+					JobName = "DatabaseMaintenanceJob",
+					LastExecutedAt = now.AddHours(-2),
+				},
+				new RecurringJobExecution
+				{
+					JobName = "RefreshTokenCleanupJob",
+					LastExecutedAt = now.AddMinutes(-30),
+				},
+				new RecurringJobExecution
+				{
+					JobName = "IpAnonymizationJob",
+					LastExecutedAt = now.AddDays(-1),
+				},
+				new RecurringJobExecution
+				{
+					JobName = "OrphanedRegistrationCleanupJob",
+					LastExecutedAt = now.AddMinutes(-20),
+				},
+			]);
+
+		// Act
+		await Service.CheckAndRebootstrapAsync(CancellationToken.None);
+
+		// Assert
+		Logger
+			.DidNotReceive()
+			.Log(
+				LogLevel.Warning,
+				Arg.Any<EventId>(),
+				Arg.Is<object>(formattedLogValues =>
+					formattedLogValues.ToString()!.Contains("EmailQueueProcessJob")),
+				Arg.Any<Exception?>(),
+				Arg.Any<Func<object, Exception?, string>>());
+	}
+
+	/// <summary>
 	/// When a job is stale (beyond 3x interval), it should be re-bootstrapped.
 	/// </summary>
 	/// <returns>
@@ -520,6 +586,39 @@ public sealed class JobChainWatchdogServiceTests
 
 		// Assert
 		result.ShouldBeTrue();
+	}
+
+	/// <summary>
+	/// IsJobStale returns false when LastExecutedAt is MinValue but the next
+	/// scheduled time is still in the future.
+	/// </summary>
+	[Fact]
+	public void IsJobStale_WhenMinValueAndScheduledInFuture_ReturnsFalse()
+	{
+		// Arrange
+		DateTimeOffset now =
+			TimeProvider.GetUtcNow();
+
+		Dictionary<string, RecurringJobExecution> executionsByName =
+			new()
+			{
+				["TestJob"] = new RecurringJobExecution
+				{
+					JobName = "TestJob",
+					LastExecutedAt = DateTimeOffset.MinValue,
+					NextScheduledAt = now.AddMinutes(5),
+				},
+			};
+
+		// Act
+		bool result =
+			Service.IsJobStale(
+				"TestJob",
+				TimeSpan.FromHours(1),
+				executionsByName);
+
+		// Assert
+		result.ShouldBeFalse();
 	}
 
 	/// <summary>

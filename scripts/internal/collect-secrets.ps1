@@ -55,50 +55,23 @@ function New-RandomBase64 {
 
 # Validates a password against the same rules enforced by the application.
 # Rules sourced from appsettings.json Auth:Password — must stay in sync.
-#   MinLength: 12, RequireUppercase, RequireLowercase, RequireDigit, RequireSpecialChar
+# OWASP ASVS V2.1.9: length-only, no composition rules.
+#   MinLength: 12
 function Test-PasswordPolicy {
 	param([string]$Password)
 	$errors = [System.Collections.Generic.List[string]]::new()
 	if ($Password.Length -lt 12) { $errors.Add("At least 12 characters (got $($Password.Length))") }
-	if ($Password -cnotmatch '[A-Z]') { $errors.Add('At least one uppercase letter [A-Z]') }
-	if ($Password -cnotmatch '[a-z]') { $errors.Add('At least one lowercase letter [a-z]') }
-	if ($Password -notmatch '\d') { $errors.Add('At least one digit [0-9]') }
-	if ($Password -notmatch '[^a-zA-Z\d]') { $errors.Add('At least one special character (e.g. !@#$%^&*)') }
 	return $errors
 }
 
 # Generates a random password that always satisfies the application password policy.
+# OWASP ASVS V2.1.9: length-only (12+ chars), no composition rules.
 function New-ValidPassword {
-	$upper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-	$lower = 'abcdefghijklmnopqrstuvwxyz'
-	$digits = '0123456789'
-	$special = '!@#$%^&*-_=+?'
-	$all = $upper + $lower + $digits + $special
+	$pool = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*-_=+?'
 	$rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
-	$toBytes = { param($n) $b = [byte[]]::new($n); $rng.GetBytes($b); return $b }
-	$pick = { param($pool) $pool[(& $toBytes 1)[0] % $pool.Length] }
-	# Guarantee at least one of each required class (2 each = 8 chars guaranteed)
-	$required = @(
-		(& $pick $upper),
-		(& $pick $upper),
-		(& $pick $lower),
-		(& $pick $lower),
-		(& $pick $digits),
-		(& $pick $digits),
-		(& $pick $special),
-		(& $pick $special)
-	)
-	# Fill remaining 8 chars from full pool to reach 16 total
-	$extra = (& $toBytes 8) | ForEach-Object { $all[$_ % $all.Length] }
-	# Fisher-Yates shuffle so required chars aren't always at the front
-	$chars = [System.Collections.Generic.List[char]]::new()
-	$required | ForEach-Object { $chars.Add($_) }
-	$extra | ForEach-Object { $chars.Add($_) }
-	$shuffleBytes = (& $toBytes $chars.Count)
-	for ($i = $chars.Count - 1; $i -gt 0; $i--) {
-		$j = $shuffleBytes[$i] % ($i + 1)
-		$tmp = $chars[$i]; $chars[$i] = $chars[$j]; $chars[$j] = $tmp
-	}
+	$bytes = [byte[]]::new(16)
+	$rng.GetBytes($bytes)
+	$chars = $bytes | ForEach-Object { $pool[$_ % $pool.Length] }
 	return -join $chars
 }
 

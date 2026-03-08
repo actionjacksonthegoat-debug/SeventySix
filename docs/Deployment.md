@@ -214,14 +214,13 @@ ssh deploy@$SERVER_IP
 
 ## 4. Install Caddy (TLS Termination)
 
-Caddy automatically provisions **Let's Encrypt TLS certificates** and acts as a reverse proxy in front of the Docker containers. No manual certificate management is needed.
+Caddy acts as a reverse proxy in front of the Docker containers and uses Cloudflare Origin certificates referenced in `Caddyfile.production`.
 
 > **How TLS works with Cloudflare:**
-> - Caddy requests certificates from Let's Encrypt using the **HTTP-01 ACME challenge** for all domains.
-> - For Cloudflare-**proxied** records (root, www, api): Cloudflare forwards the HTTP-01 challenge request through to the server, so Caddy gets its certificates normally.
-> - For Cloudflare-**DNS only** records (grafana, jaeger): Let's Encrypt talks directly to the server — no special handling needed.
-> - You set Cloudflare **SSL/TLS mode to "Full (Strict)"** — this means Cloudflare validates the origin server's certificate. Caddy's Let's Encrypt certs satisfy this requirement.
-> - **You do not purchase, generate, or upload any SSL certificates.** Caddy handles everything automatically and renews them before they expire.
+> - Generate Cloudflare Origin certificates (`origin.crt` + `origin.key`) and place them on the server at `/etc/caddy/certs/`.
+> - `Caddyfile.production` uses explicit `tls /etc/caddy/certs/origin.crt /etc/caddy/certs/origin.key` directives for apex, `www`, and `api` hosts.
+> - Set Cloudflare **SSL/TLS mode to "Full (Strict)"** so Cloudflare validates the origin certificate.
+> - Rotate origin certificates before expiry and reload Caddy after replacing files.
 
 SSH as deploy user:
 
@@ -243,11 +242,6 @@ Create the Caddyfile:
 # Recommended: copy the checked-in source-of-truth and adjust domain/cert paths if needed
 cp Caddyfile.production /etc/caddy/Caddyfile
 
-# Or create it manually:
-cat > /etc/caddy/Caddyfile << 'CEOF'
-{
-    email admin@seventysixsandbox.com
-}
 
 # Angular SPA — served from Docker container port 8080
 # API calls (/api/*) are routed to the API container so the Angular client
@@ -550,7 +544,7 @@ ssh deploy@$SERVER_IP
 sudo mkdir -p /var/lib/docker/volumes/seventysix_dataprotection_prod_keys/_data
 sudo cp /tmp/dataprotection.pfx /var/lib/docker/volumes/seventysix_dataprotection_prod_keys/_data/
 sudo chown root:root /var/lib/docker/volumes/seventysix_dataprotection_prod_keys/_data/dataprotection.pfx
-sudo chmod 644 /var/lib/docker/volumes/seventysix_dataprotection_prod_keys/_data/dataprotection.pfx
+sudo chmod 600 /var/lib/docker/volumes/seventysix_dataprotection_prod_keys/_data/dataprotection.pfx
 rm /tmp/dataprotection.pfx
 ```
 

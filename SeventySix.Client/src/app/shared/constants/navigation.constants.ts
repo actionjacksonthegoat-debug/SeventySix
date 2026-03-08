@@ -6,7 +6,8 @@
 
 import {
 	ROLE_ADMIN,
-	ROLE_DEVELOPER
+	ROLE_DEVELOPER,
+	ROLE_USER
 } from "@shared/constants/role.constants";
 import { NavSection } from "@shared/models";
 
@@ -46,7 +47,7 @@ export const NAV_SECTIONS: ReadonlyArray<NavSection> =
 					route: "/developer/style-guide"
 				}
 			],
-			requiredRoles: [ROLE_DEVELOPER, ROLE_ADMIN]
+			requiredRoles: [ROLE_USER, ROLE_DEVELOPER, ROLE_ADMIN]
 		},
 		{
 			title: "Management",
