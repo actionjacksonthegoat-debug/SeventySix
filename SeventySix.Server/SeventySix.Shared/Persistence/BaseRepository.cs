@@ -107,19 +107,19 @@ public abstract class BaseRepository<TEntity, TContext>(
 		catch (DbUpdateConcurrencyException exception)
 		{
 			logger.LogError(
-				exception,
-				"Concurrency conflict {Operation}: {Entity}",
+				"Concurrency conflict {Operation}: {Entity}. {ErrorMessage}",
 				operationName,
-				entityIdentifier);
+				entityIdentifier,
+				exception.InnerException?.Message ?? exception.Message);
 			throw;
 		}
 		catch (DbUpdateException exception)
 		{
 			logger.LogError(
-				exception,
-				"Database error {Operation}: {Entity}",
+				"Database error {Operation}: {Entity}. {ErrorMessage}",
 				operationName,
-				entityIdentifier);
+				entityIdentifier,
+				exception.InnerException?.Message ?? exception.Message);
 			throw;
 		}
 	}

@@ -99,6 +99,7 @@
 				"serve": {
 					"builder": "@angular/build:dev-server",
 					"options": {
+						"proxyConfig": "proxy.conf.json",
 						"ssl": true,
 						"sslCert": "ssl/dev-certificate.crt",
 						"sslKey": "ssl/dev-certificate.key"

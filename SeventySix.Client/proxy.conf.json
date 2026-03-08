@@ -3,5 +3,13 @@
 		"target": "https://localhost:7074",
 		"secure": true,
 		"changeOrigin": true
+	},
+	"/telemetry": {
+		"target": "https://localhost:4319",
+		"secure": false,
+		"changeOrigin": true,
+		"pathRewrite": {
+			"^/telemetry": ""
+		}
 	}
 }

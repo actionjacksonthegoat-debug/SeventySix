@@ -30,6 +30,7 @@ namespace SeventySix.Domains.Tests.ApiTracking.Repositories;
 [Collection(CollectionNames.ApiTrackingPostgreSql)]
 public sealed class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase
 {
+	private readonly FakeTimeProvider TimeProvider = new();
 	private readonly ThirdPartyApiRequestRepository Repository;
 
 	public ThirdPartyApiRequestRepositoryTests(
@@ -47,14 +48,13 @@ public sealed class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase
 	public async Task GetByApiNameAndDateAsync_ReturnsRecord_WhenExistsAsync()
 	{
 		// Arrange
-		FakeTimeProvider timeProvider = new();
 		string testId =
 			Guid.NewGuid().ToString("N")[..8];
 		string apiName =
 			$"GetByDate_{testId}";
 		DateOnly today =
 			DateOnly.FromDateTime(
-			timeProvider.GetUtcNow().UtcDateTime);
+			TimeProvider.GetUtcNow().UtcDateTime);
 		ThirdPartyApiRequest request =
 			new()
 			{
@@ -80,10 +80,9 @@ public sealed class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase
 	public async Task GetByApiNameAndDateAsync_ReturnsNull_WhenNotFoundAsync()
 	{
 		// Arrange
-		FakeTimeProvider timeProvider = new();
 		DateOnly today =
 			DateOnly.FromDateTime(
-			timeProvider.GetUtcNow().UtcDateTime);
+			TimeProvider.GetUtcNow().UtcDateTime);
 
 		// Act
 		ThirdPartyApiRequest? result =
@@ -97,10 +96,9 @@ public sealed class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase
 	public async Task GetByApiNameAndDateAsync_ReturnsNull_WhenDifferentDateAsync()
 	{
 		// Arrange
-		FakeTimeProvider timeProvider = new();
 		DateOnly today =
 			DateOnly.FromDateTime(
-			timeProvider.GetUtcNow().UtcDateTime);
+			TimeProvider.GetUtcNow().UtcDateTime);
 		DateOnly yesterday =
 			today.AddDays(-1);
 
@@ -126,14 +124,13 @@ public sealed class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase
 	public async Task CreateAsync_CreatesRecord_WithGeneratedIdAsync()
 	{
 		// Arrange
-		FakeTimeProvider timeProvider = new();
 		string testId =
 			Guid.NewGuid().ToString("N")[..8];
 		string apiName =
 			$"Create_{testId}";
 		DateOnly today =
 			DateOnly.FromDateTime(
-			timeProvider.GetUtcNow().UtcDateTime);
+			TimeProvider.GetUtcNow().UtcDateTime);
 		ThirdPartyApiRequest request =
 			new()
 			{
@@ -159,14 +156,13 @@ public sealed class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase
 		// Arrange
 		// Note: Timestamp auto-setting is tested in AuditInterceptorTests
 		// This test verifies repository CreateAsync behavior without interceptor
-		FakeTimeProvider timeProvider = new();
 		string testId =
 			Guid.NewGuid().ToString("N")[..8];
 		string apiName =
 			$"CreateTest_{testId}";
 		DateOnly today =
 			DateOnly.FromDateTime(
-			timeProvider.GetUtcNow().UtcDateTime);
+			TimeProvider.GetUtcNow().UtcDateTime);
 		ThirdPartyApiRequest request =
 			new()
 			{
@@ -191,14 +187,13 @@ public sealed class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase
 	public async Task CreateAsync_ThrowsException_WhenDuplicateApiNameAndDateAsync()
 	{
 		// Arrange
-		FakeTimeProvider timeProvider = new();
 		string testId =
 			Guid.NewGuid().ToString("N")[..8];
 		string apiName =
 			$"DupCheck_{testId}";
 		DateOnly today =
 			DateOnly.FromDateTime(
-			timeProvider.GetUtcNow().UtcDateTime);
+			TimeProvider.GetUtcNow().UtcDateTime);
 		ThirdPartyApiRequest request1 =
 			new()
 			{
@@ -225,14 +220,13 @@ public sealed class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase
 	public async Task CreateAsync_AllowsDifferentDatesForSameApiAsync()
 	{
 		// Arrange
-		FakeTimeProvider timeProvider = new();
 		string testId =
 			Guid.NewGuid().ToString("N")[..8];
 		string apiName =
 			$"DiffDate_{testId}";
 		DateOnly today =
 			DateOnly.FromDateTime(
-			timeProvider.GetUtcNow().UtcDateTime);
+			TimeProvider.GetUtcNow().UtcDateTime);
 		DateOnly yesterday =
 			today.AddDays(-1);
 
@@ -266,14 +260,13 @@ public sealed class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase
 	public async Task UpdateAsync_UpdatesRecord_SuccessfullyAsync()
 	{
 		// Arrange
-		FakeTimeProvider timeProvider = new();
 		string testId =
 			Guid.NewGuid().ToString("N")[..8];
 		string apiName =
 			$"Update_{testId}";
 		DateOnly today =
 			DateOnly.FromDateTime(
-			timeProvider.GetUtcNow().UtcDateTime);
+			TimeProvider.GetUtcNow().UtcDateTime);
 		ThirdPartyApiRequest request =
 			new()
 			{
@@ -298,14 +291,13 @@ public sealed class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase
 	public async Task GetByApiNameAsync_ReturnsAllRecordsForApiAsync()
 	{
 		// Arrange
-		FakeTimeProvider timeProvider = new();
 		string testId =
 			Guid.NewGuid().ToString("N")[..8];
 		string apiName =
 			$"GetByName_{testId}";
 		DateOnly today =
 			DateOnly.FromDateTime(
-			timeProvider.GetUtcNow().UtcDateTime);
+			TimeProvider.GetUtcNow().UtcDateTime);
 		DateOnly yesterday =
 			today.AddDays(-1);
 		DateOnly twoDaysAgo =
@@ -375,14 +367,13 @@ public sealed class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase
 	public async Task DeleteOlderThanAsync_DeletesOldRecordsAsync()
 	{
 		// Arrange
-		FakeTimeProvider timeProvider = new();
 		string testId =
 			Guid.NewGuid().ToString("N")[..8];
 		string apiName =
 			$"Delete_{testId}";
 		DateOnly today =
 			DateOnly.FromDateTime(
-			timeProvider.GetUtcNow().UtcDateTime);
+			TimeProvider.GetUtcNow().UtcDateTime);
 		DateOnly tenDaysAgo =
 			today.AddDays(-10);
 		DateOnly thirtyDaysAgo =
@@ -437,14 +428,13 @@ public sealed class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase
 	public async Task DeleteOlderThanAsync_ReturnsZero_WhenNoRecordsToDeleteAsync()
 	{
 		// Arrange
-		FakeTimeProvider timeProvider = new();
 		string testId =
 			Guid.NewGuid().ToString("N")[..8];
 		string apiName =
 			$"NoDelete_{testId}";
 		DateOnly today =
 			DateOnly.FromDateTime(
-			timeProvider.GetUtcNow().UtcDateTime);
+			TimeProvider.GetUtcNow().UtcDateTime);
 
 		await Repository.CreateAsync(
 			new ThirdPartyApiRequest
@@ -481,37 +471,34 @@ public sealed class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase
 	public async Task GetByApiNameAndDateAsync_ThrowsException_WhenApiNameIsNullAsync()
 	{
 		// Arrange
-		FakeTimeProvider timeProvider = new();
 
 		// Act & Assert
 		await Should.ThrowAsync<ArgumentNullException>(() =>
 			Repository.GetByApiNameAndDateAsync(
 				null!,
-				DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime)));
+				DateOnly.FromDateTime(TimeProvider.GetUtcNow().UtcDateTime)));
 	}
 
 	[Fact]
 	public async Task GetByApiNameAndDateAsync_ThrowsException_WhenApiNameIsEmptyAsync()
 	{
 		// Arrange
-		FakeTimeProvider timeProvider = new();
 
 		// Act & Assert
 		await Should.ThrowAsync<ArgumentException>(() =>
 			Repository.GetByApiNameAndDateAsync(
 				string.Empty,
-				DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime)));
+				DateOnly.FromDateTime(TimeProvider.GetUtcNow().UtcDateTime)));
 	}
 
 	[Fact]
 	public async Task GetStatisticsAsync_ReturnsAggregatedStatistics_ForTodayOnlyAsync()
 	{
 		// Arrange
-		FakeTimeProvider timeProvider = new();
 		string testId =
 			Guid.NewGuid().ToString("N")[..8];
 		DateTimeOffset now =
-			timeProvider.GetUtcNow();
+			TimeProvider.GetUtcNow();
 		DateOnly today =
 			DateOnly.FromDateTime(now.UtcDateTime);
 		DateOnly yesterday =
@@ -602,11 +589,10 @@ public sealed class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase
 	public async Task GetAllAsync_ReturnsRecords_OrderedByLastCalledAtDescendingWithNullsLastAsync()
 	{
 		// Arrange
-		FakeTimeProvider timeProvider = new();
 		string testId =
 			Guid.NewGuid().ToString("N")[..8];
 		DateTimeOffset now =
-			timeProvider.GetUtcNow();
+			TimeProvider.GetUtcNow();
 		DateOnly today =
 			DateOnly.FromDateTime(now.UtcDateTime);
 
@@ -672,5 +658,128 @@ public sealed class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase
 		testResults[2].ApiName.ShouldBe($"AlphaApi_{testId}");
 		// Null LastCalledAt last
 		testResults[3].ApiName.ShouldBe($"GammaApi_{testId}");
+	}
+
+	[Fact]
+	public async Task UpsertCallCountAsync_NoExistingRecord_CreatesWithCallCountOneAsync()
+	{
+		// Arrange
+		string apiName =
+			$"TestApi_{Guid.NewGuid():N}";
+		DateOnly today =
+			DateOnly.FromDateTime(
+				TimeProvider.GetUtcNow().UtcDateTime);
+		DateTimeOffset now =
+			TimeProvider.GetUtcNow();
+
+		// Act
+		int? newCount =
+			await Repository.UpsertCallCountAsync(
+				apiName,
+				"https://api.example.com",
+				today,
+				now,
+				limit: 100);
+
+		// Assert
+		newCount.ShouldBe(1);
+
+		ThirdPartyApiRequest? created =
+			await Repository.GetByApiNameAndDateAsync(
+				apiName,
+				today);
+
+		created.ShouldNotBeNull();
+		created.CallCount.ShouldBe(1);
+		created.ApiName.ShouldBe(apiName);
+		created.ResetDate.ShouldBe(today);
+	}
+
+	[Fact]
+	public async Task UpsertCallCountAsync_ExistingRecord_IncrementsCallCountAsync()
+	{
+		// Arrange — create an initial record via UPSERT
+		string apiName =
+			$"TestApi_{Guid.NewGuid():N}";
+		DateOnly today =
+			DateOnly.FromDateTime(
+				TimeProvider.GetUtcNow().UtcDateTime);
+		DateTimeOffset now =
+			TimeProvider.GetUtcNow();
+
+		await Repository.UpsertCallCountAsync(
+			apiName,
+			"https://api.example.com",
+			today,
+			now,
+			limit: 100);
+
+		// Act — second UPSERT should increment
+		int? newCount =
+			await Repository.UpsertCallCountAsync(
+				apiName,
+				"https://api.example.com",
+				today,
+				now.AddSeconds(5),
+				limit: 100);
+
+		// Assert
+		newCount.ShouldBe(2);
+
+		ThirdPartyApiRequest? updated =
+			await Repository.GetByApiNameAndDateAsync(
+				apiName,
+				today);
+
+		updated.ShouldNotBeNull();
+		updated.CallCount.ShouldBe(2);
+	}
+
+	[Fact]
+	public async Task UpsertCallCountAsync_AtLimit_ReturnsNullAsync()
+	{
+		// Arrange — create a record at the limit
+		string apiName =
+			$"TestApi_{Guid.NewGuid():N}";
+		DateOnly today =
+			DateOnly.FromDateTime(
+				TimeProvider.GetUtcNow().UtcDateTime);
+		DateTimeOffset now =
+			TimeProvider.GetUtcNow();
+		int limit = 2;
+
+		// Fill to limit
+		await Repository.UpsertCallCountAsync(
+			apiName,
+			"https://api.example.com",
+			today,
+			now,
+			limit);
+		await Repository.UpsertCallCountAsync(
+			apiName,
+			"https://api.example.com",
+			today,
+			now.AddSeconds(1),
+			limit);
+
+		// Act — third UPSERT should be blocked by WHERE clause
+		int? newCount =
+			await Repository.UpsertCallCountAsync(
+				apiName,
+				"https://api.example.com",
+				today,
+				now.AddSeconds(2),
+				limit);
+
+		// Assert — null means limit reached, count stays at 2
+		newCount.ShouldBeNull();
+
+		ThirdPartyApiRequest? record =
+			await Repository.GetByApiNameAndDateAsync(
+				apiName,
+				today);
+
+		record.ShouldNotBeNull();
+		record.CallCount.ShouldBe(2);
 	}
 }

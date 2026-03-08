@@ -131,4 +131,37 @@ public interface IThirdPartyApiRequestRepository
 	public Task<ThirdPartyApiStatisticsDto> GetStatisticsAsync(
 		DateOnly today,
 		CancellationToken cancellationToken = default);
+
+	/// <summary>
+	/// Atomically creates or increments the call count for the specified API and date.
+	/// Uses PostgreSQL UPSERT with a WHERE clause that prevents exceeding the limit.
+	/// </summary>
+	/// <param name="apiName">
+	/// The external API name.
+	/// </param>
+	/// <param name="baseUrl">
+	/// The base URL of the API.
+	/// </param>
+	/// <param name="resetDate">
+	/// The date for the counter.
+	/// </param>
+	/// <param name="lastCalledAt">
+	/// Timestamp of the API call.
+	/// </param>
+	/// <param name="limit">
+	/// The maximum allowed call count.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token for async operation.
+	/// </param>
+	/// <returns>
+	/// The new call count after the upsert, or <c>null</c> if the limit was already reached.
+	/// </returns>
+	public Task<int?> UpsertCallCountAsync(
+		string apiName,
+		string baseUrl,
+		DateOnly resetDate,
+		DateTimeOffset lastCalledAt,
+		int limit,
+		CancellationToken cancellationToken = default);
 }

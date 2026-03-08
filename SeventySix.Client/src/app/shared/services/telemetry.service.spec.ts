@@ -79,4 +79,34 @@ describe("TelemetryService",
 					.not
 					.toHaveBeenCalled();
 			});
+
+		it("should allow shutdown when never initialized",
+			async () =>
+			{
+				await service.shutdown();
+
+				// No error should be logged — clean no-op
+				expect(mockLogger.error)
+					.not
+					.toHaveBeenCalled();
+			});
+
+		it("should reset initialized flag after shutdown",
+			async () =>
+			{
+				environment.telemetry.enabled = true;
+
+				// Initialize first
+				service.initialize();
+
+				// Shutdown should reset the flag
+				await service.shutdown();
+
+				// Re-initialization should be possible (no duplicate guard)
+				service.initialize();
+
+				expect(mockLogger.error)
+					.not
+					.toHaveBeenCalled();
+			});
 	});

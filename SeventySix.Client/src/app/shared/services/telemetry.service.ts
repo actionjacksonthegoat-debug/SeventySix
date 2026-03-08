@@ -4,6 +4,7 @@ import {
 } from "@angular/core";
 import { environment } from "@environments/environment";
 import { LoggerService } from "@shared/services/logger.service";
+import { isNullOrUndefined } from "@shared/utilities/null-check.utility";
 import {
 	take,
 	timer
@@ -41,6 +42,7 @@ interface TelemetryModules
 interface WebTracerProviderInstance
 {
 	register(): void;
+	shutdown(): Promise<void>;
 }
 
 /**
@@ -71,6 +73,13 @@ export class TelemetryService
 	 * @private
 	 */
 	private initialized: boolean = false;
+
+	/**
+	 * Reference to the active tracer provider for shutdown on logout.
+	 * @type {WebTracerProviderInstance | null}
+	 * @private
+	 */
+	private provider: WebTracerProviderInstance | null = null;
 
 	/**
 	 * Initializes OpenTelemetry tracing with automatic instrumentation.
@@ -104,6 +113,36 @@ export class TelemetryService
 	}
 
 	/**
+	 * Shuts down telemetry tracing, flushing pending spans.
+	 * Called on logout so tracing stops for unauthenticated state.
+	 * Allows re-initialization on next login.
+	 * @returns {Promise<void>}
+	 */
+	public async shutdown(): Promise<void>
+	{
+		if (isNullOrUndefined(this.provider))
+		{
+			return;
+		}
+
+		try
+		{
+			await this.provider.shutdown();
+		}
+		catch (error: unknown)
+		{
+			this.logger.error(
+				"Failed to shutdown OpenTelemetry",
+				error instanceof Error ? error : undefined);
+		}
+		finally
+		{
+			this.provider = null;
+			this.initialized = false;
+		}
+	}
+
+	/**
 	 * Performs async telemetry initialization with dynamic imports.
 	 * This moves OpenTelemetry packages out of the initial bundle.
 	 * @returns {Promise<void>}
@@ -115,10 +154,10 @@ export class TelemetryService
 			const modules: TelemetryModules =
 				await this.loadTelemetryModules();
 
-			const provider: WebTracerProviderInstance =
+			this.provider =
 				this.createTracerProvider(modules);
 
-			provider.register();
+			this.provider.register();
 
 			this.registerInstrumentations(modules);
 		}

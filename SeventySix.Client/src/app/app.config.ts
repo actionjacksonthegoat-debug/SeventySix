@@ -150,20 +150,24 @@ function initializeTelemetry(): Promise<void>
 
 					// Reactively watch auth state.
 					// Activates telemetry when user becomes authenticated,
-					// whether at page load or after login.
+					// shuts it down on logout to stop tracing.
 					effect(
 						() =>
 						{
-							if (!authService.isAuthenticated())
-							{
-								return;
-							}
+							const authenticated: boolean =
+								authService.isAuthenticated();
 
-							// TelemetryService.initialized prevents double init
 							untracked(
 								() =>
 								{
-									void activateTelemetry(injector);
+									if (authenticated)
+									{
+										void activateTelemetry(injector);
+									}
+									else
+									{
+										void deactivateTelemetry(injector);
+									}
 								});
 						});
 				});
@@ -188,6 +192,25 @@ async function activateTelemetry(injector: Injector): Promise<void>
 		{
 			inject(telemetryModule.TelemetryService)
 				.initialize();
+		});
+}
+
+/**
+ * Shuts down telemetry when user logs out.
+ * Dynamically imports the service to avoid adding it to the main bundle.
+ */
+async function deactivateTelemetry(injector: Injector): Promise<void>
+{
+	const telemetryModule: typeof import("@shared/services/telemetry.service") =
+		await import(
+			"@shared/services/telemetry.service");
+
+	runInInjectionContext(
+		injector,
+		() =>
+		{
+			void inject(telemetryModule.TelemetryService)
+				.shutdown();
 		});
 }
 
