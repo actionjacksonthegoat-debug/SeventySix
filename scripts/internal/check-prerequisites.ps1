@@ -57,6 +57,16 @@ $tools = @(
 		WingetId    = "Docker.DockerDesktop"
 		DownloadUrl = "https://www.docker.com/products/docker-desktop/"
 		Required    = $true
+	},
+	@{
+		Name        = "dprint"
+		Command     = "dprint"
+		VersionArg  = "--version"
+		VersionRx   = '(\d+\.\d+\.\d+)'
+		MinVersion  = [version]"0.45.0"
+		WingetId    = "dprint.dprint"
+		DownloadUrl = "https://dprint.dev/install"
+		Required    = $false  # Auto-installed by bootstrap.ps1; warning only if running check-prerequisites standalone
 	}
 )
 

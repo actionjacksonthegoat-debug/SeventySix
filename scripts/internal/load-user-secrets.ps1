@@ -8,9 +8,9 @@
 # Mapped environment variables:
 #   DB_PASSWORD                          → PostgreSQL (docker-compose.yml)
 #   JWT_SECRET_KEY                       → API authentication (docker-compose.yml)
-#   GITHUB_CLIENT_ID / CLIENT_SECRET     → GitHub OAuth (docker-compose.yml)
-#   EMAIL_API_KEY                        → Brevo HTTP API (docker-compose.yml)
-#   EMAIL_FROM_ADDRESS                   → Sender address (docker-compose.yml)
+#   GITHUB_CLIENT_ID / CLIENT_SECRET     → GitHub OAuth (docker-compose.yml) [optional — set Auth:OAuth:Providers:0:Enabled=false to disable]
+#   EMAIL_API_KEY                        → Brevo HTTP API (docker-compose.yml) [optional — Email:Enabled controls use]
+#   EMAIL_FROM_ADDRESS                   → Sender address (docker-compose.yml) [optional — Email:Enabled controls use]
 #   SITE_EMAIL                           → Public contact email for legal pages (docker-compose.yml)
 #   ALTCHA_HMAC_KEY                      → ALTCHA HMAC (docker-compose.yml)
 #   ADMIN_EMAIL / ADMIN_PASSWORD         → Admin seeding (docker-compose.yml)
@@ -58,6 +58,16 @@ $secretToEnvMapping =
 	"Database:User"                       = "DB_USER"
 }
 
+# Optional secrets — missing keys are silently set to "" (mirroring docker-compose.yml ${VAR:-} defaults).
+# These features are disabled via their own Enabled flag in appsettings.json when the key is absent.
+$optionalSecretKeys =
+[System.Collections.Generic.HashSet[string]]@(
+	"Email:ApiKey"
+	"Email:FromAddress"
+	"Auth:OAuth:Providers:0:ClientId"
+	"Auth:OAuth:Providers:0:ClientSecret"
+)
+
 # Read all user secrets
 $secretsOutput =
 dotnet user-secrets list --project $projectPath 2>&1
@@ -90,6 +100,9 @@ foreach ($mapping in $secretToEnvMapping.GetEnumerator()) {
 
 	if ($secrets.ContainsKey($secretKey)) {
 		[System.Environment]::SetEnvironmentVariable($envVarName, $secrets[$secretKey], "Process")
+	}
+	elseif ($optionalSecretKeys.Contains($secretKey)) {
+		[System.Environment]::SetEnvironmentVariable($envVarName, "", "Process")
 	}
 	else {
 		$missingSecrets += $secretKey

@@ -147,6 +147,7 @@ services:
             - Auth__OAuth__Providers__0__ClientId=${GITHUB_CLIENT_ID:?GITHUB_CLIENT_ID must be set}
             - Auth__OAuth__Providers__0__ClientSecret=${GITHUB_CLIENT_SECRET:?GITHUB_CLIENT_SECRET must be set}
             # Email Configuration
+            - Email__Enabled=true
             - Email__ApiKey=${EMAIL_API_KEY:?EMAIL_API_KEY must be set}
             - Email__FromAddress=${EMAIL_FROM_ADDRESS:?EMAIL_FROM_ADDRESS must be set}
             # Site — contact email for legal pages (never hardcoded in client)
