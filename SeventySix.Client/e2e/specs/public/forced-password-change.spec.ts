@@ -144,26 +144,38 @@ unauthenticatedTest.describe("Forced Password Change",
 			"should receive 403 from protected API while password change pending",
 			async ({ unauthenticatedPage }) =>
 			{
-			// Capture access token from login API response.
-			// Chain .then(r => r.json()) eagerly so the body is read before the
-			// page navigates away and Playwright frees the network response buffer.
-				const loginBodyPromise: Promise<{ accessToken: string }> =
-					unauthenticatedPage.waitForResponse(
-						(response) =>
-							response
-								.url()
-								.includes(API_ROUTES.auth.login)
-								&& response.status() === 200,
-						{ timeout: TIMEOUTS.api })
-						.then(response =>
-							response.json() as Promise<{ accessToken: string }>);
-
 				await loginAsForcedUser(unauthenticatedPage);
 
-				const responseBody: { accessToken: string } =
-					await loginBodyPromise;
-				const capturedToken: string =
-					responseBody.accessToken;
+				const refreshResponse: {
+					accessToken: string;
+					requiresPasswordChange: boolean;
+				} =
+					await unauthenticatedPage.evaluate(
+						async ({ refreshUrl }: { refreshUrl: string; }) =>
+						{
+							const response: Response =
+								await fetch(
+									refreshUrl,
+									{
+										method: "POST",
+										credentials: "include"
+									});
+
+							if (!response.ok)
+							{
+								throw new Error(
+									`Refresh failed with status ${response.status}`);
+							}
+
+							return response.json() as Promise<{
+								accessToken: string;
+								requiresPasswordChange: boolean;
+							}>;
+						},
+						{ refreshUrl: API_ROUTES.auth.refresh });
+
+				expect(refreshResponse.requiresPasswordChange)
+					.toBe(true);
 
 				// Make API request to a protected endpoint via the nginx /api/ proxy.
 				// Uses the client base URL so the request is same-origin, avoiding
@@ -186,7 +198,7 @@ unauthenticatedTest.describe("Forced Password Change",
 
 							return response.status;
 						},
-						{ token: capturedToken, url: apiUrl });
+						{ token: refreshResponse.accessToken, url: apiUrl });
 
 				expect(apiStatus)
 					.toBe(403);
