@@ -248,11 +248,31 @@ When multiple test cases share the same logic with different inputs, use `[Theor
 
 ### [InlineData] — for simple scalar inputs (strings, ints, enums, null)
 
+Each `[InlineData]` on its own line. Multi-argument `[InlineData]` puts each argument on its own line with the closing `)]` on its own line.
+
 ```csharp
+// [ALWAYS] — single-arg, each attribute on its own line
 [Theory]
 [InlineData("")]
 [InlineData(null)]
 [InlineData("   ")]
+
+// [ALWAYS] — multi-arg, each argument on its own line
+[Theory]
+[InlineData(
+    "TestScenario",
+    "expected output",
+    true,
+    42
+)]
+public async Task Handle_Scenario_ReturnsExpectedAsync(
+    string scenario,
+    string expected,
+    bool flag,
+    int count)
+
+// [NEVER] — multi-arg on one line
+[InlineData("TestScenario", "expected output", true, 42)]
 public async Task Handle_EmptyOrNullInput_ReturnsValidationErrorAsync(
 	string? input)
 {

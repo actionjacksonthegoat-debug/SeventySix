@@ -15,7 +15,7 @@ Proceed through **all remaining phases** across all `implementation-N.md` files 
 
 ## Rules
 
-1. **Read** `Implementation.md` (orchestrator) and ALL `implementation-N.md` files listed in it, plus all `.github/instructions/*.instructions.md` files before starting
+1. **Read** `Implementation.md` (orchestrator) and ALL `implementation-N.md` files listed in it, plus all `.github/instructions/*.instructions.md` files (especially `formatting.instructions.md`) before starting
 2. Follow **KISS, DRY, YAGNI** — simplest solution, no duplication, no speculative features
 3. Follow **TDD-First 80/20** — write tests BEFORE implementation for the 20% of code carrying 80% of risk (Red → Green → Refactor)
 4. Fix all IDE warnings — never suppress with `#pragma warning disable`, `// @ts-ignore`, or `[SuppressMessage]`
@@ -34,7 +34,7 @@ Proceed through **all remaining phases** across all `implementation-N.md` files 
 
 At natural technology/domain boundaries (e.g., switching from server to client work):
 1. Compact context — release completed phase details
-2. Re-read `.github/copilot-instructions.md`
+2. Re-read `.github/copilot-instructions.md` and `formatting.instructions.md`
 3. Re-read relevant `.github/instructions/*.instructions.md` for the upcoming work
 4. Continue with the next phase
 

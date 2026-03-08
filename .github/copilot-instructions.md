@@ -48,6 +48,18 @@
 - **`npm run format` is the ONLY format command** — `dprint` must NEVER be run standalone. `npm run format:client` runs: ESLint → dprint → ESLint. Run format at the end of implementation phases, right before the test gate.
 - **All required test suites MUST pass** in the final validation phase before claiming completion (see below)
 
+## [CRITICAL] Key Formatting Rules (ALWAYS FOLLOW)
+
+> Full examples in `formatting.instructions.md`, `csharp.instructions.md`, and `testing-server.instructions.md`. **NEVER skip — violation = blocker.**
+
+| Rule | [NEVER] | [ALWAYS] |
+| ---- | ------- | -------- |
+| C# XML doc tags | `<param name="x">text</param>` (single line) | Multi-line: open tag → indented description → close tag |
+| TS variable types | `const value = ...` | `const value: Type = ...` (`@typescript-eslint/typedef`) |
+| TS null checks | `!value`, `!!value`, `value \|\| "x"` | `isNullOrUndefined(value)`, `isPresent(value)`, `value ?? "x"` |
+| C# `var` | `var name = "test"` | `string name = "test"` (always explicit) |
+| C# `[InlineData]` multi-arg | All args on one line | Each arg on its own line — see `testing-server.instructions.md` |
+
 > **[CRITICAL] CI/CD ENVIRONMENT VERIFICATION**: Tests passing locally on Windows is necessary but NOT sufficient.
 > All tests must also be verified to pass in an environment matching CI/CD (`ubuntu-latest`, Linux Docker).
 

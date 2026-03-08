@@ -16,8 +16,8 @@ Write a new `Implementation.md` plan for the following work:
 
 ## Plan Requirements
 
-1. **Read** `.github/copilot-instructions.md` and every file in `.github/instructions/` before drafting
-2. Add an explicit phase checkpoint step that links #file:../copilot-instructions.md before the start of **every** phase
+1. **Read** `.github/copilot-instructions.md`, `formatting.instructions.md`, and every file in `.github/instructions/` before drafting
+2. Add an explicit phase checkpoint step that links #file:../copilot-instructions.md and #file:../instructions/formatting.instructions.md before the start of **every** phase
 3. Add an explicit resume checkpoint step: after **every compaction**, re-read #file:../copilot-instructions.md before continuing. Insert compaction checkpoints at major domain/technology boundaries (e.g., between server and client phases, between unrelated feature areas). Each compaction checkpoint: compact → re-read copilot-instructions.md → re-read relevant instruction files for next phase → continue.
 4. Follow the existing `Implementation.md` structure: Executive Summary → numbered Phases → Appendices
 5. Each phase must have clear **deliverables** and **verification steps**
