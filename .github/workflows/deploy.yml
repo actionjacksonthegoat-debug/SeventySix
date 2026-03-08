@@ -55,7 +55,6 @@ jobs:
                   host: ${{ secrets.PROD_HOST }}
                   username: ${{ secrets.PROD_USER }}
                   key: ${{ secrets.PROD_SSH_KEY }}
-                  command_timeout: 20m
                   # Forward all env vars above into the remote shell session
                   envs: DB_NAME,DB_USER,DB_PASSWORD,JWT_SECRET_KEY,GITHUB_CLIENT_ID,GITHUB_CLIENT_SECRET,EMAIL_API_KEY,EMAIL_FROM_ADDRESS,SITE_EMAIL,ALTCHA_HMAC_KEY,ADMIN_EMAIL,ADMIN_PASSWORD,ADMIN_USERNAME,ADMIN_FULLNAME,ADMIN_SEEDER_ENABLED,DATA_PROTECTION_CERTIFICATE_PASSWORD,CORS_ORIGIN_0,CORS_ORIGIN_1,VALKEY_PASSWORD,GRAFANA_ADMIN_USER,GRAFANA_ADMIN_PASSWORD,ALLOWED_HOSTS,CLIENT_BASE_URL,OAUTH_CALLBACK_URL,OAUTH_REDIRECT_URI
                   script: |
