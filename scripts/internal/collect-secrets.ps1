@@ -61,7 +61,7 @@ function Test-PasswordPolicy {
 	param([string]$Password)
 	$errors = [System.Collections.Generic.List[string]]::new()
 	if ($Password.Length -lt 12) { $errors.Add("At least 12 characters (got $($Password.Length))") }
-	return $errors
+	return ,$errors
 }
 
 # Generates a random password that always satisfies the application password policy.
@@ -139,6 +139,7 @@ Write-Host "    - At least one lowercase letter [a-z]" -ForegroundColor Gray
 Write-Host "    - At least one digit [0-9]" -ForegroundColor Gray
 Write-Host "    - At least one special character (e.g. !@#`$%^&*)" -ForegroundColor Gray
 Write-Host "  Press Enter to use the generated default shown in brackets." -ForegroundColor Cyan
+Write-Host "  The password you choose here will be shown again when bootstrap completes." -ForegroundColor Cyan
 Write-Host ""
 
 $adminPassword = ""
@@ -292,7 +293,7 @@ Write-Host ""
 Write-Host "[SUCCESS] All secrets saved to .NET user-secrets." -ForegroundColor Green
 
 # ─── Brevo skipped: critical notice + offer to auto-patch appsettings ─────────
-if ($smtpUsername -eq "PLACEHOLDER_USE_USER_SECRETS") {
+if ($brevoApiKey -eq "PLACEHOLDER_USE_USER_SECRETS") {
 	Write-Host ""
 	Write-Host "========================================" -ForegroundColor Red
 	Write-Host "  CRITICAL: No Email Provider Configured" -ForegroundColor Red
