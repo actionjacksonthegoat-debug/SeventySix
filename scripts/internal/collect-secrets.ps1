@@ -61,7 +61,7 @@ function Test-PasswordPolicy {
 	param([string]$Password)
 	$errors = [System.Collections.Generic.List[string]]::new()
 	if ($Password.Length -lt 12) { $errors.Add("At least 12 characters (got $($Password.Length))") }
-	return ,$errors
+	return , $errors
 }
 
 # Generates a random password that always satisfies the application password policy.
@@ -123,10 +123,11 @@ Write-Host ""
 
 Write-Host "--- Admin Account (Development Only) ---" -ForegroundColor Cyan
 Write-Host "  The seeded admin account is used for local dev and Chrome DevTools MFA testing."
-Write-Host "  Use a real email address — MFA verification codes are sent here."
+Write-Host "  Press Enter to use the default (seventysix@app.local)."
+Write-Host "  Only use a real email address if you plan to enable MFA/TOTP — verification codes are sent there."
 Write-Host ""
 
-$adminEmail = Read-Prompt -Prompt "  Admin User Email"
+$adminEmail = Read-Prompt -Prompt "  Admin User Email" -Default "seventysix@app.local"
 
 # Generate a policy-compliant default the user can accept by pressing Enter.
 $generatedAdminPassword = New-ValidPassword
