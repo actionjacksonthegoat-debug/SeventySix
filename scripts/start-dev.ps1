@@ -214,15 +214,16 @@ else {
 		) -WindowStyle Normal
 	}
 	else {
-		# On Linux/macOS (Codespace, CI): run Angular in background, log to file
-		$ngLogPath = Join-Path $clientPath "ng-serve.log"
-		$ngJob = Start-Job -ScriptBlock {
-			Set-Location $using:clientPath
-			& npm start 2>&1
-		}
-		Write-Host "  Angular client starting in background (job $($ngJob.Id))." -ForegroundColor Cyan
-		Write-Host "  Logs: $ngLogPath" -ForegroundColor Cyan
-		Write-Host "  Open https://localhost:4200 once ready." -ForegroundColor Cyan
+		# On Linux/macOS/Codespace: cannot open a new OS window.
+		# Instruct the user to start the client in a new terminal tab.
+		Write-Host ""
+		Write-Host "========================================" -ForegroundColor Cyan
+		Write-Host "  Start the Angular Client" -ForegroundColor Cyan
+		Write-Host "========================================" -ForegroundColor Cyan
+		Write-Host ""
+		Write-Host "  Open a new terminal tab and run:" -ForegroundColor White
+		Write-Host "    npm run start:client" -ForegroundColor Green
+		Write-Host ""
 	}
 }
 
