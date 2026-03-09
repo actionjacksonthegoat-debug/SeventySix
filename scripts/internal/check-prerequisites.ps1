@@ -73,7 +73,12 @@ $tools = @(
 function Get-ToolVersion {
 	param($tool)
 	try {
-		if ($null -eq $tool.VersionArg) {
+		if ($tool.Command -eq "pwsh") {
+			# Use $PSVersionTable directly — spawning a child pwsh process can fail
+			# in dev containers where the .NET tool shim binary has restrictive permissions.
+			return [version]$PSVersionTable.PSVersion
+		}
+		elseif ($null -eq $tool.VersionArg) {
 			# Special case: .NET SDK list
 			$output = & dotnet --list-sdks 2>$null
 			$match = $output | Select-String $tool.VersionRx | Select-Object -First 1
