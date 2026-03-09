@@ -93,14 +93,37 @@ public sealed class SharedWebApplicationFactory<TProgram>
 				services.RemoveAll<DbContextOptions<ApiTrackingDbContext>>();
 				services.RemoveAll<DbContextOptions<ElectronicNotificationsDbContext>>();
 
-				services.AddDbContext<IdentityDbContext>(
-					options => options.UseNpgsql(ConnectionString));
-				services.AddDbContext<LoggingDbContext>(
-					options => options.UseNpgsql(ConnectionString));
-				services.AddDbContext<ApiTrackingDbContext>(
-					options => options.UseNpgsql(ConnectionString));
-				services.AddDbContext<ElectronicNotificationsDbContext>(
-					options => options.UseNpgsql(ConnectionString));
+				bool useInMemory =
+					string.Equals(
+						ConnectionString,
+						"InMemory",
+						StringComparison.OrdinalIgnoreCase);
+
+				if (useInMemory)
+				{
+					string dbName =
+						$"TestDb_{Guid.NewGuid():N}";
+
+					services.AddDbContext<IdentityDbContext>(
+						options => options.UseInMemoryDatabase(dbName));
+					services.AddDbContext<LoggingDbContext>(
+						options => options.UseInMemoryDatabase(dbName));
+					services.AddDbContext<ApiTrackingDbContext>(
+						options => options.UseInMemoryDatabase(dbName));
+					services.AddDbContext<ElectronicNotificationsDbContext>(
+						options => options.UseInMemoryDatabase(dbName));
+				}
+				else
+				{
+					services.AddDbContext<IdentityDbContext>(
+						options => options.UseNpgsql(ConnectionString));
+					services.AddDbContext<LoggingDbContext>(
+						options => options.UseNpgsql(ConnectionString));
+					services.AddDbContext<ApiTrackingDbContext>(
+						options => options.UseNpgsql(ConnectionString));
+					services.AddDbContext<ElectronicNotificationsDbContext>(
+						options => options.UseNpgsql(ConnectionString));
+				}
 
 				// Apply custom service configuration for mocking dependencies
 				ConfigureServicesAction?.Invoke(services);
