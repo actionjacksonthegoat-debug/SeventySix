@@ -45,7 +45,7 @@ public sealed class PasswordControllerTests(IdentityAuthApiPostgreSqlFixture fix
 	}
 
 	/// <inheritdoc/>
-	public new Task DisposeAsync()
+	public override Task DisposeAsync()
 	{
 		// Only dispose client, not the shared factory (managed by fixture)
 		Client?.Dispose();

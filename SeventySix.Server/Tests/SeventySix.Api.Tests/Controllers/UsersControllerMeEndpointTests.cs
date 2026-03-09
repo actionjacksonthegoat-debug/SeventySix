@@ -36,7 +36,7 @@ public sealed class UsersControllerMeEndpointTests(
 	}
 
 	/// <inheritdoc/>
-	public new Task DisposeAsync()
+	public override Task DisposeAsync()
 	{
 		Client?.Dispose();
 		return Task.CompletedTask;

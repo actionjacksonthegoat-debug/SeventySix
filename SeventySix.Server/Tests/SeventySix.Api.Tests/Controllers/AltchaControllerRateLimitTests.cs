@@ -63,7 +63,7 @@ public sealed class AltchaControllerRateLimitTests(IdentityAuthApiPostgreSqlFixt
 	}
 
 	/// <inheritdoc/>
-	public new Task DisposeAsync()
+	public override Task DisposeAsync()
 	{
 		HttpClient?.Dispose();
 		IsolatedFactory?.Dispose();

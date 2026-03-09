@@ -51,7 +51,7 @@ public sealed class LogsControllerRateLimitTests(LoggingApiPostgreSqlFixture fix
 	}
 
 	/// <inheritdoc/>
-	public new Task DisposeAsync()
+	public override Task DisposeAsync()
 	{
 		HttpClient?.Dispose();
 		IsolatedFactory?.Dispose();
