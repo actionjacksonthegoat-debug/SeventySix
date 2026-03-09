@@ -327,11 +327,12 @@ if ($brevoApiKey -eq "PLACEHOLDER_USE_USER_SECRETS") {
 		$inEmail = $false
 		$emailDepth = 0
 		$inTotp = $false
+		$totpDepth = 0
 		$totpEnabledInserted = $false
 		foreach ($line in $lines) {
 			if ($line -match '^\t"Email"\s*:') { $inEmail = $true; $emailDepth = 0 }
 			if ($line -match '^\t"Mfa"\s*:') { $inMfa = $true; $mfaDepth = 0 }
-			if ($line -match '^\t"Totp"\s*:') { $inTotp = $true }
+			if ($line -match '^\t"Totp"\s*:') { $inTotp = $true; $totpDepth = 0 }
 			if ($inEmail) {
 				if ($line.Contains('{')) { $emailDepth++ }
 				if ($line.Contains('}')) {
@@ -352,10 +353,22 @@ if ($brevoApiKey -eq "PLACEHOLDER_USE_USER_SECRETS") {
 				$line = $line -replace '"Enabled"\s*:\s*true', '"Enabled": false'
 				$line = $line -replace '"RequiredForAllUsers"\s*:\s*true', '"RequiredForAllUsers": false'
 			}
-			if ($inTotp -and -not $totpEnabledInserted -and $line -match '^\t\t"IssuerName"') {
-				$newLines.Add("`t`t`"Enabled`": false,")
-				$totpEnabledInserted = $true
-				$inTotp = $false
+			if ($inTotp) {
+				if ($line.Contains('{')) { $totpDepth++ }
+				if ($line.Contains('}')) {
+					$totpDepth--
+					if ($totpDepth -le 0) { $inTotp = $false }
+				}
+				# Replace existing Enabled key if present
+				if ($totpDepth -ge 1 -and $line -match '^\t\t"Enabled"\s*:') {
+					$line = $line -replace '"Enabled"\s*:\s*\w+', '"Enabled": false'
+					$totpEnabledInserted = $true
+				}
+				# Insert Enabled key before IssuerName only if it doesn't already exist
+				if (-not $totpEnabledInserted -and $line -match '^\t\t"IssuerName"') {
+					$newLines.Add("`t`t`"Enabled`": false,")
+					$totpEnabledInserted = $true
+				}
 			}
 			$newLines.Add($line)
 		}
