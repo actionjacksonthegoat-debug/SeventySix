@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env bash
+#!/usr/bin/env bash
 set -euo pipefail
 
 # bootstrap.sh — Linux/macOS/GitHub Codespace entry point. Works with bash only (no PowerShell required).

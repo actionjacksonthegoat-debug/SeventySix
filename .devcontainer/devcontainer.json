@@ -5,12 +5,13 @@
 		"ghcr.io/devcontainers/features/node:1": {
 			"version": "24"
 		},
-		"ghcr.io/devcontainers/features/docker-in-docker:2": {}
+		"ghcr.io/devcontainers/features/docker-in-docker:2": {},
+		"ghcr.io/devcontainers/features/powershell:1": {}
 	},
 	"hostRequirements": {
 		"cpus": 4,
 		"memory": "16gb",
-		"storage": "64gb"
+		"storage": "150gb"
 	},
 	"postCreateCommand": "npm install",
 	"customizations": {
@@ -20,7 +21,10 @@
 				"angular.ng-template",
 				"ms-playwright.playwright",
 				"dbaeumer.vscode-eslint"
-			]
+			],
+			"settings": {
+				"terminal.integrated.defaultProfile.linux": "pwsh"
+			}
 		}
 	}
 }
