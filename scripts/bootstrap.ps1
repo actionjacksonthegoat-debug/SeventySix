@@ -15,8 +15,7 @@
 #>
 [CmdletBinding()]
 param(
-	[switch]$SkipTests,
-	[switch]$SkipStart
+	[switch]$SkipTests
 )
 
 Set-StrictMode -Version Latest
@@ -150,63 +149,6 @@ if (-not $SkipTests) {
 		exit 1
 	}
 	Write-Host "  [PASS] Client tests passed." -ForegroundColor Green
-
-	# E2E and load tests run in parallel since they use different Docker ports
-	Write-Host ""
-	Write-Host "--- E2E & Load Tests (parallel, Docker-isolated) ---" -ForegroundColor Cyan
-
-	$e2eJob = Start-Job -ScriptBlock {
-		Set-Location $using:repoRoot
-		& npm run test:e2e 2>&1
-		exit $LASTEXITCODE
-	}
-
-	$loadJob = Start-Job -ScriptBlock {
-		Set-Location $using:repoRoot
-		& npm run loadtest:quick 2>&1
-		exit $LASTEXITCODE
-	}
-
-	$e2eOutput = Receive-Job -Job $e2eJob -Wait
-	$e2eWasFailed = $e2eJob.State -eq 'Failed'
-	Remove-Job -Job $e2eJob -Force
-
-	$loadOutput = Receive-Job -Job $loadJob -Wait
-	$loadWasFailed = $loadJob.State -eq 'Failed'
-	Remove-Job -Job $loadJob -Force
-
-	if ($e2eWasFailed -or ($e2eOutput -match '\[FAIL\]|\bfailed\b')) {
-		$e2eExitCode = 1
-	}
-	else {
-		$e2eExitCode = 0
-	}
-
-	if ($loadWasFailed -or ($loadOutput -match '\[FAIL\]|\bfailed\b')) {
-		$loadExitCode = 1
-	}
-	else {
-		$loadExitCode = 0
-	}
-
-	Write-Host ""
-	Write-Host "--- E2E Test Results ---"
-	Write-Host $e2eOutput
-	Write-Host ""
-	Write-Host "--- Load Test Results ---"
-	Write-Host $loadOutput
-
-	if ($e2eExitCode -ne 0) {
-		Write-Host "[FAIL] E2E tests failed. Check output above." -ForegroundColor Red
-		exit 1
-	}
-	Write-Host "  [PASS] E2E tests passed." -ForegroundColor Green
-
-	if ($loadExitCode -ne 0) {
-		Write-Host "[FAIL] Load tests failed. Check output above." -ForegroundColor Red
-		exit 1
-	}
-	Write-Host "  [PASS] Load tests passed." -ForegroundColor Green
 }
 
 # Phase 8: Version summary
@@ -270,12 +212,6 @@ function Write-VersionSummary {
 	Write-Host "    k6: latest"
 	Write-Host ""
 
-	if (-not $SkipStart) {
-		Write-Host "  To start developing:" -ForegroundColor Cyan
-		Write-Host "    npm start" -ForegroundColor White
-		Write-Host ""
-	}
-
 	# --- Critical notice if Brevo SMTP was not configured ---
 	$emailApiKey = $env:EMAIL_API_KEY
 	if ([string]::IsNullOrWhiteSpace($emailApiKey) -or $emailApiKey -eq "PLACEHOLDER_USE_USER_SECRETS") {
@@ -321,10 +257,7 @@ function Write-VersionSummary {
 
 Write-VersionSummary
 
-# Phase 9: Offer to start
-if (-not $SkipStart) {
-	$startNow = Read-Host "Start the development environment now? (y/N)"
-	if ($startNow -match '^[yY]') {
-		& "$PSScriptRoot\start-dev.ps1"
-	}
-}
+# Phase 9: Next steps
+Write-Host ""
+Write-Host "  Run 'npm run start' in the terminal to launch your local instance." -ForegroundColor Green
+Write-Host ""

@@ -6,7 +6,7 @@ export const environment: Environment =
 		...ENVIRONMENT_DEFAULTS,
 		production: false,
 		version: "1.0.0-dev",
-		apiUrl: "https://localhost:7074/api/v1", // HTTPS for local development with HTTP/2 support
+		apiUrl: "/api/v1",
 		logging: {
 			enableRemoteLogging: true,
 			consoleLogLevel: "warn", // Only show warnings and errors in console
