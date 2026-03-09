@@ -61,7 +61,7 @@ public sealed class AuthRateLimitingTests(IdentityAuthApiPostgreSqlFixture fixtu
 	}
 
 	/// <inheritdoc/>
-	public new Task DisposeAsync()
+	public override Task DisposeAsync()
 	{
 		Client?.Dispose();
 		IsolatedFactory?.Dispose();

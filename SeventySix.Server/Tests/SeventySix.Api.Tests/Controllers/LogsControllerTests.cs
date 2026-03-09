@@ -87,7 +87,7 @@ public sealed class LogsControllerTests(LoggingApiPostgreSqlFixture fixture)
 	}
 
 	/// <inheritdoc/>
-	public new Task DisposeAsync()
+	public override Task DisposeAsync()
 	{
 		// Only dispose client, not the shared factory (managed by fixture)
 		Client?.Dispose();
