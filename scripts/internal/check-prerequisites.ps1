@@ -117,6 +117,10 @@ function Assert-Tool {
 	param($tool)
 	$current = Get-ToolVersion $tool
 	if ($null -eq $current) {
+		if (-not $tool.Required) {
+			Write-Host "[OPTIONAL] $($tool.Name) is not installed. bootstrap.ps1 will install it later if needed."
+			return
+		}
 		Write-Host "[MISSING] $($tool.Name) is not installed."
 		$install = Read-Host "  Install $($tool.Name)? (y/N)"
 		if ($install -match '^[yY]') {
@@ -128,6 +132,10 @@ function Assert-Tool {
 		}
 	}
 	elseif ($current -lt $tool.MinVersion) {
+		if (-not $tool.Required) {
+			Write-Host "[OPTIONAL] $($tool.Name) $current found (minimum: $($tool.MinVersion)). bootstrap.ps1 will update it later if needed."
+			return
+		}
 		Write-Host "[OUTDATED] $($tool.Name) $current found (minimum: $($tool.MinVersion))"
 		$upgrade = Read-Host "  Upgrade? (y/N)"
 		if ($upgrade -match '^[yY]') {

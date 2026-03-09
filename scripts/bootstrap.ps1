@@ -277,8 +277,8 @@ function Write-VersionSummary {
 	}
 
 	# --- Critical notice if Brevo SMTP was not configured ---
-	$smtpUser = $env:EMAIL_SMTP_USERNAME
-	if ([string]::IsNullOrWhiteSpace($smtpUser) -or $smtpUser -eq "PLACEHOLDER_USE_USER_SECRETS") {
+	$emailApiKey = $env:EMAIL_API_KEY
+	if ([string]::IsNullOrWhiteSpace($emailApiKey) -or $emailApiKey -eq "PLACEHOLDER_USE_USER_SECRETS") {
 		Write-Host ""
 		Write-Host "========================================" -ForegroundColor Red
 		Write-Host "  CRITICAL: No Email Provider Configured" -ForegroundColor Red
