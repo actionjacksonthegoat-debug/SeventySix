@@ -1,9 +1,15 @@
 # SeventySix
 
 [![CI](https://github.com/actionjacksonthegoat-debug/SeventySix/actions/workflows/ci.yml/badge.svg)](https://github.com/actionjacksonthegoat-debug/SeventySix/actions/workflows/ci.yml)
+[![Deploy](https://github.com/actionjacksonthegoat-debug/SeventySix/actions/workflows/deploy.yml/badge.svg)](https://github.com/actionjacksonthegoat-debug/SeventySix/actions/workflows/deploy.yml)
 [![CodeQL](https://github.com/actionjacksonthegoat-debug/SeventySix/actions/workflows/codeql.yml/badge.svg)](https://github.com/actionjacksonthegoat-debug/SeventySix/actions/workflows/codeql.yml)
 [![codecov](https://codecov.io/gh/actionjacksonthegoat-debug/SeventySix/graph/badge.svg)](https://codecov.io/gh/actionjacksonthegoat-debug/SeventySix)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE.txt)
+[![.NET 10](https://img.shields.io/badge/.NET-10.0-512BD4?logo=dotnet&logoColor=white)](https://dotnet.microsoft.com/en-us/download/dotnet/10.0)
+[![Angular 21](https://img.shields.io/badge/Angular-21-DD0031?logo=angular&logoColor=white)](https://angular.dev)
+[![PWA](https://img.shields.io/badge/PWA-enabled-5A0FC8?logo=pwa&logoColor=white)](https://web.dev/progressive-web-apps/)
+[![OpenTelemetry](https://img.shields.io/badge/OpenTelemetry-enabled-425CC7?logo=opentelemetry&logoColor=white)](https://opentelemetry.io)
+[![WCAG 2.2 AA](https://img.shields.io/badge/WCAG_2.2-AA_Compliant-0078D4)](https://www.w3.org/TR/WCAG22/)
 
 This site has been deployed to production - You can try it here at [SeventySix](https://seventysixsandbox.com/). Logged in users will be given access to the development and style-guide page.
 
