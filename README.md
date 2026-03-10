@@ -1,11 +1,23 @@
 # SeventySix
 
 [![CI](https://github.com/actionjacksonthegoat-debug/SeventySix/actions/workflows/ci.yml/badge.svg)](https://github.com/actionjacksonthegoat-debug/SeventySix/actions/workflows/ci.yml)
+[![Deploy](https://github.com/actionjacksonthegoat-debug/SeventySix/actions/workflows/deploy.yml/badge.svg)](https://github.com/actionjacksonthegoat-debug/SeventySix/actions/workflows/deploy.yml)
 [![CodeQL](https://github.com/actionjacksonthegoat-debug/SeventySix/actions/workflows/codeql.yml/badge.svg)](https://github.com/actionjacksonthegoat-debug/SeventySix/actions/workflows/codeql.yml)
 [![codecov](https://codecov.io/gh/actionjacksonthegoat-debug/SeventySix/graph/badge.svg)](https://codecov.io/gh/actionjacksonthegoat-debug/SeventySix)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE.txt)
+[![.NET 10](https://img.shields.io/badge/.NET-10.0-512BD4?logo=dotnet&logoColor=white)](https://dotnet.microsoft.com/en-us/download/dotnet/10.0)
+[![Angular 21](https://img.shields.io/badge/Angular-21-DD0031?logo=angular&logoColor=white)](https://angular.dev)
+[![PWA](https://img.shields.io/badge/PWA-enabled-5A0FC8?logo=pwa&logoColor=white)](https://web.dev/progressive-web-apps/)
+[![OpenTelemetry](https://img.shields.io/badge/OpenTelemetry-enabled-425CC7?logo=opentelemetry&logoColor=white)](https://opentelemetry.io)
+[![WCAG 2.2 AA](https://img.shields.io/badge/WCAG_2.2-AA_Compliant-0078D4)](https://www.w3.org/TR/WCAG22/)
 
 This site has been deployed to production - You can try it here at [SeventySix](https://seventysixsandbox.com/). Logged in users will be given access to the development and style-guide page.
+
+Disclaimer: This document was validated on 3/10/26. I plan on revisiting this with each new .Net and Angular release so this should stay up to date. This is V1 and there are no more planned features, I plan on forking off of this myself with a private branch and seeing where I can go with it also.
+
+Try it in Codespace first (Green 'Code' dropdown at the top of this page):
+- Copilot's first months worth of requests are free on a trial, I prefer Sonnet and Opus. You can get a ton done in a month.
+- Github's free account allows 120 hours of codespace and the Dev Container created in Codespace is 4 cores and 16gb ram matching production.
 
 ## Site Walkthrough
 
@@ -20,6 +32,7 @@ Install it all or just the admin password, postgre password, and altcha password
 <video src="https://github.com/user-attachments/assets/d1a98168-96bd-4f83-9e7f-b95f631820e9" controls width="100%"></video>
 
 ### `npm run start`, new VSCode terminal `npm run start:client` - Spin up the full Docker Container, run and login as admin with your set user password from the prompt above. Enjoy.
+When you know you want to move forward - I recommend installing all extensions and MCPs (Toast in the bottom right of VSCode),  accepting all github profile permissions in the bottom left of VSCode (Github user link, Microsoft Link), and clicking the Finish Setup (Copilot) and clicking Use AI Features in the bottom right corner in the VS Code footer ribbon.
 
 <video src="https://github.com/user-attachments/assets/d1d9f7dd-3bab-4d70-9229-3777ace98d59" controls width="100%"></video>
 

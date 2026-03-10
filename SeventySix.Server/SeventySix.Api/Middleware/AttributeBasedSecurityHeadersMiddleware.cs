@@ -59,7 +59,7 @@ public sealed class AttributeBasedSecurityHeadersMiddleware(
 		+ "style-src 'self' 'unsafe-inline'; "
 		+ "font-src 'self'; "
 		+ "img-src 'self' data: https:; "
-		+ "connect-src 'self' https://cloudflareinsights.com https://static.cloudflareinsights.com; "
+		+ "connect-src 'self' https://cloudflareinsights.com https://static.cloudflareinsights.com https://github.com; "
 		+ "frame-src 'self'; "
 		+ "frame-ancestors 'self'; "
 		+ "base-uri 'self'; "
