@@ -13,6 +13,12 @@
 
 This site has been deployed to production - You can try it here at [SeventySix](https://seventysixsandbox.com/). Logged in users will be given access to the development and style-guide page.
 
+Disclaimer: This document was validated on 3/10/26. I plan on revisiting this with each new .Net and Angular release so this should stay up to date. This is V1 and there are no more planned features, I plan on forking off of this myself with a private branch and seeing where I can go with it also.
+
+Try it in Codespace first (Green 'Code' dropdown at the top of this page):
+- Copilot's first months worth of requests are free on a trial, I prefer Sonnet and Opus. You can get a ton done in a month.
+- Github's free account allows 120 hours of codespace and the Dev Container created in Codespace is 4 cores and 16gb ram matching production.
+
 ## Site Walkthrough
 
 <video src="https://github.com/actionjacksonthegoat-debug/SeventySix/releases/download/media-assets/Site_Walkthrough_SeventySix.mp4](https://github.com/user-attachments/assets/dfac2b4a-33e6-4de1-a6f7-6da7cf0c5c78" controls width="100%"></video>
@@ -26,6 +32,7 @@ Install it all or just the admin password, postgre password, and altcha password
 <video src="https://github.com/user-attachments/assets/d1a98168-96bd-4f83-9e7f-b95f631820e9" controls width="100%"></video>
 
 ### `npm run start`, new VSCode terminal `npm run start:client` - Spin up the full Docker Container, run and login as admin with your set user password from the prompt above. Enjoy.
+When you know you want to move forward - I recommend installing all extensions and MCPs (Toast in the bottom right of VSCode),  accepting all github profile permissions in the bottom left of VSCode (Github user link, Microsoft Link), and clicking the Finish Setup (Copilot) and clicking Use AI Features in the bottom right corner in the VS Code footer ribbon.
 
 <video src="https://github.com/user-attachments/assets/d1d9f7dd-3bab-4d70-9229-3777ace98d59" controls width="100%"></video>
 
