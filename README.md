@@ -5,13 +5,23 @@
 [![codecov](https://codecov.io/gh/actionjacksonthegoat-debug/SeventySix/graph/badge.svg)](https://codecov.io/gh/actionjacksonthegoat-debug/SeventySix)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE.txt)
 
-> **Work in Progress — Not Production Ready**
->
-> This codebase is under active development and is **not yet suitable for production use**. APIs, database schemas, and configuration may change without notice.
+This site has been deployed to production - You can try it here at [SeventySix](https://seventysixsandbox.com/). Logged in users will be given access to the development and style-guide page.
 
 ## Site Walkthrough
 
 <video src="https://github.com/actionjacksonthegoat-debug/SeventySix/releases/download/media-assets/Site_Walkthrough_SeventySix.mp4](https://github.com/user-attachments/assets/dfac2b4a-33e6-4de1-a6f7-6da7cf0c5c78" controls width="100%"></video>
+
+## Start Developing in 10 Minutes
+Download the branch locally and install there with the following two commands or run in a CodeSpace (Code Dropdown at the top of this page) - Be online as the site admin and coding in 10 Minutes (Even from your phone).
+
+### `npm run bootstrap` - Environment Initialization, Skippable feature prompts with solid defaults
+Install it all or just the admin password, postgre password, and altcha password for the minimal version - build what you want to start with
+
+<video src="https://github.com/user-attachments/assets/d1a98168-96bd-4f83-9e7f-b95f631820e9" controls width="100%"></video>
+
+### `npm run start`, new VSCode terminal `npm run start:client` - Spin up the full Docker Container, run and login as admin with your set user password from the prompt above. Enjoy.
+
+<video src="https://github.com/user-attachments/assets/d1d9f7dd-3bab-4d70-9229-3777ace98d59" controls width="100%"></video>
 
 ## Overview
 
