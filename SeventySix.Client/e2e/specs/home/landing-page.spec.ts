@@ -292,10 +292,11 @@ test.describe("Landing Page",
 						const externalLinks: Locator =
 							cta.locator("a[target='_blank']");
 
-						const linkCount: number = externalLinks;
-
-						await expect(linkCount)
+						await expect(externalLinks)
 							.toHaveCount(2);
+
+						const linkCount: number =
+							await externalLinks.count();
 
 						for (let idx: number = 0; idx < linkCount; idx++)
 						{
@@ -311,11 +312,11 @@ test.describe("Landing Page",
 				test("should have exactly one h1 and correct h2 structure",
 					async ({ page }: { page: Page; }) =>
 					{
-						const h1Count: number =
+						const h1Heading: Locator =
 							page
 								.locator("h1");
 
-						await expect(h1Count)
+						await expect(h1Heading)
 							.toHaveCount(1);
 
 						const h2Elements: Locator =

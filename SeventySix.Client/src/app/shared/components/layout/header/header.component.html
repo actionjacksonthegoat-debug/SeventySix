@@ -8,6 +8,8 @@
 		(click)="toggleSidebar()"
 		matTooltip="Toggle menu"
 		aria-label="Toggle navigation menu"
+		[attr.aria-expanded]="layoutService.sidebarOpened()"
+		aria-controls="sidebar-navigation"
 		class="menu-toggle">
 		<mat-icon aria-hidden="true">menu</mat-icon>
 	</button>

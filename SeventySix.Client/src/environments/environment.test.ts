@@ -77,5 +77,7 @@ export const environment: Environment =
 		},
 		auth: {
 			loginUrl: "/auth/login"
-		}
+		},
+		serviceWorkerEnabled: false,
+		oauthAllowedOrigin: ""
 	};

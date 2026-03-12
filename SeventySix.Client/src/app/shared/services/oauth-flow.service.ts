@@ -235,15 +235,23 @@ export class OAuthFlowService
 	 */
 	private isValidOAuthOrigin(origin: string): boolean
 	{
-		// Guard against relative apiUrl (production uses '/api/v1') which would
-		// throw 'TypeError: Invalid URL' inside new URL(). Fall back to the
-		// current window origin when the URL is relative.
-		const allowedOrigin: string =
-			environment.apiUrl.startsWith(HTTP_PROTOCOL_PREFIX)
-				? new URL(environment.apiUrl).origin
-				: window.location.origin;
+		// When apiUrl is absolute, extract its origin directly.
+		if (environment.apiUrl.startsWith(HTTP_PROTOCOL_PREFIX))
+		{
+			return origin === new URL(environment.apiUrl).origin;
+		}
 
-		return origin === allowedOrigin;
+		// When apiUrl is relative (production/dev proxy), check:
+		// 1. Same-origin (production behind reverse proxy)
+		// 2. Explicit OAuth callback origin (dev proxy to separate API port)
+		if (origin === window.location.origin)
+		{
+			return true;
+		}
+
+		return isPresent(environment.oauthAllowedOrigin)
+			&& environment.oauthAllowedOrigin.length > 0
+			&& origin === environment.oauthAllowedOrigin;
 	}
 
 	/**

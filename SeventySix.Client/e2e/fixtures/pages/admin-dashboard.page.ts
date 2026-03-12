@@ -63,27 +63,29 @@ export class AdminDashboardPageHelper
 	}
 
 	/**
-	 * Gets a tab by index.
-	 * @param tabIndex
-	 * Zero-based tab index.
+	 * Gets a tab by its visible label text.
+	 * @param tabLabel
+	 * The tab's text label.
 	 * @returns
 	 * Locator for the tab.
 	 */
-	getTab(tabIndex: number): Locator
+	getTab(tabLabel: string): Locator
 	{
-		return this.tabs.nth(tabIndex);
+		return this.tabs.filter(
+			{ hasText: tabLabel });
 	}
 
 	/**
-	 * Clicks a tab by index.
-	 * @param tabIndex
-	 * Zero-based tab index.
+	 * Clicks a tab by its visible label text.
+	 * @param tabLabel
+	 * The tab's text label.
 	 */
-	async selectTab(tabIndex: number): Promise<void>
+	async selectTab(tabLabel: string): Promise<void>
 	{
 		await this
 			.tabs
-			.nth(tabIndex)
+			.filter(
+				{ hasText: tabLabel })
 			.click();
 	}
 
@@ -111,12 +113,14 @@ export class AdminDashboardPageHelper
 
 	/**
 	 * Asserts that a tab is selected via aria-selected.
-	 * @param tabIndex
-	 * Zero-based tab index.
+	 * @param tabLabel
+	 * The tab's text label.
 	 */
-	async expectTabSelected(tabIndex: number): Promise<void>
+	async expectTabSelected(tabLabel: string): Promise<void>
 	{
-		await expect(this.tabs.nth(tabIndex))
+		await expect(
+			this.tabs.filter(
+				{ hasText: tabLabel }))
 			.toHaveAttribute(
 				"aria-selected",
 				"true");
@@ -124,12 +128,14 @@ export class AdminDashboardPageHelper
 
 	/**
 	 * Asserts that a tab is active via CSS class.
-	 * @param tabIndex
-	 * Zero-based tab index.
+	 * @param tabLabel
+	 * The tab's text label.
 	 */
-	async expectTabActive(tabIndex: number): Promise<void>
+	async expectTabActive(tabLabel: string): Promise<void>
 	{
-		await expect(this.tabs.nth(tabIndex))
+		await expect(
+			this.tabs.filter(
+				{ hasText: tabLabel }))
 			.toHaveClass(/mdc-tab--active/);
 	}
 }

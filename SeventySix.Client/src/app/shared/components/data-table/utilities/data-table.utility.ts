@@ -151,7 +151,7 @@ export class DataTableUtilities
 	static calculateDateRange(
 		range: string,
 		now: Date,
-		dateService: DateService = new DateService()): DateRangeEvent | null
+		dateService: DateService): DateRangeEvent | null
 	{
 		const rangeMs: number | undefined =
 			DataTableUtilities.DATE_RANGE_MS[range as DateRangeKey];

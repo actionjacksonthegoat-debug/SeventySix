@@ -159,7 +159,10 @@ describe("DataTableUtilities",
 					() =>
 					{
 						const result: DateRangeEvent | null =
-							DataTableUtilities.calculateDateRange("24h", referenceTime);
+							DataTableUtilities.calculateDateRange(
+								"24h",
+								referenceTime,
+								new DateService());
 
 						expect(result)
 							.not
@@ -176,7 +179,10 @@ describe("DataTableUtilities",
 					() =>
 					{
 						const result: DateRangeEvent | null =
-							DataTableUtilities.calculateDateRange("7d", referenceTime);
+							DataTableUtilities.calculateDateRange(
+								"7d",
+								referenceTime,
+								new DateService());
 
 						expect(result)
 							.not
@@ -193,7 +199,10 @@ describe("DataTableUtilities",
 					() =>
 					{
 						const result: DateRangeEvent | null =
-							DataTableUtilities.calculateDateRange("30d", referenceTime);
+							DataTableUtilities.calculateDateRange(
+								"30d",
+								referenceTime,
+								new DateService());
 
 						expect(result)
 							.not

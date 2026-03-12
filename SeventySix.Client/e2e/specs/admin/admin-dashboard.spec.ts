@@ -50,13 +50,13 @@ test.describe("Admin Dashboard",
 
 						expect(tabCount)
 							.toBe(4);
-						await expect(adminDashboardPage.getTab(0))
+						await expect(adminDashboardPage.getTab(PAGE_TEXT.adminDashboard.tabs.systemOverview))
 							.toContainText(PAGE_TEXT.adminDashboard.tabs.systemOverview);
-						await expect(adminDashboardPage.getTab(1))
+						await expect(adminDashboardPage.getTab(PAGE_TEXT.adminDashboard.tabs.apiMetrics))
 							.toContainText(PAGE_TEXT.adminDashboard.tabs.apiMetrics);
-						await expect(adminDashboardPage.getTab(2))
+						await expect(adminDashboardPage.getTab(PAGE_TEXT.adminDashboard.tabs.cacheMetrics))
 							.toContainText(PAGE_TEXT.adminDashboard.tabs.cacheMetrics);
-						await expect(adminDashboardPage.getTab(3))
+						await expect(adminDashboardPage.getTab(PAGE_TEXT.adminDashboard.tabs.externalSystems))
 							.toContainText(PAGE_TEXT.adminDashboard.tabs.externalSystems);
 					});
 			});
@@ -87,7 +87,7 @@ test.describe("Admin Dashboard",
 					async ({ adminDashboardPage }) =>
 					{
 						// Click API Metrics tab
-						await adminDashboardPage.selectTab(1);
+						await adminDashboardPage.selectTab(PAGE_TEXT.adminDashboard.tabs.apiMetrics);
 					});
 
 				test("should display Grafana embed with API Endpoint Metrics title",
@@ -105,7 +105,7 @@ test.describe("Admin Dashboard",
 					async ({ adminDashboardPage }) =>
 					{
 						// Click Cache Metrics tab
-						await adminDashboardPage.selectTab(2);
+						await adminDashboardPage.selectTab(PAGE_TEXT.adminDashboard.tabs.cacheMetrics);
 					});
 
 				test("should display Grafana embed with Valkey Cache Metrics title",
@@ -123,7 +123,7 @@ test.describe("Admin Dashboard",
 					async ({ adminDashboardPage }) =>
 					{
 						// Click External Systems tab
-						await adminDashboardPage.selectTab(3);
+						await adminDashboardPage.selectTab(PAGE_TEXT.adminDashboard.tabs.externalSystems);
 					});
 
 				test("should display API statistics table",
@@ -208,25 +208,25 @@ test.describe("Admin Dashboard",
 					async ({ adminDashboardPage }) =>
 					{
 						// Verify System Overview tab is active by default
-						await expect(adminDashboardPage.getTab(0))
+						await expect(adminDashboardPage.getTab(PAGE_TEXT.adminDashboard.tabs.systemOverview))
 							.toHaveClass(/mdc-tab--active/);
 
 						// Switch to API Metrics tab
-						await adminDashboardPage.selectTab(1);
+						await adminDashboardPage.selectTab(PAGE_TEXT.adminDashboard.tabs.apiMetrics);
 
-						await expect(adminDashboardPage.getTab(1))
+						await expect(adminDashboardPage.getTab(PAGE_TEXT.adminDashboard.tabs.apiMetrics))
 							.toHaveClass(/mdc-tab--active/);
 
 						// Switch to Cache Metrics tab
-						await adminDashboardPage.selectTab(2);
+						await adminDashboardPage.selectTab(PAGE_TEXT.adminDashboard.tabs.cacheMetrics);
 
-						await expect(adminDashboardPage.getTab(2))
+						await expect(adminDashboardPage.getTab(PAGE_TEXT.adminDashboard.tabs.cacheMetrics))
 							.toHaveClass(/mdc-tab--active/);
 
 						// Switch to External Systems tab
-						await adminDashboardPage.selectTab(3);
+						await adminDashboardPage.selectTab(PAGE_TEXT.adminDashboard.tabs.externalSystems);
 
-						await expect(adminDashboardPage.getTab(3))
+						await expect(adminDashboardPage.getTab(PAGE_TEXT.adminDashboard.tabs.externalSystems))
 							.toHaveClass(/mdc-tab--active/);
 					});
 			});

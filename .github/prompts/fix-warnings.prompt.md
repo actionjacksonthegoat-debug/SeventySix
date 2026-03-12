@@ -16,7 +16,7 @@ Find and fix ALL build and lint warnings across the entire codebase.
 1. Run `dotnet build` in `SeventySix.Server/` and fix ALL warnings
 2. Run `npx ng build` in `SeventySix.Client/` and fix ALL warnings
 3. Run `npx eslint "src/**/*.ts" --max-warnings 0` in `SeventySix.Client/` and fix ALL warnings
-4. Check for IDE errors via `get_errors` tool
+4. Run `get_errors` (no file filter) — fix ALL IDE/TypeScript/lint errors reported
 
 ## Rules
 
@@ -27,4 +27,4 @@ Find and fix ALL build and lint warnings across the entire codebase.
 
 ## Validation
 
-After fixing, re-run all three commands and confirm zero warnings.
+After fixing, re-run all build commands and `get_errors` (no file filter) — confirm zero warnings/errors.

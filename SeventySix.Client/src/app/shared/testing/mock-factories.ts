@@ -310,6 +310,7 @@ export interface MockLayoutService
 	closeSidebar: Mock;
 	sidebarMode: Mock;
 	sidebarExpanded: Mock;
+	sidebarOpened: Mock;
 }
 
 /**
@@ -330,7 +331,10 @@ export function createMockLayoutService(): MockLayoutService
 			.mockReturnValue("side"),
 		sidebarExpanded: vi
 			.fn()
-			.mockReturnValue(true)
+			.mockReturnValue(true),
+		sidebarOpened: vi
+			.fn()
+			.mockReturnValue(false)
 	};
 }
 
