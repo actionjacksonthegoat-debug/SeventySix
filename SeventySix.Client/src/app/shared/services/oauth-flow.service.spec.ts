@@ -434,5 +434,87 @@ describe("OAuthFlowService",
 							environment.apiUrl = originalApiUrl;
 						}
 					});
+
+				it("should accept messages from oauthAllowedOrigin when apiUrl is relative",
+					() =>
+					{
+						const originalApiUrl: string =
+							environment.apiUrl;
+						const originalOauthOrigin: string =
+							environment.oauthAllowedOrigin;
+
+						try
+						{
+							environment.apiUrl = "/api/v1";
+							environment.oauthAllowedOrigin = "https://localhost:7074";
+
+							const events: unknown[] = [];
+							service.events$.subscribe(
+								(event: unknown) => events.push(event));
+
+							window.dispatchEvent(
+								new MessageEvent(
+									"message",
+									{
+										origin: "https://localhost:7074",
+										data: {
+											type: OAUTH_POSTMESSAGE_TYPE.SUCCESS,
+											code: "cross-origin-api-test"
+										}
+									}));
+
+							expect(events)
+								.toHaveLength(1);
+							expect(events[0])
+								.toEqual(
+									{
+										type: OAUTH_FLOW_EVENT_TYPE.CODE_RECEIVED,
+										code: "cross-origin-api-test"
+									});
+						}
+						finally
+						{
+							environment.apiUrl = originalApiUrl;
+							environment.oauthAllowedOrigin = originalOauthOrigin;
+						}
+					});
+
+				it("should reject messages from unknown origin even when oauthAllowedOrigin is set",
+					() =>
+					{
+						const originalApiUrl: string =
+							environment.apiUrl;
+						const originalOauthOrigin: string =
+							environment.oauthAllowedOrigin;
+
+						try
+						{
+							environment.apiUrl = "/api/v1";
+							environment.oauthAllowedOrigin = "https://localhost:7074";
+
+							const events: unknown[] = [];
+							service.events$.subscribe(
+								(event: unknown) => events.push(event));
+
+							window.dispatchEvent(
+								new MessageEvent(
+									"message",
+									{
+										origin: "https://evil.com",
+										data: {
+											type: OAUTH_POSTMESSAGE_TYPE.SUCCESS,
+											code: "stolen-code"
+										}
+									}));
+
+							expect(events)
+								.toHaveLength(0);
+						}
+						finally
+						{
+							environment.apiUrl = originalApiUrl;
+							environment.oauthAllowedOrigin = originalOauthOrigin;
+						}
+					});
 			});
 	});

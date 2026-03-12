@@ -20,7 +20,8 @@ Read `Implementation.md` (orchestrator) and ALL `implementation-N.md` files list
 5. **Naming & formatting**: Check proposed names, structure, and patterns match the instruction files
 6. **Architecture**: Server dependencies flow `Shared ← Domains ← Api` (never reverse). Client domains import only `@shared/*` + themselves
 7. **Compaction checkpoints**: Verify compaction checkpoints exist at major domain/technology boundaries (e.g., server → client transitions). Each checkpoint must specify re-reading copilot-instructions.md and relevant instruction files.
-8. **Final phase MUST run all required test suites (this is final-phase only — intermediate phases use build + unit tests) — NO SKIPPING, NO EXCEPTIONS, REGARDLESS OF TIME NEEDED**:
+8. **Zero Warnings Gate**: Verify the plan includes a mandatory step (after all implementation phases, before security review) to run `npm run format`, `/fix-warnings`, and `get_errors` with zero errors/warnings confirmed.
+9. **Final phase MUST run all required test suites (this is final-phase only — intermediate phases use build + unit tests) — NO SKIPPING, NO EXCEPTIONS, REGARDLESS OF TIME NEEDED**:
     - `dotnet test` → `Test summary: total: X, failed: 0`
     - `npm test` → `X passed (X)`
     - `npm run test:e2e` → `[PASS] All E2E tests passed!`

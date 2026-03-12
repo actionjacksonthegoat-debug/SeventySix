@@ -65,13 +65,22 @@
 
 ## [CRITICAL] Security Review Gate
 
-> Before running the final test gate, execute the `/security-review` prompt to perform a comprehensive OWASP/PII/Auth security audit. Fix ALL Critical and High findings before proceeding to tests. This gate is mandatory for all plan executions — the workflow is: **Implementation phases → `/security-review` → `npm run format` → Test Gate**.
+> Before running the final test gate, execute the `/security-review` prompt to perform a comprehensive OWASP/PII/Auth security audit. Fix ALL Critical and High findings before proceeding to tests. This gate is mandatory for all plan executions — the workflow is: **Implementation phases → Zero Warnings Gate → `/security-review` → Test Gate**.
+
+## [CRITICAL] Zero Warnings Gate (Before Security Review)
+
+After all implementation phases complete, BEFORE security review:
+1. Run `npm run format`
+2. Run `/fix-warnings` — fix every build, lint, and IDE warning
+3. Run `get_errors` (no file filter) — confirm zero errors/warnings
+
+This gate is NON-NEGOTIABLE. Zero warnings must be verified before security review.
 
 ## [CRITICAL] Final Validation Gate (Plan Completion ONLY)
 
 This gate runs **once** at the end of a plan — not during every phase.
 
-**During implementation phases**: run relevant build/unit tests to verify your work (`dotnet build`, `ng build`, unit tests for changed code). Do NOT run E2E or load tests mid-phase.
+**During implementation phases**: run relevant build/unit tests to verify your work (`dotnet build`, `ng build`, unit tests for changed code). Run `get_errors` (no file filter) after each phase to catch IDE/TypeScript warnings. Do NOT run E2E or load tests mid-phase.
 
 **Final validation** (after all implementation phases + security review + `npm run format`):
 

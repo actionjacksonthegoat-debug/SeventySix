@@ -520,4 +520,83 @@ describe("LogDetailDialogComponent",
 							.toHaveBeenCalled();
 					});
 			});
+
+		describe("accessibility",
+			() =>
+			{
+				it("should have aria-controls on exception toggle button",
+					() =>
+					{
+						const button: HTMLButtonElement | null =
+							fixture.nativeElement.querySelector(
+								"[aria-controls='exception-details-content']");
+
+						expect(button)
+							.toBeTruthy();
+					});
+
+				it("should have aria-controls on stack trace toggle button",
+					() =>
+					{
+						const button: HTMLButtonElement | null =
+							fixture.nativeElement.querySelector(
+								"[aria-controls='stack-trace-content']");
+
+						expect(button)
+							.toBeTruthy();
+					});
+
+				it("should have aria-controls on properties toggle button",
+					() =>
+					{
+						const button: HTMLButtonElement | null =
+							fixture.nativeElement.querySelector(
+								"[aria-controls='properties-content']");
+
+						expect(button)
+							.toBeTruthy();
+					});
+
+				it("should have id on exception content region when expanded",
+					() =>
+					{
+						component.exceptionCollapsed.set(false);
+						fixture.detectChanges();
+
+						const content: HTMLElement | null =
+							fixture.nativeElement.querySelector(
+								"#exception-details-content");
+
+						expect(content)
+							.toBeTruthy();
+					});
+
+				it("should have id on stack trace content region when expanded",
+					() =>
+					{
+						component.stackTraceCollapsed.set(false);
+						fixture.detectChanges();
+
+						const content: HTMLElement | null =
+							fixture.nativeElement.querySelector(
+								"#stack-trace-content");
+
+						expect(content)
+							.toBeTruthy();
+					});
+
+				it("should have id on properties content region when expanded",
+					() =>
+					{
+						component.propertiesCollapsed.set(false);
+						fixture.detectChanges();
+
+						const content: HTMLElement | null =
+							fixture.nativeElement.querySelector(
+								"#properties-content");
+
+						expect(content)
+							.toBeTruthy();
+					});
+			});
 	});

@@ -88,12 +88,15 @@
 						(click)="toggleException()"
 						[matTooltip]='exceptionCollapsed() ? "Expand" : "Collapse"'
 						[attr.aria-label]='exceptionCollapsed() ? "Expand exception details" : "Collapse exception details"'
-						[attr.aria-expanded]="!exceptionCollapsed()">
+						[attr.aria-expanded]="!exceptionCollapsed()"
+						aria-controls="exception-details-content">
 						<mat-icon aria-hidden="true">{{ exceptionCollapsed() ? "expand_more" : "expand_less" }}</mat-icon>
 					</button>
 				</div>
 				@if (!exceptionCollapsed()) {
-					<div class="section-content">
+					<div
+						id="exception-details-content"
+						class="section-content">
 						<div class="error-breakdown">
 							@if (log().exceptionMessage) {
 								<div class="error-item exception-message">
@@ -139,7 +142,8 @@
 						(click)="toggleStackTrace()"
 						[matTooltip]='stackTraceCollapsed() ? "Expand" : "Collapse"'
 						[attr.aria-label]='stackTraceCollapsed() ? "Expand stack trace" : "Collapse stack trace"'
-						[attr.aria-expanded]="!stackTraceCollapsed()">
+						[attr.aria-expanded]="!stackTraceCollapsed()"
+						aria-controls="stack-trace-content">
 						<mat-icon aria-hidden="true">{{
 								stackTraceCollapsed()
 								? "expand_more"
@@ -148,7 +152,9 @@
 					</button>
 				</div>
 				@if (!stackTraceCollapsed()) {
-					<div class="section-content">
+					<div
+						id="stack-trace-content"
+						class="section-content">
 						<div class="stack-breakdown">
 							<!-- Stack Frame Count -->
 							<div class="stack-info">
@@ -241,7 +247,8 @@
 						(click)="toggleProperties()"
 						[attr.aria-expanded]="!propertiesCollapsed()"
 						[attr.aria-label]="propertiesCollapsed() ? 'Expand properties' : 'Collapse properties'"
-						[matTooltip]='propertiesCollapsed() ? "Expand" : "Collapse"'>
+						[matTooltip]='propertiesCollapsed() ? "Expand" : "Collapse"'
+						aria-controls="properties-content">
 						<mat-icon aria-hidden="true">{{
 								propertiesCollapsed()
 								? "expand_more"
@@ -250,7 +257,9 @@
 					</button>
 				</div>
 				@if (!propertiesCollapsed()) {
-					<div class="section-content properties-content">
+					<div
+						id="properties-content"
+						class="section-content properties-content">
 						<pre>{{ formattedProperties() }}</pre>
 					</div>
 				}

@@ -27,6 +27,7 @@ Proceed through **all remaining phases** across all `implementation-N.md` files 
 
 - Build the affected project (`dotnet build` or `ng build`)
 - Run unit tests for changed code
+- **Run `get_errors` (no file filter)** — confirm zero IDE/TypeScript/lint errors before moving to the next phase
 - Do NOT run E2E or load tests until the final gate
 - **[CRITICAL] NEVER** truncate terminal output — no `Select-Object -Last N`, `Select-Object -First N`, `Select-String`, or **any** filtering/piping of command output. Run raw commands and let them stream fully.
 
@@ -38,15 +39,24 @@ At natural technology/domain boundaries (e.g., switching from server to client w
 3. Re-read relevant `.github/instructions/*.instructions.md` for the upcoming work
 4. Continue with the next phase
 
+## [CRITICAL] Zero Warnings Gate — Runs Before Security Review
+
+After completing ALL implementation phases but BEFORE the security review:
+
+1. **Run `npm run format`** to normalize formatting
+2. **Run `/fix-warnings`** — fix every build, lint, and IDE warning across server and client
+3. **Run `get_errors` (no file filter)** — confirm zero errors/warnings in the IDE. If any remain, fix them before proceeding.
+
+This gate is NON-NEGOTIABLE. Zero warnings must be verified before security review.
+
 ## [CRITICAL] Security Review Gate — Runs Before Final Tests
 
-After completing ALL implementation phases but BEFORE running the final test gate:
+After the Zero Warnings Gate passes:
 
 1. **Execute the `/security-review` prompt** — perform a full OWASP/PII/Auth security audit
 2. **Fix ALL Critical and High findings** — these block release
 3. **Document Medium findings** as GitHub issues if not fixable immediately
-4. **Run `npm run format`** after any security fixes
-5. **Run `/fix-warnings`** to catch and fix any remaining build/lint warnings
+4. **Run `npm run format`** if security fixes changed code
 
 This security review is NON-NEGOTIABLE. The codebase must be verified clean of:
 - Hardcoded secrets, API keys, passwords, connection strings

@@ -1,3 +1,4 @@
+import { signal, WritableSignal } from "@angular/core";
 import { ComponentFixture } from "@angular/core/testing";
 import { provideRouter, Router } from "@angular/router";
 import { APP_ROUTES } from "@shared/constants/routes.constants";
@@ -16,6 +17,7 @@ import { HeaderComponent } from "./header.component";
 interface MockLayoutService
 {
 	toggleSidebar: ReturnType<typeof vi.fn>;
+	sidebarOpened: WritableSignal<boolean>;
 }
 
 describe("HeaderComponent",
@@ -35,7 +37,8 @@ describe("HeaderComponent",
 					createMockThemeService();
 				mockLayoutService =
 					{
-						toggleSidebar: vi.fn()
+						toggleSidebar: vi.fn(),
+						sidebarOpened: signal(false)
 					};
 				mockAuthService =
 					createMockAuthService();
@@ -319,6 +322,42 @@ describe("HeaderComponent",
 							.toBeTruthy();
 						expect(logoImg?.getAttribute("alt"))
 							.toBe("");
+					});
+
+				it("should have aria-controls on menu toggle button",
+					() =>
+					{
+						const menuButton: HTMLButtonElement | null =
+							fixture.nativeElement.querySelector(".menu-toggle");
+
+						expect(menuButton?.getAttribute("aria-controls"))
+							.toBe("sidebar-navigation");
+					});
+
+				it("should set aria-expanded to false when sidebar is closed",
+					() =>
+					{
+						mockLayoutService.sidebarOpened.set(false);
+						fixture.detectChanges();
+
+						const menuButton: HTMLButtonElement | null =
+							fixture.nativeElement.querySelector(".menu-toggle");
+
+						expect(menuButton?.getAttribute("aria-expanded"))
+							.toBe("false");
+					});
+
+				it("should set aria-expanded to true when sidebar is open",
+					() =>
+					{
+						mockLayoutService.sidebarOpened.set(true);
+						fixture.detectChanges();
+
+						const menuButton: HTMLButtonElement | null =
+							fixture.nativeElement.querySelector(".menu-toggle");
+
+						expect(menuButton?.getAttribute("aria-expanded"))
+							.toBe("true");
 					});
 			});
 	});

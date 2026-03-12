@@ -148,4 +148,6 @@ export interface Environment
 	testing: TestingConfig;
 	telemetry: TelemetryConfig;
 	auth: AuthConfig;
+	serviceWorkerEnabled: boolean;
+	oauthAllowedOrigin: string;
 }

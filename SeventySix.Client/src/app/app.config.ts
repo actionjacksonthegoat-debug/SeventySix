@@ -9,7 +9,6 @@ import {
 	ErrorHandler,
 	inject,
 	Injector,
-	isDevMode,
 	provideAppInitializer,
 	provideBrowserGlobalErrorListeners,
 	provideZonelessChangeDetection,
@@ -375,7 +374,7 @@ export const appConfig: ApplicationConfig =
 			// Service Worker for PWA support and asset caching only
 			provideServiceWorker("ngsw-worker.js",
 				{
-					enabled: !isDevMode(),
+					enabled: environment.serviceWorkerEnabled,
 					registrationStrategy: "registerWhenStable:30000"
 				}),
 			// Skeleton loader for loading states

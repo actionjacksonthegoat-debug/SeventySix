@@ -285,16 +285,12 @@ test.describe("User Management Page",
 							.toBeVisible(
 								{ timeout: TIMEOUTS.api });
 
-						// Quick filter chips: [All Users(0), Active(1), Inactive(2), Show Deleted(3)]
-						const filterChips: Locator =
+						const activeChip: Locator =
 							adminPage
 								.locator(SELECTORS.userManagement.dataTable)
-								.locator(SELECTORS.dataTable.chipOption);
-						const activeChip: Locator =
-							filterChips.nth(1);
-
-						await expect(activeChip)
-							.toContainText(PAGE_TEXT.userManagement.activeFilter);
+								.locator(SELECTORS.dataTable.chipOption)
+								.filter(
+									{ hasText: /\bActive\b/i });
 						await activeChip.click();
 
 						// Data should still be visible (all seeded users are active)
