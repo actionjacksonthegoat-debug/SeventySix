@@ -210,8 +210,10 @@ public static class OpenTelemetryExtensions
 							X509ChainTrustMode.CustomRootTrust;
 						chain.ChainPolicy.CustomTrustStore.Add(caCert);
 
-						return chain.Build(
-							new X509Certificate2(certificate));
+						using X509Certificate2 cert =
+							new(certificate);
+
+						return chain.Build(cert);
 					};
 			}
 
