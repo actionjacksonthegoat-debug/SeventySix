@@ -85,7 +85,7 @@ jobs:
                   cmd_options: >-
                       -a
                       -j
-                      -hook .zap/auth-hook.py
+                      --hook .zap/auth-hook.py
 
             - name: Upload ZAP SARIF
               if: always() && hashFiles('report_sarif.json') != ''
