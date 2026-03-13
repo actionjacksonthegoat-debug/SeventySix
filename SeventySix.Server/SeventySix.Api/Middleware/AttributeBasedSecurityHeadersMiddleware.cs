@@ -25,7 +25,7 @@ namespace SeventySix.Api.Middleware;
 /// <list type="bullet">
 /// <item>X-Content-Type-Options: nosniff</item>
 /// <item>X-Frame-Options: DENY</item>
-/// <item>X-XSS-Protection: 1; mode=block</item>
+/// <item>X-XSS-Protection: 0 (disabled — CSP provides superior protection)</item>
 /// <item>Referrer-Policy: strict-origin-when-cross-origin</item>
 /// <item>Permissions-Policy: geolocation=(), microphone=(), camera=()</item>
 /// <item>Content-Security-Policy: Configured for Angular + Material + Google Fonts</item>
@@ -58,7 +58,7 @@ public sealed class AttributeBasedSecurityHeadersMiddleware(
 		+ "script-src 'self' https://static.cloudflareinsights.com; "
 		+ "style-src 'self' 'unsafe-inline'; "
 		+ "font-src 'self'; "
-		+ "img-src 'self' data: https:; "
+		+ "img-src 'self' data:; "
 		+ "connect-src 'self' https://cloudflareinsights.com https://static.cloudflareinsights.com https://github.com; "
 		+ "frame-src 'self'; "
 		+ "frame-ancestors 'self'; "
@@ -75,7 +75,7 @@ public sealed class AttributeBasedSecurityHeadersMiddleware(
 		+ "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
 		+ "style-src 'self' 'unsafe-inline'; "
 		+ "font-src 'self'; "
-		+ "img-src 'self' data: https:; "
+		+ "img-src 'self' data:; "
 		+ "connect-src 'self' wss: https://localhost:7074 https://localhost:4319; "
 		+ "frame-src 'self' https://localhost:3443; "
 		+ "frame-ancestors 'self'; "
@@ -123,7 +123,8 @@ public sealed class AttributeBasedSecurityHeadersMiddleware(
 		context.Response.Headers.XContentTypeOptions =
 			config.XContentTypeOptions;
 		context.Response.Headers.XFrameOptions = config.XFrameOptions;
-		context.Response.Headers.XXSSProtection = "1; mode=block";
+		context.Response.Headers.XXSSProtection =
+			SeventySix.Shared.Constants.SecurityHeaderConstants.Values.XssDisabled;
 		context.Response.Headers["Referrer-Policy"] = config.ReferrerPolicy;
 		context.Response.Headers["Permissions-Policy"] =
 			config.PermissionsPolicy;

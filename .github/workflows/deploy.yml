@@ -7,6 +7,8 @@ on:
         types: [completed]
         branches: [master]
 
+permissions: {} # This workflow only uses SSH — no GITHUB_TOKEN needed
+
 concurrency:
     group: deploy-production
     cancel-in-progress: false  # Never cancel an in-progress deploy
@@ -15,12 +17,16 @@ jobs:
     deploy:
         name: Deploy to Production
         runs-on: ubuntu-latest
+        environment: production
         if: >-
             github.event_name == 'workflow_dispatch' ||
             github.event.workflow_run.conclusion == 'success'
 
         steps:
             - name: Deploy via SSH
+              # Risk acceptance: appleboy/ssh-action is single-maintainer.
+              # Mitigated by SHA-pinning (not tag-based). The action only executes
+              # explicit SSH commands defined in this workflow. Widely adopted (10K+ stars).
               uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1
               # All production secrets are injected from GitHub Secrets/Variables.
               # No .env file is used on the server — docker compose reads from the shell environment
@@ -70,7 +76,7 @@ jobs:
                       echo "=== Syncing repo to origin/master (overwrite local drift) ==="
                       git fetch origin master
                       git reset --hard origin/master
-                      git clean -fd -e postgres-ssl/ -e logs/
+                      git clean -fd -e postgres-ssl/ -e logs/ -e docker/certs/
 
                       echo "=== Syncing Caddy from checked-in source-of-truth ==="
                       sudo cp "$APP_DIR/Caddyfile.production" /etc/caddy/Caddyfile
@@ -84,6 +90,9 @@ jobs:
 
                       echo "=== Pulling pre-built images from GHCR ==="
                       docker compose -f docker-compose.production.yml pull api client
+
+                      echo "=== Verifying container UIDs match cert ACLs ==="
+                      bash "$APP_DIR/scripts/verify-cert-uids.sh"
 
                       echo "=== Restarting containers ==="
                       # Don't let compose failure skip diagnostics — capture exit code

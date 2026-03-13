@@ -1,3 +1,8 @@
+# ┌─────────────────────────────────────────────────────────────────────────┐
+# │ LOCAL DEVELOPMENT ONLY — passwords below are NOT used in production.  │
+# │ Production credentials are injected via CI/CD environment variables.  │
+# └─────────────────────────────────────────────────────────────────────────┘
+#
 # Manages user secrets for SeventySix development.
 # This will run 'dotnet user-secrets' commands for developer instances only.
 # Production will use environment variables which will work as user secrets in production containers,

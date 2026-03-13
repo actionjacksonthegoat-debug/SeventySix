@@ -254,6 +254,16 @@ public static class StartupValidator
 			violations.Add("Token rotation must NOT be disabled in Production environment");
 		}
 
+		if (authSettings?.Cookie is { SecureCookie: false })
+		{
+			violations.Add("Auth:Cookie:SecureCookie must be true in Production environment");
+		}
+
+		if (authSettings?.Cookie is { SameSiteLax: true })
+		{
+			violations.Add("Auth:Cookie:SameSiteLax must be false in Production environment");
+		}
+
 		if (violations.Count > 0)
 		{
 			foreach (string violation in violations)

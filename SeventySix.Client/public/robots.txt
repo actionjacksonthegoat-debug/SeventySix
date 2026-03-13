@@ -1,37 +1,10 @@
 # SeventySix - Production robots.txt
-# Optimized for 2026 AI crawlers and standard search engines
+# Only expose the public landing page; block API crawling.
+# Internal SPA routes are auth-gated and not listed here.
 
-# Default rules for all crawlers
 User-agent: *
-Allow: /
-
-# Prioritize landing page for crawlers
 Allow: /$
-
-# Block admin routes (not for public indexing)
-Disallow: /admin/
-Disallow: /developer/
-
-# Block account routes (user-specific, not for indexing)
-Disallow: /account/
-
-# Block auth routes (login pages, not for indexing)
-Disallow: /auth/
-
-# AI Crawler specific rules (optional - allow training on public content)
-# GPTBot (OpenAI), Google-Extended (Bard), anthropic-ai, ClaudeBot
-User-agent: GPTBot
-User-agent: Google-Extended
-User-agent: anthropic-ai
-User-agent: ClaudeBot
-Allow: /
-Disallow: /admin/
-Disallow: /developer/
-Disallow: /account/
-Disallow: /auth/
-
-# Crawl-delay to be respectful to origin (in seconds)
-Crawl-delay: 1
+Disallow: /api/
 
 # Sitemap location
 Sitemap: https://seventysixsandbox.com/sitemap.xml

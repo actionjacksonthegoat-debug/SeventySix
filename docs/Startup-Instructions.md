@@ -398,7 +398,7 @@ Once the token is set, every CI run on `master` or a pull request will upload co
 
 ## 8. Generate Certificates
 
-The application uses HTTPS everywhere, even in development. Two certificates are needed:
+The application uses HTTPS everywhere, even in development. Three certificate sets are needed:
 
 ### SSL Certificate (for HTTPS)
 
@@ -415,6 +415,16 @@ npm run generate:dataprotection-cert
 ```
 
 This generates the certificate used by .NET's Data Protection API to encrypt sensitive data at rest.
+
+### Internal CA Certificates (for mTLS)
+
+```powershell
+pwsh scripts/generate-internal-ca.ps1
+```
+
+This generates an internal Certificate Authority and service certificates used for mutual TLS (mTLS) between Docker services in production. Certificates are stored in `docker/certs/` (gitignored). See [Certificate-Lifecycle.md](Certificate-Lifecycle.md) for details.
+
+> **Note**: The `npm run bootstrap` script runs all three certificate generation scripts automatically.
 
 ### Regenerating the DataProtection Certificate
 

@@ -11,6 +11,7 @@
 		"test:coverage": "npm run test:coverage:server && npm run test:coverage:client",
 		"test:coverage:server": "node scripts/run-pwsh.mjs -File scripts/run-server-coverage.ps1",
 		"test:coverage:client": "cd SeventySix.Client && npm run test:coverage",
+		"test:dast": "node scripts/run-pwsh.mjs -File scripts/run-dast.ps1",
 		"test:e2e": "cd SeventySix.Client && npm run test:e2e --",
 		"test:e2e:keepalive": "cd SeventySix.Client && npm run test:e2e:keepalive --",
 		"start": "node scripts/run-pwsh.mjs -File scripts/start-dev.ps1",

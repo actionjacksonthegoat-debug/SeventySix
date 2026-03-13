@@ -483,39 +483,33 @@ After configuring all rules, verify:
 
 ---
 
-### 5.10 Generate PostgreSQL SSL Certificates
+### 5.10 Generate Internal CA and Service Certificates
 
-PostgreSQL is configured with `ssl=on` in `docker-compose.production.yml` and the API connects with `Database__SslMode=Require`. Self-signed certificates are sufficient because the connection is internal (Docker bridge network only — never exposed to the internet).
+Production inter-service communication uses mutual TLS (mTLS) with an internal Certificate Authority. The `generate-internal-ca.ps1` script creates a root CA (10-year lifetime) and service certificates (1-year lifetime) for PostgreSQL, Valkey, OTEL Collector, Jaeger, Prometheus, Grafana, and client certificates for the API and supporting services.
 
-**These must exist before the first `docker compose up`.** Without them PostgreSQL will fail to start and the entire stack will crash.
+**These must exist before the first `docker compose up`.** Without them services will fail to start.
 
 On the **production server**:
 
 ```bash
 ssh deploy@$SERVER_IP
+cd /srv/seventysix
 
-mkdir -p /srv/seventysix/postgres-ssl
-
-# Generate a self-signed cert valid for 10 years
-openssl req -x509 -nodes -days 3650 -newkey rsa:2048 \
-  -keyout /srv/seventysix/postgres-ssl/server.key \
-  -out /srv/seventysix/postgres-ssl/server.crt \
-  -subj "/CN=postgres"
-
-# PostgreSQL requires the key to be owned by UID 70 (postgres user inside the container)
-# and have strict permissions
-sudo chown 70:70 /srv/seventysix/postgres-ssl/server.key /srv/seventysix/postgres-ssl/server.crt
-sudo chmod 600 /srv/seventysix/postgres-ssl/server.key /srv/seventysix/postgres-ssl/server.crt
+# Generate all certificates (CA + service certs + client certs)
+pwsh scripts/generate-internal-ca.ps1
 ```
 
-Verify:
+This creates certificates in `docker/certs/` with proper directory structure. The `docker-compose.production.yml` mounts these into each service container.
+
+PostgreSQL requires strict file permissions:
 
 ```bash
-ls -la /srv/seventysix/postgres-ssl/
-# Should show server.crt and server.key owned by UID 70 with 600 permissions
+# PostgreSQL requires the key to be owned by UID 70 (postgres user inside the container)
+sudo chown 70:70 docker/certs/postgres/server.key docker/certs/postgres/server.crt
+sudo chmod 600 docker/certs/postgres/server.key docker/certs/postgres/server.crt
 ```
 
-> **On server migration:** These certs do NOT need to be preserved across servers — generate fresh ones on each new server. They only encrypt the internal Docker network connection between the API container and the PostgreSQL container.
+> **Certificate rotation:** Service certificates expire after 1 year. Re-run `generate-internal-ca.ps1` and restart services. The CA root (10-year) only needs regeneration if compromised. See [Certificate-Lifecycle.md](Certificate-Lifecycle.md) for full rotation procedures.
 
 ---
 
@@ -1134,8 +1128,8 @@ Client code using `new URL(environment.apiUrl)` works in dev (where `apiUrl` is 
 **Data Protection cert must be generated locally, not on the server.**
 The `npm run generate:dataprotection-cert` script requires the .NET SDK. Generate on your dev machine, then `scp` the `.pfx` to the server. The password must match the `DATA_PROTECTION_CERTIFICATE_PASSWORD` GitHub Secret exactly.
 
-**PostgreSQL SSL certs must exist before first `docker compose up`.**
-Without `postgres-ssl/server.crt` and `server.key`, PostgreSQL fails to start and cascades to the entire stack. See Section 5.10.
+**Internal CA certs must exist before first `docker compose up`.**
+Without certificates in `docker/certs/`, services requiring mTLS fail to start. Run `pwsh scripts/generate-internal-ca.ps1` first. See Section 5.10.
 
 **Server location matters for latency.**
 Hetzner EU (Germany) adds ~180ms RTT for US West Coast users on every uncached API call. Hetzner US West (Hillsboro, Oregon) drops this to ~20-40ms. Cloudflare caches static assets at edge PoPs regardless, so the latency hit is API-only. Choose location based on where your users are.

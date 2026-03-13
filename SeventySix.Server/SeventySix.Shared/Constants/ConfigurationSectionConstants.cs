@@ -47,6 +47,27 @@ public static class ConfigurationSectionConstants
 		/// Database SSL mode setting (optional — Npgsql SSL Mode values: Disable, Prefer, Require, VerifyCA, VerifyFull).
 		/// </summary>
 		public const string SslMode = "Database:SslMode";
+
+		/// <summary>
+		/// Whether to trust the server certificate without validation (optional, defaults to false).
+		/// Set to "true" only for self-signed certificates in development/test environments.
+		/// </summary>
+		public const string TrustServerCertificate = "Database:TrustServerCertificate";
+
+		/// <summary>
+		/// Path to the CA certificate for server certificate verification (optional — enables VerifyFull).
+		/// </summary>
+		public const string SslCaCertificate = "Database:SslCaCertificate";
+
+		/// <summary>
+		/// Path to the client certificate for mutual TLS (optional).
+		/// </summary>
+		public const string SslClientCertificate = "Database:SslClientCertificate";
+
+		/// <summary>
+		/// Path to the client certificate private key for mutual TLS (optional).
+		/// </summary>
+		public const string SslClientKey = "Database:SslClientKey";
 	}
 
 	/// <summary>

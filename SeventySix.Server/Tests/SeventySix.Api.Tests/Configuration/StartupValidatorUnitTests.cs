@@ -293,6 +293,132 @@ public sealed class StartupValidatorUnitTests
 		exception.Message.ShouldContain("Configuration validation failed");
 	}
 
+	[Fact]
+	public void ValidateProductionSecuritySettings_Production_SecureCookieFalse_ThrowsInvalidOperationException()
+	{
+		// Arrange
+		Dictionary<string, string?> configValues =
+			new()
+			{
+				["Mfa:Enabled"] = "true",
+				["Totp:Enabled"] = "true",
+				["Auth:Token:DisableRotation"] = "false",
+				["Auth:Cookie:SecureCookie"] = "false",
+				["Auth:Cookie:SameSiteLax"] = "false",
+			};
+
+		IConfiguration configuration =
+			new ConfigurationBuilder()
+				.AddInMemoryCollection(configValues)
+				.Build();
+
+		IHostEnvironment environment =
+			CreateEnvironment(Environments.Production);
+
+		// Act & Assert
+		InvalidOperationException exception =
+			Should.Throw<InvalidOperationException>(
+				() => StartupValidator.ValidateProductionSecuritySettings(
+					configuration,
+					environment,
+					Logger));
+
+		exception.Message.ShouldContain("SecureCookie");
+	}
+
+	[Fact]
+	public void ValidateProductionSecuritySettings_Production_SecureCookieTrue_DoesNotThrow()
+	{
+		// Arrange
+		Dictionary<string, string?> configValues =
+			new()
+			{
+				["Mfa:Enabled"] = "true",
+				["Totp:Enabled"] = "true",
+				["Auth:Token:DisableRotation"] = "false",
+				["Auth:Cookie:SecureCookie"] = "true",
+				["Auth:Cookie:SameSiteLax"] = "false",
+			};
+
+		IConfiguration configuration =
+			new ConfigurationBuilder()
+				.AddInMemoryCollection(configValues)
+				.Build();
+
+		IHostEnvironment environment =
+			CreateEnvironment(Environments.Production);
+
+		// Act & Assert
+		Should.NotThrow(
+			() => StartupValidator.ValidateProductionSecuritySettings(
+				configuration,
+				environment,
+				Logger));
+	}
+
+	[Fact]
+	public void ValidateProductionSecuritySettings_Production_SameSiteLaxTrue_ThrowsInvalidOperationException()
+	{
+		// Arrange
+		Dictionary<string, string?> configValues =
+			new()
+			{
+				["Mfa:Enabled"] = "true",
+				["Totp:Enabled"] = "true",
+				["Auth:Token:DisableRotation"] = "false",
+				["Auth:Cookie:SecureCookie"] = "true",
+				["Auth:Cookie:SameSiteLax"] = "true",
+			};
+
+		IConfiguration configuration =
+			new ConfigurationBuilder()
+				.AddInMemoryCollection(configValues)
+				.Build();
+
+		IHostEnvironment environment =
+			CreateEnvironment(Environments.Production);
+
+		// Act & Assert
+		InvalidOperationException exception =
+			Should.Throw<InvalidOperationException>(
+				() => StartupValidator.ValidateProductionSecuritySettings(
+					configuration,
+					environment,
+					Logger));
+
+		exception.Message.ShouldContain("SameSiteLax");
+	}
+
+	[Fact]
+	public void ValidateProductionSecuritySettings_Production_SameSiteLaxFalse_DoesNotThrow()
+	{
+		// Arrange
+		Dictionary<string, string?> configValues =
+			new()
+			{
+				["Mfa:Enabled"] = "true",
+				["Totp:Enabled"] = "true",
+				["Auth:Token:DisableRotation"] = "false",
+				["Auth:Cookie:SecureCookie"] = "true",
+				["Auth:Cookie:SameSiteLax"] = "false",
+			};
+
+		IConfiguration configuration =
+			new ConfigurationBuilder()
+				.AddInMemoryCollection(configValues)
+				.Build();
+
+		IHostEnvironment environment =
+			CreateEnvironment(Environments.Production);
+
+		// Act & Assert
+		Should.NotThrow(
+			() => StartupValidator.ValidateProductionSecuritySettings(
+				configuration,
+				environment,
+				Logger));
+	}
+
 	private static IHostEnvironment CreateEnvironment(string environmentName)
 	{
 		IHostEnvironment environment =

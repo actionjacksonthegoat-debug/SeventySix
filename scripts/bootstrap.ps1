@@ -46,6 +46,8 @@ if ($LASTEXITCODE -ne 0) { exit 1 }
 if ($LASTEXITCODE -ne 0) { exit 1 }
 & "$PSScriptRoot\generate-dataprotection-cert.ps1"
 if ($LASTEXITCODE -ne 0) { exit 1 }
+& "$PSScriptRoot\generate-internal-ca.ps1"
+if ($LASTEXITCODE -ne 0) { exit 1 }
 
 # Phase 5: Install dependencies
 Write-Host ""

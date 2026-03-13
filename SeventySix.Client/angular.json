@@ -48,6 +48,7 @@
 					},
 					"configurations": {
 						"production": {
+							"subresourceIntegrity": true,
 							"budgets": [
 								{
 									"type": "initial",
@@ -84,6 +85,7 @@
 							]
 						},
 						"e2e": {
+							"subresourceIntegrity": true,
 							"optimization": false,
 							"extractLicenses": false,
 							"sourceMap": true,

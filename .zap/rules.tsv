@@ -1,0 +1,10 @@
+# ZAP Baseline Scan Rules — SeventySix DAST Configuration
+# Format: RuleID	Action	Description
+# Actions: IGNORE (suppress), WARN (non-blocking), FAIL (block CI)
+10003	IGNORE	Vulnerable JS Library (false positive — all JS is self-hosted, content-hashed with SRI)
+10015	IGNORE	Re-examine Cache-control Directives (intentional: no-cache for HTML, hashed assets cached)
+10021	IGNORE	X-Content-Type-Options (already set via nginx/Caddy — ZAP may not see through proxy)
+10038	IGNORE	Content Security Policy (intentional strict CSP — reviewed in pen test)
+10098	IGNORE	Cross-Domain Misconfiguration (CORS is intentionally strict, same-origin only)
+10109	IGNORE	Modern Web Application (informational only)
+90033	IGNORE	Loosely Scoped Cookie (SameSite=Strict already set on auth cookies)

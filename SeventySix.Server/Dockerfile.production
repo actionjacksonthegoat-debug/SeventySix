@@ -87,8 +87,10 @@ RUN apt-get update && \
 	apt-get clean && \
 	rm -rf /var/lib/apt/lists/*
 
-# Create a non-root user
-RUN groupadd -r appuser && useradd -r -g appuser appuser
+# Create a non-root user with a pinned UID (999) so ACLs on mounted cert files
+# remain correct across base image upgrades. The UID must match the setfacl
+# entries in scripts/generate-internal-ca.ps1 (u:999:r).
+RUN groupadd -r -g 999 appuser && useradd -r -u 999 -g appuser appuser
 
 # Copy published files and migration scripts
 COPY --from=publish /app/publish .
