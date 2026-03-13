@@ -167,7 +167,9 @@ services:
       retries: 10
       start_period: 30s
     networks:
-      - dast-network
+      dast-network:
+        aliases:
+          - api-e2e # nginx-e2e.conf references api-e2e upstream
 
   # Angular Client - DAST Build (HTTPS)
   client-dast:
