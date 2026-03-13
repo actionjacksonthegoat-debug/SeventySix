@@ -28,11 +28,6 @@ updates:
       - "dependencies"
       - "npm"
       - "client"
-    # These packages are pinned in package.json `overrides` as security patches
-    # for transitive dependencies. Update them manually after security review.
-    ignore:
-      - dependency-name: "tar"
-      - dependency-name: "hono"
     groups:
       angular:
         patterns:

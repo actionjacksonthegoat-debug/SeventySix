@@ -1,0 +1,200 @@
+# docker-compose.dast.yml
+# DAST (Dynamic Application Security Testing) Environment for SeventySix
+# Usage: docker compose -f docker-compose.dast.yml up -d
+#
+# IMPORTANT: Run scripts/generate-dev-ssl-cert.ps1 first to generate SSL certificates
+#
+# Key differences from E2E:
+# - Rate limiting disabled (ZAP active scanning triggers rate limits)
+# - MFA disabled (ZAP can't solve TOTP challenges)
+# - ALTCHA disabled (ZAP can't solve proof-of-work)
+#
+# Port Allocation (isolated from development, E2E, and load test, all HTTPS):
+# - API: 7274 HTTPS (dev: 7074, E2E: 7174, loadtest: 7175)
+# - Client: 4301 HTTPS (dev: 4200, E2E: 4201, loadtest: 4202)
+# - PostgreSQL: 5436 (dev: 5433, E2E: 5434, loadtest: 5435)
+# - Valkey: 6382 (dev: 6379, E2E: 6380, loadtest: 6381)
+# - Mock Brevo API: 1082 (E2E: 1080, loadtest: 1081)
+
+name: seventysix-dast
+
+services:
+  # PostgreSQL - DAST Database
+  postgres-dast:
+    image: postgres:18-alpine
+    container_name: seventysix-postgres-dast
+    environment:
+      POSTGRES_DB: seventysix_dast
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: DAST_Test_Password_123
+      PGDATA: /var/lib/postgresql/data
+    ports:
+      - "5436:5432"
+    volumes:
+      - postgres_dast_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - dast-network
+
+  # Valkey - DAST Cache
+  valkey-dast:
+    image: valkey/valkey:9.0-alpine
+    container_name: seventysix-valkey-dast
+    ports:
+      - "6382:6379"
+    healthcheck:
+      test: [ "CMD", "valkey-cli", "ping" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - dast-network
+
+  # Mock Brevo API - Email Capture
+  mock-brevo-api-dast:
+    build:
+      context: ./SeventySix.Client/mock-brevo-api
+      dockerfile: Dockerfile
+    container_name: seventysix-mock-brevo-dast
+    ports:
+      - "1082:3000"
+    healthcheck:
+      test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health" ]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+    networks:
+      - dast-network
+
+  # .NET API - DAST Environment (HTTPS)
+  api-dast:
+    build:
+      context: ./SeventySix.Server
+      dockerfile: SeventySix.Api/Dockerfile
+    container_name: seventysix-api-dast
+    ports:
+      - "7274:8081" # HTTPS - DAST isolated port
+    environment:
+      # Core Environment
+      - ASPNETCORE_ENVIRONMENT=E2E
+      - ASPNETCORE_HTTPS_PORTS=8081
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=dev-ssl-password
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/dev-certificate.pfx
+      # Database (DAST isolated)
+      - Database__Host=postgres-dast
+      - Database__Port=5432
+      - Database__Name=seventysix_dast
+      - Database__User=postgres
+      - Database__Password=DAST_Test_Password_123
+      - Database__Maintenance__Enabled=false
+      # Cache (DAST isolated)
+      - Cache__Valkey__Enabled=true
+      - Cache__Valkey__UseSsl=false
+      - Cache__Valkey__ConnectionString=valkey-dast:6379
+      - Cache__OutputCache__Policies__users__Enabled=false
+      - Cache__OutputCache__Policies__logs__Enabled=false
+      - Cache__OutputCache__Policies__health__Enabled=false
+      - Cache__OutputCache__Policies__thirdpartyrequests__Enabled=false
+      - Cache__OutputCache__Policies__features__Enabled=false
+      # Email (Mock Brevo API — validates api-key header presence)
+      - Email__Enabled=true
+      - Email__ApiKey=test-api-key-dast
+      - Email__ApiUrl=http://mock-brevo-api-dast:3000
+      - Email__FromAddress=noreply@dast.local
+      - Site__Email=contact@dast.local
+      - Email__ClientBaseUrl=https://localhost:4301
+      - Email__Queue__Enabled=true
+      - Email__Queue__ProcessingIntervalSeconds=5
+      - Email__Queue__BatchSize=10
+      # JWT (test secret - minimum 64 chars for security)
+      - Jwt__SecretKey=nR4tY6uH9bE3dF5gA1cZ0iL8oS2wX4nM7qJ6kR9pT3uV5yBxK7mQ2pWvN8jzD2fH4j
+      # Seeders
+      - AdminSeeder__Enabled=true
+      - AdminSeeder__InitialPassword=SecureE2ETestPassword123!
+      - E2ESeeder__Enabled=true
+      # Background Jobs
+      - BackgroundJobs__Enabled=true
+      # MFA (disabled — ZAP can't solve TOTP challenges)
+      - Mfa__Enabled=false
+      - Mfa__RequiredForAllUsers=false
+      # Security
+      - Security__EnforceHttps=true
+      - Security__HstsIncludeSubdomains=false
+      - Security__AllowHttpForHealthChecks=false
+      - Security__AllowHttpForMetrics=false
+      - Security__AllowHttpForOpenApi=false
+      # Auth
+      - Auth__Lockout__Enabled=true
+      - Auth__Cookie__SecureCookie=true
+      - Auth__Cookie__SameSiteLax=true
+      - Auth__Token__DisableRotation=false
+      - Auth__BreachedPassword__Enabled=false
+      - Auth__BreachedPassword__BlockBreachedPasswords=false
+      # ALTCHA (disabled — ZAP can't solve proof-of-work challenges)
+      - Altcha__Enabled=false
+      # Rate Limiting (disabled — ZAP active scanning would trigger rate limits)
+      - RateLimiting__Enabled=false
+      # OAuth (placeholder values)
+      - Auth__OAuth__Providers__0__ClientId=dast-github-client-id
+      - Auth__OAuth__Providers__0__ClientSecret=dast-github-client-secret
+      # Runtime stability
+      - DOTNET_EnableDiagnostics=0
+      - OpenTelemetry__Enabled=false
+      - ResponseCompression__Enabled=false
+      - Logging__Cleanup__Enabled=false
+      - ThirdPartyApiLimits__Enabled=false
+      # Health
+      - HealthChecks__Enabled=true
+      # CORS
+      - Cors__AllowedOrigins__0=https://localhost:4301
+    volumes:
+      - ./SeventySix.Client/ssl:/https:ro
+    depends_on:
+      postgres-dast:
+        condition: service_healthy
+      valkey-dast:
+        condition: service_healthy
+      mock-brevo-api-dast:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "--no-check-certificate", "https://localhost:8081/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - dast-network
+
+  # Angular Client - DAST Build (HTTPS)
+  client-dast:
+    build:
+      context: ./SeventySix.Client
+      dockerfile: Dockerfile.e2e
+    container_name: seventysix-client-dast
+    ports:
+      - "4301:8443" # HTTPS - DAST isolated port
+    volumes:
+      - ./SeventySix.Client/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      api-dast:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "--no-check-certificate", "https://localhost:8443/" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - dast-network
+
+networks:
+  dast-network:
+    name: seventysix-dast-network
+
+volumes:
+  postgres_dast_data:
+    name: seventysix_postgres_dast_data

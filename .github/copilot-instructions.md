@@ -224,15 +224,16 @@ Plans created by `/create-plan` include explicit compaction checkpoints at major
 
 ---
 
-## E2E and Load Test Environment Isolation (CRITICAL)
+## E2E, Load Test, and DAST Environment Isolation (CRITICAL)
 
-E2E and load tests run in **fully isolated Docker environments** — do NOT start the dev environment for either.
+E2E, load tests, and DAST scans run in **fully isolated Docker environments** — do NOT start the dev environment for any of them.
 
 | Environment | Docker Compose File | Ports (DB / Cache / API / Client) |
 |-------------|--------------------|---------------------------------|
 | Dev | `docker-compose.yml` | 5433 / 6379 / 7074 / 4200 |
 | E2E | `docker-compose.e2e.yml` | 5434 / 6380 / 7174 / 4201 |
 | Load Test | `docker-compose.loadtest.yml` | 5435 / 6381 / 7175 / 4202 |
+| DAST | `docker-compose.dast.yml` | 5436 / 6382 / 7274 / 4301 |
 
 ## File Index (Auto-Applied via `applyTo` Globs)
 

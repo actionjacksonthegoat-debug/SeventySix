@@ -1,0 +1,54 @@
+# OpenTelemetry Collector Configuration with mTLS — Production
+# Receives OTLP telemetry from API over TLS and exports to Jaeger (TLS) and Prometheus
+
+extensions:
+    health_check:
+        endpoint: 0.0.0.0:13133
+
+receivers:
+    otlp:
+        protocols:
+            grpc:
+                endpoint: 0.0.0.0:4317
+                tls:
+                    cert_file: /tls/server.crt
+                    key_file: /tls/server.key
+                    ca_file: /tls/ca.crt
+                    client_ca_file: /tls/ca.crt
+            http:
+                endpoint: 0.0.0.0:4318
+                tls:
+                    cert_file: /tls/server.crt
+                    key_file: /tls/server.key
+                    ca_file: /tls/ca.crt
+                    client_ca_file: /tls/ca.crt
+
+processors:
+    batch:
+        timeout: 10s
+        send_batch_size: 1024
+
+exporters:
+    # Prometheus metrics export — scraped by Prometheus
+    prometheus:
+        endpoint: "0.0.0.0:8889"
+
+    # Jaeger traces via OTLP with TLS
+    otlp/jaeger:
+        endpoint: jaeger:4317
+        tls:
+            cert_file: /tls/client.crt
+            key_file: /tls/client.key
+            ca_file: /tls/ca.crt
+
+service:
+    extensions: [health_check]
+    pipelines:
+        traces:
+            receivers: [otlp]
+            processors: [batch]
+            exporters: [otlp/jaeger]
+        metrics:
+            receivers: [otlp]
+            processors: [batch]
+            exporters: [prometheus]

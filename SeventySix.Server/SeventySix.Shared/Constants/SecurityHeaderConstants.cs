@@ -67,9 +67,9 @@ public static class SecurityHeaderConstants
 		public const string Deny = "DENY";
 
 		/// <summary>
-		/// X-XSS-Protection enabled with block mode.
+		/// X-XSS-Protection disabled (modern best practice — CSP provides superior protection).
 		/// </summary>
-		public const string XssBlock = "1; mode=block";
+		public const string XssDisabled = "0";
 
 		/// <summary>
 		/// HSTS max age in seconds (1 year).

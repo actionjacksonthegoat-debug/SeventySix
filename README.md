@@ -9,6 +9,7 @@
 [![Angular 21](https://img.shields.io/badge/Angular-21-DD0031?logo=angular&logoColor=white)](https://angular.dev)
 [![PWA](https://img.shields.io/badge/PWA-enabled-5A0FC8?logo=pwa&logoColor=white)](https://web.dev/progressive-web-apps/)
 [![OpenTelemetry](https://img.shields.io/badge/OpenTelemetry-enabled-425CC7?logo=opentelemetry&logoColor=white)](https://opentelemetry.io)
+[![DAST](https://github.com/actionjacksonthegoat-debug/SeventySix/actions/workflows/dast.yml/badge.svg)](https://github.com/actionjacksonthegoat-debug/SeventySix/actions/workflows/dast.yml)
 [![WCAG 2.2 AA](https://img.shields.io/badge/WCAG_2.2-AA_Compliant-0078D4)](https://www.w3.org/TR/WCAG22/)
 
 This site has been deployed to production - You can try it here at [SeventySix](https://seventysixsandbox.com/). Logged in users will be given access to the development and style-guide page.
@@ -106,6 +107,9 @@ For the full step-by-step manual setup, see [Startup Instructions](docs/Startup-
 - **Multi-factor authentication** via TOTP authenticator apps with backup codes
 - **GitHub OAuth** provider integration with account linking (connect/disconnect from profile page)
 - **Role-based access control** enforced server-side and client-side (User, Developer, Admin)
+- **Mutual TLS (mTLS)** for all production inter-service communication (PostgreSQL, Valkey, OTEL Collector, Jaeger) with internal CA and annual cert rotation
+- **Subresource Integrity (SRI)** on all Angular production bundles to prevent supply-chain tampering
+- **DAST scanning** via OWASP ZAP baseline scan on every push to master and weekly schedule
 
 ### Observability
 - **End-to-end OpenTelemetry traces** from browser through API to database (exported to Jaeger)
@@ -309,6 +313,7 @@ SeventySix/
 ├── docker-compose.yml            Development (services)
 ├── docker-compose.e2e.yml        E2E testing (isolated ports + mock Brevo API)
 ├── docker-compose.loadtest.yml   Load testing
+├── docker-compose.dast.yml       DAST security scanning (OWASP ZAP)
 ├── docker-compose.production.yml Production deployment
 └── package.json                  Root orchestration scripts
 ```
@@ -403,6 +408,7 @@ A set of npm scripts handle the full development lifecycle from the repo root. A
 | `npm run loadtest:smoke` | Run smoke load test profile | Endpoint availability, baseline performance, early error detection |
 | `npm run loadtest:load` | Run standard load test profile | Sustained load metrics, resource usage, bottleneck identification |
 | `npm run loadtest:stress` | Run stress load test profile | Breaking point analysis, recovery behavior, max throughput |
+| `npm run test:dast` | Run OWASP ZAP DAST scan in isolated Docker environment | SARIF findings, alert summary, pass/fail status |
 
 ### Code Quality
 
@@ -438,6 +444,7 @@ A set of npm scripts handle the full development lifecycle from the repo root. A
 | `npm run scan:codeql:ci` | Run CodeQL analysis for both C# and TypeScript (Docker) | SARIF results in `.codeql/results/` |
 | `npm run scan:codeql:ci:csharp` | Run CodeQL analysis for C# only (~15-20 min) | C# security findings |
 | `npm run scan:codeql:ci:typescript` | Run CodeQL analysis for TypeScript only (~5 min) | JS/TS security findings |
+| `npm run test:dast` | Run OWASP ZAP DAST baseline scan (Docker-isolated) | Alert categories, SARIF results, pass/fail by rule |
 
 ### Generation
 
@@ -637,6 +644,14 @@ All error responses follow ProblemDetails (RFC 9457). Exception messages are nev
 ### Data Protection
 
 The .NET Data Protection API uses certificate-based key encryption. HTTPS is enforced in all environments (development, E2E, production) via self-signed or real certificates.
+
+### Transport Security
+
+Production inter-service communication uses mutual TLS (mTLS) with an internal Certificate Authority. PostgreSQL, Valkey, OpenTelemetry Collector, and Jaeger all require verified client certificates. Service certificates rotate annually; the CA root has a 10-year lifetime. See [docs/Certificate-Lifecycle.md](docs/Certificate-Lifecycle.md) for rotation procedures and architecture details.
+
+### Supply Chain Integrity
+
+Angular production builds include Subresource Integrity (SRI) hashes on all script and style tags. This ensures browsers reject tampered bundles even if a CDN or build artifact is compromised.
 
 ### Legal Pages
 
@@ -867,7 +882,7 @@ Full prompt guide: [Copilot Prompt Guide](docs/Prompt-Guide.md)
 
 ## Docker Environments
 
-Four Docker Compose configurations cover all environments:
+Five Docker Compose configurations cover all environments:
 
 | File | Purpose | Services | Key Ports |
 |---|---|---|---|
@@ -875,6 +890,7 @@ Four Docker Compose configurations cover all environments:
 | `docker-compose.e2e.yml` | E2E testing | Isolated stack + mock Brevo API | API: 7174, Client: 4201, DB: 5434 |
 | `docker-compose.loadtest.yml` | Load testing | API + infrastructure | Isolated from dev |
 | `docker-compose.production.yml` | Production | API + infrastructure | Resource limits, external secrets |
+| `docker-compose.dast.yml` | DAST scanning | Isolated stack + OWASP ZAP | API: 7274, Client: 4301, DB: 5436 |
 
 ### Development Services
 
@@ -1064,10 +1080,11 @@ Multiple test suites provide automated checks across the full stack:
 
 | Suite | Framework | Tests | Command | What It Covers |
 |---|---|---|---|---|
-| Server | xUnit + NSubstitute + Shouldly | 1,600+ | `npm run test:server` | Server projects: API, Domains, Identity, Shared, Architecture, Analyzers |
-| Client | Vitest | 1,500+ | `npm run test:client` | Unit/integration tests across 100+ spec files + architecture enforcement |
-| E2E | Playwright | 260+ | `npm run test:e2e` | Specs across auth roles (public, authenticated, admin, developer), WCAG 2.2 AA accessibility scanning per role, mock Brevo API |
+| Server | xUnit + NSubstitute + Shouldly | 1,670+ | `npm run test:server` | Server projects: API, Domains, Identity, Shared, Architecture, Analyzers |
+| Client | Vitest | 1,570+ | `npm run test:client` | Unit/integration tests across 100+ spec files + architecture enforcement |
+| E2E | Playwright | 320+ | `npm run test:e2e` | Specs across auth roles (public, authenticated, admin, developer), WCAG 2.2 AA accessibility scanning per role, mock Brevo API |
 | Load | k6 (Grafana) | scenarios | `npm run loadtest:quick` | Auth, users, permissions, logging, and health across multiple profiles (smoke, quick, stress, load) |
+| DAST | OWASP ZAP | baseline | `npm run test:dast` | Security header validation, injection testing, authenticated API scanning |
 
 ### E2E Coverage by Role
 

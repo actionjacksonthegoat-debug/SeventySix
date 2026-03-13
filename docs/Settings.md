@@ -1,6 +1,6 @@
 # Application Settings Reference
 
-> **Last Updated**: February 13, 2026
+> **Last Updated**: March 12, 2026
 
 ## Overview
 
@@ -95,6 +95,24 @@ SeventySix uses a layered configuration system. This document provides a high-le
 | `Resilience:CircuitBreaker:FailureThreshold` | Failures before breaking | 5 |
 | `Security:EnforceHttps` | HTTPS enforcement | `true` |
 | `HealthChecks:Enabled` | Health check endpoints | `true` |
+
+## TLS & Certificates (Production Only)
+
+| Setting | Purpose | Default |
+|---------|---------|---------|
+| `Database:SslMode` | PostgreSQL SSL connection mode | `Prefer` (dev), `VerifyFull` (prod) |
+| `Database:SslCaCertificate` | CA cert path for PostgreSQL verification | — |
+| `Database:SslClientCertificate` | Client cert path for PostgreSQL mTLS | — |
+| `Database:SslClientKey` | Client key path for PostgreSQL mTLS | — |
+| `Cache:Valkey:UseSsl` | Enable TLS for Valkey connection | `false` (dev), `true` (prod) |
+| `Cache:Valkey:SslCaCertificate` | CA cert path for Valkey verification | — |
+| `Cache:Valkey:SslClientCertificate` | Client cert path for Valkey mTLS | — |
+| `Cache:Valkey:SslClientKey` | Client key path for Valkey mTLS | — |
+| `OpenTelemetry:TlsCaCertificate` | CA cert path for OTLP exporter | — |
+| `OpenTelemetry:TlsClientCertificate` | Client cert path for OTLP exporter | — |
+| `OpenTelemetry:TlsClientKey` | Client key path for OTLP exporter | — |
+
+> These settings are only used in production Docker deployments. In development, services communicate over the Docker bridge network without TLS. See [Certificate-Lifecycle.md](Certificate-Lifecycle.md) for rotation procedures.
 
 ---
 

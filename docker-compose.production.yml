@@ -15,9 +15,13 @@ services:
         container_name: seventysix-valkey-prod
         volumes:
             - valkey_data:/data
-        command: valkey-server --save 60 1 --loglevel warning --appendonly yes --requirepass ${VALKEY_PASSWORD:?VALKEY_PASSWORD must be set}
+            - ./docker/certs/valkey/server.crt:/tls/server.crt:ro
+            - ./docker/certs/valkey/server.key:/tls/server.key:ro
+            - ./docker/certs/ca.crt:/tls/ca.crt:ro
+        command: >
+            valkey-server --save 60 1 --loglevel warning --appendonly yes --requirepass ${VALKEY_PASSWORD:?VALKEY_PASSWORD must be set} --tls-port 6379 --port 0 --tls-cert-file /tls/server.crt --tls-key-file /tls/server.key --tls-ca-cert-file /tls/ca.crt --tls-auth-clients yes
         healthcheck:
-            test: [ "CMD", "valkey-cli", "-a", "${VALKEY_PASSWORD}", "ping" ]
+            test: [ "CMD", "valkey-cli", "--tls", "--cacert", "/tls/ca.crt", "-a", "${VALKEY_PASSWORD}", "ping" ]
             interval: 10s
             timeout: 5s
             retries: 5
@@ -39,8 +43,16 @@ services:
         image: oliver006/redis_exporter:v1.67.0
         container_name: seventysix-redis-exporter-prod
         environment:
-            REDIS_ADDR: "valkey:6379"
+            REDIS_ADDR: "rediss://valkey:6379"
             REDIS_PASSWORD: "${VALKEY_PASSWORD:?VALKEY_PASSWORD must be set}"
+            REDIS_EXPORTER_TLS_CA_CERT_FILE: "/tls/ca.crt"
+            REDIS_EXPORTER_TLS_CLIENT_CERT_FILE: "/tls/client.crt"
+            REDIS_EXPORTER_TLS_CLIENT_KEY_FILE: "/tls/client.key"
+            REDIS_EXPORTER_SKIP_TLS_VERIFICATION: "false"
+        volumes:
+            - ./docker/certs/ca.crt:/tls/ca.crt:ro
+            - ./docker/certs/api/client.crt:/tls/client.crt:ro
+            - ./docker/certs/api/client.key:/tls/client.key:ro
         ports:
             - "127.0.0.1:9121:9121" # Redis metrics — internal only
         depends_on:
@@ -61,7 +73,12 @@ services:
         container_name: seventysix-otel-collector-prod
         command: [ "--config=/etc/otel-collector.yaml" ]
         volumes:
-            - ./observability/otel-collector.yaml:/etc/otel-collector.yaml:ro
+            - ./observability/otel-collector-mtls.yaml:/etc/otel-collector.yaml:ro
+            - ./docker/certs/otel-collector/server.crt:/tls/server.crt:ro
+            - ./docker/certs/otel-collector/server.key:/tls/server.key:ro
+            - ./docker/certs/otel-client/client.crt:/tls/client.crt:ro
+            - ./docker/certs/otel-client/client.key:/tls/client.key:ro
+            - ./docker/certs/ca.crt:/tls/ca.crt:ro
         ports:
             - "127.0.0.1:4317:4317" # OTLP gRPC receiver — internal only
             - "127.0.0.1:4318:4318" # OTLP HTTP receiver — internal only
@@ -94,10 +111,12 @@ services:
             - "127.0.0.1:5433:5432"
         volumes:
             - postgres_data:/var/lib/postgresql/data
-            - ./postgres-ssl/server.crt:/var/lib/postgresql/server.crt:ro
-            - ./postgres-ssl/server.key:/var/lib/postgresql/server.key:ro
+            - ./docker/certs/postgres/server.crt:/var/lib/postgresql/server.crt:ro
+            - ./docker/certs/postgres/server.key:/var/lib/postgresql/server.key:ro
+            - ./docker/certs/ca.crt:/var/lib/postgresql/ca.crt:ro
+            - ./docker/postgres/pg_hba.conf:/var/lib/postgresql/pg_hba.conf:ro
         command: >
-            -c ssl=on -c ssl_cert_file=/var/lib/postgresql/server.crt -c ssl_key_file=/var/lib/postgresql/server.key
+            -c ssl=on -c ssl_cert_file=/var/lib/postgresql/server.crt -c ssl_key_file=/var/lib/postgresql/server.key -c ssl_ca_file=/var/lib/postgresql/ca.crt -c hba_file=/var/lib/postgresql/pg_hba.conf
         healthcheck:
             test: [ "CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}" ]
             interval: 10s
@@ -185,12 +204,22 @@ services:
             - ForwardedHeaders__KnownNetworks__1=172.16.0.0/12
             - ForwardedHeaders__KnownNetworks__2=192.168.0.0/16
             - ForwardedHeaders__ForwardLimit=1
-            # Database SSL — require encrypted connections to PostgreSQL
-            - Database__SslMode=Require
-            # Valkey Cache Connection
-            - Cache__Valkey__ConnectionString=valkey:6379,password=${VALKEY_PASSWORD:?VALKEY_PASSWORD must be set}
-            # OpenTelemetry - send to collector
-            - OpenTelemetry__OtlpEndpoint=http://otel-collector:4317
+            # Database SSL — require encrypted connections with CA verification and client cert
+            - Database__SslMode=VerifyFull
+            - Database__SslCaCertificate=/tls/ca.crt
+            - Database__SslClientCertificate=/tls/api/client.crt
+            - Database__SslClientKey=/tls/api/client.key
+            # Valkey Cache Connection — TLS with client certificate
+            - Cache__Valkey__ConnectionString=valkey:6379,password=${VALKEY_PASSWORD:?VALKEY_PASSWORD must be set},ssl=true
+            - Cache__Valkey__UseSsl=true
+            - Cache__Valkey__SslCaCertificate=/tls/ca.crt
+            - Cache__Valkey__SslClientCertificate=/tls/api/client.crt
+            - Cache__Valkey__SslClientKey=/tls/api/client.key
+            # OpenTelemetry — send to collector over TLS
+            - OpenTelemetry__OtlpEndpoint=https://otel-collector:4317
+            - OpenTelemetry__TlsCaCertificate=/tls/ca.crt
+            - OpenTelemetry__TlsClientCertificate=/tls/api/client.crt
+            - OpenTelemetry__TlsClientKey=/tls/api/client.key
             - OpenTelemetry__Enabled=true
             # Trusted Device (Remember This Device) — MFA bypass for trusted browsers
             - TrustedDevices__TokenLifetimeDays=30
@@ -200,6 +229,9 @@ services:
             - RateLimiting__PermitLimit=5000
         volumes:
             - dataprotection_keys:/app/keys
+            - ./docker/certs/ca.crt:/tls/ca.crt:ro
+            - ./docker/certs/api/client.crt:/tls/api/client.crt:ro
+            - ./docker/certs/api/client.key:/tls/api/client.key:ro
         depends_on:
             database:
                 condition: service_healthy
@@ -304,6 +336,14 @@ services:
         environment:
             - COLLECTOR_OTLP_ENABLED=true
             - QUERY_BASE_PATH=/jaeger
+            - COLLECTOR_OTLP_GRPC_TLS_ENABLED=true
+            - COLLECTOR_OTLP_GRPC_TLS_CERT=/tls/server.crt
+            - COLLECTOR_OTLP_GRPC_TLS_KEY=/tls/server.key
+            - COLLECTOR_OTLP_GRPC_TLS_CLIENT_CA=/tls/ca.crt
+        volumes:
+            - ./docker/certs/jaeger/server.crt:/tls/server.crt:ro
+            - ./docker/certs/jaeger/server.key:/tls/server.key:ro
+            - ./docker/certs/ca.crt:/tls/ca.crt:ro
         healthcheck:
             test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:14269/" ]
             interval: 30s

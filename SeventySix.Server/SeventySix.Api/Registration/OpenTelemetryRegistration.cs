@@ -3,6 +3,9 @@
 // </copyright>
 
 using System.Diagnostics.CodeAnalysis;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
+using OpenTelemetry.Exporter;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -66,6 +69,9 @@ public static class OpenTelemetryExtensions
 		Uri otlpEndpointUri =
 			new(otlpEndpoint);
 
+		Func<HttpClient>? httpClientFactory =
+			CreateOtlpHttpClientFactory(configuration);
+
 		string samplingType =
 			configuration.GetValue<string>("OpenTelemetry:Sampling:Type") ?? "AlwaysOn";
 
@@ -110,9 +116,10 @@ public static class OpenTelemetryExtensions
 						.AddFusionCacheInstrumentation()
 						.AddOtlpExporter(
 							options =>
-							{
-								options.Endpoint = otlpEndpointUri;
-							});
+								ConfigureOtlpExporter(
+									options,
+									otlpEndpointUri,
+									httpClientFactory));
 				})
 			.WithMetrics(metrics =>
 				metrics
@@ -123,10 +130,92 @@ public static class OpenTelemetryExtensions
 					.AddFusionCacheInstrumentation()
 					.AddOtlpExporter(
 						options =>
-						{
-							options.Endpoint = otlpEndpointUri;
-						}));
+							ConfigureOtlpExporter(
+								options,
+								otlpEndpointUri,
+								httpClientFactory)));
 
 		return services;
+	}
+
+	/// <summary>Configures an OTLP exporter with endpoint and optional mTLS client factory.</summary>
+	private static void ConfigureOtlpExporter(
+		OtlpExporterOptions options,
+		Uri endpoint,
+		Func<HttpClient>? httpClientFactory)
+	{
+		options.Endpoint = endpoint;
+		if (httpClientFactory is not null)
+		{
+			options.HttpClientFactory = httpClientFactory;
+		}
+	}
+
+	/// <summary>
+	/// Creates an HttpClientFactory with mTLS for OTLP exporters.
+	/// </summary>
+	/// <remarks>
+	/// Returns null when no TLS certificates are configured, allowing the
+	/// exporter to use the default HTTP client (plain gRPC/HTTP).
+	/// Reads OpenTelemetry:TlsCaCertificate, OpenTelemetry:TlsClientCertificate,
+	/// and OpenTelemetry:TlsClientKey from configuration.
+	/// </remarks>
+	private static Func<HttpClient>? CreateOtlpHttpClientFactory(
+		IConfiguration configuration)
+	{
+		string? caCertPath =
+			configuration.GetValue<string>("OpenTelemetry:TlsCaCertificate");
+
+		string? clientCertPath =
+			configuration.GetValue<string>("OpenTelemetry:TlsClientCertificate");
+
+		string? clientKeyPath =
+			configuration.GetValue<string>("OpenTelemetry:TlsClientKey");
+
+		if (string.IsNullOrWhiteSpace(caCertPath)
+			&& string.IsNullOrWhiteSpace(clientCertPath))
+		{
+			return null;
+		}
+
+		return () =>
+		{
+			HttpClientHandler handler = new();
+
+			if (!string.IsNullOrWhiteSpace(clientCertPath)
+				&& !string.IsNullOrWhiteSpace(clientKeyPath))
+			{
+				X509Certificate2 clientCert =
+					X509Certificate2.CreateFromPemFile(
+						clientCertPath,
+						clientKeyPath);
+
+				handler.ClientCertificates.Add(clientCert);
+			}
+
+			if (!string.IsNullOrWhiteSpace(caCertPath))
+			{
+				X509Certificate2 caCert =
+					X509CertificateLoader.LoadCertificateFromFile(caCertPath);
+
+				handler.ServerCertificateCustomValidationCallback =
+					(_, certificate, chain, _) =>
+					{
+						if (certificate is null || chain is null)
+						{
+							return false;
+						}
+
+						chain.ChainPolicy.TrustMode =
+							X509ChainTrustMode.CustomRootTrust;
+						chain.ChainPolicy.CustomTrustStore.Add(caCert);
+
+						return chain.Build(
+							new X509Certificate2(certificate));
+					};
+			}
+
+			return new HttpClient(handler);
+		};
 	}
 }

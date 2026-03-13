@@ -67,7 +67,39 @@ public static class ConnectionStringBuilder
 
 		if (!string.IsNullOrWhiteSpace(sslMode))
 		{
-			connectionString += $"SSL Mode={sslMode};Trust Server Certificate=true;";
+			string trustServerCertificate =
+				string.Equals(
+					configuration[ConfigurationSectionConstants.Database.TrustServerCertificate],
+					"true",
+					StringComparison.OrdinalIgnoreCase)
+				? "true"
+				: "false";
+
+			connectionString += $"SSL Mode={sslMode};Trust Server Certificate={trustServerCertificate};";
+
+			string? sslCaCertificate =
+				configuration[ConfigurationSectionConstants.Database.SslCaCertificate];
+
+			if (!string.IsNullOrWhiteSpace(sslCaCertificate))
+			{
+				connectionString += $"Root Certificate={sslCaCertificate};";
+			}
+
+			string? sslClientCertificate =
+				configuration[ConfigurationSectionConstants.Database.SslClientCertificate];
+
+			string? sslClientKey =
+				configuration[ConfigurationSectionConstants.Database.SslClientKey];
+
+			if (!string.IsNullOrWhiteSpace(sslClientCertificate))
+			{
+				connectionString += $"SSL Certificate={sslClientCertificate};";
+			}
+
+			if (!string.IsNullOrWhiteSpace(sslClientKey))
+			{
+				connectionString += $"SSL Key={sslClientKey};";
+			}
 		}
 
 		return connectionString;

@@ -1,0 +1,110 @@
+name: DAST Security Scan
+
+on:
+    push:
+        branches: [master]
+    schedule:
+        # Run weekly on Monday at 8:00 UTC (after CodeQL at 6:00 UTC)
+        - cron: "0 8 * * 1"
+    workflow_dispatch:
+
+permissions:
+    contents: read
+
+concurrency:
+    group: dast-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    dast-scan:
+        name: OWASP ZAP Baseline Scan
+        runs-on: ubuntu-latest
+        timeout-minutes: 30
+
+        permissions:
+            security-events: write # Upload SARIF to Security tab
+            contents: read # Checkout code
+            actions: read # Required for CodeQL SARIF upload
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+            - name: Generate SSL certificates
+              shell: pwsh
+              run: scripts/generate-dev-ssl-cert.ps1 -SkipTrust
+
+            - name: Fix SSL permissions for Linux
+              run: |
+                  chmod 644 SeventySix.Client/ssl/dev-certificate.crt
+                  chmod 600 SeventySix.Client/ssl/dev-certificate.key
+
+            - name: Start DAST infrastructure
+              run: |
+                  docker compose -f docker-compose.dast.yml up -d --build
+                  echo "Waiting for API health..."
+                  for i in $(seq 1 60); do
+                    if curl -sf --insecure https://localhost:7274/health; then
+                      echo ""
+                      echo "API is healthy"
+                      break
+                    fi
+                    sleep 5
+                  done
+                  echo "Waiting for client..."
+                  for i in $(seq 1 30); do
+                    if curl -sf --insecure https://localhost:4301/ > /dev/null; then
+                      echo "Client is ready"
+                      break
+                    fi
+                    sleep 3
+                  done
+
+            - name: Authenticate for DAST scanning
+              id: auth
+              run: |
+                  TOKEN=$(curl -sf --insecure -X POST \
+                    https://localhost:7274/api/v1/auth/login \
+                    -H 'Content-Type: application/json' \
+                    -d '{"usernameOrEmail":"admin@seventysix.local","password":"SecureE2ETestPassword123!"}' \
+                    | jq -r '.accessToken')
+                  if [ -z "$TOKEN" ] || [ "$TOKEN" = "null" ]; then
+                    echo "::warning::Failed to obtain auth token — running unauthenticated scan only"
+                  else
+                    echo "ZAP_AUTH_TOKEN=$TOKEN" >> "$GITHUB_ENV"
+                    echo "Auth token obtained successfully"
+                  fi
+
+            - name: Run OWASP ZAP Baseline Scan
+              uses: zaproxy/action-baseline@de8ad967d3548d44ef623df22cf95c3b0baf8b25 # v0.15.0
+              with:
+                  target: "https://localhost:4301"
+                  rules_file_name: ".zap/rules.tsv"
+                  allow_issue_writing: false
+                  fail_action: true
+                  cmd_options: >-
+                      -a
+                      -j
+                      -config api.disablekey=true
+                      -config connection.dnsTtlSuccessfulQueries=-1
+                      -config scanner.threadPerHost=2
+                      -hook .zap/auth-hook.py
+
+            - name: Upload ZAP SARIF
+              if: always()
+              uses: github/codeql-action/upload-sarif@0d579ffd059c29b07949a3cce3983f0780820c98 # v4
+              with:
+                  sarif_file: report_sarif.json
+                  category: zap-dast
+
+            - name: Upload ZAP HTML Report
+              if: always()
+              uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+              with:
+                  name: zap-dast-report
+                  path: report_html.html
+                  retention-days: 30
+
+            - name: Teardown DAST infrastructure
+              if: always()
+              run: docker compose -f docker-compose.dast.yml down -v --remove-orphans

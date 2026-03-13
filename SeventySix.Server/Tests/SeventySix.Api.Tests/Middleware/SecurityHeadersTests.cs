@@ -74,11 +74,11 @@ public sealed class SecurityHeadersTests : IDisposable
 	}
 
 	/// <summary>
-	/// Tests that X-XSS-Protection header is set correctly.
-	/// Enables browser XSS filtering (legacy but still useful).
+	/// Tests that X-XSS-Protection header is set to 0 (disabled).
+	/// Modern best practice: disable the legacy XSS filter — CSP provides superior protection.
 	/// </summary>
 	[Fact]
-	public async Task Response_ContainsXssProtectionHeader_EnabledWithBlockAsync()
+	public async Task Response_ContainsXssProtectionHeader_DisabledAsync()
 	{
 		// Arrange
 		using HttpClient client =
@@ -93,7 +93,7 @@ public sealed class SecurityHeadersTests : IDisposable
 			SecurityHeaderConstants.Names.XssProtection,
 			out IEnumerable<string>? values).ShouldBeTrue();
 		values.ShouldNotBeNull();
-		values.ShouldContain(SecurityHeaderConstants.Values.XssBlock);
+		values.ShouldContain(SecurityHeaderConstants.Values.XssDisabled);
 	}
 
 	/// <summary>
@@ -298,6 +298,66 @@ public sealed class SecurityHeadersTests : IDisposable
 			cspValues.First();
 		cspHeader.ShouldContain("frame-ancestors 'self'");
 		cspHeader.ShouldNotContain("frame-ancestors 'none'");
+	}
+
+	/// <summary>
+	/// Tests that CSP img-src does not contain the wildcard https: source.
+	/// Only 'self' and data: are needed — no external image domains required.
+	/// </summary>
+	[Fact]
+	public async Task Csp_ImgSrc_DoesNotContainWildcardHttpsAsync()
+	{
+		// Arrange
+		using HttpClient httpClient =
+			Factory.CreateClient();
+
+		// Act
+		HttpResponseMessage response =
+			await httpClient.GetAsync(ApiEndpoints.Health.Base);
+
+		// Assert
+		response.Headers.TryGetValues(
+			SecurityHeaderConstants.Names.ContentSecurityPolicy,
+			out IEnumerable<string>? cspValues).ShouldBeTrue();
+		cspValues.ShouldNotBeNull();
+		string cspHeader =
+			cspValues.First();
+		cspHeader.ShouldContain("img-src 'self' data:");
+		cspHeader.ShouldNotContain("img-src 'self' data: https:");
+	}
+
+	/// <summary>
+	/// Tests that CSP script-src does not contain 'unsafe-inline'.
+	/// Angular AOT compilation eliminates the need for inline scripts.
+	/// CSP provides superior XSS protection without unsafe-inline.
+	/// </summary>
+	[Fact]
+	public async Task Csp_ScriptSrc_DoesNotContainUnsafeInlineAsync()
+	{
+		// Arrange
+		using HttpClient httpClient =
+			Factory.CreateClient();
+
+		// Act
+		HttpResponseMessage response =
+			await httpClient.GetAsync(ApiEndpoints.Health.Base);
+
+		// Assert
+		response.Headers.TryGetValues(
+			SecurityHeaderConstants.Names.ContentSecurityPolicy,
+			out IEnumerable<string>? cspValues).ShouldBeTrue();
+		cspValues.ShouldNotBeNull();
+		string cspHeader =
+			cspValues.First();
+
+		// Extract the script-src directive value
+		string scriptSrc =
+			cspHeader.Split(';')
+				.Select(directive => directive.Trim())
+				.First(directive => directive.StartsWith(
+					"script-src",
+					StringComparison.OrdinalIgnoreCase));
+		scriptSrc.ShouldNotContain("'unsafe-inline'");
 	}
 
 	/// <inheritdoc/>

@@ -3,6 +3,8 @@
 // </copyright>
 
 using System.Diagnostics.CodeAnalysis;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
 using FluentValidation;
 using Microsoft.Extensions.Caching.StackExchangeRedis;
 using Microsoft.Extensions.Configuration;
@@ -109,6 +111,8 @@ public static class FusionCacheRegistration
 				options.AllowAdmin = false;
 				options.Ssl =
 					cacheSettings.Valkey.UseSsl;
+
+				ConfigureSslCertificates(options, cacheSettings.Valkey);
 
 				IConnectionMultiplexer multiplexer =
 					ConnectionMultiplexer.Connect(options);
@@ -350,5 +354,71 @@ public static class FusionCacheRegistration
 			options.JitterMaxDuration =
 				TimeSpan.FromMilliseconds(settings.Duration.TotalMilliseconds * 0.1);
 		};
+	}
+
+	/// <summary>
+	/// Configures TLS client and CA certificates on the connection options.
+	/// </summary>
+	/// <remarks>
+	/// When <see cref="ValkeySettings.SslClientCertificate"/> and
+	/// <see cref="ValkeySettings.SslClientKey"/> are set, loads the client
+	/// certificate for mTLS authentication. When
+	/// <see cref="ValkeySettings.SslCaCertificate"/> is set, validates the Valkey
+	/// server certificate against the internal CA.
+	/// </remarks>
+	/// <param name="options">
+	/// The StackExchange.Redis configuration options to configure.
+	/// </param>
+	/// <param name="valkeySettings">
+	/// The Valkey settings containing certificate paths.
+	/// </param>
+	private static void ConfigureSslCertificates(
+		ConfigurationOptions options,
+		ValkeySettings valkeySettings)
+	{
+		if (!valkeySettings.UseSsl)
+		{
+			return;
+		}
+
+		X509Certificate2? clientCert = null;
+
+		if (!string.IsNullOrWhiteSpace(valkeySettings.SslClientCertificate)
+			&& !string.IsNullOrWhiteSpace(valkeySettings.SslClientKey))
+		{
+			clientCert =
+				X509Certificate2.CreateFromPemFile(
+					valkeySettings.SslClientCertificate,
+					valkeySettings.SslClientKey);
+		}
+
+		if (clientCert is not null)
+		{
+			options.CertificateSelection +=
+				(_, _, _, _, _) => clientCert;
+		}
+
+		if (!string.IsNullOrWhiteSpace(valkeySettings.SslCaCertificate))
+		{
+			X509Certificate2 caCert =
+				X509CertificateLoader.LoadCertificateFromFile(
+					valkeySettings.SslCaCertificate);
+
+			options.CertificateValidation +=
+				(_, certificate, chain, _) =>
+				{
+					if (certificate is null || chain is null)
+					{
+						return false;
+					}
+
+					chain.ChainPolicy.TrustMode =
+						X509ChainTrustMode.CustomRootTrust;
+					chain.ChainPolicy.CustomTrustStore.Add(caCert);
+
+					return chain.Build(
+						new X509Certificate2(certificate));
+				};
+		}
 	}
 }

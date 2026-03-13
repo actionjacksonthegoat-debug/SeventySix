@@ -130,7 +130,7 @@ public sealed class ConnectionStringBuilderTests
 	}
 
 	[Fact]
-	public void BuildPostgresConnectionString_WithSslMode_AppendsSslParameters()
+	public void BuildPostgresConnectionString_WithSslMode_DefaultsTrustServerCertificateFalse()
 	{
 		// Arrange
 		IConfiguration configuration =
@@ -144,6 +144,35 @@ public sealed class ConnectionStringBuilderTests
 						["Database:User"] = "myuser",
 						["Database:Password"] = "mypassword",
 						["Database:SslMode"] = "Require",
+					})
+				.Build();
+
+		// Act
+		string result =
+			ConnectionStringBuilder.BuildPostgresConnectionString(
+				configuration);
+
+		// Assert
+		result.ShouldContain("SSL Mode=Require");
+		result.ShouldContain("Trust Server Certificate=false");
+	}
+
+	[Fact]
+	public void BuildPostgresConnectionString_TrustServerCertificateTrue_AppendsTrueOverride()
+	{
+		// Arrange
+		IConfiguration configuration =
+			new ConfigurationBuilder()
+				.AddInMemoryCollection(
+					new Dictionary<string, string?>
+					{
+						["Database:Host"] = "myhost",
+						["Database:Port"] = "5432",
+						["Database:Name"] = "mydb",
+						["Database:User"] = "myuser",
+						["Database:Password"] = "mypassword",
+						["Database:SslMode"] = "Require",
+						["Database:TrustServerCertificate"] = "true",
 					})
 				.Build();
 
@@ -182,5 +211,98 @@ public sealed class ConnectionStringBuilderTests
 		// Assert
 		result.ShouldNotContain("SSL Mode");
 		result.ShouldNotContain("Trust Server Certificate");
+	}
+
+	[Fact]
+	public void BuildPostgresConnectionString_WithSslCaCertificate_AppendsSslRootCert()
+	{
+		// Arrange
+		IConfiguration configuration =
+			new ConfigurationBuilder()
+				.AddInMemoryCollection(
+					new Dictionary<string, string?>
+					{
+						["Database:Host"] = "myhost",
+						["Database:Port"] = "5432",
+						["Database:Name"] = "mydb",
+						["Database:User"] = "myuser",
+						["Database:Password"] = "mypassword",
+						["Database:SslMode"] = "VerifyFull",
+						["Database:SslCaCertificate"] = "/tls/ca.crt",
+					})
+				.Build();
+
+		// Act
+		string result =
+			ConnectionStringBuilder.BuildPostgresConnectionString(
+				configuration);
+
+		// Assert
+		result.ShouldContain("SSL Mode=VerifyFull");
+		result.ShouldContain("Root Certificate=/tls/ca.crt");
+	}
+
+	[Fact]
+	public void BuildPostgresConnectionString_WithClientCert_AppendsClientCertPaths()
+	{
+		// Arrange
+		IConfiguration configuration =
+			new ConfigurationBuilder()
+				.AddInMemoryCollection(
+					new Dictionary<string, string?>
+					{
+						["Database:Host"] = "myhost",
+						["Database:Port"] = "5432",
+						["Database:Name"] = "mydb",
+						["Database:User"] = "myuser",
+						["Database:Password"] = "mypassword",
+						["Database:SslMode"] = "VerifyFull",
+						["Database:SslClientCertificate"] = "/tls/client.crt",
+						["Database:SslClientKey"] = "/tls/client.key",
+					})
+				.Build();
+
+		// Act
+		string result =
+			ConnectionStringBuilder.BuildPostgresConnectionString(
+				configuration);
+
+		// Assert
+		result.ShouldContain("SSL Certificate=/tls/client.crt");
+		result.ShouldContain("SSL Key=/tls/client.key");
+	}
+
+	[Fact]
+	public void BuildPostgresConnectionString_WithAllSslOptions_AppendsAllSslParameters()
+	{
+		// Arrange
+		IConfiguration configuration =
+			new ConfigurationBuilder()
+				.AddInMemoryCollection(
+					new Dictionary<string, string?>
+					{
+						["Database:Host"] = "myhost",
+						["Database:Port"] = "5432",
+						["Database:Name"] = "mydb",
+						["Database:User"] = "myuser",
+						["Database:Password"] = "mypassword",
+						["Database:SslMode"] = "VerifyFull",
+						["Database:SslCaCertificate"] = "/tls/ca.crt",
+						["Database:SslClientCertificate"] = "/tls/client.crt",
+						["Database:SslClientKey"] = "/tls/client.key",
+					})
+				.Build();
+
+		// Act
+		string result =
+			ConnectionStringBuilder.BuildPostgresConnectionString(
+				configuration);
+
+		// Assert
+		result.ShouldContain("SSL Mode=VerifyFull");
+		result.ShouldContain("Root Certificate=/tls/ca.crt");
+		result.ShouldContain("SSL Certificate=/tls/client.crt");
+		result.ShouldContain("SSL Key=/tls/client.key");
+		result.ShouldContain("Trust Server Certificate=false");
 	}
 }
