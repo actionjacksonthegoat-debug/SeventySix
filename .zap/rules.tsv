@@ -6,5 +6,8 @@
 10021	IGNORE	X-Content-Type-Options (already set via nginx/Caddy — ZAP may not see through proxy)
 10038	IGNORE	Content Security Policy (intentional strict CSP — reviewed in pen test)
 10098	IGNORE	Cross-Domain Misconfiguration (CORS is intentionally strict, same-origin only)
+10055	IGNORE	CSP: script-src unsafe-inline (Angular requires unsafe-inline in compiled output — same concern already reviewed under rule 10038)
+10096	IGNORE	Timestamp Disclosure - Unix (false positive — Unix timestamps in ngsw-worker.js are Angular service worker cache keys, not sensitive data)
 10109	IGNORE	Modern Web Application (informational only)
+10110	IGNORE	Dangerous JS Functions (false positive — ZAP flags standard Angular/zone.js minified patterns; no eval() in application code)
 90033	IGNORE	Loosely Scoped Cookie (SameSite=Strict already set on auth cookies)
