@@ -23,6 +23,7 @@ Write a new `Implementation.md` plan for the following work:
 5. Each phase must have clear **deliverables** and **verification steps**
 6. Follow **KISS, DRY, YAGNI** — no speculative features, no duplication
 7. Include a **TDD-First 80/20** testing strategy — write tests BEFORE implementation for the 20% of code carrying 80% of risk (Red → Green → Refactor). Each phase that adds new code MUST list test deliverables before implementation code.
+8. **Documentation**: All new classes, methods, functions, properties, and constants must include XML doc (C#), JSDoc (TS/JS/MJS), or comment-based help (PS). Tests are exempt.
 8. Architecture: server `Shared ← Domains ← Api` (never reverse), client domains import only `@shared/*` + themselves
 9. Add a mandatory runtime/browser verification gate before completion for client-impacting work:
     - Run `npm run stop` then `npm run start`

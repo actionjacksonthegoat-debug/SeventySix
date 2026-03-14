@@ -54,6 +54,7 @@
 
 | Rule | [NEVER] | [ALWAYS] |
 | ---- | ------- | -------- |
+| Code documentation | No docs on new class/method/property/constant | XML doc (C#), JSDoc (TS/JS/MJS), comment-based help (PS) — tests exempt |
 | C# XML doc tags | `<param name="x">text</param>` (single line) | Multi-line: open tag → indented description → close tag |
 | TS variable types | `const value = ...` | `const value: Type = ...` (`@typescript-eslint/typedef`) |
 | TS null checks | `!value`, `!!value`, `value \|\| "x"` | `isNullOrUndefined(value)`, `isPresent(value)`, `value ?? "x"` |

@@ -15,6 +15,7 @@ Review all staged/unstaged changes against every rule in the `.github/instructio
 
 ## Check For Violations
 
+- **Missing documentation**: New classes, interfaces, enums, methods, functions, properties, or constants without XML doc (C#), JSDoc (TS/JS/MJS), or comment-based help (PS). Tests are exempt.
 - **Formatting**: Null coercion (`!!value`, `|| for defaults`), single-letter variables, missing explicit return types, `var` usage in C#
 - **Security**: Raw `exception.Message` in ProblemDetails, missing `ProblemDetailConstants`
 - **Accessibility**: Missing `aria-labels` on icon-only buttons, missing `aria-hidden="true"` on decorative icons
