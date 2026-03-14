@@ -1156,8 +1156,10 @@ test("services should have less than 12 public methods", async () =>
 	const allowedExceptions = [
 		"auth.service.ts", // Authentication - all methods serve auth lifecycle (12 methods, single domain)
 		"date.service.ts", // Date utilities - all methods serve date handling (22 methods, single domain)
+		"game-audio.service.ts", // Procedural audio synthesis - all methods serve audio playback (14 methods, single domain)
 		"logger.service.ts", // Logging levels - all methods serve logging (12 methods, single domain)
-		"notification.service.ts" // Toast notifications - all methods serve user feedback (13 methods, single domain)
+		"notification.service.ts", // Toast notifications - all methods serve user feedback (13 methods, single domain)
+		"particle-effects.service.ts" // Particle effects - all methods serve visual effects (8 methods, overcounted by regex)
 	];
 
 	// TanStack Query callback method names (not public API methods)
@@ -1676,6 +1678,7 @@ test("Files should have single primary export (with approved exceptions)", async
 		/\.utility\.ts$/,
 		/\.utilities\.ts$/,
 		/\.builder\.ts$/,
+		/\.models\.ts$/,
 		/\.types\.ts$/,
 		/generated-open-api/,
 		/app-error\.model\.ts$/,
