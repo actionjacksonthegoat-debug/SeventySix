@@ -8,7 +8,7 @@
  * Runs automatically after every 'npm run build' via the 'postbuild' lifecycle hook.
  */
 import { createHash } from "node:crypto";
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -16,14 +16,21 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const distDir = join(__dirname, "..", "dist", "SeventySix.Client", "browser");
 const indexPath = join(distDir, "index.html");
 
-if (!existsSync(indexPath))
+let html;
+try
 {
-	// No dist yet — nothing to do (happens when other npm lifecycle scripts run
-	// outside a build context, e.g. 'npm install --ignore-scripts').
-	process.exit(0);
+	html = readFileSync(indexPath, "utf8");
 }
-
-let html = readFileSync(indexPath, "utf8");
+catch (error)
+{
+	if (error.code === "ENOENT")
+	{
+		// No dist yet — nothing to do (happens when other npm lifecycle scripts run
+		// outside a build context, e.g. 'npm install --ignore-scripts').
+		process.exit(0);
+	}
+	throw error;
+}
 
 // Match <script src="..."> tags that don't yet have an integrity attribute.
 // [^>]* matches across newlines because [^>] is any char except '>'.
@@ -50,13 +57,20 @@ while ((match = scriptTagRegex.exec(html)) !== null)
 	const fileName = src.replace(/^\//, "");
 	const filePath = join(distDir, fileName);
 
-	if (!existsSync(filePath))
+	let content;
+	try
 	{
-		console.error(`inject-sri: file not found for SRI injection: ${filePath}`);
-		process.exit(1);
+		content = readFileSync(filePath);
 	}
-
-	const content = readFileSync(filePath);
+	catch (error)
+	{
+		if (error.code === "ENOENT")
+		{
+			console.error(`inject-sri: file not found for SRI injection: ${filePath}`);
+			process.exit(1);
+		}
+		throw error;
+	}
 	const hash = createHash("sha384").update(content).digest("base64");
 	const integrity = `sha384-${hash}`;
 
