@@ -19,7 +19,8 @@ Proceed through **all remaining phases** across all `implementation-N.md` files 
 2. Follow **KISS, DRY, YAGNI** — simplest solution, no duplication, no speculative features
 3. Follow **TDD-First 80/20** — write tests BEFORE implementation for the 20% of code carrying 80% of risk (Red → Green → Refactor)
 4. Fix all IDE warnings — never suppress with `#pragma warning disable`, `// @ts-ignore`, or `[SuppressMessage]`
-5. **Do NOT send commits** — I will handle these
+5. **Document all new code** — every class, method, function, property, and constant: XML doc (C#), JSDoc (TS/JS/MJS), comment-based help (PS). Tests exempt.
+6. **Do NOT send commits** — I will handle these
 6. **Do NOT run** `npm run db:reset`, `db:reset`, or any `reset-database` command
 7. **Do NOT modify** READMEs or `docs/*.md` unless the **active** `implementation-N.md` contains an explicit documentation phase. When a docs phase IS present, use `/update-documentation` to align all READMEs and docs.
 

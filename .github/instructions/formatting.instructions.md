@@ -79,6 +79,18 @@ applyTo: "**/SeventySix.Client/src/**/*.{ts,html,scss,css},**/SeventySix.Server/
 | `"Developer"` inline | `RoleConstants.Developer`               |
 | Repeated literal 2x+ | Extract to constant                     |
 
+## Documentation (ALL New Code — REQUIRED)
+
+> **RULE**: Every class, interface, enum, function, method, property, and constant in new code MUST be documented. Private or public — no exceptions. Tests are exempt.
+
+| Language | Format | Required Tags |
+| -------- | ------ | ------------- |
+| C# | `/// <summary>` XML doc | `<summary>`, `<param>`, `<returns>`, `<typeparam>`, `<remarks>` |
+| TypeScript / JavaScript / MJS | `/** */` JSDoc | `@param`, `@returns`, `@template`, `@remarks` |
+| PowerShell | Comment-based help | `.SYNOPSIS`, `.PARAMETER`, `.OUTPUTS` |
+
+> C# XML doc tags must use multi-line format — see the C# XML Doc section below.
+
 ## Method Return Types (REQUIRED)
 
 All TypeScript method and function declarations MUST have explicit return types.
