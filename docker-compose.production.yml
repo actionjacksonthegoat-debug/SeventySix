@@ -18,10 +18,14 @@ services:
             - ./docker/certs/valkey/server.crt:/tls/server.crt:ro
             - ./docker/certs/valkey/server.key:/tls/server.key:ro
             - ./docker/certs/ca.crt:/tls/ca.crt:ro
+            # Client certs reused for the healthcheck — api/client.key has ACL u:999:r
+            # (Valkey runs as UID 999 via gosu, same as appuser/caddy on this host)
+            - ./docker/certs/api/client.crt:/tls/client.crt:ro
+            - ./docker/certs/api/client.key:/tls/client.key:ro
         command: >
             valkey-server --save 60 1 --loglevel warning --appendonly yes --requirepass ${VALKEY_PASSWORD:?VALKEY_PASSWORD must be set} --tls-port 6379 --port 0 --tls-cert-file /tls/server.crt --tls-key-file /tls/server.key --tls-ca-cert-file /tls/ca.crt --tls-auth-clients yes
         healthcheck:
-            test: [ "CMD", "valkey-cli", "--tls", "--cacert", "/tls/ca.crt", "-a", "${VALKEY_PASSWORD}", "ping" ]
+            test: [ "CMD", "valkey-cli", "--tls", "--cacert", "/tls/ca.crt", "--cert", "/tls/client.crt", "--key", "/tls/client.key", "-a", "${VALKEY_PASSWORD}", "ping" ]
             interval: 10s
             timeout: 5s
             retries: 5
