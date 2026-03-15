@@ -124,8 +124,10 @@ RUN echo '#!/bin/bash\n\
 
 RUN chmod +x /app/entrypoint.sh
 
-# Switch to non-root user for application execution
-USER appuser
+# Switch to non-root user for application execution.
+# Use numeric UID (not name) so docker image inspect returns "999", which is
+# what scripts/verify-cert-uids.sh compares against for ACL validation.
+USER 999
 
 # Expose ports
 EXPOSE 8080
