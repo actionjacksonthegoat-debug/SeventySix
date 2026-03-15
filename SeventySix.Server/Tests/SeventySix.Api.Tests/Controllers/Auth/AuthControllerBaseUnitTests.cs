@@ -67,8 +67,11 @@ public sealed class AuthControllerBaseUnitTests
 
 		problemDetails.Title.ShouldBe("Test Title");
 		problemDetails.Detail.ShouldBe("Test Detail");
-		problemDetails.Extensions.ContainsKey("errorCode").ShouldBeTrue();
-		problemDetails.Extensions["errorCode"].ShouldBe("TEST_ERROR_CODE");
+		problemDetails.Extensions.TryGetValue(
+			"errorCode",
+			out object? errorCodeValue)
+			.ShouldBeTrue();
+		errorCodeValue.ShouldBe("TEST_ERROR_CODE");
 	}
 
 	[Fact]
@@ -242,12 +245,13 @@ public sealed class AuthControllerBaseUnitTests
 		const string CspOverrideKey = "SecurityHeaders.CspOverride";
 
 		Controller.HttpContext.Items
-			.ContainsKey(CspOverrideKey)
+			.TryGetValue(
+				CspOverrideKey,
+				out object? cspItem)
 			.ShouldBeTrue();
 
 		string csp =
-			Controller.HttpContext.Items[CspOverrideKey]
-				.ShouldBeOfType<string>();
+			cspItem.ShouldBeOfType<string>();
 
 		// Extract nonce from HTML to verify CSP matches
 		System.Text.RegularExpressions.Match nonceMatch =
@@ -374,12 +378,13 @@ public sealed class AuthControllerBaseUnitTests
 		const string CspOverrideKey = "SecurityHeaders.CspOverride";
 
 		Controller.HttpContext.Items
-			.ContainsKey(CspOverrideKey)
+			.TryGetValue(
+				CspOverrideKey,
+				out object? cspItem)
 			.ShouldBeTrue();
 
 		string csp =
-			Controller.HttpContext.Items[CspOverrideKey]
-				.ShouldBeOfType<string>();
+			cspItem.ShouldBeOfType<string>();
 
 		// Extract nonce from HTML to verify CSP matches
 		System.Text.RegularExpressions.Match nonceMatch =
