@@ -111,14 +111,14 @@ RUN mkdir -p /app/logs /app/keys && chown -R appuser:appuser /app
 RUN echo '#!/bin/bash\n\
 	set -e\n\
 	\n\
-	# Copy client key to /run (not /tmp — /tmp is world-writable) with 0600 perms\n\
-	# so libpq accepts it. /run is a tmpfs on Linux, cleaned on reboot.\n\
-	cp /tls/api/client.key /run/pg-client.key\n\
-	chmod 600 /run/pg-client.key\n\
+	# Copy client key to /app with 0600 perms\n\
+	# so libpq accepts it (copied from mounted volume to ensure 0600 perms).\n\
+	cp /tls/api/client.key /app/pg-client.key\n\
+	chmod 600 /app/pg-client.key\n\
 	\n\
 	export PGSSLMODE=verify-full\n\
 	export PGSSLCERT=/tls/api/client.crt\n\
-	export PGSSLKEY=/run/pg-client.key\n\
+	export PGSSLKEY=/app/pg-client.key\n\
 	export PGSSLROOTCERT=/tls/ca.crt\n\
 	\n\
 	echo "Waiting for PostgreSQL..."\n\
@@ -134,7 +134,7 @@ RUN echo '#!/bin/bash\n\
 	PGPASSWORD=$DB_PASSWORD psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" -f /app/electronicnotifications-migrations.sql\n\
 	\n\
 	# Clean up temp key before handing off to the app\n\
-	rm -f /run/pg-client.key\n\
+	rm -f /app/pg-client.key\n\
 	\n\
 	echo "Starting application"\n\
 	exec dotnet SeventySix.Api.dll' > /app/entrypoint.sh
