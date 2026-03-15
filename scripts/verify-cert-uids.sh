@@ -45,10 +45,16 @@ echo "=== Verifying container UIDs match cert ACLs ==="
 # stays in sync automatically (grep for the image: lines).
 COMPOSE_FILE="$(dirname "$0")/../docker-compose.production.yml"
 
-API_IMAGE=$(grep -E '^\s+image:.*ghcr\.io.*seventysix-api' "$COMPOSE_FILE" | head -1 | awk '{print $2}')
-OTEL_IMAGE=$(grep -E '^\s+image:.*opentelemetry-collector-contrib' "$COMPOSE_FILE" | head -1 | awk '{print $2}')
-JAEGER_IMAGE=$(grep -E '^\s+image:.*jaegertracing' "$COMPOSE_FILE" | head -1 | awk '{print $2}')
-EXPORTER_IMAGE=$(grep -E '^\s+image:.*redis_exporter' "$COMPOSE_FILE" | head -1 | awk '{print $2}')
+# Resolve ${VAR:-default} syntax to just the default value (compose variables
+# aren't expanded by grep/awk, so strip the wrapper to get the actual image ref).
+resolve_image() {
+    grep -E "$1" "$COMPOSE_FILE" | head -1 | awk '{print $2}' | sed 's/\${[^:]*:-\(.*\)}/\1/'
+}
+
+API_IMAGE=$(resolve_image '^\s+image:.*seventysix-api')
+OTEL_IMAGE=$(resolve_image '^\s+image:.*opentelemetry-collector-contrib')
+JAEGER_IMAGE=$(resolve_image '^\s+image:.*jaegertracing')
+EXPORTER_IMAGE=$(resolve_image '^\s+image:.*redis_exporter')
 
 check_uid "$API_IMAGE"      "999"   "API (appuser)"
 check_uid "$OTEL_IMAGE"     "10001" "otel-collector"
