@@ -18,8 +18,10 @@ import { RaceStateService } from "@games/car-a-lot/services/race-state.service";
 import { RoadCollisionService } from "@games/car-a-lot/services/road-collision.service";
 import { TrackBuilderService } from "@games/car-a-lot/services/track-builder.service";
 import { TrackFeaturesService } from "@games/car-a-lot/services/track-features.service";
+import { GameFlowService } from "@games/car-a-lot/services/game-flow.service";
 import { BABYLON_ENGINE_OPTIONS } from "@games/shared/constants/engine.constants";
 import { BabylonEngineService } from "@games/shared/services/babylon-engine.service";
+import { GameLoopService } from "@games/shared/services/game-loop.service";
 import { InputService } from "@games/shared/services/input.service";
 import { CarALotGameComponent } from "./car-a-lot-game";
 
@@ -52,6 +54,8 @@ describe("CarALotGameComponent",
 								CoinService,
 								BoostService,
 								CarALotAudioService,
+								GameFlowService,
+								GameLoopService,
 								{
 									provide: BABYLON_ENGINE_OPTIONS,
 									useValue: { useNullEngine: true }

@@ -16,7 +16,9 @@ import { RaceStateService } from "@games/car-a-lot/services/race-state.service";
 import { RoadCollisionService } from "@games/car-a-lot/services/road-collision.service";
 import { TrackBuilderService } from "@games/car-a-lot/services/track-builder.service";
 import { TrackFeaturesService } from "@games/car-a-lot/services/track-features.service";
+import { GameFlowService } from "@games/car-a-lot/services/game-flow.service";
 import { BabylonEngineService } from "@games/shared/services/babylon-engine.service";
+import { GameLoopService } from "@games/shared/services/game-loop.service";
 import { InputService } from "@games/shared/services/input.service";
 
 /**
@@ -44,6 +46,8 @@ export const GAMES_ROUTES: Routes =
 			providers: [
 				BabylonEngineService,
 				CharacterBuilderService,
+				GameFlowService,
+				GameLoopService,
 				DrivingPhysicsService,
 				InputService,
 				KartBuilderService,

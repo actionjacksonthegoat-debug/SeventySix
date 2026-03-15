@@ -11,6 +11,18 @@ Scene lifecycle: `new Engine(canvas)` → `new Scene(engine)` → populate → `
 
 `BabylonEngineService` wraps this lifecycle in Angular — route-scoped.
 
+## SOLID Scene Architecture
+
+Babylon.js scene code follows the same SOLID rules as all game code (see `games.instructions.md`). Scene population, game loop, and state logic live in services — never in the component.
+
+| Layer | Responsibility | Example |
+|-------|---------------|---------|
+| Component | Wire services, pass scene to `initialize()` | `onSceneReady()` calls service init methods |
+| `GameLoopService` (shared) | Manage `onBeforeRenderObservable` | `initialize(scene)` → `start()` → `dispose()` |
+| `GameFlowService` | Per-frame state transitions | `update(state, raceState, boundary, deltaTime)` |
+| `*SceneService` | Create sky, lights, ground, track | `initialize(scene)` |
+| `*PhysicsService` | Movement math per frame | `update(keys, deltaTime)` |
+
 ## Testing with NullEngine
 
 Use `NullEngine` for unit tests — no GPU required.

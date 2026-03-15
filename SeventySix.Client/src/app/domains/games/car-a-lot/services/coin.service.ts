@@ -68,12 +68,7 @@ export class CoinService
 		}
 
 		this.coinMaterial =
-			new StandardMaterial("coin-mat", scene);
-		this.coinMaterial.diffuseColor =
-			COIN_COLOR.clone();
-		this.coinMaterial.emissiveColor =
-			COIN_EMISSIVE_COLOR.clone();
-		this.coinMaterial.specularPower = 64;
+			this.createCoinMaterial(scene);
 
 		const spacing: number =
 			Math.max(1, Math.floor(segments.length / COIN_COUNT));
@@ -119,6 +114,26 @@ export class CoinService
 		}
 
 		this._totalCoins.set(COIN_COUNT);
+	}
+
+	/**
+	 * Create the shared coin material.
+	 * @param scene
+	 * The Babylon.js Scene.
+	 * @returns
+	 * A configured StandardMaterial for coins.
+	 */
+	private createCoinMaterial(scene: Scene): StandardMaterial
+	{
+		const material: StandardMaterial =
+			new StandardMaterial("coin-mat", scene);
+		material.diffuseColor =
+			COIN_COLOR.clone();
+		material.emissiveColor =
+			COIN_EMISSIVE_COLOR.clone();
+		material.specularPower = 64;
+
+		return material;
 	}
 
 	/**

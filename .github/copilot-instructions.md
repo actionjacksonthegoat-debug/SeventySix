@@ -40,6 +40,7 @@
 
 ## Core Principles
 
+- **SOLID** — Single Responsibility, Open/Closed, Liskov Substitution, Interface Segregation, Dependency Inversion. Components are thin controllers; logic lives in focused services. One reason to change per class.
 - **KISS, DRY, YAGNI** — simplest solution, no duplication, no speculative features
 - **TDD-First 80/20** — write tests first for the 20% of code carrying 80% of risk (Red → Green → Refactor)
 - **IDE Warnings = MUST FIX** — never suppress with `#pragma warning disable`, `// @ts-ignore`, `[SuppressMessage]`, or `.editorconfig` severity overrides

@@ -7,7 +7,6 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, inject } from "@angular/core";
 import { Vector3 } from "@babylonjs/core/Maths/math.vector";
 import { TransformNode } from "@babylonjs/core/Meshes/transformNode";
-import { Observer } from "@babylonjs/core/Misc/observable";
 import { Scene } from "@babylonjs/core/scene";
 import { ColorSelectorComponent } from "@games/car-a-lot/components/color-selector/color-selector";
 import { DrivingHudComponent } from "@games/car-a-lot/components/driving-hud/driving-hud";
@@ -15,16 +14,11 @@ import { MobileControlsComponent } from "@games/car-a-lot/components/mobile-cont
 import {
 	BUMPER_WIDTH,
 	KART_GROUND_OFFSET,
-	LANDING_ROAD_LENGTH,
-	LANDING_ROAD_WIDTH,
 	MAX_SPEED_MPH,
-	OCTOPUS_JUMP_VELOCITY,
 	OCTOPUS_SPAWN_OFFSET_Z,
 	RESCUE_PLATFORM_HEIGHT,
 	RESCUE_PLATFORM_OFFSET_Z,
-	RESCUE_ZONE_RADIUS,
-	VICTORY_DECEL_RATE,
-	VICTORY_TURN_RATE
+	RESCUE_ZONE_RADIUS
 } from "@games/car-a-lot/constants/car-a-lot.constants";
 import {
 	CharacterType,
@@ -40,6 +34,7 @@ import { CarALotAudioService } from "@games/car-a-lot/services/car-a-lot-audio.s
 import { CharacterBuilderService } from "@games/car-a-lot/services/character-builder.service";
 import { CoinService } from "@games/car-a-lot/services/coin.service";
 import { DrivingPhysicsService } from "@games/car-a-lot/services/driving-physics.service";
+import { GameFlowService } from "@games/car-a-lot/services/game-flow.service";
 import { KartBuilderService } from "@games/car-a-lot/services/kart-builder.service";
 import { OctopusBossService } from "@games/car-a-lot/services/octopus-boss.service";
 import { RaceCameraService } from "@games/car-a-lot/services/race-camera.service";
@@ -50,6 +45,7 @@ import { TrackBuilderService } from "@games/car-a-lot/services/track-builder.ser
 import { TrackFeaturesService } from "@games/car-a-lot/services/track-features.service";
 import { BabylonCanvasComponent } from "@games/shared/components/babylon-canvas/babylon-canvas";
 import { InputService } from "@games/shared/services/input.service";
+import { GameLoopService } from "@games/shared/services/game-loop.service";
 
 import { isPresent } from "@shared/utilities/null-check.utility";
 
@@ -125,11 +121,16 @@ export class CarALotGameComponent
 	private readonly audioService: CarALotAudioService =
 		inject(CarALotAudioService);
 
+	/** Game flow coordinator — handles state transitions each frame. */
+	private readonly gameFlow: GameFlowService =
+		inject(GameFlowService);
+
+	/** Shared game loop — manages the Babylon.js render observable. */
+	private readonly gameLoop: GameLoopService =
+		inject(GameLoopService);
+
 	/** Reference to the kart root node for game loop position updates. */
 	private kartRoot: TransformNode | null = null;
-
-	/** Reference to the game loop observer for cleanup. */
-	private gameLoopObserver: Observer<Scene> | null = null;
 
 	/** Rescue platform center position for auto-stop. */
 	private rescueCenter: Vector3 =
@@ -138,23 +139,11 @@ export class CarALotGameComponent
 	/** Reference to the scene for restart. */
 	private scene: Scene | null = null;
 
-	/** Octopus body center X for landing road check. */
-	private landingRoadCenterX: number = 0;
-
-	/** Octopus body center Z for landing road start. */
-	private landingRoadStartZ: number = 0;
-
-	/** Synthetic road segments for landing road bumper detection (split around victory circle). */
-	private landingRoadSegments: RoadSegment[] = [];
-
 	/** Last countdown value for bing sound detection. */
 	private lastCountdownValue: number = -1;
 
 	/** Reference to the rescue character root node for rebuild on character change. */
 	private rescueCharRoot: TransformNode | null = null;
-
-	/** Tracks whether the space key was held last frame to enable edge detection. */
-	private spaceWasDown: boolean = false;
 
 	/**
 	 * Handle Babylon.js scene initialization.
@@ -211,11 +200,6 @@ export class CarALotGameComponent
 			scene,
 			octopusPosition);
 
-		this.landingRoadCenterX =
-			octopusPosition.x;
-		this.landingRoadStartZ =
-			octopusPosition.z;
-
 		this.raceScene.createLandingRoad(
 			scene,
 			octopusPosition);
@@ -230,7 +214,7 @@ export class CarALotGameComponent
 		const afterCircleLength: number =
 			LANDING_ROAD_LENGTH - afterCircleStartOffset;
 
-		this.landingRoadSegments =
+		const landingRoadSegments: RoadSegment[] =
 			[
 				{
 					positionX: octopusPosition.x,
@@ -252,7 +236,12 @@ export class CarALotGameComponent
 
 		this.roadCollision.createBumpers(
 			scene,
-			this.landingRoadSegments);
+			landingRoadSegments);
+
+		this.gameFlow.initialize(
+			octopusPosition.x,
+			octopusPosition.z,
+			landingRoadSegments);
 
 		this.rescueCenter =
 			new Vector3(
@@ -297,7 +286,7 @@ export class CarALotGameComponent
 		this.startGameLoop(scene);
 
 		this.destroyRef.onDestroy(
-			() => this.cleanup(scene));
+			() => this.cleanup());
 	}
 
 	/**
@@ -360,438 +349,334 @@ export class CarALotGameComponent
 	}
 
 	/**
-	 * Starts the main game loop via the scene's before-render observable.
+	 * Starts the main game loop via the shared GameLoopService.
 	 * @param scene
 	 * The Babylon.js scene to attach the game loop to.
 	 */
 	private startGameLoop(scene: Scene): void
 	{
-		this.gameLoopObserver =
-			scene.onBeforeRenderObservable.add(
-				() =>
-				{
-					const engine: import("@babylonjs/core/Engines/engine").Engine =
-						scene
-							.getEngine() as import("@babylonjs/core/Engines/engine").Engine;
-					const deltaTime: number =
-						engine.getDeltaTime() / 1000;
-
-					const currentState: RaceState =
-						this.raceState.currentState();
-
-					if (
-						currentState === RaceState.Countdown
-							&& this.raceState.isCountdownActive())
-					{
-						const countdownBefore: number =
-							this.raceState.countdownValue();
-
-						if (this.raceState.tickCountdown(deltaTime))
-						{
-							this.audioService.playCountdownBing(true);
-							this.raceState.transitionTo(RaceState.Racing);
-							this.audioService.startEngine();
-							this.audioService.startMusic();
-							this.lastCountdownValue = -1;
-						}
-						else
-						{
-							const countdownAfter: number =
-								this.raceState.countdownValue();
-
-							if (
-								countdownAfter !== countdownBefore
-									&& countdownAfter !== this.lastCountdownValue)
-							{
-								this.audioService.playCountdownBing(false);
-								this.lastCountdownValue = countdownAfter;
-							}
-						}
-
-						return;
-					}
-
-					const isRacing: boolean =
-						currentState !== RaceState.Countdown
-							&& currentState !== RaceState.Victory
-							&& currentState !== RaceState.GameOver;
-
-					const activeKeys: Record<string, boolean> =
-						isRacing
-							? { ...this.inputService.keys }
-							: {};
-
-					const kartPos: Vector3 =
-						this.kartRoot?.position ?? Vector3.Zero();
-
-					const preCheckBoundary: RoadBoundaryResult =
-						this.roadCollision.checkRoadBoundary(
-							kartPos.x,
-							kartPos.z,
-							this.trackBuilder.getSegments());
-
-					const state: DrivingState =
-						this.drivingPhysics.update(
-							activeKeys,
-							deltaTime,
-							preCheckBoundary.groundElevation);
-
-					if (this.kartRoot !== null)
-					{
-						this.kartRoot.position =
-							new Vector3(
-								state.positionX,
-								state.positionY,
-								state.positionZ);
-						this.kartRoot.rotation.y =
-							state.rotationY;
-					}
-
-					this.kartBuilder.updateWheels(
-						state.speedMph,
-						deltaTime);
-
-					this.characterBuilder.updateCapeAnimation(
-						state.speedMph,
-						deltaTime);
-
-					const isInTunnel: boolean =
-						this.trackFeatures.isInsideTunnel(
-							state.positionX,
-							state.positionZ);
-
-					this.raceCamera.updateCamera(
-						this.kartRoot?.position ?? Vector3.Zero(),
-						state.rotationY,
-						deltaTime,
-						isInTunnel);
-
-					this.raceState.updateSpeed(state.speedMph);
-
-					this.audioService.updateEngine(
-						state.speedMph / MAX_SPEED_MPH);
-
-					if (
-						currentState === RaceState.Racing
-							|| currentState === RaceState.OctopusPhase
-							|| currentState === RaceState.Rescue)
-					{
-						this.raceState.updateElapsedTime(deltaTime);
-					}
-
-					const boundary: RoadBoundaryResult =
-						this.roadCollision.checkRoadBoundary(
-							state.positionX,
-							state.positionZ,
-							this.trackBuilder.getSegments());
-
-					if (boundary.isInBumperZone && state.isGrounded)
-					{
-						const pushDistance: number =
-							BUMPER_WIDTH - boundary.distanceToEdge + 0.5;
-						const normalX: number =
-							Math.sin(boundary.bumperNormalAngle);
-						const normalZ: number =
-							Math.cos(boundary.bumperNormalAngle);
-
-						this.drivingPhysics.clampToRoad(
-							normalX * pushDistance,
-							normalZ * pushDistance);
-						this.drivingPhysics.applyBounce(
-							boundary.bumperNormalAngle,
-							0);
-						this.boostService.deactivateBoost();
-						this.audioService.playBumper();
-					}
-					else if (
-						!boundary.isOnRoad
-							&& currentState === RaceState.Racing
-							&& state.isGrounded)
-					{
-						this.raceState.transitionTo(RaceState.GameOver);
-						this.drivingPhysics.setMaxSpeed(0);
-						this.audioService.stopEngine();
-						this.audioService.stopMusic();
-						this.audioService.playGameOver();
-					}
-
-					const jumpResult: JumpResult | null =
-						isInTunnel
-							? null
-							: this.trackFeatures.checkJumpTrigger(
-								state.positionX,
-								state.positionZ,
-								state.speedMph);
-
-					if (isPresent(jumpResult))
-					{
-						this.drivingPhysics.applyJump(
-							jumpResult.jumpVelocity);
-						this.audioService.playJump();
-					}
-
-					const coinCollected: boolean =
-						this.coinService.checkCollection(
-							state.positionX,
-							state.positionZ);
-
-					if (coinCollected)
-					{
-						this.audioService.playCoin();
-					}
-
-					this.coinService.updateAnimation(deltaTime);
-
-					const boostTriggered: boolean =
-						this.boostService.checkBoostTrigger(
-							state.positionX,
-							state.positionZ);
-
-					if (boostTriggered)
-					{
-						this.audioService.playBoost();
-					}
-
-					this.boostService.updateBoost(deltaTime);
-
-					if (this.boostService.isBoostActive())
-					{
-						this.drivingPhysics.setTemporaryMaxSpeed(
-							this.boostService.getEffectiveMaxSpeedMph());
-					}
-					else
-					{
-						this.drivingPhysics.clearTemporaryMaxSpeed();
-					}
-
-					this.octopusBoss.updateAnimation(deltaTime);
-
-					this.handleGameFlow(state, currentState, boundary, deltaTime);
-				});
+		this.gameLoop.initialize(scene);
+		this.gameLoop.onUpdate =
+			(deltaTimeMs: number) =>
+				this.onFrameUpdate(deltaTimeMs / 1000);
+		this.gameLoop.start();
 	}
 
 	/**
-	 * Handle game state flow: octopus approach, rescue, victory, restart.
+	 * Per-frame update — called by GameLoopService each render tick.
+	 * @param deltaTime
+	 * Frame delta time in seconds.
+	 */
+	private onFrameUpdate(deltaTime: number): void
+	{
+		const currentState: RaceState =
+			this.raceState.currentState();
+
+		if (this.handleCountdown(
+			deltaTime,
+			currentState))
+		{
+			return;
+		}
+
+		const state: DrivingState =
+			this.updatePhysics(
+				deltaTime,
+				currentState);
+
+		this.updateVisuals(
+			state,
+			deltaTime);
+
+		const boundary: RoadBoundaryResult =
+			this.roadCollision.checkRoadBoundary(
+				state.positionX,
+				state.positionZ,
+				this.trackBuilder.getSegments());
+
+		this.handleCollisions(
+			state,
+			currentState,
+			boundary);
+
+		this.updateItems(
+			state,
+			deltaTime);
+
+		this.octopusBoss.updateAnimation(deltaTime);
+
+		this.gameFlow.update(
+			state,
+			currentState,
+			boundary,
+			deltaTime,
+			this.rescueCenter);
+	}
+
+	/**
+	 * Tick countdown and play audio cues.
+	 * @param deltaTime
+	 * Frame delta time in seconds.
+	 * @param currentState
+	 * Current race lifecycle state.
+	 * @returns
+	 * True if countdown is active and frame processing should stop.
+	 */
+	private handleCountdown(
+		deltaTime: number,
+		currentState: RaceState): boolean
+	{
+		if (
+			currentState !== RaceState.Countdown
+				|| !this.raceState.isCountdownActive())
+		{
+			return false;
+		}
+
+		const countdownBefore: number =
+			this.raceState.countdownValue();
+
+		if (this.raceState.tickCountdown(deltaTime))
+		{
+			this.audioService.playCountdownBing(true);
+			this.raceState.transitionTo(RaceState.Racing);
+			this.audioService.startEngine();
+			this.audioService.startMusic();
+			this.lastCountdownValue = -1;
+		}
+		else
+		{
+			const countdownAfter: number =
+				this.raceState.countdownValue();
+
+			if (
+				countdownAfter !== countdownBefore
+					&& countdownAfter !== this.lastCountdownValue)
+			{
+				this.audioService.playCountdownBing(false);
+				this.lastCountdownValue = countdownAfter;
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * Run physics update and apply kart position/rotation to the mesh.
+	 * @param deltaTime
+	 * Frame delta time in seconds.
+	 * @param currentState
+	 * Current race lifecycle state.
+	 * @returns
+	 * The driving state snapshot from the physics engine.
+	 */
+	private updatePhysics(
+		deltaTime: number,
+		currentState: RaceState): DrivingState
+	{
+		const isRacing: boolean =
+			currentState !== RaceState.Countdown
+				&& currentState !== RaceState.Victory
+				&& currentState !== RaceState.GameOver;
+
+		const activeKeys: Record<string, boolean> =
+			isRacing
+				? { ...this.inputService.keys }
+				: {};
+
+		const kartPos: Vector3 =
+			this.kartRoot?.position ?? Vector3.Zero();
+
+		const preCheckBoundary: RoadBoundaryResult =
+			this.roadCollision.checkRoadBoundary(
+				kartPos.x,
+				kartPos.z,
+				this.trackBuilder.getSegments());
+
+		const state: DrivingState =
+			this.drivingPhysics.update(
+				activeKeys,
+				deltaTime,
+				preCheckBoundary.groundElevation);
+
+		if (this.kartRoot !== null)
+		{
+			this.kartRoot.position =
+				new Vector3(
+					state.positionX,
+					state.positionY,
+					state.positionZ);
+			this.kartRoot.rotation.y =
+				state.rotationY;
+		}
+
+		return state;
+	}
+
+	/**
+	 * Update visual systems — wheels, cape, camera, speed display, and engine audio.
+	 * @param state
+	 * Current driving state snapshot.
+	 * @param deltaTime
+	 * Frame delta time in seconds.
+	 */
+	private updateVisuals(
+		state: DrivingState,
+		deltaTime: number): void
+	{
+		this.kartBuilder.updateWheels(
+			state.speedMph,
+			deltaTime);
+
+		this.characterBuilder.updateCapeAnimation(
+			state.speedMph,
+			deltaTime);
+
+		const isInTunnel: boolean =
+			this.trackFeatures.isInsideTunnel(
+				state.positionX,
+				state.positionZ);
+
+		this.raceCamera.updateCamera(
+			this.kartRoot?.position ?? Vector3.Zero(),
+			state.rotationY,
+			deltaTime,
+			isInTunnel);
+
+		this.raceState.updateSpeed(state.speedMph);
+
+		this.audioService.updateEngine(
+			state.speedMph / MAX_SPEED_MPH);
+
+		const currentState: RaceState =
+			this.raceState.currentState();
+
+		if (
+			currentState === RaceState.Racing
+				|| currentState === RaceState.OctopusPhase
+				|| currentState === RaceState.Rescue)
+		{
+			this.raceState.updateElapsedTime(deltaTime);
+		}
+	}
+
+	/**
+	 * Check road boundary collisions and handle bumper pushback or off-road game over.
 	 * @param state
 	 * Current driving state snapshot.
 	 * @param currentState
 	 * Current race lifecycle state.
 	 * @param boundary
-	 * Current road boundary check result.
+	 * Road boundary check result.
+	 */
+	private handleCollisions(
+		state: DrivingState,
+		currentState: RaceState,
+		boundary: RoadBoundaryResult): void
+	{
+		if (boundary.isInBumperZone && state.isGrounded)
+		{
+			const pushDistance: number =
+				BUMPER_WIDTH - boundary.distanceToEdge + 0.5;
+			const normalX: number =
+				Math.sin(boundary.bumperNormalAngle);
+			const normalZ: number =
+				Math.cos(boundary.bumperNormalAngle);
+
+			this.drivingPhysics.clampToRoad(
+				normalX * pushDistance,
+				normalZ * pushDistance);
+			this.drivingPhysics.applyBounce(
+				boundary.bumperNormalAngle,
+				0);
+			this.boostService.deactivateBoost();
+			this.audioService.playBumper();
+		}
+		else if (
+			!boundary.isOnRoad
+				&& currentState === RaceState.Racing
+				&& state.isGrounded)
+		{
+			this.raceState.transitionTo(RaceState.GameOver);
+			this.drivingPhysics.setMaxSpeed(0);
+			this.audioService.stopEngine();
+			this.audioService.stopMusic();
+			this.audioService.playGameOver();
+		}
+	}
+
+	/**
+	 * Check jump triggers, coin collection, and boost pad activation.
+	 * @param state
+	 * Current driving state snapshot.
 	 * @param deltaTime
 	 * Frame delta time in seconds.
 	 */
-	private handleGameFlow(
+	private updateItems(
 		state: DrivingState,
-		currentState: RaceState,
-		boundary: RoadBoundaryResult,
 		deltaTime: number): void
 	{
-		const kartPosition: Vector3 =
-			this.kartRoot?.position ?? Vector3.Zero();
+		const isInTunnel: boolean =
+			this.trackFeatures.isInsideTunnel(
+				state.positionX,
+				state.positionZ);
 
-		if (currentState === RaceState.Racing)
+		const jumpResult: JumpResult | null =
+			isInTunnel
+				? null
+				: this.trackFeatures.checkJumpTrigger(
+					state.positionX,
+					state.positionZ,
+					state.speedMph);
+
+		if (isPresent(jumpResult))
 		{
-			if (this.octopusBoss.checkApproachZone(kartPosition))
-			{
-				this.raceState.transitionTo(RaceState.OctopusPhase);
-				this.audioService.playOctopusRumble();
-			}
+			this.drivingPhysics.applyJump(
+				jumpResult.jumpVelocity);
+			this.audioService.playJump();
 		}
 
-		if (currentState === RaceState.OctopusPhase)
+		const coinCollected: boolean =
+			this.coinService.checkCollection(
+				state.positionX,
+				state.positionZ);
+
+		if (coinCollected)
 		{
-			this.octopusBoss.updateEyeTracking(kartPosition);
-
-			const spaceDown: boolean =
-				this.inputService.keys[" "] === true;
-
-			if (spaceDown && !this.spaceWasDown && state.isGrounded)
-			{
-				this.drivingPhysics.applyJump(
-					OCTOPUS_JUMP_VELOCITY);
-				this.audioService.playJump();
-			}
-
-			this.spaceWasDown = spaceDown;
-
-			if (!state.isGrounded && this.octopusBoss.checkBodyCollision(kartPosition))
-			{
-				this.raceState.transitionTo(RaceState.OctopusAttack);
-				this.octopusBoss.startJumpAttack();
-				this.drivingPhysics.setMaxSpeed(0);
-				this.audioService.stopEngine();
-			}
-
-			if (state.isGrounded && this.octopusBoss.checkGroundCollision(kartPosition))
-			{
-				this.raceState.transitionTo(RaceState.GameOver);
-				this.drivingPhysics.setMaxSpeed(0);
-				this.audioService.stopEngine();
-				this.audioService.stopMusic();
-				this.audioService.playGameOver();
-			}
-
-			if (this.octopusBoss.hasCleared(kartPosition))
-			{
-				this.raceState.transitionTo(RaceState.Rescue);
-			}
-			else if (
-				state.isGrounded
-					&& !boundary.isOnRoad
-					&& !this.isOnLandingRoad(state.positionX, state.positionZ))
-			{
-				this.raceState.transitionTo(RaceState.GameOver);
-				this.drivingPhysics.setMaxSpeed(0);
-				this.audioService.stopEngine();
-				this.audioService.stopMusic();
-				this.audioService.playGameOver();
-			}
+			this.audioService.playCoin();
 		}
 
-		if (currentState === RaceState.OctopusAttack)
-		{
-			const jumpResult: { landed: boolean; position: Vector3; } =
-				this.octopusBoss.updateJumpAttack(
-					deltaTime);
+		this.coinService.updateAnimation(deltaTime);
 
-			if (jumpResult.landed)
-			{
-				this.raceState.transitionTo(RaceState.GameOver);
-				this.audioService.stopMusic();
-				this.audioService.playGameOver();
-			}
+		const boostTriggered: boolean =
+			this.boostService.checkBoostTrigger(
+				state.positionX,
+				state.positionZ);
+
+		if (boostTriggered)
+		{
+			this.audioService.playBoost();
 		}
 
-		if (currentState === RaceState.Rescue)
+		this.boostService.updateBoost(deltaTime);
+
+		if (this.boostService.isBoostActive())
 		{
-			if (state.isGrounded)
-			{
-				const isOnLanding: boolean =
-					this.isOnLandingRoad(
-						state.positionX,
-						state.positionZ);
-
-				if (!isOnLanding)
-				{
-					this.raceState.transitionTo(RaceState.GameOver);
-					this.drivingPhysics.setMaxSpeed(0);
-					this.audioService.stopEngine();
-					this.audioService.stopMusic();
-					this.audioService.playGameOver();
-
-					return;
-				}
-			}
-
-			if (
-				this.landingRoadSegments.length > 0
-					&& state.isGrounded)
-			{
-				const landingBoundary: RoadBoundaryResult =
-					this.roadCollision.checkRoadBoundary(
-						state.positionX,
-						state.positionZ,
-						this.landingRoadSegments);
-
-				if (landingBoundary.isInBumperZone)
-				{
-					const pushDistance: number =
-						BUMPER_WIDTH - landingBoundary.distanceToEdge + 0.5;
-					const normalX: number =
-						Math.sin(landingBoundary.bumperNormalAngle);
-					const normalZ: number =
-						Math.cos(landingBoundary.bumperNormalAngle);
-
-					this.drivingPhysics.clampToRoad(
-						normalX * pushDistance,
-						normalZ * pushDistance);
-					this.drivingPhysics.applyBounce(
-						landingBoundary.bumperNormalAngle,
-						0);
-					this.audioService.playBumper();
-				}
-			}
-
-			const distToCenter: number =
-				Vector3.Distance(kartPosition, this.rescueCenter);
-
-			if (distToCenter < RESCUE_ZONE_RADIUS)
-			{
-				this.raceState.transitionTo(RaceState.Victory);
-				this.audioService.stopEngine();
-				this.audioService.stopMusic();
-				this.audioService.playVictory();
-			}
+			this.drivingPhysics.setTemporaryMaxSpeed(
+				this.boostService.getEffectiveMaxSpeedMph());
 		}
-
-		if (currentState === RaceState.Victory)
+		else
 		{
-			const damping: number =
-				Math.max(0, 1 - VICTORY_DECEL_RATE * deltaTime);
-			this.drivingPhysics.reduceSpeed(damping);
-
-			const dirX: number =
-				this.rescueCenter.x - kartPosition.x;
-			const dirZ: number =
-				this.rescueCenter.z - kartPosition.z;
-			const targetHeading: number =
-				Math.atan2(dirX, dirZ);
-			const currentHeading: number =
-				state.rotationY;
-			const headingDiff: number =
-				Math.atan2(
-					Math.sin(targetHeading - currentHeading),
-					Math.cos(targetHeading - currentHeading));
-			const maxTurn: number =
-				VICTORY_TURN_RATE * deltaTime;
-			const turnAmount: number =
-				Math.sign(headingDiff) * Math.min(Math.abs(headingDiff), maxTurn);
-
-			this.drivingPhysics.setHeading(
-				currentHeading + turnAmount);
+			this.drivingPhysics.clearTemporaryMaxSpeed();
 		}
 	}
 
 	/**
-	 * Check whether a position is on the landing road after the octopus.
-	 * @param posX
-	 * World X position.
-	 * @param posZ
-	 * World Z position.
-	 * @returns
-	 * True if the position is within the landing road bounds.
+	 * Cleans up the game loop and disposes all services.
 	 */
-	private isOnLandingRoad(
-		posX: number,
-		posZ: number): boolean
+	private cleanup(): void
 	{
-		const halfWidth: number =
-			LANDING_ROAD_WIDTH / 2;
-		const isInX: boolean =
-			posX >= this.landingRoadCenterX - halfWidth
-				&& posX <= this.landingRoadCenterX + halfWidth;
-		const isInZ: boolean =
-			posZ >= this.landingRoadStartZ
-				&& posZ <= this.landingRoadStartZ + LANDING_ROAD_LENGTH;
-
-		return isInX && isInZ;
-	}
-
-	/**
-	 * Cleans up game loop observer and disposes all services.
-	 * @param scene
-	 * The Babylon.js scene to clean up.
-	 */
-	private cleanup(scene: Scene): void
-	{
-		if (this.gameLoopObserver !== null)
-		{
-			scene.onBeforeRenderObservable.remove(
-				this.gameLoopObserver);
-			this.gameLoopObserver = null;
-		}
-
+		this.gameLoop.dispose();
 		this.coinService.dispose();
 		this.boostService.dispose();
 		this.octopusBoss.dispose();
