@@ -492,84 +492,96 @@ function createTestSegments(): RoadSegment[]
 			positionZ: 20,
 			length: 40,
 			rotationY: 0,
-			isFork: false
+			isFork: false,
+			elevation: 0
 		},
 		{
 			positionX: -10,
 			positionZ: 52,
 			length: 30,
 			rotationY: -Math.PI / 4,
-			isFork: true
+			isFork: true,
+			elevation: 0
 		},
 		{
 			positionX: 10,
 			positionZ: 82,
 			length: 35,
 			rotationY: Math.PI / 4,
-			isFork: true
+			isFork: true,
+			elevation: 0
 		},
 		{
 			positionX: 10,
 			positionZ: 102,
 			length: 20,
 			rotationY: 0,
-			isFork: false
+			isFork: false,
+			elevation: 0
 		},
 		{
 			positionX: -5,
 			positionZ: 117,
 			length: 25,
 			rotationY: -Math.PI / 6,
-			isFork: true
+			isFork: true,
+			elevation: 0
 		},
 		{
 			positionX: 5,
 			positionZ: 142,
 			length: 25,
 			rotationY: Math.PI / 6,
-			isFork: true
+			isFork: true,
+			elevation: 0
 		},
 		{
 			positionX: 15,
 			positionZ: 172,
 			length: 40,
 			rotationY: Math.PI / 2,
-			isFork: false
+			isFork: false,
+			elevation: 0
 		},
 		{
 			positionX: 15,
 			positionZ: 187,
 			length: 15,
 			rotationY: 0,
-			isFork: false
+			isFork: false,
+			elevation: 0
 		},
 		{
 			positionX: 15,
 			positionZ: 207,
 			length: 20,
 			rotationY: 0,
-			isFork: false
+			isFork: false,
+			elevation: 0
 		},
 		{
 			positionX: 15,
 			positionZ: 237,
 			length: 30,
 			rotationY: 0,
-			isFork: false
+			isFork: false,
+			elevation: 0
 		},
 		{
 			positionX: 15,
 			positionZ: 262,
 			length: 50,
 			rotationY: 0,
-			isFork: false
+			isFork: false,
+			elevation: 0
 		},
 		{
 			positionX: 15,
 			positionZ: 282,
 			length: 20,
 			rotationY: 0,
-			isFork: false
+			isFork: false,
+			elevation: 0
 		}
 	];
 }

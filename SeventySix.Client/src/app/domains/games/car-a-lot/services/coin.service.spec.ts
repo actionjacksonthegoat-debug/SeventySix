@@ -214,7 +214,8 @@ function createTestSegments(): RoadSegment[]
 				positionZ: segIndex * 30,
 				length: 30,
 				rotationY: 0,
-				isFork: false
+				isFork: false,
+				elevation: 0
 			});
 	}
 

@@ -29,7 +29,8 @@ describe("RoadCollisionService",
 				positionZ: 20,
 				length: 40,
 				rotationY: 0,
-				isFork: false
+				isFork: false,
+				elevation: 0
 			};
 
 		/** Angled road segment for turn testing. */
@@ -39,7 +40,8 @@ describe("RoadCollisionService",
 				positionZ: 50,
 				length: 30,
 				rotationY: Math.PI / 4,
-				isFork: false
+				isFork: false,
+				elevation: 0
 			};
 
 		/** Fork road segment. */
@@ -49,7 +51,8 @@ describe("RoadCollisionService",
 				positionZ: 60,
 				length: 30,
 				rotationY: -Math.PI / 4,
-				isFork: true
+				isFork: true,
+				elevation: 0
 			};
 
 		beforeEach(

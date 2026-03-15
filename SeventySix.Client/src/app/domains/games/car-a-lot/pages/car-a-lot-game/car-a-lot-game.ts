@@ -14,6 +14,7 @@ import { MobileControlsComponent } from "@games/car-a-lot/components/mobile-cont
 import {
 	BUMPER_WIDTH,
 	KART_GROUND_OFFSET,
+	LANDING_ROAD_LENGTH,
 	MAX_SPEED_MPH,
 	OCTOPUS_SPAWN_OFFSET_Z,
 	RESCUE_PLATFORM_HEIGHT,
