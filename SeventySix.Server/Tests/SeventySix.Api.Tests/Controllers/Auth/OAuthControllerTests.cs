@@ -152,5 +152,86 @@ public sealed class OAuthControllerTests(IdentityAuthApiPostgreSqlFixture fixtur
 		content.ShouldContain(PostMessageMethod);
 	}
 
+	/// <summary>
+	/// Tests that callback HTML includes a CSP nonce on the script tag
+	/// and a matching Content-Security-Policy header.
+	/// </summary>
+	[Fact]
+	public async Task GitHubCallbackAsync_ErrorResponse_ContainsCspNonceAsync()
+	{
+		// Act
+		HttpResponseMessage response =
+			await Client!.GetAsync(
+			$"{ApiEndpoints.Auth.OAuth.GitHubCallback}?code=test&state=invalid");
+
+		// Assert — HTML has <script nonce="...">
+		string content =
+			await response.Content.ReadAsStringAsync();
+
+		System.Text.RegularExpressions.Match nonceMatch =
+			System.Text.RegularExpressions.Regex.Match(
+				content,
+				"""<script nonce="([^"]+)">""");
+
+		nonceMatch.Success.ShouldBeTrue("Callback HTML should contain <script nonce=\"...\">");
+
+		string nonceValue =
+			nonceMatch.Groups[1].Value;
+
+		nonceValue.ShouldNotBeNullOrWhiteSpace();
+
+		// Assert — CSP header contains matching nonce
+		IEnumerable<string> cspValues =
+			response.Headers.GetValues("Content-Security-Policy");
+
+		string csp =
+			string.Join("; ", cspValues);
+
+		csp.ShouldContain($"'nonce-{nonceValue}'");
+		csp.ShouldContain("default-src 'none'");
+	}
+
+	/// <summary>
+	/// Tests that each callback request generates a unique nonce.
+	/// </summary>
+	[Fact]
+	public async Task GitHubCallbackAsync_MultipleRequests_GeneratesUniqueNoncesAsync()
+	{
+		// Arrange
+		string callbackUrl =
+			$"{ApiEndpoints.Auth.OAuth.GitHubCallback}?code=test&state=invalid";
+
+		// Act
+		HttpResponseMessage response1 =
+			await Client!.GetAsync(callbackUrl);
+
+		HttpResponseMessage response2 =
+			await Client!.GetAsync(callbackUrl);
+
+		// Assert
+		string content1 =
+			await response1.Content.ReadAsStringAsync();
+
+		string content2 =
+			await response2.Content.ReadAsStringAsync();
+
+		System.Text.RegularExpressions.Match nonce1 =
+			System.Text.RegularExpressions.Regex.Match(
+				content1,
+				"""<script nonce="([^"]+)">""");
+
+		System.Text.RegularExpressions.Match nonce2 =
+			System.Text.RegularExpressions.Regex.Match(
+				content2,
+				"""<script nonce="([^"]+)">""");
+
+		nonce1.Success.ShouldBeTrue();
+		nonce2.Success.ShouldBeTrue();
+
+		nonce1.Groups[1].Value.ShouldNotBe(
+			nonce2.Groups[1].Value,
+			"Each request should generate a unique nonce");
+	}
+
 	#endregion
 }

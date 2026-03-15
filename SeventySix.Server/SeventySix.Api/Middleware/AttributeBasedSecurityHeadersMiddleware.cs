@@ -131,13 +131,26 @@ public sealed class AttributeBasedSecurityHeadersMiddleware(
 		context.Response.Headers.CacheControl = "no-store";
 		context.Response.Headers.Pragma = "no-cache";
 
-		// Content Security Policy - use environment-appropriate default
-		string defaultCsp =
-			environment.IsDevelopment()
-			? DevelopmentCsp
-			: ProductionCsp;
-		string csp =
-			config.ContentSecurityPolicy ?? defaultCsp;
+		// Content Security Policy — dynamic override takes highest priority,
+		// then attribute config, then environment-appropriate default
+		string csp;
+		if (context.Items.TryGetValue(
+			SeventySix.Shared.Constants.SecurityHeaderConstants.ItemKeys.CspOverride,
+			out object? cspOverride)
+			&& cspOverride is string dynamicCsp)
+		{
+			csp = dynamicCsp;
+		}
+		else
+		{
+			string defaultCsp =
+				environment.IsDevelopment()
+				? DevelopmentCsp
+				: ProductionCsp;
+			csp =
+				config.ContentSecurityPolicy ?? defaultCsp;
+		}
+
 		context.Response.Headers.ContentSecurityPolicy = csp;
 
 		// HSTS only in production to avoid development certificate issues
