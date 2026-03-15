@@ -1,0 +1,37 @@
+<div class="selector-container">
+	<div
+		class="color-buttons"
+		role="group"
+		aria-label="Kart color selection">
+		@for (color of kartColors; track color) {
+			<button
+				type="button"
+				class="color-btn"
+				[style.background-color]="colorCssMap[color]"
+				[class.selected]="selectedColor() === color"
+				[attr.aria-label]="'Select ' + colorLabelMap[color] + ' kart'"
+				[attr.aria-pressed]="selectedColor() === color"
+				[attr.data-testid]="'color-btn-' + color"
+				(click)="selectColor(color)">
+			</button>
+		}
+	</div>
+
+	<div
+		class="character-buttons"
+		role="group"
+		aria-label="Character selection">
+		@for (character of characterTypes; track character) {
+			<button
+				type="button"
+				class="character-btn"
+				[class.selected]="selectedCharacter() === character"
+				[attr.aria-label]="'Switch to ' + character"
+				[attr.aria-pressed]="selectedCharacter() === character"
+				[attr.data-testid]="'character-btn-' + character"
+				(click)="selectCharacter(character)">
+				{{ character }}
+			</button>
+		}
+	</div>
+</div>

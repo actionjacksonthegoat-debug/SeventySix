@@ -399,7 +399,7 @@ export const PAGE_TEXT: PageTextConfig =
 	 * Sandbox page text.
 	 */
 		sandbox: {
-			title: "Hello World"
+			title: "Sandbox"
 		},
 
 		/**

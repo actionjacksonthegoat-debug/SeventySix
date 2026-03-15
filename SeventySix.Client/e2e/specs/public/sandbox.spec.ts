@@ -26,7 +26,7 @@ test.describe("Sandbox Page",
 		test.describe("Page Structure",
 			() =>
 			{
-				test("should display Hello World heading",
+				test("should display Sandbox heading",
 					async ({ page }) =>
 					{
 						const heading: Locator =

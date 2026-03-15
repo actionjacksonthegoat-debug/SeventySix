@@ -3,20 +3,21 @@
  * Lazy-loaded routes for sandbox experimentation area
  */
 import { Routes } from "@angular/router";
-import { BabylonEngineService } from "@sandbox/services/babylon-engine.service";
-import { BossService } from "@sandbox/services/boss.service";
-import { CollisionService } from "@sandbox/services/collision.service";
-import { EnemySwarmService } from "@sandbox/services/enemy-swarm.service";
-import { GameAudioService } from "@sandbox/services/game-audio.service";
-import { GameCollisionHandlerService } from "@sandbox/services/game-collision-handler.service";
-import { GameSceneService } from "@sandbox/services/game-scene.service";
-import { GameStateService } from "@sandbox/services/game-state.service";
-import { InputService } from "@sandbox/services/input.service";
-import { ParticleEffectsService } from "@sandbox/services/particle-effects.service";
-import { PlayerShipService } from "@sandbox/services/player-ship.service";
-import { PowerUpService } from "@sandbox/services/powerup.service";
-import { ScoringService } from "@sandbox/services/scoring.service";
-import { WeaponService } from "@sandbox/services/weapon.service";
+import { BoostService } from "@sandbox/car-a-lot/services/boost.service";
+import { CarALotAudioService } from "@sandbox/car-a-lot/services/car-a-lot-audio.service";
+import { CharacterBuilderService } from "@sandbox/car-a-lot/services/character-builder.service";
+import { CoinService } from "@sandbox/car-a-lot/services/coin.service";
+import { DrivingPhysicsService } from "@sandbox/car-a-lot/services/driving-physics.service";
+import { KartBuilderService } from "@sandbox/car-a-lot/services/kart-builder.service";
+import { OctopusBossService } from "@sandbox/car-a-lot/services/octopus-boss.service";
+import { RaceCameraService } from "@sandbox/car-a-lot/services/race-camera.service";
+import { RaceSceneService } from "@sandbox/car-a-lot/services/race-scene.service";
+import { RaceStateService } from "@sandbox/car-a-lot/services/race-state.service";
+import { RoadCollisionService } from "@sandbox/car-a-lot/services/road-collision.service";
+import { TrackBuilderService } from "@sandbox/car-a-lot/services/track-builder.service";
+import { TrackFeaturesService } from "@sandbox/car-a-lot/services/track-features.service";
+import { BabylonEngineService } from "@sandbox/shared/services/babylon-engine.service";
+import { InputService } from "@sandbox/shared/services/input.service";
 
 /**
  * Sandbox feature routes used for experimentation and testing of components.
@@ -31,31 +32,31 @@ export const SANDBOX_ROUTES: Routes =
 					(module) =>
 						module.SandboxLandingComponent),
 			title: "Sandbox - SeventySix",
-			data: { breadcrumb: "Landing" }
+			data: { breadcrumb: "Sandbox" }
 		},
 		{
-			path: "galactic-assault",
+			path: "car-a-lot",
 			loadComponent: () =>
-				import("./pages/galactic-assault/galactic-assault").then(
-					(module) =>
-						module.GalacticAssaultComponent),
-			title: "Galactic Assault - SeventySix",
-			data: { breadcrumb: "Galactic Assault" },
+				import("./car-a-lot/pages/car-a-lot-game/car-a-lot-game").then(
+					(module) => module.CarALotGameComponent),
+			title: "Car-a-Lot - SeventySix",
+			data: { breadcrumb: "Car-a-Lot" },
 			providers: [
 				BabylonEngineService,
-				GameSceneService,
-				PlayerShipService,
+				CharacterBuilderService,
+				DrivingPhysicsService,
 				InputService,
-				EnemySwarmService,
-				CollisionService,
-				WeaponService,
-				PowerUpService,
-				BossService,
-				ScoringService,
-				GameAudioService,
-				GameCollisionHandlerService,
-				GameStateService,
-				ParticleEffectsService
+				KartBuilderService,
+				OctopusBossService,
+				RaceCameraService,
+				RaceSceneService,
+				RaceStateService,
+				RoadCollisionService,
+				TrackBuilderService,
+				TrackFeaturesService,
+				CoinService,
+				BoostService,
+				CarALotAudioService
 			]
 		}
 	];

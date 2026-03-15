@@ -1,5 +1,6 @@
 import { provideZonelessChangeDetection } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
+import { provideRouter } from "@angular/router";
 import { SandboxLandingComponent } from "./sandbox-landing";
 
 describe("SandboxLandingComponent",
@@ -15,7 +16,10 @@ describe("SandboxLandingComponent",
 					.configureTestingModule(
 						{
 							imports: [SandboxLandingComponent],
-							providers: [provideZonelessChangeDetection()]
+							providers: [
+								provideZonelessChangeDetection(),
+								provideRouter([])
+							]
 						})
 					.compileComponents();
 
@@ -39,6 +43,17 @@ describe("SandboxLandingComponent",
 				const heading: HTMLElement | null =
 					fixture.nativeElement.querySelector("h1");
 				expect(heading?.textContent)
-					.toContain("Hello World");
+					.toContain("Sandbox");
+			});
+
+		it("should render car-a-lot game card",
+			() =>
+			{
+				const card: HTMLElement | null =
+					fixture.nativeElement.querySelector("[data-testid='game-card-car-a-lot']");
+				expect(card)
+					.toBeTruthy();
+				expect(card?.textContent)
+					.toContain("Car-a-Lot");
 			});
 	});
