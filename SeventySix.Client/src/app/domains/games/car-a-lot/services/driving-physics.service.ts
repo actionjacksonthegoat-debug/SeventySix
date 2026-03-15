@@ -247,8 +247,7 @@ export class DrivingPhysicsService
 		const isAccelerating: boolean =
 			keys["w"] === true
 				|| keys["W"] === true
-				|| keys["ArrowUp"] === true
-				|| keys["mouseLeft"] === true;
+				|| keys["ArrowUp"] === true;
 		const isBraking: boolean =
 			keys["s"] === true
 				|| keys["S"] === true

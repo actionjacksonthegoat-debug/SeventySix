@@ -1,7 +1,7 @@
 /**
  * Input Service.
- * Manages keyboard, mouse, and touch state for game controls via polling.
- * Tracks pressed keys and mouse buttons each frame for the game loop to read.
+ * Manages keyboard and touch state for game controls via polling.
+ * Tracks pressed keys each frame for the game loop to read.
  * Touch-capable devices can inject virtual key presses through `setKey()`.
  * Domain-scoped service — must be provided via route providers array.
  */
@@ -22,9 +22,6 @@ export class InputService
 	 * @readonly
 	 */
 	readonly keys: Record<string, boolean> = {};
-
-	/** Whether the left mouse button is currently pressed. */
-	mouseLeft: boolean = false;
 
 	/**
 	 * Whether the current device supports touch input.
@@ -80,25 +77,7 @@ export class InputService
 		(): void => this.resetAll();
 
 	/**
-	 * Bound mousedown handler for cleanup.
-	 * @type {(event: MouseEvent) => void}
-	 * @private
-	 */
-	private readonly boundMouseDown: (event: MouseEvent) => void =
-		(event: MouseEvent): void =>
-			this.onMouseDown(event);
-
-	/**
-	 * Bound mouseup handler for cleanup.
-	 * @type {(event: MouseEvent) => void}
-	 * @private
-	 */
-	private readonly boundMouseUp: (event: MouseEvent) => void =
-		(event: MouseEvent): void =>
-			this.onMouseUp(event);
-
-	/**
-	 * Attaches keyboard and mouse event listeners to the window.
+	 * Attaches keyboard event listeners to the window.
 	 */
 	initialize(): void
 	{
@@ -111,12 +90,6 @@ export class InputService
 		window.addEventListener(
 			"blur",
 			this.boundBlur);
-		window.addEventListener(
-			"mousedown",
-			this.boundMouseDown);
-		window.addEventListener(
-			"mouseup",
-			this.boundMouseUp);
 	}
 
 	/**
@@ -159,7 +132,7 @@ export class InputService
 	}
 
 	/**
-	 * Removes keyboard and mouse event listeners and resets state.
+	 * Removes keyboard event listeners and resets state.
 	 */
 	dispose(): void
 	{
@@ -172,12 +145,6 @@ export class InputService
 		window.removeEventListener(
 			"blur",
 			this.boundBlur);
-		window.removeEventListener(
-			"mousedown",
-			this.boundMouseDown);
-		window.removeEventListener(
-			"mouseup",
-			this.boundMouseUp);
 		this.resetAll();
 	}
 
@@ -214,35 +181,7 @@ export class InputService
 	}
 
 	/**
-	 * Handles mousedown events by recording the left button as pressed.
-	 * @param {MouseEvent} event
-	 * The mouse event.
-	 * @private
-	 */
-	private onMouseDown(event: MouseEvent): void
-	{
-		if (event.button === 0)
-		{
-			this.mouseLeft = true;
-		}
-	}
-
-	/**
-	 * Handles mouseup events by recording the left button as released.
-	 * @param {MouseEvent} event
-	 * The mouse event.
-	 * @private
-	 */
-	private onMouseUp(event: MouseEvent): void
-	{
-		if (event.button === 0)
-		{
-			this.mouseLeft = false;
-		}
-	}
-
-	/**
-	 * Resets all key and mouse states to unpressed.
+	 * Resets all key states to unpressed.
 	 * Called on window blur to prevent stuck inputs.
 	 * @private
 	 */
@@ -252,6 +191,5 @@ export class InputService
 		{
 			this.keys[key] = false;
 		}
-		this.mouseLeft = false;
 	}
 }

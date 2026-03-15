@@ -14,6 +14,7 @@ import { DrivingHudComponent } from "@games/car-a-lot/components/driving-hud/dri
 import { MobileControlsComponent } from "@games/car-a-lot/components/mobile-controls/mobile-controls";
 import {
 	BUMPER_WIDTH,
+	KART_GROUND_OFFSET,
 	LANDING_ROAD_LENGTH,
 	LANDING_ROAD_WIDTH,
 	MAX_SPEED_MPH,
@@ -143,8 +144,8 @@ export class CarALotGameComponent
 	/** Octopus body center Z for landing road start. */
 	private landingRoadStartZ: number = 0;
 
-	/** Synthetic road segment for landing road bumper detection. */
-	private landingRoadSegment: RoadSegment | null = null;
+	/** Synthetic road segments for landing road bumper detection (split around victory circle). */
+	private landingRoadSegments: RoadSegment[] = [];
 
 	/** Last countdown value for bing sound detection. */
 	private lastCountdownValue: number = -1;
@@ -219,19 +220,39 @@ export class CarALotGameComponent
 			scene,
 			octopusPosition);
 
-		this.landingRoadSegment =
-			{
-				positionX: octopusPosition.x,
-				positionZ: octopusPosition.z + LANDING_ROAD_LENGTH / 2,
-				length: LANDING_ROAD_LENGTH,
-				rotationY: 0,
-				isFork: false,
-				elevation: 0
-			};
+		// Bumpers run from the octopus to just before the victory circle, then
+		// resume after the victory circle into the castle — leaving the circle
+		// area bump-free.
+		const beforeCircleLength: number =
+			RESCUE_PLATFORM_OFFSET_Z - RESCUE_ZONE_RADIUS;
+		const afterCircleStartOffset: number =
+			RESCUE_PLATFORM_OFFSET_Z + RESCUE_ZONE_RADIUS;
+		const afterCircleLength: number =
+			LANDING_ROAD_LENGTH - afterCircleStartOffset;
+
+		this.landingRoadSegments =
+			[
+				{
+					positionX: octopusPosition.x,
+					positionZ: octopusPosition.z + beforeCircleLength / 2,
+					length: beforeCircleLength,
+					rotationY: 0,
+					isFork: false,
+					elevation: 0
+				},
+				{
+					positionX: octopusPosition.x,
+					positionZ: octopusPosition.z + afterCircleStartOffset + afterCircleLength / 2,
+					length: afterCircleLength,
+					rotationY: 0,
+					isFork: false,
+					elevation: 0
+				}
+			];
 
 		this.roadCollision.createBumpers(
 			scene,
-			[this.landingRoadSegment]);
+			this.landingRoadSegments);
 
 		this.rescueCenter =
 			new Vector3(
@@ -323,6 +344,16 @@ export class CarALotGameComponent
 		this.drivingPhysics.reset();
 		this.boostService.reset();
 		this.coinService.reset();
+
+		// Move kart to start position immediately so it is at start
+		// during the countdown rather than snapping there after GO!.
+		if (this.kartRoot !== null)
+		{
+			this.kartRoot.position =
+				new Vector3(0, KART_GROUND_OFFSET, 0);
+			this.kartRoot.rotation.y = 0;
+		}
+
 		this.raceState.startCountdown();
 		this.lastCountdownValue = 3;
 		this.audioService.playCountdownBing(false);
@@ -387,7 +418,7 @@ export class CarALotGameComponent
 
 					const activeKeys: Record<string, boolean> =
 						isRacing
-							? { ...this.inputService.keys, mouseLeft: this.inputService.mouseLeft }
+							? { ...this.inputService.keys }
 							: {};
 
 					const kartPos: Vector3 =
@@ -654,14 +685,14 @@ export class CarALotGameComponent
 			}
 
 			if (
-				isPresent(this.landingRoadSegment)
+				this.landingRoadSegments.length > 0
 					&& state.isGrounded)
 			{
 				const landingBoundary: RoadBoundaryResult =
 					this.roadCollision.checkRoadBoundary(
 						state.positionX,
 						state.positionZ,
-						[this.landingRoadSegment]);
+						this.landingRoadSegments);
 
 				if (landingBoundary.isInBumperZone)
 				{

@@ -83,7 +83,6 @@ export class BoostService
 			BOOST_PAD_COLOR.clone();
 		this.boostMaterial.emissiveColor =
 			BOOST_PAD_EMISSIVE.clone();
-		this.boostMaterial.alpha = 0.85;
 
 		const chevronMat: StandardMaterial =
 			new StandardMaterial("boost-chevron-mat", scene);
