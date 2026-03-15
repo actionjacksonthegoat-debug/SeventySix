@@ -1,0 +1,62 @@
+@if (showControls) {
+	<div
+		class="mobile-controls-overlay"
+		[class.playing]="isPlaying()"
+		data-testid="mobile-controls">
+
+		<!-- Left side: Steering buttons -->
+		<div class="steering-zone">
+			<button
+				class="touch-button steer-button steer-left"
+				(touchstart)="onTouchStart($event, 'ArrowLeft')"
+				(touchend)="onTouchEnd($event, 'ArrowLeft')"
+				(touchcancel)="onTouchEnd($event, 'ArrowLeft')"
+				aria-label="Steer left"
+				data-testid="touch-steer-left">
+				◀
+			</button>
+			<button
+				class="touch-button steer-button steer-right"
+				(touchstart)="onTouchStart($event, 'ArrowRight')"
+				(touchend)="onTouchEnd($event, 'ArrowRight')"
+				(touchcancel)="onTouchEnd($event, 'ArrowRight')"
+				aria-label="Steer right"
+				data-testid="touch-steer-right">
+				▶
+			</button>
+		</div>
+
+		<!-- Right side: Action buttons -->
+		<div class="action-zone">
+			@if (showJumpButton()) {
+				<button
+					class="touch-button action-button jump-button"
+					(touchstart)="onTouchStart($event, ' ')"
+					(touchend)="onTouchEnd($event, ' ')"
+					(touchcancel)="onTouchEnd($event, ' ')"
+					aria-label="Jump"
+					data-testid="touch-jump">
+					JUMP
+				</button>
+			}
+			<button
+				class="touch-button action-button gas-button"
+				(touchstart)="onTouchStart($event, 'ArrowUp')"
+				(touchend)="onTouchEnd($event, 'ArrowUp')"
+				(touchcancel)="onTouchEnd($event, 'ArrowUp')"
+				aria-label="Accelerate"
+				data-testid="touch-gas">
+				GAS
+			</button>
+			<button
+				class="touch-button action-button brake-button"
+				(touchstart)="onTouchStart($event, 'ArrowDown')"
+				(touchend)="onTouchEnd($event, 'ArrowDown')"
+				(touchcancel)="onTouchEnd($event, 'ArrowDown')"
+				aria-label="Brake"
+				data-testid="touch-brake">
+				BRK
+			</button>
+		</div>
+	</div>
+}

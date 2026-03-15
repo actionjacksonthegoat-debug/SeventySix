@@ -40,12 +40,13 @@ See `accessibility.instructions.md` for WCAG AA patterns (icons, loading, live r
 
 Each domain imports ONLY `@shared/*` + itself. NEVER another domain.
 
-| From → To  | @shared  | @admin   | @sandbox | @developer |
-| ---------- | -------- | -------- | -------- | ---------- |
-| @shared    | [SELF]   | [NEVER]  | [NEVER]  | [NEVER]    |
-| @admin     | [OK]     | [SELF]   | [NEVER]  | [NEVER]    |
-| @sandbox   | [OK]     | [NEVER]  | [SELF]   | [NEVER]    |
-| @developer | [OK]     | [NEVER]  | [NEVER]  | [SELF]     |
+| From → To  | @shared  | @admin   | @games   | @sandbox | @developer |
+| ---------- | -------- | -------- | -------- | -------- | ---------- |
+| @shared    | [SELF]   | [NEVER]  | [NEVER]  | [NEVER]  | [NEVER]    |
+| @admin     | [OK]     | [SELF]   | [NEVER]  | [NEVER]  | [NEVER]    |
+| @games     | [OK]     | [NEVER]  | [SELF]   | [NEVER]  | [NEVER]    |
+| @sandbox   | [OK]     | [NEVER]  | [NEVER]  | [SELF]   | [NEVER]    |
+| @developer | [OK]     | [NEVER]  | [NEVER]  | [NEVER]  | [SELF]     |
 
 ## File Organization
 

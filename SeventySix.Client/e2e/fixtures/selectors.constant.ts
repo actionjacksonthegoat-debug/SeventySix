@@ -144,6 +144,7 @@ type SelectorsConfig = {
 		tab: string;
 		colorSchemeSelect: string;
 	};
+	games: { title: string; subtitle: string; gameCard: string; gameCardTitle: string; };
 	sandbox: { title: string; };
 	errorPage: { container: string; errorTitle: string; homeButton: string; };
 	dataTable: {
@@ -424,6 +425,16 @@ export const SELECTORS: SelectorsConfig =
 			tabGroup: "mat-tab-group",
 			tab: ".mat-mdc-tab",
 			colorSchemeSelect: "mat-select"
+		},
+
+		/**
+	 * Games page selectors.
+	 */
+		games: {
+			title: "h1.games-title",
+			subtitle: ".games-subtitle",
+			gameCard: "[data-testid='game-card-car-a-lot']",
+			gameCardTitle: ".game-card-title"
 		},
 
 		/**

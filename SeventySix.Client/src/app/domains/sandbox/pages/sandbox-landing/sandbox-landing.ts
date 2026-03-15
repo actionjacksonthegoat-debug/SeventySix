@@ -1,15 +1,14 @@
 import { ChangeDetectionStrategy, Component } from "@angular/core";
-import { RouterLink } from "@angular/router";
 
 /**
  * Sandbox Landing Page.
- * Displays navigation cards for available sandbox games.
+ * Simple Hello World experimentation page.
  */
 @Component(
 	{
 		selector: "app-sandbox-landing",
 		standalone: true,
-		imports: [RouterLink],
+		imports: [],
 		templateUrl: "./sandbox-landing.html",
 		styleUrl: "./sandbox-landing.scss",
 		changeDetection: ChangeDetectionStrategy.OnPush
