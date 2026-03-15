@@ -14,9 +14,11 @@
 #   jaegertracing/all-in-one            — 10001 (explicit in upstream Dockerfile)
 #   oliver006/redis_exporter            — 59000 (explicit in upstream Dockerfile)
 #   SeventySix API (appuser)            —   999 (pinned via -u 999 in Dockerfile.production)
+#   valkey/valkey:*-alpine              —   999 (gosu valkey at runtime; Config.User is empty/root
+#                                               so checked via docker run, not docker image inspect)
 #   postgres:18-alpine                  —    70 (Alpine convention for postgres user;
 #                                               not checked here — handled by chown 70:70)
-#   valkey, nginx                       —     0 (root — no ACL needed)
+#   nginx                               —     0 (root — no ACL needed)
 
 set -euo pipefail
 
@@ -39,6 +41,26 @@ check_uid() {
     fi
 }
 
+# For images that switch user at runtime via gosu (Config.User is root/empty),
+# run a quick container to read the actual named user's UID from /etc/passwd.
+check_uid_runtime() {
+    local image="$1"
+    local expected="$2"
+    local label="$3"
+    local username="$4"
+
+    actual=$(docker run --rm --entrypoint '' "$image" sh -c "id -u $username" 2>/dev/null)
+    if [ "$actual" != "$expected" ]; then
+        echo "ERROR: $label UID changed: expected $expected, got '$actual'"
+        echo "       1. Update the expected UID in scripts/verify-cert-uids.sh"
+        echo "       2. Update the setfacl entry in scripts/generate-internal-ca.ps1"
+        echo "       3. Re-run cert generation on the server"
+        FAILED=1
+    else
+        echo "  [ok] $label UID=$actual (runtime check)"
+    fi
+}
+
 echo "=== Verifying container UIDs match cert ACLs ==="
 
 # Pull exact image tags from docker-compose.production.yml so this script
@@ -56,10 +78,14 @@ OTEL_IMAGE=$(resolve_image '^\s+image:.*opentelemetry-collector-contrib')
 JAEGER_IMAGE=$(resolve_image '^\s+image:.*jaegertracing')
 EXPORTER_IMAGE=$(resolve_image '^\s+image:.*redis_exporter')
 
+VALKEY_IMAGE=$(resolve_image '^\s+image:.*valkey/valkey')
+
 check_uid "$API_IMAGE"      "999"   "API (appuser)"
 check_uid "$OTEL_IMAGE"     "10001" "otel-collector"
 check_uid "$JAEGER_IMAGE"   "10001" "jaeger"
 check_uid "$EXPORTER_IMAGE" "59000" "redis-exporter"
+# Valkey uses 'gosu valkey' at runtime — Config.User is empty so we check via docker run
+check_uid_runtime "$VALKEY_IMAGE" "999" "valkey" "valkey"
 
 if [ "$FAILED" -ne 0 ]; then
     echo ""
