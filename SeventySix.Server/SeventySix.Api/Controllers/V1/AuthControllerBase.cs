@@ -7,6 +7,7 @@ using Microsoft.Extensions.Options;
 using SeventySix.Api.Infrastructure;
 using SeventySix.Identity;
 using SeventySix.Shared.Constants;
+using SeventySix.Shared.Extensions;
 using SeventySix.Shared.Utilities;
 
 namespace SeventySix.Api.Controllers;
@@ -249,13 +250,16 @@ public abstract class AuthControllerBase(
 					validatedResult.RequiresPasswordChange,
 					validatedResult.IsFirstLogin));
 
+		string nonce =
+			CryptoExtensions.GenerateSecureToken();
+
 		string html =
 			$$"""
 			<!DOCTYPE html>
 			<html>
 			<head><title>OAuth Complete</title></head>
 			<body>
-			<script>
+			<script nonce="{{nonce}}">
 				if (window.opener) {
 					window.opener.postMessage({
 						type: 'oauth_success',
@@ -268,6 +272,8 @@ public abstract class AuthControllerBase(
 			</body>
 			</html>
 			""";
+
+		SetOAuthCallbackCsp(nonce);
 
 		return Content(html, MediaTypeConstants.TextHtml);
 	}
@@ -289,13 +295,16 @@ public abstract class AuthControllerBase(
 		string escapedError =
 			Uri.EscapeDataString(error);
 
+		string nonce =
+			CryptoExtensions.GenerateSecureToken();
+
 		string html =
 			$$"""
 			<!DOCTYPE html>
 			<html>
 			<head><title>OAuth Error</title></head>
 			<body>
-			<script>
+			<script nonce="{{nonce}}">
 				if (window.opener) {
 					window.opener.postMessage({
 						type: 'oauth_error',
@@ -308,6 +317,8 @@ public abstract class AuthControllerBase(
 			</body>
 			</html>
 			""";
+
+		SetOAuthCallbackCsp(nonce);
 
 		return Content(html, MediaTypeConstants.TextHtml);
 	}
@@ -323,13 +334,16 @@ public abstract class AuthControllerBase(
 		string origin =
 			CookieService.GetAllowedOrigin();
 
+		string nonce =
+			CryptoExtensions.GenerateSecureToken();
+
 		string html =
 			$$"""
 			<!DOCTYPE html>
 			<html>
 			<head><title>Account Linked</title></head>
 			<body>
-			<script>
+			<script nonce="{{nonce}}">
 				if (window.opener) {
 					window.opener.postMessage({
 						type: 'oauth_link_success'
@@ -342,6 +356,22 @@ public abstract class AuthControllerBase(
 			</html>
 			""";
 
+		SetOAuthCallbackCsp(nonce);
+
 		return Content(html, MediaTypeConstants.TextHtml);
+	}
+
+	/// <summary>
+	/// Sets a restrictive Content-Security-Policy on the response that only allows
+	/// the specific inline script identified by the given nonce.
+	/// Used for OAuth callback HTML pages that contain a postMessage script.
+	/// </summary>
+	/// <param name="nonce">
+	/// The cryptographic nonce included in the script tag.
+	/// </param>
+	private void SetOAuthCallbackCsp(string nonce)
+	{
+		HttpContext.Items[SecurityHeaderConstants.ItemKeys.CspOverride] =
+			$"default-src 'none'; script-src 'nonce-{nonce}'";
 	}
 }

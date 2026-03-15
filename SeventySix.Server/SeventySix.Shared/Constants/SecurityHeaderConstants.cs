@@ -52,6 +52,18 @@ public static class SecurityHeaderConstants
 	}
 
 	/// <summary>
+	/// HttpContext.Items keys for dynamic header overrides.
+	/// </summary>
+	public static class ItemKeys
+	{
+		/// <summary>
+		/// When set in HttpContext.Items, overrides the Content-Security-Policy header.
+		/// Value must be a string containing the full CSP directive.
+		/// </summary>
+		public const string CspOverride = "SecurityHeaders.CspOverride";
+	}
+
+	/// <summary>
 	/// Standard values for security headers.
 	/// </summary>
 	public static class Values
