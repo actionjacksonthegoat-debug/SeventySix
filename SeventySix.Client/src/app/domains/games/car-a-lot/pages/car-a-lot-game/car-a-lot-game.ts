@@ -143,6 +143,9 @@ export class CarALotGameComponent
 	/** Octopus body center Z for landing road start. */
 	private landingRoadStartZ: number = 0;
 
+	/** Synthetic road segment for landing road bumper detection. */
+	private landingRoadSegment: RoadSegment | null = null;
+
 	/** Last countdown value for bing sound detection. */
 	private lastCountdownValue: number = -1;
 
@@ -215,6 +218,20 @@ export class CarALotGameComponent
 		this.raceScene.createLandingRoad(
 			scene,
 			octopusPosition);
+
+		this.landingRoadSegment =
+			{
+				positionX: octopusPosition.x,
+				positionZ: octopusPosition.z + LANDING_ROAD_LENGTH / 2,
+				length: LANDING_ROAD_LENGTH,
+				rotationY: 0,
+				isFork: false,
+				elevation: 0
+			};
+
+		this.roadCollision.createBumpers(
+			scene,
+			[this.landingRoadSegment]);
 
 		this.rescueCenter =
 			new Vector3(
@@ -575,6 +592,15 @@ export class CarALotGameComponent
 				this.audioService.stopEngine();
 			}
 
+			if (state.isGrounded && this.octopusBoss.checkGroundCollision(kartPosition))
+			{
+				this.raceState.transitionTo(RaceState.GameOver);
+				this.drivingPhysics.setMaxSpeed(0);
+				this.audioService.stopEngine();
+				this.audioService.stopMusic();
+				this.audioService.playGameOver();
+			}
+
 			if (this.octopusBoss.hasCleared(kartPosition))
 			{
 				this.raceState.transitionTo(RaceState.Rescue);
@@ -624,6 +650,35 @@ export class CarALotGameComponent
 					this.audioService.playGameOver();
 
 					return;
+				}
+			}
+
+			if (
+				isPresent(this.landingRoadSegment)
+					&& state.isGrounded)
+			{
+				const landingBoundary: RoadBoundaryResult =
+					this.roadCollision.checkRoadBoundary(
+						state.positionX,
+						state.positionZ,
+						[this.landingRoadSegment]);
+
+				if (landingBoundary.isInBumperZone)
+				{
+					const pushDistance: number =
+						BUMPER_WIDTH - landingBoundary.distanceToEdge + 0.5;
+					const normalX: number =
+						Math.sin(landingBoundary.bumperNormalAngle);
+					const normalZ: number =
+						Math.cos(landingBoundary.bumperNormalAngle);
+
+					this.drivingPhysics.clampToRoad(
+						normalX * pushDistance,
+						normalZ * pushDistance);
+					this.drivingPhysics.applyBounce(
+						landingBoundary.bumperNormalAngle,
+						0);
+					this.audioService.playBumper();
 				}
 			}
 

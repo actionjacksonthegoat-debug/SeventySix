@@ -48,8 +48,8 @@ export class DrivingHudComponent
 	protected readonly audioService: CarALotAudioService =
 		inject(CarALotAudioService);
 
-	/** Input service for device detection. */
-	private readonly inputService: InputService =
+	/** Input service for device detection and mobile preview toggle. */
+	protected readonly inputService: InputService =
 		inject(InputService);
 
 	/** Expose RaceState enum for template comparisons. */

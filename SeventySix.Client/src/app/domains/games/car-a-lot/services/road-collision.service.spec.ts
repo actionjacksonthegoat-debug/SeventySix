@@ -8,6 +8,10 @@ import { TestBed } from "@angular/core/testing";
 import { NullEngine } from "@babylonjs/core/Engines/nullEngine";
 import { AbstractMesh } from "@babylonjs/core/Meshes/abstractMesh";
 import { Scene } from "@babylonjs/core/scene";
+import {
+	LANDING_ROAD_LENGTH,
+	ROAD_WIDTH
+} from "@games/car-a-lot/constants/car-a-lot.constants";
 import { RoadBoundaryResult, RoadSegment } from "@games/car-a-lot/models/car-a-lot.models";
 import { RoadCollisionService } from "@games/car-a-lot/services/road-collision.service";
 
@@ -291,6 +295,56 @@ describe("RoadCollisionService",
 
 						expect(scene.meshes.length)
 							.toBeLessThan(meshCountBefore);
+					});
+			});
+
+		describe("Landing road bumper creation",
+			() =>
+			{
+				it("should create bumper meshes for a landing road segment",
+					() =>
+					{
+						const landingSegment: RoadSegment =
+							{
+								positionX: 0,
+								positionZ: 350,
+								length: LANDING_ROAD_LENGTH,
+								rotationY: 0,
+								isFork: false,
+								elevation: 0
+							};
+
+						expect(
+							() =>
+								service.createBumpers(scene,
+									[landingSegment]))
+							.not
+							.toThrow();
+					});
+
+				it("should detect bumper zone on the landing road edge",
+					() =>
+					{
+						const halfWidth: number =
+							ROAD_WIDTH / 2;
+						const landingSegment: RoadSegment =
+							{
+								positionX: 0,
+								positionZ: 350,
+								length: LANDING_ROAD_LENGTH,
+								rotationY: 0,
+								isFork: false,
+								elevation: 0
+							};
+
+						const result: RoadBoundaryResult =
+							service.checkRoadBoundary(
+								halfWidth - 1,
+								350,
+								[landingSegment]);
+
+						expect(result.isInBumperZone)
+							.toBe(true);
 					});
 			});
 	});

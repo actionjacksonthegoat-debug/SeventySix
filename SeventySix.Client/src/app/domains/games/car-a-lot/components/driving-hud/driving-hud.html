@@ -37,6 +37,18 @@
 			data-testid="mute-button">
 			{{ audioService.isMuted() ? '🔇' : '🔊' }}
 		</button>
+
+		@if (!inputService.isTouchDevice) {
+			<button
+				class="mobile-preview-button"
+				[class.active]="inputService.isMobilePreview()"
+				(click)="inputService.toggleMobilePreview()"
+				[attr.aria-label]="inputService.isMobilePreview() ? 'Disable mobile preview' : 'Enable mobile preview'"
+				[attr.aria-pressed]="inputService.isMobilePreview()"
+				data-testid="mobile-preview-toggle">
+				📱 {{ inputService.isMobilePreview() ? 'Mobile ON' : 'Mobile' }}
+			</button>
+		}
 	</div>
 
 	<div class="start-game-wrapper">

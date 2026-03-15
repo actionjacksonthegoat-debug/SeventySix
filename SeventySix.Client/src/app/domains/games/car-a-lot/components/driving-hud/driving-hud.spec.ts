@@ -11,6 +11,7 @@ import { CarALotAudioService } from "@games/car-a-lot/services/car-a-lot-audio.s
 import { CoinService } from "@games/car-a-lot/services/coin.service";
 import { RaceStateService } from "@games/car-a-lot/services/race-state.service";
 import { InputService } from "@games/shared/services/input.service";
+import { vi } from "vitest";
 import { DrivingHudComponent } from "./driving-hud";
 
 describe("DrivingHudComponent",
@@ -138,5 +139,40 @@ describe("DrivingHudComponent",
 
 				expect(timerElement?.textContent)
 					.toContain("1:15");
+			});
+
+		describe("Mobile preview toggle",
+			() =>
+			{
+				it("should render mobile preview button when not a touch device",
+					() =>
+					{
+						const button: HTMLElement | null =
+							fixture.nativeElement.querySelector(
+								"[data-testid='mobile-preview-toggle']");
+
+						expect(button)
+							.not
+							.toBeNull();
+					});
+
+				it("should call toggleMobilePreview when preview button is clicked",
+					() =>
+					{
+						const inputService: InputService =
+							TestBed.inject(InputService);
+						const spy: ReturnType<typeof vi.spyOn> =
+							vi.spyOn(inputService, "toggleMobilePreview");
+
+						fixture.detectChanges();
+
+						const button: HTMLButtonElement =
+							fixture.nativeElement.querySelector(
+								"[data-testid='mobile-preview-toggle']");
+						button?.click();
+
+						expect(spy)
+							.toHaveBeenCalledTimes(1);
+					});
 			});
 	});

@@ -134,4 +134,34 @@ describe("InputService",
 				expect(service.isKeyPressed("q"))
 					.toBe(false);
 			});
+
+		describe("Mobile preview mode",
+			() =>
+			{
+				it("should start with isMobilePreview as false",
+					() =>
+					{
+						expect(service.isMobilePreview())
+							.toBe(false);
+					});
+
+				it("should return true for isMobilePreview after toggleMobilePreview()",
+					() =>
+					{
+						service.toggleMobilePreview();
+
+						expect(service.isMobilePreview())
+							.toBe(true);
+					});
+
+				it("should toggle isMobilePreview back to false on second call",
+					() =>
+					{
+						service.toggleMobilePreview();
+						service.toggleMobilePreview();
+
+						expect(service.isMobilePreview())
+							.toBe(false);
+					});
+			});
 	});

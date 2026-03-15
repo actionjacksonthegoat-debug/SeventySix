@@ -9,6 +9,7 @@ import {
 	BUMPER_MAX_HEADING_CHANGE,
 	BUMPER_SPEED_RETENTION,
 	GRAVITY,
+	KART_GROUND_OFFSET,
 	MAX_SPEED_MPH,
 	TURN_SPEED
 } from "@games/car-a-lot/constants/car-a-lot.constants";
@@ -49,7 +50,7 @@ export class DrivingPhysicsService
 	private currentSpeedMps: number = 0;
 	private headingRadians: number = 0;
 	private positionX: number = 0;
-	private positionY: number = 0;
+	private positionY: number = KART_GROUND_OFFSET;
 	private positionZ: number = 0;
 	private verticalVelocity: number = 0;
 	private grounded: boolean = true;
@@ -227,7 +228,7 @@ export class DrivingPhysicsService
 		this.currentSpeedMps = 0;
 		this.headingRadians = 0;
 		this.positionX = 0;
-		this.positionY = 0;
+		this.positionY = KART_GROUND_OFFSET;
 		this.positionZ = 0;
 		this.verticalVelocity = 0;
 		this.grounded = true;
@@ -336,16 +337,18 @@ export class DrivingPhysicsService
 			this.verticalVelocity += GRAVITY * deltaTime;
 			this.positionY += this.verticalVelocity * deltaTime;
 
-			if (this.positionY <= groundHeight)
+			if (this.positionY <= groundHeight + KART_GROUND_OFFSET)
 			{
-				this.positionY = groundHeight;
+				this.positionY =
+					groundHeight + KART_GROUND_OFFSET;
 				this.verticalVelocity = 0;
 				this.grounded = true;
 			}
 		}
 		else
 		{
-			this.positionY = groundHeight;
+			this.positionY =
+				groundHeight + KART_GROUND_OFFSET;
 		}
 	}
 }

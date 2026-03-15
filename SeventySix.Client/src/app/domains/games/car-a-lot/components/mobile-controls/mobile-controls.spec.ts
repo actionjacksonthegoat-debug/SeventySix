@@ -14,6 +14,8 @@ describe("MobileControlsComponent",
 		let mockInputService: {
 			setKey: ReturnType<typeof vi.fn>;
 			isTouchDevice: boolean;
+			isMobilePreview: ReturnType<typeof signal<boolean>>;
+			toggleMobilePreview: ReturnType<typeof vi.fn>;
 			keys: Record<string, boolean>;
 			mouseLeft: boolean;
 			isKeyPressed: ReturnType<typeof vi.fn>;
@@ -31,6 +33,8 @@ describe("MobileControlsComponent",
 						setKey: vi.fn(),
 						isKeyPressed: vi.fn(),
 						isTouchDevice: true,
+						isMobilePreview: signal(false),
+						toggleMobilePreview: vi.fn(),
 						keys: {},
 						mouseLeft: false
 					};
@@ -172,5 +176,48 @@ describe("MobileControlsComponent",
 					.toHaveBeenCalledWith(
 						" ",
 						true);
+			});
+
+		describe("Mobile preview mode visibility",
+			() =>
+			{
+				it("should show controls when isMobilePreview is active even on non-touch device",
+					() =>
+					{
+						mockInputService.isTouchDevice = false;
+						(mockInputService.isMobilePreview as WritableSignal<boolean>)
+							.set(true);
+
+						fixture =
+							TestBed.createComponent(MobileControlsComponent);
+						fixture.detectChanges();
+
+						const overlay: HTMLElement | null =
+							fixture.nativeElement.querySelector(
+								"[data-testid='mobile-controls']");
+
+						expect(overlay)
+							.not
+							.toBeNull();
+					});
+
+				it("should hide controls when preview mode is inactive and not a touch device",
+					() =>
+					{
+						mockInputService.isTouchDevice = false;
+						(mockInputService.isMobilePreview as WritableSignal<boolean>)
+							.set(false);
+
+						fixture =
+							TestBed.createComponent(MobileControlsComponent);
+						fixture.detectChanges();
+
+						const overlay: HTMLElement | null =
+							fixture.nativeElement.querySelector(
+								"[data-testid='mobile-controls']");
+
+						expect(overlay)
+							.toBeNull();
+					});
 			});
 	});

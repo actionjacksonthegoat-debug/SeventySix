@@ -252,6 +252,33 @@ export class OctopusBossService
 	}
 
 	/**
+	 * Check if a grounded kart drives into the octopus horizontally.
+	 * Tests only horizontal XZ distance — used when the kart is on the ground
+	 * and cannot have sufficient vertical clearance for the 3D ellipsoid test.
+	 * @param kartPosition
+	 * Current kart world position.
+	 * @returns
+	 * True if the kart is within the octopus horizontal footprint.
+	 */
+	checkGroundCollision(kartPosition: Vector3): boolean
+	{
+		if (!this.created)
+		{
+			return false;
+		}
+
+		const deltaX: number =
+			kartPosition.x - this.bodyCenter.x;
+		const deltaZ: number =
+			kartPosition.z - this.bodyCenter.z;
+
+		const horizontalDist: number =
+			Math.sqrt(deltaX * deltaX + deltaZ * deltaZ);
+
+		return horizontalDist < OCTOPUS_COLLISION_RADIUS;
+	}
+
+	/**
 	 * Update eye pupil tracking toward the kart.
 	 * Pupils track within bounded offsets to stay inside eye whites.
 	 * @param kartPosition

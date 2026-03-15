@@ -514,4 +514,65 @@ describe("OctopusBossService",
 							.toBe(bodyPosition.z);
 					});
 			});
+
+		describe("checkGroundCollision",
+			() =>
+			{
+				beforeEach(
+					() =>
+					{
+						service.createOctopus(
+							scene,
+							bodyPosition);
+					});
+
+				it("should return true when kart is within horizontal radius at ground level",
+					() =>
+					{
+						const kartAtBase: Vector3 =
+							new Vector3(
+								bodyPosition.x + OCTOPUS_COLLISION_RADIUS - 1,
+								0.3,
+								bodyPosition.z);
+
+						expect(service.checkGroundCollision(kartAtBase))
+							.toBe(true);
+					});
+
+				it("should return false when kart is outside horizontal radius at ground level",
+					() =>
+					{
+						const kartFarAway: Vector3 =
+							new Vector3(
+								bodyPosition.x + OCTOPUS_COLLISION_RADIUS + 5,
+								0.3,
+								bodyPosition.z);
+
+						expect(service.checkGroundCollision(kartFarAway))
+							.toBe(false);
+					});
+
+				it("should return false when octopus has not been created",
+					() =>
+					{
+						const freshService: OctopusBossService =
+							TestBed.inject(OctopusBossService);
+
+						expect(freshService.checkGroundCollision(Vector3.Zero()))
+							.toBe(false);
+					});
+
+				it("should return true when kart drives straight to center",
+					() =>
+					{
+						const kartAtCenter: Vector3 =
+							new Vector3(
+								bodyPosition.x,
+								0.3,
+								bodyPosition.z);
+
+						expect(service.checkGroundCollision(kartAtCenter))
+							.toBe(true);
+					});
+			});
 	});

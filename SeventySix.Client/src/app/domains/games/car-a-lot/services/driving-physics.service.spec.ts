@@ -5,6 +5,7 @@
 
 import { provideZonelessChangeDetection } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
+import { KART_GROUND_OFFSET } from "@games/car-a-lot/constants/car-a-lot.constants";
 import { DrivingState } from "@games/car-a-lot/models/car-a-lot.models";
 import { DrivingPhysicsService } from "@games/car-a-lot/services/driving-physics.service";
 
@@ -274,7 +275,7 @@ describe("DrivingPhysicsService",
 								0);
 
 						expect(state.positionY)
-							.toBe(0);
+							.toBeCloseTo(KART_GROUND_OFFSET, 4);
 						expect(state.isGrounded)
 							.toBe(true);
 					});
@@ -309,7 +310,7 @@ describe("DrivingPhysicsService",
 						expect(state.isGrounded)
 							.toBe(true);
 						expect(state.positionY)
-							.toBe(0);
+							.toBeCloseTo(KART_GROUND_OFFSET, 4);
 					});
 			});
 
@@ -460,6 +461,70 @@ describe("DrivingPhysicsService",
 
 						expect(after.speedMph)
 							.toBeGreaterThan(0);
+					});
+			});
+
+		describe("Ground offset",
+			() =>
+			{
+				it("should initialize positionY to KART_GROUND_OFFSET",
+					() =>
+					{
+						const state: DrivingState =
+							service.update({}, 0.016, 0);
+
+						expect(state.positionY)
+							.toBeCloseTo(KART_GROUND_OFFSET, 4);
+					});
+
+				it("should clamp grounded positionY to groundHeight + KART_GROUND_OFFSET",
+					() =>
+					{
+						const hillHeight: number = 3;
+
+						for (let frame: number = 0; frame < 5; frame++)
+						{
+							service.update({}, 0.016, hillHeight);
+						}
+
+						const state: DrivingState =
+							service.update({}, 0.016, hillHeight);
+
+						expect(state.positionY)
+							.toBeCloseTo(hillHeight + KART_GROUND_OFFSET, 4);
+					});
+
+				it("should land at groundHeight + KART_GROUND_OFFSET after a jump",
+					() =>
+					{
+						service.applyJump(15);
+
+						for (let frame: number = 0; frame < 120; frame++)
+						{
+							service.update({}, 0.016, 0);
+						}
+
+						const state: DrivingState =
+							service.update({}, 0.016, 0);
+
+						expect(state.positionY)
+							.toBeCloseTo(KART_GROUND_OFFSET, 4);
+						expect(state.isGrounded)
+							.toBe(true);
+					});
+
+				it("should reset positionY to KART_GROUND_OFFSET on reset()",
+					() =>
+					{
+						service.applyJump(15);
+						service.update({}, 0.5, 0);
+						service.reset();
+
+						const state: DrivingState =
+							service.update({}, 0.016, 0);
+
+						expect(state.positionY)
+							.toBeCloseTo(KART_GROUND_OFFSET, 4);
 					});
 			});
 	});

@@ -48,10 +48,14 @@ export class MobileControlsComponent
 
 	/**
 	 * Whether touch controls should be displayed.
-	 * @type {boolean}
+	 * True if the device uses touch OR if mobile preview mode is active.
+	 * @type {Signal<boolean>}
 	 */
-	protected readonly showControls: boolean =
-		this.inputService.isTouchDevice;
+	protected readonly showControls: Signal<boolean> =
+		computed(
+			() =>
+				this.inputService.isTouchDevice
+					|| this.inputService.isMobilePreview());
 
 	/**
 	 * Whether the jump button should be visible (only during OctopusPhase).

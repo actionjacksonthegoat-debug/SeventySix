@@ -22,6 +22,10 @@ export const TURN_SPEED: number = 2.5;
 /** Gravity acceleration (negative = downward). */
 export const GRAVITY: number = -30;
 
+/** Vertical offset of kart root above road surface so wheel bottoms touch the road.
+ *  Equal to the wheel cylinder radius (0.3 world units). */
+export const KART_GROUND_OFFSET: number = 0.3;
+
 /** Initial upward velocity for jumps. */
 export const JUMP_VELOCITY: number = 15;
 

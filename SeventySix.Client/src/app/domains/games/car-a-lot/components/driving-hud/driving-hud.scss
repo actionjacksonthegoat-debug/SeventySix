@@ -59,6 +59,28 @@
 	}
 }
 
+.mobile-preview-button {
+	background: rgba(0, 0, 0, 0.5);
+	border: 1px solid rgba(255, 255, 255, 0.4);
+	border-radius: vars.$border-radius-lg;
+	color: #fff;
+	cursor: pointer;
+	font-size: 0.75rem;
+	padding: vars.$spacing-xs vars.$spacing-sm;
+	pointer-events: auto;
+	white-space: nowrap;
+
+	&.active {
+		background: rgba(0, 160, 100, 0.7);
+		border-color: rgba(0, 255, 150, 0.6);
+	}
+
+	&:focus-visible {
+		outline: 2px solid #fff;
+		outline-offset: 2px;
+	}
+}
+
 @keyframes boost-pulse {
 	from {
 		opacity: 0.8;

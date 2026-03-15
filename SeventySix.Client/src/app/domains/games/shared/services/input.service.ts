@@ -6,7 +6,7 @@
  * Domain-scoped service — must be provided via route providers array.
  */
 
-import { Injectable } from "@angular/core";
+import { Injectable, Signal, signal, WritableSignal } from "@angular/core";
 
 /**
  * Service for tracking keyboard, mouse, and touch input state.
@@ -34,6 +34,24 @@ export class InputService
 	 */
 	readonly isTouchDevice: boolean =
 		"ontouchstart" in globalThis || navigator.maxTouchPoints > 0;
+
+	/**
+	 * Writable signal that allows desktop users to force-enable touch mode
+	 * for development/testing purposes.
+	 * @type {WritableSignal<boolean>}
+	 * @private
+	 */
+	private readonly _forceTouchMode: WritableSignal<boolean> =
+		signal(false);
+
+	/**
+	 * Read-only signal for whether mobile preview mode is active.
+	 * Desktop-only feature — allows testing touch controls without a touch device.
+	 * @type {Signal<boolean>}
+	 * @readonly
+	 */
+	readonly isMobilePreview: Signal<boolean> =
+		this._forceTouchMode.asReadonly();
 
 	/**
 	 * Bound keydown handler for cleanup.
@@ -127,6 +145,17 @@ export class InputService
 		pressed: boolean): void
 	{
 		this.keys[key] = pressed;
+	}
+
+	/**
+	 * Toggles the mobile preview mode on or off.
+	 * When active, mobile touch controls overlay is shown on non-touch devices.
+	 * Intended for development and testing purposes only.
+	 */
+	toggleMobilePreview(): void
+	{
+		this._forceTouchMode.update(
+			(current: boolean) => !current);
 	}
 
 	/**
