@@ -17,7 +17,6 @@ describe("MobileControlsComponent",
 			isMobilePreview: ReturnType<typeof signal<boolean>>;
 			toggleMobilePreview: ReturnType<typeof vi.fn>;
 			keys: Record<string, boolean>;
-			mouseLeft: boolean;
 			isKeyPressed: ReturnType<typeof vi.fn>;
 		};
 		let currentState: WritableSignal<RaceState>;
@@ -35,8 +34,7 @@ describe("MobileControlsComponent",
 						isTouchDevice: true,
 						isMobilePreview: signal(false),
 						toggleMobilePreview: vi.fn(),
-						keys: {},
-						mouseLeft: false
+						keys: {}
 					};
 
 				const mockRaceStateService: Partial<RaceStateService> =
@@ -68,7 +66,7 @@ describe("MobileControlsComponent",
 					.toBeTruthy();
 			});
 
-		it("should call setKey with ArrowLeft on steer-left touchstart",
+		it("should call setKey with ArrowLeft on steer-left pointerdown",
 			() =>
 			{
 				// Arrange
@@ -79,9 +77,9 @@ describe("MobileControlsComponent",
 
 				// Act
 				steerLeft?.dispatchEvent(
-					new TouchEvent(
-						"touchstart",
-						{ cancelable: true }));
+					new PointerEvent(
+						"pointerdown",
+						{ bubbles: true, cancelable: true }));
 
 				// Assert
 				expect(mockInputService.setKey)
@@ -90,7 +88,7 @@ describe("MobileControlsComponent",
 						true);
 			});
 
-		it("should call setKey with ArrowLeft false on steer-left touchend",
+		it("should call setKey with ArrowLeft false on steer-left pointerup",
 			() =>
 			{
 				// Arrange
@@ -101,9 +99,9 @@ describe("MobileControlsComponent",
 
 				// Act
 				steerLeft?.dispatchEvent(
-					new TouchEvent(
-						"touchend",
-						{ cancelable: true }));
+					new PointerEvent(
+						"pointerup",
+						{ bubbles: true, cancelable: true }));
 
 				// Assert
 				expect(mockInputService.setKey)
@@ -112,7 +110,7 @@ describe("MobileControlsComponent",
 						false);
 			});
 
-		it("should call setKey with ArrowUp on gas touchstart",
+		it("should call setKey with ArrowUp on gas pointerdown",
 			() =>
 			{
 				// Arrange
@@ -122,9 +120,9 @@ describe("MobileControlsComponent",
 
 				// Act
 				gasButton?.dispatchEvent(
-					new TouchEvent(
-						"touchstart",
-						{ cancelable: true }));
+					new PointerEvent(
+						"pointerdown",
+						{ bubbles: true, cancelable: true }));
 
 				// Assert
 				expect(mockInputService.setKey)
@@ -156,7 +154,7 @@ describe("MobileControlsComponent",
 					.toBeTruthy();
 			});
 
-		it("should call setKey with space on jump touchstart",
+		it("should call setKey with space on jump pointerdown",
 			() =>
 			{
 				// Arrange — set to OctopusPhase so jump button appears
@@ -167,9 +165,9 @@ describe("MobileControlsComponent",
 
 				// Act
 				jumpButton?.dispatchEvent(
-					new TouchEvent(
-						"touchstart",
-						{ cancelable: true }));
+					new PointerEvent(
+						"pointerdown",
+						{ bubbles: true, cancelable: true }));
 
 				// Assert
 				expect(mockInputService.setKey)

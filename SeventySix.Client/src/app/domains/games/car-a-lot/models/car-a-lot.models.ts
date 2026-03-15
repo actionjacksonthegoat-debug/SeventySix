@@ -44,7 +44,7 @@ export enum RaceState
 	/** Approaching or engaging the octopus boss. */
 	OctopusPhase = "OctopusPhase",
 
-	/** Landing on the rescue circle. */
+	/** Driving to the victory circle. */
 	Rescue = "Rescue",
 
 	/** Octopus is jumping on the player after missed tentacle. */

@@ -138,7 +138,7 @@ export class RaceStateService
 
 		if (state === RaceState.Rescue)
 		{
-			return "Land on the rescue circle!";
+			return "Drive to the victory circle!";
 		}
 
 		if (state === RaceState.Victory)

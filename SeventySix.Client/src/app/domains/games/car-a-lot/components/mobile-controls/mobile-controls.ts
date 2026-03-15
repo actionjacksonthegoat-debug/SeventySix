@@ -1,7 +1,7 @@
 /**
  * Mobile Touch Controls Component.
  * Provides on-screen touch controls for mobile/tablet devices.
- * Renders steering arrows (left/right) and action buttons (gas, brake, jump).
+ * Renders steering arrows (left/right) and action buttons (gas, jump).
  * Feeds touch input into InputService via setKey() so game physics
  * require zero changes — same polling mechanism as keyboard.
  */
@@ -83,15 +83,16 @@ export class MobileControlsComponent
 			});
 
 	/**
-	 * Handles touch start on a control button.
+	 * Handles pointer down on a control button.
 	 * Sets the mapped key as pressed in InputService.
-	 * @param {TouchEvent} event
-	 * The touch event from the button.
+	 * Uses PointerEvent for unified touch, mouse, and pen support.
+	 * @param {PointerEvent} event
+	 * The pointer event from the button.
 	 * @param {string} key
 	 * The key identifier to press (e.g., "ArrowLeft").
 	 */
-	protected onTouchStart(
-		event: TouchEvent,
+	protected onPointerDown(
+		event: PointerEvent,
 		key: string): void
 	{
 		event.preventDefault();
@@ -101,15 +102,16 @@ export class MobileControlsComponent
 	}
 
 	/**
-	 * Handles touch end on a control button.
+	 * Handles pointer up on a control button.
 	 * Releases the mapped key in InputService.
-	 * @param {TouchEvent} event
-	 * The touch event from the button.
+	 * Uses PointerEvent for unified touch, mouse, and pen support.
+	 * @param {PointerEvent} event
+	 * The pointer event from the button.
 	 * @param {string} key
 	 * The key identifier to release (e.g., "ArrowLeft").
 	 */
-	protected onTouchEnd(
-		event: TouchEvent,
+	protected onPointerUp(
+		event: PointerEvent,
 		key: string): void
 	{
 		event.preventDefault();

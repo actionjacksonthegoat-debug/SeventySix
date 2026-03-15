@@ -9,8 +9,8 @@
 import { Injectable, Signal, signal, WritableSignal } from "@angular/core";
 
 /**
- * Service for tracking keyboard, mouse, and touch input state.
- * Game loop reads current key/mouse state each frame via polling.
+ * Service for tracking keyboard and touch input state.
+ * Game loop reads current key state each frame via polling.
  * Mobile touch controls feed into the same key state via `setKey()`.
  */
 @Injectable()

@@ -9,10 +9,12 @@
 
 .mobile-controls-overlay {
 	display: flex;
-	justify-content: space-between;
-	align-items: flex-end;
+	flex-direction: column;
+	justify-content: flex-end;
+	align-items: center;
 	height: 100%;
 	padding: vars.$spacing-lg;
+	gap: vars.$spacing-md;
 	opacity: 0.4;
 	transition: opacity 0.3s ease;
 
@@ -21,17 +23,22 @@
 	}
 }
 
-.steering-zone {
+.jump-zone {
 	display: flex;
-	gap: vars.$spacing-sm;
-	align-items: flex-end;
+	justify-content: center;
 }
 
-.action-zone {
+.controls-row {
 	display: flex;
-	flex-direction: column;
+	align-items: center;
+	justify-content: space-between;
+	width: 100%;
+}
+
+.steering-group {
+	display: flex;
 	gap: vars.$spacing-sm;
-	align-items: flex-end;
+	align-items: center;
 }
 
 .touch-button {
@@ -79,17 +86,6 @@
 
 	&:active {
 		background: #16a34a;
-	}
-}
-
-.brake-button {
-	width: 64px;
-	height: 48px;
-	background: color-mix(in srgb, var(--mat-sys-error) 70%, transparent);
-	color: var(--mat-sys-on-error);
-
-	&:active {
-		background: var(--mat-sys-error);
 	}
 }
 
@@ -145,11 +141,6 @@
 		font-size: 1.1rem;
 	}
 
-	.brake-button {
-		width: 56px;
-		height: 42px;
-	}
-
 	.jump-button {
 		width: 68px;
 		height: 48px;
@@ -157,5 +148,9 @@
 
 	.mobile-controls-overlay {
 		padding: vars.$spacing-md;
+	}
+
+	.steering-group {
+		gap: vars.$spacing-xs;
 	}
 }

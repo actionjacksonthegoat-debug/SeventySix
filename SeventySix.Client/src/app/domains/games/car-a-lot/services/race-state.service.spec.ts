@@ -107,6 +107,17 @@ describe("RaceStateService",
 					.toContain("Octopus");
 			});
 
+		it("should show drive to victory circle message during Rescue",
+			() =>
+			{
+				service.transitionTo(RaceState.Racing);
+				service.transitionTo(RaceState.OctopusPhase);
+				service.transitionTo(RaceState.Rescue);
+
+				expect(service.rescueMessage())
+					.toContain("victory circle");
+			});
+
 		it("should allow restarting from Victory back to Countdown",
 			() =>
 			{

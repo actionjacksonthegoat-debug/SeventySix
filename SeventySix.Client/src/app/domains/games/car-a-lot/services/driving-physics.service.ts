@@ -1,11 +1,10 @@
 /**
  * Driving Physics Service.
- * Core physics engine for acceleration, steering, braking, gravity, and jumps.
+ * Core physics engine for acceleration, steering, gravity, and jumps.
  */
 
 import { Injectable } from "@angular/core";
 import {
-	BRAKE_DECELERATION,
 	BUMPER_MAX_HEADING_CHANGE,
 	BUMPER_SPEED_RETENTION,
 	GRAVITY,
@@ -26,10 +25,6 @@ const MAX_SPEED_MPS: number =
 const ACCELERATION: number =
 	MAX_SPEED_MPS / 3;
 
-/** Brake deceleration rate in m/s^2. */
-const BRAKE_DECEL_MPS: number =
-	BRAKE_DECELERATION * MPH_TO_MPS;
-
 /** Friction deceleration rate (coast to stop in ~6 seconds). */
 const FRICTION_DECEL: number =
 	MAX_SPEED_MPS / 6;
@@ -42,7 +37,7 @@ const DELTA_TIME_CAP: number = 0.1;
 
 /**
  * Core driving physics engine.
- * Handles acceleration, braking, steering, gravity, and jump mechanics.
+ * Handles acceleration, steering, gravity, and jump mechanics.
  */
 @Injectable()
 export class DrivingPhysicsService
@@ -236,7 +231,7 @@ export class DrivingPhysicsService
 	}
 
 	/**
-	 * Updates speed based on acceleration, braking, or friction.
+	 * Updates speed based on acceleration or friction.
 	 * @param keys - Current keyboard state.
 	 * @param deltaTime - Capped frame delta time.
 	 */
@@ -248,10 +243,6 @@ export class DrivingPhysicsService
 			keys["w"] === true
 				|| keys["W"] === true
 				|| keys["ArrowUp"] === true;
-		const isBraking: boolean =
-			keys["s"] === true
-				|| keys["S"] === true
-				|| keys["ArrowDown"] === true;
 
 		if (isAccelerating)
 		{
@@ -260,12 +251,6 @@ export class DrivingPhysicsService
 				this.getEffectiveMaxSpeedMps();
 			this.currentSpeedMps =
 				Math.min(this.currentSpeedMps, effectiveMax);
-		}
-		else if (isBraking)
-		{
-			this.currentSpeedMps -= BRAKE_DECEL_MPS * deltaTime;
-			this.currentSpeedMps =
-				Math.max(this.currentSpeedMps, 0);
 		}
 		else if (this.currentSpeedMps > 0)
 		{

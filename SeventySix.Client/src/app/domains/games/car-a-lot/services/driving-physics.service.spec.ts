@@ -119,39 +119,12 @@ describe("DrivingPhysicsService",
 							.toBeLessThan(25);
 					});
 
-				it("should decelerate faster when brake pressed",
-					() =>
-					{
-						service.update(
-							{ w: true },
-							2.0,
-							0);
-
-						const braking: DrivingState =
-							service.update(
-								{ s: true },
-								0.5,
-								0);
-
-						service.reset();
-						service.update(
-							{ w: true },
-							2.0,
-							0);
-
-						const coastOnly: DrivingState =
-							service.update({}, 0.5, 0);
-
-						expect(braking.speedMph)
-							.toBeLessThanOrEqual(coastOnly.speedMph);
-					});
-
 				it("should NOT go below 0 speed",
 					() =>
 					{
 						const state: DrivingState =
 							service.update(
-								{ s: true },
+								{},
 								1.0,
 								0);
 

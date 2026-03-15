@@ -13,9 +13,6 @@ export const MAX_SPEED_MPH: number = 75;
 /** Time in seconds to reach max speed from standstill. */
 export const ACCELERATION_TIME_SECONDS: number = 3;
 
-/** Deceleration rate when braking (mph per second). */
-export const BRAKE_DECELERATION: number = 15;
-
 /** Turn speed in radians per second. */
 export const TURN_SPEED: number = 2.5;
 
