@@ -21,11 +21,13 @@
 		},
 		"4200": {
 			"label": "Angular Client",
-			"protocol": "https"
+			"protocol": "https",
+			"visibility": "public"
 		},
 		"3443": {
 			"label": "Grafana (HTTPS Proxy)",
-			"protocol": "https"
+			"protocol": "https",
+			"visibility": "public"
 		},
 		"5050": {
 			"label": "pgAdmin"

@@ -1,3 +1,4 @@
+import { DOCUMENT } from "@angular/common";
 import {
 	ChangeDetectionStrategy,
 	Component,
@@ -10,6 +11,7 @@ import {
 import { MatCardModule } from "@angular/material/card";
 import { DomSanitizer, SafeResourceUrl } from "@angular/platform-browser";
 import { environment } from "@environments/environment";
+import { isNullOrUndefined } from "@shared/utilities/null-check.utility";
 import { ThemeService } from "@shared/services";
 
 /**
@@ -47,6 +49,15 @@ export class GrafanaDashboardEmbedComponent
 	 */
 	private readonly themeService: ThemeService =
 		inject(ThemeService);
+
+	/**
+	 * Injected document used to read the current hostname for Codespaces detection.
+	 * @type {Document}
+	 * @private
+	 * @readonly
+	 */
+	private readonly document: Document =
+		inject(DOCUMENT);
 
 	/**
 	 * Dashboard UID (e.g., 'seventysix-system-overview').
@@ -94,6 +105,17 @@ export class GrafanaDashboardEmbedComponent
 	private readonly dashboardUidPattern: RegExp =
 		/^[a-zA-Z0-9_-]+$/;
 
+	/** Regex to extract the port number from a localhost URL such as `https://localhost:3443`. */
+	private readonly localhostPortPattern: RegExp =
+		/:(\d+)/;
+
+	/**
+	 * Regex to detect a GitHub Codespaces forwarded hostname.
+	 * Matches the pattern `{codespace-name}-{port}.app.github.dev`.
+	 */
+	private readonly codespaceHostPattern: RegExp =
+		/^(.+)-(\d+)\.app\.github\.dev$/;
+
 	/**
 	 * Computed safe URL for iframe src binding.
 	 * Constructs Grafana URL with kiosk mode (hides UI chrome).
@@ -106,7 +128,7 @@ export class GrafanaDashboardEmbedComponent
 			() =>
 			{
 				const baseUrl: string =
-					environment.observability.grafanaUrl;
+					this.resolveGrafanaBaseUrl();
 				const uid: string =
 					this.dashboardUid();
 				const refresh: string =
@@ -136,4 +158,46 @@ export class GrafanaDashboardEmbedComponent
 	readonly iframeTitle: Signal<string> =
 		computed(
 			() => `${this.title()} dashboard`);
+
+	/**
+	 * Resolves the Grafana base URL, remapping `localhost` ports to their
+	 * GitHub Codespaces port-forwarded equivalents when running inside a Codespace.
+	 *
+	 * In Codespaces, port-forwarded URLs follow the pattern
+	 * `{codespace-name}-{port}.app.github.dev`. Because the browser cannot reach
+	 * `localhost` inside the remote container, the configured localhost URL is
+	 * rewritten to the corresponding forwarded URL at runtime.
+	 *
+	 * @returns {string}
+	 * The resolved Grafana base URL — either the configured value or the Codespace URL.
+	 */
+	private resolveGrafanaBaseUrl(): string
+	{
+		const configuredUrl: string =
+			environment.observability.grafanaUrl;
+		const hostname: string =
+			this.document.location.hostname;
+		const codespaceMatch: RegExpMatchArray | null =
+			hostname.match(this.codespaceHostPattern);
+
+		if (isNullOrUndefined(codespaceMatch))
+		{
+			return configuredUrl;
+		}
+
+		const portMatch: RegExpMatchArray | null =
+			configuredUrl.match(this.localhostPortPattern);
+
+		if (isNullOrUndefined(portMatch))
+		{
+			return configuredUrl;
+		}
+
+		const codespaceBaseName: string =
+			codespaceMatch[1];
+		const grafanaPort: string =
+			portMatch[1];
+
+		return `https://${codespaceBaseName}-${grafanaPort}.app.github.dev`;
+	}
 }
