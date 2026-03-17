@@ -1,6 +1,7 @@
 import { ApiStatisticsTableComponent } from "@admin/components/api-statistics-table/api-statistics-table.component";
 import { GrafanaDashboardEmbedComponent } from "@admin/components/grafana-dashboard-embed/grafana-dashboard-embed.component";
 import { ScheduledJobsTableComponent } from "@admin/components/scheduled-jobs-table/scheduled-jobs-table.component";
+import { DOCUMENT } from "@angular/common";
 import { ChangeDetectionStrategy, Component, DestroyRef, inject } from "@angular/core";
 import { MatTabsModule } from "@angular/material/tabs";
 import { MatToolbarModule } from "@angular/material/toolbar";
@@ -10,6 +11,7 @@ import { CARD_MATERIAL_MODULES } from "@shared/material-bundles.constants";
 import { LoggerService } from "@shared/services/logger.service";
 import { NotificationService } from "@shared/services/notification.service";
 import { WindowService } from "@shared/services/window.service";
+import { resolveCodespaceUrl } from "@shared/utilities/codespace-url.utility";
 import { isPresent } from "@shared/utilities/null-check.utility";
 
 /**
@@ -68,6 +70,15 @@ export class AdminDashboardPage
 	private readonly windowService: WindowService =
 		inject(WindowService);
 
+	/**
+	 * Injected document used to read the current hostname for Codespaces URL resolution.
+	 * @type {Document}
+	 * @private
+	 * @readonly
+	 */
+	private readonly document: Document =
+		inject(DOCUMENT);
+
 	// Best-effort tracking of opened observability tabs.
 	// Closed on component destroy (which includes logout navigation).
 	// Cross-origin windows may deny programmatic close.
@@ -113,7 +124,9 @@ export class AdminDashboardPage
 	openJaeger(): void
 	{
 		const jaegerUrl: string =
-			environment.observability.jaegerUrl;
+			resolveCodespaceUrl(
+				environment.observability.jaegerUrl,
+				this.document.location.hostname);
 		this.openTracked(`${jaegerUrl}/search?service=SeventySix.Api`);
 	}
 
@@ -125,7 +138,9 @@ export class AdminDashboardPage
 	openPrometheus(): void
 	{
 		const prometheusUrl: string =
-			environment.observability.prometheusUrl;
+			resolveCodespaceUrl(
+				environment.observability.prometheusUrl,
+				this.document.location.hostname);
 		this.openTracked(`${prometheusUrl}/targets`);
 	}
 
@@ -137,7 +152,9 @@ export class AdminDashboardPage
 	openGrafana(): void
 	{
 		const grafanaUrl: string =
-			environment.observability.grafanaUrl;
+			resolveCodespaceUrl(
+				environment.observability.grafanaUrl,
+				this.document.location.hostname);
 		this.openTracked(`${grafanaUrl}/dashboards`);
 	}
 
@@ -149,7 +166,9 @@ export class AdminDashboardPage
 	openPgAdmin(): void
 	{
 		const pgAdminUrl: string | undefined =
-			environment.observability.pgAdminUrl;
+			resolveCodespaceUrl(
+				environment.observability.pgAdminUrl,
+				this.document.location.hostname);
 
 		if (isPresent(pgAdminUrl))
 		{
@@ -165,7 +184,9 @@ export class AdminDashboardPage
 	openRedisInsight(): void
 	{
 		const redisInsightUrl: string | undefined =
-			environment.observability.redisInsightUrl;
+			resolveCodespaceUrl(
+				environment.observability.redisInsightUrl,
+				this.document.location.hostname);
 
 		if (isPresent(redisInsightUrl))
 		{
@@ -181,7 +202,9 @@ export class AdminDashboardPage
 	openScalar(): void
 	{
 		const scalarUrl: string | undefined =
-			environment.observability.scalarUrl;
+			resolveCodespaceUrl(
+				environment.observability.scalarUrl,
+				this.document.location.hostname);
 
 		if (isPresent(scalarUrl))
 		{

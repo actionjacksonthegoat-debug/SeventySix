@@ -1,3 +1,4 @@
+import { DOCUMENT } from "@angular/common";
 import {
 	ChangeDetectionStrategy,
 	Component,
@@ -11,6 +12,7 @@ import { MatCardModule } from "@angular/material/card";
 import { DomSanitizer, SafeResourceUrl } from "@angular/platform-browser";
 import { environment } from "@environments/environment";
 import { ThemeService } from "@shared/services";
+import { resolveCodespaceUrl } from "@shared/utilities/codespace-url.utility";
 
 /**
  * Component for embedding Grafana dashboards via iframe.
@@ -47,6 +49,15 @@ export class GrafanaDashboardEmbedComponent
 	 */
 	private readonly themeService: ThemeService =
 		inject(ThemeService);
+
+	/**
+	 * Injected document used to read the current hostname for Codespaces detection.
+	 * @type {Document}
+	 * @private
+	 * @readonly
+	 */
+	private readonly document: Document =
+		inject(DOCUMENT);
 
 	/**
 	 * Dashboard UID (e.g., 'seventysix-system-overview').
@@ -106,7 +117,9 @@ export class GrafanaDashboardEmbedComponent
 			() =>
 			{
 				const baseUrl: string =
-					environment.observability.grafanaUrl;
+					resolveCodespaceUrl(
+						environment.observability.grafanaUrl,
+						this.document.location.hostname);
 				const uid: string =
 					this.dashboardUid();
 				const refresh: string =

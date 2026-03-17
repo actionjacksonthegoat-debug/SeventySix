@@ -13,25 +13,49 @@
 		"memory": "16gb",
 		"storage": "64gb"
 	},
-	"forwardPorts": [4200, 7074, 3443, 5050, 5433],
+	"forwardPorts": [4200, 7074, 3443, 5051, 16687, 9091, 5541, 5433, 6379],
 	"portsAttributes": {
 		"7074": {
 			"label": "SeventySix API",
-			"protocol": "https"
+			"protocol": "https",
+			"visibility": "public"
 		},
 		"4200": {
 			"label": "Angular Client",
-			"protocol": "https"
+			"protocol": "https",
+			"visibility": "public"
 		},
 		"3443": {
 			"label": "Grafana (HTTPS Proxy)",
-			"protocol": "https"
+			"protocol": "https",
+			"visibility": "public"
 		},
-		"5050": {
-			"label": "pgAdmin"
+		"16687": {
+			"label": "Jaeger (HTTPS Proxy)",
+			"protocol": "https",
+			"visibility": "public"
+		},
+		"9091": {
+			"label": "Prometheus (HTTPS Proxy)",
+			"protocol": "https",
+			"visibility": "public"
+		},
+		"5051": {
+			"label": "pgAdmin (HTTPS Proxy)",
+			"protocol": "https",
+			"visibility": "public"
+		},
+		"5541": {
+			"label": "RedisInsight (HTTPS Proxy)",
+			"protocol": "https",
+			"visibility": "public"
 		},
 		"5433": {
 			"label": "PostgreSQL",
+			"onAutoForward": "silent"
+		},
+		"6379": {
+			"label": "Valkey (Redis)",
 			"onAutoForward": "silent"
 		}
 	},

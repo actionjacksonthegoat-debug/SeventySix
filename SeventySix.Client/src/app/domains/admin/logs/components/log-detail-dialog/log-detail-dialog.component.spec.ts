@@ -8,6 +8,7 @@ import {
 	LogDto
 } from "@admin/logs/models";
 import { Clipboard } from "@angular/cdk/clipboard";
+import { DOCUMENT } from "@angular/common";
 import { provideZonelessChangeDetection } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material/dialog";
@@ -598,5 +599,102 @@ describe("LogDetailDialogComponent",
 						expect(content)
 							.toBeTruthy();
 					});
+			});
+	});
+
+describe("LogDetailDialogComponent — GitHub Codespaces",
+	() =>
+	{
+		let component: LogDetailDialogComponent;
+		let fixture: ComponentFixture<LogDetailDialogComponent>;
+
+		const mockLog: LogDto =
+			{
+				id: 1,
+				createDate: "2024-11-13T09:00:00Z",
+				logLevel: "Error",
+				message: "An error occurred.",
+				exceptionMessage: null,
+				baseExceptionMessage: null,
+				stackTrace: null,
+				sourceContext: "TestService",
+				requestMethod: "GET",
+				requestPath: "/api/test",
+				statusCode: 500,
+				durationMs: 100,
+				properties: null,
+				machineName: "TEST",
+				environment: "Test",
+				correlationId: "trace-abc-123",
+				spanId: "span-1",
+				parentSpanId: null
+			};
+
+		beforeEach(
+			async () =>
+			{
+				const codespaceDocument: Document =
+					new Proxy(
+						document,
+						{
+							get(target: Document, prop: string | symbol): unknown
+							{
+								if (prop === "location")
+								{
+									return {
+										hostname: "my-codespace-4200.app.github.dev"
+									};
+								}
+
+								const value: unknown =
+									target[prop as keyof Document];
+
+								if (typeof value === "function")
+								{
+									return (value as Function).bind(target);
+								}
+
+								return value;
+							}
+						});
+
+				await TestBed
+					.configureTestingModule(
+						{
+							imports: [LogDetailDialogComponent],
+							providers: [
+								provideZonelessChangeDetection(),
+								{ provide: MAT_DIALOG_DATA, useValue: mockLog },
+								{ provide: MatDialogRef, useValue: { close: vi.fn() } },
+								{ provide: Clipboard, useValue: { copy: vi.fn() } },
+								{ provide: DOCUMENT, useValue: codespaceDocument }
+							]
+						})
+					.compileComponents();
+
+				fixture =
+					TestBed.createComponent(LogDetailDialogComponent);
+				component =
+					fixture.componentInstance;
+				fixture.detectChanges();
+			});
+
+		afterEach(
+			() =>
+			{
+				vi.restoreAllMocks();
+			});
+
+		it("should remap Jaeger URL to Codespaces forwarded URL",
+			() =>
+			{
+				vi.spyOn(window, "open");
+
+				component.openInJaeger();
+
+				expect(window.open)
+					.toHaveBeenCalledWith(
+						"https://my-codespace-16687.app.github.dev/trace/trace-abc-123",
+						"_blank");
 			});
 	});
