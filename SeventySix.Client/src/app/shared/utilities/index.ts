@@ -1,5 +1,6 @@
 export * from "../components/data-table/utilities/data-table.utility";
 export * from "./clipboard.utility";
+export * from "./codespace-url.utility";
 export * from "./http-error.utility";
 export * from "./http-params.utility";
 export * from "./log-level.utility";
