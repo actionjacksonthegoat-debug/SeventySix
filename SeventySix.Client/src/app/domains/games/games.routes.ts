@@ -8,6 +8,7 @@ import { CarALotAudioService } from "@games/car-a-lot/services/car-a-lot-audio.s
 import { CharacterBuilderService } from "@games/car-a-lot/services/character-builder.service";
 import { CoinService } from "@games/car-a-lot/services/coin.service";
 import { DrivingPhysicsService } from "@games/car-a-lot/services/driving-physics.service";
+import { GameFlowService } from "@games/car-a-lot/services/game-flow.service";
 import { KartBuilderService } from "@games/car-a-lot/services/kart-builder.service";
 import { OctopusBossService } from "@games/car-a-lot/services/octopus-boss.service";
 import { RaceCameraService } from "@games/car-a-lot/services/race-camera.service";
@@ -16,7 +17,6 @@ import { RaceStateService } from "@games/car-a-lot/services/race-state.service";
 import { RoadCollisionService } from "@games/car-a-lot/services/road-collision.service";
 import { TrackBuilderService } from "@games/car-a-lot/services/track-builder.service";
 import { TrackFeaturesService } from "@games/car-a-lot/services/track-features.service";
-import { GameFlowService } from "@games/car-a-lot/services/game-flow.service";
 import { BabylonEngineService } from "@games/shared/services/babylon-engine.service";
 import { GameLoopService } from "@games/shared/services/game-loop.service";
 import { InputService } from "@games/shared/services/input.service";

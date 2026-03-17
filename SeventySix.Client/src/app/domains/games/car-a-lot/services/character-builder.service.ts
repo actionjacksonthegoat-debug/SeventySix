@@ -7,6 +7,7 @@ import { Injectable } from "@angular/core";
 import { StandardMaterial } from "@babylonjs/core/Materials/standardMaterial";
 import { Color3 } from "@babylonjs/core/Maths/math.color";
 import { Vector3 } from "@babylonjs/core/Maths/math.vector";
+import { AbstractMesh } from "@babylonjs/core/Meshes/abstractMesh";
 import { CreateBox } from "@babylonjs/core/Meshes/Builders/boxBuilder";
 import { CreateCylinder } from "@babylonjs/core/Meshes/Builders/cylinderBuilder";
 import { CreateSphere } from "@babylonjs/core/Meshes/Builders/sphereBuilder";
@@ -147,6 +148,50 @@ export class CharacterBuilderService
 
 		this.capeMesh.rotation.x =
 			-0.26 + flutter * deltaTime * 10;
+	}
+
+	/**
+	 * Disposes the seated kart character and replaces it with a standing version
+	 * at the given world position, with feet placed at ground level (Y = 0).
+	 * Uses the character bounding box to compute the correct vertical offset.
+	 * @param scene - Babylon.js scene for mesh creation.
+	 * @param position - World position to stand at; X and Z are used, Y = ground level.
+	 */
+	showVictoryStanding(
+		scene: Scene,
+		position: Vector3): void
+	{
+		this.disposeCharacter();
+
+		const root: TransformNode =
+			new TransformNode("char-victory-root", scene);
+
+		this.charRoot = root;
+
+		this.buildCharacterMeshes(
+			scene,
+			root,
+			this.currentType,
+			false);
+
+		// Force world-matrix computation on all child meshes so bounding
+		// vectors reflect the mesh geometry before the scene renders.
+		root.computeWorldMatrix(true);
+		root
+			.getChildMeshes(false)
+			.forEach(
+				(mesh: AbstractMesh) =>
+					mesh.computeWorldMatrix(true));
+
+		const bounds: { min: Vector3; max: Vector3; } =
+			root.getHierarchyBoundingVectors(true);
+
+		// Place feet exactly on the ground surface (Y = 0) at the given X/Z position.
+		root.position =
+			new Vector3(
+				position.x,
+				-bounds.min.y,
+				position.z);
 	}
 
 	/**

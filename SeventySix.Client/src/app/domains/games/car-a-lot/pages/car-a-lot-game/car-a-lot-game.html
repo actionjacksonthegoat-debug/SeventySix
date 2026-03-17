@@ -1,8 +1,9 @@
 <div class="game-container">
 	<app-babylon-canvas (sceneReady)="onSceneReady($event)" />
-	<app-driving-hud (startGame)="onStartGame()" />
+	<app-driving-hud />
 	<app-mobile-controls />
 	<app-color-selector
+		(startGame)="onStartGame()"
 		(kartColorChange)="onKartColorChange($event)"
 		(characterChange)="onCharacterChange($event)" />
 </div>

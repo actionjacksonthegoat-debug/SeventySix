@@ -51,15 +51,6 @@
 		}
 	</div>
 
-	<div class="start-game-wrapper">
-		<button
-			class="start-game-button"
-			(click)="onStartGame()"
-			data-testid="start-game-button">
-			🏁 Start Game
-		</button>
-	</div>
-
 	@if (raceState.currentState() === RaceState.OctopusPhase) {
 		<div
 			class="jump-prompt"

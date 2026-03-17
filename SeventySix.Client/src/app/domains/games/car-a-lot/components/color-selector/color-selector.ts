@@ -17,6 +17,10 @@ import { CharacterType, KartColor } from "@games/car-a-lot/models/car-a-lot.mode
 	})
 export class ColorSelectorComponent
 {
+	/** Emits when the Start Game button is clicked. */
+	readonly startGame: OutputEmitterRef<void> =
+		output();
+
 	/** Emits when the user selects a new kart color. */
 	readonly kartColorChange: OutputEmitterRef<KartColor> =
 		output<KartColor>();
@@ -40,6 +44,14 @@ export class ColorSelectorComponent
 	/** Available character types for the selector buttons. */
 	protected readonly characterTypes: readonly CharacterType[] =
 		[CharacterType.Princess, CharacterType.Prince];
+
+	/**
+	 * Handle start game button click — emit event to parent.
+	 */
+	protected onStartGame(): void
+	{
+		this.startGame.emit();
+	}
 
 	/**
 	 * Handle kart color selection.

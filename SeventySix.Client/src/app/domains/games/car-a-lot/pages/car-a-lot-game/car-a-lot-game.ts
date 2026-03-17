@@ -13,6 +13,7 @@ import { DrivingHudComponent } from "@games/car-a-lot/components/driving-hud/dri
 import { MobileControlsComponent } from "@games/car-a-lot/components/mobile-controls/mobile-controls";
 import {
 	BUMPER_WIDTH,
+	CHARACTER_STANDING_FOOT_OFFSET,
 	KART_GROUND_OFFSET,
 	LANDING_ROAD_LENGTH,
 	MAX_SPEED_MPH,
@@ -45,8 +46,8 @@ import { RoadCollisionService } from "@games/car-a-lot/services/road-collision.s
 import { TrackBuilderService } from "@games/car-a-lot/services/track-builder.service";
 import { TrackFeaturesService } from "@games/car-a-lot/services/track-features.service";
 import { BabylonCanvasComponent } from "@games/shared/components/babylon-canvas/babylon-canvas";
-import { InputService } from "@games/shared/services/input.service";
 import { GameLoopService } from "@games/shared/services/game-loop.service";
+import { InputService } from "@games/shared/services/input.service";
 
 import { isPresent } from "@shared/utilities/null-check.utility";
 
@@ -142,6 +143,9 @@ export class CarALotGameComponent
 
 	/** Last countdown value for bing sound detection. */
 	private lastCountdownValue: number = -1;
+
+	/** Whether the victory standing character has been shown for the current race. */
+	private victoryCharacterShown: boolean = false;
 
 	/** Reference to the rescue character root node for rebuild on character change. */
 	private rescueCharRoot: TransformNode | null = null;
@@ -272,7 +276,7 @@ export class CarALotGameComponent
 		const rescueCharPosition: Vector3 =
 			this.rescueCenter.clone();
 		rescueCharPosition.y =
-			RESCUE_PLATFORM_HEIGHT;
+			RESCUE_PLATFORM_HEIGHT + CHARACTER_STANDING_FOOT_OFFSET;
 		rescueCharRoot.position = rescueCharPosition;
 		this.rescueCharRoot = rescueCharRoot;
 
@@ -318,7 +322,7 @@ export class CarALotGameComponent
 			const newPosition: Vector3 =
 				this.rescueCenter.clone();
 			newPosition.y =
-				RESCUE_PLATFORM_HEIGHT;
+				RESCUE_PLATFORM_HEIGHT + CHARACTER_STANDING_FOOT_OFFSET;
 			newRescue.position = newPosition;
 			this.rescueCharRoot = newRescue;
 		}
@@ -346,6 +350,7 @@ export class CarALotGameComponent
 
 		this.raceState.startCountdown();
 		this.lastCountdownValue = 3;
+		this.victoryCharacterShown = false;
 		this.audioService.playCountdownBing(false);
 	}
 
@@ -373,12 +378,15 @@ export class CarALotGameComponent
 		const currentState: RaceState =
 			this.raceState.currentState();
 
-		if (this.handleCountdown(
-			deltaTime,
-			currentState))
+		if (
+			this.handleCountdown(
+				deltaTime,
+				currentState))
 		{
 			return;
 		}
+
+		this.showVictoryCharacterOnFirstFrame(currentState);
 
 		const state: DrivingState =
 			this.updatePhysics(
@@ -459,7 +467,42 @@ export class CarALotGameComponent
 			}
 		}
 
+		// Keep camera lerping toward the kart so it returns to the
+		// start position during the 3-2-1 countdown.
+		if (this.kartRoot !== null)
+		{
+			this.raceCamera.updateCamera(
+				this.kartRoot.position,
+				this.kartRoot.rotation.y,
+				deltaTime,
+				false);
+		}
+
 		return true;
+	}
+
+	/**
+	 * On the first frame of victory, replace the seated kart character with
+	 * a standing version at the kart's current position.
+	 * @param currentState
+	 * Current race lifecycle state.
+	 */
+	private showVictoryCharacterOnFirstFrame(
+		currentState: RaceState): void
+	{
+		if (
+			currentState !== RaceState.Victory
+				|| this.victoryCharacterShown
+				|| this.kartRoot === null
+				|| this.scene === null)
+		{
+			return;
+		}
+
+		this.victoryCharacterShown = true;
+		this.characterBuilder.showVictoryStanding(
+			this.scene,
+			this.kartRoot.position.clone());
 	}
 
 	/**

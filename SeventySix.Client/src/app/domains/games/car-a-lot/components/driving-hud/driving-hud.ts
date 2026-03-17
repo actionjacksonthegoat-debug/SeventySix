@@ -9,8 +9,6 @@ import {
 	Component,
 	computed,
 	inject,
-	output,
-	OutputEmitterRef,
 	type Signal
 } from "@angular/core";
 import { RaceState } from "@games/car-a-lot/models/car-a-lot.models";
@@ -66,13 +64,6 @@ export class DrivingHudComponent
 			: "HIT SPACE TO JUMP OVER THE OCTOPUS";
 
 	/**
-	 * Emits when the Start Game button is clicked.
-	 * @type {OutputEmitterRef<void>}
-	 */
-	readonly startGame: OutputEmitterRef<void> =
-		output();
-
-	/**
 	 * Computed signal that formats elapsed time as M:SS display string.
 	 * @type {Signal<string>}
 	 */
@@ -93,14 +84,6 @@ export class DrivingHudComponent
 						.padStart(2, "0")
 				}`;
 			});
-
-	/**
-	 * Handle start game button click — emit event to parent.
-	 */
-	protected onStartGame(): void
-	{
-		this.startGame.emit();
-	}
 
 	/**
 	 * Toggle audio mute on/off.

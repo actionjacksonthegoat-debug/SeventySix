@@ -169,33 +169,6 @@
 	opacity: 0.8;
 }
 
-.start-game-wrapper {
-	display: flex;
-	justify-content: center;
-	margin-top: vars.$spacing-sm;
-	position: relative;
-	z-index: 25;
-	pointer-events: auto;
-}
-
-.start-game-button {
-	background: var(--mat-sys-primary);
-	color: var(--mat-sys-on-primary);
-	border: none;
-	border-radius: vars.$border-radius-lg;
-	padding: vars.$spacing-sm vars.$spacing-lg;
-	font-size: vars.$font-size-lg;
-	font-weight: 700;
-	cursor: pointer;
-	pointer-events: auto;
-	transition: background 0.2s ease;
-
-	&:hover {
-		background: var(--mat-sys-primary-container);
-		color: var(--mat-sys-on-primary-container);
-	}
-}
-
 .game-over-overlay {
 	position: absolute;
 	inset: 0;
@@ -257,10 +230,5 @@
 	.jump-prompt {
 		font-size: 1.25rem;
 		padding: vars.$spacing-xs vars.$spacing-sm;
-	}
-
-	.start-game-button {
-		font-size: vars.$font-size-md;
-		padding: vars.$spacing-xs vars.$spacing-md;
 	}
 }

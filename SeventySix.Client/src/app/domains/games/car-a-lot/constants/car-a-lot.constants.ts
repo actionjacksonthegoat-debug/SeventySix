@@ -257,6 +257,12 @@ export const RESCUE_PLATFORM_RADIUS: number = 40;
 /** Rescue platform height (at road level). */
 export const RESCUE_PLATFORM_HEIGHT: number = 0.15;
 
+/**
+ * Y distance from a standing character's root node to the bottom of its feet.
+ * Used to place standing characters so their feet land exactly on a surface.
+ */
+export const CHARACTER_STANDING_FOOT_OFFSET: number = 0.60;
+
 /** Distance behind the octopus body where the rescue platform spawns. */
 export const RESCUE_PLATFORM_OFFSET_Z: number = 600;
 
