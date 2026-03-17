@@ -146,33 +146,6 @@ try {
 		Write-Host "  Grafana:          https://localhost:3443" -ForegroundColor White
 		Write-Host ""
 
-		# Start client in new PowerShell window if not already running
-		$clientPort = 4200
-		$clientRunning = $false
-		try {
-			if ($IsWindows) {
-				$clientRunning = $null -ne (Get-NetTCPConnection -LocalPort $clientPort -ErrorAction SilentlyContinue)
-			}
-			else {
-				$lsofResult = & lsof -ti ":$clientPort" 2>/dev/null
-				$clientRunning = -not [string]::IsNullOrEmpty($lsofResult)
-			}
-		}
-		catch {
-			# Port not in use
-		}
-
-		if ($clientRunning) {
-			Write-Host "Angular client already running on port $clientPort" -ForegroundColor Green
-		}
-
-		if (-not $clientRunning) {
-			Write-Host "Starting Angular client in new window..." -ForegroundColor Cyan
-			$clientPath =
-			Join-Path $PSScriptRoot "..\SeventySix.Client"
-			Start-Process pwsh -ArgumentList "-NoExit", "-Command", "cd '$clientPath'; npm start"
-		}
-
 		Write-Host ""
 		Write-Host "========================================" -ForegroundColor Yellow
 		Write-Host "  Next Steps:" -ForegroundColor Yellow
@@ -181,6 +154,7 @@ try {
 		Write-Host "  1. Open SeventySix.Server.slnx in Visual Studio 2026" -ForegroundColor White
 		Write-Host "  2. Select 'https' launch profile" -ForegroundColor White
 		Write-Host "  3. Press F5 to start debugging" -ForegroundColor White
+		Write-Host "  4. Run 'npm run start:client' to start the Angular client" -ForegroundColor White
 		Write-Host ""
 		Write-Host "To stop infrastructure:" -ForegroundColor Cyan
 		Write-Host "  npm run stop" -ForegroundColor White
