@@ -10,6 +10,7 @@ import {
 	parseLogLevel
 } from "@admin/logs/models";
 import { Clipboard } from "@angular/cdk/clipboard";
+import { DOCUMENT } from "@angular/common";
 import {
 	ChangeDetectionStrategy,
 	Component,
@@ -33,6 +34,7 @@ import { MatIconModule } from "@angular/material/icon";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { environment } from "@environments/environment";
 import { DateService } from "@shared/services";
+import { resolveCodespaceUrl } from "@shared/utilities/codespace-url.utility";
 import { isNullOrEmpty } from "@shared/utilities/null-check.utility";
 
 /** Dialog component for displaying detailed log information. */
@@ -78,6 +80,15 @@ export class LogDetailDialogComponent
 	 */
 	private readonly dateService: DateService =
 		inject(DateService);
+
+	/**
+	 * Injected document used to read the current hostname for Codespaces URL resolution.
+	 * @type {Document}
+	 * @private
+	 * @readonly
+	 */
+	private readonly document: Document =
+		inject(DOCUMENT);
 
 	/**
 	 * The log entry provided to the dialog via `MAT_DIALOG_DATA`.
@@ -309,7 +320,9 @@ export class LogDetailDialogComponent
 		}
 
 		const jaegerBaseUrl: string =
-			environment.observability.jaegerUrl;
+			resolveCodespaceUrl(
+				environment.observability.jaegerUrl,
+				this.document.location.hostname);
 		const traceUrl: string =
 			`${jaegerBaseUrl}/trace/${log.correlationId}`;
 		window.open(traceUrl, "_blank");

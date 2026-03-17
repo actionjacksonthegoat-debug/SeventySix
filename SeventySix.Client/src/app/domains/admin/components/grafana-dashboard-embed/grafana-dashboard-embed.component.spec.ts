@@ -1,3 +1,4 @@
+import { DOCUMENT } from "@angular/common";
 import { provideZonelessChangeDetection, signal, WritableSignal } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { environment } from "@environments/environment";
@@ -240,5 +241,104 @@ describe("GrafanaDashboardEmbedComponent",
 							.not
 							.toContain("evil");
 					});
+			});
+	});
+
+describe("GrafanaDashboardEmbedComponent — GitHub Codespaces",
+	() =>
+	{
+		let component: GrafanaDashboardEmbedComponent;
+		let fixture: ComponentFixture<GrafanaDashboardEmbedComponent>;
+
+		const mockBrightness: WritableSignal<ThemeBrightness> =
+			signal<ThemeBrightness>("dark");
+
+		const mockThemeService: Partial<ThemeService> =
+			{
+				brightness: mockBrightness
+			};
+
+		beforeEach(
+			async () =>
+			{
+				const codespaceDocument: Document =
+					new Proxy(
+						document,
+						{
+							get(target: Document, prop: string | symbol): unknown
+							{
+								if (prop === "location")
+								{
+									return {
+										hostname: "my-codespace-4200.app.github.dev"
+									};
+								}
+
+								const value: unknown =
+									target[prop as keyof Document];
+
+								if (typeof value === "function")
+								{
+									return (value as Function).bind(target);
+								}
+
+								return value;
+							}
+						});
+
+				await TestBed
+					.configureTestingModule(
+						{
+							imports: [GrafanaDashboardEmbedComponent],
+							providers: [
+								provideZonelessChangeDetection(),
+								{
+									provide: ThemeService,
+									useValue: mockThemeService
+								},
+								{
+									provide: DOCUMENT,
+									useValue: codespaceDocument
+								}
+							]
+						})
+					.compileComponents();
+
+				fixture =
+					TestBed.createComponent(GrafanaDashboardEmbedComponent);
+				component =
+					fixture.componentInstance;
+
+				fixture.componentRef.setInput("dashboardUid", "test-dashboard");
+				fixture.detectChanges();
+			});
+
+		it("should remap localhost Grafana URL to the Codespaces forwarded URL",
+			() =>
+			{
+				const url: string =
+					component
+						.sanitizedUrl()
+						.toString();
+
+				expect(url)
+					.toContain("my-codespace-3443.app.github.dev");
+				expect(url)
+					.not
+					.toContain("localhost");
+			});
+
+		it("should preserve dashboard UID and kiosk params after remapping",
+			() =>
+			{
+				const url: string =
+					component
+						.sanitizedUrl()
+						.toString();
+
+				expect(url)
+					.toContain("/d/test-dashboard/test-dashboard");
+				expect(url)
+					.toContain("kiosk");
 			});
 	});

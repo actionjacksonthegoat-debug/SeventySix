@@ -3,6 +3,7 @@ import { GrafanaDashboardEmbedComponent } from "@admin/components/grafana-dashbo
 import { ScheduledJobsTableComponent } from "@admin/components/scheduled-jobs-table/scheduled-jobs-table.component";
 import { RecurringJobStatusResponse, ThirdPartyApiRequestDto } from "@admin/models";
 import { HealthApiService, ThirdPartyApiService } from "@admin/services";
+import { DOCUMENT } from "@angular/common";
 import { provideHttpClient } from "@angular/common/http";
 import { provideHttpClientTesting } from "@angular/common/http/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
@@ -319,5 +320,143 @@ describe("AdminDashboardPage",
 					() => component.sendErrorLog())
 					.toThrowError(
 						/Division by zero test error/);
+			});
+	});
+
+describe("AdminDashboardPage — GitHub Codespaces",
+	() =>
+	{
+		let component: AdminDashboardPage;
+		let fixture: ComponentFixture<AdminDashboardPage>;
+
+		beforeEach(
+			async () =>
+			{
+				const thirdPartyApiServiceSpy: { getAllThirdPartyApis: ReturnType<typeof vi.fn>; } =
+					{
+						getAllThirdPartyApis: vi.fn()
+					};
+
+				const healthApiServiceSpy: { getScheduledJobs: ReturnType<typeof vi.fn>; } =
+					{ getScheduledJobs: vi.fn() };
+
+				thirdPartyApiServiceSpy.getAllThirdPartyApis.mockReturnValue(
+					createMockQueryResult<ThirdPartyApiRequestDto[]>([]));
+
+				healthApiServiceSpy.getScheduledJobs.mockReturnValue(
+					createMockQueryResult<RecurringJobStatusResponse[]>([]));
+
+				const codespaceDocument: Document =
+					new Proxy(
+						document,
+						{
+							get(target: Document, prop: string | symbol): unknown
+							{
+								if (prop === "location")
+								{
+									return {
+										hostname: "my-codespace-4200.app.github.dev"
+									};
+								}
+
+								const value: unknown =
+									target[prop as keyof Document];
+
+								if (typeof value === "function")
+								{
+									return (value as Function).bind(target);
+								}
+
+								return value;
+							}
+						});
+
+				await TestBed
+					.configureTestingModule(
+						{
+							imports: [
+								AdminDashboardPage,
+								GrafanaDashboardEmbedComponent,
+								ApiStatisticsTableComponent,
+								ScheduledJobsTableComponent
+							],
+							providers: [
+								provideZonelessChangeDetection(),
+								provideHttpClient(),
+								provideHttpClientTesting(),
+								{
+									provide: ThirdPartyApiService,
+									useValue: thirdPartyApiServiceSpy
+								},
+								{
+									provide: HealthApiService,
+									useValue: healthApiServiceSpy
+								},
+								{
+									provide: NotificationService,
+									useValue: createMockNotificationService()
+								},
+								{
+									provide: LoggerService,
+									useValue: createMockLogger()
+								},
+								{
+									provide: DOCUMENT,
+									useValue: codespaceDocument
+								}
+							]
+						})
+					.compileComponents();
+
+				fixture =
+					TestBed.createComponent(AdminDashboardPage);
+				component =
+					fixture.componentInstance;
+				fixture.detectChanges();
+			});
+
+		afterEach(
+			() =>
+			{
+				vi.restoreAllMocks();
+			});
+
+		it("should remap Jaeger URL to Codespaces forwarded URL",
+			() =>
+			{
+				vi.spyOn(window, "open");
+
+				component.openJaeger();
+
+				expect(window.open)
+					.toHaveBeenCalledWith(
+						"https://my-codespace-16687.app.github.dev/search?service=SeventySix.Api",
+						"_blank");
+			});
+
+		it("should remap Grafana URL to Codespaces forwarded URL",
+			() =>
+			{
+				vi.spyOn(window, "open");
+
+				component.openGrafana();
+
+				expect(window.open)
+					.toHaveBeenCalledWith(
+						"https://my-codespace-3443.app.github.dev/dashboards",
+						"_blank");
+			});
+
+		it("should remap Prometheus URL to Codespaces forwarded URL",
+			() =>
+			{
+				vi.spyOn(window, "open");
+
+				component.openPrometheus();
+
+				expect(window.open)
+					.toHaveBeenCalledWith(
+						"https://my-codespace-9091.app.github.dev/targets",
+						"_blank");
 			});
 	});
