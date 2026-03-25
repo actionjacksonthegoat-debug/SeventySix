@@ -1,0 +1,264 @@
+<div class="game-container">
+	<div
+		class="canvas-wrapper"
+		data-testid="spy-vs-spy-canvas">
+		<app-babylon-canvas (sceneReady)="onSceneReady($event)" />
+	</div>
+
+	<app-fullscreen-toggle (fullscreenChange)="isFullscreen.set($event)" />
+	<app-spy-mobile-controls />
+
+	@if (gameState() === SpyGameState.Playing) {
+		<canvas
+			class="minimap-canvas"
+			data-testid="minimap-canvas"
+			width="160"
+			height="160"
+			#minimapCanvas
+			aria-label="Minimap showing island layout and player position">
+		</canvas>
+	}
+
+	@if (gameState() === SpyGameState.Playing) {
+		<div
+			class="spy-hud"
+			data-testid="spy-hud"
+			role="status"
+			aria-live="polite">
+			<div
+				class="hud-turn-indicator"
+				aria-label="Current turn">
+				<span
+					class="hud-label"
+					data-testid="turn-indicator">{{ currentTurn() === TurnPhase.Player1 ? 'PLAYER 1 TURN' : 'PLAYER 2 TURN' }}</span>
+			</div>
+			<div class="hud-players">
+				<div
+					class="hud-player"
+					aria-label="Player 1 status">
+					<span class="hud-label">P1 (Black)</span>
+					<span
+						class="hud-value"
+						data-testid="p1-item-count">Items: {{ player1ItemCount() }} / 4</span>
+					<span
+						class="hud-value hud-lives"
+						data-testid="p1-lives">{{ player1Hearts() }}</span>
+					<span
+						class="hud-value"
+						[class]="player1TimerClass()"
+						data-testid="p1-timer">{{ formattedPlayer1Timer() }}</span>
+					@if (player1RemedyCount(); as remedies) {
+						<span
+							class="hud-remedy"
+							data-testid="p1-remedies"
+							aria-label="Collected remedies">Remedies: {{ remedies }}</span>
+					}
+				</div>
+				<div
+					class="hud-player"
+					aria-label="Player 2 status">
+					<span class="hud-label">P2 (White)</span>
+					<span
+						class="hud-value"
+						data-testid="p2-item-count">Items: {{ player2ItemCount() }} / 4</span>
+					<span
+						class="hud-value hud-lives"
+						data-testid="p2-lives">{{ player2Hearts() }}</span>
+					<span
+						class="hud-value"
+						data-testid="p2-timer">{{ formattedPlayer2Timer() }}</span>
+				</div>
+			</div>
+			<div
+				class="hud-timer"
+				aria-label="Elapsed time">
+				<span
+					class="hud-value"
+					data-testid="timer">{{ formattedTime() }}</span>
+			</div>
+			@if (currentRoom(); as room) {
+				<div
+					class="hud-room"
+					data-testid="current-room"
+					aria-label="Current room">
+					<span class="hud-room-text">{{ room }}</span>
+				</div>
+			}
+			<div class="hud-actions">
+				<span class="hud-controls">E: Search | T: Place Trap | Q: Cycle Trap ({{ selectedTrapType }}) | Space: Combat</span>
+			</div>
+		</div>
+	}
+
+	@if (isSearching()) {
+		<div
+			class="search-overlay"
+			data-testid="search-overlay"
+			role="status"
+			aria-live="assertive">
+			<span class="search-text">Searching...</span>
+		</div>
+	}
+
+	@if (!isSearching() && !isInCombat() && nearFurniture() && gameState() === SpyGameState.Playing) {
+		<div
+			class="search-prompt"
+			data-testid="search-prompt"
+			role="status"
+			aria-live="polite">
+			<span class="search-prompt-text">Press E to Search | T to Place {{ selectedTrapType }}</span>
+		</div>
+	}
+
+	@if (playerStunRemaining() > 0 && gameState() === SpyGameState.Playing) {
+		<div
+			class="stun-overlay"
+			data-testid="stun-overlay"
+			role="status"
+			aria-live="assertive">
+			<span class="stun-text">STUNNED! {{ playerStunDisplay() }}s</span>
+		</div>
+	}
+
+	@if (isInCombat()) {
+		<div
+			class="combat-overlay"
+			data-testid="combat-overlay"
+			role="status"
+			aria-live="assertive">
+			<span class="combat-text">Combat! {{ combatTimerDisplay() }}s</span>
+		</div>
+	}
+
+	@if (notificationMessage(); as message) {
+		<div
+			class="notification-overlay"
+			data-testid="notification-overlay"
+			role="status"
+			aria-live="polite"
+			[style.color]="notificationColor()"
+			[style.border-color]="notificationColor()">
+			<span class="notification-text">{{ message }}</span>
+		</div>
+	}
+
+	@if (allItemsCollected() && gameState() === SpyGameState.Playing) {
+		<div
+			class="airstrip-banner"
+			data-testid="airstrip-banner"
+			role="status"
+			aria-live="assertive">
+			<span class="airstrip-banner-text">Get to the Airport!</span>
+		</div>
+	}
+
+	@if (gameState() === SpyGameState.Escaping) {
+		<div
+			class="escaping-overlay"
+			data-testid="escaping-overlay"
+			role="status"
+			aria-live="assertive">
+			<span class="escaping-text">Escaping the island...</span>
+		</div>
+	}
+
+	@if (gameState() === SpyGameState.Exploding) {
+		<div
+			class="exploding-overlay"
+			data-testid="exploding-overlay"
+			role="status"
+			aria-live="assertive">
+			<span class="exploding-text">💥 The island is self-destructing!</span>
+		</div>
+	}
+
+	@if (gameState() === SpyGameState.Ready) {
+		<div
+			class="countdown-overlay"
+			data-testid="countdown"
+			role="status"
+			aria-live="assertive">
+			<span class="countdown-number">{{ countdown() }}</span>
+		</div>
+	}
+
+	@if (gameState() === SpyGameState.Idle) {
+		<div
+			class="start-overlay"
+			data-testid="start-overlay">
+			<h1 class="game-title">Spy And Fly</h1>
+			<p class="game-instructions">
+				Search furniture to find all 4 mission items and reach the Airstrip before the enemy spy!<br />
+				Watch out for traps hidden in furniture — collect remedies to defuse them!<br />
+			You each have 3 lives — lose all lives and the mission fails!<br />
+			W/&#8593;: Up | S/&#8595;: Down | A/&#8592;: Left | D/&#8594;: Right<br />
+			E: Search Furniture | T: Place Trap | Q: Cycle Trap Type | Space: Combat
+			</p>
+			<button
+				class="start-btn"
+				type="button"
+				data-testid="start-game"
+				aria-label="Start game"
+				(click)="onStartGame()">
+				Start Mission
+			</button>
+			<a
+				routerLink="/games"
+				class="back-link"
+				data-testid="back-to-games"
+				aria-label="Back to games">
+				&#8592; Back to Games
+			</a>
+		</div>
+	}
+
+	@if (gameState() === SpyGameState.Won) {
+		<div
+			class="result-overlay won-overlay"
+			data-testid="won-overlay"
+			role="alert">
+			<h2 class="result-title">Mission Complete!</h2>
+			<p class="result-message">{{ winReason() }} Time: {{ formattedTime() }}</p>
+			<button
+				class="restart-btn"
+				type="button"
+				data-testid="restart-game"
+				aria-label="Play again"
+				(click)="onRestartGame()">
+				Play Again
+			</button>
+			<a
+				routerLink="/games"
+				class="back-link"
+				data-testid="back-to-games-result"
+				aria-label="Back to games">
+				&#8592; Games
+			</a>
+		</div>
+	}
+
+	@if (gameState() === SpyGameState.Lost) {
+		<div
+			class="result-overlay lost-overlay"
+			data-testid="lost-overlay"
+			role="alert">
+			<h2 class="result-title">Mission Failed</h2>
+			<p class="result-message">{{ winReason() }} Your items: {{ player1ItemCount() }} / 4</p>
+			<button
+				class="restart-btn"
+				type="button"
+				data-testid="restart-game"
+				aria-label="Try again"
+				(click)="onRestartGame()">
+				Try Again
+			</button>
+			<a
+				routerLink="/games"
+				class="back-link"
+				data-testid="back-to-games-result"
+				aria-label="Back to games">
+				&#8592; Games
+			</a>
+		</div>
+	}
+</div>

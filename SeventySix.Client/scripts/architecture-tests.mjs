@@ -1035,7 +1035,13 @@ test("all files should have less than 800 lines", async () =>
 		"octopus-boss.service.ts", // Complex 3D boss with tentacles, animations, and phase logic
 		"game-audio.service.ts", // Web Audio API: multiple instrument voices, boss music, and SFX
 		"track-builder.service.ts", // Procedural track generation with hills, trees, rocks, and tunnel exclusion
-		"game-collision-handler.service.ts" // All collision detection and response for Galactic Assault — single domain
+		"game-collision-handler.service.ts", // All collision detection and response for Galactic Assault — single domain
+		"game-flow.service.ts", // Full game lifecycle: state machine, turn orchestration, combat, search, and win/lose evaluation
+		"game-flow.service.spec.ts", // Comprehensive test suite covering countdown, combat, search, restart, and turn orchestration
+		"island-scene.service.ts", // Procedural 3D island: 6 rooms, terrain, ocean, sky, walls, doorways, and furniture placement
+		"spy-builder.service.ts", // Spy mesh construction: body, hat, arms, legs, and animation setup for both spies
+		"spy-ai.service.ts", // AI opponent: multi-strategy decision-making, pathfinding, combat detection, and movement — single domain
+		"search.service.spec.ts" // Comprehensive test suite covering search, trap detection, item redistribution, and remedy system
 	];
 
 	for (const file of sourceFiles)
@@ -1092,6 +1098,19 @@ test("methods should have less than 50 lines", async () =>
 		["game-audio.service.startBossMusic", "Web Audio API boss music composition"],
 		["game-scene.service.createStarfield", "Procedural starfield generation"],
 		["particle-effects.service.createBossDeathStage", "Multi-stage particle effect"],
+		["island-scene.service.createRoomWalls", "Procedural room wall generation with doorways"],
+		["island-scene.service.createDoorframePosts", "3D doorframe post construction"],
+		["island-scene.service.createCorridorFloor", "Procedural corridor floor construction"],
+		["island-scene.service.createCorridorWalls", "3D corridor wall construction"],
+		["island-scene.service.createRoomLabel", "3D room label text generation"],
+		["island-scene.service.createDoorOutlines", "Procedural door outline generation loop"],
+		["island-scene.service.createSingleDoorOutline", "Complex 3D door mesh construction"],
+		["island-scene.service.createAirstrip", "Procedural airstrip runway construction"],
+		["island-scene.service.createPlaneMesh", "Complex 3D plane mesh construction"],
+		["spy-physics.service.addRoomWalls", "Procedural room wall generation with doorway gaps"],
+		["furniture.service.createCabinet", "3D furniture mesh construction"],
+		["spy-builder.service.dispose", "Sequential 3D resource disposal"],
+		["spy-builder.service.playDeathAnimation", "Multi-step 3D animation sequence"],
 	]);
 
 	const methodMatches = await findMethodsInFiles(sourceFiles, { skipTests: true });
@@ -1187,7 +1206,9 @@ test("services should have less than 12 public methods", async () =>
 		"weapon.service.ts", // Weapon system - single domain (overcounted by regex matching if/switch)
 		"logger.service.ts", // Logging levels - all methods serve logging (12 methods, single domain)
 		"notification.service.ts", // Toast notifications - all methods serve user feedback (13 methods, single domain)
-		"particle-effects.service.ts" // Particle effects - all methods serve visual effects (8 methods, overcounted by regex)
+		"particle-effects.service.ts", // Particle effects - all methods serve visual effects (8 methods, overcounted by regex)
+		"spy-ai.service.ts", // Spy vs Spy AI opponent - all methods serve AI decision-making lifecycle (13 methods, single domain)
+		"spy-audio.service.ts" // Spy vs Spy audio synthesis - all methods serve game audio (overcounted by regex matching if/for)
 	];
 
 	// TanStack Query callback method names (not public API methods)

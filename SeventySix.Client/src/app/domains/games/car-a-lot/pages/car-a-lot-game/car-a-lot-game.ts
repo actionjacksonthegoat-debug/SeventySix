@@ -4,7 +4,7 @@
  * Orchestrates scene initialization and game loop.
  */
 
-import { ChangeDetectionStrategy, Component, DestroyRef, inject } from "@angular/core";
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal, WritableSignal } from "@angular/core";
 import { Vector3 } from "@babylonjs/core/Maths/math.vector";
 import { TransformNode } from "@babylonjs/core/Meshes/transformNode";
 import { Scene } from "@babylonjs/core/scene";
@@ -46,6 +46,7 @@ import { RoadCollisionService } from "@games/car-a-lot/services/road-collision.s
 import { TrackBuilderService } from "@games/car-a-lot/services/track-builder.service";
 import { TrackFeaturesService } from "@games/car-a-lot/services/track-features.service";
 import { BabylonCanvasComponent } from "@games/shared/components/babylon-canvas/babylon-canvas";
+import { FullscreenToggleComponent } from "@games/shared/components/fullscreen-toggle/fullscreen-toggle";
 import { GameLoopService } from "@games/shared/services/game-loop.service";
 import { InputService } from "@games/shared/services/input.service";
 
@@ -57,12 +58,22 @@ import { isPresent } from "@shared/utilities/null-check.utility";
 		selector: "app-car-a-lot-game",
 		standalone: true,
 		changeDetection: ChangeDetectionStrategy.OnPush,
-		imports: [BabylonCanvasComponent, DrivingHudComponent, ColorSelectorComponent, MobileControlsComponent],
+		imports: [
+			BabylonCanvasComponent,
+			DrivingHudComponent,
+			ColorSelectorComponent,
+			FullscreenToggleComponent,
+			MobileControlsComponent
+		],
 		templateUrl: "./car-a-lot-game.html",
 		styleUrl: "./car-a-lot-game.scss"
 	})
 export class CarALotGameComponent
 {
+	/** Whether the browser is currently in fullscreen mode. */
+	protected readonly isFullscreen: WritableSignal<boolean> =
+		signal<boolean>(false);
+
 	/** Destroy ref for cleanup registration. */
 	private readonly destroyRef: DestroyRef =
 		inject(DestroyRef);
@@ -346,6 +357,29 @@ export class CarALotGameComponent
 			this.kartRoot.position =
 				new Vector3(0, KART_GROUND_OFFSET, 0);
 			this.kartRoot.rotation.y = 0;
+		}
+
+		// Rebuild seated character on kart using current selection
+		// (victory standing disposed the seated character).
+		this.characterBuilder.setCharacterType(
+			this.raceState.characterType());
+
+		// Rebuild rescue character at platform position.
+		if (this.scene !== null)
+		{
+			if (this.rescueCharRoot !== null)
+			{
+				this.rescueCharRoot.dispose();
+			}
+
+			const newRescue: TransformNode =
+				this.characterBuilder.createRescueCharacter(this.scene);
+			const rescuePosition: Vector3 =
+				this.rescueCenter.clone();
+			rescuePosition.y =
+				RESCUE_PLATFORM_HEIGHT + CHARACTER_STANDING_FOOT_OFFSET;
+			newRescue.position = rescuePosition;
+			this.rescueCharRoot = newRescue;
 		}
 
 		this.raceState.startCountdown();

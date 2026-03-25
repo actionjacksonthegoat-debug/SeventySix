@@ -12,7 +12,6 @@ import {
 	type Signal
 } from "@angular/core";
 import { RaceState } from "@games/car-a-lot/models/car-a-lot.models";
-import { BoostService } from "@games/car-a-lot/services/boost.service";
 import { CarALotAudioService } from "@games/car-a-lot/services/car-a-lot-audio.service";
 import { CoinService } from "@games/car-a-lot/services/coin.service";
 import { RaceStateService } from "@games/car-a-lot/services/race-state.service";
@@ -37,10 +36,6 @@ export class DrivingHudComponent
 	/** Coin service for collection counter. */
 	protected readonly coinService: CoinService =
 		inject(CoinService);
-
-	/** Boost service for active boost indicator. */
-	protected readonly boostService: BoostService =
-		inject(BoostService);
 
 	/** Audio service for mute toggle. */
 	protected readonly audioService: CarALotAudioService =

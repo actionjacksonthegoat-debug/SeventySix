@@ -145,6 +145,18 @@ type SelectorsConfig = {
 		colorSchemeSelect: string;
 	};
 	games: { title: string; subtitle: string; gameCard: string; gameCardTitle: string; };
+	spyVsSpy: {
+		canvas: string;
+		startOverlay: string;
+		startGame: string;
+		backToGames: string;
+		spyHud: string;
+		countdown: string;
+		placeTrap: string;
+		wonOverlay: string;
+		lostOverlay: string;
+		restartGame: string;
+	};
 	sandbox: { title: string; };
 	errorPage: { container: string; errorTitle: string; homeButton: string; };
 	dataTable: {
@@ -435,6 +447,22 @@ export const SELECTORS: SelectorsConfig =
 			subtitle: ".games-subtitle",
 			gameCard: "[data-testid='game-card-car-a-lot']",
 			gameCardTitle: ".game-card-title"
+		},
+
+		/**
+	 * Spy vs Spy game page selectors.
+	 */
+		spyVsSpy: {
+			canvas: "[data-testid='spy-vs-spy-canvas']",
+			startOverlay: "[data-testid='start-overlay']",
+			startGame: "[data-testid='start-game']",
+			backToGames: "[data-testid='back-to-games']",
+			spyHud: "[data-testid='spy-hud']",
+			countdown: "[data-testid='countdown']",
+			placeTrap: "[data-testid='place-trap']",
+			wonOverlay: "[data-testid='won-overlay']",
+			lostOverlay: "[data-testid='lost-overlay']",
+			restartGame: "[data-testid='restart-game']"
 		},
 
 		/**

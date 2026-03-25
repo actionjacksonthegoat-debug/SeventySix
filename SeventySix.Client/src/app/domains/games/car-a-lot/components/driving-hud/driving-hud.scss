@@ -33,16 +33,6 @@
 	font-variant-numeric: tabular-nums;
 }
 
-.boost-display {
-	background: color-mix(in srgb, #0099ff 85%, transparent);
-	color: #fff;
-	padding: vars.$spacing-xs vars.$spacing-sm;
-	border-radius: vars.$border-radius-lg;
-	font-size: vars.$font-size-lg;
-	font-weight: 700;
-	animation: boost-pulse 0.5s ease-in-out infinite alternate;
-}
-
 .mute-button {
 	background: color-mix(in srgb, var(--mat-sys-surface) 85%, transparent);
 	color: var(--mat-sys-on-surface);
@@ -78,16 +68,6 @@
 	&:focus-visible {
 		outline: 2px solid #fff;
 		outline-offset: 2px;
-	}
-}
-
-@keyframes boost-pulse {
-	from {
-		opacity: 0.8;
-	}
-
-	to {
-		opacity: 1;
 	}
 }
 

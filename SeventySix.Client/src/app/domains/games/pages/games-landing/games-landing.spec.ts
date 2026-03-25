@@ -75,4 +75,25 @@ describe("GamesLandingComponent",
 				expect(card?.getAttribute("href"))
 					.toBe("/car-a-lot");
 			});
+
+		it("should render Spy And Fly game card",
+			() =>
+			{
+				const card: HTMLElement | null =
+					fixture.nativeElement.querySelector("[data-testid='game-card-spy-vs-spy']");
+				expect(card)
+					.toBeTruthy();
+				expect(card?.textContent)
+					.toContain("Spy And Fly");
+			});
+
+		it("should have routerLink to spy-vs-spy",
+			() =>
+			{
+				const card: HTMLAnchorElement | null =
+					fixture.nativeElement.querySelector(
+						"[data-testid='game-card-spy-vs-spy']");
+				expect(card?.getAttribute("href"))
+					.toBe("/spy-vs-spy");
+			});
 	});

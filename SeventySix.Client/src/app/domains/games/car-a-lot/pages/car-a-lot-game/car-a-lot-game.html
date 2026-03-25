@@ -1,5 +1,6 @@
 <div class="game-container">
 	<app-babylon-canvas (sceneReady)="onSceneReady($event)" />
+	<app-fullscreen-toggle (fullscreenChange)="isFullscreen.set($event)" />
 	<app-driving-hud />
 	<app-mobile-controls />
 	<app-color-selector

@@ -29,7 +29,7 @@ type Routes = {
 		permissionRequests: string;
 	};
 	developer: { styleGuide: string; };
-	games: { root: string; carALot: string; };
+	games: { root: string; carALot: string; spyVsSpy: string; };
 	sandbox: { root: string; };
 };
 
@@ -73,7 +73,8 @@ export const ROUTES: Routes =
 
 		games: {
 			root: "/games",
-			carALot: "/games/car-a-lot"
+			carALot: "/games/car-a-lot",
+			spyVsSpy: "/games/spy-vs-spy"
 		},
 
 		sandbox: {

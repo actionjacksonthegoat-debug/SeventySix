@@ -16,13 +16,14 @@ these assets for any purpose, including commercially, provided appropriate credi
 
 ### Assets Used
 
-<!-- Add entries as assets are used. Format:
 | Asset Path (local) | Source URL | Modifications |
 |---------------------|-----------|---------------|
-| public/assets/games/example.glb | https://assets.babylonjs.com/meshes/example.glb | None |
--->
-
-No BabylonJS Assets are currently bundled. This section will be updated when assets are added.
+| public/assets/babylonjs/skyboxes/TropicalSunnyDay/TropicalSunnyDay_nx.jpg | https://raw.githubusercontent.com/BabylonJS/Assets/master/skyboxes/TropicalSunnyDay/TropicalSunnyDay_nx.jpg | None |
+| public/assets/babylonjs/skyboxes/TropicalSunnyDay/TropicalSunnyDay_ny.jpg | https://raw.githubusercontent.com/BabylonJS/Assets/master/skyboxes/TropicalSunnyDay/TropicalSunnyDay_ny.jpg | None |
+| public/assets/babylonjs/skyboxes/TropicalSunnyDay/TropicalSunnyDay_nz.jpg | https://raw.githubusercontent.com/BabylonJS/Assets/master/skyboxes/TropicalSunnyDay/TropicalSunnyDay_nz.jpg | None |
+| public/assets/babylonjs/skyboxes/TropicalSunnyDay/TropicalSunnyDay_px.jpg | https://raw.githubusercontent.com/BabylonJS/Assets/master/skyboxes/TropicalSunnyDay/TropicalSunnyDay_px.jpg | None |
+| public/assets/babylonjs/skyboxes/TropicalSunnyDay/TropicalSunnyDay_py.jpg | https://raw.githubusercontent.com/BabylonJS/Assets/master/skyboxes/TropicalSunnyDay/TropicalSunnyDay_py.jpg | None |
+| public/assets/babylonjs/skyboxes/TropicalSunnyDay/TropicalSunnyDay_pz.jpg | https://raw.githubusercontent.com/BabylonJS/Assets/master/skyboxes/TropicalSunnyDay/TropicalSunnyDay_pz.jpg | None |
 
 ---
 

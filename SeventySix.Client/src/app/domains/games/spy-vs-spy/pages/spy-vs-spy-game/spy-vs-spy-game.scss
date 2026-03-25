@@ -1,0 +1,541 @@
+@use "variables" as vars;
+
+:host {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+.game-container {
+	position: relative;
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+	touch-action: none;
+}
+
+.canvas-wrapper {
+	width: 100%;
+	height: 100%;
+}
+
+.minimap-canvas {
+	position: absolute;
+	top: vars.$spacing-md;
+	left: vars.$spacing-md;
+	z-index: 20;
+	width: 10rem;
+	height: 10rem;
+	border: 1px solid var(--mat-sys-primary);
+	background: color-mix(in srgb, var(--mat-sys-scrim) 70%, transparent);
+	border-radius: vars.$border-radius-sm;
+	pointer-events: none;
+}
+
+.spy-hud {
+	position: absolute;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	z-index: 10;
+	display: flex;
+	gap: 0;
+	align-items: stretch;
+	justify-content: space-between;
+	height: 88px;
+	padding: 0;
+	font-family: "Courier New", Courier, monospace;
+	color: #0f0;
+	background: #000;
+	border-top: 2px solid #0f0;
+}
+
+.hud-turn-indicator {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 160px;
+	padding: 0 12px;
+	font-size: vars.$font-size-lg;
+	font-weight: 700;
+	text-transform: uppercase;
+	background: #111;
+	border-right: 1px solid #0a0;
+}
+
+.hud-players {
+	display: flex;
+	flex: 1;
+	gap: 0;
+}
+
+.hud-player {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	gap: 2px;
+	align-items: center;
+	justify-content: center;
+	padding: 4px 12px;
+	border-right: 1px solid #0a0;
+}
+
+.hud-label {
+	font-size: vars.$font-size-md;
+	font-weight: 700;
+	text-transform: uppercase;
+	opacity: 0.6;
+}
+
+.hud-value {
+	font-size: vars.$font-size-xl;
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+}
+
+.hud-remedy {
+	font-size: vars.$font-size-base;
+	font-weight: 700;
+	color: #ff0;
+	text-transform: uppercase;
+	opacity: 0.7;
+}
+
+.timer-ok {
+	color: #0f0;
+}
+
+.timer-warning {
+	color: #ff0;
+}
+
+.timer-danger {
+	color: #f00;
+	animation: timer-pulse 0.8s ease-in-out infinite;
+}
+
+@keyframes timer-pulse {
+	0%,
+	100% {
+		opacity: 1;
+	}
+
+	50% {
+		opacity: 0.5;
+	}
+}
+
+.hud-timer {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 100px;
+	padding: 0 12px;
+	font-size: vars.$font-size-2xl;
+	font-weight: 700;
+	border-right: 1px solid #0a0;
+}
+
+.hud-room {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 110px;
+	padding: 0 12px;
+	border-right: 1px solid #0a0;
+}
+
+.hud-room-text {
+	font-size: vars.$font-size-md;
+	font-weight: 700;
+	color: #0cf;
+	text-align: center;
+	text-transform: uppercase;
+	opacity: 0.85;
+}
+
+.hud-lives {
+	font-size: vars.$font-size-xl;
+	font-weight: 700;
+	letter-spacing: 2px;
+}
+
+.hud-actions {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	align-items: center;
+	justify-content: center;
+	min-width: 140px;
+	padding: 0 12px;
+}
+
+.hud-controls {
+	font-size: vars.$font-size-base;
+	font-weight: 700;
+	opacity: 0.5;
+}
+
+.hud-trap-btn {
+	min-height: 32px;
+	padding: 4px 12px;
+	font-family: "Courier New", Courier, monospace;
+	font-size: vars.$font-size-base;
+	font-weight: 700;
+	color: #0f0;
+	cursor: pointer;
+	background: #111;
+	border: 1px solid #0a0;
+	border-radius: 2px;
+}
+
+.hud-trap-btn:hover {
+	color: #000;
+	background: #0f0;
+}
+
+.countdown-overlay {
+	position: absolute;
+	inset: 0;
+	z-index: 20;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.countdown-number {
+	font-family: "Courier New", Courier, monospace;
+	font-size: vars.$font-size-7xl;
+	font-weight: 900;
+	color: #0f0;
+	text-shadow: 0 0 20px #0a0, 0 0 40px #080;
+}
+
+.start-overlay {
+	position: absolute;
+	inset: 0;
+	z-index: 20;
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	align-items: center;
+	justify-content: center;
+	background: rgb(0 0 0 / 90%);
+}
+
+.game-title {
+	margin: 0;
+	font-family: "Courier New", Courier, monospace;
+	font-size: vars.$font-size-4xl;
+	font-weight: 900;
+	color: #0f0;
+	text-shadow: 0 0 12px #0a0, 0 0 24px #080;
+}
+
+.game-instructions {
+	max-width: 480px;
+	margin: 0;
+	font-family: "Courier New", Courier, monospace;
+	font-size: vars.$font-size-md;
+	line-height: 1.8;
+	color: #0c0;
+	text-align: center;
+}
+
+.start-btn {
+	min-height: 48px;
+	padding: 12px 32px;
+	font-family: "Courier New", Courier, monospace;
+	font-size: vars.$font-size-lg;
+	font-weight: 700;
+	color: #0f0;
+	cursor: pointer;
+	background: #111;
+	border: 2px solid #0f0;
+	border-radius: 4px;
+}
+
+.start-btn:hover {
+	color: #000;
+	background: #0f0;
+}
+
+.back-link {
+	font-family: "Courier New", Courier, monospace;
+	font-size: vars.$font-size-md;
+	color: #0a0;
+	text-decoration: none;
+}
+
+.back-link:hover {
+	color: #0f0;
+}
+
+.result-overlay {
+	position: absolute;
+	inset: 0;
+	z-index: 20;
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	align-items: center;
+	justify-content: center;
+	font-family: "Courier New", Courier, monospace;
+}
+
+.won-overlay {
+	color: #0f0;
+	background: rgb(0 0 0 / 90%);
+}
+
+.lost-overlay {
+	color: #f00;
+	background: rgb(0 0 0 / 90%);
+}
+
+.result-title {
+	margin: 0;
+	font-size: 2.25rem;
+	font-weight: 900;
+	text-shadow: 0 0 12px currentcolor;
+}
+
+.result-message {
+	margin: 0;
+	font-size: vars.$font-size-lg;
+	opacity: 0.8;
+}
+
+.restart-btn {
+	min-height: 48px;
+	padding: 12px 32px;
+	font-family: "Courier New", Courier, monospace;
+	font-size: vars.$font-size-lg;
+	font-weight: 700;
+	color: #000;
+	cursor: pointer;
+	background: #0a0;
+	border: 2px solid #0a0;
+	border-radius: 4px;
+}
+
+.lost-overlay .restart-btn {
+	background: #c00;
+	border-color: #c00;
+	color: #fff;
+}
+
+.restart-btn:hover {
+	filter: brightness(1.3);
+}
+
+.search-overlay {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	z-index: 15;
+	padding: 12px 24px;
+	font-family: "Courier New", Courier, monospace;
+	font-size: vars.$font-size-3xl;
+	font-weight: 700;
+	color: #ff0;
+	background: rgb(0 0 0 / 80%);
+	border: 1px solid #ff0;
+	border-radius: 4px;
+	transform: translate(-50%, -50%);
+}
+
+.search-text {
+	text-shadow: 0 0 8px #ff0;
+}
+
+.combat-overlay {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	z-index: 15;
+	padding: 12px 24px;
+	font-family: "Courier New", Courier, monospace;
+	font-size: 2.375rem;
+	font-weight: 900;
+	color: #f00;
+	background: rgb(0 0 0 / 80%);
+	border: 1px solid #f00;
+	border-radius: 4px;
+	transform: translate(-50%, -50%);
+}
+
+.combat-text {
+	text-shadow: 0 0 8px #f00;
+}
+
+.notification-overlay {
+	position: absolute;
+	top: 30%;
+	left: 50%;
+	z-index: 14;
+	padding: 12px 24px;
+	font-family: "Courier New", Courier, monospace;
+	font-size: vars.$font-size-2xl;
+	font-weight: 700;
+	color: inherit;
+	background: rgb(0 0 0 / 80%);
+	border: 1px solid currentcolor;
+	border-radius: 4px;
+	transform: translate(-50%, -50%);
+}
+
+.notification-text {
+	text-shadow: 0 0 8px currentcolor;
+}
+
+.search-prompt {
+	position: absolute;
+	bottom: 28%;
+	left: 50%;
+	z-index: 12;
+	padding: 10px 20px;
+	font-family: "Courier New", Courier, monospace;
+	font-size: vars.$font-size-xl;
+	font-weight: 700;
+	color: #0f0;
+	pointer-events: none;
+	background: rgb(0 0 0 / 60%);
+	border: 1px solid rgb(0 255 0 / 40%);
+	border-radius: 4px;
+	transform: translateX(-50%);
+	animation: pulse-prompt 1.5s ease-in-out infinite;
+}
+
+.search-prompt-text {
+	text-shadow: 0 0 6px #0f0;
+}
+
+.stun-overlay {
+	position: absolute;
+	top: 38%;
+	left: 50%;
+	z-index: 16;
+	padding: 14px 32px;
+	font-family: "Courier New", Courier, monospace;
+	font-size: 2.125rem;
+	font-weight: 900;
+	color: #ff0;
+	background: rgb(0 0 0 / 80%);
+	border: 2px solid #ff0;
+	border-radius: 4px;
+	transform: translate(-50%, -50%);
+	animation: stun-pulse 0.5s ease-in-out infinite;
+}
+
+.stun-text {
+	text-shadow: 0 0 10px #ff0;
+}
+
+@keyframes stun-pulse {
+	0%,
+	100% {
+		opacity: 1;
+	}
+
+	50% {
+		opacity: 0.6;
+	}
+}
+
+@keyframes pulse-prompt {
+	0%,
+	100% {
+		opacity: 0.7;
+	}
+
+	50% {
+		opacity: 1;
+	}
+}
+
+.airstrip-banner {
+	position: absolute;
+	top: 18%;
+	left: 50%;
+	z-index: 15;
+	padding: 10px 28px;
+	font-family: "Courier New", Courier, monospace;
+	font-size: vars.$font-size-2xl;
+	font-weight: 900;
+	color: #ff0;
+	pointer-events: none;
+	background: rgb(0 0 0 / 75%);
+	border: 2px solid #ff0;
+	border-radius: 6px;
+	transform: translateX(-50%);
+	animation: airstrip-pulse 1s ease-in-out infinite;
+}
+
+.airstrip-banner-text {
+	text-shadow: 0 0 12px #ff0;
+}
+
+@keyframes airstrip-pulse {
+	0%,
+	100% {
+		opacity: 0.8;
+	}
+
+	50% {
+		opacity: 1;
+	}
+}
+
+.escaping-overlay {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	z-index: 18;
+	padding: 18px 36px;
+	font-family: "Courier New", Courier, monospace;
+	font-size: 2.125rem;
+	font-weight: 900;
+	color: #0f0;
+	pointer-events: none;
+	background: rgb(0 0 0 / 85%);
+	border: 2px solid #0f0;
+	border-radius: 6px;
+	transform: translate(-50%, -50%);
+}
+
+.escaping-text {
+	text-shadow: 0 0 10px #0f0;
+}
+
+.exploding-overlay {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	z-index: 18;
+	padding: 18px 36px;
+	font-family: "Courier New", Courier, monospace;
+	font-size: 2.125rem;
+	font-weight: 900;
+	color: #f60;
+	pointer-events: none;
+	background: rgb(0 0 0 / 85%);
+	border: 2px solid #f60;
+	border-radius: 6px;
+	transform: translate(-50%, -50%);
+	animation: flash-exploding 0.5s ease-in-out infinite alternate;
+}
+
+.exploding-text {
+	text-shadow: 0 0 10px #f60;
+}
+
+@keyframes flash-exploding {
+	0% {
+		opacity: 0.7;
+	}
+
+	100% {
+		opacity: 1;
+	}
+}

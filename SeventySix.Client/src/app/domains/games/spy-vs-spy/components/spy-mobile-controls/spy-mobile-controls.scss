@@ -1,0 +1,13 @@
+:host {
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	z-index: 5;
+}
+
+.spy-mobile-controls-overlay {
+	position: absolute;
+	inset: 0;
+	touch-action: none;
+	pointer-events: auto;
+}

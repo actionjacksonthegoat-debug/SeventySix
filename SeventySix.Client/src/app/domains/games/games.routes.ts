@@ -20,6 +20,29 @@ import { TrackFeaturesService } from "@games/car-a-lot/services/track-features.s
 import { BabylonEngineService } from "@games/shared/services/babylon-engine.service";
 import { GameLoopService } from "@games/shared/services/game-loop.service";
 import { InputService } from "@games/shared/services/input.service";
+import { AirplaneService } from "@games/spy-vs-spy/services/airplane.service";
+import { CombatService } from "@games/spy-vs-spy/services/combat.service";
+import { ExplosionService } from "@games/spy-vs-spy/services/explosion.service";
+import { FurnitureService } from "@games/spy-vs-spy/services/furniture.service";
+import { SpyFlowService } from "@games/spy-vs-spy/services/game-flow.service";
+import { IslandDecorationService } from "@games/spy-vs-spy/services/island-decoration.service";
+import { IslandEnvironmentService } from "@games/spy-vs-spy/services/island-environment.service";
+import { IslandOutdoorService } from "@games/spy-vs-spy/services/island-outdoor.service";
+import { IslandSceneService } from "@games/spy-vs-spy/services/island-scene.service";
+import { ItemService } from "@games/spy-vs-spy/services/item.service";
+import { MinimapService } from "@games/spy-vs-spy/services/minimap.service";
+import { SearchService } from "@games/spy-vs-spy/services/search.service";
+import { SpyAiCoordinatorService } from "@games/spy-vs-spy/services/spy-ai-coordinator.service";
+import { SpyAiService } from "@games/spy-vs-spy/services/spy-ai.service";
+import { SpyAudioService } from "@games/spy-vs-spy/services/spy-audio.service";
+import { SpyBuilderService } from "@games/spy-vs-spy/services/spy-builder.service";
+import { SpyCameraService } from "@games/spy-vs-spy/services/spy-camera.service";
+import { SpyDamageHandlerService } from "@games/spy-vs-spy/services/spy-damage-handler.service";
+import { SpyPathfindingService } from "@games/spy-vs-spy/services/spy-pathfinding.service";
+import { SpyPhysicsService } from "@games/spy-vs-spy/services/spy-physics.service";
+import { SpySearchHandlerService } from "@games/spy-vs-spy/services/spy-search-handler.service";
+import { TrapService } from "@games/spy-vs-spy/services/trap.service";
+import { TurnService } from "@games/spy-vs-spy/services/turn.service";
 
 /**
  * Games domain routes for all game experiences.
@@ -61,6 +84,42 @@ export const GAMES_ROUTES: Routes =
 				CoinService,
 				BoostService,
 				CarALotAudioService
+			]
+		},
+		{
+			path: "spy-vs-spy",
+			loadComponent: () =>
+				import("./spy-vs-spy/pages/spy-vs-spy-game/spy-vs-spy-game").then(
+					(module) => module.SpyVsSpyGameComponent),
+			title: "Spy And Fly - SeventySix",
+			data: { breadcrumb: "Spy And Fly" },
+			providers: [
+				AirplaneService,
+				BabylonEngineService,
+				CombatService,
+				ExplosionService,
+				FurnitureService,
+				GameLoopService,
+				InputService,
+				IslandDecorationService,
+				IslandEnvironmentService,
+				IslandOutdoorService,
+				IslandSceneService,
+				ItemService,
+				MinimapService,
+				SearchService,
+				SpyAiCoordinatorService,
+				SpyAiService,
+				SpyAudioService,
+				SpyBuilderService,
+				SpyCameraService,
+				SpyDamageHandlerService,
+				SpyFlowService,
+				SpyPathfindingService,
+				SpySearchHandlerService,
+				SpyPhysicsService,
+				TrapService,
+				TurnService
 			]
 		}
 	];

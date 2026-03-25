@@ -1,3 +1,5 @@
+@use "variables" as vars;
+
 :host {
 	display: block;
 	width: 100%;
@@ -10,4 +12,9 @@
 	height: 100%;
 	overflow: hidden;
 	touch-action: none;
+}
+
+/* Position fullscreen toggle below the driving HUD top bar to avoid overlap. */
+app-fullscreen-toggle {
+	top: calc(vars.$spacing-md + 48px + vars.$spacing-sm);
 }

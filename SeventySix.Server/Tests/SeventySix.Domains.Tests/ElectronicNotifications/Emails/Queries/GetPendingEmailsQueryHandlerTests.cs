@@ -7,40 +7,39 @@ using Microsoft.Extensions.Time.Testing;
 using SeventySix.ElectronicNotifications;
 using SeventySix.ElectronicNotifications.Emails;
 using SeventySix.Shared.Contracts.Emails;
+using SeventySix.TestUtilities.Constants;
+using SeventySix.TestUtilities.TestBases;
 using Shouldly;
 
 namespace SeventySix.Domains.Tests.ElectronicNotifications.Emails.Queries;
 
 /// <summary>
-/// Unit tests for <see cref="GetPendingEmailsQueryHandler"/>.
+/// Integration tests for <see cref="GetPendingEmailsQueryHandler"/>.
 /// </summary>
 /// <remarks>
 /// 80/20 Focus: Tests the critical filtering logic — pending status, failed-with-retry,
-/// max-attempts exclusion, and batch size limiting — using an in-memory database.
+/// max-attempts exclusion, and batch size limiting — using a real PostgreSQL database.
+/// Real PostgreSQL is required to support the FOR UPDATE SKIP LOCKED raw SQL query
+/// and to verify that returned entities are tracked for row-lock integrity.
 /// </remarks>
-public sealed class GetPendingEmailsQueryHandlerTests
+[Collection(CollectionNames.ElectronicNotificationsPostgreSql)]
+public sealed class GetPendingEmailsQueryHandlerTests(ElectronicNotificationsPostgreSqlFixture fixture)
+	: DataPostgreSqlTestBase(fixture)
 {
-	private readonly FakeTimeProvider TimeProvider;
+	private readonly FakeTimeProvider TimeProvider =
+		new(new DateTimeOffset(2026, 6, 1, 12, 0, 0, TimeSpan.Zero));
 
-	/// <summary>
-	/// Initializes a new instance of the <see cref="GetPendingEmailsQueryHandlerTests"/> class.
-	/// </summary>
-	public GetPendingEmailsQueryHandlerTests()
+	/// <inheritdoc/>
+	public override async Task InitializeAsync()
 	{
-		TimeProvider =
-			new FakeTimeProvider(
-				new DateTimeOffset(2026, 6, 1, 12, 0, 0, TimeSpan.Zero));
+		await TruncateTablesAsync(TestTables.ElectronicNotifications);
 	}
 
-	private static ElectronicNotificationsDbContext CreateInMemoryDbContext()
-	{
-		DbContextOptions<ElectronicNotificationsDbContext> options =
+	private ElectronicNotificationsDbContext CreateElectronicNotificationsDbContext() =>
+		new(
 			new DbContextOptionsBuilder<ElectronicNotificationsDbContext>()
-				.UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
-				.Options;
-
-		return new ElectronicNotificationsDbContext(options);
-	}
+				.UseNpgsql(ConnectionString)
+				.Options);
 
 	private EmailQueueEntry CreateEntry(
 		string status = "Pending",
@@ -70,7 +69,7 @@ public sealed class GetPendingEmailsQueryHandlerTests
 	{
 		// Arrange
 		await using ElectronicNotificationsDbContext dbContext =
-			CreateInMemoryDbContext();
+			CreateElectronicNotificationsDbContext();
 
 		GetPendingEmailsQuery query =
 			new(BatchSize: 10);
@@ -95,7 +94,7 @@ public sealed class GetPendingEmailsQueryHandlerTests
 	{
 		// Arrange
 		await using ElectronicNotificationsDbContext dbContext =
-			CreateInMemoryDbContext();
+			CreateElectronicNotificationsDbContext();
 
 		EmailQueueEntry entry =
 			CreateEntry(status: EmailQueueStatus.Pending);
@@ -127,7 +126,7 @@ public sealed class GetPendingEmailsQueryHandlerTests
 	{
 		// Arrange
 		await using ElectronicNotificationsDbContext dbContext =
-			CreateInMemoryDbContext();
+			CreateElectronicNotificationsDbContext();
 
 		DateTimeOffset lastAttemptAtBeforeThreshold =
 			TimeProvider.GetUtcNow().AddMinutes(-10);
@@ -164,7 +163,7 @@ public sealed class GetPendingEmailsQueryHandlerTests
 	{
 		// Arrange
 		await using ElectronicNotificationsDbContext dbContext =
-			CreateInMemoryDbContext();
+			CreateElectronicNotificationsDbContext();
 
 		DateTimeOffset lastAttemptAtAfterThreshold =
 			TimeProvider.GetUtcNow().AddMinutes(-1);
@@ -201,7 +200,7 @@ public sealed class GetPendingEmailsQueryHandlerTests
 	{
 		// Arrange
 		await using ElectronicNotificationsDbContext dbContext =
-			CreateInMemoryDbContext();
+			CreateElectronicNotificationsDbContext();
 
 		EmailQueueEntry entry =
 			CreateEntry(
@@ -235,7 +234,7 @@ public sealed class GetPendingEmailsQueryHandlerTests
 	{
 		// Arrange
 		await using ElectronicNotificationsDbContext dbContext =
-			CreateInMemoryDbContext();
+			CreateElectronicNotificationsDbContext();
 
 		for (int entryIndex = 0; entryIndex < 5; entryIndex++)
 		{
@@ -258,5 +257,44 @@ public sealed class GetPendingEmailsQueryHandlerTests
 
 		// Assert
 		results.Count.ShouldBe(3);
+	}
+
+	/// <summary>
+	/// Verifies that returned email entries are tracked by the DbContext.
+	/// Tracked entities are required for FOR UPDATE SKIP LOCKED to hold the row lock
+	/// within the surrounding Wolverine transaction, ensuring atomic email claim.
+	/// </summary>
+	[Fact]
+	public async Task HandleAsync_ReturnsPendingEmails_WithTrackedEntitiesAsync()
+	{
+		// Arrange
+		await using ElectronicNotificationsDbContext dbContext =
+			CreateElectronicNotificationsDbContext();
+
+		EmailQueueEntry entry =
+			CreateEntry(status: EmailQueueStatus.Pending);
+
+		dbContext.EmailQueue.Add(entry);
+		await dbContext.SaveChangesAsync();
+
+		// Clear the change tracker so the seeded entity is no longer tracked —
+		// we want to verify the handler's query itself returns a tracked entity.
+		dbContext.ChangeTracker.Clear();
+
+		GetPendingEmailsQuery query =
+			new(BatchSize: 10);
+
+		// Act
+		IReadOnlyList<EmailQueueEntry> results =
+			await GetPendingEmailsQueryHandler.HandleAsync(
+				query,
+				dbContext,
+				TimeProvider,
+				CancellationToken.None);
+
+		// Assert — entities must be tracked (not detached) so FOR UPDATE SKIP LOCKED
+		// holds the row lock across the Wolverine transaction boundary.
+		results.Count.ShouldBe(1);
+		dbContext.Entry(results[0]).State.ShouldNotBe(EntityState.Detached);
 	}
 }

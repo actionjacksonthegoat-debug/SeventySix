@@ -264,6 +264,15 @@ export class RaceStateService
 	}
 
 	/**
+	 * Gets the currently selected character type.
+	 * @returns The active CharacterType.
+	 */
+	characterType(): CharacterType
+	{
+		return this._characterType();
+	}
+
+	/**
 	 * Reset all state back to initial values for a new race.
 	 */
 	reset(): void

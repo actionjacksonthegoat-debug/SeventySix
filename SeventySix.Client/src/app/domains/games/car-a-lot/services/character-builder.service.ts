@@ -66,7 +66,10 @@ export class CharacterBuilderService
 	private rescueRoot: TransformNode | null = null;
 	private currentType: CharacterType =
 		CharacterType.Princess;
-	private readonly disposables: Array<{ dispose(): void; }> = [];
+	private readonly characterDisposables: Array<{ dispose(): void; }> = [];
+	private readonly rescueDisposables: Array<{ dispose(): void; }> = [];
+	private activeDisposables: Array<{ dispose(): void; }> =
+		this.characterDisposables;
 	private capeMesh: Mesh | null = null;
 
 	/**
@@ -247,6 +250,11 @@ export class CharacterBuilderService
 		type: CharacterType,
 		seated: boolean): void
 	{
+		this.activeDisposables =
+			root === this.rescueRoot
+				? this.rescueDisposables
+				: this.characterDisposables;
+
 		const isPrincess: boolean =
 			type === CharacterType.Princess;
 		const torsoColor: Color3 =
@@ -268,6 +276,9 @@ export class CharacterBuilderService
 		{
 			this.createPrinceHat(scene, root);
 		}
+
+		this.activeDisposables =
+			this.characterDisposables;
 	}
 
 	/**
@@ -295,7 +306,7 @@ export class CharacterBuilderService
 		head.position.y = 1.6;
 		head.material = skinMat;
 		head.parent = root;
-		this.disposables.push(head);
+		this.activeDisposables.push(head);
 
 		const headTop: Mesh =
 			CreateSphere(
@@ -310,7 +321,7 @@ export class CharacterBuilderService
 		headTop.position.y = 2.05;
 		headTop.material = skinMat;
 		headTop.parent = root;
-		this.disposables.push(headTop);
+		this.activeDisposables.push(headTop);
 	}
 
 	/**
@@ -335,7 +346,7 @@ export class CharacterBuilderService
 			new Vector3(-0.25, 1.7, 0.55);
 		leftEye.material = eyeMat;
 		leftEye.parent = root;
-		this.disposables.push(leftEye);
+		this.activeDisposables.push(leftEye);
 
 		const rightEye: Mesh =
 			CreateSphere(
@@ -347,7 +358,7 @@ export class CharacterBuilderService
 			new Vector3(0.25, 1.7, 0.55);
 		rightEye.material = eyeMat;
 		rightEye.parent = root;
-		this.disposables.push(rightEye);
+		this.activeDisposables.push(rightEye);
 	}
 
 	/**
@@ -381,7 +392,7 @@ export class CharacterBuilderService
 		torso.position.y = 0.8;
 		torso.material = torsoMat;
 		torso.parent = root;
-		this.disposables.push(torso);
+		this.activeDisposables.push(torso);
 	}
 
 	/**
@@ -422,7 +433,7 @@ export class CharacterBuilderService
 			arm.rotation.x = -0.4;
 			arm.material = armMat;
 			arm.parent = root;
-			this.disposables.push(arm);
+			this.activeDisposables.push(arm);
 
 			const hand: Mesh =
 				CreateCylinder(
@@ -438,7 +449,7 @@ export class CharacterBuilderService
 				new Vector3(side * 0.8, 0.15, 0.35);
 			hand.material = handMat;
 			hand.parent = root;
-			this.disposables.push(hand);
+			this.activeDisposables.push(hand);
 		}
 	}
 
@@ -479,7 +490,7 @@ export class CharacterBuilderService
 					seated ? 0.2 : 0);
 			leg.material = legMat;
 			leg.parent = root;
-			this.disposables.push(leg);
+			this.activeDisposables.push(leg);
 		}
 	}
 
@@ -515,7 +526,7 @@ export class CharacterBuilderService
 		cape.material = capeMat;
 		cape.parent = root;
 		this.capeMesh = cape;
-		this.disposables.push(cape);
+		this.activeDisposables.push(cape);
 
 		this.createCapeStars(
 			scene,
@@ -562,7 +573,7 @@ export class CharacterBuilderService
 				starPositions[idx];
 			star.material = starMat;
 			star.parent = cape;
-			this.disposables.push(star);
+			this.activeDisposables.push(star);
 		}
 	}
 
@@ -595,7 +606,7 @@ export class CharacterBuilderService
 			new Vector3(1, 0.5, 1);
 		hairTop.material = hairMat;
 		hairTop.parent = root;
-		this.disposables.push(hairTop);
+		this.activeDisposables.push(hairTop);
 
 		for (const side of [-0.45, 0.45])
 		{
@@ -613,7 +624,7 @@ export class CharacterBuilderService
 				new Vector3(side, 1.2, -0.15);
 			sideHair.material = hairMat;
 			sideHair.parent = root;
-			this.disposables.push(sideHair);
+			this.activeDisposables.push(sideHair);
 		}
 	}
 
@@ -642,7 +653,7 @@ export class CharacterBuilderService
 		crown.position.y = 2.35;
 		crown.material = crownMat;
 		crown.parent = root;
-		this.disposables.push(crown);
+		this.activeDisposables.push(crown);
 	}
 
 	/**
@@ -670,7 +681,7 @@ export class CharacterBuilderService
 		hat.position.y = 2.2;
 		hat.material = hatMat;
 		hat.parent = root;
-		this.disposables.push(hat);
+		this.activeDisposables.push(hat);
 
 		const featherMat: StandardMaterial =
 			this.createMaterial("char-feather-mat", FEATHER_COLOR, scene);
@@ -691,7 +702,7 @@ export class CharacterBuilderService
 		feather.rotation.x = -0.78;
 		feather.material = featherMat;
 		feather.parent = root;
-		this.disposables.push(feather);
+		this.activeDisposables.push(feather);
 	}
 
 	/**
@@ -710,7 +721,7 @@ export class CharacterBuilderService
 			new StandardMaterial(name, scene);
 
 		mat.diffuseColor = color;
-		this.disposables.push(mat);
+		this.activeDisposables.push(mat);
 
 		return mat;
 	}
@@ -720,12 +731,12 @@ export class CharacterBuilderService
 	 */
 	private disposeCharacter(): void
 	{
-		for (const item of this.disposables)
+		for (const item of this.characterDisposables)
 		{
 			item.dispose();
 		}
 
-		this.disposables.length = 0;
+		this.characterDisposables.length = 0;
 		this.capeMesh = null;
 
 		if (this.charRoot != null)
@@ -740,6 +751,13 @@ export class CharacterBuilderService
 	 */
 	private disposeRescue(): void
 	{
+		for (const item of this.rescueDisposables)
+		{
+			item.dispose();
+		}
+
+		this.rescueDisposables.length = 0;
+
 		if (this.rescueRoot != null)
 		{
 			this.rescueRoot.dispose();

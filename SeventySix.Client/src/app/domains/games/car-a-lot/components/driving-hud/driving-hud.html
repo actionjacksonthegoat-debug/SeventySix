@@ -14,15 +14,6 @@
 			🪙 {{ coinService.coinsCollected() }} / {{ coinService.totalCoins() }}
 		</span>
 
-		@if (boostService.isBoostActive()) {
-			<span
-				class="boost-display"
-				aria-live="polite"
-				data-testid="boost-display">
-				⚡ BOOST!
-			</span>
-		}
-
 		<span
 			class="timer-display"
 			aria-label="Race timer"

@@ -6,7 +6,6 @@
 import { provideZonelessChangeDetection } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { RaceState } from "@games/car-a-lot/models/car-a-lot.models";
-import { BoostService } from "@games/car-a-lot/services/boost.service";
 import { CarALotAudioService } from "@games/car-a-lot/services/car-a-lot-audio.service";
 import { CoinService } from "@games/car-a-lot/services/coin.service";
 import { RaceStateService } from "@games/car-a-lot/services/race-state.service";
@@ -31,7 +30,7 @@ describe("DrivingHudComponent",
 								provideZonelessChangeDetection(),
 								RaceStateService,
 								CoinService,
-								BoostService,
+
 								CarALotAudioService,
 								InputService
 							]

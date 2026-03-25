@@ -149,6 +149,25 @@ export class InputService
 	}
 
 	/**
+	 * Normalizes a key identifier to lowercase for single ASCII letters.
+	 * Prevents Caps Lock from breaking WASD controls (e.g. "W" → "w").
+	 * @param {string} key
+	 * The raw `event.key` value.
+	 * @returns {string}
+	 * The normalized key identifier.
+	 * @private
+	 */
+	private normalizeKey(key: string): string
+	{
+		if (key.length === 1 && key >= "A" && key <= "Z")
+		{
+			return key.toLowerCase();
+		}
+
+		return key;
+	}
+
+	/**
 	 * Handles keydown events by recording the key as pressed.
 	 * @param {KeyboardEvent} event
 	 * The keyboard event.
@@ -161,7 +180,7 @@ export class InputService
 			event.preventDefault();
 		}
 
-		this.keys[event.key] = true;
+		this.keys[this.normalizeKey(event.key)] = true;
 	}
 
 	/**
@@ -177,7 +196,7 @@ export class InputService
 			event.preventDefault();
 		}
 
-		this.keys[event.key] = false;
+		this.keys[this.normalizeKey(event.key)] = false;
 	}
 
 	/**
