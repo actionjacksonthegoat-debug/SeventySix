@@ -1,11 +1,11 @@
 /**
  * Sandbox Feature Routes
- * Lazy-loaded routes for sandbox experimentation area
+ * Lazy-loaded routes for sandbox experimentation area.
  */
 import { Routes } from "@angular/router";
 
 /**
- * Sandbox feature routes used for experimentation and testing of components.
+ * Sandbox feature routes for the Hello World experimentation page.
  * Lazy-loaded under `/sandbox` for isolation from production flows.
  */
 export const SANDBOX_ROUTES: Routes =
@@ -17,6 +17,6 @@ export const SANDBOX_ROUTES: Routes =
 					(module) =>
 						module.SandboxLandingComponent),
 			title: "Sandbox - SeventySix",
-			data: { breadcrumb: "Landing" }
+			data: { breadcrumb: "Sandbox" }
 		}
 	];

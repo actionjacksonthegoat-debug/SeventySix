@@ -559,6 +559,67 @@ describe("NotificationService",
 						expect(onAction)
 							.toHaveBeenCalled();
 					});
+
+				it("should auto-dismiss warningWithAction after the provided duration",
+					() =>
+					{
+						service.warningWithAction(
+							"Conflict",
+							"Retry",
+							() => undefined,
+							1000);
+
+						expect(service.readonlyNotifications().length)
+							.toBe(1);
+						vi.advanceTimersByTime(1000);
+						expect(service.readonlyNotifications().length)
+							.toBe(0);
+					});
+
+				it("should keep warningWithAction visible when duration is zero",
+					() =>
+					{
+						service.warningWithAction(
+							"Persistent conflict",
+							"Retry",
+							() => undefined,
+							0);
+
+						vi.advanceTimersByTime(10000);
+						expect(service.readonlyNotifications().length)
+							.toBe(1);
+					});
+
+				it("should evict the oldest notification when warningWithAction is added at capacity",
+					() =>
+					{
+						service.success("Msg 1");
+						service.success("Msg 2");
+						service.success("Msg 3");
+						service.success("Msg 4");
+						service.success("Msg 5");
+
+						const oldestId: string =
+							service.readonlyNotifications()[0].id;
+
+						service.warningWithAction(
+							"Conflict",
+							"Retry",
+							() => undefined,
+							0);
+
+						const notifications: Notification[] =
+							service.readonlyNotifications();
+						expect(notifications.length)
+							.toBe(5);
+						expect(
+							notifications.find(
+								(notification: Notification) =>
+									notification.id === oldestId))
+							.toBeUndefined();
+						expect(notifications[4].message)
+							.toBe("Conflict");
+					});
 			});
 
 		describe("maxVisible cap",

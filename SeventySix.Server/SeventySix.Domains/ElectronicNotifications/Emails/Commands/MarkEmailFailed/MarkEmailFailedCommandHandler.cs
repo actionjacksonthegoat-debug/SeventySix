@@ -46,6 +46,11 @@ public static class MarkEmailFailedCommandHandler
 				$"Email queue entry {command.EmailQueueId} not found");
 		}
 
+		if (entry.Status is EmailQueueStatus.Sent or EmailQueueStatus.DeadLetter)
+		{
+			return Result.Success();
+		}
+
 		DateTimeOffset now =
 			timeProvider.GetUtcNow();
 

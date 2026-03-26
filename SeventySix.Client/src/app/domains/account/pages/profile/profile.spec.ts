@@ -10,9 +10,11 @@ import { ApiService } from "@shared/services/api.service";
 import { AuthService } from "@shared/services/auth.service";
 import { ExternalLoginDto } from "@shared/services/auth.types";
 import type { OAuthProvider } from "@shared/services/auth.types";
+import { NotificationService } from "@shared/services/notification.service";
 import {
 	createMockApiService,
 	createMockFeatureFlagsService,
+	createMockNotificationService,
 	createTestQueryClient,
 	MockApiService
 } from "@shared/testing";
@@ -22,7 +24,7 @@ import {
 	provideTanStackQuery,
 	QueryClient
 } from "@tanstack/angular-query-experimental";
-import { of } from "rxjs";
+import { of, throwError } from "rxjs";
 import { vi } from "vitest";
 import { ProfilePage } from "./profile";
 
@@ -33,6 +35,7 @@ describe("ProfilePage",
 		let fixture: ComponentFixture<ProfilePage>;
 		let mockApiService: MockApiService;
 		let queryClient: QueryClient;
+		let mockNotificationService: ReturnType<typeof createMockNotificationService>;
 
 		beforeEach(
 			async () =>
@@ -44,6 +47,8 @@ describe("ProfilePage",
 
 				queryClient =
 					createTestQueryClient();
+				mockNotificationService =
+					createMockNotificationService();
 
 				await TestBed
 					.configureTestingModule(
@@ -55,6 +60,7 @@ describe("ProfilePage",
 								provideTanStackQuery(queryClient),
 								AccountService,
 								{ provide: ApiService, useValue: mockApiService },
+								{ provide: NotificationService, useValue: mockNotificationService },
 								{
 									provide: FeatureFlagsService,
 									useValue: createMockFeatureFlagsService()
@@ -118,6 +124,44 @@ describe("ProfilePage",
 						});
 			});
 
+		it("should submit undefined fullName when the field is null",
+			async () =>
+			{
+				mockApiService.put.mockReturnValue(of({}));
+				component.profileForm.patchValue(
+					{
+						email: "new@example.com",
+						fullName: null
+					});
+
+				await component.onSubmit();
+
+				expect(mockApiService.put)
+					.toHaveBeenCalledWith(
+						"users/me",
+						{
+							email: "new@example.com",
+							fullName: undefined
+						});
+			});
+
+		it("should show an error notification when profile update fails",
+			async () =>
+			{
+				mockApiService.put.mockReturnValue(
+					throwError(() => new Error("Update failed")));
+				component.profileForm.patchValue(
+					{
+						email: "new@example.com",
+						fullName: "New Name"
+					});
+
+				await component.onSubmit();
+
+				expect(mockNotificationService.error)
+					.toHaveBeenCalledWith("Failed to update profile");
+			});
+
 		it("should not overwrite dirty form on query refetch",
 			async () =>
 			{
@@ -148,6 +192,7 @@ describe("ProfilePage linked accounts",
 		let queryClient: QueryClient;
 		let mockIsOAuthInProgress: WritableSignal<boolean>;
 		let mockLinkProvider: ReturnType<typeof vi.fn<(provider: OAuthProvider) => void>>;
+		let mockNotificationService: ReturnType<typeof createMockNotificationService>;
 
 		/** GitHub external login fixture */
 		const GITHUB_LOGIN: ExternalLoginDto =
@@ -192,6 +237,8 @@ describe("ProfilePage linked accounts",
 					signal<boolean>(false);
 				mockLinkProvider =
 					vi.fn();
+				mockNotificationService =
+					createMockNotificationService();
 
 				const mockAuthService: Partial<AuthService> =
 					{
@@ -210,6 +257,7 @@ describe("ProfilePage linked accounts",
 								AccountService,
 								{ provide: ApiService, useValue: mockApiService },
 								{ provide: AuthService, useValue: mockAuthService },
+								{ provide: NotificationService, useValue: mockNotificationService },
 								{
 									provide: FeatureFlagsService,
 									useValue: createMockFeatureFlagsService()
@@ -319,5 +367,41 @@ describe("ProfilePage linked accounts",
 
 				expect(mockApiService.delete)
 					.toHaveBeenCalledWith("auth/oauth/link/github");
+			});
+
+		it("should expose lowercase linked provider ids",
+			async () =>
+			{
+				const componentFixture: ComponentFixture<ProfilePage> =
+					await createFixture(
+						[
+							{
+								provider: "GitHub",
+								providerDisplayName: "GitHub"
+							}
+						]);
+
+				expect(
+					componentFixture
+						.componentInstance
+						.linkedProviderIds()
+						.has("github"))
+					.toBe(true);
+			});
+
+		it("should show an error notification when unlinking fails",
+			async () =>
+			{
+				mockApiService.delete.mockReturnValue(
+					throwError(() => new Error("Disconnect failed")));
+				const componentFixture: ComponentFixture<ProfilePage> =
+					await createFixture(
+						[GITHUB_LOGIN],
+						{ hasPassword: true });
+
+				await componentFixture.componentInstance.onUnlinkProvider("GitHub");
+
+				expect(mockNotificationService.error)
+					.toHaveBeenCalledWith("Failed to disconnect GitHub");
 			});
 	});

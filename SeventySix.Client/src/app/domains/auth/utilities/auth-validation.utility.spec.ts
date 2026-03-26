@@ -9,11 +9,64 @@ import {
 	it
 } from "vitest";
 import {
+	validateEmail,
 	validatePassword,
 	validatePasswordsMatch,
 	validateRegistrationForm,
 	validateUsername
 } from "./auth-validation.utility";
+
+describe("validateEmail",
+	() =>
+	{
+		it("should return invalid when email is undefined",
+			() =>
+			{
+				const result: ValidationResult =
+					validateEmail(undefined);
+
+				expect(result.valid)
+					.toBe(false);
+				expect(result.errorMessage)
+					.toBe("Email is required.");
+			});
+
+		it("should return invalid when email is whitespace",
+			() =>
+			{
+				const result: ValidationResult =
+					validateEmail("   ");
+
+				expect(result.valid)
+					.toBe(false);
+				expect(result.errorMessage)
+					.toBe("Email is required.");
+			});
+
+		it("should return invalid when email format is incorrect",
+			() =>
+			{
+				const result: ValidationResult =
+					validateEmail("invalid-email");
+
+				expect(result.valid)
+					.toBe(false);
+				expect(result.errorMessage)
+					.toBe("Please enter a valid email address.");
+			});
+
+		it("should return valid for a correctly formatted email",
+			() =>
+			{
+				const result: ValidationResult =
+					validateEmail("user@example.com");
+
+				expect(result.valid)
+					.toBe(true);
+				expect(result.errorMessage)
+					.toBeUndefined();
+			});
+	});
 
 describe("validateUsername",
 	() =>

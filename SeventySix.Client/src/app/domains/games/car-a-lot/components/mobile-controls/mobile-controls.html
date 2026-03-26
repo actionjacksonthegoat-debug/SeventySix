@@ -1,0 +1,54 @@
+@if (showControls()) {
+	<div
+		class="mobile-controls-overlay"
+		[class.playing]="isPlaying()"
+		data-testid="mobile-controls">
+
+		@if (showJumpButton()) {
+			<div class="jump-zone">
+				<button
+					class="touch-button action-button jump-button"
+					(pointerdown)="onPointerDown($event, ' ')"
+					(pointerup)="onPointerUp($event, ' ')"
+					(pointercancel)="onPointerUp($event, ' ')"
+					aria-label="Jump"
+					data-testid="touch-jump">
+					JUMP
+				</button>
+			</div>
+		}
+
+		<!-- Bottom row: LEFT/RIGHT on left thumb, GAS on right thumb -->
+		<div class="controls-row">
+			<div class="steering-group">
+				<button
+					class="touch-button steer-button steer-left"
+					(pointerdown)="onPointerDown($event, 'ArrowLeft')"
+					(pointerup)="onPointerUp($event, 'ArrowLeft')"
+					(pointercancel)="onPointerUp($event, 'ArrowLeft')"
+					aria-label="Steer left"
+					data-testid="touch-steer-left">
+					◀
+				</button>
+				<button
+					class="touch-button steer-button steer-right"
+					(pointerdown)="onPointerDown($event, 'ArrowRight')"
+					(pointerup)="onPointerUp($event, 'ArrowRight')"
+					(pointercancel)="onPointerUp($event, 'ArrowRight')"
+					aria-label="Steer right"
+					data-testid="touch-steer-right">
+					▶
+				</button>
+			</div>
+			<button
+				class="touch-button action-button gas-button"
+				(pointerdown)="onPointerDown($event, 'ArrowUp')"
+				(pointerup)="onPointerUp($event, 'ArrowUp')"
+				(pointercancel)="onPointerUp($event, 'ArrowUp')"
+				aria-label="Accelerate"
+				data-testid="touch-gas">
+				GAS
+			</button>
+		</div>
+	</div>
+}

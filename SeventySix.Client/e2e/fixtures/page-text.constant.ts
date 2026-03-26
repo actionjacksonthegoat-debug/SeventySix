@@ -109,7 +109,8 @@ type PageTextConfig = {
 	developer: {
 		styleGuide: { title: string; description: string; colorsTab: string; };
 	};
-	sandbox: { title: string; };
+	games: { title: string; subtitle: string; };
+	sandbox: { title: string; subtitle: string; };
 	errorPage: { notFoundTitle: string; notFoundDescription: string; goToHome: string; };
 	registerComplete: { heading: string; linkExpired: string; passwordHint: string; };
 	setPassword: { invalidLink: string; linkExpired: string; };
@@ -396,10 +397,19 @@ export const PAGE_TEXT: PageTextConfig =
 		},
 
 		/**
+	 * Games page text.
+	 */
+		games: {
+			title: "Games",
+			subtitle: "Choose your adventure"
+		},
+
+		/**
 	 * Sandbox page text.
 	 */
 		sandbox: {
-			title: "Hello World"
+			title: "Sandbox",
+			subtitle: "Hello World"
 		},
 
 		/**

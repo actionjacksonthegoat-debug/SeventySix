@@ -4,8 +4,14 @@
 	display: block;
 	text-align: center;
 	padding-top: vars.$spacing-2xl;
+	padding-inline: vars.$spacing-page-padding;
 }
 
 .sandbox-title {
 	margin: 0;
+}
+
+.sandbox-subtitle {
+	margin-top: vars.$spacing-sm;
+	color: var(--mat-sys-on-surface-variant);
 }

@@ -219,5 +219,46 @@ describe("FeatureFlagsService",
 						expect(service.siteEmail())
 							.toBe("");
 					});
+
+				it("should apply nullish fallbacks for optional response fields",
+					async () =>
+					{
+						const partialFlags: FeatureFlags =
+							{
+								...EXPECTED_DEFAULTS,
+								mfaEnabled: false,
+								totpEnabled: true,
+								oAuthEnabled: true,
+								oAuthProviders: undefined as unknown as string[],
+								altchaEnabled: undefined as unknown as boolean,
+								tokenRefreshBufferSeconds: undefined as unknown as number,
+								siteEmail: undefined as unknown as string
+							};
+
+						const initPromise: Promise<void> =
+							service.initialize();
+
+						const req: ReturnType<typeof httpMock.expectOne> =
+							httpMock.expectOne(
+								(request) =>
+									request.url.endsWith(FEATURE_FLAGS_URL));
+						req.flush(partialFlags);
+						await initPromise;
+
+						expect(service.mfaEnabled())
+							.toBe(false);
+						expect(service.totpEnabled())
+							.toBe(true);
+						expect(service.oAuthEnabled())
+							.toBe(true);
+						expect(service.oAuthProviders())
+							.toEqual([]);
+						expect(service.altchaEnabled())
+							.toBe(EXPECTED_DEFAULTS.altchaEnabled);
+						expect(service.tokenRefreshBufferSeconds())
+							.toBe(EXPECTED_DEFAULTS.tokenRefreshBufferSeconds);
+						expect(service.siteEmail())
+							.toBe("");
+					});
 			});
 	});

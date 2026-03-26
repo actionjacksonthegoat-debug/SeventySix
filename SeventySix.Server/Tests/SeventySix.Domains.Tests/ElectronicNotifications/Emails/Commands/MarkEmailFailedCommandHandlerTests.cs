@@ -220,4 +220,91 @@ public sealed class MarkEmailFailedCommandHandlerTests
 		result.Error.ShouldNotBeNull();
 		result.Error.ShouldContain("not found");
 	}
+
+	[Fact]
+	public async Task HandleAsync_AlreadySent_ReturnsSuccessWithoutModifyingAsync()
+	{
+		// Arrange
+		await using ElectronicNotificationsDbContext dbContext =
+			CreateInMemoryDbContext();
+
+		EmailQueueEntry entry =
+			new()
+			{
+				EmailType = EmailTypeConstants.Welcome,
+				RecipientEmail = "test@example.com",
+				TemplateData = "{}",
+				Status = EmailQueueStatus.Sent,
+				Attempts = 1,
+				CreateDate = TimeProvider.GetUtcNow(),
+				IdempotencyKey = Guid.NewGuid()
+			};
+
+		dbContext.EmailQueue.Add(entry);
+		await dbContext.SaveChangesAsync();
+
+		MarkEmailFailedCommand command =
+			new(entry.Id, "Some error");
+
+		// Act
+		Result result =
+			await MarkEmailFailedCommandHandler.HandleAsync(
+				command,
+				dbContext,
+				TimeProvider,
+				CancellationToken.None);
+
+		// Assert — idempotent: already-Sent must not be overwritten to Failed
+		result.IsSuccess.ShouldBeTrue();
+
+		EmailQueueEntry? unchanged =
+			await dbContext.EmailQueue.FindAsync(entry.Id);
+		unchanged.ShouldNotBeNull();
+		unchanged.Status.ShouldBe(EmailQueueStatus.Sent);
+		unchanged.Attempts.ShouldBe(1);
+	}
+
+	[Fact]
+	public async Task HandleAsync_AlreadyDeadLetter_ReturnsSuccessWithoutModifyingAsync()
+	{
+		// Arrange
+		await using ElectronicNotificationsDbContext dbContext =
+			CreateInMemoryDbContext();
+
+		EmailQueueEntry entry =
+			new()
+			{
+				EmailType = EmailTypeConstants.Welcome,
+				RecipientEmail = "test@example.com",
+				TemplateData = "{}",
+				Status = EmailQueueStatus.DeadLetter,
+				Attempts = 3,
+				MaxAttempts = 3,
+				CreateDate = TimeProvider.GetUtcNow(),
+				IdempotencyKey = Guid.NewGuid()
+			};
+
+		dbContext.EmailQueue.Add(entry);
+		await dbContext.SaveChangesAsync();
+
+		MarkEmailFailedCommand command =
+			new(entry.Id, "Some error");
+
+		// Act
+		Result result =
+			await MarkEmailFailedCommandHandler.HandleAsync(
+				command,
+				dbContext,
+				TimeProvider,
+				CancellationToken.None);
+
+		// Assert — idempotent: DeadLetter is a terminal state and must not be re-processed
+		result.IsSuccess.ShouldBeTrue();
+
+		EmailQueueEntry? unchanged =
+			await dbContext.EmailQueue.FindAsync(entry.Id);
+		unchanged.ShouldNotBeNull();
+		unchanged.Status.ShouldBe(EmailQueueStatus.DeadLetter);
+		unchanged.Attempts.ShouldBe(3);
+	}
 }

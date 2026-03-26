@@ -1,0 +1,156 @@
+@use "variables" as vars;
+
+:host {
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	z-index: 15;
+}
+
+.mobile-controls-overlay {
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-end;
+	align-items: center;
+	height: 100%;
+	padding: vars.$spacing-lg;
+	gap: vars.$spacing-md;
+	opacity: 0.4;
+	transition: opacity 0.3s ease;
+
+	&.playing {
+		opacity: 0.85;
+	}
+}
+
+.jump-zone {
+	display: flex;
+	justify-content: center;
+}
+
+.controls-row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	width: 100%;
+}
+
+.steering-group {
+	display: flex;
+	gap: vars.$spacing-sm;
+	align-items: center;
+}
+
+.touch-button {
+	pointer-events: auto;
+	border: 2px solid color-mix(in srgb, var(--mat-sys-on-surface) 30%, transparent);
+	font-weight: 900;
+	cursor: pointer;
+	user-select: none;
+	-webkit-user-select: none;
+	touch-action: manipulation;
+	transition: transform 0.1s ease, background 0.1s ease;
+
+	&:active {
+		transform: scale(0.92);
+	}
+}
+
+.steer-button {
+	width: 72px;
+	height: 72px;
+	border-radius: 50%;
+	font-size: 1.75rem;
+	background: color-mix(in srgb, var(--mat-sys-primary-container) 80%, transparent);
+	color: var(--mat-sys-on-primary-container);
+
+	&:active {
+		background: var(--mat-sys-primary);
+		color: var(--mat-sys-on-primary);
+	}
+}
+
+.action-button {
+	border-radius: vars.$border-radius-lg;
+	font-size: 1rem;
+	letter-spacing: 0.05em;
+}
+
+.gas-button {
+	width: 80px;
+	height: 80px;
+	border-radius: 50%;
+	font-size: 1.25rem;
+	background: color-mix(in srgb, #22c55e 80%, transparent);
+	color: #fff;
+
+	&:active {
+		background: #16a34a;
+	}
+}
+
+.jump-button {
+	width: 80px;
+	height: 56px;
+	background: color-mix(in srgb, #3b82f6 80%, transparent);
+	color: #fff;
+	animation: jump-button-appear 0.4s ease-out forwards, jump-glow 0.8s 0.4s ease-in-out infinite alternate;
+
+	&:active {
+		background: #2563eb;
+	}
+}
+
+@keyframes jump-button-appear {
+	0% {
+		transform: scale(0.85);
+		opacity: 0.6;
+	}
+
+	60% {
+		transform: scale(1.1);
+		opacity: 1;
+	}
+
+	100% {
+		transform: scale(1);
+		opacity: 1;
+	}
+}
+
+@keyframes jump-glow {
+	from {
+		box-shadow: 0 0 8px color-mix(in srgb, #3b82f6 40%, transparent);
+	}
+
+	to {
+		box-shadow: 0 0 20px color-mix(in srgb, #3b82f6 70%, transparent);
+	}
+}
+
+@media #{vars.$breakpoint-xs} {
+	.steer-button {
+		width: 64px;
+		height: 64px;
+		font-size: 1.5rem;
+	}
+
+	.gas-button {
+		width: 68px;
+		height: 68px;
+		font-size: 1.1rem;
+	}
+
+	.jump-button {
+		width: 68px;
+		height: 48px;
+	}
+
+	.mobile-controls-overlay {
+		padding: vars.$spacing-md;
+	}
+
+	.steering-group {
+		gap: vars.$spacing-xs;
+	}
+}

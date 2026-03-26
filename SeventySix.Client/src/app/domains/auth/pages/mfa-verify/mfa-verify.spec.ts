@@ -7,6 +7,7 @@ import { provideZonelessChangeDetection } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { Router } from "@angular/router";
 import { MFA_METHOD } from "@auth/constants";
+import { MFA_ERROR_CODE } from "@auth/constants/mfa-error.constants";
 import {
 	AuthResponse,
 	MfaState,
@@ -238,6 +239,35 @@ describe("MfaVerifyComponent",
 								[APP_ROUTES.ACCOUNT.PROFILE]);
 					});
 
+				it("should redirect to change password when required",
+					() =>
+					{
+						const passwordChangeResponse: AuthResponse =
+							{
+								...mockAuthResponse,
+								requiresPasswordChange: true
+							};
+						mockMfaService.verifyMfa.mockReturnValue(
+							of(passwordChangeResponse));
+
+						component["mfaForm"].patchValue(
+							{ code: "123456" });
+						component["onVerify"]();
+
+						expect(mockNotificationService.info)
+							.toHaveBeenCalled();
+						expect(router.navigate)
+							.toHaveBeenCalledWith(
+								[APP_ROUTES.AUTH.CHANGE_PASSWORD],
+								expect.objectContaining(
+									{
+										queryParams: {
+											required: "true",
+											returnUrl: "/"
+										}
+									}));
+					});
+
 				it("should show error on verification failure",
 					() =>
 					{
@@ -255,6 +285,27 @@ describe("MfaVerifyComponent",
 
 						expect(mockNotificationService.error)
 							.toHaveBeenCalled();
+					});
+
+				it("should clear MFA state and redirect to login for invalid challenge errors",
+					() =>
+					{
+						mockMfaService.verifyMfa.mockReturnValue(
+							throwError(
+								() => ({
+									error: { errorCode: MFA_ERROR_CODE.INVALID_CHALLENGE },
+									status: 400
+								})));
+
+						component["mfaForm"].patchValue(
+							{ code: "123456" });
+						component["onVerify"]();
+
+						expect(mockMfaService.clearMfaState)
+							.toHaveBeenCalled();
+						expect(router.navigate)
+							.toHaveBeenCalledWith(
+								[APP_ROUTES.AUTH.LOGIN]);
 					});
 
 				it("should not verify when code is empty",
@@ -344,6 +395,99 @@ describe("MfaVerifyComponent",
 						expect(component["showBackupCodeEntry"]())
 							.toBe(false);
 					});
+
+				it("should validate using backup code length when backup mode is enabled",
+					() =>
+					{
+						component["onUseBackupCode"]();
+						component["mfaForm"].patchValue(
+							{ code: "ABCD1234" });
+
+						expect(component["canVerify"]())
+							.toBe(true);
+					});
+
+				it("should show an invalid backup code error message",
+					() =>
+					{
+						component["onUseBackupCode"]();
+						mockMfaService.verifyBackupCode.mockReturnValue(
+							throwError(
+								() => ({
+									error: { errorCode: MFA_ERROR_CODE.BACKUP_CODE_INVALID },
+									status: 400
+								})));
+
+						component["mfaForm"].patchValue(
+							{ code: "ABCD1234" });
+						component["onVerify"]();
+
+						expect(mockNotificationService.error)
+							.toHaveBeenCalledWith(
+								"Invalid backup code. Please try again.");
+					});
+
+				it("should show a used backup code error message",
+					() =>
+					{
+						component["onUseBackupCode"]();
+						mockMfaService.verifyBackupCode.mockReturnValue(
+							throwError(
+								() => ({
+									error: { errorCode: MFA_ERROR_CODE.BACKUP_CODE_ALREADY_USED },
+									status: 400
+								})));
+
+						component["mfaForm"].patchValue(
+							{ code: "ABCD1234" });
+						component["onVerify"]();
+
+						expect(mockNotificationService.error)
+							.toHaveBeenCalledWith(
+								"This backup code has already been used.");
+					});
+
+				it("should show a no-backup-codes-available message",
+					() =>
+					{
+						component["onUseBackupCode"]();
+						mockMfaService.verifyBackupCode.mockReturnValue(
+							throwError(
+								() => ({
+									error: { errorCode: MFA_ERROR_CODE.NO_BACKUP_CODES_AVAILABLE },
+									status: 400
+								})));
+
+						component["mfaForm"].patchValue(
+							{ code: "ABCD1234" });
+						component["onVerify"]();
+
+						expect(mockNotificationService.error)
+							.toHaveBeenCalledWith(
+								"No backup codes available. Please contact support.");
+					});
+
+				it("should use the fallback message for unknown backup code errors",
+					() =>
+					{
+						component["onUseBackupCode"]();
+						mockMfaService.verifyBackupCode.mockReturnValue(
+							throwError(
+								() => ({
+									error: { errorCode: "UNKNOWN_BACKUP_CODE_ERROR" },
+									status: 400
+								})));
+
+						component["mfaForm"].patchValue(
+							{ code: "ABCD1234" });
+						component["onVerify"]();
+
+						expect(mockNotificationService.error)
+							.toHaveBeenCalledWith(
+								"Verification failed. Please try again.");
+						expect(component["isLoading"]())
+							.toBe(false);
+					});
 			});
 
 		describe("trust device",
@@ -421,6 +565,112 @@ describe("MfaVerifyComponent",
 							.not
 							.toHaveBeenCalled();
 					});
+
+				it("should not resend while already resending",
+					() =>
+					{
+						component["isResending"].set(true);
+						component["onResendCode"]();
+
+						expect(mockMfaService.resendMfaCode)
+							.not
+							.toHaveBeenCalled();
+					});
+
+				it("should warn and start cooldown on resend cooldown errors",
+					() =>
+					{
+						mockMfaService.resendMfaCode.mockReturnValue(
+							throwError(
+								() => ({
+									error: { errorCode: "MFA_RESEND_COOLDOWN" },
+									status: 429
+								})));
+
+						component["onResendCode"]();
+
+						expect(mockNotificationService.warning)
+							.toHaveBeenCalledWith("Please wait before requesting another code.");
+						expect(component["resendOnCooldown"]())
+							.toBe(true);
+					});
+
+				it("should clear MFA state and redirect when resend challenge is invalid",
+					() =>
+					{
+						mockMfaService.resendMfaCode.mockReturnValue(
+							throwError(
+								() => ({
+									error: { errorCode: "MFA_INVALID_CHALLENGE" },
+									status: 400
+								})));
+
+						component["onResendCode"]();
+
+						expect(mockMfaService.clearMfaState)
+							.toHaveBeenCalled();
+						expect(router.navigate)
+							.toHaveBeenCalledWith(
+								[APP_ROUTES.AUTH.LOGIN]);
+					});
+
+				it("should show a generic error when resend fails with an unknown error code",
+					() =>
+					{
+						mockMfaService.resendMfaCode.mockReturnValue(
+							throwError(
+								() => ({
+									error: { errorCode: "UNEXPECTED" },
+									status: 500
+								})));
+
+						component["onResendCode"]();
+
+						expect(mockNotificationService.error)
+							.toHaveBeenCalledWith(
+								"Failed to resend code. Please try again.");
+						expect(component["isResending"]())
+							.toBe(false);
+					});
+
+				it("should not resend when MFA state is missing",
+					() =>
+					{
+						component["mfaState"] = null;
+
+						component["onResendCode"]();
+
+						expect(mockMfaService.resendMfaCode)
+							.not
+							.toHaveBeenCalled();
+					});
+
+				it("should decrement cooldown and stop when the timer reaches zero",
+					() =>
+					{
+						vi.useFakeTimers();
+
+						try
+						{
+							component["resendCooldownSeconds"].set(2);
+							component["resendOnCooldown"].set(true);
+							component["startCooldown"]();
+
+							vi.advanceTimersByTime(1000);
+							expect(component["resendCooldownSeconds"]())
+								.toBeGreaterThan(0);
+
+							vi.advanceTimersByTime(60000);
+							expect(component["resendOnCooldown"]())
+								.toBe(false);
+							expect(component["resendCooldownSeconds"]())
+								.toBe(0);
+						}
+						finally
+						{
+							vi.useRealTimers();
+						}
+					});
 			});
 
 		describe("navigation",
@@ -439,6 +689,13 @@ describe("MfaVerifyComponent",
 						expect(router.navigate)
 							.toHaveBeenCalledWith(
 								[APP_ROUTES.AUTH.LOGIN]);
+					});
+
+				it("should leave short emails unchanged when masking",
+					() =>
+					{
+						expect(component["maskEmail"]("a@b.com"))
+							.toBe("a@b.com");
 					});
 			});
 	});

@@ -40,6 +40,7 @@
 
 ## Core Principles
 
+- **SOLID** — Single Responsibility, Open/Closed, Liskov Substitution, Interface Segregation, Dependency Inversion. Components are thin controllers; logic lives in focused services. One reason to change per class.
 - **KISS, DRY, YAGNI** — simplest solution, no duplication, no speculative features
 - **TDD-First 80/20** — write tests first for the 20% of code carrying 80% of risk (Red → Green → Refactor)
 - **IDE Warnings = MUST FIX** — never suppress with `#pragma warning disable`, `// @ts-ignore`, `[SuppressMessage]`, or `.editorconfig` severity overrides
@@ -120,7 +121,7 @@ After all tests pass, verify:
 | Layer  | Technology                                                                      |
 | ------ | ------------------------------------------------------------------------------- |
 | Server | .NET 10 LTS, Wolverine CQRS, EF Core, PostgreSQL, FusionCache, FluentValidation |
-| Client | Angular 21 LTS, Zoneless, Signals, TanStack Query, Material Design 3            |
+| Client | Angular 21 LTS, Zoneless, Signals, TanStack Query, Material Design 3, Babylon.js |
 | IDE    | VS Code 1.100+                                                                  |
 
 ## Domains
@@ -131,6 +132,7 @@ After all tests pass, verify:
 | `Logging`                 | `auth`      |
 | `ApiTracking`             | `account`   |
 | `ElectronicNotifications` | `developer` |
+|                           | `games`     |
 |                           | `sandbox`   |
 |                           | `home`      |
 
@@ -249,6 +251,8 @@ E2E, load tests, and DAST scans run in **fully isolated Docker environments** �
 | `testing-client.instructions.md` | `**/SeventySix.Client/src/**/*.spec.ts`        |
 | `e2e.instructions.md`            | `**/SeventySix.Client/e2e/**/*.ts`             |
 | `new-domain.instructions.md`     | Manual reference — domain blueprints           |
+| `games.instructions.md`          | `**/SeventySix.Client/src/app/domains/games/**/*.{ts,html,scss}` — game domain architecture |
+| `babylonjs.instructions.md`      | `**/SeventySix.Client/src/app/domains/games/**/*.ts` — Babylon.js patterns & CC BY 4.0 |
 | `load-testing.instructions.md`   | `**/SeventySix.Client/load-testing/**/*.js` — k6 load test patterns |
 
 ## Prompt Index (Invoked via `/prompt-name` in Chat)

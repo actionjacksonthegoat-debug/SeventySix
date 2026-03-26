@@ -242,7 +242,6 @@ services:
             - GF_ANALYTICS_REPORTING_ENABLED=false
             - GF_INSTALL_PLUGINS=yesoreyeram-infinity-datasource
             # Reverse proxy configuration for HTTPS access via nginx-proxy
-            - GF_SERVER_ROOT_URL=https://localhost:3443/
             - GF_SERVER_SERVE_FROM_SUB_PATH=false
         volumes:
             - grafana_data:/var/lib/grafana

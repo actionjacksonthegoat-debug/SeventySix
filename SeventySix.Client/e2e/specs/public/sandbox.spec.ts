@@ -11,8 +11,7 @@ import type { Locator } from "@playwright/test";
  * E2E Tests for Sandbox Page
  *
  * Priority: P2 (Public Feature)
- * Tests the sandbox experimentation area including:
- * - Page structure and content
+ * Tests the sandbox Hello World page.
  */
 test.describe("Sandbox Page",
 	() =>
@@ -26,7 +25,7 @@ test.describe("Sandbox Page",
 		test.describe("Page Structure",
 			() =>
 			{
-				test("should display Hello World heading",
+				test("should display Sandbox heading",
 					async ({ page }) =>
 					{
 						const heading: Locator =
@@ -37,6 +36,19 @@ test.describe("Sandbox Page",
 
 						await expect(heading)
 							.toHaveText(PAGE_TEXT.sandbox.title);
+					});
+
+				test("should display Hello World subtitle",
+					async ({ page }) =>
+					{
+						const subtitle: Locator =
+							page.locator(".sandbox-subtitle");
+
+						await expect(subtitle)
+							.toBeVisible();
+
+						await expect(subtitle)
+							.toHaveText(PAGE_TEXT.sandbox.subtitle);
 					});
 			});
 	});

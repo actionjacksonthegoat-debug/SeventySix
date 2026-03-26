@@ -116,4 +116,52 @@ public sealed class MarkEmailSentCommandHandlerTests
 		result.Error.ShouldNotBeNull();
 		result.Error.ShouldContain("not found");
 	}
+
+	[Fact]
+	public async Task HandleAsync_AlreadySent_ReturnsSuccessWithoutModifyingAsync()
+	{
+		// Arrange
+		await using ElectronicNotificationsDbContext dbContext =
+			CreateInMemoryDbContext();
+
+		DateTimeOffset originalSentAt =
+			TimeProvider.GetUtcNow();
+
+		EmailQueueEntry entry =
+			new()
+			{
+				EmailType = EmailTypeConstants.Welcome,
+				RecipientEmail = "test@example.com",
+				TemplateData = "{}",
+				Status = EmailQueueStatus.Sent,
+				SentAt = originalSentAt,
+				Attempts = 1,
+				CreateDate = TimeProvider.GetUtcNow(),
+				IdempotencyKey = Guid.NewGuid()
+			};
+
+		dbContext.EmailQueue.Add(entry);
+		await dbContext.SaveChangesAsync();
+
+		MarkEmailSentCommand command =
+			new(entry.Id);
+
+		// Act
+		Result result =
+			await MarkEmailSentCommandHandler.HandleAsync(
+				command,
+				dbContext,
+				TimeProvider,
+				CancellationToken.None);
+
+		// Assert — idempotent: already-Sent must be a no-op (Attempts stays at 1, SentAt unchanged)
+		result.IsSuccess.ShouldBeTrue();
+
+		EmailQueueEntry? unchanged =
+			await dbContext.EmailQueue.FindAsync(entry.Id);
+		unchanged.ShouldNotBeNull();
+		unchanged.Status.ShouldBe(EmailQueueStatus.Sent);
+		unchanged.Attempts.ShouldBe(1);
+		unchanged.SentAt.ShouldBe(originalSentAt);
+	}
 }

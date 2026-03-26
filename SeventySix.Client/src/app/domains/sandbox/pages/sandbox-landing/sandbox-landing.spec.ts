@@ -15,7 +15,9 @@ describe("SandboxLandingComponent",
 					.configureTestingModule(
 						{
 							imports: [SandboxLandingComponent],
-							providers: [provideZonelessChangeDetection()]
+							providers: [
+								provideZonelessChangeDetection()
+							]
 						})
 					.compileComponents();
 
@@ -39,6 +41,15 @@ describe("SandboxLandingComponent",
 				const heading: HTMLElement | null =
 					fixture.nativeElement.querySelector("h1");
 				expect(heading?.textContent)
+					.toContain("Sandbox");
+			});
+
+		it("should display Hello World subtitle",
+			() =>
+			{
+				const subtitle: HTMLElement | null =
+					fixture.nativeElement.querySelector(".sandbox-subtitle");
+				expect(subtitle?.textContent)
 					.toContain("Hello World");
 			});
 	});

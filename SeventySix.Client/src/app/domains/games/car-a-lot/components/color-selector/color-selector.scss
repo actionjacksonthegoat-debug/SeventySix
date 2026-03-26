@@ -1,0 +1,120 @@
+@use "variables" as vars;
+
+:host {
+	position: absolute;
+	top: vars.$spacing-md;
+	left: 50%;
+	transform: translateX(-50%);
+	z-index: 20;
+	pointer-events: auto;
+}
+
+.selector-container {
+	display: flex;
+	gap: vars.$spacing-sm;
+	align-items: center;
+	background: color-mix(in srgb, var(--mat-sys-surface) 85%, transparent);
+	padding: vars.$spacing-xs vars.$spacing-sm;
+	border-radius: vars.$border-radius-lg;
+}
+
+.color-buttons,
+.character-buttons {
+	display: flex;
+	gap: vars.$spacing-xs;
+}
+
+.color-btn {
+	width: 32px;
+	height: 32px;
+	border-radius: 50%;
+	border: 2px solid transparent;
+	cursor: pointer;
+	transition: vars.$transition-all;
+
+	&.selected {
+		border-color: var(--mat-sys-on-surface);
+		box-shadow: 0 0 0 2px var(--mat-sys-primary);
+	}
+
+	&:hover {
+		transform: scale(1.1);
+	}
+
+	@include vars.focus-visible();
+}
+
+.character-btn {
+	padding: vars.$spacing-xs vars.$spacing-sm;
+	border-radius: vars.$border-radius-lg;
+	border: 2px solid transparent;
+	background: var(--mat-sys-surface-container);
+	color: var(--mat-sys-on-surface);
+	cursor: pointer;
+	font-size: vars.$font-size-sm;
+	font-weight: 600;
+	transition: vars.$transition-all;
+
+	&.selected {
+		border-color: var(--mat-sys-primary);
+		background: color-mix(in srgb, var(--mat-sys-primary) 15%, transparent);
+	}
+
+	&:hover {
+		background: color-mix(in srgb, var(--mat-sys-primary) 10%, transparent);
+	}
+
+	@include vars.focus-visible();
+}
+
+.start-game-wrapper {
+	display: flex;
+	justify-content: center;
+	margin-top: 2px;
+}
+
+.start-game-button {
+	background: var(--mat-sys-primary);
+	color: var(--mat-sys-on-primary);
+	border: none;
+	border-radius: vars.$border-radius-lg;
+	padding: vars.$spacing-sm vars.$spacing-lg;
+	font-size: vars.$font-size-lg;
+	font-weight: 700;
+	cursor: pointer;
+	width: 100%;
+	transition: background 0.2s ease;
+
+	&:hover {
+		background: var(--mat-sys-primary-container);
+		color: var(--mat-sys-on-primary-container);
+	}
+
+	@include vars.focus-visible();
+}
+
+@media #{vars.$breakpoint-xs} {
+	:host {
+		top: vars.$spacing-xs;
+	}
+
+	.selector-container {
+		padding: 2px vars.$spacing-xs;
+		gap: vars.$spacing-xs;
+	}
+
+	.color-btn {
+		width: 24px;
+		height: 24px;
+	}
+
+	.character-btn {
+		font-size: vars.$font-size-xs;
+		padding: 2px vars.$spacing-xs;
+	}
+
+	.start-game-button {
+		font-size: vars.$font-size-md;
+		padding: vars.$spacing-xs vars.$spacing-md;
+	}
+}

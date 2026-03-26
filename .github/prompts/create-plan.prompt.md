@@ -22,14 +22,15 @@ Write a new `Implementation.md` plan for the following work:
 4. Follow the existing `Implementation.md` structure: Executive Summary → numbered Phases → Appendices
 5. Each phase must have clear **deliverables** and **verification steps**
 6. Follow **KISS, DRY, YAGNI** — no speculative features, no duplication
-7. Include a **TDD-First 80/20** testing strategy — write tests BEFORE implementation for the 20% of code carrying 80% of risk (Red → Green → Refactor). Each phase that adds new code MUST list test deliverables before implementation code.
-8. **Documentation**: All new classes, methods, functions, properties, and constants must include XML doc (C#), JSDoc (TS/JS/MJS), or comment-based help (PS). Tests are exempt.
-8. Architecture: server `Shared ← Domains ← Api` (never reverse), client domains import only `@shared/*` + themselves
-9. Add a mandatory runtime/browser verification gate before completion for client-impacting work:
+7. **SOLID decomposition gate** — every phase that adds a new class, component, or service must verify Single Responsibility (one reason to change), Interface Segregation (focused public API), and Dependency Inversion (depend on abstractions/services, not concretions). Components are thin controllers; logic lives in focused services.
+8. Include a **TDD-First 80/20** testing strategy — write tests BEFORE implementation for the 20% of code carrying 80% of risk (Red → Green → Refactor). Each phase that adds new code MUST list test deliverables before implementation code.
+9. **Documentation**: All new classes, methods, functions, properties, and constants must include XML doc (C#), JSDoc (TS/JS/MJS), or comment-based help (PS). Tests are exempt.
+10. Architecture: server `Shared ← Domains ← Api` (never reverse), client domains import only `@shared/*` + themselves
+11. Add a mandatory runtime/browser verification gate before completion for client-impacting work:
     - Run `npm run stop` then `npm run start`
     - Verify visual/interaction changes using Chrome DevTools MCP browser before calling work complete
-10. **Phase-level verification**: Intermediate phases should build and run unit tests for changed code (`dotnet build`, `ng build`, relevant unit tests). Do NOT run E2E or load tests mid-phase.
-11. **Final phase MUST run all required test suites — NO SKIPPING, NO EXCEPTIONS, REGARDLESS OF TIME NEEDED**:
+12. **Phase-level verification**: Intermediate phases should build and run unit tests for changed code (`dotnet build`, `ng build`, relevant unit tests). Do NOT run E2E or load tests mid-phase.
+13. **Final phase MUST run all required test suites — NO SKIPPING, NO EXCEPTIONS, REGARDLESS OF TIME NEEDED**:
     - `dotnet test` → `Test summary: total: X, failed: 0`
     - `npm test` → `X passed (X)`
     - `npm run test:e2e` → `[PASS] All E2E tests passed!`

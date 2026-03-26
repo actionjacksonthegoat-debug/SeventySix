@@ -1,0 +1,9 @@
+<button
+	class="fullscreen-btn"
+	type="button"
+	data-testid="fullscreen-toggle"
+	aria-label="Toggle fullscreen"
+	[attr.aria-expanded]="isFullscreen()"
+	(click)="toggleFullscreen()">
+	{{ isFullscreen() ? '⤡' : '⛶' }}
+</button>

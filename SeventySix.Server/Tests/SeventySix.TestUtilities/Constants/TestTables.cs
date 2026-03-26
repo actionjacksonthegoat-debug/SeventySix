@@ -43,6 +43,12 @@ public static class TestTables
 	];
 
 	/// <summary>
+	/// All ElectronicNotifications bounded context tables.
+	/// </summary>
+	public static readonly string[] ElectronicNotifications =
+		["\"ElectronicNotifications\".\"EmailQueue\""];
+
+	/// <summary>
 	/// All tables across all bounded contexts.
 	/// Use for full database cleanup between tests.
 	/// </summary>
@@ -51,5 +57,6 @@ public static class TestTables
 		.. Identity,
 		.. Logging,
 		.. ApiTracking,
+		.. ElectronicNotifications,
 	];
 }
