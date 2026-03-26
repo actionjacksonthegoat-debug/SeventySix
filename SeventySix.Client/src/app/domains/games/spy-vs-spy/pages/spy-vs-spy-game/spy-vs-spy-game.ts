@@ -21,6 +21,7 @@ import {
 	WritableSignal
 } from "@angular/core";
 import { RouterLink } from "@angular/router";
+import type { PickingInfo } from "@babylonjs/core/Collisions/pickingInfo";
 import { Scene } from "@babylonjs/core/scene";
 import { BabylonCanvasComponent } from "@games/shared/components/babylon-canvas/babylon-canvas";
 import { FullscreenToggleComponent } from "@games/shared/components/fullscreen-toggle/fullscreen-toggle";
@@ -28,6 +29,10 @@ import { GameLoopService } from "@games/shared/services/game-loop.service";
 import { InputService } from "@games/shared/services/input.service";
 import { SpyMobileControlsComponent } from "@games/spy-vs-spy/components/spy-mobile-controls/spy-mobile-controls";
 import {
+	AIRSTRIP_CENTER_X,
+	AIRSTRIP_CENTER_Z,
+	AIRSTRIP_RUNWAY_LENGTH,
+	AIRSTRIP_RUNWAY_WIDTH,
 	BLACK_SPY_SPAWN_X,
 	BLACK_SPY_SPAWN_Z,
 	SPY_STARTING_LIVES
@@ -35,8 +40,7 @@ import {
 import {
 	SpyGameState,
 	SpyIdentity,
-	TrapType,
-	TurnPhase
+	TrapType
 } from "@games/spy-vs-spy/models/spy-vs-spy.models";
 import { FurnitureService } from "@games/spy-vs-spy/services/furniture.service";
 import { SpyFlowService } from "@games/spy-vs-spy/services/game-flow.service";
@@ -49,6 +53,16 @@ import { SpyBuilderService } from "@games/spy-vs-spy/services/spy-builder.servic
 import { SpyCameraService } from "@games/spy-vs-spy/services/spy-camera.service";
 import { SpyPhysicsService } from "@games/spy-vs-spy/services/spy-physics.service";
 import { TrapService } from "@games/spy-vs-spy/services/trap.service";
+
+/** Mobile tap payload with viewport coordinates. */
+interface MobileTapEvent
+{
+	/** Tap X coordinate in viewport pixels. */
+	readonly clientX: number;
+
+	/** Tap Y coordinate in viewport pixels. */
+	readonly clientY: number;
+}
 
 /** Spy vs Spy island game page — orchestrates scene and service wiring. */
 @Component(
@@ -74,9 +88,6 @@ export class SpyVsSpyGameComponent
 
 	/** Expose SpyGameState enum to the template. */
 	protected readonly SpyGameState: typeof SpyGameState = SpyGameState;
-
-	/** Expose TurnPhase enum to the template. */
-	protected readonly TurnPhase: typeof TurnPhase = TurnPhase;
 
 	/** Expose TrapType enum to the template. */
 	protected readonly TrapType: typeof TrapType = TrapType;
@@ -162,17 +173,9 @@ export class SpyVsSpyGameComponent
 	protected readonly itemCount: Signal<number> =
 		this.spyFlowService.player1Items;
 
-	/** Current turn phase for HUD display. */
-	protected readonly currentTurn: Signal<TurnPhase> =
-		this.spyFlowService.currentTurn;
-
-	/** Player 1 personal timer for HUD. */
-	protected readonly player1Timer: Signal<number> =
-		this.spyFlowService.player1Timer;
-
-	/** Player 2 personal timer for HUD. */
-	protected readonly player2Timer: Signal<number> =
-		this.spyFlowService.player2Timer;
+	/** Shared island self-destruct timer for HUD. */
+	protected readonly islandTimer: Signal<number> =
+		this.spyFlowService.islandTimer;
 
 	/** Whether a search is active. */
 	protected readonly isSearching: Signal<boolean> =
@@ -247,23 +250,17 @@ export class SpyVsSpyGameComponent
 	protected readonly allItemsCollected: Signal<boolean> =
 		this.spyFlowService.allItemsCollected;
 
-	/** CSS class for the player 1 timer based on remaining time. */
-	protected readonly player1TimerClass: Signal<string> =
+	/** CSS class for the island timer based on remaining time. */
+	protected readonly islandTimerClass: Signal<string> =
 		computed(
 			() =>
-				this.getTimerWarningClass(this.player1Timer()));
+				this.getTimerWarningClass(this.islandTimer()));
 
-	/** Player 1 timer formatted as M:SS for HUD display. */
-	protected readonly formattedPlayer1Timer: Signal<string> =
+	/** Island timer formatted as M:SS for HUD display. */
+	protected readonly formattedIslandTimer: Signal<string> =
 		computed(
 			() =>
-				this.formatTimerValue(this.player1Timer()));
-
-	/** Player 2 timer formatted as M:SS for HUD display. */
-	protected readonly formattedPlayer2Timer: Signal<string> =
-		computed(
-			() =>
-				this.formatTimerValue(this.player2Timer()));
+				this.formatTimerValue(this.islandTimer()));
 
 	/**
 	 * Format a timer value (seconds) as M:SS for HUD display.
@@ -392,6 +389,7 @@ export class SpyVsSpyGameComponent
 			scene,
 			blackSpyNode,
 			whiteSpyNode);
+		this.spyFlowService.restartGame();
 		this.itemService.initializeItems(scene);
 		this.inputService.initialize();
 
@@ -414,9 +412,8 @@ export class SpyVsSpyGameComponent
 					this.minimapService.update(
 						blackSpyNode.position.x,
 						blackSpyNode.position.z);
+					this.spyCamera.updateTarget(blackSpyNode);
 				}
-
-				this.spyCamera.updateTarget(blackSpyNode);
 			};
 
 		this.gameLoop.start();
@@ -487,6 +484,109 @@ export class SpyVsSpyGameComponent
 	}
 
 	/**
+	 * Handle mobile tap gesture for movement and interaction.
+	 * @param tap
+	 * Mobile tap coordinates in viewport pixels.
+	 */
+	protected onMobileTap(tap: MobileTapEvent): void
+	{
+		if (this.gameState() !== SpyGameState.Playing)
+		{
+			return;
+		}
+
+		if (this.nearFurniture())
+		{
+			this.spyFlowService.triggerSearch();
+			return;
+		}
+
+		const worldPoint: { x: number; z: number; } | null =
+			this.pickWorldPointFromTap(tap.clientX, tap.clientY);
+
+		if (worldPoint == null)
+		{
+			return;
+		}
+
+		this.spyPhysics.setMoveTarget(worldPoint.x, worldPoint.z);
+
+		if (
+			this.allItemsCollected()
+				&& this.isWithinAirstripRunway(worldPoint.x, worldPoint.z))
+		{
+			this.spyPhysics.resetPosition(worldPoint.x, worldPoint.z);
+		}
+	}
+
+	/**
+	 * Checks whether a world-space position is within runway bounds.
+	 * @param positionX
+	 * World-space X coordinate.
+	 * @param positionZ
+	 * World-space Z coordinate.
+	 * @returns
+	 * True when inside the runway rectangle.
+	 */
+	private isWithinAirstripRunway(
+		positionX: number,
+		positionZ: number): boolean
+	{
+		const halfRunwayLength: number =
+			AIRSTRIP_RUNWAY_LENGTH / 2;
+		const halfRunwayWidth: number =
+			AIRSTRIP_RUNWAY_WIDTH / 2;
+		const withinX: boolean =
+			positionX >= AIRSTRIP_CENTER_X - halfRunwayLength
+				&& positionX <= AIRSTRIP_CENTER_X + halfRunwayLength;
+		const withinZ: boolean =
+			positionZ >= AIRSTRIP_CENTER_Z - halfRunwayWidth
+				&& positionZ <= AIRSTRIP_CENTER_Z + halfRunwayWidth;
+
+		return withinX && withinZ;
+	}
+
+	/**
+	 * Convert a screen-space tap into a world-space point on island or runway meshes.
+	 * @param clientX
+	 * Tap X coordinate in viewport pixels.
+	 * @param clientY
+	 * Tap Y coordinate in viewport pixels.
+	 * @returns
+	 * World-space X/Z point, or null when no valid hit exists.
+	 */
+	private pickWorldPointFromTap(
+		clientX: number,
+		clientY: number): { x: number; z: number; } | null
+	{
+		if (this.scene == null)
+		{
+			return null;
+		}
+
+		const pickResult: PickingInfo =
+			this.scene.pick(
+				clientX,
+				clientY,
+				(mesh) =>
+					mesh.name === "island-ground"
+						|| mesh.name === "airstrip-runway");
+
+		if (
+			pickResult == null
+				|| !pickResult.hit
+				|| pickResult.pickedPoint == null)
+		{
+			return null;
+		}
+
+		return {
+			x: pickResult.pickedPoint.x,
+			z: pickResult.pickedPoint.z
+		};
+	}
+
+	/**
 	 * Initializes the minimap canvas on first Playing frame.
 	 * Deferred because the canvas is conditionally rendered.
 	 */
@@ -512,6 +612,7 @@ export class SpyVsSpyGameComponent
 	 */
 	private cleanup(): void
 	{
+		this.spyFlowService.restartGame();
 		this.gameLoop.dispose();
 		this.inputService.dispose();
 		this.spyAi.dispose();

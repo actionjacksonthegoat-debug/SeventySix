@@ -13,10 +13,9 @@ import {
 	SpyIdentity,
 	TrapType
 } from "@games/spy-vs-spy/models/spy-vs-spy.models";
-import type { SearchAttemptResult } from "@games/spy-vs-spy/models/spy-vs-spy.models";
+import type { SearchAttemptResult, SearchOutcome } from "@games/spy-vs-spy/models/spy-vs-spy.models";
 import { ItemService } from "./item.service";
 import { SpyAudioService } from "./spy-audio.service";
-import type { SearchOutcome } from "./spy-search-handler.service";
 import { SpySearchHandlerService } from "./spy-search-handler.service";
 
 describe("SpySearchHandlerService",

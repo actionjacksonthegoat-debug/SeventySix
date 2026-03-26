@@ -404,6 +404,16 @@ export class IslandEnvironmentService
 		this.disposables.push(runway);
 
 		/* Center dashed line markings along X axis (east-west). */
+		this.createRunwayDashes(scene);
+	}
+
+	/**
+	 * Creates center dashed line markings along the airstrip runway.
+	 * @param scene
+	 * The Babylon.js scene.
+	 */
+	private createRunwayDashes(scene: Scene): void
+	{
 		const dashCount: number = 12;
 		const dashLength: number = 2;
 		const dashGap: number =

@@ -12,6 +12,12 @@
 	height: 100%;
 	overflow: hidden;
 	touch-action: none;
+
+	&:fullscreen {
+		width: 100vw;
+		height: 100vh;
+		background: #000;
+	}
 }
 
 .canvas-wrapper {
@@ -42,7 +48,7 @@
 	gap: 0;
 	align-items: stretch;
 	justify-content: space-between;
-	height: 88px;
+	height: 116px;
 	padding: 0;
 	font-family: "Courier New", Courier, monospace;
 	color: #0f0;
@@ -73,10 +79,10 @@
 	display: flex;
 	flex: 1;
 	flex-direction: column;
-	gap: 2px;
+	gap: 4px;
 	align-items: center;
 	justify-content: center;
-	padding: 4px 12px;
+	padding: 8px 12px;
 	border-right: 1px solid #0a0;
 }
 
@@ -91,6 +97,7 @@
 	font-size: vars.$font-size-xl;
 	font-weight: 700;
 	font-variant-numeric: tabular-nums;
+	line-height: 1.1;
 }
 
 .hud-remedy {
@@ -127,12 +134,23 @@
 
 .hud-timer {
 	display: flex;
+	flex-direction: column;
+	gap: 4px;
 	align-items: center;
 	justify-content: center;
-	min-width: 100px;
+	min-width: 140px;
 	padding: 0 12px;
-	font-size: vars.$font-size-2xl;
-	font-weight: 700;
+	border-right: 1px solid #0a0;
+}
+
+.hud-elapsed {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	align-items: center;
+	justify-content: center;
+	min-width: 120px;
+	padding: 0 12px;
 	border-right: 1px solid #0a0;
 }
 
@@ -166,13 +184,15 @@
 	gap: 4px;
 	align-items: center;
 	justify-content: center;
-	min-width: 140px;
+	min-width: 280px;
 	padding: 0 12px;
 }
 
 .hud-controls {
-	font-size: vars.$font-size-base;
+	font-size: vars.$font-size-md;
 	font-weight: 700;
+	line-height: 1.25;
+	text-align: center;
 	opacity: 0.5;
 }
 

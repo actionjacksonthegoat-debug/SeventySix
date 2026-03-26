@@ -422,17 +422,41 @@ export class IslandSceneService
 		const trimHeight: number = 0.15;
 		const trimY: number =
 			ISLAND_GROUND_Y + ROOM_WALL_HEIGHT + trimHeight / 2;
+
+		this.createNorthSouthWallTrim(scene, room, trimY, trimHeight, trimMaterial);
+		this.createEastWestWallTrim(scene, room, trimY, trimHeight, trimMaterial);
+	}
+
+	/**
+	 * Creates north and south wall trim meshes for a room.
+	 * @param scene
+	 * The Babylon.js Scene.
+	 * @param room
+	 * The room definition.
+	 * @param trimY
+	 * Vertical center position of the trim band.
+	 * @param trimHeight
+	 * Height of the trim band.
+	 * @param material
+	 * Shared trim material.
+	 */
+	private createNorthSouthWallTrim(
+		scene: Scene,
+		room: RoomDefinition,
+		trimY: number,
+		trimHeight: number,
+		material: StandardMaterial): void
+	{
 		const fullWidth: number =
 			room.halfWidth * 2 + WALL_THICKNESS;
-		const fullDepth: number =
-			room.halfDepth * 2 + WALL_THICKNESS;
 
 		const trimNorth: Mesh =
 			MeshBuilder.CreateBox(
 				`wall-trim-north-${room.id}`,
 				{ width: fullWidth, height: trimHeight, depth: WALL_THICKNESS },
 				scene);
-		trimNorth.material = trimMaterial;
+
+		trimNorth.material = material;
 		trimNorth.position.set(
 			room.centerX,
 			trimY,
@@ -444,19 +468,45 @@ export class IslandSceneService
 				`wall-trim-south-${room.id}`,
 				{ width: fullWidth, height: trimHeight, depth: WALL_THICKNESS },
 				scene);
-		trimSouth.material = trimMaterial;
+
+		trimSouth.material = material;
 		trimSouth.position.set(
 			room.centerX,
 			trimY,
 			room.centerZ + room.halfDepth);
 		this.disposables.push(trimSouth);
+	}
+
+	/**
+	 * Creates east and west wall trim meshes for a room.
+	 * @param scene
+	 * The Babylon.js Scene.
+	 * @param room
+	 * The room definition.
+	 * @param trimY
+	 * Vertical center position of the trim band.
+	 * @param trimHeight
+	 * Height of the trim band.
+	 * @param material
+	 * Shared trim material.
+	 */
+	private createEastWestWallTrim(
+		scene: Scene,
+		room: RoomDefinition,
+		trimY: number,
+		trimHeight: number,
+		material: StandardMaterial): void
+	{
+		const fullDepth: number =
+			room.halfDepth * 2 + WALL_THICKNESS;
 
 		const trimWest: Mesh =
 			MeshBuilder.CreateBox(
 				`wall-trim-west-${room.id}`,
 				{ width: WALL_THICKNESS, height: trimHeight, depth: fullDepth },
 				scene);
-		trimWest.material = trimMaterial;
+
+		trimWest.material = material;
 		trimWest.position.set(
 			room.centerX - room.halfWidth,
 			trimY,
@@ -468,7 +518,8 @@ export class IslandSceneService
 				`wall-trim-east-${room.id}`,
 				{ width: WALL_THICKNESS, height: trimHeight, depth: fullDepth },
 				scene);
-		trimEast.material = trimMaterial;
+
+		trimEast.material = material;
 		trimEast.position.set(
 			room.centerX + room.halfWidth,
 			trimY,
@@ -539,10 +590,6 @@ export class IslandSceneService
 		room: RoomDefinition,
 		colorHex: string): void
 	{
-		const fullWidth: number =
-			room.halfWidth * 2 + WALL_THICKNESS;
-		const fullDepth: number =
-			room.halfDepth * 2 + WALL_THICKNESS;
 		const baseboardHeight: number = 0.25;
 		const baseboardY: number =
 			ISLAND_GROUND_Y + baseboardHeight / 2;
@@ -561,18 +608,69 @@ export class IslandSceneService
 
 		this.disposables.push(baseboardMaterial);
 
+		this.createNorthBaseboard(scene, room, baseboardY, baseboardHeight, baseboardMaterial);
+		this.createSideBaseboards(scene, room, baseboardY, baseboardHeight, baseboardMaterial);
+	}
+
+	/**
+	 * Creates the north wall baseboard mesh for a room.
+	 * @param scene
+	 * The Babylon.js Scene.
+	 * @param room
+	 * The room definition.
+	 * @param baseboardY
+	 * Vertical center position of the baseboard.
+	 * @param baseboardHeight
+	 * Height of the baseboard strip.
+	 * @param material
+	 * Shared baseboard material.
+	 */
+	private createNorthBaseboard(
+		scene: Scene,
+		room: RoomDefinition,
+		baseboardY: number,
+		baseboardHeight: number,
+		material: StandardMaterial): void
+	{
+		const fullWidth: number =
+			room.halfWidth * 2 + WALL_THICKNESS;
+
 		const baseboardNorth: Mesh =
 			MeshBuilder.CreateBox(
 				`baseboard-north-${room.id}`,
 				{ width: fullWidth, height: baseboardHeight, depth: 0.12 },
 				scene);
 
-		baseboardNorth.material = baseboardMaterial;
+		baseboardNorth.material = material;
 		baseboardNorth.position.set(
 			room.centerX,
 			baseboardY,
 			room.centerZ - room.halfDepth + WALL_THICKNESS / 2 + 0.06);
 		this.disposables.push(baseboardNorth);
+	}
+
+	/**
+	 * Creates the east and west wall baseboard meshes for a room.
+	 * @param scene
+	 * The Babylon.js Scene.
+	 * @param room
+	 * The room definition.
+	 * @param baseboardY
+	 * Vertical center position of the baseboard.
+	 * @param baseboardHeight
+	 * Height of the baseboard strip.
+	 * @param material
+	 * Shared baseboard material.
+	 */
+	private createSideBaseboards(
+		scene: Scene,
+		room: RoomDefinition,
+		baseboardY: number,
+		baseboardHeight: number,
+		material: StandardMaterial): void
+	{
+		const fullDepth: number =
+			room.halfDepth * 2 + WALL_THICKNESS;
 
 		const baseboardWest: Mesh =
 			MeshBuilder.CreateBox(
@@ -580,7 +678,7 @@ export class IslandSceneService
 				{ width: 0.12, height: baseboardHeight, depth: fullDepth },
 				scene);
 
-		baseboardWest.material = baseboardMaterial;
+		baseboardWest.material = material;
 		baseboardWest.position.set(
 			room.centerX - room.halfWidth + WALL_THICKNESS / 2 + 0.06,
 			baseboardY,
@@ -593,7 +691,7 @@ export class IslandSceneService
 				{ width: 0.12, height: baseboardHeight, depth: fullDepth },
 				scene);
 
-		baseboardEast.material = baseboardMaterial;
+		baseboardEast.material = material;
 		baseboardEast.position.set(
 			room.centerX + room.halfWidth - WALL_THICKNESS / 2 - 0.06,
 			baseboardY,

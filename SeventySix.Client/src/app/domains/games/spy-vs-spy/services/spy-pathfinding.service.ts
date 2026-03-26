@@ -28,8 +28,8 @@ const HALF_ISLAND: number =
 /** Distance threshold for considering goal reached. */
 const GOAL_REACHED_DISTANCE: number = 1.5;
 
-/** Offset past the wall center so waypoints are through the doorway, not on the wall. */
-const DOORWAY_WAYPOINT_OFFSET: number = 2.0;
+/** Inset applied inside the destination room when creating doorway waypoints. */
+const DOORWAY_TARGET_ROOM_INSET: number = 0.75;
 
 /**
  * Spy Pathfinding Service.
@@ -479,26 +479,34 @@ export class SpyPathfindingService
 			return null;
 		}
 
-		/* Determine shared wall direction based on relative position. */
+		/* Place waypoint just inside the destination room to avoid doorway re-stall loops. */
 		if (toRoom.centerZ < fromRoom.centerZ)
 		{
-			/* Door is on north wall — offset northward through doorway. */
-			return { x: fromRoom.centerX, z: fromRoom.centerZ - fromRoom.halfDepth - DOORWAY_WAYPOINT_OFFSET };
+			return {
+				x: toRoom.centerX,
+				z: toRoom.centerZ + toRoom.halfDepth - DOORWAY_TARGET_ROOM_INSET
+			};
 		}
 
 		if (toRoom.centerZ > fromRoom.centerZ)
 		{
-			/* Door is on south wall — offset southward through doorway. */
-			return { x: fromRoom.centerX, z: fromRoom.centerZ + fromRoom.halfDepth + DOORWAY_WAYPOINT_OFFSET };
+			return {
+				x: toRoom.centerX,
+				z: toRoom.centerZ - toRoom.halfDepth + DOORWAY_TARGET_ROOM_INSET
+			};
 		}
 
 		if (toRoom.centerX < fromRoom.centerX)
 		{
-			/* Door is on west wall — offset westward through doorway. */
-			return { x: fromRoom.centerX - fromRoom.halfWidth - DOORWAY_WAYPOINT_OFFSET, z: fromRoom.centerZ };
+			return {
+				x: toRoom.centerX + toRoom.halfWidth - DOORWAY_TARGET_ROOM_INSET,
+				z: toRoom.centerZ
+			};
 		}
 
-		/* Door is on east wall — offset eastward through doorway. */
-		return { x: fromRoom.centerX + fromRoom.halfWidth + DOORWAY_WAYPOINT_OFFSET, z: fromRoom.centerZ };
+		return {
+			x: toRoom.centerX - toRoom.halfWidth + DOORWAY_TARGET_ROOM_INSET,
+			z: toRoom.centerZ
+		};
 	}
 }

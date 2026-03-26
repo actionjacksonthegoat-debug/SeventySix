@@ -8,6 +8,7 @@ import { FreeCamera } from "@babylonjs/core/Cameras/freeCamera";
 import { NullEngine } from "@babylonjs/core/Engines/nullEngine";
 import { Vector3 } from "@babylonjs/core/Maths/math.vector";
 import { Scene } from "@babylonjs/core/scene";
+import { EXPLOSION_DURATION_SECONDS } from "@games/spy-vs-spy/constants/spy-vs-spy.constants";
 
 import { ExplosionService } from "@games/spy-vs-spy/services/explosion.service";
 import { SpyAudioService } from "@games/spy-vs-spy/services/spy-audio.service";
@@ -107,8 +108,8 @@ describe("ExplosionService",
 								completed = true;
 							});
 
-						/* Advance past explosion duration (4 seconds). */
-						vi.advanceTimersByTime(4500);
+						/* Advance just past configured explosion duration. */
+						vi.advanceTimersByTime((EXPLOSION_DURATION_SECONDS * 1000) + 100);
 
 						expect(completed)
 							.toBe(true);

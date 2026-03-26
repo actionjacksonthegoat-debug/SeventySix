@@ -12,6 +12,12 @@
 	height: 100%;
 	overflow: hidden;
 	touch-action: none;
+
+	&:fullscreen {
+		width: 100vw;
+		height: 100vh;
+		background: #000;
+	}
 }
 
 /* Position fullscreen toggle below the driving HUD top bar to avoid overlap. */

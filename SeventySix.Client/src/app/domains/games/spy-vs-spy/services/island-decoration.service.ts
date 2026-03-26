@@ -82,6 +82,15 @@ const ROOM_COLORS: ReadonlyMap<RoomId, string> =
 /** Island ground color (sandy tan) — fallback when room color is not found. */
 const ISLAND_GROUND_COLOR: string = "#C2A267";
 
+/** Width of each door opening in world units. */
+const DOOR_WIDTH: number = 1.8;
+
+/** Height of each door opening in world units. */
+const DOOR_HEIGHT: number = 2.5;
+
+/** Frame border thickness in world units. */
+const DOOR_FRAME_THICKNESS: number = 0.08;
+
 /**
  * Creates decorative elements for island rooms: ceilings, labels, door
  * outlines, wall-mounted pictures, and clocks.
@@ -213,6 +222,39 @@ export class IslandDecorationService
 			Mesh.BILLBOARDMODE_Y;
 
 		const labelTexture: DynamicTexture =
+			this.createRoomLabelTexture(scene, room);
+
+		const material: StandardMaterial =
+			new StandardMaterial(
+				`room-label-material-${room.id}`,
+				scene);
+
+		material.diffuseTexture = labelTexture;
+		material.emissiveColor =
+			new Color3(0.5, 0.5, 0.5);
+		material.useAlphaFromDiffuseTexture = true;
+		material.backFaceCulling = false;
+
+		plane.material = material;
+
+		this.disposables.push(plane);
+		this.disposables.push(material);
+		this.disposables.push(labelTexture);
+	}
+
+	/**
+	 * Creates and draws the dynamic texture for a room label.
+	 * @param scene
+	 * The Babylon.js Scene.
+	 * @param room
+	 * The room definition used for the label text.
+	 * @returns The configured DynamicTexture.
+	 */
+	private createRoomLabelTexture(
+		scene: Scene,
+		room: RoomDefinition): DynamicTexture
+	{
+		const labelTexture: DynamicTexture =
 			new DynamicTexture(
 				`room-label-tex-${room.id}`,
 				{ width: 512, height: 96 },
@@ -242,22 +284,7 @@ export class IslandDecorationService
 
 		labelTexture.hasAlpha = true;
 
-		const material: StandardMaterial =
-			new StandardMaterial(
-				`room-label-material-${room.id}`,
-				scene);
-
-		material.diffuseTexture = labelTexture;
-		material.emissiveColor =
-			new Color3(0.5, 0.5, 0.5);
-		material.useAlphaFromDiffuseTexture = true;
-		material.backFaceCulling = false;
-
-		plane.material = material;
-
-		this.disposables.push(plane);
-		this.disposables.push(material);
-		this.disposables.push(labelTexture);
+		return labelTexture;
 	}
 
 	/**
@@ -267,80 +294,96 @@ export class IslandDecorationService
 	 */
 	private createDoorOutlines(scene: Scene): void
 	{
-		const doorWidth: number = 1.8;
-		const doorHeight: number = 2.5;
-		const frameThickness: number = 0.08;
-		const doorY: number =
-			ISLAND_GROUND_Y + doorHeight / 2;
-
 		for (const room of ISLAND_ROOMS)
 		{
-			/* North wall door (always present). */
-			this.createSingleDoorOutline(
-				{
-					scene,
-					room,
-					direction: "north",
-					x: room.centerX,
-					y: doorY,
-					z: room.centerZ - room.halfDepth + 0.05,
-					doorWidth,
-					doorHeight,
-					frameThickness,
-					isHorizontalWall: true
-				});
-
-			/* East wall door (if connected to room to the east). */
-			const connectedRooms: ReadonlyArray<RoomDefinition> =
-				ISLAND_ROOMS.filter(
-					(roomDef: RoomDefinition) =>
-						room.connections.includes(roomDef.id));
-
-			const hasEastConnection: boolean =
-				connectedRooms.some(
-					(roomDef: RoomDefinition) =>
-						roomDef.centerX > room.centerX);
-
-			if (hasEastConnection)
-			{
-				this.createSingleDoorOutline(
-					{
-						scene,
-						room,
-						direction: "east",
-						x: room.centerX + room.halfWidth - 0.05,
-						y: doorY,
-						z: room.centerZ,
-						doorWidth,
-						doorHeight,
-						frameThickness,
-						isHorizontalWall: false
-					});
-			}
-
-			/* West wall door (if connected to room to the west). */
-			const hasWestConnection: boolean =
-				connectedRooms.some(
-					(roomDef: RoomDefinition) =>
-						roomDef.centerX < room.centerX);
-
-			if (hasWestConnection)
-			{
-				this.createSingleDoorOutline(
-					{
-						scene,
-						room,
-						direction: "west",
-						x: room.centerX - room.halfWidth + 0.05,
-						y: doorY,
-						z: room.centerZ,
-						doorWidth,
-						doorHeight,
-						frameThickness,
-						isHorizontalWall: false
-					});
-			}
+			this.createRoomNorthDoor(scene, room);
+			this.createConditionalSideDoor(scene, room, "east");
+			this.createConditionalSideDoor(scene, room, "west");
 		}
+	}
+
+	/**
+	 * Creates the north wall door outline for a room.
+	 * @param scene
+	 * The Babylon.js Scene.
+	 * @param room
+	 * The room definition.
+	 */
+	private createRoomNorthDoor(
+		scene: Scene,
+		room: RoomDefinition): void
+	{
+		const doorY: number =
+			ISLAND_GROUND_Y + DOOR_HEIGHT / 2;
+
+		this.createSingleDoorOutline(
+			{
+				scene,
+				room,
+				direction: "north",
+				x: room.centerX,
+				y: doorY,
+				z: room.centerZ - room.halfDepth + 0.05,
+				doorWidth: DOOR_WIDTH,
+				doorHeight: DOOR_HEIGHT,
+				frameThickness: DOOR_FRAME_THICKNESS,
+				isHorizontalWall: true
+			});
+	}
+
+	/**
+	 * Creates a side wall door outline if the room connects in that direction.
+	 * @param scene
+	 * The Babylon.js Scene.
+	 * @param room
+	 * The room definition.
+	 * @param direction
+	 * The side wall direction: east or west.
+	 */
+	private createConditionalSideDoor(
+		scene: Scene,
+		room: RoomDefinition,
+		direction: "east" | "west"): void
+	{
+		const isEast: boolean =
+			direction === "east";
+		const connectedRooms: ReadonlyArray<RoomDefinition> =
+			ISLAND_ROOMS.filter(
+				(roomDef: RoomDefinition) =>
+					room.connections.includes(roomDef.id));
+
+		const hasConnection: boolean =
+			connectedRooms.some(
+				(roomDef: RoomDefinition) =>
+					isEast
+						? roomDef.centerX > room.centerX
+						: roomDef.centerX < room.centerX);
+
+		if (!hasConnection)
+		{
+			return;
+		}
+
+		const doorY: number =
+			ISLAND_GROUND_Y + DOOR_HEIGHT / 2;
+		const doorX: number =
+			isEast
+				? room.centerX + room.halfWidth - 0.05
+				: room.centerX - room.halfWidth + 0.05;
+
+		this.createSingleDoorOutline(
+			{
+				scene,
+				room,
+				direction,
+				x: doorX,
+				y: doorY,
+				z: room.centerZ,
+				doorWidth: DOOR_WIDTH,
+				doorHeight: DOOR_HEIGHT,
+				frameThickness: DOOR_FRAME_THICKNESS,
+				isHorizontalWall: false
+			});
 	}
 
 	/**
@@ -350,67 +393,28 @@ export class IslandDecorationService
 	 */
 	private createSingleDoorOutline(params: DoorOutlineParams): void
 	{
-		const { scene, room, direction, x, y, z, doorWidth, doorHeight, frameThickness, isHorizontalWall } = params;
+		const { room } = params;
 		const colorHex: string =
 			ROOM_COLORS.get(room.id) ?? ISLAND_GROUND_COLOR;
 
-		this.createDoorFrame(
-			scene,
-			room.id,
-			direction,
-			colorHex,
-			x,
-			y,
-			z,
-			doorWidth,
-			doorHeight,
-			frameThickness,
-			isHorizontalWall);
-		this.createDoorPanel(scene, room.id, direction, colorHex, x, y, z, doorWidth, doorHeight, isHorizontalWall);
-		this.createDoorKnob(scene, room.id, direction, x, y, z, doorWidth, isHorizontalWall);
+		this.createDoorFrame(params, colorHex);
+		this.createDoorPanel(params, colorHex);
+		this.createDoorKnob(params);
 	}
 
 	/**
 	 * Creates the door frame outline rectangle.
-	 * @param scene
-	 * The Babylon.js Scene.
-	 * @param roomId
-	 * Unique room identifier for mesh naming.
-	 * @param direction
-	 * Cardinal direction of the door.
+	 * @param params
+	 * Door outline configuration parameters.
 	 * @param colorHex
 	 * Room color hex string for material tinting.
-	 * @param posX
-	 * Door center X position.
-	 * @param posY
-	 * Door center Y position.
-	 * @param posZ
-	 * Door center Z position.
-	 * @param doorWidth
-	 * Width of the doorway opening.
-	 * @param doorHeight
-	 * Height of the doorway opening.
-	 * @param frameThickness
-	 * Thickness of the frame border.
-	 * @param isHorizontalWall
-	 * Whether the door is on a horizontal (north/south) wall.
 	 */
-	private createDoorFrame(
-		scene: Scene,
-		roomId: RoomId,
-		direction: string,
-		colorHex: string,
-		posX: number,
-		posY: number,
-		posZ: number,
-		doorWidth: number,
-		doorHeight: number,
-		frameThickness: number,
-		isHorizontalWall: boolean): void
+	private createDoorFrame(params: DoorOutlineParams, colorHex: string): void
 	{
+		const { scene, room, direction, x, y, z, doorWidth, doorHeight, frameThickness, isHorizontalWall } = params;
 		const frameMaterial: StandardMaterial =
 			new StandardMaterial(
-				`door-frame-mat-${roomId}-${direction}`,
+				`door-frame-mat-${room.id}-${direction}`,
 				scene);
 
 		frameMaterial.diffuseColor =
@@ -432,7 +436,7 @@ export class IslandDecorationService
 
 		const frame: Mesh =
 			MeshBuilder.CreateBox(
-				`door-frame-${roomId}-${direction}`,
+				`door-frame-${room.id}-${direction}`,
 				{
 					width: frameWidth,
 					height: doorHeight + frameThickness,
@@ -441,48 +445,23 @@ export class IslandDecorationService
 				scene);
 
 		frame.material = frameMaterial;
-		frame.position.set(posX, posY, posZ);
+		frame.position.set(x, y, z);
 		this.disposables.push(frame);
 	}
 
 	/**
 	 * Creates the inset door panel.
-	 * @param scene
-	 * The Babylon.js Scene.
-	 * @param roomId
-	 * Unique room identifier for mesh naming.
-	 * @param direction
-	 * Cardinal direction of the door.
+	 * @param params
+	 * Door outline configuration parameters.
 	 * @param colorHex
 	 * Room color hex string for material tinting.
-	 * @param posX
-	 * Door center X position.
-	 * @param posY
-	 * Door center Y position.
-	 * @param posZ
-	 * Door center Z position.
-	 * @param doorWidth
-	 * Width of the doorway opening.
-	 * @param doorHeight
-	 * Height of the doorway opening.
-	 * @param isHorizontalWall
-	 * Whether the door is on a horizontal (north/south) wall.
 	 */
-	private createDoorPanel(
-		scene: Scene,
-		roomId: RoomId,
-		direction: string,
-		colorHex: string,
-		posX: number,
-		posY: number,
-		posZ: number,
-		doorWidth: number,
-		doorHeight: number,
-		isHorizontalWall: boolean): void
+	private createDoorPanel(params: DoorOutlineParams, colorHex: string): void
 	{
+		const { scene, room, direction, x, y, z, doorWidth, doorHeight, isHorizontalWall } = params;
 		const panelMaterial: StandardMaterial =
 			new StandardMaterial(
-				`door-panel-mat-${roomId}-${direction}`,
+				`door-panel-mat-${room.id}-${direction}`,
 				scene);
 
 		panelMaterial.diffuseColor =
@@ -504,7 +483,7 @@ export class IslandDecorationService
 
 		const panel: Mesh =
 			MeshBuilder.CreateBox(
-				`door-panel-${roomId}-${direction}`,
+				`door-panel-${room.id}-${direction}`,
 				{
 					width: panelWidth,
 					height: doorHeight,
@@ -514,44 +493,23 @@ export class IslandDecorationService
 
 		panel.material = panelMaterial;
 		panel.position.set(
-			posX + panelOffsetX,
-			posY,
-			posZ + panelOffsetZ);
+			x + panelOffsetX,
+			y,
+			z + panelOffsetZ);
 		this.disposables.push(panel);
 	}
 
 	/**
 	 * Creates a small gold door knob sphere.
-	 * @param scene
-	 * The Babylon.js Scene.
-	 * @param roomId
-	 * Unique room identifier for mesh naming.
-	 * @param direction
-	 * Cardinal direction of the door.
-	 * @param posX
-	 * Door center X position.
-	 * @param posY
-	 * Door center Y position.
-	 * @param posZ
-	 * Door center Z position.
-	 * @param doorWidth
-	 * Width of the doorway opening.
-	 * @param isHorizontalWall
-	 * Whether the door is on a horizontal (north/south) wall.
+	 * @param params
+	 * Door outline configuration parameters.
 	 */
-	private createDoorKnob(
-		scene: Scene,
-		roomId: RoomId,
-		direction: string,
-		posX: number,
-		posY: number,
-		posZ: number,
-		doorWidth: number,
-		isHorizontalWall: boolean): void
+	private createDoorKnob(params: DoorOutlineParams): void
 	{
+		const { scene, room, direction, x, y, z, doorWidth, isHorizontalWall } = params;
 		const knobMaterial: StandardMaterial =
 			new StandardMaterial(
-				`door-knob-mat-${roomId}-${direction}`,
+				`door-knob-mat-${room.id}-${direction}`,
 				scene);
 
 		knobMaterial.diffuseColor =
@@ -562,7 +520,7 @@ export class IslandDecorationService
 
 		const knob: Mesh =
 			MeshBuilder.CreateSphere(
-				`door-knob-${roomId}-${direction}`,
+				`door-knob-${room.id}-${direction}`,
 				{ diameter: 0.15 },
 				scene);
 
@@ -577,9 +535,9 @@ export class IslandDecorationService
 
 		knob.material = knobMaterial;
 		knob.position.set(
-			posX + knobOffsetX,
-			posY - 0.2,
-			posZ + knobOffsetZ);
+			x + knobOffsetX,
+			y - 0.2,
+			z + knobOffsetZ);
 		this.disposables.push(knob);
 	}
 

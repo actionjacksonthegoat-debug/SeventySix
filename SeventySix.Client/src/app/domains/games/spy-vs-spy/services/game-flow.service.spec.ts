@@ -123,11 +123,8 @@ describe("SpyFlowService",
 		/** Tracks the current turn for mock TurnService. */
 		let currentTurnValue: TurnPhase;
 
-		/** Tracks player 1 timer for mock TurnService. */
-		let player1TimerValue: number;
-
-		/** Tracks player 2 timer for mock TurnService. */
-		let player2TimerValue: number;
+		/** Tracks shared island timer for mock TurnService. */
+		let islandTimerValue: number;
 
 		/** Tracks combat active state for mock. */
 		let combatActiveValue: boolean;
@@ -137,8 +134,7 @@ describe("SpyFlowService",
 			{
 				currentTurnValue =
 					TurnPhase.Player1;
-				player1TimerValue = GAME_TIMER_SECONDS;
-				player2TimerValue = GAME_TIMER_SECONDS;
+				islandTimerValue = GAME_TIMER_SECONDS;
 				combatActiveValue = false;
 
 				mockPhysics =
@@ -240,8 +236,9 @@ describe("SpyFlowService",
 					{
 						currentTurn: (): TurnPhase => currentTurnValue,
 						turnTimeRemaining: (): number => 15,
-						player1Timer: (): number => player1TimerValue,
-						player2Timer: (): number => player2TimerValue,
+						player1Timer: (): number => islandTimerValue,
+						player2Timer: (): number => islandTimerValue,
+						islandTimer: (): number => islandTimerValue,
 						initialize: (): void =>
 						{/* mock */},
 						update: (): void =>
@@ -253,11 +250,8 @@ describe("SpyFlowService",
 						{/* mock */},
 						isTimerExpired: (identity: SpyIdentity): boolean =>
 						{
-							if (identity === SpyIdentity.Black)
-							{
-								return player1TimerValue <= 0;
-							}
-							return player2TimerValue <= 0;
+							void identity;
+							return islandTimerValue <= 0;
 						},
 						reset: (): void =>
 						{/* mock */},
@@ -618,6 +612,29 @@ describe("SpyFlowService",
 					.toBe(2);
 			});
 
+		it("restartGame should re-initialize explosion service when scene exists",
+			() =>
+			{
+				let explosionInitializeCount: number = 0;
+
+				mockExplosion.initialize =
+					(): void =>
+					{
+						explosionInitializeCount++;
+					};
+
+				const flowWithInternals: SpyFlowService & { sceneRef?: unknown; } =
+					service as SpyFlowService & {
+						sceneRef?: unknown;
+					};
+				flowWithInternals.sceneRef = {};
+
+				service.restartGame();
+
+				expect(explosionInitializeCount)
+					.toBe(1);
+			});
+
 		describe("turn-based orchestration",
 			() =>
 			{
@@ -967,10 +984,10 @@ describe("SpyFlowService",
 		describe("timer expiry",
 			() =>
 			{
-				it("should transition to Lost when player 1 timer expires",
+				it("should transition to Lost when island timer expires",
 					() =>
 					{
-						player1TimerValue = 0;
+						islandTimerValue = 0;
 
 						service.startGame();
 						service.update(COUNTDOWN_DURATION_SECONDS + 0.1);
@@ -978,19 +995,6 @@ describe("SpyFlowService",
 
 						expect(service.getState())
 							.toBe(SpyGameState.Lost);
-					});
-
-				it("should transition to Won when player 2 timer expires",
-					() =>
-					{
-						player2TimerValue = 0;
-
-						service.startGame();
-						service.update(COUNTDOWN_DURATION_SECONDS + 0.1);
-						service.update(0.016);
-
-						expect(service.getState())
-							.toBe(SpyGameState.Won);
 					});
 			});
 
@@ -1162,10 +1166,10 @@ describe("SpyFlowService",
 					});
 			});
 
-		describe("airstrip notification",
+		describe("airstrip guidance",
 			() =>
 			{
-				it("should show airstrip message when 4 items collected",
+				it("should set allItemsCollected when 4 items are collected",
 					() =>
 					{
 						const testAccess: FlowServiceTestAccess =
@@ -1182,8 +1186,8 @@ describe("SpyFlowService",
 						/* Trigger a frame to process the items. */
 						service.update(0.016);
 
-						expect(service.notificationMessage())
-							.toContain("Airport");
+						expect(service.allItemsCollected())
+							.toBe(true);
 					});
 
 				it("should not auto-win when 4 items collected away from airstrip",

@@ -124,21 +124,21 @@ export class ExplosionService
 		fire.colorDead =
 			new Color4(0.2, 0.0, 0.0, 0.0);
 
-		fire.minSize = 0.5;
-		fire.maxSize = 2.5;
-		fire.minLifeTime = 0.3;
-		fire.maxLifeTime = 1.0;
+		fire.minSize = 1.2;
+		fire.maxSize = 4.8;
+		fire.minLifeTime = 0.6;
+		fire.maxLifeTime = 1.8;
 
 		fire.emitRate =
 			EXPLOSION_FIRE_PARTICLE_COUNT;
 		fire.direction1 =
-			new Vector3(-3, 8, -3);
+			new Vector3(-12, 18, -12);
 		fire.direction2 =
-			new Vector3(3, 12, 3);
-		fire.minEmitPower = 2;
-		fire.maxEmitPower = 6;
+			new Vector3(12, 24, 12);
+		fire.minEmitPower = 7;
+		fire.maxEmitPower = 16;
 
-		fire.targetStopDuration = 1.0;
+		fire.targetStopDuration = 2.4;
 
 		fire.start();
 		this.particleSystems.push(fire);
@@ -170,23 +170,23 @@ export class ExplosionService
 		debris.colorDead =
 			new Color4(0.2, 0.2, 0.2, 0.0);
 
-		debris.minSize = 0.2;
-		debris.maxSize = 1.0;
-		debris.minLifeTime = 0.5;
-		debris.maxLifeTime = 2.0;
+		debris.minSize = 0.4;
+		debris.maxSize = 2.0;
+		debris.minLifeTime = 1.2;
+		debris.maxLifeTime = 4.2;
 
 		debris.emitRate =
 			EXPLOSION_DEBRIS_PARTICLE_COUNT;
 		debris.direction1 =
-			new Vector3(-8, 4, -8);
+			new Vector3(-18, 8, -18);
 		debris.direction2 =
-			new Vector3(8, 10, 8);
+			new Vector3(18, 20, 18);
 		debris.gravity =
 			new Vector3(0, -9.81, 0);
-		debris.minEmitPower = 3;
-		debris.maxEmitPower = 8;
+		debris.minEmitPower = 10;
+		debris.maxEmitPower = 26;
 
-		debris.targetStopDuration = 2.0;
+		debris.targetStopDuration = 3.4;
 
 		debris.start();
 		this.particleSystems.push(debris);
@@ -218,21 +218,21 @@ export class ExplosionService
 		smoke.colorDead =
 			new Color4(0.05, 0.05, 0.05, 0.0);
 
-		smoke.minSize = 1.0;
-		smoke.maxSize = 4.0;
-		smoke.minLifeTime = 1.5;
-		smoke.maxLifeTime = 3.5;
+		smoke.minSize = 2.0;
+		smoke.maxSize = 8.0;
+		smoke.minLifeTime = 3.0;
+		smoke.maxLifeTime = 6.0;
 
 		smoke.emitRate =
-			EXPLOSION_SMOKE_PARTICLE_COUNT / 2;
+			EXPLOSION_SMOKE_PARTICLE_COUNT;
 		smoke.direction1 =
-			new Vector3(-2, 3, -2);
+			new Vector3(-6, 8, -6);
 		smoke.direction2 =
-			new Vector3(2, 8, 2);
-		smoke.minEmitPower = 0.5;
-		smoke.maxEmitPower = 2;
+			new Vector3(6, 14, 6);
+		smoke.minEmitPower = 2;
+		smoke.maxEmitPower = 5;
 
-		smoke.targetStopDuration = 3.5;
+		smoke.targetStopDuration = 5.5;
 
 		smoke.start();
 		this.particleSystems.push(smoke);

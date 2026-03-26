@@ -11,7 +11,7 @@ import { BABYLON_ENGINE_OPTIONS } from "@games/shared/constants/engine.constants
 import { BabylonEngineService } from "@games/shared/services/babylon-engine.service";
 import { GameLoopService } from "@games/shared/services/game-loop.service";
 import { InputService } from "@games/shared/services/input.service";
-import { SpyGameState, TurnPhase } from "@games/spy-vs-spy/models/spy-vs-spy.models";
+import { SpyGameState } from "@games/spy-vs-spy/models/spy-vs-spy.models";
 import { AirplaneService } from "@games/spy-vs-spy/services/airplane.service";
 import { CombatService } from "@games/spy-vs-spy/services/combat.service";
 import { ExplosionService } from "@games/spy-vs-spy/services/explosion.service";
@@ -34,7 +34,6 @@ import { SpyPathfindingService } from "@games/spy-vs-spy/services/spy-pathfindin
 import { SpyPhysicsService } from "@games/spy-vs-spy/services/spy-physics.service";
 import { SpySearchHandlerService } from "@games/spy-vs-spy/services/spy-search-handler.service";
 import { TrapService } from "@games/spy-vs-spy/services/trap.service";
-import { TurnService } from "@games/spy-vs-spy/services/turn.service";
 import { SpyVsSpyGameComponent } from "./spy-vs-spy-game";
 
 describe("SpyVsSpyGameComponent",
@@ -46,9 +45,7 @@ describe("SpyVsSpyGameComponent",
 		let mockPlayerItemCountSignal: WritableSignal<number>;
 		let mockPlayer1ItemsSignal: WritableSignal<number>;
 		let mockPlayer2ItemsSignal: WritableSignal<number>;
-		let mockCurrentTurnSignal: WritableSignal<TurnPhase>;
-		let mockPlayer1TimerSignal: WritableSignal<number>;
-		let mockPlayer2TimerSignal: WritableSignal<number>;
+		let mockIslandTimerSignal: WritableSignal<number>;
 		let mockIsSearchingSignal: WritableSignal<boolean>;
 		let mockIsInCombatSignal: WritableSignal<boolean>;
 		let mockNotificationMessageSignal: WritableSignal<string>;
@@ -77,11 +74,7 @@ describe("SpyVsSpyGameComponent",
 					signal<number>(0);
 				mockPlayer2ItemsSignal =
 					signal<number>(0);
-				mockCurrentTurnSignal =
-					signal<TurnPhase>(TurnPhase.Player1);
-				mockPlayer1TimerSignal =
-					signal<number>(300);
-				mockPlayer2TimerSignal =
+				mockIslandTimerSignal =
 					signal<number>(300);
 				mockIsSearchingSignal =
 					signal<boolean>(false);
@@ -119,9 +112,7 @@ describe("SpyVsSpyGameComponent",
 						playerItemCount: mockPlayerItemCountSignal.asReadonly(),
 						player1Items: mockPlayer1ItemsSignal.asReadonly(),
 						player2Items: mockPlayer2ItemsSignal.asReadonly(),
-						currentTurn: mockCurrentTurnSignal.asReadonly(),
-						player1Timer: mockPlayer1TimerSignal.asReadonly(),
-						player2Timer: mockPlayer2TimerSignal.asReadonly(),
+						islandTimer: mockIslandTimerSignal.asReadonly(),
 						isSearching: mockIsSearchingSignal.asReadonly(),
 						isInCombat: mockIsInCombatSignal.asReadonly(),
 						notificationMessage: mockNotificationMessageSignal.asReadonly(),
@@ -195,7 +186,6 @@ describe("SpyVsSpyGameComponent",
 								SpyPhysicsService,
 								SpySearchHandlerService,
 								TrapService,
-								TurnService,
 								{
 									provide: SpyFlowService,
 									useValue: mockSpyFlowService as unknown as SpyFlowService
@@ -346,15 +336,15 @@ describe("SpyVsSpyGameComponent",
 					.toBe("Items: 2 / 4");
 			});
 
-		it("should display player 1 timer as M:SS",
+		it("should display island timer as M:SS",
 			() =>
 			{
 				mockGameStateSignal.set(SpyGameState.Playing);
-				mockPlayer1TimerSignal.set(125);
+				mockIslandTimerSignal.set(125);
 				fixture.detectChanges();
 
 				const timer: HTMLElement | null =
-					fixture.nativeElement.querySelector("[data-testid='p1-timer']");
+					fixture.nativeElement.querySelector("[data-testid='island-timer']");
 
 				expect(timer?.textContent?.trim())
 					.toBe("2:05");

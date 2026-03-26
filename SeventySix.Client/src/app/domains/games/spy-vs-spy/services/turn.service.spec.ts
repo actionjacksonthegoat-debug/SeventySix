@@ -1,14 +1,13 @@
 /**
  * Turn Service unit tests.
- * Tests turn alternation, timer management, and death penalties.
+ * Tests shared island timer management and death penalties.
  */
 
 import { provideZonelessChangeDetection } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
 import {
 	DEATH_TIMER_PENALTY_SECONDS,
-	GAME_TIMER_SECONDS,
-	TURN_DURATION_SECONDS
+	GAME_TIMER_SECONDS
 } from "@games/spy-vs-spy/constants/spy-vs-spy.constants";
 import { SpyIdentity, TurnPhase } from "@games/spy-vs-spy/models/spy-vs-spy.models";
 import { TurnService } from "./turn.service";
@@ -55,109 +54,63 @@ describe("TurnService",
 					.toBe(TurnPhase.Player1);
 			});
 
-		it("initial turn time should equal TURN_DURATION_SECONDS",
+		it("turn time should remain zero in single-player mode",
 			() =>
 			{
 				service.initialize();
 
 				expect(service.turnTimeRemaining())
-					.toBe(TURN_DURATION_SECONDS);
+					.toBe(0);
 			});
 
-		it("initial player timers should equal GAME_TIMER_SECONDS",
+		it("initial timers should equal GAME_TIMER_SECONDS",
 			() =>
 			{
 				service.initialize();
 
+				expect(service.islandTimer())
+					.toBe(GAME_TIMER_SECONDS);
 				expect(service.player1Timer())
 					.toBe(GAME_TIMER_SECONDS);
 				expect(service.player2Timer())
 					.toBe(GAME_TIMER_SECONDS);
 			});
 
-		it("initialize with custom duration should set player timers",
+		it("initialize with custom duration should set island timer",
 			() =>
 			{
 				service.initialize(120);
 
+				expect(service.islandTimer())
+					.toBe(120);
 				expect(service.player1Timer())
 					.toBe(120);
 				expect(service.player2Timer())
 					.toBe(120);
 			});
 
-		it("update should decrement turn time",
+		it("update should decrement island timer",
 			() =>
 			{
 				service.initialize();
 				service.update(1);
 
-				expect(service.turnTimeRemaining())
-					.toBe(TURN_DURATION_SECONDS - 1);
-			});
-
-		it("update should decrement active player personal timer",
-			() =>
-			{
-				service.initialize();
-				service.update(5);
-
+				expect(service.islandTimer())
+					.toBe(GAME_TIMER_SECONDS - 1);
 				expect(service.player1Timer())
-					.toBe(GAME_TIMER_SECONDS - 5);
+					.toBe(GAME_TIMER_SECONDS - 1);
 				expect(service.player2Timer())
-					.toBe(GAME_TIMER_SECONDS);
+					.toBe(GAME_TIMER_SECONDS - 1);
 			});
 
-		it("update should auto-switch turn when time expires",
+		it("switchTurn should be a no-op in single-player mode",
 			() =>
 			{
 				service.initialize();
-				service.update(TURN_DURATION_SECONDS + 1);
-
-				expect(service.currentTurn())
-					.toBe(TurnPhase.Player2);
-			});
-
-		it("auto-switch should reset turn timer",
-			() =>
-			{
-				service.initialize();
-				service.update(TURN_DURATION_SECONDS + 1);
-
-				expect(service.turnTimeRemaining())
-					.toBe(TURN_DURATION_SECONDS);
-			});
-
-		it("switchTurn should toggle from Player1 to Player2",
-			() =>
-			{
-				service.initialize();
-				service.switchTurn();
-
-				expect(service.currentTurn())
-					.toBe(TurnPhase.Player2);
-			});
-
-		it("switchTurn should toggle from Player2 back to Player1",
-			() =>
-			{
-				service.initialize();
-				service.switchTurn();
 				service.switchTurn();
 
 				expect(service.currentTurn())
 					.toBe(TurnPhase.Player1);
-			});
-
-		it("switchTurn should reset turn timer",
-			() =>
-			{
-				service.initialize();
-				service.update(5);
-				service.switchTurn();
-
-				expect(service.turnTimeRemaining())
-					.toBe(TURN_DURATION_SECONDS);
 			});
 
 		it("getActiveIdentity should return Black for Player1",
@@ -169,34 +122,28 @@ describe("TurnService",
 					.toBe(SpyIdentity.Black);
 			});
 
-		it("getActiveIdentity should return White for Player2",
-			() =>
-			{
-				service.initialize();
-				service.switchTurn();
-
-				expect(service.getActiveIdentity())
-					.toBe(SpyIdentity.White);
-			});
-
-		it("applyDeathPenalty should deduct from Black spy timer",
+		it("applyDeathPenalty should deduct from shared timer",
 			() =>
 			{
 				service.initialize();
 
 				service.applyDeathPenalty(SpyIdentity.Black);
 
+				expect(service.islandTimer())
+					.toBe(GAME_TIMER_SECONDS - DEATH_TIMER_PENALTY_SECONDS);
 				expect(service.player1Timer())
 					.toBe(GAME_TIMER_SECONDS - DEATH_TIMER_PENALTY_SECONDS);
 			});
 
-		it("applyDeathPenalty should deduct from White spy timer",
+		it("applyDeathPenalty should ignore identity in shared mode",
 			() =>
 			{
 				service.initialize();
 
 				service.applyDeathPenalty(SpyIdentity.White);
 
+				expect(service.islandTimer())
+					.toBe(GAME_TIMER_SECONDS - DEATH_TIMER_PENALTY_SECONDS);
 				expect(service.player2Timer())
 					.toBe(GAME_TIMER_SECONDS - DEATH_TIMER_PENALTY_SECONDS);
 			});
@@ -238,29 +185,17 @@ describe("TurnService",
 			() =>
 			{
 				service.initialize();
-				service.switchTurn();
 				service.applyDeathPenalty(SpyIdentity.Black);
 
 				service.reset();
 
+				expect(service.islandTimer())
+					.toBe(GAME_TIMER_SECONDS);
 				expect(service.currentTurn())
 					.toBe(TurnPhase.Player1);
 				expect(service.player1Timer())
 					.toBe(GAME_TIMER_SECONDS);
 				expect(service.player2Timer())
-					.toBe(GAME_TIMER_SECONDS);
-			});
-
-		it("Player2 update should decrement player2 timer",
-			() =>
-			{
-				service.initialize();
-				service.switchTurn();
-				service.update(3);
-
-				expect(service.player2Timer())
-					.toBe(GAME_TIMER_SECONDS - 3);
-				expect(service.player1Timer())
 					.toBe(GAME_TIMER_SECONDS);
 			});
 	});

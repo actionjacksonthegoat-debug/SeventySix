@@ -4,177 +4,120 @@
 
 /**
  * Turn Service.
- * Manages two-player turn alternation and personal timers for Spy vs Spy.
- * Single Responsibility: turn timing and switching only.
+ * Maintains the shared island self-destruct timer for Spy vs Spy.
+ * Single Responsibility: countdown and penalty deductions only.
  */
 
 import { Injectable, type Signal, signal, type WritableSignal } from "@angular/core";
 import {
 	DEATH_TIMER_PENALTY_SECONDS,
-	GAME_TIMER_SECONDS,
-	TURN_DURATION_SECONDS
+	GAME_TIMER_SECONDS
 } from "@games/spy-vs-spy/constants/spy-vs-spy.constants";
 import { SpyIdentity, TurnPhase } from "@games/spy-vs-spy/models/spy-vs-spy.models";
 
 /**
- * Manages two-player turn-based alternation and personal countdown timers.
+ * Maintains the shared island countdown timer.
  * Domain-scoped — provided via route `providers` array.
  */
 @Injectable()
 export class TurnService
 {
-	/** Internal writable signal for current turn phase. */
-	private readonly currentTurnWritable: WritableSignal<TurnPhase> =
-		signal<TurnPhase>(TurnPhase.Player1);
-
-	/** Internal writable signal for turn time remaining. */
-	private readonly turnTimeWritable: WritableSignal<number> =
-		signal<number>(TURN_DURATION_SECONDS);
-
-	/** Internal writable signal for player 1 timer. */
-	private readonly player1TimerWritable: WritableSignal<number> =
+	/** Internal writable signal for island timer. */
+	private readonly islandTimerWritable: WritableSignal<number> =
 		signal<number>(GAME_TIMER_SECONDS);
 
-	/** Internal writable signal for player 2 timer. */
-	private readonly player2TimerWritable: WritableSignal<number> =
-		signal<number>(GAME_TIMER_SECONDS);
-
-	/** Whose turn it currently is. */
+	/** Legacy-compatible turn signal (single-player always Player1). */
 	readonly currentTurn: Signal<TurnPhase> =
-		this.currentTurnWritable.asReadonly();
+		signal<TurnPhase>(TurnPhase.Player1)
+			.asReadonly();
 
-	/** Seconds remaining in the current turn. */
+	/** Legacy-compatible turn-time signal (unused in single-player mode). */
 	readonly turnTimeRemaining: Signal<number> =
-		this.turnTimeWritable.asReadonly();
+		signal<number>(0)
+			.asReadonly();
 
-	/** Player 1 (Black Spy) personal timer in seconds. */
+	/** Legacy-compatible alias for island timer in seconds. */
 	readonly player1Timer: Signal<number> =
-		this.player1TimerWritable.asReadonly();
+		this.islandTimerWritable.asReadonly();
 
-	/** Player 2 (White Spy) personal timer in seconds. */
+	/** Legacy-compatible alias for island timer in seconds. */
 	readonly player2Timer: Signal<number> =
-		this.player2TimerWritable.asReadonly();
+		this.islandTimerWritable.asReadonly();
+
+	/** Shared island self-destruct timer in seconds. */
+	readonly islandTimer: Signal<number> =
+		this.islandTimerWritable.asReadonly();
 
 	/**
-	 * Initialize all timers for a new game.
+	 * Initialize the island timer for a new game.
 	 * @param gameDurationSeconds
-	 * Total game time per player (default: GAME_TIMER_SECONDS).
+	 * Total island self-destruct time in seconds.
 	 */
 	initialize(gameDurationSeconds: number = GAME_TIMER_SECONDS): void
 	{
-		this.currentTurnWritable.set(TurnPhase.Player1);
-		this.turnTimeWritable.set(TURN_DURATION_SECONDS);
-		this.player1TimerWritable.set(gameDurationSeconds);
-		this.player2TimerWritable.set(gameDurationSeconds);
+		this.islandTimerWritable.set(gameDurationSeconds);
 	}
 
 	/**
-	 * Advance turn timer and active player's personal timer.
-	 * Auto-switches turn when the turn timer expires.
+	 * Advance the island timer.
 	 * @param deltaTime
 	 * Elapsed time in seconds since last update.
 	 */
 	update(deltaTime: number): void
 	{
-		const remaining: number =
-			this.turnTimeWritable() - deltaTime;
-
-		if (remaining <= 0)
-		{
-			this.switchTurn();
-			return;
-		}
-
-		this.turnTimeWritable.set(remaining);
-
-		/* Deduct from active player's personal timer. */
-		if (this.currentTurnWritable() === TurnPhase.Player1)
-		{
-			const newTimer: number =
-				this.player1TimerWritable() - deltaTime;
-			this.player1TimerWritable.set(
-				Math.max(0, newTimer));
-		}
-		else
-		{
-			const newTimer: number =
-				this.player2TimerWritable() - deltaTime;
-			this.player2TimerWritable.set(
-				Math.max(0, newTimer));
-		}
+		const newTimer: number =
+			this.islandTimerWritable() - deltaTime;
+		this.islandTimerWritable.set(Math.max(0, newTimer));
 	}
 
 	/**
-	 * Force switch to the other player's turn.
-	 * Resets the turn timer.
+	 * Legacy no-op for compatibility with older tests.
 	 */
 	switchTurn(): void
 	{
-		const nextTurn: TurnPhase =
-			this.currentTurnWritable() === TurnPhase.Player1
-				? TurnPhase.Player2
-				: TurnPhase.Player1;
-
-		this.currentTurnWritable.set(nextTurn);
-		this.turnTimeWritable.set(TURN_DURATION_SECONDS);
+		/* Single-player mode: no alternating turns. */
 	}
 
 	/**
-	 * Get the SpyIdentity of the currently active player.
+	 * Get the active identity.
 	 * @returns
-	 * SpyIdentity.Black for Player1, SpyIdentity.White for Player2.
+	 * Always SpyIdentity.Black in single-player mode.
 	 */
 	getActiveIdentity(): SpyIdentity
 	{
-		return this.currentTurnWritable() === TurnPhase.Player1
-			? SpyIdentity.Black
-			: SpyIdentity.White;
+		return SpyIdentity.Black;
 	}
 
 	/**
-	 * Deduct death penalty from a player's personal timer.
+	 * Deduct death penalty from island timer.
 	 * @param identity
-	 * The SpyIdentity of the player who died.
+	 * The SpyIdentity of the player who died (unused in shared-timer mode).
 	 */
 	applyDeathPenalty(identity: SpyIdentity): void
 	{
-		if (identity === SpyIdentity.Black)
-		{
-			const newTimer: number =
-				this.player1TimerWritable() - DEATH_TIMER_PENALTY_SECONDS;
-			this.player1TimerWritable.set(
-				Math.max(0, newTimer));
-		}
-		else
-		{
-			const newTimer: number =
-				this.player2TimerWritable() - DEATH_TIMER_PENALTY_SECONDS;
-			this.player2TimerWritable.set(
-				Math.max(0, newTimer));
-		}
+		void identity;
+		const newTimer: number =
+			this.islandTimerWritable() - DEATH_TIMER_PENALTY_SECONDS;
+		this.islandTimerWritable.set(Math.max(0, newTimer));
 	}
 
 	/**
-	 * Check if a player's personal timer has expired.
+	 * Check if the island timer has expired.
 	 * @param identity
-	 * The SpyIdentity to check.
+	 * The SpyIdentity to check (unused in shared-timer mode).
 	 * @returns
-	 * True if the player's timer is at or below zero.
+	 * True if the island timer is at or below zero.
 	 */
 	isTimerExpired(identity: SpyIdentity): boolean
 	{
-		if (identity === SpyIdentity.Black)
-		{
-			return this.player1TimerWritable() <= 0;
-		}
-
-		return this.player2TimerWritable() <= 0;
+		void identity;
+		return this.islandTimerWritable() <= 0;
 	}
 
 	/**
-	 * Reset all timers for a new game.
+	 * Reset island timer for a new game.
 	 * @param gameDurationSeconds
-	 * Total game time per player.
+	 * Total island self-destruct time in seconds.
 	 */
 	reset(gameDurationSeconds: number = GAME_TIMER_SECONDS): void
 	{
@@ -186,9 +129,6 @@ export class TurnService
 	 */
 	dispose(): void
 	{
-		this.currentTurnWritable.set(TurnPhase.Player1);
-		this.turnTimeWritable.set(TURN_DURATION_SECONDS);
-		this.player1TimerWritable.set(GAME_TIMER_SECONDS);
-		this.player2TimerWritable.set(GAME_TIMER_SECONDS);
+		this.islandTimerWritable.set(GAME_TIMER_SECONDS);
 	}
 }

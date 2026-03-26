@@ -184,9 +184,20 @@ describe("RaceStateService",
 				service.transitionTo(RaceState.Victory);
 
 				expect(service.rescueMessage())
-					.toContain("Prince");
+					.toBe("Prince rescued! You win!");
+			});
+
+		it("should display princess victory message when driving Prince",
+			() =>
+			{
+				service.setCharacterType(CharacterType.Prince);
+				service.transitionTo(RaceState.Racing);
+				service.transitionTo(RaceState.OctopusPhase);
+				service.transitionTo(RaceState.Rescue);
+				service.transitionTo(RaceState.Victory);
+
 				expect(service.rescueMessage())
-					.toContain("rescued");
+					.toBe("Princess rescued! You win!");
 			});
 
 		it("should transition from Rescue to GameOver",

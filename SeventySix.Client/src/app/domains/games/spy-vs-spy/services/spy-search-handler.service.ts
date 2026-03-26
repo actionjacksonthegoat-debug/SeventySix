@@ -4,25 +4,10 @@
 
 import { inject, Injectable, Signal, signal, WritableSignal } from "@angular/core";
 import { SEARCH_DISPLAY_MS } from "@games/spy-vs-spy/constants/spy-vs-spy.constants";
-import { ItemType, RemedyType, SearchResult, SpyIdentity, TrapType } from "@games/spy-vs-spy/models/spy-vs-spy.models";
-import type { SearchAttemptResult } from "@games/spy-vs-spy/models/spy-vs-spy.models";
+import { SearchResult, SpyIdentity, TrapType } from "@games/spy-vs-spy/models/spy-vs-spy.models";
+import type { SearchAttemptResult, SearchOutcome } from "@games/spy-vs-spy/models/spy-vs-spy.models";
 import { ItemService } from "@games/spy-vs-spy/services/item.service";
 import { SpyAudioService } from "@games/spy-vs-spy/services/spy-audio.service";
-
-/** Outcome of processing a search result for the orchestrator to apply. */
-export interface SearchOutcome
-{
-	/** The type of search outcome. */
-	readonly type: "item" | "trap" | "remedy-pickup" | "remedy-defused" | "empty";
-	/** The item type found, if any. */
-	readonly itemType?: ItemType;
-	/** The trap type triggered, if any. */
-	readonly trapType?: TrapType;
-	/** The identity of the spy who placed the triggered trap, if any. */
-	readonly trapPlacedBy?: SpyIdentity;
-	/** The remedy type found or consumed, if any. */
-	readonly remedyType?: RemedyType;
-}
 
 /** Handles search results, notifications, and search overlay state for the Spy vs Spy game. */
 @Injectable()

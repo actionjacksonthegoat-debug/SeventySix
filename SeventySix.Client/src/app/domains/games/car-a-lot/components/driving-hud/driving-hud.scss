@@ -84,11 +84,14 @@
 }
 
 .jump-prompt {
+	position: absolute;
+	left: 50%;
+	bottom: 22%;
+	transform: translateX(-50%);
 	display: flex;
 	justify-content: center;
 	align-items: center;
 	padding: vars.$spacing-sm vars.$spacing-lg;
-	margin-top: vars.$spacing-md;
 	font-size: 2rem;
 	font-weight: 900;
 	color: #fff;
@@ -208,6 +211,7 @@
 	}
 
 	.jump-prompt {
+		bottom: 18%;
 		font-size: 1.25rem;
 		padding: vars.$spacing-xs vars.$spacing-sm;
 	}

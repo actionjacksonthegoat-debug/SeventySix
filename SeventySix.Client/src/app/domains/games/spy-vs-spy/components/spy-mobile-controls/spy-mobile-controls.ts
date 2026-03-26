@@ -13,12 +13,28 @@ import {
 	ChangeDetectionStrategy,
 	Component,
 	computed,
-	DestroyRef,
-	ElementRef,
 	inject,
+	output,
+	type OutputEmitterRef,
 	type Signal
 } from "@angular/core";
 import { InputService } from "@games/shared/services/input.service";
+
+/** Mobile tap payload with viewport coordinates. */
+interface MobileTapEvent
+{
+	/** Tap X coordinate in viewport pixels. */
+	readonly clientX: number;
+
+	/** Tap Y coordinate in viewport pixels. */
+	readonly clientY: number;
+}
+
+/** Maximum gesture duration to classify as tap (milliseconds). */
+const TAP_MAX_DURATION_MS: number = 220;
+
+/** Maximum gesture travel distance to classify as tap (pixels). */
+const TAP_MAX_DISTANCE_PX: number = 12;
 
 /**
  * Angle threshold in radians for cardinal direction detection.
@@ -44,17 +60,13 @@ const DIRECTION_THRESHOLD: number =
 	})
 export class SpyMobileControlsComponent
 {
+	/** Emits when a tap gesture is detected on the touch overlay. */
+	readonly mobileTap: OutputEmitterRef<MobileTapEvent> =
+		output<MobileTapEvent>();
+
 	/** Input service for injecting virtual key presses. */
 	private readonly inputService: InputService =
 		inject(InputService);
-
-	/** Component host element reference for overlay sizing. */
-	private readonly elementRef: ElementRef<HTMLElement> =
-		inject(ElementRef);
-
-	/** Destroy ref for cleanup registration. */
-	private readonly destroyRef: DestroyRef =
-		inject(DestroyRef);
 
 	/**
 	 * Whether touch controls overlay should be displayed.
@@ -71,6 +83,21 @@ export class SpyMobileControlsComponent
 	private readonly directionKeys: readonly string[] =
 		["w", "a", "s", "d"];
 
+	/** Timestamp when current touch gesture started. */
+	private touchStartTimestampMs: number = 0;
+
+	/** Gesture start X coordinate. */
+	private touchStartX: number = 0;
+
+	/** Gesture start Y coordinate. */
+	private touchStartY: number = 0;
+
+	/** Latest touch X coordinate. */
+	private touchCurrentX: number = 0;
+
+	/** Latest touch Y coordinate. */
+	private touchCurrentY: number = 0;
+
 	/**
 	 * Handles touch start on the overlay.
 	 * Calculates direction from center and sets appropriate keys.
@@ -84,6 +111,16 @@ export class SpyMobileControlsComponent
 		{
 			const touch: Touch =
 				event.touches[0];
+			this.touchStartTimestampMs =
+				performance.now();
+			this.touchStartX =
+				touch.clientX;
+			this.touchStartY =
+				touch.clientY;
+			this.touchCurrentX =
+				touch.clientX;
+			this.touchCurrentY =
+				touch.clientY;
 			this.updateDirection(
 				touch.clientX,
 				touch.clientY);
@@ -103,6 +140,10 @@ export class SpyMobileControlsComponent
 		{
 			const touch: Touch =
 				event.touches[0];
+			this.touchCurrentX =
+				touch.clientX;
+			this.touchCurrentY =
+				touch.clientY;
 			this.updateDirection(
 				touch.clientX,
 				touch.clientY);
@@ -118,6 +159,24 @@ export class SpyMobileControlsComponent
 	protected onTouchEnd(_event: TouchEvent): void
 	{
 		this.releaseAllKeys();
+
+		const durationMs: number =
+			performance.now() - this.touchStartTimestampMs;
+		const deltaX: number =
+			this.touchCurrentX - this.touchStartX;
+		const deltaY: number =
+			this.touchCurrentY - this.touchStartY;
+		const distance: number =
+			Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
+		if (durationMs <= TAP_MAX_DURATION_MS && distance <= TAP_MAX_DISTANCE_PX)
+		{
+			this.mobileTap.emit(
+				{
+					clientX: this.touchCurrentX,
+					clientY: this.touchCurrentY
+				});
+		}
 	}
 
 	/**

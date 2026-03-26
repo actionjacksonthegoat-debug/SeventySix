@@ -125,15 +125,12 @@ export class RaceStateService
 	{
 		const state: RaceState =
 			this._currentState();
+		const rescuedCharacter: string =
+			this.rescueCharacterName();
 
 		if (state === RaceState.OctopusPhase)
 		{
-			const character: string =
-				this._characterType() === CharacterType.Princess
-					? "Princess"
-					: "Prince";
-
-			return `Jump over the Octopus to rescue the ${character}!`;
+			return `Jump over the Octopus to rescue the ${rescuedCharacter}!`;
 		}
 
 		if (state === RaceState.Rescue)
@@ -143,12 +140,7 @@ export class RaceStateService
 
 		if (state === RaceState.Victory)
 		{
-			const character: string =
-				this._characterType() === CharacterType.Princess
-					? "Princess"
-					: "Prince";
-
-			return `${character} rescued! You win!`;
+			return `${rescuedCharacter} rescued! You win!`;
 		}
 
 		if (state === RaceState.GameOver)

@@ -30,6 +30,9 @@ const HALF_ISLAND: number =
 /** Wall thickness used for collision AABBs (matches scene). */
 const WALL_THICKNESS: number = 0.5;
 
+/** Distance threshold for considering tap-to-move target reached. */
+const TAP_TARGET_REACHED_DISTANCE: number = 0.65;
+
 /** Axis-aligned bounding box for wall collision. */
 interface WallAABB
 {
@@ -105,6 +108,12 @@ export class SpyPhysicsService
 	/** Pre-computed wall AABBs for collision detection. */
 	private wallAABBs: ReadonlyArray<WallAABB> = [];
 
+	/** Optional world-space tap target X position. */
+	private moveTargetX: number | null = null;
+
+	/** Optional world-space tap target Z position. */
+	private moveTargetZ: number | null = null;
+
 	/**
 	 * Binds this service to a spy TransformNode and sets spawn position.
 	 * @param spyNode
@@ -127,6 +136,23 @@ export class SpyPhysicsService
 		this.stunRemaining = 0;
 		this.wallAABBs =
 			this.buildWallAABBs();
+		this.moveTargetX = null;
+		this.moveTargetZ = null;
+	}
+
+	/**
+	 * Set a world-space movement target for tap-to-move controls.
+	 * @param targetX
+	 * Target X position.
+	 * @param targetZ
+	 * Target Z position.
+	 */
+	setMoveTarget(
+		targetX: number,
+		targetZ: number): void
+	{
+		this.moveTargetX = targetX;
+		this.moveTargetZ = targetZ;
 	}
 
 	/**
@@ -152,8 +178,92 @@ export class SpyPhysicsService
 			return;
 		}
 
-		this.applyCardinalMovement(keys, deltaTime);
+		const hasDirectionalInput: boolean =
+			keys["ArrowUp"] === true
+				|| keys["w"] === true
+				|| keys["ArrowDown"] === true
+				|| keys["s"] === true
+				|| keys["ArrowLeft"] === true
+				|| keys["a"] === true
+				|| keys["ArrowRight"] === true
+				|| keys["d"] === true;
+
+		if (hasDirectionalInput)
+		{
+			this.moveTargetX = null;
+			this.moveTargetZ = null;
+			this.applyCardinalMovement(keys, deltaTime);
+		}
+		else
+		{
+			this.applyMoveTarget(deltaTime);
+		}
+
 		this.clampToBounds();
+	}
+
+	/**
+	 * Moves the player toward the active tap target when one is set.
+	 * @param deltaTime
+	 * Frame delta time in seconds.
+	 */
+	private applyMoveTarget(deltaTime: number): void
+	{
+		if (
+			this.spyNode == null
+				|| this.moveTargetX == null
+				|| this.moveTargetZ == null)
+		{
+			return;
+		}
+
+		const currentX: number =
+			this.spyNode.position.x;
+		const currentZ: number =
+			this.spyNode.position.z;
+		const deltaX: number =
+			this.moveTargetX - currentX;
+		const deltaZ: number =
+			this.moveTargetZ - currentZ;
+		const distance: number =
+			Math.sqrt(deltaX * deltaX + deltaZ * deltaZ);
+
+		if (distance <= TAP_TARGET_REACHED_DISTANCE)
+		{
+			this.moveTargetX = null;
+			this.moveTargetZ = null;
+			return;
+		}
+
+		const directionX: number =
+			deltaX / distance;
+		const directionZ: number =
+			deltaZ / distance;
+		const maxStep: number =
+			SPY_MOVE_SPEED * deltaTime;
+		const stepDistance: number =
+			Math.min(maxStep, distance);
+		const moveX: number =
+			directionX * stepDistance;
+		const moveZ: number =
+			directionZ * stepDistance;
+
+		this.spyNode.rotation.y =
+			Math.atan2(moveX, moveZ);
+
+		const nextX: number =
+			currentX + moveX;
+		if (!this.collidesWithWall(nextX, currentZ))
+		{
+			this.spyNode.position.x = nextX;
+		}
+
+		const nextZ: number =
+			currentZ + moveZ;
+		if (!this.collidesWithWall(this.spyNode.position.x, nextZ))
+		{
+			this.spyNode.position.z = nextZ;
+		}
 	}
 
 	/**
@@ -553,6 +663,8 @@ export class SpyPhysicsService
 			this.spyNode.position.x = spawnX;
 			this.spyNode.position.z = spawnZ;
 			this.spyNode.rotation.y = 0;
+			this.moveTargetX = null;
+			this.moveTargetZ = null;
 		}
 
 		this.currentStunState =

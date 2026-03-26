@@ -18,10 +18,12 @@ import type { Scene } from "@babylonjs/core/scene";
 import {
 	AIRSTRIP_CENTER_X,
 	AIRSTRIP_CENTER_Z,
-	AIRSTRIP_TRIGGER_RADIUS,
+	AIRSTRIP_RUNWAY_LENGTH,
+	AIRSTRIP_RUNWAY_WIDTH,
 	BLACK_SPY_SPAWN_X,
 	BLACK_SPY_SPAWN_Z,
 	COUNTDOWN_DURATION_SECONDS,
+	GAME_TIMER_SECONDS,
 	ISLAND_ROOMS,
 	REQUIRED_ITEM_COUNT,
 	SPY_STARTING_LIVES
@@ -33,8 +35,7 @@ import {
 	RoomId,
 	SpyGameState,
 	SpyIdentity,
-	TrapType,
-	TurnPhase
+	TrapType
 } from "@games/spy-vs-spy/models/spy-vs-spy.models";
 import type {
 	FurnitureDefinition,
@@ -42,6 +43,7 @@ import type {
 	SpyPhysicsState,
 	SpyState
 } from "@games/spy-vs-spy/models/spy-vs-spy.models";
+import type { SearchOutcome } from "@games/spy-vs-spy/models/spy-vs-spy.models";
 import { AirplaneService } from "@games/spy-vs-spy/services/airplane.service";
 import { CombatService } from "@games/spy-vs-spy/services/combat.service";
 import { ExplosionService } from "@games/spy-vs-spy/services/explosion.service";
@@ -54,7 +56,6 @@ import { SpyAudioService } from "@games/spy-vs-spy/services/spy-audio.service";
 import { SpyCameraService } from "@games/spy-vs-spy/services/spy-camera.service";
 import { SpyDamageHandlerService } from "@games/spy-vs-spy/services/spy-damage-handler.service";
 import { SpyPhysicsService } from "@games/spy-vs-spy/services/spy-physics.service";
-import type { SearchOutcome } from "@games/spy-vs-spy/services/spy-search-handler.service";
 import { SpySearchHandlerService } from "@games/spy-vs-spy/services/spy-search-handler.service";
 import { TrapService } from "@games/spy-vs-spy/services/trap.service";
 import { TurnService } from "@games/spy-vs-spy/services/turn.service";
@@ -228,17 +229,9 @@ export class SpyFlowService
 	readonly player2Items: Signal<number> =
 		this.player2ItemCountSignal.asReadonly();
 
-	/** Readonly signal — whose turn it is. */
-	readonly currentTurn: Signal<TurnPhase> =
-		this.turnService.currentTurn;
-
-	/** Readonly signal — player 1 personal timer. */
-	readonly player1Timer: Signal<number> =
-		this.turnService.player1Timer;
-
-	/** Readonly signal — player 2 personal timer. */
-	readonly player2Timer: Signal<number> =
-		this.turnService.player2Timer;
+	/** Readonly signal — shared island self-destruct timer. */
+	readonly islandTimer: Signal<number> =
+		this.turnService.islandTimer;
 
 	/** Readonly signal — whether a search is active. */
 	readonly isSearching: Signal<boolean> =
@@ -328,7 +321,7 @@ export class SpyFlowService
 		this.countdownElapsed = 0;
 		this.countdownValueSignal.set(COUNTDOWN_DURATION_SECONDS);
 		this.elapsedSecondsSignal.set(0);
-		this.turnService.initialize();
+		this.turnService.initialize(GAME_TIMER_SECONDS);
 		this.searchService.initialize(
 			this.itemService.getUncollectedItems(),
 			[TrapType.Bomb, TrapType.Bomb, TrapType.SpringTrap],
@@ -375,32 +368,11 @@ export class SpyFlowService
 		/* Update turn timer (always ticks, even during combat). */
 		this.turnService.update(deltaTime);
 
-		/* Non-combat game logic: AI movement and searching. */
-		if (!this.combatService.isInCombat())
-		{
-			const playerState: SpyPhysicsState =
-				this.spyPhysics.getState();
-			const playerSpyState: Readonly<SpyState> =
-				this.aiCoordinator.buildPlayerSpyState(
-					playerState,
-					this.determineRoom(
-						playerState.positionX,
-						playerState.positionZ) ?? RoomId.JungleHQ,
-					this.player1Inventory,
-					this.player1Remedies,
-					this.turnService.player1Timer());
-			const aiSearchResult: SearchAttemptResult | null =
-				this.aiCoordinator.updateAi(deltaTime, playerSpyState);
-
-			if (aiSearchResult != null)
-			{
-				this.handleSearchResult(aiSearchResult, false);
-			}
-		}
+		this.updateNonCombatGameLogic(deltaTime);
 
 		/* Sync AI personal timer. */
 		this.spyAi.setPersonalTimer(
-			this.turnService.player2Timer());
+			this.turnService.islandTimer());
 
 		/* Update furniture proximity indicator. */
 		this.updateFurnitureProximity();
@@ -410,6 +382,38 @@ export class SpyFlowService
 		this.checkLoseCondition();
 		this.checkTimerExpiry();
 		this.checkLivesExpiry();
+	}
+
+	/**
+	 * Updates non-combat game logic: AI movement and search result handling.
+	 * @param deltaTime
+	 * Time elapsed since last frame in seconds.
+	 */
+	private updateNonCombatGameLogic(deltaTime: number): void
+	{
+		if (this.combatService.isInCombat())
+		{
+			return;
+		}
+
+		const playerState: SpyPhysicsState =
+			this.spyPhysics.getState();
+		const playerSpyState: Readonly<SpyState> =
+			this.aiCoordinator.buildPlayerSpyState(
+				playerState,
+				this.determineRoom(
+					playerState.positionX,
+					playerState.positionZ) ?? RoomId.JungleHQ,
+				this.player1Inventory,
+				this.player1Remedies,
+				this.turnService.islandTimer());
+		const aiSearchResult: SearchAttemptResult | null =
+			this.aiCoordinator.updateAi(deltaTime, playerSpyState);
+
+		if (aiSearchResult != null)
+		{
+			this.handleSearchResult(aiSearchResult, false);
+		}
 	}
 
 	/**
@@ -578,6 +582,11 @@ export class SpyFlowService
 		this.combatService.reset();
 		this.searchService.dispose();
 		this.explosionService.dispose();
+
+		if (this.sceneRef != null)
+		{
+			this.explosionService.initialize(this.sceneRef);
+		}
 
 		/* Reset spy positions to spawn points. */
 		this.spyPhysics.resetPosition(
@@ -853,10 +862,6 @@ export class SpyFlowService
 			if (count >= REQUIRED_ITEM_COUNT)
 			{
 				this.allItemsCollectedSignal.set(true);
-				this.searchHandler.showNotification(
-					"Get to the Airport!",
-					0,
-					"#ff0");
 			}
 			else
 			{
@@ -1100,20 +1105,10 @@ export class SpyFlowService
 
 		const playerState: SpyPhysicsState =
 			this.spyPhysics.getState();
-		const distanceToAirstrip: number =
-			Math.sqrt(
-				(playerState.positionX - AIRSTRIP_CENTER_X) ** 2
-					+ (playerState.positionZ - AIRSTRIP_CENTER_Z) ** 2);
 
-		if (distanceToAirstrip > AIRSTRIP_TRIGGER_RADIUS)
+		if (!this.isWithinAirstripRunway(playerState.positionX, playerState.positionZ))
 		{
-			/* Player has all items but hasn't reached the airport yet. */
 			this.allItemsCollectedSignal.set(true);
-			this.searchHandler.showNotification(
-				"Get to the Airport!",
-				0,
-				"#ff0");
-
 			return;
 		}
 
@@ -1121,13 +1116,11 @@ export class SpyFlowService
 		this.gameStateSignal.set(SpyGameState.Escaping);
 		this.audioService.playWon();
 
-		/* Hide player mesh — they're boarding the plane. */
 		if (this.player1Node != null)
 		{
 			this.player1Node.setEnabled(false);
 		}
 
-		/* Start takeoff animation with existing parked airplane. */
 		this.startEscapeAnimation();
 	}
 
@@ -1181,12 +1174,7 @@ export class SpyFlowService
 			return;
 		}
 
-		const distanceToAirstrip: number =
-			Math.sqrt(
-				(aiState.positionX - AIRSTRIP_CENTER_X) ** 2
-					+ (aiState.positionZ - AIRSTRIP_CENTER_Z) ** 2);
-
-		if (distanceToAirstrip <= AIRSTRIP_TRIGGER_RADIUS)
+		if (this.isWithinAirstripRunway(aiState.positionX, aiState.positionZ))
 		{
 			this.winReasonSignal.set("The enemy spy escaped with the mission items!");
 			this.gameStateSignal.set(SpyGameState.Lost);
@@ -1195,22 +1183,43 @@ export class SpyFlowService
 	}
 
 	/**
-	 * Checks if either player's personal timer has expired.
+	 * Checks if the island timer has expired.
 	 * Triggers camera zoom-out and island explosion before declaring result.
 	 */
 	private checkTimerExpiry(): void
 	{
-		if (this.turnService.isTimerExpired(SpyIdentity.Black))
+		if (this.turnService.islandTimer() <= 0)
 		{
-			this.winReasonSignal.set("Your mission timer ran out!");
+			this.winReasonSignal.set("The island self-destruct timer expired!");
 			this.triggerTimerExplosion(SpyGameState.Lost);
 		}
+	}
 
-		if (this.turnService.isTimerExpired(SpyIdentity.White))
-		{
-			this.winReasonSignal.set("Enemy spy ran out of time!");
-			this.triggerTimerExplosion(SpyGameState.Won);
-		}
+	/**
+	 * Checks whether a world-space point is inside the runway rectangle.
+	 * @param positionX
+	 * World-space X position.
+	 * @param positionZ
+	 * World-space Z position.
+	 * @returns
+	 * True when the point is inside runway bounds.
+	 */
+	private isWithinAirstripRunway(
+		positionX: number,
+		positionZ: number): boolean
+	{
+		const halfRunwayLength: number =
+			AIRSTRIP_RUNWAY_LENGTH / 2;
+		const halfRunwayWidth: number =
+			AIRSTRIP_RUNWAY_WIDTH / 2;
+		const withinX: boolean =
+			positionX >= AIRSTRIP_CENTER_X - halfRunwayLength
+				&& positionX <= AIRSTRIP_CENTER_X + halfRunwayLength;
+		const withinZ: boolean =
+			positionZ >= AIRSTRIP_CENTER_Z - halfRunwayWidth
+				&& positionZ <= AIRSTRIP_CENTER_Z + halfRunwayWidth;
+
+		return withinX && withinZ;
 	}
 
 	/**

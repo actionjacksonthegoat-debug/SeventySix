@@ -458,3 +458,18 @@ export interface PlaceTrapParams
 	/** Which spy placed this trap. */
 	readonly placedBy: SpyIdentity;
 }
+
+/** Outcome of processing a search result for the orchestrator to apply. */
+export interface SearchOutcome
+{
+	/** The type of search outcome. */
+	readonly type: "item" | "trap" | "remedy-pickup" | "remedy-defused" | "empty";
+	/** The item type found, if any. */
+	readonly itemType?: ItemType;
+	/** The trap type triggered, if any. */
+	readonly trapType?: TrapType;
+	/** The identity of the spy who placed the triggered trap, if any. */
+	readonly trapPlacedBy?: SpyIdentity;
+	/** The remedy type found or consumed, if any. */
+	readonly remedyType?: RemedyType;
+}

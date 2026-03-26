@@ -1,4 +1,4 @@
-<div class="game-container">
+<div class="game-container full-width-page">
 	<div
 		class="canvas-wrapper"
 		data-testid="spy-vs-spy-canvas">
@@ -6,7 +6,7 @@
 	</div>
 
 	<app-fullscreen-toggle (fullscreenChange)="isFullscreen.set($event)" />
-	<app-spy-mobile-controls />
+	<app-spy-mobile-controls (mobileTap)="onMobileTap($event)" />
 
 	@if (gameState() === SpyGameState.Playing) {
 		<canvas
@@ -25,13 +25,6 @@
 			data-testid="spy-hud"
 			role="status"
 			aria-live="polite">
-			<div
-				class="hud-turn-indicator"
-				aria-label="Current turn">
-				<span
-					class="hud-label"
-					data-testid="turn-indicator">{{ currentTurn() === TurnPhase.Player1 ? 'PLAYER 1 TURN' : 'PLAYER 2 TURN' }}</span>
-			</div>
 			<div class="hud-players">
 				<div
 					class="hud-player"
@@ -43,10 +36,6 @@
 					<span
 						class="hud-value hud-lives"
 						data-testid="p1-lives">{{ player1Hearts() }}</span>
-					<span
-						class="hud-value"
-						[class]="player1TimerClass()"
-						data-testid="p1-timer">{{ formattedPlayer1Timer() }}</span>
 					@if (player1RemedyCount(); as remedies) {
 						<span
 							class="hud-remedy"
@@ -56,22 +45,29 @@
 				</div>
 				<div
 					class="hud-player"
-					aria-label="Player 2 status">
-					<span class="hud-label">P2 (White)</span>
+					aria-label="Enemy spy status">
+					<span class="hud-label">Enemy Spy (White)</span>
 					<span
 						class="hud-value"
 						data-testid="p2-item-count">Items: {{ player2ItemCount() }} / 4</span>
 					<span
 						class="hud-value hud-lives"
 						data-testid="p2-lives">{{ player2Hearts() }}</span>
-					<span
-						class="hud-value"
-						data-testid="p2-timer">{{ formattedPlayer2Timer() }}</span>
 				</div>
 			</div>
 			<div
 				class="hud-timer"
-				aria-label="Elapsed time">
+				aria-label="Island self-destruct timer">
+				<span class="hud-label">ISLAND TIMER</span>
+				<span
+					class="hud-value"
+					[class]="islandTimerClass()"
+					data-testid="island-timer">{{ formattedIslandTimer() }}</span>
+			</div>
+			<div
+				class="hud-elapsed"
+				aria-label="Elapsed mission time">
+				<span class="hud-label">ELAPSED</span>
 				<span
 					class="hud-value"
 					data-testid="timer">{{ formattedTime() }}</span>
@@ -190,7 +186,8 @@
 			<p class="game-instructions">
 				Search furniture to find all 4 mission items and reach the Airstrip before the enemy spy!<br />
 				Watch out for traps hidden in furniture — collect remedies to defuse them!<br />
-			You each have 3 lives — lose all lives and the mission fails!<br />
+			You have 3 lives — lose all lives and the mission fails!<br />
+			The island self-destruct timer is shared and drops when either spy is hit!<br />
 			W/&#8593;: Up | S/&#8595;: Down | A/&#8592;: Left | D/&#8594;: Right<br />
 			E: Search Furniture | T: Place Trap | Q: Cycle Trap Type | Space: Combat
 			</p>

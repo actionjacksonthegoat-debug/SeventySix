@@ -9,6 +9,7 @@ describe("FullscreenToggleComponent",
 	{
 		let component: FullscreenToggleComponent;
 		let fixture: ComponentFixture<FullscreenToggleComponent>;
+		let gameContainer: HTMLDivElement;
 
 		beforeEach(
 			async () =>
@@ -20,11 +21,25 @@ describe("FullscreenToggleComponent",
 						})
 					.compileComponents();
 
+				/* Wrap fixture host in a .game-container div to simulate real usage. */
+				gameContainer =
+					document.createElement("div");
+				gameContainer.classList.add("game-container");
+				document.body.appendChild(gameContainer);
+
 				fixture =
 					TestBed.createComponent(FullscreenToggleComponent);
+				gameContainer.appendChild(
+					fixture.nativeElement);
 				component =
 					fixture.componentInstance;
 				fixture.detectChanges();
+			});
+
+		afterEach(
+			() =>
+			{
+				gameContainer.remove();
 			});
 
 		it("should create",
@@ -64,9 +79,32 @@ describe("FullscreenToggleComponent",
 					.toBe("Toggle fullscreen");
 			});
 
-		it("should call requestFullscreen when clicking and not fullscreen",
+		it("should call requestFullscreen on .game-container when clicking and not fullscreen",
 			() =>
 			{
+				const mockRequestFullscreen: ReturnType<typeof vi.fn> =
+					vi
+						.fn()
+						.mockResolvedValue(undefined);
+				gameContainer.requestFullscreen =
+					mockRequestFullscreen;
+
+				const button: HTMLButtonElement | null =
+					fixture.nativeElement.querySelector(
+						"[data-testid='fullscreen-toggle']");
+				button?.click();
+
+				expect(mockRequestFullscreen)
+					.toHaveBeenCalled();
+			});
+
+		it("should fall back to document.documentElement when no .game-container ancestor",
+			() =>
+			{
+				/* Move component out of game-container to test fallback. */
+				document.body.appendChild(
+					fixture.nativeElement);
+
 				const mockRequestFullscreen: ReturnType<typeof vi.fn> =
 					vi
 						.fn()
@@ -85,6 +123,10 @@ describe("FullscreenToggleComponent",
 
 				expect(mockRequestFullscreen)
 					.toHaveBeenCalled();
+
+				/* Restore to game-container. */
+				gameContainer.appendChild(
+					fixture.nativeElement);
 			});
 
 		it("should call exitFullscreen when clicking and is fullscreen",

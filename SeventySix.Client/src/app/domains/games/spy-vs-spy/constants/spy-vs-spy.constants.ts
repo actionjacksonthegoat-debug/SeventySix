@@ -45,7 +45,7 @@ export const BOMB_STUN_SECONDS: number = 3;
 export const SPRING_STUN_SECONDS: number = 2;
 
 /** AI decision interval — how often AI re-evaluates its goal (seconds). */
-export const AI_DECISION_INTERVAL_SECONDS: number = 2.0;
+export const AI_DECISION_INTERVAL_SECONDS: number = 0.8;
 
 /** Minimum seconds between AI furniture searches. */
 export const AI_SEARCH_COOLDOWN_SECONDS: number = 5;
@@ -54,7 +54,7 @@ export const AI_SEARCH_COOLDOWN_SECONDS: number = 5;
 export const AI_SPEED_MULTIPLIER: number = 1.0;
 
 /** Probability (0–1) AI wanders randomly instead of searching optimally. */
-export const AI_WANDER_PROBABILITY: number = 0.20;
+export const AI_WANDER_PROBABILITY: number = 0.15;
 
 /** Probability (0–1) AI places a trap when entering a room. */
 export const AI_TRAP_PROBABILITY: number = 0.10;
@@ -409,16 +409,16 @@ export const AIRPLANE_PARKED_ROTATION_Y: number =
 // ─── Explosion ─────────────────────────────────────────────────────────────
 
 /** Total explosion animation duration in seconds. */
-export const EXPLOSION_DURATION_SECONDS: number = 4;
+export const EXPLOSION_DURATION_SECONDS: number = 6;
 
 /** Fire burst particle count. */
-export const EXPLOSION_FIRE_PARTICLE_COUNT: number = 2000;
+export const EXPLOSION_FIRE_PARTICLE_COUNT: number = 5000;
 
 /** Flying debris particle count. */
-export const EXPLOSION_DEBRIS_PARTICLE_COUNT: number = 500;
+export const EXPLOSION_DEBRIS_PARTICLE_COUNT: number = 1600;
 
 /** Smoke plume particle count. */
-export const EXPLOSION_SMOKE_PARTICLE_COUNT: number = 300;
+export const EXPLOSION_SMOKE_PARTICLE_COUNT: number = 2200;
 
 // ─── Outside Decor ─────────────────────────────────────────────────────────
 
@@ -440,15 +440,12 @@ export const TREE_CANOPY_HEIGHT: number = 3.5;
 /** Scale multiplier applied to all trees (1.0 = default, 1.5 = 50% larger). */
 export const TREE_SCALE_MULTIPLIER: number = 1.5;
 
-// ─── Turn & Timer ──────────────────────────────────────────────────────────
+// ─── Timer ─────────────────────────────────────────────────────────────────
 
-/** Duration of a single turn in seconds before auto-switch. */
-export const TURN_DURATION_SECONDS: number = 15;
-
-/** Total game timer in seconds (per original: ~5 minutes). */
+/** Total island self-destruct timer in seconds. */
 export const GAME_TIMER_SECONDS: number = 360;
 
-/** Seconds deducted from personal timer on each death. */
+/** Seconds deducted from the island timer on each death. */
 export const DEATH_TIMER_PENALTY_SECONDS: number = 15;
 
 // ─── Combat ────────────────────────────────────────────────────────────────

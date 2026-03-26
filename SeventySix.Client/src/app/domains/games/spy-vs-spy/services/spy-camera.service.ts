@@ -17,7 +17,8 @@ import type { Scene } from "@babylonjs/core/scene";
 import {
 	CAMERA_HEIGHT,
 	CAMERA_PITCH_DEGREES,
-	CAMERA_TARGET_Y_OFFSET
+	CAMERA_TARGET_Y_OFFSET,
+	SPY_MESH_HEIGHT
 } from "@games/spy-vs-spy/constants/spy-vs-spy.constants";
 
 /**
@@ -36,14 +37,18 @@ export class SpyCameraService
 	/** Per-frame chase observer tracking the airplane. */
 	private chaseObserver: ReturnType<typeof Scene.prototype.onBeforeRenderObservable.add> | null = null;
 
-	/** Zoom-out height for full island view during explosion. */
-	private static readonly ZOOM_OUT_HEIGHT: number = 60;
+	/** Minimum horizontal distance from explosion center during zoom-out. */
+	private static readonly ZOOM_OUT_HORIZONTAL_MIN_DISTANCE: number = 58;
+
+	/** Additional camera height above current framing for explosion visibility. */
+	private static readonly EXPLOSION_HEIGHT_BONUS: number =
+		SPY_MESH_HEIGHT * 3;
 
 	/** Camera pan animation frames per second. */
 	private static readonly ANIMATION_FPS: number = 30;
 
 	/** Camera pan animation duration in frames. */
-	private static readonly PAN_FRAMES: number = 60;
+	private static readonly PAN_FRAMES: number = 45;
 
 	/** Vertical offset above airplane for chase camera. */
 	private static readonly CHASE_CAMERA_Y_OFFSET: number = 8;
@@ -246,6 +251,30 @@ export class SpyCameraService
 			return;
 		}
 
+		const centerTarget: Vector3 =
+			islandCenter.clone();
+		const currentOffset: Vector3 =
+			this.camera.position.subtract(this.camera.target);
+		const horizontalOffset: Vector3 =
+			new Vector3(currentOffset.x, 0, currentOffset.z);
+		const horizontalDistance: number =
+			horizontalOffset.length();
+		const horizontalDirection: Vector3 =
+			horizontalDistance > 0.001
+				? horizontalOffset.scale(1 / horizontalDistance)
+				: new Vector3(0, 0, -1);
+		const desiredHorizontalDistance: number =
+			Math.max(
+				horizontalDistance,
+				SpyCameraService.ZOOM_OUT_HORIZONTAL_MIN_DISTANCE);
+		const currentVerticalOffset: number =
+			this.camera.position.y - this.camera.target.y;
+		const endPosition: Vector3 =
+			new Vector3(
+				centerTarget.x + horizontalDirection.x * desiredHorizontalDistance,
+				centerTarget.y + currentVerticalOffset + SpyCameraService.EXPLOSION_HEIGHT_BONUS,
+				centerTarget.z + horizontalDirection.z * desiredHorizontalDistance);
+
 		const targetAnimation: Animation =
 			new Animation(
 				"cameraZoomTarget",
@@ -257,26 +286,26 @@ export class SpyCameraService
 		targetAnimation.setKeys(
 			[
 				{ frame: 0, value: this.camera.target.clone() },
-				{ frame: SpyCameraService.PAN_FRAMES, value: islandCenter.clone() }
+				{ frame: SpyCameraService.PAN_FRAMES, value: centerTarget }
 			]);
 
-		const radiusAnimation: Animation =
+		const positionAnimation: Animation =
 			new Animation(
-				"cameraZoomRadius",
-				"radius",
+				"cameraZoomPosition",
+				"position",
 				SpyCameraService.ANIMATION_FPS,
-				Animation.ANIMATIONTYPE_FLOAT,
+				Animation.ANIMATIONTYPE_VECTOR3,
 				Animation.ANIMATIONLOOPMODE_CONSTANT);
 
-		radiusAnimation.setKeys(
+		positionAnimation.setKeys(
 			[
-				{ frame: 0, value: this.camera.radius },
-				{ frame: SpyCameraService.PAN_FRAMES, value: SpyCameraService.ZOOM_OUT_HEIGHT }
+				{ frame: 0, value: this.camera.position.clone() },
+				{ frame: SpyCameraService.PAN_FRAMES, value: endPosition }
 			]);
 
 		this.sceneRef.beginDirectAnimation(
 			this.camera,
-			[targetAnimation, radiusAnimation],
+			[targetAnimation, positionAnimation],
 			0,
 			SpyCameraService.PAN_FRAMES,
 			false,

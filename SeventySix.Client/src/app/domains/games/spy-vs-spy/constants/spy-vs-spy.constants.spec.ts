@@ -23,6 +23,7 @@ import {
 	DEATH_ANIMATION_SECONDS,
 	DEATH_TIMER_PENALTY_SECONDS,
 	DOORWAY_WIDTH,
+	EXPLOSION_DURATION_SECONDS,
 	FURNITURE_SEARCH_RADIUS,
 	GAME_TIMER_SECONDS,
 	INITIAL_TRAP_COUNT_PER_TYPE,
@@ -41,7 +42,6 @@ import {
 	SPY_MOVE_SPEED,
 	SPY_ROTATION_SPEED,
 	TRAP_TRIGGER_RADIUS,
-	TURN_DURATION_SECONDS,
 	WHITE_SPY_SPAWN_X,
 	WHITE_SPY_SPAWN_Z
 } from "@games/spy-vs-spy/constants/spy-vs-spy.constants";
@@ -364,16 +364,9 @@ describe("furniture constants",
 			});
 	});
 
-describe("turn and timer constants",
+describe("timer constants",
 	() =>
 	{
-		it("TURN_DURATION_SECONDS should be positive",
-			() =>
-			{
-				expect(TURN_DURATION_SECONDS)
-					.toBeGreaterThan(0);
-			});
-
 		it("GAME_TIMER_SECONDS should be 360",
 			() =>
 			{
@@ -386,6 +379,13 @@ describe("turn and timer constants",
 			{
 				expect(DEATH_TIMER_PENALTY_SECONDS)
 					.toBe(15);
+			});
+
+		it("EXPLOSION_DURATION_SECONDS should be positive",
+			() =>
+			{
+				expect(EXPLOSION_DURATION_SECONDS)
+					.toBeGreaterThan(0);
 			});
 	});
 

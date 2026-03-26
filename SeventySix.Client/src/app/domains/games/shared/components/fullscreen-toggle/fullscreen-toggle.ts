@@ -12,12 +12,14 @@ import {
 	ChangeDetectionStrategy,
 	Component,
 	DestroyRef,
+	ElementRef,
 	inject,
 	output,
 	OutputEmitterRef,
 	signal,
 	WritableSignal
 } from "@angular/core";
+import { isPresent } from "@shared/utilities/null-check.utility";
 
 /**
  * Toggle button for entering/exiting browser fullscreen mode.
@@ -39,11 +41,15 @@ export class FullscreenToggleComponent
 {
 	/** Whether the document is currently in fullscreen mode. */
 	readonly isFullscreen: WritableSignal<boolean> =
-		signal<boolean>(!!document.fullscreenElement);
+		signal<boolean>(isPresent(document.fullscreenElement));
 
 	/** Emits when fullscreen state changes. */
 	readonly fullscreenChange: OutputEmitterRef<boolean> =
 		output<boolean>();
+
+	/** Element reference for finding the parent game container. */
+	private readonly elementRef: ElementRef<HTMLElement> =
+		inject(ElementRef);
 
 	/** @private */
 	private readonly destroyRef: DestroyRef =
@@ -51,6 +57,8 @@ export class FullscreenToggleComponent
 
 	/**
 	 * Toggle between entering and exiting fullscreen mode.
+	 * Targets the nearest `.game-container` ancestor for natural app chrome hiding.
+	 * Falls back to `document.documentElement` when no game container is found.
 	 */
 	toggleFullscreen(): void
 	{
@@ -60,7 +68,11 @@ export class FullscreenToggleComponent
 		}
 		else
 		{
-			document.documentElement.requestFullscreen();
+			const gameContainer: Element | null =
+				this.elementRef.nativeElement.closest(".game-container");
+			const target: Element =
+				gameContainer ?? document.documentElement;
+			target.requestFullscreen();
 		}
 	}
 
