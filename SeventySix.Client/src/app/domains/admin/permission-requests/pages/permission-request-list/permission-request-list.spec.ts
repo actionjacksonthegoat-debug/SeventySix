@@ -131,6 +131,18 @@ describe("PermissionRequestListPage",
 					.toBeTruthy();
 			});
 
+		it("should refresh the active requests query",
+			() =>
+			{
+				const requestsQuery: { refetch: Mock; } =
+					component.requestsQuery as unknown as { refetch: Mock; };
+
+				component.onRefresh();
+
+				expect(requestsQuery.refetch)
+					.toHaveBeenCalled();
+			});
+
 		it("should call approve mutation on row action approve",
 			() =>
 			{
@@ -245,6 +257,23 @@ describe("PermissionRequestListPage",
 					.toHaveBeenCalledWith("Failed to reject request: Database error");
 			});
 
+		it("should ignore unsupported row actions",
+			() =>
+			{
+				const event: RowActionEvent<PermissionRequestDto> =
+					{
+						action: "archive" as never,
+						row: mockPermissionRequests[0]
+					};
+
+				component.onRowAction(event);
+
+				expect(mockApproveMutation.mutate)
+					.not.toHaveBeenCalled();
+				expect(mockRejectMutation.mutate)
+					.not.toHaveBeenCalled();
+			});
+
 		it("should show success notification with count when bulk approve succeeds",
 			() =>
 			{
@@ -331,5 +360,34 @@ describe("PermissionRequestListPage",
 
 				expect(mockNotificationService.error)
 					.toHaveBeenCalledWith("Failed to reject requests: Timeout");
+			});
+
+		it("should ignore unsupported bulk actions",
+			() =>
+			{
+				const event: BulkActionEvent<PermissionRequestDto> =
+					{
+						action: "archive-all" as never,
+						selectedRows: [],
+						selectedIds: [1]
+					};
+
+				component.onBulkAction(event);
+
+				expect(mockBulkApproveMutation.mutate)
+					.not.toHaveBeenCalled();
+				expect(mockBulkRejectMutation.mutate)
+					.not.toHaveBeenCalled();
+			});
+
+		it("should format null request messages as a dash",
+			() =>
+			{
+				const messageColumn =
+					component.columns.find(
+						(column) => column.key === "requestMessage");
+
+				expect(messageColumn?.formatter?.(null))
+					.toBe("-");
 			});
 	});

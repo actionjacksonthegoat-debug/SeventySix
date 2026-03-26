@@ -544,6 +544,7 @@ describe("UserDetailPage",
 								},
 								expect.any(Object));
 					});
+
 			});
 
 		describe("role management",
@@ -630,14 +631,43 @@ describe("UserDetailPage",
 				it("should not call add mutation when userId is not a valid number",
 					async () =>
 					{
-						// Verify the guard: parseInt("invalid") returns NaN,
-						// which should prevent the mutation from being called.
-						// We test this by directly checking the NaN guard in onAddRole.
-						const parsedId: number =
-							parseInt("invalid");
+						mockActivatedRoute.snapshot.paramMap.get = () => "invalid";
+						const mockAddMutation: ReturnType<typeof createMockMutationResult> =
+							createMockMutationResult();
+						mockAddMutation.mutate =
+							vi.fn();
+						mockUserService.addRole.mockReturnValue(mockAddMutation);
 
-						expect(isNaN(parsedId))
-							.toBe(true);
+						const { component: invalidIdComponent } =
+							createComponent();
+						await fixture.whenStable();
+
+						invalidIdComponent.onAddRole("Admin");
+
+						expect(mockAddMutation.mutate)
+							.not
+							.toHaveBeenCalled();
+					});
+
+				it("should not call remove mutation when userId is not a valid number",
+					async () =>
+					{
+						mockActivatedRoute.snapshot.paramMap.get = () => "invalid";
+						const mockRemoveMutation: ReturnType<typeof createMockMutationResult> =
+							createMockMutationResult();
+						mockRemoveMutation.mutate =
+							vi.fn();
+						mockUserService.removeRole.mockReturnValue(mockRemoveMutation);
+
+						const { component: invalidIdComponent } =
+							createComponent();
+						await fixture.whenStable();
+
+						invalidIdComponent.onRemoveRole("Developer");
+
+						expect(mockRemoveMutation.mutate)
+							.not
+							.toHaveBeenCalled();
 					});
 
 				it("should show success notification on role add",

@@ -348,6 +348,77 @@ describe("ErrorQueueService (Zoneless)",
 
 						req.flush({});
 					});
+
+				it("should warn and skip sending when the circuit is open with queued items",
+					() =>
+					{
+						const warnSpy: ReturnType<typeof vi.spyOn> =
+							vi.spyOn(console, "warn")
+								.mockImplementation(() => {});
+						const internalService: {
+							queue: CreateLogRequest[];
+							circuitBreakerState: "closed" | "open";
+							processBatch(): void;
+						} =
+							service as unknown as {
+								queue: CreateLogRequest[];
+								circuitBreakerState: "closed" | "open";
+								processBatch(): void;
+							};
+
+						internalService.queue =
+							[
+								{
+									logLevel: "Error",
+									message: "Pending error",
+									clientTimestamp: dateService.now()
+								}
+							];
+						internalService.circuitBreakerState = "open";
+						(internalService as {
+							circuitBreakerOpenTime: number;
+						}).circuitBreakerOpenTime = dateService.nowTimestamp();
+
+						internalService.processBatch();
+
+						httpMock.expectNone(API_BATCH_URL);
+						expect(warnSpy)
+							.toHaveBeenCalled();
+					});
+
+				it("should close the circuit after the configured timeout elapses",
+					() =>
+					{
+						const internalService: {
+							consecutiveFailures: number;
+							circuitBreakerState: "closed" | "open";
+							circuitBreakerOpenTime: number;
+							handleBatchFailure(error: unknown): void;
+							isCircuitOpen(): boolean;
+						} =
+							service as unknown as {
+								consecutiveFailures: number;
+								circuitBreakerState: "closed" | "open";
+								circuitBreakerOpenTime: number;
+								handleBatchFailure(error: unknown): void;
+								isCircuitOpen(): boolean;
+							};
+
+						internalService.consecutiveFailures =
+							environment.logging.circuitBreakerThreshold - 1;
+						internalService.handleBatchFailure(new Error("boom"));
+
+						expect(internalService.circuitBreakerState)
+							.toBe("open");
+
+						internalService.circuitBreakerOpenTime =
+							dateService.nowTimestamp() - environment.logging.circuitBreakerTimeout;
+
+						expect(internalService.isCircuitOpen())
+							.toBe(false);
+						expect(internalService.circuitBreakerState)
+							.toBe("closed");
+					});
 			});
 
 		describe("LocalStorage Persistence (Zoneless)",

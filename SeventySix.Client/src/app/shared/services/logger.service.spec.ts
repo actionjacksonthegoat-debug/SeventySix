@@ -210,6 +210,15 @@ describe("LoggerService",
 						expect(lastCall?.[3])
 							.toBe(error);
 					});
+
+				it("should not send non-forced error logs to remote in development",
+					() =>
+					{
+						service.error("Development error");
+
+						httpMock.expectNone(
+							"http://localhost:1234/api/v1/logs/client");
+					});
 			});
 
 		describe("critical",
@@ -303,7 +312,44 @@ describe("LoggerService",
 					});
 			});
 
-		describe("structured logging",
+			describe("minimum log level mapping",
+			() =>
+			{
+				it("should map all configured console log levels",
+					() =>
+					{
+						const logger: {
+							getMinLogLevel: () => number;
+							consoleLogLevel: string;
+						} =
+							service as unknown as {
+								getMinLogLevel: () => number;
+								consoleLogLevel: string;
+							};
+
+						logger.consoleLogLevel = "info";
+						expect(logger.getMinLogLevel())
+							.toBe(2);
+
+						logger.consoleLogLevel = "warn";
+						expect(logger.getMinLogLevel())
+							.toBe(3);
+
+						logger.consoleLogLevel = "error";
+						expect(logger.getMinLogLevel())
+							.toBe(4);
+
+						logger.consoleLogLevel = "none";
+						expect(logger.getMinLogLevel())
+							.toBe(7);
+
+						logger.consoleLogLevel = "unexpected";
+						expect(logger.getMinLogLevel())
+							.toBe(3);
+					});
+			});
+
+			describe("structured logging",
 			() =>
 			{
 				it("should create structured log entry with all fields",
@@ -323,22 +369,67 @@ describe("LoggerService",
 							.toHaveBeenCalled();
 						const lastCall: unknown[] | undefined =
 							consoleErrorSpy.mock.lastCall;
-
-						// Verify prefix includes level
 						expect(lastCall?.[0])
 							.toContain("[Error]");
-
-						// Verify message
 						expect(lastCall?.[1])
 							.toBe("Login error");
-
-						// Verify context
 						expect(lastCall?.[2])
 							.toBe(context);
-
-						// Verify error
 						expect(lastCall?.[3])
 							.toBe(error);
+					});
+			});
+
+		describe("private branch coverage",
+			() =>
+			{
+				it("should log verbose entries with console.log and fatal entries with console.error",
+					() =>
+					{
+						const logger: {
+							logToConsole: (entry: { timestamp: string; level: number; message: string; }) => void;
+						} =
+							service as unknown as {
+								logToConsole: (entry: { timestamp: string; level: number; message: string; }) => void;
+							};
+
+						logger.logToConsole(
+							{ timestamp: "2024-01-01T00:00:00.000Z", level: 0, message: "Verbose" });
+						logger.logToConsole(
+							{ timestamp: "2024-01-01T00:00:00.000Z", level: 5, message: "Fatal" });
+
+						expect(consoleLogSpy)
+							.toHaveBeenCalledWith(
+								expect.stringContaining("[Verbose]"),
+								"Verbose");
+						expect(consoleErrorSpy)
+							.toHaveBeenCalledWith(
+								expect.stringContaining("[Fatal]"),
+								"Fatal");
+					});
+
+				it("should fall back to WindowService pathname when router url is unavailable",
+					() =>
+					{
+						const logger: {
+							router: object;
+						} =
+							service as unknown as {
+								router: object;
+							};
+
+						vi
+							.spyOn(logger.router, "url", "get")
+							.mockReturnValue(undefined);
+						service.forceInfo("Window pathname fallback");
+
+						const req: ReturnType<typeof httpMock.expectOne> =
+							httpMock.expectOne(
+								"http://localhost:1234/api/v1/logs/client");
+
+						expect(req.request.body.requestUrl)
+							.toBe("/");
+						req.flush({});
 					});
 			});
 
@@ -461,6 +552,54 @@ describe("LoggerService",
 							.toBeNull();
 
 						req.flush({});
+					});
+
+				it("should force log critical message and send remote payload",
+					() =>
+					{
+						const error: Error =
+							new Error("Critical failure");
+
+						service.forceCritical("Force critical message", error,
+							{ feature: "logger" });
+
+						const req: ReturnType<typeof httpMock.expectOne> =
+							httpMock.expectOne(
+								"http://localhost:1234/api/v1/logs/client");
+
+						expect(req.request.body.logLevel)
+							.toBe("Critical");
+						expect(req.request.body.exceptionMessage)
+							.toBe("Critical failure");
+						expect(req.request.body.additionalContext)
+							.toEqual({ feature: "logger" });
+
+						req.flush({});
+
+						expect(console.error)
+							.toHaveBeenCalled();
+						const lastCall: unknown[] | undefined =
+							consoleErrorSpy.mock.lastCall;
+						expect(lastCall?.[1])
+							.toBe("Force critical message");
+					});
+
+				it("should log remote transport failures to console",
+					() =>
+					{
+						service.forceInfo("Force info failure path");
+
+						const req: ReturnType<typeof httpMock.expectOne> =
+							httpMock.expectOne(
+								"http://localhost:1234/api/v1/logs/client");
+						req.flush(
+							{ message: "boom" },
+							{ status: 500, statusText: "Server Error" });
+
+						expect(consoleErrorSpy)
+							.toHaveBeenCalledWith(
+								"Failed to send log to remote endpoint:",
+								expect.anything());
 					});
 			});
 	});

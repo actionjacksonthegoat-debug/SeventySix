@@ -1,4 +1,5 @@
 import { setupSimpleServiceTest } from "@shared/testing";
+import { vi } from "vitest";
 import { DateService } from "./date.service";
 
 describe("DateService",
@@ -53,6 +54,28 @@ describe("DateService",
 						expect(date.toISOString())
 							.toBe(iso);
 					});
+
+				it("fromMillis() should construct date from epoch milliseconds",
+					() =>
+					{
+						const date: Date =
+							service.fromMillis(1714405512123);
+						expect(date.toISOString())
+							.toBe("2024-04-29T15:45:12.123Z");
+					});
+
+				it("nowDate() should parse the current ISO timestamp",
+					() =>
+					{
+						vi
+							.spyOn(service, "now")
+							.mockReturnValue("2024-04-29T15:45:12.123Z");
+
+						const result: Date =
+							service.nowDate();
+						expect(result.toISOString())
+							.toBe("2024-04-29T15:45:12.123Z");
+					});
 			});
 
 		describe("Validation",
@@ -91,6 +114,14 @@ describe("DateService",
 							.toBe(false);
 					});
 
+				it("isBefore() should compare ISO string inputs correctly",
+					() =>
+					{
+						expect(
+							service.isBefore("2024-04-29T00:00:00Z", "2024-04-30T00:00:00Z"))
+							.toBe(true);
+					});
+
 				it("isAfter() should compare dates correctly",
 					() =>
 					{
@@ -102,6 +133,14 @@ describe("DateService",
 							.toBe(true);
 						expect(service.isAfter(earlier, later))
 							.toBe(false);
+					});
+
+				it("isAfter() should compare ISO string inputs correctly",
+					() =>
+					{
+						expect(
+							service.isAfter("2024-04-30T00:00:00Z", "2024-04-29T00:00:00Z"))
+							.toBe(true);
 					});
 
 				it("isSameDay() should compare calendar days correctly",
@@ -118,6 +157,14 @@ describe("DateService",
 							.toBe(true);
 						expect(service.isSameDay(morning, nextDay))
 							.toBe(false);
+					});
+
+				it("isSameDay() should compare ISO string inputs correctly",
+					() =>
+					{
+						expect(
+							service.isSameDay("2024-04-29T08:00:00Z", "2024-04-29T20:00:00Z"))
+							.toBe(true);
 					});
 
 				it("isPast() should check if date is before now",
@@ -164,6 +211,15 @@ describe("DateService",
 							.toBe("2024-04-22T00:00:00.000Z");
 					});
 
+				it("addDays() should accept ISO string input",
+					() =>
+					{
+						const result: Date =
+							service.addDays("2024-04-29T00:00:00Z", 1);
+						expect(result.toISOString())
+							.toBe("2024-04-30T00:00:00.000Z");
+					});
+
 				it("addHours() should add hours correctly",
 					() =>
 					{
@@ -186,6 +242,15 @@ describe("DateService",
 							.toBe("2024-04-29T06:00:00.000Z");
 					});
 
+				it("addHours() should accept ISO string input",
+					() =>
+					{
+						const result: Date =
+							service.addHours("2024-04-29T12:00:00Z", 2);
+						expect(result.toISOString())
+							.toBe("2024-04-29T14:00:00.000Z");
+					});
+
 				it("differenceInDays() should calculate difference correctly",
 					() =>
 					{
@@ -194,6 +259,14 @@ describe("DateService",
 						const end: Date =
 							new Date("2024-05-06T00:00:00Z");
 						expect(service.differenceInDays(end, start))
+							.toBe(7);
+					});
+
+				it("differenceInDays() should accept ISO string inputs",
+					() =>
+					{
+						expect(
+							service.differenceInDays("2024-05-06T00:00:00Z", "2024-04-29T00:00:00Z"))
 							.toBe(7);
 					});
 
@@ -208,6 +281,15 @@ describe("DateService",
 							.toBe("2024-04-29T00:00:00.000Z");
 					});
 
+				it("startOfDay() should accept ISO string input",
+					() =>
+					{
+						const result: Date =
+							service.startOfDay("2024-04-29T15:45:12.123Z");
+						expect(result.toISOString())
+							.toBe("2024-04-29T00:00:00.000Z");
+					});
+
 				it("endOfDay() should return end of day in UTC",
 					() =>
 					{
@@ -215,6 +297,15 @@ describe("DateService",
 							new Date("2024-04-29T15:45:12.123Z");
 						const result: Date =
 							service.endOfDay(date);
+						expect(result.toISOString())
+							.toBe("2024-04-29T23:59:59.999Z");
+					});
+
+				it("endOfDay() should accept ISO string input",
+					() =>
+					{
+						const result: Date =
+							service.endOfDay("2024-04-29T15:45:12.123Z");
 						expect(result.toISOString())
 							.toBe("2024-04-29T23:59:59.999Z");
 					});
@@ -234,11 +325,33 @@ describe("DateService",
 							.toBe(2);
 					});
 
+				it("hoursSince() should accept ISO string input",
+					() =>
+					{
+						const twoHoursAgo: string =
+							new Date(Date.now() - 2 * 3600000).toISOString();
+						const hours: number =
+							service.hoursSince(twoHoursAgo);
+						expect(hours)
+							.toBe(2);
+					});
+
 				it("minutesSince() should calculate minutes correctly",
 					() =>
 					{
 						const fiveMinutesAgo: Date =
 							new Date(Date.now() - 5 * 60000);
+						const minutes: number =
+							service.minutesSince(fiveMinutesAgo);
+						expect(minutes)
+							.toBe(5);
+					});
+
+				it("minutesSince() should accept ISO string input",
+					() =>
+					{
+						const fiveMinutesAgo: string =
+							new Date(Date.now() - 5 * 60000).toISOString();
 						const minutes: number =
 							service.minutesSince(fiveMinutesAgo);
 						expect(minutes)
@@ -275,6 +388,28 @@ describe("DateService",
 							service.formatLocal(iso, "yyyy-MM-dd");
 						expect(formatted)
 							.toMatch(/^\d{4}-\d{2}-\d{2}$/);
+					});
+
+				it("toLocal() should accept ISO string input",
+					() =>
+					{
+						const result: Date =
+							service.toLocal("2024-04-29T15:45:12.123Z");
+						expect(result)
+							.toBeInstanceOf(Date);
+						expect(Number.isNaN(result.getTime()))
+							.toBe(false);
+					});
+
+				it("toLocal() should accept Date input",
+					() =>
+					{
+						const result: Date =
+							service.toLocal(new Date("2024-04-29T15:45:12.123Z"));
+						expect(result)
+							.toBeInstanceOf(Date);
+						expect(Number.isNaN(result.getTime()))
+							.toBe(false);
 					});
 			});
 

@@ -1,6 +1,7 @@
 import { HttpErrorResponse } from "@angular/common/http";
 import { provideZonelessChangeDetection } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
+import { environment } from "@environments/environment";
 import {
 	HttpError,
 	NetworkError,
@@ -197,6 +198,97 @@ describe("ErrorHandlerService",
 							.toContain("Server error");
 					});
 
+				it("should handle HTTP 403 errors",
+					() =>
+					{
+						const httpError: HttpErrorResponse =
+							new HttpErrorResponse(
+								{
+									status: 403,
+									statusText: "Forbidden"
+								});
+
+						callHandleErrorIgnoringRethrow(httpError);
+
+						const lastCall: unknown[] | undefined =
+							mockNotification.errorWithDetails.mock.lastCall;
+						expect(lastCall?.[0])
+							.toContain("permission");
+					});
+
+				it("should handle HTTP 429 errors",
+					() =>
+					{
+						const httpError: HttpErrorResponse =
+							new HttpErrorResponse(
+								{
+									status: 429,
+									statusText: "Too Many Requests"
+								});
+
+						callHandleErrorIgnoringRethrow(httpError);
+
+						const lastCall: unknown[] | undefined =
+							mockNotification.errorWithDetails.mock.lastCall;
+						expect(lastCall?.[0])
+							.toContain("Too many requests");
+					});
+
+				it("should handle HTTP 0 network connectivity errors",
+					() =>
+					{
+						const httpError: HttpErrorResponse =
+							new HttpErrorResponse(
+								{
+									status: 0,
+									statusText: "Unknown Error"
+								});
+
+						callHandleErrorIgnoringRethrow(httpError);
+
+						const lastCall: unknown[] | undefined =
+							mockNotification.errorWithDetails.mock.lastCall;
+						expect(lastCall?.[0])
+							.toContain("Unable to connect to the server");
+					});
+
+				it("should use fallback validation text for 422 errors without a title",
+					() =>
+					{
+						const httpError: HttpErrorResponse =
+							new HttpErrorResponse(
+								{
+									status: 422,
+									statusText: "Unprocessable Entity",
+									error: {}
+								});
+
+						callHandleErrorIgnoringRethrow(httpError);
+
+						const lastCall: unknown[] | undefined =
+							mockNotification.errorWithDetails.mock.lastCall;
+						expect(lastCall?.[0])
+							.toContain("Validation failed");
+					});
+
+				it("should use dev-mode fallback text for unknown HTTP status codes",
+					() =>
+					{
+						const httpError: HttpErrorResponse =
+							new HttpErrorResponse(
+								{
+									status: 418,
+									statusText: "I'm a teapot"
+								});
+
+						callHandleErrorIgnoringRethrow(httpError);
+
+						const lastCall: unknown[] | undefined =
+							mockNotification.errorWithDetails.mock.lastCall;
+						expect(lastCall?.[0])
+							.toContain("HTTP 418");
+					});
+
 				it("should handle ValidationError",
 					() =>
 					{
@@ -277,6 +369,35 @@ describe("ErrorHandlerService",
 								"Custom HTTP error",
 								undefined,
 								expect.any(String));
+					});
+
+				it("should use generic production message for unexpected errors without rethrowing",
+					() =>
+					{
+						const originalProduction: boolean =
+							environment.production;
+						environment.production = true;
+
+						try
+						{
+							expect(
+								() =>
+								{
+									service.handleError(new Error("Sensitive dev error"));
+								})
+								.not
+								.toThrow();
+
+							expect(mockNotification.errorWithDetails)
+								.toHaveBeenCalledWith(
+									"An unexpected error occurred. Please try again.",
+									expect.anything(),
+									expect.any(String));
+						}
+						finally
+						{
+							environment.production = originalProduction;
+						}
 					});
 			});
 

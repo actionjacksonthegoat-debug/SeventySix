@@ -5,6 +5,16 @@
 
 import { provideZonelessChangeDetection } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
+import { Vector3 } from "@babylonjs/core/Maths/math.vector";
+import {
+	CharacterType,
+	DrivingState,
+	JumpResult,
+	KartColor,
+	RaceState,
+	RoadBoundaryResult
+} from "@games/car-a-lot/models/car-a-lot.models";
+import { KART_GROUND_OFFSET } from "@games/car-a-lot/constants/car-a-lot.constants";
 import { BoostService } from "@games/car-a-lot/services/boost.service";
 import { CarALotAudioService } from "@games/car-a-lot/services/car-a-lot-audio.service";
 import { CharacterBuilderService } from "@games/car-a-lot/services/character-builder.service";
@@ -23,12 +33,42 @@ import { BABYLON_ENGINE_OPTIONS } from "@games/shared/constants/engine.constants
 import { BabylonEngineService } from "@games/shared/services/babylon-engine.service";
 import { GameLoopService } from "@games/shared/services/game-loop.service";
 import { InputService } from "@games/shared/services/input.service";
+import { vi } from "vitest";
 import { CarALotGameComponent } from "./car-a-lot-game";
 
 describe("CarALotGameComponent",
 	() =>
 	{
 		let fixture: ComponentFixture<CarALotGameComponent>;
+		let component: CarALotGameComponent;
+
+		function createDrivingState(overrides: Partial<DrivingState> = {}): DrivingState
+		{
+			return {
+				speedMph: 45,
+				positionX: 10,
+				positionY: 2,
+				positionZ: 20,
+				rotationY: 0.5,
+				isGrounded: true,
+				isOnRoad: true,
+				currentLap: 1,
+				...overrides
+			};
+		}
+
+		function createBoundaryResult(overrides: Partial<RoadBoundaryResult> = {}): RoadBoundaryResult
+		{
+			return {
+				isOnRoad: true,
+				isInBumperZone: false,
+				bumperNormalAngle: 0,
+				distanceToEdge: 3,
+				segmentIndex: 0,
+				groundElevation: 1,
+				...overrides
+			};
+		}
 
 		beforeEach(
 			async () =>
@@ -66,6 +106,8 @@ describe("CarALotGameComponent",
 
 				fixture =
 					TestBed.createComponent(CarALotGameComponent);
+				component =
+					fixture.componentInstance;
 				fixture.detectChanges();
 			});
 
@@ -114,5 +156,490 @@ describe("CarALotGameComponent",
 
 				expect(selector)
 					.toBeTruthy();
+			});
+
+		describe("public handlers",
+			() =>
+			{
+				it("should forward kart color changes to the kart builder",
+					() =>
+					{
+						const setKartColorSpy =
+							vi.spyOn(component["kartBuilder"], "setKartColor");
+
+						component.onKartColorChange(KartColor.Red);
+
+						expect(setKartColorSpy)
+							.toHaveBeenCalledWith(KartColor.Red);
+					});
+
+				it("should update the selected character without rebuilding rescue assets when scene data is unavailable",
+					() =>
+					{
+						const createRescueSpy =
+							vi.spyOn(component["characterBuilder"], "createRescueCharacter");
+						component["scene"] = null;
+						component["rescueCharRoot"] = null;
+
+						component.onCharacterChange(CharacterType.Prince);
+
+						expect(createRescueSpy.mock.calls.length)
+							.toBe(0);
+					});
+
+				it("should rebuild the rescue character when the scene is available",
+					() =>
+					{
+						const oldRescueDisposeSpy = vi.fn();
+						const newRescueRoot: { position: Vector3; } =
+							{ position: Vector3.Zero() };
+						const createRescueSpy =
+							vi.spyOn(component["characterBuilder"], "createRescueCharacter")
+								.mockReturnValue(newRescueRoot as never);
+
+						component["scene"] = {} as typeof component["scene"];
+						component["rescueCenter"] = new Vector3(5, 0, 10);
+						component["rescueCharRoot"] =
+							{ dispose: oldRescueDisposeSpy } as unknown as typeof component["rescueCharRoot"];
+
+						component.onCharacterChange(CharacterType.Princess);
+
+						expect(oldRescueDisposeSpy)
+							.toHaveBeenCalledOnce();
+						expect(createRescueSpy)
+							.toHaveBeenCalledOnce();
+						expect(component["rescueCharRoot"])
+							.toBe(newRescueRoot);
+					});
+
+				it("should reset race state and rebuild start assets when starting a game",
+					() =>
+					{
+						const resetRaceSpy =
+							vi.spyOn(component["raceState"], "reset");
+						const resetPhysicsSpy =
+							vi.spyOn(component["drivingPhysics"], "reset");
+						const resetBoostSpy =
+							vi.spyOn(component["boostService"], "reset");
+						const resetCoinsSpy =
+							vi.spyOn(component["coinService"], "reset");
+						const setCharacterTypeSpy =
+							vi.spyOn(component["characterBuilder"], "setCharacterType");
+						const startCountdownSpy =
+							vi.spyOn(component["raceState"], "startCountdown");
+						const playCountdownSpy =
+							vi.spyOn(component["audioService"], "playCountdownBing");
+						const createRescueSpy =
+							vi.spyOn(component["characterBuilder"], "createRescueCharacter")
+								.mockReturnValue({ position: Vector3.Zero() } as never);
+						vi.spyOn(component["raceState"], "characterType")
+							.mockReturnValue(CharacterType.Prince);
+
+						component["scene"] = {} as typeof component["scene"];
+						component["rescueCenter"] = new Vector3(2, 0, 3);
+						component["rescueCharRoot"] =
+							{ dispose: vi.fn() } as unknown as typeof component["rescueCharRoot"];
+						component["kartRoot"] =
+							{
+								position: new Vector3(99, 99, 99),
+								rotation: { y: 5 }
+							} as unknown as typeof component["kartRoot"];
+
+						component.onStartGame();
+
+						expect(resetRaceSpy)
+							.toHaveBeenCalledOnce();
+						expect(resetPhysicsSpy)
+							.toHaveBeenCalledOnce();
+						expect(resetBoostSpy)
+							.toHaveBeenCalledOnce();
+						expect(resetCoinsSpy)
+							.toHaveBeenCalledOnce();
+						expect(component["kartRoot"]?.position)
+							.toEqual(new Vector3(0, KART_GROUND_OFFSET, 0));
+						expect(component["kartRoot"]?.rotation.y)
+							.toBe(0);
+						expect(setCharacterTypeSpy)
+							.toHaveBeenCalledWith(CharacterType.Prince);
+						expect(createRescueSpy)
+							.toHaveBeenCalledOnce();
+						expect(startCountdownSpy)
+							.toHaveBeenCalledOnce();
+						expect(component["lastCountdownValue"])
+							.toBe(3);
+						expect(playCountdownSpy)
+							.toHaveBeenCalledWith(false);
+					});
+			});
+
+		describe("branch-heavy private methods",
+			() =>
+			{
+				it("should return false when countdown handling is inactive",
+					() =>
+					{
+						vi.spyOn(component["raceState"], "isCountdownActive")
+							.mockReturnValue(false);
+
+						expect(component["handleCountdown"](0.5, RaceState.Racing))
+							.toBe(false);
+					});
+
+				it("should transition from countdown to racing when the countdown completes",
+					() =>
+					{
+						const playCountdownSpy =
+							vi.spyOn(component["audioService"], "playCountdownBing");
+						const transitionSpy =
+							vi.spyOn(component["raceState"], "transitionTo");
+						const startEngineSpy =
+							vi.spyOn(component["audioService"], "startEngine");
+						const startMusicSpy =
+							vi.spyOn(component["audioService"], "startMusic");
+						const updateCameraSpy =
+							vi.spyOn(component["raceCamera"], "updateCamera");
+						vi.spyOn(component["raceState"], "isCountdownActive")
+							.mockReturnValue(true);
+						vi.spyOn(component["raceState"], "countdownValue")
+							.mockReturnValue(1);
+						vi.spyOn(component["raceState"], "tickCountdown")
+							.mockReturnValue(true);
+						component["kartRoot"] =
+							{
+								position: new Vector3(1, 2, 3),
+								rotation: { y: 0.75 }
+							} as unknown as typeof component["kartRoot"];
+
+						expect(component["handleCountdown"](0.25, RaceState.Countdown))
+							.toBe(true);
+						expect(playCountdownSpy)
+							.toHaveBeenCalledWith(true);
+						expect(transitionSpy)
+							.toHaveBeenCalledWith(RaceState.Racing);
+						expect(startEngineSpy)
+							.toHaveBeenCalledOnce();
+						expect(startMusicSpy)
+							.toHaveBeenCalledOnce();
+						expect(updateCameraSpy)
+							.toHaveBeenCalledOnce();
+					});
+
+				it("should play countdown ticks when the countdown value changes",
+					() =>
+					{
+						const playCountdownSpy =
+							vi.spyOn(component["audioService"], "playCountdownBing");
+						vi.spyOn(component["raceState"], "isCountdownActive")
+							.mockReturnValue(true);
+						vi.spyOn(component["raceState"], "countdownValue")
+							.mockReturnValueOnce(3)
+							.mockReturnValueOnce(2);
+						vi.spyOn(component["raceState"], "tickCountdown")
+							.mockReturnValue(false);
+
+						expect(component["handleCountdown"](0.25, RaceState.Countdown))
+							.toBe(true);
+						expect(playCountdownSpy)
+							.toHaveBeenCalledWith(false);
+						expect(component["lastCountdownValue"])
+							.toBe(2);
+					});
+
+				it("should show the victory character only once on the first victory frame",
+					() =>
+					{
+						const showVictorySpy =
+							vi.spyOn(component["characterBuilder"], "showVictoryStanding")
+								.mockImplementation((): void => undefined);
+						component["scene"] = {} as typeof component["scene"];
+						component["kartRoot"] =
+							{
+								position: new Vector3(9, 8, 7)
+							} as unknown as typeof component["kartRoot"];
+
+						component["showVictoryCharacterOnFirstFrame"](RaceState.Victory);
+						component["showVictoryCharacterOnFirstFrame"](RaceState.Victory);
+
+						expect(showVictorySpy)
+							.toHaveBeenCalledOnce();
+					});
+
+				it("should update physics with live input while racing and apply mesh state",
+					() =>
+					{
+						const boundary: RoadBoundaryResult =
+							createBoundaryResult({ groundElevation: 4 });
+						const state: DrivingState =
+							createDrivingState();
+						const updateSpy =
+							vi.spyOn(component["drivingPhysics"], "update")
+								.mockReturnValue(state);
+						vi.spyOn(component["roadCollision"], "checkRoadBoundary")
+							.mockReturnValue(boundary);
+						component["inputService"].keys = { ArrowUp: true };
+						component["kartRoot"] =
+							{
+								position: new Vector3(0, 0, 0),
+								rotation: { y: 0 }
+							} as unknown as typeof component["kartRoot"];
+
+						const returnedState: DrivingState =
+							component["updatePhysics"](0.16, RaceState.Racing);
+
+						expect(updateSpy)
+							.toHaveBeenCalledWith({ ArrowUp: true }, 0.16, 4);
+						expect(returnedState)
+							.toBe(state);
+						expect(component["kartRoot"]?.position)
+							.toEqual(new Vector3(state.positionX, state.positionY, state.positionZ));
+						expect(component["kartRoot"]?.rotation.y)
+							.toBe(state.rotationY);
+					});
+
+				it("should suppress live input while not racing",
+					() =>
+					{
+						const updateSpy =
+							vi.spyOn(component["drivingPhysics"], "update")
+								.mockReturnValue(createDrivingState());
+						vi.spyOn(component["roadCollision"], "checkRoadBoundary")
+							.mockReturnValue(createBoundaryResult());
+						component["inputService"].keys = { ArrowUp: true };
+
+						component["updatePhysics"](0.1, RaceState.Countdown);
+
+						expect(updateSpy)
+							.toHaveBeenCalledWith({}, 0.1, 1);
+					});
+
+				it("should update visuals and elapsed time during active race phases",
+					() =>
+					{
+						const state: DrivingState =
+							createDrivingState();
+						const updateElapsedTimeSpy =
+							vi.spyOn(component["raceState"], "updateElapsedTime");
+						vi.spyOn(component["trackFeatures"], "isInsideTunnel")
+							.mockReturnValue(false);
+						vi.spyOn(component["raceState"], "currentState")
+							.mockReturnValue(RaceState.Rescue);
+
+						component["updateVisuals"](state, 0.2);
+
+						expect(updateElapsedTimeSpy)
+							.toHaveBeenCalledWith(0.2);
+					});
+
+				it("should avoid elapsed time updates outside active race phases",
+					() =>
+					{
+						const state: DrivingState =
+							createDrivingState();
+						const updateElapsedTimeSpy =
+							vi.spyOn(component["raceState"], "updateElapsedTime");
+						vi.spyOn(component["trackFeatures"], "isInsideTunnel")
+							.mockReturnValue(true);
+						vi.spyOn(component["raceState"], "currentState")
+							.mockReturnValue(RaceState.Victory);
+
+						component["updateVisuals"](state, 0.2);
+
+						expect(updateElapsedTimeSpy)
+							.not.toHaveBeenCalled();
+					});
+
+				it("should apply bumper collisions when inside a bumper zone",
+					() =>
+					{
+						const state: DrivingState =
+							createDrivingState({ isGrounded: true });
+						const boundary: RoadBoundaryResult =
+							createBoundaryResult({ isInBumperZone: true, distanceToEdge: 1, bumperNormalAngle: Math.PI / 2 });
+						const clampToRoadSpy =
+							vi.spyOn(component["drivingPhysics"], "clampToRoad");
+						const applyBounceSpy =
+							vi.spyOn(component["drivingPhysics"], "applyBounce");
+						const deactivateBoostSpy =
+							vi.spyOn(component["boostService"], "deactivateBoost");
+						const playBumperSpy =
+							vi.spyOn(component["audioService"], "playBumper");
+
+						component["handleCollisions"](state, RaceState.Racing, boundary);
+
+						expect(clampToRoadSpy)
+							.toHaveBeenCalledOnce();
+						expect(applyBounceSpy)
+							.toHaveBeenCalledWith(boundary.bumperNormalAngle, 0);
+						expect(deactivateBoostSpy)
+							.toHaveBeenCalledOnce();
+						expect(playBumperSpy)
+							.toHaveBeenCalledOnce();
+					});
+
+				it("should trigger game over when leaving the road during racing",
+					() =>
+					{
+						const state: DrivingState =
+							createDrivingState({ isGrounded: true });
+						const boundary: RoadBoundaryResult =
+							createBoundaryResult({ isOnRoad: false, isInBumperZone: false });
+						const transitionSpy =
+							vi.spyOn(component["raceState"], "transitionTo");
+						const setMaxSpeedSpy =
+							vi.spyOn(component["drivingPhysics"], "setMaxSpeed");
+						const stopEngineSpy =
+							vi.spyOn(component["audioService"], "stopEngine");
+						const stopMusicSpy =
+							vi.spyOn(component["audioService"], "stopMusic");
+						const playGameOverSpy =
+							vi.spyOn(component["audioService"], "playGameOver");
+
+						component["handleCollisions"](state, RaceState.Racing, boundary);
+
+						expect(transitionSpy)
+							.toHaveBeenCalledWith(RaceState.GameOver);
+						expect(setMaxSpeedSpy)
+							.toHaveBeenCalledWith(0);
+						expect(stopEngineSpy)
+							.toHaveBeenCalledOnce();
+						expect(stopMusicSpy)
+							.toHaveBeenCalledOnce();
+						expect(playGameOverSpy)
+							.toHaveBeenCalledOnce();
+					});
+
+				it("should skip jump checks inside tunnels and clear temporary speed when no boost is active",
+					() =>
+					{
+						const state: DrivingState =
+							createDrivingState();
+						const jumpTriggerSpy =
+							vi.spyOn(component["trackFeatures"], "checkJumpTrigger");
+						const clearTemporaryMaxSpeedSpy =
+							vi.spyOn(component["drivingPhysics"], "clearTemporaryMaxSpeed");
+						vi.spyOn(component["trackFeatures"], "isInsideTunnel")
+							.mockReturnValue(true);
+						vi.spyOn(component["coinService"], "checkCollection")
+							.mockReturnValue(false);
+						vi.spyOn(component["boostService"], "checkBoostTrigger")
+							.mockReturnValue(false);
+						vi.spyOn(component["boostService"], "isBoostActive")
+							.mockReturnValue(false);
+
+						component["updateItems"](state, 0.3);
+
+						expect(jumpTriggerSpy)
+							.not.toHaveBeenCalled();
+						expect(clearTemporaryMaxSpeedSpy)
+							.toHaveBeenCalledOnce();
+					});
+
+				it("should apply jump, coin, and boost effects when item triggers occur",
+					() =>
+					{
+						const state: DrivingState =
+							createDrivingState();
+						const jumpResult: JumpResult =
+							{ jumpVelocity: 12, rampIndex: 1 };
+						const applyJumpSpy =
+							vi.spyOn(component["drivingPhysics"], "applyJump");
+						const playJumpSpy =
+							vi.spyOn(component["audioService"], "playJump");
+						const playCoinSpy =
+							vi.spyOn(component["audioService"], "playCoin");
+						const playBoostSpy =
+							vi.spyOn(component["audioService"], "playBoost");
+						const setTemporaryMaxSpeedSpy =
+							vi.spyOn(component["drivingPhysics"], "setTemporaryMaxSpeed");
+						vi.spyOn(component["trackFeatures"], "isInsideTunnel")
+							.mockReturnValue(false);
+						vi.spyOn(component["trackFeatures"], "checkJumpTrigger")
+							.mockReturnValue(jumpResult);
+						vi.spyOn(component["coinService"], "checkCollection")
+							.mockReturnValue(true);
+						vi.spyOn(component["boostService"], "checkBoostTrigger")
+							.mockReturnValue(true);
+						vi.spyOn(component["boostService"], "isBoostActive")
+							.mockReturnValue(true);
+						vi.spyOn(component["boostService"], "getEffectiveMaxSpeedMph")
+							.mockReturnValue(88);
+
+						component["updateItems"](state, 0.3);
+
+						expect(applyJumpSpy)
+							.toHaveBeenCalledWith(12);
+						expect(playJumpSpy)
+							.toHaveBeenCalledOnce();
+						expect(playCoinSpy)
+							.toHaveBeenCalledOnce();
+						expect(playBoostSpy)
+							.toHaveBeenCalledOnce();
+						expect(setTemporaryMaxSpeedSpy)
+							.toHaveBeenCalledWith(88);
+					});
+
+				it("should dispose owned services during cleanup",
+					() =>
+					{
+						const gameLoopDisposeSpy =
+							vi.spyOn(component["gameLoop"], "dispose");
+						const coinDisposeSpy =
+							vi.spyOn(component["coinService"], "dispose");
+						const boostDisposeSpy =
+							vi.spyOn(component["boostService"], "dispose");
+						const octopusDisposeSpy =
+							vi.spyOn(component["octopusBoss"], "dispose");
+						const roadDisposeSpy =
+							vi.spyOn(component["roadCollision"], "dispose");
+						const trackFeaturesDisposeSpy =
+							vi.spyOn(component["trackFeatures"], "dispose");
+						const raceCameraDisposeSpy =
+							vi.spyOn(component["raceCamera"], "dispose");
+						const characterDisposeSpy =
+							vi.spyOn(component["characterBuilder"], "dispose");
+						const kartDisposeSpy =
+							vi.spyOn(component["kartBuilder"], "dispose");
+						const trackBuilderDisposeSpy =
+							vi.spyOn(component["trackBuilder"], "dispose");
+						const raceSceneDisposeSpy =
+							vi.spyOn(component["raceScene"], "dispose");
+						const resetPhysicsSpy =
+							vi.spyOn(component["drivingPhysics"], "reset");
+						const inputDisposeSpy =
+							vi.spyOn(component["inputService"], "dispose");
+						const audioDisposeSpy =
+							vi.spyOn(component["audioService"], "dispose");
+
+						component["cleanup"]();
+
+						expect(gameLoopDisposeSpy)
+							.toHaveBeenCalledOnce();
+						expect(coinDisposeSpy)
+							.toHaveBeenCalledOnce();
+						expect(boostDisposeSpy)
+							.toHaveBeenCalledOnce();
+						expect(octopusDisposeSpy)
+							.toHaveBeenCalledOnce();
+						expect(roadDisposeSpy)
+							.toHaveBeenCalledOnce();
+						expect(trackFeaturesDisposeSpy)
+							.toHaveBeenCalledOnce();
+						expect(raceCameraDisposeSpy)
+							.toHaveBeenCalledOnce();
+						expect(characterDisposeSpy)
+							.toHaveBeenCalledOnce();
+						expect(kartDisposeSpy)
+							.toHaveBeenCalledOnce();
+						expect(trackBuilderDisposeSpy)
+							.toHaveBeenCalledOnce();
+						expect(raceSceneDisposeSpy)
+							.toHaveBeenCalledOnce();
+						expect(resetPhysicsSpy)
+							.toHaveBeenCalledOnce();
+						expect(inputDisposeSpy)
+							.toHaveBeenCalledOnce();
+						expect(audioDisposeSpy)
+							.toHaveBeenCalledOnce();
+					});
 			});
 	});
