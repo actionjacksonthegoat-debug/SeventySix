@@ -8,9 +8,9 @@ import { provideRouter } from "@angular/router";
 import { FeatureFlagsService } from "@shared/services";
 import { ApiService } from "@shared/services/api.service";
 import { AuthService } from "@shared/services/auth.service";
-import { NotificationService } from "@shared/services/notification.service";
 import { ExternalLoginDto } from "@shared/services/auth.types";
 import type { OAuthProvider } from "@shared/services/auth.types";
+import { NotificationService } from "@shared/services/notification.service";
 import {
 	createMockApiService,
 	createMockFeatureFlagsService,
@@ -381,7 +381,11 @@ describe("ProfilePage linked accounts",
 							}
 						]);
 
-				expect(componentFixture.componentInstance.linkedProviderIds().has("github"))
+				expect(
+					componentFixture
+						.componentInstance
+						.linkedProviderIds()
+						.has("github"))
 					.toBe(true);
 			});
 

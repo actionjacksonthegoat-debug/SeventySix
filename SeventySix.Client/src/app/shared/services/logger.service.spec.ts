@@ -312,7 +312,7 @@ describe("LoggerService",
 					});
 			});
 
-			describe("minimum log level mapping",
+		describe("minimum log level mapping",
 			() =>
 			{
 				it("should map all configured console log levels",
@@ -349,7 +349,7 @@ describe("LoggerService",
 					});
 			});
 
-			describe("structured logging",
+		describe("structured logging",
 			() =>
 			{
 				it("should create structured log entry with all fields",
@@ -572,7 +572,8 @@ describe("LoggerService",
 						expect(req.request.body.exceptionMessage)
 							.toBe("Critical failure");
 						expect(req.request.body.additionalContext)
-							.toEqual({ feature: "logger" });
+							.toEqual(
+								{ feature: "logger" });
 
 						req.flush({});
 

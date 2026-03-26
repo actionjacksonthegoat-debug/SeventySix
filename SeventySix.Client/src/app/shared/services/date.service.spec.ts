@@ -329,7 +329,8 @@ describe("DateService",
 					() =>
 					{
 						const twoHoursAgo: string =
-							new Date(Date.now() - 2 * 3600000).toISOString();
+							new Date(Date.now() - 2 * 3600000)
+								.toISOString();
 						const hours: number =
 							service.hoursSince(twoHoursAgo);
 						expect(hours)
@@ -351,7 +352,8 @@ describe("DateService",
 					() =>
 					{
 						const fiveMinutesAgo: string =
-							new Date(Date.now() - 5 * 60000).toISOString();
+							new Date(Date.now() - 5 * 60000)
+								.toISOString();
 						const minutes: number =
 							service.minutesSince(fiveMinutesAgo);
 						expect(minutes)

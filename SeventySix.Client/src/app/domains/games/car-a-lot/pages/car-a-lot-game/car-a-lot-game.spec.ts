@@ -6,6 +6,7 @@
 import { provideZonelessChangeDetection } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { Vector3 } from "@babylonjs/core/Maths/math.vector";
+import { KART_GROUND_OFFSET } from "@games/car-a-lot/constants/car-a-lot.constants";
 import {
 	CharacterType,
 	DrivingState,
@@ -14,7 +15,6 @@ import {
 	RaceState,
 	RoadBoundaryResult
 } from "@games/car-a-lot/models/car-a-lot.models";
-import { KART_GROUND_OFFSET } from "@games/car-a-lot/constants/car-a-lot.constants";
 import { BoostService } from "@games/car-a-lot/services/boost.service";
 import { CarALotAudioService } from "@games/car-a-lot/services/car-a-lot-audio.service";
 import { CharacterBuilderService } from "@games/car-a-lot/services/character-builder.service";
@@ -33,7 +33,7 @@ import { BABYLON_ENGINE_OPTIONS } from "@games/shared/constants/engine.constants
 import { BabylonEngineService } from "@games/shared/services/babylon-engine.service";
 import { GameLoopService } from "@games/shared/services/game-loop.service";
 import { InputService } from "@games/shared/services/input.service";
-import { vi } from "vitest";
+import { Mock, vi } from "vitest";
 import { CarALotGameComponent } from "./car-a-lot-game";
 
 describe("CarALotGameComponent",
@@ -164,7 +164,7 @@ describe("CarALotGameComponent",
 				it("should forward kart color changes to the kart builder",
 					() =>
 					{
-						const setKartColorSpy =
+						const setKartColorSpy: Mock =
 							vi.spyOn(component["kartBuilder"], "setKartColor");
 
 						component.onKartColorChange(KartColor.Red);
@@ -176,7 +176,7 @@ describe("CarALotGameComponent",
 				it("should update the selected character without rebuilding rescue assets when scene data is unavailable",
 					() =>
 					{
-						const createRescueSpy =
+						const createRescueSpy: Mock =
 							vi.spyOn(component["characterBuilder"], "createRescueCharacter");
 						component["scene"] = null;
 						component["rescueCharRoot"] = null;
@@ -190,17 +190,23 @@ describe("CarALotGameComponent",
 				it("should rebuild the rescue character when the scene is available",
 					() =>
 					{
-						const oldRescueDisposeSpy = vi.fn();
+						const oldRescueDisposeSpy: Mock =
+							vi.fn();
 						const newRescueRoot: { position: Vector3; } =
 							{ position: Vector3.Zero() };
-						const createRescueSpy =
-							vi.spyOn(component["characterBuilder"], "createRescueCharacter")
+						const createRescueSpy: Mock =
+							vi
+								.spyOn(component["characterBuilder"], "createRescueCharacter")
 								.mockReturnValue(newRescueRoot as never);
 
-						component["scene"] = {} as typeof component["scene"];
-						component["rescueCenter"] = new Vector3(5, 0, 10);
+						component["scene"] =
+							{} as typeof component["scene"];
+						component["rescueCenter"] =
+							new Vector3(5, 0, 10);
 						component["rescueCharRoot"] =
-							{ dispose: oldRescueDisposeSpy } as unknown as typeof component["rescueCharRoot"];
+							{
+								dispose: oldRescueDisposeSpy
+							} as unknown as typeof component["rescueCharRoot"];
 
 						component.onCharacterChange(CharacterType.Princess);
 
@@ -215,28 +221,32 @@ describe("CarALotGameComponent",
 				it("should reset race state and rebuild start assets when starting a game",
 					() =>
 					{
-						const resetRaceSpy =
+						const resetRaceSpy: Mock =
 							vi.spyOn(component["raceState"], "reset");
-						const resetPhysicsSpy =
+						const resetPhysicsSpy: Mock =
 							vi.spyOn(component["drivingPhysics"], "reset");
-						const resetBoostSpy =
+						const resetBoostSpy: Mock =
 							vi.spyOn(component["boostService"], "reset");
-						const resetCoinsSpy =
+						const resetCoinsSpy: Mock =
 							vi.spyOn(component["coinService"], "reset");
-						const setCharacterTypeSpy =
+						const setCharacterTypeSpy: Mock =
 							vi.spyOn(component["characterBuilder"], "setCharacterType");
-						const startCountdownSpy =
+						const startCountdownSpy: Mock =
 							vi.spyOn(component["raceState"], "startCountdown");
-						const playCountdownSpy =
+						const playCountdownSpy: Mock =
 							vi.spyOn(component["audioService"], "playCountdownBing");
-						const createRescueSpy =
-							vi.spyOn(component["characterBuilder"], "createRescueCharacter")
+						const createRescueSpy: Mock =
+							vi
+								.spyOn(component["characterBuilder"], "createRescueCharacter")
 								.mockReturnValue({ position: Vector3.Zero() } as never);
-						vi.spyOn(component["raceState"], "characterType")
+						vi
+							.spyOn(component["raceState"], "characterType")
 							.mockReturnValue(CharacterType.Prince);
 
-						component["scene"] = {} as typeof component["scene"];
-						component["rescueCenter"] = new Vector3(2, 0, 3);
+						component["scene"] =
+							{} as typeof component["scene"];
+						component["rescueCenter"] =
+							new Vector3(2, 0, 3);
 						component["rescueCharRoot"] =
 							{ dispose: vi.fn() } as unknown as typeof component["rescueCharRoot"];
 						component["kartRoot"] =
@@ -278,7 +288,8 @@ describe("CarALotGameComponent",
 				it("should return false when countdown handling is inactive",
 					() =>
 					{
-						vi.spyOn(component["raceState"], "isCountdownActive")
+						vi
+							.spyOn(component["raceState"], "isCountdownActive")
 							.mockReturnValue(false);
 
 						expect(component["handleCountdown"](0.5, RaceState.Racing))
@@ -288,21 +299,24 @@ describe("CarALotGameComponent",
 				it("should transition from countdown to racing when the countdown completes",
 					() =>
 					{
-						const playCountdownSpy =
+						const playCountdownSpy: Mock =
 							vi.spyOn(component["audioService"], "playCountdownBing");
-						const transitionSpy =
+						const transitionSpy: Mock =
 							vi.spyOn(component["raceState"], "transitionTo");
-						const startEngineSpy =
+						const startEngineSpy: Mock =
 							vi.spyOn(component["audioService"], "startEngine");
-						const startMusicSpy =
+						const startMusicSpy: Mock =
 							vi.spyOn(component["audioService"], "startMusic");
-						const updateCameraSpy =
+						const updateCameraSpy: Mock =
 							vi.spyOn(component["raceCamera"], "updateCamera");
-						vi.spyOn(component["raceState"], "isCountdownActive")
+						vi
+							.spyOn(component["raceState"], "isCountdownActive")
 							.mockReturnValue(true);
-						vi.spyOn(component["raceState"], "countdownValue")
+						vi
+							.spyOn(component["raceState"], "countdownValue")
 							.mockReturnValue(1);
-						vi.spyOn(component["raceState"], "tickCountdown")
+						vi
+							.spyOn(component["raceState"], "tickCountdown")
 							.mockReturnValue(true);
 						component["kartRoot"] =
 							{
@@ -327,14 +341,17 @@ describe("CarALotGameComponent",
 				it("should play countdown ticks when the countdown value changes",
 					() =>
 					{
-						const playCountdownSpy =
+						const playCountdownSpy: Mock =
 							vi.spyOn(component["audioService"], "playCountdownBing");
-						vi.spyOn(component["raceState"], "isCountdownActive")
+						vi
+							.spyOn(component["raceState"], "isCountdownActive")
 							.mockReturnValue(true);
-						vi.spyOn(component["raceState"], "countdownValue")
+						vi
+							.spyOn(component["raceState"], "countdownValue")
 							.mockReturnValueOnce(3)
 							.mockReturnValueOnce(2);
-						vi.spyOn(component["raceState"], "tickCountdown")
+						vi
+							.spyOn(component["raceState"], "tickCountdown")
 							.mockReturnValue(false);
 
 						expect(component["handleCountdown"](0.25, RaceState.Countdown))
@@ -348,10 +365,12 @@ describe("CarALotGameComponent",
 				it("should show the victory character only once on the first victory frame",
 					() =>
 					{
-						const showVictorySpy =
-							vi.spyOn(component["characterBuilder"], "showVictoryStanding")
+						const showVictorySpy: Mock =
+							vi
+								.spyOn(component["characterBuilder"], "showVictoryStanding")
 								.mockImplementation((): void => undefined);
-						component["scene"] = {} as typeof component["scene"];
+						component["scene"] =
+							{} as typeof component["scene"];
 						component["kartRoot"] =
 							{
 								position: new Vector3(9, 8, 7)
@@ -368,15 +387,19 @@ describe("CarALotGameComponent",
 					() =>
 					{
 						const boundary: RoadBoundaryResult =
-							createBoundaryResult({ groundElevation: 4 });
+							createBoundaryResult(
+								{ groundElevation: 4 });
 						const state: DrivingState =
 							createDrivingState();
-						const updateSpy =
-							vi.spyOn(component["drivingPhysics"], "update")
+						const updateSpy: Mock =
+							vi
+								.spyOn(component["drivingPhysics"], "update")
 								.mockReturnValue(state);
-						vi.spyOn(component["roadCollision"], "checkRoadBoundary")
+						vi
+							.spyOn(component["roadCollision"], "checkRoadBoundary")
 							.mockReturnValue(boundary);
-						component["inputService"].keys = { ArrowUp: true };
+						component["inputService"].keys =
+							{ ArrowUp: true };
 						component["kartRoot"] =
 							{
 								position: new Vector3(0, 0, 0),
@@ -387,7 +410,10 @@ describe("CarALotGameComponent",
 							component["updatePhysics"](0.16, RaceState.Racing);
 
 						expect(updateSpy)
-							.toHaveBeenCalledWith({ ArrowUp: true }, 0.16, 4);
+							.toHaveBeenCalledWith(
+								{ ArrowUp: true },
+								0.16,
+								4);
 						expect(returnedState)
 							.toBe(state);
 						expect(component["kartRoot"]?.position)
@@ -399,12 +425,15 @@ describe("CarALotGameComponent",
 				it("should suppress live input while not racing",
 					() =>
 					{
-						const updateSpy =
-							vi.spyOn(component["drivingPhysics"], "update")
+						const updateSpy: Mock =
+							vi
+								.spyOn(component["drivingPhysics"], "update")
 								.mockReturnValue(createDrivingState());
-						vi.spyOn(component["roadCollision"], "checkRoadBoundary")
+						vi
+							.spyOn(component["roadCollision"], "checkRoadBoundary")
 							.mockReturnValue(createBoundaryResult());
-						component["inputService"].keys = { ArrowUp: true };
+						component["inputService"].keys =
+							{ ArrowUp: true };
 
 						component["updatePhysics"](0.1, RaceState.Countdown);
 
@@ -417,11 +446,13 @@ describe("CarALotGameComponent",
 					{
 						const state: DrivingState =
 							createDrivingState();
-						const updateElapsedTimeSpy =
+						const updateElapsedTimeSpy: Mock =
 							vi.spyOn(component["raceState"], "updateElapsedTime");
-						vi.spyOn(component["trackFeatures"], "isInsideTunnel")
+						vi
+							.spyOn(component["trackFeatures"], "isInsideTunnel")
 							.mockReturnValue(false);
-						vi.spyOn(component["raceState"], "currentState")
+						vi
+							.spyOn(component["raceState"], "currentState")
 							.mockReturnValue(RaceState.Rescue);
 
 						component["updateVisuals"](state, 0.2);
@@ -435,33 +466,38 @@ describe("CarALotGameComponent",
 					{
 						const state: DrivingState =
 							createDrivingState();
-						const updateElapsedTimeSpy =
+						const updateElapsedTimeSpy: Mock =
 							vi.spyOn(component["raceState"], "updateElapsedTime");
-						vi.spyOn(component["trackFeatures"], "isInsideTunnel")
+						vi
+							.spyOn(component["trackFeatures"], "isInsideTunnel")
 							.mockReturnValue(true);
-						vi.spyOn(component["raceState"], "currentState")
+						vi
+							.spyOn(component["raceState"], "currentState")
 							.mockReturnValue(RaceState.Victory);
 
 						component["updateVisuals"](state, 0.2);
 
 						expect(updateElapsedTimeSpy)
-							.not.toHaveBeenCalled();
+							.not
+							.toHaveBeenCalled();
 					});
 
 				it("should apply bumper collisions when inside a bumper zone",
 					() =>
 					{
 						const state: DrivingState =
-							createDrivingState({ isGrounded: true });
+							createDrivingState(
+								{ isGrounded: true });
 						const boundary: RoadBoundaryResult =
-							createBoundaryResult({ isInBumperZone: true, distanceToEdge: 1, bumperNormalAngle: Math.PI / 2 });
-						const clampToRoadSpy =
+							createBoundaryResult(
+								{ isInBumperZone: true, distanceToEdge: 1, bumperNormalAngle: Math.PI / 2 });
+						const clampToRoadSpy: Mock =
 							vi.spyOn(component["drivingPhysics"], "clampToRoad");
-						const applyBounceSpy =
+						const applyBounceSpy: Mock =
 							vi.spyOn(component["drivingPhysics"], "applyBounce");
-						const deactivateBoostSpy =
+						const deactivateBoostSpy: Mock =
 							vi.spyOn(component["boostService"], "deactivateBoost");
-						const playBumperSpy =
+						const playBumperSpy: Mock =
 							vi.spyOn(component["audioService"], "playBumper");
 
 						component["handleCollisions"](state, RaceState.Racing, boundary);
@@ -480,18 +516,20 @@ describe("CarALotGameComponent",
 					() =>
 					{
 						const state: DrivingState =
-							createDrivingState({ isGrounded: true });
+							createDrivingState(
+								{ isGrounded: true });
 						const boundary: RoadBoundaryResult =
-							createBoundaryResult({ isOnRoad: false, isInBumperZone: false });
-						const transitionSpy =
+							createBoundaryResult(
+								{ isOnRoad: false, isInBumperZone: false });
+						const transitionSpy: Mock =
 							vi.spyOn(component["raceState"], "transitionTo");
-						const setMaxSpeedSpy =
+						const setMaxSpeedSpy: Mock =
 							vi.spyOn(component["drivingPhysics"], "setMaxSpeed");
-						const stopEngineSpy =
+						const stopEngineSpy: Mock =
 							vi.spyOn(component["audioService"], "stopEngine");
-						const stopMusicSpy =
+						const stopMusicSpy: Mock =
 							vi.spyOn(component["audioService"], "stopMusic");
-						const playGameOverSpy =
+						const playGameOverSpy: Mock =
 							vi.spyOn(component["audioService"], "playGameOver");
 
 						component["handleCollisions"](state, RaceState.Racing, boundary);
@@ -513,23 +551,28 @@ describe("CarALotGameComponent",
 					{
 						const state: DrivingState =
 							createDrivingState();
-						const jumpTriggerSpy =
+						const jumpTriggerSpy: Mock =
 							vi.spyOn(component["trackFeatures"], "checkJumpTrigger");
-						const clearTemporaryMaxSpeedSpy =
+						const clearTemporaryMaxSpeedSpy: Mock =
 							vi.spyOn(component["drivingPhysics"], "clearTemporaryMaxSpeed");
-						vi.spyOn(component["trackFeatures"], "isInsideTunnel")
+						vi
+							.spyOn(component["trackFeatures"], "isInsideTunnel")
 							.mockReturnValue(true);
-						vi.spyOn(component["coinService"], "checkCollection")
+						vi
+							.spyOn(component["coinService"], "checkCollection")
 							.mockReturnValue(false);
-						vi.spyOn(component["boostService"], "checkBoostTrigger")
+						vi
+							.spyOn(component["boostService"], "checkBoostTrigger")
 							.mockReturnValue(false);
-						vi.spyOn(component["boostService"], "isBoostActive")
+						vi
+							.spyOn(component["boostService"], "isBoostActive")
 							.mockReturnValue(false);
 
 						component["updateItems"](state, 0.3);
 
 						expect(jumpTriggerSpy)
-							.not.toHaveBeenCalled();
+							.not
+							.toHaveBeenCalled();
 						expect(clearTemporaryMaxSpeedSpy)
 							.toHaveBeenCalledOnce();
 					});
@@ -541,27 +584,33 @@ describe("CarALotGameComponent",
 							createDrivingState();
 						const jumpResult: JumpResult =
 							{ jumpVelocity: 12, rampIndex: 1 };
-						const applyJumpSpy =
+						const applyJumpSpy: Mock =
 							vi.spyOn(component["drivingPhysics"], "applyJump");
-						const playJumpSpy =
+						const playJumpSpy: Mock =
 							vi.spyOn(component["audioService"], "playJump");
-						const playCoinSpy =
+						const playCoinSpy: Mock =
 							vi.spyOn(component["audioService"], "playCoin");
-						const playBoostSpy =
+						const playBoostSpy: Mock =
 							vi.spyOn(component["audioService"], "playBoost");
-						const setTemporaryMaxSpeedSpy =
+						const setTemporaryMaxSpeedSpy: Mock =
 							vi.spyOn(component["drivingPhysics"], "setTemporaryMaxSpeed");
-						vi.spyOn(component["trackFeatures"], "isInsideTunnel")
+						vi
+							.spyOn(component["trackFeatures"], "isInsideTunnel")
 							.mockReturnValue(false);
-						vi.spyOn(component["trackFeatures"], "checkJumpTrigger")
+						vi
+							.spyOn(component["trackFeatures"], "checkJumpTrigger")
 							.mockReturnValue(jumpResult);
-						vi.spyOn(component["coinService"], "checkCollection")
+						vi
+							.spyOn(component["coinService"], "checkCollection")
 							.mockReturnValue(true);
-						vi.spyOn(component["boostService"], "checkBoostTrigger")
+						vi
+							.spyOn(component["boostService"], "checkBoostTrigger")
 							.mockReturnValue(true);
-						vi.spyOn(component["boostService"], "isBoostActive")
+						vi
+							.spyOn(component["boostService"], "isBoostActive")
 							.mockReturnValue(true);
-						vi.spyOn(component["boostService"], "getEffectiveMaxSpeedMph")
+						vi
+							.spyOn(component["boostService"], "getEffectiveMaxSpeedMph")
 							.mockReturnValue(88);
 
 						component["updateItems"](state, 0.3);
@@ -581,33 +630,33 @@ describe("CarALotGameComponent",
 				it("should dispose owned services during cleanup",
 					() =>
 					{
-						const gameLoopDisposeSpy =
+						const gameLoopDisposeSpy: Mock =
 							vi.spyOn(component["gameLoop"], "dispose");
-						const coinDisposeSpy =
+						const coinDisposeSpy: Mock =
 							vi.spyOn(component["coinService"], "dispose");
-						const boostDisposeSpy =
+						const boostDisposeSpy: Mock =
 							vi.spyOn(component["boostService"], "dispose");
-						const octopusDisposeSpy =
+						const octopusDisposeSpy: Mock =
 							vi.spyOn(component["octopusBoss"], "dispose");
-						const roadDisposeSpy =
+						const roadDisposeSpy: Mock =
 							vi.spyOn(component["roadCollision"], "dispose");
-						const trackFeaturesDisposeSpy =
+						const trackFeaturesDisposeSpy: Mock =
 							vi.spyOn(component["trackFeatures"], "dispose");
-						const raceCameraDisposeSpy =
+						const raceCameraDisposeSpy: Mock =
 							vi.spyOn(component["raceCamera"], "dispose");
-						const characterDisposeSpy =
+						const characterDisposeSpy: Mock =
 							vi.spyOn(component["characterBuilder"], "dispose");
-						const kartDisposeSpy =
+						const kartDisposeSpy: Mock =
 							vi.spyOn(component["kartBuilder"], "dispose");
-						const trackBuilderDisposeSpy =
+						const trackBuilderDisposeSpy: Mock =
 							vi.spyOn(component["trackBuilder"], "dispose");
-						const raceSceneDisposeSpy =
+						const raceSceneDisposeSpy: Mock =
 							vi.spyOn(component["raceScene"], "dispose");
-						const resetPhysicsSpy =
+						const resetPhysicsSpy: Mock =
 							vi.spyOn(component["drivingPhysics"], "reset");
-						const inputDisposeSpy =
+						const inputDisposeSpy: Mock =
 							vi.spyOn(component["inputService"], "dispose");
-						const audioDisposeSpy =
+						const audioDisposeSpy: Mock =
 							vi.spyOn(component["audioService"], "dispose");
 
 						component["cleanup"]();

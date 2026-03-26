@@ -353,8 +353,11 @@ describe("ErrorQueueService (Zoneless)",
 					() =>
 					{
 						const warnSpy: ReturnType<typeof vi.spyOn> =
-							vi.spyOn(console, "warn")
-								.mockImplementation(() => {});
+							vi
+								.spyOn(console, "warn")
+								.mockImplementation(
+									() =>
+									{});
 						const internalService: {
 							queue: CreateLogRequest[];
 							circuitBreakerState: "closed" | "open";
@@ -377,7 +380,9 @@ describe("ErrorQueueService (Zoneless)",
 						internalService.circuitBreakerState = "open";
 						(internalService as {
 							circuitBreakerOpenTime: number;
-						}).circuitBreakerOpenTime = dateService.nowTimestamp();
+						})
+							.circuitBreakerOpenTime =
+								dateService.nowTimestamp();
 
 						internalService.processBatch();
 
@@ -412,7 +417,8 @@ describe("ErrorQueueService (Zoneless)",
 							.toBe("open");
 
 						internalService.circuitBreakerOpenTime =
-							dateService.nowTimestamp() - environment.logging.circuitBreakerTimeout;
+							dateService.nowTimestamp()
+								- environment.logging.circuitBreakerTimeout;
 
 						expect(internalService.isCircuitOpen())
 							.toBe(false);

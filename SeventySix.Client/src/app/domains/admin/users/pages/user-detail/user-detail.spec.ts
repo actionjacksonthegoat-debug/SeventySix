@@ -544,7 +544,6 @@ describe("UserDetailPage",
 								},
 								expect.any(Object));
 					});
-
 			});
 
 		describe("role management",
@@ -631,7 +630,8 @@ describe("UserDetailPage",
 				it("should not call add mutation when userId is not a valid number",
 					async () =>
 					{
-						mockActivatedRoute.snapshot.paramMap.get = () => "invalid";
+						mockActivatedRoute.snapshot.paramMap.get =
+							() => "invalid";
 						const mockAddMutation: ReturnType<typeof createMockMutationResult> =
 							createMockMutationResult();
 						mockAddMutation.mutate =
@@ -652,7 +652,8 @@ describe("UserDetailPage",
 				it("should not call remove mutation when userId is not a valid number",
 					async () =>
 					{
-						mockActivatedRoute.snapshot.paramMap.get = () => "invalid";
+						mockActivatedRoute.snapshot.paramMap.get =
+							() => "invalid";
 						const mockRemoveMutation: ReturnType<typeof createMockMutationResult> =
 							createMockMutationResult();
 						mockRemoveMutation.mutate =

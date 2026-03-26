@@ -269,9 +269,11 @@ describe("PermissionRequestListPage",
 				component.onRowAction(event);
 
 				expect(mockApproveMutation.mutate)
-					.not.toHaveBeenCalled();
+					.not
+					.toHaveBeenCalled();
 				expect(mockRejectMutation.mutate)
-					.not.toHaveBeenCalled();
+					.not
+					.toHaveBeenCalled();
 			});
 
 		it("should show success notification with count when bulk approve succeeds",
@@ -375,17 +377,20 @@ describe("PermissionRequestListPage",
 				component.onBulkAction(event);
 
 				expect(mockBulkApproveMutation.mutate)
-					.not.toHaveBeenCalled();
+					.not
+					.toHaveBeenCalled();
 				expect(mockBulkRejectMutation.mutate)
-					.not.toHaveBeenCalled();
+					.not
+					.toHaveBeenCalled();
 			});
 
 		it("should format null request messages as a dash",
 			() =>
 			{
-				const messageColumn =
+				const messageColumn: (typeof component.columns)[number] | undefined =
 					component.columns.find(
-						(column) => column.key === "requestMessage");
+						(column) =>
+							column.key === "requestMessage");
 
 				expect(messageColumn?.formatter?.(null))
 					.toBe("-");

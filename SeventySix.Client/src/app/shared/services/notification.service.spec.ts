@@ -614,7 +614,8 @@ describe("NotificationService",
 							.toBe(5);
 						expect(
 							notifications.find(
-								(notification: Notification) => notification.id === oldestId))
+								(notification: Notification) =>
+									notification.id === oldestId))
 							.toBeUndefined();
 						expect(notifications[4].message)
 							.toBe("Conflict");
@@ -656,7 +657,6 @@ describe("NotificationService",
 							.toBe("Msg 6");
 					});
 			});
-
 	});
 
 describe("NotificationService copyToClipboard",

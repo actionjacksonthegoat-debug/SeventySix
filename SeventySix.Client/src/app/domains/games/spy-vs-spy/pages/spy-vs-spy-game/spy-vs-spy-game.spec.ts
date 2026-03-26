@@ -423,9 +423,9 @@ describe("SpyVsSpyGameComponent",
 				it("should start game and play soundtrack",
 					() =>
 					{
-						const startGameSpy =
+						const startGameSpy: Mock =
 							vi.spyOn(component["spyFlowService"], "startGame");
-						const playSoundtrackSpy =
+						const playSoundtrackSpy: Mock =
 							vi.spyOn(component["audioService"], "playSoundtrack");
 
 						component.onStartGame();
@@ -439,7 +439,7 @@ describe("SpyVsSpyGameComponent",
 				it("should restart game",
 					() =>
 					{
-						const restartSpy =
+						const restartSpy: Mock =
 							vi.spyOn(component["spyFlowService"], "restartGame");
 
 						component.onRestartGame();
@@ -451,13 +451,14 @@ describe("SpyVsSpyGameComponent",
 				it("should trigger search, trap placement, trap cycling, and combat",
 					() =>
 					{
-						const triggerSearchSpy =
+						const triggerSearchSpy: Mock =
 							vi.spyOn(component["spyFlowService"], "triggerSearch");
-						const triggerTrapPlacementSpy =
+						const triggerTrapPlacementSpy: Mock =
 							vi.spyOn(component["spyFlowService"], "triggerTrapPlacement");
-						const triggerCombatSpy =
+						const triggerCombatSpy: Mock =
 							vi.spyOn(component["spyFlowService"], "triggerCombat");
-						const preventDefaultSpy = vi.fn();
+						const preventDefaultSpy: Mock =
+							vi.fn();
 
 						component["onSearch"]();
 						component["onCycleTrapType"]();
@@ -484,13 +485,19 @@ describe("SpyVsSpyGameComponent",
 				it("should ignore mobile taps when the game is not playing",
 					() =>
 					{
-						const pickWorldPointSpy =
-							vi.spyOn(component as unknown as { pickWorldPointFromTap(clientX: number, clientY: number): { x: number; z: number; } | null; }, "pickWorldPointFromTap");
+						const pickWorldPointSpy: Mock =
+							vi.spyOn(
+								component as unknown as {
+									pickWorldPointFromTap(clientX: number, clientY: number): { x: number; z: number; } | null;
+								},
+								"pickWorldPointFromTap");
 
-						component["onMobileTap"]({ clientX: 10, clientY: 20 });
+						component["onMobileTap"](
+							{ clientX: 10, clientY: 20 });
 
 						expect(pickWorldPointSpy)
-							.not.toHaveBeenCalled();
+							.not
+							.toHaveBeenCalled();
 					});
 
 				it("should trigger furniture search on mobile tap when near furniture",
@@ -498,57 +505,74 @@ describe("SpyVsSpyGameComponent",
 					{
 						mockGameStateSignal.set(SpyGameState.Playing);
 						mockNearFurnitureSignal.set(true);
-						const triggerSearchSpy =
+						const triggerSearchSpy: Mock =
 							vi.spyOn(component["spyFlowService"], "triggerSearch");
-						const setMoveTargetSpy =
+						const setMoveTargetSpy: Mock =
 							vi.spyOn(component["spyPhysics"], "setMoveTarget");
 
-						component["onMobileTap"]({ clientX: 15, clientY: 25 });
+						component["onMobileTap"](
+							{ clientX: 15, clientY: 25 });
 
 						expect(triggerSearchSpy)
 							.toHaveBeenCalledOnce();
 						expect(setMoveTargetSpy)
-							.not.toHaveBeenCalled();
+							.not
+							.toHaveBeenCalled();
 					});
 
 				it("should ignore mobile taps when no world point can be picked",
 					() =>
 					{
 						mockGameStateSignal.set(SpyGameState.Playing);
-						const pickWorldPointSpy =
-							vi.spyOn(component as unknown as { pickWorldPointFromTap(clientX: number, clientY: number): { x: number; z: number; } | null; }, "pickWorldPointFromTap")
+						const pickWorldPointSpy: Mock =
+							vi
+								.spyOn(
+									component as unknown as {
+										pickWorldPointFromTap(clientX: number, clientY: number): { x: number; z: number; } | null;
+									},
+									"pickWorldPointFromTap")
 								.mockReturnValue(null);
-						const setMoveTargetSpy =
+						const setMoveTargetSpy: Mock =
 							vi.spyOn(component["spyPhysics"], "setMoveTarget");
 
-						component["onMobileTap"]({ clientX: 30, clientY: 40 });
+						component["onMobileTap"](
+							{ clientX: 30, clientY: 40 });
 
 						expect(pickWorldPointSpy)
 							.toHaveBeenCalledOnce();
 						expect(setMoveTargetSpy)
-							.not.toHaveBeenCalled();
+							.not
+							.toHaveBeenCalled();
 					});
 
 				it("should set a move target from a valid mobile tap",
 					() =>
 					{
 						mockGameStateSignal.set(SpyGameState.Playing);
-						const pickWorldPointSpy =
-							vi.spyOn(component as unknown as { pickWorldPointFromTap(clientX: number, clientY: number): { x: number; z: number; } | null; }, "pickWorldPointFromTap")
-								.mockReturnValue({ x: 120, z: 220 });
-						const setMoveTargetSpy =
+						const pickWorldPointSpy: Mock =
+							vi
+								.spyOn(
+									component as unknown as {
+										pickWorldPointFromTap(clientX: number, clientY: number): { x: number; z: number; } | null;
+									},
+									"pickWorldPointFromTap")
+								.mockReturnValue(
+									{ x: 120, z: 220 });
+						const setMoveTargetSpy: Mock =
 							vi.spyOn(component["spyPhysics"], "setMoveTarget");
-						const resetPositionSpy =
+						const resetPositionSpy: Mock =
 							vi.spyOn(component["spyPhysics"], "resetPosition");
 
-						component["onMobileTap"]({ clientX: 50, clientY: 60 });
+						component["onMobileTap"](
+							{ clientX: 50, clientY: 60 });
 
 						expect(pickWorldPointSpy)
 							.toHaveBeenCalledOnce();
 						expect(setMoveTargetSpy)
 							.toHaveBeenCalledWith(120, 220);
 						expect(resetPositionSpy)
-							.not.toHaveBeenCalled();
+							.not
+							.toHaveBeenCalled();
 					});
 
 				it("should reset position when a collected-items tap lands on the runway",
@@ -556,16 +580,26 @@ describe("SpyVsSpyGameComponent",
 					{
 						mockGameStateSignal.set(SpyGameState.Playing);
 						mockAllItemsCollectedSignal.set(true);
-						const pickWorldPointSpy =
-							vi.spyOn(component as unknown as { pickWorldPointFromTap(clientX: number, clientY: number): { x: number; z: number; } | null; }, "pickWorldPointFromTap")
-								.mockReturnValue({ x: 0, z: 0 });
-						const runwaySpy =
-							vi.spyOn(component as unknown as { isWithinAirstripRunway(positionX: number, positionZ: number): boolean; }, "isWithinAirstripRunway")
+						const pickWorldPointSpy: Mock =
+							vi
+								.spyOn(
+									component as unknown as {
+										pickWorldPointFromTap(clientX: number, clientY: number): { x: number; z: number; } | null;
+									},
+									"pickWorldPointFromTap")
+								.mockReturnValue(
+									{ x: 0, z: 0 });
+						const runwaySpy: Mock =
+							vi
+								.spyOn(
+									component as unknown as { isWithinAirstripRunway(positionX: number, positionZ: number): boolean; },
+									"isWithinAirstripRunway")
 								.mockReturnValue(true);
-						const resetPositionSpy =
+						const resetPositionSpy: Mock =
 							vi.spyOn(component["spyPhysics"], "resetPosition");
 
-						component["onMobileTap"]({ clientX: 75, clientY: 85 });
+						component["onMobileTap"](
+							{ clientX: 75, clientY: 85 });
 
 						expect(pickWorldPointSpy)
 							.toHaveBeenCalledOnce();
@@ -600,7 +634,10 @@ describe("SpyVsSpyGameComponent",
 
 						component["scene"] =
 							{
-								pick: vi.fn().mockReturnValue({ hit: false, pickedPoint: null })
+								pick: vi
+									.fn()
+									.mockReturnValue(
+										{ hit: false, pickedPoint: null })
 							} as unknown as typeof component["scene"];
 
 						expect(component["pickWorldPointFromTap"](3, 4))
@@ -608,11 +645,15 @@ describe("SpyVsSpyGameComponent",
 
 						component["scene"] =
 							{
-								pick: vi.fn().mockReturnValue({ hit: true, pickedPoint: { x: 12, z: 34 } })
+								pick: vi
+									.fn()
+									.mockReturnValue(
+										{ hit: true, pickedPoint: { x: 12, z: 34 } })
 							} as unknown as typeof component["scene"];
 
 						expect(component["pickWorldPointFromTap"](5, 6))
-							.toEqual({ x: 12, z: 34 });
+							.toEqual(
+								{ x: 12, z: 34 });
 					});
 
 				it("should initialize the minimap only once",
@@ -621,11 +662,14 @@ describe("SpyVsSpyGameComponent",
 						const canvasElement: HTMLCanvasElement =
 							document.createElement("canvas");
 						const canvasRef: ElementRef<HTMLCanvasElement> =
-							{ nativeElement: canvasElement } as ElementRef<HTMLCanvasElement>;
-						const initializeSpy =
+							{ nativeElement: canvasElement } as ElementRef<
+								HTMLCanvasElement>;
+						const initializeSpy: Mock =
 							vi.spyOn(component["minimapService"], "initialize");
 						component["minimapCanvas"] =
-							vi.fn().mockReturnValue(canvasRef);
+							vi
+								.fn()
+								.mockReturnValue(canvasRef);
 
 						component["initializeMinimapIfNeeded"]();
 						component["initializeMinimapIfNeeded"]();
@@ -637,31 +681,31 @@ describe("SpyVsSpyGameComponent",
 				it("should dispose all owned services during cleanup",
 					() =>
 					{
-						const restartSpy =
+						const restartSpy: Mock =
 							vi.spyOn(component["spyFlowService"], "restartGame");
-						const gameLoopDisposeSpy =
+						const gameLoopDisposeSpy: Mock =
 							vi.spyOn(component["gameLoop"], "dispose");
-						const inputDisposeSpy =
+						const inputDisposeSpy: Mock =
 							vi.spyOn(component["inputService"], "dispose");
-						const aiDisposeSpy =
+						const aiDisposeSpy: Mock =
 							vi.spyOn(component["spyAi"], "dispose");
-						const physicsDisposeSpy =
+						const physicsDisposeSpy: Mock =
 							vi.spyOn(component["spyPhysics"], "dispose");
-						const itemDisposeSpy =
+						const itemDisposeSpy: Mock =
 							vi.spyOn(component["itemService"], "dispose");
-						const trapDisposeSpy =
+						const trapDisposeSpy: Mock =
 							vi.spyOn(component["trapService"], "dispose");
-						const audioDisposeSpy =
+						const audioDisposeSpy: Mock =
 							vi.spyOn(component["audioService"], "dispose");
-						const builderDisposeSpy =
+						const builderDisposeSpy: Mock =
 							vi.spyOn(component["spyBuilder"], "dispose");
-						const cameraDisposeSpy =
+						const cameraDisposeSpy: Mock =
 							vi.spyOn(component["spyCamera"], "dispose");
-						const furnitureDisposeSpy =
+						const furnitureDisposeSpy: Mock =
 							vi.spyOn(component["furnitureService"], "dispose");
-						const islandDisposeSpy =
+						const islandDisposeSpy: Mock =
 							vi.spyOn(component["islandScene"], "dispose");
-						const minimapDisposeSpy =
+						const minimapDisposeSpy: Mock =
 							vi.spyOn(component["minimapService"], "dispose");
 
 						component["cleanup"]();

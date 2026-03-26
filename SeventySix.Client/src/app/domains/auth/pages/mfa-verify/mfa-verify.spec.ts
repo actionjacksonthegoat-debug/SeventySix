@@ -304,7 +304,8 @@ describe("MfaVerifyComponent",
 						expect(mockMfaService.clearMfaState)
 							.toHaveBeenCalled();
 						expect(router.navigate)
-							.toHaveBeenCalledWith([APP_ROUTES.AUTH.LOGIN]);
+							.toHaveBeenCalledWith(
+								[APP_ROUTES.AUTH.LOGIN]);
 					});
 
 				it("should not verify when code is empty",
@@ -572,7 +573,8 @@ describe("MfaVerifyComponent",
 						component["onResendCode"]();
 
 						expect(mockMfaService.resendMfaCode)
-							.not.toHaveBeenCalled();
+							.not
+							.toHaveBeenCalled();
 					});
 
 				it("should warn and start cooldown on resend cooldown errors",
@@ -608,7 +610,8 @@ describe("MfaVerifyComponent",
 						expect(mockMfaService.clearMfaState)
 							.toHaveBeenCalled();
 						expect(router.navigate)
-							.toHaveBeenCalledWith([APP_ROUTES.AUTH.LOGIN]);
+							.toHaveBeenCalledWith(
+								[APP_ROUTES.AUTH.LOGIN]);
 					});
 
 				it("should show a generic error when resend fails with an unknown error code",
@@ -630,7 +633,8 @@ describe("MfaVerifyComponent",
 							.toBe(false);
 					});
 
-				it("should not resend when MFA state is missing", () =>
+				it("should not resend when MFA state is missing",
+					() =>
 					{
 						component["mfaState"] = null;
 
