@@ -1,6 +1,6 @@
 ---
 description: Code formatting rules for all TypeScript and C# files
-applyTo: "**/SeventySix.Client/src/**/*.{ts,html,scss,css},**/SeventySix.Server/**/*.cs"
+applyTo: "**/SeventySix.Client/src/**/*.{ts,html,scss,css},**/SeventySix.Server/**/*.cs,**/seventysixcommerce-sveltekit/src/**/*.{ts,svelte,css},**/seventysixcommerce-tanstack/src/**/*.{ts,tsx,css}"
 ---
 
 # Formatting Instructions
@@ -18,6 +18,16 @@ applyTo: "**/SeventySix.Client/src/**/*.{ts,html,scss,css},**/SeventySix.Server/
 | Run `dprint` as a pre-step | Manually fix formatting during development |
 
 **Why**: `npm run format:client` runs ESLint → dprint → ESLint in that exact order. Running `dprint` directly bypasses the ESLint pre/post passes. Run format only at the end of implementation phases, right before the test gate.
+
+## Multi-Project Formatting Scope
+
+- Root `npm run format` formats all active projects in this repository:
+    - Server (`format:server`)
+    - Angular client (`format:client`)
+    - SvelteKit sandbox (`format:svelte`)
+    - TanStack sandbox (`format:tanstack`)
+- Sandbox projects follow the same ESLint + dprint style pipeline as the main TypeScript projects
+- Shared custom ESLint rules are sourced from `SeventySix.Client/eslint-rules/` and referenced by sandbox ESLint configs
 
 ## End-of-File Newlines (CRITICAL — NO TRAILING NEWLINE)
 

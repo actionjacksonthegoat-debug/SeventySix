@@ -3,7 +3,14 @@ import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { SwUpdate, VersionReadyEvent } from "@angular/service-worker";
 import { LoggerService } from "@shared/services/logger.service";
 import { WindowService } from "@shared/services/window.service";
-import { concat, filter, first, interval } from "rxjs";
+import {
+	filter,
+	first,
+	merge,
+	Observable,
+	switchMap,
+	timer
+} from "rxjs";
 
 /**
  * Service Worker update service.
@@ -21,6 +28,13 @@ import { concat, filter, first, interval } from "rxjs";
 	})
 export class SwUpdateService
 {
+	/**
+	 * Guard to prevent overlapping update checks when startup retries are close together.
+	 * @type {boolean}
+	 * @private
+	 */
+	private isCheckInProgress: boolean = false;
+
 	/**
 	 * Service Worker update API.
 	 * @type {SwUpdate}
@@ -79,34 +93,62 @@ export class SwUpdateService
 	 */
 	private checkForUpdates(): void
 	{
-		// Wait for app to stabilize, then check for updates every 6 hours
-		const appIsStable: import("rxjs").Observable<boolean> =
+		// Wait for app to stabilize, then run aggressive startup retries before
+		// switching to long-running checks.
+		const appIsStable: Observable<boolean> =
 			this.appRef.isStable.pipe(
 				first(
 					(isStable: boolean) => isStable === true));
-		const everySixHours: import("rxjs").Observable<number> =
-			interval(
-				6 * 60 * 60 * 1000);
-		const everySixHoursOnceAppIsStable: import("rxjs").Observable<
-			boolean | number> =
-			concat(appIsStable, everySixHours);
+		const startupChecks: Observable<number> =
+			merge(
+				timer(0),
+				timer(10_000),
+				timer(30_000),
+				timer(60_000));
+		const periodicChecks: Observable<number> =
+			timer(6 * 60 * 60 * 1000, 6 * 60 * 60 * 1000);
+		const updateCheckSchedule: Observable<number> =
+			appIsStable.pipe(
+				switchMap(
+					() =>
+						merge(startupChecks, periodicChecks)));
 
-		everySixHoursOnceAppIsStable
+		updateCheckSchedule
 			.pipe(takeUntilDestroyed())
 			.subscribe(
 				async () =>
 				{
-					try
-					{
-						await this.swUpdate.checkForUpdate();
-					}
-					catch (error)
-					{
-						this.logger.error(
-							"Failed to check for updates",
-							error instanceof Error ? error : undefined);
-					}
+					await this.checkForUpdateSilently();
 				});
+	}
+
+	/**
+	 * Performs a background update check and logs failures without surfacing browser dialogs.
+	 * @returns {Promise<void>}
+	 */
+	private async checkForUpdateSilently(): Promise<void>
+	{
+		if (this.isCheckInProgress)
+		{
+			return;
+		}
+
+		this.isCheckInProgress = true;
+
+		try
+		{
+			await this.swUpdate.checkForUpdate();
+		}
+		catch (error)
+		{
+			this.logger.error(
+				"Failed to check for updates",
+				error instanceof Error ? error : undefined);
+		}
+		finally
+		{
+			this.isCheckInProgress = false;
+		}
 	}
 
 	/**
@@ -127,10 +169,8 @@ export class SwUpdateService
 			.subscribe(
 				() =>
 				{
-					if (this.confirmUpdate())
-					{
-						this.activateUpdate();
-					}
+					this.logger.info("New version available. Activating update.");
+					void this.activateUpdate();
 				});
 	}
 
@@ -154,35 +194,8 @@ export class SwUpdateService
 						{
 							reason: event.reason
 						});
-
-					// Reload the page
-					this.notifyUnrecoverableState(
-						"An error occurred that requires reloading the page.");
 					this.windowService.reload();
 				});
-	}
-
-	/**
-	 * Prompts user to confirm update.
-	 * Can be customized to show a custom dialog.
-	 * @returns {boolean}
-	 * True if user confirms the update.
-	 */
-	private confirmUpdate(): boolean
-	{
-		return confirm(
-			"A new version is available. Would you like to update now?");
-	}
-
-	/**
-	 * Notifies user of unrecoverable state.
-	 * @param {string} message
-	 * The message to show to the user.
-	 * @returns {void}
-	 */
-	private notifyUnrecoverableState(message: string): void
-	{
-		alert(message);
 	}
 
 	/**

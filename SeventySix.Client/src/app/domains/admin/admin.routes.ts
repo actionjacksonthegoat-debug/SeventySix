@@ -47,6 +47,25 @@ export const ADMIN_ROUTES: Routes =
 			title: "Admin Dashboard - SeventySix"
 		},
 		{
+			path: "sandbox",
+			redirectTo: "svelte",
+			pathMatch: "full"
+		},
+		{
+			path: "svelte",
+			loadChildren: () =>
+				import("./svelte/svelte-admin.routes").then(
+					(mod) => mod.SVELTE_ADMIN_ROUTES),
+			title: "SvelteKit Admin - SeventySix"
+		},
+		{
+			path: "tanstack",
+			loadChildren: () =>
+				import("./tanstack/tanstack-admin.routes").then(
+					(mod) => mod.TANSTACK_ADMIN_ROUTES),
+			title: "TanStack Admin - SeventySix"
+		},
+		{
 			path: "users",
 			providers: [
 				UserService,

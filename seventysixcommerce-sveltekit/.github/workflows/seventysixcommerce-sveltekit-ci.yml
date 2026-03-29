@@ -1,0 +1,39 @@
+name: SeventySixCommerce SvelteKit CI
+on:
+  pull_request:
+    paths: ['seventysixcommerce-sveltekit/**']
+  push:
+    branches: [main]
+    paths: ['seventysixcommerce-sveltekit/**']
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: seventysixcommerce_sveltekit_test
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_password
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd="pg_isready -U test_user"
+          --health-interval=5s
+          --health-timeout=3s
+          --health-retries=5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install dependencies
+        run: cd seventysixcommerce-sveltekit && npm ci
+      - name: Build
+        run: cd seventysixcommerce-sveltekit && npm run build
+        env:
+          DATABASE_URL: postgresql://test_user:test_password@localhost:5432/seventysixcommerce_sveltekit_test
+      - name: Test
+        run: cd seventysixcommerce-sveltekit && npm test
+        env:
+          DATABASE_URL: postgresql://test_user:test_password@localhost:5432/seventysixcommerce_sveltekit_test

@@ -22,6 +22,14 @@ export const ADMIN_ROUTES: Readonly<{
 	PERMISSION_REQUESTS: {
 		LIST: "/admin/permission-requests";
 	};
+	SVELTE: {
+		DASHBOARD: "/admin/svelte";
+		LOGS: "/admin/svelte/logs";
+	};
+	TANSTACK: {
+		DASHBOARD: "/admin/tanstack";
+		LOGS: "/admin/tanstack/logs";
+	};
 }> =
 	{
 	/** Admin root route. */
@@ -61,5 +69,15 @@ export const ADMIN_ROUTES: Readonly<{
 		/** Permission request routes. */
 		PERMISSION_REQUESTS: {
 			LIST: "/admin/permission-requests"
+		},
+		/** SvelteKit admin section routes. */
+		SVELTE: {
+			DASHBOARD: "/admin/svelte",
+			LOGS: "/admin/svelte/logs"
+		},
+		/** TanStack admin section routes. */
+		TANSTACK: {
+			DASHBOARD: "/admin/tanstack",
+			LOGS: "/admin/tanstack/logs"
 		}
 	} as const;

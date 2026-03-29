@@ -1,0 +1,41 @@
+<app-page-header title="TanStack Dashboard" />
+
+<div class="dashboard-layout">
+	<mat-card class="health-summary-card">
+		<mat-card-header>
+			<mat-card-title>Health Summary (24h)</mat-card-title>
+		</mat-card-header>
+		<mat-card-content>
+			@if (isLoading()) {
+				<mat-spinner diameter="24" />
+			} @else {
+				<div class="log-counts">
+					<div class="count-item warning">
+						<span class="count-value">{{ warningCount() }}</span>
+						<span class="count-label">Warnings</span>
+					</div>
+					<div class="count-item error">
+						<span class="count-value">{{ errorCount() }}</span>
+						<span class="count-label">Errors</span>
+					</div>
+				</div>
+			}
+		</mat-card-content>
+		<mat-card-actions>
+			<a mat-button [routerLink]="['../', logsRoute]">View Logs</a>
+		</mat-card-actions>
+	</mat-card>
+
+	<mat-tab-group>
+		<mat-tab label="Performance">
+			<app-grafana-dashboard-embed
+				[dashboardUid]="performanceDashboardUid"
+				title="TanStack Performance" />
+		</mat-tab>
+		<mat-tab label="Commerce">
+			<app-grafana-dashboard-embed
+				[dashboardUid]="commerceDashboardUid"
+				title="TanStack Commerce" />
+		</mat-tab>
+	</mat-tab-group>
+</div>

@@ -1,0 +1,443 @@
+name: SeventySixCommerce CI
+
+on:
+    push:
+        branches: [master]
+        paths:
+            - "seventysixcommerce-tanstack/**"
+            - "seventysixcommerce-sveltekit/**"
+            - ".github/workflows/seventysixcommerce-ci.yml"
+    pull_request:
+        branches: [master]
+        paths:
+            - "seventysixcommerce-tanstack/**"
+            - "seventysixcommerce-sveltekit/**"
+            - ".github/workflows/seventysixcommerce-ci.yml"
+    workflow_dispatch:
+
+permissions:
+    contents: read
+
+env:
+    FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+concurrency:
+    group: seventysixcommerce-ci-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    # ──────────────────────────────────────────────────────────
+    # Stage 1: TanStack Start — Typecheck + Test + Build
+    # ──────────────────────────────────────────────────────────
+    tanstack-build:
+        name: TanStack Build & Test
+        runs-on: ubuntu-latest
+
+        defaults:
+            run:
+                working-directory: seventysixcommerce-tanstack
+
+        services:
+            postgres:
+                image: postgres:17-alpine
+                env:
+                    POSTGRES_USER: SeventySixCommerce
+                    POSTGRES_PASSWORD: seventysixcommerce_ci
+                    POSTGRES_DB: SeventySixCommerce
+                ports:
+                    - 5438:5432
+                options: >-
+                    --health-cmd "pg_isready -U SeventySixCommerce"
+                    --health-interval 5s
+                    --health-timeout 3s
+                    --health-retries 5
+
+        env:
+            DATABASE_URL: postgresql://SeventySixCommerce:seventysixcommerce_ci@localhost:5438/SeventySixCommerce
+            MOCK_SERVICES: "true"
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+            - name: Setup Node.js
+              uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+              with:
+                  node-version: "22.x"
+                  cache: "npm"
+                  cache-dependency-path: seventysixcommerce-tanstack/package-lock.json
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Typecheck
+              run: npx tsc --noEmit
+
+            - name: Test with coverage
+              run: npx vitest run --coverage
+
+            - name: Build
+              run: npm run build
+
+            - name: Upload coverage
+              if: always()
+              uses: codecov/codecov-action@ad3126e916f78f00edff4ed0317cf185271ccc2d # v5
+              with:
+                  token: ${{ secrets.CODECOV_TOKEN }}
+                  flags: seventysixcommerce-tanstack
+                  directory: seventysixcommerce-tanstack/coverage
+                  fail_ci_if_error: false
+
+    # ──────────────────────────────────────────────────────────
+    # Stage 1: SvelteKit — Check + Test + Build
+    # ──────────────────────────────────────────────────────────
+    sveltekit-build:
+        name: SvelteKit Build & Test
+        runs-on: ubuntu-latest
+
+        defaults:
+            run:
+                working-directory: seventysixcommerce-sveltekit
+
+        services:
+            postgres:
+                image: postgres:17-alpine
+                env:
+                    POSTGRES_DB: seventysixcommerce_sveltekit_test
+                    POSTGRES_USER: test_user
+                    POSTGRES_PASSWORD: test_password
+                ports:
+                    - 5439:5432
+                options: >-
+                    --health-cmd "pg_isready -U test_user"
+                    --health-interval 5s
+                    --health-timeout 3s
+                    --health-retries 5
+
+        env:
+            DATABASE_URL: postgresql://test_user:test_password@localhost:5439/seventysixcommerce_sveltekit_test
+            MOCK_SERVICES: "true"
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+            - name: Setup Node.js
+              uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+              with:
+                  node-version: "22.x"
+                  cache: "npm"
+                  cache-dependency-path: seventysixcommerce-sveltekit/package-lock.json
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Svelte Check
+              run: npm run check
+
+            - name: Test with coverage
+              run: npx vitest run --coverage
+
+            - name: Build
+              run: npm run build
+              env:
+                  DATABASE_URL: postgresql://test_user:test_password@localhost:5439/seventysixcommerce_sveltekit_test
+
+            - name: Upload coverage
+              if: always()
+              uses: codecov/codecov-action@ad3126e916f78f00edff4ed0317cf185271ccc2d # v5
+              with:
+                  token: ${{ secrets.CODECOV_TOKEN }}
+                  flags: seventysixcommerce-sveltekit
+                  directory: seventysixcommerce-sveltekit/coverage
+                  fail_ci_if_error: false
+
+    # ──────────────────────────────────────────────────────────
+    # Stage 2: SvelteKit E2E Tests
+    # ──────────────────────────────────────────────────────────
+    e2e-sveltekit:
+        name: SvelteKit E2E Tests
+        runs-on: ubuntu-latest
+        needs: [sveltekit-build]
+
+        defaults:
+            run:
+                working-directory: seventysixcommerce-sveltekit
+
+        services:
+            postgres:
+                image: postgres:17-alpine
+                env:
+                    POSTGRES_USER: ssxc_e2e
+                    POSTGRES_PASSWORD: ssxc_e2e_password
+                    POSTGRES_DB: seventysixcommerce_sveltekit_e2e
+                ports:
+                    - 5440:5432
+                options: >-
+                    --health-cmd "pg_isready -U ssxc_e2e -d seventysixcommerce_sveltekit_e2e"
+                    --health-interval 10s
+                    --health-timeout 5s
+                    --health-retries 5
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+            - name: Setup Node.js
+              uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+              with:
+                  node-version: "22.x"
+                  cache: "npm"
+                  cache-dependency-path: seventysixcommerce-sveltekit/package-lock.json
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Install Playwright browsers
+              run: npx playwright install --with-deps chromium
+
+            - name: Build application
+              run: npm run build
+              env:
+                  DATABASE_URL: postgresql://ssxc_e2e:ssxc_e2e_password@localhost:5440/seventysixcommerce_sveltekit_e2e
+
+            - name: Run database migrations
+              run: npm run db:migrate
+              env:
+                  DATABASE_URL: postgresql://ssxc_e2e:ssxc_e2e_password@localhost:5440/seventysixcommerce_sveltekit_e2e
+
+            - name: Start application
+              run: node build &
+              env:
+                  DATABASE_URL: postgresql://ssxc_e2e:ssxc_e2e_password@localhost:5440/seventysixcommerce_sveltekit_e2e
+                  PORT: "3011"
+                  NODE_ENV: production
+
+            - name: Wait for application to be ready
+              run: |
+                  for i in $(seq 1 30); do
+                      if curl -sf http://localhost:3011/healthz > /dev/null 2>&1; then
+                          echo "Application is ready"
+                          exit 0
+                      fi
+                      echo "Attempt $i/30 — waiting..."
+                      sleep 2
+                  done
+                  echo "Application failed to start within 60 seconds"
+                  exit 1
+
+            - name: Run E2E tests
+              run: npx playwright test
+              env:
+                  DATABASE_URL: postgresql://ssxc_e2e:ssxc_e2e_password@localhost:5440/seventysixcommerce_sveltekit_e2e
+                  CI: "true"
+
+            - name: Upload Playwright report
+              uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4
+              if: always()
+              with:
+                  name: sveltekit-playwright-report
+                  path: seventysixcommerce-sveltekit/playwright-report/
+                  retention-days: 14
+
+    # ──────────────────────────────────────────────────────────
+    # Stage 2: TanStack E2E Tests
+    # ──────────────────────────────────────────────────────────
+    e2e-tanstack:
+        name: TanStack E2E Tests
+        runs-on: ubuntu-latest
+        needs: [tanstack-build]
+
+        defaults:
+            run:
+                working-directory: seventysixcommerce-tanstack
+
+        services:
+            postgres:
+                image: postgres:17-alpine
+                env:
+                    POSTGRES_USER: ssxc_e2e
+                    POSTGRES_PASSWORD: ssxc_e2e_password
+                    POSTGRES_DB: seventysixcommerce_tanstack_e2e
+                ports:
+                    - 5441:5432
+                options: >-
+                    --health-cmd "pg_isready -U ssxc_e2e -d seventysixcommerce_tanstack_e2e"
+                    --health-interval 10s
+                    --health-timeout 5s
+                    --health-retries 5
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+            - name: Setup Node.js
+              uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+              with:
+                  node-version: "22.x"
+                  cache: "npm"
+                  cache-dependency-path: seventysixcommerce-tanstack/package-lock.json
+
+            - name: Install dependencies
+              run: npm ci --legacy-peer-deps
+
+            - name: Install Playwright browsers
+              run: npx playwright install --with-deps chromium
+
+            - name: Build application
+              run: npm run build
+              env:
+                  DATABASE_URL: postgresql://ssxc_e2e:ssxc_e2e_password@localhost:5441/seventysixcommerce_tanstack_e2e
+
+            - name: Run database migrations
+              run: npm run db:migrate
+              env:
+                  DATABASE_URL: postgresql://ssxc_e2e:ssxc_e2e_password@localhost:5441/seventysixcommerce_tanstack_e2e
+
+            - name: Start application
+              run: node dist/server/server.js &
+              env:
+                  DATABASE_URL: postgresql://ssxc_e2e:ssxc_e2e_password@localhost:5441/seventysixcommerce_tanstack_e2e
+                  PORT: "3012"
+                  NODE_ENV: production
+
+            - name: Wait for application to be ready
+              run: |
+                  for i in $(seq 1 30); do
+                      if curl -sf http://localhost:3012/api/healthz > /dev/null 2>&1; then
+                          echo "Application is ready"
+                          exit 0
+                      fi
+                      echo "Attempt $i/30 — waiting..."
+                      sleep 2
+                  done
+                  echo "Application failed to start within 60 seconds"
+                  exit 1
+
+            - name: Run E2E tests
+              run: npx playwright test
+              env:
+                  DATABASE_URL: postgresql://ssxc_e2e:ssxc_e2e_password@localhost:5441/seventysixcommerce_tanstack_e2e
+                  CI: "true"
+
+            - name: Upload Playwright report
+              uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4
+              if: always()
+              with:
+                  name: tanstack-playwright-report
+                  path: seventysixcommerce-tanstack/playwright-report/
+                  retention-days: 14
+
+    # ──────────────────────────────────────────────────────────
+    # Stage 3: Quality gate — all checks must pass
+    # ──────────────────────────────────────────────────────────
+    # NOTE: Add the following as required status checks in GitHub branch protection:
+    # - "SvelteKit Build & Test"
+    # - "TanStack Build & Test"
+    # - "SvelteKit E2E Tests"
+    # - "TanStack E2E Tests"
+    # - "SeventySixCommerce Quality Gate"
+    quality-gate:
+        name: SeventySixCommerce Quality Gate
+        needs: [tanstack-build, sveltekit-build, e2e-sveltekit, e2e-tanstack]
+        runs-on: ubuntu-latest
+        if: always()
+
+        steps:
+            - name: Evaluate gate results
+              run: |
+                  echo "============================================"
+                  echo "  SeventySixCommerce Quality Gate Results"
+                  echo "============================================"
+                  echo ""
+
+                  FAILED=0
+
+                  check_job() {
+                      local name="$1"
+                      local result="$2"
+                      if [ "$result" = "success" ]; then
+                          printf "  %-30s PASSED\n" "$name"
+                      else
+                          printf "  %-30s FAILED (%s)\n" "$name" "$result"
+                          FAILED=1
+                      fi
+                  }
+
+                  check_job "TanStack Build & Test" "${{ needs.tanstack-build.result }}"
+                  check_job "SvelteKit Build & Test" "${{ needs.sveltekit-build.result }}"
+                  check_job "SvelteKit E2E Tests" "${{ needs.e2e-sveltekit.result }}"
+                  check_job "TanStack E2E Tests" "${{ needs.e2e-tanstack.result }}"
+
+                  echo ""
+                  echo "============================================"
+
+                  if [ "$FAILED" -eq 1 ]; then
+                      echo "  Quality Gate: FAILED"
+                      echo "============================================"
+                      exit 1
+                  fi
+
+                  echo "  Quality Gate: PASSED"
+                  echo "============================================"
+
+    # ──────────────────────────────────────────────────────────
+    # Stage 3: Build & publish Docker images (master push only)
+    # ──────────────────────────────────────────────────────────
+    publish:
+        name: Publish SeventySixCommerce Docker Images
+        needs: [quality-gate]
+        runs-on: ubuntu-latest
+        if: github.ref == 'refs/heads/master' && github.event_name == 'push' && needs.quality-gate.result == 'success'
+
+        permissions:
+            contents: read
+            packages: write
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4
+
+            - name: Log in to GHCR
+              uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4
+              with:
+                  registry: ghcr.io
+                  username: ${{ github.actor }}
+                  password: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Extract metadata
+              id: meta
+              run: |
+                  echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+                  echo "date=$(date -u +%Y%m%d)" >> $GITHUB_OUTPUT
+
+            - name: Build and push TanStack image
+              uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7
+              with:
+                  context: ./seventysixcommerce-tanstack
+                  file: ./seventysixcommerce-tanstack/Dockerfile
+                  platforms: linux/amd64
+                  push: true
+                  tags: |
+                      ghcr.io/${{ github.repository_owner }}/seventysixcommerce-tanstack:latest
+                      ghcr.io/${{ github.repository_owner }}/seventysixcommerce-tanstack:${{ github.sha }}
+                      ghcr.io/${{ github.repository_owner }}/seventysixcommerce-tanstack:${{ steps.meta.outputs.date }}-${{ steps.meta.outputs.sha_short }}
+                  cache-from: type=gha
+                  cache-to: type=gha,mode=max
+
+            - name: Build and push SvelteKit image
+              uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7
+              with:
+                  context: ./seventysixcommerce-sveltekit
+                  file: ./seventysixcommerce-sveltekit/Dockerfile
+                  platforms: linux/amd64
+                  push: true
+                  tags: |
+                      ghcr.io/${{ github.repository_owner }}/seventysixcommerce-sveltekit:latest
+                      ghcr.io/${{ github.repository_owner }}/seventysixcommerce-sveltekit:${{ github.sha }}
+                      ghcr.io/${{ github.repository_owner }}/seventysixcommerce-sveltekit:${{ steps.meta.outputs.date }}-${{ steps.meta.outputs.sha_short }}
+                  cache-from: type=gha
+                  cache-to: type=gha,mode=max

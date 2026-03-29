@@ -1,0 +1,44 @@
+@use "variables" as vars;
+@use "mixins";
+
+.dashboard-layout {
+	display: flex;
+	flex-direction: column;
+	gap: vars.$spacing-lg;
+}
+
+.health-summary-card {
+	max-width: 400px;
+}
+
+.log-counts {
+	display: flex;
+	gap: vars.$spacing-xl;
+	padding: vars.$spacing-md 0;
+}
+
+.count-item {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.count-value {
+	font-size: 2rem;
+	font-weight: 600;
+	line-height: 1;
+}
+
+.count-label {
+	font-size: 0.85rem;
+	color: var(--mat-sys-on-surface-variant);
+	margin-top: vars.$spacing-xs;
+}
+
+.warning .count-value {
+	color: var(--mat-sys-tertiary);
+}
+
+.error .count-value {
+	color: var(--mat-sys-error);
+}

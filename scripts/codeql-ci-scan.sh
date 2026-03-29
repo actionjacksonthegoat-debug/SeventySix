@@ -91,6 +91,19 @@ if [[ "${LANGUAGE}" == "typescript" ]]; then
   if [[ ! -d node_modules ]]; then
     npm ci --prefer-offline 2>/dev/null || npm install
   fi
+
+  echo ">>> [TS] Installing SvelteKit packages..."
+  cd "${REPO_ROOT}/seventysixcommerce-sveltekit"
+  if [[ ! -d node_modules ]]; then
+    npm ci --prefer-offline 2>/dev/null || npm install
+  fi
+
+  echo ">>> [TS] Installing TanStack packages..."
+  cd "${REPO_ROOT}/seventysixcommerce-tanstack"
+  if [[ ! -d node_modules ]]; then
+    npm ci --prefer-offline 2>/dev/null || npm install
+  fi
+
   cd "${REPO_ROOT}"
 
   echo ">>> [TS] Removing stale database (if any)..."

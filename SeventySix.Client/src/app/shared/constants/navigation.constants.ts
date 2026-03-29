@@ -76,6 +76,16 @@ export const NAV_SECTIONS: ReadonlyArray<NavSection> =
 					label: "Logs",
 					icon: "article",
 					route: "/admin/logs"
+				},
+				{
+					label: "SvelteKit",
+					icon: "web",
+					route: "/admin/svelte"
+				},
+				{
+					label: "TanStack",
+					icon: "code",
+					route: "/admin/tanstack"
 				}
 			],
 			requiredRoles: [ROLE_ADMIN]

@@ -1,0 +1,59 @@
+# docker-compose.dast.yml — SeventySixCommerce TanStack DAST Environment
+# Usage: docker compose -f docker-compose.dast.yml up -d
+#
+# Key differences from E2E:
+# - Rate limiting disabled (ZAP active scanning triggers rate limits)
+# - Mock services enabled (ZAP can't interact with real Stripe/payment flows)
+#
+# Port Allocation (isolated from dev, E2E):
+# - PostgreSQL: 5443 (dev: 5432, E2E: 5441)
+# - App: 3022 (dev: 3002, E2E: 3012)
+
+name: seventysixcommerce-tanstack-dast
+
+services:
+  postgres-dast:
+    image: postgres:18-alpine
+    container_name: ssxc-tanstack-postgres-dast
+    ports:
+      - "127.0.0.1:5443:5432"
+    environment:
+      POSTGRES_USER: ssxc_dast
+      POSTGRES_PASSWORD: ssxc_dast_password
+      POSTGRES_DB: seventysixcommerce_tanstack_dast
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ssxc_dast -d seventysixcommerce_tanstack_dast"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ssxc-tanstack-dast-network
+
+  tanstack-dast:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ssxc-tanstack-app-dast
+    ports:
+      - "127.0.0.1:3022:3000"
+    environment:
+      DATABASE_URL: postgresql://ssxc_dast:ssxc_dast_password@postgres-dast:5432/seventysixcommerce_tanstack_dast
+      MOCK_SERVICES: "true"
+      RATE_LIMIT_DISABLED: "true"
+      NODE_ENV: production
+      BASE_URL: http://localhost:3022
+    depends_on:
+      postgres-dast:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/api/healthz || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - ssxc-tanstack-dast-network
+
+networks:
+  ssxc-tanstack-dast-network:
+    driver: bridge

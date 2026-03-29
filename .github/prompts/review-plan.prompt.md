@@ -1,4 +1,4 @@
----
+ ---
 agent: agent
 description: Review an Implementation.md plan against all project rules
 ---

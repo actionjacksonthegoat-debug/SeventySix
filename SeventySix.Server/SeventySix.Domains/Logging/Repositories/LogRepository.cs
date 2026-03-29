@@ -104,6 +104,14 @@ internal class LogRepository(
 				query.Where(log => log.LogLevel == request.LogLevel);
 		}
 
+		if (!string.IsNullOrWhiteSpace(request.SourceContext))
+		{
+			string sourceContext =
+				request.SourceContext;
+			query =
+				query.Where(log => log.SourceContext == sourceContext);
+		}
+
 		if (request.StartDate.HasValue)
 		{
 			DateTimeOffset startDate =

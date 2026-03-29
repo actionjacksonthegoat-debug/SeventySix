@@ -29,7 +29,11 @@ export const environment: Environment =
 			dashboards: {
 				systemOverview: "seventysix-system-overview",
 				apiEndpoints: "seventysix-api-endpoints",
-				valkeyCache: "seventysix-valkey"
+				valkeyCache: "seventysix-valkey",
+				sveltePerformance: "svelte-perf",
+				svelteCommerce: "svelte-commerce",
+				tanstackPerformance: "tanstack-perf",
+				tanstackCommerce: "tanstack-commerce"
 			}
 		},
 		cache: {

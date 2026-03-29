@@ -1,0 +1,64 @@
+name: seventysixcommerce-tanstack-e2e
+
+services:
+  postgres-e2e:
+    image: postgres:18-alpine
+    container_name: ssxc-tanstack-postgres-e2e
+    ports:
+      - "127.0.0.1:5441:5432"
+    environment:
+      POSTGRES_USER: ssxc_e2e
+      POSTGRES_PASSWORD: ssxc_e2e_password
+      POSTGRES_DB: seventysixcommerce_tanstack_e2e
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ssxc_e2e -d seventysixcommerce_tanstack_e2e"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ssxc-tanstack-e2e-network
+
+  db-init:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: db-init
+    container_name: ssxc-tanstack-db-init-e2e
+    environment:
+      DATABASE_URL: postgresql://ssxc_e2e:ssxc_e2e_password@postgres-e2e:5432/seventysixcommerce_tanstack_e2e
+    depends_on:
+      postgres-e2e:
+        condition: service_healthy
+    networks:
+      - ssxc-tanstack-e2e-network
+
+  tanstack-e2e:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runner
+    container_name: ssxc-tanstack-app-e2e
+    ports:
+      - "127.0.0.1:3012:3000"
+    environment:
+      DATABASE_URL: postgresql://ssxc_e2e:ssxc_e2e_password@postgres-e2e:5432/seventysixcommerce_tanstack_e2e
+      MOCK_SERVICES: "true"
+      NODE_ENV: production
+      BASE_URL: http://localhost:3012
+    depends_on:
+      db-init:
+        condition: service_completed_successfully
+      postgres-e2e:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/api/healthz || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - ssxc-tanstack-e2e-network
+
+networks:
+  ssxc-tanstack-e2e-network:
+    driver: bridge

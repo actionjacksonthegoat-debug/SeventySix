@@ -40,6 +40,6 @@
 			"type": "promptString",
 			"description": "PostgreSQL connection string (dev default - Create a read only user if you want this in Prod or Staging: postgresql://postgres:TestPassword@localhost:5433/seventysix)",
 			"password": true
-		},
+		}
 	]
 }

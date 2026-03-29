@@ -1,3 +1,18 @@
+<div class="log-list-filters">
+	<mat-form-field appearance="outline" subscriptSizing="dynamic">
+		<mat-label>Source</mat-label>
+		<mat-select
+			value=""
+			(valueChange)="onSourceContextChange($event)"
+			aria-label="Filter by source context">
+			@for (option of sourceContextOptions; track option.value)
+			{
+				<mat-option [value]="option.value">{{ option.label }}</mat-option>
+			}
+		</mat-select>
+	</mat-form-field>
+</div>
+
 <app-data-table
 	[columns]="columns"
 	[data]="data()"
