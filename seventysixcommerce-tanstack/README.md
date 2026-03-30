@@ -15,7 +15,7 @@ Art merchandise storefront built with TanStack Start, React 19, PostgreSQL, and 
 | Framework | TanStack Start 1.167 + TanStack Router |
 | UI | React 19 + Tailwind CSS 4 |
 | Language | TypeScript 6 |
-| Data | PostgreSQL 17 + Drizzle ORM |
+| Data | PostgreSQL 18 + Drizzle ORM |
 | Payments | Stripe Checkout (SAQ-A) |
 | Fulfillment | Printful (mocked by default) |
 | Email | Brevo (mocked by default) |

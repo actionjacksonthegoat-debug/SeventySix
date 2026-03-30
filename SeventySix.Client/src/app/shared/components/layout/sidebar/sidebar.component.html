@@ -30,7 +30,7 @@
 					[routerLink]="item.route"
 					routerLinkActive="active"
 					#rla="routerLinkActive"
-					[routerLinkActiveOptions]='{ exact: item.route === "/" || item.route === "/admin" }'
+					[routerLinkActiveOptions]='{ exact: isExactMatchRoute(item.route) }'
 					(click)="closeSidebarOnMobile()"
 					[attr.aria-current]='rla.isActive ? "page" : null'>
 					<mat-icon

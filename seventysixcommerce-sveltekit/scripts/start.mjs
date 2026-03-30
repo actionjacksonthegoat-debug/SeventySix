@@ -5,7 +5,8 @@
  * and starts the dev server.
  */
 import { execSync, spawn } from "node:child_process";
-import { existsSync } from "node:fs";
+import { randomBytes } from "node:crypto";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -20,6 +21,12 @@ function run(cmd, options = {})
 {
 	console.log(`\n> ${cmd}`);
 	execSync(cmd, { cwd: stackDir, stdio: "inherit", ...options });
+}
+
+/** Generates a cryptographically strong random password (base64url, 32 bytes). */
+function generateStrongPassword()
+{
+	return randomBytes(32).toString("base64url");
 }
 
 /**
@@ -107,6 +114,18 @@ async function main()
 	// 0. Ensure shared development SSL certificate is available
 	ensureSslCertificate();
 
+	// 0b. Ensure .env exists (auto-generate with strong passwords on first run)
+	const envPath = resolve(stackDir, ".env");
+	const envExamplePath = resolve(stackDir, ".env.example");
+	if (!existsSync(envPath) && existsSync(envExamplePath))
+	{
+		const dbPassword = generateStrongPassword();
+		let content = readFileSync(envExamplePath, "utf-8");
+		content = content.replaceAll("CHANGE_ME_STRONG_PASSWORD", dbPassword);
+		writeFileSync(envPath, content);
+		console.log("Created .env with strong random database password");
+	}
+
 	// 1. Ensure Docker is running
 	await ensureDocker();
 
@@ -151,10 +170,10 @@ async function main()
 
 	// 6. Start dev server
 	console.log("\nStarting dev server at https://localhost:3001 ...\n");
-	const npmCmd = process.platform === "win32" ? "npm.cmd" : "npm";
-	const dev = spawn(npmCmd, ["run", "dev"], {
+	const dev = spawn("npm run dev", {
 		cwd: stackDir,
-		stdio: "inherit"
+		stdio: "inherit",
+		shell: true
 	});
 
 	dev.on("exit", (code) => process.exit(code ?? 0));

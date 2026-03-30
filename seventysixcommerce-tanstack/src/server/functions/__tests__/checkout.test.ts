@@ -139,28 +139,22 @@ describe("Checkout",
 							.toBe(true);
 					});
 
-				it("applies free shipping when subtotal >= $60",
-					() =>
+				it.each(
+					[
+						{ subtotal: 45.5, expectedShipping: 599 },
+						{ subtotal: 59.99, expectedShipping: 599 },
+						{ subtotal: 60.0, expectedShipping: 0 },
+						{ subtotal: 75.0, expectedShipping: 0 }
+					])(
+					"calculates shipping $expectedShipping cents for subtotal $subtotal",
+					({ subtotal, expectedShipping }: { subtotal: number; expectedShipping: number; }) =>
 					{
 						const FREE_SHIPPING_THRESHOLD: number = 60;
-						const subtotal: number = 75.0;
 						const shippingAmount: number =
 							subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : 599;
 
 						expect(shippingAmount)
-							.toBe(0);
-					});
-
-				it("charges shipping when subtotal < $60",
-					() =>
-					{
-						const FREE_SHIPPING_THRESHOLD: number = 60;
-						const subtotal: number = 45.5;
-						const shippingAmount: number =
-							subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : 599;
-
-						expect(shippingAmount)
-							.toBe(599);
+							.toBe(expectedShipping);
 					});
 
 				it("converts dollar prices to cents for Stripe",

@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { eq } from "drizzle-orm";
 import type Stripe from "stripe";
-import { FREE_SHIPPING_THRESHOLD, STANDARD_SHIPPING_CENTS } from "~/lib/constants";
+import { FREE_SHIPPING_THRESHOLD, MOCK_ORDER_EMAIL, STANDARD_SHIPPING_CENTS } from "~/lib/constants";
 import { db } from "../db";
 import * as schema from "../db/schema";
 import { getStripe } from "../lib/stripe";
@@ -192,7 +192,7 @@ async function createMockOrder(
 						{
 							stripeSessionId: session.id,
 							cartSessionId,
-							email: "mock@example.com",
+							email: MOCK_ORDER_EMAIL,
 							status: "paid",
 							totalAmount: String(
 								((session.amount_total ?? 0) / 100).toFixed(2)),

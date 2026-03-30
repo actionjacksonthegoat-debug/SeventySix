@@ -30,6 +30,7 @@ using SeventySix.Api.Configuration;
 using SeventySix.Api.Extensions;
 using SeventySix.Api.Middleware;
 using SeventySix.Api.Registration;
+using SeventySix.EcommerceCleanup.Registration;
 using SeventySix.Identity.Registration;
 using SeventySix.Registration;
 using SeventySix.Shared.Registration;
@@ -216,6 +217,8 @@ builder.Services.AddApiTrackingDomain(
 	builder.Configuration);
 builder.Services.AddElectronicNotificationsDomain(
 	connectionString,
+	builder.Configuration);
+builder.Services.AddEcommerceCleanupDomain(
 	builder.Configuration);
 
 // Register cache invalidation service (cross-domain)

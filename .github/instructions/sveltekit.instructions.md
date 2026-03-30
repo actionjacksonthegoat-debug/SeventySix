@@ -12,7 +12,7 @@ applyTo: "**/seventysixcommerce-sveltekit/src/**/*.{ts,svelte,css}"
 | Framework | SvelteKit 2+ with Svelte 5 (runes) |
 | Language | TypeScript 5.9+ (strict mode) |
 | ORM | Drizzle ORM 0.45+ |
-| Database | PostgreSQL 17 |
+| Database | PostgreSQL 18 |
 | Payments | Stripe SDK |
 | Email | Brevo transactional API |
 | Fulfillment | Printful API |

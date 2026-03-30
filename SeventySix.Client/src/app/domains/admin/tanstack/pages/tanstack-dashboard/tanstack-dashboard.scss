@@ -5,6 +5,28 @@
 	display: flex;
 	flex-direction: column;
 	gap: vars.$spacing-lg;
+
+	mat-tab-group {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
+	}
+
+	.tab-content {
+		padding: vars.$spacing-md 0;
+
+		&.full-height {
+			flex: 1;
+			overflow: hidden;
+
+			app-grafana-dashboard-embed {
+				flex: 1;
+				display: flex;
+				min-height: 0;
+			}
+		}
+	}
 }
 
 .health-summary-card {

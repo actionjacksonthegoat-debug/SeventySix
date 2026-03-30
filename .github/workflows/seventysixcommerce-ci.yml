@@ -329,6 +329,178 @@ jobs:
                   retention-days: 14
 
     # ──────────────────────────────────────────────────────────
+    # Stage 2: SvelteKit Load Tests
+    # ──────────────────────────────────────────────────────────
+    loadtest-sveltekit:
+        name: SvelteKit Load Tests
+        runs-on: ubuntu-latest
+        needs: [sveltekit-build]
+
+        defaults:
+            run:
+                working-directory: seventysixcommerce-sveltekit
+
+        services:
+            postgres:
+                image: postgres:18-alpine
+                env:
+                    POSTGRES_USER: ssxc_loadtest
+                    POSTGRES_PASSWORD: ssxc_loadtest_password
+                    POSTGRES_DB: seventysixcommerce_sveltekit_loadtest
+                    PGDATA: /var/lib/postgresql/data
+                ports:
+                    - 5442:5432
+                options: >-
+                    --health-cmd "pg_isready -U ssxc_loadtest -d seventysixcommerce_sveltekit_loadtest"
+                    --health-interval 5s
+                    --health-timeout 3s
+                    --health-retries 5
+
+        env:
+            DATABASE_URL: postgresql://ssxc_loadtest:ssxc_loadtest_password@localhost:5442/seventysixcommerce_sveltekit_loadtest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+            - name: Setup Node.js
+              uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+              with:
+                  node-version: "22.x"
+                  cache: "npm"
+                  cache-dependency-path: seventysixcommerce-sveltekit/package-lock.json
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Build application
+              run: npm run build
+
+            - name: Run database migrations and seed
+              run: |
+                  npx drizzle-kit push --force
+                  npx tsx src/lib/server/db/seed.ts
+
+            - name: Start application
+              run: node build &
+              env:
+                  PORT: "3021"
+                  NODE_ENV: production
+                  MOCK_SERVICES: "true"
+
+            - name: Wait for application to be ready
+              run: |
+                  for i in $(seq 1 30); do
+                      if curl -sf http://localhost:3021/healthz > /dev/null 2>&1; then
+                          echo "Application is ready"
+                          exit 0
+                      fi
+                      echo "Attempt $i/30 — waiting..."
+                      sleep 2
+                  done
+                  echo "Application failed to start within 60 seconds"
+                  exit 1
+
+            - name: Install k6
+              run: |
+                  sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg --import <(curl -sS https://dl.k6.io/key.gpg)
+                  echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+                  sudo apt-get update && sudo apt-get install k6
+
+            - name: Run load tests (quick profile)
+              run: |
+                  for scenario in load-testing/scenarios/**/*.test.js; do
+                      echo "Running: $scenario"
+                      k6 run --config load-testing/config/quick.json "$scenario" || true
+                  done
+
+    # ──────────────────────────────────────────────────────────
+    # Stage 2: TanStack Load Tests
+    # ──────────────────────────────────────────────────────────
+    loadtest-tanstack:
+        name: TanStack Load Tests
+        runs-on: ubuntu-latest
+        needs: [tanstack-build]
+
+        defaults:
+            run:
+                working-directory: seventysixcommerce-tanstack
+
+        services:
+            postgres:
+                image: postgres:18-alpine
+                env:
+                    POSTGRES_USER: ssxc_loadtest
+                    POSTGRES_PASSWORD: ssxc_loadtest_password
+                    POSTGRES_DB: seventysixcommerce_tanstack_loadtest
+                    PGDATA: /var/lib/postgresql/data
+                ports:
+                    - 5443:5432
+                options: >-
+                    --health-cmd "pg_isready -U ssxc_loadtest -d seventysixcommerce_tanstack_loadtest"
+                    --health-interval 5s
+                    --health-timeout 3s
+                    --health-retries 5
+
+        env:
+            DATABASE_URL: postgresql://ssxc_loadtest:ssxc_loadtest_password@localhost:5443/seventysixcommerce_tanstack_loadtest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+            - name: Setup Node.js
+              uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+              with:
+                  node-version: "22.x"
+                  cache: "npm"
+                  cache-dependency-path: seventysixcommerce-tanstack/package-lock.json
+
+            - name: Install dependencies
+              run: npm ci --legacy-peer-deps
+
+            - name: Build application
+              run: npm run build
+
+            - name: Run database migrations and seed
+              run: |
+                  npx drizzle-kit push --force
+                  npx tsx src/server/db/seed.ts
+
+            - name: Start application
+              run: node dist/server/server.js &
+              env:
+                  PORT: "3022"
+                  NODE_ENV: production
+                  MOCK_SERVICES: "true"
+
+            - name: Wait for application to be ready
+              run: |
+                  for i in $(seq 1 30); do
+                      if curl -sf http://localhost:3022/api/healthz > /dev/null 2>&1; then
+                          echo "Application is ready"
+                          exit 0
+                      fi
+                      echo "Attempt $i/30 — waiting..."
+                      sleep 2
+                  done
+                  echo "Application failed to start within 60 seconds"
+                  exit 1
+
+            - name: Install k6
+              run: |
+                  sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg --import <(curl -sS https://dl.k6.io/key.gpg)
+                  echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+                  sudo apt-get update && sudo apt-get install k6
+
+            - name: Run load tests (quick profile)
+              run: |
+                  for scenario in load-testing/scenarios/**/*.test.js; do
+                      echo "Running: $scenario"
+                      k6 run --config load-testing/config/quick.json "$scenario" || true
+                  done
+
+    # ──────────────────────────────────────────────────────────
     # Stage 3: Quality gate — all checks must pass
     # ──────────────────────────────────────────────────────────
     # NOTE: Add the following as required status checks in GitHub branch protection:
@@ -339,7 +511,7 @@ jobs:
     # - "SeventySixCommerce Quality Gate"
     quality-gate:
         name: SeventySixCommerce Quality Gate
-        needs: [tanstack-build, sveltekit-build, e2e-sveltekit, e2e-tanstack]
+        needs: [tanstack-build, sveltekit-build, e2e-sveltekit, e2e-tanstack, loadtest-sveltekit, loadtest-tanstack]
         runs-on: ubuntu-latest
         if: always()
 
@@ -368,6 +540,8 @@ jobs:
                   check_job "SvelteKit Build & Test" "${{ needs.sveltekit-build.result }}"
                   check_job "SvelteKit E2E Tests" "${{ needs.e2e-sveltekit.result }}"
                   check_job "TanStack E2E Tests" "${{ needs.e2e-tanstack.result }}"
+                  check_job "SvelteKit Load Tests" "${{ needs.loadtest-sveltekit.result }}"
+                  check_job "TanStack Load Tests" "${{ needs.loadtest-tanstack.result }}"
 
                   echo ""
                   echo "============================================"

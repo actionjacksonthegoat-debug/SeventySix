@@ -107,4 +107,36 @@ describe("SvelteLogService",
 				expect(pagedLogs.isLoading)
 					.toBeDefined();
 			});
+
+		it("should create paged logs query with level filter applied",
+			() =>
+			{
+				service.setLevelFilter("Error");
+
+				const pagedLogs: ReturnType<typeof service.getPagedLogs> =
+					TestBed.runInInjectionContext(() =>
+						service.getPagedLogs());
+
+				expect(pagedLogs)
+					.toBeTruthy();
+				expect(service.logLevelFilter())
+					.toBe("Error");
+				expect(service.currentPage())
+					.toBe(1);
+			});
+
+		it("should create paged logs query at custom page",
+			() =>
+			{
+				service.goToPage(3);
+
+				const pagedLogs: ReturnType<typeof service.getPagedLogs> =
+					TestBed.runInInjectionContext(() =>
+						service.getPagedLogs());
+
+				expect(pagedLogs)
+					.toBeTruthy();
+				expect(service.currentPage())
+					.toBe(3);
+			});
 	});

@@ -55,7 +55,7 @@
 		<mat-tab-group data-testid="svelte-dashboard-tabs">
 			<mat-tab label="Performance">
 				<ng-template matTabContent>
-					<div class="tab-content">
+					<div class="tab-content full-height">
 						<app-grafana-dashboard-embed
 							[dashboardUid]="performanceDashboardUid"
 							title="SvelteKit Performance"></app-grafana-dashboard-embed>
@@ -65,7 +65,7 @@
 
 			<mat-tab label="Commerce">
 				<ng-template matTabContent>
-					<div class="tab-content">
+					<div class="tab-content full-height">
 						<app-grafana-dashboard-embed
 							[dashboardUid]="commerceDashboardUid"
 							title="SvelteKit Commerce"></app-grafana-dashboard-embed>

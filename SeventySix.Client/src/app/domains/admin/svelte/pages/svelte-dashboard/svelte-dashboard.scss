@@ -8,10 +8,17 @@
 	.dashboard-content {
 		flex: 1;
 		padding: vars.$spacing-lg;
-		overflow-y: auto;
+		overflow: hidden;
 		display: flex;
 		flex-direction: column;
 		gap: vars.$spacing-lg;
+
+		mat-tab-group {
+			flex: 1;
+			display: flex;
+			flex-direction: column;
+			overflow: hidden;
+		}
 	}
 
 	.loading-container {
@@ -61,6 +68,17 @@
 
 	.tab-content {
 		padding: vars.$spacing-md 0;
+
+		&.full-height {
+			flex: 1;
+			overflow: hidden;
+
+			app-grafana-dashboard-embed {
+				flex: 1;
+				display: flex;
+				min-height: 0;
+			}
+		}
 	}
 
 	@media #{vars.$breakpoint-mobile} {

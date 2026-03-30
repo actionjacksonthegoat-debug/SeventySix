@@ -18,6 +18,9 @@ export default defineConfig({
       '~': resolve(import.meta.dirname, 'src'),
     },
   },
+  optimizeDeps: {
+    include: ['use-sync-external-store/shim/with-selector'],
+  },
   server: {
     https: hasSharedCertificate
       ? {

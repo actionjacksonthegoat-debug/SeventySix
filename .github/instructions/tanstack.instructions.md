@@ -13,7 +13,7 @@ applyTo: "**/seventysixcommerce-tanstack/src/**/*.{ts,tsx,css}"
 | UI | React 19.2+ |
 | Language | TypeScript 6.0+ (strict mode) |
 | ORM | Drizzle ORM 0.45+ |
-| Database | PostgreSQL 17 |
+| Database | PostgreSQL 18 |
 | Payments | Stripe SDK 21+ |
 | Email | Brevo transactional API |
 | Fulfillment | Printful API |

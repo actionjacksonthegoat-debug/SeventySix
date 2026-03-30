@@ -16,9 +16,9 @@ import { initClientTelemetry, recordNavigation } from "~/lib/telemetry-client";
 import { getCart } from "~/server/functions/cart";
 import globalsCss from "~/styles/globals.css?url";
 
-/** Inline script that prevents FOUC by applying the dark class before paint. */
+/** Inline script that prevents FOUC by applying the dark class before paint and suppressing transitions. */
 const FOUC_SCRIPT: string =
-	`(function(){var t=localStorage.getItem("SeventySixCommerce-theme");if(!t){t=window.matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light"}if(t==="dark"){document.documentElement.classList.add("dark")}})();`;
+	`(function(){var d=document.documentElement;d.classList.add("no-transition");var t=localStorage.getItem("SeventySixCommerce-theme");if(!t){t=window.matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light"}if(t==="dark"){d.classList.add("dark")}requestAnimationFrame(function(){requestAnimationFrame(function(){d.classList.remove("no-transition")})})})();`;
 
 /** Returns the base meta tags including optional Google Site Verification. */
 function buildRootMeta(): Array<Record<string, string>>

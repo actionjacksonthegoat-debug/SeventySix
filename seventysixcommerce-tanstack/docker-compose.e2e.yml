@@ -10,6 +10,7 @@ services:
       POSTGRES_USER: ssxc_e2e
       POSTGRES_PASSWORD: ssxc_e2e_password
       POSTGRES_DB: seventysixcommerce_tanstack_e2e
+      PGDATA: /var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ssxc_e2e -d seventysixcommerce_tanstack_e2e"]
       interval: 5s

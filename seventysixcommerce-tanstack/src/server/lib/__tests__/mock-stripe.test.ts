@@ -25,7 +25,7 @@ describe("Mock Stripe",
 						});
 
 				expect(session.id)
-					.toMatch(/^mock_sess_/);
+					.toMatch(/^cs_test_mock/);
 				expect(session.url)
 					.toContain("/checkout/success?session_id=");
 

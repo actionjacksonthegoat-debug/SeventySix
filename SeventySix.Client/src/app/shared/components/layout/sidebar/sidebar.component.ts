@@ -11,7 +11,10 @@ import { MatIconModule } from "@angular/material/icon";
 import { MatListModule } from "@angular/material/list";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { RouterLink, RouterLinkActive } from "@angular/router";
-import { NAV_SECTIONS } from "@shared/constants";
+import {
+	EXACT_MATCH_ROUTES,
+	NAV_SECTIONS
+} from "@shared/constants";
 import { NavItem, NavSection } from "@shared/models";
 import { LayoutService } from "@shared/services";
 import { AuthService } from "@shared/services/auth.service";
@@ -121,5 +124,18 @@ export class SidebarComponent
 		{
 			this.layoutService.toggleSidebar();
 		}
+	}
+
+	/**
+	 * Determines if a route requires exact matching for active-link highlighting.
+	 * Dashboard routes need exact match to prevent sub-routes from also highlighting.
+	 * @param {string} route
+	 * The route path to check.
+	 * @returns {boolean}
+	 * True if the route requires exact matching.
+	 */
+	protected isExactMatchRoute(route: string): boolean
+	{
+		return EXACT_MATCH_ROUTES.has(route);
 	}
 }

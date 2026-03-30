@@ -3,14 +3,14 @@
 #
 # Usage:
 #   .\scripts\run-load-tests.ps1                          # Smoke profile, all scenarios
-#   .\scripts\run-load-tests.ps1 -Profile load             # Load profile
-#   .\scripts\run-load-tests.ps1 -Profile stress            # Stress profile
+#   .\scripts\run-load-tests.ps1 -TestProfile load          # Load profile
+#   .\scripts\run-load-tests.ps1 -TestProfile stress         # Stress profile
 #   .\scripts\run-load-tests.ps1 -Scenario auth/login       # Single scenario
 #   .\scripts\run-load-tests.ps1 -KeepRunning               # Don't stop containers after
 
 param(
 	[ValidateSet("quick", "smoke", "load", "stress")]
-	[string]$Profile = "smoke",
+	[string]$TestProfile = "smoke",
 
 	[string]$Scenario = "",
 
@@ -23,7 +23,7 @@ $RepoRoot = $LoadTestRoot | Split-Path -Parent | Split-Path -Parent
 
 Write-Host ""
 Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "  SeventySix Load Tests ($Profile)" -ForegroundColor Cyan
+Write-Host "  SeventySix Load Tests ($TestProfile)" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 
@@ -142,7 +142,7 @@ Write-Host "API is healthy!" -ForegroundColor Green
 
 # 5. Run k6 scenarios
 Write-Host ""
-Write-Host "Running k6 load tests (profile: $Profile)..." -ForegroundColor Cyan
+Write-Host "Running k6 load tests (profile: $TestProfile)..." -ForegroundColor Cyan
 $exitCode = 0
 
 # k6 writes INFO log lines to stderr (e.g. k6-reporter notifications).
@@ -162,7 +162,7 @@ if ($Scenario) {
 		$scenarioPath = "scenarios/$Scenario"
 	}
 	Write-Host "  Running: $scenarioPath" -ForegroundColor White
-	$null | k6 run -q --env PROFILE=$Profile $scenarioPath 2>&1 | ForEach-Object { "$_" }
+	$null | k6 run -q --env PROFILE=$TestProfile $scenarioPath 2>&1 | ForEach-Object { "$_" }
 	if ($LASTEXITCODE -ne 0) { $exitCode = 1 }
 }
 else {
@@ -171,7 +171,7 @@ else {
 	foreach ($file in $scenarioFiles) {
 		$relativePath = $file.FullName.Substring($LoadTestRoot.Length + 1).Replace("\", "/")
 		Write-Host "  Running: $relativePath" -ForegroundColor White
-		$null | k6 run -q --env PROFILE=$Profile $relativePath 2>&1 | ForEach-Object { "$_" }
+		$null | k6 run -q --env PROFILE=$TestProfile $relativePath 2>&1 | ForEach-Object { "$_" }
 		if ($LASTEXITCODE -ne 0) {
 			Write-Host "  FAILED: $relativePath" -ForegroundColor Red
 			$exitCode = 1

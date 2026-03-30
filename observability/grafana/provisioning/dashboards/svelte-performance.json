@@ -90,5 +90,5 @@
 	"templating": { "list": [] },
 	"time": { "from": "now-1h", "to": "now" },
 	"title": "SvelteKit Performance",
-	"uid": "svelte-performance"
+	"uid": "svelte-perf"
 }

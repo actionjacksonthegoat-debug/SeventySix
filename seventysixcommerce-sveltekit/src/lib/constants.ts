@@ -74,3 +74,8 @@ export const DEFAULT_COUNTRY: string = "US";
 
 /** Brevo transactional email API endpoint. */
 export const BREVO_API_URL: string = "https://api.brevo.com/v3/smtp/email";
+
+// ── Mock ──────────────────────────────────────────────────────────────
+
+/** Email address used for mock checkout orders. */
+export const MOCK_ORDER_EMAIL: string = "mock@example.com";

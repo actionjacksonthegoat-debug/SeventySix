@@ -28,9 +28,11 @@ export default {
 			response.headers.set(
 				"Permissions-Policy",
 				"camera=(), microphone=(), geolocation=()");
+			// TanStack Start emits inline hydration/scroll-restoration scripts that
+			// cannot use nonces yet, so 'unsafe-inline' is required for script-src.
 			response.headers.set(
 				"Content-Security-Policy",
-				"default-src 'self'; script-src 'self' https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self' https://www.google-analytics.com https://www.googletagmanager.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'");
+				"default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self' https://www.google-analytics.com https://www.googletagmanager.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'");
 
 			return response;
 		}

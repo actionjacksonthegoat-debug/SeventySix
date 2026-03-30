@@ -8,7 +8,7 @@ Art merchandise e-commerce storefront built with SvelteKit 2, Svelte 5, Drizzle 
 | --- | --- |
 | Framework | SvelteKit 2 + Svelte 5 |
 | Styling | Tailwind CSS 4 |
-| Database | PostgreSQL 17 + Drizzle ORM |
+| Database | PostgreSQL 18 + Drizzle ORM |
 | Payments | Stripe Checkout (SAQ-A) |
 | Fulfillment | Printful (mocked by default) |
 | Email | Brevo (mocked by default) |

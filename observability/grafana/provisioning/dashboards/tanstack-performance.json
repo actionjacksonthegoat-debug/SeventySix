@@ -90,5 +90,5 @@
 	"templating": { "list": [] },
 	"time": { "from": "now-1h", "to": "now" },
 	"title": "TanStack Performance",
-	"uid": "tanstack-performance"
+	"uid": "tanstack-perf"
 }

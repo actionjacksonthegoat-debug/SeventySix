@@ -9,7 +9,7 @@ name: SeventySixCommerce-prod
 services:
   # PostgreSQL — shared database for both apps
   postgres:
-    image: postgres:17-alpine
+    image: postgres:18-alpine
     container_name: SeventySixCommerce-postgres-prod
     volumes:
       - ssxc_pgdata:/var/lib/postgresql/data
@@ -17,6 +17,7 @@ services:
       POSTGRES_USER: ${SSXC_DB_USER:?SSXC_DB_USER must be set}
       POSTGRES_PASSWORD: ${SSXC_DB_PASSWORD:?SSXC_DB_PASSWORD must be set}
       POSTGRES_DB: SeventySixCommerce
+      PGDATA: /var/lib/postgresql/data
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U ${SSXC_DB_USER}" ]
       interval: 10s

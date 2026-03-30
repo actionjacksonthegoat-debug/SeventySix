@@ -2,9 +2,9 @@ import { provideHttpClient } from "@angular/common/http";
 import { provideHttpClientTesting } from "@angular/common/http/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
+import { createTestQueryClient } from "@shared/testing";
 import {
-	provideAngularQuery,
-	QueryClient
+	provideTanStackQuery
 } from "@tanstack/angular-query-experimental";
 import { SandboxDashboardService } from "./sandbox-dashboard.service";
 
@@ -22,7 +22,7 @@ describe("SandboxDashboardService",
 							provideZonelessChangeDetection(),
 							provideHttpClient(),
 							provideHttpClientTesting(),
-							provideAngularQuery(new QueryClient()),
+							provideTanStackQuery(createTestQueryClient()),
 							SandboxDashboardService
 						]
 					});
@@ -38,31 +38,55 @@ describe("SandboxDashboardService",
 					.toBeTruthy();
 			});
 
-		it("should have getSvelteKitWarnings method",
+		it("should return SvelteKit warnings query result",
 			() =>
 			{
-				expect(service.getSvelteKitWarnings)
+				const result: ReturnType<typeof service.getSvelteKitWarnings> =
+					TestBed.runInInjectionContext(() =>
+						service.getSvelteKitWarnings());
+
+				expect(result)
+					.toBeTruthy();
+				expect(result.isLoading)
 					.toBeDefined();
 			});
 
-		it("should have getSvelteKitErrors method",
+		it("should return SvelteKit errors query result",
 			() =>
 			{
-				expect(service.getSvelteKitErrors)
+				const result: ReturnType<typeof service.getSvelteKitErrors> =
+					TestBed.runInInjectionContext(() =>
+						service.getSvelteKitErrors());
+
+				expect(result)
+					.toBeTruthy();
+				expect(result.isLoading)
 					.toBeDefined();
 			});
 
-		it("should have getTanStackWarnings method",
+		it("should return TanStack warnings query result",
 			() =>
 			{
-				expect(service.getTanStackWarnings)
+				const result: ReturnType<typeof service.getTanStackWarnings> =
+					TestBed.runInInjectionContext(() =>
+						service.getTanStackWarnings());
+
+				expect(result)
+					.toBeTruthy();
+				expect(result.isLoading)
 					.toBeDefined();
 			});
 
-		it("should have getTanStackErrors method",
+		it("should return TanStack errors query result",
 			() =>
 			{
-				expect(service.getTanStackErrors)
+				const result: ReturnType<typeof service.getTanStackErrors> =
+					TestBed.runInInjectionContext(() =>
+						service.getTanStackErrors());
+
+				expect(result)
+					.toBeTruthy();
+				expect(result.isLoading)
 					.toBeDefined();
 			});
 	});

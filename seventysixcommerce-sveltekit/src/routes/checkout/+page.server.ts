@@ -2,6 +2,7 @@ import { env } from "$env/dynamic/private";
 import {
 	CENTS_PER_DOLLAR,
 	FREE_SHIPPING_THRESHOLD,
+	MOCK_ORDER_EMAIL,
 	STANDARD_SHIPPING_CENTS
 } from "$lib/constants";
 import { db } from "$lib/server/db";
@@ -186,7 +187,7 @@ async function createMockOrder(
 						{
 							stripeSessionId: sessionId,
 							cartSessionId,
-							email: "mock@example.com",
+							email: MOCK_ORDER_EMAIL,
 							status: "paid",
 							totalAmount: String(((amountTotal ?? 0) / 100).toFixed(2)),
 							shippingAddress: null,

@@ -12,16 +12,18 @@ import { APP_ROUTES } from "@shared/constants";
 import { TotpSetupResponse } from "@shared/models";
 import { NotificationService } from "@shared/services";
 import { createMockNotificationService } from "@shared/testing";
-import * as QRCode from "qrcode";
 import { of, throwError } from "rxjs";
 import { vi } from "vitest";
 import { TotpSetupComponent } from "./totp-setup";
 
-vi.mock("qrcode", () => ({
-	toDataURL: vi
-		.fn()
-		.mockResolvedValue("data:image/png;base64,MOCKQR")
-}));
+const mockQRCode: { toDataURL: ReturnType<typeof vi.fn>; } =
+	vi.hoisted(() => ({
+		toDataURL: vi
+			.fn()
+			.mockResolvedValue("data:image/png;base64,MOCKQR")
+	}));
+
+vi.mock("qrcode", () => mockQRCode);
 
 interface MockTotpService
 {
@@ -297,10 +299,8 @@ describe("TotpSetupComponent",
 		it("should fall back to manual entry when QR code generation fails",
 			async () =>
 			{
-				vi
-					.mocked(QRCode.toDataURL)
-					.mockRejectedValue(
-						new Error("Canvas error"));
+				mockQRCode.toDataURL.mockRejectedValue(
+					new Error("Canvas error"));
 
 				fixture.detectChanges();
 				await Promise.resolve();
@@ -309,11 +309,9 @@ describe("TotpSetupComponent",
 				expect(component["showManualEntry"]())
 					.toBe(true);
 
-				vi
-					.mocked(QRCode.toDataURL)
-					.mockImplementation(
-						() =>
-							Promise.resolve("data:image/png;base64,MOCKQR"));
+				mockQRCode.toDataURL.mockImplementation(
+					() =>
+						Promise.resolve("data:image/png;base64,MOCKQR"));
 			});
 
 		describe("onCopySecret",

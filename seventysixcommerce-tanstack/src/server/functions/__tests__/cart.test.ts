@@ -87,38 +87,22 @@ describe("Cart Operations",
 		describe("addToCart",
 			() =>
 			{
-				it("rejects quantity > 10",
-					() =>
+				it.each(
+					[
+						{ quantity: -1, expected: false },
+						{ quantity: 0, expected: false },
+						{ quantity: 1, expected: true },
+						{ quantity: 5, expected: true },
+						{ quantity: 10, expected: true },
+						{ quantity: 11, expected: false }
+					])(
+					"validates quantity $quantity is $expected",
+					({ quantity, expected }: { quantity: number; expected: boolean; }) =>
 					{
-						const quantity = 11;
-						expect(quantity)
-							.toBeGreaterThan(10);
 						const isValid: boolean =
 							quantity >= 1 && quantity <= 10;
 						expect(isValid)
-							.toBe(false);
-					});
-
-				it("rejects negative quantity",
-					() =>
-					{
-						const quantity = -1;
-						const isValid: boolean =
-							quantity >= 1 && quantity <= 10;
-						expect(isValid)
-							.toBe(false);
-					});
-
-				it("accepts valid quantity range (1-10)",
-					() =>
-					{
-						for (const quantity of [1, 5, 10])
-						{
-							const isValid: boolean =
-								quantity >= 1 && quantity <= 10;
-							expect(isValid)
-								.toBe(true);
-						}
+							.toBe(expected);
 					});
 			});
 
@@ -149,24 +133,22 @@ describe("Cart Operations",
 		describe("shipping calculation",
 			() =>
 			{
-				it("applies free shipping when subtotal >= $60",
-					() =>
-					{
-						const subtotal = 60.0;
-						const shippingCost: number =
-							subtotal >= 60 ? 0 : 5.99;
-						expect(shippingCost)
-							.toBe(0);
-					});
+				const FREE_SHIPPING_THRESHOLD: number = 60;
 
-				it("charges $5.99 shipping when subtotal < $60",
-					() =>
+				it.each(
+					[
+						{ subtotal: 59.99, expectedShipping: 5.99 },
+						{ subtotal: 60.0, expectedShipping: 0 },
+						{ subtotal: 75.0, expectedShipping: 0 },
+						{ subtotal: 0, expectedShipping: 5.99 }
+					])(
+					"calculates shipping $expectedShipping for subtotal $subtotal",
+					({ subtotal, expectedShipping }: { subtotal: number; expectedShipping: number; }) =>
 					{
-						const subtotal = 59.99;
 						const shippingCost: number =
-							subtotal >= 60 ? 0 : 5.99;
+							subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : 5.99;
 						expect(shippingCost)
-							.toBe(5.99);
+							.toBe(expectedShipping);
 					});
 			});
 	});

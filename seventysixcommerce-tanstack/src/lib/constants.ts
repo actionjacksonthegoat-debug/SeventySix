@@ -42,3 +42,6 @@ export const BREVO_API_URL: string = "https://api.brevo.com/v3/smtp/email";
 
 /** Printful API base URL. */
 export const PRINTFUL_API_BASE_URL: string = "https://api.printful.com";
+
+/** Placeholder email used when creating orders in mock/demo mode. */
+export const MOCK_ORDER_EMAIL: string = "mock@example.com";

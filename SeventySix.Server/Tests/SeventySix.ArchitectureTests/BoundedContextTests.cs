@@ -22,6 +22,7 @@ public sealed class BoundedContextTests
 	private static readonly string[] ServiceOnlyContexts =
 		[
 			"ElectronicNotifications",
+			"EcommerceCleanup",
 		];
 
 	/// <summary>

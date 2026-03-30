@@ -60,10 +60,11 @@ export function createMockStripe(baseUrl: string): MockStripeClient
 				create: async (params: Record<string, unknown>) =>
 				{
 					const id: string =
-						`mock_sess_${
+						`cs_test_mock${
 							crypto
 								.randomUUID()
-								.slice(0, 8)
+								.replaceAll("-", "")
+								.slice(0, 16)
 						}`;
 					const lineItems: Array<{
 						price_data: {
