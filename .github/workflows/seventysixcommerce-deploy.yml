@@ -53,16 +53,16 @@ jobs:
                       git clean -fd -e postgres-ssl/ -e logs/ -e docker/certs/
 
                       echo "=== Syncing SeventySixCommerce Caddy config ==="
-                      sudo cp "$APP_DIR/Caddyfile.SeventySixCommerce" /etc/caddy/Caddyfile.SeventySixCommerce
-                      sudo caddy fmt --overwrite /etc/caddy/Caddyfile.SeventySixCommerce
+                      sudo cp "$APP_DIR/Caddyfile.seventysixcommerce" /etc/caddy/Caddyfile.seventysixcommerce
+                      sudo caddy fmt --overwrite /etc/caddy/Caddyfile.seventysixcommerce
                       sudo caddy validate --config /etc/caddy/Caddyfile
                       sudo systemctl reload caddy
 
                       echo "=== Pulling SeventySixCommerce images ==="
-                      docker compose -f docker-compose.SeventySixCommerce.yml pull tanstack sveltekit
+                      docker compose -f docker-compose.seventysixcommerce.yml pull tanstack sveltekit
 
                       echo "=== Restarting SeventySixCommerce containers ==="
-                      docker compose -f docker-compose.SeventySixCommerce.yml up -d --remove-orphans
+                      docker compose -f docker-compose.seventysixcommerce.yml up -d --remove-orphans
 
                       echo "=== Cleaning up old images ==="
                       docker image prune -f
@@ -75,7 +75,7 @@ jobs:
                           fi
                           if [ "$i" -eq 12 ]; then
                               echo "ERROR: TanStack health check failed after 12 attempts"
-                              docker compose -f docker-compose.SeventySixCommerce.yml logs --tail=50 tanstack
+                              docker compose -f docker-compose.seventysixcommerce.yml logs --tail=50 tanstack
                               exit 1
                           fi
                           echo "  Waiting for TanStack... (attempt $i/12)"
@@ -90,7 +90,7 @@ jobs:
                           fi
                           if [ "$i" -eq 12 ]; then
                               echo "ERROR: SvelteKit health check failed after 12 attempts"
-                              docker compose -f docker-compose.SeventySixCommerce.yml logs --tail=50 sveltekit
+                              docker compose -f docker-compose.seventysixcommerce.yml logs --tail=50 sveltekit
                               exit 1
                           fi
                           echo "  Waiting for SvelteKit... (attempt $i/12)"
@@ -99,7 +99,7 @@ jobs:
 
                       echo ""
                       echo "=== Final container status ==="
-                      docker compose -f docker-compose.SeventySixCommerce.yml ps -a
+                      docker compose -f docker-compose.seventysixcommerce.yml ps -a
 
                       echo ""
                       echo "=== SeventySixCommerce deploy complete ==="
