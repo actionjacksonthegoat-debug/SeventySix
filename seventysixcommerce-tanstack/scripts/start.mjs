@@ -117,13 +117,22 @@ async function main()
 	// 0b. Ensure .env exists (auto-generate with strong passwords on first run)
 	const envPath = resolve(stackDir, ".env");
 	const envExamplePath = resolve(stackDir, ".env.example");
-	if (!existsSync(envPath) && existsSync(envExamplePath))
+	try
 	{
 		const dbPassword = generateStrongPassword();
 		let content = readFileSync(envExamplePath, "utf-8");
 		content = content.replaceAll("CHANGE_ME_STRONG_PASSWORD", dbPassword);
-		writeFileSync(envPath, content);
+		writeFileSync(envPath, content, { flag: "wx" });
 		console.log("Created .env with strong random database password");
+	}
+	catch (error)
+	{
+		if (error.code !== "EEXIST" && error.code !== "ENOENT")
+		{
+			throw error;
+		}
+		// EEXIST: .env already exists — no action needed
+		// ENOENT: .env.example doesn't exist — skip .env generation
 	}
 
 	// 1. Ensure Docker is running
