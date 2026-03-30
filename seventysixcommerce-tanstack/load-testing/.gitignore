@@ -1,0 +1,7 @@
+# Load test outputs
+results/
+reports/
+
+# Keep directory structure
+!results/.gitkeep
+!reports/.gitkeep

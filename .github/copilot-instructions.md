@@ -1,4 +1,4 @@
-﻿# SeventySix Copilot Instructions
+# SeventySix Copilot Instructions
 
 > **Context-specific rules** are in `.github/instructions/*.instructions.md` files (auto-applied by `applyTo` globs).
 > This file contains **global rules only**. Each concept lives in exactly ONE file — never duplicated.
@@ -35,6 +35,24 @@
 - If a change is complex enough to need user-facing documentation, **ASK the user first** before writing it
 - `.github/instructions/*.instructions.md` files are the authoritative reference — keep them current, don't duplicate into `/docs/`
 - **During `/execute-plan`**: Do NOT modify READMEs or `docs/*.md` unless the active `implementation-N.md` contains an explicit documentation phase. The orchestrator's final documentation gate verifies currency — incidental doc edits during code phases cause merge noise and scope creep.
+
+---
+
+## [CRITICAL] Development Environment Policy
+
+> **Local development is ALWAYS preferred** over dev containers. Dev containers are only for GitHub Codespaces or CI environments where local tooling is unavailable.
+
+| Environment | Command | When |
+| ----------- | ------- | ---- |
+| Local (preferred) | `npm run start` | Always — unless in a Codespace |
+| Dev Container | `npm run start:container` | Only in GitHub Codespaces or when explicitly requested |
+
+**Rules**:
+- **NEVER recommend** opening the project in a dev container for local development
+- **NEVER suggest** "Reopen in Container" for developers with Docker Desktop and local tooling
+- The `.devcontainer/` folder exists for Codespaces compatibility — it is NOT the default workflow
+- Local development with Docker Desktop for infrastructure (PostgreSQL, Valkey, etc.) and native tooling for code is the standard
+- Dev containers impose significant performance overhead — local native tools are always faster
 
 ---
 
@@ -122,6 +140,8 @@ After all tests pass, verify:
 | ------ | ------------------------------------------------------------------------------- |
 | Server | .NET 10 LTS, Wolverine CQRS, EF Core, PostgreSQL, FusionCache, FluentValidation |
 | Client | Angular 21 LTS, Zoneless, Signals, TanStack Query, Material Design 3, Babylon.js |
+| Sandbox (SvelteKit) | SvelteKit 2, Svelte 5, TypeScript 5.9+, Tailwind CSS 4 |
+| Sandbox (TanStack) | TanStack Start 1.167+, React 19, TypeScript 6.0+, Tailwind CSS 4 |
 | IDE    | VS Code 1.100+                                                                  |
 
 ## Domains
@@ -203,7 +223,7 @@ If a server needs credentials, ask the user. After VS Code restart, MCP tool tog
 
 | Rule | Requirement |
 |------|-------------|
-| **No output truncation** | NEVER pipe build/test/E2E/load output through `Select-Object`, `Select-String`, `Where-Object`, or ANY filter. Run raw commands, full output, no exceptions. Use timeout `0` when unsure. |
+| **No output truncation** | NEVER pipe build/test/E2E/load output through `Select-Object`, `Select-String`, `Where-Object`, `tail`, `head`, `grep`, or ANY filter/truncation command. This includes `| tail -N`, `| head -N`, `2>&1 | tail`, and any other form of output limiting. Run raw commands, full output, no exceptions. Use timeout `0` when unsure. |
 | **Zero broken tests** | A failing test MUST be fixed — no "pre-existing", "flaky", or "unrelated" excuses. STOP and fix before claiming done. A broken test is broken code. |
 | **Debug single specs** | Run only the failing spec: `npm run test:e2e -- specs/path/to.spec.ts` or `--grep "test name"` or `--keepalive specs/file.spec.ts`. If the failure can't reproduce standalone, re-run the full suite — it may be a cross-test corruption issue. |
 | **Full suite gate** | A full passing E2E suite run (`npm run test:e2e` with 0 failures) is REQUIRED before calling `/execute-plan` or `/code-review` complete. No exceptions. |
@@ -224,6 +244,7 @@ Plans created by `/create-plan` include explicit compaction checkpoints at major
 > Use `npm run <script>` commands defined in `package.json`. Read `package.json` for the full list.
 > **CRITICAL**: `npm run db:reset` is **USER ONLY — NEVER run via Copilot**.
 > **`npm run format` is the ONLY format command** — never run `dprint` directly.
+> Root format coverage includes `format:server`, `format:client`, `format:svelte`, and `format:tanstack`.
 
 ---
 
@@ -242,7 +263,7 @@ E2E, load tests, and DAST scans run in **fully isolated Docker environments** �
 
 | File                             | Scope                                          |
 | -------------------------------- | ---------------------------------------------- |
-| `formatting.instructions.md`     | `**/SeventySix.Client/src/**/*.{ts,html,scss,css},**/SeventySix.Server/**/*.cs` — naming, structure, operators  |
+| `formatting.instructions.md`     | `**/SeventySix.Client/src/**/*.{ts,html,scss,css},**/SeventySix.Server/**/*.cs,**/seventysixcommerce-sveltekit/src/**/*.{ts,svelte,css},**/seventysixcommerce-tanstack/src/**/*.{ts,tsx,css}` — naming, structure, operators  |
 | `angular.instructions.md`        | `**/SeventySix.Client/src/**/*.ts`             |
 | `csharp.instructions.md`         | `**/SeventySix.Server/**/*.cs`                 |
 | `security.instructions.md`       | `**/SeventySix.Client/src/**/*.ts,**/SeventySix.Server/**/*.cs` — ProblemDetails, auth errors   |
@@ -254,6 +275,10 @@ E2E, load tests, and DAST scans run in **fully isolated Docker environments** �
 | `games.instructions.md`          | `**/SeventySix.Client/src/app/domains/games/**/*.{ts,html,scss}` — game domain architecture |
 | `babylonjs.instructions.md`      | `**/SeventySix.Client/src/app/domains/games/**/*.ts` — Babylon.js patterns & CC BY 4.0 |
 | `load-testing.instructions.md`   | `**/SeventySix.Client/load-testing/**/*.js` — k6 load test patterns |
+| `sveltekit.instructions.md`      | `**/seventysixcommerce-sveltekit/src/**/*.{ts,svelte,css}` — SvelteKit sandbox patterns |
+| `tanstack.instructions.md`       | `**/seventysixcommerce-tanstack/src/**/*.{ts,tsx,css}` — TanStack Start sandbox patterns |
+| `e2e-svelte.instructions.md`    | `**/seventysixcommerce-sveltekit/e2e/**/*.ts` — SvelteKit E2E patterns |
+| `e2e-tanstack.instructions.md`  | `**/seventysixcommerce-tanstack/e2e/**/*.ts` — TanStack E2E patterns |
 
 ## Prompt Index (Invoked via `/prompt-name` in Chat)
 

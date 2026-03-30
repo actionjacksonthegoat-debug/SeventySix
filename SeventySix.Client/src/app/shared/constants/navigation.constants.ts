@@ -79,5 +79,46 @@ export const NAV_SECTIONS: ReadonlyArray<NavSection> =
 				}
 			],
 			requiredRoles: [ROLE_ADMIN]
+		},
+		{
+			title: "SvelteKit",
+			items: [
+				{
+					label: "Dashboard",
+					icon: "dashboard",
+					route: "/admin/svelte"
+				},
+				{
+					label: "Logs",
+					icon: "article",
+					route: "/admin/svelte/logs"
+				}
+			],
+			requiredRoles: [ROLE_ADMIN]
+		},
+		{
+			title: "TanStack",
+			items: [
+				{
+					label: "Dashboard",
+					icon: "dashboard",
+					route: "/admin/tanstack"
+				},
+				{
+					label: "Logs",
+					icon: "article",
+					route: "/admin/tanstack/logs"
+				}
+			],
+			requiredRoles: [ROLE_ADMIN]
 		}
 	] as const;
+
+/**
+ * Routes that require exact matching for active-link highlighting.
+ * Dashboard routes need exact match to avoid highlighting when on sub-routes like /logs.
+ * @type {ReadonlySet<string>}
+ */
+export const EXACT_MATCH_ROUTES: ReadonlySet<string> =
+	new Set(
+		["/", "/admin", "/admin/svelte", "/admin/tanstack"]);

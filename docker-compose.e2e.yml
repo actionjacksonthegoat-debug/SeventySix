@@ -23,7 +23,7 @@ services:
             POSTGRES_PASSWORD: E2E_Test_Password_123
             PGDATA: /var/lib/postgresql/data
         ports:
-            - "5434:5432"
+            - "127.0.0.1:5434:5432"
         volumes:
             - postgres_e2e_data:/var/lib/postgresql/data
         healthcheck:
@@ -39,7 +39,7 @@ services:
         image: valkey/valkey:9.0-alpine
         container_name: seventysix-valkey-e2e
         ports:
-            - "6380:6379"
+            - "127.0.0.1:6380:6379"
         healthcheck:
             test: [ "CMD", "valkey-cli", "ping" ]
             interval: 5s
@@ -55,7 +55,7 @@ services:
             dockerfile: Dockerfile
         container_name: seventysix-mock-brevo-e2e
         ports:
-            - "1080:3000"
+            - "127.0.0.1:1080:3000"
         healthcheck:
             test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health" ]
             interval: 5s
@@ -71,7 +71,7 @@ services:
             dockerfile: SeventySix.Api/Dockerfile
         container_name: seventysix-api-e2e
         ports:
-            - "7174:8081" # HTTPS - E2E isolated port (dev: 7074)
+            - "127.0.0.1:7174:8081" # HTTPS - E2E isolated port (dev: 7074)
         environment:
             # Core Environment - Using E2E-specific appsettings
             - ASPNETCORE_ENVIRONMENT=E2E
@@ -176,7 +176,7 @@ services:
             dockerfile: Dockerfile.e2e
         container_name: seventysix-client-e2e
         ports:
-            - "4201:8443" # HTTPS - E2E isolated port (dev: 4200)
+            - "127.0.0.1:4201:8443" # HTTPS - E2E isolated port (dev: 4200)
         volumes:
             - ./SeventySix.Client/ssl:/etc/nginx/ssl:ro
         depends_on:

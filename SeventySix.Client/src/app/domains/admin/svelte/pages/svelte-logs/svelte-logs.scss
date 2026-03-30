@@ -1,0 +1,109 @@
+@use "variables" as vars;
+@use "mixins" as mixins;
+
+:host {
+	@include mixins.flex-fill-column();
+	width: 100%;
+}
+
+.svelte-logs {
+	@include mixins.flex-fill-column();
+	width: 100%;
+
+	.logs-content {
+		flex: 1;
+		padding: vars.$spacing-lg;
+		display: flex;
+		flex-direction: column;
+		gap: vars.$spacing-md;
+	}
+
+	.filters-row {
+		display: flex;
+		gap: vars.$spacing-md;
+		align-items: flex-start;
+	}
+
+	.loading-container {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		padding: vars.$spacing-xl;
+	}
+
+	.table-container {
+		overflow-x: auto;
+	}
+
+	.log-table {
+		width: 100%;
+		border-collapse: collapse;
+
+		th,
+		td {
+			padding: vars.$spacing-sm vars.$spacing-md;
+			text-align: left;
+			border-bottom: 1px solid var(--mat-sys-outline-variant);
+		}
+
+		th {
+			font-weight: 500;
+			color: var(--mat-sys-on-surface-variant);
+			white-space: nowrap;
+		}
+
+		.timestamp {
+			white-space: nowrap;
+			min-width: 140px;
+		}
+
+		.level {
+			white-space: nowrap;
+			min-width: 100px;
+		}
+
+		.message {
+			max-width: 500px;
+			@include vars.truncate-text();
+		}
+
+		.source {
+			max-width: 200px;
+			@include vars.truncate-text();
+		}
+
+		.empty-state {
+			text-align: center;
+			color: var(--mat-sys-on-surface-variant);
+			padding: vars.$spacing-xl;
+		}
+	}
+
+	.level-badge {
+		padding: 2px vars.$spacing-sm;
+		border-radius: 4px;
+		font-size: 0.75rem;
+		font-weight: 500;
+	}
+
+	.level-warning {
+		.level-badge {
+			background: color-mix(in srgb, var(--mat-sys-tertiary) 12%, transparent);
+			color: var(--mat-sys-tertiary);
+		}
+	}
+
+	.level-error,
+	.level-critical {
+		.level-badge {
+			background: color-mix(in srgb, var(--mat-sys-error) 12%, transparent);
+			color: var(--mat-sys-error);
+		}
+	}
+
+	@media #{vars.$breakpoint-mobile} {
+		.logs-content {
+			padding: vars.$spacing-md;
+		}
+	}
+}

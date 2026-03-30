@@ -1,0 +1,44 @@
+@import "tailwindcss";
+
+@theme {
+	--color-bg-primary: oklch(1 0 0);
+	--color-bg-secondary: oklch(0.985 0.002 247);
+	--color-bg-tertiary: oklch(0.967 0.003 264);
+	--color-text-primary: oklch(0.21 0.006 285);
+	--color-text-secondary: oklch(0.446 0.03 256);
+	--color-text-muted: oklch(0.551 0.027 264);
+	--color-border: oklch(0.928 0.006 264);
+	--color-accent: oklch(0.511 0.262 276);
+	--color-accent-hover: oklch(0.457 0.24 277);
+	--color-surface: oklch(1 0 0);
+}
+
+.dark {
+	--color-bg-primary: oklch(0.145 0.005 285);
+	--color-bg-secondary: oklch(0.21 0.006 285);
+	--color-bg-tertiary: oklch(0.269 0.007 286);
+	--color-text-primary: oklch(0.985 0.002 247);
+	--color-text-secondary: oklch(0.707 0.015 261);
+	--color-text-muted: oklch(0.551 0.027 264);
+	--color-border: oklch(0.373 0.013 261);
+	--color-accent: oklch(0.673 0.182 276);
+	--color-accent-hover: oklch(0.757 0.139 276);
+	--color-surface: oklch(0.21 0.006 285);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	*,
+	*::before,
+	*::after {
+		transition:
+			background-color 0.2s ease,
+			color 0.2s ease,
+			border-color 0.2s ease;
+	}
+}
+
+.no-transition *,
+.no-transition *::before,
+.no-transition *::after {
+	transition: none !important;
+}

@@ -926,6 +926,145 @@ pgAdmin and RedisInsight are **not deployed in production** — they are dev-env
 
 ---
 
+## 11.6 Commerce Site Deployment
+
+The SeventySixCommerce sandbox sites (SvelteKit and TanStack Start) run as separate Docker containers alongside the core platform.
+
+### Subdomains
+
+| Site | Subdomain | Container Port |
+|------|-----------|---------------|
+| TanStack (React) | `seventysixcommerce-react.seventysixsandbox.com` | 3000 |
+| SvelteKit (Svelte) | `seventysixcommerce-svelte.seventysixsandbox.com` | 3001 |
+
+### Cloudflare DNS
+
+Add A records for both commerce subdomains pointing to the server IP, with Cloudflare proxy enabled (orange cloud):
+
+```
+seventysixcommerce-react  A  <SERVER_IP>  Proxied
+seventysixcommerce-svelte A  <SERVER_IP>  Proxied
+```
+
+### Caddy Configuration
+
+Commerce routing is defined in `Caddyfile.seventysixcommerce`, imported by the primary `Caddyfile.production`. Both subdomains use the same Cloudflare origin certificate for TLS termination.
+
+### Commerce Database
+
+Each commerce site uses its own PostgreSQL database (`seventysixcommerce`) within the shared PostgreSQL container. The Drizzle ORM schema auto-migrates on container startup.
+
+### Environment Variables
+
+Required environment variables for commerce containers:
+
+| Variable | Purpose |
+|----------|---------|
+| `DATABASE_URL` | PostgreSQL connection string for the commerce database |
+| `STRIPE_SECRET_KEY` | Stripe API key for payment processing |
+| `STRIPE_WEBHOOK_SECRET` | Stripe webhook signature verification |
+| `PRINTFUL_API_KEY` | Printful API key for order fulfillment |
+| `PRINTFUL_WEBHOOK_SECRET` | Printful webhook signature verification |
+| `BREVO_API_KEY` | Brevo API key for transactional email |
+| `BASE_URL` | Public URL of the commerce site |
+| `SEVENTYSIX_API_URL` | SeventySix API URL for log forwarding |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | OpenTelemetry collector endpoint |
+
+Optional analytics/SEO variables:
+
+| Variable | Purpose |
+|----------|---------|
+| `PUBLIC_GA4_MEASUREMENT_ID` / `VITE_GA4_MEASUREMENT_ID` | Google Analytics 4 tracking |
+| `PUBLIC_GOOGLE_SITE_VERIFICATION` / `VITE_GOOGLE_SITE_VERIFICATION` | Google Search Console |
+| `PUBLIC_BING_SITE_VERIFICATION` / `VITE_BING_SITE_VERIFICATION` | Bing Webmaster Tools |
+
+### Docker Compose
+
+Commerce containers are defined in `docker-compose.seventysixcommerce.yml`. Deploy alongside the main stack:
+
+```bash
+docker compose -f docker-compose.production.yml -f docker-compose.seventysixcommerce.yml up -d
+```
+
+### Health Monitoring
+
+Add UptimeRobot monitors for both commerce sites:
+
+| Monitor | Type | URL | Interval |
+|---|---|---|---|
+| Commerce (React) | HTTPS | `https://seventysixcommerce-react.seventysixsandbox.com` | 5 min |
+| Commerce (Svelte) | HTTPS | `https://seventysixcommerce-svelte.seventysixsandbox.com` | 5 min |
+
+### Security Headers
+
+Both commerce sites set security headers in their server middleware:
+- `X-Content-Type-Options: nosniff`
+- `X-Frame-Options: DENY`
+- `Referrer-Policy: strict-origin-when-cross-origin`
+- `Permissions-Policy: camera=(), microphone=(), geolocation=()`
+- `Content-Security-Policy` — strict policy with GA4 sources allowed when analytics is enabled
+
+HSTS is handled at the Caddy TLS termination layer.
+
+---
+
+## 11.7 Cloudflare Hardening
+
+Configure these settings in the Cloudflare dashboard for all domains:
+
+### WAF & Bot Protection
+
+| Setting | Value | Purpose |
+|---------|-------|---------|
+| WAF Managed Rules | OWASP Core Ruleset enabled | Block common attack patterns |
+| Bot Fight Mode | Enabled | Challenge suspected bots |
+| Browser Integrity Check | Enabled | Block requests with suspicious user agents |
+| Hotlink Protection | Enabled | Prevent product image hotlinking |
+| Email Obfuscation | Enabled | Hide email addresses in HTML |
+
+### SSL/TLS
+
+| Setting | Value | Purpose |
+|---------|-------|---------|
+| SSL Mode | Full (Strict) | Caddy has valid origin certificate |
+| Minimum TLS Version | 1.2 | Block TLS 1.0/1.1 |
+| HTTP/3 (QUIC) | Enabled | Performance improvement |
+| HSTS | Enabled (max-age 12 months, includeSubDomains) | Force HTTPS |
+| Always Use HTTPS | Enabled | Redirect HTTP → HTTPS |
+
+### Caching
+
+| Setting | Value | Purpose |
+|---------|-------|---------|
+| Browser Cache TTL | Respect Existing Headers | Let app servers control caching |
+| Cache Level | Standard | Cache static assets |
+| Bypass cache for | `/api/*`, `/checkout/*` | Never cache dynamic content |
+
+### Rate Limiting (optional, free tier limited)
+
+| Rule | Threshold | Action |
+|------|-----------|--------|
+| API endpoints | 100 req/10s per IP | Challenge |
+| Login page | 10 req/min per IP | Block |
+
+### Hetzner UFW (Origin Protection)
+
+Restrict ports 80/443 to Cloudflare IPs only:
+
+```bash
+# Download Cloudflare IP ranges
+curl -s https://www.cloudflare.com/ips-v4 | while read ip; do
+  ufw allow from "$ip" to any port 80,443 proto tcp
+done
+
+# Block all other 80/443 traffic
+ufw default deny incoming
+ufw allow 22/tcp  # SSH
+ufw enable
+```
+
+---
+
 ## 12. Post-Deploy Verification
 
 Run through this checklist after the first deploy:
@@ -953,6 +1092,13 @@ Run through this checklist after the first deploy:
 - [ ] CD pipeline deploys on push to master (check GitHub Actions)
 - [ ] Cloudflare Analytics shows cache hits for static assets
 - [ ] UptimeRobot shows green for both monitors
+- [ ] Commerce (React): `https://seventysixcommerce-react.seventysixsandbox.com` loads over HTTPS
+- [ ] Commerce (Svelte): `https://seventysixcommerce-svelte.seventysixsandbox.com` loads over HTTPS
+- [ ] Commerce sites: product pages render with correct SEO meta tags
+- [ ] Commerce sites: robots.txt accessible and contains correct Sitemap URL
+- [ ] Commerce sites: security headers present (check via browser DevTools → Network → Response Headers)
+- [ ] Commerce sites: OpenTelemetry traces appear in Jaeger under commerce service names
+- [ ] Commerce sites: logs forwarded to SeventySix API (visible in admin log viewer)
 
 ---
 

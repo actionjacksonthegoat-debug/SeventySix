@@ -219,7 +219,7 @@ These prompts generate code for specific components or domains. They handle file
 
 **`/review-solution`** is the most comprehensive prompt — it reads every instruction file, cross-references every pattern with Context7 docs, and delegates Stage 2 (security) to `/security-review`. Output is a prioritized `Implementation.md` plan.
 
-**`/run-site-base`** automates a 21-step walkthrough: landing page → login → MFA → admin dashboard → user management → logs → permissions → profile → developer tools → error pages → logout. Generates a `walkthrough-report.md` and screenshots. Run it after any client-facing changes.
+**`/run-site-base`** automates a 31-step walkthrough across all three sites: SeventySix Angular (Steps 1–21: landing page → login → MFA → admin dashboard → user management → logs → permissions → profile → developer tools → error pages → logout), SeventySixCommerce SvelteKit (Steps 22–26: home → about → shop → cart → policies), and SeventySixCommerce TanStack Start (Steps 27–31: home → about → shop → cart → policies). Generates a `walkthrough-report.md` and screenshots. Run it after any client-facing changes.
 
 ---
 

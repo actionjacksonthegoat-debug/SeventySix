@@ -63,6 +63,22 @@ else {
 	Write-Host "  No stopped containers to remove" -ForegroundColor DarkGray
 }
 
+# Remove stopped SeventySixCommerce containers (ssxc-* dev and SeventySixCommerce-* prod)
+Write-Host ""
+Write-Host "Removing stopped SeventySixCommerce containers..." -ForegroundColor Yellow
+$yahContainers =
+docker ps -a --filter "status=exited" --format "{{.Names}}" |
+Where-Object { $_ -match "^(ssxc-|SeventySixCommerce-)" }
+if ($yahContainers) {
+	foreach ($name in $yahContainers) {
+		docker rm $name 2>$null | Out-Null
+	}
+	Write-Host "  Removed $($yahContainers.Count) stopped SeventySixCommerce container(s)" -ForegroundColor DarkYellow
+}
+else {
+	Write-Host "  No stopped SeventySixCommerce containers to remove" -ForegroundColor DarkGray
+}
+
 # Remove dangling images (dangling = unused intermediate layers with <none> tag)
 Write-Host ""
 Write-Host "Removing dangling images..." -ForegroundColor Yellow
@@ -114,6 +130,12 @@ if ($IncludeVolumes) {
 			docker compose -f docker-compose.loadtest.yml down --remove-orphans 2>&1 | Out-Null
 		}
 	}
+
+	# Also stop SeventySixCommerce dev containers to release volume locks
+	if ($Environment -eq "dev" -or $Environment -eq "all") {
+		docker compose -f seventysixcommerce-tanstack/docker-compose.dev.yml down --remove-orphans 2>&1 | Out-Null
+		docker compose -f seventysixcommerce-sveltekit/docker-compose.dev.yml down --remove-orphans 2>&1 | Out-Null
+	}
 	$ErrorActionPreference = "Stop"
 	Pop-Location
 
@@ -139,6 +161,30 @@ if ($IncludeVolumes) {
 		$ErrorActionPreference = "SilentlyContinue"
 		docker volume rm $volume --force 2>&1 | Out-Null
 		$ErrorActionPreference = "Stop"
+	}
+
+	# Remove SeventySixCommerce volumes (ssxc_* and ssxc-* patterns)
+	if ($Environment -eq "dev" -or $Environment -eq "all") {
+		Write-Host ""
+		Write-Host "Removing SeventySixCommerce volumes (excluding PostgreSQL)..." -ForegroundColor Yellow
+		$yahVolumes =
+		docker volume ls --format "{{.Name}}" | Where-Object { $_ -match "^yah[-_]" -and $_ -notmatch "postgres|pgdata" }
+
+		$yahPostgresVolumes =
+		docker volume ls --format "{{.Name}}" | Where-Object { $_ -match "^yah[-_]" -and $_ -match "postgres|pgdata" }
+
+		if ($yahPostgresVolumes) {
+			foreach ($pgVolume in $yahPostgresVolumes) {
+				Write-Host "  Skipping SeventySixCommerce PostgreSQL volume: $pgVolume" -ForegroundColor Yellow
+			}
+		}
+
+		foreach ($yahVolume in $yahVolumes) {
+			Write-Host "  Removing: $yahVolume" -ForegroundColor DarkYellow
+			$ErrorActionPreference = "SilentlyContinue"
+			docker volume rm $yahVolume --force 2>&1 | Out-Null
+			$ErrorActionPreference = "Stop"
+		}
 	}
 }
 

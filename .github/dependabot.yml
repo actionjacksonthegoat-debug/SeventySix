@@ -119,3 +119,59 @@ updates:
       - "dependencies"
       - "docker"
       - "server"
+
+  # npm — SeventySixCommerce SvelteKit sandbox
+  - package-ecosystem: "npm"
+    directory: "/seventysixcommerce-sveltekit"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "npm"
+      - "sveltekit"
+    groups:
+      minor-and-patch:
+        update-types:
+          - "minor"
+          - "patch"
+
+  # npm — SeventySixCommerce TanStack sandbox
+  - package-ecosystem: "npm"
+    directory: "/seventysixcommerce-tanstack"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "npm"
+      - "tanstack"
+    groups:
+      minor-and-patch:
+        update-types:
+          - "minor"
+          - "patch"
+
+  # Docker — SvelteKit sandbox Dockerfile
+  - package-ecosystem: "docker"
+    directory: "/seventysixcommerce-sveltekit"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    labels:
+      - "dependencies"
+      - "docker"
+      - "sveltekit"
+
+  # Docker — TanStack sandbox Dockerfile
+  - package-ecosystem: "docker"
+    directory: "/seventysixcommerce-tanstack"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    labels:
+      - "dependencies"
+      - "docker"
+      - "tanstack"

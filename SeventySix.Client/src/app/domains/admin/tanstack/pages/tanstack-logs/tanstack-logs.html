@@ -1,0 +1,84 @@
+<div class="tanstack-logs">
+	<app-page-header
+		icon="article"
+		title="TanStack Logs"
+		subtitle="Read-only log viewer for the TanStack sandbox"
+	/>
+
+	<div class="logs-content">
+		<!-- Filters -->
+		<div class="filters-row">
+			<mat-form-field appearance="outline">
+				<mat-label>Log Level</mat-label>
+				<mat-select
+					[value]="currentLevel()"
+					(selectionChange)="onLevelChange($event.value)"
+					data-testid="tanstack-log-level-filter"
+					aria-label="Filter by log level">
+					@for (level of logLevels; track level) {
+					<mat-option [value]="level">
+						{{ level === "" ? "All Levels" : level }}
+					</mat-option>
+					}
+				</mat-select>
+			</mat-form-field>
+		</div>
+
+		<!-- Log Table -->
+		@if (isLoading()) {
+		<div class="loading-container">
+			<mat-spinner diameter="48"></mat-spinner>
+		</div>
+		} @else {
+		<mat-card data-testid="tanstack-log-table-card">
+			<mat-card-content>
+				<div class="table-container">
+					<table
+						class="log-table"
+						aria-label="TanStack application logs">
+						<thead>
+							<tr>
+								<th scope="col">Timestamp</th>
+								<th scope="col">Level</th>
+								<th scope="col">Message</th>
+								<th scope="col">Source</th>
+							</tr>
+						</thead>
+						<tbody>
+							@for (log of logsQuery.data()?.items ?? []; track log.id) {
+							<tr [class]="'level-' + log.logLevel.toLowerCase()">
+								<td class="timestamp">{{ log.createDate | date:"short" }}</td>
+								<td class="level">
+									<span class="level-badge">{{ log.logLevel }}</span>
+								</td>
+								<td class="message">{{ log.message }}</td>
+								<td class="source">{{ log.sourceContext }}</td>
+							</tr>
+							} @empty {
+							<tr>
+								<td
+									colspan="4"
+									class="empty-state">
+									No logs found
+								</td>
+							</tr>
+							}
+						</tbody>
+					</table>
+				</div>
+			</mat-card-content>
+		</mat-card>
+
+		<!-- Paginator -->
+		<mat-paginator
+			[length]="totalCount()"
+			[pageSize]="pageSize()"
+			[pageIndex]="pageIndex()"
+			[pageSizeOptions]="[10, 25, 50, 100]"
+			(page)="onPageChange($event)"
+			aria-label="Select page of TanStack logs"
+			data-testid="tanstack-log-paginator">
+		</mat-paginator>
+		}
+	</div>
+</div>

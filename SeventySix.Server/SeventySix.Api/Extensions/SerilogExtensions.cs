@@ -155,12 +155,81 @@ public static class SerilogExtensions
 	private const int ClientErrorThreshold = 400;
 
 	/// <summary>
+	/// Determines the Serilog log level for an HTTP request based on status code and path.
+	/// </summary>
+	/// <remarks>
+	/// Auth refresh 401 responses are logged as Debug because they represent expected behavior
+	/// (expired refresh token). All other 401s remain Warning.
+	/// </remarks>
+	/// <param name="httpContext">
+	/// The HTTP context for the request.
+	/// </param>
+	/// <param name="elapsed">
+	/// The request elapsed time in milliseconds.
+	/// </param>
+	/// <param name="exception">
+	/// Any exception thrown during request processing.
+	/// </param>
+	/// <returns>
+	/// The appropriate <see cref="LogEventLevel"/> for the request.
+	/// </returns>
+	public static LogEventLevel GetRequestLogLevel(
+		HttpContext httpContext,
+		double elapsed,
+		Exception? exception)
+	{
+		if (exception is not null)
+		{
+			return LogEventLevel.Error;
+		}
+
+		int statusCode =
+			httpContext.Response.StatusCode;
+
+		if (statusCode >= ServerErrorThreshold)
+		{
+			return LogEventLevel.Error;
+		}
+
+		// Auth refresh returning 401 is expected behavior — token expired
+		if (statusCode == StatusCodes.Status401Unauthorized
+			&& IsAuthRefreshPath(httpContext.Request.Path))
+		{
+			return LogEventLevel.Debug;
+		}
+
+		if (statusCode >= ClientErrorThreshold)
+		{
+			return LogEventLevel.Warning;
+		}
+
+		return LogEventLevel.Information;
+	}
+
+	/// <summary>
+	/// Checks if the request path is the auth token refresh endpoint.
+	/// </summary>
+	/// <param name="path">
+	/// The request path to check.
+	/// </param>
+	/// <returns>
+	/// True if the path matches the auth refresh endpoint.
+	/// </returns>
+	private static bool IsAuthRefreshPath(PathString path)
+	{
+		return path.StartsWithSegments(
+			"/api/v1/auth/refresh",
+			StringComparison.OrdinalIgnoreCase);
+	}
+
+	/// <summary>
 	/// Configures Serilog HTTP request logging with status-aware log levels
 	/// and diagnostic context enrichment.
 	/// </summary>
 	/// <remarks>
 	/// Log levels are assigned by HTTP response status:
 	/// - 5xx or exception → Error
+	/// - 401 on /api/v1/auth/refresh → Debug (expected behavior)
 	/// - 4xx → Warning
 	/// - All others → Information
 	///
@@ -179,25 +248,7 @@ public static class SerilogExtensions
 			options =>
 			{
 				options.GetLevel =
-					(httpContext, elapsed, exception) =>
-					{
-						if (exception is not null)
-						{
-							return LogEventLevel.Error;
-						}
-
-						if (httpContext.Response.StatusCode >= ServerErrorThreshold)
-						{
-							return LogEventLevel.Error;
-						}
-
-						if (httpContext.Response.StatusCode >= ClientErrorThreshold)
-						{
-							return LogEventLevel.Warning;
-						}
-
-						return LogEventLevel.Information;
-					};
+					GetRequestLogLevel;
 
 				options.MessageTemplate =
 					"HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms";

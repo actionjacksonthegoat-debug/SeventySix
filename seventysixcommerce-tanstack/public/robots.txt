@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /checkout/
+
+Sitemap: https://commerce-tanstack.seventysixsandbox.com/api/sitemap

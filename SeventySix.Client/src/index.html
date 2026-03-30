@@ -24,7 +24,7 @@
 		/>
 		<meta
 			name="robots"
-			content="index, follow"
+			content="noindex, nofollow"
 		/>
 
 		<!-- Language and accessibility (AI crawler hints) -->
@@ -131,6 +131,12 @@
 			rel="apple-touch-icon"
 			href="/icons/icon-192x192.png"
 		/>
+
+		<!-- Preload primary font weights for fast LCP/FCP -->
+		<link rel="preload" href="/fonts/roboto/roboto-latin-400-normal.woff2"
+			as="font" type="font/woff2" crossorigin />
+		<link rel="preload" href="/fonts/roboto/roboto-latin-500-normal.woff2"
+			as="font" type="font/woff2" crossorigin />
 
 		<!-- Preload hero background images for fast LCP & apply theme classes synchronously. -->
 		<script src="theme-init.js"></script>

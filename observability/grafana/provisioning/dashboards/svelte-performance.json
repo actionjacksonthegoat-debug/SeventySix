@@ -1,0 +1,94 @@
+{
+	"annotations": { "list": [] },
+	"editable": true,
+	"fiscalYearStartMonth": 0,
+	"graphTooltip": 0,
+	"id": null,
+	"links": [],
+	"liveNow": false,
+	"panels": [
+		{
+			"datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+			"fieldConfig": {
+				"defaults": { "unit": "reqps" },
+				"overrides": []
+			},
+			"gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+			"id": 1,
+			"title": "Request Rate",
+			"type": "timeseries",
+			"targets": [
+				{
+					"expr": "rate(http_server_request_duration_seconds_count{service_name=\"seventysixcommerce-sveltekit\"}[5m])",
+					"legendFormat": "requests/s"
+				}
+			]
+		},
+		{
+			"datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+			"fieldConfig": {
+				"defaults": { "unit": "s" },
+				"overrides": []
+			},
+			"gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+			"id": 2,
+			"title": "Response Time Percentiles",
+			"type": "timeseries",
+			"targets": [
+				{
+					"expr": "histogram_quantile(0.50, rate(http_server_request_duration_seconds_bucket{service_name=\"seventysixcommerce-sveltekit\"}[5m]))",
+					"legendFormat": "p50"
+				},
+				{
+					"expr": "histogram_quantile(0.95, rate(http_server_request_duration_seconds_bucket{service_name=\"seventysixcommerce-sveltekit\"}[5m]))",
+					"legendFormat": "p95"
+				},
+				{
+					"expr": "histogram_quantile(0.99, rate(http_server_request_duration_seconds_bucket{service_name=\"seventysixcommerce-sveltekit\"}[5m]))",
+					"legendFormat": "p99"
+				}
+			]
+		},
+		{
+			"datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+			"fieldConfig": {
+				"defaults": { "unit": "percent" },
+				"overrides": []
+			},
+			"gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+			"id": 3,
+			"title": "Error Rate",
+			"type": "timeseries",
+			"targets": [
+				{
+					"expr": "100 * sum(rate(http_server_request_duration_seconds_count{service_name=\"seventysixcommerce-sveltekit\",http_response_status_code=~\"5..\"}[5m])) / sum(rate(http_server_request_duration_seconds_count{service_name=\"seventysixcommerce-sveltekit\"}[5m]))",
+					"legendFormat": "error %"
+				}
+			]
+		},
+		{
+			"datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+			"fieldConfig": {
+				"defaults": { "unit": "bytes" },
+				"overrides": []
+			},
+			"gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+			"id": 4,
+			"title": "Memory Usage",
+			"type": "timeseries",
+			"targets": [
+				{
+					"expr": "process_resident_memory_bytes{service_name=\"seventysixcommerce-sveltekit\"}",
+					"legendFormat": "RSS"
+				}
+			]
+		}
+	],
+	"refresh": "10s",
+	"schemaVersion": 39,
+	"tags": ["sveltekit", "performance"],
+	"templating": { "list": [] },
+	"time": { "from": "now-1h", "to": "now" },
+	"title": "SvelteKit Performance",
+	"uid": "svelte-perf"
+}

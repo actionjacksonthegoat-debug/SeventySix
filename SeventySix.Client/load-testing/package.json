@@ -12,6 +12,6 @@
 		"test:all": "npm run test:quick"
 	},
 	"devDependencies": {
-		"@types/k6": "^1.0.0"
+		"@types/k6": "^1.7.0"
 	}
 }

@@ -48,3 +48,6 @@ api.seventysixsandbox.com {
 		header_up X-Forwarded-For {header.CF-Connecting-IP}
 	}
 }
+
+# SeventySixCommerce routes (TanStack + SvelteKit subdomains)
+import /etc/caddy/Caddyfile.seventysixcommerce

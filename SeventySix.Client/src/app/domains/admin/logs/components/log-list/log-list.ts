@@ -11,6 +11,8 @@ import {
 	Signal
 } from "@angular/core";
 import { MatDialog, MatDialogRef } from "@angular/material/dialog";
+import { MatFormFieldModule } from "@angular/material/form-field";
+import { MatSelectModule } from "@angular/material/select";
 import { DataTableComponent } from "@shared/components/data-table/data-table.component";
 import {
 	BulkAction,
@@ -35,7 +37,7 @@ import { NotificationService } from "@shared/services/notification.service";
 @Component(
 	{
 		selector: "app-log-list",
-		imports: [DataTableComponent],
+		imports: [DataTableComponent, MatFormFieldModule, MatSelectModule],
 		templateUrl: "./log-list.html",
 		styleUrl: "./log-list.scss",
 		changeDetection: ChangeDetectionStrategy.OnPush,
@@ -241,6 +243,18 @@ export class LogList
 			}
 		];
 
+	/**
+	 * Source context filter options for the dropdown.
+	 * @type {ReadonlyArray<{ value: string; label: string }>}
+	 */
+	readonly sourceContextOptions: ReadonlyArray<{ value: string; label: string; }> =
+		[
+			{ value: "", label: "All Sources" },
+			{ value: "SeventySix API", label: "SeventySix API" },
+			{ value: "seventysixcommerce-sveltekit", label: "seventysixcommerce-sveltekit" },
+			{ value: "seventysixcommerce-tanstack", label: "seventysixcommerce-tanstack" }
+		];
+
 	// Row actions (view handled by rowClick)
 	/**
 	 * Row-level actions available for each log row (view/delete).
@@ -381,6 +395,18 @@ export class LogList
 
 		this.logService.updateFilter(
 			{ logLevel });
+	}
+
+	/**
+	 * Change the source context filter from the dropdown.
+	 * @param {string} sourceContext
+	 * The selected source context value, or empty string for all sources.
+	 * @returns {void}
+	 */
+	onSourceContextChange(sourceContext: string): void
+	{
+		this.logService.updateFilter(
+			{ sourceContext: sourceContext.length > 0 ? sourceContext : undefined });
 	}
 
 	/**

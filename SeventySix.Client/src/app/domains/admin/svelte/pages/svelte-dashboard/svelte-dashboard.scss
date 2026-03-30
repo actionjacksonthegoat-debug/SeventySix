@@ -1,0 +1,89 @@
+@use "variables" as vars;
+
+.svelte-dashboard {
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+
+	.dashboard-content {
+		flex: 1;
+		padding: vars.$spacing-lg;
+		overflow: hidden;
+		display: flex;
+		flex-direction: column;
+		gap: vars.$spacing-lg;
+
+		mat-tab-group {
+			flex: 1;
+			display: flex;
+			flex-direction: column;
+			overflow: hidden;
+		}
+	}
+
+	.loading-container {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		padding: vars.$spacing-md;
+	}
+
+	.health-card {
+		mat-card-title {
+			display: flex;
+			align-items: center;
+			gap: vars.$spacing-sm;
+		}
+	}
+
+	.log-counts {
+		display: flex;
+		gap: vars.$spacing-lg;
+		margin-top: vars.$spacing-md;
+	}
+
+	.count-item {
+		display: flex;
+		align-items: center;
+		gap: vars.$spacing-sm;
+
+		.count {
+			font-size: 1.5rem;
+			font-weight: 500;
+		}
+
+		.label {
+			color: var(--mat-sys-on-surface-variant);
+			font-size: 0.875rem;
+		}
+
+		&.warning mat-icon {
+			color: var(--mat-sys-tertiary);
+		}
+
+		&.error mat-icon {
+			color: var(--mat-sys-error);
+		}
+	}
+
+	.tab-content {
+		padding: vars.$spacing-md 0;
+
+		&.full-height {
+			flex: 1;
+			overflow: hidden;
+
+			app-grafana-dashboard-embed {
+				flex: 1;
+				display: flex;
+				min-height: 0;
+			}
+		}
+	}
+
+	@media #{vars.$breakpoint-mobile} {
+		.dashboard-content {
+			padding: vars.$spacing-md;
+		}
+	}
+}
