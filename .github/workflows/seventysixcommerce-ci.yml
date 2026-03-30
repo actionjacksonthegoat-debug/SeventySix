@@ -295,7 +295,9 @@ jobs:
                   DATABASE_URL: postgresql://ssxc_e2e:ssxc_e2e_password@localhost:5441/seventysixcommerce_tanstack_e2e
 
             - name: Start application
-              run: node dist/server/server.js &
+              run: |
+                  node server-entry.mjs > /tmp/tanstack-e2e.log 2>&1 &
+                  echo $! > /tmp/tanstack-e2e.pid
               env:
                   DATABASE_URL: postgresql://ssxc_e2e:ssxc_e2e_password@localhost:5441/seventysixcommerce_tanstack_e2e
                   PORT: "3012"
@@ -303,15 +305,33 @@ jobs:
 
             - name: Wait for application to be ready
               run: |
-                  for i in $(seq 1 30); do
-                      if curl -sf http://localhost:3012/api/healthz > /dev/null 2>&1; then
-                          echo "Application is ready"
-                          exit 0
-                      fi
-                      echo "Attempt $i/30 — waiting..."
-                      sleep 2
-                  done
-                  echo "Application failed to start within 60 seconds"
+                for i in $(seq 1 60); do
+                  if curl -sf http://localhost:3012/api/healthz > /dev/null 2>&1; then
+                    echo "Application is ready"
+                    exit 0
+                  fi
+
+                  if [ -f /tmp/tanstack-e2e.pid ] && ! kill -0 "$(cat /tmp/tanstack-e2e.pid)" 2>/dev/null; then
+                    echo "Application process exited early"
+                    echo "=== TanStack startup logs (E2E) ==="
+                    if [ -f /tmp/tanstack-e2e.log ]; then
+                      tail -n 200 /tmp/tanstack-e2e.log
+                    fi
+                    exit 1
+                  fi
+
+                  echo "Attempt $i/60 — waiting..."
+                  sleep 2
+                done
+
+                echo "Application failed to start within 120 seconds"
+                echo "=== TanStack startup logs (E2E) ==="
+                if [ -f /tmp/tanstack-e2e.log ]; then
+                  tail -n 200 /tmp/tanstack-e2e.log
+                fi
+                if [ -f /tmp/tanstack-e2e.pid ]; then
+                  echo "PID: $(cat /tmp/tanstack-e2e.pid)"
+                fi
                   exit 1
 
             - name: Run E2E tests
@@ -468,7 +488,9 @@ jobs:
                   npx tsx src/server/db/seed.ts
 
             - name: Start application
-              run: node dist/server/server.js &
+              run: |
+                  node server-entry.mjs > /tmp/tanstack-loadtest.log 2>&1 &
+                  echo $! > /tmp/tanstack-loadtest.pid
               env:
                   PORT: "3022"
                   NODE_ENV: production
@@ -476,15 +498,33 @@ jobs:
 
             - name: Wait for application to be ready
               run: |
-                  for i in $(seq 1 30); do
-                      if curl -sf http://localhost:3022/api/healthz > /dev/null 2>&1; then
-                          echo "Application is ready"
-                          exit 0
-                      fi
-                      echo "Attempt $i/30 — waiting..."
-                      sleep 2
-                  done
-                  echo "Application failed to start within 60 seconds"
+                for i in $(seq 1 60); do
+                  if curl -sf http://localhost:3022/api/healthz > /dev/null 2>&1; then
+                    echo "Application is ready"
+                    exit 0
+                  fi
+
+                  if [ -f /tmp/tanstack-loadtest.pid ] && ! kill -0 "$(cat /tmp/tanstack-loadtest.pid)" 2>/dev/null; then
+                    echo "Application process exited early"
+                    echo "=== TanStack startup logs (Load Test) ==="
+                    if [ -f /tmp/tanstack-loadtest.log ]; then
+                      tail -n 200 /tmp/tanstack-loadtest.log
+                    fi
+                    exit 1
+                  fi
+
+                  echo "Attempt $i/60 — waiting..."
+                  sleep 2
+                done
+
+                echo "Application failed to start within 120 seconds"
+                echo "=== TanStack startup logs (Load Test) ==="
+                if [ -f /tmp/tanstack-loadtest.log ]; then
+                  tail -n 200 /tmp/tanstack-loadtest.log
+                fi
+                if [ -f /tmp/tanstack-loadtest.pid ]; then
+                  echo "PID: $(cat /tmp/tanstack-loadtest.pid)"
+                fi
                   exit 1
 
             - name: Install k6
