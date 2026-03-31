@@ -133,3 +133,31 @@ SeventySix uses a layered configuration system. This document provides a high-le
 | All other settings | `appsettings.json` | Safe to commit |
 
 > **Rule**: If a value is sensitive (passwords, API keys, tokens), it goes in user secrets or environment variables — **never** in `appsettings.json`.
+
+---
+
+## E-Commerce Site Configuration
+
+The e-commerce sites (SvelteKit and TanStack) use environment variables (not .NET user secrets). Configuration is defined in `docker-compose.seventysixcommerce.yml` for production and `.env` files for local development.
+
+### Common Environment Variables
+
+| Variable | Purpose | Required |
+|----------|---------|----------|
+| `DATABASE_URL` | PostgreSQL connection string | Yes |
+| `STRIPE_SECRET_KEY` | Stripe API secret key | Yes (production) |
+| `STRIPE_WEBHOOK_SECRET` | Stripe webhook signing secret | Yes (production) |
+| `PRINTFUL_API_KEY` | Printful API key | Optional (mock available) |
+| `BREVO_API_KEY` | Brevo transactional email key | Optional (mock available) |
+| `MOCK_SERVICES` | Enable mock integrations (`true`/`false`) | Dev/test only |
+| `BASE_URL` | Public URL for the application | Yes |
+| `LOG_FORWARDING_URL` | SeventySix API log ingestion endpoint | Optional |
+| `NODE_ENV` | `development` or `production` | Yes |
+
+### Mock Services
+
+Both commerce sites support `MOCK_SERVICES=true` which replaces Stripe, Printful, and Brevo with in-memory mock implementations. This is the default for development, E2E tests, and load tests.
+
+For detailed configuration, see:
+- [SvelteKit Commerce README](../seventysixcommerce-sveltekit/README.md)
+- [TanStack Commerce README](../seventysixcommerce-tanstack/README.md)

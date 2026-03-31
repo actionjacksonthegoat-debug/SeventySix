@@ -363,3 +363,16 @@ The old "shared CPU throttling" branch is eliminated — there are no shared CPU
 > **All prices confirmed from Hetzner Cloud Console, US West (`hil`), March 2026.** Dedicated AMD pricing is not shown on the public pricing page — check the console directly.
 > **Traffic**: CCX23 includes 2 TB/mo, CCX33 includes 3 TB/mo, CCX43 includes 4 TB/mo. Additional traffic: $1.00/TB. For reference, CPX41 was used previously with 4 TB included — CCX23's 2 TB is sufficient for most early-stage SaaS apps when Cloudflare caches static assets.
 > **vs. CPX path**: CCX23 ($28.99) saves $4.50/mo vs CPX41 ($33.49). CCX33 ($55.49) saves $11.50/mo vs CPX51 ($66.99). Over two years at Phase A+B: **~$400 saved** — and with better dedicated CPU performance throughout.
+
+---
+
+## Multi-Application Considerations
+
+This scaling plan focuses on the core SeventySix application (.NET API + Angular SPA). The two e-commerce sites (SvelteKit Commerce and TanStack Commerce) are independently deployable Node.js applications that:
+
+- Share the same Hetzner server in the current single-server architecture (Phase A)
+- Have separate Docker Compose configurations and databases
+- Can be migrated to separate servers independently if load requires it
+- Resource limits: each commerce container runs with 1.0 CPU / 512MB memory
+
+When scaling beyond Phase B (single server), consider whether commerce sites should remain on the same server or split to dedicated instances based on traffic patterns.

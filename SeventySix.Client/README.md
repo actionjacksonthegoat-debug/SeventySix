@@ -56,6 +56,7 @@ graph TB
             Auth["auth\n(Login, Register, MFA, OAuth)"]
             Account["account\n(Profile, Password)"]
             Developer["developer\n(Dev Tools, Guides)"]
+            Games["games\n(Babylon.js 3D Games)"]
             Home["home\n(Landing Page)"]
             Sandbox["sandbox\n(Experiments)"]
         end
@@ -73,6 +74,7 @@ graph TB
     Auth --> SharedLayer
     Account --> SharedLayer
     Developer --> SharedLayer
+    Games --> SharedLayer
     Home --> SharedLayer
     Sandbox --> SharedLayer
 ```
@@ -81,14 +83,15 @@ graph TB
 
 Each domain imports only `@shared/*` and itself. Domains never import from other domains. This is enforced by architecture tests in `scripts/architecture-tests.mjs`.
 
-| From | @shared | @admin | @auth | @account | @developer | @sandbox | @home |
-|------|---------|--------|-------|----------|------------|----------|-------|
-| **@admin** | Allowed | Allowed | -- | -- | -- | -- | -- |
-| **@auth** | Allowed | -- | Allowed | -- | -- | -- | -- |
-| **@account** | Allowed | -- | -- | Allowed | -- | -- | -- |
-| **@developer** | Allowed | -- | -- | -- | Allowed | -- | -- |
-| **@sandbox** | Allowed | -- | -- | -- | -- | Allowed | -- |
-| **@home** | Allowed | -- | -- | -- | -- | -- | Allowed |
+| From | @shared | @admin | @auth | @account | @developer | @games | @sandbox | @home |
+|------|---------|--------|-------|----------|------------|--------|----------|-------|
+| **@admin** | Allowed | Allowed | -- | -- | -- | -- | -- | -- |
+| **@auth** | Allowed | -- | Allowed | -- | -- | -- | -- | -- |
+| **@account** | Allowed | -- | -- | Allowed | -- | -- | -- | -- |
+| **@developer** | Allowed | -- | -- | -- | Allowed | -- | -- | -- |
+| **@games** | Allowed | -- | -- | -- | -- | Allowed | -- | -- |
+| **@sandbox** | Allowed | -- | -- | -- | -- | -- | Allowed | -- |
+| **@home** | Allowed | -- | -- | -- | -- | -- | -- | Allowed |
 
 ### Zoneless + Signals
 
@@ -113,10 +116,12 @@ graph TD
     Root --> AccountR["account\n(authenticated)"]
     Root --> AdminR["admin\n(Admin role)"]
     Root --> DevR["developer\n(Developer role)"]
+    Root --> GamesR["games\n(authenticated)"]
 
     AccountR -.- Guard1["passwordChangeGuard()\n+ roleGuard()"]
     AdminR -.- Guard2["passwordChangeGuard()\n+ roleGuard(ROLE_ADMIN)"]
     DevR -.- Guard3["passwordChangeGuard()\n+ roleGuard(ROLE_DEVELOPER)"]
+    GamesR -.- Guard4["passwordChangeGuard()\n+ roleGuard()"]
 ```
 
 Public routes (home, sandbox, auth) are preloaded for fast navigation. Protected routes check role authorization before downloading the module bundle.
@@ -174,6 +179,10 @@ All public forms (login, registration, forgot password) integrate the shared `al
 
 **Style Guide** — A comprehensive Material Design 3 component reference organized into tabs: Colors, Typography, Buttons, Forms, Tables, Feedback, Icons, and Loading States. Live theme controls at the top allow previewing every component across multiple theme variants (light/dark × color variants). This page serves as both visual documentation and a design system reference for contributors.
 
+### Games Domain
+
+Babylon.js 3D game dashboard with two playable browser games: **Spy vs Spy** (top-down stealth strategy with room-based gameplay, trap mechanics, AI opponents, and sprite animations) and **Car-a-Lot** (vehicle-based arena gameplay). Each game uses route-scoped services destroyed on navigation. Shared game infrastructure includes `GameLoopService`, `BabylonEngineService`, `InputService`, and `AssetManagerService`. All services follow SOLID decomposition with single-responsibility patterns.
+
 ### Home Domain
 
 Dual-theme parallax landing page showcasing the project's tech stack, features, architecture patterns, and stats. Serves as the default page for all visitors.
@@ -189,6 +198,7 @@ The application uses a responsive sidebar with collapsible sections based on the
 | Section | Required Role | Pages |
 |---|---|---|
 | **Main** | All users | Home, Sandbox |
+| **Games** | Authenticated | Spy vs Spy, Car-a-Lot |
 | **Developer** | Developer or Admin | Style Guide |
 | **Management** | Admin only | Dashboard, Users, Logs, Permission Requests |
 

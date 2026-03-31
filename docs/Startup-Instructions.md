@@ -583,6 +583,39 @@ With these overrides:
 
 ---
 
+## Multi-Site Development
+
+The SeventySix ecosystem includes three independently runnable applications. `npm start` launches all of them, but you can start each site individually:
+
+| Command | What it starts | URL |
+|---------|---------------|-----|
+| `npm start` | Full stack: API + Angular + SvelteKit + TanStack + infrastructure | Angular: https://localhost:4200 |
+| `npm run start:seventysix` | API + Angular client only | https://localhost:4200 |
+| `npm run start:svelte` | SvelteKit commerce site + its PostgreSQL | http://localhost:3001 |
+| `npm run start:tanstack` | TanStack commerce site + its PostgreSQL | http://localhost:3000 |
+
+### E-Commerce Site Dependencies
+
+Both e-commerce sites require:
+- Docker Desktop running (for their PostgreSQL database)
+- `npm install` in the respective subdirectory (handled by bootstrap)
+
+They do NOT require the SeventySix API to be running — they are independently deployable applications with their own databases. Log forwarding to the API is optional (logs are also written to stdout).
+
+### Testing Individual Sites
+
+| Command | Scope |
+|---------|-------|
+| `npm test` | All test suites (server + client + both commerce) |
+| `npm run test:svelte` | SvelteKit unit tests only |
+| `npm run test:tanstack` | TanStack unit tests only |
+| `npm run test:e2e:svelte` | SvelteKit E2E tests (isolated Docker) |
+| `npm run test:e2e:tanstack` | TanStack E2E tests (isolated Docker) |
+| `npm run loadtest:svelte:quick` | SvelteKit load tests |
+| `npm run loadtest:tanstack:quick` | TanStack load tests |
+
+---
+
 ## Troubleshooting
 
 ### Docker containers won't start

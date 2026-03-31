@@ -339,7 +339,78 @@ const INFRASTRUCTURE_TECH: readonly TechStackItem[] =
 		}
 	];
 
-/** Grouped technology stack categories (Server, Client, Infrastructure). */
+const GAMES_TECH: readonly TechStackItem[] =
+	[
+		{
+			name: "Babylon.js",
+			slug: "babylondotjs",
+			cdnSource: "simpleIcons",
+			brandColor: "#BB464B",
+			url: "https://www.babylonjs.com/",
+			license: "Apache-2.0",
+			description: "3D game engine"
+		}
+	];
+
+const ECOMMERCE_TECH: readonly TechStackItem[] =
+	[
+		{
+			name: "SvelteKit",
+			slug: "svelte",
+			cdnSource: "simpleIcons",
+			brandColor: "#FF3E00",
+			url: "https://svelte.dev/",
+			license: "MIT",
+			description: "Full-stack Svelte framework"
+		},
+		{
+			name: "TanStack Start",
+			slug: "reactquery",
+			cdnSource: "simpleIcons",
+			brandColor: "#FF4154",
+			url: "https://tanstack.com/start/latest",
+			license: "MIT",
+			description: "Full-stack React framework"
+		},
+		{
+			name: "React 19",
+			slug: "react",
+			cdnSource: "simpleIcons",
+			brandColor: "#61DAFB",
+			url: "https://react.dev/",
+			license: "MIT",
+			description: "UI component library"
+		},
+		{
+			name: "Drizzle ORM",
+			slug: "drizzle",
+			cdnSource: "simpleIcons",
+			brandColor: "#C5F74F",
+			url: "https://orm.drizzle.team/",
+			license: "Apache-2.0",
+			description: "Type-safe SQL ORM"
+		},
+		{
+			name: "Stripe",
+			slug: "stripe",
+			cdnSource: "simpleIcons",
+			brandColor: "#635BFF",
+			url: "https://stripe.com/",
+			license: "MIT",
+			description: "Payment processing"
+		},
+		{
+			name: "Tailwind CSS",
+			slug: "tailwindcss",
+			cdnSource: "simpleIcons",
+			brandColor: "#06B6D4",
+			url: "https://tailwindcss.com/",
+			license: "MIT",
+			description: "Utility-first CSS"
+		}
+	];
+
+/** Grouped technology stack categories (Server, Client, Infrastructure, Games, E-Commerce). */
 export const TECH_STACK_CATEGORIES: readonly TechStackCategory[] =
 	[
 		{
@@ -356,6 +427,16 @@ export const TECH_STACK_CATEGORIES: readonly TechStackCategory[] =
 			title: "Infrastructure",
 			icon: "cloud",
 			items: INFRASTRUCTURE_TECH
+		},
+		{
+			title: "Games",
+			icon: "sports_esports",
+			items: GAMES_TECH
+		},
+		{
+			title: "E-Commerce",
+			icon: "storefront",
+			items: ECOMMERCE_TECH
 		}
 	];
 
@@ -379,13 +460,13 @@ export const STAT_ITEMS: readonly StatItem[] =
 			icon: "check_circle"
 		},
 		{
-			value: 260,
+			value: 340,
 			suffix: "+",
 			label: "E2E Test Cases",
 			icon: "integration_instructions"
 		},
 		{
-			value: 14,
+			value: 19,
 			suffix: "",
 			label: "Load Test Scenarios",
 			icon: "speed"
@@ -475,6 +556,20 @@ export const FEATURE_HIGHLIGHTS: readonly FeatureHighlight[] =
 				"Hetzner cloud hosting with Docker Compose production deploys",
 				"Cloudflare free-tier edge security: WAF, DDoS protection, CDN caching"
 			]
+		},
+		{
+			title: "Multi-Site Ecosystem",
+			icon: "hub",
+			tagline: "One repo, three production applications",
+			description:
+			"A central .NET + Angular application with Games dashboard, plus two independently deployable e-commerce storefronts built with SvelteKit and TanStack Start.",
+			bullets: [
+				"Games dashboard with Babylon.js 3D games (Spy vs Spy, Car-a-Lot)",
+				"SvelteKit 2 commerce: Svelte 5, Drizzle ORM, Stripe, Printful, Brevo",
+				"TanStack Start commerce: React 19, Drizzle ORM, Stripe, Printful, Brevo",
+				"Shared Docker Compose infrastructure with isolated test environments",
+				"Centralized observability \u2014 commerce sites forward logs to main API"
+			]
 		}
 	];
 
@@ -556,5 +651,18 @@ export const ARCHITECTURE_CARDS: readonly ArchitectureCard[] =
 				"Custom scenarios per API endpoint with realistic data"
 			],
 			keywords: ["k6", "Performance", "Load Testing", "Grafana"]
+		},
+		{
+			title: "Multi-Site Architecture",
+			icon: "device_hub",
+			shortDescription: "Three independently deployable apps sharing infrastructure and observability.",
+			details: [
+				"SeventySix: .NET 10 API + Angular 21 SPA with Babylon.js Games dashboard",
+				"SvelteKit Commerce: Svelte 5, Drizzle ORM, file-based routing, server actions",
+				"TanStack Commerce: React 19, TanStack Router, server functions, Zod validation",
+				"All sites share Hetzner hosting, Caddy reverse proxy, and Cloudflare edge security",
+				"E2E and load tests run in fully isolated Docker environments per site"
+			],
+			keywords: ["Monorepo", "Multi-Site", "SvelteKit", "TanStack Start", "Babylon.js"]
 		}
 	];
