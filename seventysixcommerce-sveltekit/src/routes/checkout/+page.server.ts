@@ -15,7 +15,10 @@ import {
 	orderStatusHistory,
 	products
 } from "$lib/server/db/schema";
+import { queueLog } from "$lib/server/log-forwarder";
+import { recordCheckoutComplete, recordCheckoutStart } from "$lib/server/metrics";
 import { getStripe } from "$lib/server/stripe";
+import { now } from "$lib/utils/date";
 import { fail, redirect } from "@sveltejs/kit";
 import { eq } from "drizzle-orm";
 import type { Actions } from "./$types";
@@ -26,6 +29,16 @@ export const actions: Actions =
 	/** Creates Stripe Checkout session and redirects to Stripe hosted page. */
 		default: async ({ locals }) =>
 		{
+			const checkoutStartTime: number =
+				now()
+					.getTime();
+			recordCheckoutStart();
+			queueLog(
+				{
+					logLevel: "Information",
+					message: "Checkout started"
+				});
+
 			const cart: CartItemWithProduct[] =
 				await getCart(locals.cartSessionId);
 
@@ -156,6 +169,15 @@ export const actions: Actions =
 					session.id,
 					amountTotal,
 					locals.cartSessionId);
+
+				recordCheckoutComplete(
+					now()
+						.getTime() - checkoutStartTime);
+				queueLog(
+					{
+						logLevel: "Information",
+						message: `Checkout complete: session ${session.id}`
+					});
 			}
 
 			if (session.url === null || session.url === undefined)

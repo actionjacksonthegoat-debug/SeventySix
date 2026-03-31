@@ -3,12 +3,21 @@ import type { JSX } from "react";
 import { SITE_URL } from "~/lib/constants";
 import { getCategories } from "~/server/functions/products";
 import type { Category } from "~/server/functions/products";
+import { queueLog } from "~/server/log-forwarder";
+import { recordPageView } from "~/server/metrics";
 
 export const Route =
 	createFileRoute("/shop/")(
 		{
 			loader: async () =>
 			{
+				recordPageView("shop");
+				queueLog(
+					{
+						logLevel: "Information",
+						message: "Page view: shop"
+					});
+
 				const categories: Category[] =
 					await getCategories();
 				return { categories };

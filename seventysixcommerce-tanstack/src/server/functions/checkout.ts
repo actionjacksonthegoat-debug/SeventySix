@@ -2,9 +2,12 @@ import { createServerFn } from "@tanstack/react-start";
 import { eq } from "drizzle-orm";
 import type Stripe from "stripe";
 import { FREE_SHIPPING_THRESHOLD, MOCK_ORDER_EMAIL, STANDARD_SHIPPING_CENTS } from "~/lib/constants";
+import { now } from "~/lib/date";
 import { db } from "../db";
 import * as schema from "../db/schema";
 import { getStripe } from "../lib/stripe";
+import { queueLog } from "../log-forwarder";
+import { recordCheckoutComplete, recordCheckoutStart } from "../metrics";
 import { cartSessionMiddleware } from "../middleware/cart-session";
 import { csrfMiddleware } from "../middleware/csrf";
 
@@ -40,6 +43,16 @@ export const createCheckoutSession =
 		.handler(
 			async ({ context }): Promise<CheckoutSessionResponse> =>
 			{
+				const checkoutStartTime: number =
+					now()
+						.getTime();
+				recordCheckoutStart();
+				queueLog(
+					{
+						logLevel: "Information",
+						message: "Checkout started"
+					});
+
 				const cartRows: CartProductRow[] =
 					await db
 						.select(
@@ -164,6 +177,15 @@ export const createCheckoutSession =
 					await createMockOrder(
 						session as unknown as Stripe.Checkout.Session,
 						context.cartSessionId);
+
+					recordCheckoutComplete(
+						now()
+							.getTime() - checkoutStartTime);
+					queueLog(
+						{
+							logLevel: "Information",
+							message: `Checkout complete: session ${session.id}`
+						});
 				}
 
 				if (session.url === null || session.url === undefined)

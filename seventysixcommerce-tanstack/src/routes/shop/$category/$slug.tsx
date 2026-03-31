@@ -18,12 +18,21 @@ import type {
 	ProductDetail,
 	ProductVariant
 } from "~/server/functions/products";
+import { queueLog } from "~/server/log-forwarder";
+import { recordPageView } from "~/server/metrics";
 
 export const Route =
 	createFileRoute("/shop/$category/$slug")(
 		{
 			loader: async ({ params }) =>
 			{
+				recordPageView("product");
+				queueLog(
+					{
+						logLevel: "Information",
+						message: `Page view: product ${params.slug}`
+					});
+
 				const product: ProductDetail | null =
 					await getProduct(
 						{

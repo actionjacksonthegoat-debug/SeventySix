@@ -78,11 +78,11 @@
 			"type": "timeseries",
 			"targets": [
 				{
-					"expr": "histogram_quantile(0.50, rate(commerce_checkout_duration_ms_bucket{service_name=\"seventysixcommerce-sveltekit\"}[5m]))",
+					"expr": "histogram_quantile(0.50, rate(commerce_checkout_duration_ms_milliseconds_bucket{service_name=\"seventysixcommerce-sveltekit\"}[5m]))",
 					"legendFormat": "p50"
 				},
 				{
-					"expr": "histogram_quantile(0.95, rate(commerce_checkout_duration_ms_bucket{service_name=\"seventysixcommerce-sveltekit\"}[5m]))",
+					"expr": "histogram_quantile(0.95, rate(commerce_checkout_duration_ms_milliseconds_bucket{service_name=\"seventysixcommerce-sveltekit\"}[5m]))",
 					"legendFormat": "p95"
 				}
 			]

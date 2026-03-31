@@ -8,12 +8,21 @@ import { JsonLd } from "~/components/seo/JsonLd";
 import { SITE_URL } from "~/lib/constants";
 import { getCategories, getProducts } from "~/server/functions/products";
 import type { Category, Product } from "~/server/functions/products";
+import { queueLog } from "~/server/log-forwarder";
+import { recordPageView } from "~/server/metrics";
 
 export const Route =
 	createFileRoute("/shop/$category/")(
 		{
 			loader: async ({ params }) =>
 			{
+				recordPageView("category");
+				queueLog(
+					{
+						logLevel: "Information",
+						message: `Page view: category ${params.category}`
+					});
+
 				const [productsResult, categories] =
 					await Promise.all(
 						[

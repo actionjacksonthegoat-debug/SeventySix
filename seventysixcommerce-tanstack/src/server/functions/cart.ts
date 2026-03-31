@@ -5,6 +5,8 @@ import { CART_SESSION_MAX_AGE_SECONDS, MAX_CART_ITEM_QUANTITY } from "~/lib/cons
 import { futureDate } from "~/lib/date";
 import { db } from "../db";
 import * as schema from "../db/schema";
+import { queueLog } from "../log-forwarder";
+import { recordCartAdd, recordCartRemove } from "../metrics";
 import { cartSessionMiddleware } from "../middleware/cart-session";
 import { csrfMiddleware } from "../middleware/csrf";
 
@@ -204,6 +206,13 @@ export const addToCart =
 							});
 				}
 
+				recordCartAdd(data.productId);
+				queueLog(
+					{
+						logLevel: "Information",
+						message: `Cart add: product ${data.productId}, variant ${data.variantId}, qty ${data.quantity}`
+					});
+
 				return getCart(
 					{ data: undefined });
 			});
@@ -253,6 +262,13 @@ export const updateCartItem =
 					await db
 						.delete(schema.cartItems)
 						.where(eq(schema.cartItems.id, data.cartItemId));
+
+					recordCartRemove(data.cartItemId);
+					queueLog(
+						{
+							logLevel: "Information",
+							message: `Cart remove: item ${data.cartItemId}`
+						});
 				}
 				else
 				{
@@ -288,6 +304,13 @@ export const removeFromCart =
 						and(
 							eq(schema.cartItems.id, data.cartItemId),
 							eq(schema.cartItems.sessionId, context.cartSessionId)));
+
+				recordCartRemove(data.cartItemId);
+				queueLog(
+					{
+						logLevel: "Information",
+						message: `Cart remove: item ${data.cartItemId}`
+					});
 
 				return getCart(
 					{ data: undefined });

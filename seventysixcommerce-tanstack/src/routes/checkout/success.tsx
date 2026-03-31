@@ -4,6 +4,8 @@ import type { JSX } from "react";
 import type Stripe from "stripe";
 import { z } from "zod";
 import { getStripe } from "~/server/lib/stripe";
+import { queueLog } from "~/server/log-forwarder";
+import { recordPageView } from "~/server/metrics";
 import { cartSessionMiddleware } from "~/server/middleware/cart-session";
 
 /** Order confirmation details shown on the success page. */
@@ -73,6 +75,13 @@ export const Route =
 			loaderDeps: ({ search }) => ({ sessionId: search.session_id }),
 			loader: async ({ deps }) =>
 			{
+				recordPageView("checkout-success");
+				queueLog(
+					{
+						logLevel: "Information",
+						message: "Page view: checkout-success"
+					});
+
 				if (deps.sessionId === undefined)
 				{
 					return { confirmation: null };

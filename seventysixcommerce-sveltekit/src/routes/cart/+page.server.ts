@@ -5,6 +5,8 @@ import {
 	removeFromCart,
 	updateCartItem
 } from "$lib/server/db/cart";
+import { queueLog } from "$lib/server/log-forwarder";
+import { recordCartAdd, recordCartRemove, recordPageView } from "$lib/server/metrics";
 import { fail } from "@sveltejs/kit";
 import { z } from "zod";
 import type { Actions, PageServerLoad } from "./$types";
@@ -13,6 +15,13 @@ import type { Actions, PageServerLoad } from "./$types";
 export const load: PageServerLoad =
 	async ({ locals }) =>
 	{
+		recordPageView("cart");
+		queueLog(
+			{
+				logLevel: "Information",
+				message: "Page view: cart"
+			});
+
 		const cart =
 			await getCart(locals.cartSessionId);
 		const subtotal: number =
@@ -103,6 +112,14 @@ export const actions: Actions =
 					{ error: result.error });
 			}
 
+			recordCartAdd(parsed.data.productId);
+			queueLog(
+				{
+					logLevel: "Information",
+					message:
+					`Cart add: product ${parsed.data.productId}, variant ${parsed.data.variantId}, qty ${parsed.data.quantity}`
+				});
+
 			return { success: true };
 		},
 
@@ -128,6 +145,17 @@ export const actions: Actions =
 				locals.cartSessionId,
 				parsed.data.cartItemId,
 				parsed.data.quantity);
+
+			if (parsed.data.quantity === 0)
+			{
+				recordCartRemove(parsed.data.cartItemId);
+				queueLog(
+					{
+						logLevel: "Information",
+						message: `Cart remove: item ${parsed.data.cartItemId}`
+					});
+			}
+
 			return { success: true };
 		},
 
@@ -149,6 +177,14 @@ export const actions: Actions =
 			}
 
 			await removeFromCart(locals.cartSessionId, parsed.data.cartItemId);
+
+			recordCartRemove(parsed.data.cartItemId);
+			queueLog(
+				{
+					logLevel: "Information",
+					message: `Cart remove: item ${parsed.data.cartItemId}`
+				});
+
 			return { success: true };
 		}
 	};

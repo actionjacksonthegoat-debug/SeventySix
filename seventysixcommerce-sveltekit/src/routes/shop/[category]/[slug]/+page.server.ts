@@ -2,6 +2,8 @@ import { env } from "$env/dynamic/private";
 import { MAX_CART_ITEM_QUANTITY } from "$lib/constants";
 import { addToCart } from "$lib/server/db/cart";
 import { getProduct, getRelatedProducts } from "$lib/server/db/products";
+import { queueLog } from "$lib/server/log-forwarder";
+import { recordCartAdd, recordPageView } from "$lib/server/metrics";
 import { generateProductJsonLd } from "$lib/utils/seo";
 import { error, fail } from "@sveltejs/kit";
 import { z } from "zod";
@@ -11,6 +13,13 @@ import type { Actions, PageServerLoad } from "./$types";
 export const load: PageServerLoad =
 	async ({ params }) =>
 	{
+		recordPageView("product");
+		queueLog(
+			{
+				logLevel: "Information",
+				message: `Page view: product ${params.slug}`
+			});
+
 		const product =
 			await getProduct(params.slug);
 
@@ -79,6 +88,14 @@ export const actions: Actions =
 				return fail(400,
 					{ error: result.error });
 			}
+
+			recordCartAdd(parsed.data.productId);
+			queueLog(
+				{
+					logLevel: "Information",
+					message:
+					`Cart add: product ${parsed.data.productId}, variant ${parsed.data.variantId}, qty ${parsed.data.quantity}`
+				});
 
 			return { success: true, message: "Added to cart" };
 		}

@@ -12,6 +12,8 @@ import {
 } from "~/server/functions/cart";
 import type { CartItem, CartResponse } from "~/server/functions/cart";
 import { createCheckoutSession } from "~/server/functions/checkout";
+import { queueLog } from "~/server/log-forwarder";
+import { recordPageView } from "~/server/metrics";
 
 export const Route =
 	createFileRoute("/cart")(
@@ -24,6 +26,13 @@ export const Route =
 			}),
 			loader: async (): Promise<CartResponse> =>
 			{
+				recordPageView("cart");
+				queueLog(
+					{
+						logLevel: "Information",
+						message: "Page view: cart"
+					});
+
 				return getCart();
 			},
 			component: CartPage

@@ -1,3 +1,5 @@
+import { queueLog } from "$lib/server/log-forwarder";
+import { recordPageView } from "$lib/server/metrics";
 import { getStripe } from "$lib/server/stripe";
 import { error } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
@@ -9,6 +11,13 @@ const STRIPE_SESSION_PATTERN: RegExp =
 export const load: PageServerLoad =
 	async ({ url, locals }) =>
 	{
+		recordPageView("checkout-success");
+		queueLog(
+			{
+				logLevel: "Information",
+				message: "Page view: checkout-success"
+			});
+
 		const sessionId: string =
 			url.searchParams.get("session_id") ?? "";
 

@@ -8,12 +8,21 @@ import {
 	getFeaturedProducts
 } from "~/server/functions/products";
 import type { Category, Product } from "~/server/functions/products";
+import { queueLog } from "~/server/log-forwarder";
+import { recordPageView } from "~/server/metrics";
 
 export const Route =
 	createFileRoute("/")(
 		{
 			loader: async () =>
 			{
+				recordPageView("home");
+				queueLog(
+					{
+						logLevel: "Information",
+						message: "Page view: home"
+					});
+
 				const [featured, categories] =
 					await Promise.all(
 						[
