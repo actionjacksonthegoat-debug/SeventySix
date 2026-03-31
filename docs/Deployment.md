@@ -1235,6 +1235,65 @@ gh secret set PROD_HOST --body "NEW_IP" --repo actionjacksonthegoat-debug/Sevent
 
 ---
 
+## E-Commerce Sites Deployment
+
+The two e-commerce storefronts deploy via `docker-compose.seventysixcommerce.yml` on the same production server, using Caddy as a reverse proxy.
+
+### Architecture
+
+- **Docker Compose**: `docker-compose.seventysixcommerce.yml` defines three services: PostgreSQL 18, TanStack app (port 3000), and SvelteKit app (port 3001)
+- **Database**: Single PostgreSQL instance with two databases — `SeventySixCommerce` (TanStack) and `SeventySixCommerce_sveltekit` (SvelteKit), separate from the main SeventySix database
+- **Resource Limits**: Each commerce container limited to 1.0 CPU / 512MB memory
+
+### Caddy Configuration
+
+`Caddyfile.seventysixcommerce` configures two domain pairs:
+
+| Domain | Target |
+|--------|--------|
+| `SeventySixCommerce-react.seventysixsandbox.com` | TanStack app → `localhost:3000` |
+| `SeventySixCommerce-svelte.seventysixsandbox.com` | SvelteKit app → `localhost:3001` |
+
+Both use the same Cloudflare origin TLS certificates as the main site.
+
+### Health Checks
+
+| App | Endpoint |
+|-----|----------|
+| TanStack | `GET /api/healthz` |
+| SvelteKit | `GET /healthz` |
+
+### Secrets
+
+Environment variables set in `docker-compose.seventysixcommerce.yml`:
+
+| Variable | Purpose |
+|----------|---------|
+| `DATABASE_URL` | PostgreSQL connection string |
+| `STRIPE_SECRET_KEY` | Stripe API secret key |
+| `STRIPE_WEBHOOK_SECRET` | Stripe webhook signing secret |
+| `PRINTFUL_API_KEY` | Printful API key (optional — mock available) |
+| `BREVO_API_KEY` | Brevo transactional email key (optional — mock available) |
+| `BASE_URL` | Public URL for the application |
+| `NODE_ENV` | `production` |
+
+### Deploying Commerce Sites
+
+```bash
+ssh deploy@$SERVER_IP
+cd /srv/seventysix
+
+# Pull latest images and restart
+docker compose -f docker-compose.seventysixcommerce.yml pull
+docker compose -f docker-compose.seventysixcommerce.yml up -d
+
+# Verify health
+curl -s http://localhost:3000/api/healthz
+curl -s http://localhost:3001/healthz
+```
+
+---
+
 ## Appendix A — Deployment Notes & Gotchas
 
 Lessons learned from the initial deployment. Intended for the deploying human **and** for Copilot so it knows what it can and cannot do.

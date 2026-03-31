@@ -8,6 +8,10 @@
 
 Art merchandise storefront built with TanStack Start, React 19, PostgreSQL, and mocked third-party integrations by default.
 
+## Ecosystem Context
+
+This is one of two satellite e-commerce sites in the [SeventySix](../README.md) ecosystem. Both storefronts share production infrastructure (Hetzner server, Caddy reverse proxy, Cloudflare DNS) and forward application logs to the SeventySix API for centralized observability. Each site uses its own PostgreSQL database, separate from the main SeventySix database. The sister site — [SeventySixCommerce (SvelteKit)](../seventysixcommerce-sveltekit/README.md) — provides the same feature set built with Svelte 5 and SvelteKit 2.
+
 ## Stack
 
 | Layer | Technology |

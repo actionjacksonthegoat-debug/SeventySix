@@ -133,6 +133,7 @@ After all tests pass, verify:
 
 - **Server**: `Shared ← Domains ← Api` (never reverse)
 - **Client**: Domains import ONLY `@shared/*` + itself, NEVER another domain
+- **E-Commerce Sites**: Two independently deployable Node.js storefronts (SvelteKit + TanStack Start) with separate databases, shared Stripe/Printful/Brevo integrations
 
 ## Technology Stack
 
@@ -140,8 +141,8 @@ After all tests pass, verify:
 | ------ | ------------------------------------------------------------------------------- |
 | Server | .NET 10 LTS, Wolverine CQRS, EF Core, PostgreSQL, FusionCache, FluentValidation |
 | Client | Angular 21 LTS, Zoneless, Signals, TanStack Query, Material Design 3, Babylon.js |
-| Sandbox (SvelteKit) | SvelteKit 2, Svelte 5, TypeScript 5.9+, Tailwind CSS 4 |
-| Sandbox (TanStack) | TanStack Start 1.167+, React 19, TypeScript 6.0+, Tailwind CSS 4 |
+| Sandbox (SvelteKit) | SvelteKit 2, Svelte 5, TypeScript 5.9+, Tailwind CSS 4, Drizzle ORM, Stripe, Printful, Brevo |
+| Sandbox (TanStack) | TanStack Start 1.167+, React 19, TypeScript 6.0+, Tailwind CSS 4, Drizzle ORM, Stripe, Printful, Brevo |
 | IDE    | VS Code 1.100+                                                                  |
 
 ## Domains
@@ -254,6 +255,7 @@ Plans created by `/create-plan` include explicit compaction checkpoints at major
 > **CRITICAL**: `npm run db:reset` is **USER ONLY — NEVER run via Copilot**.
 > **`npm run format` is the ONLY format command** — never run `dprint` directly.
 > Root format coverage includes `format:server`, `format:client`, `format:svelte`, and `format:tanstack`.
+> Commerce site scripts follow the pattern: `start:svelte`, `start:tanstack`, `test:svelte`, `test:tanstack`, `test:e2e:svelte`, `test:e2e:tanstack`, `loadtest:svelte:*`, `loadtest:tanstack:*`. All are defined in the root `package.json`.
 
 ---
 
@@ -267,6 +269,8 @@ E2E, load tests, and DAST scans run in **fully isolated Docker environments** �
 | E2E | `docker-compose.e2e.yml` | 5434 / 6380 / 7174 / 4201 |
 | Load Test | `docker-compose.loadtest.yml` | 5435 / 6381 / 7175 / 4202 |
 | DAST | `docker-compose.dast.yml` | 5436 / 6382 / 7274 / 4301 |
+| SvelteKit Load | `docker-compose.loadtest-svelte.yml` | 5442 / — / — / 3021 |
+| TanStack Load | `docker-compose.loadtest-tanstack.yml` | 5443 / — / — / 3022 |
 
 ## File Index (Auto-Applied via `applyTo` Globs)
 

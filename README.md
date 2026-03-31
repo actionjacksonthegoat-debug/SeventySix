@@ -39,9 +39,9 @@ When you know you want to move forward - I recommend installing all extensions a
 
 ## Overview
 
-A full-stack monorepo demonstrating enterprise-grade patterns with .NET 10 and Angular 21. Built entirely through AI-assisted development using GitHub Copilot and Claude, this codebase serves as both a functional application and a reference implementation for secure, observable, well-tested systems.
+A multi-application ecosystem demonstrating enterprise-grade patterns across three independently deployable sites. The main application pairs a .NET 10 API with an Angular 21 SPA featuring a Babylon.js Games dashboard, developer tools, and full site administration. Two satellite e-commerce storefronts — one built with SvelteKit 2 + Svelte 5 and the other with TanStack Start + React 19 — showcase modern full-stack alternatives with shared infrastructure for payments (Stripe), fulfillment (Printful), and transactional email (Brevo). Built entirely through AI-assisted development using GitHub Copilot and Claude, this codebase serves as both a functional application and a reference implementation for secure, observable, well-tested systems.
 
-**Core Stack**: .NET 10 (Wolverine CQRS, EF Core, PostgreSQL) • Angular 21 (Zoneless, Signals, TanStack Query) • Docker Compose infrastructure • MIT licensed with no paid dependencies
+**Core Stack**: .NET 10 (Wolverine CQRS, EF Core, PostgreSQL) • Angular 21 (Zoneless, Signals, TanStack Query, Babylon.js Games) • SvelteKit 2 (Svelte 5, Drizzle ORM, Stripe) • TanStack Start (React 19, Drizzle ORM, Stripe) • Docker Compose infrastructure • MIT licensed with no paid dependencies
 
 ## Quick Start
 
@@ -221,6 +221,7 @@ Domain-driven modules with enforced isolation via architecture tests
 | [k6](https://grafana.com/docs/k6/latest/) | latest | AGPL-3.0 | Load and performance testing (Grafana) |
 | ESLint | latest | MIT | Linting with custom rules |
 | dprint | latest | MIT | Code formatting |
+| [Babylon.js](https://www.babylonjs.com/) | 7.x | Apache-2.0 | 3D game engine for Games dashboard (Spy vs Spy, Car-a-Lot) |
 
 ### Infrastructure
 
@@ -235,14 +236,36 @@ Domain-driven modules with enforced isolation via architecture tests
 | pgAdmin | latest | PostgreSQL License | PostgreSQL web UI |
 | RedisInsight | latest | SSPL | Valkey/Redis GUI for cache visualization |
 
+### E-Commerce Sites
+
+Both e-commerce storefronts are independently deployable Node.js applications sharing a common feature set.
+
+| Technology | SvelteKit Version | TanStack Version | License | Purpose |
+|---|---|---|---|---|
+| Node.js | 22+ | 22+ | MIT | Server runtime |
+| TypeScript | 5.9+ | 6.0+ | Apache-2.0 | Type safety |
+| Drizzle ORM | 0.45+ | 0.45+ | Apache-2.0 | Type-safe ORM |
+| PostgreSQL | 18 | 18 | PostgreSQL | Database |
+| Stripe | 21+ | 21+ | MIT | Payment processing (SAQ-A) |
+| Printful | API | API | — | Print-on-demand fulfillment |
+| Brevo | API | API | — | Transactional email |
+| Tailwind CSS | 4.2+ | 4.2+ | MIT | Utility-first CSS |
+| Playwright | 1.58+ | 1.58+ | Apache-2.0 | E2E testing |
+| Vitest | 4.1+ | 4.1+ | MIT | Unit and architecture testing |
+| SvelteKit | 2.50+ | — | MIT | Full-stack framework |
+| Svelte | 5.54+ | — | MIT | UI library (runes) |
+| TanStack Start | — | 1.167+ | MIT | Full-stack framework |
+| React | — | 19.2+ | MIT | UI library |
+
 ## Architecture Overview
 
 ```mermaid
 flowchart LR
     subgraph Client["Angular 21 Client"]
         direction TB
-        AppDomains["Domains<br/>admin · auth · account<br/>developer · home · sandbox"]
+        AppDomains["Domains<br/>admin · auth · account · developer<br/>games · home · sandbox"]
         AppShared["Shared<br/>services · guards<br/>interceptors · components"]
+        Games["Games Dashboard<br/>Babylon.js 3D<br/>Spy vs Spy · Car-a-Lot"]
     end
 
     subgraph Server[".NET 10 Server"]
@@ -260,11 +283,22 @@ flowchart LR
         Identity --> SharedServer
     end
 
+    subgraph SvelteKit["SvelteKit Commerce"]
+        direction TB
+        SvelteApp["SvelteKit 2<br/>Svelte 5 · Drizzle ORM<br/>Stripe · Printful · Brevo"]
+    end
+
+    subgraph TanStack["TanStack Commerce"]
+        direction TB
+        TanStackApp["TanStack Start<br/>React 19 · Drizzle ORM<br/>Stripe · Printful · Brevo"]
+    end
+
     subgraph Infra["Docker Infrastructure"]
         direction TB
         PG[("PostgreSQL 18<br/>DbContexts")]
         VK[("Valkey 9<br/>L1 + L2 cache")]
         OT["OTel Collector<br/>traces + metrics"]
+        PGCommerce[("PostgreSQL 18<br/>Commerce DB")]
     end
 
     Client -->|HTTPS| Api
@@ -273,11 +307,17 @@ flowchart LR
     DomainLayer -->|FusionCache| VK
     Identity -->|FusionCache| VK
     Api -->|OTLP| OT
+    SvelteApp -->|Drizzle| PGCommerce
+    TanStackApp -->|Drizzle| PGCommerce
+    SvelteApp -.->|log forwarding| Api
+    TanStackApp -.->|log forwarding| Api
 ```
 
 **Server** follows Clean Architecture with a strict `Shared <- Domains <- Api` dependency flow — never reversed. Wolverine dispatches commands and queries to static handlers with method-injected dependencies. Bounded contexts (Identity, Logging, ApiTracking, ElectronicNotifications) each own their database schema, migrations, and EF Core `DbContext`.
 
-**Client** enforces domain isolation — each of the client domains (admin, auth, account, developer, home, sandbox) imports only `@shared/*` and itself, never another domain. Zoneless change detection with Signals eliminates `zone.js`. TanStack Query manages all server state with coordinated cache invalidation via `CacheCoordinationService`. The HTTP interceptor pipeline (auth, cache-bypass, date-parser, error, logging) handles cross-cutting concerns.
+**Client** enforces domain isolation — each of the client domains (admin, auth, account, developer, games, home, sandbox) imports only `@shared/*` and itself, never another domain. Zoneless change detection with Signals eliminates `zone.js`. TanStack Query manages all server state with coordinated cache invalidation via `CacheCoordinationService`. The HTTP interceptor pipeline (auth, cache-bypass, date-parser, error, logging) handles cross-cutting concerns. The Games domain provides a Babylon.js 3D game dashboard with two playable games (Spy vs Spy, Car-a-Lot) using route-scoped services and shared game infrastructure.
+
+**E-Commerce Sites** — Two independently deployable e-commerce storefronts showcase modern full-stack alternatives. Both use Drizzle ORM with PostgreSQL, Stripe for payments, Printful for print-on-demand fulfillment, and Brevo for transactional email. They forward application logs to the SeventySix API for centralized observability. The SvelteKit site uses file-based routing with form actions; the TanStack Start site uses TanStack Router with server functions.
 
 **Infrastructure** uses Docker Compose to orchestrate development services. All observability UIs are proxied through nginx with TLS termination.
 
@@ -293,10 +333,18 @@ SeventySix/
 │   ├── SeventySix.Analyzers/     custom Roslyn analyzers
 │   └── Tests/                    test projects (xUnit + NSubstitute + Shouldly)
 ├── SeventySix.Client/            Angular 21 SPA (Zoneless, Signals, TanStack Query)
-│   ├── src/app/domains/          admin | auth | account | developer | home | sandbox
+│   ├── src/app/domains/          admin | auth | account | developer | games | home | sandbox
 │   ├── src/app/shared/           Services, guards, interceptors, components, pipes
 │   ├── e2e/                      Playwright E2E tests (auth roles, axe-core WCAG)
 │   └── load-testing/             k6 load tests (scenarios, Docker-isolated)
+├── seventysixcommerce-sveltekit/ SvelteKit 2 E-Commerce (Svelte 5, Drizzle, Stripe)
+│   ├── src/lib/                  Components, server DB, integrations
+│   ├── src/routes/               File-based routing with form actions
+│   └── e2e/                      Playwright E2E tests
+├── seventysixcommerce-tanstack/  TanStack Start E-Commerce (React 19, Drizzle, Stripe)
+│   ├── src/components/           Layout, SEO, UI components
+│   ├── src/routes/               File-based TanStack Router
+│   └── e2e/                      Playwright E2E tests
 ├── docs/                         Project documentation
 │   ├── Caching-Strategy.md       Three-tier caching architecture
 │   ├── E2E-Speed-Optimization.md E2E performance tuning guide
@@ -315,6 +363,9 @@ SeventySix/
 ├── docker-compose.loadtest.yml   Load testing
 ├── docker-compose.dast.yml       DAST security scanning (OWASP ZAP)
 ├── docker-compose.production.yml Production deployment
+├── docker-compose.seventysixcommerce.yml  Commerce production (TanStack + SvelteKit)
+├── docker-compose.loadtest-svelte.yml     SvelteKit commerce load testing
+├── docker-compose.loadtest-tanstack.yml   TanStack commerce load testing
 └── package.json                  Root orchestration scripts
 ```
 
@@ -493,6 +544,8 @@ Each sub-project has its own README with deeper technical detail:
 | **SeventySix.Client** | Angular 21 SPA — domain modules, Zoneless with Signals, TanStack Query, Material Design 3, HTTP interceptors, PWA, theme variants, client-side telemetry | [Client README](SeventySix.Client/README.md) |
 | **E2E Tests** | Playwright — auth roles (public, authenticated, admin, developer), axe-core WCAG 2.2 AA, custom fixtures, `data-testid` selectors | [E2E README](SeventySix.Client/e2e/README.md) |
 | **Load Tests** | k6 (Grafana) — scenarios, Docker-isolated environment, HTML summary reports, multiple run profiles (quick, smoke, load, stress) | [Load Testing README](SeventySix.Client/load-testing/README.md) |
+| **SeventySixCommerce (SvelteKit)** | SvelteKit 2 E-Commerce — Svelte 5 runes, Drizzle ORM, PostgreSQL, Stripe payments, Printful print-on-demand, Brevo transactional email, dark mode, architecture tests | [SvelteKit Commerce README](seventysixcommerce-sveltekit/README.md) |
+| **SeventySixCommerce (TanStack)** | TanStack Start E-Commerce — React 19, TanStack Router, Drizzle ORM, PostgreSQL, Stripe, Printful, Brevo, dark mode, CSRF middleware, architecture tests | [TanStack Commerce README](seventysixcommerce-tanstack/README.md) |
 
 ## Application Showcase
 
@@ -882,7 +935,7 @@ Full prompt guide: [Copilot Prompt Guide](docs/Prompt-Guide.md)
 
 ## Docker Environments
 
-Five Docker Compose configurations cover all environments:
+Eight Docker Compose configurations cover all environments:
 
 | File | Purpose | Services | Key Ports |
 |---|---|---|---|
@@ -891,6 +944,9 @@ Five Docker Compose configurations cover all environments:
 | `docker-compose.loadtest.yml` | Load testing | API + infrastructure | Isolated from dev |
 | `docker-compose.production.yml` | Production | API + infrastructure | Resource limits, external secrets |
 | `docker-compose.dast.yml` | DAST scanning | Isolated stack + OWASP ZAP | API: 7274, Client: 4301, DB: 5436 |
+| `docker-compose.seventysixcommerce.yml` | Commerce production | TanStack + SvelteKit + PostgreSQL | TanStack: 3000, SvelteKit: 3001 |
+| `docker-compose.loadtest-svelte.yml` | SvelteKit load test | SvelteKit app + PostgreSQL | App: 3021, DB: 5442 |
+| `docker-compose.loadtest-tanstack.yml` | TanStack load test | TanStack app + PostgreSQL | App: 3022, DB: 5443 |
 
 ### Development Services
 
