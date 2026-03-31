@@ -103,12 +103,15 @@ function ProductDetailPage(): JSX.Element
 		useState<ProductVariant | null>(product.variants[0] ?? null);
 	const [adding, setAdding] =
 		useState<boolean>(false);
+	const [cartError, setCartError] =
+		useState<string>("");
 
 	/** Adds the selected variant to the cart and refreshes loader data. */
 	async function handleAddToCart(): Promise<void>
 	{
 		if (selectedVariant === null) return;
 		setAdding(true);
+		setCartError("");
 		try
 		{
 			await addToCart(
@@ -120,6 +123,10 @@ function ProductDetailPage(): JSX.Element
 					}
 				});
 			await router.invalidate();
+		}
+		catch
+		{
+			setCartError("Unable to add item to cart. Please try again.");
 		}
 		finally
 		{
@@ -225,6 +232,11 @@ function ProductDetailPage(): JSX.Element
 										</button>))}
 							</div>
 						</div>)}
+
+					{cartError.length > 0 && (
+						<p className="text-sm text-red-600" role="alert">
+							{cartError}
+						</p>)}
 
 					<button
 						type="button"

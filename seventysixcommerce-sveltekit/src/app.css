@@ -18,8 +18,8 @@
 	--color-bg-secondary: oklch(0.21 0.006 285);
 	--color-bg-tertiary: oklch(0.269 0.007 286);
 	--color-text-primary: oklch(0.985 0.002 247);
-	--color-text-secondary: oklch(0.707 0.015 261);
-	--color-text-muted: oklch(0.551 0.027 264);
+	--color-text-secondary: oklch(0.78 0.015 261);
+	--color-text-muted: oklch(0.65 0.022 264);
 	--color-border: oklch(0.373 0.013 261);
 	--color-accent: oklch(0.673 0.182 276);
 	--color-accent-hover: oklch(0.757 0.139 276);

@@ -13,7 +13,19 @@ import { fileURLToPath } from "node:url";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(__dirname, "..");
 
-/** @type {{ name: string; command: string; args: string[]; color: string }[]} */
+/**
+ * Environment overrides for commerce app processes when running alongside the main platform.
+ * Enables log forwarding to the SeventySix API and OTEL telemetry collection.
+ * NODE_TLS_REJECT_UNAUTHORIZED=0 allows connecting to the dev self-signed certificate.
+ * @type {Record<string, string>}
+ */
+const commerceEnvOverrides = {
+	SEVENTYSIX_API_URL: "https://localhost:7074",
+	OTEL_EXPORTER_OTLP_ENDPOINT: "http://localhost:4318",
+	NODE_TLS_REJECT_UNAUTHORIZED: "0",
+};
+
+/** @type {{ name: string; command: string; args: string[]; color: string; env?: Record<string, string> }[]} */
 const services = [
 	{
 		name: "SeventySix",
@@ -26,12 +38,14 @@ const services = [
 		command: "node",
 		args: ["seventysixcommerce-tanstack/scripts/start.mjs"],
 		color: "\x1b[33m",
+		env: commerceEnvOverrides,
 	},
 	{
 		name: "SvelteKit",
 		command: "node",
 		args: ["seventysixcommerce-sveltekit/scripts/start.mjs"],
 		color: "\x1b[35m",
+		env: commerceEnvOverrides,
 	},
 ];
 
@@ -74,7 +88,7 @@ for (const service of services) {
 	const child = spawn(service.command, service.args, {
 		cwd: repoRoot,
 		stdio: ["ignore", "pipe", "pipe"],
-		env: { ...process.env },
+		env: { ...process.env, ...service.env },
 	});
 
 	prefixStream(service.name, service.color, child.stdout, process.stdout);

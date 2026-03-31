@@ -7,67 +7,40 @@
 
 	.dashboard-content {
 		flex: 1;
-		padding: vars.$spacing-lg;
 		overflow: hidden;
 		display: flex;
 		flex-direction: column;
-		gap: vars.$spacing-lg;
 
 		mat-tab-group {
 			flex: 1;
 			display: flex;
 			flex-direction: column;
 			overflow: hidden;
-		}
-	}
 
-	.loading-container {
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		padding: vars.$spacing-md;
-	}
+			::ng-deep .mat-mdc-tab-body-wrapper {
+				flex: 1;
+				display: flex;
+				flex-direction: column;
+			}
 
-	.health-card {
-		mat-card-title {
-			display: flex;
-			align-items: center;
-			gap: vars.$spacing-sm;
-		}
-	}
+			::ng-deep mat-tab-body {
+				flex: 1;
+				display: flex;
+				flex-direction: column;
+			}
 
-	.log-counts {
-		display: flex;
-		gap: vars.$spacing-lg;
-		margin-top: vars.$spacing-md;
-	}
-
-	.count-item {
-		display: flex;
-		align-items: center;
-		gap: vars.$spacing-sm;
-
-		.count {
-			font-size: 1.5rem;
-			font-weight: 500;
-		}
-
-		.label {
-			color: var(--mat-sys-on-surface-variant);
-			font-size: 0.875rem;
-		}
-
-		&.warning mat-icon {
-			color: var(--mat-sys-tertiary);
-		}
-
-		&.error mat-icon {
-			color: var(--mat-sys-error);
+			::ng-deep .mat-mdc-tab-body-content {
+				flex: 1;
+				display: flex;
+				flex-direction: column;
+				overflow: hidden;
+			}
 		}
 	}
 
 	.tab-content {
-		padding: vars.$spacing-md 0;
+		display: flex;
+		flex-direction: column;
 
 		&.full-height {
 			flex: 1;
@@ -78,6 +51,11 @@
 				display: flex;
 				min-height: 0;
 			}
+		}
+
+		&:not(.full-height) {
+			padding: vars.$spacing-lg;
+			overflow-y: auto;
 		}
 	}
 

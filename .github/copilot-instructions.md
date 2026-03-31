@@ -188,6 +188,15 @@ All code MUST work on both **Windows** and **Linux** (CI runs on `ubuntu-latest`
 
 Use **context7** when unsure about current API for Angular, Wolverine, TanStack Query, or Playwright. Not needed for stable APIs like `Path.Combine`.
 If a server needs credentials, ask the user. After VS Code restart, MCP tool toggles may need re-enabling in the Chat panel.
+## Runtime Verification via `npm run start` (ALWAYS AVAILABLE)
+
+> **Copilot can and SHOULD run `npm run start`** (or `npm start`) whenever runtime verification is needed. This starts the full dev stack (API, Angular client, both commerce apps, infrastructure). Use it to verify fixes before claiming completion. There is **no reason** to skip runtime verification — if the stack isn't running, start it.
+
+| Command | Purpose |
+|---------|---------|
+| `npm run start` | Start full dev stack (all 3 sites + infrastructure) |
+| `npm run stop` | Stop all running services |
+
 ## Chrome DevTools Verification (REQUIRED for Client Changes)
 
 > After any client-side change (component, service, route, style, template), verify with Chrome DevTools MCP. Never rely on "it should work."

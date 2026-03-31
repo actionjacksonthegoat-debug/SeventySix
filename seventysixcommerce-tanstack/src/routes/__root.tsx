@@ -166,7 +166,7 @@ function RootDocument({
 }: Readonly<{ children: ReactNode; }>): JSX.Element
 {
 	return (
-		<html lang="en">
+		<html lang="en" suppressHydrationWarning>
 			<head>
 				<script dangerouslySetInnerHTML={{ __html: FOUC_SCRIPT }} />
 				<HeadContent />
@@ -183,17 +183,30 @@ function RootDocument({
 /** Cart badge that shows item count in the navigation. */
 function CartBadge(): JSX.Element | null
 {
+	const router =
+		useRouter();
 	const [count, setCount] =
 		useState<number>(0);
 
 	useEffect(
 		() =>
 		{
-			getCart()
-				.then((cart) => setCount(cart.itemCount))
-				.catch(() => setCount(0));
+			/** Fetches the current cart count from the server. */
+			function fetchCount(): void
+			{
+				getCart()
+					.then((cart) => setCount(cart.itemCount))
+					.catch(() => setCount(0));
+			}
+
+			fetchCount();
+
+			const unsubscribe: () => void =
+				router.subscribe("onResolved", fetchCount);
+
+			return unsubscribe;
 		},
-		[]);
+		[router]);
 
 	if (count === 0)
 	{

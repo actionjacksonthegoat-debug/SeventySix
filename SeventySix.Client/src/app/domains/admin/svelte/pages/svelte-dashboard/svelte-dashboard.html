@@ -6,52 +6,6 @@
 	/>
 
 	<div class="dashboard-content">
-		<!-- Health Summary Card -->
-		<mat-card
-			class="health-card"
-			data-testid="svelte-health-card">
-			<mat-card-header>
-				<mat-card-title>
-					<mat-icon aria-hidden="true">monitor_heart</mat-icon>
-					Health Summary (24h)
-				</mat-card-title>
-			</mat-card-header>
-			<mat-card-content>
-				@if (isLoading()) {
-				<div class="loading-container">
-					<mat-spinner diameter="32"></mat-spinner>
-				</div>
-				} @else {
-				<div class="log-counts">
-					<div
-						class="count-item warning"
-						data-testid="svelte-warnings">
-						<mat-icon aria-hidden="true">warning</mat-icon>
-						<span class="count">{{ warningCount() }}</span>
-						<span class="label">Warnings</span>
-					</div>
-					<div
-						class="count-item error"
-						data-testid="svelte-errors">
-						<mat-icon aria-hidden="true">error</mat-icon>
-						<span class="count">{{ errorCount() }}</span>
-						<span class="label">Errors</span>
-					</div>
-				</div>
-				}
-			</mat-card-content>
-			<mat-card-actions>
-				<a
-					mat-stroked-button
-					[routerLink]="logsRoute"
-					aria-label="View SvelteKit logs">
-					<mat-icon aria-hidden="true">article</mat-icon>
-					View Logs
-				</a>
-			</mat-card-actions>
-		</mat-card>
-
-		<!-- Grafana Dashboard Tabs -->
 		<mat-tab-group data-testid="svelte-dashboard-tabs">
 			<mat-tab label="Performance">
 				<ng-template matTabContent>

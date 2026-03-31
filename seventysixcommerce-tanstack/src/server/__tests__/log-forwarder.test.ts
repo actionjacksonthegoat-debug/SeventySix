@@ -137,12 +137,12 @@ describe("log-forwarder",
 
 						const body: string =
 							mockFetch.mock.calls[0][1]!.body as string;
-						const parsed: { requests: Record<string, unknown>[]; } =
+						const parsed: Record<string, unknown>[] =
 							JSON.parse(body);
 
-						expect(parsed.requests)
+						expect(parsed)
 							.toHaveLength(1);
-						expect(parsed.requests[0].sourceContext)
+						expect(parsed[0].sourceContext)
 							.toBe("seventysixcommerce-tanstack");
 					});
 
@@ -162,10 +162,10 @@ describe("log-forwarder",
 
 						const body: string =
 							mockFetch.mock.calls[0][1]!.body as string;
-						const parsed: { requests: Record<string, unknown>[]; } =
+						const parsed: Record<string, unknown>[] =
 							JSON.parse(body);
 
-						expect(parsed.requests[0].sourceContext)
+						expect(parsed[0].sourceContext)
 							.toBe("seventysixcommerce-tanstack");
 					});
 

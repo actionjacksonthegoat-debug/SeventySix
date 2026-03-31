@@ -56,8 +56,14 @@ export function ThemeToggle(): JSX.Element
 			aria-label="Toggle dark mode"
 			role="switch"
 			aria-checked={isDark}
+			suppressHydrationWarning
 			className="rounded-lg p-2 text-text-secondary hover:bg-bg-tertiary hover:text-text-primary"
 		>
-			{isDark ? <MoonIcon /> : <SunIcon />}
+			<span className="block dark:hidden">
+				<SunIcon />
+			</span>
+			<span className="hidden dark:block">
+				<MoonIcon />
+			</span>
 		</button>);
 }

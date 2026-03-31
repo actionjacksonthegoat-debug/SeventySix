@@ -1,11 +1,9 @@
-import { PagedResultOfLogDto } from "@admin/logs/models";
 import { SvelteDashboardService } from "@admin/svelte/services";
 import { provideHttpClient } from "@angular/common/http";
 import { provideHttpClientTesting } from "@angular/common/http/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideRouter } from "@angular/router";
-import { createMockQueryResult } from "@shared/testing";
 import { vi } from "vitest";
 import { SvelteDashboardPage } from "./svelte-dashboard";
 
@@ -18,18 +16,7 @@ describe("SvelteDashboardPage",
 		interface MockDashboardService
 		{
 			getDashboardUid: ReturnType<typeof vi.fn>;
-			getWarnings: ReturnType<typeof vi.fn>;
-			getErrors: ReturnType<typeof vi.fn>;
 		}
-
-		const mockPagedResult: PagedResultOfLogDto =
-			{
-				items: [],
-				page: 1,
-				pageSize: 1,
-				totalCount: 5,
-				totalPages: 5
-			};
 
 		beforeEach(
 			async () =>
@@ -42,17 +29,7 @@ describe("SvelteDashboardPage",
 								(type: string) =>
 									type === "performance"
 										? "svelte-perf"
-										: "svelte-commerce"),
-						getWarnings: vi
-							.fn()
-							.mockReturnValue(
-								createMockQueryResult<PagedResultOfLogDto>(
-									{ ...mockPagedResult, totalCount: 4 })),
-						getErrors: vi
-							.fn()
-							.mockReturnValue(
-								createMockQueryResult<PagedResultOfLogDto>(
-									{ ...mockPagedResult, totalCount: 2 }))
+										: "svelte-commerce")
 					};
 
 				await TestBed
@@ -106,33 +83,6 @@ describe("SvelteDashboardPage",
 					fixture.nativeElement as HTMLElement;
 				expect(compiled.querySelector("app-page-header"))
 					.toBeTruthy();
-			});
-
-		it("should display warning count",
-			() =>
-			{
-				createComponent();
-
-				expect(component.warningCount())
-					.toBe(4);
-			});
-
-		it("should display error count",
-			() =>
-			{
-				createComponent();
-
-				expect(component.errorCount())
-					.toBe(2);
-			});
-
-		it("should not be loading when queries are complete",
-			() =>
-			{
-				createComponent();
-
-				expect(component.isLoading())
-					.toBe(false);
 			});
 
 		it("should have performance dashboard UID",

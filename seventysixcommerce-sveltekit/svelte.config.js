@@ -20,7 +20,21 @@ const config = {
 		adapter: adapter({
 			out: 'build',
 			precompress: true,
-		})
+		}),
+		csp: {
+			mode: 'nonce',
+			directives: {
+				'default-src': ['self'],
+				'script-src': ['self', 'https://www.googletagmanager.com'],
+				'style-src': ['self', 'unsafe-inline'],
+				'img-src': ['self', 'data:', 'https:'],
+				'font-src': ['self'],
+				'connect-src': ['self', 'https://www.google-analytics.com', 'https://www.googletagmanager.com'],
+				'frame-ancestors': ['none'],
+				'base-uri': ['self'],
+				'form-action': ['self']
+			}
+		}
 	}
 };
 

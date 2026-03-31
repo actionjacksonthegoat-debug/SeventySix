@@ -69,6 +69,10 @@ try {
 
 		Write-Host "Stopping LoadTest environment..." -ForegroundColor Yellow
 		docker compose -f docker-compose.loadtest.yml down --remove-orphans 2>$null
+
+		Write-Host "Stopping Commerce LoadTest environments..." -ForegroundColor Yellow
+		docker compose -f docker-compose.loadtest-tanstack.yml down --remove-orphans 2>$null
+		docker compose -f docker-compose.loadtest-svelte.yml down --remove-orphans 2>$null
 	}
 
 	Write-Host ""
