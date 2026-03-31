@@ -1,0 +1,10 @@
+{
+	"vus": 200,
+	"duration": "10m",
+	"stages": [
+		{ "duration": "2m", "target": 100 },
+		{ "duration": "3m", "target": 200 },
+		{ "duration": "3m", "target": 200 },
+		{ "duration": "2m", "target": 0 }
+	]
+}

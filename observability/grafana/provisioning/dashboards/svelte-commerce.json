@@ -1,0 +1,98 @@
+{
+	"annotations": { "list": [] },
+	"editable": true,
+	"fiscalYearStartMonth": 0,
+	"graphTooltip": 0,
+	"id": null,
+	"links": [],
+	"liveNow": false,
+	"panels": [
+		{
+			"datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+			"fieldConfig": {
+				"defaults": { "unit": "short" },
+				"overrides": []
+			},
+			"gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+			"id": 1,
+			"title": "Page Views",
+			"type": "timeseries",
+			"targets": [
+				{
+					"expr": "rate(commerce_page_view_total{service_name=\"seventysixcommerce-sveltekit\"}[5m])",
+					"legendFormat": "{{ page_type }}"
+				}
+			]
+		},
+		{
+			"datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+			"fieldConfig": {
+				"defaults": { "unit": "short" },
+				"overrides": []
+			},
+			"gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+			"id": 2,
+			"title": "Cart Operations",
+			"type": "timeseries",
+			"targets": [
+				{
+					"expr": "rate(commerce_cart_add_total{service_name=\"seventysixcommerce-sveltekit\"}[5m])",
+					"legendFormat": "add"
+				},
+				{
+					"expr": "rate(commerce_cart_remove_total{service_name=\"seventysixcommerce-sveltekit\"}[5m])",
+					"legendFormat": "remove"
+				}
+			]
+		},
+		{
+			"datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+			"fieldConfig": {
+				"defaults": { "unit": "short" },
+				"overrides": []
+			},
+			"gridPos": { "h": 8, "w": 24, "x": 0, "y": 8 },
+			"id": 3,
+			"title": "Checkout Funnel",
+			"type": "bargauge",
+			"targets": [
+				{
+					"expr": "increase(commerce_checkout_start_total{service_name=\"seventysixcommerce-sveltekit\"}[1h])",
+					"legendFormat": "Started"
+				},
+				{
+					"expr": "increase(commerce_checkout_complete_total{service_name=\"seventysixcommerce-sveltekit\"}[1h])",
+					"legendFormat": "Completed"
+				}
+			]
+		},
+		{
+			"datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+			"fieldConfig": {
+				"defaults": { "unit": "ms" },
+				"overrides": []
+			},
+			"gridPos": { "h": 8, "w": 24, "x": 0, "y": 16 },
+			"id": 4,
+			"title": "Checkout Duration",
+			"type": "timeseries",
+			"targets": [
+				{
+					"expr": "histogram_quantile(0.50, rate(commerce_checkout_duration_ms_milliseconds_bucket{service_name=\"seventysixcommerce-sveltekit\"}[5m]))",
+					"legendFormat": "p50"
+				},
+				{
+					"expr": "histogram_quantile(0.95, rate(commerce_checkout_duration_ms_milliseconds_bucket{service_name=\"seventysixcommerce-sveltekit\"}[5m]))",
+					"legendFormat": "p95"
+				}
+			]
+		}
+	],
+	"refresh": "10s",
+	"schemaVersion": 39,
+	"tags": ["sveltekit", "commerce"],
+	"templating": { "list": [] },
+	"time": { "from": "now-1h", "to": "now" },
+	"title": "SvelteKit Commerce",
+	"uid": "svelte-commerce"
+}

@@ -4,3 +4,10 @@
 :host {
 	@include mixins.flex-fill-column();
 }
+
+.log-list-filters {
+	display: flex;
+	gap: vars.$spacing-md;
+	padding: vars.$spacing-sm vars.$spacing-md;
+	align-items: center;
+}

@@ -118,6 +118,8 @@ describe("SidebarComponent",
 							.toContain("Main");
 						expect(sectionTitles).not.toContain("Developer");
 						expect(sectionTitles).not.toContain("Management");
+						expect(sectionTitles).not.toContain("SvelteKit");
+						expect(sectionTitles).not.toContain("TanStack");
 					});
 
 				it("should show Main and Developer sections for developers",
@@ -179,6 +181,10 @@ describe("SidebarComponent",
 							.toContain("Developer");
 						expect(sectionTitles)
 							.toContain("Management");
+						expect(sectionTitles)
+							.toContain("SvelteKit");
+						expect(sectionTitles)
+							.toContain("TanStack");
 					});
 
 				it("should update visible sections when user logs in",
@@ -215,6 +221,10 @@ describe("SidebarComponent",
 							.toContain("Developer");
 						expect(sectionTitles)
 							.toContain("Management");
+						expect(sectionTitles)
+							.toContain("SvelteKit");
+						expect(sectionTitles)
+							.toContain("TanStack");
 					});
 
 				it("should update visible sections when user logs out",
@@ -233,7 +243,7 @@ describe("SidebarComponent",
 						let sections: { title: string; }[] =
 							component["visibleNavSections"]();
 						expect(sections.length)
-							.toBe(3); // All sections
+							.toBe(5); // All sections
 
 						// Act - log out
 						mockAuthService.setUser(null);
@@ -250,6 +260,8 @@ describe("SidebarComponent",
 							.toContain("Main");
 						expect(sectionTitles).not.toContain("Developer");
 						expect(sectionTitles).not.toContain("Management");
+						expect(sectionTitles).not.toContain("SvelteKit");
+						expect(sectionTitles).not.toContain("TanStack");
 					});
 
 				it("should show Developer section for users with both Developer and Admin roles",
@@ -281,6 +293,10 @@ describe("SidebarComponent",
 							.toContain("Developer");
 						expect(sectionTitles)
 							.toContain("Management");
+						expect(sectionTitles)
+							.toContain("SvelteKit");
+						expect(sectionTitles)
+							.toContain("TanStack");
 					});
 			});
 

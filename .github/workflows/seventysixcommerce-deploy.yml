@@ -1,0 +1,105 @@
+name: Deploy SeventySixCommerce
+
+on:
+    workflow_dispatch:
+    workflow_run:
+        workflows: [SeventySixCommerce CI]
+        types: [completed]
+        branches: [master]
+
+permissions: {}
+
+concurrency:
+    group: deploy-seventysixcommerce
+    cancel-in-progress: false
+
+jobs:
+    deploy:
+        name: Deploy SeventySixCommerce to Production
+        runs-on: ubuntu-latest
+        environment: production
+        if: >-
+            github.event_name == 'workflow_dispatch' ||
+            github.event.workflow_run.conclusion == 'success'
+
+        steps:
+            - name: Deploy via SSH
+              uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1
+              env:
+                  GITHUB_OWNER: ${{ github.repository_owner }}
+                  SSXC_DB_USER: ${{ vars.SSXC_DB_USER || 'SeventySixCommerce' }}
+                  SSXC_DB_PASSWORD: ${{ secrets.SSXC_DB_PASSWORD }}
+                  STRIPE_SECRET_KEY: ${{ secrets.SSXC_STRIPE_SECRET_KEY }}
+                  STRIPE_WEBHOOK_SECRET: ${{ secrets.SSXC_STRIPE_WEBHOOK_SECRET }}
+                  PRINTFUL_API_KEY: ${{ secrets.SSXC_PRINTFUL_API_KEY }}
+                  PRINTFUL_WEBHOOK_SECRET: ${{ secrets.SSXC_PRINTFUL_WEBHOOK_SECRET }}
+                  BREVO_API_KEY: ${{ secrets.SSXC_BREVO_API_KEY }}
+                  TANSTACK_BASE_URL: ${{ vars.SSXC_TANSTACK_BASE_URL || 'https://commerce-tanstack.seventysixsandbox.com' }}
+                  SVELTEKIT_BASE_URL: ${{ vars.SSXC_SVELTEKIT_BASE_URL || 'https://commerce-sveltekit.seventysixsandbox.com' }}
+              with:
+                  host: ${{ secrets.PROD_HOST }}
+                  username: ${{ secrets.PROD_USER }}
+                  key: ${{ secrets.PROD_SSH_KEY }}
+                  envs: GITHUB_OWNER,SSXC_DB_USER,SSXC_DB_PASSWORD,STRIPE_SECRET_KEY,STRIPE_WEBHOOK_SECRET,PRINTFUL_API_KEY,PRINTFUL_WEBHOOK_SECRET,BREVO_API_KEY,TANSTACK_BASE_URL,SVELTEKIT_BASE_URL
+                  script: |
+                      set -euo pipefail
+
+                      APP_DIR="/srv/seventysix"
+                      cd "$APP_DIR"
+
+                      echo "=== Syncing repo ==="
+                      git fetch origin master
+                      git reset --hard origin/master
+                      git clean -fd -e postgres-ssl/ -e logs/ -e docker/certs/
+
+                      echo "=== Syncing SeventySixCommerce Caddy config ==="
+                      sudo cp "$APP_DIR/Caddyfile.seventysixcommerce" /etc/caddy/Caddyfile.seventysixcommerce
+                      sudo caddy fmt --overwrite /etc/caddy/Caddyfile.seventysixcommerce
+                      sudo caddy validate --config /etc/caddy/Caddyfile
+                      sudo systemctl reload caddy
+
+                      echo "=== Pulling SeventySixCommerce images ==="
+                      docker compose -f docker-compose.seventysixcommerce.yml pull tanstack sveltekit
+
+                      echo "=== Restarting SeventySixCommerce containers ==="
+                      docker compose -f docker-compose.seventysixcommerce.yml up -d --remove-orphans
+
+                      echo "=== Cleaning up old images ==="
+                      docker image prune -f
+
+                      echo "=== Waiting for TanStack health (max 60s) ==="
+                      for i in $(seq 1 12); do
+                          if curl -sf http://localhost:3000/api/healthz > /dev/null 2>&1; then
+                              echo "TanStack is healthy (attempt $i/12)"
+                              break
+                          fi
+                          if [ "$i" -eq 12 ]; then
+                              echo "ERROR: TanStack health check failed after 12 attempts"
+                              docker compose -f docker-compose.seventysixcommerce.yml logs --tail=50 tanstack
+                              exit 1
+                          fi
+                          echo "  Waiting for TanStack... (attempt $i/12)"
+                          sleep 5
+                      done
+
+                      echo "=== Waiting for SvelteKit health (max 60s) ==="
+                      for i in $(seq 1 12); do
+                          if curl -sf http://localhost:3001/healthz > /dev/null 2>&1; then
+                              echo "SvelteKit is healthy (attempt $i/12)"
+                              break
+                          fi
+                          if [ "$i" -eq 12 ]; then
+                              echo "ERROR: SvelteKit health check failed after 12 attempts"
+                              docker compose -f docker-compose.seventysixcommerce.yml logs --tail=50 sveltekit
+                              exit 1
+                          fi
+                          echo "  Waiting for SvelteKit... (attempt $i/12)"
+                          sleep 5
+                      done
+
+                      echo ""
+                      echo "=== Final container status ==="
+                      docker compose -f docker-compose.seventysixcommerce.yml ps -a
+
+                      echo ""
+                      echo "=== SeventySixCommerce deploy complete ==="

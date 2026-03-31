@@ -526,7 +526,119 @@ public sealed class LogRepositoryTests : DataPostgreSqlTestBase
 		}
 	}
 
+	/// <summary>
+	/// Verifies that CreateBatchAsync persists multiple logs in a single operation.
+	/// </summary>
+	[Fact]
+	public async Task CreateBatchAsync_CreatesBatch_SuccessfullyAsync()
+	{
+		// Arrange
+		FakeTimeProvider timeProvider = new();
+		string testId =
+			Guid.NewGuid().ToString("N")[..8];
+		Log[] batch =
+			[
+				LogBuilder
+					.CreateError(timeProvider)
+					.WithMessage($"Batch log 1_{testId}")
+					.Build(),
+				LogBuilder
+					.CreateError(timeProvider)
+					.WithMessage($"Batch log 2_{testId}")
+					.Build(),
+			];
+
+		// Act
+		await Repository.CreateBatchAsync(batch);
+
+		// Assert
+		LogQueryRequest request =
+			new() { SearchTerm = $"Batch log 1_{testId}" };
+		(IEnumerable<Log> logs, int _) =
+			await Repository.GetPagedAsync(request);
+		logs.ShouldNotBeEmpty();
+	}
+
+	/// <summary>
+	/// Verifies DeleteByIdAsync removes a specific log by its identifier.
+	/// </summary>
+	[Fact]
+	public async Task DeleteByIdAsync_DeletesLog_SuccessfullyAsync()
+	{
+		// Arrange
+		FakeTimeProvider timeProvider = new();
+		Log log =
+			LogBuilder
+				.CreateError(timeProvider)
+				.WithMessage("Log to delete by id")
+				.Build();
+		Log created =
+			await Repository.CreateAsync(log);
+
+		// Act
+		bool result =
+			await Repository.DeleteByIdAsync(created.Id);
+
+		// Assert
+		result.ShouldBeTrue();
+	}
+
+	/// <summary>
+	/// Verifies DeleteByIdAsync returns false when the log does not exist.
+	/// </summary>
+	[Fact]
+	public async Task DeleteByIdAsync_ReturnsFalse_WhenLogNotFoundAsync()
+	{
+		// Arrange & Act
+		bool result =
+			await Repository.DeleteByIdAsync(999999);
+
+		// Assert
+		result.ShouldBeFalse();
+	}
+
+	/// <summary>
+	/// Verifies DeleteBatchAsync removes multiple logs by their identifiers.
+	/// </summary>
+	[Fact]
+	public async Task DeleteBatchAsync_DeletesLogs_SuccessfullyAsync()
+	{
+		// Arrange
+		FakeTimeProvider timeProvider = new();
+		Log log1 =
+			await Repository.CreateAsync(
+				LogBuilder
+					.CreateError(timeProvider)
+					.WithMessage("Batch delete 1")
+					.Build());
+		Log log2 =
+			await Repository.CreateAsync(
+				LogBuilder
+					.CreateError(timeProvider)
+					.WithMessage("Batch delete 2")
+					.Build());
+
+		// Act
+		int deletedCount =
+			await Repository.DeleteBatchAsync(
+				[log1.Id, log2.Id]);
+
+		// Assert
+		deletedCount.ShouldBe(2);
+	}
+
 	#region Parameter Validation Tests
+
+	/// <summary>
+	/// Verifies CreateBatchAsync throws when entities is null.
+	/// </summary>
+	[Fact]
+	public async Task CreateBatchAsync_ThrowsArgumentNullException_WhenEntitiesIsNullAsync()
+	{
+		// Act & Assert
+		await Should.ThrowAsync<ArgumentNullException>(async () =>
+			await Repository.CreateBatchAsync(null!));
+	}
 
 	/// <summary>
 	/// Verifies DeleteByIdAsync throws when id is zero.

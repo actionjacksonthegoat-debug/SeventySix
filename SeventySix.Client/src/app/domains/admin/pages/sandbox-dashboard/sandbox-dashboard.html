@@ -1,0 +1,99 @@
+<div class="sandbox-dashboard">
+	<app-page-header
+		icon="monitor_heart"
+		title="Sandbox Monitor"
+		subtitle="SvelteKit and TanStack sandbox container health"
+	/>
+
+	<div class="dashboard-content">
+		@if (isLoading()) {
+		<div class="loading-container">
+			<mat-spinner diameter="48"></mat-spinner>
+		</div>
+		} @else {
+		<div class="cards-grid">
+			<!-- SvelteKit Sandbox Card -->
+			<mat-card
+				class="sandbox-card"
+				data-testid="sveltekit-card">
+				<mat-card-header>
+					<mat-card-title>
+						<mat-icon aria-hidden="true">code</mat-icon>
+						SvelteKit Sandbox
+					</mat-card-title>
+					<mat-card-subtitle>seventysixcommerce-sveltekit</mat-card-subtitle>
+				</mat-card-header>
+				<mat-card-content>
+					<div class="log-counts">
+						<div
+							class="count-item warning"
+							data-testid="sveltekit-warnings">
+							<mat-icon aria-hidden="true">warning</mat-icon>
+							<span class="count">{{ svelteKitWarningCount() }}</span>
+							<span class="label">Warnings (24h)</span>
+						</div>
+						<div
+							class="count-item error"
+							data-testid="sveltekit-errors">
+							<mat-icon aria-hidden="true">error</mat-icon>
+							<span class="count">{{ svelteKitErrorCount() }}</span>
+							<span class="label">Errors (24h)</span>
+						</div>
+					</div>
+				</mat-card-content>
+				<mat-card-actions>
+					<a
+						mat-stroked-button
+						[routerLink]="['/admin/logs']"
+						[queryParams]="{ sourceContext: svelteKitSource }"
+						aria-label="View SvelteKit logs">
+						<mat-icon aria-hidden="true">article</mat-icon>
+						View Logs
+					</a>
+				</mat-card-actions>
+			</mat-card>
+
+			<!-- TanStack Sandbox Card -->
+			<mat-card
+				class="sandbox-card"
+				data-testid="tanstack-card">
+				<mat-card-header>
+					<mat-card-title>
+						<mat-icon aria-hidden="true">code</mat-icon>
+						TanStack Sandbox
+					</mat-card-title>
+					<mat-card-subtitle>seventysixcommerce-tanstack</mat-card-subtitle>
+				</mat-card-header>
+				<mat-card-content>
+					<div class="log-counts">
+						<div
+							class="count-item warning"
+							data-testid="tanstack-warnings">
+							<mat-icon aria-hidden="true">warning</mat-icon>
+							<span class="count">{{ tanStackWarningCount() }}</span>
+							<span class="label">Warnings (24h)</span>
+						</div>
+						<div
+							class="count-item error"
+							data-testid="tanstack-errors">
+							<mat-icon aria-hidden="true">error</mat-icon>
+							<span class="count">{{ tanStackErrorCount() }}</span>
+							<span class="label">Errors (24h)</span>
+						</div>
+					</div>
+				</mat-card-content>
+				<mat-card-actions>
+					<a
+						mat-stroked-button
+						[routerLink]="['/admin/logs']"
+						[queryParams]="{ sourceContext: tanStackSource }"
+						aria-label="View TanStack logs">
+						<mat-icon aria-hidden="true">article</mat-icon>
+						View Logs
+					</a>
+				</mat-card-actions>
+			</mat-card>
+		</div>
+		}
+	</div>
+</div>

@@ -65,6 +65,50 @@ Write-Host "  Running dotnet restore..."
 if ($LASTEXITCODE -ne 0) { Write-Error "dotnet restore failed."; exit 1 }
 Pop-Location
 
+# Install sandbox dependencies (SeventySixCommerce SvelteKit and TanStack)
+Write-Host "  Installing SeventySixCommerce SvelteKit dependencies..." -ForegroundColor Cyan
+Push-Location (Join-Path $repoRoot "seventysixcommerce-sveltekit")
+& npm ci
+if ($LASTEXITCODE -ne 0) { Write-Error "SvelteKit npm ci failed."; exit 1 }
+Pop-Location
+
+Write-Host "  Installing SeventySixCommerce TanStack dependencies..." -ForegroundColor Cyan
+Push-Location (Join-Path $repoRoot "seventysixcommerce-tanstack")
+& npm ci --legacy-peer-deps
+if ($LASTEXITCODE -ne 0) { Write-Error "TanStack npm ci failed."; exit 1 }
+Pop-Location
+
+# Generate sandbox .env.local files
+Write-Host ""
+Write-Host "--- Sandbox Environment Files ---" -ForegroundColor Cyan
+Write-Host "  Generating .env.local files for SeventySixCommerce sandboxes."
+Write-Host "  Press Enter to use default values."
+Write-Host ""
+
+$svelteDbUrl = Read-Host -Prompt "  SvelteKit database URL [postgresql://ssxc_dev:dev_password_only@localhost:5439/seventysixcommerce_sveltekit_dev]"
+if ([string]::IsNullOrWhiteSpace($svelteDbUrl)) {
+	$svelteDbUrl = "postgresql://ssxc_dev:dev_password_only@localhost:5439/seventysixcommerce_sveltekit_dev"
+}
+
+$tanstackDbUrl = Read-Host -Prompt "  TanStack database URL [postgresql://seventysixcommerce:seventysixcommerce_dev@localhost:5438/seventysixcommerce]"
+if ([string]::IsNullOrWhiteSpace($tanstackDbUrl)) {
+	$tanstackDbUrl = "postgresql://seventysixcommerce:seventysixcommerce_dev@localhost:5438/seventysixcommerce"
+}
+
+$svelteEnvPath = Join-Path $repoRoot "seventysixcommerce-sveltekit" ".env.local"
+@"
+DATABASE_URL=$svelteDbUrl
+MOCK_SERVICES=true
+"@ | Set-Content -Path $svelteEnvPath -NoNewline
+Write-Host "  [OK] SvelteKit .env.local written." -ForegroundColor Green
+
+$tanstackEnvPath = Join-Path $repoRoot "seventysixcommerce-tanstack" ".env.local"
+@"
+DATABASE_URL=$tanstackDbUrl
+MOCK_SERVICES=true
+"@ | Set-Content -Path $tanstackEnvPath -NoNewline
+Write-Host "  [OK] TanStack .env.local written." -ForegroundColor Green
+
 # Install dprint globally if not already present
 # dprint is required for 'npm run format' (ESLint → dprint → ESLint pipeline).
 Write-Host "  Checking dprint..."
@@ -151,6 +195,30 @@ if (-not $SkipTests) {
 		exit 1
 	}
 	Write-Host "  [PASS] Client tests passed." -ForegroundColor Green
+
+	Write-Host ""
+	Write-Host "--- SeventySixCommerce SvelteKit Tests (npm test) ---" -ForegroundColor Cyan
+	Push-Location (Join-Path $repoRoot "seventysixcommerce-sveltekit")
+	& npm run test
+	$svelteTestExit = $LASTEXITCODE
+	Pop-Location
+	if ($svelteTestExit -ne 0) {
+		Write-Host "[FAIL] SvelteKit tests failed. Check output above." -ForegroundColor Red
+		exit 1
+	}
+	Write-Host "  [PASS] SvelteKit tests passed." -ForegroundColor Green
+
+	Write-Host ""
+	Write-Host "--- SeventySixCommerce TanStack Tests (npm test) ---" -ForegroundColor Cyan
+	Push-Location (Join-Path $repoRoot "seventysixcommerce-tanstack")
+	& npm run test
+	$tanstackTestExit = $LASTEXITCODE
+	Pop-Location
+	if ($tanstackTestExit -ne 0) {
+		Write-Host "[FAIL] TanStack tests failed. Check output above." -ForegroundColor Red
+		exit 1
+	}
+	Write-Host "  [PASS] TanStack tests passed." -ForegroundColor Green
 }
 
 # Phase 8: Version summary

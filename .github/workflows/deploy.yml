@@ -81,6 +81,11 @@ jobs:
                       echo "=== Syncing Caddy from checked-in source-of-truth ==="
                       sudo cp "$APP_DIR/Caddyfile.production" /etc/caddy/Caddyfile
                       sudo caddy fmt --overwrite /etc/caddy/Caddyfile
+
+                      echo "=== Syncing SeventySixCommerce Caddy config ==="
+                      sudo cp "$APP_DIR/Caddyfile.seventysixcommerce" /etc/caddy/Caddyfile.seventysixcommerce
+                      sudo caddy fmt --overwrite /etc/caddy/Caddyfile.seventysixcommerce
+
                       sudo caddy validate --config /etc/caddy/Caddyfile
                       # Use restart instead of reload — reload hangs when the running config
                       # differs significantly (e.g. adding a global log block) because

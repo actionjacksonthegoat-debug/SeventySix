@@ -15,4 +15,9 @@ public record LogQueryRequest : BaseQueryRequest
 	/// Gets the log level filter (Error, Warning, Information, etc.).
 	/// </summary>
 	public string? LogLevel { get; init; }
+
+	/// <summary>
+	/// Gets the source context filter (e.g., class name or application name).
+	/// </summary>
+	public string? SourceContext { get; init; }
 }

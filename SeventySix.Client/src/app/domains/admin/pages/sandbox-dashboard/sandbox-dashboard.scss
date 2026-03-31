@@ -1,0 +1,74 @@
+@use "variables" as vars;
+
+.sandbox-dashboard {
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+
+	.dashboard-content {
+		flex: 1;
+		padding: vars.$spacing-lg;
+		overflow-y: auto;
+	}
+
+	.loading-container {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		padding: vars.$spacing-xl;
+	}
+
+	.cards-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+		gap: vars.$spacing-lg;
+	}
+
+	.sandbox-card {
+		mat-card-title {
+			display: flex;
+			align-items: center;
+			gap: vars.$spacing-sm;
+		}
+	}
+
+	.log-counts {
+		display: flex;
+		gap: vars.$spacing-lg;
+		margin-top: vars.$spacing-md;
+	}
+
+	.count-item {
+		display: flex;
+		align-items: center;
+		gap: vars.$spacing-sm;
+
+		.count {
+			font-size: 1.5rem;
+			font-weight: 500;
+		}
+
+		.label {
+			color: var(--mat-sys-on-surface-variant);
+			font-size: 0.875rem;
+		}
+
+		&.warning mat-icon {
+			color: var(--mat-sys-tertiary);
+		}
+
+		&.error mat-icon {
+			color: var(--mat-sys-error);
+		}
+	}
+
+	@media #{vars.$breakpoint-mobile} {
+		.cards-grid {
+			grid-template-columns: 1fr;
+		}
+
+		.dashboard-content {
+			padding: vars.$spacing-md;
+		}
+	}
+}

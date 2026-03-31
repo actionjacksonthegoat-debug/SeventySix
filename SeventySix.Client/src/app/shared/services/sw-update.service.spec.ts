@@ -6,7 +6,7 @@ import {
 	createSwUpdateTestContext,
 	type SwUpdateTestContext
 } from "@shared/testing";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 
 describe("SwUpdateService",
 	() =>
@@ -115,7 +115,7 @@ describe("SwUpdateService",
 							createSwUpdateTestContext(
 								{ isEnabled: true });
 						context.swUpdateSpy.checkForUpdate.mockResolvedValue(true);
-						context.swUpdateSpy.activateUpdate.mockResolvedValue(undefined);
+						context.swUpdateSpy.activateUpdate.mockResolvedValue(true);
 
 						await context.service.forceUpdate();
 
@@ -158,21 +158,13 @@ describe("SwUpdateService",
 		describe("version updates",
 			() =>
 			{
-				it("should activate update and reload when user confirms",
+				it("should activate update and reload when a new version is ready",
 					async () =>
 					{
 						const context: SwUpdateTestContext =
 							createSwUpdateTestContext(
 								{ isEnabled: true });
-						context.swUpdateSpy.activateUpdate.mockResolvedValue(undefined);
-						vi
-							.spyOn(window, "confirm")
-							.mockReturnValue(true);
-						vi
-							.spyOn(window, "alert")
-							.mockImplementation(
-								() =>
-								{});
+						context.swUpdateSpy.activateUpdate.mockResolvedValue(true);
 
 						context.versionUpdatesSubject.next(
 							{
@@ -194,37 +186,6 @@ describe("SwUpdateService",
 							.toHaveBeenCalled();
 					});
 
-				it("should not activate update when user declines",
-					async () =>
-					{
-						const context: SwUpdateTestContext =
-							createSwUpdateTestContext(
-								{ isEnabled: true });
-						vi
-							.spyOn(window, "confirm")
-							.mockReturnValue(false);
-
-						context.versionUpdatesSubject.next(
-							{
-								type: "VERSION_READY",
-								currentVersion: { hash: "abc" },
-								latestVersion: { hash: "def" }
-							});
-
-						await new Promise<void>(
-							(resolve) =>
-							{
-								setTimeout(resolve, 0);
-							});
-
-						expect(context.swUpdateSpy.activateUpdate)
-							.not
-							.toHaveBeenCalled();
-						expect(context.windowServiceSpy.reload)
-							.not
-							.toHaveBeenCalled();
-					});
-
 				it("should log error when activateUpdate fails",
 					async () =>
 					{
@@ -232,14 +193,6 @@ describe("SwUpdateService",
 							createSwUpdateTestContext(
 								{ isEnabled: true });
 						context.swUpdateSpy.activateUpdate.mockRejectedValue(new Error("Activate error"));
-						vi
-							.spyOn(window, "confirm")
-							.mockReturnValue(true);
-						vi
-							.spyOn(window, "alert")
-							.mockImplementation(
-								() =>
-								{});
 
 						context.versionUpdatesSubject.next(
 							{
@@ -268,11 +221,6 @@ describe("SwUpdateService",
 						const context: SwUpdateTestContext =
 							createSwUpdateTestContext(
 								{ isEnabled: true });
-						vi
-							.spyOn(window, "alert")
-							.mockImplementation(
-								() =>
-								{});
 
 						context.unrecoverableSubject.next(
 							{

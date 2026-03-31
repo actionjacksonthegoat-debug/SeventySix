@@ -1,0 +1,110 @@
+import { afterEach, describe, expect, it, vi } from "vitest";
+
+// Mock the OTel SDK before importing the module under test
+const mockSdkStart =
+	vi.fn();
+const mockSdkShutdown =
+	vi
+		.fn()
+		.mockResolvedValue(undefined);
+vi.mock("@opentelemetry/sdk-node", () => (
+	{
+		NodeSDK: class MockNodeSDK
+		{
+			start = mockSdkStart;
+			shutdown = mockSdkShutdown;
+		}
+	}));
+
+vi.mock("@opentelemetry/auto-instrumentations-node", () => (
+	{
+		getNodeAutoInstrumentations: vi
+			.fn()
+			.mockReturnValue([])
+	}));
+
+vi.mock("@opentelemetry/exporter-trace-otlp-http", () => (
+	{
+		OTLPTraceExporter: class MockTraceExporter
+		{
+		}
+	}));
+
+vi.mock("@opentelemetry/exporter-metrics-otlp-http", () => (
+	{
+		OTLPMetricExporter: class MockMetricExporter
+		{
+		}
+	}));
+
+vi.mock("@opentelemetry/sdk-metrics", () => (
+	{
+		PeriodicExportingMetricReader: class MockMetricReader
+		{
+		}
+	}));
+
+describe("telemetry",
+	() =>
+	{
+		afterEach(
+			() =>
+			{
+				vi.clearAllMocks();
+				vi.resetModules();
+			});
+
+		it("should export initTelemetry function",
+			async () =>
+			{
+				const telemetry =
+					await import("$lib/server/telemetry");
+				expect(telemetry.initTelemetry)
+					.toBeDefined();
+				expect(typeof telemetry.initTelemetry)
+					.toBe("function");
+			});
+
+		it("should export shutdownTelemetry function",
+			async () =>
+			{
+				const telemetry =
+					await import("$lib/server/telemetry");
+				expect(telemetry.shutdownTelemetry)
+					.toBeDefined();
+				expect(typeof telemetry.shutdownTelemetry)
+					.toBe("function");
+			});
+
+		it("should not initialize SDK when endpoint is empty",
+			async () =>
+			{
+				const telemetry =
+					await import("$lib/server/telemetry");
+				telemetry.initTelemetry("");
+				expect(mockSdkStart)
+					.not
+					.toHaveBeenCalled();
+			});
+
+		it("should initialize SDK when endpoint is provided",
+			async () =>
+			{
+				const telemetry =
+					await import("$lib/server/telemetry");
+				telemetry.initTelemetry("http://otel-collector:4318");
+				expect(mockSdkStart)
+					.toHaveBeenCalledOnce();
+			});
+
+		it("should not initialize SDK twice",
+			async () =>
+			{
+				const telemetry =
+					await import("$lib/server/telemetry");
+				telemetry.initTelemetry("http://otel-collector:4318");
+				telemetry.initTelemetry("http://otel-collector:4318");
+				expect(mockSdkStart)
+					.toHaveBeenCalledOnce();
+			});
+	});

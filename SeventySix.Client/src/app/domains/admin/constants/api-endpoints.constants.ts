@@ -25,3 +25,16 @@ export const ADMIN_API_ENDPOINTS: Readonly<{
 		THIRD_PARTY_REQUESTS: "thirdpartyrequests",
 		PERMISSION_REQUESTS: "permissionrequests"
 	} as const;
+
+/**
+ * Sandbox container source context identifiers.
+ * Used to filter logs by origin application.
+ */
+export const SANDBOX_SOURCES: Readonly<{
+	SVELTEKIT: "seventysixcommerce-sveltekit";
+	TANSTACK: "seventysixcommerce-tanstack";
+}> =
+	{
+		SVELTEKIT: "seventysixcommerce-sveltekit",
+		TANSTACK: "seventysixcommerce-tanstack"
+	} as const;

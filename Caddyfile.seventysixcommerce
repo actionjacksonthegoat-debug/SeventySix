@@ -1,0 +1,44 @@
+# SeventySixCommerce routes — imported by Caddyfile.production
+# No global options block here — the primary Caddyfile owns that.
+
+# TanStack Start (React) — SeventySixCommerce-react.seventysixsandbox.com
+SeventySixCommerce-react.seventysixsandbox.com {
+	tls /etc/caddy/certs/origin.crt /etc/caddy/certs/origin.key
+
+	handle /api/* {
+		reverse_proxy localhost:3000 {
+			header_up X-Forwarded-For {header.CF-Connecting-IP}
+		}
+	}
+	handle {
+		reverse_proxy localhost:3000 {
+			header_up X-Forwarded-For {header.CF-Connecting-IP}
+		}
+	}
+}
+
+www.SeventySixCommerce-react.seventysixsandbox.com {
+	tls /etc/caddy/certs/origin.crt /etc/caddy/certs/origin.key
+	redir https://SeventySixCommerce-react.seventysixsandbox.com{uri} permanent
+}
+
+# SvelteKit — SeventySixCommerce-svelte.seventysixsandbox.com
+SeventySixCommerce-svelte.seventysixsandbox.com {
+	tls /etc/caddy/certs/origin.crt /etc/caddy/certs/origin.key
+
+	handle /api/* {
+		reverse_proxy localhost:3001 {
+			header_up X-Forwarded-For {header.CF-Connecting-IP}
+		}
+	}
+	handle {
+		reverse_proxy localhost:3001 {
+			header_up X-Forwarded-For {header.CF-Connecting-IP}
+		}
+	}
+}
+
+www.SeventySixCommerce-svelte.seventysixsandbox.com {
+	tls /etc/caddy/certs/origin.crt /etc/caddy/certs/origin.key
+	redir https://SeventySixCommerce-svelte.seventysixsandbox.com{uri} permanent
+}

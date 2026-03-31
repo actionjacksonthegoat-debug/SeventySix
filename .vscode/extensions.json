@@ -8,6 +8,12 @@
 		// Angular
 		"angular.ng-template",
 
+		// Svelte
+		"svelte.svelte-vscode",
+
+		// Tailwind CSS (SvelteKit + TanStack commerce sites)
+		"bradlc.vscode-tailwindcss",
+
 		// .NET
 		"ms-dotnettools.csdevkit",
 
@@ -15,7 +21,7 @@
 		"ms-playwright.playwright",
 
 		// Infrastructure
-		"ms-azuretools.vscode-docker",
+		"ms-azuretools.vscode-containers",
 		"ms-vscode.powershell",
 
 		// GitHub
@@ -27,6 +33,10 @@
 
 		// AI
 		"ms-windows-ai-studio.windows-ai-studio",
+
+		// Babylon.js shaders
+		"hittaito.wgsl-syntax-for-babylon-js",
+		"raczzalan.webgl-glsl-editor",
 
 		// Documentation
 		"bierner.markdown-mermaid"

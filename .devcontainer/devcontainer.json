@@ -13,7 +13,7 @@
 		"memory": "16gb",
 		"storage": "64gb"
 	},
-	"forwardPorts": [4200, 7074, 3443, 5051, 16687, 9091, 5541, 5433, 6379, 4319],
+	"forwardPorts": [4200, 7074, 3443, 5051, 16687, 9091, 5541, 5433, 6379, 4319, 3001, 3002, 3011, 3012, 5440, 5441],
 	"portsAttributes": {
 		"7074": {
 			"label": "SeventySix API",
@@ -62,9 +62,33 @@
 			"label": "OTEL Collector (HTTPS Proxy)",
 			"protocol": "https",
 			"onAutoForward": "silent"
+		},
+		"3001": {
+			"label": "SeventySixCommerce SvelteKit Dev",
+			"onAutoForward": "silent"
+		},
+		"3002": {
+			"label": "SeventySixCommerce TanStack Dev",
+			"onAutoForward": "silent"
+		},
+		"3011": {
+			"label": "SvelteKit E2E App",
+			"onAutoForward": "silent"
+		},
+		"3012": {
+			"label": "TanStack E2E App",
+			"onAutoForward": "silent"
+		},
+		"5440": {
+			"label": "SvelteKit E2E PostgreSQL",
+			"onAutoForward": "silent"
+		},
+		"5441": {
+			"label": "TanStack E2E PostgreSQL",
+			"onAutoForward": "silent"
 		}
 	},
-	"postCreateCommand": "npm install",
+	"postCreateCommand": "npm install && cd seventysixcommerce-sveltekit && npm ci && cd ../seventysixcommerce-tanstack && npm ci",
 	"customizations": {
 		"vscode": {
 			"extensions": [

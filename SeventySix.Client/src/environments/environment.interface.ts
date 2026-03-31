@@ -59,6 +59,10 @@ export interface ObservabilityConfig
 		systemOverview: string;
 		apiEndpoints: string;
 		valkeyCache: string;
+		sveltePerformance: string;
+		svelteCommerce: string;
+		tanstackPerformance: string;
+		tanstackCommerce: string;
 	};
 }
 

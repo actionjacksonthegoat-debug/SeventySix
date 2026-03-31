@@ -1,0 +1,4 @@
+{
+	"baseUrl": "http://localhost:3021",
+	"testUserPrefix": "loadtest_"
+}

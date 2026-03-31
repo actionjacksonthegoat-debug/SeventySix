@@ -5,10 +5,14 @@ description: Automated full-site walkthrough using Chrome DevTools MCP with scre
 
 # Run Site Base — Full Application Walkthrough
 
-Automate a complete walkthrough of the SeventySix application using Chrome DevTools MCP.
+Automate a complete walkthrough of the SeventySix application and both SeventySixCommerce ecommerce sites using Chrome DevTools MCP.
 Navigate every page, exercise core features, capture screenshots, and generate a pass/fail report.
 
-**Target**: Dev environment (`https://localhost:4200`)
+**Targets**:
+- **Part 1**: SeventySix Angular — `https://localhost:4200` (Steps 1–21)
+- **Part 2**: SeventySixCommerce SvelteKit — `https://localhost:3001` (Steps 22–26)
+- **Part 3**: SeventySixCommerce TanStack Start — `https://localhost:3002` (Steps 27–31)
+
 **Output**: `.dev-tools-output/walkthrough-report.md` + `.dev-tools-output/screenshots/*.png`
 
 ---
@@ -103,7 +107,7 @@ If an error is found AND the current step is NOT "Click Create Error Log button"
 
 ---
 
-## Walkthrough Steps
+## Part 1: SeventySix Angular (`https://localhost:4200`)
 
 ### Step 1: Landing Page
 
@@ -397,6 +401,128 @@ If PostgreSQL MCP is unavailable, **ask the user to provide the MFA code**.
 
 ---
 
+## Part 2: SeventySixCommerce SvelteKit (`https://localhost:3001`)
+
+> **Prerequisite**: The SvelteKit dev server must be running on port 3001 (started by `npm start`).
+> If not available, note it as "SKIPPED — SvelteKit dev server not running" and proceed to Part 3.
+
+### Step 22: SvelteKit — Home Page
+
+1. Navigate to `https://localhost:3001/`
+2. Wait for the page to load fully
+3. Take screenshot → `step-22-svelte-home.png`
+4. Scroll to the bottom of the page
+5. Take screenshot → `step-22-svelte-home-footer.png`
+6. Check for console errors (ignore CSP inline script warnings — Vite dev-mode only)
+7. Record result
+
+### Step 23: SvelteKit — About Page
+
+1. Navigate to `https://localhost:3001/about`
+2. Wait for the page to load
+3. Take screenshot → `step-23-svelte-about.png`
+4. Check for console errors
+5. Record result
+
+### Step 24: SvelteKit — Shop Page
+
+1. Navigate to `https://localhost:3001/shop`
+2. Wait for product categories to load
+3. Take screenshot → `step-24-svelte-shop.png`
+4. Click on the first category link
+5. Wait for the category page to load
+6. Take screenshot → `step-24-svelte-category.png`
+7. Click on the first product in the category
+8. Wait for the product detail page to load
+9. Take screenshot → `step-24-svelte-product-detail.png`
+10. Check for console errors
+11. Record result
+
+### Step 25: SvelteKit — Cart Page
+
+1. Navigate to `https://localhost:3001/cart`
+2. Wait for the cart page to load (may show empty cart)
+3. Take screenshot → `step-25-svelte-cart.png`
+4. Check for console errors
+5. Record result
+
+### Step 26: SvelteKit — Policy Pages
+
+1. Navigate to `https://localhost:3001/policies/privacy`
+2. Wait for the page to load
+3. Take screenshot → `step-26-svelte-privacy.png`
+4. Navigate to `https://localhost:3001/policies/returns`
+5. Wait for the page to load
+6. Take screenshot → `step-26-svelte-returns.png`
+7. Navigate to `https://localhost:3001/policies/terms`
+8. Wait for the page to load
+9. Take screenshot → `step-26-svelte-terms.png`
+10. Check for console errors
+11. Record result
+
+---
+
+## Part 3: SeventySixCommerce TanStack Start (`https://localhost:3002`)
+
+> **Prerequisite**: The TanStack dev server must be running on port 3002 (started by `npm start`).
+> If not available, note it as "SKIPPED — TanStack dev server not running" and proceed to Report Generation.
+
+### Step 27: TanStack — Home Page
+
+1. Navigate to `https://localhost:3002/`
+2. Wait for the page to load fully
+3. Take screenshot → `step-27-tanstack-home.png`
+4. Scroll to the bottom of the page
+5. Take screenshot → `step-27-tanstack-home-footer.png`
+6. Check for console errors (ignore React hydration mismatch warnings on theme class — standard SSR behavior)
+7. Record result
+
+### Step 28: TanStack — About Page
+
+1. Navigate to `https://localhost:3002/about`
+2. Wait for the page to load
+3. Take screenshot → `step-28-tanstack-about.png`
+4. Check for console errors
+5. Record result
+
+### Step 29: TanStack — Shop Page
+
+1. Navigate to `https://localhost:3002/shop`
+2. Wait for product categories to load
+3. Take screenshot → `step-29-tanstack-shop.png`
+4. Click on the first category link
+5. Wait for the category page to load
+6. Take screenshot → `step-29-tanstack-category.png`
+7. Click on the first product in the category
+8. Wait for the product detail page to load
+9. Take screenshot → `step-29-tanstack-product-detail.png`
+10. Check for console errors
+11. Record result
+
+### Step 30: TanStack — Cart Page
+
+1. Navigate to `https://localhost:3002/cart`
+2. Wait for the cart page to load (may show empty cart)
+3. Take screenshot → `step-30-tanstack-cart.png`
+4. Check for console errors
+5. Record result
+
+### Step 31: TanStack — Policy Pages
+
+1. Navigate to `https://localhost:3002/privacy`
+2. Wait for the page to load
+3. Take screenshot → `step-31-tanstack-privacy.png`
+4. Navigate to `https://localhost:3002/returns`
+5. Wait for the page to load
+6. Take screenshot → `step-31-tanstack-returns.png`
+7. Navigate to `https://localhost:3002/terms`
+8. Wait for the page to load
+9. Take screenshot → `step-31-tanstack-terms.png`
+10. Check for console errors
+11. Record result
+
+---
+
 ## User Interaction Handling
 
 If any step requires user interaction that Chrome DevTools MCP cannot automate:
@@ -416,10 +542,13 @@ Known cases:
 After ALL walkthrough steps have completed (whether PASSED or FAILED), create `.dev-tools-output/walkthrough-report.md`:
 
 ```markdown
-# SeventySix Site Walkthrough Report
+# SeventySix Full Site Walkthrough Report
 
 **Generated**: {current date and time}
-**Target**: https://localhost:4200
+**Targets**:
+- SeventySix Angular: https://localhost:4200
+- SeventySixCommerce SvelteKit: https://localhost:3001
+- SeventySixCommerce TanStack: https://localhost:3002
 **Admin User**: {email used}
 
 ---
@@ -433,16 +562,33 @@ If none: "No unexpected error banners detected."}
 ## Console Errors Detected
 
 {List any console errors found during the walkthrough.
+Ignore: CSP inline script warnings (SvelteKit Vite dev), React hydration mismatch on theme class (TanStack SSR).
 If none: "No console errors detected."}
 
 ---
 
 ## Step Results
 
+### Part 1: SeventySix Angular (Steps 1–21)
+
 | # | Step | Status | Notes |
 |---|------|--------|-------|
 | 1 | Landing page | PASSED/FAILED | |
 | 2 | Sandbox page | PASSED/FAILED | |
+| ... | ... | ... | ... |
+
+### Part 2: SeventySixCommerce SvelteKit (Steps 22–26)
+
+| # | Step | Status | Notes |
+|---|------|--------|-------|
+| 22 | SvelteKit Home | PASSED/FAILED | |
+| ... | ... | ... | ... |
+
+### Part 3: SeventySixCommerce TanStack (Steps 27–31)
+
+| # | Step | Status | Notes |
+|---|------|--------|-------|
+| 27 | TanStack Home | PASSED/FAILED | |
 | ... | ... | ... | ... |
 
 ---
@@ -452,6 +598,7 @@ If none: "No console errors detected."}
 - **Total Steps**: {N}
 - **Passed**: {N}
 - **Failed**: {N}
+- **Skipped**: {N}
 - **Screenshots**: `.dev-tools-output/screenshots/`
 
 ---
@@ -469,4 +616,4 @@ After writing the report, tell the user:
 > **Walkthrough complete!**
 > - Report: `.dev-tools-output/walkthrough-report.md`
 > - Screenshots: `.dev-tools-output/screenshots/`
-> - {X}/{Y} steps passed
+> - {X}/{Y} steps passed across all 3 sites

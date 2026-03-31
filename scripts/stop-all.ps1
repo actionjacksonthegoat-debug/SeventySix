@@ -58,6 +58,10 @@ try {
 	Write-Host "Stopping dev Docker containers..." -ForegroundColor Yellow
 	docker compose -f docker-compose.yml -f docker-compose.override.yml down --remove-orphans 2>$null
 
+	Write-Host "Stopping SeventySixCommerce dev containers..." -ForegroundColor Yellow
+	docker compose -f seventysixcommerce-tanstack/docker-compose.dev.yml down 2>$null
+	docker compose -f seventysixcommerce-sveltekit/docker-compose.dev.yml down 2>$null
+
 	if ($All) {
 		Write-Host ""
 		Write-Host "Stopping E2E environment..." -ForegroundColor Yellow
@@ -65,6 +69,10 @@ try {
 
 		Write-Host "Stopping LoadTest environment..." -ForegroundColor Yellow
 		docker compose -f docker-compose.loadtest.yml down --remove-orphans 2>$null
+
+		Write-Host "Stopping Commerce LoadTest environments..." -ForegroundColor Yellow
+		docker compose -f docker-compose.loadtest-tanstack.yml down --remove-orphans 2>$null
+		docker compose -f docker-compose.loadtest-svelte.yml down --remove-orphans 2>$null
 	}
 
 	Write-Host ""

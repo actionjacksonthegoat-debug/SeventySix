@@ -12,6 +12,13 @@ receivers:
                 endpoint: 0.0.0.0:4317
             http:
                 endpoint: 0.0.0.0:4318
+                cors:
+                    allowed_origins:
+                        - "https://localhost:3001"
+                        - "https://localhost:3002"
+                        - "https://localhost:4200"
+                    allowed_headers:
+                        - "*"
 
 processors:
     batch:
@@ -24,6 +31,8 @@ exporters:
     # The job label is added by Prometheus scrape config instead
     prometheus:
         endpoint: "0.0.0.0:8889"
+        resource_to_telemetry_conversion:
+            enabled: true
 
     # Jaeger traces via OTLP
     otlp/jaeger:
