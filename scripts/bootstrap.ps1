@@ -67,13 +67,13 @@ Pop-Location
 
 # Install sandbox dependencies (SeventySixCommerce SvelteKit and TanStack)
 Write-Host "  Installing SeventySixCommerce SvelteKit dependencies..." -ForegroundColor Cyan
-Push-Location (Join-Path $repoRoot "seventysixcommerce-sveltekit")
+Push-Location (Join-Path $repoRoot "ECommerce" "seventysixcommerce-sveltekit")
 & npm ci
 if ($LASTEXITCODE -ne 0) { Write-Error "SvelteKit npm ci failed."; exit 1 }
 Pop-Location
 
 Write-Host "  Installing SeventySixCommerce TanStack dependencies..." -ForegroundColor Cyan
-Push-Location (Join-Path $repoRoot "seventysixcommerce-tanstack")
+Push-Location (Join-Path $repoRoot "ECommerce" "seventysixcommerce-tanstack")
 & npm ci --legacy-peer-deps
 if ($LASTEXITCODE -ne 0) { Write-Error "TanStack npm ci failed."; exit 1 }
 Pop-Location
@@ -95,14 +95,14 @@ if ([string]::IsNullOrWhiteSpace($tanstackDbUrl)) {
 	$tanstackDbUrl = "postgresql://seventysixcommerce:seventysixcommerce_dev@localhost:5438/seventysixcommerce"
 }
 
-$svelteEnvPath = Join-Path $repoRoot "seventysixcommerce-sveltekit" ".env.local"
+$svelteEnvPath = Join-Path $repoRoot "ECommerce" "seventysixcommerce-sveltekit" ".env.local"
 @"
 DATABASE_URL=$svelteDbUrl
 MOCK_SERVICES=true
 "@ | Set-Content -Path $svelteEnvPath -NoNewline
 Write-Host "  [OK] SvelteKit .env.local written." -ForegroundColor Green
 
-$tanstackEnvPath = Join-Path $repoRoot "seventysixcommerce-tanstack" ".env.local"
+$tanstackEnvPath = Join-Path $repoRoot "ECommerce" "seventysixcommerce-tanstack" ".env.local"
 @"
 DATABASE_URL=$tanstackDbUrl
 MOCK_SERVICES=true
@@ -198,7 +198,7 @@ if (-not $SkipTests) {
 
 	Write-Host ""
 	Write-Host "--- SeventySixCommerce SvelteKit Tests (npm test) ---" -ForegroundColor Cyan
-	Push-Location (Join-Path $repoRoot "seventysixcommerce-sveltekit")
+	Push-Location (Join-Path $repoRoot "ECommerce" "seventysixcommerce-sveltekit")
 	& npm run test
 	$svelteTestExit = $LASTEXITCODE
 	Pop-Location
@@ -210,7 +210,7 @@ if (-not $SkipTests) {
 
 	Write-Host ""
 	Write-Host "--- SeventySixCommerce TanStack Tests (npm test) ---" -ForegroundColor Cyan
-	Push-Location (Join-Path $repoRoot "seventysixcommerce-tanstack")
+	Push-Location (Join-Path $repoRoot "ECommerce" "seventysixcommerce-tanstack")
 	& npm run test
 	$tanstackTestExit = $LASTEXITCODE
 	Pop-Location

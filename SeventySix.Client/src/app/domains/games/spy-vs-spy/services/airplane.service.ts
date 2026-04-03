@@ -104,7 +104,31 @@ export class AirplaneService
 		const { wings, tailFin } =
 			this.createWingParts(scene);
 
-		/* Nose cone at front (+Z end). */
+		const noseCone: Mesh =
+			this.createNoseCone(scene, fuselageMaterial);
+
+		this.mergeAndPositionAirplane(
+			[fuselage, wings, tailFin, noseCone]);
+
+		if (this.airplaneMesh == null)
+		{
+			throw new Error("AirplaneService: failed to merge airplane meshes.");
+		}
+
+		return this.airplaneMesh;
+	}
+
+	/**
+	 * Creates the nose cone at the front of the airplane.
+	 * @param scene
+	 * The active Babylon.js scene.
+	 * @param material
+	 * The fuselage material to apply.
+	 * @returns
+	 * The nose cone mesh.
+	 */
+	private createNoseCone(scene: Scene, material: StandardMaterial): Mesh
+	{
 		const noseCone: Mesh =
 			MeshBuilder.CreateCylinder(
 				"airplane-nose",
@@ -120,12 +144,21 @@ export class AirplaneService
 			Math.PI / 2;
 		noseCone.position.z =
 			AIRPLANE_FUSELAGE_LENGTH / 2 + 0.5;
-		noseCone.material = fuselageMaterial;
+		noseCone.material = material;
 
-		/* Merge into a single mesh. */
+		return noseCone;
+	}
+
+	/**
+	 * Merges airplane part meshes and positions the result on the runway.
+	 * @param parts
+	 * The meshes to merge.
+	 */
+	private mergeAndPositionAirplane(parts: Mesh[]): void
+	{
 		const merged: Mesh | null =
 			Mesh.MergeMeshes(
-				[fuselage, wings, tailFin, noseCone],
+				parts,
 				true,
 				true,
 				undefined,
@@ -145,13 +178,6 @@ export class AirplaneService
 
 			this.airplaneMesh = merged;
 		}
-
-		if (this.airplaneMesh == null)
-		{
-			throw new Error("AirplaneService: failed to merge airplane meshes.");
-		}
-
-		return this.airplaneMesh;
 	}
 
 	/**

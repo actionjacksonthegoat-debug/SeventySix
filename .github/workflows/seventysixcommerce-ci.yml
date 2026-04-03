@@ -4,14 +4,14 @@ on:
     push:
         branches: [master]
         paths:
-            - "seventysixcommerce-tanstack/**"
-            - "seventysixcommerce-sveltekit/**"
+            - "ECommerce/seventysixcommerce-tanstack/**"
+            - "ECommerce/seventysixcommerce-sveltekit/**"
             - ".github/workflows/seventysixcommerce-ci.yml"
     pull_request:
         branches: [master]
         paths:
-            - "seventysixcommerce-tanstack/**"
-            - "seventysixcommerce-sveltekit/**"
+            - "ECommerce/seventysixcommerce-tanstack/**"
+            - "ECommerce/seventysixcommerce-sveltekit/**"
             - ".github/workflows/seventysixcommerce-ci.yml"
     workflow_dispatch:
 
@@ -35,7 +35,7 @@ jobs:
 
         defaults:
             run:
-                working-directory: seventysixcommerce-tanstack
+                working-directory: ECommerce/seventysixcommerce-tanstack
 
         services:
             postgres:
@@ -65,7 +65,7 @@ jobs:
               with:
                   node-version: "22.x"
                   cache: "npm"
-                  cache-dependency-path: seventysixcommerce-tanstack/package-lock.json
+                  cache-dependency-path: ECommerce/seventysixcommerce-tanstack/package-lock.json
 
             - name: Install dependencies
               run: npm ci
@@ -85,7 +85,7 @@ jobs:
               with:
                   token: ${{ secrets.CODECOV_TOKEN }}
                   flags: seventysixcommerce-tanstack
-                  directory: seventysixcommerce-tanstack/coverage
+                  directory: ECommerce/seventysixcommerce-tanstack/coverage
                   fail_ci_if_error: false
 
     # ──────────────────────────────────────────────────────────
@@ -97,7 +97,7 @@ jobs:
 
         defaults:
             run:
-                working-directory: seventysixcommerce-sveltekit
+                working-directory: ECommerce/seventysixcommerce-sveltekit
 
         services:
             postgres:
@@ -127,7 +127,7 @@ jobs:
               with:
                   node-version: "22.x"
                   cache: "npm"
-                  cache-dependency-path: seventysixcommerce-sveltekit/package-lock.json
+                  cache-dependency-path: ECommerce/seventysixcommerce-sveltekit/package-lock.json
 
             - name: Install dependencies
               run: npm ci
@@ -149,7 +149,7 @@ jobs:
               with:
                   token: ${{ secrets.CODECOV_TOKEN }}
                   flags: seventysixcommerce-sveltekit
-                  directory: seventysixcommerce-sveltekit/coverage
+                  directory: ECommerce/seventysixcommerce-sveltekit/coverage
                   fail_ci_if_error: false
 
     # ──────────────────────────────────────────────────────────
@@ -162,7 +162,7 @@ jobs:
 
         defaults:
             run:
-                working-directory: seventysixcommerce-sveltekit
+                working-directory: ECommerce/seventysixcommerce-sveltekit
 
         services:
             postgres:
@@ -188,7 +188,7 @@ jobs:
               with:
                   node-version: "22.x"
                   cache: "npm"
-                  cache-dependency-path: seventysixcommerce-sveltekit/package-lock.json
+                  cache-dependency-path: ECommerce/seventysixcommerce-sveltekit/package-lock.json
 
             - name: Install dependencies
               run: npm ci
@@ -237,7 +237,7 @@ jobs:
               if: always()
               with:
                   name: sveltekit-playwright-report
-                  path: seventysixcommerce-sveltekit/playwright-report/
+                  path: ECommerce/seventysixcommerce-sveltekit/playwright-report/
                   retention-days: 14
 
     # ──────────────────────────────────────────────────────────
@@ -250,7 +250,7 @@ jobs:
 
         defaults:
             run:
-                working-directory: seventysixcommerce-tanstack
+                working-directory: ECommerce/seventysixcommerce-tanstack
 
         services:
             postgres:
@@ -276,7 +276,7 @@ jobs:
               with:
                   node-version: "22.x"
                   cache: "npm"
-                  cache-dependency-path: seventysixcommerce-tanstack/package-lock.json
+                  cache-dependency-path: ECommerce/seventysixcommerce-tanstack/package-lock.json
 
             - name: Install dependencies
               run: npm ci --legacy-peer-deps
@@ -345,7 +345,7 @@ jobs:
               if: always()
               with:
                   name: tanstack-playwright-report
-                  path: seventysixcommerce-tanstack/playwright-report/
+                  path: ECommerce/seventysixcommerce-tanstack/playwright-report/
                   retention-days: 14
 
     # ──────────────────────────────────────────────────────────
@@ -358,7 +358,7 @@ jobs:
 
         defaults:
             run:
-                working-directory: seventysixcommerce-sveltekit
+                working-directory: ECommerce/seventysixcommerce-sveltekit
 
         services:
             postgres:
@@ -388,7 +388,7 @@ jobs:
               with:
                   node-version: "22.x"
                   cache: "npm"
-                  cache-dependency-path: seventysixcommerce-sveltekit/package-lock.json
+                  cache-dependency-path: ECommerce/seventysixcommerce-sveltekit/package-lock.json
 
             - name: Install dependencies
               run: npm ci
@@ -444,7 +444,7 @@ jobs:
 
         defaults:
             run:
-                working-directory: seventysixcommerce-tanstack
+                working-directory: ECommerce/seventysixcommerce-tanstack
 
         services:
             postgres:
@@ -474,7 +474,7 @@ jobs:
               with:
                   node-version: "22.x"
                   cache: "npm"
-                  cache-dependency-path: seventysixcommerce-tanstack/package-lock.json
+                  cache-dependency-path: ECommerce/seventysixcommerce-tanstack/package-lock.json
 
             - name: Install dependencies
               run: npm ci --legacy-peer-deps
@@ -632,7 +632,7 @@ jobs:
               uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7
               with:
                   context: ./seventysixcommerce-tanstack
-                  file: ./seventysixcommerce-tanstack/Dockerfile
+                  file: ./ECommerce/seventysixcommerce-tanstack/Dockerfile
                   platforms: linux/amd64
                   push: true
                   tags: |
@@ -646,7 +646,7 @@ jobs:
               uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7
               with:
                   context: ./seventysixcommerce-sveltekit
-                  file: ./seventysixcommerce-sveltekit/Dockerfile
+                  file: ./ECommerce/seventysixcommerce-sveltekit/Dockerfile
                   platforms: linux/amd64
                   push: true
                   tags: |

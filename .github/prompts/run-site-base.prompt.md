@@ -9,9 +9,9 @@ Automate a complete walkthrough of the SeventySix application and both SeventySi
 Navigate every page, exercise core features, capture screenshots, and generate a pass/fail report.
 
 **Targets**:
-- **Part 1**: SeventySix Angular — `https://localhost:4200` (Steps 1–21)
-- **Part 2**: SeventySixCommerce SvelteKit — `https://localhost:3001` (Steps 22–26)
-- **Part 3**: SeventySixCommerce TanStack Start — `https://localhost:3002` (Steps 27–31)
+- **Part 1**: SeventySix Angular — `https://localhost:4200` (Steps 1–26)
+- **Part 2**: SeventySixCommerce SvelteKit — `https://localhost:3001` (Steps 27–35)
+- **Part 3**: SeventySixCommerce TanStack Start — `https://localhost:3002` (Steps 36–43)
 
 **Output**: `.dev-tools-output/walkthrough-report.md` + `.dev-tools-output/screenshots/*.png`
 
@@ -399,6 +399,75 @@ If PostgreSQL MCP is unavailable, **ask the user to provide the MFA code**.
 5. Check for console errors
 6. Record result
 
+### Step 22: Admin Embedded Commerce — SvelteKit Dashboard
+
+**Re-login as admin first** (follow Steps 6–7 login/MFA flow).
+
+1. Navigate to `https://localhost:4200/admin/svelte`
+2. Wait for the Grafana dashboard embed to load
+3. Take screenshot → `step-22-svelte-dashboard.png`
+4. Verify NO page-level vertical scrollbar exists (content should fit within viewport)
+5. Verify the Grafana iframe fills the available space between the tab bar and footer
+6. Check for console errors
+7. Record result
+
+### Step 23: Admin Embedded Commerce — SvelteKit Logs
+
+1. Navigate to `https://localhost:4200/admin/svelte/logs`
+2. Wait for the log data table to load
+3. Take screenshot → `step-23-svelte-logs.png`
+4. Verify NO page-level vertical scrollbar exists (table scrolls within its own container)
+5. Check that log entries are visible with timestamp, level, message, and source columns
+6. Check for console errors
+7. Record result
+
+### Step 24: Admin Embedded Commerce — TanStack Dashboard
+
+1. Navigate to `https://localhost:4200/admin/tanstack`
+2. Wait for the Grafana dashboard embed to load
+3. Take screenshot → `step-24-tanstack-dashboard.png`
+4. Verify NO page-level vertical scrollbar exists
+5. Verify layout matches the SvelteKit Dashboard (same spacing, icon positioning)
+6. Check for console errors
+7. Record result
+
+### Step 25: Admin Embedded Commerce — TanStack Logs
+
+1. Navigate to `https://localhost:4200/admin/tanstack/logs`
+2. Wait for the log data table to load
+3. Take screenshot → `step-25-tanstack-logs.png`
+4. Verify NO page-level vertical scrollbar exists
+5. Check that log entries are visible
+6. Check for console errors
+7. Record result
+
+### Step 26: Games — Play Both Games
+
+> **IMPORTANT**: Both games use Babylon.js 3D rendering. A loading screen with the game icon and name displays while the engine initializes. Verify it appears before the game canvas renders.
+
+#### Car-a-Lot
+
+1. Navigate to `https://localhost:4200/games/car-a-lot`
+2. Wait for the game scene to fully load (loading screen should appear, then the 3D scene)
+3. Take screenshot → `step-26-car-a-lot-loaded.png`
+4. Click the "Start Game" button
+5. Wait briefly for the game to begin
+6. Take screenshot → `step-26-car-a-lot-playing.png`
+7. Use keyboard controls (arrow keys / WASD) to drive the kart — interact for a few seconds
+8. Check for console errors (ignore Babylon.js engine initialization messages)
+
+#### Spy And Fly
+
+9. Navigate to `https://localhost:4200/games/spy-vs-spy`
+10. Wait for the game scene to fully load
+11. Take screenshot → `step-26-spy-and-fly-loaded.png`
+12. Click the "Start Mission" button
+13. Wait for the game to begin
+14. Take screenshot → `step-26-spy-and-fly-playing.png`
+15. Use keyboard controls to play — interact for a few seconds
+16. Check for console errors (ignore Babylon.js engine initialization messages)
+17. Record result for both games
+
 ---
 
 ## Part 2: SeventySixCommerce SvelteKit (`https://localhost:3001`)
@@ -406,59 +475,106 @@ If PostgreSQL MCP is unavailable, **ask the user to provide the MFA code**.
 > **Prerequisite**: The SvelteKit dev server must be running on port 3001 (started by `npm start`).
 > If not available, note it as "SKIPPED — SvelteKit dev server not running" and proceed to Part 3.
 
-### Step 22: SvelteKit — Home Page
+### Step 27: SvelteKit — Home Page
 
 1. Navigate to `https://localhost:3001/`
 2. Wait for the page to load fully
-3. Take screenshot → `step-22-svelte-home.png`
+3. Take screenshot → `step-27-svelte-home.png`
 4. Scroll to the bottom of the page
-5. Take screenshot → `step-22-svelte-home-footer.png`
+5. Take screenshot → `step-27-svelte-home-footer.png`
 6. Check for console errors (ignore CSP inline script warnings — Vite dev-mode only)
 7. Record result
 
-### Step 23: SvelteKit — About Page
+### Step 28: SvelteKit — About Page
 
 1. Navigate to `https://localhost:3001/about`
 2. Wait for the page to load
-3. Take screenshot → `step-23-svelte-about.png`
+3. Take screenshot → `step-28-svelte-about.png`
 4. Check for console errors
 5. Record result
 
-### Step 24: SvelteKit — Shop Page
+### Step 29: SvelteKit — Shop & Product Detail
 
 1. Navigate to `https://localhost:3001/shop`
 2. Wait for product categories to load
-3. Take screenshot → `step-24-svelte-shop.png`
+3. Take screenshot → `step-29-svelte-shop.png`
 4. Click on the first category link
 5. Wait for the category page to load
-6. Take screenshot → `step-24-svelte-category.png`
+6. Take screenshot → `step-29-svelte-category.png`
 7. Click on the first product in the category
 8. Wait for the product detail page to load
-9. Take screenshot → `step-24-svelte-product-detail.png`
+9. Take screenshot → `step-29-svelte-product-detail.png`
 10. Check for console errors
 11. Record result
 
-### Step 25: SvelteKit — Cart Page
+### Step 30: SvelteKit — Add to Cart & Checkout Flow
+
+1. On the product detail page (from Step 29), select a size if a size selector is visible
+2. Click the "Add to Cart" button
+3. Verify the cart badge updates (shows item count)
+4. Take screenshot → `step-30-svelte-add-to-cart.png`
+5. Navigate to `https://localhost:3001/cart`
+6. Wait for the cart page to load with item(s)
+7. Take screenshot → `step-30-svelte-cart-with-items.png`
+8. Verify subtotal, shipping, and total amounts are displayed
+9. Click "Proceed to Checkout" button
+10. Wait for the checkout/order confirmation page
+11. Take screenshot → `step-30-svelte-checkout-complete.png`
+12. Verify the order confirmation message appears (e.g., "Thank you for your order!")
+13. Check for console errors
+14. Record result
+
+### Step 31: SvelteKit — Cart Page (Empty State)
 
 1. Navigate to `https://localhost:3001/cart`
-2. Wait for the cart page to load (may show empty cart)
-3. Take screenshot → `step-25-svelte-cart.png`
+2. Wait for the cart page to load (should show empty cart after checkout)
+3. Take screenshot → `step-31-svelte-cart-empty.png`
 4. Check for console errors
 5. Record result
 
-### Step 26: SvelteKit — Policy Pages
+### Step 32: SvelteKit — Dark/Light Mode Toggle
+
+1. Navigate to `https://localhost:3001/`
+2. Locate the dark/light mode toggle button (usually in the header/nav)
+3. Take screenshot → `step-32-svelte-current-theme.png`
+4. Click the toggle to switch themes
+5. Wait for the theme transition to complete
+6. Take screenshot → `step-32-svelte-toggled-theme.png`
+7. Verify the color scheme changed (background, text colors differ from previous screenshot)
+8. Toggle back to the original theme
+9. Check for console errors
+10. Record result
+
+### Step 33: SvelteKit — /products Redirect Verification
+
+1. Navigate to `https://localhost:3001/products`
+2. Wait for the page to load
+3. Verify the URL redirected to `https://localhost:3001/shop` (301 redirect)
+4. Take screenshot → `step-33-svelte-products-redirect.png`
+5. Navigate to `https://localhost:3001/products/some-product-slug`
+6. Verify it redirects to `/shop`
+7. Record result
+
+### Step 34: SvelteKit — Policy Pages
 
 1. Navigate to `https://localhost:3001/policies/privacy`
 2. Wait for the page to load
-3. Take screenshot → `step-26-svelte-privacy.png`
+3. Take screenshot → `step-34-svelte-privacy.png`
 4. Navigate to `https://localhost:3001/policies/returns`
 5. Wait for the page to load
-6. Take screenshot → `step-26-svelte-returns.png`
+6. Take screenshot → `step-34-svelte-returns.png`
 7. Navigate to `https://localhost:3001/policies/terms`
 8. Wait for the page to load
-9. Take screenshot → `step-26-svelte-terms.png`
+9. Take screenshot → `step-34-svelte-terms.png`
 10. Check for console errors
 11. Record result
+
+### Step 35: SvelteKit — Network Error Check
+
+1. Use `list_network_requests` to review all HTTP requests made during the SvelteKit walkthrough
+2. Filter for any failed requests (status 4xx or 5xx, excluding expected 301 redirects)
+3. Record any unexpected failures
+4. Record result
 
 ---
 
@@ -467,59 +583,96 @@ If PostgreSQL MCP is unavailable, **ask the user to provide the MFA code**.
 > **Prerequisite**: The TanStack dev server must be running on port 3002 (started by `npm start`).
 > If not available, note it as "SKIPPED — TanStack dev server not running" and proceed to Report Generation.
 
-### Step 27: TanStack — Home Page
+### Step 36: TanStack — Home Page
 
 1. Navigate to `https://localhost:3002/`
 2. Wait for the page to load fully
-3. Take screenshot → `step-27-tanstack-home.png`
+3. Take screenshot → `step-36-tanstack-home.png`
 4. Scroll to the bottom of the page
-5. Take screenshot → `step-27-tanstack-home-footer.png`
+5. Take screenshot → `step-36-tanstack-home-footer.png`
 6. Check for console errors (ignore React hydration mismatch warnings on theme class — standard SSR behavior)
 7. Record result
 
-### Step 28: TanStack — About Page
+### Step 37: TanStack — About Page
 
 1. Navigate to `https://localhost:3002/about`
 2. Wait for the page to load
-3. Take screenshot → `step-28-tanstack-about.png`
+3. Take screenshot → `step-37-tanstack-about.png`
 4. Check for console errors
 5. Record result
 
-### Step 29: TanStack — Shop Page
+### Step 38: TanStack — Shop & Product Detail
 
 1. Navigate to `https://localhost:3002/shop`
 2. Wait for product categories to load
-3. Take screenshot → `step-29-tanstack-shop.png`
+3. Take screenshot → `step-38-tanstack-shop.png`
 4. Click on the first category link
 5. Wait for the category page to load
-6. Take screenshot → `step-29-tanstack-category.png`
+6. Take screenshot → `step-38-tanstack-category.png`
 7. Click on the first product in the category
 8. Wait for the product detail page to load
-9. Take screenshot → `step-29-tanstack-product-detail.png`
+9. Take screenshot → `step-38-tanstack-product-detail.png`
 10. Check for console errors
 11. Record result
 
-### Step 30: TanStack — Cart Page
+### Step 39: TanStack — Add to Cart & Checkout Flow
+
+1. On the product detail page (from Step 38), select a size if size buttons are visible
+2. Click the "Add to Cart" button
+3. Verify the cart badge updates (shows item count)
+4. Take screenshot → `step-39-tanstack-add-to-cart.png`
+5. Navigate to `https://localhost:3002/cart`
+6. Wait for the cart page to load with item(s)
+7. Take screenshot → `step-39-tanstack-cart-with-items.png`
+8. Verify subtotal, shipping, and total amounts are displayed
+9. Click "Proceed to Checkout" button
+10. Wait for the checkout/order confirmation page
+11. Take screenshot → `step-39-tanstack-checkout-complete.png`
+12. Verify the order confirmation message appears
+13. Check for console errors
+14. Record result
+
+### Step 40: TanStack — Cart Page (Empty State)
 
 1. Navigate to `https://localhost:3002/cart`
-2. Wait for the cart page to load (may show empty cart)
-3. Take screenshot → `step-30-tanstack-cart.png`
+2. Wait for the cart page to load (should show empty cart after checkout)
+3. Take screenshot → `step-40-tanstack-cart-empty.png`
 4. Check for console errors
 5. Record result
 
-### Step 31: TanStack — Policy Pages
+### Step 41: TanStack — Dark/Light Mode Toggle
+
+1. Navigate to `https://localhost:3002/`
+2. Locate the dark/light mode toggle button
+3. Take screenshot → `step-41-tanstack-current-theme.png`
+4. Click the toggle to switch themes
+5. Wait for the theme transition to complete
+6. Take screenshot → `step-41-tanstack-toggled-theme.png`
+7. Verify the color scheme changed
+8. Toggle back to the original theme
+9. Check for console errors
+10. Record result
+
+### Step 42: TanStack — Policy Pages
 
 1. Navigate to `https://localhost:3002/privacy`
 2. Wait for the page to load
-3. Take screenshot → `step-31-tanstack-privacy.png`
+3. Take screenshot → `step-42-tanstack-privacy.png`
 4. Navigate to `https://localhost:3002/returns`
 5. Wait for the page to load
-6. Take screenshot → `step-31-tanstack-returns.png`
+6. Take screenshot → `step-42-tanstack-returns.png`
 7. Navigate to `https://localhost:3002/terms`
 8. Wait for the page to load
-9. Take screenshot → `step-31-tanstack-terms.png`
+9. Take screenshot → `step-42-tanstack-terms.png`
 10. Check for console errors
 11. Record result
+
+### Step 43: TanStack — Network Error Check
+
+1. Use `list_network_requests` to review all HTTP requests made during the TanStack walkthrough
+2. Filter for any failed requests (status 4xx or 5xx)
+3. Record any unexpected failures
+4. Record result
 
 ---
 
@@ -569,27 +722,45 @@ If none: "No console errors detected."}
 
 ## Step Results
 
-### Part 1: SeventySix Angular (Steps 1–21)
+### Part 1: SeventySix Angular (Steps 1–26)
 
 | # | Step | Status | Notes |
 |---|------|--------|-------|
 | 1 | Landing page | PASSED/FAILED | |
 | 2 | Sandbox page | PASSED/FAILED | |
 | ... | ... | ... | ... |
+| 22 | Admin SvelteKit Dashboard | PASSED/FAILED | |
+| 23 | Admin SvelteKit Logs | PASSED/FAILED | |
+| 24 | Admin TanStack Dashboard | PASSED/FAILED | |
+| 25 | Admin TanStack Logs | PASSED/FAILED | |
+| 26 | Games (Car-a-Lot + Spy And Fly) | PASSED/FAILED | |
 
-### Part 2: SeventySixCommerce SvelteKit (Steps 22–26)
-
-| # | Step | Status | Notes |
-|---|------|--------|-------|
-| 22 | SvelteKit Home | PASSED/FAILED | |
-| ... | ... | ... | ... |
-
-### Part 3: SeventySixCommerce TanStack (Steps 27–31)
+### Part 2: SeventySixCommerce SvelteKit (Steps 27–35)
 
 | # | Step | Status | Notes |
 |---|------|--------|-------|
-| 27 | TanStack Home | PASSED/FAILED | |
-| ... | ... | ... | ... |
+| 27 | SvelteKit Home | PASSED/FAILED | |
+| 28 | SvelteKit About | PASSED/FAILED | |
+| 29 | SvelteKit Shop & Product Detail | PASSED/FAILED | |
+| 30 | SvelteKit Add to Cart & Checkout | PASSED/FAILED | |
+| 31 | SvelteKit Cart Empty State | PASSED/FAILED | |
+| 32 | SvelteKit Dark/Light Mode Toggle | PASSED/FAILED | |
+| 33 | SvelteKit /products Redirect | PASSED/FAILED | |
+| 34 | SvelteKit Policy Pages | PASSED/FAILED | |
+| 35 | SvelteKit Network Error Check | PASSED/FAILED | |
+
+### Part 3: SeventySixCommerce TanStack (Steps 36–43)
+
+| # | Step | Status | Notes |
+|---|------|--------|-------|
+| 36 | TanStack Home | PASSED/FAILED | |
+| 37 | TanStack About | PASSED/FAILED | |
+| 38 | TanStack Shop & Product Detail | PASSED/FAILED | |
+| 39 | TanStack Add to Cart & Checkout | PASSED/FAILED | |
+| 40 | TanStack Cart Empty State | PASSED/FAILED | |
+| 41 | TanStack Dark/Light Mode Toggle | PASSED/FAILED | |
+| 42 | TanStack Policy Pages | PASSED/FAILED | |
+| 43 | TanStack Network Error Check | PASSED/FAILED | |
 
 ---
 
@@ -616,4 +787,4 @@ After writing the report, tell the user:
 > **Walkthrough complete!**
 > - Report: `.dev-tools-output/walkthrough-report.md`
 > - Screenshots: `.dev-tools-output/screenshots/`
-> - {X}/{Y} steps passed across all 3 sites
+> - {X}/{Y} steps passed across all 3 sites (including admin commerce pages, games, cart flows, and theme toggles)

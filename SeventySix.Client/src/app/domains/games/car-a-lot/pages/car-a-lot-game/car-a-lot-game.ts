@@ -4,7 +4,17 @@
  * Orchestrates scene initialization and game loop.
  */
 
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal, WritableSignal } from "@angular/core";
+import {
+	ChangeDetectionStrategy,
+	Component,
+	computed,
+	DestroyRef,
+	inject,
+	Signal,
+	signal,
+	WritableSignal
+} from "@angular/core";
+import { ActivatedRoute } from "@angular/router";
 import { Vector3 } from "@babylonjs/core/Maths/math.vector";
 import { TransformNode } from "@babylonjs/core/Meshes/transformNode";
 import { Scene } from "@babylonjs/core/scene";
@@ -41,6 +51,8 @@ import { TrackBuilderService } from "@games/car-a-lot/services/track-builder.ser
 import { TrackFeaturesService } from "@games/car-a-lot/services/track-features.service";
 import { BabylonCanvasComponent } from "@games/shared/components/babylon-canvas/babylon-canvas";
 import { FullscreenToggleComponent } from "@games/shared/components/fullscreen-toggle/fullscreen-toggle";
+import { GameLoadingComponent } from "@games/shared/components/game-loading/game-loading";
+import { GameLifecycleState } from "@games/shared/models/game.models";
 import { DisposableRegistryService } from "@games/shared/services/disposable-registry.service";
 import { GameLoopService } from "@games/shared/services/game-loop.service";
 import { InputService } from "@games/shared/services/input.service";
@@ -56,6 +68,7 @@ import { InputService } from "@games/shared/services/input.service";
 			DrivingHudComponent,
 			ColorSelectorComponent,
 			FullscreenToggleComponent,
+			GameLoadingComponent,
 			MobileControlsComponent
 		],
 		templateUrl: "./car-a-lot-game.html",
@@ -67,9 +80,27 @@ export class CarALotGameComponent
 	protected readonly isFullscreen: WritableSignal<boolean> =
 		signal<boolean>(false);
 
+	/** Whether the game is still loading (scene initializing). */
+	protected readonly isLoading: Signal<boolean> =
+		computed(
+			() =>
+				this.gameLoop.state() === GameLifecycleState.Initializing);
+
 	/** Destroy ref for cleanup registration. */
 	private readonly destroyRef: DestroyRef =
 		inject(DestroyRef);
+
+	/** Active route for reading game metadata. */
+	private readonly route: ActivatedRoute =
+		inject(ActivatedRoute);
+
+	/** Game name from route data for the loading screen. */
+	protected readonly gameName: string =
+		this.route.snapshot.data["gameName"] as string ?? "Car-a-Lot";
+
+	/** Game icon from route data for the loading screen. */
+	protected readonly gameIcon: string =
+		this.route.snapshot.data["gameIcon"] as string ?? "🏎️";
 
 	/** Disposable registry for batch service cleanup. */
 	private readonly disposableRegistry: DisposableRegistryService =

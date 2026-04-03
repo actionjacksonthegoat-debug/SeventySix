@@ -59,8 +59,8 @@ try {
 	docker compose -f docker-compose.yml -f docker-compose.override.yml down --remove-orphans 2>$null
 
 	Write-Host "Stopping SeventySixCommerce dev containers..." -ForegroundColor Yellow
-	docker compose -f seventysixcommerce-tanstack/docker-compose.dev.yml down 2>$null
-	docker compose -f seventysixcommerce-sveltekit/docker-compose.dev.yml down 2>$null
+	docker compose -f ECommerce/seventysixcommerce-tanstack/docker-compose.dev.yml down 2>$null
+	docker compose -f ECommerce/seventysixcommerce-sveltekit/docker-compose.dev.yml down 2>$null
 
 	if ($All) {
 		Write-Host ""

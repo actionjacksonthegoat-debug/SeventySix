@@ -675,8 +675,8 @@ Each test type runs in a **fully isolated Docker environment** — you never nee
 | Environment | Compose File | Ports (DB / App) |
 |-------------|-------------|-------------------|
 | Dev (main) | `docker-compose.yml` | 5433 / 4200 + 7074 |
-| Dev (SvelteKit) | `seventysixcommerce-sveltekit/docker-compose.dev.yml` | 5439 / 3001 |
-| Dev (TanStack) | `seventysixcommerce-tanstack/docker-compose.dev.yml` | 5438 / 3002 |
+| Dev (SvelteKit) | `ECommerce/seventysixcommerce-sveltekit/docker-compose.dev.yml` | 5439 / 3001 |
+| Dev (TanStack) | `ECommerce/seventysixcommerce-tanstack/docker-compose.dev.yml` | 5438 / 3002 |
 | E2E (main) | `docker-compose.e2e.yml` | 5434 / 4201 + 7174 |
 | Load (main) | `docker-compose.loadtest.yml` | 5435 / 4202 + 7175 |
 | Load (SvelteKit) | `docker-compose.loadtest-svelte.yml` | 5442 / 3021 |

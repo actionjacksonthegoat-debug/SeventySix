@@ -133,8 +133,8 @@ if ($IncludeVolumes) {
 
 	# Also stop SeventySixCommerce dev containers to release volume locks
 	if ($Environment -eq "dev" -or $Environment -eq "all") {
-		docker compose -f seventysixcommerce-tanstack/docker-compose.dev.yml down --remove-orphans 2>&1 | Out-Null
-		docker compose -f seventysixcommerce-sveltekit/docker-compose.dev.yml down --remove-orphans 2>&1 | Out-Null
+		docker compose -f ECommerce/seventysixcommerce-tanstack/docker-compose.dev.yml down --remove-orphans 2>&1 | Out-Null
+		docker compose -f ECommerce/seventysixcommerce-sveltekit/docker-compose.dev.yml down --remove-orphans 2>&1 | Out-Null
 	}
 	$ErrorActionPreference = "Stop"
 	Pop-Location

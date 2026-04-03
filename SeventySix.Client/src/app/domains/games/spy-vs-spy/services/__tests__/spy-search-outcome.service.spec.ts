@@ -15,13 +15,13 @@ import {
 	SpyIdentity,
 	TrapType
 } from "@games/spy-vs-spy/models/spy-vs-spy.models";
-import type { SearchOutcome } from "@games/spy-vs-spy/models/spy-vs-spy.models";
+import type { LifeChange, SearchOutcome } from "@games/spy-vs-spy/models/spy-vs-spy.models";
 import { SearchService } from "@games/spy-vs-spy/services/search.service";
 import { SpyAiService } from "@games/spy-vs-spy/services/spy-ai.service";
 import { SpyDamageHandlerService } from "@games/spy-vs-spy/services/spy-damage-handler.service";
 import { SpyInventoryService } from "@games/spy-vs-spy/services/spy-inventory.service";
 import { SpySearchHandlerService } from "@games/spy-vs-spy/services/spy-search-handler.service";
-import { type LifeChange, SpySearchOutcomeService } from "@games/spy-vs-spy/services/spy-search-outcome.service";
+import { SpySearchOutcomeService } from "@games/spy-vs-spy/services/spy-search-outcome.service";
 import { TrapService } from "@games/spy-vs-spy/services/trap.service";
 
 describe("SpySearchOutcomeService",

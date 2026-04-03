@@ -1,9 +1,12 @@
 @use "variables" as vars;
+@use "mixins" as mixins;
+
+:host {
+	@include mixins.flex-fill-column();
+}
 
 .svelte-dashboard {
-	height: 100%;
-	display: flex;
-	flex-direction: column;
+	@include mixins.flex-fill-column();
 
 	.dashboard-content {
 		flex: 1;
@@ -36,26 +39,26 @@
 				overflow: hidden;
 			}
 		}
-	}
 
-	.tab-content {
-		display: flex;
-		flex-direction: column;
+		.tab-content {
+			display: flex;
+			flex-direction: column;
 
-		&.full-height {
-			flex: 1;
-			overflow: hidden;
-
-			app-grafana-dashboard-embed {
+			&.full-height {
 				flex: 1;
-				display: flex;
-				min-height: 0;
-			}
-		}
+				overflow: hidden;
 
-		&:not(.full-height) {
-			padding: vars.$spacing-lg;
-			overflow-y: auto;
+				app-grafana-dashboard-embed {
+					flex: 1;
+					display: flex;
+					min-height: 0;
+				}
+			}
+
+			&:not(.full-height) {
+				padding: vars.$spacing-lg;
+				overflow-y: auto;
+			}
 		}
 	}
 

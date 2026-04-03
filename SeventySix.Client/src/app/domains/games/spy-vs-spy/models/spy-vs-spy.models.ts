@@ -473,3 +473,16 @@ export interface SearchOutcome
 	/** The remedy type found or consumed, if any. */
 	readonly remedyType?: RemedyType;
 }
+
+/**
+ * Describes life-signal changes that the orchestrator should apply
+ * after a search outcome is processed.
+ */
+export interface LifeChange
+{
+	/** Player identity affected. */
+	readonly identity: SpyIdentity;
+
+	/** Delta to apply to the player's life count (negative = lost life, positive = gained). */
+	readonly delta: number;
+}

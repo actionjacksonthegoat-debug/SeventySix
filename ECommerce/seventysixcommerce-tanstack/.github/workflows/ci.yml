@@ -1,0 +1,49 @@
+name: SeventySixCommerce TanStack CI
+
+on:
+  push:
+    branches: [main]
+    paths: ['ECommerce/seventysixcommerce-tanstack/**']
+  pull_request:
+    branches: [main]
+    paths: ['ECommerce/seventysixcommerce-tanstack/**']
+
+defaults:
+  run:
+    working-directory: seventysixcommerce-tanstack
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: SeventySixCommerce
+          POSTGRES_PASSWORD: seventysixcommerce_ci
+          POSTGRES_DB: SeventySixCommerce
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U SeventySixCommerce"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql://SeventySixCommerce:seventysixcommerce_ci@localhost:5432/SeventySixCommerce
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: ECommerce/seventysixcommerce-tanstack/package-lock.json
+
+      - run: npm ci
+      - run: npm run build
+      - run: npx tsc --noEmit
+      - run: npx vitest run

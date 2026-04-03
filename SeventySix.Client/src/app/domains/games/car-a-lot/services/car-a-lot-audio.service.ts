@@ -167,8 +167,8 @@ export class CarALotAudioService extends BaseGameAudioService
 		playArpeggio(
 			this.audioContext,
 			this.sfxGain,
-			[0, 7, 12].map((s) =>
-				SfxBuilder.semitoneToFrequency(880, s)),
+			[0, 7, 12].map((semitone) =>
+				SfxBuilder.semitoneToFrequency(880, semitone)),
 			{
 				waveform: "sine",
 				noteSpacing: 0.08,
@@ -260,8 +260,8 @@ export class CarALotAudioService extends BaseGameAudioService
 		playArpeggio(
 			this.audioContext,
 			this.sfxGain,
-			[0, 4, 7, 12, 16].map((s) =>
-				SfxBuilder.semitoneToFrequency(BASE_FREQ, s)),
+			[0, 4, 7, 12, 16].map((semitone) =>
+				SfxBuilder.semitoneToFrequency(BASE_FREQ, semitone)),
 			{
 				waveform: "square",
 				noteSpacing: 0.2,

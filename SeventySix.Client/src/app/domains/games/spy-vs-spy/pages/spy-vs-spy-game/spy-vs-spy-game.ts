@@ -20,11 +20,13 @@ import {
 	viewChild,
 	WritableSignal
 } from "@angular/core";
-import { RouterLink } from "@angular/router";
+import { ActivatedRoute, RouterLink } from "@angular/router";
 import type { PickingInfo } from "@babylonjs/core/Collisions/pickingInfo";
 import { Scene } from "@babylonjs/core/scene";
 import { BabylonCanvasComponent } from "@games/shared/components/babylon-canvas/babylon-canvas";
 import { FullscreenToggleComponent } from "@games/shared/components/fullscreen-toggle/fullscreen-toggle";
+import { GameLoadingComponent } from "@games/shared/components/game-loading/game-loading";
+import { GameLifecycleState } from "@games/shared/models/game.models";
 import { DisposableRegistryService } from "@games/shared/services/disposable-registry.service";
 import { GameLoopService } from "@games/shared/services/game-loop.service";
 import { InputService } from "@games/shared/services/input.service";
@@ -76,7 +78,13 @@ interface MobileTapEvent
 		selector: "app-spy-vs-spy-game",
 		standalone: true,
 		changeDetection: ChangeDetectionStrategy.OnPush,
-		imports: [BabylonCanvasComponent, FullscreenToggleComponent, RouterLink, SpyMobileControlsComponent],
+		imports: [
+			BabylonCanvasComponent,
+			FullscreenToggleComponent,
+			GameLoadingComponent,
+			RouterLink,
+			SpyMobileControlsComponent
+		],
 		templateUrl: "./spy-vs-spy-game.html",
 		styleUrl: "./spy-vs-spy-game.scss",
 		host: {
@@ -88,6 +96,19 @@ interface MobileTapEvent
 	})
 export class SpyVsSpyGameComponent
 {
+	/** Route reference for reading game metadata. */
+	private readonly route: ActivatedRoute =
+		inject(ActivatedRoute);
+
+	/** Name of the current game from route data. */
+	protected readonly gameName: string =
+		(this.route.snapshot.data["gameName"] as string | undefined) ?? "Spy And Fly";
+
+	/** Icon of the current game from route data. */
+	protected readonly gameIcon: string =
+		(this.route.snapshot.data["gameIcon"] as string | undefined)
+			?? "\uD83D\uDD75\uFE0F";
+
 	/** Whether the browser is currently in fullscreen mode. */
 	protected readonly isFullscreen: WritableSignal<boolean> =
 		signal<boolean>(false);
@@ -150,6 +171,11 @@ export class SpyVsSpyGameComponent
 	/** Game loop service. */
 	private readonly gameLoop: GameLoopService =
 		inject(GameLoopService);
+
+	/** Whether the game is still initializing (loading screen visible). */
+	protected readonly isLoading: Signal<boolean> =
+		computed(() =>
+			this.gameLoop.state() === GameLifecycleState.Initializing);
 
 	/** Game flow orchestration service. */
 	private readonly spyFlowService: SpyFlowService =

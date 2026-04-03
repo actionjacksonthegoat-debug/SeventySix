@@ -36,5 +36,6 @@ export type {
 export { GameLifecycleState } from "./models/game.models";
 
 /* ─── Components ───────────────────────────────────────────────────── */
-export { BabylonCanvasComponent } from "./components/babylon-canvas/babylon-canvas.component";
-export { FullscreenToggleComponent } from "./components/fullscreen-toggle/fullscreen-toggle.component";
+export { BabylonCanvasComponent } from "./components/babylon-canvas/babylon-canvas";
+export { FullscreenToggleComponent } from "./components/fullscreen-toggle/fullscreen-toggle";
+export { GameLoadingComponent } from "./components/game-loading/game-loading";

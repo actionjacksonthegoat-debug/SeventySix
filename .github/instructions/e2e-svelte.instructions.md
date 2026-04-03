@@ -1,6 +1,6 @@
 ---
 description: SvelteKit E2E test patterns and rules
-applyTo: "**/seventysixcommerce-sveltekit/e2e/**/*.ts"
+applyTo: "**/ECommerce/seventysixcommerce-sveltekit/e2e/**/*.ts"
 ---
 
 # SvelteKit E2E Instructions

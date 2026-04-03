@@ -276,7 +276,7 @@ E2E, load tests, and DAST scans run in **fully isolated Docker environments** �
 
 | File                             | Scope                                          |
 | -------------------------------- | ---------------------------------------------- |
-| `formatting.instructions.md`     | `**/SeventySix.Client/src/**/*.{ts,html,scss,css},**/SeventySix.Server/**/*.cs,**/seventysixcommerce-sveltekit/src/**/*.{ts,svelte,css},**/seventysixcommerce-tanstack/src/**/*.{ts,tsx,css}` — naming, structure, operators  |
+| `formatting.instructions.md`     | `**/SeventySix.Client/src/**/*.{ts,html,scss,css},**/SeventySix.Server/**/*.cs,**/ECommerce/seventysixcommerce-sveltekit/src/**/*.{ts,svelte,css},**/ECommerce/seventysixcommerce-tanstack/src/**/*.{ts,tsx,css}` — naming, structure, operators  |
 | `angular.instructions.md`        | `**/SeventySix.Client/src/**/*.ts`             |
 | `csharp.instructions.md`         | `**/SeventySix.Server/**/*.cs`                 |
 | `security.instructions.md`       | `**/SeventySix.Client/src/**/*.ts,**/SeventySix.Server/**/*.cs` — ProblemDetails, auth errors   |
@@ -288,10 +288,10 @@ E2E, load tests, and DAST scans run in **fully isolated Docker environments** �
 | `games.instructions.md`          | `**/SeventySix.Client/src/app/domains/games/**/*.{ts,html,scss}` — game domain architecture |
 | `babylonjs.instructions.md`      | `**/SeventySix.Client/src/app/domains/games/**/*.ts` — Babylon.js patterns & CC BY 4.0 |
 | `load-testing.instructions.md`   | `**/SeventySix.Client/load-testing/**/*.js` — k6 load test patterns |
-| `sveltekit.instructions.md`      | `**/seventysixcommerce-sveltekit/src/**/*.{ts,svelte,css}` — SvelteKit sandbox patterns |
-| `tanstack.instructions.md`       | `**/seventysixcommerce-tanstack/src/**/*.{ts,tsx,css}` — TanStack Start sandbox patterns |
-| `e2e-svelte.instructions.md`    | `**/seventysixcommerce-sveltekit/e2e/**/*.ts` — SvelteKit E2E patterns |
-| `e2e-tanstack.instructions.md`  | `**/seventysixcommerce-tanstack/e2e/**/*.ts` — TanStack E2E patterns |
+| `sveltekit.instructions.md`      | `**/ECommerce/seventysixcommerce-sveltekit/src/**/*.{ts,svelte,css}` — SvelteKit sandbox patterns |
+| `tanstack.instructions.md`       | `**/ECommerce/seventysixcommerce-tanstack/src/**/*.{ts,tsx,css}` — TanStack Start sandbox patterns |
+| `e2e-svelte.instructions.md`    | `**/ECommerce/seventysixcommerce-sveltekit/e2e/**/*.ts` — SvelteKit E2E patterns |
+| `e2e-tanstack.instructions.md`  | `**/ECommerce/seventysixcommerce-tanstack/e2e/**/*.ts` — TanStack E2E patterns |
 
 ## Prompt Index (Invoked via `/prompt-name` in Chat)
 

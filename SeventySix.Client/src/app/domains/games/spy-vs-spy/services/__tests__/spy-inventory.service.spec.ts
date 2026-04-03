@@ -11,7 +11,7 @@ import {
 	SpyIdentity
 } from "@games/spy-vs-spy/models/spy-vs-spy.models";
 
-import { SpyInventoryService } from "../spy-inventory.service";
+import { SpyInventoryService } from "@games/spy-vs-spy/services/spy-inventory.service";
 
 describe("SpyInventoryService",
 	() =>

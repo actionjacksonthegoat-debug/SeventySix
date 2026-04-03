@@ -281,64 +281,95 @@ export class SfxBuilder
 
 		if (this.envelope != null)
 		{
-			const envStart: number =
-				now + this.envelopeOffset;
-
-			gain.gain.setValueAtTime(
-				this.envelope.attack,
-				envStart);
-
-			if (this.envelope.exponential)
-			{
-				gain.gain.exponentialRampToValueAtTime(
-					this.envelope.release,
-					envStart + this.envelope.duration);
-			}
-			else
-			{
-				gain.gain.linearRampToValueAtTime(
-					this.envelope.release,
-					envStart + this.envelope.duration);
-			}
+			this.applyEnvelope(gain, now);
 		}
 
 		for (const tone of this.tones)
 		{
-			const osc: OscillatorNode =
-				this.ctx.createOscillator();
-			osc.type =
-				tone.waveform;
+			this.scheduleTone(tone, gain, now);
+		}
+	}
 
-			const start: number =
-				now + tone.startOffset;
+	/**
+	 * Applies the configured envelope to the gain node.
+	 * @param gain
+	 * The gain node to shape.
+	 * @param now
+	 * The current audio context time.
+	 */
+	private applyEnvelope(gain: GainNode, now: number): void
+	{
+		if (this.envelope == null)
+		{
+			return;
+		}
 
-			if (tone.sweep != null)
+		const envStart: number =
+			now + this.envelopeOffset;
+
+		gain.gain.setValueAtTime(
+			this.envelope.attack,
+			envStart);
+
+		if (this.envelope.exponential)
+		{
+			gain.gain.exponentialRampToValueAtTime(
+				this.envelope.release,
+				envStart + this.envelope.duration);
+		}
+		else
+		{
+			gain.gain.linearRampToValueAtTime(
+				this.envelope.release,
+				envStart + this.envelope.duration);
+		}
+	}
+
+	/**
+	 * Creates, configures, and schedules a single oscillator tone.
+	 * @param tone
+	 * The tone configuration.
+	 * @param gain
+	 * The parent gain node to connect to.
+	 * @param now
+	 * The current audio context time.
+	 */
+	private scheduleTone(tone: ToneConfig, gain: GainNode, now: number): void
+	{
+		const osc: OscillatorNode =
+			this.ctx.createOscillator();
+		osc.type =
+			tone.waveform;
+
+		const start: number =
+			now + tone.startOffset;
+
+		if (tone.sweep != null)
+		{
+			osc.frequency.setValueAtTime(tone.frequency, start);
+
+			if (tone.sweep.exponential)
 			{
-				osc.frequency.setValueAtTime(tone.frequency, start);
-
-				if (tone.sweep.exponential)
-				{
-					osc.frequency.exponentialRampToValueAtTime(
-						tone.sweep.target,
-						start + tone.sweep.duration);
-				}
-				else
-				{
-					osc.frequency.linearRampToValueAtTime(
-						tone.sweep.target,
-						start + tone.sweep.duration);
-				}
+				osc.frequency.exponentialRampToValueAtTime(
+					tone.sweep.target,
+					start + tone.sweep.duration);
 			}
 			else
 			{
-				osc.frequency.value =
-					tone.frequency;
+				osc.frequency.linearRampToValueAtTime(
+					tone.sweep.target,
+					start + tone.sweep.duration);
 			}
-
-			osc.connect(gain);
-			osc.start(start);
-			osc.stop(start + tone.duration);
 		}
+		else
+		{
+			osc.frequency.value =
+				tone.frequency;
+		}
+
+		osc.connect(gain);
+		osc.start(start);
+		osc.stop(start + tone.duration);
 	}
 
 	/**

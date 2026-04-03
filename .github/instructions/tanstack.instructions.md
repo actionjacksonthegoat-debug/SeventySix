@@ -1,6 +1,6 @@
 ---
 description: TanStack Start patterns and rules for the SeventySixCommerce sandbox site
-applyTo: "**/seventysixcommerce-tanstack/src/**/*.{ts,tsx,css}"
+applyTo: "**/ECommerce/seventysixcommerce-tanstack/src/**/*.{ts,tsx,css}"
 ---
 
 # TanStack Start Instructions
@@ -32,7 +32,7 @@ applyTo: "**/seventysixcommerce-tanstack/src/**/*.{ts,tsx,css}"
 ## Project Structure
 
 ```
-seventysixcommerce-tanstack/src/
+ECommerce/seventysixcommerce-tanstack/src/
 ├── components/
 │   ├── layout/           # Header, Footer, Layout
 │   ├── seo/              # JsonLd, structured data helpers

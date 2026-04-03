@@ -12,10 +12,28 @@
 
 	.logs-content {
 		flex: 1;
+		min-height: 0;
 		padding: vars.$spacing-lg;
 		display: flex;
 		flex-direction: column;
 		gap: vars.$spacing-md;
+		overflow: hidden;
+
+		mat-card {
+			flex: 1;
+			min-height: 0;
+			overflow: hidden;
+			display: flex;
+			flex-direction: column;
+
+			::ng-deep .mat-mdc-card-content {
+				flex: 1;
+				min-height: 0;
+				overflow: hidden;
+				display: flex;
+				flex-direction: column;
+			}
+		}
 	}
 
 	.filters-row {
@@ -32,7 +50,9 @@
 	}
 
 	.table-container {
-		overflow-x: auto;
+		flex: 1;
+		min-height: 0;
+		overflow: auto;
 	}
 
 	.log-table {

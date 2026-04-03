@@ -69,7 +69,7 @@ export const GAMES_ROUTES: Routes =
 				import("./car-a-lot/pages/car-a-lot-game/car-a-lot-game").then(
 					(module) => module.CarALotGameComponent),
 			title: "Car-a-Lot - SeventySix",
-			data: { breadcrumb: "Car-a-Lot" },
+			data: { breadcrumb: "Car-a-Lot", gameIcon: "🏎️", gameName: "Car-a-Lot" },
 			providers: [
 				AudioContextService,
 				BabylonEngineService,
@@ -98,7 +98,7 @@ export const GAMES_ROUTES: Routes =
 				import("./spy-vs-spy/pages/spy-vs-spy-game/spy-vs-spy-game").then(
 					(module) => module.SpyVsSpyGameComponent),
 			title: "Spy And Fly - SeventySix",
-			data: { breadcrumb: "Spy And Fly" },
+			data: { breadcrumb: "Spy And Fly", gameIcon: "🕵️", gameName: "Spy And Fly" },
 			providers: [
 				AirplaneService,
 				AudioContextService,

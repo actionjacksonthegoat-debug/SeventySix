@@ -195,17 +195,8 @@ export class SpyAiService
 		}
 
 		/* Process stun timer. */
-		if (this.stunRemaining > 0)
+		if (this.processStunTimer(deltaTime))
 		{
-			this.stunRemaining =
-				Math.max(0, this.stunRemaining - deltaTime);
-
-			if (this.stunRemaining <= 0)
-			{
-				this.currentStunState =
-					StunState.None;
-			}
-
 			return;
 		}
 
@@ -238,6 +229,32 @@ export class SpyAiService
 
 		/* Move toward goal. */
 		this.pathfinding.moveTowardGoal(aiNode, deltaTime);
+	}
+
+	/**
+	 * Processes the stun timer, decrementing and clearing state when expired.
+	 * @param deltaTime
+	 * Frame delta in seconds.
+	 * @returns
+	 * True if the AI is still stunned and should skip further processing.
+	 */
+	private processStunTimer(deltaTime: number): boolean
+	{
+		if (this.stunRemaining <= 0)
+		{
+			return false;
+		}
+
+		this.stunRemaining =
+			Math.max(0, this.stunRemaining - deltaTime);
+
+		if (this.stunRemaining <= 0)
+		{
+			this.currentStunState =
+				StunState.None;
+		}
+
+		return true;
 	}
 
 	/**

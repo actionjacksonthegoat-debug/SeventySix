@@ -39,11 +39,12 @@ import {
 } from "@games/spy-vs-spy/models/spy-vs-spy.models";
 import type {
 	FurnitureDefinition,
+	LifeChange,
 	SearchAttemptResult,
+	SearchOutcome,
 	SpyPhysicsState,
 	SpyState
 } from "@games/spy-vs-spy/models/spy-vs-spy.models";
-import type { SearchOutcome } from "@games/spy-vs-spy/models/spy-vs-spy.models";
 import { AirplaneService } from "@games/spy-vs-spy/services/airplane.service";
 import { CombatService } from "@games/spy-vs-spy/services/combat.service";
 import { ExplosionService } from "@games/spy-vs-spy/services/explosion.service";
@@ -58,7 +59,7 @@ import { SpyDamageHandlerService } from "@games/spy-vs-spy/services/spy-damage-h
 import { SpyInventoryService } from "@games/spy-vs-spy/services/spy-inventory.service";
 import { SpyPhysicsService } from "@games/spy-vs-spy/services/spy-physics.service";
 import { SpySearchHandlerService } from "@games/spy-vs-spy/services/spy-search-handler.service";
-import { type LifeChange, SpySearchOutcomeService } from "@games/spy-vs-spy/services/spy-search-outcome.service";
+import { SpySearchOutcomeService } from "@games/spy-vs-spy/services/spy-search-outcome.service";
 import { TrapService } from "@games/spy-vs-spy/services/trap.service";
 import { TurnService } from "@games/spy-vs-spy/services/turn.service";
 

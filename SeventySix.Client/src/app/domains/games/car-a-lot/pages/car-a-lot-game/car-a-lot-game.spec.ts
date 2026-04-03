@@ -5,6 +5,7 @@
 
 import { provideZonelessChangeDetection } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
+import { provideRouter } from "@angular/router";
 import { Vector3 } from "@babylonjs/core/Maths/math.vector";
 import { KART_GROUND_OFFSET } from "@games/car-a-lot/constants/car-a-lot.constants";
 import {
@@ -49,6 +50,7 @@ describe("CarALotGameComponent",
 							imports: [CarALotGameComponent],
 							providers: [
 								provideZonelessChangeDetection(),
+								provideRouter([]),
 								AudioContextService,
 								BabylonEngineService,
 								CharacterBuilderService,

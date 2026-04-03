@@ -1,4 +1,8 @@
 <div class="game-container full-width-page">
+	@if (isLoading()) {
+		<app-game-loading [gameName]="gameName" [gameIcon]="gameIcon" />
+	}
+
 	<div
 		class="canvas-wrapper"
 		data-testid="spy-vs-spy-canvas">

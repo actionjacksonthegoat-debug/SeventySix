@@ -315,28 +315,8 @@ export class SpyPhysicsService implements IGamePhysicsService, IDisposable
 		const spyNode: TransformNode =
 			this.spyNode;
 
-		let moveX: number = 0;
-		let moveZ: number = 0;
-
-		if (keys["ArrowUp"] === true || keys["w"] === true)
-		{
-			moveZ += SPY_MOVE_SPEED * deltaTime;
-		}
-
-		if (keys["ArrowDown"] === true || keys["s"] === true)
-		{
-			moveZ -= SPY_MOVE_SPEED * deltaTime;
-		}
-
-		if (keys["ArrowLeft"] === true || keys["a"] === true)
-		{
-			moveX -= SPY_MOVE_SPEED * deltaTime;
-		}
-
-		if (keys["ArrowRight"] === true || keys["d"] === true)
-		{
-			moveX += SPY_MOVE_SPEED * deltaTime;
-		}
+		const { moveX, moveZ } =
+			this.calculateInputVelocity(keys, deltaTime);
 
 		if (moveX === 0 && moveZ === 0)
 		{
@@ -370,6 +350,45 @@ export class SpyPhysicsService implements IGamePhysicsService, IDisposable
 		{
 			spyNode.position.z = nextZ;
 		}
+	}
+
+	/**
+	 * Calculates the movement velocity from keyboard input.
+	 * @param keys
+	 * Pressed key map.
+	 * @param deltaTime
+	 * Frame delta in seconds.
+	 * @returns
+	 * The X and Z movement deltas.
+	 */
+	private calculateInputVelocity(
+		keys: Record<string, boolean>,
+		deltaTime: number): { moveX: number; moveZ: number; }
+	{
+		let moveX: number = 0;
+		let moveZ: number = 0;
+
+		if (keys["ArrowUp"] === true || keys["w"] === true)
+		{
+			moveZ += SPY_MOVE_SPEED * deltaTime;
+		}
+
+		if (keys["ArrowDown"] === true || keys["s"] === true)
+		{
+			moveZ -= SPY_MOVE_SPEED * deltaTime;
+		}
+
+		if (keys["ArrowLeft"] === true || keys["a"] === true)
+		{
+			moveX -= SPY_MOVE_SPEED * deltaTime;
+		}
+
+		if (keys["ArrowRight"] === true || keys["d"] === true)
+		{
+			moveX += SPY_MOVE_SPEED * deltaTime;
+		}
+
+		return { moveX, moveZ };
 	}
 
 	/**

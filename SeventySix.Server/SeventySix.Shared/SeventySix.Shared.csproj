@@ -26,7 +26,7 @@
 		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.1" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.5" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.5" />
-		<PackageReference Include="WolverineFx" Version="5.24.0" />
+		<PackageReference Include="WolverineFx" Version="5.27.0" />
 		<PackageReference Include="Roslynator.Formatting.Analyzers" Version="4.15.0">
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 			<PrivateAssets>all</PrivateAssets>

@@ -122,7 +122,7 @@ updates:
 
   # npm — SeventySixCommerce SvelteKit sandbox
   - package-ecosystem: "npm"
-    directory: "/seventysixcommerce-sveltekit"
+    directory: "/ECommerce/seventysixcommerce-sveltekit"
     schedule:
       interval: "weekly"
       day: "monday"
@@ -139,7 +139,7 @@ updates:
 
   # npm — SeventySixCommerce TanStack sandbox
   - package-ecosystem: "npm"
-    directory: "/seventysixcommerce-tanstack"
+    directory: "/ECommerce/seventysixcommerce-tanstack"
     schedule:
       interval: "weekly"
       day: "monday"
@@ -156,7 +156,7 @@ updates:
 
   # Docker — SvelteKit sandbox Dockerfile
   - package-ecosystem: "docker"
-    directory: "/seventysixcommerce-sveltekit"
+    directory: "/ECommerce/seventysixcommerce-sveltekit"
     schedule:
       interval: "weekly"
       day: "monday"
@@ -167,7 +167,7 @@ updates:
 
   # Docker — TanStack sandbox Dockerfile
   - package-ecosystem: "docker"
-    directory: "/seventysixcommerce-tanstack"
+    directory: "/ECommerce/seventysixcommerce-tanstack"
     schedule:
       interval: "weekly"
       day: "monday"
