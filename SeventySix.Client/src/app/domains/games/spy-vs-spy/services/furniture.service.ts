@@ -16,6 +16,8 @@ import { Mesh } from "@babylonjs/core/Meshes/mesh";
 import { MeshBuilder } from "@babylonjs/core/Meshes/meshBuilder";
 import { Scene } from "@babylonjs/core/scene";
 
+import { distanceXZ } from "@games/shared/utilities/math.utility";
+
 import {
 	FURNITURE_BARREL_COLOR,
 	FURNITURE_BOOKSHELF_COLOR,
@@ -115,12 +117,8 @@ export class FurnitureService
 			const worldZ: number =
 				room.centerZ + furniture.offsetZ;
 
-			const deltaX: number =
-				positionX - worldX;
-			const deltaZ: number =
-				positionZ - worldZ;
 			const distance: number =
-				Math.sqrt(deltaX * deltaX + deltaZ * deltaZ);
+				distanceXZ(positionX, positionZ, worldX, worldZ);
 
 			if (distance < nearestDistance)
 			{

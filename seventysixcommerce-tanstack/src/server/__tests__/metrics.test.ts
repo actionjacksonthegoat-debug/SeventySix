@@ -1,33 +1,28 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-const mockCounterAdd =
+const mockRecordPageView =
 	vi.fn();
-const mockHistogramRecord =
+const mockRecordCartAdd =
 	vi.fn();
-const mockCreateCounter =
-	vi
-		.fn()
-		.mockReturnValue(
-			{ add: mockCounterAdd });
-const mockCreateHistogram =
-	vi
-		.fn()
-		.mockReturnValue(
-			{ record: mockHistogramRecord });
-const mockGetMeter =
-	vi
-		.fn()
-		.mockReturnValue(
-			{
-				createCounter: mockCreateCounter,
-				createHistogram: mockCreateHistogram
-			});
+const mockRecordCartRemove =
+	vi.fn();
+const mockRecordCheckoutStart =
+	vi.fn();
+const mockRecordCheckoutComplete =
+	vi.fn();
 
-vi.mock("@opentelemetry/api", () => (
+vi.mock("@seventysixcommerce/shared/observability", () => (
 	{
-		metrics: {
-			getMeter: mockGetMeter
-		}
+		createCommerceMetrics: vi
+			.fn()
+			.mockReturnValue(
+				{
+					recordPageView: mockRecordPageView,
+					recordCartAdd: mockRecordCartAdd,
+					recordCartRemove: mockRecordCartRemove,
+					recordCheckoutStart: mockRecordCheckoutStart,
+					recordCheckoutComplete: mockRecordCheckoutComplete
+				})
 	}));
 
 describe("metrics",
@@ -86,10 +81,8 @@ describe("metrics",
 				const metricsModule =
 					await import("~/server/metrics");
 				metricsModule.recordPageView("home");
-				expect(mockCounterAdd)
-					.toHaveBeenCalledWith(
-						1,
-						{ "page.type": "home" });
+				expect(mockRecordPageView)
+					.toHaveBeenCalledWith("home");
 			});
 
 		it("should increment cart add counter with product slug",
@@ -98,10 +91,8 @@ describe("metrics",
 				const metricsModule =
 					await import("~/server/metrics");
 				metricsModule.recordCartAdd("test-product");
-				expect(mockCounterAdd)
-					.toHaveBeenCalledWith(
-						1,
-						{ "product.slug": "test-product" });
+				expect(mockRecordCartAdd)
+					.toHaveBeenCalledWith("test-product");
 			});
 
 		it("should record checkout duration in histogram",
@@ -110,9 +101,7 @@ describe("metrics",
 				const metricsModule =
 					await import("~/server/metrics");
 				metricsModule.recordCheckoutComplete(1500);
-				expect(mockHistogramRecord)
-					.toHaveBeenCalledWith(
-						1500,
-						expect.any(Object));
+				expect(mockRecordCheckoutComplete)
+					.toHaveBeenCalledWith(1500);
 			});
 	});

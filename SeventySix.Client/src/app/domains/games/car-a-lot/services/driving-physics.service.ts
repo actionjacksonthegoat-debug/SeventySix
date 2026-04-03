@@ -13,6 +13,7 @@ import {
 	TURN_SPEED
 } from "@games/car-a-lot/constants/car-a-lot.constants";
 import { DrivingState } from "@games/car-a-lot/models/car-a-lot.models";
+import type { IGamePhysicsService } from "@games/shared/models/game-service.interfaces";
 
 /** Conversion factor from mph to meters per second. */
 const MPH_TO_MPS: number = 0.44704;
@@ -40,7 +41,7 @@ const DELTA_TIME_CAP: number = 0.1;
  * Handles acceleration, steering, gravity, and jump mechanics.
  */
 @Injectable()
-export class DrivingPhysicsService
+export class DrivingPhysicsService implements IGamePhysicsService
 {
 	private currentSpeedMps: number = 0;
 	private headingRadians: number = 0;

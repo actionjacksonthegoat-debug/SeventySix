@@ -5,6 +5,8 @@
 
 import { computed, Injectable, Signal, signal, WritableSignal } from "@angular/core";
 import { CharacterType, RaceState } from "@games/car-a-lot/models/car-a-lot.models";
+import { CountdownHelper, CountdownTickResult } from "@games/shared/utilities/countdown.utility";
+import { formatTimerValue } from "@games/shared/utilities/timer-display.utility";
 
 /** Valid state transitions in the race lifecycle. */
 const VALID_TRANSITIONS: ReadonlyMap<RaceState, readonly RaceState[]> =
@@ -46,8 +48,9 @@ export class RaceStateService
 	private readonly _countdownValue: WritableSignal<number> =
 		signal(-1);
 
-	/** Accumulated fractional countdown time. */
-	private countdownAccumulator: number = 0;
+	/** Reusable countdown timer for pre-race sequence. */
+	private readonly countdown: CountdownHelper =
+		new CountdownHelper(3);
 
 	/** Read-only signal for current race state. */
 	readonly currentState: Signal<RaceState> =
@@ -101,20 +104,7 @@ export class RaceStateService
 	readonly finalTime: Signal<string> =
 		computed(
 			() =>
-			{
-				const total: number =
-					this._elapsedTime();
-				const minutes: number =
-					Math.floor(total / 60);
-				const seconds: number =
-					Math.floor(total % 60);
-
-				return `${minutes}:${
-					seconds
-						.toString()
-						.padStart(2, "0")
-				}`;
-			});
+				formatTimerValue(this._elapsedTime()));
 
 	/**
 	 * Contextual rescue message based on race state and character.
@@ -157,8 +147,8 @@ export class RaceStateService
 	 */
 	startCountdown(): void
 	{
+		this.countdown.reset();
 		this._countdownValue.set(3);
-		this.countdownAccumulator = 0;
 	}
 
 	/**
@@ -171,27 +161,20 @@ export class RaceStateService
 	 */
 	tickCountdown(deltaSeconds: number): boolean
 	{
-		const current: number =
-			this._countdownValue();
-
-		if (current <= 0)
+		if (this._countdownValue() <= 0)
 		{
 			return false;
 		}
 
-		this.countdownAccumulator += deltaSeconds;
+		const result: CountdownTickResult =
+			this.countdown.update(deltaSeconds);
 
-		if (this.countdownAccumulator >= 1)
+		if (result.valueChanged)
 		{
-			this.countdownAccumulator = 0;
-			const next: number =
-				current - 1;
-			this._countdownValue.set(next);
-
-			return next === 0;
+			this._countdownValue.set(this.countdown.currentValue);
 		}
 
-		return false;
+		return result.completed;
 	}
 
 	/**
@@ -273,7 +256,7 @@ export class RaceStateService
 		this._currentSpeed.set(0);
 		this._elapsedTime.set(0);
 		this._countdownValue.set(-1);
-		this.countdownAccumulator = 0;
+		this.countdown.reset();
 	}
 }
 

@@ -74,6 +74,20 @@ All games MUST use shared services where they exist. Do NOT duplicate lifecycle 
 | `InputService` | Keyboard/touch polling via `keys` dictionary | Yes |
 | `BabylonEngineService` | Engine creation and canvas binding | Yes |
 | `AssetManagerService` | Asset container loading and caching | When loading models |
+| `DisposableRegistryService` | Collects `IDisposable` services and disposes them in order | Yes |
+| `AudioContextService` | Manages `AudioContext` lifecycle, master gain, and audio node helpers | When game has audio |
+
+### Shared Interfaces (`games/shared/models/game-service.interfaces.ts`)
+
+| Interface | Extends | Purpose |
+|-----------|---------|---------|
+| `IDisposable` | — | `dispose()` contract for resource cleanup |
+| `IGameAudioService` | `IDisposable` | `initialize()`, `setMasterVolume()`, `dispose()` |
+| `IGameCameraService` | `IDisposable` | `initialize(scene, canvas)`, `getCamera()`, `dispose()` |
+| `IGamePhysicsService` | — | `update(deltaTime)` per-frame physics |
+| `IGameSceneService` | `IDisposable` | `initialize(scene)`, `dispose()` |
+
+Games implement these interfaces on their game-specific services. `DisposableRegistryService` accepts any `IDisposable` and calls `dispose()` on all registered services during teardown.
 
 ## Game Lifecycle Pattern
 
@@ -136,6 +150,6 @@ games/
 ```
 
 Then:
-1. Add route in `games.routes.ts` with route-scoped `providers[]` (include shared services: `GameLoopService`, `InputService`, `BabylonEngineService`)
+1. Add route in `games.routes.ts` with route-scoped `providers[]` (include shared services: `GameLoopService`, `InputService`, `BabylonEngineService`, `DisposableRegistryService`, `AudioContextService` if game has audio)
 2. Add game card in `games-landing.html`
 3. Add E2E selectors/routes/page-text in fixtures

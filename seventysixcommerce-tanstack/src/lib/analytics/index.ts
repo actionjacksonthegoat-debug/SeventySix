@@ -1,31 +1,26 @@
 /**
  * Analytics barrel export.
- * Re-exports consent management, GA4 core, and ecommerce event tracking.
+ * Re-exports all analytics utilities from the shared commerce package.
+ * @see {@link @seventysixcommerce/shared/analytics}
  */
 export {
 	CONSENT_COOKIE_MAX_AGE,
 	CONSENT_COOKIE_NAME,
 	type ConsentState,
+	type Ga4Item,
 	getConsentState,
-	revokeConsent,
-	setConsentState
-} from "./consent";
-
-export {
 	initAnalytics,
 	isAnalyticsActive,
 	resetAnalytics,
-	trackPageView
-} from "./analytics";
-
-export {
-	type Ga4Item,
+	revokeConsent,
+	setConsentState,
 	trackAddToCart,
 	trackBeginCheckout,
+	trackPageView,
 	trackPurchase,
 	trackRemoveFromCart,
 	trackSearch,
 	trackSelectItem,
 	trackViewItem,
 	trackViewItemList
-} from "./ecommerce-events";
+} from "@seventysixcommerce/shared/analytics";

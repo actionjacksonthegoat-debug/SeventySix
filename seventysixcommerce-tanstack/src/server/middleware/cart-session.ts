@@ -1,7 +1,7 @@
 import { createMiddleware } from "@tanstack/react-start";
 import { getCookie, setCookie } from "@tanstack/react-start/server";
 import {
-	CART_COOKIE_NAME,
+	CART_SESSION_COOKIE,
 	CART_SESSION_MAX_AGE_SECONDS
 } from "~/lib/constants";
 
@@ -16,13 +16,13 @@ export const cartSessionMiddleware =
 			async ({ next }) =>
 			{
 				let sessionId: string =
-					getCookie(CART_COOKIE_NAME) ?? "";
+					getCookie(CART_SESSION_COOKIE) ?? "";
 
 				if (sessionId === "")
 				{
 					sessionId =
 						crypto.randomUUID();
-					setCookie(CART_COOKIE_NAME, sessionId,
+					setCookie(CART_SESSION_COOKIE, sessionId,
 						{
 							httpOnly: true,
 							secure: true,

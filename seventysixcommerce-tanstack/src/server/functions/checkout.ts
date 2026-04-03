@@ -1,7 +1,13 @@
+import {
+	buildShippingOptions,
+	buildStripeLineItems,
+	calculateSubtotal,
+	createCheckoutSnapshot,
+	createMockOrder,
+	type ValidatedCartRow
+} from "@seventysixcommerce/shared/checkout";
 import { createServerFn } from "@tanstack/react-start";
 import { eq } from "drizzle-orm";
-import type Stripe from "stripe";
-import { FREE_SHIPPING_THRESHOLD, MOCK_ORDER_EMAIL, STANDARD_SHIPPING_CENTS } from "~/lib/constants";
 import { now } from "~/lib/date";
 import { db } from "../db";
 import * as schema from "../db/schema";
@@ -96,54 +102,29 @@ export const createCheckoutSession =
 						`The following items are no longer available: ${names}`);
 				}
 
-				const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] =
-					cartRows.map((row) => ({
-						price_data: {
-							currency: "usd",
-							product_data: {
-								name: row.productTitle,
-								description: row.variantName,
-								images: [row.thumbnailUrl]
-							},
-							unit_amount: Math.round(
-								parseFloat(String(row.currentPrice)) * 100)
-						},
-						quantity: row.quantity
-					}));
+				const validatedRows: ValidatedCartRow[] =
+					cartRows.map(
+						(row) => ({
+							productId: row.productId,
+							variantId: row.variantId,
+							quantity: row.quantity,
+							productTitle: row.productTitle,
+							variantName: row.variantName,
+							imageUrl: row.thumbnailUrl,
+							currentPrice: row.currentPrice
+						}));
 
+				const lineItems =
+					buildStripeLineItems(validatedRows);
 				const subtotal: number =
-					cartRows.reduce(
-						(sum, row) =>
-							sum + parseFloat(String(row.currentPrice)) * row.quantity,
-						0);
-
-				const shippingOptions: Stripe.Checkout.SessionCreateParams.ShippingOption[] =
-					[
-						{
-							shipping_rate_data: {
-								type: "fixed_amount",
-								fixed_amount: {
-									amount: subtotal >= FREE_SHIPPING_THRESHOLD
-										? 0
-										: STANDARD_SHIPPING_CENTS,
-									currency: "usd"
-								},
-								display_name: subtotal >= FREE_SHIPPING_THRESHOLD
-									? "Free Shipping"
-									: "Standard Shipping"
-							}
-						}
-					];
+					calculateSubtotal(validatedRows);
+				const shippingOptions =
+					buildShippingOptions(subtotal);
 
 				const baseUrl: string =
 					process.env.BASE_URL ?? "https://localhost:3002";
 
-				const session: Awaited<
-					ReturnType<
-					typeof getStripe extends () => infer S
-						? S extends { checkout: { sessions: { create: (...args: never[]) => infer R; }; }; } ? () => R
-							: never
-						: never>> =
+				const session =
 					await getStripe().checkout.sessions.create(
 						{
 							mode: "payment",
@@ -155,27 +136,24 @@ export const createCheckoutSession =
 							metadata: { cartSessionId: context.cartSessionId }
 						});
 
-				// In mock mode, simulate webhook — create the order immediately since no real Stripe webhook fires
-				// Save immutable snapshot of validated cart items for tamper-proof fulfillment
-				await db
-					.insert(schema.checkoutSnapshots)
-					.values(
-						{
-							stripeSessionId: session.id,
-							cartSessionId: context.cartSessionId,
-							items: cartRows.map((row) => ({
-								productId: row.productId,
-								variantId: row.variantId,
-								quantity: row.quantity,
-								unitPrice: String(row.currentPrice)
-							}))
-						});
+				await createCheckoutSnapshot(
+					db,
+					session.id,
+					context.cartSessionId,
+					validatedRows);
 
 				// In mock mode, simulate webhook — create the order immediately since no real Stripe webhook fires
 				if (process.env.MOCK_SERVICES !== "false")
 				{
+					const amountTotal: number | null =
+						"amount_total" in session
+							? (session.amount_total as number | null)
+							: null;
+
 					await createMockOrder(
-						session as unknown as Stripe.Checkout.Session,
+						db,
+						session.id,
+						amountTotal,
 						context.cartSessionId);
 
 					recordCheckoutComplete(
@@ -195,77 +173,3 @@ export const createCheckoutSession =
 
 				return { url: session.url };
 			});
-
-/**
- * Creates an order directly in mock mode (no real Stripe webhook fires).
- * Mirrors the core transaction from webhook's handleCheckoutCompleted.
- */
-async function createMockOrder(
-	session: Stripe.Checkout.Session,
-	cartSessionId: string): Promise<void>
-{
-	await db.transaction(
-		async (tx) =>
-		{
-			const [order] =
-				await tx
-					.insert(schema.orders)
-					.values(
-						{
-							stripeSessionId: session.id,
-							cartSessionId,
-							email: MOCK_ORDER_EMAIL,
-							status: "paid",
-							totalAmount: String(
-								((session.amount_total ?? 0) / 100).toFixed(2)),
-							shippingAddress: null,
-							shippingName: "Mock Customer"
-						})
-					.returning();
-
-			if (order === null || order === undefined)
-			{
-				throw new Error("Failed to create mock order");
-			}
-
-			const cartItems: { productId: string; variantId: string; quantity: number; unitPrice: string; }[] =
-				await tx
-					.select(
-						{
-							productId: schema.cartItems.productId,
-							variantId: schema.cartItems.variantId,
-							quantity: schema.cartItems.quantity,
-							unitPrice: schema.cartItems.unitPrice
-						})
-					.from(schema.cartItems)
-					.where(eq(schema.cartItems.sessionId, cartSessionId));
-
-			if (cartItems.length > 0)
-			{
-				await tx
-					.insert(schema.orderItems)
-					.values(
-						cartItems.map((item) => ({
-							orderId: order.id,
-							productId: item.productId,
-							variantId: item.variantId,
-							quantity: item.quantity,
-							unitPrice: String(item.unitPrice)
-						})));
-			}
-
-			await tx
-				.delete(schema.cartItems)
-				.where(eq(schema.cartItems.sessionId, cartSessionId));
-
-			await tx
-				.insert(schema.orderStatusHistory)
-				.values(
-					{
-						orderId: order.id,
-						fromStatus: null,
-						toStatus: "paid",
-						reason: "Mock checkout completed"
-					});
-		});
-}

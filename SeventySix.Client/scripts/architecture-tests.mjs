@@ -1208,7 +1208,8 @@ test("services should have less than 12 public methods", async () =>
 		"notification.service.ts", // Toast notifications - all methods serve user feedback (13 methods, single domain)
 		"particle-effects.service.ts", // Particle effects - all methods serve visual effects (8 methods, overcounted by regex)
 		"spy-ai.service.ts", // Spy vs Spy AI opponent - all methods serve AI decision-making lifecycle (13 methods, single domain)
-		"spy-audio.service.ts" // Spy vs Spy audio synthesis - all methods serve game audio (overcounted by regex matching if/for)
+		"spy-audio.service.ts", // Spy vs Spy audio synthesis - all methods serve game audio (overcounted by regex matching if/for)
+		"spy-physics.service.ts" // Spy vs Spy physics - all methods serve movement/collision physics (overcounted by regex matching if/for)
 	];
 
 	// TanStack Query callback method names (not public API methods)
@@ -1729,6 +1730,7 @@ test("Files should have single primary export (with approved exceptions)", async
 		/\.builder\.ts$/,
 		/\.models\.ts$/,
 		/\.types\.ts$/,
+		/\.interfaces\.ts$/,
 		/generated-open-api/,
 		/app-error\.model\.ts$/,
 		/environment\.interface\.ts$/,

@@ -181,6 +181,9 @@ export class SpyAiService
 			return;
 		}
 
+		const aiNode: TransformNode =
+			this.aiNode;
+
 		this.wantsCombat = false;
 		this.wantsSearch = false;
 
@@ -208,9 +211,9 @@ export class SpyAiService
 
 		/* Check if player spy is nearby for combat. */
 		const currentX: number =
-			this.aiNode.position.x;
+			aiNode.position.x;
 		const currentZ: number =
-			this.aiNode.position.z;
+			aiNode.position.z;
 
 		this.checkCombatOpportunity(
 			currentX,
@@ -234,7 +237,7 @@ export class SpyAiService
 			unsearchedFurnitureIds);
 
 		/* Move toward goal. */
-		this.pathfinding.moveTowardGoal(this.aiNode!, deltaTime);
+		this.pathfinding.moveTowardGoal(aiNode, deltaTime);
 	}
 
 	/**

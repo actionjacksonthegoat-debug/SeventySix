@@ -6,6 +6,7 @@
 
 import { provideZonelessChangeDetection } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
+import { AudioContextService } from "@games/shared/services/audio-context.service";
 import { SpyAudioService } from "./spy-audio.service";
 
 describe("SpyAudioService",
@@ -20,6 +21,7 @@ describe("SpyAudioService",
 					{
 						providers: [
 							provideZonelessChangeDetection(),
+							AudioContextService,
 							SpyAudioService
 						]
 					});

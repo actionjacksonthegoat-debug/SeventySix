@@ -16,6 +16,7 @@ import { CarALotAudioService } from "@games/car-a-lot/services/car-a-lot-audio.s
 import { CoinService } from "@games/car-a-lot/services/coin.service";
 import { RaceStateService } from "@games/car-a-lot/services/race-state.service";
 import { InputService } from "@games/shared/services/input.service";
+import { formatTimerValue } from "@games/shared/utilities/timer-display.utility";
 
 /** Driving heads-up display overlay for Car-a-Lot. */
 @Component(
@@ -65,20 +66,8 @@ export class DrivingHudComponent
 	protected readonly formattedTime: Signal<string> =
 		computed(
 			() =>
-			{
-				const totalSeconds: number =
-					this.raceState.elapsedTime();
-				const minutes: number =
-					Math.floor(totalSeconds / 60);
-				const seconds: number =
-					Math.floor(totalSeconds % 60);
-
-				return `${minutes}:${
-					seconds
-						.toString()
-						.padStart(2, "0")
-				}`;
-			});
+				formatTimerValue(
+					this.raceState.elapsedTime()));
 
 	/**
 	 * Toggle audio mute on/off.

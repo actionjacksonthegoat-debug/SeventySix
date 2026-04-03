@@ -18,6 +18,8 @@ import { Scene } from "@babylonjs/core/scene";
 import "@babylonjs/core/Shaders/default.vertex";
 import "@babylonjs/core/Shaders/default.fragment";
 
+import { distanceXZ } from "@games/shared/utilities/math.utility";
+
 import {
 	ISLAND_ROOMS,
 	ITEM_COLLECTION_RADIUS
@@ -214,12 +216,8 @@ export class ItemService
 				continue;
 			}
 
-			const deltaX: number =
-				positionX - item.positionX;
-			const deltaZ: number =
-				positionZ - item.positionZ;
 			const distance: number =
-				Math.sqrt(deltaX * deltaX + deltaZ * deltaZ);
+				distanceXZ(positionX, positionZ, item.positionX, item.positionZ);
 
 			if (distance <= ITEM_COLLECTION_RADIUS)
 			{

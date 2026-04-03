@@ -146,7 +146,12 @@ export class AirplaneService
 			this.airplaneMesh = merged;
 		}
 
-		return this.airplaneMesh!;
+		if (this.airplaneMesh == null)
+		{
+			throw new Error("AirplaneService: failed to merge airplane meshes.");
+		}
+
+		return this.airplaneMesh;
 	}
 
 	/**

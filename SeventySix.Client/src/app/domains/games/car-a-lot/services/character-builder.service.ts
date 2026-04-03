@@ -218,8 +218,17 @@ export class CharacterBuilderService
 		type: CharacterType,
 		seated: boolean): TransformNode
 	{
+		if (this.scene == null)
+		{
+			throw new Error(
+				"CharacterBuilderService: scene not initialized.");
+		}
+
+		const scene: Scene =
+			this.scene;
+
 		const root: TransformNode =
-			new TransformNode("char-root", this.scene!);
+			new TransformNode("char-root", scene);
 
 		root.parent =
 			this.kartRoot;
@@ -229,7 +238,7 @@ export class CharacterBuilderService
 		this.charRoot = root;
 
 		this.buildCharacterMeshes(
-			this.scene!,
+			scene,
 			root,
 			type,
 			seated);

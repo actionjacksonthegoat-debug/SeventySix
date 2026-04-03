@@ -8,7 +8,9 @@ import { ElementRef, provideZonelessChangeDetection, signal, WritableSignal } fr
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideRouter } from "@angular/router";
 import { BABYLON_ENGINE_OPTIONS } from "@games/shared/constants/engine.constants";
+import { AudioContextService } from "@games/shared/services/audio-context.service";
 import { BabylonEngineService } from "@games/shared/services/babylon-engine.service";
+import { DisposableRegistryService } from "@games/shared/services/disposable-registry.service";
 import { GameLoopService } from "@games/shared/services/game-loop.service";
 import { InputService } from "@games/shared/services/input.service";
 import { SpyGameState, TrapType } from "@games/spy-vs-spy/models/spy-vs-spy.models";
@@ -164,8 +166,10 @@ describe("SpyVsSpyGameComponent",
 								provideZonelessChangeDetection(),
 								provideRouter([]),
 								AirplaneService,
+								AudioContextService,
 								BabylonEngineService,
 								CombatService,
+								DisposableRegistryService,
 								ExplosionService,
 								FurnitureService,
 								GameLoopService,
@@ -678,63 +682,19 @@ describe("SpyVsSpyGameComponent",
 							.toHaveBeenCalledOnce();
 					});
 
-				it("should dispose all owned services during cleanup",
+				it("should restart flow service and delegate disposal to the registry",
 					() =>
 					{
 						const restartSpy: Mock =
 							vi.spyOn(component["spyFlowService"], "restartGame");
-						const gameLoopDisposeSpy: Mock =
-							vi.spyOn(component["gameLoop"], "dispose");
-						const inputDisposeSpy: Mock =
-							vi.spyOn(component["inputService"], "dispose");
-						const aiDisposeSpy: Mock =
-							vi.spyOn(component["spyAi"], "dispose");
-						const physicsDisposeSpy: Mock =
-							vi.spyOn(component["spyPhysics"], "dispose");
-						const itemDisposeSpy: Mock =
-							vi.spyOn(component["itemService"], "dispose");
-						const trapDisposeSpy: Mock =
-							vi.spyOn(component["trapService"], "dispose");
-						const audioDisposeSpy: Mock =
-							vi.spyOn(component["audioService"], "dispose");
-						const builderDisposeSpy: Mock =
-							vi.spyOn(component["spyBuilder"], "dispose");
-						const cameraDisposeSpy: Mock =
-							vi.spyOn(component["spyCamera"], "dispose");
-						const furnitureDisposeSpy: Mock =
-							vi.spyOn(component["furnitureService"], "dispose");
-						const islandDisposeSpy: Mock =
-							vi.spyOn(component["islandScene"], "dispose");
-						const minimapDisposeSpy: Mock =
-							vi.spyOn(component["minimapService"], "dispose");
+						const disposeAllSpy: Mock =
+							vi.spyOn(component["disposableRegistry"], "disposeAll");
 
 						component["cleanup"]();
 
 						expect(restartSpy)
 							.toHaveBeenCalledOnce();
-						expect(gameLoopDisposeSpy)
-							.toHaveBeenCalledOnce();
-						expect(inputDisposeSpy)
-							.toHaveBeenCalledOnce();
-						expect(aiDisposeSpy)
-							.toHaveBeenCalledOnce();
-						expect(physicsDisposeSpy)
-							.toHaveBeenCalledOnce();
-						expect(itemDisposeSpy)
-							.toHaveBeenCalledOnce();
-						expect(trapDisposeSpy)
-							.toHaveBeenCalledOnce();
-						expect(audioDisposeSpy)
-							.toHaveBeenCalledOnce();
-						expect(builderDisposeSpy)
-							.toHaveBeenCalledOnce();
-						expect(cameraDisposeSpy)
-							.toHaveBeenCalledOnce();
-						expect(furnitureDisposeSpy)
-							.toHaveBeenCalledOnce();
-						expect(islandDisposeSpy)
-							.toHaveBeenCalledOnce();
-						expect(minimapDisposeSpy)
+						expect(disposeAllSpy)
 							.toHaveBeenCalledOnce();
 					});
 			});

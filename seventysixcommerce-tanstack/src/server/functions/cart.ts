@@ -1,10 +1,15 @@
+import {
+	addToCart as sharedAddToCart,
+	type CartItemRow,
+	getCartItems,
+	removeCartItem,
+	updateCartItemQuantity
+} from "@seventysixcommerce/shared/cart";
 import { createServerFn } from "@tanstack/react-start";
-import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { CART_SESSION_MAX_AGE_SECONDS, MAX_CART_ITEM_QUANTITY } from "~/lib/constants";
 import { futureDate } from "~/lib/date";
 import { db } from "../db";
-import * as schema from "../db/schema";
 import { queueLog } from "../log-forwarder";
 import { recordCartAdd, recordCartRemove } from "../metrics";
 import { cartSessionMiddleware } from "../middleware/cart-session";
@@ -32,6 +37,39 @@ export interface CartResponse
 	subtotal: string;
 }
 
+/** Transforms shared cart rows into the TanStack CartResponse shape. */
+function toCartResponse(rows: CartItemRow[]): CartResponse
+{
+	let subtotal: number = 0;
+
+	const items: CartItem[] =
+		rows.map(
+			(row) =>
+			{
+				const lineTotal: number =
+					parseFloat(row.unitPrice) * row.quantity;
+				subtotal += lineTotal;
+
+				return {
+					id: row.id,
+					productId: row.productId,
+					variantId: row.variantId,
+					productTitle: row.productTitle,
+					variantName: row.variantName,
+					thumbnailUrl: row.imageUrl,
+					quantity: row.quantity,
+					unitPrice: row.unitPrice,
+					lineTotal: lineTotal.toFixed(2)
+				};
+			});
+
+	return {
+		items,
+		itemCount: items.reduce((sum, item) => sum + item.quantity, 0),
+		subtotal: subtotal.toFixed(2)
+	};
+}
+
 /** Retrieves the current cart contents with product details and pricing. */
 export const getCart =
 	createServerFn(
@@ -41,48 +79,10 @@ export const getCart =
 		.handler(
 			async ({ context }): Promise<CartResponse> =>
 			{
-				const rows =
-					await db
-						.select(
-							{
-								id: schema.cartItems.id,
-								productId: schema.cartItems.productId,
-								variantId: schema.cartItems.variantId,
-								productTitle: schema.products.title,
-								variantName: schema.productVariants.name,
-								thumbnailUrl: schema.products.thumbnailUrl,
-								quantity: schema.cartItems.quantity,
-								unitPrice: schema.cartItems.unitPrice
-							})
-						.from(schema.cartItems)
-						.innerJoin(
-							schema.products,
-							eq(schema.cartItems.productId, schema.products.id))
-						.innerJoin(
-							schema.productVariants,
-							eq(schema.cartItems.variantId, schema.productVariants.id))
-						.where(eq(schema.cartItems.sessionId, context.cartSessionId));
+				const rows: CartItemRow[] =
+					await getCartItems(db, context.cartSessionId);
 
-				const items: CartItem[] =
-					rows.map((row) => ({
-						...row,
-						unitPrice: String(row.unitPrice),
-						lineTotal: (
-							parseFloat(String(row.unitPrice)) * row.quantity)
-							.toFixed(2)
-					}));
-
-				const subtotal: number =
-					items.reduce(
-						(sum, item) =>
-							sum + parseFloat(item.unitPrice) * item.quantity,
-						0);
-
-				return {
-					items,
-					itemCount: items.reduce((sum, item) => sum + item.quantity, 0),
-					subtotal: subtotal.toFixed(2)
-				};
+				return toCartResponse(rows);
 			});
 
 /** Adds a product variant to the cart, creating or incrementing quantity. */
@@ -109,101 +109,21 @@ export const addToCart =
 		.handler(
 			async ({ data, context }): Promise<CartResponse> =>
 			{
-				const product =
-					await db
-						.select(
-							{
-								id: schema.products.id,
-								basePrice: schema.products.basePrice
-							})
-						.from(schema.products)
-						.where(
-							and(
-								eq(schema.products.id, data.productId),
-								eq(schema.products.isActive, true)))
-						.limit(1);
+				const expiresAt: Date =
+					futureDate(CART_SESSION_MAX_AGE_SECONDS);
 
-				if (product.length === 0)
+				const result =
+					await sharedAddToCart(
+						db,
+						context.cartSessionId,
+						data.productId,
+						data.variantId,
+						data.quantity,
+						expiresAt);
+
+				if (!result.success)
 				{
-					throw new Error("Product not found or inactive");
-				}
-
-				const variant =
-					await db
-						.select(
-							{ id: schema.productVariants.id })
-						.from(schema.productVariants)
-						.where(
-							and(
-								eq(schema.productVariants.id, data.variantId),
-								eq(schema.productVariants.productId, data.productId),
-								eq(schema.productVariants.isAvailable, true)))
-						.limit(1);
-
-				if (variant.length === 0)
-				{
-					throw new Error("Variant not found or unavailable");
-				}
-
-				// Ensure cart session exists in DB
-				const sessionExists =
-					await db
-						.select(
-							{ id: schema.cartSessions.id })
-						.from(schema.cartSessions)
-						.where(eq(schema.cartSessions.id, context.cartSessionId))
-						.limit(1);
-
-				if (sessionExists.length === 0)
-				{
-					await db
-						.insert(schema.cartSessions)
-						.values(
-							{
-								id: context.cartSessionId,
-								expiresAt: futureDate(CART_SESSION_MAX_AGE_SECONDS)
-							});
-				}
-
-				// Check if item already exists in cart
-				const existingItem =
-					await db
-						.select(
-							{
-								id: schema.cartItems.id,
-								quantity: schema.cartItems.quantity
-							})
-						.from(schema.cartItems)
-						.where(
-							and(
-								eq(schema.cartItems.sessionId, context.cartSessionId),
-								eq(schema.cartItems.variantId, data.variantId)))
-						.limit(1);
-
-				if (existingItem.length > 0)
-				{
-					const newQty: number =
-						Math.min(
-							existingItem[0]!.quantity + data.quantity,
-							MAX_CART_ITEM_QUANTITY);
-					await db
-						.update(schema.cartItems)
-						.set(
-							{ quantity: newQty })
-						.where(eq(schema.cartItems.id, existingItem[0]!.id));
-				}
-				else
-				{
-					await db
-						.insert(schema.cartItems)
-						.values(
-							{
-								sessionId: context.cartSessionId,
-								productId: data.productId,
-								variantId: data.variantId,
-								quantity: data.quantity,
-								unitPrice: String(product[0]!.basePrice)
-							});
+					throw new Error(result.error ?? "Failed to add to cart");
 				}
 
 				recordCartAdd(data.productId);
@@ -213,8 +133,10 @@ export const addToCart =
 						message: `Cart add: product ${data.productId}, variant ${data.variantId}, qty ${data.quantity}`
 					});
 
-				return getCart(
-					{ data: undefined });
+				const rows: CartItemRow[] =
+					await getCartItems(db, context.cartSessionId);
+
+				return toCartResponse(rows);
 			});
 
 /** Updates the quantity of an item (0 = remove). */
@@ -238,31 +160,8 @@ export const updateCartItem =
 		.handler(
 			async ({ data, context }): Promise<CartResponse> =>
 			{
-				const item =
-					await db
-						.select(
-							{ id: schema.cartItems.id })
-						.from(schema.cartItems)
-						.innerJoin(
-							schema.cartSessions,
-							eq(schema.cartItems.sessionId, schema.cartSessions.id))
-						.where(
-							and(
-								eq(schema.cartItems.id, data.cartItemId),
-								eq(schema.cartItems.sessionId, context.cartSessionId)))
-						.limit(1);
-
-				if (item.length === 0)
-				{
-					throw new Error("Cart item not found");
-				}
-
 				if (data.quantity === 0)
 				{
-					await db
-						.delete(schema.cartItems)
-						.where(eq(schema.cartItems.id, data.cartItemId));
-
 					recordCartRemove(data.cartItemId);
 					queueLog(
 						{
@@ -270,17 +169,17 @@ export const updateCartItem =
 							message: `Cart remove: item ${data.cartItemId}`
 						});
 				}
-				else
-				{
-					await db
-						.update(schema.cartItems)
-						.set(
-							{ quantity: data.quantity })
-						.where(eq(schema.cartItems.id, data.cartItemId));
-				}
 
-				return getCart(
-					{ data: undefined });
+				await updateCartItemQuantity(
+					db,
+					context.cartSessionId,
+					data.cartItemId,
+					data.quantity);
+
+				const rows: CartItemRow[] =
+					await getCartItems(db, context.cartSessionId);
+
+				return toCartResponse(rows);
 			});
 
 /** Removes an item from the cart. */
@@ -298,12 +197,10 @@ export const removeFromCart =
 		.handler(
 			async ({ data, context }): Promise<CartResponse> =>
 			{
-				await db
-					.delete(schema.cartItems)
-					.where(
-						and(
-							eq(schema.cartItems.id, data.cartItemId),
-							eq(schema.cartItems.sessionId, context.cartSessionId)));
+				await removeCartItem(
+					db,
+					context.cartSessionId,
+					data.cartItemId);
 
 				recordCartRemove(data.cartItemId);
 				queueLog(
@@ -312,6 +209,8 @@ export const removeFromCart =
 						message: `Cart remove: item ${data.cartItemId}`
 					});
 
-				return getCart(
-					{ data: undefined });
+				const rows: CartItemRow[] =
+					await getCartItems(db, context.cartSessionId);
+
+				return toCartResponse(rows);
 			});

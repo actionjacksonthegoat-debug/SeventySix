@@ -11,6 +11,8 @@
 
 import { Injectable } from "@angular/core";
 import { TransformNode } from "@babylonjs/core/Meshes/transformNode";
+import type { IDisposable, IGamePhysicsService } from "@games/shared/models/game-service.interfaces";
+import { distanceXZ } from "@games/shared/utilities/math.utility";
 import {
 	AIRSTRIP_CENTER_X,
 	AIRSTRIP_CENTER_Z,
@@ -93,7 +95,7 @@ interface WallSegmentParams
  * Domain-scoped — provided via route `providers` array.
  */
 @Injectable()
-export class SpyPhysicsService
+export class SpyPhysicsService implements IGamePhysicsService, IDisposable
 {
 	/** Bound spy TransformNode. */
 	private spyNode: TransformNode | null = null;
@@ -226,7 +228,7 @@ export class SpyPhysicsService
 		const deltaZ: number =
 			this.moveTargetZ - currentZ;
 		const distance: number =
-			Math.sqrt(deltaX * deltaX + deltaZ * deltaZ);
+			distanceXZ(currentX, currentZ, this.moveTargetX, this.moveTargetZ);
 
 		if (distance <= TAP_TARGET_REACHED_DISTANCE)
 		{
@@ -305,6 +307,14 @@ export class SpyPhysicsService
 		keys: Record<string, boolean>,
 		deltaTime: number): void
 	{
+		if (this.spyNode == null)
+		{
+			return;
+		}
+
+		const spyNode: TransformNode =
+			this.spyNode;
+
 		let moveX: number = 0;
 		let moveZ: number = 0;
 
@@ -334,14 +344,14 @@ export class SpyPhysicsService
 		}
 
 		/* Auto-face the direction of movement. */
-		this.spyNode!.rotation.y =
+		spyNode.rotation.y =
 			Math.atan2(moveX, moveZ);
 
 		/* Apply movement with wall collision (slide along walls). */
 		const currentX: number =
-			this.spyNode!.position.x;
+			spyNode.position.x;
 		const currentZ: number =
-			this.spyNode!.position.z;
+			spyNode.position.z;
 
 		/* Try X-axis movement first. */
 		const nextX: number =
@@ -349,16 +359,16 @@ export class SpyPhysicsService
 
 		if (!this.collidesWithWall(nextX, currentZ))
 		{
-			this.spyNode!.position.x = nextX;
+			spyNode.position.x = nextX;
 		}
 
 		/* Try Z-axis movement. */
 		const nextZ: number =
 			currentZ + moveZ;
 
-		if (!this.collidesWithWall(this.spyNode!.position.x, nextZ))
+		if (!this.collidesWithWall(spyNode.position.x, nextZ))
 		{
-			this.spyNode!.position.z = nextZ;
+			spyNode.position.z = nextZ;
 		}
 	}
 
@@ -670,6 +680,19 @@ export class SpyPhysicsService
 		this.currentStunState =
 			StunState.None;
 		this.stunRemaining = 0;
+	}
+
+	/**
+	 * Resets physics state to initial values without unbinding from the scene node.
+	 * Clears stun state and move targets.
+	 */
+	reset(): void
+	{
+		this.currentStunState =
+			StunState.None;
+		this.stunRemaining = 0;
+		this.moveTargetX = null;
+		this.moveTargetZ = null;
 	}
 
 	/**

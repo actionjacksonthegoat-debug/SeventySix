@@ -17,7 +17,9 @@ import { RaceStateService } from "@games/car-a-lot/services/race-state.service";
 import { RoadCollisionService } from "@games/car-a-lot/services/road-collision.service";
 import { TrackBuilderService } from "@games/car-a-lot/services/track-builder.service";
 import { TrackFeaturesService } from "@games/car-a-lot/services/track-features.service";
+import { AudioContextService } from "@games/shared/services/audio-context.service";
 import { BabylonEngineService } from "@games/shared/services/babylon-engine.service";
+import { DisposableRegistryService } from "@games/shared/services/disposable-registry.service";
 import { GameLoopService } from "@games/shared/services/game-loop.service";
 import { InputService } from "@games/shared/services/input.service";
 import { AirplaneService } from "@games/spy-vs-spy/services/airplane.service";
@@ -38,9 +40,11 @@ import { SpyAudioService } from "@games/spy-vs-spy/services/spy-audio.service";
 import { SpyBuilderService } from "@games/spy-vs-spy/services/spy-builder.service";
 import { SpyCameraService } from "@games/spy-vs-spy/services/spy-camera.service";
 import { SpyDamageHandlerService } from "@games/spy-vs-spy/services/spy-damage-handler.service";
+import { SpyInventoryService } from "@games/spy-vs-spy/services/spy-inventory.service";
 import { SpyPathfindingService } from "@games/spy-vs-spy/services/spy-pathfinding.service";
 import { SpyPhysicsService } from "@games/spy-vs-spy/services/spy-physics.service";
 import { SpySearchHandlerService } from "@games/spy-vs-spy/services/spy-search-handler.service";
+import { SpySearchOutcomeService } from "@games/spy-vs-spy/services/spy-search-outcome.service";
 import { TrapService } from "@games/spy-vs-spy/services/trap.service";
 import { TurnService } from "@games/spy-vs-spy/services/turn.service";
 
@@ -67,8 +71,10 @@ export const GAMES_ROUTES: Routes =
 			title: "Car-a-Lot - SeventySix",
 			data: { breadcrumb: "Car-a-Lot" },
 			providers: [
+				AudioContextService,
 				BabylonEngineService,
 				CharacterBuilderService,
+				DisposableRegistryService,
 				GameFlowService,
 				GameLoopService,
 				DrivingPhysicsService,
@@ -95,8 +101,10 @@ export const GAMES_ROUTES: Routes =
 			data: { breadcrumb: "Spy And Fly" },
 			providers: [
 				AirplaneService,
+				AudioContextService,
 				BabylonEngineService,
 				CombatService,
+				DisposableRegistryService,
 				ExplosionService,
 				FurnitureService,
 				GameLoopService,
@@ -115,8 +123,10 @@ export const GAMES_ROUTES: Routes =
 				SpyCameraService,
 				SpyDamageHandlerService,
 				SpyFlowService,
+				SpyInventoryService,
 				SpyPathfindingService,
 				SpySearchHandlerService,
+				SpySearchOutcomeService,
 				SpyPhysicsService,
 				TrapService,
 				TurnService

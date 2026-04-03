@@ -1,3 +1,4 @@
+import { DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE } from "@seventysixcommerce/shared/constants";
 import { createServerFn } from "@tanstack/react-start";
 import { and, count, desc, eq } from "drizzle-orm";
 import { z } from "zod";
@@ -90,8 +91,8 @@ export const getProducts =
 						.number()
 						.int()
 						.positive()
-						.max(50)
-						.default(24)
+						.max(MAX_PAGE_SIZE)
+						.default(DEFAULT_PAGE_SIZE)
 				}))
 		.handler(
 			async ({ data }): Promise<PaginatedResult<Product>> =>

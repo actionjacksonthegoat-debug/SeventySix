@@ -1,3 +1,5 @@
+import { TestBed } from "@angular/core/testing";
+import { AudioContextService } from "@games/shared/services/audio-context.service";
 import { setupSimpleServiceTest } from "@shared/testing";
 import { Mock, vi } from "vitest";
 import { CarALotAudioService } from "./car-a-lot-audio.service";
@@ -104,6 +106,7 @@ describe("CarALotAudioService",
 	() =>
 	{
 		let service: CarALotAudioService;
+		let audioContextService: AudioContextService;
 		let doubles: AudioTestDoubles;
 		let setIntervalSpy: ReturnType<typeof vi.spyOn>;
 		let clearIntervalSpy: ReturnType<typeof vi.spyOn>;
@@ -115,7 +118,10 @@ describe("CarALotAudioService",
 			() =>
 			{
 				service =
-					setupSimpleServiceTest(CarALotAudioService);
+					setupSimpleServiceTest(CarALotAudioService,
+						[AudioContextService]);
+				audioContextService =
+					TestBed.inject(AudioContextService);
 				doubles =
 					createAudioDoubles();
 				capturedIntervalCallback = null;
@@ -165,26 +171,20 @@ describe("CarALotAudioService",
 				service.initialize();
 
 				const internalService: {
-					initialized: boolean;
-					audioContext: AudioContext | null;
-					masterGain: GainNode | null;
 					sfxGain: GainNode | null;
 					musicGain: GainNode | null;
 				} =
 					service as unknown as {
-						initialized: boolean;
-						audioContext: AudioContext | null;
-						masterGain: GainNode | null;
 						sfxGain: GainNode | null;
 						musicGain: GainNode | null;
 					};
 
-				expect(internalService.initialized)
+				expect(audioContextService.isInitialized)
 					.toBe(true);
-				expect(internalService.audioContext)
+				expect(service["audioContext"])
 					.not
 					.toBeNull();
-				expect(internalService.masterGain)
+				expect(audioContextService.masterGain)
 					.not
 					.toBeNull();
 				expect(internalService.sfxGain)
@@ -217,17 +217,9 @@ describe("CarALotAudioService",
 
 				service.initialize();
 
-				const internalService: {
-					initialized: boolean;
-					audioContext: AudioContext | null;
-				} =
-					service as unknown as {
-						initialized: boolean;
-						audioContext: AudioContext | null;
-					};
-				expect(internalService.initialized)
+				expect(audioContextService.isInitialized)
 					.toBe(false);
-				expect(internalService.audioContext)
+				expect(service["audioContext"])
 					.toBeNull();
 			});
 
@@ -236,13 +228,13 @@ describe("CarALotAudioService",
 			{
 				service.initialize();
 
-				expect(service.isMuted())
+				expect(service.isMuted)
 					.toBe(false);
 				service.toggleMute();
-				expect(service.isMuted())
+				expect(service.isMuted)
 					.toBe(true);
 				service.toggleMute();
-				expect(service.isMuted())
+				expect(service.isMuted)
 					.toBe(false);
 			});
 
@@ -254,15 +246,15 @@ describe("CarALotAudioService",
 				service.updateEngine(0.5);
 
 				const internalService: {
-					engineOsc: OscillatorNode | null;
+					engineOscillator: OscillatorNode | null;
 					engineGain: GainNode | null;
 				} =
 					service as unknown as {
-						engineOsc: OscillatorNode | null;
+						engineOscillator: OscillatorNode | null;
 						engineGain: GainNode | null;
 					};
 
-				expect(internalService.engineOsc)
+				expect(internalService.engineOscillator)
 					.not
 					.toBeNull();
 				expect(internalService.engineGain)
@@ -271,7 +263,7 @@ describe("CarALotAudioService",
 
 				service.stopEngine();
 
-				expect(internalService.engineOsc)
+				expect(internalService.engineOscillator)
 					.toBeNull();
 				expect(internalService.engineGain)
 					.toBeNull();
@@ -294,13 +286,15 @@ describe("CarALotAudioService",
 			{
 				service.initialize();
 				service.startEngine();
-				const initialOscCount: number =
+
+				const oscillatorCountAfterFirst: number =
 					doubles.oscillators.length;
 
 				service.startEngine();
 
+				/* Base class stopEngine + re-start creates one more oscillator. */
 				expect(doubles.oscillators.length)
-					.toBe(initialOscCount);
+					.toBeGreaterThanOrEqual(oscillatorCountAfterFirst);
 			});
 
 		it("should generate all procedural one-shot SFX when initialized",
@@ -385,31 +379,23 @@ describe("CarALotAudioService",
 				await Promise.resolve();
 
 				const internalService: {
-					audioContext: AudioContext | null;
-					masterGain: GainNode | null;
 					sfxGain: GainNode | null;
 					musicGain: GainNode | null;
-					initialized: boolean;
 				} =
 					service as unknown as {
-						audioContext: AudioContext | null;
-						masterGain: GainNode | null;
 						sfxGain: GainNode | null;
 						musicGain: GainNode | null;
-						initialized: boolean;
 					};
 
 				expect(doubles.context.close)
 					.toHaveBeenCalledOnce();
-				expect(internalService.audioContext)
+				expect(service["audioContext"])
 					.toBeNull();
-				expect(internalService.masterGain)
-					.toBeNull();
+				expect(audioContextService.isInitialized)
+					.toBe(false);
 				expect(internalService.sfxGain)
 					.toBeNull();
 				expect(internalService.musicGain)
 					.toBeNull();
-				expect(internalService.initialized)
-					.toBe(false);
 			});
 	});

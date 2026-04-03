@@ -1,4 +1,5 @@
 import { Injectable, signal, type WritableSignal } from "@angular/core";
+import type { Engine } from "@babylonjs/core/Engines/engine";
 import type { Observer } from "@babylonjs/core/Misc/observable";
 import type { Scene } from "@babylonjs/core/scene";
 import { GameLifecycleState } from "@games/shared/models/game.models";
@@ -32,6 +33,9 @@ export class GameLoopService
 	/** Reference to the render observer for cleanup. */
 	private renderObserver: Observer<Scene> | null = null;
 
+	/** Cached engine reference, captured at start() to avoid non-null assertions. */
+	private engine: Engine | null = null;
+
 	/**
 	 * Initialize the game loop with a Babylon.js scene.
 	 * Transitions state to Ready.
@@ -57,6 +61,10 @@ export class GameLoopService
 
 		this.removeObserver();
 
+		this.engine =
+			this.scene.getEngine();
+		const engine: Engine =
+			this.engine;
 		this.renderObserver =
 			this.scene.onBeforeRenderObservable.add(
 				() =>
@@ -64,9 +72,7 @@ export class GameLoopService
 					if (this.state() === GameLifecycleState.Running && this.onUpdate !== null)
 					{
 						const deltaTime: number =
-							this.scene!
-								.getEngine()
-								.getDeltaTime();
+							engine.getDeltaTime();
 						this.onUpdate(deltaTime);
 					}
 				});
@@ -91,6 +97,7 @@ export class GameLoopService
 	{
 		this.removeObserver();
 		this.onUpdate = null;
+		this.engine = null;
 		this.scene = null;
 		this.state.set(GameLifecycleState.Disposed);
 	}

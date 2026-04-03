@@ -1,6 +1,6 @@
 {
 	"scripts": {
-		"postinstall": "npm install --prefix SeventySix.Client && npm install --prefix SeventySix.Client/load-testing && npm install --prefix SeventySix.Client/mock-brevo-api && npm install --prefix seventysixcommerce-sveltekit && npm install --prefix seventysixcommerce-tanstack",
+		"postinstall": "npm install --prefix seventysixcommerce-shared && npm install --prefix SeventySix.Client && npm install --prefix SeventySix.Client/load-testing && npm install --prefix SeventySix.Client/mock-brevo-api && npm install --prefix seventysixcommerce-sveltekit && npm install --prefix seventysixcommerce-tanstack",
 		"bootstrap": "node scripts/bootstrap.mjs",
 
 		"start": "node scripts/start-all.mjs",
@@ -16,9 +16,10 @@
 		"stop:svelte": "docker compose -f seventysixcommerce-sveltekit/docker-compose.dev.yml down",
 		"stop:tanstack": "docker compose -f seventysixcommerce-tanstack/docker-compose.dev.yml down",
 
-		"format": "npm run format:server && npm run format:client && npm run format:svelte && npm run format:tanstack",
+		"format": "npm run format:server && npm run format:client && npm run format:shared && npm run format:svelte && npm run format:tanstack",
 		"format:server": "cd SeventySix.Server && dotnet build SeventySix.Analyzers.CodeFixes --configuration Release --no-incremental && dotnet build SeventySix.Analyzers --configuration Release --no-incremental && dotnet build && dotnet format analyzers --severity warn && dotnet format && dotnet format",
 		"format:client": "cd SeventySix.Client && npm run format",
+		"format:shared": "cd seventysixcommerce-shared && npm run format",
 		"format:svelte": "cd seventysixcommerce-sveltekit && npm run format",
 		"format:tanstack": "cd seventysixcommerce-tanstack && npm run format",
 
@@ -27,9 +28,10 @@
 		"lint:svelte": "cd seventysixcommerce-sveltekit && npm run lint",
 		"lint:tanstack": "cd seventysixcommerce-tanstack && npm run lint",
 
-		"test": "npm run test:server && npm run test:client && npm run test:svelte && npm run test:tanstack",
+		"test": "npm run test:server && npm run test:client && npm run test:shared && npm run test:svelte && npm run test:tanstack",
 		"test:server": "cd SeventySix.Server && dotnet build && dotnet test",
 		"test:client": "cd SeventySix.Client && npm test",
+		"test:shared": "cd seventysixcommerce-shared && npm test",
 		"test:svelte": "cd seventysixcommerce-sveltekit && npm test",
 		"test:tanstack": "cd seventysixcommerce-tanstack && npm test",
 

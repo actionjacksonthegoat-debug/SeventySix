@@ -12,6 +12,7 @@ import {
 	CAMERA_HEIGHT,
 	TUNNEL_HEIGHT
 } from "@games/car-a-lot/constants/car-a-lot.constants";
+import type { IGameCameraService } from "@games/shared/models/game-service.interfaces";
 
 /** Lerp smoothing factor multiplier for camera follow. */
 const LERP_SPEED: number = 4;
@@ -26,9 +27,21 @@ const LOOK_AHEAD_HEIGHT: number = 2;
  * Chase camera that smoothly follows the kart from behind and above.
  */
 @Injectable()
-export class RaceCameraService
+export class RaceCameraService implements IGameCameraService
 {
 	private camera: FreeCamera | null = null;
+
+	/** Pre-allocated offset behind the kart for camera positioning. */
+	private readonly _behindOffset: Vector3 =
+		Vector3.Zero();
+
+	/** Pre-allocated target position for camera lerp. */
+	private readonly _targetPos: Vector3 =
+		Vector3.Zero();
+
+	/** Pre-allocated look-ahead direction for camera target. */
+	private readonly _lookAhead: Vector3 =
+		Vector3.Zero();
 
 	/**
 	 * Creates and initializes the chase camera in the scene.
@@ -70,32 +83,29 @@ export class RaceCameraService
 				? TUNNEL_HEIGHT - 2
 				: CAMERA_HEIGHT;
 
-		const behindOffset: Vector3 =
-			new Vector3(
-				-Math.sin(kartHeading) * CAMERA_DISTANCE_BACK,
-				targetHeight,
-				-Math.cos(kartHeading) * CAMERA_DISTANCE_BACK);
+		this._behindOffset.copyFromFloats(
+			-Math.sin(kartHeading) * CAMERA_DISTANCE_BACK,
+			targetHeight,
+			-Math.cos(kartHeading) * CAMERA_DISTANCE_BACK);
 
-		const targetPos: Vector3 =
-			kartPosition.add(behindOffset);
+		kartPosition.addToRef(this._behindOffset, this._targetPos);
 
 		const lerpFactor: number =
 			Math.min(1, deltaTime * LERP_SPEED);
 
-		this.camera.position =
-			Vector3.Lerp(
-				this.camera.position,
-				targetPos,
-				lerpFactor);
+		Vector3.LerpToRef(
+			this.camera.position,
+			this._targetPos,
+			lerpFactor,
+			this.camera.position);
 
-		const lookAhead: Vector3 =
-			new Vector3(
-				Math.sin(kartHeading) * LOOK_AHEAD_DISTANCE,
-				LOOK_AHEAD_HEIGHT,
-				Math.cos(kartHeading) * LOOK_AHEAD_DISTANCE);
+		this._lookAhead.copyFromFloats(
+			Math.sin(kartHeading) * LOOK_AHEAD_DISTANCE,
+			LOOK_AHEAD_HEIGHT,
+			Math.cos(kartHeading) * LOOK_AHEAD_DISTANCE);
 
-		this.camera.setTarget(
-			kartPosition.add(lookAhead));
+		kartPosition.addToRef(this._lookAhead, this._lookAhead);
+		this.camera.setTarget(this._lookAhead);
 	}
 
 	/**

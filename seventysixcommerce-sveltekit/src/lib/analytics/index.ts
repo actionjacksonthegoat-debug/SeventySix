@@ -1,6 +1,6 @@
-export { initAnalytics, isAnalyticsActive, resetAnalytics, trackPageView } from "./analytics";
-export { getConsentState, revokeConsent, setConsentState } from "./consent";
-export type { ConsentState } from "./consent";
+export { initAnalytics, isAnalyticsActive, resetAnalytics, trackPageView } from "@seventysixcommerce/shared/analytics";
+export { getConsentState, revokeConsent, setConsentState } from "@seventysixcommerce/shared/analytics";
+export type { ConsentState } from "@seventysixcommerce/shared/analytics";
 export {
 	trackAddToCart,
 	trackBeginCheckout,
@@ -10,5 +10,5 @@ export {
 	trackSelectItem,
 	trackViewItem,
 	trackViewItemList
-} from "./ecommerce-events";
-export type { Ga4Item } from "./ecommerce-events";
+} from "@seventysixcommerce/shared/analytics";
+export type { Ga4Item } from "@seventysixcommerce/shared/analytics";

@@ -1,27 +1,12 @@
 /**
- * Date utility functions wrapping date-fns.
+ * Date utility functions.
+ * Re-exports shared date utilities and adds SvelteKit-specific helpers.
  * All date operations in the application should use these functions
  * instead of native Date constructors.
  */
-import { addDays as dateFnsAddDays, getYear } from "date-fns";
+import { addDays as dateFnsAddDays } from "date-fns";
 
-/**
- * Returns the current date/time.
- * @returns {Date} The current Date instance.
- */
-export function now(): Date
-{
-	return new Date();
-}
-
-/**
- * Returns the current year as a number.
- * @returns {number} The current four-digit year.
- */
-export function currentYear(): number
-{
-	return getYear(new Date());
-}
+export { currentYear, now } from "@seventysixcommerce/shared/date";
 
 /**
  * Adds the specified number of days to the given date.

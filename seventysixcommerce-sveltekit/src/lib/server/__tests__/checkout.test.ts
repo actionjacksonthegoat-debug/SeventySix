@@ -26,7 +26,9 @@ vi.mock("$lib/server/db/schema", () => ({
 }));
 
 vi.mock("drizzle-orm", () => ({
-	eq: vi.fn()
+	and: vi.fn(),
+	eq: vi.fn(),
+	inArray: vi.fn()
 }));
 
 vi.mock("$env/dynamic/private", () => ({
@@ -55,9 +57,12 @@ vi.mock("@sveltejs/kit", () => ({
 	}
 }));
 
-/** Sets up the mockDbSelect chain to return a product with given price and active state. */
+/** Sets up the mockDbSelect chain to return products for batch lookup. */
 function setupDbSelectMock(basePrice: string, isActive: boolean = true): void
 {
+	const results: { id: string; basePrice: string; }[] =
+		isActive ? [{ id: "p-1", basePrice }] : [];
+
 	mockDbSelect.mockReturnValue(
 		{
 			from: vi
@@ -66,13 +71,7 @@ function setupDbSelectMock(basePrice: string, isActive: boolean = true): void
 					{
 						where: vi
 							.fn()
-							.mockReturnValue(
-								{
-									limit: vi
-										.fn()
-										.mockResolvedValue(
-											[{ basePrice, isActive }])
-								})
+							.mockResolvedValue(results)
 					})
 		});
 }

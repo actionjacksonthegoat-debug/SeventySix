@@ -14,6 +14,7 @@ import { ArcRotateCamera } from "@babylonjs/core/Cameras/arcRotateCamera";
 import { Vector3 } from "@babylonjs/core/Maths/math.vector";
 import type { TransformNode } from "@babylonjs/core/Meshes/transformNode";
 import type { Scene } from "@babylonjs/core/scene";
+import type { IGameCameraService } from "@games/shared/models/game-service.interfaces";
 import {
 	CAMERA_HEIGHT,
 	CAMERA_PITCH_DEGREES,
@@ -26,7 +27,7 @@ import {
  * Domain-scoped — provided via route `providers` array.
  */
 @Injectable()
-export class SpyCameraService
+export class SpyCameraService implements IGameCameraService
 {
 	/** Camera instance reference. */
 	private camera: ArcRotateCamera | null = null;

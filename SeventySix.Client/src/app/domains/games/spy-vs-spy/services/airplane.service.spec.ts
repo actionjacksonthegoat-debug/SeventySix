@@ -12,6 +12,7 @@ import { Vector3 } from "@babylonjs/core/Maths/math.vector";
 import { Mesh } from "@babylonjs/core/Meshes/mesh";
 import type { TransformNode } from "@babylonjs/core/Meshes/transformNode";
 import { Scene } from "@babylonjs/core/scene";
+import { AudioContextService } from "@games/shared/services/audio-context.service";
 import {
 	AIRPLANE_FUSELAGE_LENGTH,
 	AIRSTRIP_CENTER_X,
@@ -36,6 +37,7 @@ describe("AirplaneService",
 					{
 						providers: [
 							provideZonelessChangeDetection(),
+							AudioContextService,
 							AirplaneService,
 							SpyAudioService
 						]
