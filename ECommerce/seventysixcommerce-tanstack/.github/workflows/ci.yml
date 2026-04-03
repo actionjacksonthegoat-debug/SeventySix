@@ -2,15 +2,15 @@ name: SeventySixCommerce TanStack CI
 
 on:
   push:
-    branches: [main]
+    branches: [master]
     paths: ['ECommerce/seventysixcommerce-tanstack/**']
   pull_request:
-    branches: [main]
+    branches: [master]
     paths: ['ECommerce/seventysixcommerce-tanstack/**']
 
 defaults:
   run:
-    working-directory: seventysixcommerce-tanstack
+    working-directory: ECommerce/seventysixcommerce-tanstack
 
 jobs:
   build-and-test:
@@ -43,7 +43,17 @@ jobs:
           cache: 'npm'
           cache-dependency-path: ECommerce/seventysixcommerce-tanstack/package-lock.json
 
-      - run: npm ci
-      - run: npm run build
-      - run: npx tsc --noEmit
-      - run: npx vitest run
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Link shared module resolution to app dependencies
+        run: node ../../scripts/link-commerce-shared-node-modules.mjs --app tanstack
+
+      - name: Build
+        run: npm run build
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Test with coverage
+        run: npx vitest run --coverage

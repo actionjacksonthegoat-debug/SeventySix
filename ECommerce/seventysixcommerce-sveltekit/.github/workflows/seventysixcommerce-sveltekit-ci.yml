@@ -1,10 +1,15 @@
 name: SeventySixCommerce SvelteKit CI
 on:
   pull_request:
+    branches: [master]
     paths: ['ECommerce/seventysixcommerce-sveltekit/**']
   push:
-    branches: [main]
+    branches: [master]
     paths: ['ECommerce/seventysixcommerce-sveltekit/**']
+
+defaults:
+  run:
+    working-directory: ECommerce/seventysixcommerce-sveltekit
 
 jobs:
   build-and-test:
@@ -27,13 +32,17 @@ jobs:
       - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
           node-version: 22
+          cache: 'npm'
+          cache-dependency-path: ECommerce/seventysixcommerce-sveltekit/package-lock.json
       - name: Install dependencies
-        run: cd seventysixcommerce-sveltekit && npm ci
+        run: npm ci
+      - name: Link shared module resolution to app dependencies
+        run: node ../../scripts/link-commerce-shared-node-modules.mjs --app sveltekit
+      - name: Svelte Check
+        run: npm run check
+      - name: Test with coverage
+        run: npx vitest run --coverage
       - name: Build
-        run: cd seventysixcommerce-sveltekit && npm run build
-        env:
-          DATABASE_URL: postgresql://test_user:test_password@localhost:5432/seventysixcommerce_sveltekit_test
-      - name: Test
-        run: cd seventysixcommerce-sveltekit && npm test
+        run: npm run build
         env:
           DATABASE_URL: postgresql://test_user:test_password@localhost:5432/seventysixcommerce_sveltekit_test

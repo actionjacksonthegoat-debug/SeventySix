@@ -29,3 +29,20 @@ Never approve code with:
 - IDE warnings or suppressions (`#pragma warning disable`, `// @ts-ignore`)
 - `Zone.js`, `*ngIf`, `*ngFor`, constructor injection in Angular
 - `Task.Delay()` or `Thread.Sleep()` in tests (use `FakeTimeProvider`)
+
+## Commerce App Anti-Patterns (SvelteKit + TanStack + Shared)
+
+Never approve commerce code with:
+
+- Svelte 4 stores (`writable`, `readable`, `derived`) — use Svelte 5 runes (`$state`, `$derived`, `$effect`)
+- `process.env` in SvelteKit — use `$env/static/private` or `$env/dynamic/private`
+- Client-side fetch for initial data in SvelteKit — use `+page.server.ts` load functions
+- `useEffect` for initial data loading in TanStack — use route `loader` with `serverFn`
+- Missing Zod `.inputValidator()` on TanStack server functions
+- Missing CSRF middleware on mutation server functions (TanStack)
+- Direct `new Date()` usage — use `date-fns` via the shared date utility
+- Missing JSDoc on exported functions, types, constants, or server functions
+- Raw `error.message` exposed to clients in commerce error responses
+- PII (email addresses) logged without masking
+- Missing shared-module linking before isolated commerce builds
+- `|| "default"` null coercion — use `??` or explicit null checks

@@ -9,6 +9,8 @@
 		"start:client": "cd SeventySix.Client && npm start",
 		"start:svelte": "node ECommerce/seventysixcommerce-sveltekit/scripts/start.mjs",
 		"start:tanstack": "node ECommerce/seventysixcommerce-tanstack/scripts/start.mjs",
+		"link:shared:svelte": "node scripts/link-commerce-shared-node-modules.mjs --app sveltekit",
+		"link:shared:tanstack": "node scripts/link-commerce-shared-node-modules.mjs --app tanstack",
 		"start:container": "devcontainer up --workspace-folder .",
 
 		"stop": "node scripts/run-pwsh.mjs -File scripts/stop-all.ps1",

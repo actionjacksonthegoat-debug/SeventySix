@@ -70,16 +70,24 @@ Only after the security review passes with zero Critical/High findings do you pr
 
 ## [CRITICAL] Completion Gate — all required test suites, no exceptions
 
-After the security review passes, run all required test suites and confirm they pass:
+After the security review passes, run all required test suites and confirm they pass. The completion gate must closely mirror GitHub Actions quality gates for the main app and both commerce apps:
 
 | Suite        | Command              | Must See                            |
 | ------------ | -------------------- | ----------------------------------- |
-| Server       | `dotnet test`        | `Test summary: total: X, failed: 0` |
-| Client       | `npm test`           | `X passed (X)`                      |
-| E2E          | `npm run test:e2e`   | `[PASS] All E2E tests passed!`      |
-| Load (quick) | `npm run loadtest:quick` | All scenarios pass thresholds   |
+| Client Build & Test | `cd SeventySix.Client && npm run lint && npm run build && npm run test:coverage` | lint/build pass and coverage run succeeds |
+| Server Build & Test | `cd SeventySix.Server && dotnet restore SeventySix.Server.slnx && dotnet build SeventySix.Server.slnx --configuration Release --no-restore /p:TreatWarningsAsErrors=true && dotnet test SeventySix.Server.slnx --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage" --settings ./coverlet.runsettings --results-directory ./TestResults --logger "trx"` | build passes with warnings as errors and tests/coverage succeed |
+| Commerce SvelteKit Build & Test | `node scripts/link-commerce-shared-node-modules.mjs --app sveltekit && cd ECommerce/seventysixcommerce-sveltekit && npm run check && npm run test:coverage && npm run build` | `svelte-check found 0 errors`, coverage run succeeds, build succeeds |
+| Commerce TanStack Build & Test | `node scripts/link-commerce-shared-node-modules.mjs --app tanstack && cd ECommerce/seventysixcommerce-tanstack && npm run build && npm run typecheck && npm run test:coverage` | build/typecheck/coverage succeed |
+| Main App E2E | `npm run test:e2e` | `[PASS] All E2E tests passed!` |
+| Commerce SvelteKit E2E | `npm run test:e2e:svelte` | Playwright suite passes |
+| Commerce TanStack E2E | `npm run test:e2e:tanstack` | Playwright suite passes |
+| Main App Load (quick) | `npm run loadtest:quick` | All scenarios pass thresholds |
+| Commerce SvelteKit Load (quick) | `npm run loadtest:svelte:quick` | All scenarios pass thresholds |
+| Commerce TanStack Load (quick) | `npm run loadtest:tanstack:quick` | All scenarios pass thresholds |
 
 **All required test suites MUST RUN AND PASS. NO SKIPPING. NO EXCEPTIONS. REGARDLESS OF TIME NEEDED OR CURRENT STATE OF THE CODE.**
+- The gate is incomplete unless it includes the main app plus both commerce apps, including build/test, E2E, and quick load-test validation.
+- For isolated commerce build/test/E2E/load validation, always run `node scripts/link-commerce-shared-node-modules.mjs --app <sveltekit|tanstack>` first.
 - E2E and load tests CAN run in parallel to save time
 - If infrastructure is not running, **start it** — do not skip the suite
 - Never claim "done" without running and passing all required test suites
