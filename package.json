@@ -25,8 +25,9 @@
 		"format:svelte": "cd ECommerce/seventysixcommerce-sveltekit && npm run format",
 		"format:tanstack": "cd ECommerce/seventysixcommerce-tanstack && npm run format",
 
-		"lint": "npm run lint:client && npm run lint:svelte && npm run lint:tanstack",
+		"lint": "npm run lint:client && npm run lint:shared && npm run lint:svelte && npm run lint:tanstack",
 		"lint:client": "cd SeventySix.Client && npm run lint",
+		"lint:shared": "cd ECommerce/seventysixcommerce-shared && npm run lint",
 		"lint:svelte": "cd ECommerce/seventysixcommerce-sveltekit && npm run lint",
 		"lint:tanstack": "cd ECommerce/seventysixcommerce-tanstack && npm run lint",
 
@@ -37,9 +38,10 @@
 		"test:svelte": "cd ECommerce/seventysixcommerce-sveltekit && npm test",
 		"test:tanstack": "cd ECommerce/seventysixcommerce-tanstack && npm test",
 
-		"test:coverage": "npm run test:coverage:server && npm run test:coverage:client && npm run test:coverage:svelte && npm run test:coverage:tanstack",
+		"test:coverage": "npm run test:coverage:server && npm run test:coverage:client && npm run test:coverage:shared && npm run test:coverage:svelte && npm run test:coverage:tanstack",
 		"test:coverage:server": "node scripts/run-pwsh.mjs -File scripts/run-server-coverage.ps1",
 		"test:coverage:client": "cd SeventySix.Client && npm run test:coverage",
+		"test:coverage:shared": "cd ECommerce/seventysixcommerce-shared && npm run test:coverage",
 		"test:coverage:svelte": "cd ECommerce/seventysixcommerce-sveltekit && npm run test:coverage",
 		"test:coverage:tanstack": "cd ECommerce/seventysixcommerce-tanstack && npm run test:coverage",
 

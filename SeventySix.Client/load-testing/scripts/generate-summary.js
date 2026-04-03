@@ -124,8 +124,8 @@ function generateSummary()
 {
 	if (!fs.existsSync(RESULTS_DIR))
 	{
-		console.error("No results directory found.");
-		process.exit(1);
+		console.log("No results directory found — skipping HTML summary (k6 ran in Docker).");
+		process.exit(0);
 	}
 
 	const jsonFiles =

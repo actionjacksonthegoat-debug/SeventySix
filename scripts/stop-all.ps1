@@ -67,12 +67,23 @@ try {
 		Write-Host "Stopping E2E environment..." -ForegroundColor Yellow
 		docker compose -f docker-compose.e2e.yml down -v --remove-orphans 2>$null
 
+		Write-Host "Stopping Commerce E2E environments..." -ForegroundColor Yellow
+		docker compose -f ECommerce/seventysixcommerce-sveltekit/docker-compose.e2e.yml down -v --remove-orphans 2>$null
+		docker compose -f ECommerce/seventysixcommerce-tanstack/docker-compose.e2e.yml down -v --remove-orphans 2>$null
+
 		Write-Host "Stopping LoadTest environment..." -ForegroundColor Yellow
 		docker compose -f docker-compose.loadtest.yml down --remove-orphans 2>$null
 
 		Write-Host "Stopping Commerce LoadTest environments..." -ForegroundColor Yellow
 		docker compose -f docker-compose.loadtest-tanstack.yml down --remove-orphans 2>$null
 		docker compose -f docker-compose.loadtest-svelte.yml down --remove-orphans 2>$null
+
+		Write-Host "Stopping DAST environment..." -ForegroundColor Yellow
+		docker compose -f docker-compose.dast.yml down -v --remove-orphans 2>$null
+
+		Write-Host "Stopping Commerce DAST environments..." -ForegroundColor Yellow
+		docker compose -f ECommerce/seventysixcommerce-sveltekit/docker-compose.dast.yml down -v --remove-orphans 2>$null
+		docker compose -f ECommerce/seventysixcommerce-tanstack/docker-compose.dast.yml down -v --remove-orphans 2>$null
 	}
 
 	Write-Host ""
