@@ -1,6 +1,13 @@
 @use "variables" as vars;
 
 :host {
+	/* Car-a-Lot mobile controls — inherits theme from driving-hud */
+	--car-gas: #22c55e;
+	--car-gas-active: #16a34a;
+	--car-jump: #3b82f6;
+	--car-jump-active: #2563eb;
+	--car-text: #fff;
+
 	position: absolute;
 	inset: 0;
 	pointer-events: none;
@@ -81,23 +88,23 @@
 	height: 80px;
 	border-radius: 50%;
 	font-size: 1.25rem;
-	background: color-mix(in srgb, #22c55e 80%, transparent);
-	color: #fff;
+	background: color-mix(in srgb, var(--car-gas) 80%, transparent);
+	color: var(--car-text);
 
 	&:active {
-		background: #16a34a;
+		background: var(--car-gas-active);
 	}
 }
 
 .jump-button {
 	width: 80px;
 	height: 56px;
-	background: color-mix(in srgb, #3b82f6 80%, transparent);
-	color: #fff;
+	background: color-mix(in srgb, var(--car-jump) 80%, transparent);
+	color: var(--car-text);
 	animation: jump-button-appear 0.4s ease-out forwards, jump-glow 0.8s 0.4s ease-in-out infinite alternate;
 
 	&:active {
-		background: #2563eb;
+		background: var(--car-jump-active);
 	}
 }
 
@@ -120,11 +127,11 @@
 
 @keyframes jump-glow {
 	from {
-		box-shadow: 0 0 8px color-mix(in srgb, #3b82f6 40%, transparent);
+		box-shadow: 0 0 8px color-mix(in srgb, var(--car-jump) 40%, transparent);
 	}
 
 	to {
-		box-shadow: 0 0 20px color-mix(in srgb, #3b82f6 70%, transparent);
+		box-shadow: 0 0 20px color-mix(in srgb, var(--car-jump) 70%, transparent);
 	}
 }
 

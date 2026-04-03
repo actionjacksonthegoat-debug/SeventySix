@@ -232,9 +232,7 @@
 
 // Column width stability: truncate long HEADER cell content rather than expanding
 .mat-mdc-header-cell {
-	overflow: hidden;
-	white-space: nowrap;
-	text-overflow: ellipsis;
+	@include vars.truncate-text();
 }
 
 // Sticky header: opaque background prevents rows bleeding through during scroll
@@ -244,9 +242,7 @@
 
 // Column width stability: truncate long cell content rather than expanding columns
 .mat-mdc-cell {
-	overflow: hidden;
-	white-space: nowrap;
-	text-overflow: ellipsis;
+	@include vars.truncate-text();
 }
 
 // Refetch progress bar — sits flush at the top of the table content wrapper

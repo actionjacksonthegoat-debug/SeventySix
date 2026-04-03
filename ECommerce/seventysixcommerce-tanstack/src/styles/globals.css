@@ -1,5 +1,7 @@
 @import 'tailwindcss';
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
 	--color-bg-primary: oklch(1 0 0);
 	--color-bg-secondary: oklch(0.985 0.002 247);
@@ -41,4 +43,25 @@
 .no-transition *::before,
 .no-transition *::after {
 	transition: none !important;
+}
+
+/* Focus-visible ring for keyboard navigation (WCAG AA) */
+:focus-visible {
+	outline: 2px solid var(--color-accent);
+	outline-offset: 2px;
+}
+
+:focus:not(:focus-visible) {
+	outline: none;
+}
+
+/* Respect user motion preferences */
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+	}
 }

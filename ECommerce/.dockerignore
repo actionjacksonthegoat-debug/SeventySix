@@ -1,0 +1,14 @@
+**/node_modules
+**/.svelte-kit
+**/build
+**/dist
+**/.output
+**/.tanstack
+**/.env
+**/.env.*
+!**/.env.example
+**/.git
+**/TestResults
+**/coverage
+**/e2e
+**/load-testing

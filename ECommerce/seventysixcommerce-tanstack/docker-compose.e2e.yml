@@ -21,8 +21,8 @@ services:
 
   db-init:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: seventysixcommerce-tanstack/Dockerfile
       target: db-init
     container_name: ssxc-tanstack-db-init-e2e
     environment:
@@ -35,8 +35,8 @@ services:
 
   tanstack-e2e:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: seventysixcommerce-tanstack/Dockerfile
       target: runner
     container_name: ssxc-tanstack-app-e2e
     ports:
