@@ -20,13 +20,21 @@ import {
 	viewChild,
 	WritableSignal
 } from "@angular/core";
-import { RouterLink } from "@angular/router";
+import { ActivatedRoute, RouterLink } from "@angular/router";
 import type { PickingInfo } from "@babylonjs/core/Collisions/pickingInfo";
 import { Scene } from "@babylonjs/core/scene";
 import { BabylonCanvasComponent } from "@games/shared/components/babylon-canvas/babylon-canvas";
 import { FullscreenToggleComponent } from "@games/shared/components/fullscreen-toggle/fullscreen-toggle";
+import { GameLoadingComponent } from "@games/shared/components/game-loading/game-loading";
+import { GameLifecycleState } from "@games/shared/models/game.models";
+import { DisposableRegistryService } from "@games/shared/services/disposable-registry.service";
 import { GameLoopService } from "@games/shared/services/game-loop.service";
 import { InputService } from "@games/shared/services/input.service";
+import {
+	formatTimerValue,
+	formatTimerValuePadded,
+	getTimerWarningClass
+} from "@games/shared/utilities/timer-display.utility";
 import { SpyMobileControlsComponent } from "@games/spy-vs-spy/components/spy-mobile-controls/spy-mobile-controls";
 import {
 	AIRSTRIP_CENTER_X,
@@ -70,7 +78,13 @@ interface MobileTapEvent
 		selector: "app-spy-vs-spy-game",
 		standalone: true,
 		changeDetection: ChangeDetectionStrategy.OnPush,
-		imports: [BabylonCanvasComponent, FullscreenToggleComponent, RouterLink, SpyMobileControlsComponent],
+		imports: [
+			BabylonCanvasComponent,
+			FullscreenToggleComponent,
+			GameLoadingComponent,
+			RouterLink,
+			SpyMobileControlsComponent
+		],
 		templateUrl: "./spy-vs-spy-game.html",
 		styleUrl: "./spy-vs-spy-game.scss",
 		host: {
@@ -82,6 +96,19 @@ interface MobileTapEvent
 	})
 export class SpyVsSpyGameComponent
 {
+	/** Route reference for reading game metadata. */
+	private readonly route: ActivatedRoute =
+		inject(ActivatedRoute);
+
+	/** Name of the current game from route data. */
+	protected readonly gameName: string =
+		(this.route.snapshot.data["gameName"] as string | undefined) ?? "Spy And Fly";
+
+	/** Icon of the current game from route data. */
+	protected readonly gameIcon: string =
+		(this.route.snapshot.data["gameIcon"] as string | undefined)
+			?? "\uD83D\uDD75\uFE0F";
+
 	/** Whether the browser is currently in fullscreen mode. */
 	protected readonly isFullscreen: WritableSignal<boolean> =
 		signal<boolean>(false);
@@ -104,6 +131,10 @@ export class SpyVsSpyGameComponent
 	/** Destroy ref for cleanup registration. */
 	private readonly destroyRef: DestroyRef =
 		inject(DestroyRef);
+
+	/** Disposable registry for batch service cleanup. */
+	private readonly disposableRegistry: DisposableRegistryService =
+		inject(DisposableRegistryService);
 
 	/** Island scene builder service. */
 	private readonly islandScene: IslandSceneService =
@@ -140,6 +171,11 @@ export class SpyVsSpyGameComponent
 	/** Game loop service. */
 	private readonly gameLoop: GameLoopService =
 		inject(GameLoopService);
+
+	/** Whether the game is still initializing (loading screen visible). */
+	protected readonly isLoading: Signal<boolean> =
+		computed(() =>
+			this.gameLoop.state() === GameLifecycleState.Initializing);
 
 	/** Game flow orchestration service. */
 	private readonly spyFlowService: SpyFlowService =
@@ -260,29 +296,7 @@ export class SpyVsSpyGameComponent
 	protected readonly formattedIslandTimer: Signal<string> =
 		computed(
 			() =>
-				this.formatTimerValue(this.islandTimer()));
-
-	/**
-	 * Format a timer value (seconds) as M:SS for HUD display.
-	 * @param totalSeconds
-	 * Total seconds remaining.
-	 * @returns
-	 * Formatted timer string.
-	 */
-	private formatTimerValue(totalSeconds: number): string
-	{
-		const rounded: number =
-			Math.floor(totalSeconds);
-		const minutes: number =
-			Math.floor(rounded / 60);
-		const seconds: number =
-			rounded % 60;
-
-		return `${String(minutes)}:${
-			String(seconds)
-				.padStart(2, "0")
-		}`;
-	}
+				formatTimerValue(this.islandTimer()));
 
 	/**
 	 * Returns a CSS class based on remaining timer seconds.
@@ -293,17 +307,7 @@ export class SpyVsSpyGameComponent
 	 */
 	private getTimerWarningClass(seconds: number): string
 	{
-		if (seconds <= 30)
-		{
-			return "timer-danger";
-		}
-
-		if (seconds <= 60)
-		{
-			return "timer-warning";
-		}
-
-		return "timer-ok";
+		return getTimerWarningClass(seconds);
 	}
 
 	/**
@@ -328,23 +332,8 @@ export class SpyVsSpyGameComponent
 	protected readonly formattedTime: Signal<string> =
 		computed(
 			() =>
-			{
-				const totalSeconds: number =
-					Math.floor(this.spyFlowService.elapsedSeconds());
-				const minutes: number =
-					Math.floor(totalSeconds / 60);
-				const seconds: number =
-					totalSeconds % 60;
-
-				const minuteStr: string =
-					String(minutes)
-						.padStart(2, "0");
-				const secondStr: string =
-					String(seconds)
-						.padStart(2, "0");
-
-				return `${minuteStr}:${secondStr}`;
-			});
+				formatTimerValuePadded(
+					this.spyFlowService.elapsedSeconds()));
 
 	/** Countdown value for Ready state overlay. */
 	protected readonly countdown: Signal<number> =
@@ -418,8 +407,29 @@ export class SpyVsSpyGameComponent
 
 		this.gameLoop.start();
 
+		this.registerDisposables();
+
 		this.destroyRef.onDestroy(
 			() => this.cleanup());
+	}
+
+	/**
+	 * Register all disposable services for batch cleanup on destroy.
+	 */
+	private registerDisposables(): void
+	{
+		this.disposableRegistry.register(this.minimapService);
+		this.disposableRegistry.register(this.islandScene);
+		this.disposableRegistry.register(this.furnitureService);
+		this.disposableRegistry.register(this.spyCamera);
+		this.disposableRegistry.register(this.spyBuilder);
+		this.disposableRegistry.register(this.audioService);
+		this.disposableRegistry.register(this.trapService);
+		this.disposableRegistry.register(this.itemService);
+		this.disposableRegistry.register(this.spyPhysics);
+		this.disposableRegistry.register(this.spyAi);
+		this.disposableRegistry.register(this.inputService);
+		this.disposableRegistry.register(this.gameLoop);
 	}
 
 	/**
@@ -613,17 +623,6 @@ export class SpyVsSpyGameComponent
 	private cleanup(): void
 	{
 		this.spyFlowService.restartGame();
-		this.gameLoop.dispose();
-		this.inputService.dispose();
-		this.spyAi.dispose();
-		this.spyPhysics.dispose();
-		this.itemService.dispose();
-		this.trapService.dispose();
-		this.audioService.dispose();
-		this.spyBuilder.dispose();
-		this.spyCamera.dispose();
-		this.furnitureService.dispose();
-		this.islandScene.dispose();
-		this.minimapService.dispose();
+		this.disposableRegistry.disposeAll();
 	}
 }

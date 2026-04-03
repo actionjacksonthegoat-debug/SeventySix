@@ -29,6 +29,7 @@ import {
 	TENTACLE_SWAY_PERIOD,
 	TENTACLE_WIDTH
 } from "@games/car-a-lot/constants/car-a-lot.constants";
+import { distanceXZ } from "@games/shared/utilities/math.utility";
 
 /** Phase offset between tentacle sway animation (radians). */
 const TENTACLE_PHASE_OFFSET: number =
@@ -233,15 +234,11 @@ export class OctopusBossService
 
 		const bodyCenterY: number =
 			OCTOPUS_BODY_DIAMETER * OCTOPUS_BODY_SCALE_Y / 2;
-		const deltaX: number =
-			kartPosition.x - this.bodyCenter.x;
 		const deltaY: number =
 			kartPosition.y - bodyCenterY;
-		const deltaZ: number =
-			kartPosition.z - this.bodyCenter.z;
 
 		const horizontalDist: number =
-			Math.sqrt(deltaX * deltaX + deltaZ * deltaZ);
+			distanceXZ(kartPosition.x, kartPosition.z, this.bodyCenter.x, this.bodyCenter.z);
 		const verticalDist: number =
 			Math.abs(deltaY) / OCTOPUS_BODY_SCALE_Y;
 
@@ -267,13 +264,8 @@ export class OctopusBossService
 			return false;
 		}
 
-		const deltaX: number =
-			kartPosition.x - this.bodyCenter.x;
-		const deltaZ: number =
-			kartPosition.z - this.bodyCenter.z;
-
 		const horizontalDist: number =
-			Math.sqrt(deltaX * deltaX + deltaZ * deltaZ);
+			distanceXZ(kartPosition.x, kartPosition.z, this.bodyCenter.x, this.bodyCenter.z);
 
 		return horizontalDist < OCTOPUS_COLLISION_RADIUS;
 	}

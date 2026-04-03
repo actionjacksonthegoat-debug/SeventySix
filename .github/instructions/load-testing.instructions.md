@@ -1,7 +1,7 @@
 ````instructions
 ---
-description: k6 load test patterns and rules for SeventySix load-testing
-applyTo: "**/SeventySix.Client/load-testing/**/*.js"
+description: k6 load test patterns and rules for all SeventySix load-testing
+applyTo: "**/SeventySix.Client/load-testing/**/*.js,**/ECommerce/seventysixcommerce-sveltekit/load-testing/**/*.js,**/ECommerce/seventysixcommerce-tanstack/load-testing/**/*.js"
 ---
 
 # Load Testing (Grafana k6)

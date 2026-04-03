@@ -6,6 +6,8 @@
  */
 
 import { Injectable } from "@angular/core";
+import { BaseGameAudioService } from "@games/shared/services/base-game-audio.service";
+import { playArpeggio, SfxBuilder } from "@games/shared/utilities/sfx-builder.utility";
 
 /** Racing melody notes as semitone offsets in sections. */
 const MELODY_SECTIONS: number[][] =
@@ -31,25 +33,23 @@ const BASE_FREQ: number = 261.63;
  * Uses Web Audio API oscillators and noise for all game sounds.
  */
 @Injectable()
-export class CarALotAudioService
+export class CarALotAudioService extends BaseGameAudioService
 {
-	/** Web Audio API context. */
-	private audioContext: AudioContext | null = null;
-
-	/** Master gain node for global volume. */
-	private masterGain: GainNode | null = null;
-
 	/** SFX gain node for sound effects. */
 	private sfxGain: GainNode | null = null;
 
 	/** Music gain node for background music. */
 	private musicGain: GainNode | null = null;
 
-	/** Whether audio is muted. */
-	private muted: boolean = false;
-
-	/** Whether the context has been initialized. */
-	private initialized: boolean = false;
+	/**
+	 * Get active AudioContext or null when not initialized.
+	 */
+	private get audioContext(): AudioContext | null
+	{
+		return this.audioContextService.isInitialized
+			? this.audioContextService.audioContext
+			: null;
+	}
 
 	/** Active music oscillators for cleanup. */
 	private musicOscillators: OscillatorNode[] = [];
@@ -57,71 +57,26 @@ export class CarALotAudioService
 	/** Music arpeggio interval for cleanup. */
 	private arpeggioInterval: ReturnType<typeof setInterval> | null = null;
 
-	/** Engine drone oscillator. */
-	private engineOsc: OscillatorNode | null = null;
-
-	/** Engine drone gain for RPM modulation. */
-	private engineGain: GainNode | null = null;
-
 	/**
-	 * Initialize the Web Audio API context and gain nodes.
-	 * Must be called after a user interaction event.
+	 * Initialize game-specific SFX and music gain nodes.
+	 * Called by base class after AudioContext is initialized.
 	 */
-	initialize(): void
+	protected initializeGainNodes(): void
 	{
-		if (this.initialized)
+		if (!this.audioContextService.isInitialized || this.sfxGain !== null)
 		{
 			return;
 		}
-
-		if (typeof AudioContext === "undefined")
-		{
-			return;
-		}
-
-		this.audioContext =
-			new AudioContext();
-		this.masterGain =
-			this.audioContext.createGain();
-		this.masterGain.gain.value = 0.3;
-		this.masterGain.connect(this.audioContext.destination);
 
 		this.sfxGain =
-			this.audioContext.createGain();
+			this.audioContextService.audioContext.createGain();
 		this.sfxGain.gain.value = 0.6;
-		this.sfxGain.connect(this.masterGain);
+		this.sfxGain.connect(this.audioContextService.masterGain);
 
 		this.musicGain =
-			this.audioContext.createGain();
+			this.audioContextService.audioContext.createGain();
 		this.musicGain.gain.value = 0.45;
-		this.musicGain.connect(this.masterGain);
-
-		this.initialized = true;
-	}
-
-	/**
-	 * Returns whether audio is currently muted.
-	 * @returns
-	 * True if muted.
-	 */
-	isMuted(): boolean
-	{
-		return this.muted;
-	}
-
-	/**
-	 * Toggle mute state.
-	 */
-	toggleMute(): void
-	{
-		this.muted =
-			!this.muted;
-
-		if (this.masterGain !== null)
-		{
-			this.masterGain.gain.value =
-				this.muted ? 0 : 0.3;
-		}
+		this.musicGain.connect(this.audioContextService.masterGain);
 	}
 
 	/**
@@ -136,24 +91,11 @@ export class CarALotAudioService
 			return;
 		}
 
-		const now: number =
-			this.audioContext.currentTime;
-		const osc: OscillatorNode =
-			this.audioContext.createOscillator();
-		const gain: GainNode =
-			this.audioContext.createGain();
-
-		osc.type = "sine";
-		osc.frequency.value =
-			isLast ? 880 : 440;
-
-		gain.gain.setValueAtTime(0.4, now);
-		gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
-
-		osc.connect(gain);
-		gain.connect(this.sfxGain);
-		osc.start(now);
-		osc.stop(now + 0.4);
+		SfxBuilder
+			.tone(this.audioContext, this.sfxGain)
+			.sine(isLast ? 880 : 440, 0.4)
+			.expEnvelope(0.4, 0.01, 0.4)
+			.play();
 	}
 
 	/**
@@ -161,23 +103,12 @@ export class CarALotAudioService
 	 */
 	startEngine(): void
 	{
-		if (this.audioContext === null || this.sfxGain === null || this.engineOsc !== null)
+		if (this.audioContext === null || this.sfxGain === null)
 		{
 			return;
 		}
 
-		this.engineOsc =
-			this.audioContext.createOscillator();
-		this.engineOsc.type = "sawtooth";
-		this.engineOsc.frequency.value = 60;
-
-		this.engineGain =
-			this.audioContext.createGain();
-		this.engineGain.gain.value = 0.03;
-
-		this.engineOsc.connect(this.engineGain);
-		this.engineGain.connect(this.sfxGain);
-		this.engineOsc.start();
+		this.startEngineSound(60, 0.03, "sawtooth");
 	}
 
 	/**
@@ -187,36 +118,9 @@ export class CarALotAudioService
 	 */
 	updateEngine(speedRatio: number): void
 	{
-		if (this.engineOsc !== null)
-		{
-			this.engineOsc.frequency.value =
-				60 + speedRatio * 180;
-		}
-
-		if (this.engineGain !== null)
-		{
-			this.engineGain.gain.value =
-				0.01 + speedRatio * 0.03;
-		}
-	}
-
-	/**
-	 * Stop the engine drone sound.
-	 */
-	stopEngine(): void
-	{
-		if (this.engineOsc !== null)
-		{
-			this.engineOsc.stop();
-			this.engineOsc.disconnect();
-			this.engineOsc = null;
-		}
-
-		if (this.engineGain !== null)
-		{
-			this.engineGain.disconnect();
-			this.engineGain = null;
-		}
+		this.updateEngineSound(
+			60 + speedRatio * 180,
+			0.01 + speedRatio * 0.03);
 	}
 
 	/**
@@ -260,31 +164,20 @@ export class CarALotAudioService
 			return;
 		}
 
-		const now: number =
-			this.audioContext.currentTime;
-
-		for (const [noteIdx, semitone] of [0, 7, 12].entries())
-		{
-			const osc: OscillatorNode =
-				this.audioContext.createOscillator();
-			const gain: GainNode =
-				this.audioContext.createGain();
-
-			const freq: number =
-				880 * Math.pow(2, semitone / 12);
-			const start: number =
-				now + noteIdx * 0.08;
-
-			osc.type = "sine";
-			osc.frequency.value = freq;
-			gain.gain.setValueAtTime(0.2, start);
-			gain.gain.exponentialRampToValueAtTime(0.01, start + 0.15);
-
-			osc.connect(gain);
-			gain.connect(this.sfxGain);
-			osc.start(start);
-			osc.stop(start + 0.15);
-		}
+		playArpeggio(
+			this.audioContext,
+			this.sfxGain,
+			[0, 7, 12].map((semitone) =>
+				SfxBuilder.semitoneToFrequency(880, semitone)),
+			{
+				waveform: "sine",
+				noteSpacing: 0.08,
+				noteDuration: 0.15,
+				volume: 0.2,
+				envelopeType: "exponential",
+				envelopeDelay: 0,
+				envelopeReleaseDuration: 0.15
+			});
 	}
 
 	/**
@@ -297,24 +190,12 @@ export class CarALotAudioService
 			return;
 		}
 
-		const now: number =
-			this.audioContext.currentTime;
-		const osc: OscillatorNode =
-			this.audioContext.createOscillator();
-		const gain: GainNode =
-			this.audioContext.createGain();
-
-		osc.type = "triangle";
-		osc.frequency.setValueAtTime(120, now);
-		osc.frequency.exponentialRampToValueAtTime(40, now + 0.2);
-
-		gain.gain.setValueAtTime(0.25, now);
-		gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
-
-		osc.connect(gain);
-		gain.connect(this.sfxGain);
-		osc.start(now);
-		osc.stop(now + 0.2);
+		SfxBuilder
+			.tone(this.audioContext, this.sfxGain)
+			.triangle(120, 0.2)
+			.sweepTo(40, 0.2)
+			.expEnvelope(0.25, 0.01, 0.2)
+			.play();
 	}
 
 	/**
@@ -358,24 +239,12 @@ export class CarALotAudioService
 			return;
 		}
 
-		const now: number =
-			this.audioContext.currentTime;
-		const osc: OscillatorNode =
-			this.audioContext.createOscillator();
-		const gain: GainNode =
-			this.audioContext.createGain();
-
-		osc.type = "sine";
-		osc.frequency.setValueAtTime(200, now);
-		osc.frequency.exponentialRampToValueAtTime(600, now + 0.2);
-
-		gain.gain.setValueAtTime(0.2, now);
-		gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
-
-		osc.connect(gain);
-		gain.connect(this.sfxGain);
-		osc.start(now);
-		osc.stop(now + 0.3);
+		SfxBuilder
+			.tone(this.audioContext, this.sfxGain)
+			.sine(200, 0.3)
+			.sweepTo(600, 0.2)
+			.expEnvelope(0.2, 0.01, 0.3)
+			.play();
 	}
 
 	/**
@@ -388,31 +257,20 @@ export class CarALotAudioService
 			return;
 		}
 
-		const now: number =
-			this.audioContext.currentTime;
-
-		for (const [noteIdx, semitone] of [0, 4, 7, 12, 16].entries())
-		{
-			const osc: OscillatorNode =
-				this.audioContext.createOscillator();
-			const gain: GainNode =
-				this.audioContext.createGain();
-
-			const freq: number =
-				BASE_FREQ * Math.pow(2, semitone / 12);
-			const start: number =
-				now + noteIdx * 0.2;
-
-			osc.type = "square";
-			osc.frequency.value = freq;
-			gain.gain.setValueAtTime(0.2, start);
-			gain.gain.exponentialRampToValueAtTime(0.01, start + 0.3);
-
-			osc.connect(gain);
-			gain.connect(this.sfxGain);
-			osc.start(start);
-			osc.stop(start + 0.3);
-		}
+		playArpeggio(
+			this.audioContext,
+			this.sfxGain,
+			[0, 4, 7, 12, 16].map((semitone) =>
+				SfxBuilder.semitoneToFrequency(BASE_FREQ, semitone)),
+			{
+				waveform: "square",
+				noteSpacing: 0.2,
+				noteDuration: 0.3,
+				volume: 0.2,
+				envelopeType: "exponential",
+				envelopeDelay: 0,
+				envelopeReleaseDuration: 0.3
+			});
 	}
 
 	/**
@@ -425,24 +283,12 @@ export class CarALotAudioService
 			return;
 		}
 
-		const now: number =
-			this.audioContext.currentTime;
-		const osc: OscillatorNode =
-			this.audioContext.createOscillator();
-		const gain: GainNode =
-			this.audioContext.createGain();
-
-		osc.type = "sawtooth";
-		osc.frequency.setValueAtTime(400, now);
-		osc.frequency.exponentialRampToValueAtTime(80, now + 1.0);
-
-		gain.gain.setValueAtTime(0.2, now);
-		gain.gain.exponentialRampToValueAtTime(0.01, now + 1.0);
-
-		osc.connect(gain);
-		gain.connect(this.sfxGain);
-		osc.start(now);
-		osc.stop(now + 1.0);
+		SfxBuilder
+			.tone(this.audioContext, this.sfxGain)
+			.sawtooth(400, 1.0)
+			.sweepTo(80, 1.0)
+			.expEnvelope(0.2, 0.01, 1.0)
+			.play();
 	}
 
 	/**
@@ -477,7 +323,7 @@ export class CarALotAudioService
 					const semitone: number =
 						section[noteIndex % section.length];
 					const freq: number =
-						BASE_FREQ * Math.pow(2, semitone / 12);
+						SfxBuilder.semitoneToFrequency(BASE_FREQ, semitone);
 
 					const melodyOsc: OscillatorNode =
 						this.audioContext.createOscillator();
@@ -500,7 +346,7 @@ export class CarALotAudioService
 						const bassSemitone: number =
 							BASS_PATTERN[bassStep % BASS_PATTERN.length] - 12;
 						const bassFreq: number =
-							BASE_FREQ * Math.pow(2, bassSemitone / 12);
+							SfxBuilder.semitoneToFrequency(BASE_FREQ, bassSemitone);
 
 						const bassOsc: OscillatorNode =
 							this.audioContext.createOscillator();
@@ -553,27 +399,10 @@ export class CarALotAudioService
 	/**
 	 * Dispose all audio resources and close the context.
 	 */
-	dispose(): void
+	override dispose(): void
 	{
-		this.stopEngine();
-		this.stopMusic();
-
-		if (this.audioContext !== null)
-		{
-			this
-				.audioContext
-				.close()
-				.catch(
-					() =>
-					{
-						/* Context may already be closed */
-					});
-			this.audioContext = null;
-		}
-
-		this.masterGain = null;
+		super.dispose();
 		this.sfxGain = null;
 		this.musicGain = null;
-		this.initialized = false;
 	}
 }

@@ -1,0 +1,45 @@
+{
+	"name": "@seventysixcommerce/shared",
+	"version": "0.0.1",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"test": "vitest run",
+		"test:watch": "vitest",
+		"test:coverage": "vitest run --coverage",
+		"format": "eslint . --fix && dprint fmt && eslint . --fix",
+		"lint": "eslint ."
+	},
+	"exports": {
+		"./analytics": "./src/analytics/index.ts",
+		"./cart": "./src/cart/index.ts",
+		"./checkout": "./src/checkout/index.ts",
+		"./constants": "./src/constants.ts",
+		"./integrations": "./src/integrations/index.ts",
+		"./schema": "./src/schema/index.ts",
+		"./types": "./src/types/index.ts",
+		"./observability": "./src/observability/index.ts",
+		"./webhook": "./src/webhook/index.ts",
+		"./date": "./src/date.ts"
+	},
+	"dependencies": {
+		"@opentelemetry/api": "^1.9.1",
+		"date-fns": "^4.1.0",
+		"zod": "^4.3.6"
+	},
+	"peerDependencies": {
+		"drizzle-orm": "^0.45.1"
+	},
+	"devDependencies": {
+		"@stylistic/eslint-plugin": "^5.10.0",
+		"@typescript-eslint/eslint-plugin": "^8.58.0",
+		"@typescript-eslint/parser": "^8.58.0",
+		"@vitest/coverage-v8": "^4.1.2",
+		"dprint": "^0.53.1",
+		"drizzle-orm": "^0.45.2",
+		"eslint": "^9.33.0",
+		"jsdom": "^29.0.1",
+		"typescript": "^5.9.0",
+		"vitest": "^4.1.2"
+	}
+}

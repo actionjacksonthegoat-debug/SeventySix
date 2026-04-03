@@ -159,5 +159,5 @@ The e-commerce sites (SvelteKit and TanStack) use environment variables (not .NE
 Both commerce sites support `MOCK_SERVICES=true` which replaces Stripe, Printful, and Brevo with in-memory mock implementations. This is the default for development, E2E tests, and load tests.
 
 For detailed configuration, see:
-- [SvelteKit Commerce README](../seventysixcommerce-sveltekit/README.md)
-- [TanStack Commerce README](../seventysixcommerce-tanstack/README.md)
+- [SvelteKit Commerce README](../ECommerce/seventysixcommerce-sveltekit/README.md)
+- [TanStack Commerce README](../ECommerce/seventysixcommerce-tanstack/README.md)

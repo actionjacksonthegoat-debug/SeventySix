@@ -88,7 +88,7 @@
 			"onAutoForward": "silent"
 		}
 	},
-	"postCreateCommand": "npm install && cd seventysixcommerce-sveltekit && npm ci && cd ../seventysixcommerce-tanstack && npm ci",
+	"postCreateCommand": "npm install && cd ECommerce/seventysixcommerce-sveltekit && npm ci && cd ../seventysixcommerce-tanstack && npm ci",
 	"customizations": {
 		"vscode": {
 			"extensions": [

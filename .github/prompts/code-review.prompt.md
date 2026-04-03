@@ -43,8 +43,14 @@ Review all staged/unstaged changes against every rule in the `.github/instructio
    |-------|---------|-------------------|
    | Server tests | `npm run test:server` | `Test summary: total: X, failed: 0` |
    | Client tests | `npm run test:client` | `X passed (X)` |
+   | Commerce SvelteKit Build & Test | `node scripts/link-commerce-shared-node-modules.mjs --app sveltekit && cd ECommerce/seventysixcommerce-sveltekit && npm run check && npm run test:coverage && npm run build` | `svelte-check found 0 errors`, coverage succeeds, build succeeds |
+   | Commerce TanStack Build & Test | `node scripts/link-commerce-shared-node-modules.mjs --app tanstack && cd ECommerce/seventysixcommerce-tanstack && npm run build && npm run typecheck && npm run test:coverage` | build/typecheck/coverage succeed |
    | E2E tests | `npm run test:e2e` | `[PASS] All E2E tests passed!` |
+   | Commerce SvelteKit E2E | `npm run test:e2e:svelte` | Playwright suite passes |
+   | Commerce TanStack E2E | `npm run test:e2e:tanstack` | Playwright suite passes |
    | Quick load test | `npm run loadtest:quick` | All scenarios pass thresholds |
+   | Commerce SvelteKit Load | `npm run loadtest:svelte:quick` | All scenarios pass thresholds |
+   | Commerce TanStack Load | `npm run loadtest:tanstack:quick` | All scenarios pass thresholds |
 
    > **NO EXCEPTIONS.** If infrastructure is not running, start it. Do not skip any suite.
    > **NEVER** label a failure "pre-existing" or "unrelated" and move on — ALL failures must be fixed.

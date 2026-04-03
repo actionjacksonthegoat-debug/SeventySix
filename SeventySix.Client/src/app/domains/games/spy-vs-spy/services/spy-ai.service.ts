@@ -181,6 +181,9 @@ export class SpyAiService
 			return;
 		}
 
+		const aiNode: TransformNode =
+			this.aiNode;
+
 		this.wantsCombat = false;
 		this.wantsSearch = false;
 
@@ -192,25 +195,16 @@ export class SpyAiService
 		}
 
 		/* Process stun timer. */
-		if (this.stunRemaining > 0)
+		if (this.processStunTimer(deltaTime))
 		{
-			this.stunRemaining =
-				Math.max(0, this.stunRemaining - deltaTime);
-
-			if (this.stunRemaining <= 0)
-			{
-				this.currentStunState =
-					StunState.None;
-			}
-
 			return;
 		}
 
 		/* Check if player spy is nearby for combat. */
 		const currentX: number =
-			this.aiNode.position.x;
+			aiNode.position.x;
 		const currentZ: number =
-			this.aiNode.position.z;
+			aiNode.position.z;
 
 		this.checkCombatOpportunity(
 			currentX,
@@ -234,7 +228,33 @@ export class SpyAiService
 			unsearchedFurnitureIds);
 
 		/* Move toward goal. */
-		this.pathfinding.moveTowardGoal(this.aiNode!, deltaTime);
+		this.pathfinding.moveTowardGoal(aiNode, deltaTime);
+	}
+
+	/**
+	 * Processes the stun timer, decrementing and clearing state when expired.
+	 * @param deltaTime
+	 * Frame delta in seconds.
+	 * @returns
+	 * True if the AI is still stunned and should skip further processing.
+	 */
+	private processStunTimer(deltaTime: number): boolean
+	{
+		if (this.stunRemaining <= 0)
+		{
+			return false;
+		}
+
+		this.stunRemaining =
+			Math.max(0, this.stunRemaining - deltaTime);
+
+		if (this.stunRemaining <= 0)
+		{
+			this.currentStunState =
+				StunState.None;
+		}
+
+		return true;
 	}
 
 	/**

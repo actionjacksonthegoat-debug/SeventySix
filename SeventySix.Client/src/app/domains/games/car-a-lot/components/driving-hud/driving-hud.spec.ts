@@ -9,6 +9,7 @@ import { RaceState } from "@games/car-a-lot/models/car-a-lot.models";
 import { CarALotAudioService } from "@games/car-a-lot/services/car-a-lot-audio.service";
 import { CoinService } from "@games/car-a-lot/services/coin.service";
 import { RaceStateService } from "@games/car-a-lot/services/race-state.service";
+import { AudioContextService } from "@games/shared/services/audio-context.service";
 import { InputService } from "@games/shared/services/input.service";
 import { vi } from "vitest";
 import { DrivingHudComponent } from "./driving-hud";
@@ -30,7 +31,7 @@ describe("DrivingHudComponent",
 								provideZonelessChangeDetection(),
 								RaceStateService,
 								CoinService,
-
+								AudioContextService,
 								CarALotAudioService,
 								InputService
 							]

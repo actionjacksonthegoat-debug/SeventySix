@@ -49,19 +49,12 @@ import { SpyAudioService } from "./spy-audio.service";
 import { SpyBuilderService } from "./spy-builder.service";
 import { SpyCameraService } from "./spy-camera.service";
 import { SpyDamageHandlerService } from "./spy-damage-handler.service";
+import { SpyInventoryService } from "./spy-inventory.service";
 import { SpyPhysicsService } from "./spy-physics.service";
 import { SpySearchHandlerService } from "./spy-search-handler.service";
+import { SpySearchOutcomeService } from "./spy-search-outcome.service";
 import { TrapService } from "./trap.service";
 import { TurnService } from "./turn.service";
-
-/** Test-only type for accessing private inventory methods during test setup. */
-interface FlowServiceTestAccess
-{
-	addPlayerItem(itemType: ItemType): void;
-	addPlayer2Item(itemType: ItemType): void;
-	dropRandomPlayerItem(): ItemType | null;
-	dropRandomPlayer2Item(): ItemType | null;
-}
 
 /** Creates a default player physics state. */
 function createPlayerState(
@@ -100,6 +93,7 @@ describe("SpyFlowService",
 	() =>
 	{
 		let service: SpyFlowService;
+		let inventoryService: SpyInventoryService;
 		let mockPhysics: SpyPhysicsService;
 		let mockAi: SpyAiService;
 		let mockItems: ItemService;
@@ -390,12 +384,16 @@ describe("SpyFlowService",
 							{ provide: SpyCameraService, useValue: mockCamera },
 							SpyAiCoordinatorService,
 							SpyDamageHandlerService,
-							SpySearchHandlerService
+							SpyInventoryService,
+							SpySearchHandlerService,
+							SpySearchOutcomeService
 						]
 					});
 
 				service =
 					TestBed.inject(SpyFlowService);
+				inventoryService =
+					TestBed.inject(SpyInventoryService);
 			});
 
 		it("should create without throwing",
@@ -508,8 +506,7 @@ describe("SpyFlowService",
 
 				for (const item of allItems)
 				{
-					(service as unknown as FlowServiceTestAccess)
-						.addPlayerItem(item);
+					inventoryService.collectItem(SpyIdentity.Black, item);
 				}
 
 				service.update(0.016);
@@ -819,8 +816,7 @@ describe("SpyFlowService",
 						service.update(COUNTDOWN_DURATION_SECONDS + 0.1);
 
 						/* Add an item to player inventory before triggering the trap. */
-						(service as unknown as FlowServiceTestAccess)
-							.addPlayerItem(ItemType.KeyCard);
+						inventoryService.collectItem(SpyIdentity.Black, ItemType.KeyCard);
 
 						service.triggerSearch();
 
@@ -1172,16 +1168,13 @@ describe("SpyFlowService",
 				it("should set allItemsCollected when 4 items are collected",
 					() =>
 					{
-						const testAccess: FlowServiceTestAccess =
-							service as unknown as FlowServiceTestAccess;
-
 						service.startGame();
 						service.update(COUNTDOWN_DURATION_SECONDS + 0.1);
 
-						testAccess.addPlayerItem(ItemType.KeyCard);
-						testAccess.addPlayerItem(ItemType.Passport);
-						testAccess.addPlayerItem(ItemType.SecretDocuments);
-						testAccess.addPlayerItem(ItemType.MoneyBag);
+						inventoryService.collectItem(SpyIdentity.Black, ItemType.KeyCard);
+						inventoryService.collectItem(SpyIdentity.Black, ItemType.Passport);
+						inventoryService.collectItem(SpyIdentity.Black, ItemType.SecretDocuments);
+						inventoryService.collectItem(SpyIdentity.Black, ItemType.MoneyBag);
 
 						/* Trigger a frame to process the items. */
 						service.update(0.016);
@@ -1193,16 +1186,13 @@ describe("SpyFlowService",
 				it("should not auto-win when 4 items collected away from airstrip",
 					() =>
 					{
-						const testAccess: FlowServiceTestAccess =
-							service as unknown as FlowServiceTestAccess;
-
 						service.startGame();
 						service.update(COUNTDOWN_DURATION_SECONDS + 0.1);
 
-						testAccess.addPlayerItem(ItemType.KeyCard);
-						testAccess.addPlayerItem(ItemType.Passport);
-						testAccess.addPlayerItem(ItemType.SecretDocuments);
-						testAccess.addPlayerItem(ItemType.MoneyBag);
+						inventoryService.collectItem(SpyIdentity.Black, ItemType.KeyCard);
+						inventoryService.collectItem(SpyIdentity.Black, ItemType.Passport);
+						inventoryService.collectItem(SpyIdentity.Black, ItemType.SecretDocuments);
+						inventoryService.collectItem(SpyIdentity.Black, ItemType.MoneyBag);
 
 						/* Player is at default spawn, NOT at airstrip. */
 						service.update(0.016);
@@ -1223,13 +1213,10 @@ describe("SpyFlowService",
 							(): void =>
 							{/* Hold — don't call onComplete. */};
 
-						const testAccess: FlowServiceTestAccess =
-							service as unknown as FlowServiceTestAccess;
-
-						testAccess.addPlayerItem(ItemType.KeyCard);
-						testAccess.addPlayerItem(ItemType.Passport);
-						testAccess.addPlayerItem(ItemType.SecretDocuments);
-						testAccess.addPlayerItem(ItemType.MoneyBag);
+						inventoryService.collectItem(SpyIdentity.Black, ItemType.KeyCard);
+						inventoryService.collectItem(SpyIdentity.Black, ItemType.Passport);
+						inventoryService.collectItem(SpyIdentity.Black, ItemType.SecretDocuments);
+						inventoryService.collectItem(SpyIdentity.Black, ItemType.MoneyBag);
 
 						/* Move player to airstrip zone. */
 						mockPhysics.getState =
@@ -1252,27 +1239,23 @@ describe("SpyFlowService",
 		describe("player 2 inventory",
 			() =>
 			{
-				it("addPlayer2Item should increment player 2 item count",
+				it("collectItem should increment player 2 item count",
 					() =>
 					{
-						(service as unknown as FlowServiceTestAccess)
-							.addPlayer2Item(ItemType.Passport);
+						inventoryService.collectItem(SpyIdentity.White, ItemType.Passport);
 
 						expect(service.player2Items())
 							.toBe(1);
 					});
 
-				it("dropRandomPlayer2Item should decrement player 2 items",
+				it("dropRandomItem should decrement player 2 items",
 					() =>
 					{
-						const testAccess: FlowServiceTestAccess =
-							service as unknown as FlowServiceTestAccess;
-
-						testAccess.addPlayer2Item(ItemType.Passport);
-						testAccess.addPlayer2Item(ItemType.KeyCard);
+						inventoryService.collectItem(SpyIdentity.White, ItemType.Passport);
+						inventoryService.collectItem(SpyIdentity.White, ItemType.KeyCard);
 
 						const dropped: ItemType | null =
-							testAccess.dropRandomPlayer2Item();
+							inventoryService.dropRandomItem(SpyIdentity.White);
 
 						expect(dropped)
 							.not
@@ -1281,12 +1264,11 @@ describe("SpyFlowService",
 							.toBe(1);
 					});
 
-				it("dropRandomPlayer2Item should return null when empty",
+				it("dropRandomItem should return null when empty",
 					() =>
 					{
 						const dropped: ItemType | null =
-							(service as unknown as FlowServiceTestAccess)
-								.dropRandomPlayer2Item();
+							inventoryService.dropRandomItem(SpyIdentity.White);
 
 						expect(dropped)
 							.toBeNull();

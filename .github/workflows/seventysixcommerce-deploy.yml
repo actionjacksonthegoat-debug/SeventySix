@@ -34,13 +34,14 @@ jobs:
                   PRINTFUL_API_KEY: ${{ secrets.SSXC_PRINTFUL_API_KEY }}
                   PRINTFUL_WEBHOOK_SECRET: ${{ secrets.SSXC_PRINTFUL_WEBHOOK_SECRET }}
                   BREVO_API_KEY: ${{ secrets.SSXC_BREVO_API_KEY }}
-                  TANSTACK_BASE_URL: ${{ vars.SSXC_TANSTACK_BASE_URL || 'https://commerce-tanstack.seventysixsandbox.com' }}
-                  SVELTEKIT_BASE_URL: ${{ vars.SSXC_SVELTEKIT_BASE_URL || 'https://commerce-sveltekit.seventysixsandbox.com' }}
+                  TANSTACK_BASE_URL: ${{ vars.SSXC_TANSTACK_BASE_URL || 'https://seventysixcommerce-react.seventysixsandbox.com' }}
+                  SVELTEKIT_BASE_URL: ${{ vars.SSXC_SVELTEKIT_BASE_URL || 'https://seventysixcommerce-svelte.seventysixsandbox.com' }}
+                  MOCK_SERVICES: ${{ vars.SSXC_MOCK_SERVICES || 'false' }}
               with:
                   host: ${{ secrets.PROD_HOST }}
                   username: ${{ secrets.PROD_USER }}
                   key: ${{ secrets.PROD_SSH_KEY }}
-                  envs: GITHUB_OWNER,SSXC_DB_USER,SSXC_DB_PASSWORD,STRIPE_SECRET_KEY,STRIPE_WEBHOOK_SECRET,PRINTFUL_API_KEY,PRINTFUL_WEBHOOK_SECRET,BREVO_API_KEY,TANSTACK_BASE_URL,SVELTEKIT_BASE_URL
+                  envs: GITHUB_OWNER,SSXC_DB_USER,SSXC_DB_PASSWORD,STRIPE_SECRET_KEY,STRIPE_WEBHOOK_SECRET,PRINTFUL_API_KEY,PRINTFUL_WEBHOOK_SECRET,BREVO_API_KEY,TANSTACK_BASE_URL,SVELTEKIT_BASE_URL,MOCK_SERVICES
                   script: |
                       set -euo pipefail
 

@@ -18,3 +18,15 @@ SeventySix.Server/SeventySix.Api/Middleware/ @actionjacksonthegoat-debug
 
 # Client security headers
 SeventySix.Client/nginx.conf @actionjacksonthegoat-debug
+
+# Commerce app source, configuration, and workflows
+ECommerce/ @actionjacksonthegoat-debug
+
+# Commerce infrastructure
+docker-compose.seventysixcommerce.yml @actionjacksonthegoat-debug
+docker-compose.loadtest-svelte.yml @actionjacksonthegoat-debug
+docker-compose.loadtest-tanstack.yml @actionjacksonthegoat-debug
+Caddyfile.seventysixcommerce @actionjacksonthegoat-debug
+
+# Shared build scripts
+scripts/ @actionjacksonthegoat-debug

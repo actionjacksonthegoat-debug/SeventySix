@@ -18,6 +18,8 @@ import { Scene } from "@babylonjs/core/scene";
 import "@babylonjs/core/Shaders/default.vertex";
 import "@babylonjs/core/Shaders/default.fragment";
 
+import { distanceXZ } from "@games/shared/utilities/math.utility";
+
 import { TRAP_TRIGGER_RADIUS } from "@games/spy-vs-spy/constants/spy-vs-spy.constants";
 import { INITIAL_TRAP_COUNT_PER_TYPE } from "@games/spy-vs-spy/constants/spy-vs-spy.constants";
 import {
@@ -231,12 +233,8 @@ export class TrapService
 				continue;
 			}
 
-			const deltaX: number =
-				positionX - trap.positionX;
-			const deltaZ: number =
-				positionZ - trap.positionZ;
 			const distance: number =
-				Math.sqrt(deltaX * deltaX + deltaZ * deltaZ);
+				distanceXZ(positionX, positionZ, trap.positionX, trap.positionZ);
 
 			if (distance <= TRAP_TRIGGER_RADIUS)
 			{

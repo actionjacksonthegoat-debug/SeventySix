@@ -31,14 +31,14 @@ const suites = [
 	},
 	{
 		name: "SvelteKit",
-		cwd: resolve(repoRoot, "seventysixcommerce-sveltekit"),
+		cwd: resolve(repoRoot, "ECommerce", "seventysixcommerce-sveltekit"),
 		command: "npm",
 		args: ["run", "test:e2e"],
 		color: "\x1b[35m",
 	},
 	{
 		name: "TanStack",
-		cwd: resolve(repoRoot, "seventysixcommerce-tanstack"),
+		cwd: resolve(repoRoot, "ECommerce", "seventysixcommerce-tanstack"),
 		command: "npm",
 		args: ["run", "test:e2e"],
 		color: "\x1b[33m",

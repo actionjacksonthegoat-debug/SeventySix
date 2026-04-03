@@ -63,11 +63,14 @@ export class ExplosionService
 			return;
 		}
 
+		const scene: Scene =
+			this.sceneRef;
+
 		this.audioService.playExplosionBoom();
 
-		this.createFireBurst(center);
-		this.createDebris(center);
-		this.createSmokePlume(center);
+		this.createFireBurst(scene, center);
+		this.createDebris(scene, center);
+		this.createSmokePlume(scene, center);
 
 		this.completionTimer =
 			setTimeout(
@@ -100,22 +103,23 @@ export class ExplosionService
 
 	/**
 	 * Creates the initial fire burst particle system.
+	 * @param scene - The active Babylon.js scene.
 	 * @param center - Explosion origin point.
 	 */
-	private createFireBurst(center: Vector3): void
+	private createFireBurst(scene: Scene, center: Vector3): void
 	{
 		const fire: ParticleSystem =
 			new ParticleSystem(
 				"explosionFire",
 				EXPLOSION_FIRE_PARTICLE_COUNT,
-				this.sceneRef!);
+				scene);
 
 		fire.emitter =
 			center.clone();
 		fire.particleTexture =
 			new Texture(
 				"assets/babylonjs/textures/flare.png",
-				this.sceneRef!);
+				scene);
 
 		fire.color1 =
 			new Color4(1.0, 0.6, 0.0, 1.0);
@@ -146,22 +150,23 @@ export class ExplosionService
 
 	/**
 	 * Creates debris particles thrown outward from the explosion.
+	 * @param scene - The active Babylon.js scene.
 	 * @param center - Explosion origin point.
 	 */
-	private createDebris(center: Vector3): void
+	private createDebris(scene: Scene, center: Vector3): void
 	{
 		const debris: ParticleSystem =
 			new ParticleSystem(
 				"explosionDebris",
 				EXPLOSION_DEBRIS_PARTICLE_COUNT,
-				this.sceneRef!);
+				scene);
 
 		debris.emitter =
 			center.clone();
 		debris.particleTexture =
 			new Texture(
 				"assets/babylonjs/textures/flare.png",
-				this.sceneRef!);
+				scene);
 
 		debris.color1 =
 			new Color4(0.5, 0.35, 0.2, 1.0);
@@ -194,22 +199,23 @@ export class ExplosionService
 
 	/**
 	 * Creates rising smoke particles that persist after the explosion.
+	 * @param scene - The active Babylon.js scene.
 	 * @param center - Explosion origin point.
 	 */
-	private createSmokePlume(center: Vector3): void
+	private createSmokePlume(scene: Scene, center: Vector3): void
 	{
 		const smoke: ParticleSystem =
 			new ParticleSystem(
 				"explosionSmoke",
 				EXPLOSION_SMOKE_PARTICLE_COUNT,
-				this.sceneRef!);
+				scene);
 
 		smoke.emitter =
 			center.clone();
 		smoke.particleTexture =
 			new Texture(
 				"assets/babylonjs/textures/flare.png",
-				this.sceneRef!);
+				scene);
 
 		smoke.color1 =
 			new Color4(0.3, 0.3, 0.3, 0.6);

@@ -93,13 +93,13 @@ if [[ "${LANGUAGE}" == "typescript" ]]; then
   fi
 
   echo ">>> [TS] Installing SvelteKit packages..."
-  cd "${REPO_ROOT}/seventysixcommerce-sveltekit"
+  cd "${REPO_ROOT}/ECommerce/seventysixcommerce-sveltekit"
   if [[ ! -d node_modules ]]; then
     npm ci --prefer-offline 2>/dev/null || npm install
   fi
 
   echo ">>> [TS] Installing TanStack packages..."
-  cd "${REPO_ROOT}/seventysixcommerce-tanstack"
+  cd "${REPO_ROOT}/ECommerce/seventysixcommerce-tanstack"
   if [[ ! -d node_modules ]]; then
     npm ci --prefer-offline 2>/dev/null || npm install
   fi

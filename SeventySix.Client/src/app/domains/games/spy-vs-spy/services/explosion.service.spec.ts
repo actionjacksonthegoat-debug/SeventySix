@@ -10,6 +10,7 @@ import { Vector3 } from "@babylonjs/core/Maths/math.vector";
 import { Scene } from "@babylonjs/core/scene";
 import { EXPLOSION_DURATION_SECONDS } from "@games/spy-vs-spy/constants/spy-vs-spy.constants";
 
+import { AudioContextService } from "@games/shared/services/audio-context.service";
 import { ExplosionService } from "@games/spy-vs-spy/services/explosion.service";
 import { SpyAudioService } from "@games/spy-vs-spy/services/spy-audio.service";
 
@@ -28,6 +29,7 @@ describe("ExplosionService",
 					{
 						providers: [
 							provideZonelessChangeDetection(),
+							AudioContextService,
 							ExplosionService,
 							SpyAudioService
 						]

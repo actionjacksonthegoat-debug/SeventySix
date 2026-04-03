@@ -1,6 +1,6 @@
 ---
 description: SvelteKit patterns and rules for the SeventySixCommerce sandbox site
-applyTo: "**/seventysixcommerce-sveltekit/src/**/*.{ts,svelte,css}"
+applyTo: "**/ECommerce/seventysixcommerce-sveltekit/src/**/*.{ts,svelte,css}"
 ---
 
 # SvelteKit Instructions
@@ -29,7 +29,7 @@ applyTo: "**/seventysixcommerce-sveltekit/src/**/*.{ts,svelte,css}"
 ## Project Structure
 
 ```
-seventysixcommerce-sveltekit/src/
+ECommerce/seventysixcommerce-sveltekit/src/
 ├── lib/
 │   ├── assets/           # Static SVGs and images
 │   ├── components/       # Reusable Svelte components

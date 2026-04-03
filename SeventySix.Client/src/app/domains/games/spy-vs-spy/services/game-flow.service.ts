@@ -15,6 +15,7 @@ import { inject, Injectable, Signal, signal, WritableSignal } from "@angular/cor
 import { Vector3 } from "@babylonjs/core/Maths/math.vector";
 import type { TransformNode } from "@babylonjs/core/Meshes/transformNode";
 import type { Scene } from "@babylonjs/core/scene";
+import { CountdownHelper, CountdownTickResult } from "@games/shared/utilities/countdown.utility";
 import {
 	AIRSTRIP_CENTER_X,
 	AIRSTRIP_CENTER_Z,
@@ -30,7 +31,6 @@ import {
 } from "@games/spy-vs-spy/constants/spy-vs-spy.constants";
 import {
 	CombatResult,
-	ItemType,
 	RemedyType,
 	RoomId,
 	SpyGameState,
@@ -39,11 +39,12 @@ import {
 } from "@games/spy-vs-spy/models/spy-vs-spy.models";
 import type {
 	FurnitureDefinition,
+	LifeChange,
 	SearchAttemptResult,
+	SearchOutcome,
 	SpyPhysicsState,
 	SpyState
 } from "@games/spy-vs-spy/models/spy-vs-spy.models";
-import type { SearchOutcome } from "@games/spy-vs-spy/models/spy-vs-spy.models";
 import { AirplaneService } from "@games/spy-vs-spy/services/airplane.service";
 import { CombatService } from "@games/spy-vs-spy/services/combat.service";
 import { ExplosionService } from "@games/spy-vs-spy/services/explosion.service";
@@ -55,8 +56,10 @@ import { SpyAiService } from "@games/spy-vs-spy/services/spy-ai.service";
 import { SpyAudioService } from "@games/spy-vs-spy/services/spy-audio.service";
 import { SpyCameraService } from "@games/spy-vs-spy/services/spy-camera.service";
 import { SpyDamageHandlerService } from "@games/spy-vs-spy/services/spy-damage-handler.service";
+import { SpyInventoryService } from "@games/spy-vs-spy/services/spy-inventory.service";
 import { SpyPhysicsService } from "@games/spy-vs-spy/services/spy-physics.service";
 import { SpySearchHandlerService } from "@games/spy-vs-spy/services/spy-search-handler.service";
+import { SpySearchOutcomeService } from "@games/spy-vs-spy/services/spy-search-outcome.service";
 import { TrapService } from "@games/spy-vs-spy/services/trap.service";
 import { TurnService } from "@games/spy-vs-spy/services/turn.service";
 
@@ -127,6 +130,14 @@ export class SpyFlowService
 	private readonly damageHandler: SpyDamageHandlerService =
 		inject(SpyDamageHandlerService);
 
+	/** Per-player item and remedy inventory manager. */
+	private readonly inventoryService: SpyInventoryService =
+		inject(SpyInventoryService);
+
+	/** Search outcome handler — applies items, traps, remedies, and item drops. */
+	private readonly searchOutcomeService: SpySearchOutcomeService =
+		inject(SpySearchOutcomeService);
+
 	/* ─── Private Writable Signals ─────────────────────────────────────── */
 
 	/** Current game state writable signal. */
@@ -140,18 +151,6 @@ export class SpyFlowService
 	/** Countdown value for Ready state HUD display. */
 	private readonly countdownValueSignal: WritableSignal<number> =
 		signal<number>(COUNTDOWN_DURATION_SECONDS);
-
-	/** Player 1 (Black) item count writable signal. */
-	private readonly player1ItemCountSignal: WritableSignal<number> =
-		signal<number>(0);
-
-	/** Player 2 (White / AI) item count writable signal. */
-	private readonly player2ItemCountSignal: WritableSignal<number> =
-		signal<number>(0);
-
-	/** Player 1 remedy count signal (publicly readable). */
-	private readonly player1RemedyCountSignal: WritableSignal<number> =
-		signal<number>(0);
 
 	/** Whether player is near searchable furniture. */
 	private readonly nearFurnitureSignal: WritableSignal<boolean> =
@@ -177,26 +176,11 @@ export class SpyFlowService
 	private readonly playerStunRemainingSignal: WritableSignal<number> =
 		signal<number>(0);
 
-	/** Whether the player has collected all required mission items. */
-	private readonly allItemsCollectedSignal: WritableSignal<boolean> =
-		signal<boolean>(false);
-
 	/* ─── Private State ────────────────────────────────────────────────── */
 
-	/** Player 1 (Black spy) inventory. */
-	private readonly player1Inventory: ItemType[] = [];
-
-	/** Player 2 (White spy / AI) inventory. */
-	private readonly player2Inventory: ItemType[] = [];
-
-	/** Player 1 remedies. */
-	private readonly player1Remedies: RemedyType[] = [];
-
-	/** Player 2 remedies. */
-	private readonly player2Remedies: RemedyType[] = [];
-
 	/** Countdown timer for Ready state. */
-	private countdownElapsed: number = 0;
+	private readonly countdown: CountdownHelper =
+		new CountdownHelper(COUNTDOWN_DURATION_SECONDS);
 
 	/** Babylon.js scene reference for visual effects. */
 	private sceneRef: Scene | null = null;
@@ -221,13 +205,13 @@ export class SpyFlowService
 	readonly countdownValue: Signal<number> =
 		this.countdownValueSignal.asReadonly();
 
-	/** Readonly signal — player 1 item count. */
+	/** Readonly signal — player 1 item count (delegated to SpyInventoryService). */
 	readonly player1Items: Signal<number> =
-		this.player1ItemCountSignal.asReadonly();
+		this.inventoryService.player1ItemCount;
 
-	/** Readonly signal — player 2 item count. */
+	/** Readonly signal — player 2 item count (delegated to SpyInventoryService). */
 	readonly player2Items: Signal<number> =
-		this.player2ItemCountSignal.asReadonly();
+		this.inventoryService.player2ItemCount;
 
 	/** Readonly signal — shared island self-destruct timer. */
 	readonly islandTimer: Signal<number> =
@@ -245,9 +229,9 @@ export class SpyFlowService
 	readonly notificationColor: Signal<string> =
 		this.searchHandler.notificationColor;
 
-	/** Readonly signal — player 1 collected remedy count. */
+	/** Readonly signal — player 1 collected remedy count (delegated to SpyInventoryService). */
 	readonly player1RemedyCount: Signal<number> =
-		this.player1RemedyCountSignal.asReadonly();
+		this.inventoryService.player1RemedyCount;
 
 	/** Readonly signal — whether player is near searchable furniture. */
 	readonly nearFurniture: Signal<boolean> =
@@ -281,13 +265,13 @@ export class SpyFlowService
 	readonly playerStunRemaining: Signal<number> =
 		this.playerStunRemainingSignal.asReadonly();
 
-	/** Readonly signal — whether the player has found all 4 mission items. */
+	/** Readonly signal — whether the player has found all 4 mission items (delegated to SpyInventoryService). */
 	readonly allItemsCollected: Signal<boolean> =
-		this.allItemsCollectedSignal.asReadonly();
+		this.inventoryService.allItemsCollected;
 
 	/** Backward-compatible alias for player 1 item count. */
 	readonly playerItemCount: Signal<number> =
-		this.player1ItemCountSignal.asReadonly();
+		this.inventoryService.player1ItemCount;
 
 	/**
 	 * Stores scene and spy node references for visual effects and win condition checking.
@@ -318,7 +302,7 @@ export class SpyFlowService
 	startGame(): void
 	{
 		this.gameStateSignal.set(SpyGameState.Ready);
-		this.countdownElapsed = 0;
+		this.countdown.reset();
 		this.countdownValueSignal.set(COUNTDOWN_DURATION_SECONDS);
 		this.elapsedSecondsSignal.set(0);
 		this.turnService.initialize(GAME_TIMER_SECONDS);
@@ -404,8 +388,8 @@ export class SpyFlowService
 				this.determineRoom(
 					playerState.positionX,
 					playerState.positionZ) ?? RoomId.JungleHQ,
-				this.player1Inventory,
-				this.player1Remedies,
+				this.inventoryService.getItems(SpyIdentity.Black),
+				this.inventoryService.getRemedies(SpyIdentity.Black),
 				this.turnService.islandTimer());
 		const aiSearchResult: SearchAttemptResult | null =
 			this.aiCoordinator.updateAi(deltaTime, playerSpyState);
@@ -440,7 +424,7 @@ export class SpyFlowService
 			this.searchService.searchNearby(
 				playerState.positionX,
 				playerState.positionZ,
-				this.player1Remedies,
+				this.inventoryService.getRemedies(SpyIdentity.Black),
 				SpyIdentity.Black);
 
 		if (result == null)
@@ -558,18 +542,11 @@ export class SpyFlowService
 		this.gameStateSignal.set(SpyGameState.Idle);
 		this.elapsedSecondsSignal.set(0);
 		this.countdownValueSignal.set(COUNTDOWN_DURATION_SECONDS);
-		this.player1Inventory.length = 0;
-		this.player2Inventory.length = 0;
-		this.player1Remedies.length = 0;
-		this.player2Remedies.length = 0;
-		this.player1ItemCountSignal.set(0);
-		this.player2ItemCountSignal.set(0);
-		this.player1RemedyCountSignal.set(0);
+		this.inventoryService.reset();
 		this.nearFurnitureSignal.set(false);
 		this.player1LivesSignal.set(SPY_STARTING_LIVES);
 		this.player2LivesSignal.set(SPY_STARTING_LIVES);
-		this.allItemsCollectedSignal.set(false);
-		this.countdownElapsed = 0;
+		this.countdown.reset();
 		this.winReasonSignal.set("");
 		this.currentRoomSignal.set("");
 		this.playerStunRemainingSignal.set(0);
@@ -618,178 +595,21 @@ export class SpyFlowService
 	}
 
 	/**
-	 * Returns elapsed seconds in the current round.
-	 * @returns
-	 * Elapsed time in seconds.
-	 */
-	private getElapsedSeconds(): number
-	{
-		return this.elapsedSeconds();
-	}
-
-	/**
-	 * Returns the player 1 item count.
-	 * @returns
-	 * Number of items collected by player 1.
-	 */
-	private getPlayerItemCount(): number
-	{
-		return this.player1Items();
-	}
-
-	/**
-	 * Returns the player 2 item count.
-	 * @returns
-	 * Number of items collected by player 2.
-	 */
-	private getPlayer2ItemCount(): number
-	{
-		return this.player2Items();
-	}
-
-	/**
-	 * Adds an item to player 1's inventory.
-	 * @param itemType
-	 * The type of item collected.
-	 */
-	private addPlayerItem(itemType: ItemType): void
-	{
-		this.player1Inventory.push(itemType);
-		this.player1ItemCountSignal.set(this.player1Inventory.length);
-	}
-
-	/**
-	 * Adds an item to player 2's inventory.
-	 * @param itemType
-	 * The type of item collected.
-	 */
-	private addPlayer2Item(itemType: ItemType): void
-	{
-		this.player2Inventory.push(itemType);
-		this.player2ItemCountSignal.set(this.player2Inventory.length);
-	}
-
-	/**
-	 * Returns a human-readable display name for an item type.
-	 * @param itemType
-	 * The item type to name.
-	 * @returns
-	 * Friendly display name.
-	 */
-	private getItemDisplayName(itemType: ItemType): string
-	{
-		switch (itemType)
-		{
-			case ItemType.SecretDocuments:
-				return "Secret Documents";
-			case ItemType.Passport:
-				return "Passport";
-			case ItemType.KeyCard:
-				return "Key Card";
-			case ItemType.MoneyBag:
-				return "Money Bag";
-		}
-	}
-
-	/**
-	 * Removes a random item from player 1's inventory (trap/combat penalty).
-	 * @returns
-	 * The dropped ItemType, or null if inventory was empty.
-	 */
-	private dropRandomPlayerItem(): ItemType | null
-	{
-		if (this.player1Inventory.length === 0)
-		{
-			return null;
-		}
-
-		const index: number =
-			Math.floor(Math.random() * this.player1Inventory.length);
-		const dropped: ItemType =
-			this.player1Inventory.splice(index, 1)[0];
-
-		this.player1ItemCountSignal.set(this.player1Inventory.length);
-
-		return dropped;
-	}
-
-	/**
-	 * Removes a random item from player 2's inventory (trap/combat penalty).
-	 * @returns
-	 * The dropped ItemType, or null if inventory was empty.
-	 */
-	private dropRandomPlayer2Item(): ItemType | null
-	{
-		if (this.player2Inventory.length === 0)
-		{
-			return null;
-		}
-
-		const index: number =
-			Math.floor(Math.random() * this.player2Inventory.length);
-		const dropped: ItemType =
-			this.player2Inventory.splice(index, 1)[0];
-
-		this.player2ItemCountSignal.set(this.player2Inventory.length);
-
-		return dropped;
-	}
-
-	/**
-	 * Consumes a remedy from a spy's inventory after trap defusal.
-	 * @param remedyType
-	 * The remedy type that was consumed.
-	 * @param isPlayer1
-	 * Whether the consuming spy is player 1.
-	 */
-	private consumeRemedy(
-		remedyType: RemedyType,
-		isPlayer1: boolean): void
-	{
-		const remedies: RemedyType[] =
-			isPlayer1 ? this.player1Remedies : this.player2Remedies;
-		const index: number =
-			remedies.indexOf(remedyType);
-
-		if (index >= 0)
-		{
-			remedies.splice(index, 1);
-		}
-
-		if (isPlayer1)
-		{
-			this.player1RemedyCountSignal.set(
-				this.player1Remedies.length);
-		}
-	}
-
-	/**
-	 * Returns the countdown value for HUD display.
-	 * @returns
-	 * Countdown seconds remaining (3, 2, 1, 0).
-	 */
-	private getCountdownValue(): number
-	{
-		return Math.max(
-			0,
-			COUNTDOWN_DURATION_SECONDS - Math.floor(this.countdownElapsed));
-	}
-
-	/**
 	 * Handles countdown timer in Ready state.
 	 * @param deltaTime
 	 * Frame delta time in seconds.
 	 */
 	private updateCountdown(deltaTime: number): void
 	{
-		this.countdownElapsed += deltaTime;
+		const result: CountdownTickResult =
+			this.countdown.update(deltaTime);
 
-		this.countdownValueSignal.set(
-			Math.max(
-				0,
-				COUNTDOWN_DURATION_SECONDS - Math.floor(this.countdownElapsed)));
+		if (result.valueChanged)
+		{
+			this.countdownValueSignal.set(this.countdown.currentValue);
+		}
 
-		if (this.countdownElapsed >= COUNTDOWN_DURATION_SECONDS)
+		if (result.completed)
 		{
 			this.gameStateSignal.set(SpyGameState.Playing);
 			this.elapsedSecondsSignal.set(0);
@@ -799,7 +619,7 @@ export class SpyFlowService
 
 	/**
 	 * Handles the result of a search attempt using the search handler.
-	 * Applies inventory changes, trap effects, and remedy effects based on the outcome.
+	 * Delegates outcome application to SpySearchOutcomeService and applies life changes.
 	 * @param result
 	 * The search attempt result.
 	 * @param isPlayer1
@@ -812,225 +632,30 @@ export class SpyFlowService
 		const outcome: SearchOutcome =
 			this.searchHandler.handleSearchResult(result, isPlayer1);
 
-		switch (outcome.type)
+		const lifeChanges: LifeChange[] =
+			this.searchOutcomeService.applyOutcome(outcome, isPlayer1);
+
+		for (const change of lifeChanges)
 		{
-			case "item":
-				this.applyItemOutcome(outcome, isPlayer1);
-				break;
-
-			case "trap":
-				this.applyTrapOutcome(outcome, isPlayer1);
-				break;
-
-			case "remedy-defused":
-				this.applyRemedyDefusedOutcome(outcome, isPlayer1);
-				break;
-
-			case "remedy-pickup":
-				this.handleRemedyPickup(outcome.remedyType!, isPlayer1);
-				break;
-
-			case "empty":
-				break;
+			this.applyLifeChange(change);
 		}
 	}
 
 	/**
-	 * Applies the inventory changes from a found-item search outcome.
-	 * @param outcome
-	 * The search outcome with item details.
-	 * @param isPlayer1
-	 * Whether the finding player is player 1.
+	 * Applies a life-change delta returned by search outcome or combat resolution.
+	 * @param change
+	 * The life change to apply.
 	 */
-	private applyItemOutcome(
-		outcome: SearchOutcome,
-		isPlayer1: boolean): void
+	private applyLifeChange(change: LifeChange): void
 	{
-		if (outcome.itemType == null)
-		{
-			return;
-		}
+		const signal: WritableSignal<number> =
+			change.identity === SpyIdentity.Black
+				? this.player1LivesSignal
+				: this.player2LivesSignal;
 
-		if (isPlayer1)
-		{
-			this.addPlayerItem(outcome.itemType);
-			const itemName: string =
-				this.getItemDisplayName(outcome.itemType);
-			const count: number =
-				this.player1Inventory.length;
-
-			if (count >= REQUIRED_ITEM_COUNT)
-			{
-				this.allItemsCollectedSignal.set(true);
-			}
-			else
-			{
-				this.searchHandler.showNotification(
-					`[${String(count)}/4] ${itemName} found!`,
-					1500,
-					"#0f0");
-			}
-		}
-		else
-		{
-			this.addPlayer2Item(outcome.itemType);
-			this.spyAi.collectItem(outcome.itemType);
-		}
-	}
-
-	/**
-	 * Applies trap damage and inventory effects from a trap search outcome.
-	 * Notification was already shown by the search handler.
-	 * @param outcome
-	 * The search outcome with trap details.
-	 * @param isPlayer1
-	 * Whether the trapped player is player 1.
-	 */
-	private applyTrapOutcome(
-		outcome: SearchOutcome,
-		isPlayer1: boolean): void
-	{
-		if (outcome.trapType == null)
-		{
-			return;
-		}
-
-		const isBomb: boolean =
-			this.damageHandler.applyTrapToSpy(outcome.trapType, isPlayer1);
-
-		/* Replenish the placing spy's inventory for this trap type. */
-		if (outcome.trapPlacedBy != null)
-		{
-			this.trapService.replenishTrap(
-				outcome.trapPlacedBy,
-				outcome.trapType);
-		}
-
-		if (isBomb)
-		{
-			this.applyBombItemDrop(isPlayer1);
-		}
-	}
-
-	/**
-	 * Applies remedy defusal effects — consumes the remedy from inventory.
-	 * @param outcome
-	 * The search outcome with remedy details.
-	 * @param isPlayer1
-	 * Whether the defusing player is player 1.
-	 */
-	private applyRemedyDefusedOutcome(
-		outcome: SearchOutcome,
-		isPlayer1: boolean): void
-	{
-		if (outcome.remedyType == null)
-		{
-			return;
-		}
-
-		this.consumeRemedy(outcome.remedyType, isPlayer1);
-
-		if (isPlayer1)
-		{
-			const remedyName: string =
-				outcome.remedyType === RemedyType.WireCutters
-					? "Wire Cutters"
-					: "Shield";
-			this.searchHandler.showNotification(
-				`${remedyName} defused the trap!`,
-				1200,
-				"#ff0");
-		}
-	}
-
-	/**
-	 * Adds a picked-up remedy to the player's inventory and applies immediate effects.
-	 * @param remedyType
-	 * The type of remedy found.
-	 * @param isPlayer1
-	 * Whether the picking-up player is player 1 (Black spy).
-	 */
-	private handleRemedyPickup(
-		remedyType: RemedyType,
-		isPlayer1: boolean): void
-	{
-		if (isPlayer1)
-		{
-			this.player1Remedies.push(remedyType);
-			this.player1RemedyCountSignal.set(
-				this.player1Remedies.length);
-
-			if (remedyType === RemedyType.Shield)
-			{
-				this.player1LivesSignal.update(
-					(lives: number) => lives + 1);
-				this.searchHandler.showNotification(
-					"Shield collected! +1 life!",
-					1200,
-					"#ff0");
-			}
-			else
-			{
-				this.searchHandler.showNotification(
-					"Wire Cutters collected!",
-					1200,
-					"#ff0");
-			}
-		}
-		else
-		{
-			this.player2Remedies.push(remedyType);
-
-			if (remedyType === RemedyType.Shield)
-			{
-				this.player2LivesSignal.update(
-					(lives: number) => lives + 1);
-			}
-
-			this.spyAi.collectRemedy(remedyType);
-		}
-	}
-
-	/**
-	 * Handles bomb-specific inventory and life consequences.
-	 * Visual and audio effects are handled by the damage handler.
-	 * @param isPlayer1
-	 * Whether the affected spy is player 1 (Black).
-	 */
-	private applyBombItemDrop(isPlayer1: boolean): void
-	{
-		if (isPlayer1)
-		{
-			const droppedItem: ItemType | null =
-				this.dropRandomPlayerItem();
-
-			if (droppedItem != null)
-			{
-				this.searchService.redistributeItem(
-					droppedItem,
-					SpyIdentity.Black);
-			}
-
-			this.player1LivesSignal.update(
-				(lives: number) =>
-					Math.max(0, lives - 1));
-		}
-		else
-		{
-			const droppedItem: ItemType | null =
-				this.dropRandomPlayer2Item();
-
-			if (droppedItem != null)
-			{
-				this.searchService.redistributeItem(
-					droppedItem,
-					SpyIdentity.White);
-			}
-
-			this.player2LivesSignal.update(
-				(lives: number) =>
-					Math.max(0, lives - 1));
-		}
+		signal.update(
+			(lives: number) =>
+				Math.max(0, lives + change.delta));
 	}
 
 	/**
@@ -1048,9 +673,8 @@ export class SpyFlowService
 				"You defeated the spy!",
 				1500,
 				"#0f0");
-			this.player2LivesSignal.update(
-				(lives: number) =>
-					Math.max(0, lives - 1));
+			this.applyLifeChange(
+				{ identity: SpyIdentity.White, delta: -1 });
 		}
 		else
 		{
@@ -1058,9 +682,8 @@ export class SpyFlowService
 				"Spy defeated you!",
 				1500,
 				"#f00");
-			this.player1LivesSignal.update(
-				(lives: number) =>
-					Math.max(0, lives - 1));
+			this.applyLifeChange(
+				{ identity: SpyIdentity.Black, delta: -1 });
 		}
 	}
 
@@ -1098,7 +721,7 @@ export class SpyFlowService
 	 */
 	private checkWinCondition(): void
 	{
-		if (this.player1Inventory.length < REQUIRED_ITEM_COUNT)
+		if (!this.inventoryService.hasAllItems(SpyIdentity.Black))
 		{
 			return;
 		}
@@ -1108,7 +731,6 @@ export class SpyFlowService
 
 		if (!this.isWithinAirstripRunway(playerState.positionX, playerState.positionZ))
 		{
-			this.allItemsCollectedSignal.set(true);
 			return;
 		}
 

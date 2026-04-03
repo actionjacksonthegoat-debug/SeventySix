@@ -1,6 +1,6 @@
 ---
 description: Code formatting rules for all TypeScript and C# files
-applyTo: "**/SeventySix.Client/src/**/*.{ts,html,scss,css},**/SeventySix.Server/**/*.cs,**/seventysixcommerce-sveltekit/src/**/*.{ts,svelte,css},**/seventysixcommerce-tanstack/src/**/*.{ts,tsx,css}"
+applyTo: "**/SeventySix.Client/src/**/*.{ts,html,scss,css},**/SeventySix.Server/**/*.cs,**/ECommerce/seventysixcommerce-sveltekit/src/**/*.{ts,svelte,css},**/ECommerce/seventysixcommerce-tanstack/src/**/*.{ts,tsx,css}"
 ---
 
 # Formatting Instructions

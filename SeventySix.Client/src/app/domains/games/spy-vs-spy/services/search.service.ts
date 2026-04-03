@@ -10,6 +10,7 @@
  */
 
 import { Injectable } from "@angular/core";
+import { distanceXZ } from "@games/shared/utilities/math.utility";
 import {
 	FURNITURE_SEARCH_RADIUS,
 	ROOM_COLUMNS,
@@ -398,12 +399,8 @@ export class SearchService
 				room.centerX + furniture.offsetX;
 			const furnZ: number =
 				room.centerZ + furniture.offsetZ;
-			const deltaX: number =
-				positionX - furnX;
-			const deltaZ: number =
-				positionZ - furnZ;
 			const dist: number =
-				Math.sqrt(deltaX * deltaX + deltaZ * deltaZ);
+				distanceXZ(positionX, positionZ, furnX, furnZ);
 
 			if (dist < nearestDist)
 			{

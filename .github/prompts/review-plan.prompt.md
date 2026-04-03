@@ -23,12 +23,23 @@ Read `Implementation.md` (orchestrator) and ALL `implementation-N.md` files list
 8. **Zero Warnings Gate**: Verify the plan includes a mandatory step (after all implementation phases, before security review) to run `npm run format`, `/fix-warnings`, and `get_errors` with zero errors/warnings confirmed.
 9. **Documentation**: Verify phases document all new classes, methods, functions, properties, and constants — XML doc (C#), JSDoc (TS/JS/MJS), comment-based help (PS). Tests are exempt.
 9. **Final phase MUST run all required test suites (this is final-phase only — intermediate phases use build + unit tests) — NO SKIPPING, NO EXCEPTIONS, REGARDLESS OF TIME NEEDED**:
-    - `dotnet test` → `Test summary: total: X, failed: 0`
-    - `npm test` → `X passed (X)`
-    - `npm run test:e2e` → `[PASS] All E2E tests passed!`
-    - `npm run loadtest:quick` → All scenarios pass thresholds
+
+    | Suite | Command | Must See |
+    |-------|---------|----------|
+    | Client Build & Test | `cd SeventySix.Client && npm run lint && npm run build && npm run test:coverage` | lint/build pass, coverage succeeds |
+    | Server Build & Test | `cd SeventySix.Server && dotnet restore SeventySix.Server.slnx && dotnet build SeventySix.Server.slnx --configuration Release --no-restore /p:TreatWarningsAsErrors=true && dotnet test SeventySix.Server.slnx --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage" --settings ./coverlet.runsettings --results-directory ./TestResults --logger "trx"` | build w/ warnings-as-errors passes, tests pass |
+    | Commerce SvelteKit Build & Test | `node scripts/link-commerce-shared-node-modules.mjs --app sveltekit && cd ECommerce/seventysixcommerce-sveltekit && npm run check && npm run test:coverage && npm run build` | `svelte-check found 0 errors`, coverage succeeds, build succeeds |
+    | Commerce TanStack Build & Test | `node scripts/link-commerce-shared-node-modules.mjs --app tanstack && cd ECommerce/seventysixcommerce-tanstack && npm run build && npm run typecheck && npm run test:coverage` | build/typecheck/coverage succeed |
+    | Main App E2E | `npm run test:e2e` | `[PASS] All E2E tests passed!` |
+    | Commerce SvelteKit E2E | `npm run test:e2e:svelte` | Playwright suite passes |
+    | Commerce TanStack E2E | `npm run test:e2e:tanstack` | Playwright suite passes |
+    | Main App Load (quick) | `npm run loadtest:quick` | All scenarios pass thresholds |
+    | Commerce SvelteKit Load (quick) | `npm run loadtest:svelte:quick` | All scenarios pass thresholds |
+    | Commerce TanStack Load (quick) | `npm run loadtest:tanstack:quick` | All scenarios pass thresholds |
+
     - E2E and load tests CAN run in parallel to save time
     - If infrastructure is not running, **start it** — do not skip the suite
+    - For isolated commerce validation, always run `node scripts/link-commerce-shared-node-modules.mjs --app <sveltekit|tanstack>` first
 
 ## Output
 

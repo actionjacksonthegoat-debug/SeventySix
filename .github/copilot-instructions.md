@@ -102,16 +102,24 @@ This gate runs **once** at the end of a plan — not during every phase.
 
 **During implementation phases**: run relevant build/unit tests to verify your work (`dotnet build`, `ng build`, unit tests for changed code). Run `get_errors` (no file filter) after each phase to catch IDE/TypeScript warnings. Do NOT run E2E or load tests mid-phase.
 
-**Final validation** (after all implementation phases + security review + `npm run format`):
+**Final validation** (after all implementation phases + security review + `npm run format`) must mirror the GitHub Actions quality gates as closely as local tooling allows:
 
 | Suite        | Command              | Must See                            |
 | ------------ | -------------------- | ----------------------------------- |
-| Server       | `dotnet test`        | `Test summary: total: X, failed: 0` |
-| Client       | `npm test`           | `X passed (X)`                      |
-| E2E          | `npm run test:e2e`   | `[PASS] All E2E tests passed!`      |
-| Load (quick) | `npm run loadtest:quick` | All scenarios pass thresholds   |
+| Client Build & Test | `cd SeventySix.Client && npm run lint && npm run build && npm run test:coverage` | lint/build pass and coverage run succeeds |
+| Server Build & Test | `cd SeventySix.Server && dotnet restore SeventySix.Server.slnx && dotnet build SeventySix.Server.slnx --configuration Release --no-restore /p:TreatWarningsAsErrors=true && dotnet test SeventySix.Server.slnx --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage" --settings ./coverlet.runsettings --results-directory ./TestResults --logger "trx"` | build passes with warnings as errors and tests/coverage succeed |
+| Commerce SvelteKit Build & Test | `node scripts/link-commerce-shared-node-modules.mjs --app sveltekit && cd ECommerce/seventysixcommerce-sveltekit && npm run check && npm run test:coverage && npm run build` | `svelte-check found 0 errors`, coverage run succeeds, build succeeds |
+| Commerce TanStack Build & Test | `node scripts/link-commerce-shared-node-modules.mjs --app tanstack && cd ECommerce/seventysixcommerce-tanstack && npm run build && npm run typecheck && npm run test:coverage` | build/typecheck/coverage succeed |
+| Main App E2E | `npm run test:e2e` | `[PASS] All E2E tests passed!` |
+| Commerce SvelteKit E2E | `npm run test:e2e:svelte` | Playwright suite passes |
+| Commerce TanStack E2E | `npm run test:e2e:tanstack` | Playwright suite passes |
+| Main App Load (quick) | `npm run loadtest:quick` | All scenarios pass thresholds |
+| Commerce SvelteKit Load (quick) | `npm run loadtest:svelte:quick` | All scenarios pass thresholds |
+| Commerce TanStack Load (quick) | `npm run loadtest:tanstack:quick` | All scenarios pass thresholds |
 
 > **All required test suites MUST RUN AND PASS. NO SKIPPING. NO EXCEPTIONS.**
+> - The final validation gate is incomplete unless it covers the main app plus both commerce apps, including their build/test, E2E, and quick load-test flows.
+> - For isolated commerce validation, always link shared module resolution to the active app dependency tree first with `node scripts/link-commerce-shared-node-modules.mjs --app <sveltekit|tanstack>`.
 > - E2E and load tests CAN run in parallel to save time
 > - If infrastructure is not running, **start it** — do not skip the suite
 > - **NEVER** claim "done" without actually running and passing all required test suites
@@ -236,7 +244,7 @@ If a server needs credentials, ask the user. After VS Code restart, MCP tool tog
 | **No output truncation** | NEVER pipe build/test/E2E/load output through `Select-Object`, `Select-String`, `Where-Object`, `tail`, `head`, `grep`, or ANY filter/truncation command. This includes `| tail -N`, `| head -N`, `2>&1 | tail`, and any other form of output limiting. Run raw commands, full output, no exceptions. Use timeout `0` when unsure. |
 | **Zero broken tests** | A failing test MUST be fixed — no "pre-existing", "flaky", or "unrelated" excuses. STOP and fix before claiming done. A broken test is broken code. |
 | **Debug single specs** | Run only the failing spec: `npm run test:e2e -- specs/path/to.spec.ts` or `--grep "test name"` or `--keepalive specs/file.spec.ts`. If the failure can't reproduce standalone, re-run the full suite — it may be a cross-test corruption issue. |
-| **Full suite gate** | A full passing E2E suite run (`npm run test:e2e` with 0 failures) is REQUIRED before calling `/execute-plan` or `/code-review` complete. No exceptions. |
+| **Full suite gate** | A full passing E2E suite run for ALL projects (`npm run test:e2e`, `npm run test:e2e:svelte`, `npm run test:e2e:tanstack` — each with 0 failures) is REQUIRED before calling `/execute-plan` or `/code-review` complete. No exceptions. |
 
 ## Context Compaction Strategy
 
@@ -256,6 +264,7 @@ Plans created by `/create-plan` include explicit compaction checkpoints at major
 > **`npm run format` is the ONLY format command** — never run `dprint` directly.
 > Root format coverage includes `format:server`, `format:client`, `format:svelte`, and `format:tanstack`.
 > Commerce site scripts follow the pattern: `start:svelte`, `start:tanstack`, `test:svelte`, `test:tanstack`, `test:e2e:svelte`, `test:e2e:tanstack`, `loadtest:svelte:*`, `loadtest:tanstack:*`. All are defined in the root `package.json`.
+> **CRITICAL for commerce app-only validation**: Link shared module resolution to the active app dependency tree before isolated SvelteKit or TanStack check/build/test/E2E/load commands with `node scripts/link-commerce-shared-node-modules.mjs --app <sveltekit|tanstack>`.
 
 ---
 
@@ -276,22 +285,23 @@ E2E, load tests, and DAST scans run in **fully isolated Docker environments** �
 
 | File                             | Scope                                          |
 | -------------------------------- | ---------------------------------------------- |
-| `formatting.instructions.md`     | `**/SeventySix.Client/src/**/*.{ts,html,scss,css},**/SeventySix.Server/**/*.cs,**/seventysixcommerce-sveltekit/src/**/*.{ts,svelte,css},**/seventysixcommerce-tanstack/src/**/*.{ts,tsx,css}` — naming, structure, operators  |
+| `formatting.instructions.md`     | `**/SeventySix.Client/src/**/*.{ts,html,scss,css},**/SeventySix.Server/**/*.cs,**/ECommerce/seventysixcommerce-sveltekit/src/**/*.{ts,svelte,css},**/ECommerce/seventysixcommerce-tanstack/src/**/*.{ts,tsx,css}` — naming, structure, operators  |
 | `angular.instructions.md`        | `**/SeventySix.Client/src/**/*.ts`             |
 | `csharp.instructions.md`         | `**/SeventySix.Server/**/*.cs`                 |
-| `security.instructions.md`       | `**/SeventySix.Client/src/**/*.ts,**/SeventySix.Server/**/*.cs` — ProblemDetails, auth errors   |
-| `accessibility.instructions.md`  | `**/SeventySix.Client/src/**/*.{ts,html,scss}` |
+| `security.instructions.md`       | `**/SeventySix.Client/src/**/*.ts,**/SeventySix.Server/**/*.cs,**/ECommerce/seventysixcommerce-sveltekit/src/**/*.{ts,svelte},**/ECommerce/seventysixcommerce-tanstack/src/**/*.{ts,tsx},**/ECommerce/seventysixcommerce-shared/src/**/*.ts` — ProblemDetails, auth errors, commerce security |
+| `accessibility.instructions.md`  | `**/SeventySix.Client/src/**/*.{ts,html,scss},**/ECommerce/seventysixcommerce-sveltekit/src/**/*.{ts,svelte,css},**/ECommerce/seventysixcommerce-tanstack/src/**/*.{ts,tsx,css}` — WCAG AA for all user-facing projects |
 | `testing-server.instructions.md` | `**/SeventySix.Server/Tests/**/*.cs`           |
 | `testing-client.instructions.md` | `**/SeventySix.Client/src/**/*.spec.ts`        |
 | `e2e.instructions.md`            | `**/SeventySix.Client/e2e/**/*.ts`             |
 | `new-domain.instructions.md`     | Manual reference — domain blueprints           |
 | `games.instructions.md`          | `**/SeventySix.Client/src/app/domains/games/**/*.{ts,html,scss}` — game domain architecture |
 | `babylonjs.instructions.md`      | `**/SeventySix.Client/src/app/domains/games/**/*.ts` — Babylon.js patterns & CC BY 4.0 |
-| `load-testing.instructions.md`   | `**/SeventySix.Client/load-testing/**/*.js` — k6 load test patterns |
-| `sveltekit.instructions.md`      | `**/seventysixcommerce-sveltekit/src/**/*.{ts,svelte,css}` — SvelteKit sandbox patterns |
-| `tanstack.instructions.md`       | `**/seventysixcommerce-tanstack/src/**/*.{ts,tsx,css}` — TanStack Start sandbox patterns |
-| `e2e-svelte.instructions.md`    | `**/seventysixcommerce-sveltekit/e2e/**/*.ts` — SvelteKit E2E patterns |
-| `e2e-tanstack.instructions.md`  | `**/seventysixcommerce-tanstack/e2e/**/*.ts` — TanStack E2E patterns |
+| `load-testing.instructions.md`   | `**/SeventySix.Client/load-testing/**/*.js,**/ECommerce/seventysixcommerce-sveltekit/load-testing/**/*.js,**/ECommerce/seventysixcommerce-tanstack/load-testing/**/*.js` — k6 load test patterns |
+| `sveltekit.instructions.md`      | `**/ECommerce/seventysixcommerce-sveltekit/src/**/*.{ts,svelte,css}` — SvelteKit sandbox patterns |
+| `tanstack.instructions.md`       | `**/ECommerce/seventysixcommerce-tanstack/src/**/*.{ts,tsx,css}` — TanStack Start sandbox patterns |
+| `commerce-shared.instructions.md` | `**/ECommerce/seventysixcommerce-shared/src/**/*.ts` — shared commerce library patterns |
+| `e2e-svelte.instructions.md`    | `**/ECommerce/seventysixcommerce-sveltekit/e2e/**/*.ts` — SvelteKit E2E patterns |
+| `e2e-tanstack.instructions.md`  | `**/ECommerce/seventysixcommerce-tanstack/e2e/**/*.ts` — TanStack E2E patterns |
 
 ## Prompt Index (Invoked via `/prompt-name` in Chat)
 

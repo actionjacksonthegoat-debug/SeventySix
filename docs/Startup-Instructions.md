@@ -282,12 +282,18 @@ Or use **File** → **Open Folder** and select the `SeventySix` directory.
 From the `SeventySix` root directory:
 
 ```bash
-cd SeventySix.Client
 npm install
-cd ..
 ```
 
-This installs all Angular, testing, and build dependencies. The first run may take a few minutes.
+This installs dependencies for:
+- **Root** — orchestration scripts, shared tooling
+- **SeventySix.Client** — Angular SPA, E2E tests, load tests
+- **seventysixcommerce-sveltekit** — SvelteKit commerce site
+- **seventysixcommerce-tanstack** — TanStack Start commerce site
+
+The first run downloads all packages and may take a few minutes. Subsequent installs use the npm cache and are much faster.
+
+> **Bootstrap handles this automatically** — `npm run bootstrap` runs `npm install` for all projects. This manual step is only needed if you skipped bootstrap or are adding dependencies later.
 
 ---
 
@@ -466,33 +472,51 @@ Ensure Docker Desktop is running (whale icon in system tray), then:
 npm start
 ```
 
-This single command:
+This single command starts the **entire three-site ecosystem**:
 1. Exports your user secrets as environment variables
-2. Starts 13 Docker containers (PostgreSQL, Valkey, Grafana, Jaeger, Prometheus, etc.)
-3. Waits for infrastructure health checks
-4. Starts the .NET API
-5. Starts the Angular development server
+2. Starts Docker containers for: main app (PostgreSQL, Valkey, Grafana, Jaeger, Prometheus, etc.), SvelteKit commerce (PostgreSQL on port 5439), and TanStack commerce (PostgreSQL on port 5438)
+3. Waits for all infrastructure health checks
+4. Starts the .NET API (port 7074)
+5. Starts the Angular development server (port 4200)
+6. Starts the SvelteKit commerce dev server (port 3001)
+7. Starts the TanStack Start commerce dev server (port 3002)
 
 The first run downloads Docker images and may take 5–10 minutes. Subsequent starts are much faster.
 
 ### What You Should See
 
-The terminal will show progress as services start. When ready, you will see output indicating the Angular dev server is running on port 4200.
+The terminal shows color-coded output from all three services:
+- **SeventySix** (cyan) — API and Angular dev server on port 4200
+- **SvelteKit** (magenta) — Commerce site on port 3001
+- **TanStack** (yellow) — Commerce site on port 3002
+
+All three servers run concurrently. Each site has its own PostgreSQL database and can be started independently — see [Multi-Site Development](#multi-site-development) for individual commands.
 
 ---
 
 ## 10. Verify Everything Works
 
-Open your browser and visit these URLs:
+Open your browser and visit these URLs to confirm all three sites and supporting services are running:
 
-| Service | URL | What You Should See |
-|---|---|---|
-| **Application** | `https://localhost:4200` | SeventySix home page with sidebar navigation |
+### Application Sites
+
+| Site | URL | What You Should See |
+|------|-----|---------------------|
+| **SeventySix (Angular)** | `https://localhost:4200` | Landing page with sidebar navigation, tech stack section, Games & E-Commerce categories |
+| **SvelteKit Commerce** | `https://localhost:3001` | E-commerce storefront with product grid and shopping cart |
+| **TanStack Commerce** | `https://localhost:3002` | E-commerce storefront with product grid and shopping cart |
 | **API Health** | `https://localhost:7074/health` | JSON with `"status": "Healthy"` |
 | **API Docs** | `https://localhost:7074/scalar/v1` | Interactive API documentation |
+
+### Observability & Admin Tools
+
+| Service | URL | What You Should See |
+|---------|-----|---------------------|
 | **Grafana** | `https://localhost:3443` | Grafana login page (use your Grafana credentials from Step 6) |
 | **Jaeger** | `https://localhost:16687` | Jaeger tracing UI |
 | **pgAdmin** | `https://localhost:5051` | pgAdmin login (use your pgAdmin credentials from Step 6) |
+
+> **SSL warnings**: All sites use HTTPS with the shared dev certificate generated in Step 8. Your browser will show a security warning on first visit — click **Advanced** → **Proceed** to continue. This is expected for self-signed certificates.
 
 ### Log In
 
@@ -585,22 +609,50 @@ With these overrides:
 
 ## Multi-Site Development
 
-The SeventySix ecosystem includes three independently runnable applications. `npm start` launches all of them, but you can start each site individually:
+The SeventySix ecosystem includes three independently runnable applications. `npm start` launches all of them, or you can run each site individually.
 
-| Command | What it starts | URL |
-|---------|---------------|-----|
-| `npm start` | Full stack: API + Angular + SvelteKit + TanStack + infrastructure | Angular: https://localhost:4200 |
-| `npm run start:seventysix` | API + Angular client only | https://localhost:4200 |
-| `npm run start:svelte` | SvelteKit commerce site + its PostgreSQL | http://localhost:3001 |
-| `npm run start:tanstack` | TanStack commerce site + its PostgreSQL | http://localhost:3000 |
+### Development URLs
 
-### E-Commerce Site Dependencies
+| Site | Dev URL | Database Port | Stack |
+|------|---------|---------------|-------|
+| **SeventySix (main)** | `https://localhost:4200` (client) / `https://localhost:7074` (API) | 5433 (shared PostgreSQL) | .NET 10 + Angular 21 + Babylon.js |
+| **SvelteKit Commerce** | `https://localhost:3001` | 5439 | SvelteKit 2, Svelte 5, Drizzle ORM, Stripe |
+| **TanStack Commerce** | `https://localhost:3002` | 5438 | TanStack Start, React 19, Drizzle ORM, Stripe |
 
-Both e-commerce sites require:
-- Docker Desktop running (for their PostgreSQL database)
-- `npm install` in the respective subdirectory (handled by bootstrap)
+All sites use HTTPS via the shared dev certificate generated during bootstrap (`SeventySix.Client/ssl/dev-certificate.crt`).
 
-They do NOT require the SeventySix API to be running — they are independently deployable applications with their own databases. Log forwarding to the API is optional (logs are also written to stdout).
+### Start Commands
+
+| Command | What It Starts | Sites |
+|---------|---------------|-------|
+| `npm start` | Full ecosystem: API + Angular + SvelteKit + TanStack + all infrastructure | All three |
+| `npm run start:seventysix` | Main API + Angular client + infrastructure | SeventySix only |
+| `npm run start:svelte` | SvelteKit commerce + its PostgreSQL container | SvelteKit only |
+| `npm run start:tanstack` | TanStack commerce + its PostgreSQL container | TanStack only |
+| `npm stop` | Stops all running services and containers | — |
+
+### E-Commerce Site Independence
+
+Both commerce sites are **independently deployable** — they do NOT require the SeventySix API:
+- Each has its own PostgreSQL database (managed via `docker-compose.dev.yml` in each project directory)
+- Each runs Drizzle ORM migrations automatically on startup
+- Log forwarding to the main API's OpenTelemetry collector is optional (logs are also written to stdout)
+- Stripe, Printful, and Brevo integrations can use mock mode for local development (set via environment variables)
+
+### E-Commerce Environment Variables
+
+Commerce sites are configured via `.env` files in their respective directories. The start scripts generate default `.env` files automatically. Key variables:
+
+| Variable | Purpose | Default |
+|----------|---------|--------|
+| `DATABASE_URL` | PostgreSQL connection string | Auto-generated by start script |
+| `STRIPE_SECRET_KEY` | Stripe API key | Uses mock mode if unset |
+| `STRIPE_WEBHOOK_SECRET` | Stripe webhook signature | Uses mock mode if unset |
+| `PRINTFUL_API_KEY` | Printful API key | Uses mock mode if unset |
+| `BREVO_API_KEY` | Brevo transactional email key | Uses mock mode if unset |
+| `SEVENTYSIX_API_URL` | Main API URL for log forwarding | `https://localhost:7074` |
+
+> **No third-party keys required**: Commerce sites run fully functional with mock services. Configure Stripe/Printful/Brevo keys only when you want real payment, fulfillment, or email functionality.
 
 ### Testing Individual Sites
 
@@ -609,10 +661,27 @@ They do NOT require the SeventySix API to be running — they are independently 
 | `npm test` | All test suites (server + client + both commerce) |
 | `npm run test:svelte` | SvelteKit unit tests only |
 | `npm run test:tanstack` | TanStack unit tests only |
+| `npm run test:e2e` | Main app E2E tests (isolated Docker) |
 | `npm run test:e2e:svelte` | SvelteKit E2E tests (isolated Docker) |
 | `npm run test:e2e:tanstack` | TanStack E2E tests (isolated Docker) |
+| `npm run loadtest:quick` | Main app load tests |
 | `npm run loadtest:svelte:quick` | SvelteKit load tests |
 | `npm run loadtest:tanstack:quick` | TanStack load tests |
+
+### Docker Environments by Purpose
+
+Each test type runs in a **fully isolated Docker environment** — you never need to start the dev stack for testing:
+
+| Environment | Compose File | Ports (DB / App) |
+|-------------|-------------|-------------------|
+| Dev (main) | `docker-compose.yml` | 5433 / 4200 + 7074 |
+| Dev (SvelteKit) | `ECommerce/seventysixcommerce-sveltekit/docker-compose.dev.yml` | 5439 / 3001 |
+| Dev (TanStack) | `ECommerce/seventysixcommerce-tanstack/docker-compose.dev.yml` | 5438 / 3002 |
+| E2E (main) | `docker-compose.e2e.yml` | 5434 / 4201 + 7174 |
+| Load (main) | `docker-compose.loadtest.yml` | 5435 / 4202 + 7175 |
+| Load (SvelteKit) | `docker-compose.loadtest-svelte.yml` | 5442 / 3021 |
+| Load (TanStack) | `docker-compose.loadtest-tanstack.yml` | 5443 / 3022 |
+| DAST | `docker-compose.dast.yml` | 5436 / 4301 + 7274 |
 
 ---
 

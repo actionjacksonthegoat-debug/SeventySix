@@ -14,6 +14,7 @@ import { Vector3 } from "@babylonjs/core/Maths/math.vector";
 import { Mesh } from "@babylonjs/core/Meshes/mesh";
 import { MeshBuilder } from "@babylonjs/core/Meshes/meshBuilder";
 import { Scene } from "@babylonjs/core/scene";
+import type { IGameSceneService } from "@games/shared/models/game-service.interfaces";
 
 /* Side-effect imports: register StandardMaterial shader source + all #include chunks. */
 /* Required for Vite dev mode — prevents HTTP fallback to index.html for .fx files. */
@@ -78,7 +79,7 @@ const FOG_DENSITY: number = 0.002;
  * Domain-scoped — provided via route `providers` array.
  */
 @Injectable()
-export class RaceSceneService
+export class RaceSceneService implements IGameSceneService
 {
 	/** References to disposable scene objects. */
 	private readonly disposables: Disposable[] = [];

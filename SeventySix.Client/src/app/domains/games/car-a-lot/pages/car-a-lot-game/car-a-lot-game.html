@@ -1,4 +1,9 @@
 <div class="game-container full-width-page">
+	@if (isLoading()) {
+		<app-game-loading
+			[gameName]="gameName"
+			[gameIcon]="gameIcon" />
+	}
 	<app-babylon-canvas (sceneReady)="onSceneReady($event)" />
 	<app-fullscreen-toggle (fullscreenChange)="isFullscreen.set($event)" />
 	<app-driving-hud />

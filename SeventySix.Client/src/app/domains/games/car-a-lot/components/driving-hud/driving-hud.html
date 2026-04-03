@@ -24,9 +24,9 @@
 		<button
 			class="mute-button"
 			(click)="onToggleMute()"
-			[attr.aria-label]="audioService.isMuted() ? 'Unmute audio' : 'Mute audio'"
+			[attr.aria-label]="audioService.isMuted ? 'Unmute audio' : 'Mute audio'"
 			data-testid="mute-button">
-			{{ audioService.isMuted() ? '🔇' : '🔊' }}
+			{{ audioService.isMuted ? '🔇' : '🔊' }}
 		</button>
 
 		@if (!inputService.isTouchDevice) {

@@ -4,7 +4,17 @@
  * Orchestrates scene initialization and game loop.
  */
 
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal, WritableSignal } from "@angular/core";
+import {
+	ChangeDetectionStrategy,
+	Component,
+	computed,
+	DestroyRef,
+	inject,
+	Signal,
+	signal,
+	WritableSignal
+} from "@angular/core";
+import { ActivatedRoute } from "@angular/router";
 import { Vector3 } from "@babylonjs/core/Maths/math.vector";
 import { TransformNode } from "@babylonjs/core/Meshes/transformNode";
 import { Scene } from "@babylonjs/core/scene";
@@ -12,11 +22,9 @@ import { ColorSelectorComponent } from "@games/car-a-lot/components/color-select
 import { DrivingHudComponent } from "@games/car-a-lot/components/driving-hud/driving-hud";
 import { MobileControlsComponent } from "@games/car-a-lot/components/mobile-controls/mobile-controls";
 import {
-	BUMPER_WIDTH,
 	CHARACTER_STANDING_FOOT_OFFSET,
 	KART_GROUND_OFFSET,
 	LANDING_ROAD_LENGTH,
-	MAX_SPEED_MPH,
 	OCTOPUS_SPAWN_OFFSET_Z,
 	RESCUE_PLATFORM_HEIGHT,
 	RESCUE_PLATFORM_OFFSET_Z,
@@ -24,11 +32,7 @@ import {
 } from "@games/car-a-lot/constants/car-a-lot.constants";
 import {
 	CharacterType,
-	DrivingState,
-	JumpResult,
 	KartColor,
-	RaceState,
-	RoadBoundaryResult,
 	RoadSegment
 } from "@games/car-a-lot/models/car-a-lot.models";
 import { BoostService } from "@games/car-a-lot/services/boost.service";
@@ -47,10 +51,11 @@ import { TrackBuilderService } from "@games/car-a-lot/services/track-builder.ser
 import { TrackFeaturesService } from "@games/car-a-lot/services/track-features.service";
 import { BabylonCanvasComponent } from "@games/shared/components/babylon-canvas/babylon-canvas";
 import { FullscreenToggleComponent } from "@games/shared/components/fullscreen-toggle/fullscreen-toggle";
+import { GameLoadingComponent } from "@games/shared/components/game-loading/game-loading";
+import { GameLifecycleState } from "@games/shared/models/game.models";
+import { DisposableRegistryService } from "@games/shared/services/disposable-registry.service";
 import { GameLoopService } from "@games/shared/services/game-loop.service";
 import { InputService } from "@games/shared/services/input.service";
-
-import { isPresent } from "@shared/utilities/null-check.utility";
 
 /** Car-a-Lot driving game page — orchestrates scene, HUD, and selectors. */
 @Component(
@@ -63,6 +68,7 @@ import { isPresent } from "@shared/utilities/null-check.utility";
 			DrivingHudComponent,
 			ColorSelectorComponent,
 			FullscreenToggleComponent,
+			GameLoadingComponent,
 			MobileControlsComponent
 		],
 		templateUrl: "./car-a-lot-game.html",
@@ -74,9 +80,31 @@ export class CarALotGameComponent
 	protected readonly isFullscreen: WritableSignal<boolean> =
 		signal<boolean>(false);
 
+	/** Whether the game is still loading (scene initializing). */
+	protected readonly isLoading: Signal<boolean> =
+		computed(
+			() =>
+				this.gameLoop.state() === GameLifecycleState.Initializing);
+
 	/** Destroy ref for cleanup registration. */
 	private readonly destroyRef: DestroyRef =
 		inject(DestroyRef);
+
+	/** Active route for reading game metadata. */
+	private readonly route: ActivatedRoute =
+		inject(ActivatedRoute);
+
+	/** Game name from route data for the loading screen. */
+	protected readonly gameName: string =
+		this.route.snapshot.data["gameName"] as string ?? "Car-a-Lot";
+
+	/** Game icon from route data for the loading screen. */
+	protected readonly gameIcon: string =
+		this.route.snapshot.data["gameIcon"] as string ?? "🏎️";
+
+	/** Disposable registry for batch service cleanup. */
+	private readonly disposableRegistry: DisposableRegistryService =
+		inject(DisposableRegistryService);
 
 	/** Input service for tracking pressed keys. */
 	private readonly inputService: InputService =
@@ -151,12 +179,6 @@ export class CarALotGameComponent
 
 	/** Reference to the scene for restart. */
 	private scene: Scene | null = null;
-
-	/** Last countdown value for bing sound detection. */
-	private lastCountdownValue: number = -1;
-
-	/** Whether the victory standing character has been shown for the current race. */
-	private victoryCharacterShown: boolean = false;
 
 	/** Reference to the rescue character root node for rebuild on character change. */
 	private rescueCharRoot: TransformNode | null = null;
@@ -299,7 +321,30 @@ export class CarALotGameComponent
 			this.kartRoot);
 
 		this.raceCamera.initialize(scene);
+
+		if (this.kartRoot !== null)
+		{
+			this.gameFlow.setContext(
+				scene,
+				this.kartRoot,
+				this.rescueCenter);
+		}
+
 		this.startGameLoop(scene);
+
+		this.disposableRegistry.register(this.audioService);
+		this.disposableRegistry.register(this.inputService);
+		this.disposableRegistry.register(this.raceScene);
+		this.disposableRegistry.register(this.trackBuilder);
+		this.disposableRegistry.register(this.kartBuilder);
+		this.disposableRegistry.register(this.characterBuilder);
+		this.disposableRegistry.register(this.raceCamera);
+		this.disposableRegistry.register(this.trackFeatures);
+		this.disposableRegistry.register(this.roadCollision);
+		this.disposableRegistry.register(this.octopusBoss);
+		this.disposableRegistry.register(this.boostService);
+		this.disposableRegistry.register(this.coinService);
+		this.disposableRegistry.register(this.gameLoop);
 
 		this.destroyRef.onDestroy(
 			() => this.cleanup());
@@ -383,8 +428,7 @@ export class CarALotGameComponent
 		}
 
 		this.raceState.startCountdown();
-		this.lastCountdownValue = 3;
-		this.victoryCharacterShown = false;
+		this.gameFlow.resetForNewRace();
 		this.audioService.playCountdownBing(false);
 	}
 
@@ -409,344 +453,7 @@ export class CarALotGameComponent
 	 */
 	private onFrameUpdate(deltaTime: number): void
 	{
-		const currentState: RaceState =
-			this.raceState.currentState();
-
-		if (
-			this.handleCountdown(
-				deltaTime,
-				currentState))
-		{
-			return;
-		}
-
-		this.showVictoryCharacterOnFirstFrame(currentState);
-
-		const state: DrivingState =
-			this.updatePhysics(
-				deltaTime,
-				currentState);
-
-		this.updateVisuals(
-			state,
-			deltaTime);
-
-		const boundary: RoadBoundaryResult =
-			this.roadCollision.checkRoadBoundary(
-				state.positionX,
-				state.positionZ,
-				this.trackBuilder.getSegments());
-
-		this.handleCollisions(
-			state,
-			currentState,
-			boundary);
-
-		this.updateItems(
-			state,
-			deltaTime);
-
-		this.octopusBoss.updateAnimation(deltaTime);
-
-		this.gameFlow.update(
-			state,
-			currentState,
-			boundary,
-			deltaTime,
-			this.rescueCenter);
-	}
-
-	/**
-	 * Tick countdown and play audio cues.
-	 * @param deltaTime
-	 * Frame delta time in seconds.
-	 * @param currentState
-	 * Current race lifecycle state.
-	 * @returns
-	 * True if countdown is active and frame processing should stop.
-	 */
-	private handleCountdown(
-		deltaTime: number,
-		currentState: RaceState): boolean
-	{
-		if (
-			currentState !== RaceState.Countdown
-				|| !this.raceState.isCountdownActive())
-		{
-			return false;
-		}
-
-		const countdownBefore: number =
-			this.raceState.countdownValue();
-
-		if (this.raceState.tickCountdown(deltaTime))
-		{
-			this.audioService.playCountdownBing(true);
-			this.raceState.transitionTo(RaceState.Racing);
-			this.audioService.startEngine();
-			this.audioService.startMusic();
-			this.lastCountdownValue = -1;
-		}
-		else
-		{
-			const countdownAfter: number =
-				this.raceState.countdownValue();
-
-			if (
-				countdownAfter !== countdownBefore
-					&& countdownAfter !== this.lastCountdownValue)
-			{
-				this.audioService.playCountdownBing(false);
-				this.lastCountdownValue = countdownAfter;
-			}
-		}
-
-		// Keep camera lerping toward the kart so it returns to the
-		// start position during the 3-2-1 countdown.
-		if (this.kartRoot !== null)
-		{
-			this.raceCamera.updateCamera(
-				this.kartRoot.position,
-				this.kartRoot.rotation.y,
-				deltaTime,
-				false);
-		}
-
-		return true;
-	}
-
-	/**
-	 * On the first frame of victory, replace the seated kart character with
-	 * a standing version at the kart's current position.
-	 * @param currentState
-	 * Current race lifecycle state.
-	 */
-	private showVictoryCharacterOnFirstFrame(
-		currentState: RaceState): void
-	{
-		if (
-			currentState !== RaceState.Victory
-				|| this.victoryCharacterShown
-				|| this.kartRoot === null
-				|| this.scene === null)
-		{
-			return;
-		}
-
-		this.victoryCharacterShown = true;
-		this.characterBuilder.showVictoryStanding(
-			this.scene,
-			this.kartRoot.position.clone());
-	}
-
-	/**
-	 * Run physics update and apply kart position/rotation to the mesh.
-	 * @param deltaTime
-	 * Frame delta time in seconds.
-	 * @param currentState
-	 * Current race lifecycle state.
-	 * @returns
-	 * The driving state snapshot from the physics engine.
-	 */
-	private updatePhysics(
-		deltaTime: number,
-		currentState: RaceState): DrivingState
-	{
-		const isRacing: boolean =
-			currentState !== RaceState.Countdown
-				&& currentState !== RaceState.Victory
-				&& currentState !== RaceState.GameOver;
-
-		const activeKeys: Record<string, boolean> =
-			isRacing
-				? { ...this.inputService.keys }
-				: {};
-
-		const kartPos: Vector3 =
-			this.kartRoot?.position ?? Vector3.Zero();
-
-		const preCheckBoundary: RoadBoundaryResult =
-			this.roadCollision.checkRoadBoundary(
-				kartPos.x,
-				kartPos.z,
-				this.trackBuilder.getSegments());
-
-		const state: DrivingState =
-			this.drivingPhysics.update(
-				activeKeys,
-				deltaTime,
-				preCheckBoundary.groundElevation);
-
-		if (this.kartRoot !== null)
-		{
-			this.kartRoot.position =
-				new Vector3(
-					state.positionX,
-					state.positionY,
-					state.positionZ);
-			this.kartRoot.rotation.y =
-				state.rotationY;
-		}
-
-		return state;
-	}
-
-	/**
-	 * Update visual systems — wheels, cape, camera, speed display, and engine audio.
-	 * @param state
-	 * Current driving state snapshot.
-	 * @param deltaTime
-	 * Frame delta time in seconds.
-	 */
-	private updateVisuals(
-		state: DrivingState,
-		deltaTime: number): void
-	{
-		this.kartBuilder.updateWheels(
-			state.speedMph,
-			deltaTime);
-
-		this.characterBuilder.updateCapeAnimation(
-			state.speedMph,
-			deltaTime);
-
-		const isInTunnel: boolean =
-			this.trackFeatures.isInsideTunnel(
-				state.positionX,
-				state.positionZ);
-
-		this.raceCamera.updateCamera(
-			this.kartRoot?.position ?? Vector3.Zero(),
-			state.rotationY,
-			deltaTime,
-			isInTunnel);
-
-		this.raceState.updateSpeed(state.speedMph);
-
-		this.audioService.updateEngine(
-			state.speedMph / MAX_SPEED_MPH);
-
-		const currentState: RaceState =
-			this.raceState.currentState();
-
-		if (
-			currentState === RaceState.Racing
-				|| currentState === RaceState.OctopusPhase
-				|| currentState === RaceState.Rescue)
-		{
-			this.raceState.updateElapsedTime(deltaTime);
-		}
-	}
-
-	/**
-	 * Check road boundary collisions and handle bumper pushback or off-road game over.
-	 * @param state
-	 * Current driving state snapshot.
-	 * @param currentState
-	 * Current race lifecycle state.
-	 * @param boundary
-	 * Road boundary check result.
-	 */
-	private handleCollisions(
-		state: DrivingState,
-		currentState: RaceState,
-		boundary: RoadBoundaryResult): void
-	{
-		if (boundary.isInBumperZone && state.isGrounded)
-		{
-			const pushDistance: number =
-				BUMPER_WIDTH - boundary.distanceToEdge + 0.5;
-			const normalX: number =
-				Math.sin(boundary.bumperNormalAngle);
-			const normalZ: number =
-				Math.cos(boundary.bumperNormalAngle);
-
-			this.drivingPhysics.clampToRoad(
-				normalX * pushDistance,
-				normalZ * pushDistance);
-			this.drivingPhysics.applyBounce(
-				boundary.bumperNormalAngle,
-				0);
-			this.boostService.deactivateBoost();
-			this.audioService.playBumper();
-		}
-		else if (
-			!boundary.isOnRoad
-				&& currentState === RaceState.Racing
-				&& state.isGrounded)
-		{
-			this.raceState.transitionTo(RaceState.GameOver);
-			this.drivingPhysics.setMaxSpeed(0);
-			this.audioService.stopEngine();
-			this.audioService.stopMusic();
-			this.audioService.playGameOver();
-		}
-	}
-
-	/**
-	 * Check jump triggers, coin collection, and boost pad activation.
-	 * @param state
-	 * Current driving state snapshot.
-	 * @param deltaTime
-	 * Frame delta time in seconds.
-	 */
-	private updateItems(
-		state: DrivingState,
-		deltaTime: number): void
-	{
-		const isInTunnel: boolean =
-			this.trackFeatures.isInsideTunnel(
-				state.positionX,
-				state.positionZ);
-
-		const jumpResult: JumpResult | null =
-			isInTunnel
-				? null
-				: this.trackFeatures.checkJumpTrigger(
-					state.positionX,
-					state.positionZ,
-					state.speedMph);
-
-		if (isPresent(jumpResult))
-		{
-			this.drivingPhysics.applyJump(
-				jumpResult.jumpVelocity);
-			this.audioService.playJump();
-		}
-
-		const coinCollected: boolean =
-			this.coinService.checkCollection(
-				state.positionX,
-				state.positionZ);
-
-		if (coinCollected)
-		{
-			this.audioService.playCoin();
-		}
-
-		this.coinService.updateAnimation(deltaTime);
-
-		const boostTriggered: boolean =
-			this.boostService.checkBoostTrigger(
-				state.positionX,
-				state.positionZ);
-
-		if (boostTriggered)
-		{
-			this.audioService.playBoost();
-		}
-
-		this.boostService.updateBoost(deltaTime);
-
-		if (this.boostService.isBoostActive())
-		{
-			this.drivingPhysics.setTemporaryMaxSpeed(
-				this.boostService.getEffectiveMaxSpeedMph());
-		}
-		else
-		{
-			this.drivingPhysics.clearTemporaryMaxSpeed();
-		}
+		this.gameFlow.update(deltaTime);
 	}
 
 	/**
@@ -754,19 +461,7 @@ export class CarALotGameComponent
 	 */
 	private cleanup(): void
 	{
-		this.gameLoop.dispose();
-		this.coinService.dispose();
-		this.boostService.dispose();
-		this.octopusBoss.dispose();
-		this.roadCollision.dispose();
-		this.trackFeatures.dispose();
-		this.raceCamera.dispose();
-		this.characterBuilder.dispose();
-		this.kartBuilder.dispose();
-		this.trackBuilder.dispose();
-		this.raceScene.dispose();
 		this.drivingPhysics.reset();
-		this.inputService.dispose();
-		this.audioService.dispose();
+		this.disposableRegistry.disposeAll();
 	}
 }

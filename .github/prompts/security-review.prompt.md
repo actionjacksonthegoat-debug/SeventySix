@@ -192,6 +192,52 @@ Review EVERY file in `SeventySix.Domains.Identity/` and the `auth/` client domai
 
 ---
 
+## Stage 5B: Commerce Application Security (SvelteKit + TanStack)
+
+> Both commerce apps handle payments (Stripe), PII (email addresses, cart sessions), and run server-side code. They require the same security rigor as the main application.
+
+### A) Stripe Integration Security
+- Webhook signature verification using `stripe.webhooks.constructEvent()` with secret
+- No raw Stripe secret keys in source code (must use environment variables)
+- Stripe API calls only from server-side code (never client-side)
+- Price/amount validation server-side (never trust client-provided prices)
+
+### B) Commerce CSRF Protection
+- SvelteKit: SameSite cookies + origin check in `hooks.server.ts`
+- TanStack: `csrfMiddleware` applied to ALL mutation server functions
+- No state-changing operations in GET handlers
+
+### C) Cart Session Security
+- Cart session cookies: HttpOnly, Secure, SameSite=Lax
+- Session IDs are cryptographically random UUIDs
+- No sensitive data stored in cookies (only session reference)
+- Server-side session validation on every request
+
+### D) Commerce Input Validation
+- SvelteKit: All route params validated (UUID pattern, slug format)
+- TanStack: All server functions use Zod `.inputValidator()`
+- Shared library: All database inputs validated before queries
+
+### E) Commerce Error Handling
+- No raw `error.message` exposed to clients in any response
+- PII (email addresses) masked in all log output
+- Stack traces never sent to clients in production
+- Generic error messages for all user-facing errors
+
+### F) Commerce Environment Variables
+- SvelteKit: Uses `$env/static/private` or `$env/dynamic/private` (never `process.env`)
+- TanStack: Server-only env access via `process.env` with fallback defaults
+- No secrets in client-side bundles
+- Check that `.env` files are properly gitignored
+
+### G) Commerce Docker Security
+- No secrets in commerce Dockerfiles or docker-compose files
+- Non-root container users
+- Minimal base images
+- Health check endpoints accessible without auth
+
+---
+
 ## Stage 6: CodeQL Alert Triage (MANDATORY)
 
 > This stage requires the `github.vscode-codeql` extension and CodeQL CLI (see `docs/Startup-Instructions.md`).

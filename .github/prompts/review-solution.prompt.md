@@ -13,9 +13,9 @@ Before reporting ANY violation or outdated API usage, use **context7** to verify
 
 | Stage | Required Context7 Queries |
 |-------|--------------------------|
-| Stage 1 (Rules Compliance) | Angular 21 signals, TanStack Query v5, Wolverine CQRS, EF Core 10, FusionCache, FluentValidation, Playwright latest, k6 options |
-| Stage 2 (Security) | .NET 10 auth middleware, ASP.NET Core data protection, OWASP .NET checklists |
-| Stage 3 (Dead Code) | Angular standalone components barrel exports, .NET trimming attributes |
+| Stage 1 (Rules Compliance) | Angular 21 signals, TanStack Query v5, Wolverine CQRS, EF Core 10, FusionCache, FluentValidation, Playwright latest, k6 options, SvelteKit 2, Svelte 5 runes, TanStack Start/Router, Drizzle ORM |
+| Stage 2 (Security) | .NET 10 auth middleware, ASP.NET Core data protection, OWASP .NET checklists, Stripe webhook verification, SvelteKit security headers |
+| Stage 3 (Dead Code) | Angular standalone components barrel exports, .NET trimming attributes, SvelteKit/TanStack unused exports |
 | Stage 4 (Consistency) | Any pattern you are unsure about before flagging |
 
 **Use the MCP servers in every stage:**
@@ -28,16 +28,21 @@ Before reporting ANY violation or outdated API usage, use **context7** to verify
 
 ### Stage 1: Rules Compliance Scan
 
-Read EVERY file in `.github/instructions/` and scan the ENTIRE codebase for violations:
+Read EVERY file in `.github/instructions/` and scan the ENTIRE codebase for violations — this includes the main app (Angular + .NET), both commerce apps (SvelteKit + TanStack), and the shared commerce library:
 - **formatting.instructions.md** — variable naming, code structure, null coercion, constants, return types
 - **angular.instructions.md** — DI patterns, domain boundaries, service scoping, signals, TanStack Query
 - **csharp.instructions.md** — type usage, constructors, collections, async patterns, EF Core
-- **security.instructions.md** — ProblemDetails, exception messages, auth error handling
-- **accessibility.instructions.md** — WCAG AA, aria labels, icons, live regions
+- **security.instructions.md** — ProblemDetails, exception messages, auth error handling (applies to ALL projects including commerce)
+- **accessibility.instructions.md** — WCAG AA, aria labels, icons, live regions (applies to ALL user-facing projects including commerce)
 - **testing-server.instructions.md** — test structure, mocking, builders, time-based testing
 - **testing-client.instructions.md** — Vitest, zoneless, provider helpers, mock factories
 - **e2e.instructions.md** — import rules, anti-flake, CI compatibility
-- **load-testing.instructions.md** — scenario patterns, constants, guards, thresholds
+- **e2e-svelte.instructions.md** — SvelteKit E2E patterns, fixture chain, CI compatibility
+- **e2e-tanstack.instructions.md** — TanStack E2E patterns, fixture chain, CI compatibility
+- **load-testing.instructions.md** — scenario patterns, constants, guards, thresholds (applies to ALL projects including commerce)
+- **sveltekit.instructions.md** — Svelte 5 runes, SvelteKit form actions, `$env/` usage, server data patterns, mock services
+- **tanstack.instructions.md** — `createServerFn()`, Zod input validation, CSRF middleware, route conventions, server functions
+- **commerce-shared.instructions.md** — shared library patterns, peer dependencies, date-fns usage, Drizzle ORM patterns
 - **copilot-instructions.md — Cross-Platform Compatibility section** — path handling, line endings, platform compatibility
 
 ### Stage 2: Security Sweep (OWASP + Identity)
@@ -68,6 +73,11 @@ Read EVERY file in `.github/instructions/` and scan the ENTIRE codebase for viol
 - Services in wrong scope (root vs route-provided)
 - Missing or extra project references
 
+**C) Commerce Shared Library:**
+- Unused exports in `ECommerce/seventysixcommerce-shared/` (check both consumer apps)
+- Missing exports that consumer apps import directly from source files instead of barrel
+- Peer dependency mismatches between shared library and consumer apps
+
 ### Stage 4: Consistency Enforcement (Context7 Required)
 
 **For every pattern found in the codebase, use Context7 to verify it matches the current recommended approach.** Do not assume existing code is correct — it may have drifted from library best practices.
@@ -85,7 +95,19 @@ Read EVERY file in `.github/instructions/` and scan the ENTIRE codebase for viol
 - FluentValidation `AbstractValidator<T>` — query context7 for current validation API
 - FusionCache patterns — query context7 for current FusionCache API
 
-**C) Cross-cutting patterns to verify:**
+**C) SvelteKit patterns to verify:**
+- Svelte 5 runes usage (`$state`, `$derived`, `$effect`) — query context7 for Svelte 5 runes API
+- SvelteKit form actions and load functions — query context7 for SvelteKit 2 data loading
+- `$env/` usage for environment variables — query context7 for SvelteKit environment
+- Drizzle ORM query patterns — query context7 for Drizzle ORM latest API
+
+**D) TanStack patterns to verify:**
+- `createServerFn()` patterns — query context7 for TanStack Start server functions
+- Route `loader` and data loading — query context7 for TanStack Router data loading
+- Zod input validation on server functions — query context7 for Zod v4 API
+- `createMiddleware()` patterns — query context7 for TanStack Start middleware
+
+**E) Cross-cutting patterns to verify:**
 - Any custom pattern that does not have explicit documentation in `.github/instructions/` — look it up
 
 **Deliverable**: Flag any pattern that Context7 shows is deprecated, outdated, or against current best practices — even if it exists in many places today.

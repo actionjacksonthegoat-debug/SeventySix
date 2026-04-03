@@ -1,6 +1,6 @@
 ---
 description: TanStack E2E test patterns and rules
-applyTo: "**/seventysixcommerce-tanstack/e2e/**/*.ts"
+applyTo: "**/ECommerce/seventysixcommerce-tanstack/e2e/**/*.ts"
 ---
 
 # TanStack E2E Instructions

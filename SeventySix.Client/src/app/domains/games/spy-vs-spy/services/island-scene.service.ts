@@ -18,6 +18,7 @@ import { Mesh } from "@babylonjs/core/Meshes/mesh";
 import { MeshBuilder } from "@babylonjs/core/Meshes/meshBuilder";
 import { Scene } from "@babylonjs/core/scene";
 import type { Nullable } from "@babylonjs/core/types";
+import type { IGameSceneService } from "@games/shared/models/game-service.interfaces";
 
 import {
 	AIRSTRIP_CENTER_X,
@@ -150,7 +151,7 @@ const CHECKERBOARD_TEXTURE_SIZE: number = 256;
  * Domain-scoped — provided via route `providers` array.
  */
 @Injectable()
-export class IslandSceneService
+export class IslandSceneService implements IGameSceneService
 {
 	/** Environment sub-service for skybox, lighting, ground, water, airstrip. */
 	private readonly environmentService: IslandEnvironmentService =
