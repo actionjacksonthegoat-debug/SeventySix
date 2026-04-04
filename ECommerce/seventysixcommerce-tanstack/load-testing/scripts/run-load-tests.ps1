@@ -19,7 +19,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 $LoadTestRoot = $PSScriptRoot | Split-Path -Parent
-$RepoRoot = $LoadTestRoot | Split-Path -Parent | Split-Path -Parent
+$RepoRoot = $LoadTestRoot | Split-Path -Parent | Split-Path -Parent | Split-Path -Parent
 
 Write-Host ""
 Write-Host "========================================" -ForegroundColor Cyan

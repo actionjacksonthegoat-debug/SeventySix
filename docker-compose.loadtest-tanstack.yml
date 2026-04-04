@@ -1,1 +1,76 @@
-# docker-compose.loadtest-tanstack.yml# Load Test Environment for SeventySixCommerce TanStack Start# Usage: docker compose -f docker-compose.loadtest-tanstack.yml up -d## Port Allocation (isolated from dev, E2E, and Angular load tests):# - TanStack App: 3022 (dev: 3000, E2E: 3012)# - PostgreSQL: 5443 (dev: 5438, E2E: 5441)name: seventysixcommerce-tanstack-loadtestservices:    # PostgreSQL — Load Test Database    postgres-loadtest-tanstack:        image: postgres:18-alpine        container_name: ssxc-tanstack-postgres-loadtest        ports:            - "127.0.0.1:5443:5432"        environment:            POSTGRES_USER: ssxc_loadtest            POSTGRES_PASSWORD: ssxc_loadtest_password            POSTGRES_DB: seventysixcommerce_tanstack_loadtest            PGDATA: /var/lib/postgresql/data        healthcheck:            test: [ "CMD-SHELL", "pg_isready -U ssxc_loadtest -d seventysixcommerce_tanstack_loadtest" ]            interval: 5s            timeout: 5s            retries: 5        networks:            - ssxc-tanstack-loadtest-network    # Database Init — Push schema and seed data    db-init:        build:            context: ./ECommerce/seventysixcommerce-tanstack            dockerfile: Dockerfile            target: db-init        container_name: ssxc-tanstack-db-init-loadtest        environment:            DATABASE_URL: postgresql://ssxc_loadtest:ssxc_loadtest_password@postgres-loadtest-tanstack:5432/seventysixcommerce_tanstack_loadtest        depends_on:            postgres-loadtest-tanstack:                condition: service_healthy        networks:            - ssxc-tanstack-loadtest-network    # TanStack Start App — Production build for load testing    tanstack-loadtest:        build:            context: ./ECommerce/seventysixcommerce-tanstack            dockerfile: Dockerfile            target: runner        container_name: ssxc-tanstack-app-loadtest        ports:            - "127.0.0.1:3022:3000"        environment:            DATABASE_URL: postgresql://ssxc_loadtest:ssxc_loadtest_password@postgres-loadtest-tanstack:5432/seventysixcommerce_tanstack_loadtest            MOCK_SERVICES: "true"            NODE_ENV: production            BASE_URL: http://localhost:3022        depends_on:            db-init:                condition: service_completed_successfully            postgres-loadtest-tanstack:                condition: service_healthy        healthcheck:            test: [ "CMD-SHELL", "wget -qO- http://localhost:3000/api/healthz || exit 1" ]            interval: 10s            timeout: 5s            retries: 10            start_period: 30s        networks:            - ssxc-tanstack-loadtest-networknetworks:    ssxc-tanstack-loadtest-network:        driver: bridge
+# docker-compose.loadtest-tanstack.yml
+# Load Test Environment for SeventySixCommerce TanStack Start
+# Usage: docker compose -f docker-compose.loadtest-tanstack.yml up -d
+#
+# Port Allocation (isolated from dev, E2E, and Angular load tests):
+# - TanStack App: 3022 (dev: 3000, E2E: 3012)
+# - PostgreSQL: 5443 (dev: 5438, E2E: 5441)
+
+name: seventysixcommerce-tanstack-loadtest
+
+services:
+  # PostgreSQL — Load Test Database
+  postgres-loadtest-tanstack:
+    image: postgres:18-alpine
+    container_name: ssxc-tanstack-postgres-loadtest
+    ports:
+      - "127.0.0.1:5443:5432"
+    environment:
+      POSTGRES_USER: ssxc_loadtest
+      POSTGRES_PASSWORD: ssxc_loadtest_password
+      POSTGRES_DB: seventysixcommerce_tanstack_loadtest
+      PGDATA: /var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ssxc_loadtest -d seventysixcommerce_tanstack_loadtest" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ssxc-tanstack-loadtest-network
+
+  # Database Init — Push schema and seed data
+  db-init:
+    build:
+      context: ./ECommerce
+      dockerfile: seventysixcommerce-tanstack/Dockerfile
+      target: db-init
+    container_name: ssxc-tanstack-db-init-loadtest
+    environment:
+      DATABASE_URL: postgresql://ssxc_loadtest:ssxc_loadtest_password@postgres-loadtest-tanstack:5432/seventysixcommerce_tanstack_loadtest
+    depends_on:
+      postgres-loadtest-tanstack:
+        condition: service_healthy
+    networks:
+      - ssxc-tanstack-loadtest-network
+
+  # TanStack Start App — Production build for load testing
+  tanstack-loadtest:
+    build:
+      context: ./ECommerce
+      dockerfile: seventysixcommerce-tanstack/Dockerfile
+      target: runner
+    container_name: ssxc-tanstack-app-loadtest
+    ports:
+      - "127.0.0.1:3022:3000"
+    environment:
+      DATABASE_URL: postgresql://ssxc_loadtest:ssxc_loadtest_password@postgres-loadtest-tanstack:5432/seventysixcommerce_tanstack_loadtest
+      MOCK_SERVICES: "true"
+      NODE_ENV: production
+      BASE_URL: http://localhost:3022
+    depends_on:
+      db-init:
+        condition: service_completed_successfully
+      postgres-loadtest-tanstack:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD-SHELL", "wget -qO- http://localhost:3000/api/healthz || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - ssxc-tanstack-loadtest-network
+
+networks:
+  ssxc-tanstack-loadtest-network:
+    driver: bridge

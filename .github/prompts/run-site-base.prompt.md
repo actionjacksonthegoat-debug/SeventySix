@@ -9,7 +9,7 @@ Automate a complete walkthrough of the SeventySix application and both SeventySi
 Navigate every page, exercise core features, capture screenshots, and generate a pass/fail report.
 
 **Targets**:
-- **Part 1**: SeventySix Angular — `https://localhost:4200` (Steps 1–26)
+- **Part 1**: SeventySix Angular — `https://localhost:4200` (Steps 1–26, including 25B and 26A/26B)
 - **Part 2**: SeventySixCommerce SvelteKit — `https://localhost:3001` (Steps 27–35)
 - **Part 3**: SeventySixCommerce TanStack Start — `https://localhost:3002` (Steps 36–43)
 
@@ -98,6 +98,10 @@ After every click, form submission, or navigation:
    document.querySelector('[role="alert"]')?.textContent || null
    ```
 3. Use `list_console_messages` to check for new `error`-level messages (ignore warnings)
+4. Use `list_network_requests` periodically (after each major section) to check for:
+   - Failed requests (`net::ERR_*`)
+   - 4xx/5xx responses on expected resources (exclude expected 301 redirects)
+   - 404 responses on static assets (fonts, images, CSS files)
 
 If an error is found AND the current step is NOT "Click Create Error Log button" (Step 9), add it to the error tracking list.
 
@@ -191,11 +195,12 @@ If PostgreSQL MCP is unavailable, **ask the user to provide the MFA code**.
 1. Navigate to `https://localhost:4200/admin/dashboard`
 2. Wait for page content to load
 3. Take screenshot → `step-09-dashboard-overview.png`
-4. Click the "API Metrics" tab → wait for content → take screenshot → `step-09-dashboard-api.png`
-5. Click the "Cache Metrics" tab → wait for content → take screenshot → `step-09-dashboard-cache.png`
-6. Click the "External Systems" tab → wait for content → take screenshot → `step-09-dashboard-external.png`
-7. Check for console errors
-8. Record result
+4. Use `take_snapshot` to verify accessibility tree — check heading hierarchy (h1 → h2 → h3, no skips) and interactive elements
+5. Click the "API Metrics" tab → wait for content → take screenshot → `step-09-dashboard-api.png`
+6. Click the "Cache Metrics" tab → wait for content → take screenshot → `step-09-dashboard-cache.png`
+7. Click the "External Systems" tab → wait for content → take screenshot → `step-09-dashboard-external.png`
+8. Check for console errors
+9. Record result
 
 ### Step 9: Admin Dashboard — Create Log Entries
 
@@ -406,67 +411,115 @@ If PostgreSQL MCP is unavailable, **ask the user to provide the MFA code**.
 1. Navigate to `https://localhost:4200/admin/svelte`
 2. Wait for the Grafana dashboard embed to load
 3. Take screenshot → `step-22-svelte-dashboard.png`
-4. Verify NO page-level vertical scrollbar exists (content should fit within viewport)
-5. Verify the Grafana iframe fills the available space between the tab bar and footer
-6. Check for console errors
-7. Record result
+4. Verify the SvelteKit Dashboard tab is the active/selected tab under admin commerce navigation
+5. Verify the Grafana iframe is not showing `about:blank` or empty content — evaluate:
+   ```javascript
+   document.querySelector('iframe')?.src || 'no iframe found'
+   ```
+6. Verify the iframe fills the available space between the tab bar and footer
+7. Verify NO page-level vertical scrollbar exists (content should fit within viewport)
+8. Use `list_console_messages` to check for CSP violation errors (e.g., `frame-src`, `connect-src`)
+9. Check for console errors
+10. Record result
 
 ### Step 23: Admin Embedded Commerce — SvelteKit Logs
 
 1. Navigate to `https://localhost:4200/admin/svelte/logs`
 2. Wait for the log data table to load
 3. Take screenshot → `step-23-svelte-logs.png`
-4. Verify NO page-level vertical scrollbar exists (table scrolls within its own container)
-5. Check that log entries are visible with timestamp, level, message, and source columns
-6. Check for console errors
-7. Record result
+4. Verify the log table has at least 1 row of data
+5. Verify log level tags display with appropriate colors (info = green-ish, warn = amber, error = red)
+6. Verify NO page-level vertical scrollbar exists (table scrolls within its own container)
+7. Check that log entries are visible with timestamp, level, message, and source columns
+8. Click on the first log row to open the detail dialog
+9. Wait for the dialog to appear
+10. Take screenshot → `step-23-svelte-log-detail.png`
+11. Close the dialog (click close button or press Escape)
+12. Check for console errors
+13. Record result
 
 ### Step 24: Admin Embedded Commerce — TanStack Dashboard
 
 1. Navigate to `https://localhost:4200/admin/tanstack`
 2. Wait for the Grafana dashboard embed to load
 3. Take screenshot → `step-24-tanstack-dashboard.png`
-4. Verify NO page-level vertical scrollbar exists
-5. Verify layout matches the SvelteKit Dashboard (same spacing, icon positioning)
-6. Check for console errors
-7. Record result
+4. Verify the TanStack Dashboard tab is the active/selected tab under admin commerce navigation
+5. Verify the Grafana iframe is not showing `about:blank` or empty content — evaluate:
+   ```javascript
+   document.querySelector('iframe')?.src || 'no iframe found'
+   ```
+6. Verify the iframe fills the available space between the tab bar and footer
+7. Verify NO page-level vertical scrollbar exists
+8. Verify layout matches the SvelteKit Dashboard (same spacing, icon positioning)
+9. Use `list_console_messages` to check for CSP violation errors
+10. Check for console errors
+11. Record result
 
 ### Step 25: Admin Embedded Commerce — TanStack Logs
 
 1. Navigate to `https://localhost:4200/admin/tanstack/logs`
 2. Wait for the log data table to load
 3. Take screenshot → `step-25-tanstack-logs.png`
-4. Verify NO page-level vertical scrollbar exists
-5. Check that log entries are visible
-6. Check for console errors
-7. Record result
+4. Verify the log table has at least 1 row of data
+5. Verify log level tags display with appropriate colors (info = green-ish, warn = amber, error = red)
+6. Verify NO page-level vertical scrollbar exists
+7. Check that log entries are visible
+8. Click on the first log row to open the detail dialog
+9. Wait for the dialog to appear
+10. Take screenshot → `step-25-tanstack-log-detail.png`
+11. Close the dialog (click close button or press Escape)
+12. Check for console errors
+13. Record result
+
+### Step 25B: Games Landing Page
+
+1. Navigate to `https://localhost:4200/games`
+2. Wait for the games landing page to load
+3. Verify both game cards are visible (Car-a-Lot and Spy And Fly)
+4. Take screenshot → `step-25b-games-landing.png`
+5. Verify each game card has an image/icon and title
+6. Use `take_snapshot` to verify accessibility tree — check heading hierarchy and interactive elements
+7. Check for console errors
+8. Record result
 
 ### Step 26: Games — Play Both Games
 
 > **IMPORTANT**: Both games use Babylon.js 3D rendering. A loading screen with the game icon and name displays while the engine initializes. Verify it appears before the game canvas renders.
 
-#### Car-a-Lot
+#### Step 26A: Car-a-Lot — Full Race to Completion
 
 1. Navigate to `https://localhost:4200/games/car-a-lot`
-2. Wait for the game scene to fully load (loading screen should appear, then the 3D scene)
-3. Take screenshot → `step-26-car-a-lot-loaded.png`
-4. Click the "Start Game" button
-5. Wait briefly for the game to begin
-6. Take screenshot → `step-26-car-a-lot-playing.png`
-7. Use keyboard controls (arrow keys / WASD) to drive the kart — interact for a few seconds
-8. Check for console errors (ignore Babylon.js engine initialization messages)
+2. Wait for the loading screen to appear with game icon and name
+3. Take screenshot → `step-26a-car-a-lot-loading.png`
+4. Wait for the 3D scene to load (loading screen disappears, game canvas visible)
+5. Take screenshot → `step-26a-car-a-lot-ready.png`
+6. Select a kart color if the car color selector is visible
+7. Take screenshot → `step-26a-car-a-lot-color-selected.png`
+8. Click the "Start Game" button
+9. Take screenshot → `step-26a-car-a-lot-playing.png`
+10. Use keyboard to drive (hold ArrowUp / W for accelerate, ArrowLeft / A or ArrowRight / D to steer)
+11. Play until the race completes (lap counter reaches max) OR play for at least 60 seconds if race doesn't end
+12. When the game-over / victory screen appears, take screenshot → `step-26a-car-a-lot-victory.png`
+13. Verify the result overlay shows score/time/result text
+14. Check for console errors (ignore Babylon.js initialization and WebGL warnings)
 
-#### Spy And Fly
+#### Step 26B: Spy And Fly — Full Mission to Completion
 
-9. Navigate to `https://localhost:4200/games/spy-vs-spy`
-10. Wait for the game scene to fully load
-11. Take screenshot → `step-26-spy-and-fly-loaded.png`
-12. Click the "Start Mission" button
-13. Wait for the game to begin
-14. Take screenshot → `step-26-spy-and-fly-playing.png`
-15. Use keyboard controls to play — interact for a few seconds
-16. Check for console errors (ignore Babylon.js engine initialization messages)
-17. Record result for both games
+15. Navigate to `https://localhost:4200/games/spy-vs-spy`
+16. Wait for the loading screen to appear with game icon and name
+17. Take screenshot → `step-26b-spy-and-fly-loading.png`
+18. Wait for the 3D scene to load
+19. Take screenshot → `step-26b-spy-and-fly-ready.png`
+20. Click the "Start Mission" button
+21. Take screenshot → `step-26b-spy-and-fly-playing.png`
+22. Use keyboard controls (WASD for movement, Space for actions)
+23. Navigate the environment — search rooms/areas for items
+24. Play until mission completes (victory/defeat screen) OR play for at least 90 seconds
+25. When the result screen appears, take screenshot → `step-26b-spy-and-fly-result.png`
+26. Verify the result overlay shows mission outcome text
+27. If a "Play Again" or "Return to Menu" button is visible, take screenshot → `step-26b-spy-and-fly-replay-option.png`
+28. Check for console errors (ignore Babylon.js initialization and WebGL warnings)
+29. Record result for both games
 
 ---
 
@@ -480,10 +533,11 @@ If PostgreSQL MCP is unavailable, **ask the user to provide the MFA code**.
 1. Navigate to `https://localhost:3001/`
 2. Wait for the page to load fully
 3. Take screenshot → `step-27-svelte-home.png`
-4. Scroll to the bottom of the page
-5. Take screenshot → `step-27-svelte-home-footer.png`
-6. Check for console errors (ignore CSP inline script warnings — Vite dev-mode only)
-7. Record result
+4. Use `take_snapshot` to verify accessibility tree — check heading hierarchy and verify all images have alt text
+5. Scroll to the bottom of the page
+6. Take screenshot → `step-27-svelte-home-footer.png`
+7. Check for console errors (ignore CSP inline script warnings — Vite dev-mode only)
+8. Record result
 
 ### Step 28: SvelteKit — About Page
 
@@ -498,8 +552,9 @@ If PostgreSQL MCP is unavailable, **ask the user to provide the MFA code**.
 1. Navigate to `https://localhost:3001/shop`
 2. Wait for product categories to load
 3. Take screenshot → `step-29-svelte-shop.png`
-4. Click on the first category link
-5. Wait for the category page to load
+4. Use `take_snapshot` to verify accessibility tree — check heading hierarchy and verify all product images have alt text
+5. Click on the first category link
+6. Wait for the category page to load
 6. Take screenshot → `step-29-svelte-category.png`
 7. Click on the first product in the category
 8. Wait for the product detail page to load
@@ -588,10 +643,11 @@ If PostgreSQL MCP is unavailable, **ask the user to provide the MFA code**.
 1. Navigate to `https://localhost:3002/`
 2. Wait for the page to load fully
 3. Take screenshot → `step-36-tanstack-home.png`
-4. Scroll to the bottom of the page
-5. Take screenshot → `step-36-tanstack-home-footer.png`
-6. Check for console errors (ignore React hydration mismatch warnings on theme class — standard SSR behavior)
-7. Record result
+4. Use `take_snapshot` to verify accessibility tree — check heading hierarchy and verify all images have alt text
+5. Scroll to the bottom of the page
+6. Take screenshot → `step-36-tanstack-home-footer.png`
+7. Check for console errors (ignore React hydration mismatch warnings on theme class — standard SSR behavior)
+8. Record result
 
 ### Step 37: TanStack — About Page
 
@@ -606,8 +662,9 @@ If PostgreSQL MCP is unavailable, **ask the user to provide the MFA code**.
 1. Navigate to `https://localhost:3002/shop`
 2. Wait for product categories to load
 3. Take screenshot → `step-38-tanstack-shop.png`
-4. Click on the first category link
-5. Wait for the category page to load
+4. Use `take_snapshot` to verify accessibility tree — check heading hierarchy and verify all product images have alt text
+5. Click on the first category link
+6. Wait for the category page to load
 6. Take screenshot → `step-38-tanstack-category.png`
 7. Click on the first product in the category
 8. Wait for the product detail page to load
@@ -718,6 +775,25 @@ If none: "No unexpected error banners detected."}
 Ignore: CSP inline script warnings (SvelteKit Vite dev), React hydration mismatch on theme class (TanStack SSR).
 If none: "No console errors detected."}
 
+## Network Errors Detected
+
+{List any failed network requests (net::ERR_*, 4xx/5xx on expected resources, 404 on static assets).
+Exclude: expected 301 redirects.
+If none: "No network errors detected."}
+
+## Accessibility Findings
+
+{List heading hierarchy issues, missing alt text, non-focusable interactive elements found via take_snapshot.
+Pages checked: Admin Dashboard (Step 8), SvelteKit Home (Step 27), SvelteKit Shop (Step 29), TanStack Home (Step 36), TanStack Shop (Step 38), Games Landing (Step 25B).
+If none: "No accessibility issues found."}
+
+## Game Completion Status
+
+| Game | Reached Victory/Result Screen? | Notes |
+|------|-------------------------------|-------|
+| Car-a-Lot | Y/N | |
+| Spy And Fly | Y/N | |
+
 ---
 
 ## Step Results
@@ -733,7 +809,9 @@ If none: "No console errors detected."}
 | 23 | Admin SvelteKit Logs | PASSED/FAILED | |
 | 24 | Admin TanStack Dashboard | PASSED/FAILED | |
 | 25 | Admin TanStack Logs | PASSED/FAILED | |
-| 26 | Games (Car-a-Lot + Spy And Fly) | PASSED/FAILED | |
+| 25B | Games Landing Page | PASSED/FAILED | |
+| 26A | Car-a-Lot Full Race | PASSED/FAILED | |
+| 26B | Spy And Fly Full Mission | PASSED/FAILED | |
 
 ### Part 2: SeventySixCommerce SvelteKit (Steps 27–35)
 

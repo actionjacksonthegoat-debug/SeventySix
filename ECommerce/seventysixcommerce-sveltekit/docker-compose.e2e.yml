@@ -21,8 +21,8 @@ services:
 
   db-init:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: seventysixcommerce-sveltekit/Dockerfile
       target: db-init
     container_name: ssxc-svelte-db-init-e2e
     environment:
@@ -35,8 +35,8 @@ services:
 
   sveltekit-e2e:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: seventysixcommerce-sveltekit/Dockerfile
     container_name: ssxc-svelte-app-e2e
     ports:
       - "127.0.0.1:3011:3001"
