@@ -5,9 +5,9 @@
 # - Rate limiting disabled (ZAP active scanning triggers rate limits)
 # - Mock services enabled (ZAP can't interact with real Stripe/payment flows)
 #
-# Port Allocation (isolated from dev, E2E):
-# - PostgreSQL: 5443 (dev: 5432, E2E: 5441)
-# - App: 3022 (dev: 3002, E2E: 3012)
+# Port Allocation (isolated from dev, E2E, LoadTest):
+# - PostgreSQL: 5445 (dev: 5438, E2E: 5441, LoadTest: 5443)
+# - App: 3032 (dev: 3002, E2E: 3012, LoadTest: 3022)
 
 name: seventysixcommerce-tanstack-dast
 
@@ -16,38 +16,54 @@ services:
     image: postgres:18-alpine
     container_name: ssxc-tanstack-postgres-dast
     ports:
-      - "127.0.0.1:5443:5432"
+      - "127.0.0.1:5445:5432"
     environment:
       POSTGRES_USER: ssxc_dast
       POSTGRES_PASSWORD: ssxc_dast_password
       POSTGRES_DB: seventysixcommerce_tanstack_dast
       PGDATA: /var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ssxc_dast -d seventysixcommerce_tanstack_dast"]
+      test: [ "CMD-SHELL", "pg_isready -U ssxc_dast -d seventysixcommerce_tanstack_dast" ]
       interval: 5s
       timeout: 5s
       retries: 5
     networks:
       - ssxc-tanstack-dast-network
 
+  db-init:
+    build:
+      context: ..
+      dockerfile: seventysixcommerce-tanstack/Dockerfile
+      target: db-init
+    container_name: ssxc-tanstack-db-init-dast
+    environment:
+      DATABASE_URL: postgresql://ssxc_dast:ssxc_dast_password@postgres-dast:5432/seventysixcommerce_tanstack_dast
+    depends_on:
+      postgres-dast:
+        condition: service_healthy
+    networks:
+      - ssxc-tanstack-dast-network
+
   tanstack-dast:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: seventysixcommerce-tanstack/Dockerfile
     container_name: ssxc-tanstack-app-dast
     ports:
-      - "127.0.0.1:3022:3000"
+      - "127.0.0.1:3032:3000"
     environment:
       DATABASE_URL: postgresql://ssxc_dast:ssxc_dast_password@postgres-dast:5432/seventysixcommerce_tanstack_dast
       MOCK_SERVICES: "true"
       RATE_LIMIT_DISABLED: "true"
       NODE_ENV: production
-      BASE_URL: http://localhost:3022
+      BASE_URL: http://localhost:3032
     depends_on:
+      db-init:
+        condition: service_completed_successfully
       postgres-dast:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/api/healthz || exit 1"]
+      test: [ "CMD-SHELL", "wget -qO- http://localhost:3000/api/healthz || exit 1" ]
       interval: 10s
       timeout: 5s
       retries: 10

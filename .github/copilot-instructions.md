@@ -278,8 +278,12 @@ E2E, load tests, and DAST scans run in **fully isolated Docker environments** �
 | E2E | `docker-compose.e2e.yml` | 5434 / 6380 / 7174 / 4201 |
 | Load Test | `docker-compose.loadtest.yml` | 5435 / 6381 / 7175 / 4202 |
 | DAST | `docker-compose.dast.yml` | 5436 / 6382 / 7274 / 4301 |
+| SvelteKit E2E | `ECommerce/.../docker-compose.e2e.yml` | 5440 / — / — / 3011 |
+| TanStack E2E | `ECommerce/.../docker-compose.e2e.yml` | 5441 / — / — / 3012 |
 | SvelteKit Load | `docker-compose.loadtest-svelte.yml` | 5442 / — / — / 3021 |
 | TanStack Load | `docker-compose.loadtest-tanstack.yml` | 5443 / — / — / 3022 |
+| SvelteKit DAST | `ECommerce/.../docker-compose.dast.yml` | 5444 / — / — / 3031 |
+| TanStack DAST | `ECommerce/.../docker-compose.dast.yml` | 5445 / — / — / 3032 |
 
 ## File Index (Auto-Applied via `applyTo` Globs)
 

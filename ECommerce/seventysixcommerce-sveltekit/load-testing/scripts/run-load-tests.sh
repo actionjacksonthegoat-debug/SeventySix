@@ -17,7 +17,7 @@ KEEP_RUNNING="${KEEP_RUNNING:-0}"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LOAD_TEST_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-REPO_ROOT="$(cd "$LOAD_TEST_ROOT/../.." && pwd)"
+REPO_ROOT="$(cd "$LOAD_TEST_ROOT/../../.." && pwd)"
 
 echo ""
 echo "========================================"

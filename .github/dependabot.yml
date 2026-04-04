@@ -57,6 +57,42 @@ updates:
           - "minor"
           - "patch"
 
+  # npm — Client load testing package
+  - package-ecosystem: "npm"
+    directory: "/SeventySix.Client/load-testing"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "npm"
+      - "load-testing"
+      - "client"
+    groups:
+      minor-and-patch:
+        update-types:
+          - "minor"
+          - "patch"
+
+  # npm — Client mock Brevo API
+  - package-ecosystem: "npm"
+    directory: "/SeventySix.Client/mock-brevo-api"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "npm"
+      - "mock-brevo"
+      - "client"
+    groups:
+      minor-and-patch:
+        update-types:
+          - "minor"
+          - "patch"
+
   # NuGet — .NET server
   - package-ecosystem: "nuget"
     directory: "/SeventySix.Server"
@@ -131,6 +167,23 @@ updates:
       - "dependencies"
       - "npm"
       - "sveltekit"
+    groups:
+      minor-and-patch:
+        update-types:
+          - "minor"
+          - "patch"
+
+  # npm — SeventySixCommerce shared package
+  - package-ecosystem: "npm"
+    directory: "/ECommerce/seventysixcommerce-shared"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "npm"
+      - "commerce-shared"
     groups:
       minor-and-patch:
         update-types:

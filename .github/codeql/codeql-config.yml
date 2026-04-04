@@ -1,5 +1,22 @@
 name: "SeventySix CodeQL Configuration"
 
+paths:
+  # Main client application source (includes Games domain)
+  - "SeventySix.Client/src"
+  # Main app tests and security-relevant automation
+  - "SeventySix.Client/e2e"
+  - "SeventySix.Client/load-testing"
+  # Commerce ecosystems: runtime source + E2E + load testing
+  - "ECommerce/seventysixcommerce-shared/src"
+  - "ECommerce/seventysixcommerce-sveltekit/src"
+  - "ECommerce/seventysixcommerce-sveltekit/e2e"
+  - "ECommerce/seventysixcommerce-sveltekit/load-testing"
+  - "ECommerce/seventysixcommerce-tanstack/src"
+  - "ECommerce/seventysixcommerce-tanstack/e2e"
+  - "ECommerce/seventysixcommerce-tanstack/load-testing"
+  # Server source and tests
+  - "SeventySix.Server"
+
 paths-ignore:
   # Client build outputs
   - "SeventySix.Client/dist"
@@ -7,7 +24,6 @@ paths-ignore:
   - "SeventySix.Client/.angular"
   - "SeventySix.Client/playwright-report"
   - "SeventySix.Client/test-results"
-  - "SeventySix.Client/load-testing"
   # E2E test runner output (Vite/Vitest build artifacts — not source code)
   - "SeventySix.Client/dist/test-out"
   # Dependencies
