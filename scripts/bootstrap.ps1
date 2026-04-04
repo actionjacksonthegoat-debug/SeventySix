@@ -79,10 +79,13 @@ if ($LASTEXITCODE -ne 0) { Write-Error "TanStack npm ci failed."; exit 1 }
 Pop-Location
 
 # Generate sandbox .env.local files
+# DB URLs match the POSTGRES_USER configured in each ECommerce site's docker-compose.dev.yml:
+#   SvelteKit: ssxc_dev (container: ssxc-sveltekit-dev-db, port 5439)
+#   TanStack: seventysixcommerce (container: db, port 5438)
 Write-Host ""
-Write-Host "--- Sandbox Environment Files ---" -ForegroundColor Cyan
-Write-Host "  Generating .env.local files for SeventySixCommerce sandboxes."
-Write-Host "  Press Enter to use default values."
+Write-Host "--- ECommerce Environment Files ---" -ForegroundColor Cyan
+Write-Host "  Generating .env.local files for ECommerce sandboxes."
+Write-Host "  Press Enter to use default values (matching docker-compose.dev.yml)."
 Write-Host ""
 
 $svelteDbUrl = Read-Host -Prompt "  SvelteKit database URL [postgresql://ssxc_dev:dev_password_only@localhost:5439/seventysixcommerce_sveltekit_dev]"

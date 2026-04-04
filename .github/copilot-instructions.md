@@ -56,6 +56,27 @@
 
 ---
 
+## Ecosystem Definition
+
+> **The SeventySix Ecosystem** includes ALL projects in this repository, treated as a unified whole:
+
+| Project | Path | Role |
+|---------|------|------|
+| **SeventySix.Server** | `SeventySix.Server/` | .NET 10 API (Identity, Logging, ApiTracking, ElectronicNotifications) |
+| **SeventySix.Client** | `SeventySix.Client/` | Angular 21 SPA with Games domain (Babylon.js) |
+| **ECommerce-Svelte** | `ECommerce/seventysixcommerce-sveltekit/` | SvelteKit 2 storefront (Stripe, Printful, Brevo) |
+| **ECommerce-TanStack** | `ECommerce/seventysixcommerce-tanstack/` | TanStack Start storefront (Stripe, Printful, Brevo) |
+| **ECommerce-Shared** | `ECommerce/seventysixcommerce-shared/` | Shared TypeScript library for both ECommerce sites |
+
+**Ecosystem-first principle**: Scripts, CI, and tooling always operate on the full Ecosystem by default. Standalone project commands exist for targeted work but the Ecosystem is the primary unit.
+
+**Naming conventions**:
+- Docker containers use `ssxc-` prefix (abbrev. for SeventySixCommerce) or `SeventySixCommerce-` (production)
+- When referring to ECommerce sites informally: "ECommerce-Svelte" and "ECommerce-TanStack"
+- Shared library: "ECommerce-Shared" or `seventysixcommerce-shared`
+
+---
+
 ## Core Principles
 
 - **SOLID** — Single Responsibility, Open/Closed, Liskov Substitution, Interface Segregation, Dependency Inversion. Components are thin controllers; logic lives in focused services. One reason to change per class.

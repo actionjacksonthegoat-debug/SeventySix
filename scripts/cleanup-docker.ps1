@@ -1,9 +1,11 @@
 # cleanup-docker.ps1
-# Safely removes unused SeventySix Docker resources to reclaim disk space.
-# Only removes containers/images/volumes belonging to the SeventySix project —
+# Safely removes unused SeventySix Ecosystem Docker resources to reclaim disk space.
+# Only removes containers/images/volumes belonging to the SeventySix Ecosystem —
 # never runs indiscriminate prune commands that could destroy other projects.
 #
-# SCOPE: By default targets all SeventySix environments (dev, e2e, loadtest).
+# ECOSYSTEM: SeventySix.Server, SeventySix.Client, ECommerce-Svelte, ECommerce-TanStack
+#
+# SCOPE: By default targets all SeventySix environments (dev, e2e, loadtest, dast).
 #        Use -Environment to target a specific one without touching others.
 #
 # Usage:
@@ -22,7 +24,7 @@ $ErrorActionPreference = "Stop"
 
 Write-Host ""
 Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "  Docker Cleanup - SeventySix" -ForegroundColor Cyan
+Write-Host "  Docker Cleanup - SeventySix Ecosystem" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 
@@ -64,20 +66,20 @@ else {
 	Write-Host "  No stopped containers to remove" -ForegroundColor DarkGray
 }
 
-# Remove stopped SeventySixCommerce containers (ssxc-* dev and SeventySixCommerce-* prod)
+# Remove stopped ECommerce containers (both ssxc-* and SeventySixCommerce-* naming conventions)
 Write-Host ""
-Write-Host "Removing stopped SeventySixCommerce containers..." -ForegroundColor Yellow
-$yahContainers =
+Write-Host "Removing stopped ECommerce containers..." -ForegroundColor Yellow
+$commerceContainers =
 docker ps -a --filter "status=exited" --format "{{.Names}}" |
 Where-Object { $_ -match "^(ssxc-|SeventySixCommerce-)" }
-if ($yahContainers) {
-	foreach ($name in $yahContainers) {
+if ($commerceContainers) {
+	foreach ($name in $commerceContainers) {
 		docker rm $name 2>$null | Out-Null
 	}
-	Write-Host "  Removed $($yahContainers.Count) stopped SeventySixCommerce container(s)" -ForegroundColor DarkYellow
+	Write-Host "  Removed $($commerceContainers.Count) stopped ECommerce container(s)" -ForegroundColor DarkYellow
 }
 else {
-	Write-Host "  No stopped SeventySixCommerce containers to remove" -ForegroundColor DarkGray
+	Write-Host "  No stopped ECommerce containers to remove" -ForegroundColor DarkGray
 }
 
 # Remove dangling images (dangling = unused intermediate layers with <none> tag)
@@ -107,7 +109,7 @@ docker builder prune -f --keep-storage 2GB
 
 if ($IncludeVolumes) {
 	Write-Host ""
-	Write-Host "WARNING: Removing SeventySix volumes ($Environment) (data loss possible)..." -ForegroundColor Red
+	Write-Host "WARNING: Removing SeventySix Ecosystem volumes ($Environment) (data loss possible)..." -ForegroundColor Red
 
 	# Build volume filter based on environment
 	$volumePattern = switch ($Environment) {
@@ -118,14 +120,26 @@ if ($IncludeVolumes) {
 		default { "^seventysix" }
 	}
 
-	# First, stop containers for the targeted environment to release volume locks
-	Write-Host "Stopping targeted SeventySix containers..." -ForegroundColor Yellow
+	# Stop containers for the targeted environment to release volume locks
+	Write-Host "Stopping targeted Ecosystem containers..." -ForegroundColor Yellow
 	Push-Location "$PSScriptRoot\.."
 	$ErrorActionPreference = "SilentlyContinue"
 	switch ($Environment) {
-		"dev" { docker compose -f docker-compose.yml -f docker-compose.override.yml down --remove-orphans 2>&1 | Out-Null }
-		"e2e" { docker compose -f docker-compose.e2e.yml down -v --remove-orphans 2>&1 | Out-Null }
-		"loadtest" { docker compose -f docker-compose.loadtest.yml down --remove-orphans 2>&1 | Out-Null }
+		"dev" {
+			docker compose -f docker-compose.yml -f docker-compose.override.yml down --remove-orphans 2>&1 | Out-Null
+			docker compose -f ECommerce/seventysixcommerce-sveltekit/docker-compose.dev.yml down --remove-orphans 2>&1 | Out-Null
+			docker compose -f ECommerce/seventysixcommerce-tanstack/docker-compose.dev.yml down --remove-orphans 2>&1 | Out-Null
+		}
+		"e2e" {
+			docker compose -f docker-compose.e2e.yml down -v --remove-orphans 2>&1 | Out-Null
+			docker compose -f ECommerce/seventysixcommerce-sveltekit/docker-compose.e2e.yml down -v --remove-orphans 2>&1 | Out-Null
+			docker compose -f ECommerce/seventysixcommerce-tanstack/docker-compose.e2e.yml down -v --remove-orphans 2>&1 | Out-Null
+		}
+		"loadtest" {
+			docker compose -f docker-compose.loadtest.yml down --remove-orphans 2>&1 | Out-Null
+			docker compose -f docker-compose.loadtest-svelte.yml down --remove-orphans 2>&1 | Out-Null
+			docker compose -f docker-compose.loadtest-tanstack.yml down --remove-orphans 2>&1 | Out-Null
+		}
 		"dast" {
 			docker compose -f docker-compose.dast.yml down -v --remove-orphans 2>&1 | Out-Null
 			docker compose -f ECommerce/seventysixcommerce-sveltekit/docker-compose.dast.yml down -v --remove-orphans 2>&1 | Out-Null
@@ -136,67 +150,66 @@ if ($IncludeVolumes) {
 			docker compose -f docker-compose.e2e.yml down -v --remove-orphans 2>&1 | Out-Null
 			docker compose -f docker-compose.loadtest.yml down --remove-orphans 2>&1 | Out-Null
 			docker compose -f docker-compose.dast.yml down -v --remove-orphans 2>&1 | Out-Null
+			docker compose -f ECommerce/seventysixcommerce-sveltekit/docker-compose.dev.yml down --remove-orphans 2>&1 | Out-Null
+			docker compose -f ECommerce/seventysixcommerce-sveltekit/docker-compose.e2e.yml down -v --remove-orphans 2>&1 | Out-Null
 			docker compose -f ECommerce/seventysixcommerce-sveltekit/docker-compose.dast.yml down -v --remove-orphans 2>&1 | Out-Null
+			docker compose -f ECommerce/seventysixcommerce-tanstack/docker-compose.dev.yml down --remove-orphans 2>&1 | Out-Null
+			docker compose -f ECommerce/seventysixcommerce-tanstack/docker-compose.e2e.yml down -v --remove-orphans 2>&1 | Out-Null
 			docker compose -f ECommerce/seventysixcommerce-tanstack/docker-compose.dast.yml down -v --remove-orphans 2>&1 | Out-Null
+			docker compose -f docker-compose.loadtest-svelte.yml down --remove-orphans 2>&1 | Out-Null
+			docker compose -f docker-compose.loadtest-tanstack.yml down --remove-orphans 2>&1 | Out-Null
 		}
 	}
-}
-
-# Also stop SeventySixCommerce dev containers to release volume locks
-if ($Environment -eq "dev" -or $Environment -eq "all") {
-	docker compose -f ECommerce/seventysixcommerce-tanstack/docker-compose.dev.yml down --remove-orphans 2>&1 | Out-Null
-	docker compose -f ECommerce/seventysixcommerce-sveltekit/docker-compose.dev.yml down --remove-orphans 2>&1 | Out-Null
-}
-$ErrorActionPreference = "Stop"
-Pop-Location
-
-# Remove SeventySix volumes matching environment (excluding PostgreSQL — use 'npm run db:reset' for database reset, USER ONLY)
-Write-Host "Removing SeventySix volumes (excluding PostgreSQL)..." -ForegroundColor Yellow
-$volumes =
-docker volume ls --format "{{.Name}}" | Where-Object { $_ -match $volumePattern -and $_ -notmatch "postgres" }
-
-$postgresVolumes =
-docker volume ls --format "{{.Name}}" | Where-Object { $_ -match $volumePattern -and $_ -match "postgres" }
-
-if ($postgresVolumes) {
-	Write-Host ""
-	foreach ($pgVolume in $postgresVolumes) {
-		Write-Host "  Skipping PostgreSQL volume: $pgVolume" -ForegroundColor Yellow
-	}
-	Write-Host "  -> Use 'npm run db:reset' to reset the database (USER ONLY)" -ForegroundColor Yellow
-	Write-Host ""
-}
-
-foreach ($volume in $volumes) {
-	Write-Host "  Removing: $volume" -ForegroundColor DarkYellow
-	$ErrorActionPreference = "SilentlyContinue"
-	docker volume rm $volume --force 2>&1 | Out-Null
 	$ErrorActionPreference = "Stop"
-}
+	Pop-Location
 
-# Remove SeventySixCommerce volumes (ssxc_* and ssxc-* patterns)
-if ($Environment -eq "dev" -or $Environment -eq "all") {
-	Write-Host ""
-	Write-Host "Removing SeventySixCommerce volumes (excluding PostgreSQL)..." -ForegroundColor Yellow
-	$yahVolumes =
-	docker volume ls --format "{{.Name}}" | Where-Object { $_ -match "^yah[-_]" -and $_ -notmatch "postgres|pgdata" }
+	# Remove SeventySix volumes matching environment (excluding PostgreSQL — use 'npm run db:reset' for database reset, USER ONLY)
+	Write-Host "Removing SeventySix volumes (excluding PostgreSQL)..." -ForegroundColor Yellow
+	$volumes =
+	docker volume ls --format "{{.Name}}" | Where-Object { $_ -match $volumePattern -and $_ -notmatch "postgres" }
 
-	$yahPostgresVolumes =
-	docker volume ls --format "{{.Name}}" | Where-Object { $_ -match "^yah[-_]" -and $_ -match "postgres|pgdata" }
+	$postgresVolumes =
+	docker volume ls --format "{{.Name}}" | Where-Object { $_ -match $volumePattern -and $_ -match "postgres" }
 
-	if ($yahPostgresVolumes) {
-		foreach ($pgVolume in $yahPostgresVolumes) {
-			Write-Host "  Skipping SeventySixCommerce PostgreSQL volume: $pgVolume" -ForegroundColor Yellow
+	if ($postgresVolumes) {
+		Write-Host ""
+		foreach ($pgVolume in $postgresVolumes) {
+			Write-Host "  Skipping PostgreSQL volume: $pgVolume" -ForegroundColor Yellow
 		}
+		Write-Host "  -> Use 'npm run db:reset' to reset the database (USER ONLY)" -ForegroundColor Yellow
+		Write-Host ""
 	}
 
-	foreach ($yahVolume in $yahVolumes) {
-		Write-Host "  Removing: $yahVolume" -ForegroundColor DarkYellow
+	foreach ($volume in $volumes) {
+		Write-Host "  Removing: $volume" -ForegroundColor DarkYellow
 		$ErrorActionPreference = "SilentlyContinue"
-		docker volume rm $yahVolume --force 2>&1 | Out-Null
+		docker volume rm $volume --force 2>&1 | Out-Null
 		$ErrorActionPreference = "Stop"
 	}
-}
+
+	# Remove ECommerce volumes (ssxc and seventysixcommerce naming conventions)
+	if ($Environment -eq "dev" -or $Environment -eq "all") {
+		Write-Host ""
+		Write-Host "Removing ECommerce volumes (excluding PostgreSQL)..." -ForegroundColor Yellow
+		$commerceVolumes =
+		docker volume ls --format "{{.Name}}" | Where-Object { $_ -match "^(ssxc[-_]|seventysixcommerce[-_])" -and $_ -notmatch "postgres|pgdata" }
+
+		$commercePostgresVolumes =
+		docker volume ls --format "{{.Name}}" | Where-Object { $_ -match "^(ssxc[-_]|seventysixcommerce[-_])" -and $_ -match "postgres|pgdata" }
+
+		if ($commercePostgresVolumes) {
+			foreach ($pgVolume in $commercePostgresVolumes) {
+				Write-Host "  Skipping ECommerce PostgreSQL volume: $pgVolume" -ForegroundColor Yellow
+			}
+		}
+
+		foreach ($commerceVolume in $commerceVolumes) {
+			Write-Host "  Removing: $commerceVolume" -ForegroundColor DarkYellow
+			$ErrorActionPreference = "SilentlyContinue"
+			docker volume rm $commerceVolume --force 2>&1 | Out-Null
+			$ErrorActionPreference = "Stop"
+		}
+	}
 }
 
 # Show new disk usage

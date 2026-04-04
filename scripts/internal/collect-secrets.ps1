@@ -133,12 +133,9 @@ $adminEmail = Read-Prompt -Prompt "  Admin User Email" -Default "seventysix@app.
 $generatedAdminPassword = New-ValidPassword
 
 Write-Host ""
-Write-Host "  Admin password must meet the application policy:" -ForegroundColor White
+Write-Host "  Admin password requirements (OWASP ASVS V2.1.9):" -ForegroundColor White
 Write-Host "    - Minimum 12 characters" -ForegroundColor Gray
-Write-Host "    - At least one uppercase letter [A-Z]" -ForegroundColor Gray
-Write-Host "    - At least one lowercase letter [a-z]" -ForegroundColor Gray
-Write-Host "    - At least one digit [0-9]" -ForegroundColor Gray
-Write-Host "    - At least one special character (e.g. !@#`$%^&*)" -ForegroundColor Gray
+Write-Host "    - No composition rules — long passphrases are encouraged" -ForegroundColor Gray
 Write-Host "  Press Enter to use the generated default shown in brackets." -ForegroundColor Cyan
 Write-Host "  The password you choose here will be shown again when bootstrap completes." -ForegroundColor Cyan
 Write-Host ""
