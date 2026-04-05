@@ -45,6 +45,12 @@ export const handle: Handle =
 		response.headers.set(
 			"Permissions-Policy",
 			"camera=(), microphone=(), geolocation=()");
+		response.headers.set(
+			"Cross-Origin-Embedder-Policy",
+			"credentialless");
+		response.headers.set(
+			"Cache-Control",
+			"no-store");
 
 		return response;
 	};

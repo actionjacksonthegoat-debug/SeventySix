@@ -12,3 +12,8 @@
 10110	IGNORE	Dangerous JS Functions (false positive — ZAP flags standard Angular/zone.js minified patterns like Function() constructor used internally by the framework; no eval() in application code)
 90004	IGNORE	Cross-Origin-Opener-Policy Header Missing or Invalid (same-origin-allow-popups is intentionally used to support OAuth popup flows; same-origin would block the callback window from communicating with the opener — reviewed and accepted)
 90033	IGNORE	Loosely Scoped Cookie (SameSite=Strict already set on auth cookies)
+10049	IGNORE	Storable/Non-Storable Content (informational — expected caching behavior for static assets and public storefront pages)
+10094	IGNORE	Base64 Disclosure (false positive — compiled JS bundles contain base64 encoded runtime patterns, not sensitive data)
+10112	IGNORE	Session Management Response Identified (expected — all projects use session cookies for authentication or anonymous cart management)
+10202	IGNORE	Absence of Anti-CSRF Tokens (SvelteKit form actions use origin-based CSRF protection; main app uses .NET anti-forgery — ZAP checks for hidden input tokens which is a different mitigation strategy)
+90005	IGNORE	Sec-Fetch-Dest Header is Missing (browser-sent Fetch metadata header — ZAP synthetic requests omit it; server-side enforcement not possible)
