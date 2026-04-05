@@ -68,7 +68,7 @@ chmod +x scripts/bootstrap.sh
 
 1. **Installs prerequisites** — PowerShell 7 and Node.js (via winget/apt) if not present, then verifies Git, .NET 10 SDK, Docker Desktop
 2. **Collects your secrets** — admin email/password, database password, Brevo API key, GitHub OAuth keys, data protection cert password
-3. **Installs all dependencies** — `npm install` (root + client + load-testing), `dotnet restore`
+3. **Installs all dependencies** — `npm install` (root + client + load-testing), `dotnet restore`, k6 (load testing), Playwright browsers (E2E testing), commerce shared module linking
 4. **Generates certificates** — SSL dev cert (localhost) and ASP.NET Core Data Protection cert
 5. **Builds and verifies** — .NET server build + Angular client build
 6. **Runs all test suites** — server tests, client tests, E2E tests, load tests
@@ -238,7 +238,7 @@ Domain-driven modules with enforced isolation via architecture tests
 
 ### E-Commerce Sites
 
-Both e-commerce storefronts are independently deployable Node.js applications sharing a common feature set.
+Both e-commerce storefronts are independently deployable Node.js applications sharing a common feature set. A shared TypeScript library (`@seventysixcommerce/shared`) provides framework-agnostic utilities — Drizzle ORM schema, Stripe/Printful/Brevo integrations, cart logic, analytics, and webhook handling — consumed by both sites.
 
 | Technology | SvelteKit Version | TanStack Version | License | Purpose |
 |---|---|---|---|---|
@@ -256,6 +256,25 @@ Both e-commerce storefronts are independently deployable Node.js applications sh
 | Svelte | 5.54+ | — | MIT | UI library (runes) |
 | TanStack Start | — | 1.167+ | MIT | Full-stack framework |
 | React | — | 19.2+ | MIT | UI library |
+
+#### E-Commerce Development Commands
+
+All commerce commands run from the repo root via `npm run`. Both sites use isolated Docker environments for E2E and load testing — no port conflicts with the main app or each other.
+
+| Command | Description |
+|---|---|
+| `npm run start:svelte` | Start SvelteKit commerce dev server |
+| `npm run start:tanstack` | Start TanStack commerce dev server |
+| `npm run test:shared` | Run shared library unit tests |
+| `npm run test:svelte` | Run SvelteKit unit tests |
+| `npm run test:tanstack` | Run TanStack unit tests |
+| `npm run test:e2e:svelte` | Run SvelteKit Playwright E2E tests (Docker-isolated) |
+| `npm run test:e2e:tanstack` | Run TanStack Playwright E2E tests (Docker-isolated) |
+| `npm run loadtest:svelte:quick` | Run SvelteKit quick load test |
+| `npm run loadtest:tanstack:quick` | Run TanStack quick load test |
+| `npm run format:shared` | Format shared library code |
+| `npm run format:svelte` | Format SvelteKit code |
+| `npm run format:tanstack` | Format TanStack code |
 
 ## Architecture Overview
 
@@ -337,14 +356,17 @@ SeventySix/
 │   ├── src/app/shared/           Services, guards, interceptors, components, pipes
 │   ├── e2e/                      Playwright E2E tests (auth roles, axe-core WCAG)
 │   └── load-testing/             k6 load tests (scenarios, Docker-isolated)
-├── seventysixcommerce-sveltekit/ SvelteKit 2 E-Commerce (Svelte 5, Drizzle, Stripe)
-│   ├── src/lib/                  Components, server DB, integrations
-│   ├── src/routes/               File-based routing with form actions
-│   └── e2e/                      Playwright E2E tests
-├── seventysixcommerce-tanstack/  TanStack Start E-Commerce (React 19, Drizzle, Stripe)
-│   ├── src/components/           Layout, SEO, UI components
-│   ├── src/routes/               File-based TanStack Router
-│   └── e2e/                      Playwright E2E tests
+├── ECommerce/                    E-Commerce storefronts and shared library
+│   ├── seventysixcommerce-shared/    Shared TypeScript library (@seventysixcommerce/shared)
+│   │   └── src/                      Schema, integrations, cart, analytics, webhooks
+│   ├── seventysixcommerce-sveltekit/ SvelteKit 2 E-Commerce (Svelte 5, Drizzle, Stripe)
+│   │   ├── src/lib/                  Components, server DB, integrations
+│   │   ├── src/routes/               File-based routing with form actions
+│   │   └── e2e/                      Playwright E2E tests
+│   └── seventysixcommerce-tanstack/  TanStack Start E-Commerce (React 19, Drizzle, Stripe)
+│       ├── src/components/           Layout, SEO, UI components
+│       ├── src/routes/               File-based TanStack Router
+│       └── e2e/                      Playwright E2E tests
 ├── docs/                         Project documentation
 │   ├── Caching-Strategy.md       Three-tier caching architecture
 │   ├── E2E-Speed-Optimization.md E2E performance tuning guide
@@ -544,8 +566,9 @@ Each sub-project has its own README with deeper technical detail:
 | **SeventySix.Client** | Angular 21 SPA — domain modules, Zoneless with Signals, TanStack Query, Material Design 3, HTTP interceptors, PWA, theme variants, client-side telemetry | [Client README](SeventySix.Client/README.md) |
 | **E2E Tests** | Playwright — auth roles (public, authenticated, admin, developer), axe-core WCAG 2.2 AA, custom fixtures, `data-testid` selectors | [E2E README](SeventySix.Client/e2e/README.md) |
 | **Load Tests** | k6 (Grafana) — scenarios, Docker-isolated environment, HTML summary reports, multiple run profiles (quick, smoke, load, stress) | [Load Testing README](SeventySix.Client/load-testing/README.md) |
-| **SeventySixCommerce (SvelteKit)** | SvelteKit 2 E-Commerce — Svelte 5 runes, Drizzle ORM, PostgreSQL, Stripe payments, Printful print-on-demand, Brevo transactional email, dark mode, architecture tests | [SvelteKit Commerce README](seventysixcommerce-sveltekit/README.md) |
-| **SeventySixCommerce (TanStack)** | TanStack Start E-Commerce — React 19, TanStack Router, Drizzle ORM, PostgreSQL, Stripe, Printful, Brevo, dark mode, CSRF middleware, architecture tests | [TanStack Commerce README](seventysixcommerce-tanstack/README.md) |
+| **SeventySixCommerce (Shared)** | Shared TypeScript library — Drizzle ORM schema, Stripe/Printful/Brevo integrations, cart logic, analytics, webhook handling, date utilities | [Shared Library README](ECommerce/seventysixcommerce-shared/README.md) |
+| **SeventySixCommerce (SvelteKit)** | SvelteKit 2 E-Commerce — Svelte 5 runes, Drizzle ORM, PostgreSQL, Stripe payments, Printful print-on-demand, Brevo transactional email, dark mode, architecture tests | [SvelteKit Commerce README](ECommerce/seventysixcommerce-sveltekit/README.md) |
+| **SeventySixCommerce (TanStack)** | TanStack Start E-Commerce — React 19, TanStack Router, Drizzle ORM, PostgreSQL, Stripe, Printful, Brevo, dark mode, CSRF middleware, architecture tests | [TanStack Commerce README](ECommerce/seventysixcommerce-tanstack/README.md) |
 
 ## Application Showcase
 

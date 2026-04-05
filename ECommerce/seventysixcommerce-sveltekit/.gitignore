@@ -15,8 +15,6 @@ Thumbs.db
 # Env
 .env
 .env.*
-!.env.example
-!.env.production.example
 !.env.test
 
 # Vite

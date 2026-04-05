@@ -25,6 +25,13 @@
 #   DataProtection:*                              → Key protection settings + certificate
 #   Grafana:AdminUser/AdminPassword               → Grafana dashboard credentials
 #   PgAdmin:DefaultEmail/DefaultPassword          → pgAdmin web UI credentials
+#
+#   Commerce:Sveltekit:*                          → SvelteKit ECommerce sandbox secrets
+#   Commerce:Tanstack:*                           → TanStack ECommerce sandbox secrets
+#     DatabaseUrl / PostgresPassword / MockServices / BaseUrl / StripeSecretKey /
+#     StripeWebhookSecret / PrintfulApiKey / PrintfulWebhookSecret / BrevoApiKey /
+#     SeventySixApiUrl / OtelEndpoint / PublicOtelEndpoint / PublicGa4MeasurementId /
+#     PublicGoogleSiteVerification / PublicBingSiteVerification
 
 param(
 	[Parameter(Mandatory = $true)]
@@ -103,10 +110,47 @@ switch ($Action) {
 		dotnet user-secrets set "PgAdmin:DefaultEmail" "pgadmin@example.com" --project $projectPath
 		dotnet user-secrets set "PgAdmin:DefaultPassword" "pgadmin" --project $projectPath
 
+		# Commerce — SvelteKit ECommerce Sandbox
+		# DB credentials match docker-compose.dev.yml in seventysixcommerce-sveltekit
+		dotnet user-secrets set "Commerce:Sveltekit:DatabaseUrl" "postgresql://ssxc_dev:dev_password_only@localhost:5439/seventysixcommerce_sveltekit_dev" --project $projectPath
+		dotnet user-secrets set "Commerce:Sveltekit:PostgresPassword" "dev_password_only" --project $projectPath
+		dotnet user-secrets set "Commerce:Sveltekit:MockServices" "true" --project $projectPath
+		dotnet user-secrets set "Commerce:Sveltekit:BaseUrl" "https://localhost:3001" --project $projectPath
+		dotnet user-secrets set "Commerce:Sveltekit:StripeSecretKey" "" --project $projectPath
+		dotnet user-secrets set "Commerce:Sveltekit:StripeWebhookSecret" "" --project $projectPath
+		dotnet user-secrets set "Commerce:Sveltekit:PrintfulApiKey" "" --project $projectPath
+		dotnet user-secrets set "Commerce:Sveltekit:PrintfulWebhookSecret" "" --project $projectPath
+		dotnet user-secrets set "Commerce:Sveltekit:BrevoApiKey" "" --project $projectPath
+		dotnet user-secrets set "Commerce:Sveltekit:SeventySixApiUrl" "" --project $projectPath
+		dotnet user-secrets set "Commerce:Sveltekit:OtelEndpoint" "" --project $projectPath
+		dotnet user-secrets set "Commerce:Sveltekit:PublicOtelEndpoint" "" --project $projectPath
+		dotnet user-secrets set "Commerce:Sveltekit:PublicGa4MeasurementId" "" --project $projectPath
+		dotnet user-secrets set "Commerce:Sveltekit:PublicGoogleSiteVerification" "" --project $projectPath
+		dotnet user-secrets set "Commerce:Sveltekit:PublicBingSiteVerification" "" --project $projectPath
+
+		# Commerce — TanStack ECommerce Sandbox
+		# DB credentials match docker-compose.dev.yml in seventysixcommerce-tanstack
+		dotnet user-secrets set "Commerce:Tanstack:DatabaseUrl" "postgresql://seventysixcommerce:seventysixcommerce_dev@localhost:5438/seventysixcommerce" --project $projectPath
+		dotnet user-secrets set "Commerce:Tanstack:PostgresPassword" "seventysixcommerce_dev" --project $projectPath
+		dotnet user-secrets set "Commerce:Tanstack:MockServices" "true" --project $projectPath
+		dotnet user-secrets set "Commerce:Tanstack:BaseUrl" "https://localhost:3002" --project $projectPath
+		dotnet user-secrets set "Commerce:Tanstack:StripeSecretKey" "" --project $projectPath
+		dotnet user-secrets set "Commerce:Tanstack:StripeWebhookSecret" "" --project $projectPath
+		dotnet user-secrets set "Commerce:Tanstack:PrintfulApiKey" "" --project $projectPath
+		dotnet user-secrets set "Commerce:Tanstack:PrintfulWebhookSecret" "" --project $projectPath
+		dotnet user-secrets set "Commerce:Tanstack:BrevoApiKey" "" --project $projectPath
+		dotnet user-secrets set "Commerce:Tanstack:SeventySixApiUrl" "" --project $projectPath
+		dotnet user-secrets set "Commerce:Tanstack:OtelEndpoint" "" --project $projectPath
+		dotnet user-secrets set "Commerce:Tanstack:PublicOtelEndpoint" "" --project $projectPath
+		dotnet user-secrets set "Commerce:Tanstack:PublicGa4MeasurementId" "" --project $projectPath
+		dotnet user-secrets set "Commerce:Tanstack:PublicGoogleSiteVerification" "" --project $projectPath
+		dotnet user-secrets set "Commerce:Tanstack:PublicBingSiteVerification" "" --project $projectPath
+
 		Write-Host ""
 		Write-Host "User secrets initialized." -ForegroundColor Green
 		Write-Host "JWT SecretKey and Altcha HmacKey were auto-generated." -ForegroundColor Yellow
 		Write-Host "Update GitHub OAuth, Email, Grafana, pgAdmin, and DataProtection values with your real credentials." -ForegroundColor Yellow
+		Write-Host "Commerce sandbox secrets set with development defaults (MOCK_SERVICES=true)." -ForegroundColor Yellow
 		Write-Host ""
 		Write-Host "Run 'npm run secrets:list' to view current secrets." -ForegroundColor Cyan
 	}

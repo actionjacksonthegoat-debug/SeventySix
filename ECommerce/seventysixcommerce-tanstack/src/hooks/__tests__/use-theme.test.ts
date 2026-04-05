@@ -203,4 +203,46 @@ describe("useTheme",
 				expect(result.current.isDark)
 					.toBe(false);
 			});
+
+		it("sets theme cookie on toggleTheme",
+			() =>
+			{
+				Object.defineProperty(window, "localStorage",
+					{ value: createLocalStorageMock(), writable: true });
+				Object.defineProperty(window, "matchMedia",
+					{ value: createMatchMediaStub(false), writable: true });
+
+				const { result } =
+					renderHook(() => useTheme());
+
+				act(
+					() =>
+					{
+						result.current.toggleTheme();
+					});
+
+				expect(document.cookie)
+					.toContain("ssxc-theme=dark");
+			});
+
+		it("sets theme cookie on setTheme",
+			() =>
+			{
+				Object.defineProperty(window, "localStorage",
+					{ value: createLocalStorageMock(), writable: true });
+				Object.defineProperty(window, "matchMedia",
+					{ value: createMatchMediaStub(false), writable: true });
+
+				const { result } =
+					renderHook(() => useTheme());
+
+				act(
+					() =>
+					{
+						result.current.setTheme("dark");
+					});
+
+				expect(document.cookie)
+					.toContain("ssxc-theme=dark");
+			});
 	});

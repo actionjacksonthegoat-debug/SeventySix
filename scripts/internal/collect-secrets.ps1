@@ -133,12 +133,9 @@ $adminEmail = Read-Prompt -Prompt "  Admin User Email" -Default "seventysix@app.
 $generatedAdminPassword = New-ValidPassword
 
 Write-Host ""
-Write-Host "  Admin password must meet the application policy:" -ForegroundColor White
+Write-Host "  Admin password requirements (OWASP ASVS V2.1.9):" -ForegroundColor White
 Write-Host "    - Minimum 12 characters" -ForegroundColor Gray
-Write-Host "    - At least one uppercase letter [A-Z]" -ForegroundColor Gray
-Write-Host "    - At least one lowercase letter [a-z]" -ForegroundColor Gray
-Write-Host "    - At least one digit [0-9]" -ForegroundColor Gray
-Write-Host "    - At least one special character (e.g. !@#`$%^&*)" -ForegroundColor Gray
+Write-Host "    - No composition rules — long passphrases are encouraged" -ForegroundColor Gray
 Write-Host "  Press Enter to use the generated default shown in brackets." -ForegroundColor Cyan
 Write-Host "  The password you choose here will be shown again when bootstrap completes." -ForegroundColor Cyan
 Write-Host ""
@@ -288,10 +285,63 @@ foreach ($key in $secrets.Keys) {
 	& dotnet user-secrets set $key $secrets[$key] 2>$null
 }
 
+# ─── ECommerce Sandbox Configuration ─────────────────────────────────────────
+# Commerce secrets use the same user-secrets store with Commerce:* prefix.
+# Defaults match each app's docker-compose.dev.yml — press Enter to accept.
+
+Write-Host ""
+Write-Host "--- ECommerce Sandbox Configuration ---" -ForegroundColor Cyan
+Write-Host "  These defaults match docker-compose.dev.yml for each commerce app."
+Write-Host "  Press Enter to use defaults. Third-party keys are optional (MOCK_SERVICES=true by default)."
+Write-Host ""
+
+$svelteDbUrl = Read-Prompt -Prompt "  SvelteKit database URL" -Default "postgresql://ssxc_dev:dev_password_only@localhost:5439/seventysixcommerce_sveltekit_dev"
+$svelteDbPassword = Read-Prompt -Prompt "  SvelteKit DB password" -Default "dev_password_only"
+
+$tanstackDbUrl = Read-Prompt -Prompt "  TanStack database URL" -Default "postgresql://seventysixcommerce:seventysixcommerce_dev@localhost:5438/seventysixcommerce"
+$tanstackDbPassword = Read-Prompt -Prompt "  TanStack DB password" -Default "seventysixcommerce_dev"
+
+$commerceSecrets = @{
+	"Commerce:Sveltekit:DatabaseUrl"                  = $svelteDbUrl
+	"Commerce:Sveltekit:PostgresPassword"             = $svelteDbPassword
+	"Commerce:Sveltekit:MockServices"                 = "true"
+	"Commerce:Sveltekit:BaseUrl"                      = "https://localhost:3001"
+	"Commerce:Sveltekit:StripeSecretKey"              = ""
+	"Commerce:Sveltekit:StripeWebhookSecret"          = ""
+	"Commerce:Sveltekit:PrintfulApiKey"               = ""
+	"Commerce:Sveltekit:PrintfulWebhookSecret"        = ""
+	"Commerce:Sveltekit:BrevoApiKey"                  = ""
+	"Commerce:Sveltekit:SeventySixApiUrl"             = ""
+	"Commerce:Sveltekit:OtelEndpoint"                 = ""
+	"Commerce:Sveltekit:PublicOtelEndpoint"            = ""
+	"Commerce:Sveltekit:PublicGa4MeasurementId"       = ""
+	"Commerce:Sveltekit:PublicGoogleSiteVerification" = ""
+	"Commerce:Sveltekit:PublicBingSiteVerification"   = ""
+	"Commerce:Tanstack:DatabaseUrl"                   = $tanstackDbUrl
+	"Commerce:Tanstack:PostgresPassword"              = $tanstackDbPassword
+	"Commerce:Tanstack:MockServices"                  = "true"
+	"Commerce:Tanstack:BaseUrl"                       = "https://localhost:3002"
+	"Commerce:Tanstack:StripeSecretKey"               = ""
+	"Commerce:Tanstack:StripeWebhookSecret"           = ""
+	"Commerce:Tanstack:PrintfulApiKey"                = ""
+	"Commerce:Tanstack:PrintfulWebhookSecret"         = ""
+	"Commerce:Tanstack:BrevoApiKey"                   = ""
+	"Commerce:Tanstack:SeventySixApiUrl"              = ""
+	"Commerce:Tanstack:OtelEndpoint"                  = ""
+	"Commerce:Tanstack:PublicOtelEndpoint"             = ""
+	"Commerce:Tanstack:PublicGa4MeasurementId"        = ""
+	"Commerce:Tanstack:PublicGoogleSiteVerification"  = ""
+	"Commerce:Tanstack:PublicBingSiteVerification"    = ""
+}
+
+foreach ($key in $commerceSecrets.Keys) {
+	& dotnet user-secrets set $key $commerceSecrets[$key] 2>$null
+}
+
 Pop-Location
 
 Write-Host ""
-Write-Host "[SUCCESS] All secrets saved to .NET user-secrets." -ForegroundColor Green
+Write-Host "[SUCCESS] All secrets saved to .NET user-secrets (including commerce)." -ForegroundColor Green
 
 # ─── Brevo skipped: critical notice + offer to auto-patch appsettings ─────────
 if ($brevoApiKey -eq "PLACEHOLDER_USE_USER_SECRETS") {

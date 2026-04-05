@@ -6,7 +6,6 @@
 **/.tanstack
 **/.env
 **/.env.*
-!**/.env.example
 **/.git
 **/TestResults
 **/coverage

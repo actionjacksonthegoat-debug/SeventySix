@@ -1,6 +1,9 @@
 import adapter from '@sveltejs/adapter-node';
 import { relative, sep } from 'node:path';
 
+/** @type {boolean} */
+const isProduction = process.env.NODE_ENV === 'production';
+
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
 	compilerOptions: {
@@ -22,10 +25,13 @@ const config = {
 			precompress: true,
 		}),
 		csp: {
-			mode: 'nonce',
+			// Nonce mode in production; relaxed in dev so Vite's HMR/eval scripts are not blocked by CSP
+			mode: isProduction ? 'nonce' : undefined,
 			directives: {
 				'default-src': ['self'],
-				'script-src': ['self', 'https://www.googletagmanager.com'],
+				'script-src': isProduction
+					? ['self', 'https://www.googletagmanager.com']
+					: ['self', 'unsafe-inline', 'unsafe-eval', 'https://www.googletagmanager.com'],
 				'style-src': ['self', 'unsafe-inline'],
 				'img-src': ['self', 'data:', 'https:'],
 				'font-src': ['self'],

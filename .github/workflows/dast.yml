@@ -106,6 +106,7 @@ jobs:
                   rules_file_name: ".zap/rules.tsv"
                   allow_issue_writing: false
                   fail_action: true
+                  artifact_name: zap_scan_main
                   cmd_options: >-
                       -a
                       -j
@@ -170,6 +171,7 @@ jobs:
                   rules_file_name: ".zap/rules.tsv"
                   allow_issue_writing: false
                   fail_action: true
+                  artifact_name: zap_scan_commerce_sveltekit
                   cmd_options: >-
                       -a
                       -j
@@ -233,6 +235,7 @@ jobs:
                   rules_file_name: ".zap/rules.tsv"
                   allow_issue_writing: false
                   fail_action: true
+                  artifact_name: zap_scan_commerce_tanstack
                   cmd_options: >-
                       -a
                       -j

@@ -28,3 +28,9 @@ export {
 
 /** Canonical public URL for the TanStack SeventySixCommerce site. */
 export const SITE_URL: string = "https://commerce-tanstack.seventysixsandbox.com";
+
+/** Cookie name for persisting the user's theme preference so SSR can match. */
+export const THEME_COOKIE_NAME: string = "ssxc-theme";
+
+/** Max-age for the theme cookie in seconds (1 year). */
+export const THEME_COOKIE_MAX_AGE: number = 31_536_000;

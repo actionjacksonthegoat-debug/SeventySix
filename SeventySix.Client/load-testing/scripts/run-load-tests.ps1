@@ -153,6 +153,13 @@ $exitCode = 0
 $savedErrorPref = $ErrorActionPreference
 $ErrorActionPreference = "Continue"
 
+# Export k6 dashboard as static HTML (always useful), but disable live web server
+# The live web server (K6_WEB_DASHBOARD=true) creates a persistent HTTP listener
+# that can delay k6 process exit and freeze VS Code terminals
+$env:K6_WEB_DASHBOARD = "false"
+$dashboardExport = Join-Path $LoadTestRoot "reports" "dashboard.html"
+$env:K6_WEB_DASHBOARD_EXPORT = $dashboardExport
+
 Push-Location $LoadTestRoot
 
 if ($Scenario) {
@@ -189,13 +196,12 @@ Pop-Location
 # 6. Generate summary report
 Write-Host ""
 Write-Host "Generating summary report..." -ForegroundColor Cyan
-node (Join-Path $LoadTestRoot "scripts\generate-summary.js")
+node (Join-Path $LoadTestRoot "scripts" "generate-summary.js")
 
-# 7. Open summary in browser
-$summaryPath = Join-Path $LoadTestRoot "reports\summary.html"
+# 7. Print summary report path (never auto-open browser — causes VS Code/Copilot terminal freezes)
+$summaryPath = Join-Path $LoadTestRoot "reports" "summary.html"
 if (Test-Path $summaryPath) {
-	Write-Host "Opening summary report..." -ForegroundColor Cyan
-	Start-Process $summaryPath
+	Write-Host "Summary report: $summaryPath" -ForegroundColor Cyan
 }
 
 # 8. Stop containers (unless -KeepRunning)

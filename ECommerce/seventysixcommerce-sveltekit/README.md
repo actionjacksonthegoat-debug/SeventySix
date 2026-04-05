@@ -6,6 +6,8 @@ Art merchandise e-commerce storefront built with SvelteKit 2, Svelte 5, Drizzle 
 
 This is one of two satellite e-commerce sites in the [SeventySix](../../README.md) ecosystem. Both storefronts share production infrastructure (Hetzner server, Caddy reverse proxy, Cloudflare DNS) and forward application logs to the SeventySix API for centralized observability. Each site uses its own PostgreSQL database, separate from the main SeventySix database. The sister site — [SeventySixCommerce (TanStack)](../seventysixcommerce-tanstack/README.md) — provides the same feature set built with React 19 and TanStack Start.
 
+Both sites consume the [`@seventysixcommerce/shared`](../seventysixcommerce-shared/README.md) library for framework-agnostic utilities — Drizzle ORM schema, Stripe/Printful/Brevo integrations, cart logic, analytics, and webhook handling.
+
 ## Stack
 
 | Layer | Technology |
@@ -89,8 +91,6 @@ Server-side warning/error logs can be forwarded to SeventySix API when configure
 
 ## Tests
 
-Current baseline: 96 tests across 16 test files.
-
 ```sh
 npm test
 npm run check
@@ -98,7 +98,10 @@ npm run check
 
 ## Environment Variables
 
-| Variable | Required | Default in `.env.example` | Description |
+Secrets are managed via .NET user-secrets for local development and GitHub Secrets for production.
+See [SECRETS.md](SECRETS.md) for the full reference.
+
+| Variable | Required | Dev Default | Description |
 | --- | --- | --- | --- |
 | `DATABASE_URL` | Yes | `postgresql://ssxc_dev:dev_password_only@localhost:5439/seventysixcommerce_sveltekit_dev` | PostgreSQL connection string |
 | `STRIPE_SECRET_KEY` | Only when `MOCK_SERVICES=false` | `sk_test_mock_key` | Stripe server key |
