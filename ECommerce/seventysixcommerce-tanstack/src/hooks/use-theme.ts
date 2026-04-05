@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { THEME_COOKIE_MAX_AGE, THEME_COOKIE_NAME } from "~/lib/constants";
 
 /** The localStorage key used to persist the theme preference. */
 const STORAGE_KEY: string = "SeventySixCommerce-theme";
@@ -59,6 +60,16 @@ function applyTheme(value: Theme): void
 	}
 }
 
+/** Persists the theme value to a cookie so the server can read it during SSR. */
+function setThemeCookie(value: Theme): void
+{
+	if (typeof document !== "undefined")
+	{
+		document.cookie =
+			`${THEME_COOKIE_NAME}=${value};path=/;max-age=${THEME_COOKIE_MAX_AGE};SameSite=Lax`;
+	}
+}
+
 /**
  * React hook for managing theme state with localStorage persistence.
  * SSR-safe — guards all browser API access.
@@ -81,6 +92,7 @@ export function useTheme(): ThemeState
 			{
 				setThemeState(value);
 				applyTheme(value);
+				setThemeCookie(value);
 
 				if (typeof localStorage !== "undefined")
 				{
@@ -99,6 +111,7 @@ export function useTheme(): ThemeState
 						const next: Theme =
 							prev === "light" ? "dark" : "light";
 						applyTheme(next);
+						setThemeCookie(next);
 
 						if (typeof localStorage !== "undefined")
 						{

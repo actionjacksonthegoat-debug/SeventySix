@@ -109,10 +109,7 @@ If an error is found AND the current step is NOT "Click Create Error Log button"
 
 The following console messages are expected in development and should be **ignored**:
 
-- **Babylon.js WebGL warnings** (games only) — `BABYLON.Engine`, `WebGL`, `GL_INVALID_*`
-- **CSP inline script warnings** (SvelteKit Vite dev only) — `Refused to execute inline script`
-- **React hydration mismatch on theme class** (TanStack SSR only) — `Hydration failed`, `className` mismatch on `<html>` or `<body>`
-- **k6 reporter stderr** (load tests only) — informational lines from `k6-reporter`
+- **Babylon.js WebGL warnings** (games only) — `BABYLON.Engine`, `WebGL`, `GL_INVALID_*` — GPU driver validation messages, not suppressible via application code
 - **DevTools warnings** — messages from browser extensions, DevTools protocol noise
 
 ### Continue-on-Failure (CRITICAL)

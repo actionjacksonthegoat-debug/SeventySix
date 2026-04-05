@@ -5,20 +5,43 @@ import {
 	Scripts,
 	useRouter
 } from "@tanstack/react-router";
+import { createServerFn } from "@tanstack/react-start";
+import { getCookie } from "@tanstack/react-start/server";
 import type { JSX, ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { CookieConsent } from "~/components/ui/CookieConsent";
 import { ThemeToggle } from "~/components/ui/ThemeToggle";
 import { ThemeProvider } from "~/context/theme-context";
 import { trackPageView } from "~/lib/analytics";
+import { THEME_COOKIE_NAME } from "~/lib/constants";
 import { currentYear } from "~/lib/date";
 import { initClientTelemetry, recordNavigation } from "~/lib/telemetry-client";
 import { getCart } from "~/server/functions/cart";
 import globalsCss from "~/styles/globals.css?url";
 
-/** Inline script that prevents FOUC by applying the dark class before paint and suppressing transitions. */
+/**
+ * Server function that reads the theme cookie so SSR can render the correct CSS class.
+ * Returns "dark" when the cookie is set to "dark", otherwise defaults to "light".
+ */
+const getServerTheme =
+	createServerFn(
+		{ method: "GET" })
+		.handler(
+			async (): Promise<string> =>
+			{
+				const value: string =
+					getCookie(THEME_COOKIE_NAME) ?? "";
+
+				return value === "dark" ? "dark" : "light";
+			});
+
+/**
+ * Inline script that prevents FOUC by applying the dark class before paint.
+ * Only modifies the DOM when the server-rendered theme doesn't match the user preference.
+ * Always writes the theme cookie so the next SSR request matches.
+ */
 const FOUC_SCRIPT: string =
-	`(function(){var d=document.documentElement;d.classList.add("no-transition");var t=localStorage.getItem("SeventySixCommerce-theme");if(!t){t=window.matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light"}if(t==="dark"){d.classList.add("dark")}requestAnimationFrame(function(){requestAnimationFrame(function(){d.classList.remove("no-transition")})})})();`;
+	`(function(){var d=document.documentElement;var t=localStorage.getItem("SeventySixCommerce-theme");if(!t){t=window.matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light"}var hasDark=d.classList.contains("dark");var wantDark=t==="dark";if(hasDark!==wantDark){d.classList.add("no-transition");if(wantDark){d.classList.add("dark")}else{d.classList.remove("dark")}requestAnimationFrame(function(){requestAnimationFrame(function(){d.classList.remove("no-transition")})})}document.cookie="ssxc-theme="+t+";path=/;max-age=31536000;SameSite=Lax"})();`;
 
 /** Returns the base meta tags including optional Google Site Verification. */
 function buildRootMeta(): Array<Record<string, string>>
@@ -67,6 +90,13 @@ function buildRootMeta(): Array<Record<string, string>>
 export const Route =
 	createRootRoute(
 		{
+			beforeLoad: async () =>
+			{
+				const serverTheme: string =
+					await getServerTheme();
+
+				return { serverTheme };
+			},
 			notFoundComponent: NotFoundPage,
 			head: () => ({
 				meta: buildRootMeta(),
@@ -165,8 +195,15 @@ function RootDocument({
 	children
 }: Readonly<{ children: ReactNode; }>): JSX.Element
 {
+	const { serverTheme } =
+		Route.useRouteContext();
+
 	return (
-		<html lang="en" suppressHydrationWarning>
+		<html
+			lang="en"
+			className={serverTheme === "dark" ? "dark" : undefined}
+			suppressHydrationWarning
+		>
 			<head>
 				<script dangerouslySetInnerHTML={{ __html: FOUC_SCRIPT }} />
 				<HeadContent />
