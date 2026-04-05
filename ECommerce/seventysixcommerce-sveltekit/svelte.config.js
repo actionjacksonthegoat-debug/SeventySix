@@ -33,9 +33,10 @@ const config = {
 					? ['self', 'https://www.googletagmanager.com']
 					: ['self', 'unsafe-inline', 'unsafe-eval', 'https://www.googletagmanager.com'],
 				'style-src': ['self', 'unsafe-inline'],
-				'img-src': ['self', 'data:', 'https:'],
+				'img-src': ['self', 'data:'],
 				'font-src': ['self'],
 				'connect-src': ['self', 'https://www.google-analytics.com', 'https://www.googletagmanager.com'],
+				'object-src': ['none'],
 				'frame-ancestors': ['none'],
 				'base-uri': ['self'],
 				'form-action': ['self']

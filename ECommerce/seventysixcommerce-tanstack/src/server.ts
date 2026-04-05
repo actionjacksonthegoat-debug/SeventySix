@@ -32,7 +32,13 @@ export default {
 			// cannot use nonces yet, so 'unsafe-inline' is required for script-src.
 			response.headers.set(
 				"Content-Security-Policy",
-				"default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self' https://www.google-analytics.com https://www.googletagmanager.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'");
+				"default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://www.google-analytics.com https://www.googletagmanager.com; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'");
+			response.headers.set(
+				"Cross-Origin-Embedder-Policy",
+				"credentialless");
+			response.headers.set(
+				"Cache-Control",
+				"no-store");
 
 			return response;
 		}
