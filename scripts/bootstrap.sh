@@ -59,6 +59,20 @@ install_node() {
     fi
 }
 
+install_k6() {
+    # k6 is required for load testing — install via apt (Debian/Ubuntu/Codespace) or brew (macOS)
+    if command -v apt-get &>/dev/null; then
+        sudo gpg -k 2>/dev/null
+        curl -fsSL https://dl.grafana.com/oss/gpg.key | sudo gpg --dearmor -o /usr/share/keyrings/k6-archive-keyring.gpg
+        echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.grafana.com/oss/deb stable main" | sudo tee /etc/apt/sources.list.d/grafana_k6.list
+        sudo apt-get update -q && sudo apt-get install -y k6
+    elif command -v brew &>/dev/null; then
+        brew install k6
+    else
+        echo '[WARN] Cannot install k6 automatically. Install manually: https://grafana.com/docs/k6/latest/set-up/install-k6/'
+    fi
+}
+
 if ! command -v pwsh &>/dev/null; then
     echo ' PowerShell 7 not found. Installing...'
     install_pwsh
@@ -67,6 +81,11 @@ fi
 if ! command -v node &>/dev/null; then
     echo ' Node.js not found. Installing Node.js LTS...'
     install_node
+fi
+
+if ! command -v k6 &>/dev/null; then
+    echo ' k6 not found. Installing...'
+    install_k6
 fi
 
 exec pwsh -ExecutionPolicy Bypass -File "$(dirname "$0")/bootstrap.ps1" "$@"

@@ -6,8 +6,6 @@ dist/
 # Env
 .env
 .env.*
-!.env.example
-!.env.production.example
 !.env.test
 *.local
 

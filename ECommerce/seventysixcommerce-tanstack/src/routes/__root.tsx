@@ -146,9 +146,9 @@ function RootComponent(): JSX.Element
 					<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 						<div className="flex flex-wrap gap-6 text-sm text-text-muted">
 							<a href="/about">About</a>
-							<a href="/policies/privacy">Privacy</a>
-							<a href="/policies/terms">Terms</a>
-							<a href="/policies/returns">Returns</a>
+							<a href="/privacy">Privacy</a>
+							<a href="/terms">Terms</a>
+							<a href="/returns">Returns</a>
 						</div>
 						<p className="mt-4 text-xs text-text-muted">
 							&copy; {currentYear()} SeventySixCommerce. All rights reserved.

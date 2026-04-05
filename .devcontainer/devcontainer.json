@@ -88,7 +88,7 @@
 			"onAutoForward": "silent"
 		}
 	},
-	"postCreateCommand": "npm install && cd ECommerce/seventysixcommerce-sveltekit && npm ci && cd ../seventysixcommerce-tanstack && npm ci",
+	"postCreateCommand": "npm install && cd ECommerce/seventysixcommerce-sveltekit && npm ci && cd ../seventysixcommerce-tanstack && npm ci --legacy-peer-deps && cd ../.. && npx playwright install --with-deps chromium && (command -v k6 || (sudo gpg -k 2>/dev/null && curl -fsSL https://dl.grafana.com/oss/gpg.key | sudo gpg --dearmor -o /usr/share/keyrings/k6-archive-keyring.gpg && echo 'deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.grafana.com/oss/deb stable main' | sudo tee /etc/apt/sources.list.d/grafana_k6.list && sudo apt-get update -q && sudo apt-get install -y k6))",
 	"customizations": {
 		"vscode": {
 			"extensions": [

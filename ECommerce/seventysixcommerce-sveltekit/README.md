@@ -98,7 +98,10 @@ npm run check
 
 ## Environment Variables
 
-| Variable | Required | Default in `.env.example` | Description |
+Secrets are managed via .NET user-secrets for local development and GitHub Secrets for production.
+See [SECRETS.md](SECRETS.md) for the full reference.
+
+| Variable | Required | Dev Default | Description |
 | --- | --- | --- | --- |
 | `DATABASE_URL` | Yes | `postgresql://ssxc_dev:dev_password_only@localhost:5439/seventysixcommerce_sveltekit_dev` | PostgreSQL connection string |
 | `STRIPE_SECRET_KEY` | Only when `MOCK_SERVICES=false` | `sk_test_mock_key` | Stripe server key |

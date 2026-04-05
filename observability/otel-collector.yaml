@@ -17,6 +17,8 @@ receivers:
                         - "https://localhost:3001"
                         - "https://localhost:3002"
                         - "https://localhost:4200"
+                        # GitHub Codespaces: wildcard required — each instance gets a unique subdomain
+                        - "https://*.app.github.dev"
                     allowed_headers:
                         - "*"
 

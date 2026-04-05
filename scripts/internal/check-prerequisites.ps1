@@ -67,6 +67,16 @@ $tools = @(
 		WingetId    = "dprint.dprint"
 		DownloadUrl = "https://dprint.dev/install"
 		Required    = $false  # Auto-installed by bootstrap.ps1; warning only if running check-prerequisites standalone
+	},
+	@{
+		Name        = "k6"
+		Command     = "k6"
+		VersionArg  = "version"
+		VersionRx   = 'k6 v(\d+\.\d+\.\d+)'
+		MinVersion  = [version]"0.50.0"
+		WingetId    = "Grafana.k6"
+		DownloadUrl = "https://grafana.com/docs/k6/latest/set-up/install-k6/"
+		Required    = $false  # Auto-installed by bootstrap.ps1; warning only if running check-prerequisites standalone
 	}
 )
 
@@ -161,7 +171,7 @@ foreach ($tool in $tools) { Assert-Tool $tool }
 # Docker daemon check — verify it's running (not just installed)
 # Delegate actual Docker Desktop start to bootstrap.ps1 → start-dev.ps1 at end of run.
 # Here we just verify the daemon responds; if not, inform the user.
-$dockerInfo = & docker info 2>$null
+$null = & docker info 2>$null
 if ($LASTEXITCODE -ne 0) {
 	Write-Host "[INFO] Docker is installed but daemon is not running."
 	Write-Host "  Docker will be started automatically when you run 'npm start'."

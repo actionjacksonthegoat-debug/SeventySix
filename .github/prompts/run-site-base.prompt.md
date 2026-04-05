@@ -105,6 +105,16 @@ After every click, form submission, or navigation:
 
 If an error is found AND the current step is NOT "Click Create Error Log button" (Step 9), add it to the error tracking list.
 
+### Known-Safe Console Patterns (Do NOT flag as errors)
+
+The following console messages are expected in development and should be **ignored**:
+
+- **Babylon.js WebGL warnings** (games only) — `BABYLON.Engine`, `WebGL`, `GL_INVALID_*`
+- **CSP inline script warnings** (SvelteKit Vite dev only) — `Refused to execute inline script`
+- **React hydration mismatch on theme class** (TanStack SSR only) — `Hydration failed`, `className` mismatch on `<html>` or `<body>`
+- **k6 reporter stderr** (load tests only) — informational lines from `k6-reporter`
+- **DevTools warnings** — messages from browser extensions, DevTools protocol noise
+
 ### Continue-on-Failure (CRITICAL)
 
 **On failure of ANY step**: Log the error, take a screenshot of the current state, record the step as FAILED with error details, and CONTINUE to the next step. NEVER abort the walkthrough due to a single step failure.
@@ -488,6 +498,8 @@ If PostgreSQL MCP is unavailable, **ask the user to provide the MFA code**.
 
 #### Step 26A: Car-a-Lot — Full Race to Completion
 
+> **Timeout**: If the victory/result screen does not appear within 120 seconds of starting the game, take a screenshot, record the step as PARTIAL, and continue to Step 26B.
+
 1. Navigate to `https://localhost:4200/games/car-a-lot`
 2. Wait for the loading screen to appear with game icon and name
 3. Take screenshot → `step-26a-car-a-lot-loading.png`
@@ -505,6 +517,8 @@ If PostgreSQL MCP is unavailable, **ask the user to provide the MFA code**.
 
 #### Step 26B: Spy And Fly — Full Mission to Completion
 
+> **Timeout**: If the result screen does not appear within 180 seconds of starting the mission, take a screenshot, record the step as PARTIAL, and continue to Part 2.
+
 15. Navigate to `https://localhost:4200/games/spy-vs-spy`
 16. Wait for the loading screen to appear with game icon and name
 17. Take screenshot → `step-26b-spy-and-fly-loading.png`
@@ -520,6 +534,13 @@ If PostgreSQL MCP is unavailable, **ask the user to provide the MFA code**.
 27. If a "Play Again" or "Return to Menu" button is visible, take screenshot → `step-26b-spy-and-fly-replay-option.png`
 28. Check for console errors (ignore Babylon.js initialization and WebGL warnings)
 29. Record result for both games
+
+### Part 1 Network Checkpoint
+
+Before moving to Part 2, run `list_network_requests` and check for:
+- Any failed requests (`net::ERR_*`) during Part 1
+- Any unexpected 4xx/5xx responses (exclude expected 301 redirects and the intentional error from Step 9)
+- Record any issues in the error tracking list
 
 ---
 
@@ -786,6 +807,15 @@ If none: "No network errors detected."}
 {List heading hierarchy issues, missing alt text, non-focusable interactive elements found via take_snapshot.
 Pages checked: Admin Dashboard (Step 8), SvelteKit Home (Step 27), SvelteKit Shop (Step 29), TanStack Home (Step 36), TanStack Shop (Step 38), Games Landing (Step 25B).
 If none: "No accessibility issues found."}
+
+## Admin Commerce Dashboard Health
+
+| Dashboard | Iframe Loaded? | Iframe src | CSP Errors? | Notes |
+|-----------|---------------|------------|-------------|-------|
+| SvelteKit (Step 22) | Y/N | {url or about:blank} | Y/N | |
+| SvelteKit Logs (Step 23) | Y/N | N/A | Y/N | {row count} |
+| TanStack (Step 24) | Y/N | {url or about:blank} | Y/N | |
+| TanStack Logs (Step 25) | Y/N | N/A | Y/N | {row count} |
 
 ## Game Completion Status
 

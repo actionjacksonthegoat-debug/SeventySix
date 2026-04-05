@@ -69,7 +69,7 @@ export function CookieConsent({ measurementId }: CookieConsentProps): JSX.Elemen
 			<div className="mx-auto flex max-w-7xl flex-col items-center gap-4 sm:flex-row sm:justify-between">
 				<p className="text-sm text-text-secondary">
 					We use cookies for analytics to improve your experience. See our{" "}
-					<a href="/policies/privacy" className="underline hover:text-text-primary">Privacy Policy</a>.
+					<a href="/privacy" className="underline hover:text-text-primary">Privacy Policy</a>.
 				</p>
 				<div className="flex gap-3">
 					<button

@@ -9,11 +9,11 @@ export const ROUTES = {
 	/** Health check endpoint. */
 	healthz: "/api/healthz",
 	/** Terms of service page. */
-	terms: "/policies/terms",
+	terms: "/terms",
 	/** Privacy policy page. */
-	privacy: "/policies/privacy",
+	privacy: "/privacy",
 	/** Returns policy page. */
-	returns: "/policies/returns"
+	returns: "/returns"
 } as const;
 
 /** Grouped routes for parameterized testing (e.g., accessibility scans). */

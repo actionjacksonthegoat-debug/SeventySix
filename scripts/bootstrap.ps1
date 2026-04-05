@@ -78,39 +78,10 @@ Push-Location (Join-Path $repoRoot "ECommerce" "seventysixcommerce-tanstack")
 if ($LASTEXITCODE -ne 0) { Write-Error "TanStack npm ci failed."; exit 1 }
 Pop-Location
 
-# Generate sandbox .env.local files
-# DB URLs match the POSTGRES_USER configured in each ECommerce site's docker-compose.dev.yml:
-#   SvelteKit: ssxc_dev (container: ssxc-sveltekit-dev-db, port 5439)
-#   TanStack: seventysixcommerce (container: db, port 5438)
+# Commerce secrets are now managed via .NET user-secrets (set during collect-secrets.ps1 above).
+# No .env.local files are needed — start scripts load secrets via load-commerce-secrets.mjs.
 Write-Host ""
-Write-Host "--- ECommerce Environment Files ---" -ForegroundColor Cyan
-Write-Host "  Generating .env.local files for ECommerce sandboxes."
-Write-Host "  Press Enter to use default values (matching docker-compose.dev.yml)."
-Write-Host ""
-
-$svelteDbUrl = Read-Host -Prompt "  SvelteKit database URL [postgresql://ssxc_dev:dev_password_only@localhost:5439/seventysixcommerce_sveltekit_dev]"
-if ([string]::IsNullOrWhiteSpace($svelteDbUrl)) {
-	$svelteDbUrl = "postgresql://ssxc_dev:dev_password_only@localhost:5439/seventysixcommerce_sveltekit_dev"
-}
-
-$tanstackDbUrl = Read-Host -Prompt "  TanStack database URL [postgresql://seventysixcommerce:seventysixcommerce_dev@localhost:5438/seventysixcommerce]"
-if ([string]::IsNullOrWhiteSpace($tanstackDbUrl)) {
-	$tanstackDbUrl = "postgresql://seventysixcommerce:seventysixcommerce_dev@localhost:5438/seventysixcommerce"
-}
-
-$svelteEnvPath = Join-Path $repoRoot "ECommerce" "seventysixcommerce-sveltekit" ".env.local"
-@"
-DATABASE_URL=$svelteDbUrl
-MOCK_SERVICES=true
-"@ | Set-Content -Path $svelteEnvPath -NoNewline
-Write-Host "  [OK] SvelteKit .env.local written." -ForegroundColor Green
-
-$tanstackEnvPath = Join-Path $repoRoot "ECommerce" "seventysixcommerce-tanstack" ".env.local"
-@"
-DATABASE_URL=$tanstackDbUrl
-MOCK_SERVICES=true
-"@ | Set-Content -Path $tanstackEnvPath -NoNewline
-Write-Host "  [OK] TanStack .env.local written." -ForegroundColor Green
+Write-Host "  Commerce secrets configured via user-secrets (run 'npm run secrets:list' to view)." -ForegroundColor Green
 
 # Install dprint globally if not already present
 # dprint is required for 'npm run format' (ESLint → dprint → ESLint pipeline).
@@ -148,6 +119,52 @@ if (-not $dprintCmd) {
 else {
 	$dprintVersion = & dprint --version 2>$null
 	Write-Host "  [OK] dprint already installed: $dprintVersion" -ForegroundColor Green
+}
+
+# Install k6 if not already present
+# k6 is required for load testing (npm run loadtest:quick, etc.)
+Write-Host "  Checking k6..."
+$k6Cmd = Get-Command k6 -ErrorAction SilentlyContinue
+if (-not $k6Cmd) {
+	Write-Host "  k6 not found — installing..." -ForegroundColor Yellow
+	if ($IsWindows) {
+		if (Get-Command winget -ErrorAction SilentlyContinue) {
+			& winget install Grafana.k6 --accept-source-agreements --accept-package-agreements
+		}
+		else {
+			Write-Host "  [WARN] winget not available. Install k6 manually:" -ForegroundColor Yellow
+			Write-Host "         https://grafana.com/docs/k6/latest/set-up/install-k6/" -ForegroundColor Yellow
+		}
+	}
+	else {
+		# Linux / macOS — use official Grafana gpg key + apt repo
+		& bash -c "sudo gpg -k 2>/dev/null; curl -fsSL https://dl.grafana.com/oss/gpg.key | sudo gpg --dearmor -o /usr/share/keyrings/k6-archive-keyring.gpg && echo 'deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.grafana.com/oss/deb stable main' | sudo tee /etc/apt/sources.list.d/grafana_k6.list && sudo apt-get update -q && sudo apt-get install -y k6"
+	}
+	$k6Cmd = Get-Command k6 -ErrorAction SilentlyContinue
+	if ($k6Cmd) {
+		Write-Host "  [OK] k6 installed: $(& k6 version)" -ForegroundColor Green
+	}
+	else {
+		Write-Host "  [WARN] k6 install may require a terminal restart." -ForegroundColor Yellow
+	}
+}
+else {
+	$k6Version = & k6 version 2>$null
+	Write-Host "  [OK] k6 already installed: $k6Version" -ForegroundColor Green
+}
+
+# Install Playwright browsers for E2E testing
+# Only chromium is needed — E2E specs target Chromium/Chrome
+Write-Host "  Installing Playwright browsers (chromium)..."
+Push-Location $repoRoot
+& npx playwright install --with-deps chromium
+$playwrightExit = $LASTEXITCODE
+Pop-Location
+if ($playwrightExit -ne 0) {
+	Write-Host "  [WARN] Playwright browser install had issues. E2E tests may not work." -ForegroundColor Yellow
+}
+else {
+	Write-Host "  [OK] Playwright browsers installed." -ForegroundColor Green
 }
 
 # Phase 6: Build verification
@@ -201,6 +218,14 @@ if (-not $SkipTests) {
 
 	Write-Host ""
 	Write-Host "--- SeventySixCommerce SvelteKit Tests (npm test) ---" -ForegroundColor Cyan
+	# Link shared module resolution before commerce tests — ensures shared TS imports resolve correctly
+	Write-Host "  Linking shared modules for SvelteKit..."
+	Push-Location $repoRoot
+	& node scripts/link-commerce-shared-node-modules.mjs --app sveltekit
+	if ($LASTEXITCODE -ne 0) {
+		Write-Host "  [WARN] SvelteKit shared module linking failed." -ForegroundColor Yellow
+	}
+	Pop-Location
 	Push-Location (Join-Path $repoRoot "ECommerce" "seventysixcommerce-sveltekit")
 	& npm run test
 	$svelteTestExit = $LASTEXITCODE
@@ -213,6 +238,14 @@ if (-not $SkipTests) {
 
 	Write-Host ""
 	Write-Host "--- SeventySixCommerce TanStack Tests (npm test) ---" -ForegroundColor Cyan
+	# Link shared module resolution before TanStack tests
+	Write-Host "  Linking shared modules for TanStack..."
+	Push-Location $repoRoot
+	& node scripts/link-commerce-shared-node-modules.mjs --app tanstack
+	if ($LASTEXITCODE -ne 0) {
+		Write-Host "  [WARN] TanStack shared module linking failed." -ForegroundColor Yellow
+	}
+	Pop-Location
 	Push-Location (Join-Path $repoRoot "ECommerce" "seventysixcommerce-tanstack")
 	& npm run test
 	$tanstackTestExit = $LASTEXITCODE
@@ -257,11 +290,18 @@ function Write-VersionSummary {
 	}
 	catch { Pop-Location }
 
+	$dprintVersion = "unknown"
+	try { $dprintVersion = (& dprint --version 2>$null) } catch { }
+	$k6Version = "unknown"
+	try { $k6Version = (& k6 version 2>$null) } catch { }
+
 	Write-Host "    .NET SDK:      $dotnetVersion"
 	Write-Host "    Node.js:       $nodeVersion"
 	Write-Host "    npm:           $npmVersion"
 	Write-Host "    Docker:        $dockerVersion"
 	Write-Host "    Angular CLI:   $ngVersion"
+	Write-Host "    dprint:        $dprintVersion"
+	Write-Host "    k6:            $k6Version"
 	Write-Host ""
 	Write-Host "  # Version Comment Block (for regression tracking)"
 	Write-Host "  # Bootstrap completed: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"

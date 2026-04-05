@@ -5,10 +5,10 @@
  * and starts the dev server.
  */
 import { execSync, spawn } from "node:child_process";
-import { randomBytes } from "node:crypto";
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { applyCommerceSecrets } from "../../../scripts/load-commerce-secrets.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const stackDir = resolve(__dirname, "..");
@@ -21,12 +21,6 @@ function run(cmd, options = {})
 {
 	console.log(`\n> ${cmd}`);
 	execSync(cmd, { cwd: stackDir, stdio: "inherit", ...options });
-}
-
-/** Generates a cryptographically strong random password (base64url, 32 bytes). */
-function generateStrongPassword()
-{
-	return randomBytes(32).toString("base64url");
 }
 
 /**
@@ -114,26 +108,8 @@ async function main()
 	// 0. Ensure shared development SSL certificate is available
 	ensureSslCertificate();
 
-	// 0b. Ensure .env exists (auto-generate with strong passwords on first run)
-	const envPath = resolve(stackDir, ".env");
-	const envExamplePath = resolve(stackDir, ".env.example");
-	try
-	{
-		const dbPassword = generateStrongPassword();
-		let content = readFileSync(envExamplePath, "utf-8");
-		content = content.replaceAll("CHANGE_ME_STRONG_PASSWORD", dbPassword);
-		writeFileSync(envPath, content, { flag: "wx" });
-		console.log("Created .env with strong random database password");
-	}
-	catch (error)
-	{
-		if (error.code !== "EEXIST" && error.code !== "ENOENT")
-		{
-			throw error;
-		}
-		// EEXIST: .env already exists — no action needed
-		// ENOENT: .env.example doesn't exist — skip .env generation
-	}
+	// 0b. Load commerce secrets from .NET user-secrets into process.env
+	applyCommerceSecrets("Tanstack");
 
 	// 1. Ensure Docker is running
 	await ensureDocker();
@@ -169,7 +145,7 @@ async function main()
 		console.log("Seeding database...");
 		try
 		{
-			run("npx tsx --env-file=.env src/server/db/seed.ts");
+			run("npx tsx src/server/db/seed.ts");
 		}
 		catch
 		{

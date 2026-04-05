@@ -21,6 +21,9 @@
 #   DB_NAME                              → PostgreSQL database name (docker-compose.yml)
 #   DB_USER                              → PostgreSQL username (docker-compose.yml)
 #
+#   SSXC_SVELTE_DATABASE_URL / POSTGRES_PASSWORD / MOCK_SERVICES etc. → SvelteKit commerce [optional]
+#   SSXC_TANSTACK_DATABASE_URL / POSTGRES_PASSWORD / MOCK_SERVICES etc. → TanStack commerce [optional]
+#
 # Called by: start-dev.ps1, start-infrastructure.ps1
 
 $ErrorActionPreference = "Stop"
@@ -56,6 +59,40 @@ $secretToEnvMapping =
 	"DataProtection:CertificatePassword"  = "DATA_PROTECTION_CERTIFICATE_PASSWORD"
 	"Database:Name"                       = "DB_NAME"
 	"Database:User"                       = "DB_USER"
+
+	# Commerce — SvelteKit
+	"Commerce:Sveltekit:DatabaseUrl"                  = "SSXC_SVELTE_DATABASE_URL"
+	"Commerce:Sveltekit:PostgresPassword"             = "SSXC_SVELTE_POSTGRES_PASSWORD"
+	"Commerce:Sveltekit:MockServices"                 = "SSXC_SVELTE_MOCK_SERVICES"
+	"Commerce:Sveltekit:BaseUrl"                      = "SSXC_SVELTE_BASE_URL"
+	"Commerce:Sveltekit:StripeSecretKey"              = "SSXC_SVELTE_STRIPE_SECRET_KEY"
+	"Commerce:Sveltekit:StripeWebhookSecret"          = "SSXC_SVELTE_STRIPE_WEBHOOK_SECRET"
+	"Commerce:Sveltekit:PrintfulApiKey"               = "SSXC_SVELTE_PRINTFUL_API_KEY"
+	"Commerce:Sveltekit:PrintfulWebhookSecret"        = "SSXC_SVELTE_PRINTFUL_WEBHOOK_SECRET"
+	"Commerce:Sveltekit:BrevoApiKey"                  = "SSXC_SVELTE_BREVO_API_KEY"
+	"Commerce:Sveltekit:SeventySixApiUrl"             = "SSXC_SVELTE_SEVENTYSIX_API_URL"
+	"Commerce:Sveltekit:OtelEndpoint"                 = "SSXC_SVELTE_OTEL_ENDPOINT"
+	"Commerce:Sveltekit:PublicOtelEndpoint"            = "SSXC_SVELTE_PUBLIC_OTEL_ENDPOINT"
+	"Commerce:Sveltekit:PublicGa4MeasurementId"       = "SSXC_SVELTE_PUBLIC_GA4_MEASUREMENT_ID"
+	"Commerce:Sveltekit:PublicGoogleSiteVerification" = "SSXC_SVELTE_PUBLIC_GOOGLE_SITE_VERIFICATION"
+	"Commerce:Sveltekit:PublicBingSiteVerification"   = "SSXC_SVELTE_PUBLIC_BING_SITE_VERIFICATION"
+
+	# Commerce — TanStack
+	"Commerce:Tanstack:DatabaseUrl"                   = "SSXC_TANSTACK_DATABASE_URL"
+	"Commerce:Tanstack:PostgresPassword"              = "SSXC_TANSTACK_POSTGRES_PASSWORD"
+	"Commerce:Tanstack:MockServices"                  = "SSXC_TANSTACK_MOCK_SERVICES"
+	"Commerce:Tanstack:BaseUrl"                       = "SSXC_TANSTACK_BASE_URL"
+	"Commerce:Tanstack:StripeSecretKey"               = "SSXC_TANSTACK_STRIPE_SECRET_KEY"
+	"Commerce:Tanstack:StripeWebhookSecret"           = "SSXC_TANSTACK_STRIPE_WEBHOOK_SECRET"
+	"Commerce:Tanstack:PrintfulApiKey"                = "SSXC_TANSTACK_PRINTFUL_API_KEY"
+	"Commerce:Tanstack:PrintfulWebhookSecret"         = "SSXC_TANSTACK_PRINTFUL_WEBHOOK_SECRET"
+	"Commerce:Tanstack:BrevoApiKey"                   = "SSXC_TANSTACK_BREVO_API_KEY"
+	"Commerce:Tanstack:SeventySixApiUrl"              = "SSXC_TANSTACK_SEVENTYSIX_API_URL"
+	"Commerce:Tanstack:OtelEndpoint"                  = "SSXC_TANSTACK_OTEL_ENDPOINT"
+	"Commerce:Tanstack:PublicOtelEndpoint"             = "SSXC_TANSTACK_PUBLIC_OTEL_ENDPOINT"
+	"Commerce:Tanstack:PublicGa4MeasurementId"        = "SSXC_TANSTACK_PUBLIC_GA4_MEASUREMENT_ID"
+	"Commerce:Tanstack:PublicGoogleSiteVerification"  = "SSXC_TANSTACK_PUBLIC_GOOGLE_SITE_VERIFICATION"
+	"Commerce:Tanstack:PublicBingSiteVerification"    = "SSXC_TANSTACK_PUBLIC_BING_SITE_VERIFICATION"
 }
 
 # Optional secrets — missing keys are silently set to "" (mirroring docker-compose.yml ${VAR:-} defaults).
@@ -66,6 +103,40 @@ $optionalSecretKeys =
 	"Email:FromAddress"
 	"Auth:OAuth:Providers:0:ClientId"
 	"Auth:OAuth:Providers:0:ClientSecret"
+
+	# Commerce — SvelteKit (all optional; commerce apps may not be configured)
+	"Commerce:Sveltekit:DatabaseUrl"
+	"Commerce:Sveltekit:PostgresPassword"
+	"Commerce:Sveltekit:MockServices"
+	"Commerce:Sveltekit:BaseUrl"
+	"Commerce:Sveltekit:StripeSecretKey"
+	"Commerce:Sveltekit:StripeWebhookSecret"
+	"Commerce:Sveltekit:PrintfulApiKey"
+	"Commerce:Sveltekit:PrintfulWebhookSecret"
+	"Commerce:Sveltekit:BrevoApiKey"
+	"Commerce:Sveltekit:SeventySixApiUrl"
+	"Commerce:Sveltekit:OtelEndpoint"
+	"Commerce:Sveltekit:PublicOtelEndpoint"
+	"Commerce:Sveltekit:PublicGa4MeasurementId"
+	"Commerce:Sveltekit:PublicGoogleSiteVerification"
+	"Commerce:Sveltekit:PublicBingSiteVerification"
+
+	# Commerce — TanStack (all optional; commerce apps may not be configured)
+	"Commerce:Tanstack:DatabaseUrl"
+	"Commerce:Tanstack:PostgresPassword"
+	"Commerce:Tanstack:MockServices"
+	"Commerce:Tanstack:BaseUrl"
+	"Commerce:Tanstack:StripeSecretKey"
+	"Commerce:Tanstack:StripeWebhookSecret"
+	"Commerce:Tanstack:PrintfulApiKey"
+	"Commerce:Tanstack:PrintfulWebhookSecret"
+	"Commerce:Tanstack:BrevoApiKey"
+	"Commerce:Tanstack:SeventySixApiUrl"
+	"Commerce:Tanstack:OtelEndpoint"
+	"Commerce:Tanstack:PublicOtelEndpoint"
+	"Commerce:Tanstack:PublicGa4MeasurementId"
+	"Commerce:Tanstack:PublicGoogleSiteVerification"
+	"Commerce:Tanstack:PublicBingSiteVerification"
 )
 
 # Read all user secrets

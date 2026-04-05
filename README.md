@@ -68,7 +68,7 @@ chmod +x scripts/bootstrap.sh
 
 1. **Installs prerequisites** — PowerShell 7 and Node.js (via winget/apt) if not present, then verifies Git, .NET 10 SDK, Docker Desktop
 2. **Collects your secrets** — admin email/password, database password, Brevo API key, GitHub OAuth keys, data protection cert password
-3. **Installs all dependencies** — `npm install` (root + client + load-testing), `dotnet restore`
+3. **Installs all dependencies** — `npm install` (root + client + load-testing), `dotnet restore`, k6 (load testing), Playwright browsers (E2E testing), commerce shared module linking
 4. **Generates certificates** — SSL dev cert (localhost) and ASP.NET Core Data Protection cert
 5. **Builds and verifies** — .NET server build + Angular client build
 6. **Runs all test suites** — server tests, client tests, E2E tests, load tests
