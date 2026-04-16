@@ -23,6 +23,26 @@ jobs:
             github.event.workflow_run.conclusion == 'success'
 
         steps:
+            - name: Validate required secrets
+              run: |
+                  MISSING=""
+                  for var in SSXC_DB_PASSWORD STRIPE_SECRET_KEY STRIPE_WEBHOOK_SECRET PRINTFUL_API_KEY BREVO_API_KEY; do
+                      if [ -z "${!var}" ]; then
+                          MISSING="$MISSING $var"
+                      fi
+                  done
+                  if [ -n "$MISSING" ]; then
+                      echo "::error::Missing required secrets:$MISSING"
+                      exit 1
+                  fi
+                  echo "All required secrets are configured"
+              env:
+                  SSXC_DB_PASSWORD: ${{ secrets.SSXC_DB_PASSWORD }}
+                  STRIPE_SECRET_KEY: ${{ secrets.SSXC_STRIPE_SECRET_KEY }}
+                  STRIPE_WEBHOOK_SECRET: ${{ secrets.SSXC_STRIPE_WEBHOOK_SECRET }}
+                  PRINTFUL_API_KEY: ${{ secrets.SSXC_PRINTFUL_API_KEY }}
+                  BREVO_API_KEY: ${{ secrets.SSXC_BREVO_API_KEY }}
+
             - name: Deploy via SSH
               uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1
               env:

@@ -254,6 +254,15 @@ jobs:
                   path: ECommerce/seventysixcommerce-sveltekit/playwright-report/
                   retention-days: 14
 
+            - name: Upload test results
+              uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+              if: always()
+              with:
+                  name: sveltekit-test-results
+                  path: ECommerce/seventysixcommerce-sveltekit/test-results/
+                  if-no-files-found: ignore
+                  retention-days: 7
+
     # ──────────────────────────────────────────────────────────
     # Stage 2: TanStack E2E Tests
     # ──────────────────────────────────────────────────────────
@@ -366,6 +375,15 @@ jobs:
                   path: ECommerce/seventysixcommerce-tanstack/playwright-report/
                   retention-days: 14
 
+            - name: Upload test results
+              uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+              if: always()
+              with:
+                  name: tanstack-test-results
+                  path: ECommerce/seventysixcommerce-tanstack/test-results/
+                  if-no-files-found: ignore
+                  retention-days: 7
+
     # ──────────────────────────────────────────────────────────
     # Stage 2: SvelteKit Load Tests
     # ──────────────────────────────────────────────────────────
@@ -455,6 +473,17 @@ jobs:
                       echo "Running: $scenario"
                       k6 run --config load-testing/config/quick.json "$scenario"
                   done
+
+            - name: Upload load test report
+              uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+              if: always()
+              with:
+                  name: sveltekit-load-test-report
+                  path: |
+                      ECommerce/seventysixcommerce-sveltekit/load-testing/results/
+                      ECommerce/seventysixcommerce-sveltekit/load-testing/reports/
+                  if-no-files-found: ignore
+                  retention-days: 7
 
     # ──────────────────────────────────────────────────────────
     # Stage 2: TanStack Load Tests
@@ -565,6 +594,17 @@ jobs:
                       echo "Running: $scenario"
                       k6 run --config load-testing/config/quick.json "$scenario"
                   done
+
+            - name: Upload load test report
+              uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+              if: always()
+              with:
+                  name: tanstack-load-test-report
+                  path: |
+                      ECommerce/seventysixcommerce-tanstack/load-testing/results/
+                      ECommerce/seventysixcommerce-tanstack/load-testing/reports/
+                  if-no-files-found: ignore
+                  retention-days: 7
 
     # ──────────────────────────────────────────────────────────
     # Stage 3: Quality gate — all checks must pass

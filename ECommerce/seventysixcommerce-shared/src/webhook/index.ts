@@ -14,6 +14,7 @@ import {
 	productVariants
 } from "../schema";
 import type { OrderForFulfillment, PrintfulOrderResult, ShippingAddress } from "../types";
+import { isNullOrUndefined, isPresent } from "../utils/null-check";
 
 /** Fulfillment client callback — matches the shared PrintfulClient interface. */
 export type FulfillmentClient = (
@@ -110,7 +111,7 @@ export async function handleCheckoutCompleted(
 						})
 					.returning();
 
-			if (order === null || order === undefined)
+			if (isNullOrUndefined(order))
 			{
 				throw new Error("Failed to create order");
 			}
@@ -162,7 +163,7 @@ export async function handleCheckoutCompleted(
 		});
 
 	// Post-transaction: Printful fulfillment (non-blocking — errors logged, not thrown)
-	if (fulfillmentClient !== null)
+	if (isPresent(fulfillmentClient))
 	{
 		const [createdOrder] =
 			await db
@@ -176,7 +177,7 @@ export async function handleCheckoutCompleted(
 				.where(eq(orders.stripeSessionId, session.stripeSessionId))
 				.limit(1);
 
-		if (createdOrder !== undefined)
+		if (isPresent(createdOrder))
 		{
 			try
 			{
@@ -250,7 +251,7 @@ export async function handleCheckoutCompleted(
 	}
 
 	// Post-transaction: Email confirmation (non-blocking)
-	if (emailClient !== null && session.customerEmail !== "")
+	if (isPresent(emailClient) && session.customerEmail !== "")
 	{
 		try
 		{
@@ -265,7 +266,7 @@ export async function handleCheckoutCompleted(
 					.where(eq(orders.stripeSessionId, session.stripeSessionId))
 					.limit(1);
 
-			if (orderForEmail[0] !== undefined)
+			if (isPresent(orderForEmail[0]))
 			{
 				const itemCount: { quantity: number; }[] =
 					await db

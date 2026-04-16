@@ -2,6 +2,8 @@
  * Analytics consent cookie name.
  * Stores the user's preference for analytics tracking.
  */
+import { isNullOrUndefined } from "../utils/null-check";
+
 export const CONSENT_COOKIE_NAME: string = "analytics_consent";
 
 /** Maximum age for the consent cookie in seconds (1 year). */
@@ -33,7 +35,7 @@ export function getConsentState(): ConsentState
 		document.cookie.match(
 			new RegExp(`(?:^|;\\s*)${CONSENT_COOKIE_NAME}=([^;]*)`));
 
-	if (match === null)
+	if (isNullOrUndefined(match))
 	{
 		return "pending";
 	}

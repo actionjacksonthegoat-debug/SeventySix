@@ -1,3 +1,4 @@
+import { isNullOrUndefined } from "@seventysixcommerce/shared/utils";
 import { createMiddleware } from "@tanstack/react-start";
 import { getRequest } from "@tanstack/react-start/server";
 
@@ -32,7 +33,7 @@ export const csrfMiddleware =
 						process.env.BASE_URL ?? "https://localhost:3002")
 						.origin;
 
-				if (origin === null || origin !== allowedOrigin)
+				if (isNullOrUndefined(origin) || origin !== allowedOrigin)
 				{
 					return new Response(
 						JSON.stringify(

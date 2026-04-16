@@ -1,3 +1,4 @@
+import { isNullOrUndefined } from "@seventysixcommerce/shared/utils";
 import {
 	createFileRoute,
 	Link,
@@ -38,7 +39,7 @@ export const Route =
 						{
 							data: { slug: params.slug }
 						});
-				if (product === null)
+				if (isNullOrUndefined(product))
 				{
 					throw new Error("Product not found");
 				}
@@ -50,7 +51,7 @@ export const Route =
 					loaderData?.product;
 				const categorySlug =
 					loaderData?.categorySlug;
-				if (product === null || product === undefined) return { meta: [] };
+				if (isNullOrUndefined(product)) return { meta: [] };
 				return {
 					meta: [
 						{ title: `${product.title} — SeventySixCommerce` },
@@ -118,7 +119,7 @@ function ProductDetailPage(): JSX.Element
 	/** Adds the selected variant to the cart and refreshes loader data. */
 	async function handleAddToCart(): Promise<void>
 	{
-		if (selectedVariant === null) return;
+		if (isNullOrUndefined(selectedVariant)) return;
 		setAdding(true);
 		setCartError("");
 		try
@@ -249,7 +250,7 @@ function ProductDetailPage(): JSX.Element
 
 					<button
 						type="button"
-						disabled={selectedVariant === null || adding}
+						disabled={isNullOrUndefined(selectedVariant) || adding}
 						onClick={handleAddToCart}
 						className="w-full rounded-lg bg-text-primary px-8 py-3 font-semibold text-bg-primary transition-colors hover:bg-text-primary disabled:cursor-not-allowed disabled:opacity-50"
 					>

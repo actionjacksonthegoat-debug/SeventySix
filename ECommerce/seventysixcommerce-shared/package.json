@@ -26,7 +26,8 @@
 		"./errors": "./src/errors/index.ts",
 		"./products": "./src/products/index.ts",
 		"./seo": "./src/seo/index.ts",
-		"./seed": "./src/seed/index.ts"
+		"./seed": "./src/seed/index.ts",
+		"./utils": "./src/utils/index.ts"
 	},
 	"dependencies": {
 		"@opentelemetry/api": "^1.9.1",

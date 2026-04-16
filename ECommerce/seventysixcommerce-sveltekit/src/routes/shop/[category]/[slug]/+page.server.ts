@@ -4,6 +4,7 @@ import { getProduct, getRelatedProducts } from "$lib/server/db/products";
 import { queueLog } from "$lib/server/log-forwarder";
 import { recordCartAdd, recordPageView } from "$lib/server/metrics";
 import { generateProductJsonLd } from "$lib/utils/seo";
+import { isNullOrUndefined } from "@seventysixcommerce/shared/utils";
 import { addToCartFormSchema } from "@seventysixcommerce/shared/validation";
 import { error, fail } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
@@ -22,7 +23,7 @@ export const load: PageServerLoad =
 		const product =
 			await getProduct(params.slug);
 
-		if (product === null)
+		if (isNullOrUndefined(product))
 		{
 			error(404, "Product not found");
 		}

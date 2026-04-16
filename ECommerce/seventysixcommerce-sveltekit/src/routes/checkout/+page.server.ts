@@ -16,6 +16,7 @@ import {
 	type ValidatedCartRow
 } from "@seventysixcommerce/shared/checkout";
 import { now } from "@seventysixcommerce/shared/date";
+import { isNullOrUndefined } from "@seventysixcommerce/shared/utils";
 import { fail, redirect } from "@sveltejs/kit";
 import { and, eq, inArray } from "drizzle-orm";
 import type { Actions } from "./$types";
@@ -147,7 +148,7 @@ export const actions: Actions =
 					});
 			}
 
-			if (session.url === null || session.url === undefined)
+			if (isNullOrUndefined(session.url))
 			{
 				return fail(500,
 					{ error: "Checkout session creation failed" });

@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
 import { MOCK_CUSTOMER_EMAIL } from "../constants";
+import { isNullOrUndefined } from "../utils/null-check";
 
 /** Mock checkout session data stored in memory. */
 export interface MockSession
@@ -129,7 +130,7 @@ export function createMockStripe(baseUrl: string): MockStripeClient
 				{
 					const session: MockSession | undefined =
 						mockSessions.get(sessionId);
-					if (session === undefined)
+					if (isNullOrUndefined(session))
 					{
 						throw new Error(`Mock session ${sessionId} not found`);
 					}

@@ -8,6 +8,7 @@ import {
 } from "@seventysixcommerce/shared/checkout";
 import { now } from "@seventysixcommerce/shared/date";
 import { cartEmptyError, checkoutFailedError, itemsUnavailableError } from "@seventysixcommerce/shared/errors";
+import { isNullOrUndefined } from "@seventysixcommerce/shared/utils";
 import { createServerFn } from "@tanstack/react-start";
 import { eq } from "drizzle-orm";
 import { db } from "../db";
@@ -163,7 +164,7 @@ export const createCheckoutSession =
 						});
 				}
 
-				if (session.url === null || session.url === undefined)
+				if (isNullOrUndefined(session.url))
 				{
 					throw checkoutFailedError();
 				}

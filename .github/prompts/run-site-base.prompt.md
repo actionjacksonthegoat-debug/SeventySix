@@ -346,27 +346,48 @@ If PostgreSQL MCP is unavailable, **ask the user to provide the MFA code**.
 5. Check for console errors
 6. Record result
 
-### Step 18: Password Change Test (walkthrough_test_user)
+### Step 18: Password Setup Test (walkthrough_test_user)
 
-**This step tests the password change flow using the `walkthrough_test_user` created in Step 11 — NOT the seeded admin.**
+**This step tests the password setup flow using the `walkthrough_test_user` created in Step 11 — NOT the seeded admin.**
 
-1. Navigate to `https://localhost:4200/auth/login`
-2. Fill the email field with `walkthrough_test@test.local`
-3. Fill the password field with the temporary password shown in Step 11's confirmation (the system generates one) — if no temporary password was shown, use `SeventySixAdmin76!` (the default initial password for admin-created users)
-4. If an Altcha captcha widget is visible, click the checkbox/widget and wait for it to complete
-5. Click the Sign In button
-6. Wait for navigation — expect redirect to `/auth/change-password` (admin-created users require password change)
-7. Take screenshot → `step-18-change-password-form.png`
-8. Fill current password (same as login password)
-9. Fill new password: `WalkthroughNewPass76!`
-10. Fill confirm password: `WalkthroughNewPass76!`
-11. Click submit
-12. Wait for navigation — the app will redirect to `/auth/login` because all tokens are invalidated after a password change
-13. Take screenshot → `step-18-change-password-success.png`
-14. Check for error banners
-15. Record result
+Admin-created users receive a password setup email with a unique link. The email is queued in the database and can be retrieved via PostgreSQL MCP.
 
-> **NOTE**: This step may fail if `walkthrough_test_user` doesn't require a password change or if the temporary password is unknown. Record the result either way and continue.
+1. Use PostgreSQL MCP to retrieve the password setup link:
+   ```sql
+   SELECT "TemplateData"->>'resetLink' AS "SetupLink"
+   FROM "ElectronicNotifications"."EmailQueue"
+   WHERE "EmailType" = 'PasswordSetup'
+     AND "RecipientEmail" = 'walkthrough_test@test.local'
+   ORDER BY "CreateDate" DESC
+   LIMIT 1;
+   ```
+2. If no result is returned, try alternative email type:
+   ```sql
+   SELECT "TemplateData"->>'resetLink' AS "SetupLink"
+   FROM "ElectronicNotifications"."EmailQueue"
+   WHERE "RecipientEmail" = 'walkthrough_test@test.local'
+   ORDER BY "CreateDate" DESC
+   LIMIT 1;
+   ```
+3. Navigate to the `SetupLink` URL from the query result
+4. Wait for the password setup form to load
+5. Take screenshot → `step-18-set-password-form.png`
+6. Fill new password: `WalkthroughNewPass76!`
+7. Fill confirm password: `WalkthroughNewPass76!`
+8. Click Submit
+9. Wait for navigation — expect redirect to `/auth/login` with a success message
+10. Take screenshot → `step-18-set-password-success.png`
+11. Navigate to `https://localhost:4200/auth/login`
+12. Fill the email field with `walkthrough_test@test.local`
+13. Fill the password field with `WalkthroughNewPass76!`
+14. If an Altcha captcha widget is visible, click the checkbox/widget and wait for it to complete
+15. Click the Sign In button
+16. Wait for navigation — expect redirect to home or dashboard
+17. Take screenshot → `step-18-login-success.png`
+18. Check for error banners
+19. Record result
+
+> **NOTE**: If PostgreSQL MCP is unavailable, ask the user to provide the password setup link from the email queue. If the email system is not running, record this step as SKIPPED and continue.
 
 ### Step 19: Error Pages
 

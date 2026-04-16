@@ -1,6 +1,7 @@
 import { env } from "$env/dynamic/private";
 import { db } from "$lib/server/db";
 import { sendShippingNotification } from "$lib/server/integrations/brevo";
+import { isNullOrEmpty } from "@seventysixcommerce/shared/utils";
 import {
 	handlePrintfulShipmentUpdate,
 	printfulWebhookBodySchema,
@@ -20,8 +21,7 @@ export const POST: RequestHandler =
 			env.PRINTFUL_WEBHOOK_SECRET;
 
 		if (
-			printfulWebhookSecret === undefined
-				|| printfulWebhookSecret === ""
+			isNullOrEmpty(printfulWebhookSecret)
 				|| !verifyPrintfulSignature(
 					request.headers.get("authorization"),
 					printfulWebhookSecret))

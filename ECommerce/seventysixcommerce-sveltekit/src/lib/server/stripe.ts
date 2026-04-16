@@ -1,5 +1,6 @@
 import { env } from "$env/dynamic/private";
 import { createStripeClient, type StripeClient } from "@seventysixcommerce/shared/stripe";
+import { isNullOrUndefined } from "@seventysixcommerce/shared/utils";
 
 export type { StripeClient } from "@seventysixcommerce/shared/stripe";
 
@@ -13,7 +14,7 @@ let client: StripeClient | null = null;
  */
 export function getStripe(): StripeClient
 {
-	if (client === null)
+	if (isNullOrUndefined(client))
 	{
 		client =
 			createStripeClient(

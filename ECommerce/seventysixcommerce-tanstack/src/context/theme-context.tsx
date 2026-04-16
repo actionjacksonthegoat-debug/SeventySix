@@ -1,3 +1,4 @@
+import { isNullOrUndefined } from "@seventysixcommerce/shared/utils";
 import { createContext, use } from "react";
 import type { JSX, ReactNode } from "react";
 import type { ThemeState } from "~/hooks/use-theme";
@@ -36,7 +37,7 @@ export function useThemeContext(): ThemeState
 	const context: ThemeState | null =
 		use(ThemeContext);
 
-	if (context === null)
+	if (isNullOrUndefined(context))
 	{
 		throw new Error("useThemeContext must be used within a ThemeProvider");
 	}

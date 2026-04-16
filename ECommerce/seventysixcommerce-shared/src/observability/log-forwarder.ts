@@ -1,4 +1,5 @@
 import { now } from "../date";
+import { isNullOrUndefined, isPresent } from "../utils/null-check";
 
 /** Maximum entries before an automatic flush. */
 const BATCH_SIZE: number = 10;
@@ -150,7 +151,7 @@ export function createLogForwarder(sourceContext: string): LogForwarder
 		{
 			queue.push(entry);
 
-			if (flushTimer === undefined)
+			if (isNullOrUndefined(flushTimer))
 			{
 				flushTimer =
 					setInterval(
@@ -169,7 +170,7 @@ export function createLogForwarder(sourceContext: string): LogForwarder
 			queue = [];
 			configuredApiUrl = "";
 
-			if (flushTimer !== undefined)
+			if (isPresent(flushTimer))
 			{
 				clearInterval(flushTimer);
 				flushTimer = undefined;

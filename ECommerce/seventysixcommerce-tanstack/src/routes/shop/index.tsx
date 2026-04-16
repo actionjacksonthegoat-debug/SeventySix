@@ -1,3 +1,4 @@
+import { isPresent } from "@seventysixcommerce/shared/utils";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import type { JSX } from "react";
 import { SITE_URL } from "~/lib/constants";
@@ -73,7 +74,7 @@ function ShopPage(): JSX.Element
 						<h2 className="mb-2 text-xl font-semibold text-text-primary group-hover:text-text-secondary">
 							{category.name}
 						</h2>
-						{category.description !== null && (
+						{isPresent(category.description) && (
 							<p className="mb-4 text-sm text-text-muted">
 								{category.description}
 							</p>)}

@@ -2,6 +2,7 @@ import { z } from "zod";
 import { DEFAULT_COUNTRY, PRINTFUL_API_BASE_URL } from "../constants";
 import { now } from "../date";
 import type { OrderForFulfillment, PrintfulOrderResult } from "../types";
+import { isPresent } from "../utils/null-check";
 
 /** Configuration for the Printful fulfillment service. */
 export interface PrintfulConfig
@@ -72,7 +73,7 @@ export function createPrintfulClient(config: PrintfulConfig): PrintfulClient
 		const fulfillableItems: Array<{ printfulSyncVariantId: string | null; quantity: number; }> =
 			order.items.filter(
 				(item) =>
-					item.printfulSyncVariantId !== null);
+					isPresent(item.printfulSyncVariantId));
 
 		if (fulfillableItems.length === 0)
 		{

@@ -1,3 +1,4 @@
+import { isNullOrUndefined } from "@seventysixcommerce/shared/utils";
 import { createFileRoute } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import type { JSX } from "react";
@@ -82,7 +83,7 @@ export const Route =
 						message: "Page view: checkout-success"
 					});
 
-				if (deps.sessionId === undefined)
+				if (isNullOrUndefined(deps.sessionId))
 				{
 					return { confirmation: null };
 				}
@@ -103,7 +104,7 @@ function SuccessPage(): JSX.Element
 	const { confirmation } =
 		Route.useLoaderData();
 
-	if (confirmation === null)
+	if (isNullOrUndefined(confirmation))
 	{
 		return (
 			<div className="max-w-md mx-auto px-4 py-16 text-center">

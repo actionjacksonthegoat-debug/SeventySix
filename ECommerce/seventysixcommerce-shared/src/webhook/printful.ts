@@ -4,6 +4,7 @@ import type { CommerceDb } from "../cart";
 import { now } from "../date.js";
 import { orders, orderStatusHistory } from "../schema";
 import type { OrderStatus } from "../types/db";
+import { isNullOrEmpty, isPresent } from "../utils/null-check";
 import type { PrintfulWebhookBody } from "./types";
 
 /** Email notification callback for shipping updates. */
@@ -39,7 +40,7 @@ export function verifyPrintfulSignature(
 	authorizationHeader: string | null,
 	expectedSecret: string): boolean
 {
-	if (expectedSecret === "" || authorizationHeader === null || authorizationHeader === "")
+	if (expectedSecret === "" || isNullOrEmpty(authorizationHeader))
 	{
 		return false;
 	}
@@ -90,7 +91,7 @@ export async function handlePrintfulShipmentUpdate(
 					.where(eq(orders.printfulOrderId, printfulOrderId))
 					.limit(1);
 
-			if (matchedOrders.length > 0 && matchedOrders[0] !== undefined)
+			if (matchedOrders.length > 0 && isPresent(matchedOrders[0]))
 			{
 				const order: { id: string; email: string; status: OrderStatus; } =
 					matchedOrders[0];
@@ -119,7 +120,7 @@ export async function handlePrintfulShipmentUpdate(
 							reason: `Shipped via ${carrier}, tracking: ${trackingNumber}`
 						});
 
-				if (emailClient !== null)
+				if (isPresent(emailClient))
 				{
 					await emailClient(
 						order.email,

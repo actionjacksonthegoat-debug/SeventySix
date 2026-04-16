@@ -1,3 +1,4 @@
+import { isPresent } from "@seventysixcommerce/shared/utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockFetch =
@@ -175,8 +176,7 @@ describe("Printful Fulfillment",
 						const existingOrder =
 							{ printfulOrderId: "12345" };
 						const shouldSkip: boolean =
-							existingOrder.printfulOrderId !== null;
-
+							isPresent(existingOrder.printfulOrderId);
 						expect(shouldSkip)
 							.toBe(true);
 					});

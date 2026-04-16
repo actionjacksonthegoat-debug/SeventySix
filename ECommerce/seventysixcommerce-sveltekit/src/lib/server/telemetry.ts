@@ -3,6 +3,7 @@ import { OTLPMetricExporter } from "@opentelemetry/exporter-metrics-otlp-http";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
 import { PeriodicExportingMetricReader } from "@opentelemetry/sdk-metrics";
 import { NodeSDK } from "@opentelemetry/sdk-node";
+import { isPresent } from "@seventysixcommerce/shared/utils";
 
 /** The OpenTelemetry service name for the SvelteKit commerce site. */
 const SERVICE_NAME: string = "seventysixcommerce-sveltekit";
@@ -17,7 +18,7 @@ let sdk: NodeSDK | undefined;
  */
 export function initTelemetry(otlpEndpoint: string): void
 {
-	if (otlpEndpoint === "" || sdk !== undefined)
+	if (otlpEndpoint === "" || isPresent(sdk))
 	{
 		return;
 	}
@@ -52,7 +53,7 @@ export function initTelemetry(otlpEndpoint: string): void
  */
 export async function shutdownTelemetry(): Promise<void>
 {
-	if (sdk !== undefined)
+	if (isPresent(sdk))
 	{
 		await sdk.shutdown();
 		sdk = undefined;

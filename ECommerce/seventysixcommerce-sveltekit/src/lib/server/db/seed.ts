@@ -4,6 +4,7 @@ import {
 	DEFAULT_CATEGORIES,
 	DEFAULT_PRODUCT_TEMPLATES
 } from "@seventysixcommerce/shared/seed";
+import { isNullOrEmpty } from "@seventysixcommerce/shared/utils";
 import { drizzle } from "drizzle-orm/node-postgres";
 import pg from "pg";
 import * as schema from "./schema";
@@ -13,7 +14,7 @@ async function seed(): Promise<void>
 {
 	const connectionString: string | undefined =
 		process.env.DATABASE_URL;
-	if (connectionString === undefined || connectionString === "")
+	if (isNullOrEmpty(connectionString))
 	{
 		throw new Error("DATABASE_URL environment variable is required for seeding");
 	}

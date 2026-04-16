@@ -3,6 +3,7 @@
  * Creates either a real Stripe client or a mock based on configuration.
  */
 import Stripe from "stripe";
+import { isNullOrUndefined } from "../utils/null-check";
 import { createMockStripe, type MockStripeClient } from "./mock-stripe";
 
 export type { MockSession, MockStripeClient } from "./mock-stripe";
@@ -34,7 +35,7 @@ export function createStripeClient(config: StripeClientConfig): StripeClient
 		return createMockStripe(config.baseUrl);
 	}
 
-	if (config.secretKey === undefined)
+	if (isNullOrUndefined(config.secretKey))
 	{
 		throw new Error(
 			"STRIPE_SECRET_KEY is required when MOCK_SERVICES is not true");

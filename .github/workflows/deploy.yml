@@ -23,6 +23,27 @@ jobs:
             github.event.workflow_run.conclusion == 'success'
 
         steps:
+            - name: Validate required secrets
+              run: |
+                  MISSING=""
+                  for var in JWT_SECRET_KEY DB_PASSWORD VALKEY_PASSWORD ADMIN_EMAIL ADMIN_PASSWORD DATA_PROTECTION_CERTIFICATE_PASSWORD; do
+                      if [ -z "${!var}" ]; then
+                          MISSING="$MISSING $var"
+                      fi
+                  done
+                  if [ -n "$MISSING" ]; then
+                      echo "::error::Missing required secrets:$MISSING"
+                      exit 1
+                  fi
+                  echo "All required secrets are configured"
+              env:
+                  JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+                  DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+                  VALKEY_PASSWORD: ${{ secrets.VALKEY_PASSWORD }}
+                  ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+                  ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+                  DATA_PROTECTION_CERTIFICATE_PASSWORD: ${{ secrets.DATA_PROTECTION_CERTIFICATE_PASSWORD }}
+
             - name: Deploy via SSH
               # Risk acceptance: appleboy/ssh-action is single-maintainer.
               # Mitigated by SHA-pinning (not tag-based). The action only executes

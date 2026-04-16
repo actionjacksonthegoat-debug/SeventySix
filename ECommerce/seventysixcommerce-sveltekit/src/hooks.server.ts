@@ -2,6 +2,7 @@ import { env } from "$env/dynamic/private";
 import { CART_SESSION_COOKIE, CART_SESSION_MAX_AGE_SECONDS } from "$lib/constants";
 import { configureLogForwarder, queueLog } from "$lib/server/log-forwarder";
 import { initTelemetry } from "$lib/server/telemetry";
+import { isNullOrUndefined } from "@seventysixcommerce/shared/utils";
 import type { Handle, HandleServerError } from "@sveltejs/kit";
 
 // Configure log forwarding on module load
@@ -21,7 +22,7 @@ export const handle: Handle =
 		let sessionId: string | undefined =
 			event.cookies.get(CART_SESSION_COOKIE);
 
-		if (sessionId === undefined)
+		if (isNullOrUndefined(sessionId))
 		{
 			sessionId =
 				crypto.randomUUID();
