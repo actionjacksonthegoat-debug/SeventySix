@@ -19,6 +19,9 @@ mat-card-header {
 	flex-shrink: 0;
 }
 
+/* ::ng-deep required: Material Card does not expose a theming API token for
+   mat-card-content flex layout or padding reset. mat.card-overrides() covers
+   color/shape tokens only, not layout properties. */
 :host ::ng-deep mat-card-content {
 	display: flex;
 	flex-direction: column;

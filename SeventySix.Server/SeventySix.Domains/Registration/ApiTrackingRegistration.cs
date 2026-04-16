@@ -62,13 +62,9 @@ public static class ApiTrackingRegistration
 		IConfiguration configuration)
 	{
 		// Configure ThirdPartyApiLimitSettings with FluentValidation + ValidateOnStart
-		services.AddSingleton<IValidator<ThirdPartyApiLimitSettings>, ThirdPartyApiLimitSettingsValidator>();
-
-		services
-			.AddOptions<ThirdPartyApiLimitSettings>()
-			.Bind(configuration.GetSection(ThirdPartyApiLimitSettings.SectionName))
-			.ValidateWithFluentValidation()
-			.ValidateOnStart();
+		services.AddDomainSettings<ThirdPartyApiLimitSettings, ThirdPartyApiLimitSettingsValidator>(
+			configuration,
+			ThirdPartyApiLimitSettings.SectionName);
 
 		// Register ApiTrackingDbContext via shared helper
 		services.AddDomainDbContext<ApiTrackingDbContext>(

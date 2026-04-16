@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { createMockStripe } from "../mock-stripe";
 
+const TEST_BASE_URL: string = "http://localhost:3002";
+
 describe("Mock Stripe",
 	() =>
 	{
@@ -8,7 +10,7 @@ describe("Mock Stripe",
 			async () =>
 			{
 				const stripe =
-					createMockStripe();
+					createMockStripe(TEST_BASE_URL);
 				const session =
 					await stripe.checkout.sessions.create(
 						{
@@ -36,14 +38,14 @@ describe("Mock Stripe",
 				expect(retrieved.metadata.cartSessionId)
 					.toBe("cart-123");
 				expect(retrieved.customer_details.email)
-					.toBe("demo@SeventySixCommerce.art");
+					.toBe("mock-customer@example.com");
 			});
 
 		it("throws on retrieve of unknown session",
 			async () =>
 			{
 				const stripe =
-					createMockStripe();
+					createMockStripe(TEST_BASE_URL);
 				await expect(
 					stripe.checkout.sessions.retrieve("nonexistent"))
 					.rejects
@@ -54,14 +56,16 @@ describe("Mock Stripe",
 			() =>
 			{
 				const stripe =
-					createMockStripe();
+					createMockStripe(TEST_BASE_URL);
 				const payload: string =
 					JSON.stringify(
 						{
 							type: "checkout.session.completed"
 						});
-				const event =
-					stripe.webhooks.constructEvent(payload, "sig", "secret");
+				const event: Record<string, unknown> =
+					stripe.webhooks.constructEvent(payload, "sig", "secret") as Record<
+						string,
+						unknown>;
 				expect(event.type)
 					.toBe("checkout.session.completed");
 			});

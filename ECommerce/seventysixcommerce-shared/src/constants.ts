@@ -61,6 +61,9 @@ export const DEFAULT_COUNTRY: string = "US";
 /** Email address used for mock checkout orders. */
 export const MOCK_ORDER_EMAIL: string = "mock@example.com";
 
+/** Email address used for mock Stripe checkout sessions (test-only, not real PII). */
+export const MOCK_CUSTOMER_EMAIL: string = "mock-customer@example.com";
+
 // ── Pagination ────────────────────────────────────────────────────────
 
 /** Maximum products per page. */

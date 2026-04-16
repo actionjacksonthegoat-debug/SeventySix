@@ -19,15 +19,14 @@ describe("Product Query Types",
 						description: "A test product",
 						basePrice: "24.99",
 						thumbnailUrl: "/images/test.webp",
-						isActive: true,
 						isFeatured: false,
 						categorySlug: "posters",
 						categoryName: "Posters"
 					};
 				expect(product.slug)
 					.toBe("test-poster");
-				expect(product.isActive)
-					.toBe(true);
+				expect(product.isFeatured)
+					.toBe(false);
 			});
 
 		it("getProducts pagination defaults are valid",
@@ -56,17 +55,29 @@ describe("Product Query Types",
 						ogImageUrl: null,
 						isActive: true,
 						isFeatured: false,
+						artPieceId: "00000000-0000-0000-0000-000000000010",
+						categoryId: "00000000-0000-0000-0000-000000000020",
 						categorySlug: "posters",
 						categoryName: "Posters",
 						artPieceTitle: "Test Art",
 						artPieceDescription: "Test art description",
 						artPieceImageUrl: "/images/art/test.webp",
-						variants: [{ id: "v1", name: "18×24 inches", isAvailable: true }]
+						artPieceSlug: "test-art",
+						variants: [
+							{
+								id: "v1",
+								name: "18×24 inches",
+								printfulSyncVariantId: "sync_123",
+								isAvailable: true
+							}
+						]
 					};
 				expect(detail.variants)
 					.toHaveLength(1);
 				expect(detail.artPieceTitle)
 					.toBe("Test Art");
+				expect(detail.artPieceSlug)
+					.toBe("test-art");
 			});
 
 		it("getProduct returns null for non-existent slug",
@@ -106,7 +117,6 @@ describe("Product Query Types",
 						description: "A featured product",
 						basePrice: "29.99",
 						thumbnailUrl: "/images/featured.webp",
-						isActive: true,
 						isFeatured: true,
 						categorySlug: "posters",
 						categoryName: "Posters"

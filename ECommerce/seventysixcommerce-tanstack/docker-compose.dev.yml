@@ -15,7 +15,8 @@ services:
       test: ['CMD-SHELL', 'pg_isready -U seventysixcommerce']
       interval: 5s
       timeout: 3s
-      retries: 5
+      retries: 10
+      start_period: 30s
 
 volumes:
   ssxc_tanstack_pgdata:

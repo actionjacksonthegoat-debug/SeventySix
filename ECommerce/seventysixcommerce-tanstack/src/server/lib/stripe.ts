@@ -1,8 +1,6 @@
-import Stripe from "stripe";
-import { createMockStripe } from "./mock-stripe";
+import { createStripeClient, type StripeClient } from "@seventysixcommerce/shared/stripe";
 
-/** Stripe client or mock client type. */
-export type StripeClient = Stripe | ReturnType<typeof createMockStripe>;
+export type { StripeClient } from "@seventysixcommerce/shared/stripe";
 
 /** Cached client instance. */
 let client: StripeClient | null = null;
@@ -16,24 +14,13 @@ export function getStripe(): StripeClient
 {
 	if (client === null)
 	{
-		if (process.env.MOCK_SERVICES !== "false")
-		{
-			console.warn("[Stripe] Using mock service");
-			client =
-				createMockStripe();
-		}
-		else
-		{
-			const key: string | undefined =
-				process.env.STRIPE_SECRET_KEY;
-			if (key === undefined)
-			{
-				throw new Error(
-					"STRIPE_SECRET_KEY environment variable is required when MOCK_SERVICES is not true");
-			}
-			client =
-				new Stripe(key);
-		}
+		client =
+			createStripeClient(
+				{
+					secretKey: process.env.STRIPE_SECRET_KEY,
+					useMocks: process.env.MOCK_SERVICES !== "false",
+					baseUrl: process.env.BASE_URL ?? "https://localhost:3002"
+				});
 	}
 	return client;
 }

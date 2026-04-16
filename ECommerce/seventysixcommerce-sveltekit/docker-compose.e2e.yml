@@ -4,6 +4,11 @@ services:
   postgres-e2e:
     image: postgres:18-alpine
     container_name: ssxc-svelte-postgres-e2e
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
     ports:
       - "127.0.0.1:5440:5432"
     environment:
@@ -25,6 +30,11 @@ services:
       dockerfile: seventysixcommerce-sveltekit/Dockerfile
       target: db-init
     container_name: ssxc-svelte-db-init-e2e
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
     environment:
       DATABASE_URL: postgresql://ssxc_e2e:ssxc_e2e_password@postgres-e2e:5432/seventysixcommerce_sveltekit_e2e
     depends_on:
@@ -38,6 +48,11 @@ services:
       context: ..
       dockerfile: seventysixcommerce-sveltekit/Dockerfile
     container_name: ssxc-svelte-app-e2e
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 1G
     ports:
       - "127.0.0.1:3011:3001"
     environment:

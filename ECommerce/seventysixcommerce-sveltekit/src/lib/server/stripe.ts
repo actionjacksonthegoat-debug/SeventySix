@@ -1,9 +1,7 @@
 import { env } from "$env/dynamic/private";
-import Stripe from "stripe";
-import { createMockStripe, type MockStripeClient } from "./mock/mock-stripe";
+import { createStripeClient, type StripeClient } from "@seventysixcommerce/shared/stripe";
 
-/** Stripe client or mock client type. */
-export type StripeClient = Stripe | MockStripeClient;
+export type { StripeClient } from "@seventysixcommerce/shared/stripe";
 
 /** Cached client instance. */
 let client: StripeClient | null = null;
@@ -17,24 +15,13 @@ export function getStripe(): StripeClient
 {
 	if (client === null)
 	{
-		if (env.MOCK_SERVICES !== "false")
-		{
-			console.warn("[Stripe] Using mock service");
-			client =
-				createMockStripe(env.BASE_URL ?? "");
-		}
-		else
-		{
-			const key: string | undefined =
-				env.STRIPE_SECRET_KEY;
-			if (key === undefined)
-			{
-				throw new Error(
-					"STRIPE_SECRET_KEY is required when MOCK_SERVICES is not true");
-			}
-			client =
-				new Stripe(key);
-		}
+		client =
+			createStripeClient(
+				{
+					secretKey: env.STRIPE_SECRET_KEY,
+					useMocks: env.MOCK_SERVICES !== "false",
+					baseUrl: env.BASE_URL ?? ""
+				});
 	}
 	return client;
 }

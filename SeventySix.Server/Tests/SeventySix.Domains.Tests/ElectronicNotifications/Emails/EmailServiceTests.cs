@@ -9,6 +9,7 @@ using Microsoft.Extensions.Options;
 using NSubstitute;
 using SeventySix.ElectronicNotifications.Emails;
 using SeventySix.Shared.Constants;
+using SeventySix.Shared.Contracts.Emails;
 using SeventySix.Shared.Interfaces;
 using SeventySix.TestUtilities.TestHelpers;
 using Shouldly;
@@ -107,13 +108,13 @@ public sealed class EmailServiceTests
 		return (handler, response);
 	}
 
-	#region SendWelcomeEmailAsync Tests
+	#region SendEmailAsync Welcome Tests
 
 	/// <summary>
-	/// Verifies that SendWelcomeEmailAsync logs the email instead of sending when disabled.
+	/// Verifies that SendEmailAsync logs the email instead of sending when disabled.
 	/// </summary>
 	[Fact]
-	public async Task SendWelcomeEmailAsync_LogsEmail_WhenDisabledAsync()
+	public async Task SendEmailAsync_Welcome_LogsEmail_WhenDisabledAsync()
 	{
 		// Arrange
 		IOptions<EmailSettings> options =
@@ -134,10 +135,14 @@ public sealed class EmailServiceTests
 				Logger);
 
 		// Act
-		await service.SendWelcomeEmailAsync(
+		await service.SendEmailAsync(
+			EmailTypeConstants.Welcome,
 			"user@example.com",
-			"testuser",
-			"reset-token-123",
+			new Dictionary<string, string>
+			{
+				["username"] = "testuser",
+				["resetToken"] = "reset-token-123",
+			},
 			CancellationToken.None);
 
 		// Assert - should log but not throw
@@ -145,10 +150,10 @@ public sealed class EmailServiceTests
 	}
 
 	/// <summary>
-	/// Verifies that SendWelcomeEmailAsync throws when the email is empty.
+	/// Verifies that SendEmailAsync throws when the recipientEmail is empty.
 	/// </summary>
 	[Fact]
-	public async Task SendWelcomeEmailAsync_ThrowsArgumentException_WhenEmailEmptyAsync()
+	public async Task SendEmailAsync_Welcome_ThrowsArgumentException_WhenEmailEmptyAsync()
 	{
 		// Arrange
 		IOptions<EmailSettings> options = CreateOptions();
@@ -169,18 +174,22 @@ public sealed class EmailServiceTests
 
 		// Act & Assert
 		await Should.ThrowAsync<ArgumentException>(() =>
-			service.SendWelcomeEmailAsync(
+			service.SendEmailAsync(
+				EmailTypeConstants.Welcome,
 				"",
-				"testuser",
-				"token",
+				new Dictionary<string, string>
+				{
+					["username"] = "testuser",
+					["resetToken"] = "token",
+				},
 				CancellationToken.None));
 	}
 
 	/// <summary>
-	/// Verifies that SendWelcomeEmailAsync throws when the username is empty.
+	/// Verifies that SendEmailAsync throws when the emailType is empty.
 	/// </summary>
 	[Fact]
-	public async Task SendWelcomeEmailAsync_ThrowsArgumentException_WhenUsernameEmptyAsync()
+	public async Task SendEmailAsync_ThrowsArgumentException_WhenEmailTypeEmptyAsync()
 	{
 		// Arrange
 		IOptions<EmailSettings> options = CreateOptions();
@@ -201,18 +210,22 @@ public sealed class EmailServiceTests
 
 		// Act & Assert
 		await Should.ThrowAsync<ArgumentException>(() =>
-			service.SendWelcomeEmailAsync(
-				"user@example.com",
+			service.SendEmailAsync(
 				"",
-				"token",
+				"user@example.com",
+				new Dictionary<string, string>
+				{
+					["username"] = "testuser",
+					["resetToken"] = "token",
+				},
 				CancellationToken.None));
 	}
 
 	/// <summary>
-	/// Verifies that SendWelcomeEmailAsync throws when the token is empty.
+	/// Verifies that SendEmailAsync throws when templateData is null.
 	/// </summary>
 	[Fact]
-	public async Task SendWelcomeEmailAsync_ThrowsArgumentException_WhenTokenEmptyAsync()
+	public async Task SendEmailAsync_ThrowsArgumentNullException_WhenTemplateDataNullAsync()
 	{
 		// Arrange
 		IOptions<EmailSettings> options = CreateOptions();
@@ -232,23 +245,23 @@ public sealed class EmailServiceTests
 				Logger);
 
 		// Act & Assert
-		await Should.ThrowAsync<ArgumentException>(() =>
-			service.SendWelcomeEmailAsync(
+		await Should.ThrowAsync<ArgumentNullException>(() =>
+			service.SendEmailAsync(
+				EmailTypeConstants.Welcome,
 				"user@example.com",
-				"testuser",
-				"",
+				null!,
 				CancellationToken.None));
 	}
 
 	#endregion
 
-	#region SendPasswordResetEmailAsync Tests
+	#region SendEmailAsync PasswordReset Tests
 
 	/// <summary>
-	/// Verifies that SendPasswordResetEmailAsync logs rather than sending when disabled.
+	/// Verifies that SendEmailAsync for password reset logs rather than sending when disabled.
 	/// </summary>
 	[Fact]
-	public async Task SendPasswordResetEmailAsync_LogsEmail_WhenDisabledAsync()
+	public async Task SendEmailAsync_PasswordReset_LogsEmail_WhenDisabledAsync()
 	{
 		// Arrange
 		IOptions<EmailSettings> options =
@@ -269,10 +282,14 @@ public sealed class EmailServiceTests
 				Logger);
 
 		// Act
-		await service.SendPasswordResetEmailAsync(
+		await service.SendEmailAsync(
+			EmailTypeConstants.PasswordReset,
 			"user@example.com",
-			"testuser",
-			"reset-token-456",
+			new Dictionary<string, string>
+			{
+				["username"] = "testuser",
+				["resetToken"] = "reset-token-456",
+			},
 			CancellationToken.None);
 
 		// Assert - should log but not throw
@@ -280,10 +297,10 @@ public sealed class EmailServiceTests
 	}
 
 	/// <summary>
-	/// Verifies that SendPasswordResetEmailAsync throws when the email is empty.
+	/// Verifies that SendEmailAsync for password reset throws when the email is empty.
 	/// </summary>
 	[Fact]
-	public async Task SendPasswordResetEmailAsync_ThrowsArgumentException_WhenEmailEmptyAsync()
+	public async Task SendEmailAsync_PasswordReset_ThrowsArgumentException_WhenEmailEmptyAsync()
 	{
 		// Arrange
 		IOptions<EmailSettings> options = CreateOptions();
@@ -304,18 +321,22 @@ public sealed class EmailServiceTests
 
 		// Act & Assert
 		await Should.ThrowAsync<ArgumentException>(() =>
-			service.SendPasswordResetEmailAsync(
+			service.SendEmailAsync(
+				EmailTypeConstants.PasswordReset,
 				"",
-				"testuser",
-				"token",
+				new Dictionary<string, string>
+				{
+					["username"] = "testuser",
+					["resetToken"] = "token",
+				},
 				CancellationToken.None));
 	}
 
 	/// <summary>
-	/// Verifies that SendPasswordResetEmailAsync throws when the username is empty.
+	/// Verifies that SendEmailAsync throws for an unsupported email type.
 	/// </summary>
 	[Fact]
-	public async Task SendPasswordResetEmailAsync_ThrowsArgumentException_WhenUsernameEmptyAsync()
+	public async Task SendEmailAsync_ThrowsArgumentException_WhenEmailTypeUnsupportedAsync()
 	{
 		// Arrange
 		IOptions<EmailSettings> options = CreateOptions();
@@ -336,18 +357,18 @@ public sealed class EmailServiceTests
 
 		// Act & Assert
 		await Should.ThrowAsync<ArgumentException>(() =>
-			service.SendPasswordResetEmailAsync(
+			service.SendEmailAsync(
+				"UnsupportedEmailType",
 				"user@example.com",
-				"",
-				"token",
+				new Dictionary<string, string>(),
 				CancellationToken.None));
 	}
 
 	/// <summary>
-	/// Verifies that SendPasswordResetEmailAsync throws when the token is empty.
+	/// Verifies that SendEmailAsync for password reset throws when the recipientEmail is empty.
 	/// </summary>
 	[Fact]
-	public async Task SendPasswordResetEmailAsync_ThrowsArgumentException_WhenTokenEmptyAsync()
+	public async Task SendEmailAsync_PasswordReset_ThrowsArgumentException_WhenRecipientEmptyAsync()
 	{
 		// Arrange
 		IOptions<EmailSettings> options = CreateOptions();
@@ -368,10 +389,14 @@ public sealed class EmailServiceTests
 
 		// Act & Assert
 		await Should.ThrowAsync<ArgumentException>(() =>
-			service.SendPasswordResetEmailAsync(
-				"user@example.com",
-				"testuser",
+			service.SendEmailAsync(
+				EmailTypeConstants.PasswordReset,
 				"",
+				new Dictionary<string, string>
+				{
+					["username"] = "testuser",
+					["resetToken"] = "token",
+				},
 				CancellationToken.None));
 	}
 
@@ -380,11 +405,11 @@ public sealed class EmailServiceTests
 	#region Rate Limiting Tests
 
 	/// <summary>
-	/// Verifies that SendWelcomeEmailAsync throws <see cref="EmailRateLimitException"/>
+	/// Verifies that SendEmailAsync throws <see cref="EmailRateLimitException"/>
 	/// when the rate limit reservation fails (TryIncrementRequestCountAsync returns false).
 	/// </summary>
 	[Fact]
-	public async Task SendWelcomeEmailAsync_ThrowsException_WhenRateLimitExceededAsync()
+	public async Task SendEmailAsync_Welcome_ThrowsException_WhenRateLimitExceededAsync()
 	{
 		// Arrange
 		IOptions<EmailSettings> options =
@@ -428,21 +453,25 @@ public sealed class EmailServiceTests
 		// Act & Assert
 		EmailRateLimitException exception =
 			await Should.ThrowAsync<EmailRateLimitException>(() =>
-				service.SendWelcomeEmailAsync(
+				service.SendEmailAsync(
+					EmailTypeConstants.Welcome,
 					"test@example.com",
-					"testuser",
-					"token123",
+					new Dictionary<string, string>
+					{
+						["username"] = "testuser",
+						["resetToken"] = "token123",
+					},
 					CancellationToken.None));
 
 		exception.Message.ShouldContain("Email daily limit exceeded");
 	}
 
 	/// <summary>
-	/// Verifies that SendPasswordResetEmailAsync throws <see cref="EmailRateLimitException"/>
+	/// Verifies that SendEmailAsync throws <see cref="EmailRateLimitException"/>
 	/// when the rate limit reservation fails.
 	/// </summary>
 	[Fact]
-	public async Task SendPasswordResetEmailAsync_ThrowsException_WhenRateLimitExceededAsync()
+	public async Task SendEmailAsync_PasswordReset_ThrowsException_WhenRateLimitExceededAsync()
 	{
 		// Arrange
 		IOptions<EmailSettings> options =
@@ -486,10 +515,14 @@ public sealed class EmailServiceTests
 		// Act & Assert
 		EmailRateLimitException exception =
 			await Should.ThrowAsync<EmailRateLimitException>(() =>
-				service.SendPasswordResetEmailAsync(
+				service.SendEmailAsync(
+					EmailTypeConstants.PasswordReset,
 					"test@example.com",
-					"testuser",
-					"token456",
+					new Dictionary<string, string>
+					{
+						["username"] = "testuser",
+						["resetToken"] = "token456",
+					},
 					CancellationToken.None));
 
 		exception.Message.ShouldContain("Email daily limit exceeded");
@@ -501,7 +534,7 @@ public sealed class EmailServiceTests
 	/// <see cref="IRateLimitingService.TryDecrementRequestCountAsync"/>.
 	/// </summary>
 	[Fact]
-	public async Task SendWelcomeEmailAsync_ConnectionFailure_ReleasesRateLimitSlotAsync()
+	public async Task SendEmailAsync_ConnectionFailure_ReleasesRateLimitSlotAsync()
 	{
 		// Arrange
 		IOptions<EmailSettings> options =
@@ -539,10 +572,14 @@ public sealed class EmailServiceTests
 
 		// Act
 		await Should.ThrowAsync<HttpRequestException>(() =>
-			service.SendWelcomeEmailAsync(
+			service.SendEmailAsync(
+				EmailTypeConstants.Welcome,
 				"test@example.com",
-				"testuser",
-				"token123",
+				new Dictionary<string, string>
+				{
+					["username"] = "testuser",
+					["resetToken"] = "token123",
+				},
 				CancellationToken.None));
 
 		// Assert — TryDecrementRequestCountAsync was called to release the slot
@@ -558,7 +595,7 @@ public sealed class EmailServiceTests
 	/// the rate limit slot stays consumed — Brevo has counted the call.
 	/// </summary>
 	[Fact]
-	public async Task SendWelcomeEmailAsync_BrevoReturns400_KeepsRateLimitSlotConsumedAsync()
+	public async Task SendEmailAsync_BrevoReturns400_KeepsRateLimitSlotConsumedAsync()
 	{
 		// Arrange
 		IOptions<EmailSettings> options =
@@ -602,10 +639,14 @@ public sealed class EmailServiceTests
 
 		// Act & Assert
 		await Should.ThrowAsync<HttpRequestException>(() =>
-			service.SendWelcomeEmailAsync(
+			service.SendEmailAsync(
+				EmailTypeConstants.Welcome,
 				"test@example.com",
-				"testuser",
-				"token123",
+				new Dictionary<string, string>
+				{
+					["username"] = "testuser",
+					["resetToken"] = "token123",
+				},
 				CancellationToken.None));
 
 		// Slot was NOT released — Brevo received the call
@@ -621,7 +662,7 @@ public sealed class EmailServiceTests
 	/// <see cref="EmailRateLimitException"/> is thrown and the slot stays consumed.
 	/// </summary>
 	[Fact]
-	public async Task SendWelcomeEmailAsync_BrevoReturns429_ThrowsEmailRateLimitExceptionAsync()
+	public async Task SendEmailAsync_BrevoReturns429_ThrowsEmailRateLimitExceptionAsync()
 	{
 		// Arrange
 		IOptions<EmailSettings> options =
@@ -662,10 +703,14 @@ public sealed class EmailServiceTests
 
 		// Act & Assert
 		await Should.ThrowAsync<EmailRateLimitException>(() =>
-			service.SendWelcomeEmailAsync(
+			service.SendEmailAsync(
+				EmailTypeConstants.Welcome,
 				"test@example.com",
-				"testuser",
-				"token123",
+				new Dictionary<string, string>
+				{
+					["username"] = "testuser",
+					["resetToken"] = "token123",
+				},
 				CancellationToken.None));
 
 		// Slot was NOT released — Brevo counted the call
@@ -681,7 +726,7 @@ public sealed class EmailServiceTests
 	/// without exceptions and the rate limit slot stays consumed.
 	/// </summary>
 	[Fact]
-	public async Task SendWelcomeEmailAsync_BrevoReturns201_CompletesSuccessfullyAsync()
+	public async Task SendEmailAsync_BrevoReturns201_CompletesSuccessfullyAsync()
 	{
 		// Arrange
 		IOptions<EmailSettings> options =
@@ -714,10 +759,14 @@ public sealed class EmailServiceTests
 				Logger);
 
 		// Act — should not throw
-		await service.SendWelcomeEmailAsync(
+		await service.SendEmailAsync(
+			EmailTypeConstants.Welcome,
 			"test@example.com",
-			"testuser",
-			"token123",
+			new Dictionary<string, string>
+			{
+				["username"] = "testuser",
+				["resetToken"] = "token123",
+			},
 			CancellationToken.None);
 
 		// Assert — slot NOT released (Brevo received the call)

@@ -92,9 +92,9 @@ export class ExplosionService
 			this.completionTimer = undefined;
 		}
 
-		for (const ps of this.particleSystems)
+		for (const particleSystem of this.particleSystems)
 		{
-			ps.dispose();
+			particleSystem.dispose();
 		}
 		this.particleSystems = [];
 

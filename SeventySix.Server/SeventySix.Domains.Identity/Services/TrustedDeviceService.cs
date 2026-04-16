@@ -169,6 +169,7 @@ public sealed class TrustedDeviceService(
 		List<TrustedDeviceDto> devices =
 			await context
 				.TrustedDevices
+				.AsNoTracking()
 				.Where(device =>
 					device.UserId == userId
 					&& device.ExpiresAt > now)

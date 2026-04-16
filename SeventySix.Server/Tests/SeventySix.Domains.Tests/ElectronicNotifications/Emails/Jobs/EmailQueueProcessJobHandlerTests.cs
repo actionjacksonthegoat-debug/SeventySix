@@ -11,6 +11,8 @@ using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using SeventySix.ElectronicNotifications.Emails;
 using SeventySix.ElectronicNotifications.Emails.Jobs;
+using SeventySix.ElectronicNotifications.Emails.Services;
+using SeventySix.ElectronicNotifications.Emails.Strategies;
 using SeventySix.Shared.BackgroundJobs;
 using SeventySix.Shared.Constants;
 using SeventySix.Shared.Interfaces;
@@ -31,6 +33,7 @@ public sealed class EmailQueueProcessJobHandlerTests
 {
 	private readonly IMessageBus MessageBus;
 	private readonly IEmailService EmailService;
+	private readonly EmailSendingStrategyResolver StrategyResolver;
 	private readonly IRecurringJobService RecurringJobService;
 	private readonly IRateLimitingService RateLimitingService;
 	private readonly FakeTimeProvider TimeProvider;
@@ -45,6 +48,14 @@ public sealed class EmailQueueProcessJobHandlerTests
 			Substitute.For<IMessageBus>();
 		EmailService =
 			Substitute.For<IEmailService>();
+		StrategyResolver =
+			new EmailSendingStrategyResolver(
+				[
+					new WelcomeEmailStrategy(EmailService),
+					new PasswordResetEmailStrategy(EmailService),
+					new VerificationEmailStrategy(EmailService),
+					new MfaCodeEmailStrategy(EmailService),
+				]);
 		RecurringJobService =
 			Substitute.For<IRecurringJobService>();
 		RateLimitingService =
@@ -349,18 +360,18 @@ public sealed class EmailQueueProcessJobHandlerTests
 
 		// First email succeeds, second throws rate limit
 		EmailService
-			.SendWelcomeEmailAsync(
+			.SendEmailAsync(
+				Arg.Any<string>(),
 				"first@test.local",
-				Arg.Any<string>(),
-				Arg.Any<string>(),
+				Arg.Any<Dictionary<string, string>>(),
 				Arg.Any<CancellationToken>())
 			.Returns(Task.CompletedTask);
 
 		EmailService
-			.SendWelcomeEmailAsync(
+			.SendEmailAsync(
+				Arg.Any<string>(),
 				"second@test.local",
-				Arg.Any<string>(),
-				Arg.Any<string>(),
+				Arg.Any<Dictionary<string, string>>(),
 				Arg.Any<CancellationToken>())
 			.Throws(new EmailRateLimitException());
 
@@ -394,10 +405,10 @@ public sealed class EmailQueueProcessJobHandlerTests
 		// Assert - Third email should NOT be processed at all
 		await EmailService
 			.DidNotReceive()
-			.SendWelcomeEmailAsync(
+			.SendEmailAsync(
+				Arg.Any<string>(),
 				"third@test.local",
-				Arg.Any<string>(),
-				Arg.Any<string>(),
+				Arg.Any<Dictionary<string, string>>(),
 				Arg.Any<CancellationToken>());
 	}
 
@@ -566,7 +577,7 @@ public sealed class EmailQueueProcessJobHandlerTests
 		EmailQueueSettings queueSettings) =>
 		new(
 			MessageBus,
-			EmailService,
+			StrategyResolver,
 			RecurringJobService,
 			RateLimitingService,
 			Options.Create(emailSettings),

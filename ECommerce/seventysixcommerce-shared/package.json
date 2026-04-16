@@ -17,10 +17,16 @@
 		"./constants": "./src/constants.ts",
 		"./integrations": "./src/integrations/index.ts",
 		"./schema": "./src/schema/index.ts",
+		"./stripe": "./src/stripe/index.ts",
 		"./types": "./src/types/index.ts",
 		"./observability": "./src/observability/index.ts",
+		"./validation": "./src/validation/index.ts",
 		"./webhook": "./src/webhook/index.ts",
-		"./date": "./src/date.ts"
+		"./date": "./src/date.ts",
+		"./errors": "./src/errors/index.ts",
+		"./products": "./src/products/index.ts",
+		"./seo": "./src/seo/index.ts",
+		"./seed": "./src/seed/index.ts"
 	},
 	"dependencies": {
 		"@opentelemetry/api": "^1.9.1",
@@ -28,7 +34,8 @@
 		"zod": "^4.3.6"
 	},
 	"peerDependencies": {
-		"drizzle-orm": "^0.45.1"
+		"drizzle-orm": "^0.45.1",
+		"stripe": ">=17.0.0"
 	},
 	"devDependencies": {
 		"@stylistic/eslint-plugin": "^5.10.0",
@@ -39,6 +46,7 @@
 		"drizzle-orm": "^0.45.2",
 		"eslint": "^9.33.0",
 		"jsdom": "^29.0.1",
+		"stripe": "^21.0.1",
 		"typescript": "^5.9.0",
 		"vitest": "^4.1.2"
 	}

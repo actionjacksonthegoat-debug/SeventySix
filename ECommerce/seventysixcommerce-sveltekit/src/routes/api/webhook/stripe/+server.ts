@@ -3,7 +3,7 @@ import { db } from "$lib/server/db";
 import { sendOrderConfirmation } from "$lib/server/integrations/brevo";
 import { createPrintfulOrder } from "$lib/server/integrations/printful";
 import { getStripe } from "$lib/server/stripe";
-import { now } from "$lib/utils/date";
+import { now } from "@seventysixcommerce/shared/date";
 import {
 	type CheckoutSessionData,
 	handleCheckoutCompleted,

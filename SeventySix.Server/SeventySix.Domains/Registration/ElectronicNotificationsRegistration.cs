@@ -7,6 +7,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SeventySix.ElectronicNotifications;
 using SeventySix.ElectronicNotifications.Emails;
+using SeventySix.ElectronicNotifications.Emails.Services;
+using SeventySix.ElectronicNotifications.Emails.Strategies;
 using SeventySix.Shared.Constants;
 using SeventySix.Shared.Registration;
 
@@ -65,23 +67,15 @@ public static class ElectronicNotificationsRegistration
 			connectionString,
 			SchemaConstants.ElectronicNotifications);
 
-		// Register FluentValidation validators for settings
-		services.AddSingleton<IValidator<EmailSettings>, EmailSettingsValidator>();
-		services.AddSingleton<IValidator<EmailQueueSettings>, EmailQueueSettingsValidator>();
-
 		// Bind email settings with FluentValidation + ValidateOnStart
-		services
-			.AddOptions<EmailSettings>()
-			.Bind(configuration.GetSection(EmailSettings.SectionName))
-			.ValidateWithFluentValidation()
-			.ValidateOnStart();
+		services.AddDomainSettings<EmailSettings, EmailSettingsValidator>(
+			configuration,
+			EmailSettings.SectionName);
 
 		// Bind email queue settings with FluentValidation + ValidateOnStart
-		services
-			.AddOptions<EmailQueueSettings>()
-			.Bind(configuration.GetSection(EmailQueueSettings.SectionName))
-			.ValidateWithFluentValidation()
-			.ValidateOnStart();
+		services.AddDomainSettings<EmailQueueSettings, EmailQueueSettingsValidator>(
+			configuration,
+			EmailQueueSettings.SectionName);
 
 		// Register named HttpClient for Brevo API — read from bound EmailSettings
 		// to ensure single source of truth for ApiUrl/ApiKey defaults
@@ -112,6 +106,13 @@ public static class ElectronicNotificationsRegistration
 
 		// Register email service
 		services.AddScoped<IEmailService, EmailService>();
+
+		// Register email sending strategies (OCP — one strategy per email type)
+		services.AddScoped<IEmailSendingStrategy, WelcomeEmailStrategy>();
+		services.AddScoped<IEmailSendingStrategy, PasswordResetEmailStrategy>();
+		services.AddScoped<IEmailSendingStrategy, VerificationEmailStrategy>();
+		services.AddScoped<IEmailSendingStrategy, MfaCodeEmailStrategy>();
+		services.AddScoped<EmailSendingStrategyResolver>();
 
 		return services;
 	}

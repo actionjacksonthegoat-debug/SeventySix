@@ -1,4 +1,4 @@
-import { FREE_SHIPPING_THRESHOLD, MAX_CART_ITEM_QUANTITY } from "$lib/constants";
+import { FREE_SHIPPING_THRESHOLD } from "$lib/constants";
 import {
 	addToCart,
 	getCart,
@@ -7,8 +7,13 @@ import {
 } from "$lib/server/db/cart";
 import { queueLog } from "$lib/server/log-forwarder";
 import { recordCartAdd, recordCartRemove, recordPageView } from "$lib/server/metrics";
+import { toCartResponse } from "@seventysixcommerce/shared/cart";
+import {
+	addToCartFormSchema,
+	removeCartItemSchema,
+	updateCartItemFormSchema
+} from "@seventysixcommerce/shared/validation";
 import { fail } from "@sveltejs/kit";
-import { z } from "zod";
 import type { Actions, PageServerLoad } from "./$types";
 
 /** Loads cart contents for display. */
@@ -22,60 +27,17 @@ export const load: PageServerLoad =
 				message: "Page view: cart"
 			});
 
-		const cart =
+		const cartRows =
 			await getCart(locals.cartSessionId);
+		const cartResponse =
+			toCartResponse(cartRows);
 		const subtotal: number =
-			cart.reduce(
-				(sum, item) =>
-					sum + Number(item.unitPrice) * item.quantity,
-				0);
+			parseFloat(cartResponse.subtotal);
 		const freeShipping: boolean =
 			subtotal >= FREE_SHIPPING_THRESHOLD;
 
-		return { cart, subtotal, freeShipping };
+		return { cart: cartResponse.items, itemCount: cartResponse.itemCount, subtotal, freeShipping };
 	};
-
-/** Zod schema for add-to-cart form input. */
-const addToCartSchema =
-	z.object(
-		{
-			productId: z
-				.string()
-				.uuid(),
-			variantId: z
-				.string()
-				.uuid(),
-			quantity: z
-				.coerce
-				.number()
-				.int()
-				.min(1)
-				.max(MAX_CART_ITEM_QUANTITY)
-		});
-
-/** Zod schema for quantity update form input. */
-const updateQuantitySchema =
-	z.object(
-		{
-			cartItemId: z
-				.string()
-				.uuid(),
-			quantity: z
-				.coerce
-				.number()
-				.int()
-				.min(0)
-				.max(MAX_CART_ITEM_QUANTITY)
-		});
-
-/** Zod schema for item removal form input. */
-const removeItemSchema =
-	z.object(
-		{
-			cartItemId: z
-				.string()
-				.uuid()
-		});
 
 /** Cart page form actions for add, update, and remove operations. */
 export const actions: Actions =
@@ -86,7 +48,7 @@ export const actions: Actions =
 			const formData: FormData =
 				await request.formData();
 			const parsed =
-				addToCartSchema.safeParse(
+				addToCartFormSchema.safeParse(
 					{
 						productId: formData.get("productId"),
 						variantId: formData.get("variantId"),
@@ -129,7 +91,7 @@ export const actions: Actions =
 			const formData: FormData =
 				await request.formData();
 			const parsed =
-				updateQuantitySchema.safeParse(
+				updateCartItemFormSchema.safeParse(
 					{
 						cartItemId: formData.get("cartItemId"),
 						quantity: formData.get("quantity")
@@ -165,7 +127,7 @@ export const actions: Actions =
 			const formData: FormData =
 				await request.formData();
 			const parsed =
-				removeItemSchema.safeParse(
+				removeCartItemSchema.safeParse(
 					{
 						cartItemId: formData.get("cartItemId")
 					});

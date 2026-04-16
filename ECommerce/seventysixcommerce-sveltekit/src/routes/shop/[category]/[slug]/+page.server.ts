@@ -1,12 +1,11 @@
 import { env } from "$env/dynamic/private";
-import { MAX_CART_ITEM_QUANTITY } from "$lib/constants";
 import { addToCart } from "$lib/server/db/cart";
 import { getProduct, getRelatedProducts } from "$lib/server/db/products";
 import { queueLog } from "$lib/server/log-forwarder";
 import { recordCartAdd, recordPageView } from "$lib/server/metrics";
 import { generateProductJsonLd } from "$lib/utils/seo";
+import { addToCartFormSchema } from "@seventysixcommerce/shared/validation";
 import { error, fail } from "@sveltejs/kit";
-import { z } from "zod";
 import type { Actions, PageServerLoad } from "./$types";
 
 /** Product detail page — the money page. Full SSR with complete SEO. */
@@ -36,24 +35,6 @@ export const load: PageServerLoad =
 		return { product, related, jsonLd };
 	};
 
-/** Zod schema for add-to-cart form input. */
-const addToCartSchema =
-	z.object(
-		{
-			productId: z
-				.string()
-				.uuid(),
-			variantId: z
-				.string()
-				.uuid(),
-			quantity: z
-				.coerce
-				.number()
-				.int()
-				.min(1)
-				.max(MAX_CART_ITEM_QUANTITY)
-		});
-
 /** Product page form actions for adding to cart. */
 export const actions: Actions =
 	{
@@ -63,7 +44,7 @@ export const actions: Actions =
 			const formData: FormData =
 				await request.formData();
 			const parsed =
-				addToCartSchema.safeParse(
+				addToCartFormSchema.safeParse(
 					{
 						productId: formData.get("productId"),
 						variantId: formData.get("variantId"),

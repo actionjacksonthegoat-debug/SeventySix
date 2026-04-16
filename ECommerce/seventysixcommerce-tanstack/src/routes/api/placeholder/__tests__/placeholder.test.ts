@@ -1,5 +1,14 @@
 import { describe, expect, it } from "vitest";
 
+/** Default dimension used when the input is invalid or omitted. */
+const DEFAULT_DIMENSION: number = 600;
+
+/** Minimum allowed dimension. */
+const MIN_DIMENSION: number = 1;
+
+/** Maximum allowed dimension. */
+const MAX_DIMENSION: number = 2000;
+
 /**
  * Tests the placeholder SVG generation logic directly (extracted from the route handler).
  * The route handler itself uses Vinxi internals, so we test the SVG generation logic.
@@ -10,11 +19,11 @@ function generatePlaceholderSvg(
 	label: string): string
 {
 	const safeWidth: number =
-		Math.min(Math.max(Number(width) || 600, 1), 2000);
+		Math.min(Math.max(Number(width) || DEFAULT_DIMENSION, MIN_DIMENSION), MAX_DIMENSION);
 	const safeHeight: number =
 		Math.min(
-			Math.max(Number(height) || 600, 1),
-			2000);
+			Math.max(Number(height) || DEFAULT_DIMENSION, MIN_DIMENSION),
+			MAX_DIMENSION);
 	const safeLabel: string =
 		label.replace(/[<>&"']/g, "");
 

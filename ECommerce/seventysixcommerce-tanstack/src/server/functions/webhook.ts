@@ -1,3 +1,4 @@
+import { now } from "@seventysixcommerce/shared/date";
 import {
 	type CheckoutSessionData,
 	handleCheckoutCompleted,
@@ -5,7 +6,6 @@ import {
 } from "@seventysixcommerce/shared/webhook";
 import type Stripe from "stripe";
 import { sendOrderConfirmation } from "../../lib/brevo";
-import { now } from "../../lib/date";
 import { createPrintfulOrder } from "../../lib/printful";
 import { db } from "../db";
 import { getStripe } from "../lib/stripe";
@@ -26,7 +26,7 @@ export async function handleStripeWebhook(
 			getStripe().webhooks.constructEvent(
 				rawBody,
 				signature,
-				process.env.STRIPE_WEBHOOK_SECRET ?? "");
+				process.env.STRIPE_WEBHOOK_SECRET ?? "") as Stripe.Event;
 	}
 	catch
 	{

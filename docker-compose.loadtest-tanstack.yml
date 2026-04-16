@@ -13,6 +13,11 @@ services:
   postgres-loadtest-tanstack:
     image: postgres:18-alpine
     container_name: ssxc-tanstack-postgres-loadtest
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
     ports:
       - "127.0.0.1:5443:5432"
     environment:
@@ -35,6 +40,11 @@ services:
       dockerfile: seventysixcommerce-tanstack/Dockerfile
       target: db-init
     container_name: ssxc-tanstack-db-init-loadtest
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
     environment:
       DATABASE_URL: postgresql://ssxc_loadtest:ssxc_loadtest_password@postgres-loadtest-tanstack:5432/seventysixcommerce_tanstack_loadtest
     depends_on:
@@ -50,6 +60,11 @@ services:
       dockerfile: seventysixcommerce-tanstack/Dockerfile
       target: runner
     container_name: ssxc-tanstack-app-loadtest
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 1G
     ports:
       - "127.0.0.1:3022:3000"
     environment:

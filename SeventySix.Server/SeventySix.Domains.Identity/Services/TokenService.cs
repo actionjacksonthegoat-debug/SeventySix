@@ -2,28 +2,24 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 using SeventySix.Shared.Extensions;
 
 namespace SeventySix.Identity;
 
 /// <summary>
-/// JWT and refresh token generation and validation service.
+/// Facade that delegates to focused token services while maintaining backward compatibility.
 /// </summary>
 /// <remarks>
-/// Design Principles:
-/// - Access tokens are JWTs with short expiration (configurable)
-/// - Refresh tokens are random bytes, SHA256 hashed before storage
-/// - Token rotation: old refresh token revoked when new one issued
-/// - Session limits: oldest token revoked when max sessions exceeded
-/// - PII (email, fullName) is NOT included in JWT for GDPR compliance
+/// Delegates to:
+/// - <see cref="ITokenGenerationService"/> for JWT and refresh token creation
+/// - <see cref="ITokenRevocationService"/> for token revocation
+/// Handles token rotation orchestration and validation directly.
 /// </remarks>
 public sealed class TokenService(
+	ITokenGenerationService tokenGenerationService,
+	ITokenRevocationService tokenRevocationService,
 	ITokenRepository tokenRepository,
 	IOptions<JwtSettings> jwtSettings,
 	IOptions<AuthSettings> authSettings,
@@ -35,77 +31,23 @@ public sealed class TokenService(
 		long userId,
 		string username,
 		IEnumerable<string> roles,
-		bool requiresPasswordChange = false)
-	{
-		List<Claim> claims =
-			[
-				new Claim(
-					JwtRegisteredClaimNames.Sub,
-					userId.ToString()),
-				new Claim(
-					JwtRegisteredClaimNames.UniqueName,
-					username),
-				new Claim(
-					JwtRegisteredClaimNames.Jti,
-					Guid.NewGuid().ToString()),
-				new Claim(
-					JwtRegisteredClaimNames.Iat,
-					timeProvider.GetUtcNow().ToUnixTimeSeconds().ToString(),
-					ClaimValueTypes.Integer64),
-			];
-
-		// Add role claims
-		foreach (string role in roles)
-		{
-			claims.Add(new Claim(ClaimTypes.Role, role));
-		}
-
-		if (requiresPasswordChange)
-		{
-			claims.Add(
-				new Claim(
-					CustomClaimTypes.RequiresPasswordChange,
-					"true"));
-		}
-
-		SymmetricSecurityKey key =
-			new(
-				Encoding.UTF8.GetBytes(jwtSettings.Value.SecretKey));
-
-		SigningCredentials credentials =
-			new(
-				key,
-				SecurityAlgorithms.HmacSha256);
-
-		DateTimeOffset expires =
-			timeProvider.GetUtcNow().AddMinutes(
-				jwtSettings.Value.AccessTokenExpirationMinutes);
-
-		JwtSecurityToken token =
-			new(
-				issuer: jwtSettings.Value.Issuer,
-				audience: jwtSettings.Value.Audience,
-				claims: claims,
-				expires: expires.UtcDateTime,
-				signingCredentials: credentials);
-
-		return new JwtSecurityTokenHandler().WriteToken(token);
-	}
+		bool requiresPasswordChange = false) =>
+		tokenGenerationService.GenerateAccessToken(
+			userId,
+			username,
+			roles,
+			requiresPasswordChange);
 
 	/// <inheritdoc/>
 	public async Task<string> GenerateRefreshTokenAsync(
 		long userId,
 		bool rememberMe = false,
-		CancellationToken cancellationToken = default)
-	{
-		// Create new family for fresh token generation
-		return await GenerateRefreshTokenInternalAsync(
+		CancellationToken cancellationToken = default) =>
+		await tokenGenerationService.GenerateRefreshTokenAsync(
 			userId,
 			rememberMe,
-			familyId: Guid.NewGuid(),
-			sessionStartedAt: null,
 			cancellationToken);
-	}
+
 
 	/// <inheritdoc/>
 	public async Task<(string? Token, bool RememberMe)> RotateRefreshTokenAsync(
@@ -195,7 +137,7 @@ public sealed class TokenService(
 
 		// Generate new token inheriting the family and session start
 		string newToken =
-			await GenerateRefreshTokenInternalAsync(
+			await tokenGenerationService.GenerateRefreshTokenWithFamilyAsync(
 				existingToken.UserId,
 				rememberMe,
 				existingToken.FamilyId,
@@ -203,117 +145,6 @@ public sealed class TokenService(
 				cancellationToken);
 
 		return (newToken, rememberMe);
-	}
-
-	/// <summary>
-	/// Internal method to generate a refresh token with specified family.
-	/// </summary>
-	/// <param name="userId">
-	/// The user id the token belongs to.
-	/// </param>
-	/// <param name="rememberMe">
-	/// Whether token should use long-lived expiration.
-	/// </param>
-	/// <param name="familyId">
-	/// Token family GUID used to group related tokens.
-	/// </param>
-	/// <param name="sessionStartedAt">
-	/// Optional session start timestamp for absolute timeouts.
-	/// </param>
-	/// <param name="cancellationToken">
-	/// Cancellation token.
-	/// </param>
-	/// <returns>
-	/// The generated plaintext refresh token.
-	/// </returns>
-	private async Task<string> GenerateRefreshTokenInternalAsync(
-		long userId,
-		bool rememberMe,
-		Guid familyId,
-		DateTimeOffset? sessionStartedAt = null,
-		CancellationToken cancellationToken = default)
-	{
-		DateTimeOffset now =
-			timeProvider.GetUtcNow();
-
-		// Enforce session limit - revoke oldest if at max
-		await EnforceSessionLimitAsync(userId, now, cancellationToken);
-
-		// Generate cryptographically secure random token using shared utility
-		string plainTextToken =
-			CryptoExtensions.GenerateSecureToken();
-
-		string tokenHash =
-			CryptoExtensions.ComputeSha256Hash(plainTextToken);
-
-		int expirationDays =
-			rememberMe
-			? jwtSettings.Value.RefreshTokenRememberMeExpirationDays
-			: jwtSettings.Value.RefreshTokenExpirationDays;
-
-		RefreshToken refreshToken =
-			new()
-			{
-				TokenHash = tokenHash,
-				UserId = userId,
-				FamilyId = familyId,
-				ExpiresAt =
-					now.AddDays(expirationDays),
-				SessionStartedAt =
-					sessionStartedAt ?? now,
-				CreateDate = now,
-				IsRevoked = false,
-			};
-
-		await tokenRepository.CreateAsync(refreshToken, cancellationToken);
-
-		return plainTextToken;
-	}
-
-	/// <summary>
-	/// Revokes oldest token if user has reached max active sessions.
-	/// </summary>
-	/// <param name="userId">
-	/// The user ID to enforce limits for.
-	/// </param>
-	/// <param name="now">
-	/// Current timestamp used for comparisons.
-	/// </param>
-	/// <param name="cancellationToken">
-	/// Cancellation token.
-	/// </param>
-	private async Task EnforceSessionLimitAsync(
-		long userId,
-		DateTimeOffset now,
-		CancellationToken cancellationToken)
-	{
-		// Skip session limit enforcement when rotation is disabled (E2E testing)
-		// to allow parallel workers to share auth state without token revocation
-		if (authSettings.Value.Token.DisableRotation)
-		{
-			return;
-		}
-
-		int maxSessions =
-			authSettings.Value.Token.MaxActiveSessionsPerUser;
-
-		int activeTokenCount =
-			await tokenRepository.GetActiveSessionCountAsync(
-				userId,
-				now,
-				cancellationToken);
-
-		if (activeTokenCount < maxSessions)
-		{
-			return;
-		}
-
-		// Revoke oldest active token to make room for new one
-		await tokenRepository.RevokeOldestActiveTokenAsync(
-			userId,
-			now,
-			now,
-			cancellationToken);
 	}
 
 	/// <inheritdoc/>
@@ -336,31 +167,16 @@ public sealed class TokenService(
 	/// <inheritdoc/>
 	public async Task<bool> RevokeRefreshTokenAsync(
 		string refreshToken,
-		CancellationToken cancellationToken = default)
-	{
-		string tokenHash =
-			CryptoExtensions.ComputeSha256Hash(refreshToken);
-
-		DateTimeOffset now =
-			timeProvider.GetUtcNow();
-
-		return await tokenRepository.RevokeByHashAsync(
-			tokenHash,
-			now,
+		CancellationToken cancellationToken = default) =>
+		await tokenRevocationService.RevokeRefreshTokenAsync(
+			refreshToken,
 			cancellationToken);
-	}
 
 	/// <inheritdoc/>
 	public async Task<int> RevokeAllUserTokensAsync(
 		long userId,
-		CancellationToken cancellationToken = default)
-	{
-		DateTimeOffset now =
-			timeProvider.GetUtcNow();
-
-		return await tokenRepository.RevokeAllUserTokensAsync(
+		CancellationToken cancellationToken = default) =>
+		await tokenRevocationService.RevokeAllUserTokensAsync(
 			userId,
-			now,
 			cancellationToken);
-	}
 }

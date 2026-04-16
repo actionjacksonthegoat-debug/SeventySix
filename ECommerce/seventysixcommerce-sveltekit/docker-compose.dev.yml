@@ -16,7 +16,8 @@ services:
       test: [ "CMD-SHELL", "pg_isready -U ssxc_dev -d seventysixcommerce_sveltekit_dev" ]
       interval: 5s
       timeout: 3s
-      retries: 5
+      retries: 10
+      start_period: 30s
 
 volumes:
   ssxc-sveltekit-dev-data:

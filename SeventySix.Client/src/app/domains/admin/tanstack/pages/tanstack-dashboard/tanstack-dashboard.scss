@@ -20,6 +20,8 @@
 			flex-direction: column;
 			overflow: hidden;
 
+			/* ::ng-deep required: Material Tabs internal (.mat-mdc-tab-body-*) has no public
+			   theming API for flex layout control. See formatting.instructions.md for context. */
 			::ng-deep .mat-mdc-tab-body-wrapper {
 				flex: 1;
 				display: flex;

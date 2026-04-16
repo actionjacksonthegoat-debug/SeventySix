@@ -6,9 +6,10 @@ import {
 	createMockOrder,
 	type ValidatedCartRow
 } from "@seventysixcommerce/shared/checkout";
+import { now } from "@seventysixcommerce/shared/date";
+import { cartEmptyError, checkoutFailedError, itemsUnavailableError } from "@seventysixcommerce/shared/errors";
 import { createServerFn } from "@tanstack/react-start";
 import { eq } from "drizzle-orm";
-import { now } from "~/lib/date";
 import { db } from "../db";
 import * as schema from "../db/schema";
 import { getStripe } from "../lib/stripe";
@@ -84,7 +85,7 @@ export const createCheckoutSession =
 
 				if (cartRows.length === 0)
 				{
-					throw new Error("Cart is empty");
+					throw cartEmptyError();
 				}
 
 				// Validate all products are still active and available
@@ -94,12 +95,8 @@ export const createCheckoutSession =
 							!row.isActive || !row.isAvailable);
 				if (unavailable.length > 0)
 				{
-					const names: string =
-						unavailable
-							.map((row) => row.productTitle)
-							.join(", ");
-					throw new Error(
-						`The following items are no longer available: ${names}`);
+					throw itemsUnavailableError(
+						unavailable.map((row) => row.productTitle));
 				}
 
 				const validatedRows: ValidatedCartRow[] =
@@ -168,7 +165,7 @@ export const createCheckoutSession =
 
 				if (session.url === null || session.url === undefined)
 				{
-					throw new Error("Failed to create checkout session");
+					throw checkoutFailedError();
 				}
 
 				return { url: session.url };

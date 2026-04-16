@@ -1,5 +1,5 @@
+import { now } from "@seventysixcommerce/shared/date";
 import { createFileRoute } from "@tanstack/react-router";
-import { now } from "~/lib/date";
 
 /** Health check endpoint — returns 200 with timestamp for Docker HEALTHCHECK. */
 export const Route =

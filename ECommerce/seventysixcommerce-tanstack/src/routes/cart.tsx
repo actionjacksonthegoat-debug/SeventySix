@@ -1,3 +1,4 @@
+import type { CartItem, CartResponse } from "@seventysixcommerce/shared/cart";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import type { JSX } from "react";
 import { useState } from "react";
@@ -10,7 +11,6 @@ import {
 	removeFromCart,
 	updateCartItem
 } from "~/server/functions/cart";
-import type { CartItem, CartResponse } from "~/server/functions/cart";
 import { createCheckoutSession } from "~/server/functions/checkout";
 import { queueLog } from "~/server/log-forwarder";
 import { recordPageView } from "~/server/metrics";

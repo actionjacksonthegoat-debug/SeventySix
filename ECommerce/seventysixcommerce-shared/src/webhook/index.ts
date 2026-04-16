@@ -294,3 +294,8 @@ export async function handleCheckoutCompleted(
 		}
 	}
 }
+
+export { getTrackingUrl, handlePrintfulShipmentUpdate, verifyPrintfulSignature } from "./printful";
+export type { ShippingEmailClient } from "./printful";
+export { printfulWebhookBodySchema } from "./types";
+export type { PrintfulWebhookBody } from "./types";

@@ -38,7 +38,8 @@ namespace SeventySix.Api.Infrastructure;
 ///   <item><description>All other exceptions -> 500 Internal Server Error</description></item>
 /// </list>
 /// <para>
-/// Security: Stack traces are only included in development environments.
+/// Security: Raw exception messages are never included in responses;
+/// all responses use safe constants from <see cref="ProblemDetailConstants"/>.
 /// </para>
 /// <para>
 /// Defense-in-depth: when this handler writes an error response it will add
@@ -50,15 +51,11 @@ namespace SeventySix.Api.Infrastructure;
 /// <param name="logger">
 /// Logger instance for recording exceptions.
 /// </param>
-/// <param name="environment">
-/// Host environment for determining whether to include stack traces.
-/// </param>
 /// <param name="configuration">
 /// Application configuration to read CORS allowed origins.
 /// </param>
 public sealed class GlobalExceptionHandler(
 	ILogger<GlobalExceptionHandler> logger,
-	IHostEnvironment environment,
 	IConfiguration configuration) : IExceptionHandler
 {
 	/// <summary>
@@ -209,7 +206,7 @@ public sealed class GlobalExceptionHandler(
 					ProblemDetailConstants.Titles.Unauthorized,
 					ProblemDetailConstants.Details.Unauthorized),
 			_ =>
-				CreateDefaultProblemDetails(context, exception),
+				CreateDefaultProblemDetails(context),
 		};
 
 	/// <summary>
@@ -218,22 +215,16 @@ public sealed class GlobalExceptionHandler(
 	/// <param name="context">
 	/// The HTTP context.
 	/// </param>
-	/// <param name="exception">
-	/// The original exception; message is included in Development environment.
-	/// </param>
 	/// <returns>
 	/// A ProblemDetails for an internal server error.
 	/// </returns>
-	private ProblemDetails CreateDefaultProblemDetails(
-		HttpContext context,
-		Exception exception) =>
+	private static ProblemDetails CreateDefaultProblemDetails(
+		HttpContext context) =>
 		CreateProblemDetails(
 			context,
 			HttpStatusCode.InternalServerError,
 			ProblemDetailConstants.Titles.InternalServerError,
-			environment.IsDevelopment()
-				? exception.Message
-				: "An error occurred processing your request.");
+			ProblemDetailConstants.Details.InternalServerError);
 
 	/// <summary>
 	/// Logs a domain exception at Warning level and creates a safe ProblemDetails response.

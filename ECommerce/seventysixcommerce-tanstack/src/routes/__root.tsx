@@ -1,3 +1,4 @@
+import { currentYear } from "@seventysixcommerce/shared/date";
 import {
 	createRootRoute,
 	HeadContent,
@@ -14,7 +15,6 @@ import { ThemeToggle } from "~/components/ui/ThemeToggle";
 import { ThemeProvider } from "~/context/theme-context";
 import { trackPageView } from "~/lib/analytics";
 import { THEME_COOKIE_NAME } from "~/lib/constants";
-import { currentYear } from "~/lib/date";
 import { initClientTelemetry, recordNavigation } from "~/lib/telemetry-client";
 import { getCart } from "~/server/functions/cart";
 import globalsCss from "~/styles/globals.css?url";

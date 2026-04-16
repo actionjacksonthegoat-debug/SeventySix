@@ -250,6 +250,6 @@ public sealed class ClosingParenSameLineAnalyzer : DiagnosticAnalyzer
 			return true;
 		}
 
-		return leadingTrivia.All(lt => lt.RawKind == (int)SyntaxKind.WhitespaceTrivia);
+		return leadingTrivia.All(triviaItem => triviaItem.RawKind == (int)SyntaxKind.WhitespaceTrivia);
 	}
 }

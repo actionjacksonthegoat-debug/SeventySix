@@ -219,6 +219,9 @@ public static class IdentityRegistration
 		// Security audit logging service
 		services.AddScoped<ISecurityAuditService, SecurityAuditService>();
 
+		services.AddScoped<ITokenGenerationService, TokenGenerationService>();
+		services.AddScoped<ISessionManagementService, SessionManagementService>();
+		services.AddScoped<ITokenRevocationService, TokenRevocationService>();
 		services.AddScoped<ITokenService, TokenService>();
 		services.AddScoped<AuthenticationService>();
 		services.AddScoped<IMfaService, MfaService>();
@@ -236,34 +239,21 @@ public static class IdentityRegistration
 		services.AddSingleton<IMfaAttemptTracker, MfaAttemptTracker>();
 
 		// Configure MFA-related settings with FluentValidation + ValidateOnStart
-		services.AddSingleton<IValidator<MfaSettings>, MfaSettingsValidator>();
-		services.AddSingleton<IValidator<TotpSettings>, TotpSettingsValidator>();
-		services.AddSingleton<IValidator<BackupCodeSettings>, BackupCodeSettingsValidator>();
-		services.AddSingleton<IValidator<TrustedDeviceSettings>, TrustedDeviceSettingsValidator>();
+		services.AddDomainSettings<MfaSettings, MfaSettingsValidator>(
+			configuration,
+			MfaSettings.SectionName);
 
-		services
-			.AddOptions<MfaSettings>()
-			.Bind(configuration.GetSection(MfaSettings.SectionName))
-			.ValidateWithFluentValidation()
-			.ValidateOnStart();
+		services.AddDomainSettings<TotpSettings, TotpSettingsValidator>(
+			configuration,
+			TotpSettings.SectionName);
 
-		services
-			.AddOptions<TotpSettings>()
-			.Bind(configuration.GetSection(TotpSettings.SectionName))
-			.ValidateWithFluentValidation()
-			.ValidateOnStart();
+		services.AddDomainSettings<BackupCodeSettings, BackupCodeSettingsValidator>(
+			configuration,
+			BackupCodeSettings.SectionName);
 
-		services
-			.AddOptions<BackupCodeSettings>()
-			.Bind(configuration.GetSection(BackupCodeSettings.SectionName))
-			.ValidateWithFluentValidation()
-			.ValidateOnStart();
-
-		services
-			.AddOptions<TrustedDeviceSettings>()
-			.Bind(configuration.GetSection(TrustedDeviceSettings.SectionName))
-			.ValidateWithFluentValidation()
-			.ValidateOnStart();
+		services.AddDomainSettings<TrustedDeviceSettings, TrustedDeviceSettingsValidator>(
+			configuration,
+			TrustedDeviceSettings.SectionName);
 
 		// Register OAuth strategies (Singleton — stateless, IHttpClientFactory is Singleton-compatible)
 		services.AddSingleton<IOAuthProviderStrategy, GitHubOAuthStrategy>();
@@ -328,13 +318,9 @@ public static class IdentityRegistration
 		IConfiguration configuration)
 	{
 		// Bind ALTCHA settings with FluentValidation + ValidateOnStart
-		services.AddSingleton<IValidator<AltchaSettings>, AltchaSettingsValidator>();
-
-		services
-			.AddOptions<AltchaSettings>()
-			.Bind(configuration.GetSection(AltchaSettings.SectionName))
-			.ValidateWithFluentValidation()
-			.ValidateOnStart();
+		services.AddDomainSettings<AltchaSettings, AltchaSettingsValidator>(
+			configuration,
+			AltchaSettings.SectionName);
 
 		// Register EF-based challenge store
 		services.AddScoped<AltchaChallengeStore>();
@@ -414,27 +400,17 @@ public static class IdentityRegistration
 		IConfiguration configuration)
 	{
 		// Register job settings with FluentValidation + ValidateOnStart
-		services.AddSingleton<IValidator<RefreshTokenCleanupSettings>, RefreshTokenCleanupSettingsValidator>();
-		services.AddSingleton<IValidator<AdminSeederSettings>, AdminSeederSettingsValidator>();
-		services.AddSingleton<IValidator<OrphanedRegistrationCleanupSettings>, OrphanedRegistrationCleanupSettingsValidator>();
+		services.AddDomainSettings<RefreshTokenCleanupSettings, RefreshTokenCleanupSettingsValidator>(
+			configuration,
+			RefreshTokenCleanupSettings.SectionName);
 
-		services
-			.AddOptions<RefreshTokenCleanupSettings>()
-			.Bind(configuration.GetSection(RefreshTokenCleanupSettings.SectionName))
-			.ValidateWithFluentValidation()
-			.ValidateOnStart();
+		services.AddDomainSettings<AdminSeederSettings, AdminSeederSettingsValidator>(
+			configuration,
+			AdminSeederSettings.SectionName);
 
-		services
-			.AddOptions<AdminSeederSettings>()
-			.Bind(configuration.GetSection(AdminSeederSettings.SectionName))
-			.ValidateWithFluentValidation()
-			.ValidateOnStart();
-
-		services
-			.AddOptions<OrphanedRegistrationCleanupSettings>()
-			.Bind(configuration.GetSection(OrphanedRegistrationCleanupSettings.SectionName))
-			.ValidateWithFluentValidation()
-			.ValidateOnStart();
+		services.AddDomainSettings<OrphanedRegistrationCleanupSettings, OrphanedRegistrationCleanupSettingsValidator>(
+			configuration,
+			OrphanedRegistrationCleanupSettings.SectionName);
 
 		// Register job scheduler contributor for decoupled job scheduling
 		services.AddScoped<IJobSchedulerContributor, IdentityJobSchedulerContributor>();

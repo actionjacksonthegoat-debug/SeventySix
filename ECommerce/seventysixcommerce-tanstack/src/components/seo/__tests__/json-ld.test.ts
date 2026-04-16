@@ -19,14 +19,17 @@ const mockProduct: ProductDetail =
 		ogImageUrl: null,
 		isActive: true,
 		isFeatured: true,
+		artPieceId: "00000000-0000-0000-0000-000000000010",
+		categoryId: "00000000-0000-0000-0000-000000000020",
 		categorySlug: "posters",
 		categoryName: "Posters",
 		artPieceTitle: "Neon Horizon",
 		artPieceDescription: "A vibrant sunset cityscape.",
 		artPieceImageUrl: "/images/art/neon-horizon.webp",
+		artPieceSlug: "neon-horizon",
 		variants: [
-			{ id: "v1", name: "18×24 inches", isAvailable: true },
-			{ id: "v2", name: "24×36 inches", isAvailable: true }
+			{ id: "v1", name: "18×24 inches", printfulSyncVariantId: null, isAvailable: true },
+			{ id: "v2", name: "24×36 inches", printfulSyncVariantId: null, isAvailable: true }
 		]
 	};
 
@@ -166,7 +169,6 @@ describe("CollectionPage JSON-LD",
 								description: "A",
 								basePrice: "20",
 								thumbnailUrl: "/a.webp",
-								isActive: true,
 								isFeatured: false,
 								categorySlug: "posters",
 								categoryName: "Posters"
@@ -178,7 +180,6 @@ describe("CollectionPage JSON-LD",
 								description: "B",
 								basePrice: "25",
 								thumbnailUrl: "/b.webp",
-								isActive: true,
 								isFeatured: true,
 								categorySlug: "posters",
 								categoryName: "Posters"

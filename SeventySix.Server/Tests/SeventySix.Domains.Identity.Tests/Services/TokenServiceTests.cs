@@ -62,7 +62,26 @@ public sealed class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 		ITokenRepository tokenRepository =
 			new TokenRepository(context);
 
+		SessionManagementService sessionManagementService =
+			new(
+			tokenRepository,
+			AuthOptions);
+
+		TokenGenerationService tokenGenerationService =
+			new(
+			tokenRepository,
+			sessionManagementService,
+			JwtOptions,
+			timeProvider);
+
+		TokenRevocationService tokenRevocationService =
+			new(
+			tokenRepository,
+			timeProvider);
+
 		return new TokenService(
+			tokenGenerationService,
+			tokenRevocationService,
 			tokenRepository,
 			JwtOptions,
 			AuthOptions,
@@ -347,8 +366,27 @@ public sealed class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 		ITokenRepository tokenRepository =
 			new TokenRepository(context);
 
+		SessionManagementService sessionManagementService =
+			new(
+			tokenRepository,
+			limitedAuthOptions);
+
+		TokenGenerationService tokenGenerationService =
+			new(
+			tokenRepository,
+			sessionManagementService,
+			JwtOptions,
+			timeProvider);
+
+		TokenRevocationService tokenRevocationService =
+			new(
+			tokenRepository,
+			timeProvider);
+
 		TokenService service =
 			new(
+			tokenGenerationService,
+			tokenRevocationService,
 			tokenRepository,
 			JwtOptions,
 			limitedAuthOptions,
@@ -690,7 +728,6 @@ public sealed class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 			await CreateTestUserAsync(context);
 		TokenService service =
 			CreateService(context);
-
 		return (service, user);
 	}
 
@@ -753,14 +790,10 @@ public sealed class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 		return user;
 	}
 
-	private static string ComputeSha256Hash(string input)
-	{
-		byte[] bytes =
+	private static string ComputeSha256Hash(string input) =>
+		Convert.ToHexString(
 			System.Security.Cryptography.SHA256.HashData(
-			System.Text.Encoding.UTF8.GetBytes(input));
-
-		return Convert.ToHexString(bytes);
-	}
+				System.Text.Encoding.UTF8.GetBytes(input)));
 
 	#endregion
 }

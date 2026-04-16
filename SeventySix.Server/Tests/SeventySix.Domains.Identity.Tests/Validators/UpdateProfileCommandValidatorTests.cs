@@ -3,101 +3,43 @@
 // </copyright>
 
 using FluentValidation.TestHelper;
-using NSubstitute;
 using SeventySix.Identity.Commands.UpdateProfile;
-using Wolverine;
 
 namespace SeventySix.Identity.Tests.Validators;
 
 /// <summary>
 /// Unit tests for UpdateProfileCommandValidator.
-/// Tests email uniqueness validation via CQRS query.
+/// Tests email format and full name validation rules.
 /// </summary>
 /// <remarks>
 /// Coverage Focus:
-/// - Email uniqueness (async via CheckEmailExistsQuery with user exclusion)
-/// - Email format rules (delegated to ApplyEmailRules, covered by shared tests)
-/// - FullName rules (delegated to ApplyFullNameRules, covered by shared tests)
+/// - Email format rules (delegated to ApplyEmailRules)
+/// - FullName rules (delegated to ApplyFullNameRules)
 ///
-/// 80/20 Approach:
-/// Email format and fullName rules reuse ApplyEmailRules/ApplyFullNameRules
-/// which are thoroughly tested in CreateUserCommandValidatorTests.
-/// These tests focus on the unique behavior: email uniqueness with UserId exclusion.
+/// Email uniqueness is enforced at the database level, not in the validator.
 /// </remarks>
 public sealed class UpdateProfileCommandValidatorTests
 {
 	private const long TestUserId = 42;
 
-	private readonly IMessageBus MessageBus;
 	private readonly UpdateProfileCommandValidator Validator;
 
+	/// <summary>
+	/// Initializes a new instance of the <see cref="UpdateProfileCommandValidatorTests"/> class.
+	/// </summary>
 	public UpdateProfileCommandValidatorTests()
 	{
-		MessageBus =
-			Substitute.For<IMessageBus>();
-
-		// Default: email does not exist (valid)
-		MessageBus
-			.InvokeAsync<bool>(
-				Arg.Any<CheckEmailExistsQuery>(),
-				Arg.Any<CancellationToken>())
-			.Returns(false);
-
 		Validator =
-			new UpdateProfileCommandValidator(MessageBus);
+			new UpdateProfileCommandValidator();
 	}
 
+	/// <summary>
+	/// Tests that valid email and full name pass validation.
+	/// </summary>
 	[Fact]
-	public async Task Validate_DuplicateEmail_ReturnsValidationErrorAsync()
+	public async Task Validate_ValidEmailAndFullName_PassesValidationAsync()
 	{
 		// Arrange
-		MessageBus
-			.InvokeAsync<bool>(
-				Arg.Any<CheckEmailExistsQuery>(),
-				Arg.Any<CancellationToken>())
-			.Returns(true);
-
-		UpdateProfileCommand command =
-			CreateCommand(
-				email: "existing@example.com");
-
-		// Act
-		TestValidationResult<UpdateProfileCommand> result =
-			await Validator.TestValidateAsync(command);
-
-		// Assert
-		result
-			.ShouldHaveValidationErrorFor(
-				profileCommand => profileCommand.Request.Email)
-			.WithErrorMessage("Email address is already registered.");
-	}
-
-	[Fact]
-	public async Task Validate_SameUserEmail_PassesValidationAsync()
-	{
-		// Arrange — email exists but belongs to the same user (excluded by UserId)
-		MessageBus
-			.InvokeAsync<bool>(
-				Arg.Any<CheckEmailExistsQuery>(),
-				Arg.Any<CancellationToken>())
-			.Returns(false);
-
-		UpdateProfileCommand command =
-			CreateCommand(
-				email: "myemail@example.com");
-
-		// Act
-		TestValidationResult<UpdateProfileCommand> result =
-			await Validator.TestValidateAsync(command);
-
-		// Assert
-		result.ShouldNotHaveAnyValidationErrors();
-	}
-
-	[Fact]
-	public async Task Validate_UniqueEmail_PassesValidationAsync()
-	{
-		// Arrange (default mock returns false = email doesn't exist)
 		UpdateProfileCommand command =
 			CreateCommand(
 				email: "unique@example.com");
@@ -110,26 +52,67 @@ public sealed class UpdateProfileCommandValidatorTests
 		result.ShouldNotHaveAnyValidationErrors();
 	}
 
+	/// <summary>
+	/// Tests that an invalid email format fails validation.
+	/// </summary>
 	[Fact]
-	public async Task Validate_DuplicateEmail_PassesCorrectUserIdToQueryAsync()
+	public async Task Validate_InvalidEmailFormat_ReturnsValidationErrorAsync()
 	{
 		// Arrange
 		UpdateProfileCommand command =
 			CreateCommand(
-				email: "test@example.com",
-				userId: 99);
+				email: "not-an-email");
 
 		// Act
-		await Validator.TestValidateAsync(command);
+		TestValidationResult<UpdateProfileCommand> result =
+			await Validator.TestValidateAsync(command);
 
-		// Assert — verify the query was called with the correct UserId for exclusion
-		await MessageBus
-			.Received(1)
-			.InvokeAsync<bool>(
-				Arg.Is<CheckEmailExistsQuery>(
-					query => query.Email == "test@example.com"
-						&& query.ExcludeUserId == 99),
-				Arg.Any<CancellationToken>());
+		// Assert
+		result
+			.ShouldHaveValidationErrorFor(
+				profileCommand => profileCommand.Request.Email);
+	}
+
+	/// <summary>
+	/// Tests that an empty email fails validation.
+	/// </summary>
+	[Fact]
+	public async Task Validate_EmptyEmail_ReturnsValidationErrorAsync()
+	{
+		// Arrange
+		UpdateProfileCommand command =
+			CreateCommand(
+				email: string.Empty);
+
+		// Act
+		TestValidationResult<UpdateProfileCommand> result =
+			await Validator.TestValidateAsync(command);
+
+		// Assert
+		result
+			.ShouldHaveValidationErrorFor(
+				profileCommand => profileCommand.Request.Email);
+	}
+
+	/// <summary>
+	/// Tests that a too-long full name fails validation.
+	/// </summary>
+	[Fact]
+	public async Task Validate_FullNameTooLong_ReturnsValidationErrorAsync()
+	{
+		// Arrange
+		UpdateProfileCommand command =
+			CreateCommand(
+				fullName: new string('a', 101));
+
+		// Act
+		TestValidationResult<UpdateProfileCommand> result =
+			await Validator.TestValidateAsync(command);
+
+		// Assert
+		result
+			.ShouldHaveValidationErrorFor(
+				profileCommand => profileCommand.Request.FullName);
 	}
 
 	/// <summary>

@@ -51,6 +51,8 @@
 	}
 }
 
+/* ::ng-deep required: Material icon-button does not expose a theming API token for
+   display/line-height/alignment. mat.icon-button-overrides() covers color tokens only. */
 :host ::ng-deep mat-toolbar .mat-mdc-icon-button {
 	line-height: 1;
 	display: inline-flex;

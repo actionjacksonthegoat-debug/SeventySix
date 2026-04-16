@@ -109,17 +109,9 @@ public static class DataProtectionExtensions
 		IConfiguration configuration,
 		IWebHostEnvironment environment)
 	{
-		services.AddSingleton<
-			IValidator<DataProtectionSettings>,
-			DataProtectionSettingsValidator>();
-
-		services
-			.AddOptions<DataProtectionSettings>()
-			.Bind(
-				configuration.GetSection(
-					DataProtectionSettings.SectionName))
-			.ValidateWithFluentValidation()
-			.ValidateOnStart();
+		services.AddDomainSettings<DataProtectionSettings, DataProtectionSettingsValidator>(
+			configuration,
+			DataProtectionSettings.SectionName);
 
 		DataProtectionSettings? boundOptions =
 			configuration

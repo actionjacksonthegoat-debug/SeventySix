@@ -67,20 +67,13 @@ public static class BackgroundJobRegistration
 		// Note: Identity-related settings (RefreshTokenCleanup, IpAnonymization) are registered
 		// via IdentityRegistration.AddIdentityDomain()
 		// Note: EmailQueueSettings is registered via ElectronicNotificationsRegistration (single registration point)
-		services.AddSingleton<IValidator<LogCleanupSettings>, LogCleanupSettingsValidator>();
-		services.AddSingleton<IValidator<DatabaseMaintenanceSettings>, DatabaseMaintenanceSettingsValidator>();
+		services.AddDomainSettings<LogCleanupSettings, LogCleanupSettingsValidator>(
+			configuration,
+			LogCleanupSettings.SectionName);
 
-		services
-			.AddOptions<LogCleanupSettings>()
-			.Bind(configuration.GetSection(LogCleanupSettings.SectionName))
-			.ValidateWithFluentValidation()
-			.ValidateOnStart();
-
-		services
-			.AddOptions<DatabaseMaintenanceSettings>()
-			.Bind(configuration.GetSection(DatabaseMaintenanceSettings.SectionName))
-			.ValidateWithFluentValidation()
-			.ValidateOnStart();
+		services.AddDomainSettings<DatabaseMaintenanceSettings, DatabaseMaintenanceSettingsValidator>(
+			configuration,
+			DatabaseMaintenanceSettings.SectionName);
 
 		// Skip background job execution if disabled (e.g., in Test environment)
 		bool isBackgroundJobsEnabled =

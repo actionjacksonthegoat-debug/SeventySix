@@ -116,7 +116,11 @@ export const productVariants =
 			printfulSyncVariantId: text("printful_sync_variant_id"),
 			isAvailable: boolean("is_available")
 				.notNull()
-				.default(true)
+				.default(true),
+			stockLevel: integer("stock_level"),
+			lowStockThreshold: integer("low_stock_threshold")
+				.notNull()
+				.default(5)
 		});
 
 /** Anonymous cart sessions. */
@@ -194,6 +198,10 @@ export const orders =
 			shippingName: text("shipping_name"),
 			trackingUrl: text("tracking_url"),
 			printfulOrderId: text("printful_order_id"),
+			fulfillmentChannel: text("fulfillment_channel")
+				.notNull()
+				.default("printful"),
+			shippingProvider: text("shipping_provider"),
 			createdAt: timestamp("created_at",
 				{ withTimezone: true })
 				.notNull()

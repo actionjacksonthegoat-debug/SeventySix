@@ -9,7 +9,6 @@ using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using SeventySix.Api.Infrastructure;
@@ -40,29 +39,19 @@ public sealed class GlobalExceptionHandlerTests
 			.Build();
 
 	/// <summary>
-	/// Creates a <see cref="GlobalExceptionHandler"/> wired to a production-like
-	/// (non-development) host environment by default.
+	/// Creates a <see cref="GlobalExceptionHandler"/> wired to the shared
+	/// configuration and a substitute logger.
 	/// </summary>
-	/// <param name="isDevelopment">
-	/// Whether the host environment should report as Development.
-	/// </param>
 	/// <returns>
 	/// A configured handler instance.
 	/// </returns>
-	private GlobalExceptionHandler CreateHandler(bool isDevelopment = false)
+	private GlobalExceptionHandler CreateHandler()
 	{
 		ILogger<GlobalExceptionHandler> logger =
 			Substitute.For<ILogger<GlobalExceptionHandler>>();
 
-		IHostEnvironment environment =
-			Substitute.For<IHostEnvironment>();
-
-		environment.EnvironmentName.Returns(
-			isDevelopment ? Environments.Development : Environments.Production);
-
 		return new GlobalExceptionHandler(
 			logger,
-			environment,
 			Configuration);
 	}
 
@@ -198,11 +187,11 @@ public sealed class GlobalExceptionHandlerTests
 	}
 
 	[Fact]
-	public async Task UnhandledException_InProduction_Returns500_WithoutExceptionMessageAsync()
+	public async Task UnhandledException_Returns500_WithSafeConstantDetailAsync()
 	{
 		// Arrange
 		GlobalExceptionHandler handler =
-			CreateHandler(isDevelopment: false);
+			CreateHandler();
 
 		InvalidOperationException exception =
 			new("Connection string 'DefaultConnection' not found.");
@@ -216,7 +205,7 @@ public sealed class GlobalExceptionHandlerTests
 		string serverErrorDetail =
 			problem.Detail.ShouldNotBeNull();
 		serverErrorDetail.ShouldNotContain("Connection string");
-		serverErrorDetail.ShouldBe("An error occurred processing your request.");
+		serverErrorDetail.ShouldBe(ProblemDetailConstants.Details.InternalServerError);
 	}
 
 	[Fact]

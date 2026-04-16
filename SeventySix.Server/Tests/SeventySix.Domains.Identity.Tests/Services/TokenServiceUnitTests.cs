@@ -30,6 +30,9 @@ public sealed class TokenServiceUnitTests
 	private readonly IOptions<JwtSettings> JwtOptions;
 	private readonly IOptions<AuthSettings> AuthOptions;
 	private readonly FakeTimeProvider TimeProvider;
+	private readonly TokenGenerationService TokenGeneration;
+	private readonly SessionManagementService SessionManagement;
+	private readonly TokenRevocationService TokenRevocation;
 	private readonly TokenService Service;
 
 	public TokenServiceUnitTests()
@@ -58,8 +61,27 @@ public sealed class TokenServiceUnitTests
 		TimeProvider =
 			new FakeTimeProvider(FixedTime);
 
+		SessionManagement =
+			new SessionManagementService(
+			TokenRepository,
+			AuthOptions);
+
+		TokenGeneration =
+			new TokenGenerationService(
+			TokenRepository,
+			SessionManagement,
+			JwtOptions,
+			TimeProvider);
+
+		TokenRevocation =
+			new TokenRevocationService(
+			TokenRepository,
+			TimeProvider);
+
 		Service =
 			new TokenService(
+			TokenGeneration,
+			TokenRevocation,
 			TokenRepository,
 			JwtOptions,
 			AuthOptions,
