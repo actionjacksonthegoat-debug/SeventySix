@@ -10,6 +10,7 @@
 [![PWA](https://img.shields.io/badge/PWA-enabled-5A0FC8?logo=pwa&logoColor=white)](https://web.dev/progressive-web-apps/)
 [![OpenTelemetry](https://img.shields.io/badge/OpenTelemetry-enabled-425CC7?logo=opentelemetry&logoColor=white)](https://opentelemetry.io)
 [![DAST](https://github.com/actionjacksonthegoat-debug/SeventySix/actions/workflows/dast.yml/badge.svg)](https://github.com/actionjacksonthegoat-debug/SeventySix/actions/workflows/dast.yml)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/actionjacksonthegoat-debug/SeventySix/badge)](https://scorecard.dev/viewer/?uri=github.com/actionjacksonthegoat-debug/SeventySix)
 [![WCAG 2.2 AA](https://img.shields.io/badge/WCAG_2.2-AA_Compliant-0078D4)](https://www.w3.org/TR/WCAG22/)
 
 This site has been deployed to production - You can try it here at [SeventySix](https://seventysixsandbox.com/). Logged in users will be given access to the development and style-guide page.
@@ -17,6 +18,7 @@ This site has been deployed to production - You can try it here at [SeventySix](
 Disclaimer: This document was validated on 3/10/26. I plan on revisiting this with each new .Net and Angular release so this should stay up to date. This is V1 and there are no more planned features, I plan on forking off of this myself with a private branch and seeing where I can go with it also.
 
 Try it in Codespace first (Green 'Code' dropdown at the top of this page):
+
 - Copilot's first months worth of requests are free on a trial, I prefer Sonnet and Opus. You can get a ton done in a month.
 - Github's free account allows 120 hours of codespace and the Dev Container created in Codespace is 4 cores and 16gb ram matching production.
 
@@ -25,14 +27,17 @@ Try it in Codespace first (Green 'Code' dropdown at the top of this page):
 <video src="https://github.com/actionjacksonthegoat-debug/SeventySix/releases/download/media-assets/Site_Walkthrough_SeventySix.mp4](https://github.com/user-attachments/assets/dfac2b4a-33e6-4de1-a6f7-6da7cf0c5c78" controls width="100%"></video>
 
 ## Start Developing in 10 Minutes
+
 Download the branch locally and install there with the following two commands or run in a CodeSpace (Code Dropdown at the top of this page) - Be online as the site admin and coding in 10 Minutes (Even from your phone).
 
 ### `npm run bootstrap` - Environment Initialization, Skippable feature prompts with solid defaults
+
 Install it all or just the admin password, postgre password, and altcha password for the minimal version - build what you want to start with
 
 <video src="https://github.com/user-attachments/assets/d1a98168-96bd-4f83-9e7f-b95f631820e9" controls width="100%"></video>
 
-### `npm run start`, new VSCode terminal `npm run start:client` - Spin up the full Docker Container, run and login as admin with your set user password from the prompt above. Enjoy.
+### `npm run start`, new VSCode terminal `npm run start:client` - Spin up the full Docker Container, run and login as admin with your set user password from the prompt above. Enjoy
+
 When you know you want to move forward - I recommend installing all extensions and MCPs (Toast in the bottom right of VSCode),  accepting all github profile permissions in the bottom left of VSCode (Github user link, Microsoft Link), and clicking the Finish Setup (Copilot) and clicking Use AI Features in the bottom right corner in the VS Code footer ribbon.
 
 <video src="https://github.com/user-attachments/assets/d1d9f7dd-3bab-4d70-9229-3777ace98d59" controls width="100%"></video>
@@ -102,6 +107,7 @@ For the full step-by-step manual setup, see [Startup Instructions](docs/Startup-
 ## Key Features
 
 ### Security
+
 - **.NET Core Identity** with Argon2 password hashing and JWT bearer tokens
 - **Altcha proof-of-work CAPTCHA** on all public forms (no third-party tracking)
 - **Multi-factor authentication** via TOTP authenticator apps with backup codes
@@ -112,6 +118,7 @@ For the full step-by-step manual setup, see [Startup Instructions](docs/Startup-
 - **DAST scanning** via OWASP ZAP baseline scan on every push to master and weekly schedule
 
 ### Observability
+
 - **End-to-end OpenTelemetry traces** from browser through API to database (exported to Jaeger)
 - **Prometheus metrics** with pre-provisioned Grafana dashboards for system, API, and cache monitoring
 - **Structured logging** via Serilog with correlation IDs linking logs to distributed traces
@@ -119,12 +126,14 @@ For the full step-by-step manual setup, see [Startup Instructions](docs/Startup-
 - **All observability UIs** served via HTTPS through nginx reverse proxy
 
 ### Testing
+
 - **Server tests**: xUnit with NSubstitute and Shouldly, architecture enforcement via custom Roslyn analyzers
 - **Client tests**: Vitest unit tests with domain isolation validation and web-vitals benchmarks
 - **E2E tests**: Playwright with role-based fixtures (public, authenticated, admin, developer) and axe-core WCAG 2.2 AA scanning
 - **Load tests**: k6 with multiple profiles (quick, smoke, load, stress), Docker-isolated environment, HTML summary reports
 
 ### Development Workflow
+
 - **AI-assisted tooling** with Copilot prompts, auto-applied instruction files, and MCP server integrations (GitHub, PostgreSQL, Chrome DevTools, context7)
 - **Structured plan execution** via `/create-plan` → `/review-plan` → `/execute-plan` workflow
 - **npm script orchestration** for lifecycle management: `npm start` (full stack), `npm stop` (teardown), `npm test` (all suites), `npm run format` (all code)
@@ -134,6 +143,7 @@ For the full step-by-step manual setup, see [Startup Instructions](docs/Startup-
 ## Architecture
 
 ### Server (.NET 10)
+
 Clean Architecture with strict dependency flow: `Shared ← Domains ← Api`
 
 - **Bounded contexts**: Identity, Logging, ApiTracking, ElectronicNotifications — each owns its schema, migrations, and `DbContext`
@@ -141,6 +151,7 @@ Clean Architecture with strict dependency flow: `Shared ← Domains ← Api`
 - **Patterns**: DDD + Hexagonal + Vertical Slices in a modular monolith (ready to extract domains as microservices)
 
 ### Client (Angular 21)
+
 Domain-driven modules with enforced isolation via architecture tests
 
 - **Domain modules**: admin, auth, account, developer, home, sandbox — each imports only `@shared/*` and itself, never cross-domain
@@ -148,12 +159,14 @@ Domain-driven modules with enforced isolation via architecture tests
 - **State management**: TanStack Query for server state with coordinated cache invalidation
 
 ### Infrastructure
+
 - **Databases**: PostgreSQL (primary) + Valkey (Redis-compatible distributed cache)
 - **Observability**: Jaeger (traces), Prometheus (metrics), Grafana (dashboards), OpenTelemetry Collector (pipeline)
 - **Security**: Cloudflare WAF, .NET rate limiting, nginx TLS termination
 - **Management UIs**: pgAdmin (database), RedisInsight (cache), Scalar (API docs in dev mode)
 
 ### Quality Gates
+
 - **Code formatting**: `npm run format` runs EditorConfig, ESLint (with custom rules), dprint, and `dotnet format` across all code
 - **CI/CD**: GitHub Actions enforce zero build warnings, test passage (server, client, E2E, load), and lint compliance before merge
 - **Architecture tests**: Automated enforcement of domain boundaries, method size, parameter counts, and variable length
@@ -1028,6 +1041,7 @@ Everything is free except transactional email:
 | **Brevo HTTP API** | **Free tier** | **300 emails/day** — sufficient for development and small production |
 
 ### Third Party Api Tracking Domain
+
 The `ApiTracking` domain provides cost breakpoint visibility — this is used to monitor third-party API usage and set alerts ot completely block calls before hitting paid tiers. In the case of the Brevo HTTP API, the email queue system will stop sending emails as soon as 250 emails are sent in a 24 hour period, so the site should never accidentally go over limits.
 
 In this case, we back off of checking emails for 30 minute chunks as a fail-fast option once the rate limit is hit, then when 24 hours at midnight local have passed this will process the queued emails, allowing heavier load handling without adding cost.
@@ -1205,6 +1219,7 @@ All four suites must pass before any work is considered complete:
 See [docs/Deployment.md](docs/Deployment.md) for the complete production deployment guide.
 
 **Quick summary:**
+
 - **Target:** Hetzner CCX23 (4 dedicated AMD vCPU / 16 GB) @ US West Hillsboro + Cloudflare free
 - **Cost:** ~$35/month (server $28.99 + backups $5.80, 2 TB traffic included)
 - **Deploy:** Push to master → CI tests → images publish to GHCR → CD deploys via SSH

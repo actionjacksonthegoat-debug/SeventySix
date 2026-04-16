@@ -6,12 +6,14 @@ on:
         paths:
             - "ECommerce/seventysixcommerce-tanstack/**"
             - "ECommerce/seventysixcommerce-sveltekit/**"
+            - "ECommerce/seventysixcommerce-shared/**"
             - ".github/workflows/seventysixcommerce-ci.yml"
     pull_request:
         branches: [master]
         paths:
             - "ECommerce/seventysixcommerce-tanstack/**"
             - "ECommerce/seventysixcommerce-sveltekit/**"
+            - "ECommerce/seventysixcommerce-shared/**"
             - ".github/workflows/seventysixcommerce-ci.yml"
     workflow_dispatch:
 
@@ -32,6 +34,7 @@ jobs:
     tanstack-build:
         name: TanStack Build & Test
         runs-on: ubuntu-latest
+        timeout-minutes: 30
 
         defaults:
             run:
@@ -89,7 +92,7 @@ jobs:
                   token: ${{ secrets.CODECOV_TOKEN }}
                   flags: seventysixcommerce-tanstack
                   directory: ECommerce/seventysixcommerce-tanstack/coverage
-                  fail_ci_if_error: false
+                  fail_ci_if_error: true
 
     # ──────────────────────────────────────────────────────────
     # Stage 1: SvelteKit — Check + Test + Build
@@ -97,6 +100,7 @@ jobs:
     sveltekit-build:
         name: SvelteKit Build & Test
         runs-on: ubuntu-latest
+        timeout-minutes: 30
 
         defaults:
             run:
@@ -156,7 +160,7 @@ jobs:
                   token: ${{ secrets.CODECOV_TOKEN }}
                   flags: seventysixcommerce-sveltekit
                   directory: ECommerce/seventysixcommerce-sveltekit/coverage
-                  fail_ci_if_error: false
+                  fail_ci_if_error: true
 
     # ──────────────────────────────────────────────────────────
     # Stage 2: SvelteKit E2E Tests
@@ -164,6 +168,7 @@ jobs:
     e2e-sveltekit:
         name: SvelteKit E2E Tests
         runs-on: ubuntu-latest
+        timeout-minutes: 30
         needs: [sveltekit-build]
 
         defaults:
@@ -242,7 +247,7 @@ jobs:
                   CI: "true"
 
             - name: Upload Playwright report
-              uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4
+              uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
               if: always()
               with:
                   name: sveltekit-playwright-report
@@ -255,6 +260,7 @@ jobs:
     e2e-tanstack:
         name: TanStack E2E Tests
         runs-on: ubuntu-latest
+        timeout-minutes: 30
         needs: [tanstack-build]
 
         defaults:
@@ -353,7 +359,7 @@ jobs:
                   CI: "true"
 
             - name: Upload Playwright report
-              uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4
+              uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
               if: always()
               with:
                   name: tanstack-playwright-report
@@ -366,6 +372,7 @@ jobs:
     loadtest-sveltekit:
         name: SvelteKit Load Tests
         runs-on: ubuntu-latest
+        timeout-minutes: 30
         needs: [sveltekit-build]
 
         defaults:
@@ -446,7 +453,7 @@ jobs:
               run: |
                   for scenario in load-testing/scenarios/**/*.test.js; do
                       echo "Running: $scenario"
-                      k6 run --config load-testing/config/quick.json "$scenario" || true
+                      k6 run --config load-testing/config/quick.json "$scenario"
                   done
 
     # ──────────────────────────────────────────────────────────
@@ -455,6 +462,7 @@ jobs:
     loadtest-tanstack:
         name: TanStack Load Tests
         runs-on: ubuntu-latest
+        timeout-minutes: 30
         needs: [tanstack-build]
 
         defaults:
@@ -555,7 +563,7 @@ jobs:
               run: |
                   for scenario in load-testing/scenarios/**/*.test.js; do
                       echo "Running: $scenario"
-                      k6 run --config load-testing/config/quick.json "$scenario" || true
+                      k6 run --config load-testing/config/quick.json "$scenario"
                   done
 
     # ──────────────────────────────────────────────────────────
@@ -571,6 +579,7 @@ jobs:
         name: SeventySixCommerce Quality Gate
         needs: [tanstack-build, sveltekit-build, e2e-sveltekit, e2e-tanstack, loadtest-sveltekit, loadtest-tanstack]
         runs-on: ubuntu-latest
+        timeout-minutes: 5
         if: always()
 
         steps:
@@ -620,6 +629,7 @@ jobs:
         name: Publish SeventySixCommerce Docker Images
         needs: [quality-gate]
         runs-on: ubuntu-latest
+        timeout-minutes: 30
         if: github.ref == 'refs/heads/master' && github.event_name == 'push' && needs.quality-gate.result == 'success'
 
         permissions:

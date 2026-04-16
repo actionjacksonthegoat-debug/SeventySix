@@ -67,22 +67,9 @@ public sealed class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 			tokenRepository,
 			AuthOptions);
 
-		TokenGenerationService tokenGenerationService =
-			new(
+		return new TokenService(
 			tokenRepository,
 			sessionManagementService,
-			JwtOptions,
-			timeProvider);
-
-		TokenRevocationService tokenRevocationService =
-			new(
-			tokenRepository,
-			timeProvider);
-
-		return new TokenService(
-			tokenGenerationService,
-			tokenRevocationService,
-			tokenRepository,
 			JwtOptions,
 			AuthOptions,
 			NullLogger<TokenService>.Instance,
@@ -371,23 +358,10 @@ public sealed class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 			tokenRepository,
 			limitedAuthOptions);
 
-		TokenGenerationService tokenGenerationService =
+		TokenService service =
 			new(
 			tokenRepository,
 			sessionManagementService,
-			JwtOptions,
-			timeProvider);
-
-		TokenRevocationService tokenRevocationService =
-			new(
-			tokenRepository,
-			timeProvider);
-
-		TokenService service =
-			new(
-			tokenGenerationService,
-			tokenRevocationService,
-			tokenRepository,
 			JwtOptions,
 			limitedAuthOptions,
 			NullLogger<TokenService>.Instance,

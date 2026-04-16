@@ -2,25 +2,29 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using SeventySix.Shared.Extensions;
 
 namespace SeventySix.Identity;
 
 /// <summary>
-/// Facade that delegates to focused token services while maintaining backward compatibility.
+/// Handles JWT access token generation, refresh token lifecycle, and token revocation.
 /// </summary>
 /// <remarks>
-/// Delegates to:
-/// - <see cref="ITokenGenerationService"/> for JWT and refresh token creation
-/// - <see cref="ITokenRevocationService"/> for token revocation
-/// Handles token rotation orchestration and validation directly.
+/// Access tokens are stateless JWTs with short expiration.
+/// Refresh tokens are random bytes, SHA256 hashed before storage.
+/// PII (email, fullName) is NOT included in JWT claims for GDPR compliance.
+/// Handles revoking individual tokens, token families (reuse attack response),
+/// and all tokens for a user (logout-all, account compromise response).
 /// </remarks>
 public sealed class TokenService(
-	ITokenGenerationService tokenGenerationService,
-	ITokenRevocationService tokenRevocationService,
 	ITokenRepository tokenRepository,
+	ISessionManagementService sessionManagementService,
 	IOptions<JwtSettings> jwtSettings,
 	IOptions<AuthSettings> authSettings,
 	ILogger<TokenService> logger,
@@ -31,23 +35,92 @@ public sealed class TokenService(
 		long userId,
 		string username,
 		IEnumerable<string> roles,
-		bool requiresPasswordChange = false) =>
-		tokenGenerationService.GenerateAccessToken(
-			userId,
-			username,
-			roles,
-			requiresPasswordChange);
+		bool requiresPasswordChange = false)
+	{
+		List<Claim> claims =
+			[
+				new Claim(
+					JwtRegisteredClaimNames.Sub,
+					userId.ToString()),
+				new Claim(
+					JwtRegisteredClaimNames.UniqueName,
+					username),
+				new Claim(
+					JwtRegisteredClaimNames.Jti,
+					Guid.NewGuid().ToString()),
+				new Claim(
+					JwtRegisteredClaimNames.Iat,
+					timeProvider.GetUtcNow().ToUnixTimeSeconds().ToString(),
+					ClaimValueTypes.Integer64),
+			];
+
+		foreach (string role in roles)
+		{
+			claims.Add(new Claim(ClaimTypes.Role, role));
+		}
+
+		if (requiresPasswordChange)
+		{
+			claims.Add(
+				new Claim(
+					CustomClaimTypes.RequiresPasswordChange,
+					"true"));
+		}
+
+		SymmetricSecurityKey key =
+			new(
+				Encoding.UTF8.GetBytes(jwtSettings.Value.SecretKey));
+
+		SigningCredentials credentials =
+			new(
+				key,
+				SecurityAlgorithms.HmacSha256);
+
+		DateTimeOffset expires =
+			timeProvider.GetUtcNow().AddMinutes(
+				jwtSettings.Value.AccessTokenExpirationMinutes);
+
+		JwtSecurityToken token =
+			new(
+				issuer: jwtSettings.Value.Issuer,
+				audience: jwtSettings.Value.Audience,
+				claims: claims,
+				expires: expires.UtcDateTime,
+				signingCredentials: credentials);
+
+		return new JwtSecurityTokenHandler().WriteToken(token);
+	}
 
 	/// <inheritdoc/>
 	public async Task<string> GenerateRefreshTokenAsync(
 		long userId,
 		bool rememberMe = false,
-		CancellationToken cancellationToken = default) =>
-		await tokenGenerationService.GenerateRefreshTokenAsync(
+		CancellationToken cancellationToken = default)
+	{
+		return await GenerateRefreshTokenWithFamilyAsync(
 			userId,
 			rememberMe,
+			familyId: Guid.NewGuid(),
+			sessionStartedAt: null,
 			cancellationToken);
+	}
 
+	/// <inheritdoc/>
+	public async Task<long?> ValidateRefreshTokenAsync(
+		string refreshToken,
+		CancellationToken cancellationToken = default)
+	{
+		string tokenHash =
+			CryptoExtensions.ComputeSha256Hash(refreshToken);
+
+		DateTimeOffset now =
+			timeProvider.GetUtcNow();
+
+		return await tokenRepository.ValidateTokenAsync(
+			tokenHash,
+			now,
+			cancellationToken);
+	}
 
 	/// <inheritdoc/>
 	public async Task<(string? Token, bool RememberMe)> RotateRefreshTokenAsync(
@@ -137,7 +210,7 @@ public sealed class TokenService(
 
 		// Generate new token inheriting the family and session start
 		string newToken =
-			await tokenGenerationService.GenerateRefreshTokenWithFamilyAsync(
+			await GenerateRefreshTokenWithFamilyAsync(
 				existingToken.UserId,
 				rememberMe,
 				existingToken.FamilyId,
@@ -148,7 +221,7 @@ public sealed class TokenService(
 	}
 
 	/// <inheritdoc/>
-	public async Task<long?> ValidateRefreshTokenAsync(
+	public async Task<bool> RevokeRefreshTokenAsync(
 		string refreshToken,
 		CancellationToken cancellationToken = default)
 	{
@@ -158,25 +231,92 @@ public sealed class TokenService(
 		DateTimeOffset now =
 			timeProvider.GetUtcNow();
 
-		return await tokenRepository.ValidateTokenAsync(
+		return await tokenRepository.RevokeByHashAsync(
 			tokenHash,
 			now,
 			cancellationToken);
 	}
 
 	/// <inheritdoc/>
-	public async Task<bool> RevokeRefreshTokenAsync(
-		string refreshToken,
-		CancellationToken cancellationToken = default) =>
-		await tokenRevocationService.RevokeRefreshTokenAsync(
-			refreshToken,
-			cancellationToken);
-
-	/// <inheritdoc/>
 	public async Task<int> RevokeAllUserTokensAsync(
 		long userId,
-		CancellationToken cancellationToken = default) =>
-		await tokenRevocationService.RevokeAllUserTokensAsync(
+		CancellationToken cancellationToken = default)
+	{
+		DateTimeOffset now =
+			timeProvider.GetUtcNow();
+
+		return await tokenRepository.RevokeAllUserTokensAsync(
 			userId,
+			now,
 			cancellationToken);
+	}
+
+	/// <summary>
+	/// Generates a new refresh token inheriting an existing token family.
+	/// Used during token rotation to maintain family tracking for reuse detection.
+	/// </summary>
+	/// <param name="userId">
+	/// The user's ID.
+	/// </param>
+	/// <param name="rememberMe">
+	/// Whether to extend refresh token expiration.
+	/// </param>
+	/// <param name="familyId">
+	/// The token family GUID to inherit.
+	/// </param>
+	/// <param name="sessionStartedAt">
+	/// Optional session start timestamp for absolute timeout tracking.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// The plaintext refresh token (hash stored in database).
+	/// </returns>
+	private async Task<string> GenerateRefreshTokenWithFamilyAsync(
+		long userId,
+		bool rememberMe,
+		Guid familyId,
+		DateTimeOffset? sessionStartedAt = null,
+		CancellationToken cancellationToken = default)
+	{
+		DateTimeOffset now =
+			timeProvider.GetUtcNow();
+
+		// Enforce session limit - revoke oldest if at max
+		await sessionManagementService.EnforceSessionLimitAsync(
+			userId,
+			now,
+			cancellationToken);
+
+		// Generate cryptographically secure random token using shared utility
+		string plainTextToken =
+			CryptoExtensions.GenerateSecureToken();
+
+		string tokenHash =
+			CryptoExtensions.ComputeSha256Hash(plainTextToken);
+
+		int expirationDays =
+			rememberMe
+			? jwtSettings.Value.RefreshTokenRememberMeExpirationDays
+			: jwtSettings.Value.RefreshTokenExpirationDays;
+
+		RefreshToken refreshToken =
+			new()
+			{
+				TokenHash = tokenHash,
+				UserId = userId,
+				FamilyId = familyId,
+				ExpiresAt =
+					now.AddDays(expirationDays),
+				SessionStartedAt =
+					sessionStartedAt ?? now,
+				CreateDate = now,
+				IsRevoked = false,
+			};
+
+		await tokenRepository.CreateAsync(refreshToken, cancellationToken);
+
+		return plainTextToken;
+	}
 }

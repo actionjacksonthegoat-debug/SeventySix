@@ -24,6 +24,7 @@ jobs:
     client-build:
         name: Client Build & Test
         runs-on: ubuntu-latest
+        timeout-minutes: 30
 
         defaults:
             run:
@@ -71,6 +72,7 @@ jobs:
     server-build:
         name: Server Build & Test
         runs-on: ubuntu-latest
+        timeout-minutes: 30
         # NOTE: Server tests use Testcontainers (requires Docker).
         # ubuntu-latest includes Docker by default.
 
@@ -138,6 +140,7 @@ jobs:
         name: E2E Tests
         needs: [client-build, server-build]
         runs-on: ubuntu-latest
+        timeout-minutes: 45
         # NOTE: E2E tests use Docker Compose for infrastructure (database, cache, API, client).
         # ubuntu-latest includes Docker and Docker Compose by default.
         # Playwright runs on the host against Dockerized services.
@@ -218,6 +221,7 @@ jobs:
         name: Load Tests
         needs: [client-build, server-build]
         runs-on: ubuntu-latest
+        timeout-minutes: 45
         # NOTE: Load tests use Docker Compose for infrastructure + k6 on the host.
         # ubuntu-latest includes Docker and Docker Compose by default.
 
@@ -287,6 +291,7 @@ jobs:
         name: Quality Gate
         needs: [client-build, server-build, e2e, load-test]
         runs-on: ubuntu-latest
+        timeout-minutes: 5
         if: always()
 
         steps:
@@ -341,6 +346,7 @@ jobs:
         name: Publish Docker Images
         needs: [quality-gate]
         runs-on: ubuntu-latest
+        timeout-minutes: 30
         if: github.ref == 'refs/heads/master' && github.event_name == 'push' && needs.quality-gate.result == 'success'
 
         permissions:

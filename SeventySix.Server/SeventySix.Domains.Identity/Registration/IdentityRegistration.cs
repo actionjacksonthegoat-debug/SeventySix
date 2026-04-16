@@ -219,9 +219,7 @@ public static class IdentityRegistration
 		// Security audit logging service
 		services.AddScoped<ISecurityAuditService, SecurityAuditService>();
 
-		services.AddScoped<ITokenGenerationService, TokenGenerationService>();
 		services.AddScoped<ISessionManagementService, SessionManagementService>();
-		services.AddScoped<ITokenRevocationService, TokenRevocationService>();
 		services.AddScoped<ITokenService, TokenService>();
 		services.AddScoped<AuthenticationService>();
 		services.AddScoped<IMfaService, MfaService>();

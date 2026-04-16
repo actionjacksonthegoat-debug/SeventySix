@@ -7,6 +7,7 @@ using System.Net.Sockets;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NSubstitute;
+using NSubstitute.ExceptionExtensions;
 using SeventySix.ElectronicNotifications.Emails;
 using SeventySix.Shared.Constants;
 using SeventySix.Shared.Contracts.Emails;
@@ -722,6 +723,190 @@ public sealed class EmailServiceTests
 	}
 
 	/// <summary>
+	/// Verifies that when an HttpClient timeout occurs (TaskCanceledException not from caller),
+	/// the service releases the rate limit slot.
+	/// </summary>
+	[Fact]
+	public async Task SendEmailAsync_HttpClientTimeout_ReleasesRateLimitSlotAsync()
+	{
+		// Arrange
+		IOptions<EmailSettings> options =
+			CreateOptions(enabled: true);
+
+		IRateLimitingService rateLimiterMock =
+			Substitute.For<IRateLimitingService>();
+
+		rateLimiterMock
+			.TryIncrementRequestCountAsync(
+				ExternalApiConstants.BrevoEmail,
+				Arg.Any<string>(),
+				Arg.Any<CancellationToken>())
+			.Returns(true);
+
+		using MockHttpMessageHandler handler =
+			new(
+				(request, cancellationToken) =>
+					throw new TaskCanceledException(
+						"The request was canceled due to the configured HttpClient.Timeout."));
+
+		using HttpClient httpClient =
+			new(handler) { BaseAddress = BrevoBaseAddress };
+		IHttpClientFactory httpClientFactory =
+			CreateMockHttpClientFactory(httpClient);
+
+		EmailService service =
+			new(
+				options,
+				rateLimiterMock,
+				httpClientFactory,
+				Logger);
+
+		// Act
+		await Should.ThrowAsync<TaskCanceledException>(() =>
+			service.SendEmailAsync(
+				EmailTypeConstants.Welcome,
+				"test@example.com",
+				new Dictionary<string, string>
+				{
+					["username"] = "testuser",
+					["resetToken"] = "token123",
+				},
+				CancellationToken.None));
+
+		// Assert — TryDecrementRequestCountAsync was called to release the slot
+		await rateLimiterMock
+			.Received(1)
+			.TryDecrementRequestCountAsync(
+				ExternalApiConstants.BrevoEmail,
+				Arg.Any<CancellationToken>());
+	}
+
+	/// <summary>
+	/// Verifies that when a connection failure occurs and subsequent slot release also fails,
+	/// the original HttpRequestException still propagates and a warning is logged.
+	/// </summary>
+	[Fact]
+	public async Task SendEmailAsync_ConnectionFailure_LogsWarning_WhenSlotReleaseFailsAsync()
+	{
+		// Arrange
+		IOptions<EmailSettings> options =
+			CreateOptions(enabled: true);
+
+		IRateLimitingService rateLimiterMock =
+			Substitute.For<IRateLimitingService>();
+
+		rateLimiterMock
+			.TryIncrementRequestCountAsync(
+				ExternalApiConstants.BrevoEmail,
+				Arg.Any<string>(),
+				Arg.Any<CancellationToken>())
+			.Returns(true);
+
+		rateLimiterMock
+			.TryDecrementRequestCountAsync(
+				ExternalApiConstants.BrevoEmail,
+				Arg.Any<CancellationToken>())
+			.ThrowsAsync(new InvalidOperationException("Rate limit store unavailable"));
+
+		using MockHttpMessageHandler handler =
+			new(
+				(request, cancellationToken) =>
+					throw new HttpRequestException(
+						HttpRequestError.ConnectionError,
+						"Connection refused",
+						new SocketException()));
+
+		using HttpClient httpClient =
+			new(handler) { BaseAddress = BrevoBaseAddress };
+		IHttpClientFactory httpClientFactory =
+			CreateMockHttpClientFactory(httpClient);
+
+		EmailService service =
+			new(
+				options,
+				rateLimiterMock,
+				httpClientFactory,
+				Logger);
+
+		// Act — original exception should still propagate
+		await Should.ThrowAsync<HttpRequestException>(() =>
+			service.SendEmailAsync(
+				EmailTypeConstants.Welcome,
+				"test@example.com",
+				new Dictionary<string, string>
+				{
+					["username"] = "testuser",
+					["resetToken"] = "token123",
+				},
+				CancellationToken.None));
+
+		// Assert — decrement was attempted
+		await rateLimiterMock
+			.Received(1)
+			.TryDecrementRequestCountAsync(
+				ExternalApiConstants.BrevoEmail,
+				Arg.Any<CancellationToken>());
+	}
+
+	/// <summary>
+	/// Verifies that when Brevo returns 429 without the x-sib-ratelimit-reset header,
+	/// the default 60-second reset value is used.
+	/// </summary>
+	[Fact]
+	public async Task SendEmailAsync_BrevoReturns429_UsesDefaultResetSeconds_WhenHeaderMissingAsync()
+	{
+		// Arrange
+		IOptions<EmailSettings> options =
+			CreateOptions(enabled: true);
+
+		IRateLimitingService rateLimiterMock =
+			Substitute.For<IRateLimitingService>();
+
+		rateLimiterMock
+			.TryIncrementRequestCountAsync(
+				ExternalApiConstants.BrevoEmail,
+				Arg.Any<string>(),
+				Arg.Any<CancellationToken>())
+			.Returns(true);
+
+		using HttpResponseMessage tooManyResponse =
+			new(HttpStatusCode.TooManyRequests);
+		// Intentionally NOT adding x-sib-ratelimit-reset header
+
+		using MockHttpMessageHandler handler =
+			new(
+				(request, cancellationToken) =>
+					Task.FromResult(tooManyResponse));
+
+		using HttpClient httpClient =
+			new(handler) { BaseAddress = BrevoBaseAddress };
+		IHttpClientFactory httpClientFactory =
+			CreateMockHttpClientFactory(httpClient);
+
+		EmailService service =
+			new(
+				options,
+				rateLimiterMock,
+				httpClientFactory,
+				Logger);
+
+		// Act & Assert
+		EmailRateLimitException exception =
+			await Should.ThrowAsync<EmailRateLimitException>(() =>
+				service.SendEmailAsync(
+					EmailTypeConstants.Welcome,
+					"test@example.com",
+					new Dictionary<string, string>
+					{
+						["username"] = "testuser",
+						["resetToken"] = "token123",
+					},
+					CancellationToken.None));
+
+		exception.TimeUntilReset.ShouldBe(TimeSpan.FromSeconds(60));
+	}
+
+	/// <summary>
 	/// Verifies that a successful Brevo API call (201 Created) completes
 	/// without exceptions and the rate limit slot stays consumed.
 	/// </summary>
@@ -775,6 +960,167 @@ public sealed class EmailServiceTests
 			.TryDecrementRequestCountAsync(
 				Arg.Any<string>(),
 				Arg.Any<CancellationToken>());
+	}
+
+	#endregion
+
+	#region SendEmailAsync Verification + MFA Tests
+
+	/// <summary>
+	/// Verifies that SendEmailAsync logs the email instead of sending when disabled
+	/// for Verification and MfaVerification email types.
+	/// </summary>
+	[Theory]
+	[InlineData(EmailTypeConstants.Verification)]
+	[InlineData(EmailTypeConstants.MfaVerification)]
+	public async Task SendEmailAsync_LogsEmail_WhenDisabledAsync(string emailType)
+	{
+		// Arrange
+		IOptions<EmailSettings> options =
+			CreateOptions(enabled: false);
+		(MockHttpMessageHandler handlerValue, HttpResponseMessage responseValue) =
+			CreateSuccessHandler();
+		using MockHttpMessageHandler handler = handlerValue;
+		using HttpResponseMessage successResponse = responseValue;
+		using HttpClient httpClient =
+			new(handler) { BaseAddress = BrevoBaseAddress };
+		IHttpClientFactory httpClientFactory =
+			CreateMockHttpClientFactory(httpClient);
+		EmailService service =
+			new(
+				options,
+				RateLimitingService,
+				httpClientFactory,
+				Logger);
+
+		Dictionary<string, string> templateData =
+			emailType == EmailTypeConstants.Verification
+				? new Dictionary<string, string>
+				{
+					["verificationToken"] = "verify-token-123",
+				}
+				: new Dictionary<string, string>
+				{
+					["code"] = "123456",
+					["expirationMinutes"] = "5",
+				};
+
+		// Act
+		await service.SendEmailAsync(
+			emailType,
+			"user@example.com",
+			templateData,
+			CancellationToken.None);
+
+		// Assert - should log but not throw
+		Logger.ReceivedWithAnyArgs(1).LogWarning(default!);
+	}
+
+	/// <summary>
+	/// Verifies that Verification and MfaVerification email types complete successfully
+	/// when Brevo returns 201 Created.
+	/// </summary>
+	[Theory]
+	[InlineData(EmailTypeConstants.Verification)]
+	[InlineData(EmailTypeConstants.MfaVerification)]
+	public async Task SendEmailAsync_BrevoReturns201_CompletesSuccessfully_ForEmailTypeAsync(
+		string emailType)
+	{
+		// Arrange
+		IOptions<EmailSettings> options =
+			CreateOptions(enabled: true);
+
+		IRateLimitingService rateLimiterMock =
+			Substitute.For<IRateLimitingService>();
+
+		rateLimiterMock
+			.TryIncrementRequestCountAsync(
+				ExternalApiConstants.BrevoEmail,
+				Arg.Any<string>(),
+				Arg.Any<CancellationToken>())
+			.Returns(true);
+
+		(MockHttpMessageHandler handlerValue, HttpResponseMessage responseValue) =
+			CreateSuccessHandler();
+		using MockHttpMessageHandler handler = handlerValue;
+		using HttpResponseMessage successResponse = responseValue;
+		using HttpClient httpClient =
+			new(handler) { BaseAddress = BrevoBaseAddress };
+		IHttpClientFactory httpClientFactory =
+			CreateMockHttpClientFactory(httpClient);
+
+		EmailService service =
+			new(
+				options,
+				rateLimiterMock,
+				httpClientFactory,
+				Logger);
+
+		Dictionary<string, string> templateData =
+			emailType == EmailTypeConstants.Verification
+				? new Dictionary<string, string>
+				{
+					["verificationToken"] = "verify-token-123",
+				}
+				: new Dictionary<string, string>
+				{
+					["code"] = "123456",
+					["expirationMinutes"] = "5",
+				};
+
+		// Act — should not throw
+		await service.SendEmailAsync(
+			emailType,
+			"test@example.com",
+			templateData,
+			CancellationToken.None);
+
+		// Assert — slot NOT released (Brevo received the call)
+		await rateLimiterMock
+			.DidNotReceive()
+			.TryDecrementRequestCountAsync(
+				Arg.Any<string>(),
+				Arg.Any<CancellationToken>());
+	}
+
+	/// <summary>
+	/// Verifies that MFA email with an invalid expirationMinutes value uses the default
+	/// fallback of 5 minutes without throwing.
+	/// </summary>
+	[Fact]
+	public async Task SendEmailAsync_MfaVerification_UsesDefaultExpiration_WhenParsingFailsAsync()
+	{
+		// Arrange
+		IOptions<EmailSettings> options =
+			CreateOptions(enabled: false);
+		(MockHttpMessageHandler handlerValue, HttpResponseMessage responseValue) =
+			CreateSuccessHandler();
+		using MockHttpMessageHandler handler = handlerValue;
+		using HttpResponseMessage successResponse = responseValue;
+		using HttpClient httpClient =
+			new(handler) { BaseAddress = BrevoBaseAddress };
+		IHttpClientFactory httpClientFactory =
+			CreateMockHttpClientFactory(httpClient);
+		EmailService service =
+			new(
+				options,
+				RateLimitingService,
+				httpClientFactory,
+				Logger);
+
+		// Act — should not throw even with invalid expirationMinutes
+		await service.SendEmailAsync(
+			EmailTypeConstants.MfaVerification,
+			"user@example.com",
+			new Dictionary<string, string>
+			{
+				["code"] = "123456",
+				["expirationMinutes"] = "invalid",
+			},
+			CancellationToken.None);
+
+		// Assert - logged the email (disabled mode) without exception
+		Logger.ReceivedWithAnyArgs(1).LogWarning(default!);
 	}
 
 	#endregion
