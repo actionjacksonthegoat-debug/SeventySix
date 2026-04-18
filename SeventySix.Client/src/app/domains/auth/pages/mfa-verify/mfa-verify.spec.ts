@@ -111,15 +111,16 @@ describe("MfaVerifyComponent",
 						]
 					});
 
-			fixture =
-				TestBed.createComponent(MfaVerifyComponent);
-			component =
-				fixture.componentInstance;
 			router =
 				TestBed.inject(Router);
 
 			vi.spyOn(router, "navigate");
 			vi.spyOn(router, "navigateByUrl");
+
+			fixture =
+				TestBed.createComponent(MfaVerifyComponent);
+			component =
+				fixture.componentInstance;
 
 			fixture.detectChanges();
 		}

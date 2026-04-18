@@ -169,7 +169,6 @@ public static class IdentityRegistration
 			.AddDefaultTokenProviders();
 
 		// Replace default password hasher with Argon2
-		services.AddSingleton<IPasswordHasher, Argon2PasswordHasherService>();
 		services.AddScoped<
 			IPasswordHasher<ApplicationUser>,
 			IdentityArgon2PasswordHasherService>();
@@ -221,7 +220,7 @@ public static class IdentityRegistration
 
 		services.AddScoped<ISessionManagementService, SessionManagementService>();
 		services.AddScoped<ITokenService, TokenService>();
-		services.AddScoped<AuthenticationService>();
+		services.AddScoped<IAuthenticationService, AuthenticationService>();
 		services.AddScoped<IMfaService, MfaService>();
 		services.AddScoped<IMfaOrchestrator, MfaOrchestrator>();
 		services.AddScoped<ITotpService, TotpService>();
@@ -232,8 +231,12 @@ public static class IdentityRegistration
 		services.AddScoped<IBackupCodeService, BackupCodeService>();
 
 		services.AddScoped<ITrustedDeviceService, TrustedDeviceService>();
+		services.AddScoped<ITrustedDeviceLimitEnforcer, TrustedDeviceLimitEnforcer>();
+		services.AddScoped<ITrustedDeviceRevocationService, TrustedDeviceRevocationService>();
 
-		// MFA brute-force protection — singleton to persist attempt counts across requests
+		// MFA brute-force protection — singleton because the underlying FusionCache is
+		// process-singleton. The tracker is backed by the distributed Identity cache
+		// (memory L1 + Valkey L2) so attempt counts are consistent across replicas.
 		services.AddSingleton<IMfaAttemptTracker, MfaAttemptTracker>();
 
 		// Configure MFA-related settings with FluentValidation + ValidateOnStart

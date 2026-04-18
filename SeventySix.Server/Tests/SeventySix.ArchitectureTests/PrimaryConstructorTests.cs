@@ -44,7 +44,7 @@ public sealed class PrimaryConstructorTests
 		Assembly domainAssembly =
 			typeof(SeventySix.Identity.ApplicationUser).Assembly;
 		Assembly apiAssembly =
-			typeof(SeventySix.Api.Controllers.UsersController).Assembly;
+			typeof(SeventySix.Api.Controllers.UsersQueryController).Assembly;
 
 		List<Type> allProductionTypes = [];
 		allProductionTypes.AddRange(domainAssembly.GetTypes());

@@ -13,7 +13,6 @@ import {
 	effect,
 	EffectRef,
 	inject,
-	OnInit,
 	Signal,
 	signal,
 	WritableSignal
@@ -64,7 +63,7 @@ import { takeUntil } from "rxjs/operators";
  * Component that handles MFA code verification after initial login.
  * Supports email-based MFA, TOTP, and backup code fallback.
  */
-export class MfaVerifyComponent implements OnInit
+export class MfaVerifyComponent
 {
 	/**
 	 * MFA service for verification operations.
@@ -293,10 +292,7 @@ export class MfaVerifyComponent implements OnInit
 	private readonly destroyRef: DestroyRef =
 		inject(DestroyRef);
 
-	/**
-	 * Initialize component: check MFA state, redirect if invalid.
-	 */
-	ngOnInit(): void
+	constructor()
 	{
 		this.mfaState =
 			this.mfaService.getMfaState();

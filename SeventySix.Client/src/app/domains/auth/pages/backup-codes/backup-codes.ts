@@ -10,7 +10,6 @@ import {
 	Component,
 	DestroyRef,
 	inject,
-	OnInit,
 	signal,
 	WritableSignal
 } from "@angular/core";
@@ -51,7 +50,7 @@ const STEP_CONFIRM: number = 3;
  * Component for generating and displaying MFA backup codes.
  * Allows users to copy, print, or download their backup codes.
  */
-export class BackupCodesComponent implements OnInit
+export class BackupCodesComponent
 {
 	/**
 	 * Backup codes service for generation operations.
@@ -170,15 +169,6 @@ export class BackupCodesComponent implements OnInit
 	protected readonly STEP_CODES: number = STEP_CODES;
 	protected readonly STEP_CONFIRM: number = STEP_CONFIRM;
 	protected readonly CODE_COUNT: number = BACKUP_CODE_COUNT;
-
-	/**
-	 * Initializes the component. Does not auto-generate codes.
-	 * @returns {void}
-	 */
-	ngOnInit(): void
-	{
-		// Start at warning step, user must acknowledge before generating
-	}
 
 	/**
 	 * Generates new backup codes after user confirms.

@@ -1,0 +1,32 @@
+# Gitleaks configuration for SeventySix
+# See https://github.com/gitleaks/gitleaks#configuration
+title = "SeventySix gitleaks config"
+
+[extend]
+# Inherit the default ruleset; only add allowlists below.
+useDefault = true
+
+[allowlist]
+description = "Global allowlist for test fixtures, mocks, and known-safe dev certificates"
+paths = [
+    # Tests commonly contain throw-away values that match generic-secret heuristics
+    '''.*Tests?/.*''',
+    '''.*\.spec\.ts$''',
+    '''.*\.test\.ts$''',
+    '''.*/mocks/.*''',
+    '''.*/fixtures/.*''',
+    # Dev / E2E certificate checked into docker/certs is self-signed and explicitly public
+    '''docker/certs/.*''',
+    '''scripts/.*dev.*cert.*''',
+    # Locked dependencies — checksums routinely match generic patterns
+    '''package-lock\.json$''',
+    '''pnpm-lock\.yaml$''',
+    # Generated API clients
+    '''.*/generated/.*''',
+]
+regexes = [
+    # TOTP test secret (Base32) — standard RFC 6238 sample
+    '''JBSWY3DPEHPK3PXP''',
+    # Argon2id marker — hash prefix, not a secret
+    '''\$argon2id\$''',
+]

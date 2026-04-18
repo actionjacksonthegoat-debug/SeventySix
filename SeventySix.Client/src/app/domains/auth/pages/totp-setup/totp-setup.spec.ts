@@ -144,6 +144,11 @@ describe("TotpSetupComponent",
 							status: 500
 						})));
 
+				// Re-create component so constructor uses the error mock
+				fixture =
+					TestBed.createComponent(TotpSetupComponent);
+				component =
+					fixture.componentInstance;
 				fixture.detectChanges();
 
 				expect(mockNotificationService.error)
@@ -302,6 +307,11 @@ describe("TotpSetupComponent",
 				mockQRCode.toDataURL.mockRejectedValue(
 					new Error("Canvas error"));
 
+				// Re-create component so constructor uses the error mock
+				fixture =
+					TestBed.createComponent(TotpSetupComponent);
+				component =
+					fixture.componentInstance;
 				fixture.detectChanges();
 				await Promise.resolve();
 				await Promise.resolve();

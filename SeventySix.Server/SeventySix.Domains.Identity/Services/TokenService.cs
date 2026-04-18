@@ -173,8 +173,9 @@ public sealed class TokenService(
 		}
 
 		// REUSE ATTACK DETECTED: Token already revoked but attacker trying to use it
-		// When DisableRotation is enabled (E2E testing), skip this check since tokens aren't revoked
-		if (existingToken.IsRevoked && !authSettings.Value.Token.DisableRotation)
+		// Reuse detection ALWAYS runs regardless of DisableRotation —
+		// the flag only skips issuing a new token, never weakens security
+		if (existingToken.IsRevoked)
 		{
 			logger.LogWarning(
 				"Token reuse attack detected for user {UserId}, revoking family {FamilyId}",

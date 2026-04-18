@@ -59,6 +59,24 @@ public sealed class MetricsService() : IMetricsService
 			() => FailedItems,
 			description: "Current number of failed items in the error queue");
 
+	/// <summary>Counter for successful login events.</summary>
+	private static readonly Counter<long> AuthLoginSuccess =
+		ApplicationMeter.CreateCounter<long>(
+			"auth.login.success",
+			description: "Total number of successful logins");
+
+	/// <summary>Counter for failed login attempts.</summary>
+	private static readonly Counter<long> AuthLoginFailure =
+		ApplicationMeter.CreateCounter<long>(
+			"auth.login.failure",
+			description: "Total number of failed login attempts");
+
+	/// <summary>Counter for failed MFA verification attempts.</summary>
+	private static readonly Counter<long> AuthMfaVerifyFailure =
+		ApplicationMeter.CreateCounter<long>(
+			"auth.mfa.verify.failure",
+			description: "Total number of failed MFA verification attempts");
+
 	private static volatile int QueuedItems;
 	private static volatile int FailedItems;
 
@@ -106,5 +124,27 @@ public sealed class MetricsService() : IMetricsService
 	public (int queuedItems, int failedItems) GetQueueStats()
 	{
 		return (QueuedItems, FailedItems);
+	}
+
+	/// <inheritdoc/>
+	public void RecordLoginSuccess()
+	{
+		AuthLoginSuccess.Add(1);
+	}
+
+	/// <inheritdoc/>
+	public void RecordLoginFailure(string reason)
+	{
+		AuthLoginFailure.Add(
+			1,
+			new KeyValuePair<string, object?>("reason", reason));
+	}
+
+	/// <inheritdoc/>
+	public void RecordMfaVerifyFailure(string reason)
+	{
+		AuthMfaVerifyFailure.Add(
+			1,
+			new KeyValuePair<string, object?>("reason", reason));
 	}
 }

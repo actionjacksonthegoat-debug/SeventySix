@@ -294,6 +294,39 @@ public sealed class StartupValidatorUnitTests
 	}
 
 	[Fact]
+	public void ValidateProductionSecuritySettings_Production_DisableRotationTrue_ThrowsInvalidOperationException()
+	{
+		// Arrange
+		Dictionary<string, string?> configValues =
+			new()
+			{
+				["Mfa:Enabled"] = "true",
+				["Totp:Enabled"] = "true",
+				["Auth:Token:DisableRotation"] = "true",
+				["Auth:Cookie:SecureCookie"] = "true",
+				["Auth:Cookie:SameSiteLax"] = "false",
+			};
+
+		IConfiguration configuration =
+			new ConfigurationBuilder()
+				.AddInMemoryCollection(configValues)
+				.Build();
+
+		IHostEnvironment environment =
+			CreateEnvironment(Environments.Production);
+
+		// Act & Assert
+		InvalidOperationException exception =
+			Should.Throw<InvalidOperationException>(
+				() => StartupValidator.ValidateProductionSecuritySettings(
+					configuration,
+					environment,
+					Logger));
+
+		exception.Message.ShouldContain("Token rotation must NOT be disabled");
+	}
+
+	[Fact]
 	public void ValidateProductionSecuritySettings_Production_SecureCookieFalse_ThrowsInvalidOperationException()
 	{
 		// Arrange

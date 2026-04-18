@@ -51,18 +51,10 @@ describe("ErrorHandlerService",
 		let mockLogger: MockLoggerService;
 		let mockNotification: MockNotificationService;
 		let mockClientLogger: MockClientErrorLoggerService;
-		let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
 
 		beforeEach(
 			() =>
 			{
-				consoleErrorSpy =
-					vi
-						.spyOn(console, "error")
-						.mockImplementation(
-							() =>
-							{});
-
 				mockLogger =
 					createMockLogger() as unknown as MockLoggerService;
 				mockNotification =
@@ -739,10 +731,12 @@ describe("ErrorHandlerService",
 
 						service.handleError(new Error("First error"));
 
-						expect(consoleErrorSpy)
+						expect(mockLogger.error)
 							.toHaveBeenCalledWith(
-								"[ErrorHandler] Failed:",
-								expect.any(Error));
+								"[ErrorHandler] Failed during error handling",
+								expect.any(Error),
+								expect.objectContaining(
+									{ originalError: expect.any(String) }));
 					});
 
 				it("should gracefully handle errors during notification",
@@ -762,7 +756,7 @@ describe("ErrorHandlerService",
 							.not
 							.toThrow();
 
-						expect(consoleErrorSpy)
+						expect(mockLogger.error)
 							.toHaveBeenCalled();
 					});
 
@@ -774,6 +768,30 @@ describe("ErrorHandlerService",
 
 						expect(mockClientLogger.logError)
 							.toHaveBeenCalledTimes(2);
+					});
+
+				it("should not crash when logger itself throws in catch block",
+					() =>
+					{
+						mockNotification.errorWithDetails.mockImplementation(
+							() =>
+							{
+								throw new Error("Notification failed");
+							});
+
+						mockLogger.error.mockImplementation(
+							() =>
+							{
+								throw new Error("Logger also failed");
+							});
+
+						expect(
+							() =>
+							{
+								service.handleError(new Error("Original error"));
+							})
+							.not
+							.toThrow();
 					});
 			});
 	});

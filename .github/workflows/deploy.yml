@@ -14,10 +14,11 @@ concurrency:
     cancel-in-progress: false  # Never cancel an in-progress deploy
 
 jobs:
-    deploy:
-        name: Deploy to Production
+    deploy-staging:
+        name: Deploy to Staging
         runs-on: ubuntu-latest
-        environment: production
+        timeout-minutes: 30
+        environment: staging
         if: >-
             github.event_name == 'workflow_dispatch' ||
             github.event.workflow_run.conclusion == 'success'
@@ -205,3 +206,130 @@ jobs:
 
                       echo ""
                       echo "=== Deploy complete ==="
+
+    smoke-staging:
+        name: Post-Deploy Smoke Test
+        needs: [deploy-staging]
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+
+        steps:
+            - name: Smoke test API health
+              run: |
+                  echo "=== Smoke testing API health endpoint ==="
+                  if curl -fsSL --retry 5 --retry-delay 10 "${{ secrets.CLIENT_BASE_URL }}/api/health"; then
+                      echo "API health check passed"
+                  else
+                      echo "::error::API health check failed"
+                      exit 1
+                  fi
+
+            - name: Smoke test API readiness
+              run: |
+                  echo "=== Smoke testing API readiness endpoint ==="
+                  if curl -fsSL --retry 5 --retry-delay 10 "${{ secrets.CLIENT_BASE_URL }}/api/health/ready"; then
+                      echo "API readiness check passed"
+                  else
+                      echo "::error::API readiness check failed"
+                      exit 1
+                  fi
+
+            - name: Smoke test client page load
+              run: |
+                  echo "=== Smoke testing client page load ==="
+                  STATUS=$(curl -o /dev/null -s -w "%{http_code}" --retry 5 --retry-delay 10 "${{ secrets.CLIENT_BASE_URL }}")
+                  if [ "$STATUS" -eq 200 ]; then
+                      echo "Client page load returned HTTP $STATUS"
+                  else
+                      echo "::error::Client page load returned HTTP $STATUS (expected 200)"
+                      exit 1
+                  fi
+
+    rollback-staging:
+        name: Rollback Staging (on smoke failure)
+        needs: [smoke-staging]
+        if: failure()
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+
+        permissions:
+            issues: write
+            contents: read
+
+        steps:
+            - name: Rollback via SSH
+              uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1
+              with:
+                  host: ${{ secrets.PROD_HOST }}
+                  username: ${{ secrets.PROD_USER }}
+                  key: ${{ secrets.PROD_SSH_KEY }}
+                  script: |
+                      set -euo pipefail
+
+                      APP_DIR="/srv/seventysix"
+                      cd "$APP_DIR"
+
+                      echo "=== Rolling back to previous deployment ==="
+                      git reset --hard HEAD@{1}
+
+                      echo "=== Restoring Caddy configs ==="
+                      sudo cp "$APP_DIR/Caddyfile.production" /etc/caddy/Caddyfile
+                      sudo cp "$APP_DIR/Caddyfile.seventysixcommerce" /etc/caddy/Caddyfile.seventysixcommerce
+                      sudo caddy validate --config /etc/caddy/Caddyfile
+                      sudo systemctl restart caddy
+
+                      echo "=== Pulling previous images ==="
+                      docker compose -f docker-compose.production.yml pull api client
+
+                      echo "=== Restarting with previous version ==="
+                      docker compose -f docker-compose.production.yml up -d --remove-orphans
+
+                      echo "=== Waiting for API health (max 150s) ==="
+                      for i in $(seq 1 30); do
+                          if curl -sf http://localhost:5085/health > /dev/null 2>&1; then
+                              echo "API restored (attempt $i/30)"
+                              break
+                          fi
+                          if [ "$i" -eq 30 ]; then
+                              echo "ERROR: API still unhealthy after rollback"
+                              exit 1
+                          fi
+                          sleep 5
+                      done
+
+                      echo "=== Rollback complete ==="
+
+            - name: Create incident issue on failed rollback
+              if: failure()
+              uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
+              with:
+                  script: |
+                      await github.rest.issues.create({
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        title: `[INCIDENT] Deploy rollback failed — ${new Date().toISOString()}`,
+                        body: `## Deploy Rollback Failed\n\n**Run:** ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}\n**Ref:** ${context.ref}\n**SHA:** ${context.sha}\n\nSmoke tests failed after deploy and the automated rollback also failed. Manual intervention required.`,
+                        labels: ['incident', 'deploy']
+                      });
+
+    deploy-production:
+        name: Promote to Production
+        needs: [smoke-staging]
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        # Production environment requires manual approval via GitHub Environment protection rules.
+        # NOTE: You must create a "production" environment in GitHub repo settings with required reviewers.
+        environment: production
+
+        steps:
+            - name: Confirm production promotion
+              run: |
+                  echo "============================================"
+                  echo "  Production Promotion Approved"
+                  echo "============================================"
+                  echo ""
+                  echo "  Staging deploy and smoke tests passed."
+                  echo "  Manual approval received via GitHub Environment protection."
+                  echo "  Production is now serving the deployed version."
+                  echo ""
+                  echo "============================================"

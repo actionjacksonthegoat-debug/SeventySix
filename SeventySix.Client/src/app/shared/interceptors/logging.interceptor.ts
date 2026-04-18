@@ -1,12 +1,13 @@
 /**
  * Logging Interceptor
- * Logs HTTP requests and responses for debugging
+ * Logs HTTP requests and responses for debugging via LoggerService
  */
 
 import { HttpInterceptorFn } from "@angular/common/http";
 import { inject } from "@angular/core";
 import { environment } from "@environments/environment";
 import { DateService } from "@shared/services";
+import { LoggerService } from "@shared/services/logger.service";
 import { tap } from "rxjs";
 
 /**
@@ -18,6 +19,8 @@ export const loggingInterceptor: HttpInterceptorFn =
 	{
 		const dateService: DateService =
 			inject(DateService);
+		const loggerService: LoggerService =
+			inject(LoggerService);
 		const startTime: number =
 			dateService.nowTimestamp();
 		const logLevel: string =
@@ -33,8 +36,8 @@ export const loggingInterceptor: HttpInterceptorFn =
 			return next(req);
 		}
 
-		// eslint-disable-next-line no-console
-		console.log(`🔵 HTTP Request: ${req.method} ${req.url}`);
+		loggerService.debug(
+			`HTTP Request: ${req.method} ${req.url}`);
 
 		return next(req)
 			.pipe(
@@ -47,20 +50,18 @@ export const loggingInterceptor: HttpInterceptorFn =
 							// Not a sent event
 								const duration: number =
 									dateService.nowTimestamp() - startTime;
-								// eslint-disable-next-line no-console
-								console.log(
-									`🟢 HTTP Response: ${req.method} ${req.url} (${duration}ms)`);
+								loggerService.debug(
+									`HTTP Response: ${req.method} ${req.url} (${duration}ms)`);
 							}
 						},
-						error: (error) =>
+						error: (error: unknown) =>
 						{
 							const duration: number =
 								dateService.nowTimestamp() - startTime;
 							// Always log HTTP errors regardless of log level
-
-							console.error(
-								`🔴 HTTP Error: ${req.method} ${req.url} (${duration}ms)`,
-								error);
+							loggerService.error(
+								`HTTP Error: ${req.method} ${req.url} (${duration}ms)`,
+								error instanceof Error ? error : undefined);
 						}
 					}));
 	};

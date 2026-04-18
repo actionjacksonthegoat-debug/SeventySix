@@ -57,7 +57,7 @@ public static class ChangePasswordCommandHandler
 		ChangePasswordCommand command,
 		UserManager<ApplicationUser> userManager,
 		ITokenRepository tokenRepository,
-		AuthenticationService authenticationService,
+		IAuthenticationService authenticationService,
 		IIdentityCacheService identityCache,
 		BreachCheckDependencies breachCheck,
 		TimeProvider timeProvider,

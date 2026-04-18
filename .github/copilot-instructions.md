@@ -148,6 +148,16 @@ This gate runs **once** at the end of a plan — not during every phase.
 > **CI/CD verification**: Tests must also pass on `ubuntu-latest` (GitHub Actions CI).
 > Preferred: push to GitHub and confirm CI passes. Alternatives: WSL Ubuntu or Linux VM.
 
+## [CRITICAL] Site Walkthrough Go/No-Go (MANDATORY FINAL CHECK)
+
+After the Final Validation Gate passes, a full `/run-site-base` walkthrough is a **required go/no-go** before declaring any plan complete. This is the primary functionality confirmation for the entire Ecosystem.
+
+| Check | Command | Must See |
+| ----- | ------- | -------- |
+| Site Walkthrough | `npm run stop && npm run start` then invoke `/run-site-base` | PASS report at `.dev-tools-output/walkthrough-report.md`, zero unexpected console errors, both games reach Victory/Won, both commerce admin dashboards (SvelteKit + TanStack) render, both commerce sites complete checkout |
+
+The walkthrough MUST cover: Angular admin + public surfaces, the SvelteKit + TanStack dashboards surfaced inside `/admin/svelte` + `/admin/tanstack` (plus their log pages), the full SvelteKit + TanStack e-commerce flows (home → shop → product → cart → checkout), and both games played to their Victory / Won state. Any failure (other than the explicitly-permitted Step 9 intentional error-log button) blocks completion.
+
 ## Documentation MUST Be Current (GATE CONDITION)
 
 After all tests pass, verify:

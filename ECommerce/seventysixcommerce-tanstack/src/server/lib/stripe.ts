@@ -1,8 +1,6 @@
 import { createStripeClient, type StripeClient } from "@seventysixcommerce/shared/stripe";
 import { isNullOrUndefined } from "@seventysixcommerce/shared/utils";
 
-export type { StripeClient } from "@seventysixcommerce/shared/stripe";
-
 /** Cached client instance. */
 let client: StripeClient | null = null;
 

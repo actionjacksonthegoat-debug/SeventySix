@@ -1,4 +1,4 @@
-import { Injectable, signal, type WritableSignal } from "@angular/core";
+import { Injectable, signal, type Signal, type WritableSignal } from "@angular/core";
 import type { AbstractEngine } from "@babylonjs/core/Engines/abstractEngine";
 import type { Observer } from "@babylonjs/core/Misc/observable";
 import type { Scene } from "@babylonjs/core/scene";
@@ -15,10 +15,14 @@ import { GameLifecycleState } from "@games/shared/models/game.models";
 @Injectable()
 export class GameLoopService
 {
-	/** Current lifecycle state of the game loop. */
-	public readonly state: WritableSignal<GameLifecycleState> =
+	/** Writable state — only this service may mutate lifecycle transitions. */
+	private readonly mutableState: WritableSignal<GameLifecycleState> =
 		signal<GameLifecycleState>(
 			GameLifecycleState.Initializing);
+
+	/** Current lifecycle state of the game loop (read-only to consumers). */
+	public readonly state: Signal<GameLifecycleState> =
+		this.mutableState.asReadonly();
 
 	/**
 	 * Per-frame update callback.
@@ -44,7 +48,7 @@ export class GameLoopService
 	public initialize(scene: Scene): void
 	{
 		this.scene = scene;
-		this.state.set(GameLifecycleState.Ready);
+		this.mutableState.set(GameLifecycleState.Ready);
 	}
 
 	/**
@@ -76,7 +80,7 @@ export class GameLoopService
 					}
 				});
 
-		this.state.set(GameLifecycleState.Running);
+		this.mutableState.set(GameLifecycleState.Running);
 	}
 
 	/**
@@ -85,7 +89,7 @@ export class GameLoopService
 	 */
 	public pause(): void
 	{
-		this.state.set(GameLifecycleState.Paused);
+		this.mutableState.set(GameLifecycleState.Paused);
 	}
 
 	/**
@@ -98,7 +102,7 @@ export class GameLoopService
 		this.onUpdate = null;
 		this.engine = null;
 		this.scene = null;
-		this.state.set(GameLifecycleState.Disposed);
+		this.mutableState.set(GameLifecycleState.Disposed);
 	}
 
 	/**

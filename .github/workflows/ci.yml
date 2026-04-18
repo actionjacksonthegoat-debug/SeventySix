@@ -19,6 +19,72 @@ concurrency:
 
 jobs:
     # ──────────────────────────────────────────────────────────
+    # Stage 0: Security scans (parallel, non-blocking for PRs on transient issues)
+    # ──────────────────────────────────────────────────────────
+    security-scan:
+        name: Security Scan (npm audit + dotnet vulnerable + gitleaks)
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+
+        permissions:
+            contents: read
+            security-events: write
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+              with:
+                  fetch-depth: 0
+
+            - name: Setup Node.js
+              uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+              with:
+                  node-version: "22.x"
+
+            - name: Setup .NET
+              uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5
+              with:
+                  dotnet-version: "10.0.x"
+
+            - name: npm audit (root)
+              run: npm audit --audit-level=high --omit=dev
+              continue-on-error: true
+
+            - name: npm audit (Angular client)
+              working-directory: SeventySix.Client
+              run: |
+                  npm ci --ignore-scripts
+                  npm audit --audit-level=high --omit=dev
+              continue-on-error: true
+
+            - name: npm audit (SvelteKit commerce)
+              working-directory: ECommerce/seventysixcommerce-sveltekit
+              run: |
+                  npm ci --ignore-scripts
+                  npm audit --audit-level=high --omit=dev
+              continue-on-error: true
+
+            - name: npm audit (TanStack commerce)
+              working-directory: ECommerce/seventysixcommerce-tanstack
+              run: |
+                  npm ci --ignore-scripts
+                  npm audit --audit-level=high --omit=dev
+              continue-on-error: true
+
+            - name: dotnet list package --vulnerable (server)
+              working-directory: SeventySix.Server
+              run: |
+                  dotnet restore SeventySix.Server.slnx
+                  dotnet list SeventySix.Server.slnx package --vulnerable --include-transitive
+
+            - name: Gitleaks secret scan
+              uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # v2.3.9
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  GITLEAKS_CONFIG: .github/gitleaks.toml
+              continue-on-error: true
+
+    # ──────────────────────────────────────────────────────────
     # Stage 1: Lint + Build + Unit tests (parallel)
     # ──────────────────────────────────────────────────────────
     client-build:
@@ -132,6 +198,92 @@ jobs:
                   name: server-coverage
                   path: SeventySix.Server/TestResults/**/coverage.cobertura.xml
                   retention-days: 7
+
+    # ──────────────────────────────────────────────────────────
+    # Stage 2: Migration roundtrip (parallel with Stage 3)
+    # ──────────────────────────────────────────────────────────
+    migration-roundtrip:
+        name: Migration Roundtrip
+        needs: [server-build]
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+
+        services:
+            postgres:
+                image: postgres:17
+                env:
+                    POSTGRES_USER: migration_test
+                    POSTGRES_PASSWORD: migration_test
+                    POSTGRES_DB: migration_test
+                ports:
+                    - 5432:5432
+                options: >-
+                    --health-cmd "pg_isready -U migration_test"
+                    --health-interval 10s
+                    --health-timeout 5s
+                    --health-retries 5
+
+        defaults:
+            run:
+                working-directory: SeventySix.Server
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+            - name: Setup .NET
+              uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5
+              with:
+                  dotnet-version: "10.0.x"
+
+            - name: Restore tools
+              run: dotnet tool restore
+
+            - name: Restore dependencies
+              run: dotnet restore SeventySix.Server.slnx
+
+            - name: Build
+              run: dotnet build SeventySix.Server.slnx --configuration Release --no-restore
+
+            - name: Migration roundtrip — IdentityDbContext
+              env:
+                  ConnectionStrings__IdentityConnection: "Host=localhost;Port=5432;Database=migration_test;Username=migration_test;Password=migration_test"
+              run: |
+                  echo "=== Apply all migrations ==="
+                  dotnet ef database update --context IdentityDbContext --project SeventySix.Domains.Identity --startup-project SeventySix.Api --no-build --configuration Release
+
+                  echo "=== Roll back to InitialCreate ==="
+                  dotnet ef database update InitialCreate --context IdentityDbContext --project SeventySix.Domains.Identity --startup-project SeventySix.Api --no-build --configuration Release
+
+                  echo "=== Re-apply all migrations ==="
+                  dotnet ef database update --context IdentityDbContext --project SeventySix.Domains.Identity --startup-project SeventySix.Api --no-build --configuration Release
+
+                  echo "=== Roll back to empty ==="
+                  dotnet ef database update 0 --context IdentityDbContext --project SeventySix.Domains.Identity --startup-project SeventySix.Api --no-build --configuration Release
+
+            - name: Migration roundtrip — LoggingDbContext
+              env:
+                  ConnectionStrings__LoggingConnection: "Host=localhost;Port=5432;Database=migration_test;Username=migration_test;Password=migration_test"
+              run: |
+                  dotnet ef database update --context LoggingDbContext --project SeventySix.Domains --startup-project SeventySix.Api --no-build --configuration Release
+                  dotnet ef database update 0 --context LoggingDbContext --project SeventySix.Domains --startup-project SeventySix.Api --no-build --configuration Release
+                  dotnet ef database update --context LoggingDbContext --project SeventySix.Domains --startup-project SeventySix.Api --no-build --configuration Release
+
+            - name: Migration roundtrip — ApiTrackingDbContext
+              env:
+                  ConnectionStrings__ApiTrackingConnection: "Host=localhost;Port=5432;Database=migration_test;Username=migration_test;Password=migration_test"
+              run: |
+                  dotnet ef database update --context ApiTrackingDbContext --project SeventySix.Domains --startup-project SeventySix.Api --no-build --configuration Release
+                  dotnet ef database update 0 --context ApiTrackingDbContext --project SeventySix.Domains --startup-project SeventySix.Api --no-build --configuration Release
+                  dotnet ef database update --context ApiTrackingDbContext --project SeventySix.Domains --startup-project SeventySix.Api --no-build --configuration Release
+
+            - name: Migration roundtrip — ElectronicNotificationsDbContext
+              env:
+                  ConnectionStrings__ElectronicNotificationsConnection: "Host=localhost;Port=5432;Database=migration_test;Username=migration_test;Password=migration_test"
+              run: |
+                  dotnet ef database update --context ElectronicNotificationsDbContext --project SeventySix.Domains --startup-project SeventySix.Api --no-build --configuration Release
+                  dotnet ef database update 0 --context ElectronicNotificationsDbContext --project SeventySix.Domains --startup-project SeventySix.Api --no-build --configuration Release
+                  dotnet ef database update --context ElectronicNotificationsDbContext --project SeventySix.Domains --startup-project SeventySix.Api --no-build --configuration Release
 
     # ──────────────────────────────────────────────────────────
     # Stage 3: Integration tests (parallel — E2E + Load)
@@ -254,7 +406,7 @@ jobs:
               run: chmod 644 SeventySix.Client/ssl/dev-certificate.* || true
 
             - name: Run load tests
-              run: bash SeventySix.Client/load-testing/scripts/run-load-tests.sh quick
+              run: node scripts/run-load-tests.mjs --app main --profile quick
               env:
                   NODE_EXTRA_CA_CERTS: SeventySix.Client/ssl/dev-certificate.crt
 
@@ -289,9 +441,9 @@ jobs:
     # ──────────────────────────────────────────────────────────
     quality-gate:
         name: Quality Gate
-        needs: [client-build, server-build, e2e, load-test]
+        needs: [client-build, server-build, migration-roundtrip, e2e, load-test]
         runs-on: ubuntu-latest
-        timeout-minutes: 5
+        timeout-minutes: 15
         if: always()
 
         steps:
@@ -317,6 +469,7 @@ jobs:
 
                   check_job "Client Build & Test" "${{ needs.client-build.result }}"
                   check_job "Server Build & Test" "${{ needs.server-build.result }}"
+                  check_job "Migration Roundtrip" "${{ needs.migration-roundtrip.result }}"
                   check_job "E2E Tests" "${{ needs.e2e.result }}"
                   check_job "Load Tests" "${{ needs.load-test.result }}"
 
@@ -327,6 +480,7 @@ jobs:
                   echo "    - Vitest (all client tests pass + ≥80% coverage threshold)"
                   echo "    - dotnet build Release (TreatWarningsAsErrors)"
                   echo "    - dotnet test (all server tests pass + ≥80% line coverage via coverlet.runsettings)"
+                  echo "    - Migration roundtrip (all EF Core migrations apply and roll back cleanly)"
                   echo "    - Playwright E2E (all tests pass)"
                   echo "    - k6 load tests (all scenarios pass thresholds)"
                   echo "    - Codecov (PR status checks post ≥80% project coverage)"
@@ -393,6 +547,13 @@ jobs:
                   cache-from: type=gha
                   cache-to: type=gha,mode=max
 
+            - name: Generate SBOM for API image
+              uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
+              with:
+                  image: ghcr.io/${{ github.repository_owner }}/seventysix-api:${{ github.sha }}
+                  format: spdx-json
+                  output-file: sbom-api.spdx.json
+
             - name: Build and push Client image
               uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7
               with:
@@ -406,3 +567,46 @@ jobs:
                       ghcr.io/${{ github.repository_owner }}/seventysix-client:${{ steps.meta.outputs.date }}-${{ steps.meta.outputs.sha_short }}
                   cache-from: type=gha
                   cache-to: type=gha,mode=max
+
+            - name: Generate SBOM for Client image
+              uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
+              with:
+                  image: ghcr.io/${{ github.repository_owner }}/seventysix-client:${{ github.sha }}
+                  format: spdx-json
+                  output-file: sbom-client.spdx.json
+
+            - name: Upload SBOM artifacts
+              uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+              with:
+                  name: sbom-reports
+                  path: |
+                      sbom-api.spdx.json
+                      sbom-client.spdx.json
+                  retention-days: 90
+
+    # ──────────────────────────────────────────────────────────
+    # Stage 5: Container vulnerability scans (after publish)
+    # ──────────────────────────────────────────────────────────
+    scan-api-image:
+        name: Scan API Image
+        needs: [publish]
+        if: needs.publish.result == 'success'
+        uses: ./.github/workflows/reusable-container-scan.yml
+        with:
+            image-ref: ghcr.io/${{ github.repository_owner }}/seventysix-api:${{ github.sha }}
+            image-name: seventysix-api
+        permissions:
+            contents: read
+            security-events: write
+
+    scan-client-image:
+        name: Scan Client Image
+        needs: [publish]
+        if: needs.publish.result == 'success'
+        uses: ./.github/workflows/reusable-container-scan.yml
+        with:
+            image-ref: ghcr.io/${{ github.repository_owner }}/seventysix-client:${{ github.sha }}
+            image-name: seventysix-client
+        permissions:
+            contents: read
+            security-events: write

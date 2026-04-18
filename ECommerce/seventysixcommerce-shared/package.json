@@ -24,6 +24,7 @@
 		"./webhook": "./src/webhook/index.ts",
 		"./date": "./src/date.ts",
 		"./errors": "./src/errors/index.ts",
+		"./logging": "./src/logging/index.ts",
 		"./products": "./src/products/index.ts",
 		"./seo": "./src/seo/index.ts",
 		"./seed": "./src/seed/index.ts",
@@ -35,6 +36,7 @@
 		"zod": "^4.3.6"
 	},
 	"peerDependencies": {
+		"@opentelemetry/resources": ">=2.0.0",
 		"drizzle-orm": "^0.45.1",
 		"stripe": ">=17.0.0"
 	},

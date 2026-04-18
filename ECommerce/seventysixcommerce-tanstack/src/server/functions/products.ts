@@ -35,7 +35,7 @@ export type ProductDetail = SharedProductDetail;
 export type Category = CategoryWithCount;
 
 /** Paginated result wrapper. */
-export interface PaginatedResult<T>
+interface PaginatedResult<T>
 {
 	items: T[];
 	total: number;

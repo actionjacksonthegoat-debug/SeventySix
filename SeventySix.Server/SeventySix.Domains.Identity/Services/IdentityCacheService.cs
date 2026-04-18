@@ -99,6 +99,11 @@ public sealed class IdentityCacheService(
 	}
 
 	/// <inheritdoc />
+	/// <remarks>
+	/// The <c>.ToList()</c> materialization is safe here because the input is bounded
+	/// by admin-initiated bulk operations (e.g., BulkUpdateActiveStatus), producing
+	/// exactly <c>2 × userIds.Count + 1</c> cache keys.
+	/// </remarks>
 	public async Task InvalidateBulkUsersAsync(IEnumerable<long> userIds)
 	{
 		List<string> keysToInvalidate =

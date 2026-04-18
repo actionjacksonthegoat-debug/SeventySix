@@ -10,8 +10,10 @@ namespace SeventySix.Identity;
 /// </summary>
 /// <remarks>
 /// Email-based MFA uses the <see cref="MfaChallenge"/> entity for attempt tracking.
-/// TOTP and backup codes have no challenge entity, so this in-memory tracker
-/// provides the same protection with TTL-based automatic expiry.
+/// TOTP and backup codes have no challenge entity, so this tracker provides the same
+/// protection with TTL-based automatic expiry. The production implementation is
+/// backed by a distributed cache (FusionCache + Valkey L2) so attempt counts are
+/// consistent across horizontally-scaled API replicas.
 /// </remarks>
 public interface IMfaAttemptTracker
 {

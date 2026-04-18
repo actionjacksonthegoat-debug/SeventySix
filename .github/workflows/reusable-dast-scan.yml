@@ -1,0 +1,179 @@
+# Reusable workflow: OWASP ZAP baseline scan.
+# Replaces three near-identical jobs in dast.yml.
+name: Reusable DAST Scan
+
+on:
+    workflow_call:
+        inputs:
+            target-url:
+                description: "ZAP scan target URL"
+                required: true
+                type: string
+            compose-file:
+                description: "Docker Compose file to start infrastructure"
+                required: true
+                type: string
+            app-name:
+                description: "Short name for artifact naming (e.g. main, commerce-sveltekit)"
+                required: true
+                type: string
+            ready-endpoint:
+                description: "Health endpoint URL to poll before scanning"
+                required: true
+                type: string
+            service-name:
+                description: "Docker Compose service name for log output on failure"
+                required: true
+                type: string
+            needs-ssl:
+                description: "Whether to generate SSL certs before starting infrastructure"
+                required: false
+                type: boolean
+                default: false
+            needs-auth:
+                description: "Whether to authenticate and pass token to ZAP via auth hook"
+                required: false
+                type: boolean
+                default: false
+            auth-endpoint:
+                description: "Login endpoint URL (only used when needs-auth is true)"
+                required: false
+                type: string
+                default: ""
+            use-insecure-curl:
+                description: "Pass --insecure to curl (for self-signed TLS targets)"
+                required: false
+                type: boolean
+                default: false
+            extra-zap-options:
+                description: "Additional cmd_options for ZAP (e.g. --hook .zap/auth-hook.py)"
+                required: false
+                type: string
+                default: ""
+            client-ready-endpoint:
+                description: "Secondary health endpoint (e.g. client). Empty to skip."
+                required: false
+                type: string
+                default: ""
+
+permissions:
+    security-events: write
+    contents: read
+    actions: read
+
+jobs:
+    dast:
+        name: OWASP ZAP Scan — ${{ inputs.app-name }}
+        runs-on: ubuntu-latest
+        timeout-minutes: 30
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+            - name: Generate SSL certificates
+              if: inputs.needs-ssl
+              shell: pwsh
+              run: scripts/generate-dev-ssl-cert.ps1 -SkipTrust
+
+            - name: Fix SSL permissions for Linux
+              if: inputs.needs-ssl
+              run: |
+                  chmod 644 SeventySix.Client/ssl/dev-certificate.crt
+                  chmod 600 SeventySix.Client/ssl/dev-certificate.key
+
+            - name: Start DAST infrastructure
+              run: |
+                  docker compose -f ${{ inputs.compose-file }} up -d --build
+                  echo "Waiting for app health..."
+                  INSECURE_FLAG=""
+                  if [ "${{ inputs.use-insecure-curl }}" = "true" ]; then
+                    INSECURE_FLAG="--insecure"
+                  fi
+                  APP_READY=false
+                  for i in $(seq 1 60); do
+                    if curl -sf $INSECURE_FLAG "${{ inputs.ready-endpoint }}" > /dev/null; then
+                      echo "App is healthy"
+                      APP_READY=true
+                      break
+                    fi
+                    sleep 5
+                  done
+                  if [ "$APP_READY" != "true" ]; then
+                    echo "::error::App failed to become healthy within 5 minutes"
+                    docker compose -f ${{ inputs.compose-file }} logs ${{ inputs.service-name }} --tail=50
+                    exit 1
+                  fi
+
+            - name: Wait for client
+              if: inputs.client-ready-endpoint != ''
+              run: |
+                  INSECURE_FLAG=""
+                  if [ "${{ inputs.use-insecure-curl }}" = "true" ]; then
+                    INSECURE_FLAG="--insecure"
+                  fi
+                  CLIENT_READY=false
+                  for i in $(seq 1 30); do
+                    if curl -sf $INSECURE_FLAG "${{ inputs.client-ready-endpoint }}" > /dev/null; then
+                      echo "Client is ready"
+                      CLIENT_READY=true
+                      break
+                    fi
+                    sleep 3
+                  done
+                  if [ "$CLIENT_READY" != "true" ]; then
+                    echo "::error::Client failed to become ready within 90 seconds"
+                    exit 1
+                  fi
+
+            - name: Authenticate for scanning
+              if: inputs.needs-auth
+              id: auth
+              run: |
+                  INSECURE_FLAG=""
+                  if [ "${{ inputs.use-insecure-curl }}" = "true" ]; then
+                    INSECURE_FLAG="--insecure"
+                  fi
+                  TOKEN=$(curl -sf $INSECURE_FLAG -X POST \
+                    "${{ inputs.auth-endpoint }}" \
+                    -H 'Content-Type: application/json' \
+                    -d '{"usernameOrEmail":"admin@seventysix.local","password":"SecureE2ETestPassword123!"}' \
+                    | jq -r '.accessToken')
+                  if [ -z "$TOKEN" ] || [ "$TOKEN" = "null" ]; then
+                    echo "::warning::Failed to obtain auth token — running unauthenticated scan only"
+                  else
+                    echo "ZAP_AUTH_TOKEN=$TOKEN" >> "$GITHUB_ENV"
+                    echo "Auth token obtained successfully"
+                  fi
+
+            - name: Run OWASP ZAP Baseline Scan
+              uses: zaproxy/action-baseline@de8ad967d3548d44ef623df22cf95c3b0baf8b25 # v0.15.0
+              with:
+                  target: ${{ inputs.target-url }}
+                  rules_file_name: ".zap/rules.tsv"
+                  allow_issue_writing: false
+                  fail_action: true
+                  artifact_name: zap_scan_${{ inputs.app-name }}
+                  cmd_options: >-
+                      -a
+                      -j
+                      ${{ inputs.extra-zap-options }}
+
+            - name: Upload ZAP SARIF
+              if: always() && hashFiles('report_sarif.json') != ''
+              uses: github/codeql-action/upload-sarif@0d579ffd059c29b07949a3cce3983f0780820c98 # v4
+              with:
+                  sarif_file: report_sarif.json
+                  category: zap-dast-${{ inputs.app-name }}
+
+            - name: Upload ZAP HTML Report
+              if: always()
+              uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+              with:
+                  name: zap-dast-report-${{ inputs.app-name }}
+                  path: report_html.html
+                  retention-days: 7
+
+            - name: Teardown DAST infrastructure
+              if: always()
+              run: docker compose -f ${{ inputs.compose-file }} down -v --remove-orphans

@@ -1,10 +1,6 @@
 import { createPrintfulClient } from "@seventysixcommerce/shared/integrations";
 import type { PrintfulClient } from "@seventysixcommerce/shared/integrations";
 
-export { PRINTFUL_STATUS_MAP } from "@seventysixcommerce/shared/integrations";
-export type { PrintfulClient, PrintfulConfig } from "@seventysixcommerce/shared/integrations";
-export type { OrderForFulfillment, PrintfulOrderResult, ShippingAddress } from "@seventysixcommerce/shared/types";
-
 const printful: PrintfulClient =
 	createPrintfulClient(
 		{
@@ -18,7 +14,3 @@ const printful: PrintfulClient =
  */
 export const createPrintfulOrder: PrintfulClient["createPrintfulOrder"] =
 	printful.createPrintfulOrder;
-
-/** Retrieves the current status of a Printful order. */
-export const getPrintfulOrderStatus: PrintfulClient["getPrintfulOrderStatus"] =
-	printful.getPrintfulOrderStatus;

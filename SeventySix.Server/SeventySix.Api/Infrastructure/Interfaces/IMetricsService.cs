@@ -68,4 +68,25 @@ public interface IMetricsService
 	/// as last set by <see cref="RecordQueueStats"/>.
 	/// </returns>
 	public (int queuedItems, int failedItems) GetQueueStats();
+
+	/// <summary>
+	/// Records a successful login.
+	/// </summary>
+	public void RecordLoginSuccess();
+
+	/// <summary>
+	/// Records a failed login attempt.
+	/// </summary>
+	/// <param name="reason">
+	/// The reason for the login failure (e.g., "invalid_credentials", "account_locked").
+	/// </param>
+	public void RecordLoginFailure(string reason);
+
+	/// <summary>
+	/// Records a failed MFA verification attempt.
+	/// </summary>
+	/// <param name="reason">
+	/// The reason for the MFA failure (e.g., "code_mismatch", "expired").
+	/// </param>
+	public void RecordMfaVerifyFailure(string reason);
 }

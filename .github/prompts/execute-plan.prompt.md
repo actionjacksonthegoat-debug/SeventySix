@@ -104,6 +104,24 @@ If the failure can't reproduce standalone, re-run the full suite — it may be a
 
 **A full passing E2E suite run (`npm run test:e2e` with 0 failures) is REQUIRED before calling this plan complete. No exceptions.**
 
+## [CRITICAL] Site Walkthrough Go/No-Go (MANDATORY FINAL CHECK)
+
+After the full test suite passes AND before the Documentation Gate, run a complete runtime verification using `/run-site-base`. This is the primary functionality confirmation for the entire Ecosystem and is a hard go/no-go for declaring the plan complete.
+
+1. `npm run stop`
+2. `npm run start` — full dev stack (API + Angular + SvelteKit + TanStack + infrastructure).
+3. Invoke the `/run-site-base` prompt. It MUST:
+   - Walk the Angular app including admin (Steps 1–26 + 25B + 26A/26B).
+   - Walk the **commerce admin dashboards** (Steps 22–25) — SvelteKit + TanStack dashboards and logs surfaced inside the SeventySix admin area.
+   - Walk **SvelteKit** end-to-end (home → shop → product → cart → checkout).
+   - Walk **TanStack** end-to-end (home → shop → product → cart → checkout).
+   - Play both games (`Car-a-Lot`, `Spy And Fly`) to **completion and victory screens** — verify game state transitions to `Victory` / `Won` via Angular debug API.
+   - Assert zero `error`-level console messages per page (excluding the known-safe Babylon/WebGL, Vite dev-mode CSP, and React SSR hydration patterns already enumerated in the prompt).
+   - Emit a single report at `.dev-tools-output/walkthrough-report.md` with PASS/FAIL per step.
+4. **If any step FAILs (other than the explicitly-permitted Step 9 intentional error-log button), the plan is NOT complete. Fix, then re-run.**
+
+This gate is NON-NEGOTIABLE. Never declare `/execute-plan` complete without a passing `/run-site-base` walkthrough report.
+
 ## Documentation Gate (After Tests Pass)
 
 Verify all documentation is current. If changes touched architecture, APIs, patterns, or configuration:

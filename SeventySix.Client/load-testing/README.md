@@ -8,7 +8,7 @@ Load tests run against a fully isolated Docker environment with its own database
 
 ```mermaid
 sequenceDiagram
-    participant Script as run-load-tests.ps1/.sh
+    participant Script as scripts/run-load-tests.mjs
     participant Docker as Docker Compose
     participant API as SeventySix API
     participant K6 as k6 Runner
@@ -58,14 +58,12 @@ From the repository root:
 npm run loadtest:quick
 ```
 
-Or from `SeventySix.Client/load-testing/`:
+Or directly from the repo root with any app/profile combination:
 
-```powershell
-# Windows
-.\scripts\run-load-tests.ps1
-
-# Linux / macOS
-./scripts/run-load-tests.sh
+```bash
+node scripts/run-load-tests.mjs --app main --profile smoke
+node scripts/run-load-tests.mjs --app sveltekit --profile quick
+node scripts/run-load-tests.mjs --app tanstack --profile quick
 ```
 
 ### Run Load / Stress Profiles
@@ -77,22 +75,14 @@ npm run loadtest:stress
 
 ### Run a Single Scenario
 
-```powershell
-# Windows
-.\scripts\run-load-tests.ps1 -Profile smoke -Scenario auth/login
-
-# Linux / macOS
-./scripts/run-load-tests.sh smoke auth/login
+```bash
+node scripts/run-load-tests.mjs --app main --profile smoke --scenario auth/login
 ```
 
 ### Keep Environment Running After Tests
 
-```powershell
-# Windows
-.\scripts\run-load-tests.ps1 -KeepRunning
-
-# Linux / macOS
-KEEP_RUNNING=1 ./scripts/run-load-tests.sh
+```bash
+node scripts/run-load-tests.mjs --app main --profile smoke --keep-running
 ```
 
 ## Test Profiles
@@ -139,10 +129,9 @@ SeventySix.Client/load-testing/
 │   ├── logs/             # Client logging
 │   ├── permissions/      # Permission workflows
 │   └── users/            # User management CRUD
-├── scripts/              # Orchestration scripts
-│   ├── generate-summary.js  # Aggregates results into summary.html
-│   ├── run-load-tests.ps1   # Windows orchestrator
-│   └── run-load-tests.sh    # Linux orchestrator
+├── scripts/              # Per-app helpers
+│   └── generate-summary.js  # Aggregates results into summary.html
+│                              (orchestrator lives at repo-root scripts/run-load-tests.mjs)
 └── package.json          # k6 test scripts + @types/k6
 ```
 

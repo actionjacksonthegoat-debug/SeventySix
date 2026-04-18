@@ -128,6 +128,19 @@ export class SpyVsSpyGameComponent
 		viewChild<
 			ElementRef<HTMLCanvasElement>>("minimapCanvas");
 
+	/*
+	 * Service injections — grouped by concern:
+	 *   Lifecycle:  DestroyRef, DisposableRegistryService
+	 *   Scene:      IslandSceneService, SpyCameraService, SpyBuilderService, FurnitureService
+	 *   Gameplay:   SpyFlowService, SpyPhysicsService, SpyAiService, ItemService, TrapService
+	 *   Engine:     GameLoopService, InputService
+	 *   Feedback:   SpyAudioService, MinimapService
+	 *
+	 * High count (14+) is intentional — each service owns distinct Babylon.js
+	 * GPU resources with independent disposal lifecycles. SpyFlowService is the
+	 * consolidation/orchestration layer; the component is a thin wiring controller.
+	 */
+
 	/** Destroy ref for cleanup registration. */
 	private readonly destroyRef: DestroyRef =
 		inject(DestroyRef);

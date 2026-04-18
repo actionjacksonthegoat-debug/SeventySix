@@ -11,7 +11,6 @@ import {
 	computed,
 	DestroyRef,
 	inject,
-	OnInit,
 	Signal,
 	signal,
 	WritableSignal
@@ -53,7 +52,7 @@ import { isNullOrUndefined } from "@shared/utilities/null-check.utility";
  * Completes user registration using a token from email verification.
  * Collects username/password and validates the token with the API.
  */
-export class RegisterCompleteComponent implements OnInit
+export class RegisterCompleteComponent
 {
 	/**
 	 * Angular destroy reference for automatic subscription cleanup.
@@ -184,17 +183,11 @@ export class RegisterCompleteComponent implements OnInit
 	 * Token retrieved from the verification link.
 	 * @type {string}
 	 */
-	private token: string = "";
+	private readonly token: string =
+		this.route.snapshot.queryParams["token"] ?? "";
 
-	/**
-	 * Component initialization - validate token and prepare UI state.
-	 * @returns {void}
-	 */
-	ngOnInit(): void
+	constructor()
 	{
-		this.token =
-			this.route.snapshot.queryParams["token"] ?? "";
-
 		if (isNullOrUndefined(this.token) || this.token === "")
 		{
 			this.tokenValid.set(false);

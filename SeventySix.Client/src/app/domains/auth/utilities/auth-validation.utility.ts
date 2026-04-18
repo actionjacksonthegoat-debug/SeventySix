@@ -38,6 +38,12 @@ export function validateEmail(email: string | undefined): ValidationResult
 
 /**
  * Validates a username against the auth domain rules.
+ *
+ * @param {string | undefined} username
+ * The username to validate.
+ *
+ * @returns {ValidationResult}
+ * Validation result with the first failing rule's error message, or valid.
  */
 export function validateUsername(username: string | undefined): ValidationResult
 {
@@ -93,6 +99,15 @@ export function validatePassword(password: string | undefined): ValidationResult
 
 /**
  * Validates that two password entries match.
+ *
+ * @param {string} password
+ * The primary password entry.
+ *
+ * @param {string} confirmPassword
+ * The confirmation password entry.
+ *
+ * @returns {ValidationResult}
+ * Validation result indicating whether the passwords match.
  */
 export function validatePasswordsMatch(password: string, confirmPassword: string): ValidationResult
 {
@@ -110,6 +125,18 @@ export function validatePasswordsMatch(password: string, confirmPassword: string
 /**
  * Validates a registration form: username + password + confirmPassword.
  * Returns the first failing validation result, or valid if all pass.
+ *
+ * @param {string | undefined} username
+ * The username to validate.
+ *
+ * @param {string | undefined} password
+ * The password to validate.
+ *
+ * @param {string} confirmPassword
+ * The confirmation password to validate against the password.
+ *
+ * @returns {ValidationResult}
+ * The first failing validation result, or valid if all checks pass.
  */
 export function validateRegistrationForm(
 	username: string | undefined,

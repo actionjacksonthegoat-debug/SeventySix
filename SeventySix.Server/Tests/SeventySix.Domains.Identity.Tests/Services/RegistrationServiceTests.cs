@@ -30,7 +30,7 @@ public sealed class RegistrationServiceTests
 		new(TestTimeProviderBuilder.DefaultTime);
 
 	private readonly UserManager<ApplicationUser> UserManager;
-	private readonly AuthenticationService AuthenticationService;
+	private readonly IAuthenticationService AuthenticationService;
 	private readonly ILogger<RegistrationService> Logger;
 
 	private const string TestUsername = "newuser";
@@ -46,26 +46,7 @@ public sealed class RegistrationServiceTests
 		UserManager =
 			IdentityMockFactory.CreateUserManager();
 		AuthenticationService =
-			Substitute.For<AuthenticationService>(
-				Substitute.For<IAuthRepository>(),
-				Substitute.For<ITokenService>(),
-				Microsoft.Extensions.Options.Options.Create(
-					new JwtSettings
-					{
-						AccessTokenExpirationMinutes = 15,
-						RefreshTokenExpirationDays = 7,
-					}),
-				TimeProvider,
-				Substitute.For<UserManager<ApplicationUser>>(
-					Substitute.For<IUserStore<ApplicationUser>>(),
-					null,
-					null,
-					null,
-					null,
-					null,
-					null,
-					null,
-					null));
+			Substitute.For<IAuthenticationService>();
 		Logger =
 			Substitute.For<ILogger<RegistrationService>>();
 	}

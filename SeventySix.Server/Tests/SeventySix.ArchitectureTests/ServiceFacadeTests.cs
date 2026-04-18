@@ -34,7 +34,7 @@ public sealed class ServiceFacadeTests
 			.ToArray();
 
 		Assembly controllerAssembly =
-			typeof(SeventySix.Api.Controllers.UsersController).Assembly;
+			typeof(SeventySix.Api.Controllers.UsersQueryController).Assembly;
 
 		List<string> repositoryDependencyViolations =
 			boundedContextNames
@@ -102,7 +102,7 @@ public sealed class ServiceFacadeTests
 		Type[] controllerTypes =
 			Types
 			.InAssembly(
-				typeof(SeventySix.Api.Controllers.UsersController).Assembly)
+				typeof(SeventySix.Api.Controllers.UsersQueryController).Assembly)
 			.That()
 			.ResideInNamespace("SeventySix.Api.Controllers")
 			.GetTypes()

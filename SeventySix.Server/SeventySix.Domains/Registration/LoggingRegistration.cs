@@ -5,6 +5,8 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SeventySix.Logging;
+using SeventySix.Logging.Jobs;
+using SeventySix.Shared.BackgroundJobs;
 using SeventySix.Shared.Constants;
 using SeventySix.Shared.Registration;
 
@@ -51,6 +53,9 @@ public static class LoggingRegistration
 
 		// Register validators via assembly scanning + command adapter helper
 		services.AddDomainValidatorsFromAssemblyContaining<LoggingDbContext>();
+
+		// Register Logging domain job scheduler contributor
+		services.AddScoped<IJobSchedulerContributor, LoggingJobSchedulerContributor>();
 
 		return services;
 	}

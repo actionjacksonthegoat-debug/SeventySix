@@ -1,8 +1,9 @@
 import { type Span, trace } from "@opentelemetry/api";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
-import { type Resource, resourceFromAttributes } from "@opentelemetry/resources";
+import { type Resource } from "@opentelemetry/resources";
 import { WebTracerProvider } from "@opentelemetry/sdk-trace-web";
 import { BatchSpanProcessor } from "@opentelemetry/sdk-trace-web";
+import { buildResource } from "@seventysixcommerce/shared/observability";
 import { isNullOrUndefined, isPresent } from "@seventysixcommerce/shared/utils";
 
 /** The OpenTelemetry service name for the TanStack browser client. */
@@ -28,8 +29,7 @@ export function initClientTelemetry(otlpEndpoint: string): void
 	}
 
 	const resource: Resource =
-		resourceFromAttributes(
-			{ "service.name": SERVICE_NAME });
+		buildResource({ serviceName: SERVICE_NAME });
 
 	const exporter: OTLPTraceExporter =
 		new OTLPTraceExporter(

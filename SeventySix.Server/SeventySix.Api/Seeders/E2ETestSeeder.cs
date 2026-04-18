@@ -70,23 +70,14 @@ public sealed class E2ETestSeeder(
 	/// </returns>
 	private async Task SeedPrimaryE2EUsersAsync()
 	{
-		await CreateTestUserAsync(
-			"e2e_user",
-			"e2e_user@test.local",
-			"E2E_User_Password_123!",
-			[RoleConstants.User]);
-
-		await CreateTestUserAsync(
-			"e2e_admin",
-			"e2e_admin@test.local",
-			"E2E_Admin_Password_123!",
-			[RoleConstants.User, RoleConstants.Admin]);
-
-		await CreateTestUserAsync(
-			"e2e_developer",
-			"e2e_developer@test.local",
-			"E2E_Developer_Password_123!",
-			[RoleConstants.User, RoleConstants.Developer]);
+		foreach (E2EUserFixture fixture in E2EUserFixtureCatalog.PrimaryUsers)
+		{
+			await CreateTestUserAsync(
+				fixture.Username,
+				fixture.Email,
+				fixture.Password,
+				fixture.Roles);
+		}
 
 		await CreateForcedPasswordChangeUserAsync();
 
@@ -105,73 +96,16 @@ public sealed class E2ETestSeeder(
 	/// </returns>
 	private async Task SeedScenarioE2EUsersAsync()
 	{
-		await CreateTestUserAsync(
-			"e2e_pw_change",
-			"e2e_pw_change@test.local",
-			"E2E_PwChange_Password_123!",
-			[RoleConstants.User]);
-
-		await CreateTestUserAsync(
-			"e2e_totp_enroll",
-			"e2e_totp_enroll@test.local",
-			"E2E_TotpEnroll_Password_123!",
-			[RoleConstants.User]);
-
-		await CreateTestUserAsync(
-			"e2e_totp_viewer",
-			"e2e_totp_viewer@test.local",
-			"E2E_TotpViewer_Password_123!",
-			[RoleConstants.User]);
-
-		await CreateTestUserAsync(
-			"e2e_backup_codes",
-			"e2e_backup_codes@test.local",
-			"E2E_BackupCodes_Password_123!",
-			[RoleConstants.User]);
-
-		await CreateTestUserAsync(
-			"e2e_forgot_pw",
-			"e2e_forgot_pw@test.local",
-			"E2E_ForgotPw_Password_123!",
-			[RoleConstants.User]);
+		foreach (E2EUserFixture fixture in E2EUserFixtureCatalog.ScenarioUsers)
+		{
+			await CreateTestUserAsync(
+				fixture.Username,
+				fixture.Email,
+				fixture.Password,
+				fixture.Roles);
+		}
 
 		await CreateMfaTestUserAsync();
-
-		await CreateTestUserAsync(
-			"e2e_lockout",
-			"e2e_lockout@test.local",
-			"E2E_Lockout_Password_123!",
-			[RoleConstants.User]);
-
-		await CreateTestUserAsync(
-			"e2e_concurrent",
-			"e2e_concurrent@test.local",
-			"E2E_Concurrent_Password_123!",
-			[RoleConstants.User]);
-
-		await CreateTestUserAsync(
-			"e2e_perm_approve",
-			"e2e_perm_approve@test.local",
-			"E2E_PermApprove_Password_123!",
-			[RoleConstants.User]);
-
-		await CreateTestUserAsync(
-			"e2e_perm_reject",
-			"e2e_perm_reject@test.local",
-			"E2E_PermReject_Password_123!",
-			[RoleConstants.User]);
-
-		await CreateTestUserAsync(
-			"e2e_profile_edit",
-			"e2e_profile_edit@test.local",
-			"E2E_ProfileEdit_Password_123!",
-			[RoleConstants.User]);
-
-		await CreateTestUserAsync(
-			"e2e_crosstab",
-			"e2e_crosstab@test.local",
-			"E2E_CrossTab_Password_123!",
-			[RoleConstants.User]);
 	}
 
 	/// <summary>

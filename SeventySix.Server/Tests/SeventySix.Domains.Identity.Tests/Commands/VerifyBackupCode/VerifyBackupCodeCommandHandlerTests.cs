@@ -28,7 +28,7 @@ public sealed class VerifyBackupCodeCommandHandlerTests
 
 	private readonly IBackupCodeService BackupCodeService;
 	private readonly UserManager<ApplicationUser> UserManager;
-	private readonly AuthenticationService AuthService;
+	private readonly IAuthenticationService AuthService;
 	private readonly ISecurityAuditService SecurityAuditService;
 	private readonly ITrustedDeviceService TrustedDeviceService;
 	private readonly IMfaService MfaService;

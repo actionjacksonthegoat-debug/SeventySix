@@ -17,244 +17,49 @@ concurrency:
 
 jobs:
     dast-scan:
-        name: OWASP ZAP Baseline Scan
-        runs-on: ubuntu-latest
-        timeout-minutes: 30
-
+        name: Main App DAST
+        uses: ./.github/workflows/reusable-dast-scan.yml
+        with:
+            target-url: "https://localhost:4301"
+            compose-file: "docker-compose.dast.yml"
+            app-name: "main"
+            ready-endpoint: "https://localhost:7274/health"
+            service-name: "api-dast"
+            needs-ssl: true
+            needs-auth: true
+            auth-endpoint: "https://localhost:7274/api/v1/auth/login"
+            use-insecure-curl: true
+            extra-zap-options: "--hook .zap/auth-hook.py"
+            client-ready-endpoint: "https://localhost:4301/"
         permissions:
-            security-events: write # Upload SARIF to Security tab
-            contents: read # Checkout code
-            actions: read # Required for CodeQL SARIF upload
-
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-
-            - name: Generate SSL certificates
-              shell: pwsh
-              run: scripts/generate-dev-ssl-cert.ps1 -SkipTrust
-
-            - name: Fix SSL permissions for Linux
-              run: |
-                  chmod 644 SeventySix.Client/ssl/dev-certificate.crt
-                  chmod 600 SeventySix.Client/ssl/dev-certificate.key
-
-            - name: Start DAST infrastructure
-              run: |
-                  docker compose -f docker-compose.dast.yml up -d --build
-                  echo "Waiting for API health..."
-                  API_READY=false
-                  for i in $(seq 1 60); do
-                    if curl -sf --insecure https://localhost:7274/health; then
-                      echo ""
-                      echo "API is healthy"
-                      API_READY=true
-                      break
-                    fi
-                    sleep 5
-                  done
-                  if [ "$API_READY" != "true" ]; then
-                    echo "::error::API failed to become healthy within 5 minutes"
-                    docker compose -f docker-compose.dast.yml logs api-dast --tail=50
-                    exit 1
-                  fi
-                  echo "Waiting for client..."
-                  CLIENT_READY=false
-                  for i in $(seq 1 30); do
-                    if curl -sf --insecure https://localhost:4301/ > /dev/null; then
-                      echo "Client is ready"
-                      CLIENT_READY=true
-                      break
-                    fi
-                    sleep 3
-                  done
-                  if [ "$CLIENT_READY" != "true" ]; then
-                    echo "::error::Client failed to become ready within 90 seconds"
-                    docker compose -f docker-compose.dast.yml logs client-dast --tail=50
-                    exit 1
-                  fi
-
-            - name: Authenticate for DAST scanning
-              id: auth
-              run: |
-                  TOKEN=$(curl -sf --insecure -X POST \
-                    https://localhost:7274/api/v1/auth/login \
-                    -H 'Content-Type: application/json' \
-                    -d '{"usernameOrEmail":"admin@seventysix.local","password":"SecureE2ETestPassword123!"}' \
-                    | jq -r '.accessToken')
-                  if [ -z "$TOKEN" ] || [ "$TOKEN" = "null" ]; then
-                    echo "::warning::Failed to obtain auth token — running unauthenticated scan only"
-                  else
-                    echo "ZAP_AUTH_TOKEN=$TOKEN" >> "$GITHUB_ENV"
-                    echo "Auth token obtained successfully"
-                  fi
-
-            - name: Verify DAST target is reachable
-              run: |
-                  echo "Docker containers:"
-                  docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" | grep -E "dast|NAMES"
-                  echo ""
-                  echo "Testing target connectivity..."
-                  curl -sv --insecure https://localhost:4301/ 2>&1 | head -30
-                  echo ""
-                  echo "Target is reachable"
-
-            - name: Run OWASP ZAP Baseline Scan
-              uses: zaproxy/action-baseline@de8ad967d3548d44ef623df22cf95c3b0baf8b25 # v0.15.0
-              with:
-                  target: "https://localhost:4301"
-                  rules_file_name: ".zap/rules.tsv"
-                  allow_issue_writing: false
-                  fail_action: true
-                  artifact_name: zap_scan_main
-                  cmd_options: >-
-                      -a
-                      -j
-                      --hook .zap/auth-hook.py
-
-            - name: Upload ZAP SARIF
-              if: always() && hashFiles('report_sarif.json') != ''
-              uses: github/codeql-action/upload-sarif@0d579ffd059c29b07949a3cce3983f0780820c98 # v4
-              with:
-                  sarif_file: report_sarif.json
-                  category: zap-dast
-
-            - name: Upload ZAP HTML Report
-              if: always()
-              uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
-              with:
-                  name: zap-dast-report
-                  path: report_html.html
-                  retention-days: 30
-
-            - name: Teardown DAST infrastructure
-              if: always()
-              run: docker compose -f docker-compose.dast.yml down -v --remove-orphans
+            security-events: write
+            contents: read
+            actions: read
 
     dast-scan-commerce-sveltekit:
-        name: OWASP ZAP Baseline Scan (Commerce SvelteKit)
-        runs-on: ubuntu-latest
-        timeout-minutes: 30
-
+        name: Commerce SvelteKit DAST
+        uses: ./.github/workflows/reusable-dast-scan.yml
+        with:
+            target-url: "http://localhost:3031"
+            compose-file: "ECommerce/seventysixcommerce-sveltekit/docker-compose.dast.yml"
+            app-name: "commerce-sveltekit"
+            ready-endpoint: "http://localhost:3031/healthz"
+            service-name: "sveltekit-dast"
         permissions:
             security-events: write
             contents: read
             actions: read
-
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-
-            - name: Start Commerce SvelteKit DAST infrastructure
-              run: |
-                  docker compose -f ECommerce/seventysixcommerce-sveltekit/docker-compose.dast.yml up -d --build
-                  echo "Waiting for SvelteKit app health..."
-                  APP_READY=false
-                  for i in $(seq 1 60); do
-                    if curl -sf http://localhost:3031/healthz > /dev/null; then
-                      echo "SvelteKit app is healthy"
-                      APP_READY=true
-                      break
-                    fi
-                    sleep 3
-                  done
-                  if [ "$APP_READY" != "true" ]; then
-                    echo "::error::SvelteKit app failed to become healthy within 3 minutes"
-                    docker compose -f ECommerce/seventysixcommerce-sveltekit/docker-compose.dast.yml logs sveltekit-dast --tail=50
-                    exit 1
-                  fi
-
-            - name: Run OWASP ZAP Baseline Scan (SvelteKit)
-              uses: zaproxy/action-baseline@de8ad967d3548d44ef623df22cf95c3b0baf8b25 # v0.15.0
-              with:
-                  target: "http://localhost:3031"
-                  rules_file_name: ".zap/rules.tsv"
-                  allow_issue_writing: false
-                  fail_action: true
-                  artifact_name: zap_scan_commerce_sveltekit
-                  cmd_options: >-
-                      -a
-                      -j
-
-            - name: Upload ZAP SARIF (SvelteKit)
-              if: always() && hashFiles('report_sarif.json') != ''
-              uses: github/codeql-action/upload-sarif@0d579ffd059c29b07949a3cce3983f0780820c98 # v4
-              with:
-                  sarif_file: report_sarif.json
-                  category: zap-dast-commerce-sveltekit
-
-            - name: Upload ZAP HTML Report (SvelteKit)
-              if: always()
-              uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
-              with:
-                  name: zap-dast-report-commerce-sveltekit
-                  path: report_html.html
-                  retention-days: 30
-
-            - name: Teardown Commerce SvelteKit DAST infrastructure
-              if: always()
-              run: docker compose -f ECommerce/seventysixcommerce-sveltekit/docker-compose.dast.yml down -v --remove-orphans
 
     dast-scan-commerce-tanstack:
-        name: OWASP ZAP Baseline Scan (Commerce TanStack)
-        runs-on: ubuntu-latest
-        timeout-minutes: 30
-
+        name: Commerce TanStack DAST
+        uses: ./.github/workflows/reusable-dast-scan.yml
+        with:
+            target-url: "http://localhost:3032"
+            compose-file: "ECommerce/seventysixcommerce-tanstack/docker-compose.dast.yml"
+            app-name: "commerce-tanstack"
+            ready-endpoint: "http://localhost:3032/api/healthz"
+            service-name: "tanstack-dast"
         permissions:
             security-events: write
             contents: read
             actions: read
-
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-
-            - name: Start Commerce TanStack DAST infrastructure
-              run: |
-                  docker compose -f ECommerce/seventysixcommerce-tanstack/docker-compose.dast.yml up -d --build
-                  echo "Waiting for TanStack app health..."
-                  APP_READY=false
-                  for i in $(seq 1 60); do
-                    if curl -sf http://localhost:3032/api/healthz > /dev/null; then
-                      echo "TanStack app is healthy"
-                      APP_READY=true
-                      break
-                    fi
-                    sleep 3
-                  done
-                  if [ "$APP_READY" != "true" ]; then
-                    echo "::error::TanStack app failed to become healthy within 3 minutes"
-                    docker compose -f ECommerce/seventysixcommerce-tanstack/docker-compose.dast.yml logs tanstack-dast --tail=50
-                    exit 1
-                  fi
-
-            - name: Run OWASP ZAP Baseline Scan (TanStack)
-              uses: zaproxy/action-baseline@de8ad967d3548d44ef623df22cf95c3b0baf8b25 # v0.15.0
-              with:
-                  target: "http://localhost:3032"
-                  rules_file_name: ".zap/rules.tsv"
-                  allow_issue_writing: false
-                  fail_action: true
-                  artifact_name: zap_scan_commerce_tanstack
-                  cmd_options: >-
-                      -a
-                      -j
-
-            - name: Upload ZAP SARIF (TanStack)
-              if: always() && hashFiles('report_sarif.json') != ''
-              uses: github/codeql-action/upload-sarif@0d579ffd059c29b07949a3cce3983f0780820c98 # v4
-              with:
-                  sarif_file: report_sarif.json
-                  category: zap-dast-commerce-tanstack
-
-            - name: Upload ZAP HTML Report (TanStack)
-              if: always()
-              uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
-              with:
-                  name: zap-dast-report-commerce-tanstack
-                  path: report_html.html
-                  retention-days: 30
-
-            - name: Teardown Commerce TanStack DAST infrastructure
-              if: always()
-              run: docker compose -f ECommerce/seventysixcommerce-tanstack/docker-compose.dast.yml down -v --remove-orphans

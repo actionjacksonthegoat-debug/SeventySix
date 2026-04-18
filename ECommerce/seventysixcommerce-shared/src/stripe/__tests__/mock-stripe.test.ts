@@ -104,4 +104,40 @@ describe("createMockStripe",
 					.rejects
 					.toThrow("Mock session cs_nonexistent not found");
 			});
+
+		it("throws descriptive error for malformed webhook payload",
+			() =>
+			{
+				const mock =
+					createMockStripe("http://localhost:3001");
+
+				expect(
+					() =>
+						mock.webhooks.constructEvent("not-valid-json", "sig", "secret"))
+					.toThrow("Invalid mock Stripe payload:");
+			});
+
+		it("parses valid webhook payload successfully",
+			() =>
+			{
+				const mock =
+					createMockStripe("http://localhost:3001");
+				const payload: string =
+					JSON.stringify(
+						{
+							type: "checkout.session.completed",
+							data: { object: { id: "cs_456" } }
+						});
+
+				const event =
+					mock.webhooks.constructEvent(payload, "sig", "secret") as {
+						type: string;
+						data: { object: { id: string; }; };
+					};
+
+				expect(event.type)
+					.toBe("checkout.session.completed");
+				expect(event.data.object.id)
+					.toBe("cs_456");
+			});
 	});

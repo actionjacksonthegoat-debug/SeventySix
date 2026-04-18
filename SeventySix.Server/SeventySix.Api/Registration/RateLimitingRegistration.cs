@@ -17,6 +17,11 @@ namespace SeventySix.Api.Registration;
 /// </summary>
 /// <remarks>
 /// <para>
+/// The disabled/enabled paths are intentionally separate private methods rather than inlined
+/// because the disabled path must register all named policies as no-op limiters (controllers
+/// use <c>[EnableRateLimiting("policyName")]</c> that must resolve at runtime).
+/// </para>
+/// <para>
 /// Rate limiting policies:
 /// </para>
 /// <list type="bullet">

@@ -54,7 +54,7 @@ public static class VerifyTotpCodeCommandHandler
 		ITotpService totpService,
 		TotpSecretProtector totpSecretProtector,
 		UserManager<ApplicationUser> userManager,
-		AuthenticationService authenticationService,
+		IAuthenticationService authenticationService,
 		ISecurityAuditService securityAuditService,
 		ITrustedDeviceService trustedDeviceService,
 		IMfaService mfaService,
@@ -193,7 +193,7 @@ public static class VerifyTotpCodeCommandHandler
 	private static async Task<AuthResult> GenerateResultWithOptionalTrustAsync(
 		ApplicationUser user,
 		(bool TrustDevice, string? UserAgent) deviceDetails,
-		AuthenticationService authenticationService,
+		IAuthenticationService authenticationService,
 		ITrustedDeviceService trustedDeviceService,
 		CancellationToken cancellationToken)
 	{

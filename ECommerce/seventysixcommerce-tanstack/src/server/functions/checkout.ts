@@ -20,7 +20,7 @@ import { cartSessionMiddleware } from "../middleware/cart-session";
 import { csrfMiddleware } from "../middleware/csrf";
 
 /** Checkout session response. */
-export interface CheckoutSessionResponse
+interface CheckoutSessionResponse
 {
 	url: string;
 }

@@ -619,7 +619,7 @@ jobs:
         name: SeventySixCommerce Quality Gate
         needs: [tanstack-build, sveltekit-build, e2e-sveltekit, e2e-tanstack, loadtest-sveltekit, loadtest-tanstack]
         runs-on: ubuntu-latest
-        timeout-minutes: 5
+        timeout-minutes: 15
         if: always()
 
         steps:
@@ -710,6 +710,13 @@ jobs:
                   cache-from: type=gha
                   cache-to: type=gha,mode=max
 
+            - name: Generate SBOM for TanStack image
+              uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
+              with:
+                  image: ghcr.io/${{ github.repository_owner }}/seventysixcommerce-tanstack:${{ github.sha }}
+                  format: spdx-json
+                  output-file: sbom-tanstack.spdx.json
+
             - name: Build and push SvelteKit image
               uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7
               with:
@@ -723,3 +730,46 @@ jobs:
                       ghcr.io/${{ github.repository_owner }}/seventysixcommerce-sveltekit:${{ steps.meta.outputs.date }}-${{ steps.meta.outputs.sha_short }}
                   cache-from: type=gha
                   cache-to: type=gha,mode=max
+
+            - name: Generate SBOM for SvelteKit image
+              uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
+              with:
+                  image: ghcr.io/${{ github.repository_owner }}/seventysixcommerce-sveltekit:${{ github.sha }}
+                  format: spdx-json
+                  output-file: sbom-sveltekit.spdx.json
+
+            - name: Upload SBOM artifacts
+              uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+              with:
+                  name: sbom-commerce-reports
+                  path: |
+                      sbom-tanstack.spdx.json
+                      sbom-sveltekit.spdx.json
+                  retention-days: 90
+
+    # ──────────────────────────────────────────────────────────
+    # Stage 4: Container vulnerability scans (after publish)
+    # ──────────────────────────────────────────────────────────
+    scan-tanstack-image:
+        name: Scan TanStack Image
+        needs: [publish]
+        if: needs.publish.result == 'success'
+        uses: ./.github/workflows/reusable-container-scan.yml
+        with:
+            image-ref: ghcr.io/${{ github.repository_owner }}/seventysixcommerce-tanstack:${{ github.sha }}
+            image-name: seventysixcommerce-tanstack
+        permissions:
+            contents: read
+            security-events: write
+
+    scan-sveltekit-image:
+        name: Scan SvelteKit Image
+        needs: [publish]
+        if: needs.publish.result == 'success'
+        uses: ./.github/workflows/reusable-container-scan.yml
+        with:
+            image-ref: ghcr.io/${{ github.repository_owner }}/seventysixcommerce-sveltekit:${{ github.sha }}
+            image-name: seventysixcommerce-sveltekit
+        permissions:
+            contents: read
+            security-events: write

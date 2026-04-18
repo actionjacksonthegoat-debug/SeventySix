@@ -42,7 +42,7 @@ public static class RefreshTokensCommandHandler
 		RefreshTokensCommand command,
 		ITokenService tokenService,
 		UserManager<ApplicationUser> userManager,
-		AuthenticationService authenticationService,
+		IAuthenticationService authenticationService,
 		ISecurityAuditService securityAuditService,
 		CancellationToken cancellationToken)
 	{

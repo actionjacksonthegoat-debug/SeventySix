@@ -8,18 +8,14 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using SeventySix.ElectronicNotifications.Emails;
-using SeventySix.ElectronicNotifications.Emails.Jobs;
-using SeventySix.Logging;
-using SeventySix.Logging.Jobs;
 using SeventySix.Shared.BackgroundJobs;
 using SeventySix.Shared.Constants;
-using SeventySix.Shared.Exceptions;
 
 namespace SeventySix.Registration;
 
 /// <summary>
-/// Schedules all recurring jobs on application startup.
+/// Schedules all recurring jobs on application startup via per-domain
+/// <see cref="IJobSchedulerContributor"/> implementations.
 /// Includes resilient startup with bounded retry for Docker environments.
 /// </summary>
 /// <remarks>
@@ -37,6 +33,11 @@ namespace SeventySix.Registration;
 /// If all retries fail, the service logs an error but allows the application
 /// to continue running (graceful degradation - background jobs won't run
 /// but API endpoints remain functional).
+/// </para>
+/// <para>
+/// Domain-specific job scheduling is delegated to
+/// <see cref="IJobSchedulerContributor"/> implementations registered per
+/// bounded context. This service owns only the lifecycle/retry concerns.
 /// </para>
 /// </remarks>
 /// <param name="serviceScopeFactory">
@@ -66,6 +67,12 @@ public sealed class RecurringJobSchedulerService(
 	private const int MaxRetryAttempts = 3;
 
 	/// <summary>
+	/// Multiplier applied to the attempt number to compute the exponential
+	/// backoff delay between retries (attempt 1 → 2s, attempt 2 → 4s).
+	/// </summary>
+	private const int RetryBackoffMultiplierSeconds = 2;
+
+	/// <summary>
 	/// Schedules all recurring jobs on startup with resilient retry logic.
 	/// </summary>
 	/// <param name="stoppingToken">
@@ -85,7 +92,6 @@ public sealed class RecurringJobSchedulerService(
 			return;
 		}
 
-		// Allow database connections to stabilize after container startup
 		logger.LogInformation(
 			"Waiting {DelaySeconds}s for database to stabilize",
 			StartupDelaySeconds);
@@ -98,12 +104,10 @@ public sealed class RecurringJobSchedulerService(
 		}
 		catch (OperationCanceledException)
 		{
-			// Startup cancelled during initial delay - exit cleanly
 			logger.LogInformation("Job scheduler startup cancelled during initial delay");
 			return;
 		}
 
-		// BOUNDED retry with exponential backoff - will exit after MaxRetryAttempts
 		for (int attemptNumber = 1; attemptNumber <= MaxRetryAttempts; attemptNumber++)
 		{
 			try
@@ -112,59 +116,38 @@ public sealed class RecurringJobSchedulerService(
 
 				logger.LogInformation(
 					"Recurring job scheduler completed startup scheduling");
-				return; // SUCCESS - exit method
+				return;
 			}
 			catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
 			{
-				// Graceful shutdown requested - exit cleanly
 				logger.LogInformation("Job scheduler startup cancelled");
-				return; // CANCELLED - exit method
+				return;
 			}
 			catch (DbException exception) when (attemptNumber < MaxRetryAttempts)
 			{
-				int retryDelaySeconds =
-					attemptNumber * 2; // 2s, 4s
-
-				logger.LogWarning(
+				await DelayBeforeRetryAsync(
 					exception,
-					"Job scheduling attempt {AttemptNumber}/{MaxAttempts} failed, retrying in {RetryDelaySeconds}s",
 					attemptNumber,
-					MaxRetryAttempts,
-					retryDelaySeconds);
-
-				await Task.Delay(
-					TimeSpan.FromSeconds(retryDelaySeconds),
 					stoppingToken);
 			}
 			catch (InvalidOperationException exception) when (attemptNumber < MaxRetryAttempts)
 			{
-				int retryDelaySeconds =
-					attemptNumber * 2; // 2s, 4s
-
-				logger.LogWarning(
+				await DelayBeforeRetryAsync(
 					exception,
-					"Job scheduling attempt {AttemptNumber}/{MaxAttempts} failed, retrying in {RetryDelaySeconds}s",
 					attemptNumber,
-					MaxRetryAttempts,
-					retryDelaySeconds);
-
-				await Task.Delay(
-					TimeSpan.FromSeconds(retryDelaySeconds),
 					stoppingToken);
 			}
 		}
 
-		// FAILURE after all retries - log error but DON'T crash the app
-		// API will still function, just without background job processing
 		logger.LogError(
 			"Failed to schedule recurring jobs after {MaxAttempts} attempts. " +
 			"Background jobs will not run but API remains functional.",
 			MaxRetryAttempts);
-		// Method exits here - no infinite loop
 	}
 
 	/// <summary>
-	/// Schedules all domain recurring jobs.
+	/// Dispatches scheduling to all registered
+	/// <see cref="IJobSchedulerContributor"/> implementations.
 	/// </summary>
 	/// <param name="cancellationToken">
 	/// The cancellation token.
@@ -180,8 +163,6 @@ public sealed class RecurringJobSchedulerService(
 		IRecurringJobService recurringJobService =
 			scope.ServiceProvider.GetRequiredService<IRecurringJobService>();
 
-		// Schedule jobs from all bounded context contributors
-		// Each domain registers its own IJobSchedulerContributor implementation
 		IEnumerable<IJobSchedulerContributor> contributors =
 			scope.ServiceProvider.GetServices<IJobSchedulerContributor>();
 
@@ -191,170 +172,41 @@ public sealed class RecurringJobSchedulerService(
 				recurringJobService,
 				cancellationToken);
 		}
-
-		// Schedule ElectronicNotifications domain jobs
-		await ScheduleEmailQueueProcessJobAsync(
-			recurringJobService,
-			cancellationToken);
-
-		// Schedule Logging domain jobs
-		await ScheduleLogCleanupJobAsync(
-			recurringJobService,
-			cancellationToken);
-
-		await ScheduleDatabaseMaintenanceJobAsync(
-			recurringJobService,
-			cancellationToken);
 	}
 
 	/// <summary>
-	/// Schedules the email queue processing job if enabled.
+	/// Logs a retry warning and waits using exponential backoff derived from
+	/// <see cref="RetryBackoffMultiplierSeconds"/>.
 	/// </summary>
-	/// <param name="recurringJobService">
-	/// The recurring job service for scheduling.
+	/// <param name="exception">
+	/// The transient exception that triggered the retry.
+	/// </param>
+	/// <param name="attemptNumber">
+	/// The current (1-based) retry attempt number.
 	/// </param>
 	/// <param name="cancellationToken">
 	/// The cancellation token.
 	/// </param>
 	/// <returns>
-	/// A task representing the asynchronous operation.
+	/// A task representing the delay.
 	/// </returns>
-	private async Task ScheduleEmailQueueProcessJobAsync(
-		IRecurringJobService recurringJobService,
+	private async Task DelayBeforeRetryAsync(
+		Exception exception,
+		int attemptNumber,
 		CancellationToken cancellationToken)
 	{
-		EmailSettings emailSettings =
-			configuration.GetSection(EmailSettings.SectionName).Get<EmailSettings>()
-			?? throw new RequiredConfigurationException(EmailSettings.SectionName);
+		int retryDelaySeconds =
+			attemptNumber * RetryBackoffMultiplierSeconds;
 
-		EmailQueueSettings queueSettings =
-			configuration
-				.GetSection(EmailQueueSettings.SectionName)
-				.Get<EmailQueueSettings>()
-			?? throw new RequiredConfigurationException(EmailQueueSettings.SectionName);
+		logger.LogWarning(
+			exception,
+			"Job scheduling attempt {AttemptNumber}/{MaxAttempts} failed, retrying in {RetryDelaySeconds}s",
+			attemptNumber,
+			MaxRetryAttempts,
+			retryDelaySeconds);
 
-		if (!emailSettings.Enabled || !queueSettings.Enabled)
-		{
-			logger.LogInformation(
-				"Skipping {JobName} - email or queue processing disabled",
-				nameof(EmailQueueProcessJob));
-			return;
-		}
-
-		TimeSpan interval =
-			TimeSpan.FromSeconds(
-				queueSettings.ProcessingIntervalSeconds);
-
-		await recurringJobService.EnsureScheduledAsync<EmailQueueProcessJob>(
-			nameof(EmailQueueProcessJob),
-			interval,
+		await Task.Delay(
+			TimeSpan.FromSeconds(retryDelaySeconds),
 			cancellationToken);
-
-		logger.LogInformation(
-			"Scheduled {JobName} with interval {Interval}",
-			nameof(EmailQueueProcessJob),
-			interval);
-	}
-
-	/// <summary>
-	/// Schedules the log cleanup job if enabled.
-	/// </summary>
-	/// <param name="recurringJobService">
-	/// The recurring job service for scheduling.
-	/// </param>
-	/// <param name="cancellationToken">
-	/// The cancellation token.
-	/// </param>
-	/// <returns>
-	/// A task representing the asynchronous operation.
-	/// </returns>
-	private async Task ScheduleLogCleanupJobAsync(
-		IRecurringJobService recurringJobService,
-		CancellationToken cancellationToken)
-	{
-		LogCleanupSettings settings =
-			configuration
-				.GetSection(LogCleanupSettings.SectionName)
-				.Get<LogCleanupSettings>()
-			?? throw new RequiredConfigurationException(LogCleanupSettings.SectionName);
-
-		if (!settings.Enabled)
-		{
-			logger.LogInformation(
-				"Skipping {JobName} - log cleanup disabled",
-				nameof(LogCleanupJob));
-			return;
-		}
-
-		TimeOnly preferredTimeUtc =
-			new(
-				settings.PreferredStartHourUtc,
-				settings.PreferredStartMinuteUtc);
-
-		TimeSpan interval =
-			TimeSpan.FromHours(settings.IntervalHours);
-
-		await recurringJobService.EnsureScheduledAtPreferredTimeAsync<LogCleanupJob>(
-			nameof(LogCleanupJob),
-			preferredTimeUtc,
-			interval,
-			cancellationToken);
-
-		logger.LogInformation(
-			"Scheduled {JobName} at {PreferredTime:HH:mm} UTC with interval {Interval}",
-			nameof(LogCleanupJob),
-			preferredTimeUtc,
-			interval);
-	}
-
-	/// <summary>
-	/// Schedules the database maintenance job for PostgreSQL VACUUM ANALYZE.
-	/// </summary>
-	/// <param name="recurringJobService">
-	/// The recurring job service for scheduling.
-	/// </param>
-	/// <param name="cancellationToken">
-	/// The cancellation token.
-	/// </param>
-	/// <returns>
-	/// A task representing the asynchronous operation.
-	/// </returns>
-	private async Task ScheduleDatabaseMaintenanceJobAsync(
-		IRecurringJobService recurringJobService,
-		CancellationToken cancellationToken)
-	{
-		DatabaseMaintenanceSettings settings =
-			configuration
-				.GetSection(DatabaseMaintenanceSettings.SectionName)
-				.Get<DatabaseMaintenanceSettings>()
-			?? throw new RequiredConfigurationException(DatabaseMaintenanceSettings.SectionName);
-
-		if (!settings.Enabled)
-		{
-			logger.LogInformation(
-				"Skipping {JobName} - database maintenance disabled",
-				nameof(DatabaseMaintenanceJob));
-			return;
-		}
-
-		TimeOnly preferredTimeUtc =
-			new(
-				settings.PreferredStartHourUtc,
-				settings.PreferredStartMinuteUtc);
-
-		TimeSpan interval =
-			TimeSpan.FromHours(settings.IntervalHours);
-
-		await recurringJobService.EnsureScheduledAtPreferredTimeAsync<DatabaseMaintenanceJob>(
-			nameof(DatabaseMaintenanceJob),
-			preferredTimeUtc,
-			interval,
-			cancellationToken);
-
-		logger.LogInformation(
-			"Scheduled {JobName} at {PreferredTime:HH:mm} UTC with interval {Interval}",
-			nameof(DatabaseMaintenanceJob),
-			preferredTimeUtc,
-			interval);
 	}
 }

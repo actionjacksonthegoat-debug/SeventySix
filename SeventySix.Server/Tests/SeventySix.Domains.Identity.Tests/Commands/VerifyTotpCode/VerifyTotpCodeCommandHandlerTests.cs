@@ -32,7 +32,7 @@ public sealed class VerifyTotpCodeCommandHandlerTests
 	private readonly TotpSecretProtector TotpProtector;
 	private readonly string ProtectedSecret;
 	private readonly UserManager<ApplicationUser> UserManager;
-	private readonly AuthenticationService AuthService;
+	private readonly IAuthenticationService AuthService;
 	private readonly ISecurityAuditService SecurityAuditService;
 	private readonly ITrustedDeviceService TrustedDeviceService;
 	private readonly IMfaService MfaService;

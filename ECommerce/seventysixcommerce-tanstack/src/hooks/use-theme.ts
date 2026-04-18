@@ -5,7 +5,7 @@ import { THEME_COOKIE_MAX_AGE, THEME_COOKIE_NAME } from "~/lib/constants";
 const STORAGE_KEY: string = "SeventySixCommerce-theme";
 
 /** Valid theme values. */
-export type Theme = "light" | "dark";
+type Theme = "light" | "dark";
 
 /** The return type of the useTheme hook. */
 export interface ThemeState

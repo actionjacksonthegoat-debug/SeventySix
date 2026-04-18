@@ -41,7 +41,7 @@ public sealed class MfaOrchestrator(
 	ITrustedDeviceService trustedDeviceService,
 	ISecurityAuditService securityAuditService,
 	IMessageBus messageBus,
-	AuthenticationService authenticationService) : IMfaOrchestrator
+	IAuthenticationService authenticationService) : IMfaOrchestrator
 {
 	/// <inheritdoc />
 	public bool IsMfaRequired(ApplicationUser user)

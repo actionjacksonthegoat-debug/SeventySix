@@ -341,6 +341,111 @@ public sealed class TokenServiceUnitTests
 
 	#endregion
 
+	#region RotateRefreshTokenAsync Tests
+
+	[Fact]
+	public async Task RotateRefreshTokenAsync_ReuseOfRevokedToken_RevokesFamilyAsync()
+	{
+		// Arrange — create a revoked token to simulate reuse attack
+		Guid familyId =
+			Guid.NewGuid();
+		const long userId =
+			42L;
+
+		RefreshToken revokedToken =
+			new RefreshTokenBuilder(TimeProvider)
+				.WithUserId(userId)
+				.WithFamilyId(familyId)
+				.AsRevoked()
+				.BuildWithPlainToken(out string plainToken);
+
+		TokenRepository
+			.GetByTokenHashAsync(
+				Arg.Any<string>(),
+				Arg.Any<CancellationToken>())
+			.Returns(revokedToken);
+
+		// Act
+		(string? token, bool rememberMe) result =
+			await Service.RotateRefreshTokenAsync(
+				plainToken,
+				CancellationToken.None);
+
+		// Assert — token is null (reuse detected) and family is revoked
+		result.token.ShouldBeNull();
+		result.rememberMe.ShouldBeFalse();
+
+		await TokenRepository
+			.Received(1)
+			.RevokeFamilyAsync(
+				familyId,
+				Arg.Any<DateTimeOffset>(),
+				Arg.Any<CancellationToken>());
+	}
+
+	[Fact]
+	public async Task RotateRefreshTokenAsync_ReuseOfRevokedToken_WithDisableRotation_StillRevokesFamilyAsync()
+	{
+		// Arrange — even with DisableRotation=true, reuse detection must fire
+		Guid familyId =
+			Guid.NewGuid();
+		const long userId =
+			42L;
+
+		IOptions<AuthSettings> disableRotationOptions =
+			Options.Create(
+			new AuthSettings
+			{
+				Token =
+					new TokenSettings
+					{
+						MaxActiveSessionsPerUser = 5,
+						DisableRotation = true,
+					},
+			});
+
+		TokenService serviceWithDisableRotation =
+			new(
+			TokenRepository,
+			SessionManagement,
+			JwtOptions,
+			disableRotationOptions,
+			NullLogger<TokenService>.Instance,
+			TimeProvider);
+
+		RefreshToken revokedToken =
+			new RefreshTokenBuilder(TimeProvider)
+				.WithUserId(userId)
+				.WithFamilyId(familyId)
+				.AsRevoked()
+				.BuildWithPlainToken(out string plainToken);
+
+		TokenRepository
+			.GetByTokenHashAsync(
+				Arg.Any<string>(),
+				Arg.Any<CancellationToken>())
+			.Returns(revokedToken);
+
+		// Act
+		(string? token, bool rememberMe) result =
+			await serviceWithDisableRotation.RotateRefreshTokenAsync(
+				plainToken,
+				CancellationToken.None);
+
+		// Assert — reuse STILL detected despite DisableRotation=true
+		result.token.ShouldBeNull();
+		result.rememberMe.ShouldBeFalse();
+
+		await TokenRepository
+			.Received(1)
+			.RevokeFamilyAsync(
+				familyId,
+				Arg.Any<DateTimeOffset>(),
+				Arg.Any<CancellationToken>());
+	}
+
+	#endregion
+
 	#region Helper Methods
 
 	/// <summary>

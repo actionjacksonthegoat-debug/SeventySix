@@ -23,6 +23,15 @@ public sealed class OAuthProviderFactory(
 			StringComparer.OrdinalIgnoreCase);
 
 	/// <summary>
+	/// Cached read-only list of registered provider names.
+	/// </summary>
+	private readonly IReadOnlyList<string> RegisteredProviders =
+		strategies
+			.Select(strategy => strategy.ProviderName)
+			.ToList()
+			.AsReadOnly();
+
+	/// <summary>
 	/// Gets the strategy for the given provider.
 	/// </summary>
 	/// <param name="provider">
@@ -52,6 +61,6 @@ public sealed class OAuthProviderFactory(
 	/// </returns>
 	public IReadOnlyList<string> GetRegisteredProviders()
 	{
-		return StrategyMap.Keys.ToList().AsReadOnly();
+		return RegisteredProviders;
 	}
 }

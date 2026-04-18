@@ -22,6 +22,10 @@ export interface LogEntry
 	requestUrl?: string;
 	/** The HTTP method of the request. */
 	requestMethod?: string;
+	/** W3C trace ID for distributed tracing correlation. */
+	traceId?: string;
+	/** W3C span ID for distributed tracing correlation. */
+	spanId?: string;
 }
 
 /** Log levels that should be forwarded to the SeventySix API. */
@@ -77,6 +81,8 @@ export function createLogForwarder(sourceContext: string): LogForwarder
 			sourceContext,
 			requestUrl: entry.requestUrl,
 			requestMethod: entry.requestMethod,
+			traceId: entry.traceId,
+			spanId: entry.spanId,
 			clientTimestamp: now()
 				.toISOString()
 		};

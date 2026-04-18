@@ -7,8 +7,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SeventySix.ElectronicNotifications;
 using SeventySix.ElectronicNotifications.Emails;
+using SeventySix.ElectronicNotifications.Emails.Jobs;
 using SeventySix.ElectronicNotifications.Emails.Services;
 using SeventySix.ElectronicNotifications.Emails.Strategies;
+using SeventySix.Shared.BackgroundJobs;
 using SeventySix.Shared.Constants;
 using SeventySix.Shared.Registration;
 
@@ -77,6 +79,11 @@ public static class ElectronicNotificationsRegistration
 			configuration,
 			EmailQueueSettings.SectionName);
 
+		// Bind email queue retention settings with FluentValidation + ValidateOnStart
+		services.AddDomainSettings<EmailQueueRetentionSettings, EmailQueueRetentionSettingsValidator>(
+			configuration,
+			EmailQueueRetentionSettings.SectionName);
+
 		// Register named HttpClient for Brevo API — read from bound EmailSettings
 		// to ensure single source of truth for ApiUrl/ApiKey defaults
 		EmailSettings emailSettings =
@@ -113,6 +120,9 @@ public static class ElectronicNotificationsRegistration
 		services.AddScoped<IEmailSendingStrategy, VerificationEmailStrategy>();
 		services.AddScoped<IEmailSendingStrategy, MfaCodeEmailStrategy>();
 		services.AddScoped<EmailSendingStrategyResolver>();
+
+		// Register ElectronicNotifications domain job scheduler contributor
+		services.AddScoped<IJobSchedulerContributor, EmailQueueJobSchedulerContributor>();
 
 		return services;
 	}

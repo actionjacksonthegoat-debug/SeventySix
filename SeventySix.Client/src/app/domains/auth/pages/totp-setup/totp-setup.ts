@@ -10,7 +10,6 @@ import {
 	Component,
 	DestroyRef,
 	inject,
-	OnInit,
 	signal,
 	WritableSignal
 } from "@angular/core";
@@ -58,7 +57,7 @@ const SETUP_STEP_SUCCESS: number = 3;
  * Component for setting up TOTP (authenticator app) two-factor authentication.
  * Guides users through QR code scanning and verification.
  */
-export class TotpSetupComponent implements OnInit
+export class TotpSetupComponent
 {
 	/**
 	 * TOTP service for enrollment operations.
@@ -214,11 +213,7 @@ export class TotpSetupComponent implements OnInit
 	protected readonly STEP_SUCCESS: number = SETUP_STEP_SUCCESS;
 	protected readonly CODE_LENGTH: number = TOTP_CODE_LENGTH;
 
-	/**
-	 * Initializes the component by fetching TOTP setup data.
-	 * @returns {void}
-	 */
-	ngOnInit(): void
+	constructor()
 	{
 		this.initiateSetup();
 	}

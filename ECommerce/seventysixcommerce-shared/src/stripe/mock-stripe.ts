@@ -50,6 +50,25 @@ export interface MockStripeClient
 }
 
 /**
+ * Safely parses a raw JSON string as a Stripe-like event payload.
+ * @param raw - The raw JSON body from the webhook request.
+ * @returns The parsed event object.
+ * @throws Error with a descriptive message when the payload is malformed.
+ */
+function safeParseStripeBody<T>(raw: string): T
+{
+	try
+	{
+		return JSON.parse(raw) as T;
+	}
+	catch (error: unknown)
+	{
+		throw new Error(
+			`Invalid mock Stripe payload: ${(error as Error).message}`);
+	}
+}
+
+/**
  * Creates a mock Stripe-compatible client for demo/dev use.
  * Sessions are stored in-memory and checkout redirects to the local success page.
  * @param baseUrl - The application base URL for constructing redirect URLs.
@@ -144,7 +163,7 @@ export function createMockStripe(baseUrl: string): MockStripeClient
 				_sig: string,
 				_secret: string) =>
 			{
-				return JSON.parse(payload);
+				return safeParseStripeBody(payload);
 			}
 		}
 	};

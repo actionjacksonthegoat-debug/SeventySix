@@ -4,6 +4,25 @@ import { now } from "../date";
 import type { OrderForFulfillment, PrintfulOrderResult } from "../types";
 import { isPresent } from "../utils/null-check";
 
+/** Logger interface for the Printful client. */
+export interface PrintfulLogger
+{
+	/** Logs a warning message. */
+	warn(message: string): void;
+	/** Logs an error message. */
+	error(message: string): void;
+}
+
+/** Default logger that delegates to the console. */
+const defaultLogger: PrintfulLogger =
+	{
+		warn: (message: string): void =>
+			console.warn(message),
+
+		error: (message: string): void =>
+			console.error(message)
+	};
+
 /** Configuration for the Printful fulfillment service. */
 export interface PrintfulConfig
 {
@@ -11,6 +30,8 @@ export interface PrintfulConfig
 	apiKey: string;
 	/** Whether to use mock mode (simulate instead of call API). */
 	mockServices: boolean;
+	/** Optional logger — defaults to console. */
+	logger?: PrintfulLogger;
 }
 
 /** Printful API response schema for order creation. */
@@ -53,6 +74,8 @@ export interface PrintfulClient
  */
 export function createPrintfulClient(config: PrintfulConfig): PrintfulClient
 {
+	const logger: PrintfulLogger =
+		config.logger ?? defaultLogger;
 	/**
 	 * Creates a fulfillment order on Printful.
 	 * Called after successful Stripe payment webhook.
@@ -62,7 +85,7 @@ export function createPrintfulClient(config: PrintfulConfig): PrintfulClient
 	{
 		if (config.mockServices)
 		{
-			console.warn("[Printful Mock] Order created (simulated)");
+			logger.warn("[Printful Mock] Order created (simulated)");
 			return {
 				id: now()
 					.getTime(),
@@ -108,7 +131,7 @@ export function createPrintfulClient(config: PrintfulConfig): PrintfulClient
 
 		if (!response.ok)
 		{
-			console.error(`[Printful] API error (${response.status})`);
+			logger.error(`[Printful] API error (${response.status})`);
 			throw new Error(
 				`Printful API error (${response.status})`);
 		}

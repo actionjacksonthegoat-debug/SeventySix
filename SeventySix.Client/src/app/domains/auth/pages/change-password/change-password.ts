@@ -15,7 +15,6 @@ import {
 	computed,
 	DestroyRef,
 	inject,
-	OnInit,
 	Signal,
 	signal,
 	WritableSignal
@@ -64,7 +63,7 @@ interface ChangePasswordRequest
  * Page for changing a user's password (required or voluntary flows).
  * Validates passwords and submits change requests to the API.
  */
-export class ChangePasswordComponent implements OnInit
+export class ChangePasswordComponent
 {
 	/**
 	 * Angular destroy reference for automatic subscription cleanup.
@@ -205,12 +204,7 @@ export class ChangePasswordComponent implements OnInit
 	 */
 	private returnUrl: string = "/";
 
-	/**
-	 * Component initialization - determine whether a password change is required
-	 * and validate the reset token presence.
-	 * @returns {void}
-	 */
-	ngOnInit(): void
+	constructor()
 	{
 		// Check if password change is required (from query param or auth state)
 		const requiredParam: string | null =
