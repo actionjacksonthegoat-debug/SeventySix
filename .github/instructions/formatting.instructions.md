@@ -172,7 +172,7 @@ const serverCategory =
 
 This applies to every `const` and `let` — no exceptions, no "obvious" cases.
 
-## SCSS / CSS Rules (CRITICAL — Required for ALL Style Changes)
+## [CRITICAL] SCSS / CSS Rules
 
 > **RULE**: Every CSS/SCSS change must be intentional, minimal, and DRY.
 > Think before adding rules. Prefer reusing existing variables, mixins, or Material tokens over writing new CSS.

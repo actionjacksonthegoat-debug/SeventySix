@@ -111,7 +111,7 @@ The following console messages are expected in development and should be **ignor
 
 - **DevTools warnings** — messages from browser extensions, DevTools protocol noise
 
-### Continue-on-Failure (CRITICAL)
+### [CRITICAL] Continue-on-Failure
 
 **On failure of ANY step**: Log the error, take a screenshot of the current state, record the step as FAILED with error details, and CONTINUE to the next step. NEVER abort the walkthrough due to a single step failure.
 
@@ -539,12 +539,12 @@ Before moving to Part 2, run `list_network_requests` and check for:
 4. Use `take_snapshot` to verify accessibility tree — check heading hierarchy and verify all product images have alt text
 5. Click on the first category link
 6. Wait for the category page to load
-6. Take screenshot → `step-29-svelte-category.png`
-7. Click on the first product in the category
-8. Wait for the product detail page to load
-9. Take screenshot → `step-29-svelte-product-detail.png`
-10. Check for console errors
-11. Record result
+7. Take screenshot → `step-29-svelte-category.png`
+8. Click on the first product in the category
+9. Wait for the product detail page to load
+10. Take screenshot → `step-29-svelte-product-detail.png`
+11. Check for console errors
+12. Record result
 
 ### Step 30: SvelteKit — Add to Cart & Checkout Flow
 
@@ -649,12 +649,12 @@ Before moving to Part 2, run `list_network_requests` and check for:
 4. Use `take_snapshot` to verify accessibility tree — check heading hierarchy and verify all product images have alt text
 5. Click on the first category link
 6. Wait for the category page to load
-6. Take screenshot → `step-38-tanstack-category.png`
-7. Click on the first product in the category
-8. Wait for the product detail page to load
-9. Take screenshot → `step-38-tanstack-product-detail.png`
-10. Check for console errors
-11. Record result
+7. Take screenshot → `step-38-tanstack-category.png`
+8. Click on the first product in the category
+9. Wait for the product detail page to load
+10. Take screenshot → `step-38-tanstack-product-detail.png`
+11. Check for console errors
+12. Record result
 
 ### Step 39: TanStack — Add to Cart & Checkout Flow
 

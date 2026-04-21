@@ -15,7 +15,7 @@ Create a new Angular component with these requirements:
 
 Ask user which domain: admin, auth, account, developer, sandbox, home (or shared for cross-cutting)
 
-## Import Boundaries (CRITICAL)
+## [CRITICAL] Import Boundaries
 
 - Domain imports ONLY from `@shared/*` + own domain (`@{domain}/*`)
 - NEVER import from another domain
@@ -72,7 +72,7 @@ export class {{Name}}Component {
 }
 ```
 
-## Service Scoping (CRITICAL)
+## [CRITICAL] Service Scoping
 
 | Location             | Injectable              |
 | -------------------- | ----------------------- |

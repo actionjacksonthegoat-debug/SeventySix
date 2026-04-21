@@ -5,7 +5,7 @@ applyTo: "**/SeventySix.Client/src/**/*.ts,**/SeventySix.Server/**/*.cs,**/EComm
 
 # Security Patterns
 
-## Exception Handling = Secure ProblemDetails (CRITICAL)
+## [CRITICAL] Exception Handling: Secure ProblemDetails
 
 > **RULE**: API responses MUST NEVER expose raw `exception.Message` in `ProblemDetails.Detail`.
 > Raw exception text (parameter names, stack traces, SQL, connection strings) is **Internal Only** — logged server-side, never returned to clients.
@@ -91,7 +91,7 @@ taint-tracking alerts in C# or JS. Instead, dismiss false-positive alerts direct
 GitHub Security tab (`Security → Code scanning → Dismiss alert → False positive`).
 Dismissals persist across future scans and do not require code changes.
 
-## PII Masking in Structured Logs (CRITICAL)
+## [CRITICAL] PII Masking in Structured Logs
 
 > **RULE**: Personal Identifiable Information (PII) and user-controlled strings MUST NEVER
 > appear verbatim in structured log parameters. Use `LogSanitizer` for all log arguments

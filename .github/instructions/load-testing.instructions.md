@@ -1,4 +1,3 @@
-````instructions
 ---
 description: k6 load test patterns and rules for all SeventySix load-testing
 applyTo: "**/SeventySix.Client/load-testing/**/*.js,**/ECommerce/seventysixcommerce-sveltekit/load-testing/**/*.js,**/ECommerce/seventysixcommerce-tanstack/load-testing/**/*.js"
@@ -6,7 +5,7 @@ applyTo: "**/SeventySix.Client/load-testing/**/*.js,**/ECommerce/seventysixcomme
 
 # Load Testing (Grafana k6)
 
-## Load Test Environment Isolation (CRITICAL)
+## [CRITICAL] Load Test Environment Isolation
 
 Load tests run in a **fully isolated Docker environment** (`docker-compose.loadtest.yml`). You do NOT need to start the dev environment (`npm start`) for load tests.
 
@@ -182,7 +181,7 @@ Use `isSetupInvalid(data)` guard from `lib/guards.js` instead of inline null che
 | Idempotency | Tests create own data, never depend on prior runs |
 | No cleanup | Data persists — environment is disposable |
 
-## Thresholds (CRITICAL)
+## [CRITICAL] Thresholds
 
 Use preset objects from `THRESHOLDS.*`:
 
@@ -285,4 +284,3 @@ If VS Code freezes during load tests:
 3. Stop containers: `docker compose -f docker-compose.loadtest.yml down`
 4. Reload VS Code window: `Ctrl+Shift+P` → "Developer: Reload Window"
 
-````

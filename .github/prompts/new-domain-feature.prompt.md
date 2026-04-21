@@ -219,12 +219,12 @@ export const {{FEATURE}}_ROUTES: Routes =
 
 ## Key Rules
 
-### Import Boundaries (CRITICAL)
+### [CRITICAL] Import Boundaries
 
 - **Server**: `Shared ← Domains ← Api` (never reverse)
 - **Client**: Domain imports ONLY `@shared/*` + itself, NEVER another domain
 
-### Service Scoping (CRITICAL)
+### [CRITICAL] Service Scoping
 
 - Domain services in `services/` → Route `providers` array, NEVER `providedIn: 'root'`
 - Persistent state in `core/` → `providedIn: 'root'` OK
@@ -241,7 +241,7 @@ export const {{FEATURE}}_ROUTES: Routes =
 - New line after every `=`, before every `.`
 - Server namespace: `SeventySix.{Domain}` (NOT `SeventySix.Domains.{Domain}`)
 
-### [WARNING] Work Completion Requirements (CRITICAL)
+### [CRITICAL] Work Completion Requirements
 
 **ALL FOUR** test suites must pass for work to be considered complete:
 

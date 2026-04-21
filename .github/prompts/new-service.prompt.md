@@ -122,7 +122,7 @@ public record Create{{Name}}Request(
 | Warning     | Recoverable issues             |
 | Error       | Unrecoverable failures         |
 
-## Test Requirements (CRITICAL)
+## [CRITICAL] Test Requirements
 
 When creating a service, ALWAYS create corresponding tests:
 

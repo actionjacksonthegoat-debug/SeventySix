@@ -26,7 +26,7 @@ applyTo: "**/SeventySix.Client/src/**/*.ts"
 
 See `accessibility.instructions.md` for WCAG AA patterns (icons, loading, live regions).
 
-## Service Scoping (CRITICAL)
+## [CRITICAL] Service Scoping
 
 | Type           | Location             | Injectable              |
 | -------------- | -------------------- | ----------------------- |
@@ -36,7 +36,7 @@ See `accessibility.instructions.md` for WCAG AA patterns (icons, loading, live r
 
 **Rule**: `@{domain}/services/` must NEVER use `providedIn: 'root'`
 
-## Domain Boundaries (CRITICAL)
+## [CRITICAL] Domain Boundaries
 
 Each domain imports ONLY `@shared/*` + itself. NEVER another domain.
 
@@ -84,7 +84,7 @@ TestBed.configureTestingModule({
 **Forbidden**: `fakeAsync`, `tick`, `NgZone`
 **Use instead**: `TestBed.flushEffects()`, `jasmine.clock().tick()`
 
-## Error Handling (CRITICAL)
+## [CRITICAL] Error Handling
 
 > **RULE**: Client error display must separate user-visible details from diagnostic-only details.
 
@@ -102,7 +102,7 @@ TestBed.configureTestingModule({
 - Default case returns generic message — NEVER passes through `error.error?.detail`
 - Use `AUTH_ERROR_CODE` constants, not string literals
 
-## Date/Time Handling (CRITICAL)
+## [CRITICAL] Date/Time Handling
 
 | Required | Forbidden |
 | --- | --- |

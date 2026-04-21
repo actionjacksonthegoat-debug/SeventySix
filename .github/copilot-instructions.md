@@ -5,7 +5,7 @@
 
 ---
 
-## [CRITICAL] FORBIDDEN COMMANDS (NEVER EXECUTE)
+## [CRITICAL] FORBIDDEN COMMANDS
 
 > **ABSOLUTE PROHIBITION**: The following commands are **USER-ONLY** and must **NEVER** be executed by Copilot under any circumstances.
 
@@ -88,7 +88,7 @@
 - **`npm run format` is the ONLY format command** — `dprint` must NEVER be run standalone. `npm run format:client` runs: ESLint → dprint → ESLint. Run format at the end of implementation phases, right before the test gate.
 - **All required test suites MUST pass** in the final validation phase before claiming completion (see below)
 
-## [CRITICAL] Key Formatting Rules (ALWAYS FOLLOW)
+## [CRITICAL] Key Formatting Rules
 
 > Full examples in `formatting.instructions.md`, `csharp.instructions.md`, and `testing-server.instructions.md`. **NEVER skip — violation = blocker.**
 
@@ -148,7 +148,7 @@ This gate runs **once** at the end of a plan — not during every phase.
 > **CI/CD verification**: Tests must also pass on `ubuntu-latest` (GitHub Actions CI).
 > Preferred: push to GitHub and confirm CI passes. Alternatives: WSL Ubuntu or Linux VM.
 
-## [CRITICAL] Site Walkthrough Go/No-Go (MANDATORY FINAL CHECK)
+## [CRITICAL] Site Walkthrough Go/No-Go
 
 After the Final Validation Gate passes, a full `/run-site-base` walkthrough is a **required go/no-go** before declaring any plan complete. This is the primary functionality confirmation for the entire Ecosystem.
 
@@ -298,7 +298,7 @@ Plans created by `/create-plan` include explicit compaction checkpoints at major
 
 ---
 
-## E2E, Load Test, and DAST Environment Isolation (CRITICAL)
+## [CRITICAL] E2E, Load Test, and DAST Environment Isolation
 
 E2E, load tests, and DAST scans run in **fully isolated Docker environments** — do NOT start the dev environment for any of them.
 

@@ -193,7 +193,7 @@ ISoftDeletable (+IsDeleted, +DeletedAt, +DeletedBy)  — separate mixin
 
 `AuditInterceptor` in `SeventySix.Shared.Persistence` auto-sets timestamps/user tracking from these interfaces.
 
-## Date/Time Handling (CRITICAL)
+## [CRITICAL] Date/Time Handling
 
 | Required | Forbidden |
 | --- | --- |
@@ -207,7 +207,7 @@ ISoftDeletable (+IsDeleted, +DeletedAt, +DeletedBy)  — separate mixin
 
 Controllers are thin dispatchers — NO business logic. `IMessageBus.InvokeAsync<T>` for CQRS, `outputCacheStore.EvictByTagAsync` on mutations. See existing controllers for reference (`LogsController`, `UsersController`, etc.).
 
-## EF Core Migrations (CRITICAL)
+## [CRITICAL] EF Core Migrations
 
 ### Migration Folder Structure
 

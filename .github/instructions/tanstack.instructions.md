@@ -72,7 +72,7 @@ ECommerce/seventysixcommerce-tanstack/src/
 
 **Exception for `||`**: `Number(x) || defaultValue` and `string.join("") || fallback` are valid falsy-default patterns, not null coercion.
 
-## Date/Time Handling (CRITICAL)
+## [CRITICAL] Date/Time Handling
 
 | Required | Forbidden |
 | --- | --- |
@@ -200,7 +200,7 @@ Architecture tests live in `src/__tests__/architecture`:
 - Queries in `src/server/functions/` via server functions
 - Seed data in `src/server/db/seed.ts` (idempotent)
 
-### Migration Naming (CRITICAL)
+### [CRITICAL] Migration Naming
 
 Drizzle Kit generates random codenames by default (e.g. `0000_nice_grey_gargoyle`). **Always** provide a descriptive `--name` when generating migrations:
 

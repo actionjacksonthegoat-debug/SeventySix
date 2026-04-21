@@ -1,4 +1,3 @@
-````instructions
 ---
 description: WCAG AA accessibility rules for all user-facing components and templates
 applyTo: "**/SeventySix.Client/src/**/*.{ts,html,scss},**/ECommerce/seventysixcommerce-sveltekit/src/**/*.{ts,svelte,css},**/ECommerce/seventysixcommerce-tanstack/src/**/*.{ts,tsx,css}"
@@ -81,6 +80,4 @@ applyTo: "**/SeventySix.Client/src/**/*.{ts,html,scss},**/ECommerce/seventysixco
 
 After any accessibility-related change, verify via Chrome DevTools MCP `take_snapshot` to check accessibility tree — see `copilot-instructions.md` Chrome DevTools section.
 
-
-````
 

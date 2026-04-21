@@ -20,9 +20,9 @@ Proceed through **all remaining phases** across all `implementation-N.md` files 
 3. Follow **TDD-First 80/20** — write tests BEFORE implementation for the 20% of code carrying 80% of risk (Red → Green → Refactor)
 4. Fix all IDE warnings — never suppress with `#pragma warning disable`, `// @ts-ignore`, or `[SuppressMessage]`
 5. **Document all new code** — every class, method, function, property, and constant: XML doc (C#), JSDoc (TS/JS/MJS), comment-based help (PS). Tests exempt.
-6. **Do NOT send commits** — I will handle these
-6. **Do NOT run** `npm run db:reset`, `db:reset`, or any `reset-database` command
-7. **Do NOT modify** READMEs or `docs/*.md` unless the **active** `implementation-N.md` contains an explicit documentation phase. When a docs phase IS present, use `/update-documentation` to align all READMEs and docs.
+6. **Do NOT commit, stage, or push** — `git add`, `git stage`, `git commit`, `git push` are USER-ONLY (see `copilot-instructions.md` FORBIDDEN COMMANDS)
+7. **Do NOT run** `npm run db:reset`, `db:reset`, or any `reset-database` command
+8. **Do NOT modify** READMEs or `docs/*.md` unless the **active** `implementation-N.md` contains an explicit documentation phase. When a docs phase IS present, use `/update-documentation` to align all READMEs and docs.
 
 ## Phase-Level Verification (During Implementation)
 
@@ -104,7 +104,7 @@ If the failure can't reproduce standalone, re-run the full suite — it may be a
 
 **A full passing E2E suite run (`npm run test:e2e` with 0 failures) is REQUIRED before calling this plan complete. No exceptions.**
 
-## [CRITICAL] Site Walkthrough Go/No-Go (MANDATORY FINAL CHECK)
+## [CRITICAL] Site Walkthrough Go/No-Go
 
 After the full test suite passes AND before the Documentation Gate, run a complete runtime verification using `/run-site-base`. This is the primary functionality confirmation for the entire Ecosystem and is a hard go/no-go for declaring the plan complete.
 

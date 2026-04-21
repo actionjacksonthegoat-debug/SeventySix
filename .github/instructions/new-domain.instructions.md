@@ -184,7 +184,7 @@ Tests/SeventySix.Domains.{NewDomain}.Tests/
 
 ---
 
-## Validation Gate (Cannot Skip)
+## [CRITICAL] Validation Gate
 
 - [ ] `dotnet build` — zero warnings
 - [ ] `ng build` — zero warnings

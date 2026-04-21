@@ -58,8 +58,8 @@ Review all staged/unstaged changes against every rule in the `.github/instructio
    > **NEVER pipe or filter command output** — run raw commands, full output, no truncation.
    > **A full passing E2E suite run is REQUIRED before calling this review complete.**
 
-7. **Site Walkthrough (if changes touch UI)**: If the review includes client, commerce, or template changes, run `/run-site-base` and verify the walkthrough report passes. Server-only or config-only reviews may skip this step.
-8. Report a summary of what was fixed
+6. **Site Walkthrough (if changes touch UI)**: If the review includes client, commerce, or template changes, run `/run-site-base` and verify the walkthrough report passes. Server-only or config-only reviews may skip this step.
+7. Report a summary of what was fixed
 
 ## Report Format
 

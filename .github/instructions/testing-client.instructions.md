@@ -5,7 +5,7 @@ applyTo: "**/SeventySix.Client/src/**/*.spec.ts"
 
 # Client Testing Instructions
 
-## Test Libraries (CRITICAL)
+## [CRITICAL] Test Libraries
 
 | Allowed         | Forbidden |
 | --------------- | --------- |
@@ -77,7 +77,7 @@ const queryClient: QueryClient = createTestQueryClient();
 await flushMicrotasks();
 ```
 
-## Zoneless Testing (CRITICAL)
+## [CRITICAL] Zoneless Testing
 
 > ALL client tests MUST use `provideZonelessChangeDetection()`. Never import `Zone.js` in tests.
 
@@ -107,7 +107,7 @@ Focus coverage on the **20% of code that carries 80% of risk**:
 
 **Skip tests for:** Simple template bindings, pass-through services, DTOs, constants.
 
-## Test Failure Rule (CRITICAL)
+## [CRITICAL] Test Failure Rule
 
 > **NEVER** attribute a failing test to "another change" to skip fixing it.
 > ALL failing tests in `npm test` MUST be fixed before claiming completion — regardless of when or how they were introduced.
