@@ -40,10 +40,6 @@ interface MockClientErrorLoggerService
 	logWarning: ReturnType<typeof vi.fn>;
 }
 
-/**
- * Unit tests for `ErrorHandlerService`.
- * Covers error mapping, logging, notification, and HTTP error handling behavior.
- */
 describe("ErrorHandlerService",
 	() =>
 	{
@@ -90,12 +86,6 @@ describe("ErrorHandlerService",
 				vi.restoreAllMocks();
 			});
 
-		/**
-	 * Helper to call handleError and ignore the expected re-throw in dev mode.
-	 * Assertions on side effects (notifications, logging) should be made after calling this.
-	 * @param error
-	 * The error to pass to handleError.
-	 */
 		function callHandleErrorIgnoringRethrow(
 			error: Error | HttpErrorResponse): void
 		{
@@ -105,12 +95,9 @@ describe("ErrorHandlerService",
 			}
 			catch
 			{
-			// Expected: In non-production mode, errors are re-thrown after handling.
-			// Side effects (notifications, logging) occur before the re-throw.
 			}
 		}
 
-		/** Verifies the service is instantiated successfully. */
 		it("should be created",
 			() =>
 			{
@@ -121,7 +108,6 @@ describe("ErrorHandlerService",
 		describe("handleError",
 			() =>
 			{
-				/** Verifies logging and user notification for generic Error instances. */
 				it("should log and notify for generic errors",
 					() =>
 					{
@@ -133,7 +119,6 @@ describe("ErrorHandlerService",
 							.toHaveBeenCalled();
 					});
 
-				/** Verifies handling of HTTP 404 Not Found responses. */
 				it("should handle HTTP 404 errors",
 					() =>
 					{
@@ -152,7 +137,6 @@ describe("ErrorHandlerService",
 							.toContain("not found");
 					});
 
-				/** Verifies handling of HTTP 401 Unauthorized responses. */
 				it("should handle HTTP 401 errors",
 					() =>
 					{
@@ -171,7 +155,6 @@ describe("ErrorHandlerService",
 							.toContain("session");
 					});
 
-				/** Verifies handling of HTTP 500 Server Error responses. */
 				it("should handle HTTP 500 errors",
 					() =>
 					{
@@ -792,6 +775,23 @@ describe("ErrorHandlerService",
 							})
 							.not
 							.toThrow();
+					});
+
+				it("should log re-entry detection and return when handleError is called recursively",
+					() =>
+					{
+						mockNotification.errorWithDetails.mockImplementation(
+							() =>
+							{
+								service.handleError(new Error("Re-entrant error"));
+							});
+
+						service.handleError(new Error("First error"));
+
+						expect(mockLogger.error)
+							.toHaveBeenCalledWith(
+								"[ErrorHandler] Re-entry detected",
+								expect.any(Error));
 					});
 			});
 	});

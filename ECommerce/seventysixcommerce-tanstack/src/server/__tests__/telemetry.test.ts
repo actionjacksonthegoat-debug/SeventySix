@@ -44,7 +44,7 @@ vi.mock("@opentelemetry/sdk-metrics", () => (
 		}
 	}));
 
-describe("telemetry",
+describe("tanstack telemetry",
 	() =>
 	{
 		afterEach(
@@ -58,7 +58,7 @@ describe("telemetry",
 			async () =>
 			{
 				const telemetry =
-					await import("$lib/server/telemetry");
+					await import("~/server/telemetry");
 				expect(telemetry.initTelemetry)
 					.toBeDefined();
 				expect(typeof telemetry.initTelemetry)
@@ -69,7 +69,7 @@ describe("telemetry",
 			async () =>
 			{
 				const telemetry =
-					await import("$lib/server/telemetry");
+					await import("~/server/telemetry");
 				expect(telemetry.shutdownTelemetry)
 					.toBeDefined();
 				expect(typeof telemetry.shutdownTelemetry)
@@ -80,7 +80,7 @@ describe("telemetry",
 			async () =>
 			{
 				const telemetry =
-					await import("$lib/server/telemetry");
+					await import("~/server/telemetry");
 				telemetry.initTelemetry("");
 				expect(mockSdkStart)
 					.not
@@ -91,7 +91,7 @@ describe("telemetry",
 			async () =>
 			{
 				const telemetry =
-					await import("$lib/server/telemetry");
+					await import("~/server/telemetry");
 				telemetry.initTelemetry("http://otel-collector:4318");
 				expect(mockSdkStart)
 					.toHaveBeenCalledOnce();
@@ -101,7 +101,7 @@ describe("telemetry",
 			async () =>
 			{
 				const telemetry =
-					await import("$lib/server/telemetry");
+					await import("~/server/telemetry");
 				telemetry.initTelemetry("http://otel-collector:4318");
 				telemetry.initTelemetry("http://otel-collector:4318");
 				expect(mockSdkStart)
@@ -112,7 +112,7 @@ describe("telemetry",
 			async () =>
 			{
 				const telemetry =
-					await import("$lib/server/telemetry");
+					await import("~/server/telemetry");
 				telemetry.initTelemetry("http://otel-collector:4318");
 				expect(mockSdkStart)
 					.toHaveBeenCalledOnce();
@@ -131,7 +131,7 @@ describe("telemetry",
 			async () =>
 			{
 				const telemetry =
-					await import("$lib/server/telemetry");
+					await import("~/server/telemetry");
 
 				await telemetry.shutdownTelemetry();
 

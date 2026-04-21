@@ -1,8 +1,9 @@
 import { HttpRequest, HttpResponse } from "@angular/common/http";
 import { provideZonelessChangeDetection } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
+import { environment } from "@environments/environment";
 import { LoggerService } from "@shared/services/logger.service";
-import { firstValueFrom, of } from "rxjs";
+import { firstValueFrom, of, throwError } from "rxjs";
 import { type Mock, vi } from "vitest";
 import { loggingInterceptor } from "./logging.interceptor";
 
@@ -113,6 +114,69 @@ describe("loggingInterceptor",
 								mockHandler.handle.bind(mockHandler)));
 						expect(mockHandler.handle)
 							.toHaveBeenCalled();
+					});
+			});
+
+		it("should skip logging and pass through requests when consoleLogLevel is warn",
+			async () =>
+			{
+				const originalLevel: string =
+					environment.logging.consoleLogLevel;
+				environment.logging.consoleLogLevel = "warn";
+
+				try
+				{
+					const req: HttpRequest<unknown> =
+						new HttpRequest<unknown>("GET", "/api/data");
+
+					await TestBed.runInInjectionContext(
+						async () =>
+						{
+							await firstValueFrom(
+								loggingInterceptor(
+									req,
+									mockHandler.handle.bind(mockHandler)));
+							expect(loggerSpy.debug)
+								.not
+								.toHaveBeenCalled();
+							expect(mockHandler.handle)
+								.toHaveBeenCalled();
+						});
+				}
+				finally
+				{
+					environment.logging.consoleLogLevel = originalLevel;
+				}
+			});
+
+		it("should log HTTP errors via LoggerService error method",
+			async () =>
+			{
+				mockHandler.handle.mockReturnValue(
+					throwError(
+						() => new Error("Network failure")));
+
+				const req: HttpRequest<unknown> =
+					new HttpRequest<unknown>("POST", "/api/users");
+
+				await TestBed.runInInjectionContext(
+					async () =>
+					{
+						try
+						{
+							await firstValueFrom(
+								loggingInterceptor(
+									req,
+									mockHandler.handle.bind(mockHandler)));
+						}
+						catch
+						{
+							// Expected: error observable
+						}
+						expect(loggerSpy.error)
+							.toHaveBeenCalledWith(
+								expect.stringContaining("HTTP Error: POST /api/users"),
+								expect.any(Error));
 					});
 			});
 	});

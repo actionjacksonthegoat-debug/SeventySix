@@ -29,7 +29,7 @@ describe("NAV_SECTIONS",
 		describe("Main section",
 			() =>
 			{
-				it("should have 3 items",
+				it("should have 2 items",
 					() =>
 					{
 						const main: NavSection | undefined =
@@ -38,7 +38,7 @@ describe("NAV_SECTIONS",
 									section.title === "Main");
 
 						expect(main?.items.length)
-							.toBe(3);
+							.toBe(2);
 					});
 
 				it("should require no roles",
