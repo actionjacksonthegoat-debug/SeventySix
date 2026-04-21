@@ -25,7 +25,7 @@ public interface ITrustedDeviceLimitEnforcer
 	/// <returns>
 	/// A task representing the asynchronous operation.
 	/// </returns>
-	Task EnforceDeviceLimitAsync(
+	public Task EnforceDeviceLimitAsync(
 		long userId,
 		CancellationToken cancellationToken);
 }

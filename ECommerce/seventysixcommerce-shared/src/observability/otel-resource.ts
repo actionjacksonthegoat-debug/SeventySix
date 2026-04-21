@@ -34,7 +34,7 @@ export function buildResource(options: OtelResourceOptions): Resource
 	const attributes: Record<string, string> =
 		{
 			"service.name": options.serviceName,
-			"service.namespace": SERVICE_NAMESPACE,
+			"service.namespace": SERVICE_NAMESPACE
 		};
 
 	if (options.environment !== undefined)

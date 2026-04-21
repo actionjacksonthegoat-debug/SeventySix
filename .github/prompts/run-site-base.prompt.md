@@ -9,7 +9,7 @@ Automate a complete walkthrough of the SeventySix application and both SeventySi
 Navigate every page, exercise core features, capture screenshots, and generate a pass/fail report.
 
 **Targets**:
-- **Part 1**: SeventySix Angular — `https://localhost:4200` (Steps 1–26, including 25B and 26A/26B)
+- **Part 1**: SeventySix Angular — `https://localhost:4200` (Steps 1–25)
 - **Part 2**: SeventySixCommerce SvelteKit — `https://localhost:3001` (Steps 27–35)
 - **Part 3**: SeventySixCommerce TanStack Start — `https://localhost:3002` (Steps 36–43)
 
@@ -109,7 +109,6 @@ If an error is found AND the current step is NOT "Click Create Error Log button"
 
 The following console messages are expected in development and should be **ignored**:
 
-- **Babylon.js WebGL warnings** (games only) — `BABYLON.Engine`, `WebGL`, `GL_INVALID_*` — GPU driver validation messages, not suppressible via application code
 - **DevTools warnings** — messages from browser extensions, DevTools protocol noise
 
 ### Continue-on-Failure (CRITICAL)
@@ -499,113 +498,6 @@ Admin-created users receive a password setup email with a unique link. The email
 12. Check for console errors
 13. Record result
 
-### Step 25B: Games Landing Page
-
-1. Navigate to `https://localhost:4200/games`
-2. Wait for the games landing page to load
-3. Verify both game cards are visible (Car-a-Lot and Spy And Fly)
-4. Take screenshot → `step-25b-games-landing.png`
-5. Verify each game card has an image/icon and title
-6. Use `take_snapshot` to verify accessibility tree — check heading hierarchy and interactive elements
-7. Check for console errors
-8. Record result
-
-### Step 26: Games — Play Both Games
-
-> **IMPORTANT**: Both games use Babylon.js 3D rendering. A loading screen with the game icon and name displays while the engine initializes. Verify it appears before the game canvas renders.
-
-#### Step 26A: Car-a-Lot — Load, Play, and Verify Victory
-
-> **NOTE**: Real-time 3D racing cannot be played reliably through Chrome DevTools scripted key events.
-> Use the **programmatic victory trigger** approach: start the game, verify it's playable, then use
-> Angular's debug API to set the victory state and verify the victory screen renders.
-
-1. Navigate to `https://localhost:4200/games/car-a-lot`
-2. Wait for the loading screen to appear with game icon and name
-3. Take screenshot → `step-26a-car-a-lot-loading.png`
-4. Wait for the 3D scene to load (loading screen disappears, game canvas visible)
-5. Take screenshot → `step-26a-car-a-lot-ready.png`
-6. Select a kart color if the car color selector is visible
-7. Take screenshot → `step-26a-car-a-lot-color-selected.png`
-8. Click the "Start Game" button using the accessibility tree (`take_snapshot` → find button uid → `click`)
-9. Take screenshot → `step-26a-car-a-lot-playing.png`
-10. Verify the game is in the Racing state by evaluating:
-    ```javascript
-    (() => {
-      const el = document.querySelector('app-car-a-lot-game');
-      const c = ng.getComponent(el);
-      return c.raceState.currentState();
-    })()
-    ```
-    Expected result: `"Racing"` (or `"Countdown"` during the 3-2-1 sequence)
-11. **Drive briefly** to confirm input works — use `evaluate_script` to dispatch sustained `keydown` events:
-    ```javascript
-    (() => {
-      const canvas = document.querySelector('canvas');
-      canvas.focus();
-      let count = 0;
-      const interval = setInterval(() => {
-        canvas.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp', code: 'ArrowUp', bubbles: true }));
-        count++;
-        if (count >= 60) {
-          clearInterval(interval);
-          canvas.dispatchEvent(new KeyboardEvent('keyup', { key: 'ArrowUp', code: 'ArrowUp', bubbles: true }));
-        }
-      }, 50);
-      return 'Driving forward for 3 seconds';
-    })()
-    ```
-12. Take screenshot → `step-26a-car-a-lot-driving.png` — verify speed > 0 mph in HUD
-13. **Trigger victory programmatically** via Angular's debug API:
-    ```javascript
-    (() => {
-      const el = document.querySelector('app-car-a-lot-game');
-      const c = ng.getComponent(el);
-      c.raceState._currentState.set('Victory');
-      return c.raceState.currentState();
-    })()
-    ```
-    Expected result: `"Victory"`
-14. Take screenshot → `step-26a-car-a-lot-victory.png`
-15. Verify the victory overlay shows: rescue message (e.g., "Prince Rescued!" or "Princess Rescued!"), finish time, and "Hit the Start Game button to play again!" text
-16. Check for console errors (ignore Babylon.js initialization log and browser preload warnings)
-
-#### Step 26B: Spy And Fly — Load, Play, and Verify Victory
-
-> **NOTE**: Same approach — start the mission, verify gameplay, then trigger victory programmatically.
-
-17. Navigate to `https://localhost:4200/games/spy-vs-spy`
-18. Wait for the loading screen to appear with game icon and name
-19. Take screenshot → `step-26b-spy-and-fly-loading.png`
-20. Wait for the 3D scene to load
-21. Take screenshot → `step-26b-spy-and-fly-ready.png`
-22. Click the "Start Mission" button using the accessibility tree (`take_snapshot` → find button uid → `click`)
-23. Take screenshot → `step-26b-spy-and-fly-playing.png`
-24. Verify the game is in the Playing state by evaluating:
-    ```javascript
-    (() => {
-      const el = document.querySelector('app-spy-vs-spy-game');
-      const c = ng.getComponent(el);
-      return c.gameState();
-    })()
-    ```
-    Expected result: `"Playing"` (or `"Ready"` during countdown)
-25. Verify HUD elements are visible: Items counter (0/4), Island Timer, Elapsed time, Room name
-26. **Trigger victory programmatically** via Angular's debug API:
-    ```javascript
-    (() => {
-      const el = document.querySelector('app-spy-vs-spy-game');
-      const c = ng.getComponent(el);
-      c.spyFlowService.gameStateSignal.set('Won');
-      return c.gameState();
-    })()
-    ```
-    Expected result: `"Won"`
-27. Take screenshot → `step-26b-spy-and-fly-result.png`
-28. Verify the result overlay shows: "Mission Complete!" text, win reason, elapsed time, and "Play Again" + "← Games" buttons
-29. Check for console errors (ignore Babylon.js initialization log and browser preload warnings)
-30. Record result for both games
-
 ### Part 1 Network Checkpoint
 
 Before moving to Part 2, run `list_network_requests` and check for:
@@ -876,7 +768,7 @@ If none: "No network errors detected."}
 ## Accessibility Findings
 
 {List heading hierarchy issues, missing alt text, non-focusable interactive elements found via take_snapshot.
-Pages checked: Admin Dashboard (Step 8), SvelteKit Home (Step 27), SvelteKit Shop (Step 29), TanStack Home (Step 36), TanStack Shop (Step 38), Games Landing (Step 25B).
+Pages checked: Admin Dashboard (Step 8), SvelteKit Home (Step 27), SvelteKit Shop (Step 29), TanStack Home (Step 36), TanStack Shop (Step 38).
 If none: "No accessibility issues found."}
 
 ## Admin Commerce Dashboard Health
@@ -888,18 +780,11 @@ If none: "No accessibility issues found."}
 | TanStack (Step 24) | Y/N | {url or about:blank} | Y/N | |
 | TanStack Logs (Step 25) | Y/N | N/A | Y/N | {row count} |
 
-## Game Completion Status
-
-| Game | Reached Victory/Result Screen? | Notes |
-|------|-------------------------------|-------|
-| Car-a-Lot | Y/N | |
-| Spy And Fly | Y/N | |
-
 ---
 
 ## Step Results
 
-### Part 1: SeventySix Angular (Steps 1–26)
+### Part 1: SeventySix Angular (Steps 1–25)
 
 | # | Step | Status | Notes |
 |---|------|--------|-------|
@@ -910,9 +795,6 @@ If none: "No accessibility issues found."}
 | 23 | Admin SvelteKit Logs | PASSED/FAILED | |
 | 24 | Admin TanStack Dashboard | PASSED/FAILED | |
 | 25 | Admin TanStack Logs | PASSED/FAILED | |
-| 25B | Games Landing Page | PASSED/FAILED | |
-| 26A | Car-a-Lot Full Race | PASSED/FAILED | |
-| 26B | Spy And Fly Full Mission | PASSED/FAILED | |
 
 ### Part 2: SeventySixCommerce SvelteKit (Steps 27–35)
 
@@ -966,4 +848,4 @@ After writing the report, tell the user:
 > **Walkthrough complete!**
 > - Report: `.dev-tools-output/walkthrough-report.md`
 > - Screenshots: `.dev-tools-output/screenshots/`
-> - {X}/{Y} steps passed across all 3 sites (including admin commerce pages, games, cart flows, and theme toggles)
+> - {X}/{Y} steps passed across all 3 sites (including admin commerce pages, cart flows, and theme toggles)

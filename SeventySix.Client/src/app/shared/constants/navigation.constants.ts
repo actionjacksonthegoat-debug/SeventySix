@@ -31,11 +31,6 @@ export const NAV_SECTIONS: ReadonlyArray<NavSection> =
 					route: "/"
 				},
 				{
-					label: "Games",
-					icon: "sports_esports",
-					route: "/games"
-				},
-				{
 					label: "Sandbox",
 					icon: "science",
 					route: "/sandbox"

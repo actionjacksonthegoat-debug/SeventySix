@@ -31,7 +31,7 @@ public interface IAuthenticationService
 	/// <returns>
 	/// An <see cref="AuthResult"/> with tokens and metadata.
 	/// </returns>
-	Task<AuthResult> GenerateAuthResultAsync(
+	public Task<AuthResult> GenerateAuthResultAsync(
 		ApplicationUser user,
 		bool requiresPasswordChange,
 		bool rememberMe,
@@ -56,7 +56,7 @@ public interface IAuthenticationService
 	/// <returns>
 	/// An <see cref="AuthResult"/> with access token and metadata (RefreshToken is empty).
 	/// </returns>
-	Task<AuthResult> GenerateAccessTokenResultAsync(
+	public Task<AuthResult> GenerateAccessTokenResultAsync(
 		ApplicationUser user,
 		bool requiresPasswordChange,
 		bool rememberMe,

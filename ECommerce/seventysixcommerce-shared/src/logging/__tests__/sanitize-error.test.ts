@@ -21,9 +21,11 @@ describe("toSafeLogPayload",
 				expect(payload.correlationId)
 					.toBe("corr-123");
 				expect(JSON.stringify(payload))
-					.not.toContain("password");
+					.not
+					.toContain("password");
 				expect(JSON.stringify(payload))
-					.not.toContain("Connection string");
+					.not
+					.toContain("Connection string");
 			});
 
 		it("never includes stack traces in the payload",
@@ -36,11 +38,14 @@ describe("toSafeLogPayload",
 					toSafeLogPayload(error, "corr-456");
 
 				expect(payload)
-					.not.toHaveProperty("stackTrace");
+					.not
+					.toHaveProperty("stackTrace");
 				expect(payload)
-					.not.toHaveProperty("stack");
+					.not
+					.toHaveProperty("stack");
 				expect(JSON.stringify(payload))
-					.not.toContain("stack");
+					.not
+					.toContain("stack");
 			});
 
 		it("classifies TypeError correctly",
@@ -152,7 +157,8 @@ describe("toSafeLogPayload",
 					toSafeLogPayload(error);
 
 				expect(JSON.stringify(payload))
-					.not.toContain("user@example.com");
+					.not
+					.toContain("user@example.com");
 			});
 	});
 
@@ -168,7 +174,8 @@ describe("maskPii",
 				expect(result)
 					.toBe("Contact us***@example.com for support");
 				expect(result)
-					.not.toContain("user@");
+					.not
+					.toContain("user@");
 			});
 
 		it("masks multiple email addresses",
@@ -178,9 +185,11 @@ describe("maskPii",
 					maskPii("From admin@test.com to bob@domain.org");
 
 				expect(result)
-					.not.toContain("admin@");
+					.not
+					.toContain("admin@");
 				expect(result)
-					.not.toContain("bob@");
+					.not
+					.toContain("bob@");
 			});
 
 		it("preserves non-email text",

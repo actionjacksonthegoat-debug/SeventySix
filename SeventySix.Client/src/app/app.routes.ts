@@ -35,14 +35,6 @@ export const routes: Routes =
 					(module) => module.SANDBOX_ROUTES),
 			data: { preload: true, breadcrumb: "Sandbox" }
 		},
-		{
-		// Intentionally public — game experiences (no auth guard needed)
-			path: "games",
-			loadChildren: () =>
-				import("./domains/games/games.routes").then(
-					(module) => module.GAMES_ROUTES),
-			data: { preload: true, breadcrumb: "Games" }
-		},
 		// Auth routes (login, change-password - public) - preloaded for fast access
 		{
 			path: "auth",

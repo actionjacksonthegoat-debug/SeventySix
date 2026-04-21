@@ -1,7 +1,7 @@
 name: "SeventySix CodeQL Configuration"
 
 paths:
-  # Main client application source (includes Games domain)
+  # Main client application source
   - "SeventySix.Client/src"
   # Main app tests and security-relevant automation
   - "SeventySix.Client/e2e"

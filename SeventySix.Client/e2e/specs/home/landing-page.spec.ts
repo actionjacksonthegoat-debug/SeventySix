@@ -102,7 +102,7 @@ test.describe("Landing Page",
 							section.locator(SELECTORS.home.techCategory);
 
 						await expect(categories)
-							.toHaveCount(5);
+							.toHaveCount(4);
 					});
 
 				test("should have tech item links with noopener",

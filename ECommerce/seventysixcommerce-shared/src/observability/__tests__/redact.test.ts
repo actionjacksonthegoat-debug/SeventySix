@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { redactPayload, REDACTED_VALUE } from "../redact";
+import { REDACTED_VALUE, redactPayload } from "../redact";
 
 describe("redactPayload",
 	() =>
@@ -19,7 +19,7 @@ describe("redactPayload",
 						apiKey: "key-789",
 						api_key: "key-alt",
 						connectionString: "Host=db;Password=x",
-						token: "jwt-xyz",
+						token: "jwt-xyz"
 					};
 
 				const result: Record<string, unknown> =
@@ -41,7 +41,7 @@ describe("redactPayload",
 						email: "user@example.com",
 						requestPath: "/api/test",
 						statusCode: 200,
-						duration: 42,
+						duration: 42
 					};
 
 				const result: Record<string, unknown> =
@@ -58,7 +58,7 @@ describe("redactPayload",
 					{
 						Password: "secret",
 						ACCESS_TOKEN: "tok",
-						RefreshToken: "ref-tok",
+						RefreshToken: "ref-tok"
 					};
 
 				const result: Record<string, unknown> =
@@ -78,7 +78,7 @@ describe("redactPayload",
 				const payload: Record<string, unknown> =
 					{
 						password: "secret",
-						username: "test",
+						username: "test"
 					};
 
 				const result: Record<string, unknown> =

@@ -4,29 +4,6 @@ This file tracks third-party assets and their licenses for attribution complianc
 
 ---
 
-## BabylonJS Assets
-
-**License**: Creative Commons Attribution 4.0 International (CC BY 4.0)
-**License URL**: https://creativecommons.org/licenses/by/4.0/
-**Repository**: https://github.com/BabylonJS/Assets
-**Copyright**: © BabylonJS / BabylonJS contributors
-
-BabylonJS Assets are used under the CC BY 4.0 license. You are free to share and adapt
-these assets for any purpose, including commercially, provided appropriate credit is given.
-
-### Assets Used
-
-| Asset Path (local) | Source URL | Modifications |
-|---------------------|-----------|---------------|
-| public/assets/babylonjs/skyboxes/TropicalSunnyDay/TropicalSunnyDay_nx.jpg | https://raw.githubusercontent.com/BabylonJS/Assets/master/skyboxes/TropicalSunnyDay/TropicalSunnyDay_nx.jpg | None |
-| public/assets/babylonjs/skyboxes/TropicalSunnyDay/TropicalSunnyDay_ny.jpg | https://raw.githubusercontent.com/BabylonJS/Assets/master/skyboxes/TropicalSunnyDay/TropicalSunnyDay_ny.jpg | None |
-| public/assets/babylonjs/skyboxes/TropicalSunnyDay/TropicalSunnyDay_nz.jpg | https://raw.githubusercontent.com/BabylonJS/Assets/master/skyboxes/TropicalSunnyDay/TropicalSunnyDay_nz.jpg | None |
-| public/assets/babylonjs/skyboxes/TropicalSunnyDay/TropicalSunnyDay_px.jpg | https://raw.githubusercontent.com/BabylonJS/Assets/master/skyboxes/TropicalSunnyDay/TropicalSunnyDay_px.jpg | None |
-| public/assets/babylonjs/skyboxes/TropicalSunnyDay/TropicalSunnyDay_py.jpg | https://raw.githubusercontent.com/BabylonJS/Assets/master/skyboxes/TropicalSunnyDay/TropicalSunnyDay_py.jpg | None |
-| public/assets/babylonjs/skyboxes/TropicalSunnyDay/TropicalSunnyDay_pz.jpg | https://raw.githubusercontent.com/BabylonJS/Assets/master/skyboxes/TropicalSunnyDay/TropicalSunnyDay_pz.jpg | None |
-
----
-
 ## Adding New Third-Party Attributions
 
 When adding third-party assets to the project:

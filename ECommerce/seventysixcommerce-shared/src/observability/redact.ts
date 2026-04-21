@@ -35,7 +35,7 @@ const SENSITIVE_KEYS: ReadonlySet<string> =
 			"apikey",
 			"api_key",
 			"connectionstring",
-			"token",
+			"token"
 		]);
 
 /**

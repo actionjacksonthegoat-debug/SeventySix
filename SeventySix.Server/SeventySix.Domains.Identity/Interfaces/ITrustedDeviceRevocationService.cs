@@ -21,7 +21,7 @@ public interface ITrustedDeviceRevocationService
 	/// <returns>
 	/// A task representing the asynchronous operation.
 	/// </returns>
-	Task RevokeAllAsync(
+	public Task RevokeAllAsync(
 		long userId,
 		CancellationToken cancellationToken);
 
@@ -40,7 +40,7 @@ public interface ITrustedDeviceRevocationService
 	/// <returns>
 	/// True if the device was found and deleted; false if not found.
 	/// </returns>
-	Task<bool> RevokeDeviceAsync(
+	public Task<bool> RevokeDeviceAsync(
 		long userId,
 		long deviceId,
 		CancellationToken cancellationToken);

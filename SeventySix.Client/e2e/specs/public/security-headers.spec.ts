@@ -10,10 +10,10 @@ import { E2E_CONFIG, expect, test } from "@e2e-fixtures";
 test.describe("Security Headers @security-headers",
 	() =>
 	{
-		/**
-		 * Expected security headers and their validation rules.
-		 * Each entry defines a header name and a matcher for its value.
-		 */
+	/**
+	 * Expected security headers and their validation rules.
+	 * Each entry defines a header name and a matcher for its value.
+	 */
 		const requiredHeaders: { name: string; matcher: RegExp; }[] =
 			[
 				{ name: "x-content-type-options", matcher: /^nosniff$/i },
@@ -45,7 +45,8 @@ test.describe("Security Headers @security-headers",
 							expect(
 								value,
 								`Missing header: ${header.name}`)
-								.not.toBeNull();
+								.not
+								.toBeNull();
 							expect(
 								value,
 								`Header ${header.name} has unexpected value: ${value}`)
@@ -76,7 +77,8 @@ test.describe("Security Headers @security-headers",
 							expect(
 								value,
 								`Missing header: ${header.name}`)
-								.not.toBeNull();
+								.not
+								.toBeNull();
 							expect(
 								value,
 								`Header ${header.name} has unexpected value: ${value}`)

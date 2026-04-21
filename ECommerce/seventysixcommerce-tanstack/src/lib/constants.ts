@@ -4,7 +4,17 @@
  * This file re-exports them and adds app-specific constants.
  */
 // ── Shared constants (re-exported) ────────────────────────────────────
-export { BRAND_NAME, CART_SESSION_COOKIE, CART_SESSION_MAX_AGE_SECONDS, FREE_SHIPPING_THRESHOLD, PLACEHOLDER_CACHE_MAX_AGE, PLACEHOLDER_DEFAULT_SIZE, PLACEHOLDER_MAX_SIZE, PLACEHOLDER_MIN_SIZE, STANDARD_SHIPPING_DOLLARS } from "@seventysixcommerce/shared/constants";
+export {
+	BRAND_NAME,
+	CART_SESSION_COOKIE,
+	CART_SESSION_MAX_AGE_SECONDS,
+	FREE_SHIPPING_THRESHOLD,
+	PLACEHOLDER_CACHE_MAX_AGE,
+	PLACEHOLDER_DEFAULT_SIZE,
+	PLACEHOLDER_MAX_SIZE,
+	PLACEHOLDER_MIN_SIZE,
+	STANDARD_SHIPPING_DOLLARS
+} from "@seventysixcommerce/shared/constants";
 
 // ── App-specific constants ────────────────────────────────────────────
 

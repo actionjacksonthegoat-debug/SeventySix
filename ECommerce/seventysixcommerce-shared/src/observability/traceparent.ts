@@ -46,7 +46,7 @@ export function parseTraceparent(header: string | null | undefined): TraceContex
 
 	return {
 		traceId: match[1],
-		spanId: match[2],
+		spanId: match[2]
 	};
 }
 
@@ -59,7 +59,12 @@ export function parseTraceparent(header: string | null | undefined): TraceContex
 export function generateTraceContext(): TraceContext
 {
 	return {
-		traceId: crypto.randomUUID().replace(/-/g, ""),
-		spanId: crypto.randomUUID().replace(/-/g, "").slice(0, 16),
+		traceId: crypto
+			.randomUUID()
+			.replace(/-/g, ""),
+		spanId: crypto
+			.randomUUID()
+			.replace(/-/g, "")
+			.slice(0, 16)
 	};
 }

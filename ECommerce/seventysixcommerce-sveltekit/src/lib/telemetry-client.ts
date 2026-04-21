@@ -29,7 +29,8 @@ export function initClientTelemetry(otlpEndpoint: string): void
 	}
 
 	const resource: Resource =
-		buildResource({ serviceName: SERVICE_NAME });
+		buildResource(
+			{ serviceName: SERVICE_NAME });
 
 	const exporter: OTLPTraceExporter =
 		new OTLPTraceExporter(

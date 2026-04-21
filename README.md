@@ -44,9 +44,9 @@ When you know you want to move forward - I recommend installing all extensions a
 
 ## Overview
 
-A multi-application ecosystem demonstrating enterprise-grade patterns across three independently deployable sites. The main application pairs a .NET 10 API with an Angular 21 SPA featuring a Babylon.js Games dashboard, developer tools, and full site administration. Two satellite e-commerce storefronts — one built with SvelteKit 2 + Svelte 5 and the other with TanStack Start + React 19 — showcase modern full-stack alternatives with shared infrastructure for payments (Stripe), fulfillment (Printful), and transactional email (Brevo). Built entirely through AI-assisted development using GitHub Copilot and Claude, this codebase serves as both a functional application and a reference implementation for secure, observable, well-tested systems.
+A multi-application ecosystem demonstrating enterprise-grade patterns across three independently deployable sites. The main application pairs a .NET 10 API with an Angular 21 SPA featuring developer tools and full site administration. Two satellite e-commerce storefronts — one built with SvelteKit 2 + Svelte 5 and the other with TanStack Start + React 19 — showcase modern full-stack alternatives with shared infrastructure for payments (Stripe), fulfillment (Printful), and transactional email (Brevo). Built entirely through AI-assisted development using GitHub Copilot and Claude, this codebase serves as both a functional application and a reference implementation for secure, observable, well-tested systems.
 
-**Core Stack**: .NET 10 (Wolverine CQRS, EF Core, PostgreSQL) • Angular 21 (Zoneless, Signals, TanStack Query, Babylon.js Games) • SvelteKit 2 (Svelte 5, Drizzle ORM, Stripe) • TanStack Start (React 19, Drizzle ORM, Stripe) • Docker Compose infrastructure • MIT licensed with no paid dependencies
+**Core Stack**: .NET 10 (Wolverine CQRS, EF Core, PostgreSQL) • Angular 21 (Zoneless, Signals, TanStack Query) • SvelteKit 2 (Svelte 5, Drizzle ORM, Stripe) • TanStack Start (React 19, Drizzle ORM, Stripe) • Docker Compose infrastructure • MIT licensed with no paid dependencies
 
 ## Quick Start
 
@@ -234,7 +234,6 @@ Domain-driven modules with enforced isolation via architecture tests
 | [k6](https://grafana.com/docs/k6/latest/) | latest | AGPL-3.0 | Load and performance testing (Grafana) |
 | ESLint | latest | MIT | Linting with custom rules |
 | dprint | latest | MIT | Code formatting |
-| [Babylon.js](https://www.babylonjs.com/) | 7.x | Apache-2.0 | 3D game engine for Games dashboard (Spy vs Spy, Car-a-Lot) |
 
 ### Infrastructure
 
@@ -295,9 +294,8 @@ All commerce commands run from the repo root via `npm run`. Both sites use isola
 flowchart LR
     subgraph Client["Angular 21 Client"]
         direction TB
-        AppDomains["Domains<br/>admin · auth · account · developer<br/>games · home · sandbox"]
+        AppDomains["Domains<br/>admin · auth · account · developer<br/>home · sandbox"]
         AppShared["Shared<br/>services · guards<br/>interceptors · components"]
-        Games["Games Dashboard<br/>Babylon.js 3D<br/>Spy vs Spy · Car-a-Lot"]
     end
 
     subgraph Server[".NET 10 Server"]
@@ -347,7 +345,7 @@ flowchart LR
 
 **Server** follows Clean Architecture with a strict `Shared <- Domains <- Api` dependency flow — never reversed. Wolverine dispatches commands and queries to static handlers with method-injected dependencies. Bounded contexts (Identity, Logging, ApiTracking, ElectronicNotifications) each own their database schema, migrations, and EF Core `DbContext`.
 
-**Client** enforces domain isolation — each of the client domains (admin, auth, account, developer, games, home, sandbox) imports only `@shared/*` and itself, never another domain. Zoneless change detection with Signals eliminates `zone.js`. TanStack Query manages all server state with coordinated cache invalidation via `CacheCoordinationService`. The HTTP interceptor pipeline (auth, cache-bypass, date-parser, error, logging) handles cross-cutting concerns. The Games domain provides a Babylon.js 3D game dashboard with two playable games (Spy vs Spy, Car-a-Lot) using route-scoped services and shared game infrastructure.
+**Client** enforces domain isolation — each of the client domains (admin, auth, account, developer, home, sandbox) imports only `@shared/*` and itself, never another domain. Zoneless change detection with Signals eliminates `zone.js`. TanStack Query manages all server state with coordinated cache invalidation via `CacheCoordinationService`. The HTTP interceptor pipeline (auth, cache-bypass, date-parser, error, logging) handles cross-cutting concerns.
 
 **E-Commerce Sites** — Two independently deployable e-commerce storefronts showcase modern full-stack alternatives. Both use Drizzle ORM with PostgreSQL, Stripe for payments, Printful for print-on-demand fulfillment, and Brevo for transactional email. They forward application logs to the SeventySix API for centralized observability. The SvelteKit site uses file-based routing with form actions; the TanStack Start site uses TanStack Router with server functions.
 
@@ -365,7 +363,7 @@ SeventySix/
 │   ├── SeventySix.Analyzers/     custom Roslyn analyzers
 │   └── Tests/                    test projects (xUnit + NSubstitute + Shouldly)
 ├── SeventySix.Client/            Angular 21 SPA (Zoneless, Signals, TanStack Query)
-│   ├── src/app/domains/          admin | auth | account | developer | games | home | sandbox
+│   ├── src/app/domains/          admin | auth | account | developer | home | sandbox
 │   ├── src/app/shared/           Services, guards, interceptors, components, pipes
 │   ├── e2e/                      Playwright E2E tests (auth roles, axe-core WCAG)
 │   └── load-testing/             k6 load tests (scenarios, Docker-isolated)

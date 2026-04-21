@@ -1,11 +1,11 @@
-import {
-	createStartHandler,
-	defaultStreamHandler
-} from "@tanstack/react-start/server";
 import { toSafeLogPayload } from "@seventysixcommerce/shared/logging";
 import type { SafeErrorPayload } from "@seventysixcommerce/shared/logging";
 import { generateTraceContext, parseTraceparent } from "@seventysixcommerce/shared/observability";
 import type { TraceContext } from "@seventysixcommerce/shared/observability";
+import {
+	createStartHandler,
+	defaultStreamHandler
+} from "@tanstack/react-start/server";
 import { configureLogForwarder, queueLog } from "~/server/log-forwarder";
 import { initTelemetry } from "~/server/telemetry";
 
@@ -23,7 +23,7 @@ export default {
 	{
 		const traceContext: TraceContext =
 			parseTraceparent(request.headers.get("traceparent"))
-			?? generateTraceContext();
+				?? generateTraceContext();
 
 		try
 		{
@@ -65,7 +65,7 @@ export default {
 					requestUrl: url.pathname,
 					requestMethod: request.method,
 					traceId: traceContext.traceId,
-					spanId: traceContext.spanId,
+					spanId: traceContext.spanId
 				});
 
 			throw error;

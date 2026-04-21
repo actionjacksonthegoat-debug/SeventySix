@@ -10,6 +10,6 @@ export { createCommerceMetrics } from "./metrics";
 export type { CommerceMetrics } from "./metrics";
 export { buildResource } from "./otel-resource";
 export type { OtelResourceOptions } from "./otel-resource";
-export { redactPayload, REDACTED_VALUE } from "./redact";
+export { REDACTED_VALUE, redactPayload } from "./redact";
 export { generateTraceContext, parseTraceparent } from "./traceparent";
 export type { TraceContext } from "./traceparent";

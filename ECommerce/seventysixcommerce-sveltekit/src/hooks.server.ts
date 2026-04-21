@@ -26,10 +26,12 @@ export const handle: Handle =
 	{
 		const traceContext: TraceContext =
 			parseTraceparent(event.request.headers.get("traceparent"))
-			?? generateTraceContext();
+				?? generateTraceContext();
 
-		event.locals.traceId = traceContext.traceId;
-		event.locals.spanId = traceContext.spanId;
+		event.locals.traceId =
+			traceContext.traceId;
+		event.locals.spanId =
+			traceContext.spanId;
 
 		let sessionId: string | undefined =
 			event.cookies.get(CART_SESSION_COOKIE);
@@ -87,7 +89,7 @@ export const handleError: HandleServerError =
 				requestUrl: event.url.pathname,
 				requestMethod: event.request.method,
 				traceId: event.locals.traceId,
-				spanId: event.locals.spanId,
+				spanId: event.locals.spanId
 			});
 
 		return {

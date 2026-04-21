@@ -63,7 +63,7 @@
 | Project | Path | Role |
 |---------|------|------|
 | **SeventySix.Server** | `SeventySix.Server/` | .NET 10 API (Identity, Logging, ApiTracking, ElectronicNotifications) |
-| **SeventySix.Client** | `SeventySix.Client/` | Angular 21 SPA with Games domain (Babylon.js) |
+| **SeventySix.Client** | `SeventySix.Client/` | Angular 21 SPA |
 | **ECommerce-Svelte** | `ECommerce/seventysixcommerce-sveltekit/` | SvelteKit 2 storefront (Stripe, Printful, Brevo) |
 | **ECommerce-TanStack** | `ECommerce/seventysixcommerce-tanstack/` | TanStack Start storefront (Stripe, Printful, Brevo) |
 | **ECommerce-Shared** | `ECommerce/seventysixcommerce-shared/` | Shared TypeScript library for both ECommerce sites |
@@ -154,9 +154,9 @@ After the Final Validation Gate passes, a full `/run-site-base` walkthrough is a
 
 | Check | Command | Must See |
 | ----- | ------- | -------- |
-| Site Walkthrough | `npm run stop && npm run start` then invoke `/run-site-base` | PASS report at `.dev-tools-output/walkthrough-report.md`, zero unexpected console errors, both games reach Victory/Won, both commerce admin dashboards (SvelteKit + TanStack) render, both commerce sites complete checkout |
+| Site Walkthrough | `npm run stop && npm run start` then invoke `/run-site-base` | PASS report at `.dev-tools-output/walkthrough-report.md`, zero unexpected console errors, both commerce admin dashboards (SvelteKit + TanStack) render, both commerce sites complete checkout |
 
-The walkthrough MUST cover: Angular admin + public surfaces, the SvelteKit + TanStack dashboards surfaced inside `/admin/svelte` + `/admin/tanstack` (plus their log pages), the full SvelteKit + TanStack e-commerce flows (home → shop → product → cart → checkout), and both games played to their Victory / Won state. Any failure (other than the explicitly-permitted Step 9 intentional error-log button) blocks completion.
+The walkthrough MUST cover: Angular admin + public surfaces, the SvelteKit + TanStack dashboards surfaced inside `/admin/svelte` + `/admin/tanstack` (plus their log pages), the full SvelteKit + TanStack e-commerce flows (home → shop → product → cart → checkout). Any failure (other than the explicitly-permitted Step 9 intentional error-log button) blocks completion.
 
 ## Documentation MUST Be Current (GATE CONDITION)
 
@@ -179,7 +179,7 @@ After all tests pass, verify:
 | Layer  | Technology                                                                      |
 | ------ | ------------------------------------------------------------------------------- |
 | Server | .NET 10 LTS, Wolverine CQRS, EF Core, PostgreSQL, FusionCache, FluentValidation |
-| Client | Angular 21 LTS, Zoneless, Signals, TanStack Query, Material Design 3, Babylon.js |
+| Client | Angular 21 LTS, Zoneless, Signals, TanStack Query, Material Design 3 |
 | Sandbox (SvelteKit) | SvelteKit 2, Svelte 5, TypeScript 5.9+, Tailwind CSS 4, Drizzle ORM, Stripe, Printful, Brevo |
 | Sandbox (TanStack) | TanStack Start 1.167+, React 19, TypeScript 6.0+, Tailwind CSS 4, Drizzle ORM, Stripe, Printful, Brevo |
 | IDE    | VS Code 1.100+                                                                  |
@@ -192,7 +192,6 @@ After all tests pass, verify:
 | `Logging`                 | `auth`      |
 | `ApiTracking`             | `account`   |
 | `ElectronicNotifications` | `developer` |
-|                           | `games`     |
 |                           | `sandbox`   |
 |                           | `home`      |
 
@@ -329,8 +328,6 @@ E2E, load tests, and DAST scans run in **fully isolated Docker environments** �
 | `testing-client.instructions.md` | `**/SeventySix.Client/src/**/*.spec.ts`        |
 | `e2e.instructions.md`            | `**/SeventySix.Client/e2e/**/*.ts`             |
 | `new-domain.instructions.md`     | Manual reference — domain blueprints           |
-| `games.instructions.md`          | `**/SeventySix.Client/src/app/domains/games/**/*.{ts,html,scss}` — game domain architecture |
-| `babylonjs.instructions.md`      | `**/SeventySix.Client/src/app/domains/games/**/*.ts` — Babylon.js patterns & CC BY 4.0 |
 | `load-testing.instructions.md`   | `**/SeventySix.Client/load-testing/**/*.js,**/ECommerce/seventysixcommerce-sveltekit/load-testing/**/*.js,**/ECommerce/seventysixcommerce-tanstack/load-testing/**/*.js` — k6 load test patterns |
 | `sveltekit.instructions.md`      | `**/ECommerce/seventysixcommerce-sveltekit/src/**/*.{ts,svelte,css}` — SvelteKit sandbox patterns |
 | `tanstack.instructions.md`       | `**/ECommerce/seventysixcommerce-tanstack/src/**/*.{ts,tsx,css}` — TanStack Start sandbox patterns |

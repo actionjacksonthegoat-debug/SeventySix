@@ -63,7 +63,8 @@ export function maskPii(text: string): string
 {
 	return text.replace(
 		EMAIL_PATTERN,
-		(match: string) => match.replace(/^(.{2}).*@/, "$1***@"));
+		(match: string) =>
+			match.replace(/^(.{2}).*@/, "$1***@"));
 }
 
 /**
