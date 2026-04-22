@@ -28,20 +28,40 @@ public static class DesignTimeConnectionStringProvider
 	/// Builds a PostgreSQL connection string from appsettings.json and User Secrets.
 	/// </summary>
 	/// <remarks>
+	/// When <paramref name="connectionStringKey"/> is provided, first checks
+	/// <c>ConnectionStrings:{connectionStringKey}</c> in the loaded configuration
+	/// (e.g. set via <c>ConnectionStrings__IdentityConnection</c> environment variable in CI).
+	/// Falls back to building from individual <c>Database:*</c> settings (used in local development
+	/// via User Secrets).
 	/// Searches for the SeventySix.Api project directory by traversing up
 	/// the directory tree, then loads appsettings.json, appsettings.Development.json,
 	/// and User Secrets to build the connection string.
 	/// </remarks>
+	/// <param name="connectionStringKey">
+	/// Optional key to look up in the <c>ConnectionStrings</c> configuration section.
+	/// When set, a matching value bypasses the <c>Database:*</c> build path.
+	/// </param>
 	/// <returns>
 	/// A valid PostgreSQL connection string for design-time operations.
 	/// </returns>
 	/// <exception cref="InvalidOperationException">
 	/// Thrown when required Database settings are not configured.
 	/// </exception>
-	public static string GetConnectionString()
+	public static string GetConnectionString(string? connectionStringKey = null)
 	{
 		IConfigurationRoot configuration =
 			BuildConfiguration();
+
+		if (!string.IsNullOrWhiteSpace(connectionStringKey))
+		{
+			string? explicitConnectionString =
+				configuration.GetConnectionString(connectionStringKey);
+
+			if (!string.IsNullOrWhiteSpace(explicitConnectionString))
+			{
+				return explicitConnectionString;
+			}
+		}
 
 		IConfigurationSection databaseSection =
 			configuration.GetSection("Database");

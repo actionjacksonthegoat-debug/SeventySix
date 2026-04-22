@@ -37,9 +37,10 @@ public class IdentityDbContextFactory
 		DbContextOptionsBuilder<IdentityDbContext> optionsBuilder =
 			new();
 
-		// Load connection string from appsettings.json and User Secrets
+		// Load connection string: checks ConnectionStrings:IdentityConnection (CI env var) first,
+		// then falls back to building from Database:* user secrets (local dev).
 		string connectionString =
-			DesignTimeConnectionStringProvider.GetConnectionString();
+			DesignTimeConnectionStringProvider.GetConnectionString("IdentityConnection");
 
 		optionsBuilder.UseNpgsql(
 			connectionString,

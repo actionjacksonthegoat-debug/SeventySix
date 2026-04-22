@@ -138,8 +138,7 @@ public sealed class EmailQueueRetentionJobHandler(
 			if (totalDeleted > 0)
 			{
 				logger.LogInformation(
-					"Email queue retention completed: {DeletedCount} entries removed",
-					totalDeleted);
+					"Email queue retention completed: entries removed from email queue");
 			}
 		}
 		catch (DbUpdateException exception)
