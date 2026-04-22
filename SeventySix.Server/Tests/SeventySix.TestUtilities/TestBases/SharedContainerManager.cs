@@ -162,8 +162,9 @@ public static class SharedContainerManager
 				await checkConnection.OpenAsync();
 				await using NpgsqlCommand checkCommand =
 					new(
-					$"SELECT 1 FROM pg_database WHERE datname = '{TemplateDbName}'",
+					"SELECT 1 FROM pg_database WHERE datname = @dbname",
 					checkConnection);
+				checkCommand.Parameters.AddWithValue("@dbname", TemplateDbName);
 				object? result =
 					await checkCommand.ExecuteScalarAsync();
 				templateExists =

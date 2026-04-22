@@ -104,8 +104,6 @@ jobs:
               uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
               with:
                   node-version: "22.x"
-                  cache: "npm"
-                  cache-dependency-path: SeventySix.Client/package-lock.json
 
             - name: Install dependencies
               run: npm ci
@@ -309,8 +307,6 @@ jobs:
               uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
               with:
                   node-version: "22.x"
-                  cache: "npm"
-                  cache-dependency-path: SeventySix.Client/package-lock.json
 
             - name: Install dependencies
               run: npm ci

@@ -19,7 +19,7 @@ type TimeoutsConfig = {
 
 // CI environments (Docker + ubuntu-latest) are slower than local dev
 const CI_MULTIPLIER: number =
-	process.env.CI ? 1.5 : 1;
+	process.env['CI'] ? 1.5 : 1;
 
 export const TIMEOUTS: TimeoutsConfig =
 	{
