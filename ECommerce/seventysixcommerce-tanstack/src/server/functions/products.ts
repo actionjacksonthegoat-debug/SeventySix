@@ -13,6 +13,7 @@ import {
 import type {
 	CategoryWithCount,
 	FeaturedProduct,
+	GetProductsInput,
 	ProductDetail as SharedProductDetail,
 	ProductListItem,
 	ProductListResult,
@@ -53,7 +54,7 @@ export const getProducts =
 			async ({ data }): Promise<PaginatedResult<Product>> =>
 			{
 				const result: ProductListResult =
-					await sharedGetProducts(db, data);
+					await sharedGetProducts(db, data as GetProductsInput);
 
 				return {
 					items: result.items,
@@ -78,7 +79,7 @@ export const getProduct =
 		.handler(
 			async ({ data }): Promise<ProductDetail | null> =>
 			{
-				return getProductBySlug(db, data.slug);
+				return getProductBySlug(db, (data as { slug: string; }).slug);
 			});
 
 /** Retrieves all categories with active product counts, ordered by sortOrder. */

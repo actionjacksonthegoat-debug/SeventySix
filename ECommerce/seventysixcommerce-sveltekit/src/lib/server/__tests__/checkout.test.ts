@@ -446,7 +446,8 @@ describe("Checkout",
 													{
 														returning: vi
 															.fn()
-															.mockResolvedValue([{ id: "order-mock-1" }])
+															.mockResolvedValue(
+																[{ id: "order-mock-1" }])
 													})
 										}),
 								select: vi

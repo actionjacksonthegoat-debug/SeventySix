@@ -39,7 +39,7 @@ jobs:
             - name: Setup Node.js
               uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
               with:
-                  node-version: "22.x"
+                  node-version: "24.x"
 
             - name: Setup .NET
               uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5
@@ -103,7 +103,7 @@ jobs:
             - name: Setup Node.js
               uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
               with:
-                  node-version: "22.x"
+                  node-version: "24.x"
 
             - name: Install dependencies
               run: npm ci
@@ -306,7 +306,7 @@ jobs:
             - name: Setup Node.js
               uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
               with:
-                  node-version: "22.x"
+                  node-version: "24.x"
 
             - name: Install dependencies
               run: npm ci
@@ -380,7 +380,7 @@ jobs:
             - name: Setup Node.js
               uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
               with:
-                  node-version: "22.x"
+                  node-version: "24.x"
 
             - name: Install k6
               run: |

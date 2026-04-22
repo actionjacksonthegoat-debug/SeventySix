@@ -22,7 +22,6 @@
     "lint": "eslint ."
   },
   "dependencies": {
-    "@seventysixcommerce/shared": "file:../seventysixcommerce-shared",
     "@opentelemetry/api": "^1.9.1",
     "@opentelemetry/auto-instrumentations-node": "^0.72.0",
     "@opentelemetry/exporter-metrics-otlp-http": "^0.214.0",
@@ -31,6 +30,7 @@
     "@opentelemetry/sdk-node": "^0.214.0",
     "@opentelemetry/sdk-trace-web": "^2.6.1",
     "@opentelemetry/semantic-conventions": "^1.40.0",
+    "@seventysixcommerce/shared": "file:../seventysixcommerce-shared",
     "@tanstack/react-query": "^5.95.2",
     "@tanstack/react-router": "^1.168.5",
     "@tanstack/react-router-with-query": "^1.130.17",
@@ -40,7 +40,7 @@
     "pg": "^8.20.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
-    "stripe": "^21.0.1",
+    "stripe": "^22.0.2",
     "zod": "^4.3.6"
   },
   "devDependencies": {
@@ -66,7 +66,7 @@
     "jsdom": "^29.0.1",
     "tailwindcss": "^4.2.2",
     "tsx": "^4.21.0",
-    "typescript": "^6.0.2",
+    "typescript": "^6.0.3",
     "vitest": "^4.1.2"
   },
   "overrides": {

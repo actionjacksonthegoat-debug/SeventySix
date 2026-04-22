@@ -36,8 +36,7 @@ const getOrderConfirmation =
 				{
 					const session =
 						(await getStripe().checkout.sessions.retrieve(
-							data.sessionId)) as unknown as Stripe.Checkout.Session;
-
+							(data as { sessionId: string; }).sessionId)) as unknown as Stripe.Checkout.Session;
 					// Ownership check — verify this session belongs to the current cart
 					if (session.metadata?.cartSessionId !== context.cartSessionId)
 					{

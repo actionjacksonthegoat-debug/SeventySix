@@ -1,10 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 /** Mutable env object — individual tests override as needed. */
-const mockEnv: Record<string, string | undefined> = {
-	STRIPE_WEBHOOK_SECRET: "whsec_test_secret",
-	PRINTFUL_API_KEY: "pf_test_key"
-};
+const mockEnv: Record<string, string | undefined> =
+	{
+		STRIPE_WEBHOOK_SECRET: "whsec_test_secret",
+		PRINTFUL_API_KEY: "pf_test_key"
+	};
 
 vi.mock("$env/dynamic/private", () => ({ env: mockEnv }));
 
@@ -184,7 +185,8 @@ describe("POST /api/webhook/stripe",
 				const body: unknown =
 					await response.json();
 				expect(body)
-					.toEqual({ received: true });
+					.toEqual(
+						{ received: true });
 			});
 
 		it("processes new checkout session via handleCheckoutCompleted",
@@ -201,7 +203,13 @@ describe("POST /api/webhook/stripe",
 								amount_total: 2999,
 								collected_information: {
 									shipping_details: {
-										address: { line1: "123 Main St", city: "Austin", state: "TX", postal_code: "78701", country: "US" },
+										address: {
+											line1: "123 Main St",
+											city: "Austin",
+											state: "TX",
+											postal_code: "78701",
+											country: "US"
+										},
 										name: "Jane Doe"
 									}
 								}

@@ -3,7 +3,7 @@
 # Serves over HTTPS to match production environment
 
 # Stage 1: Build
-FROM node:22-alpine3.21 AS build
+FROM node:24-alpine3.21@sha256:5579647898d35dbc9ca22010e46c207deb6320f785822a3c5ba3a84b81b57309 AS build
 WORKDIR /app
 
 # Copy package files
