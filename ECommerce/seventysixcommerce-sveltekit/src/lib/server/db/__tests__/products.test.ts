@@ -327,7 +327,12 @@ describe("Product Queries",
 							.mockReturnThis(),
 						orderBy: vi
 							.fn()
-							.mockResolvedValue(mockProducts)
+							.mockReturnValue(
+								{
+									limit: vi
+										.fn()
+										.mockResolvedValue(mockProducts)
+								})
 					};
 
 				selectSpy.mockReturnValueOnce(mockChain as any);

@@ -10,7 +10,6 @@ import {
 	computed,
 	DestroyRef,
 	inject,
-	OnInit,
 	Signal,
 	signal,
 	WritableSignal
@@ -58,7 +57,7 @@ import { isPresent } from "@shared/utilities/null-check.utility";
  * Component that handles user login via local credentials or OAuth providers.
  * Manages redirects on success and presents user-friendly error messages.
  */
-export class LoginComponent implements OnInit
+export class LoginComponent
 {
 	/**
 	 * Form builder for creating reactive forms.
@@ -233,11 +232,7 @@ export class LoginComponent implements OnInit
 	protected readonly inactivityBannerVisible: Signal<boolean> =
 		this.showInactivityBanner.asReadonly();
 
-	/**
-	 * Initialize component: determine post-login redirect and redirect if already authenticated.
-	 * @returns {void}
-	 */
-	ngOnInit(): void
+	constructor()
 	{
 		// Check for inactivity logout flag before redirect
 		const wasIdleLogout: string | null =

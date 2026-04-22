@@ -61,13 +61,9 @@ public static class FusionCacheRegistration
 			configuration.GetSection(CacheSettings.SectionName));
 
 		// Register CacheSettings validator and enable ValidateOnStart
-		services.AddSingleton<IValidator<CacheSettings>, CacheSettingsValidator>();
-
-		services
-			.AddOptions<CacheSettings>()
-			.Bind(configuration.GetSection(CacheSettings.SectionName))
-			.ValidateWithFluentValidation()
-			.ValidateOnStart();
+		services.AddDomainSettings<CacheSettings, CacheSettingsValidator>(
+			configuration,
+			CacheSettings.SectionName);
 
 		// Skip Valkey in Test environment - use memory-only cache for fast tests
 		if (string.Equals(

@@ -3,43 +3,31 @@
 // </copyright>
 
 using FluentValidation.TestHelper;
-using NSubstitute;
 using SeventySix.Identity.Commands.CreateUser;
-using Wolverine;
 
 namespace SeventySix.Identity.Tests.Validators;
 
 /// <summary>
 /// Unit tests for CreateUserCommandValidator.
-/// Tests all validation rules for user creation requests.
+/// Tests all format and length validation rules for user creation requests.
 /// </summary>
 /// <remarks>
 /// Coverage Focus:
 /// - Username validation (required, length, format)
 /// - Email validation (required, format, length)
-/// - Email uniqueness (async via CheckEmailExistsQuery)
-/// - FullName validation (optional, length)
+/// - FullName validation (required, length)
 /// - IsActive validation (no rules, just acceptance)
+///
+/// Email uniqueness is enforced at the database level, not in the validator.
 /// </remarks>
 public sealed class CreateUserCommandValidatorTests
 {
-	private readonly IMessageBus MessageBus;
 	private readonly CreateUserCommandValidator Validator;
 
 	public CreateUserCommandValidatorTests()
 	{
-		MessageBus =
-			Substitute.For<IMessageBus>();
-
-		// Default: email does not exist (valid)
-		MessageBus
-			.InvokeAsync<bool>(
-				Arg.Any<CheckEmailExistsQuery>(),
-				Arg.Any<CancellationToken>())
-			.Returns(false);
-
 		Validator =
-			new CreateUserCommandValidator(MessageBus);
+			new CreateUserCommandValidator();
 	}
 
 	#region Username Validation Tests
@@ -561,58 +549,6 @@ public sealed class CreateUserCommandValidatorTests
 		result.ShouldHaveValidationErrorFor(x => x.Username);
 		result.ShouldHaveValidationErrorFor(x => x.Email);
 		result.ShouldHaveValidationErrorFor(x => x.FullName);
-	}
-
-	#endregion
-
-	#region Email Uniqueness Tests
-
-	[Fact]
-	public async Task Email_ShouldHaveError_WhenAlreadyRegisteredAsync()
-	{
-		// Arrange
-		MessageBus
-			.InvokeAsync<bool>(
-				Arg.Any<CheckEmailExistsQuery>(),
-				Arg.Any<CancellationToken>())
-			.Returns(true);
-
-		CreateUserRequest request =
-			new()
-			{
-				Username = "testuser",
-				Email = "existing@example.com",
-				FullName = "Test User",
-			};
-
-		// Act
-		TestValidationResult<CreateUserRequest> result =
-			await Validator.TestValidateAsync(request);
-
-		// Assert
-		result
-			.ShouldHaveValidationErrorFor(user => user.Email)
-			.WithErrorMessage("Email address is already registered.");
-	}
-
-	[Fact]
-	public async Task Email_ShouldNotHaveError_WhenUniqueAsync()
-	{
-		// Arrange (default mock returns false = email doesn't exist)
-		CreateUserRequest request =
-			new()
-			{
-				Username = "testuser",
-				Email = "unique@example.com",
-				FullName = "Test User",
-			};
-
-		// Act
-		TestValidationResult<CreateUserRequest> result =
-			await Validator.TestValidateAsync(request);
-
-		// Assert
-		result.ShouldNotHaveAnyValidationErrors();
 	}
 
 	#endregion

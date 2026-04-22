@@ -7,7 +7,6 @@ import {
 import { queueLog } from "$lib/server/log-forwarder";
 import { recordCheckoutComplete, recordCheckoutStart } from "$lib/server/metrics";
 import { getStripe } from "$lib/server/stripe";
-import { now } from "$lib/utils/date";
 import {
 	buildShippingOptions,
 	buildStripeLineItems,
@@ -16,6 +15,8 @@ import {
 	createMockOrder,
 	type ValidatedCartRow
 } from "@seventysixcommerce/shared/checkout";
+import { now } from "@seventysixcommerce/shared/date";
+import { isNullOrUndefined } from "@seventysixcommerce/shared/utils";
 import { fail, redirect } from "@sveltejs/kit";
 import { and, eq, inArray } from "drizzle-orm";
 import type { Actions } from "./$types";
@@ -65,7 +66,8 @@ export const actions: Actions =
 			const priceMap: Map<string, string> =
 				new Map(
 					activeProducts.map(
-						(p) => [p.id, p.basePrice]));
+						(product) =>
+							[product.id, product.basePrice]));
 
 			const validItems: (CartItemWithProduct & { currentPrice: string; })[] =
 				cart
@@ -146,7 +148,7 @@ export const actions: Actions =
 					});
 			}
 
-			if (session.url === null || session.url === undefined)
+			if (isNullOrUndefined(session.url))
 			{
 				return fail(500,
 					{ error: "Checkout session creation failed" });

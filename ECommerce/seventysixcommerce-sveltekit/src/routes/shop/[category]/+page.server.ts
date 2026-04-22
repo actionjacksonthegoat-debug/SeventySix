@@ -1,6 +1,7 @@
 import { getCategoryBySlug, getProducts } from "$lib/server/db/products";
 import { queueLog } from "$lib/server/log-forwarder";
 import { recordPageView } from "$lib/server/metrics";
+import { isNullOrUndefined } from "@seventysixcommerce/shared/utils";
 import { error } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 
@@ -20,7 +21,7 @@ export const load: PageServerLoad =
 		const category =
 			await getCategoryBySlug(params.category);
 
-		if (category === null)
+		if (isNullOrUndefined(category))
 		{
 			error(404, "Category not found");
 		}

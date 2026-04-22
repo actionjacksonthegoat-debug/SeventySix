@@ -110,6 +110,32 @@ public sealed class OAuthProviderFactoryTests
 	}
 
 	/// <summary>
+	/// Verifies GetRegisteredProviders returns the same cached reference on subsequent calls.
+	/// </summary>
+	[Fact]
+	public void GetRegisteredProviders_CalledTwice_ReturnsSameReference()
+	{
+		// Arrange
+		IOAuthProviderStrategy gitHubStrategy =
+			CreateMockStrategy(TestProvider);
+
+		OAuthProviderFactory factory =
+			new([gitHubStrategy]);
+
+		// Act
+		IReadOnlyList<string> first =
+			factory.GetRegisteredProviders();
+
+		IReadOnlyList<string> second =
+			factory.GetRegisteredProviders();
+
+		// Assert
+		ReferenceEquals(
+			first,
+			second).ShouldBeTrue();
+	}
+
+	/// <summary>
 	/// Creates a mock OAuth provider strategy with the specified name.
 	/// </summary>
 	/// <param name="providerName">

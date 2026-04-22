@@ -120,7 +120,14 @@ export class ErrorHandlerService implements ErrorHandler
 	{
 		if (this.isHandlingError)
 		{
-			console.error("[ErrorHandler] Re-entry detected:", error);
+			try
+			{
+				this.logger.error("[ErrorHandler] Re-entry detected", error instanceof Error ? error : undefined);
+			}
+			catch
+			{
+				// No-op: backstop — logger itself may have caused re-entry
+			}
 			return;
 		}
 
@@ -141,8 +148,17 @@ export class ErrorHandlerService implements ErrorHandler
 		}
 		catch (handlingError)
 		{
-			console.error("[ErrorHandler] Failed:", handlingError);
-			console.error("[ErrorHandler] Original:", error);
+			try
+			{
+				this.logger.error(
+					"[ErrorHandler] Failed during error handling",
+					handlingError instanceof Error ? handlingError : undefined,
+					{ originalError: error instanceof Error ? error.message : String(error) });
+			}
+			catch
+			{
+				// No-op: true backstop — logger itself failed
+			}
 		}
 		finally
 		{

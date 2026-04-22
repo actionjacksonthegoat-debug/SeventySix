@@ -85,15 +85,11 @@ public static class OpenTelemetryExtensions
 		services
 			.AddOpenTelemetry()
 			.ConfigureResource(resource =>
-				resource
-					.AddService(
-						serviceName: serviceName,
-						serviceVersion: serviceVersion)
-					.AddAttributes(
-						new Dictionary<string, object>
-						{
-							["deployment.environment"] = environment,
-						}))
+				OtelResourceBuilder.Configure(
+					resource,
+					serviceName,
+					serviceVersion,
+					environment))
 			.WithTracing(
 				tracing =>
 				{

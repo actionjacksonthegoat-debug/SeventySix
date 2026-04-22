@@ -36,14 +36,14 @@ const services = [
 	{
 		name: "TanStack",
 		command: "node",
-		args: ["ECommerce/seventysixcommerce-tanstack/scripts/start.mjs"],
+		args: ["ECommerce/scripts/start.mjs", "--app", "tanstack"],
 		color: "\x1b[33m",
 		env: commerceEnvOverrides,
 	},
 	{
 		name: "SvelteKit",
 		command: "node",
-		args: ["ECommerce/seventysixcommerce-sveltekit/scripts/start.mjs"],
+		args: ["ECommerce/scripts/start.mjs", "--app", "sveltekit"],
 		color: "\x1b[35m",
 		env: commerceEnvOverrides,
 	},

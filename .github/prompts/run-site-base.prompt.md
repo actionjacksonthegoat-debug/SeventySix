@@ -9,7 +9,7 @@ Automate a complete walkthrough of the SeventySix application and both SeventySi
 Navigate every page, exercise core features, capture screenshots, and generate a pass/fail report.
 
 **Targets**:
-- **Part 1**: SeventySix Angular — `https://localhost:4200` (Steps 1–26, including 25B and 26A/26B)
+- **Part 1**: SeventySix Angular — `https://localhost:4200` (Steps 1–25)
 - **Part 2**: SeventySixCommerce SvelteKit — `https://localhost:3001` (Steps 27–35)
 - **Part 3**: SeventySixCommerce TanStack Start — `https://localhost:3002` (Steps 36–43)
 
@@ -109,10 +109,9 @@ If an error is found AND the current step is NOT "Click Create Error Log button"
 
 The following console messages are expected in development and should be **ignored**:
 
-- **Babylon.js WebGL warnings** (games only) — `BABYLON.Engine`, `WebGL`, `GL_INVALID_*` — GPU driver validation messages, not suppressible via application code
 - **DevTools warnings** — messages from browser extensions, DevTools protocol noise
 
-### Continue-on-Failure (CRITICAL)
+### [CRITICAL] Continue-on-Failure
 
 **On failure of ANY step**: Log the error, take a screenshot of the current state, record the step as FAILED with error details, and CONTINUE to the next step. NEVER abort the walkthrough due to a single step failure.
 
@@ -346,27 +345,48 @@ If PostgreSQL MCP is unavailable, **ask the user to provide the MFA code**.
 5. Check for console errors
 6. Record result
 
-### Step 18: Password Change Test (walkthrough_test_user)
+### Step 18: Password Setup Test (walkthrough_test_user)
 
-**This step tests the password change flow using the `walkthrough_test_user` created in Step 11 — NOT the seeded admin.**
+**This step tests the password setup flow using the `walkthrough_test_user` created in Step 11 — NOT the seeded admin.**
 
-1. Navigate to `https://localhost:4200/auth/login`
-2. Fill the email field with `walkthrough_test@test.local`
-3. Fill the password field with the temporary password shown in Step 11's confirmation (the system generates one) — if no temporary password was shown, use `SeventySixAdmin76!` (the default initial password for admin-created users)
-4. If an Altcha captcha widget is visible, click the checkbox/widget and wait for it to complete
-5. Click the Sign In button
-6. Wait for navigation — expect redirect to `/auth/change-password` (admin-created users require password change)
-7. Take screenshot → `step-18-change-password-form.png`
-8. Fill current password (same as login password)
-9. Fill new password: `WalkthroughNewPass76!`
-10. Fill confirm password: `WalkthroughNewPass76!`
-11. Click submit
-12. Wait for navigation — the app will redirect to `/auth/login` because all tokens are invalidated after a password change
-13. Take screenshot → `step-18-change-password-success.png`
-14. Check for error banners
-15. Record result
+Admin-created users receive a password setup email with a unique link. The email is queued in the database and can be retrieved via PostgreSQL MCP.
 
-> **NOTE**: This step may fail if `walkthrough_test_user` doesn't require a password change or if the temporary password is unknown. Record the result either way and continue.
+1. Use PostgreSQL MCP to retrieve the password setup link:
+   ```sql
+   SELECT "TemplateData"->>'resetLink' AS "SetupLink"
+   FROM "ElectronicNotifications"."EmailQueue"
+   WHERE "EmailType" = 'PasswordSetup'
+     AND "RecipientEmail" = 'walkthrough_test@test.local'
+   ORDER BY "CreateDate" DESC
+   LIMIT 1;
+   ```
+2. If no result is returned, try alternative email type:
+   ```sql
+   SELECT "TemplateData"->>'resetLink' AS "SetupLink"
+   FROM "ElectronicNotifications"."EmailQueue"
+   WHERE "RecipientEmail" = 'walkthrough_test@test.local'
+   ORDER BY "CreateDate" DESC
+   LIMIT 1;
+   ```
+3. Navigate to the `SetupLink` URL from the query result
+4. Wait for the password setup form to load
+5. Take screenshot → `step-18-set-password-form.png`
+6. Fill new password: `WalkthroughNewPass76!`
+7. Fill confirm password: `WalkthroughNewPass76!`
+8. Click Submit
+9. Wait for navigation — expect redirect to `/auth/login` with a success message
+10. Take screenshot → `step-18-set-password-success.png`
+11. Navigate to `https://localhost:4200/auth/login`
+12. Fill the email field with `walkthrough_test@test.local`
+13. Fill the password field with `WalkthroughNewPass76!`
+14. If an Altcha captcha widget is visible, click the checkbox/widget and wait for it to complete
+15. Click the Sign In button
+16. Wait for navigation — expect redirect to home or dashboard
+17. Take screenshot → `step-18-login-success.png`
+18. Check for error banners
+19. Record result
+
+> **NOTE**: If PostgreSQL MCP is unavailable, ask the user to provide the password setup link from the email queue. If the email system is not running, record this step as SKIPPED and continue.
 
 ### Step 19: Error Pages
 
@@ -478,60 +498,6 @@ If PostgreSQL MCP is unavailable, **ask the user to provide the MFA code**.
 12. Check for console errors
 13. Record result
 
-### Step 25B: Games Landing Page
-
-1. Navigate to `https://localhost:4200/games`
-2. Wait for the games landing page to load
-3. Verify both game cards are visible (Car-a-Lot and Spy And Fly)
-4. Take screenshot → `step-25b-games-landing.png`
-5. Verify each game card has an image/icon and title
-6. Use `take_snapshot` to verify accessibility tree — check heading hierarchy and interactive elements
-7. Check for console errors
-8. Record result
-
-### Step 26: Games — Play Both Games
-
-> **IMPORTANT**: Both games use Babylon.js 3D rendering. A loading screen with the game icon and name displays while the engine initializes. Verify it appears before the game canvas renders.
-
-#### Step 26A: Car-a-Lot — Full Race to Completion
-
-> **Timeout**: If the victory/result screen does not appear within 120 seconds of starting the game, take a screenshot, record the step as PARTIAL, and continue to Step 26B.
-
-1. Navigate to `https://localhost:4200/games/car-a-lot`
-2. Wait for the loading screen to appear with game icon and name
-3. Take screenshot → `step-26a-car-a-lot-loading.png`
-4. Wait for the 3D scene to load (loading screen disappears, game canvas visible)
-5. Take screenshot → `step-26a-car-a-lot-ready.png`
-6. Select a kart color if the car color selector is visible
-7. Take screenshot → `step-26a-car-a-lot-color-selected.png`
-8. Click the "Start Game" button
-9. Take screenshot → `step-26a-car-a-lot-playing.png`
-10. Use keyboard to drive (hold ArrowUp / W for accelerate, ArrowLeft / A or ArrowRight / D to steer)
-11. Play until the race completes (lap counter reaches max) OR play for at least 60 seconds if race doesn't end
-12. When the game-over / victory screen appears, take screenshot → `step-26a-car-a-lot-victory.png`
-13. Verify the result overlay shows score/time/result text
-14. Check for console errors (ignore Babylon.js initialization and WebGL warnings)
-
-#### Step 26B: Spy And Fly — Full Mission to Completion
-
-> **Timeout**: If the result screen does not appear within 180 seconds of starting the mission, take a screenshot, record the step as PARTIAL, and continue to Part 2.
-
-15. Navigate to `https://localhost:4200/games/spy-vs-spy`
-16. Wait for the loading screen to appear with game icon and name
-17. Take screenshot → `step-26b-spy-and-fly-loading.png`
-18. Wait for the 3D scene to load
-19. Take screenshot → `step-26b-spy-and-fly-ready.png`
-20. Click the "Start Mission" button
-21. Take screenshot → `step-26b-spy-and-fly-playing.png`
-22. Use keyboard controls (WASD for movement, Space for actions)
-23. Navigate the environment — search rooms/areas for items
-24. Play until mission completes (victory/defeat screen) OR play for at least 90 seconds
-25. When the result screen appears, take screenshot → `step-26b-spy-and-fly-result.png`
-26. Verify the result overlay shows mission outcome text
-27. If a "Play Again" or "Return to Menu" button is visible, take screenshot → `step-26b-spy-and-fly-replay-option.png`
-28. Check for console errors (ignore Babylon.js initialization and WebGL warnings)
-29. Record result for both games
-
 ### Part 1 Network Checkpoint
 
 Before moving to Part 2, run `list_network_requests` and check for:
@@ -573,12 +539,12 @@ Before moving to Part 2, run `list_network_requests` and check for:
 4. Use `take_snapshot` to verify accessibility tree — check heading hierarchy and verify all product images have alt text
 5. Click on the first category link
 6. Wait for the category page to load
-6. Take screenshot → `step-29-svelte-category.png`
-7. Click on the first product in the category
-8. Wait for the product detail page to load
-9. Take screenshot → `step-29-svelte-product-detail.png`
-10. Check for console errors
-11. Record result
+7. Take screenshot → `step-29-svelte-category.png`
+8. Click on the first product in the category
+9. Wait for the product detail page to load
+10. Take screenshot → `step-29-svelte-product-detail.png`
+11. Check for console errors
+12. Record result
 
 ### Step 30: SvelteKit — Add to Cart & Checkout Flow
 
@@ -683,12 +649,12 @@ Before moving to Part 2, run `list_network_requests` and check for:
 4. Use `take_snapshot` to verify accessibility tree — check heading hierarchy and verify all product images have alt text
 5. Click on the first category link
 6. Wait for the category page to load
-6. Take screenshot → `step-38-tanstack-category.png`
-7. Click on the first product in the category
-8. Wait for the product detail page to load
-9. Take screenshot → `step-38-tanstack-product-detail.png`
-10. Check for console errors
-11. Record result
+7. Take screenshot → `step-38-tanstack-category.png`
+8. Click on the first product in the category
+9. Wait for the product detail page to load
+10. Take screenshot → `step-38-tanstack-product-detail.png`
+11. Check for console errors
+12. Record result
 
 ### Step 39: TanStack — Add to Cart & Checkout Flow
 
@@ -802,7 +768,7 @@ If none: "No network errors detected."}
 ## Accessibility Findings
 
 {List heading hierarchy issues, missing alt text, non-focusable interactive elements found via take_snapshot.
-Pages checked: Admin Dashboard (Step 8), SvelteKit Home (Step 27), SvelteKit Shop (Step 29), TanStack Home (Step 36), TanStack Shop (Step 38), Games Landing (Step 25B).
+Pages checked: Admin Dashboard (Step 8), SvelteKit Home (Step 27), SvelteKit Shop (Step 29), TanStack Home (Step 36), TanStack Shop (Step 38).
 If none: "No accessibility issues found."}
 
 ## Admin Commerce Dashboard Health
@@ -814,18 +780,11 @@ If none: "No accessibility issues found."}
 | TanStack (Step 24) | Y/N | {url or about:blank} | Y/N | |
 | TanStack Logs (Step 25) | Y/N | N/A | Y/N | {row count} |
 
-## Game Completion Status
-
-| Game | Reached Victory/Result Screen? | Notes |
-|------|-------------------------------|-------|
-| Car-a-Lot | Y/N | |
-| Spy And Fly | Y/N | |
-
 ---
 
 ## Step Results
 
-### Part 1: SeventySix Angular (Steps 1–26)
+### Part 1: SeventySix Angular (Steps 1–25)
 
 | # | Step | Status | Notes |
 |---|------|--------|-------|
@@ -836,9 +795,6 @@ If none: "No accessibility issues found."}
 | 23 | Admin SvelteKit Logs | PASSED/FAILED | |
 | 24 | Admin TanStack Dashboard | PASSED/FAILED | |
 | 25 | Admin TanStack Logs | PASSED/FAILED | |
-| 25B | Games Landing Page | PASSED/FAILED | |
-| 26A | Car-a-Lot Full Race | PASSED/FAILED | |
-| 26B | Spy And Fly Full Mission | PASSED/FAILED | |
 
 ### Part 2: SeventySixCommerce SvelteKit (Steps 27–35)
 
@@ -892,4 +848,4 @@ After writing the report, tell the user:
 > **Walkthrough complete!**
 > - Report: `.dev-tools-output/walkthrough-report.md`
 > - Screenshots: `.dev-tools-output/screenshots/`
-> - {X}/{Y} steps passed across all 3 sites (including admin commerce pages, games, cart flows, and theme toggles)
+> - {X}/{Y} steps passed across all 3 sites (including admin commerce pages, cart flows, and theme toggles)

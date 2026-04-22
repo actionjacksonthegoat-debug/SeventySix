@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
+using SeventySix.Shared.Extensions;
 using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.Constants;
 using Shouldly;
@@ -15,8 +16,8 @@ using Shouldly;
 namespace SeventySix.Identity.Tests.Services;
 
 /// <summary>
-/// Unit tests for TokenService JWT generation logic.
-/// These tests do NOT require a database - they test pure JWT generation.
+/// Unit tests for TokenService.
+/// Tests JWT generation, refresh token creation, and revocation without a database.
 /// </summary>
 public sealed class TokenServiceUnitTests
 {
@@ -27,6 +28,7 @@ public sealed class TokenServiceUnitTests
 		TestTimeProviderBuilder.DefaultTime;
 
 	private readonly ITokenRepository TokenRepository;
+	private readonly ISessionManagementService SessionManagement;
 	private readonly IOptions<JwtSettings> JwtOptions;
 	private readonly IOptions<AuthSettings> AuthOptions;
 	private readonly FakeTimeProvider TimeProvider;
@@ -36,6 +38,8 @@ public sealed class TokenServiceUnitTests
 	{
 		TokenRepository =
 			Substitute.For<ITokenRepository>();
+		SessionManagement =
+			Substitute.For<ISessionManagementService>();
 		JwtOptions =
 			Options.Create(
 			new JwtSettings
@@ -61,6 +65,7 @@ public sealed class TokenServiceUnitTests
 		Service =
 			new TokenService(
 			TokenRepository,
+			SessionManagement,
 			JwtOptions,
 			AuthOptions,
 			NullLogger<TokenService>.Instance,
@@ -203,6 +208,240 @@ public sealed class TokenServiceUnitTests
 				claim => claim.Type == CustomClaimTypes.RequiresPasswordChange);
 
 		passwordChangeClaim.ShouldBeNull();
+	}
+
+	#endregion
+
+	#region GenerateRefreshTokenAsync Tests
+
+	/// <summary>
+	/// Verifies refresh token generation calls session management and stores token.
+	/// </summary>
+	[Fact]
+	public async Task GenerateRefreshTokenAsync_ReturnsSecureTokenAsync()
+	{
+		// Act
+		string token =
+			await Service.GenerateRefreshTokenAsync(
+			userId: 1L,
+			rememberMe: false,
+			CancellationToken.None);
+
+		// Assert
+		token.ShouldNotBeNull();
+		token.ShouldNotBeEmpty();
+
+		await SessionManagement
+			.Received(1)
+			.EnforceSessionLimitAsync(
+				1L,
+				Arg.Any<DateTimeOffset>(),
+				Arg.Any<CancellationToken>());
+
+		await TokenRepository
+			.Received(1)
+			.CreateAsync(
+				Arg.Any<RefreshToken>(),
+				Arg.Any<CancellationToken>());
+	}
+
+	#endregion
+
+	#region RevokeRefreshTokenAsync Tests
+
+	/// <summary>
+	/// Verifies that revoking a valid token marks it as revoked.
+	/// </summary>
+	[Fact]
+	public async Task RevokeRefreshTokenAsync_ValidToken_MarksRevokedAsync()
+	{
+		// Arrange
+		string plainTextToken = "test-token-value";
+		string expectedHash =
+			CryptoExtensions.ComputeSha256Hash(plainTextToken);
+
+		TokenRepository
+			.RevokeByHashAsync(
+				expectedHash,
+				Arg.Any<DateTimeOffset>(),
+				Arg.Any<CancellationToken>())
+			.Returns(true);
+
+		// Act
+		bool result =
+			await Service.RevokeRefreshTokenAsync(
+			plainTextToken,
+			CancellationToken.None);
+
+		// Assert
+		result.ShouldBeTrue();
+
+		await TokenRepository
+			.Received(1)
+			.RevokeByHashAsync(
+				expectedHash,
+				FixedTime,
+				Arg.Any<CancellationToken>());
+	}
+
+	/// <summary>
+	/// Verifies that revoking a nonexistent token returns false.
+	/// </summary>
+	[Fact]
+	public async Task RevokeRefreshTokenAsync_NonexistentToken_ReturnsFalseAsync()
+	{
+		// Arrange
+		TokenRepository
+			.RevokeByHashAsync(
+				Arg.Any<string>(),
+				Arg.Any<DateTimeOffset>(),
+				Arg.Any<CancellationToken>())
+			.Returns(false);
+
+		// Act
+		bool result =
+			await Service.RevokeRefreshTokenAsync(
+			"nonexistent",
+			CancellationToken.None);
+
+		// Assert
+		result.ShouldBeFalse();
+	}
+
+	/// <summary>
+	/// Verifies that revoking all user tokens delegates to the repository.
+	/// </summary>
+	[Fact]
+	public async Task RevokeAllUserTokensAsync_RevokesAllAndReturnsCountAsync()
+	{
+		// Arrange
+		TokenRepository
+			.RevokeAllUserTokensAsync(
+				1L,
+				Arg.Any<DateTimeOffset>(),
+				Arg.Any<CancellationToken>())
+			.Returns(5);
+
+		// Act
+		int count =
+			await Service.RevokeAllUserTokensAsync(
+			userId: 1L,
+			CancellationToken.None);
+
+		// Assert
+		count.ShouldBe(5);
+
+		await TokenRepository
+			.Received(1)
+			.RevokeAllUserTokensAsync(
+				1L,
+				FixedTime,
+				Arg.Any<CancellationToken>());
+	}
+
+	#endregion
+
+	#region RotateRefreshTokenAsync Tests
+
+	[Fact]
+	public async Task RotateRefreshTokenAsync_ReuseOfRevokedToken_RevokesFamilyAsync()
+	{
+		// Arrange — create a revoked token to simulate reuse attack
+		Guid familyId =
+			Guid.NewGuid();
+		const long userId =
+			42L;
+
+		RefreshToken revokedToken =
+			new RefreshTokenBuilder(TimeProvider)
+				.WithUserId(userId)
+				.WithFamilyId(familyId)
+				.AsRevoked()
+				.BuildWithPlainToken(out string plainToken);
+
+		TokenRepository
+			.GetByTokenHashAsync(
+				Arg.Any<string>(),
+				Arg.Any<CancellationToken>())
+			.Returns(revokedToken);
+
+		// Act
+		(string? token, bool rememberMe) result =
+			await Service.RotateRefreshTokenAsync(
+				plainToken,
+				CancellationToken.None);
+
+		// Assert — token is null (reuse detected) and family is revoked
+		result.token.ShouldBeNull();
+		result.rememberMe.ShouldBeFalse();
+
+		await TokenRepository
+			.Received(1)
+			.RevokeFamilyAsync(
+				familyId,
+				Arg.Any<DateTimeOffset>(),
+				Arg.Any<CancellationToken>());
+	}
+
+	[Fact]
+	public async Task RotateRefreshTokenAsync_ReuseOfRevokedToken_WithDisableRotation_StillRevokesFamilyAsync()
+	{
+		// Arrange — even with DisableRotation=true, reuse detection must fire
+		Guid familyId =
+			Guid.NewGuid();
+		const long userId =
+			42L;
+
+		IOptions<AuthSettings> disableRotationOptions =
+			Options.Create(
+			new AuthSettings
+			{
+				Token =
+					new TokenSettings
+					{
+						MaxActiveSessionsPerUser = 5,
+						DisableRotation = true,
+					},
+			});
+
+		TokenService serviceWithDisableRotation =
+			new(
+			TokenRepository,
+			SessionManagement,
+			JwtOptions,
+			disableRotationOptions,
+			NullLogger<TokenService>.Instance,
+			TimeProvider);
+
+		RefreshToken revokedToken =
+			new RefreshTokenBuilder(TimeProvider)
+				.WithUserId(userId)
+				.WithFamilyId(familyId)
+				.AsRevoked()
+				.BuildWithPlainToken(out string plainToken);
+
+		TokenRepository
+			.GetByTokenHashAsync(
+				Arg.Any<string>(),
+				Arg.Any<CancellationToken>())
+			.Returns(revokedToken);
+
+		// Act
+		(string? token, bool rememberMe) result =
+			await serviceWithDisableRotation.RotateRefreshTokenAsync(
+				plainToken,
+				CancellationToken.None);
+
+		// Assert — reuse STILL detected despite DisableRotation=true
+		result.token.ShouldBeNull();
+		result.rememberMe.ShouldBeFalse();
+
+		await TokenRepository
+			.Received(1)
+			.RevokeFamilyAsync(
+				familyId,
+				Arg.Any<DateTimeOffset>(),
+				Arg.Any<CancellationToken>());
 	}
 
 	#endregion

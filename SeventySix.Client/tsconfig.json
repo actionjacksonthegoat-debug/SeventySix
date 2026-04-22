@@ -23,8 +23,6 @@
 		"@admin/*": ["src/app/domains/admin/*"],
 		"@sandbox": ["src/app/domains/sandbox"],
 		"@sandbox/*": ["src/app/domains/sandbox/*"],
-		"@games": ["src/app/domains/games"],
-		"@games/*": ["src/app/domains/games/*"],
 		"@auth": ["src/app/domains/auth"],
 		"@auth/*": ["src/app/domains/auth/*"],
 		"@account": ["src/app/domains/account"],

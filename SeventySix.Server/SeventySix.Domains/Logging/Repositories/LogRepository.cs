@@ -33,7 +33,7 @@ internal class LogRepository(
 	/// <remarks>
 	/// Special handling: Uses Console.WriteLine instead of logger to prevent infinite logging loops.
 	/// </remarks>
-	public new async Task<Log> CreateAsync(
+	public override async Task<Log> CreateAsync(
 		Log entity,
 		CancellationToken cancellationToken = default)
 	{

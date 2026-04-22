@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+// Mock the OTel SDK before importing the module under test
 const mockSdkStart =
 	vi.fn();
 const mockSdkShutdown =
@@ -43,7 +44,7 @@ vi.mock("@opentelemetry/sdk-metrics", () => (
 		}
 	}));
 
-describe("telemetry",
+describe("tanstack telemetry",
 	() =>
 	{
 		afterEach(
@@ -105,5 +106,37 @@ describe("telemetry",
 				telemetry.initTelemetry("http://otel-collector:4318");
 				expect(mockSdkStart)
 					.toHaveBeenCalledOnce();
+			});
+
+		it("should shutdown the SDK and allow re-initialization after shutdown",
+			async () =>
+			{
+				const telemetry =
+					await import("~/server/telemetry");
+				telemetry.initTelemetry("http://otel-collector:4318");
+				expect(mockSdkStart)
+					.toHaveBeenCalledOnce();
+
+				await telemetry.shutdownTelemetry();
+				expect(mockSdkShutdown)
+					.toHaveBeenCalledOnce();
+
+				// After shutdown, re-initialization should be allowed
+				telemetry.initTelemetry("http://otel-collector:4318");
+				expect(mockSdkStart)
+					.toHaveBeenCalledTimes(2);
+			});
+
+		it("should be a no-op when shutdownTelemetry is called without prior initialization",
+			async () =>
+			{
+				const telemetry =
+					await import("~/server/telemetry");
+
+				await telemetry.shutdownTelemetry();
+
+				expect(mockSdkShutdown)
+					.not
+					.toHaveBeenCalled();
 			});
 	});

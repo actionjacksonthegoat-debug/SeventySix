@@ -42,7 +42,7 @@ public static class VerifyMfaCommandHandler
 		VerifyMfaCommand command,
 		IMfaService mfaService,
 		UserManager<ApplicationUser> userManager,
-		AuthenticationService authenticationService,
+		IAuthenticationService authenticationService,
 		ISecurityAuditService securityAuditService,
 		ITrustedDeviceService trustedDeviceService,
 		CancellationToken cancellationToken)

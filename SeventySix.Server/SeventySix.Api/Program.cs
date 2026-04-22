@@ -42,31 +42,19 @@ WebApplicationBuilder builder =
 			WebApplication.CreateBuilder(args);
 
 // Bind centralized security settings with FluentValidation + ValidateOnStart
-builder.Services.AddSingleton<IValidator<SecuritySettings>, SecuritySettingsValidator>();
-
-builder.Services
-	.AddOptions<SecuritySettings>()
-	.Bind(builder.Configuration.GetSection(SecuritySettings.SectionName))
-	.ValidateWithFluentValidation()
-	.ValidateOnStart();
+builder.Services.AddDomainSettings<SecuritySettings, SecuritySettingsValidator>(
+	builder.Configuration,
+	SecuritySettings.SectionName);
 
 // Bind forwarded headers settings with FluentValidation + ValidateOnStart
-builder.Services.AddSingleton<IValidator<ForwardedHeadersSettings>, ForwardedHeadersSettingsValidator>();
-
-builder.Services
-	.AddOptions<ForwardedHeadersSettings>()
-	.Bind(builder.Configuration.GetSection(ForwardedHeadersSettings.SectionName))
-	.ValidateWithFluentValidation()
-	.ValidateOnStart();
+builder.Services.AddDomainSettings<ForwardedHeadersSettings, ForwardedHeadersSettingsValidator>(
+	builder.Configuration,
+	ForwardedHeadersSettings.SectionName);
 
 // Bind request limits settings with FluentValidation + ValidateOnStart
-builder.Services.AddSingleton<IValidator<RequestLimitsSettings>, RequestLimitsSettingsValidator>();
-
-builder.Services
-	.AddOptions<RequestLimitsSettings>()
-	.Bind(builder.Configuration.GetSection(RequestLimitsSettings.SectionName))
-	.ValidateWithFluentValidation()
-	.ValidateOnStart();
+builder.Services.AddDomainSettings<RequestLimitsSettings, RequestLimitsSettingsValidator>(
+	builder.Configuration,
+	RequestLimitsSettings.SectionName);
 
 // Bind request limits settings for DoS protection (early read required before builder.Build())
 RequestLimitsSettings requestLimitsSettings =

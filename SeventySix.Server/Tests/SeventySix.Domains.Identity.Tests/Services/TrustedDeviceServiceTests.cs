@@ -42,10 +42,20 @@ public sealed class TrustedDeviceServiceTests(IdentityPostgreSqlFixture fixture)
 		IdentityDbContext context,
 		FakeTimeProvider timeProvider)
 	{
+		TrustedDeviceLimitEnforcer limitEnforcer =
+			new(context, DefaultSettings);
+
 		return new TrustedDeviceService(
 			context,
 			DefaultSettings,
-			timeProvider);
+			timeProvider,
+			limitEnforcer);
+	}
+
+	private TrustedDeviceRevocationService CreateRevocationService(
+		IdentityDbContext context)
+	{
+		return new TrustedDeviceRevocationService(context);
 	}
 
 	#region CreateTrustedDeviceAsync Tests
@@ -359,6 +369,8 @@ public sealed class TrustedDeviceServiceTests(IdentityPostgreSqlFixture fixture)
 			new(FixedTime);
 		TrustedDeviceService service =
 			CreateService(context, timeProvider);
+		TrustedDeviceRevocationService revocationService =
+			CreateRevocationService(context);
 
 		// Create multiple devices
 		for (int index = 0; index < 3; index++)
@@ -370,7 +382,7 @@ public sealed class TrustedDeviceServiceTests(IdentityPostgreSqlFixture fixture)
 		}
 
 		// Act
-		await service.RevokeAllAsync(
+		await revocationService.RevokeAllAsync(
 			user.Id,
 			CancellationToken.None);
 
@@ -399,6 +411,8 @@ public sealed class TrustedDeviceServiceTests(IdentityPostgreSqlFixture fixture)
 			new(FixedTime);
 		TrustedDeviceService service =
 			CreateService(context, timeProvider);
+		TrustedDeviceRevocationService revocationService =
+			CreateRevocationService(context);
 
 		await service.CreateTrustedDeviceAsync(
 			user.Id,
@@ -412,7 +426,7 @@ public sealed class TrustedDeviceServiceTests(IdentityPostgreSqlFixture fixture)
 
 		// Act
 		bool result =
-			await service.RevokeDeviceAsync(
+			await revocationService.RevokeDeviceAsync(
 				user.Id,
 				device.Id,
 				CancellationToken.None);
@@ -429,14 +443,12 @@ public sealed class TrustedDeviceServiceTests(IdentityPostgreSqlFixture fixture)
 			CreateIdentityDbContext();
 		ApplicationUser user =
 			await CreateTestUserAsync(context);
-		FakeTimeProvider timeProvider =
-			new(FixedTime);
-		TrustedDeviceService service =
-			CreateService(context, timeProvider);
+		TrustedDeviceRevocationService revocationService =
+			CreateRevocationService(context);
 
 		// Act
 		bool result =
-			await service.RevokeDeviceAsync(
+			await revocationService.RevokeDeviceAsync(
 				user.Id,
 				999,
 				CancellationToken.None);

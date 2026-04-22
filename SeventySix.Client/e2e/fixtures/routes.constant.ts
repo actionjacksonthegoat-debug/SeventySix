@@ -29,7 +29,6 @@ type Routes = {
 		permissionRequests: string;
 	};
 	developer: { styleGuide: string; };
-	games: { root: string; carALot: string; spyVsSpy: string; };
 	sandbox: { root: string; };
 };
 
@@ -71,12 +70,6 @@ export const ROUTES: Routes =
 			styleGuide: "/developer/style-guide"
 		},
 
-		games: {
-			root: "/games",
-			carALot: "/games/car-a-lot",
-			spyVsSpy: "/games/spy-vs-spy"
-		},
-
 		sandbox: {
 			root: "/sandbox"
 		}
@@ -104,8 +97,7 @@ export const ROUTE_GROUPS: RouteGroups =
 			{ path: ROUTES.home, name: "Home" },
 			{ path: ROUTES.auth.login, name: "Login" },
 			{ path: ROUTES.auth.register, name: "Register" },
-			{ path: ROUTES.auth.forgotPassword, name: "Forgot Password" },
-			{ path: ROUTES.games.root, name: "Games" }
+			{ path: ROUTES.auth.forgotPassword, name: "Forgot Password" }
 		] as const,
 
 		adminRoutes: [

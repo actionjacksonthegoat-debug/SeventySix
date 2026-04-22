@@ -8,6 +8,12 @@ namespace SeventySix.Shared.BackgroundJobs;
 /// Framework-agnostic contract for scheduling delayed messages.
 /// Implemented by Wolverine adapter in Domains layer.
 /// </summary>
+/// <remarks>
+/// This abstraction is intentionally retained: Wolverine's <c>IMessageBus.ScheduleAsync</c> is an
+/// extension method (<c>Wolverine.MessageBusExtensions</c>) which NSubstitute cannot intercept.
+/// An instance-level interface is required to allow argument-matching assertions on scheduled
+/// messages in unit tests. Do not remove without providing an equivalent testability seam.
+/// </remarks>
 public interface IMessageScheduler
 {
 	/// <summary>

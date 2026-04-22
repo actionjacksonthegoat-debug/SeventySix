@@ -1,3 +1,5 @@
+import { now } from "@seventysixcommerce/shared/date";
+import { isNullOrEmpty } from "@seventysixcommerce/shared/utils";
 import {
 	type CheckoutSessionData,
 	handleCheckoutCompleted,
@@ -5,10 +7,10 @@ import {
 } from "@seventysixcommerce/shared/webhook";
 import type Stripe from "stripe";
 import { sendOrderConfirmation } from "../../lib/brevo";
-import { now } from "../../lib/date";
 import { createPrintfulOrder } from "../../lib/printful";
 import { db } from "../db";
 import { getStripe } from "../lib/stripe";
+import { queueLog } from "../log-forwarder";
 
 /**
  * Processes a Stripe webhook event. Verifies signature, then routes to handler.
@@ -18,6 +20,18 @@ export async function handleStripeWebhook(
 	rawBody: string,
 	signature: string): Promise<{ received: boolean; }>
 {
+	const secret: string | undefined =
+		process.env.STRIPE_WEBHOOK_SECRET;
+	if (isNullOrEmpty(secret))
+	{
+		queueLog(
+			{
+				logLevel: "Error",
+				message: "STRIPE_WEBHOOK_SECRET is not configured — rejecting webhook"
+			});
+		throw new Error("Webhook secret not configured");
+	}
+
 	let event: Stripe.Event;
 
 	try
@@ -26,7 +40,7 @@ export async function handleStripeWebhook(
 			getStripe().webhooks.constructEvent(
 				rawBody,
 				signature,
-				process.env.STRIPE_WEBHOOK_SECRET ?? "");
+				secret) as Stripe.Event;
 	}
 	catch
 	{

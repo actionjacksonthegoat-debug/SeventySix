@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { PageData } from "./$types";
-	import { currentYear } from "$lib/utils/date";
+	import { currentYear } from "@seventysixcommerce/shared/date";
 
 	let { data }: { data: PageData } = $props();
 </script>

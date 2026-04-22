@@ -39,19 +39,14 @@ public static class IdentityMockFactory
 	}
 
 	/// <summary>
-	/// Creates a mock <see cref="AuthenticationService"/> with required constructor parameters.
+	/// Creates a mock <see cref="IAuthenticationService"/>.
 	/// </summary>
 	/// <returns>
-	/// A configured NSubstitute mock for AuthenticationService.
+	/// A configured NSubstitute mock for IAuthenticationService.
 	/// </returns>
-	public static AuthenticationService CreateAuthenticationService()
+	public static IAuthenticationService CreateAuthenticationService()
 	{
-		return Substitute.For<AuthenticationService>(
-			Substitute.For<IAuthRepository>(),
-			Substitute.For<ITokenService>(),
-			Substitute.For<Microsoft.Extensions.Options.IOptions<JwtSettings>>(),
-			Substitute.For<TimeProvider>(),
-			CreateUserManager());
+		return Substitute.For<IAuthenticationService>();
 	}
 
 	/// <summary>
@@ -162,16 +157,16 @@ public static class IdentityMockFactory
 	}
 
 	/// <summary>
-	/// Configures an AuthenticationService mock to return a successful AuthResult.
+	/// Configures an IAuthenticationService mock to return a successful AuthResult.
 	/// </summary>
 	/// <param name="authenticationService">
-	/// The AuthenticationService mock to configure.
+	/// The IAuthenticationService mock to configure.
 	/// </param>
 	/// <param name="user">
 	/// The user for which to generate the auth result.
 	/// </param>
 	public static void ConfigureAuthServiceForSuccess(
-		AuthenticationService authenticationService,
+		IAuthenticationService authenticationService,
 		ApplicationUser user)
 	{
 		authenticationService

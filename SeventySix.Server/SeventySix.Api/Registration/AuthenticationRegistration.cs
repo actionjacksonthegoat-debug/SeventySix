@@ -48,31 +48,20 @@ public static class AuthenticationExtensions
 		this IServiceCollection services,
 		IConfiguration configuration)
 	{
-		// Register FluentValidation validators for settings
-		services.AddSingleton<IValidator<JwtSettings>, JwtSettingsValidator>();
-		services.AddSingleton<IValidator<AuthSettings>, AuthSettingsValidator>();
-		services.AddSingleton<IValidator<WhitelistedPermissionSettings>, WhitelistedPermissionSettingsValidator>();
-
 		// Bind configuration sections with FluentValidation + ValidateOnStart
-		services
-			.AddOptions<JwtSettings>()
-			.Bind(configuration.GetSection(JwtSettings.SectionName))
-			.ValidateWithFluentValidation()
-			.ValidateOnStart();
+		services.AddDomainSettings<JwtSettings, JwtSettingsValidator>(
+			configuration,
+			JwtSettings.SectionName);
 
-		services
-			.AddOptions<AuthSettings>()
-			.Bind(configuration.GetSection(AuthSettings.SectionName))
-			.ValidateWithFluentValidation()
-			.ValidateOnStart();
+		services.AddDomainSettings<AuthSettings, AuthSettingsValidator>(
+			configuration,
+			AuthSettings.SectionName);
 
 		// Note: AdminSeederSettings is registered in IdentityRegistration (single registration point)
 
-		services
-			.AddOptions<WhitelistedPermissionSettings>()
-			.Bind(configuration.GetSection(WhitelistedPermissionSettings.SectionName))
-			.ValidateWithFluentValidation()
-			.ValidateOnStart();
+		services.AddDomainSettings<WhitelistedPermissionSettings, WhitelistedPermissionSettingsValidator>(
+			configuration,
+			WhitelistedPermissionSettings.SectionName);
 
 		JwtSettings jwtSettings =
 			configuration.GetSection(JwtSettings.SectionName).Get<JwtSettings>()

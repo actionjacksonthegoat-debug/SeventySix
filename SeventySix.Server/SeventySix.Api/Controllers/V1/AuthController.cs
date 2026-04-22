@@ -31,6 +31,12 @@ namespace SeventySix.Api.Controllers;
 /// <param name="cookieService">
 /// Service for authentication cookie management.
 /// </param>
+/// <param name="authSettings">
+/// Authentication configuration settings.
+/// </param>
+/// <param name="metricsService">
+/// Application metrics for recording auth events.
+/// </param>
 /// <param name="logger">
 /// Logger for authentication operations.
 /// </param>
@@ -40,6 +46,7 @@ public sealed class AuthController(
 	IMessageBus messageBus,
 	IAuthCookieService cookieService,
 	IOptions<AuthSettings> authSettings,
+	IMetricsService metricsService,
 	ILogger<AuthController> logger) : AuthControllerBase(cookieService, authSettings, logger)
 {
 	/// <summary>
@@ -94,11 +101,14 @@ public sealed class AuthController(
 
 		if (!result.Success)
 		{
+			metricsService.RecordLoginFailure(result.ErrorCode ?? "unknown");
 			return HandleFailedAuthResult(
 				result,
 				"Authentication",
 				StatusCodes.Status401Unauthorized);
 		}
+
+		metricsService.RecordLoginSuccess();
 
 		ValidatedAuthResult validatedResult =
 			ValidateSuccessfulAuthResult(result);

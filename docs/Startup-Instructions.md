@@ -36,6 +36,7 @@ After running the bootstrap and skipping the optional Brevo/OAuth prompts, add t
 **File**: `SeventySix.Server/SeventySix.Api/appsettings.Development.json`
 
 Add or merge into the existing JSON:
+
 ```json
 {
   "Mfa": { "Enabled": false, "RequiredForAllUsers": false },
@@ -44,6 +45,7 @@ Add or merge into the existing JSON:
 ```
 
 With these settings:
+
 - Login requires only email + password (no MFA email code step)
 - TOTP authenticator enrollment is hidden
 - OAuth is already inactive when provider secrets are not configured
@@ -54,19 +56,24 @@ With these settings:
 You can configure these services at any time without re-running bootstrap:
 
 **Brevo API Key (enables MFA email codes)**:
+
 ```bash
 npm run secrets:set -- Email:ApiKey "xkeysib-your-key-here"
 npm run secrets:set -- Email:FromAddress "you@yourdomain.com"
 ```
+
 Then remove the `"Mfa": { "Enabled": false }` override from `appsettings.Development.json` and restart.
 Sign up at [https://www.brevo.com](https://www.brevo.com) (free tier: 300 emails/day).
 
 **GitHub OAuth (enables "Sign in with GitHub")**:
+
 ```bash
 npm run secrets:set -- Auth:OAuth:Providers:0:ClientId "your-client-id"
 npm run secrets:set -- Auth:OAuth:Providers:0:ClientSecret "your-client-secret"
 ```
+
 Then restart. Create an OAuth app at [https://github.com/settings/developers](https://github.com/settings/developers).
+
 - Homepage URL: `https://localhost:4200`
 - Authorization callback URL: `https://localhost:7074/api/v1/auth/oauth/github/callback`
 
@@ -286,6 +293,7 @@ npm install
 ```
 
 This installs dependencies for:
+
 - **Root** — orchestration scripts, shared tooling
 - **SeventySix.Client** — Angular SPA, E2E tests, load tests
 - **seventysixcommerce-sveltekit** — SvelteKit commerce site
@@ -440,21 +448,25 @@ from the Docker volume, otherwise the API will log `CryptographicException` warn
 all existing user sessions will be invalid.
 
 1. Stop all containers:
+
    ```bash
    npm run stop
    ```
 
 2. Remove the stale DataProtection keys volume:
+
    ```bash
    docker volume rm seventysix-dev_dataprotection_keys
    ```
 
 3. Delete the old certificate:
+
    ```bash
    Remove-Item SeventySix.Server/SeventySix.Api/keys/dataprotection.pfx
    ```
 
 4. Restart the dev stack (will auto-generate a new cert with the correct password):
+
    ```bash
    npm run start
    ```
@@ -473,6 +485,7 @@ npm start
 ```
 
 This single command starts the **entire three-site ecosystem**:
+
 1. Exports your user secrets as environment variables
 2. Starts Docker containers for: main app (PostgreSQL, Valkey, Grafana, Jaeger, Prometheus, etc.), SvelteKit commerce (PostgreSQL on port 5439), and TanStack commerce (PostgreSQL on port 5438)
 3. Waits for all infrastructure health checks
@@ -486,6 +499,7 @@ The first run downloads Docker images and may take 5–10 minutes. Subsequent st
 ### What You Should See
 
 The terminal shows color-coded output from all three services:
+
 - **SeventySix** (cyan) — API and Angular dev server on port 4200
 - **SvelteKit** (magenta) — Commerce site on port 3001
 - **TanStack** (yellow) — Commerce site on port 3002
@@ -502,7 +516,7 @@ Open your browser and visit these URLs to confirm all three sites and supporting
 
 | Site | URL | What You Should See |
 |------|-----|---------------------|
-| **SeventySix (Angular)** | `https://localhost:4200` | Landing page with sidebar navigation, tech stack section, Games & E-Commerce categories |
+| **SeventySix (Angular)** | `https://localhost:4200` | Landing page with sidebar navigation, tech stack section, E-Commerce categories |
 | **SvelteKit Commerce** | `https://localhost:3001` | E-commerce storefront with product grid and shopping cart |
 | **TanStack Commerce** | `https://localhost:3002` | E-commerce storefront with product grid and shopping cart |
 | **API Health** | `https://localhost:7074/health` | JSON with `"status": "Healthy"` |
@@ -590,6 +604,7 @@ To run the full application without a Brevo API key or OAuth app keys:
 ```
 
 With these overrides:
+
 - Email login works without any email being sent (no MFA code step)
 - TOTP authenticator enrollment is hidden
 - OAuth is already off by default — it only activates when provider secrets are present in user secrets
@@ -615,7 +630,7 @@ The SeventySix ecosystem includes three independently runnable applications. `np
 
 | Site | Dev URL | Database Port | Stack |
 |------|---------|---------------|-------|
-| **SeventySix (main)** | `https://localhost:4200` (client) / `https://localhost:7074` (API) | 5433 (shared PostgreSQL) | .NET 10 + Angular 21 + Babylon.js |
+| **SeventySix (main)** | `https://localhost:4200` (client) / `https://localhost:7074` (API) | 5433 (shared PostgreSQL) | .NET 10 + Angular 21 |
 | **SvelteKit Commerce** | `https://localhost:3001` | 5439 | SvelteKit 2, Svelte 5, Drizzle ORM, Stripe |
 | **TanStack Commerce** | `https://localhost:3002` | 5438 | TanStack Start, React 19, Drizzle ORM, Stripe |
 
@@ -634,6 +649,7 @@ All sites use HTTPS via the shared dev certificate generated during bootstrap (`
 ### E-Commerce Site Independence
 
 Both commerce sites are **independently deployable** — they do NOT require the SeventySix API:
+
 - Each has its own PostgreSQL database (managed via `docker-compose.dev.yml` in each project directory)
 - Each runs Drizzle ORM migrations automatically on startup
 - Log forwarding to the main API's OpenTelemetry collector is optional (logs are also written to stdout)
@@ -707,10 +723,12 @@ Then try `npm start` again.
 ### SSL certificate warnings in browser
 
 This is expected for self-signed certificates. In Chrome:
+
 1. Click **Advanced**
 2. Click **Proceed to localhost (unsafe)**
 
 In Firefox:
+
 1. Click **Advanced**
 2. Click **Accept the Risk and Continue**
 

@@ -2,20 +2,23 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Shouldly;
 
 namespace SeventySix.Identity.Tests.Services;
 
 /// <summary>
-/// Tests for <see cref="Argon2PasswordHasherService"/>.
+/// Tests for <see cref="IdentityArgon2PasswordHasherService"/>.
 /// </summary>
 /// <remarks>
 /// Security-critical tests - 100% coverage required per 80/20 rule.
 /// </remarks>
 public sealed class Argon2PasswordHasherServiceTests
 {
-	private readonly Argon2PasswordHasherService Hasher;
+	private readonly IdentityArgon2PasswordHasherService Hasher;
+	private readonly ApplicationUser TestUser =
+		new() { UserName = "testuser" };
 
 	public Argon2PasswordHasherServiceTests()
 	{
@@ -36,7 +39,7 @@ public sealed class Argon2PasswordHasherServiceTests
 			};
 
 		Hasher =
-			new Argon2PasswordHasherService(Options.Create(authSettings));
+			new IdentityArgon2PasswordHasherService(Options.Create(authSettings));
 	}
 
 	[Fact]
@@ -47,7 +50,7 @@ public sealed class Argon2PasswordHasherServiceTests
 
 		// Act
 		string hash =
-			Hasher.HashPassword(password);
+			Hasher.HashPassword(TestUser, password);
 
 		// Assert
 		hash.ShouldStartWith("$argon2id$v=19$");
@@ -64,75 +67,75 @@ public sealed class Argon2PasswordHasherServiceTests
 
 		// Act
 		string hash1 =
-			Hasher.HashPassword(password);
+			Hasher.HashPassword(TestUser, password);
 		string hash2 =
-			Hasher.HashPassword(password);
+			Hasher.HashPassword(TestUser, password);
 
 		// Assert
 		hash1.ShouldNotBe(hash2);
 	}
 
 	[Fact]
-	public void VerifyPassword_ShouldReturnTrueForCorrectPasswordAsync()
+	public void VerifyPassword_ShouldReturnSuccessForCorrectPasswordAsync()
 	{
 		// Arrange
 		string password = "SecurePassword123!";
 		string hash =
-			Hasher.HashPassword(password);
+			Hasher.HashPassword(TestUser, password);
 
 		// Act
-		bool result =
-			Hasher.VerifyPassword(password, hash);
+		PasswordVerificationResult result =
+			Hasher.VerifyHashedPassword(TestUser, hash, password);
 
 		// Assert
-		result.ShouldBeTrue();
+		result.ShouldBe(PasswordVerificationResult.Success);
 	}
 
 	[Fact]
-	public void VerifyPassword_ShouldReturnFalseForIncorrectPasswordAsync()
+	public void VerifyPassword_ShouldReturnFailedForIncorrectPasswordAsync()
 	{
 		// Arrange
 		string password = "SecurePassword123!";
 		string wrongPassword = "WrongPassword456!";
 		string hash =
-			Hasher.HashPassword(password);
+			Hasher.HashPassword(TestUser, password);
 
 		// Act
-		bool result =
-			Hasher.VerifyPassword(wrongPassword, hash);
+		PasswordVerificationResult result =
+			Hasher.VerifyHashedPassword(TestUser, hash, wrongPassword);
 
 		// Assert
-		result.ShouldBeFalse();
+		result.ShouldBe(PasswordVerificationResult.Failed);
 	}
 
 	[Fact]
-	public void VerifyPassword_ShouldReturnFalseForInvalidHashFormatAsync()
+	public void VerifyPassword_ShouldReturnFailedForInvalidHashFormatAsync()
 	{
 		// Arrange
 		string password = "SecurePassword123!";
 		string invalidHash = "$bcrypt$invalidhash";
 
 		// Act
-		bool result =
-			Hasher.VerifyPassword(password, invalidHash);
+		PasswordVerificationResult result =
+			Hasher.VerifyHashedPassword(TestUser, invalidHash, password);
 
 		// Assert
-		result.ShouldBeFalse();
+		result.ShouldBe(PasswordVerificationResult.Failed);
 	}
 
 	[Fact]
-	public void VerifyPassword_ShouldReturnFalseForMalformedArgon2HashAsync()
+	public void VerifyPassword_ShouldReturnFailedForMalformedArgon2HashAsync()
 	{
 		// Arrange
 		string password = "SecurePassword123!";
 		string malformedHash = "$argon2id$v=19$m=invalid$salt$hash";
 
 		// Act
-		bool result =
-			Hasher.VerifyPassword(password, malformedHash);
+		PasswordVerificationResult result =
+			Hasher.VerifyHashedPassword(TestUser, malformedHash, password);
 
 		// Assert
-		result.ShouldBeFalse();
+		result.ShouldBe(PasswordVerificationResult.Failed);
 	}
 
 	[Theory]
@@ -143,7 +146,10 @@ public sealed class Argon2PasswordHasherServiceTests
 		string? password)
 	{
 		// Act & Assert
-		Should.Throw<ArgumentException>(() => Hasher.HashPassword(password!));
+		Should.Throw<ArgumentException>(
+			() => Hasher.HashPassword(
+				TestUser,
+				password!));
 	}
 
 	[Theory]
@@ -157,8 +163,9 @@ public sealed class Argon2PasswordHasherServiceTests
 	{
 		// Act & Assert
 		Should.Throw<ArgumentException>(() =>
-			Hasher.VerifyPassword(
-				password!,
-				hash!));
+			Hasher.VerifyHashedPassword(
+				TestUser,
+				hash!,
+				password!));
 	}
 }

@@ -8,6 +8,16 @@ const mockDbSelect =
 	vi.fn();
 const mockDbInsert =
 	vi.fn();
+const mockDbTransaction =
+	vi.fn();
+
+/** Mutable env — individual tests override MOCK_SERVICES as needed. */
+const mockCheckoutEnv: Record<string, string> =
+	{
+		MOCK_SERVICES: "false",
+		STRIPE_SECRET_KEY: "sk_test_fake",
+		BASE_URL: "https://commerce-sveltekit.seventysixsandbox.com"
+	};
 
 vi.mock("$lib/server/db/cart", () => ({
 	getCart: mockGetCart
@@ -16,7 +26,8 @@ vi.mock("$lib/server/db/cart", () => ({
 vi.mock("$lib/server/db", () => ({
 	db: {
 		select: mockDbSelect,
-		insert: mockDbInsert
+		insert: mockDbInsert,
+		transaction: mockDbTransaction
 	}
 }));
 
@@ -31,13 +42,7 @@ vi.mock("drizzle-orm", () => ({
 	inArray: vi.fn()
 }));
 
-vi.mock("$env/dynamic/private", () => ({
-	env: {
-		MOCK_SERVICES: "false",
-		STRIPE_SECRET_KEY: "sk_test_fake",
-		BASE_URL: "https://commerce-sveltekit.seventysixsandbox.com"
-	}
-}));
+vi.mock("$env/dynamic/private", () => ({ env: mockCheckoutEnv }));
 
 vi.mock("$lib/server/stripe", () => ({
 	getStripe: () => ({
@@ -83,6 +88,7 @@ describe("Checkout",
 			() =>
 			{
 				vi.clearAllMocks();
+				mockCheckoutEnv.MOCK_SERVICES = "false";
 			});
 
 		it("creates Stripe session with correct line items",
@@ -390,5 +396,91 @@ describe("Checkout",
 							body: { error: "No active products in cart" }
 						});
 				expect(mockStripeSessionCreate).not.toHaveBeenCalled();
+			});
+
+		it("invokes createMockOrder when MOCK_SERVICES is not false",
+			async () =>
+			{
+				mockCheckoutEnv.MOCK_SERVICES = "true";
+
+				const cartItems =
+					[
+						{
+							id: "ci-1",
+							productId: "p-1",
+							variantId: "v-1",
+							quantity: 1,
+							unitPrice: "25.00",
+							productTitle: "Mock Print",
+							productSlug: "mock-print",
+							variantName: "8x10",
+							imageUrl: "/img.jpg"
+						}
+					];
+				mockGetCart.mockResolvedValue(cartItems);
+				setupDbSelectMock("25.00");
+				mockStripeSessionCreate.mockResolvedValue(
+					{
+						id: "cs_mock_123",
+						url: "https://checkout.stripe.com/mock",
+						amount_total: 2500
+					});
+				mockDbInsert.mockReturnValue(
+					{
+						values: vi
+							.fn()
+							.mockResolvedValue(undefined)
+					});
+				mockDbTransaction.mockImplementation(
+					async (fn: (tx: Record<string, unknown>) => Promise<void>) =>
+					{
+						const mockTx: Record<string, unknown> =
+							{
+								insert: vi
+									.fn()
+									.mockReturnValue(
+										{
+											values: vi
+												.fn()
+												.mockReturnValue(
+													{
+														returning: vi
+															.fn()
+															.mockResolvedValue([{ id: "order-mock-1" }])
+													})
+										}),
+								select: vi
+									.fn()
+									.mockReturnValue(
+										{
+											from: vi
+												.fn()
+												.mockReturnValue(
+													{
+														where: vi
+															.fn()
+															.mockResolvedValue([])
+													})
+										})
+							};
+						await fn(mockTx);
+					});
+
+				const { actions } =
+					await import("../../../routes/checkout/+page.server");
+
+				try
+				{
+					await actions.default({
+						locals: { cartSessionId: "sess-mock" }
+					} as never);
+				}
+				catch
+				{
+					// redirect expected after mock order created
+				}
+
+				expect(mockDbTransaction)
+					.toHaveBeenCalledOnce();
 			});
 	});

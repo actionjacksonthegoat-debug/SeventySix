@@ -34,13 +34,9 @@ public static class EcommerceCleanupRegistration
 		this IServiceCollection services,
 		IConfiguration configuration)
 	{
-		services.AddSingleton<IValidator<EcommerceCleanupSettings>, EcommerceCleanupSettingsValidator>();
-
-		services
-			.AddOptions<EcommerceCleanupSettings>()
-			.Bind(configuration.GetSection(EcommerceCleanupSettings.SectionName))
-			.ValidateWithFluentValidation()
-			.ValidateOnStart();
+		services.AddDomainSettings<EcommerceCleanupSettings, EcommerceCleanupSettingsValidator>(
+			configuration,
+			EcommerceCleanupSettings.SectionName);
 
 		services.AddScoped<IEcommerceCleanupRepository, EcommerceCleanupRepository>();
 		services.AddScoped<IJobSchedulerContributor, EcommerceCleanupJobSchedulerContributor>();

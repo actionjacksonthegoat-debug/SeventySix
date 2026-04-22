@@ -10,6 +10,7 @@
 	import { trackPageView } from "$lib/analytics";
 	import { initTheme } from "$lib/stores/theme";
 	import { afterNavigate } from "$app/navigation";
+	import { isPresent } from "@seventysixcommerce/shared/utils";
 	import { browser } from "$app/environment";
 	import { onMount } from "svelte";
 
@@ -23,7 +24,7 @@
 	});
 
 	afterNavigate(({ to }) => {
-		if (to?.url !== undefined) {
+		if (isPresent(to?.url)) {
 			recordNavigation(to.url.pathname);
 			trackPageView(to.url.pathname, document.title);
 		}

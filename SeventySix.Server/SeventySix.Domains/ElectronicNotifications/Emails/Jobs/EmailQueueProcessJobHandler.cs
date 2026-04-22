@@ -6,9 +6,9 @@ using System.Data.Common;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using SeventySix.ElectronicNotifications.Emails.Services;
 using SeventySix.Shared.BackgroundJobs;
 using SeventySix.Shared.Constants;
-using SeventySix.Shared.Contracts.Emails;
 using SeventySix.Shared.Interfaces;
 using SeventySix.Shared.Utilities;
 using Wolverine;
@@ -21,8 +21,8 @@ namespace SeventySix.ElectronicNotifications.Emails.Jobs;
 /// <param name="messageBus">
 /// The Wolverine message bus for invoking queries/commands.
 /// </param>
-/// <param name="emailService">
-/// The email sending service.
+/// <param name="strategyResolver">
+/// Resolves the appropriate email sending strategy for each email type.
 /// </param>
 /// <param name="recurringJobService">
 /// Service for recording execution and scheduling next run.
@@ -44,7 +44,7 @@ namespace SeventySix.ElectronicNotifications.Emails.Jobs;
 /// </param>
 public sealed class EmailQueueProcessJobHandler(
 	IMessageBus messageBus,
-	IEmailService emailService,
+	EmailSendingStrategyResolver strategyResolver,
 	IRecurringJobService recurringJobService,
 	IRateLimitingService rateLimitingService,
 	IOptions<EmailSettings> emailSettings,
@@ -301,7 +301,7 @@ public sealed class EmailQueueProcessJobHandler(
 	}
 
 	/// <summary>
-	/// Sends an email based on its type using the appropriate service method.
+	/// Sends an email based on its type using the resolved strategy.
 	/// </summary>
 	/// <param name="emailType">
 	/// The type of email to send (Welcome, PasswordReset, Verification, MfaVerification).
@@ -324,50 +324,19 @@ public sealed class EmailQueueProcessJobHandler(
 		Dictionary<string, string> templateData,
 		CancellationToken cancellationToken)
 	{
-		switch (emailType)
+		IEmailSendingStrategy? strategy =
+			strategyResolver.Resolve(emailType);
+
+		if (strategy is null)
 		{
-			case EmailTypeConstants.Welcome:
-				await emailService.SendWelcomeEmailAsync(
-					recipientEmail,
-					templateData.GetValueOrDefault("username", "User"),
-					templateData.GetValueOrDefault("resetToken", ""),
-					cancellationToken);
-				break;
-
-			case EmailTypeConstants.PasswordReset:
-				await emailService.SendPasswordResetEmailAsync(
-					recipientEmail,
-					templateData.GetValueOrDefault("username", "User"),
-					templateData.GetValueOrDefault("resetToken", ""),
-					cancellationToken);
-				break;
-
-			case EmailTypeConstants.Verification:
-				await emailService.SendVerificationEmailAsync(
-					recipientEmail,
-					templateData.GetValueOrDefault("verificationToken", ""),
-					cancellationToken);
-				break;
-
-			case EmailTypeConstants.MfaVerification:
-				int expirationMinutes =
-					int.TryParse(
-						templateData.GetValueOrDefault("expirationMinutes", "5"),
-						out int minutes)
-						? minutes
-						: 5;
-
-				await emailService.SendMfaCodeEmailAsync(
-					recipientEmail,
-					templateData.GetValueOrDefault("code", ""),
-					expirationMinutes,
-					cancellationToken);
-				break;
-
-			default:
-				throw new ArgumentException(
-					$"Unknown email type: {emailType}",
-					nameof(emailType));
+			throw new ArgumentException(
+				$"Unknown email type: {emailType}",
+				nameof(emailType));
 		}
+
+		await strategy.SendAsync(
+			recipientEmail,
+			templateData,
+			cancellationToken);
 	}
 }

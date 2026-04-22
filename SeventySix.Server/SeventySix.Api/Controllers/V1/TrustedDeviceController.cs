@@ -16,7 +16,10 @@ namespace SeventySix.Api.Controllers;
 /// Allows authenticated users to view and revoke trusted devices.
 /// </summary>
 /// <param name="trustedDeviceService">
-/// Service for trusted device operations.
+/// Service for trusted device query operations.
+/// </param>
+/// <param name="revocationService">
+/// Service for trusted device revocation operations.
 /// </param>
 /// <param name="cookieService">
 /// Service for authentication cookie management (trusted device cookie).
@@ -26,6 +29,7 @@ namespace SeventySix.Api.Controllers;
 [Authorize]
 public sealed class TrustedDeviceController(
 	ITrustedDeviceService trustedDeviceService,
+	ITrustedDeviceRevocationService revocationService,
 	IAuthCookieService cookieService) : ControllerBase
 {
 	/// <summary>
@@ -89,7 +93,7 @@ public sealed class TrustedDeviceController(
 		}
 
 		bool revoked =
-			await trustedDeviceService.RevokeDeviceAsync(
+			await revocationService.RevokeDeviceAsync(
 				userId,
 				deviceId,
 				cancellationToken);
@@ -125,7 +129,7 @@ public sealed class TrustedDeviceController(
 			return Unauthorized();
 		}
 
-		await trustedDeviceService.RevokeAllAsync(
+		await revocationService.RevokeAllAsync(
 			userId,
 			cancellationToken);
 

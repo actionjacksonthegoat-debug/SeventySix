@@ -2,8 +2,10 @@ import { env } from "$env/dynamic/private";
 import { db } from "$lib/server/db";
 import { sendOrderConfirmation } from "$lib/server/integrations/brevo";
 import { createPrintfulOrder } from "$lib/server/integrations/printful";
+import { queueLog } from "$lib/server/log-forwarder";
 import { getStripe } from "$lib/server/stripe";
-import { now } from "$lib/utils/date";
+import { now } from "@seventysixcommerce/shared/date";
+import { isNullOrEmpty } from "@seventysixcommerce/shared/utils";
 import {
 	type CheckoutSessionData,
 	handleCheckoutCompleted,
@@ -19,6 +21,21 @@ import type { RequestHandler } from "./$types";
 export const POST: RequestHandler =
 	async ({ request }) =>
 	{
+		const secret: string | undefined =
+			env.STRIPE_WEBHOOK_SECRET;
+		if (isNullOrEmpty(secret))
+		{
+			queueLog(
+				{
+					logLevel: "Error",
+					message: "STRIPE_WEBHOOK_SECRET is not configured — rejecting webhook"
+				});
+
+			return new Response(
+				"Webhook secret not configured",
+				{ status: 500 });
+		}
+
 		const payload: string =
 			await request.text();
 		const signature: string =
@@ -33,7 +50,7 @@ export const POST: RequestHandler =
 				stripe.webhooks.constructEvent(
 					payload,
 					signature,
-					env.STRIPE_WEBHOOK_SECRET ?? "") as Stripe.Event;
+					secret) as Stripe.Event;
 		}
 		catch
 		{

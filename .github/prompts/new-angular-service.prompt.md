@@ -26,7 +26,7 @@ Ask user:
 | Persistent State | `@{domain}/core`     | `providedIn: 'root'`   | Cross-route state, caches    |
 | App Singleton    | `@shared/services`   | `providedIn: 'root'`   | Auth, notifications, logging |
 
-## Import Boundaries (CRITICAL)
+## [CRITICAL] Import Boundaries
 
 - Domain services import ONLY from `@shared/*` + own domain
 - NEVER import from another domain (`@admin/*`, `@auth/*`, `@developer/*`, etc.)

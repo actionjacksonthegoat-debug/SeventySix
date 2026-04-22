@@ -27,7 +27,7 @@ public sealed class OAuthService(
 	OAuthProviderFactory providerFactory,
 	IOptions<AuthSettings> authSettings,
 	TimeProvider timeProvider,
-	AuthenticationService authenticationService,
+	IAuthenticationService authenticationService,
 	ILogger<OAuthService> logger) : IOAuthService
 {
 	/// <inheritdoc/>

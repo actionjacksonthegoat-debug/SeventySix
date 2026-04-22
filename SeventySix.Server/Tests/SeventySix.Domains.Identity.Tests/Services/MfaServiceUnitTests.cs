@@ -97,6 +97,63 @@ public sealed class MfaServiceUnitTests
 		codes.Count.ShouldBeGreaterThan(90);
 	}
 
+	[Fact]
+	public void GenerateCode_Distribution_IsUniform()
+	{
+		// Arrange — generate 100k codes and bucket into 10 equal ranges
+		const int sampleCount =
+			100_000;
+		const int bucketCount =
+			10;
+		const int maxCode =
+			1_000_000;
+		const int bucketSize =
+			maxCode / bucketCount;
+		int[] buckets =
+			new int[bucketCount];
+
+		// Act
+		for (int index = 0; index < sampleCount; index++)
+		{
+			string code =
+				Service.GenerateCode();
+			int value =
+				int.Parse(code);
+			int bucket =
+				value / bucketSize;
+			buckets[bucket]++;
+		}
+
+		// Assert — chi-square goodness of fit; p-value > 0.01
+		double expected =
+			sampleCount / (double)bucketCount;
+		double chiSquare =
+			buckets.Sum(
+				observed => Math.Pow(
+					observed - expected,
+					2) / expected);
+
+		// Critical value for df=9, α=0.01 is 21.666
+		chiSquare.ShouldBeLessThan(21.666);
+	}
+
+	[Fact]
+	public void GenerateCode_NeverExceedsMaxValue()
+	{
+		// Arrange & Act — verify all generated codes are within valid range
+		for (int index = 0; index < 10_000; index++)
+		{
+			string code =
+				Service.GenerateCode();
+			int value =
+				int.Parse(code);
+
+			// Assert
+			value.ShouldBeGreaterThanOrEqualTo(0);
+			value.ShouldBeLessThan(1_000_000);
+		}
+	}
+
 	#endregion
 
 	#region VerifyCodeAsync Tests

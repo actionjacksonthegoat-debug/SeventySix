@@ -20,9 +20,9 @@ Proceed through **all remaining phases** across all `implementation-N.md` files 
 3. Follow **TDD-First 80/20** — write tests BEFORE implementation for the 20% of code carrying 80% of risk (Red → Green → Refactor)
 4. Fix all IDE warnings — never suppress with `#pragma warning disable`, `// @ts-ignore`, or `[SuppressMessage]`
 5. **Document all new code** — every class, method, function, property, and constant: XML doc (C#), JSDoc (TS/JS/MJS), comment-based help (PS). Tests exempt.
-6. **Do NOT send commits** — I will handle these
-6. **Do NOT run** `npm run db:reset`, `db:reset`, or any `reset-database` command
-7. **Do NOT modify** READMEs or `docs/*.md` unless the **active** `implementation-N.md` contains an explicit documentation phase. When a docs phase IS present, use `/update-documentation` to align all READMEs and docs.
+6. **Do NOT commit, stage, or push** — `git add`, `git stage`, `git commit`, `git push` are USER-ONLY (see `copilot-instructions.md` FORBIDDEN COMMANDS)
+7. **Do NOT run** `npm run db:reset`, `db:reset`, or any `reset-database` command
+8. **Do NOT modify** READMEs or `docs/*.md` unless the **active** `implementation-N.md` contains an explicit documentation phase. When a docs phase IS present, use `/update-documentation` to align all READMEs and docs.
 
 ## Phase-Level Verification (During Implementation)
 
@@ -103,6 +103,23 @@ npm run test:e2e -- --keepalive specs/failing.spec.ts  # keeps env alive for deb
 If the failure can't reproduce standalone, re-run the full suite — it may be a cross-test corruption issue.
 
 **A full passing E2E suite run (`npm run test:e2e` with 0 failures) is REQUIRED before calling this plan complete. No exceptions.**
+
+## [CRITICAL] Site Walkthrough Go/No-Go
+
+After the full test suite passes AND before the Documentation Gate, run a complete runtime verification using `/run-site-base`. This is the primary functionality confirmation for the entire Ecosystem and is a hard go/no-go for declaring the plan complete.
+
+1. `npm run stop`
+2. `npm run start` — full dev stack (API + Angular + SvelteKit + TanStack + infrastructure).
+3. Invoke the `/run-site-base` prompt. It MUST:
+   - Walk the Angular app including admin (Steps 1–25).
+   - Walk the **commerce admin dashboards** (Steps 22–25) — SvelteKit + TanStack dashboards and logs surfaced inside the SeventySix admin area.
+   - Walk **SvelteKit** end-to-end (home → shop → product → cart → checkout).
+   - Walk **TanStack** end-to-end (home → shop → product → cart → checkout).
+   - Assert zero `error`-level console messages per page (excluding the known-safe Vite dev-mode CSP and React SSR hydration patterns already enumerated in the prompt).
+   - Emit a single report at `.dev-tools-output/walkthrough-report.md` with PASS/FAIL per step.
+4. **If any step FAILs (other than the explicitly-permitted Step 9 intentional error-log button), the plan is NOT complete. Fix, then re-run.**
+
+This gate is NON-NEGOTIABLE. Never declare `/execute-plan` complete without a passing `/run-site-base` walkthrough report.
 
 ## Documentation Gate (After Tests Pass)
 

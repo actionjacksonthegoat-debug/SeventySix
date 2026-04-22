@@ -18,6 +18,11 @@ services:
     postgres-loadtest:
         image: postgres:18-alpine
         container_name: seventysix-postgres-loadtest
+        deploy:
+            resources:
+                limits:
+                    cpus: '1.5'
+                    memory: 1G
         environment:
             POSTGRES_DB: seventysix_loadtest
             POSTGRES_USER: postgres
@@ -39,6 +44,11 @@ services:
     valkey-loadtest:
         image: valkey/valkey:9.0-alpine
         container_name: seventysix-valkey-loadtest
+        deploy:
+            resources:
+                limits:
+                    cpus: '0.5'
+                    memory: 256M
         ports:
             - "127.0.0.1:6381:6379"
         healthcheck:
@@ -55,6 +65,11 @@ services:
             context: ./SeventySix.Client/mock-brevo-api
             dockerfile: Dockerfile
         container_name: seventysix-mock-brevo-loadtest
+        deploy:
+            resources:
+                limits:
+                    cpus: '0.25'
+                    memory: 128M
         ports:
             - "127.0.0.1:1081:3000"
         healthcheck:
@@ -71,6 +86,11 @@ services:
             context: ./SeventySix.Server
             dockerfile: SeventySix.Api/Dockerfile
         container_name: seventysix-api-loadtest
+        deploy:
+            resources:
+                limits:
+                    cpus: '2.0'
+                    memory: 2G
         ports:
             - "127.0.0.1:7175:8081" # HTTPS - Load test isolated port
         environment:
@@ -170,6 +190,11 @@ services:
             context: ./SeventySix.Client
             dockerfile: Dockerfile.e2e
         container_name: seventysix-client-loadtest
+        deploy:
+            resources:
+                limits:
+                    cpus: '1.0'
+                    memory: 512M
         ports:
             - "127.0.0.1:4202:8443" # HTTPS - Load test isolated port
         volumes:

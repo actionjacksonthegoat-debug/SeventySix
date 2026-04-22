@@ -14,15 +14,36 @@ concurrency:
     cancel-in-progress: false
 
 jobs:
-    deploy:
-        name: Deploy SeventySixCommerce to Production
+    deploy-staging:
+        name: Deploy SeventySixCommerce to Staging
         runs-on: ubuntu-latest
-        environment: production
+        timeout-minutes: 30
+        environment: staging
         if: >-
             github.event_name == 'workflow_dispatch' ||
             github.event.workflow_run.conclusion == 'success'
 
         steps:
+            - name: Validate required secrets
+              run: |
+                  MISSING=""
+                  for var in SSXC_DB_PASSWORD STRIPE_SECRET_KEY STRIPE_WEBHOOK_SECRET PRINTFUL_API_KEY BREVO_API_KEY; do
+                      if [ -z "${!var}" ]; then
+                          MISSING="$MISSING $var"
+                      fi
+                  done
+                  if [ -n "$MISSING" ]; then
+                      echo "::error::Missing required secrets:$MISSING"
+                      exit 1
+                  fi
+                  echo "All required secrets are configured"
+              env:
+                  SSXC_DB_PASSWORD: ${{ secrets.SSXC_DB_PASSWORD }}
+                  STRIPE_SECRET_KEY: ${{ secrets.SSXC_STRIPE_SECRET_KEY }}
+                  STRIPE_WEBHOOK_SECRET: ${{ secrets.SSXC_STRIPE_WEBHOOK_SECRET }}
+                  PRINTFUL_API_KEY: ${{ secrets.SSXC_PRINTFUL_API_KEY }}
+                  BREVO_API_KEY: ${{ secrets.SSXC_BREVO_API_KEY }}
+
             - name: Deploy via SSH
               uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1
               env:
@@ -104,3 +125,133 @@ jobs:
 
                       echo ""
                       echo "=== SeventySixCommerce deploy complete ==="
+
+    smoke-staging:
+        name: Post-Deploy Commerce Smoke Test
+        needs: [deploy-staging]
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+
+        steps:
+            - name: Smoke test TanStack health
+              run: |
+                  echo "=== Smoke testing TanStack health endpoint ==="
+                  TANSTACK_URL="${{ vars.SSXC_TANSTACK_BASE_URL || 'https://seventysixcommerce-react.seventysixsandbox.com' }}"
+                  if curl -fsSL --retry 5 --retry-delay 10 "${TANSTACK_URL}/api/healthz"; then
+                      echo "TanStack health check passed"
+                  else
+                      echo "::error::TanStack health check failed"
+                      exit 1
+                  fi
+
+            - name: Smoke test SvelteKit health
+              run: |
+                  echo "=== Smoke testing SvelteKit health endpoint ==="
+                  SVELTEKIT_URL="${{ vars.SSXC_SVELTEKIT_BASE_URL || 'https://seventysixcommerce-svelte.seventysixsandbox.com' }}"
+                  if curl -fsSL --retry 5 --retry-delay 10 "${SVELTEKIT_URL}/healthz"; then
+                      echo "SvelteKit health check passed"
+                  else
+                      echo "::error::SvelteKit health check failed"
+                      exit 1
+                  fi
+
+    rollback-staging:
+        name: Rollback Commerce Staging (on smoke failure)
+        needs: [smoke-staging]
+        if: failure()
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+
+        permissions:
+            issues: write
+            contents: read
+
+        steps:
+            - name: Rollback via SSH
+              uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1
+              with:
+                  host: ${{ secrets.PROD_HOST }}
+                  username: ${{ secrets.PROD_USER }}
+                  key: ${{ secrets.PROD_SSH_KEY }}
+                  script: |
+                      set -euo pipefail
+
+                      APP_DIR="/srv/seventysix"
+                      cd "$APP_DIR"
+
+                      echo "=== Rolling back to previous deployment ==="
+                      git reset --hard HEAD@{1}
+
+                      echo "=== Restoring Caddy configs ==="
+                      sudo cp "$APP_DIR/Caddyfile.seventysixcommerce" /etc/caddy/Caddyfile.seventysixcommerce
+                      sudo caddy validate --config /etc/caddy/Caddyfile
+                      sudo systemctl reload caddy
+
+                      echo "=== Pulling previous images ==="
+                      docker compose -f docker-compose.seventysixcommerce.yml pull tanstack sveltekit
+
+                      echo "=== Restarting with previous version ==="
+                      docker compose -f docker-compose.seventysixcommerce.yml up -d --remove-orphans
+
+                      echo "=== Waiting for TanStack health (max 60s) ==="
+                      for i in $(seq 1 12); do
+                          if curl -sf http://localhost:3000/api/healthz > /dev/null 2>&1; then
+                              echo "TanStack restored (attempt $i/12)"
+                              break
+                          fi
+                          if [ "$i" -eq 12 ]; then
+                              echo "ERROR: TanStack still unhealthy after rollback"
+                              exit 1
+                          fi
+                          sleep 5
+                      done
+
+                      echo "=== Waiting for SvelteKit health (max 60s) ==="
+                      for i in $(seq 1 12); do
+                          if curl -sf http://localhost:3001/healthz > /dev/null 2>&1; then
+                              echo "SvelteKit restored (attempt $i/12)"
+                              break
+                          fi
+                          if [ "$i" -eq 12 ]; then
+                              echo "ERROR: SvelteKit still unhealthy after rollback"
+                              exit 1
+                          fi
+                          sleep 5
+                      done
+
+                      echo "=== Commerce rollback complete ==="
+
+            - name: Create incident issue on failed rollback
+              if: failure()
+              uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
+              with:
+                  script: |
+                      await github.rest.issues.create({
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        title: `[INCIDENT] Commerce deploy rollback failed — ${new Date().toISOString()}`,
+                        body: `## Commerce Deploy Rollback Failed\n\n**Run:** ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}\n**Ref:** ${context.ref}\n**SHA:** ${context.sha}\n\nSmoke tests failed after commerce deploy and the automated rollback also failed. Manual intervention required.`,
+                        labels: ['incident', 'deploy']
+                      });
+
+    deploy-production:
+        name: Promote Commerce to Production
+        needs: [smoke-staging]
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        # Production environment requires manual approval via GitHub Environment protection rules.
+        # NOTE: You must create a "production" environment in GitHub repo settings with required reviewers.
+        environment: production
+
+        steps:
+            - name: Confirm production promotion
+              run: |
+                  echo "============================================"
+                  echo "  Commerce Production Promotion Approved"
+                  echo "============================================"
+                  echo ""
+                  echo "  Staging deploy and smoke tests passed."
+                  echo "  Manual approval received via GitHub Environment protection."
+                  echo "  Commerce sites are now serving the deployed version."
+                  echo ""
+                  echo "============================================"

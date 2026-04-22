@@ -29,8 +29,6 @@ public sealed class SealedServiceTests
 	/// </summary>
 	private static readonly HashSet<string> ExcludedServices =
 		[
-			// Has virtual methods for NSubstitute mocking in unit tests
-			"AuthenticationService",
 		];
 
 	[Fact]
@@ -41,7 +39,7 @@ public sealed class SealedServiceTests
 			typeof(SeventySix.Identity.ApplicationUser).Assembly;
 
 		Assembly apiAssembly =
-			typeof(SeventySix.Api.Controllers.UsersController).Assembly;
+			typeof(SeventySix.Api.Controllers.UsersQueryController).Assembly;
 
 		Assembly sharedAssembly =
 			typeof(SeventySix.Shared.BackgroundJobs.IRecurringJobService).Assembly;

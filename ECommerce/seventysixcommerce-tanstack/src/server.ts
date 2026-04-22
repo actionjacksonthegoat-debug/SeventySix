@@ -1,3 +1,7 @@
+import { toSafeLogPayload } from "@seventysixcommerce/shared/logging";
+import type { SafeErrorPayload } from "@seventysixcommerce/shared/logging";
+import { generateTraceContext, parseTraceparent } from "@seventysixcommerce/shared/observability";
+import type { TraceContext } from "@seventysixcommerce/shared/observability";
 import {
 	createStartHandler,
 	defaultStreamHandler
@@ -17,6 +21,10 @@ const handler: ReturnType<typeof createStartHandler> =
 export default {
 	async fetch(request: Request): Promise<Response>
 	{
+		const traceContext: TraceContext =
+			parseTraceparent(request.headers.get("traceparent"))
+				?? generateTraceContext();
+
 		try
 		{
 			const response: Response =
@@ -46,14 +54,18 @@ export default {
 		{
 			const url: URL =
 				new URL(request.url);
+			const safePayload: SafeErrorPayload =
+				toSafeLogPayload(error);
+
 			queueLog(
 				{
 					logLevel: "Error",
-					message: error instanceof Error ? error.message : String(error),
-					exceptionMessage: error instanceof Error ? error.message : undefined,
-					stackTrace: error instanceof Error ? error.stack : undefined,
+					message: safePayload.message,
+					exceptionMessage: `[${safePayload.code}] ${safePayload.correlationId}`,
 					requestUrl: url.pathname,
-					requestMethod: request.method
+					requestMethod: request.method,
+					traceId: traceContext.traceId,
+					spanId: traceContext.spanId
 				});
 
 			throw error;

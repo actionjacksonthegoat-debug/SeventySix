@@ -12,8 +12,13 @@ using SeventySix.Shared.Extensions;
 namespace SeventySix.Identity;
 
 /// <summary>
-/// Service for trusted device (Remember This Device) operations.
+/// Service for trusted device (Remember This Device) authentication operations.
 /// </summary>
+/// <remarks>
+/// Single responsibility: device creation, validation, and querying.
+/// Device limit enforcement is delegated to <see cref="ITrustedDeviceLimitEnforcer"/>.
+/// Device revocation is handled by <see cref="ITrustedDeviceRevocationService"/>.
+/// </remarks>
 /// <param name="context">
 /// The Identity database context.
 /// </param>
@@ -23,10 +28,14 @@ namespace SeventySix.Identity;
 /// <param name="timeProvider">
 /// Time provider for timestamps.
 /// </param>
+/// <param name="limitEnforcer">
+/// Enforces maximum device count per user.
+/// </param>
 public sealed class TrustedDeviceService(
 	IdentityDbContext context,
 	IOptions<TrustedDeviceSettings> settings,
-	TimeProvider timeProvider)
+	TimeProvider timeProvider,
+	ITrustedDeviceLimitEnforcer limitEnforcer)
 	: ITrustedDeviceService
 {
 	/// <inheritdoc/>
@@ -36,7 +45,7 @@ public sealed class TrustedDeviceService(
 		CancellationToken cancellationToken)
 	{
 		// Remove oldest devices if at limit
-		await EnforceDeviceLimitAsync(
+		await limitEnforcer.EnforceDeviceLimitAsync(
 			userId,
 			cancellationToken);
 
@@ -131,34 +140,6 @@ public sealed class TrustedDeviceService(
 	}
 
 	/// <inheritdoc/>
-	public async Task RevokeAllAsync(
-		long userId,
-		CancellationToken cancellationToken)
-	{
-		await context
-			.TrustedDevices
-			.Where(device => device.UserId == userId)
-			.ExecuteDeleteAsync(cancellationToken);
-	}
-
-	/// <inheritdoc/>
-	public async Task<bool> RevokeDeviceAsync(
-		long userId,
-		long deviceId,
-		CancellationToken cancellationToken)
-	{
-		int deleted =
-			await context
-				.TrustedDevices
-				.Where(device =>
-					device.Id == deviceId
-					&& device.UserId == userId)
-				.ExecuteDeleteAsync(cancellationToken);
-
-		return deleted > 0;
-	}
-
-	/// <inheritdoc/>
 	public async Task<IReadOnlyList<TrustedDeviceDto>> GetUserDevicesAsync(
 		long userId,
 		CancellationToken cancellationToken)
@@ -169,6 +150,7 @@ public sealed class TrustedDeviceService(
 		List<TrustedDeviceDto> devices =
 			await context
 				.TrustedDevices
+				.AsNoTracking()
 				.Where(device =>
 					device.UserId == userId
 					&& device.ExpiresAt > now)
@@ -195,36 +177,6 @@ public sealed class TrustedDeviceService(
 	/// <param name="cancellationToken">
 	/// Cancellation token.
 	/// </param>
-	private async Task EnforceDeviceLimitAsync(
-		long userId,
-		CancellationToken cancellationToken)
-	{
-		int currentCount =
-			await context
-				.TrustedDevices
-				.CountAsync(
-					device => device.UserId == userId,
-					cancellationToken);
-
-		if (currentCount >= settings.Value.MaxDevicesPerUser)
-		{
-			// Delete oldest device(s) to make room
-			List<long> oldestDeviceIds =
-				await context
-					.TrustedDevices
-					.Where(device => device.UserId == userId)
-					.OrderBy(device => device.LastUsedAt ?? device.CreateDate)
-					.Take(currentCount - settings.Value.MaxDevicesPerUser + 1)
-					.Select(device => device.Id)
-					.ToListAsync(cancellationToken);
-
-			await context
-				.TrustedDevices
-				.Where(device => oldestDeviceIds.Contains(device.Id))
-				.ExecuteDeleteAsync(cancellationToken);
-		}
-	}
-
 	/// <summary>
 	/// Computes a device fingerprint from User-Agent.
 	/// </summary>

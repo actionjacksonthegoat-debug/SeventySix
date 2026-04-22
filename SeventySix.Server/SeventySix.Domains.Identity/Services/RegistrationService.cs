@@ -5,6 +5,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using SeventySix.Shared.Exceptions;
+using SeventySix.Shared.Utilities;
 
 namespace SeventySix.Identity;
 
@@ -31,7 +32,7 @@ namespace SeventySix.Identity;
 /// </param>
 public sealed class RegistrationService(
 	UserManager<ApplicationUser> userManager,
-	AuthenticationService authenticationService,
+	IAuthenticationService authenticationService,
 	TimeProvider timeProvider,
 	ILogger<RegistrationService> logger)
 {
@@ -94,7 +95,7 @@ public sealed class RegistrationService(
 			string errors = createResult.ToErrorString();
 			logger.LogWarning(
 				"Failed to create user '{Username}': {Errors}",
-				username,
+				LogSanitizer.MaskUsername(username),
 				errors);
 			throw new BusinessRuleViolationException(
 				"User registration could not be completed.");
@@ -111,7 +112,7 @@ public sealed class RegistrationService(
 			logger.LogWarning(
 				"Failed to assign role '{RoleName}' to user '{Username}': {Errors}",
 				roleName,
-				username,
+				LogSanitizer.MaskUsername(username),
 				errors);
 			throw new BusinessRuleViolationException(
 				"User registration could not be completed.");

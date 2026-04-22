@@ -15,6 +15,11 @@ services:
   postgres-dast:
     image: postgres:18-alpine
     container_name: ssxc-svelte-postgres-dast
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
     ports:
       - "127.0.0.1:5444:5432"
     environment:
@@ -36,6 +41,11 @@ services:
       dockerfile: seventysixcommerce-sveltekit/Dockerfile
       target: db-init
     container_name: ssxc-svelte-db-init-dast
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
     environment:
       DATABASE_URL: postgresql://ssxc_dast:ssxc_dast_password@postgres-dast:5432/seventysixcommerce_sveltekit_dast
     depends_on:
@@ -49,6 +59,11 @@ services:
       context: ..
       dockerfile: seventysixcommerce-sveltekit/Dockerfile
     container_name: ssxc-svelte-app-dast
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 1G
     ports:
       - "127.0.0.1:3031:3001"
     environment:

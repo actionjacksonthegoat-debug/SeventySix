@@ -27,10 +27,6 @@ export const formatLogEntry: LogForwarder["formatLogEntry"] =
 export const forwardLogs: LogForwarder["forwardLogs"] =
 	forwarder.forwardLogs;
 
-/** @see {@link import("@seventysixcommerce/shared/observability").LogForwarder.flush} */
-export const flush: LogForwarder["flush"] =
-	forwarder.flush;
-
 /** @see {@link import("@seventysixcommerce/shared/observability").LogForwarder.queueLog} */
 export const queueLog: LogForwarder["queueLog"] =
 	forwarder.queueLog;

@@ -15,6 +15,13 @@
       "when": 1774650000000,
       "tag": "0001_checkout_snapshots",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1776219039180,
+      "tag": "0002_add_fulfillment_and_inventory_columns",
+      "breakpoints": true
     }
   ]
 }

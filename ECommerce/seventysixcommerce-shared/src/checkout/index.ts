@@ -13,6 +13,7 @@ import {
 	orderStatusHistory
 } from "../schema";
 import type { CheckoutSnapshotItem } from "../types/db";
+import { isNullOrUndefined } from "../utils/null-check";
 
 /** Validated cart row with current pricing and availability. */
 export interface ValidatedCartRow
@@ -193,7 +194,7 @@ export async function createMockOrder(
 						})
 					.returning();
 
-			if (order === null || order === undefined)
+			if (isNullOrUndefined(order))
 			{
 				throw new Error("Failed to create mock order");
 			}

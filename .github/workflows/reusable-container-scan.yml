@@ -1,0 +1,57 @@
+# Reusable workflow: Trivy container vulnerability scan + SARIF upload.
+# Called from ci.yml and seventysixcommerce-ci.yml after images are pushed.
+name: Container Vulnerability Scan
+
+on:
+    workflow_call:
+        inputs:
+            image-ref:
+                description: "Full image reference including tag (e.g. ghcr.io/owner/app:sha)"
+                required: true
+                type: string
+            image-name:
+                description: "Short name for artifact naming (e.g. seventysix-api)"
+                required: true
+                type: string
+
+permissions:
+    contents: read
+    security-events: write
+
+jobs:
+    scan:
+        name: Trivy Scan — ${{ inputs.image-name }}
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+
+        steps:
+            - name: Run Trivy vulnerability scanner
+              uses: aquasecurity/trivy-action@76071ef0d7ec797419534a183b498b4d6366cf37 # v0.31.0
+              with:
+                  image-ref: ${{ inputs.image-ref }}
+                  format: "sarif"
+                  output: "trivy-${{ inputs.image-name }}.sarif"
+                  severity: "CRITICAL,HIGH"
+                  exit-code: "0"
+
+            - name: Upload Trivy SARIF to GitHub Security tab
+              uses: github/codeql-action/upload-sarif@0d579ffd059c29b07949a3cce3983f0780820c98 # v4
+              with:
+                  sarif_file: "trivy-${{ inputs.image-name }}.sarif"
+                  category: "trivy-${{ inputs.image-name }}"
+
+            - name: Upload Trivy SARIF as artifact
+              uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+              with:
+                  name: trivy-scan-${{ inputs.image-name }}
+                  path: "trivy-${{ inputs.image-name }}.sarif"
+                  retention-days: 30
+
+            - name: Fail on unfixed CRITICAL CVEs
+              uses: aquasecurity/trivy-action@76071ef0d7ec797419534a183b498b4d6366cf37 # v0.31.0
+              with:
+                  image-ref: ${{ inputs.image-ref }}
+                  format: "table"
+                  severity: "CRITICAL"
+                  exit-code: "1"
+                  ignore-unfixed: true

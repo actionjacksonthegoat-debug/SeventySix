@@ -181,12 +181,14 @@ ufw status verbose
 > **Important:** UFW does **not** intercept Docker's `iptables` rules. All Docker container ports in `docker-compose.production.yml` **must** be bound to `127.0.0.1` (e.g., `127.0.0.1:8080->8080/tcp`) — not `0.0.0.0`. A port published on `0.0.0.0` is accessible from the internet regardless of UFW.
 
 > **Maintaining Cloudflare IPs:** Cloudflare publishes their IP ranges at [cloudflare.com/ips](https://www.cloudflare.com/ips/). They change rarely but do change. To update, SSH into the server and run:
+>
 > ```bash
 > # Remove old Cloudflare rules
 > ufw status numbered | grep 'Cloudflare' | awk '{print $2}' | sort -rn | while read num; do echo "y" | ufw delete $num; done
 > # Re-run the for loops above with updated ranges
 > ufw reload
 > ```
+>
 > Check Cloudflare's IP page quarterly or subscribe to their changelog.
 
 ### 3.7 Verify and Logout
@@ -206,6 +208,7 @@ exit
 ```
 
 Test that you can SSH as the deploy user:
+
 ```bash
 ssh deploy@$SERVER_IP
 ```
@@ -217,6 +220,7 @@ ssh deploy@$SERVER_IP
 Caddy acts as a reverse proxy in front of the Docker containers and uses Cloudflare Origin certificates referenced in `Caddyfile.production`.
 
 > **How TLS works with Cloudflare:**
+>
 > - Generate Cloudflare Origin certificates (`origin.crt` + `origin.key`) and place them on the server at `/etc/caddy/certs/`.
 > - `Caddyfile.production` uses explicit `tls /etc/caddy/certs/origin.crt /etc/caddy/certs/origin.key` directives for apex, `www`, and `api` hosts.
 > - Set Cloudflare **SSL/TLS mode to "Full (Strict)"** so Cloudflare validates the origin certificate.
@@ -312,6 +316,7 @@ In the Cloudflare dashboard for your domain:
 > **Observability access**: Grafana, Jaeger, and Prometheus are served via same-origin nginx proxy routes,
 > protected by `auth_request` that validates the `X-Refresh-Token` cookie against the API (`/api/v1/auth/verify-admin`).
 > Only authenticated Admin users can access them. Unauthenticated or non-admin users receive 401.
+>
 > - `https://seventysixsandbox.com/grafana/`
 > - `https://seventysixsandbox.com/jaeger/`
 > - `https://seventysixsandbox.com/prometheus/`
@@ -331,21 +336,27 @@ In the Cloudflare dashboard for your domain:
 Create **two** Cache Rules (Cloudflare Dashboard → Caching → Cache Rules → Create rule):
 
 **Rule 1 — No-cache for API responses** *(create first — evaluated in order)*
+
 1. Rule name: `No-cache for API responses`
 2. Click **"Edit expression"** and paste:
+
    ```
    (http.host eq "seventysixsandbox.com") and (starts_with(http.request.uri.path, "/api/"))
    ```
+
 3. Cache eligibility: **Bypass cache**
 4. Place at: **First**
 5. Deploy
 
 **Rule 2 — Cache Angular static files (1 month)**
+
 1. Rule name: `Cache Angular static files`
 2. Click **"Edit expression"** and paste:
+
    ```
    (http.host eq "seventysixsandbox.com") and (http.request.uri.path.extension in {"js" "css" "woff2" "woff" "ttf" "svg" "png" "ico" "webp"})
    ```
+
 3. Cache eligibility: **Eligible for cache**
 4. Edge TTL: Click **"+ Add setting"** → **Edge TTL** → select **"Ignore cache-control header and use this TTL"** → set to `1 month`
 5. Place at: **Last**
@@ -391,9 +402,11 @@ Blocks all traffic from high-risk countries that have no legitimate users.
 
 1. Rule name: `Block high-risk countries`
 2. Click **"Edit expression"** and paste:
+
    ```
    (ip.geoip.country in {"CN" "RU" "IR" "KP"})
    ```
+
 3. Action: **Block**
 4. Place at: **First**
 5. Deploy
@@ -406,9 +419,11 @@ Blocks login attempts using passwords known to be compromised (from the Have I B
 
 1. Rule name: `Block leaked passwords`
 2. Click **"Edit expression"** and paste:
+
    ```
    (cf.waf.credential_check.password_leaked)
    ```
+
 3. Action: **Managed Challenge**
 4. Deploy
 
@@ -674,6 +689,7 @@ gh secret set GRAFANA_ADMIN_PASSWORD --body "<GENERATED_GRAFANA_PASSWORD>" --rep
 ```
 
 > **Generating cryptographic values:** Use `openssl rand -base64 N` or PowerShell:
+>
 > ```powershell
 > # PowerShell equivalent (no OpenSSL needed)
 > function New-RandomBase64([int]$bytes) {
@@ -811,6 +827,7 @@ gh secret set PROD_USER --body "deploy" --repo actionjacksonthegoat-debug/Sevent
 ### Verify CD Pipeline
 
 Push a commit to master. The pipeline should:
+
 1. CI runs (lint → build → test → e2e → load-test → quality-gate)
 2. `publish` job (`.github/workflows/ci.yml`) builds and pushes Docker images to GHCR
    > **Image architecture:** The CI publish job builds `linux/amd64` images only (Hetzner CPX41 is x86_64).
@@ -895,6 +912,7 @@ Set up alerts: Email + Discord/Slack webhook.
 Open `https://seventysixsandbox.com/grafana/`. Access is protected by nginx `auth_request` — you must be logged into the Angular app as an Admin user (the `X-Refresh-Token` cookie is validated automatically). Grafana uses anonymous viewer access behind the auth gate, so no separate Grafana login is needed for read-only viewing. To make admin changes, log in to Grafana directly with `GRAFANA_ADMIN_USER` / `GRAFANA_ADMIN_PASSWORD`.
 
 Useful Prometheus queries:
+
 - API request rate: `rate(http_server_request_duration_seconds_count[5m])`
 - API error rate: `rate(http_server_request_duration_seconds_count{http_response_status_code=~"5.."}[5m])`
 - Container memory: `container_memory_usage_bytes`
@@ -998,6 +1016,7 @@ Add UptimeRobot monitors for both commerce sites:
 ### Security Headers
 
 Both commerce sites set security headers in their server middleware:
+
 - `X-Content-Type-Options: nosniff`
 - `X-Frame-Options: DENY`
 - `Referrer-Policy: strict-origin-when-cross-origin`
@@ -1172,6 +1191,15 @@ hcloud server change-type seventysix-prod ccx33
 
 ### Rollback to Previous Image
 
+The deploy pipeline includes **automated rollback**. When post-deploy smoke tests fail:
+
+1. The `rollback-staging` job runs automatically via `if: failure()`
+2. It SSH-es to the server and resets to the previous Git commit (`HEAD@{1}`)
+3. It pulls the prior images and restarts containers
+4. If the rollback itself fails, a GitHub issue with the `incident` label is created
+
+**Manual rollback** (if automated rollback is unavailable):
+
 ```bash
 # Find the previous image SHA (on the server)
 ssh deploy@$SERVER_IP \
@@ -1187,6 +1215,8 @@ gh workflow run deploy.yml --repo actionjacksonthegoat-debug/SeventySix
 # After verifying the rollback, restore latest:
 gh variable delete API_IMAGE --repo actionjacksonthegoat-debug/SeventySix
 ```
+
+**Commerce rollback** follows the same automated pattern via `rollback-staging` in `seventysixcommerce-deploy.yml`.
 
 ### Restore from Backup
 
@@ -1258,10 +1288,14 @@ Both use the same Cloudflare origin TLS certificates as the main site.
 
 ### Health Checks
 
-| App | Endpoint |
-|-----|----------|
-| TanStack | `GET /api/healthz` |
-| SvelteKit | `GET /healthz` |
+All commerce apps expose two probe types:
+
+| Probe | Purpose | TanStack Endpoint | SvelteKit Endpoint |
+|-------|---------|--------------------|--------------------|
+| **Liveness** | Process is alive (no DB check) | `GET /api/healthz` | `GET /healthz` |
+| **Readiness** | Process is alive **and** DB is reachable | `GET /api/health/ready` | `GET /health/ready` |
+
+Docker Compose healthchecks use the **readiness** probe so containers are only marked healthy when they can serve traffic end-to-end. Orchestrators (Kubernetes, Nomad) should wire liveness → restart and readiness → traffic routing.
 
 ### Secrets
 
@@ -1287,9 +1321,9 @@ cd /srv/seventysix
 docker compose -f docker-compose.seventysixcommerce.yml pull
 docker compose -f docker-compose.seventysixcommerce.yml up -d
 
-# Verify health
-curl -s http://localhost:3000/api/healthz
-curl -s http://localhost:3001/healthz
+# Verify health (readiness probes)
+curl -s http://localhost:3000/api/health/ready
+curl -s http://localhost:3001/health/ready
 ```
 
 ---

@@ -31,35 +31,16 @@ namespace SeventySix.Identity;
 /// <param name="userManager">
 /// ASP.NET Core Identity UserManager for role lookups and role operations.
 /// </param>
-/// <remarks>
-/// Not sealed to allow unit testing with NSubstitute. Methods are virtual for mocking.
-/// </remarks>
-public class AuthenticationService(
+public sealed class AuthenticationService(
 	IAuthRepository authRepository,
 	ITokenService tokenService,
 	IOptions<JwtSettings> jwtSettings,
 	TimeProvider timeProvider,
 	UserManager<ApplicationUser> userManager)
+	: IAuthenticationService
 {
-	/// <summary>
-	/// Generates authentication result with access and refresh tokens for Identity <see cref="ApplicationUser"/>.
-	/// </summary>
-	/// <param name="user">
-	/// The identity user to issue tokens for.
-	/// </param>
-	/// <param name="requiresPasswordChange">
-	/// Whether the user must change password on next login.
-	/// </param>
-	/// <param name="rememberMe">
-	/// If true, issues a long-lived refresh token.
-	/// </param>
-	/// <param name="cancellationToken">
-	/// Cancellation token.
-	/// </param>
-	/// <returns>
-	/// An <see cref="AuthResult"/> with tokens and metadata.
-	/// </returns>
-	public virtual async Task<AuthResult> GenerateAuthResultAsync(
+	/// <inheritdoc/>
+	public async Task<AuthResult> GenerateAuthResultAsync(
 		ApplicationUser user,
 		bool requiresPasswordChange,
 		bool rememberMe,
@@ -98,26 +79,8 @@ public class AuthenticationService(
 			isFirstLogin);
 	}
 
-	/// <summary>
-	/// Generates only the access token and metadata for use during token rotation.
-	/// Does NOT create a new refresh token — the caller provides the rotated token.
-	/// </summary>
-	/// <param name="user">
-	/// The identity user to issue an access token for.
-	/// </param>
-	/// <param name="requiresPasswordChange">
-	/// Whether the user must change password on next login.
-	/// </param>
-	/// <param name="rememberMe">
-	/// Whether the user's session uses extended expiration.
-	/// </param>
-	/// <param name="cancellationToken">
-	/// Cancellation token.
-	/// </param>
-	/// <returns>
-	/// An <see cref="AuthResult"/> with access token and metadata (RefreshToken is empty).
-	/// </returns>
-	public virtual async Task<AuthResult> GenerateAccessTokenResultAsync(
+	/// <inheritdoc/>
+	public async Task<AuthResult> GenerateAccessTokenResultAsync(
 		ApplicationUser user,
 		bool requiresPasswordChange,
 		bool rememberMe,

@@ -51,7 +51,7 @@ public static class LoginCommandHandler
 		LoginCommand command,
 		SignInManager<ApplicationUser> signInManager,
 		IAuthRepository authRepository,
-		AuthenticationService authenticationService,
+		IAuthenticationService authenticationService,
 		IAltchaService altchaService,
 		ISecurityAuditService securityAuditService,
 		IMfaOrchestrator mfaOrchestrator,

@@ -54,42 +54,6 @@ public interface ITrustedDeviceService
 		CancellationToken cancellationToken);
 
 	/// <summary>
-	/// Revokes all trusted devices for a user.
-	/// </summary>
-	/// <param name="userId">
-	/// The user's ID.
-	/// </param>
-	/// <param name="cancellationToken">
-	/// Cancellation token.
-	/// </param>
-	/// <returns>
-	/// A task representing the asynchronous operation.
-	/// </returns>
-	public Task RevokeAllAsync(
-		long userId,
-		CancellationToken cancellationToken);
-
-	/// <summary>
-	/// Revokes a specific trusted device.
-	/// </summary>
-	/// <param name="userId">
-	/// The user's ID.
-	/// </param>
-	/// <param name="deviceId">
-	/// The device ID to revoke.
-	/// </param>
-	/// <param name="cancellationToken">
-	/// Cancellation token.
-	/// </param>
-	/// <returns>
-	/// True if the device was found and revoked.
-	/// </returns>
-	public Task<bool> RevokeDeviceAsync(
-		long userId,
-		long deviceId,
-		CancellationToken cancellationToken);
-
-	/// <summary>
 	/// Lists user's trusted devices.
 	/// </summary>
 	/// <param name="userId">

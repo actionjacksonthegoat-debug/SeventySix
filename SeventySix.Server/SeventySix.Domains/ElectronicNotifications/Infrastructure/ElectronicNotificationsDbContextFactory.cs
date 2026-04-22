@@ -37,9 +37,10 @@ public class ElectronicNotificationsDbContextFactory
 		DbContextOptionsBuilder<ElectronicNotificationsDbContext> optionsBuilder =
 			new();
 
-		// Load connection string from appsettings.json and User Secrets
+		// Load connection string: checks ConnectionStrings:ElectronicNotificationsConnection (CI env var) first,
+		// then falls back to building from Database:* user secrets (local dev).
 		string connectionString =
-			DesignTimeConnectionStringProvider.GetConnectionString();
+			DesignTimeConnectionStringProvider.GetConnectionString("ElectronicNotificationsConnection");
 
 		optionsBuilder.UseNpgsql(
 			connectionString,

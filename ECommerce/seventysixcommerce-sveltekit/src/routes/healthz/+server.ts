@@ -1,4 +1,4 @@
-import { now } from "$lib/utils/date";
+import { now } from "@seventysixcommerce/shared/date";
 import type { RequestHandler } from "./$types";
 
 /** Health check endpoint for Docker and monitoring. */

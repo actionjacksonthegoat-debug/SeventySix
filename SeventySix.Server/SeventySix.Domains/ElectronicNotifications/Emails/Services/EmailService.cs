@@ -8,6 +8,7 @@ using System.Net.Sockets;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SeventySix.Shared.Constants;
+using SeventySix.Shared.Contracts.Emails;
 using SeventySix.Shared.Interfaces;
 using SeventySix.Shared.Utilities;
 
@@ -54,16 +55,16 @@ public sealed class EmailService(
 	private const string BREVO_BASE_URL = "api.brevo.com";
 
 	/// <summary>
-	/// Sends a welcome email with a password setup link to the specified user.
+	/// Sends an email of the specified type using the provided template data.
 	/// </summary>
-	/// <param name="email">
+	/// <param name="emailType">
+	/// The email type constant (see <see cref="EmailTypeConstants"/>).
+	/// </param>
+	/// <param name="recipientEmail">
 	/// The recipient's email address.
 	/// </param>
-	/// <param name="username">
-	/// The recipient's username used in the email body.
-	/// </param>
-	/// <param name="resetToken">
-	/// The password reset token to build the setup link.
+	/// <param name="templateData">
+	/// Key-value pairs for email template rendering.
 	/// </param>
 	/// <param name="cancellationToken">
 	/// Cancellation token.
@@ -71,146 +72,133 @@ public sealed class EmailService(
 	/// <returns>
 	/// A task representing the async operation.
 	/// </returns>
-	public async Task SendWelcomeEmailAsync(
-		string email,
-		string username,
-		string resetToken,
+	public async Task SendEmailAsync(
+		string emailType,
+		string recipientEmail,
+		Dictionary<string, string> templateData,
 		CancellationToken cancellationToken = default)
 	{
-		ArgumentException.ThrowIfNullOrWhiteSpace(email);
-		ArgumentException.ThrowIfNullOrWhiteSpace(username);
-		ArgumentException.ThrowIfNullOrWhiteSpace(resetToken);
+		ArgumentException.ThrowIfNullOrWhiteSpace(emailType);
+		ArgumentException.ThrowIfNullOrWhiteSpace(recipientEmail);
+		ArgumentNullException.ThrowIfNull(templateData);
 
-		string resetUrl =
-			BuildPasswordResetUrl(resetToken);
+		(string subject, string body) =
+			BuildEmailContent(
+				emailType,
+				recipientEmail,
+				templateData);
 
-		string subject =
-			EmailSubjectConstants.Welcome;
-
-		string body =
-			BuildWelcomeEmailBody(username, resetUrl);
-
-		await SendEmailAsync(email, subject, body, cancellationToken);
-	}
-
-	/// <summary>
-	/// Sends a password reset email containing a reset link for the user.
-	/// </summary>
-	/// <param name="email">
-	/// The recipient's email address.
-	/// </param>
-	/// <param name="username">
-	/// The recipient's username used in the email body.
-	/// </param>
-	/// <param name="resetToken">
-	/// The password reset token to build the reset link.
-	/// </param>
-	/// <param name="cancellationToken">
-	/// Cancellation token.
-	/// </param>
-	/// <returns>
-	/// A task representing the async operation.
-	/// </returns>
-	public async Task SendPasswordResetEmailAsync(
-		string email,
-		string username,
-		string resetToken,
-		CancellationToken cancellationToken = default)
-	{
-		ArgumentException.ThrowIfNullOrWhiteSpace(email);
-		ArgumentException.ThrowIfNullOrWhiteSpace(username);
-		ArgumentException.ThrowIfNullOrWhiteSpace(resetToken);
-
-		string resetUrl =
-			BuildPasswordResetUrl(resetToken);
-
-		string subject =
-			EmailSubjectConstants.PasswordReset;
-
-		string body =
-			BuildPasswordResetEmailBody(username, resetUrl);
-
-		await SendEmailAsync(email, subject, body, cancellationToken);
-	}
-
-	/// <summary>
-	/// Sends an email with a verification link for self-registration.
-	/// </summary>
-	/// <param name="email">
-	/// The recipient's email address.
-	/// </param>
-	/// <param name="verificationToken">
-	/// The verification token used to build the verification URL.
-	/// </param>
-	/// <param name="cancellationToken">
-	/// Cancellation token.
-	/// </param>
-	/// <returns>
-	/// A task representing the async operation.
-	/// </returns>
-	public async Task SendVerificationEmailAsync(
-		string email,
-		string verificationToken,
-		CancellationToken cancellationToken = default)
-	{
-		ArgumentException.ThrowIfNullOrWhiteSpace(email);
-		ArgumentException.ThrowIfNullOrWhiteSpace(verificationToken);
-
-		string verificationUrl =
-			BuildEmailVerificationUrl(
-				email,
-				verificationToken);
-
-		string subject =
-			EmailSubjectConstants.EmailVerification;
-
-		string body =
-			BuildVerificationEmailBody(verificationUrl);
-
-		await SendEmailAsync(email, subject, body, cancellationToken);
-	}
-
-	/// <summary>
-	/// Sends a multi-factor authentication verification code email.
-	/// </summary>
-	/// <param name="email">
-	/// The recipient's email address.
-	/// </param>
-	/// <param name="code">
-	/// The 6-digit verification code.
-	/// </param>
-	/// <param name="expirationMinutes">
-	/// Number of minutes until the code expires.
-	/// </param>
-	/// <param name="cancellationToken">
-	/// Cancellation token.
-	/// </param>
-	/// <returns>
-	/// A task representing the async operation.
-	/// </returns>
-	public async Task SendMfaCodeEmailAsync(
-		string email,
-		string code,
-		int expirationMinutes,
-		CancellationToken cancellationToken = default)
-	{
-		ArgumentException.ThrowIfNullOrWhiteSpace(email);
-		ArgumentException.ThrowIfNullOrWhiteSpace(code);
-		ArgumentOutOfRangeException.ThrowIfNegativeOrZero(expirationMinutes);
-
-		string subject =
-			EmailSubjectConstants.MfaVerification;
-
-		string body =
-			BuildMfaCodeEmailBody(
-				code,
-				expirationMinutes);
-
-		await SendEmailAsync(
-			email,
+		await SendEmailInternalAsync(
+			recipientEmail,
 			subject,
 			body,
 			cancellationToken);
+	}
+
+	/// <summary>
+	/// Maps an email type and template data to the subject and HTML body.
+	/// </summary>
+	/// <param name="emailType">
+	/// The email type constant.
+	/// </param>
+	/// <param name="recipientEmail">
+	/// The recipient email (needed for verification URL encoding).
+	/// </param>
+	/// <param name="templateData">
+	/// Template data dictionary.
+	/// </param>
+	/// <returns>
+	/// A tuple of subject and HTML body.
+	/// </returns>
+	private (string Subject, string Body) BuildEmailContent(
+		string emailType,
+		string recipientEmail,
+		Dictionary<string, string> templateData) => emailType switch
+		{
+			EmailTypeConstants.Welcome =>
+				BuildWelcomeContent(templateData),
+			EmailTypeConstants.PasswordReset =>
+				BuildPasswordResetContent(templateData),
+			EmailTypeConstants.Verification =>
+				BuildVerificationContent(recipientEmail, templateData),
+			EmailTypeConstants.MfaVerification =>
+				BuildMfaCodeContent(templateData),
+			_ => throw new ArgumentException(
+				$"Unsupported email type: {emailType}",
+				nameof(emailType)),
+		};
+
+	/// <summary>
+	/// Builds welcome email subject and body.
+	/// </summary>
+	private (string Subject, string Body) BuildWelcomeContent(
+		Dictionary<string, string> templateData)
+	{
+		string username =
+			templateData.GetValueOrDefault("username", "User");
+		string resetToken =
+			templateData.GetValueOrDefault("resetToken", "");
+		string resetUrl =
+			BuildPasswordResetUrl(resetToken);
+
+		return (
+			EmailSubjectConstants.Welcome,
+			BuildWelcomeEmailBody(username, resetUrl));
+	}
+
+	/// <summary>
+	/// Builds password reset email subject and body.
+	/// </summary>
+	private (string Subject, string Body) BuildPasswordResetContent(
+		Dictionary<string, string> templateData)
+	{
+		string username =
+			templateData.GetValueOrDefault("username", "User");
+		string resetToken =
+			templateData.GetValueOrDefault("resetToken", "");
+		string resetUrl =
+			BuildPasswordResetUrl(resetToken);
+
+		return (
+			EmailSubjectConstants.PasswordReset,
+			BuildPasswordResetEmailBody(username, resetUrl));
+	}
+
+	/// <summary>
+	/// Builds email verification subject and body.
+	/// </summary>
+	private (string Subject, string Body) BuildVerificationContent(
+		string recipientEmail,
+		Dictionary<string, string> templateData)
+	{
+		string verificationToken =
+			templateData.GetValueOrDefault("verificationToken", "");
+		string verificationUrl =
+			BuildEmailVerificationUrl(recipientEmail, verificationToken);
+
+		return (
+			EmailSubjectConstants.EmailVerification,
+			BuildVerificationEmailBody(verificationUrl));
+	}
+
+	/// <summary>
+	/// Builds MFA code email subject and body.
+	/// </summary>
+	private static (string Subject, string Body) BuildMfaCodeContent(
+		Dictionary<string, string> templateData)
+	{
+		string code =
+			templateData.GetValueOrDefault("code", "");
+		int expirationMinutes =
+			int.TryParse(
+				templateData.GetValueOrDefault("expirationMinutes", "5"),
+				out int minutes)
+				? minutes
+				: 5;
+
+		return (
+			EmailSubjectConstants.MfaVerification,
+			BuildMfaCodeEmailBody(code, expirationMinutes));
 	}
 
 	/// <summary>
@@ -278,7 +266,7 @@ public sealed class EmailService(
 	/// regardless of whether the response was success (201), client error (400/401),
 	/// rate limit (429), or server error (500+).
 	/// </remarks>
-	private async Task SendEmailAsync(
+	private async Task SendEmailInternalAsync(
 		string recipientEmail,
 		string subject,
 		string htmlBody,
@@ -516,7 +504,7 @@ public sealed class EmailService(
 		BuildEmailHtml(
 			"Welcome to SeventySix!",
 			$$"""
-			<p>Hello {{username}},</p>
+			<p>Hello {{WebUtility.HtmlEncode(username)}},</p>
 			<p>Your account has been created. Please set your password to complete registration:</p>
 			{{BuildButtonHtml(resetUrl, "Set Your Password")}}
 			<p>This link expires in 24 hours.</p>
@@ -541,7 +529,7 @@ public sealed class EmailService(
 		BuildEmailHtml(
 			"Password Reset Request",
 			$$"""
-			<p>Hello {{username}},</p>
+			<p>Hello {{WebUtility.HtmlEncode(username)}},</p>
 			<p>We received a request to reset your password. Click the button below to set a new password:</p>
 			{{BuildButtonHtml(resetUrl, "Reset Password")}}
 			<p>This link expires in 24 hours.</p>
@@ -589,7 +577,7 @@ public sealed class EmailService(
 			<p>Use the following code to complete your sign-in:</p>
 			<p style="margin: 24px 0; text-align: center;">
 				<span style="display: inline-block; background: #f5f5f5; padding: 16px 32px; font-size: 32px; font-weight: bold; letter-spacing: 8px; font-family: monospace; border-radius: 4px;">
-					{{code}}
+					{{WebUtility.HtmlEncode(code)}}
 				</span>
 			</p>
 			<p>This code expires in {{expirationMinutes}} minutes.</p>

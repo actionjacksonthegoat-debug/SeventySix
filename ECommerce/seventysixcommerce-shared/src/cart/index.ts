@@ -3,6 +3,7 @@
  * Both SvelteKit and TanStack apps delegate core cart logic here,
  * wrapping with their own middleware and response shaping.
  */
+export { type CartItem, type CartResponse, toCartResponse } from "./cart-response";
 import { and, eq } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { MAX_CART_ITEM_QUANTITY } from "../constants";

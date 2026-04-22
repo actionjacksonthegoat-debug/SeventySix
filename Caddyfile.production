@@ -2,8 +2,24 @@
 	email support@seventysixsandbox.com
 }
 
+# Security headers snippet — imported by every site block.
+# CSP is intentionally strict: frame-ancestors 'none' (no iframe embedding),
+# script-src includes 'unsafe-inline' for Angular's inline bootstrap.
+(security_headers) {
+	header {
+		Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "accelerometer=(), camera=(), geolocation=(), microphone=(), payment=(self)"
+		Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://api.seventysixsandbox.com; frame-ancestors 'none'"
+		-Server
+	}
+}
+
 seventysixsandbox.com {
 	tls /etc/caddy/certs/origin.crt /etc/caddy/certs/origin.key
+	import security_headers
 
 	# Browser telemetry ingestion — proxied to OTEL Collector HTTP receiver
 	# Auth: Client only initializes telemetry for authenticated users.
@@ -44,6 +60,7 @@ www.seventysixsandbox.com {
 
 api.seventysixsandbox.com {
 	tls /etc/caddy/certs/origin.crt /etc/caddy/certs/origin.key
+	import security_headers
 	reverse_proxy localhost:5085 {
 		header_up X-Forwarded-For {header.CF-Connecting-IP}
 	}

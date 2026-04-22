@@ -109,7 +109,6 @@ type PageTextConfig = {
 	developer: {
 		styleGuide: { title: string; description: string; colorsTab: string; };
 	};
-	games: { title: string; subtitle: string; };
 	sandbox: { title: string; subtitle: string; };
 	errorPage: { notFoundTitle: string; notFoundDescription: string; goToHome: string; };
 	registerComplete: { heading: string; linkExpired: string; passwordHint: string; };
@@ -394,14 +393,6 @@ export const PAGE_TEXT: PageTextConfig =
 				description: "Material Design 3 components and design tokens",
 				colorsTab: "Colors"
 			}
-		},
-
-		/**
-	 * Games page text.
-	 */
-		games: {
-			title: "Games",
-			subtitle: "Choose your adventure"
 		},
 
 		/**

@@ -6,12 +6,14 @@ on:
         paths:
             - "ECommerce/seventysixcommerce-tanstack/**"
             - "ECommerce/seventysixcommerce-sveltekit/**"
+            - "ECommerce/seventysixcommerce-shared/**"
             - ".github/workflows/seventysixcommerce-ci.yml"
     pull_request:
         branches: [master]
         paths:
             - "ECommerce/seventysixcommerce-tanstack/**"
             - "ECommerce/seventysixcommerce-sveltekit/**"
+            - "ECommerce/seventysixcommerce-shared/**"
             - ".github/workflows/seventysixcommerce-ci.yml"
     workflow_dispatch:
 
@@ -32,6 +34,7 @@ jobs:
     tanstack-build:
         name: TanStack Build & Test
         runs-on: ubuntu-latest
+        timeout-minutes: 30
 
         defaults:
             run:
@@ -89,7 +92,7 @@ jobs:
                   token: ${{ secrets.CODECOV_TOKEN }}
                   flags: seventysixcommerce-tanstack
                   directory: ECommerce/seventysixcommerce-tanstack/coverage
-                  fail_ci_if_error: false
+                  fail_ci_if_error: true
 
     # ──────────────────────────────────────────────────────────
     # Stage 1: SvelteKit — Check + Test + Build
@@ -97,6 +100,7 @@ jobs:
     sveltekit-build:
         name: SvelteKit Build & Test
         runs-on: ubuntu-latest
+        timeout-minutes: 30
 
         defaults:
             run:
@@ -156,7 +160,7 @@ jobs:
                   token: ${{ secrets.CODECOV_TOKEN }}
                   flags: seventysixcommerce-sveltekit
                   directory: ECommerce/seventysixcommerce-sveltekit/coverage
-                  fail_ci_if_error: false
+                  fail_ci_if_error: true
 
     # ──────────────────────────────────────────────────────────
     # Stage 2: SvelteKit E2E Tests
@@ -164,6 +168,7 @@ jobs:
     e2e-sveltekit:
         name: SvelteKit E2E Tests
         runs-on: ubuntu-latest
+        timeout-minutes: 30
         needs: [sveltekit-build]
 
         defaults:
@@ -242,12 +247,21 @@ jobs:
                   CI: "true"
 
             - name: Upload Playwright report
-              uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4
+              uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
               if: always()
               with:
                   name: sveltekit-playwright-report
                   path: ECommerce/seventysixcommerce-sveltekit/playwright-report/
                   retention-days: 14
+
+            - name: Upload test results
+              uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+              if: always()
+              with:
+                  name: sveltekit-test-results
+                  path: ECommerce/seventysixcommerce-sveltekit/test-results/
+                  if-no-files-found: ignore
+                  retention-days: 7
 
     # ──────────────────────────────────────────────────────────
     # Stage 2: TanStack E2E Tests
@@ -255,6 +269,7 @@ jobs:
     e2e-tanstack:
         name: TanStack E2E Tests
         runs-on: ubuntu-latest
+        timeout-minutes: 30
         needs: [tanstack-build]
 
         defaults:
@@ -353,12 +368,21 @@ jobs:
                   CI: "true"
 
             - name: Upload Playwright report
-              uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4
+              uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
               if: always()
               with:
                   name: tanstack-playwright-report
                   path: ECommerce/seventysixcommerce-tanstack/playwright-report/
                   retention-days: 14
+
+            - name: Upload test results
+              uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+              if: always()
+              with:
+                  name: tanstack-test-results
+                  path: ECommerce/seventysixcommerce-tanstack/test-results/
+                  if-no-files-found: ignore
+                  retention-days: 7
 
     # ──────────────────────────────────────────────────────────
     # Stage 2: SvelteKit Load Tests
@@ -366,6 +390,7 @@ jobs:
     loadtest-sveltekit:
         name: SvelteKit Load Tests
         runs-on: ubuntu-latest
+        timeout-minutes: 30
         needs: [sveltekit-build]
 
         defaults:
@@ -446,8 +471,19 @@ jobs:
               run: |
                   for scenario in load-testing/scenarios/**/*.test.js; do
                       echo "Running: $scenario"
-                      k6 run --config load-testing/config/quick.json "$scenario" || true
+                      k6 run --config load-testing/config/quick.json "$scenario"
                   done
+
+            - name: Upload load test report
+              uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+              if: always()
+              with:
+                  name: sveltekit-load-test-report
+                  path: |
+                      ECommerce/seventysixcommerce-sveltekit/load-testing/results/
+                      ECommerce/seventysixcommerce-sveltekit/load-testing/reports/
+                  if-no-files-found: ignore
+                  retention-days: 7
 
     # ──────────────────────────────────────────────────────────
     # Stage 2: TanStack Load Tests
@@ -455,6 +491,7 @@ jobs:
     loadtest-tanstack:
         name: TanStack Load Tests
         runs-on: ubuntu-latest
+        timeout-minutes: 30
         needs: [tanstack-build]
 
         defaults:
@@ -555,8 +592,19 @@ jobs:
               run: |
                   for scenario in load-testing/scenarios/**/*.test.js; do
                       echo "Running: $scenario"
-                      k6 run --config load-testing/config/quick.json "$scenario" || true
+                      k6 run --config load-testing/config/quick.json "$scenario"
                   done
+
+            - name: Upload load test report
+              uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+              if: always()
+              with:
+                  name: tanstack-load-test-report
+                  path: |
+                      ECommerce/seventysixcommerce-tanstack/load-testing/results/
+                      ECommerce/seventysixcommerce-tanstack/load-testing/reports/
+                  if-no-files-found: ignore
+                  retention-days: 7
 
     # ──────────────────────────────────────────────────────────
     # Stage 3: Quality gate — all checks must pass
@@ -571,6 +619,7 @@ jobs:
         name: SeventySixCommerce Quality Gate
         needs: [tanstack-build, sveltekit-build, e2e-sveltekit, e2e-tanstack, loadtest-sveltekit, loadtest-tanstack]
         runs-on: ubuntu-latest
+        timeout-minutes: 15
         if: always()
 
         steps:
@@ -620,6 +669,7 @@ jobs:
         name: Publish SeventySixCommerce Docker Images
         needs: [quality-gate]
         runs-on: ubuntu-latest
+        timeout-minutes: 30
         if: github.ref == 'refs/heads/master' && github.event_name == 'push' && needs.quality-gate.result == 'success'
 
         permissions:
@@ -660,6 +710,13 @@ jobs:
                   cache-from: type=gha
                   cache-to: type=gha,mode=max
 
+            - name: Generate SBOM for TanStack image
+              uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
+              with:
+                  image: ghcr.io/${{ github.repository_owner }}/seventysixcommerce-tanstack:${{ github.sha }}
+                  format: spdx-json
+                  output-file: sbom-tanstack.spdx.json
+
             - name: Build and push SvelteKit image
               uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7
               with:
@@ -673,3 +730,46 @@ jobs:
                       ghcr.io/${{ github.repository_owner }}/seventysixcommerce-sveltekit:${{ steps.meta.outputs.date }}-${{ steps.meta.outputs.sha_short }}
                   cache-from: type=gha
                   cache-to: type=gha,mode=max
+
+            - name: Generate SBOM for SvelteKit image
+              uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
+              with:
+                  image: ghcr.io/${{ github.repository_owner }}/seventysixcommerce-sveltekit:${{ github.sha }}
+                  format: spdx-json
+                  output-file: sbom-sveltekit.spdx.json
+
+            - name: Upload SBOM artifacts
+              uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+              with:
+                  name: sbom-commerce-reports
+                  path: |
+                      sbom-tanstack.spdx.json
+                      sbom-sveltekit.spdx.json
+                  retention-days: 90
+
+    # ──────────────────────────────────────────────────────────
+    # Stage 4: Container vulnerability scans (after publish)
+    # ──────────────────────────────────────────────────────────
+    scan-tanstack-image:
+        name: Scan TanStack Image
+        needs: [publish]
+        if: needs.publish.result == 'success'
+        uses: ./.github/workflows/reusable-container-scan.yml
+        with:
+            image-ref: ghcr.io/${{ github.repository_owner }}/seventysixcommerce-tanstack:${{ github.sha }}
+            image-name: seventysixcommerce-tanstack
+        permissions:
+            contents: read
+            security-events: write
+
+    scan-sveltekit-image:
+        name: Scan SvelteKit Image
+        needs: [publish]
+        if: needs.publish.result == 'success'
+        uses: ./.github/workflows/reusable-container-scan.yml
+        with:
+            image-ref: ghcr.io/${{ github.repository_owner }}/seventysixcommerce-sveltekit:${{ github.sha }}
+            image-name: seventysixcommerce-sveltekit
+        permissions:
+            contents: read
+            security-events: write

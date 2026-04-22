@@ -10,6 +10,7 @@ export * from "./data-builders";
 // export * from "./fixtures";
 export * from "./integration-test.helper";
 export * from "./mock-factories";
+export * from "./mock-service";
 export {
 	createMockAuthService,
 	MockAuthService

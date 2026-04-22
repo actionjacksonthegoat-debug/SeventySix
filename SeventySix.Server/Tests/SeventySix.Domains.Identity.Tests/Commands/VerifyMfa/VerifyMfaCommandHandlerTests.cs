@@ -28,7 +28,7 @@ public sealed class VerifyMfaCommandHandlerTests
 
 	private readonly IMfaService MfaService;
 	private readonly UserManager<ApplicationUser> UserManager;
-	private readonly AuthenticationService AuthService;
+	private readonly IAuthenticationService AuthService;
 	private readonly ISecurityAuditService SecurityAuditService;
 	private readonly ITrustedDeviceService TrustedDeviceService;
 

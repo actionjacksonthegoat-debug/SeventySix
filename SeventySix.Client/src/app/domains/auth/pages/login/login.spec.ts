@@ -160,7 +160,7 @@ describe("LoginComponent",
 					.toBeTruthy();
 			});
 
-		describe("ngOnInit",
+		describe("constructor initialization",
 			() =>
 			{
 				it("should not redirect when not authenticated",
@@ -735,7 +735,7 @@ describe("LoginComponent",
 							.getSessionItem
 							.mockReturnValue("true");
 
-						// Re-create component to trigger ngOnInit with the flag
+						// Re-create component to trigger constructor with the flag
 						fixture =
 							TestBed.createComponent(LoginComponent);
 						component =

@@ -5,7 +5,7 @@
 
 ---
 
-## [CRITICAL] FORBIDDEN COMMANDS (NEVER EXECUTE)
+## [CRITICAL] FORBIDDEN COMMANDS
 
 > **ABSOLUTE PROHIBITION**: The following commands are **USER-ONLY** and must **NEVER** be executed by Copilot under any circumstances.
 
@@ -63,7 +63,7 @@
 | Project | Path | Role |
 |---------|------|------|
 | **SeventySix.Server** | `SeventySix.Server/` | .NET 10 API (Identity, Logging, ApiTracking, ElectronicNotifications) |
-| **SeventySix.Client** | `SeventySix.Client/` | Angular 21 SPA with Games domain (Babylon.js) |
+| **SeventySix.Client** | `SeventySix.Client/` | Angular 21 SPA |
 | **ECommerce-Svelte** | `ECommerce/seventysixcommerce-sveltekit/` | SvelteKit 2 storefront (Stripe, Printful, Brevo) |
 | **ECommerce-TanStack** | `ECommerce/seventysixcommerce-tanstack/` | TanStack Start storefront (Stripe, Printful, Brevo) |
 | **ECommerce-Shared** | `ECommerce/seventysixcommerce-shared/` | Shared TypeScript library for both ECommerce sites |
@@ -88,7 +88,7 @@
 - **`npm run format` is the ONLY format command** — `dprint` must NEVER be run standalone. `npm run format:client` runs: ESLint → dprint → ESLint. Run format at the end of implementation phases, right before the test gate.
 - **All required test suites MUST pass** in the final validation phase before claiming completion (see below)
 
-## [CRITICAL] Key Formatting Rules (ALWAYS FOLLOW)
+## [CRITICAL] Key Formatting Rules
 
 > Full examples in `formatting.instructions.md`, `csharp.instructions.md`, and `testing-server.instructions.md`. **NEVER skip — violation = blocker.**
 
@@ -148,6 +148,16 @@ This gate runs **once** at the end of a plan — not during every phase.
 > **CI/CD verification**: Tests must also pass on `ubuntu-latest` (GitHub Actions CI).
 > Preferred: push to GitHub and confirm CI passes. Alternatives: WSL Ubuntu or Linux VM.
 
+## [CRITICAL] Site Walkthrough Go/No-Go
+
+After the Final Validation Gate passes, a full `/run-site-base` walkthrough is a **required go/no-go** before declaring any plan complete. This is the primary functionality confirmation for the entire Ecosystem.
+
+| Check | Command | Must See |
+| ----- | ------- | -------- |
+| Site Walkthrough | `npm run stop && npm run start` then invoke `/run-site-base` | PASS report at `.dev-tools-output/walkthrough-report.md`, zero unexpected console errors, both commerce admin dashboards (SvelteKit + TanStack) render, both commerce sites complete checkout |
+
+The walkthrough MUST cover: Angular admin + public surfaces, the SvelteKit + TanStack dashboards surfaced inside `/admin/svelte` + `/admin/tanstack` (plus their log pages), the full SvelteKit + TanStack e-commerce flows (home → shop → product → cart → checkout). Any failure (other than the explicitly-permitted Step 9 intentional error-log button) blocks completion.
+
 ## Documentation MUST Be Current (GATE CONDITION)
 
 After all tests pass, verify:
@@ -169,7 +179,7 @@ After all tests pass, verify:
 | Layer  | Technology                                                                      |
 | ------ | ------------------------------------------------------------------------------- |
 | Server | .NET 10 LTS, Wolverine CQRS, EF Core, PostgreSQL, FusionCache, FluentValidation |
-| Client | Angular 21 LTS, Zoneless, Signals, TanStack Query, Material Design 3, Babylon.js |
+| Client | Angular 21 LTS, Zoneless, Signals, TanStack Query, Material Design 3 |
 | Sandbox (SvelteKit) | SvelteKit 2, Svelte 5, TypeScript 5.9+, Tailwind CSS 4, Drizzle ORM, Stripe, Printful, Brevo |
 | Sandbox (TanStack) | TanStack Start 1.167+, React 19, TypeScript 6.0+, Tailwind CSS 4, Drizzle ORM, Stripe, Printful, Brevo |
 | IDE    | VS Code 1.100+                                                                  |
@@ -182,7 +192,6 @@ After all tests pass, verify:
 | `Logging`                 | `auth`      |
 | `ApiTracking`             | `account`   |
 | `ElectronicNotifications` | `developer` |
-|                           | `games`     |
 |                           | `sandbox`   |
 |                           | `home`      |
 
@@ -289,7 +298,7 @@ Plans created by `/create-plan` include explicit compaction checkpoints at major
 
 ---
 
-## E2E, Load Test, and DAST Environment Isolation (CRITICAL)
+## [CRITICAL] E2E, Load Test, and DAST Environment Isolation
 
 E2E, load tests, and DAST scans run in **fully isolated Docker environments** — do NOT start the dev environment for any of them.
 
@@ -319,8 +328,6 @@ E2E, load tests, and DAST scans run in **fully isolated Docker environments** �
 | `testing-client.instructions.md` | `**/SeventySix.Client/src/**/*.spec.ts`        |
 | `e2e.instructions.md`            | `**/SeventySix.Client/e2e/**/*.ts`             |
 | `new-domain.instructions.md`     | Manual reference — domain blueprints           |
-| `games.instructions.md`          | `**/SeventySix.Client/src/app/domains/games/**/*.{ts,html,scss}` — game domain architecture |
-| `babylonjs.instructions.md`      | `**/SeventySix.Client/src/app/domains/games/**/*.ts` — Babylon.js patterns & CC BY 4.0 |
 | `load-testing.instructions.md`   | `**/SeventySix.Client/load-testing/**/*.js,**/ECommerce/seventysixcommerce-sveltekit/load-testing/**/*.js,**/ECommerce/seventysixcommerce-tanstack/load-testing/**/*.js` — k6 load test patterns |
 | `sveltekit.instructions.md`      | `**/ECommerce/seventysixcommerce-sveltekit/src/**/*.{ts,svelte,css}` — SvelteKit sandbox patterns |
 | `tanstack.instructions.md`       | `**/ECommerce/seventysixcommerce-tanstack/src/**/*.{ts,tsx,css}` — TanStack Start sandbox patterns |

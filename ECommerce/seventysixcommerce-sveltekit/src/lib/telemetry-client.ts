@@ -1,8 +1,10 @@
 import { type Span, trace } from "@opentelemetry/api";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
-import { type Resource, resourceFromAttributes } from "@opentelemetry/resources";
+import { type Resource } from "@opentelemetry/resources";
 import { WebTracerProvider } from "@opentelemetry/sdk-trace-web";
 import { BatchSpanProcessor } from "@opentelemetry/sdk-trace-web";
+import { buildResource } from "@seventysixcommerce/shared/observability";
+import { isNullOrUndefined, isPresent } from "@seventysixcommerce/shared/utils";
 
 /** The OpenTelemetry service name for the SvelteKit browser client. */
 const SERVICE_NAME: string = "seventysixcommerce-sveltekit-browser";
@@ -27,8 +29,8 @@ export function initClientTelemetry(otlpEndpoint: string): void
 	}
 
 	const resource: Resource =
-		resourceFromAttributes(
-			{ "service.name": SERVICE_NAME });
+		buildResource(
+			{ serviceName: SERVICE_NAME });
 
 	const exporter: OTLPTraceExporter =
 		new OTLPTraceExporter(
@@ -57,7 +59,7 @@ export function initClientTelemetry(otlpEndpoint: string): void
  */
 export function recordNavigation(path: string): void
 {
-	if (tracer === undefined)
+	if (isNullOrUndefined(tracer))
 	{
 		return;
 	}
@@ -77,7 +79,7 @@ export function recordCommerceEvent(
 	eventName: string,
 	attributes: Record<string, string>): void
 {
-	if (tracer === undefined)
+	if (isNullOrUndefined(tracer))
 	{
 		return;
 	}
@@ -94,7 +96,7 @@ export function recordCommerceEvent(
  */
 function observeWebVitals(): void
 {
-	if (typeof PerformanceObserver === "undefined" || tracer === undefined)
+	if (typeof PerformanceObserver === "undefined" || isNullOrUndefined(tracer))
 	{
 		return;
 	}
@@ -117,7 +119,7 @@ function observeLcp(): void
 						list.getEntries();
 					const lastEntry: PerformanceEntry | undefined =
 						entries[entries.length - 1];
-					if (lastEntry !== undefined && tracer !== undefined)
+					if (isPresent(lastEntry) && isPresent(tracer))
 					{
 						const span: Span =
 							tracer.startSpan("web_vital.lcp",
@@ -164,7 +166,7 @@ function observeCls(): void
 		document.addEventListener("visibilitychange",
 			() =>
 			{
-				if (document.visibilityState === "hidden" && tracer !== undefined)
+				if (document.visibilityState === "hidden" && isPresent(tracer))
 				{
 					const span: Span =
 						tracer.startSpan("web_vital.cls",
@@ -195,7 +197,7 @@ function observeInp(): void
 				{
 					for (const entry of list.getEntries())
 					{
-						if (tracer !== undefined)
+						if (isPresent(tracer))
 						{
 							const span: Span =
 								tracer.startSpan("web_vital.inp",

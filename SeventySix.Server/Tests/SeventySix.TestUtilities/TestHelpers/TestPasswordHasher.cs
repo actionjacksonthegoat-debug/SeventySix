@@ -5,6 +5,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using Konscious.Security.Cryptography;
+using Microsoft.AspNetCore.Identity;
 using SeventySix.Identity;
 
 namespace SeventySix.TestUtilities.TestHelpers;
@@ -23,7 +24,7 @@ namespace SeventySix.TestUtilities.TestHelpers;
 /// NEVER use this in production - security parameters are intentionally weak.
 /// </para>
 /// </remarks>
-public sealed class TestPasswordHasher : IPasswordHasher
+public sealed class TestPasswordHasher : IPasswordHasher<ApplicationUser>
 {
 	private const int SaltSize = 16;
 	private const int HashSize = 16; // Smaller for tests
@@ -32,7 +33,7 @@ public sealed class TestPasswordHasher : IPasswordHasher
 	private const int Parallelism = 1;
 
 	/// <inheritdoc/>
-	public string HashPassword(string password)
+	public string HashPassword(ApplicationUser user, string password)
 	{
 		ArgumentException.ThrowIfNullOrWhiteSpace(password);
 
@@ -51,24 +52,27 @@ public sealed class TestPasswordHasher : IPasswordHasher
 	}
 
 	/// <inheritdoc/>
-	public bool VerifyPassword(string password, string passwordHash)
+	public PasswordVerificationResult VerifyHashedPassword(
+		ApplicationUser user,
+		string hashedPassword,
+		string providedPassword)
 	{
-		ArgumentException.ThrowIfNullOrWhiteSpace(password);
-		ArgumentException.ThrowIfNullOrWhiteSpace(passwordHash);
+		ArgumentException.ThrowIfNullOrWhiteSpace(providedPassword);
+		ArgumentException.ThrowIfNullOrWhiteSpace(hashedPassword);
 
-		if (!passwordHash.StartsWith("$argon2id$", StringComparison.Ordinal))
+		if (!hashedPassword.StartsWith("$argon2id$", StringComparison.Ordinal))
 		{
-			return false;
+			return PasswordVerificationResult.Failed;
 		}
 
 		string[] parts =
-			passwordHash.Split(
+			hashedPassword.Split(
 				'$',
 				StringSplitOptions.RemoveEmptyEntries);
 
 		if (parts.Length != 5)
 		{
-			return false;
+			return PasswordVerificationResult.Failed;
 		}
 
 		(int memory, int iterations, int parallelism)? parameters =
@@ -76,7 +80,7 @@ public sealed class TestPasswordHasher : IPasswordHasher
 
 		if (parameters is null)
 		{
-			return false;
+			return PasswordVerificationResult.Failed;
 		}
 
 		byte[] salt;
@@ -90,21 +94,26 @@ public sealed class TestPasswordHasher : IPasswordHasher
 		}
 		catch (FormatException)
 		{
-			return false;
+			return PasswordVerificationResult.Failed;
 		}
 
 		byte[] computedHash =
 			ComputeHashWithParams(
-				password,
+				providedPassword,
 				salt,
 				parameters.Value.memory,
 				parameters.Value.iterations,
 				parameters.Value.parallelism,
 				storedHash.Length);
 
-		return CryptographicOperations.FixedTimeEquals(
-			storedHash,
-			computedHash);
+		bool isValid =
+			CryptographicOperations.FixedTimeEquals(
+				storedHash,
+				computedHash);
+
+		return isValid
+			? PasswordVerificationResult.Success
+			: PasswordVerificationResult.Failed;
 	}
 
 	private static byte[] ComputeHash(string password, byte[] salt)

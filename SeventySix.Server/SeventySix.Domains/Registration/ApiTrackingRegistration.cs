@@ -6,7 +6,9 @@ using FluentValidation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SeventySix.ApiTracking;
+using SeventySix.ApiTracking.Jobs;
 using SeventySix.Shared;
+using SeventySix.Shared.BackgroundJobs;
 using SeventySix.Shared.Constants;
 using SeventySix.Shared.Registration;
 
@@ -62,13 +64,14 @@ public static class ApiTrackingRegistration
 		IConfiguration configuration)
 	{
 		// Configure ThirdPartyApiLimitSettings with FluentValidation + ValidateOnStart
-		services.AddSingleton<IValidator<ThirdPartyApiLimitSettings>, ThirdPartyApiLimitSettingsValidator>();
+		services.AddDomainSettings<ThirdPartyApiLimitSettings, ThirdPartyApiLimitSettingsValidator>(
+			configuration,
+			ThirdPartyApiLimitSettings.SectionName);
 
-		services
-			.AddOptions<ThirdPartyApiLimitSettings>()
-			.Bind(configuration.GetSection(ThirdPartyApiLimitSettings.SectionName))
-			.ValidateWithFluentValidation()
-			.ValidateOnStart();
+		// Configure ApiTrackingRetentionSettings with FluentValidation + ValidateOnStart
+		services.AddDomainSettings<ApiTrackingRetentionSettings, ApiTrackingRetentionSettingsValidator>(
+			configuration,
+			ApiTrackingRetentionSettings.SectionName);
 
 		// Register ApiTrackingDbContext via shared helper
 		services.AddDomainDbContext<ApiTrackingDbContext>(
@@ -80,15 +83,15 @@ public static class ApiTrackingRegistration
 			IThirdPartyApiRequestRepository,
 			ThirdPartyApiRequestRepository>();
 
-		// Register ApiTracking-specific cache service
-		services.AddScoped<IApiTrackingCacheService, ApiTrackingCacheService>();
-
 		// Register transaction manager for ApiTracking context
 		services.AddTransactionManagerFor<ApiTrackingDbContext>();
 
 		// Register health check for multi-db health monitoring using generic Wolverine wrapper
 		services.AddWolverineHealthCheck<CheckApiTrackingHealthQuery>(
 			SchemaConstants.ApiTracking);
+
+		// Register ApiTracking domain job scheduler contributor
+		services.AddScoped<IJobSchedulerContributor, ApiTrackingJobSchedulerContributor>();
 
 		return services;
 	}

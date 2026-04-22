@@ -33,3 +33,5 @@ export interface OrderForFulfillment
 
 export { ORDER_STATUSES } from "./db";
 export type { CheckoutSnapshotItem, OrderStatus } from "./db";
+
+export type { CommerceDb } from "../cart/index";

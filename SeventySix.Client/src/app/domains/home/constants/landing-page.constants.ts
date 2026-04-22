@@ -339,19 +339,6 @@ const INFRASTRUCTURE_TECH: readonly TechStackItem[] =
 		}
 	];
 
-const GAMES_TECH: readonly TechStackItem[] =
-	[
-		{
-			name: "Babylon.js",
-			slug: "babylondotjs",
-			cdnSource: "simpleIcons",
-			brandColor: "#BB464B",
-			url: "https://www.babylonjs.com/",
-			license: "Apache-2.0",
-			description: "3D game engine"
-		}
-	];
-
 const ECOMMERCE_TECH: readonly TechStackItem[] =
 	[
 		{
@@ -410,7 +397,7 @@ const ECOMMERCE_TECH: readonly TechStackItem[] =
 		}
 	];
 
-/** Grouped technology stack categories (Server, Client, Infrastructure, Games, E-Commerce). */
+/** Grouped technology stack categories (Server, Client, Infrastructure, E-Commerce). */
 export const TECH_STACK_CATEGORIES: readonly TechStackCategory[] =
 	[
 		{
@@ -427,11 +414,6 @@ export const TECH_STACK_CATEGORIES: readonly TechStackCategory[] =
 			title: "Infrastructure",
 			icon: "cloud",
 			items: INFRASTRUCTURE_TECH
-		},
-		{
-			title: "Games",
-			icon: "sports_esports",
-			items: GAMES_TECH
 		},
 		{
 			title: "E-Commerce",
@@ -562,9 +544,8 @@ export const FEATURE_HIGHLIGHTS: readonly FeatureHighlight[] =
 			icon: "hub",
 			tagline: "One repo, three production applications",
 			description:
-			"A central .NET + Angular application with Games dashboard, plus two independently deployable e-commerce storefronts built with SvelteKit and TanStack Start.",
+			"A central .NET + Angular application, plus two independently deployable e-commerce storefronts built with SvelteKit and TanStack Start.",
 			bullets: [
-				"Games dashboard with Babylon.js 3D games (Spy vs Spy, Car-a-Lot)",
 				"SvelteKit 2 commerce: Svelte 5, Drizzle ORM, Stripe, Printful, Brevo",
 				"TanStack Start commerce: React 19, Drizzle ORM, Stripe, Printful, Brevo",
 				"Shared Docker Compose infrastructure with isolated test environments",
@@ -657,12 +638,12 @@ export const ARCHITECTURE_CARDS: readonly ArchitectureCard[] =
 			icon: "device_hub",
 			shortDescription: "Three independently deployable apps sharing infrastructure and observability.",
 			details: [
-				"SeventySix: .NET 10 API + Angular 21 SPA with Babylon.js Games dashboard",
+				"SeventySix: .NET 10 API + Angular 21 SPA",
 				"SvelteKit Commerce: Svelte 5, Drizzle ORM, file-based routing, server actions",
 				"TanStack Commerce: React 19, TanStack Router, server functions, Zod validation",
 				"All sites share Hetzner hosting, Caddy reverse proxy, and Cloudflare edge security",
 				"E2E and load tests run in fully isolated Docker environments per site"
 			],
-			keywords: ["Monorepo", "Multi-Site", "SvelteKit", "TanStack Start", "Babylon.js"]
+			keywords: ["Monorepo", "Multi-Site", "SvelteKit", "TanStack Start"]
 		}
 	];

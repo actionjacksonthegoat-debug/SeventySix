@@ -35,17 +35,14 @@ public sealed class MfaService(
 	/// <inheritdoc/>
 	public string GenerateCode()
 	{
-		Span<byte> randomBytes =
-			stackalloc byte[4];
-		RandomNumberGenerator.Fill(randomBytes);
-
-		int randomValue =
-			BitConverter.ToInt32(randomBytes) & int.MaxValue;
 		int maxValue =
 			(int)Math.Pow(10, settings.Value.CodeLength);
 
+		int randomValue =
+			RandomNumberGenerator.GetInt32(maxValue);
+
 		string code =
-			(randomValue % maxValue)
+			randomValue
 				.ToString()
 				.PadLeft(settings.Value.CodeLength, '0');
 

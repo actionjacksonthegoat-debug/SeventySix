@@ -1,4 +1,3 @@
-````instructions
 ---
 description: k6 load test patterns and rules for all SeventySix load-testing
 applyTo: "**/SeventySix.Client/load-testing/**/*.js,**/ECommerce/seventysixcommerce-sveltekit/load-testing/**/*.js,**/ECommerce/seventysixcommerce-tanstack/load-testing/**/*.js"
@@ -6,7 +5,7 @@ applyTo: "**/SeventySix.Client/load-testing/**/*.js,**/ECommerce/seventysixcomme
 
 # Load Testing (Grafana k6)
 
-## Load Test Environment Isolation (CRITICAL)
+## [CRITICAL] Load Test Environment Isolation
 
 Load tests run in a **fully isolated Docker environment** (`docker-compose.loadtest.yml`). You do NOT need to start the dev environment (`npm start`) for load tests.
 
@@ -182,7 +181,7 @@ Use `isSetupInvalid(data)` guard from `lib/guards.js` instead of inline null che
 | Idempotency | Tests create own data, never depend on prior runs |
 | No cleanup | Data persists — environment is disposable |
 
-## Thresholds (CRITICAL)
+## [CRITICAL] Thresholds
 
 Use preset objects from `THRESHOLDS.*`:
 
@@ -249,4 +248,39 @@ docker compose -f docker-compose.loadtest.yml up -d   # start
 docker compose -f docker-compose.loadtest.yml down     # stop
 ```
 
-````
+## Concurrent Load Tests (CRITICAL — VS Code Freeze Prevention)
+
+Running multiple load test environments simultaneously can exhaust host resources and freeze VS Code.
+
+### Root Cause
+
+When 3 load test suites run concurrently, k6 generates ~40-50 files (JSON results + HTML reports) within milliseconds. This overwhelms the VS Code file watcher event queue even with `files.watcherExclude`, because the parent directory inodes are still monitored. Combined with Docker resource pressure from 3 simultaneous container stacks, VS Code becomes unresponsive.
+
+### Prevention Rules
+
+| Rule | Requirement |
+|------|-------------|
+| **Sequential preferred** | Run `loadtest:quick`, `loadtest:svelte:quick`, `loadtest:tanstack:quick` one at a time |
+| **Parallel only via CI** | If parallel is needed, run via GitHub Actions or separate terminal windows outside VS Code |
+| File watcher | Load test output dirs are excluded via `.vscode/settings.json` `files.watcherExclude` + `files.exclude` |
+| Docker limits | All load test docker-compose files have `deploy.resources.limits` — do not remove |
+| Monitor resources | Watch Docker Desktop Resource Monitor during concurrent runs — 3 stacks consume significant memory |
+
+### VS Code Settings (MUST remain in place)
+
+These settings in `.vscode/settings.json` prevent the watcher overflow:
+
+- `files.watcherExclude`: `**/load-testing/results/**`, `**/load-testing/reports/**`
+- `files.exclude`: `**/load-testing/results`, `**/load-testing/reports`
+
+> `files.exclude` is critical — unlike `watcherExclude` (which reduces monitoring), `files.exclude` removes directories entirely from the Explorer tree, search index, and TypeScript language server.
+
+### Recovery from Freeze
+
+If VS Code freezes during load tests:
+
+1. **Wait** for k6 processes to complete (check Task Manager / `tasklist | findstr k6`)
+2. If still frozen: kill k6 (`taskkill /IM k6.exe /F` on Windows, `pkill k6` on Linux)
+3. Stop containers: `docker compose -f docker-compose.loadtest.yml down`
+4. Reload VS Code window: `Ctrl+Shift+P` → "Developer: Reload Window"
+

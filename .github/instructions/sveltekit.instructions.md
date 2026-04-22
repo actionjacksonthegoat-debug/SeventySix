@@ -59,7 +59,7 @@ ECommerce/seventysixcommerce-sveltekit/src/
 | Null checks | `=== null`, `=== undefined`, `??` | `!value`, `!!value`, `\|\| "default"` |
 | Environment | `$env/static/private`, `$env/dynamic/private` | `process.env` |
 
-## Date/Time Handling (CRITICAL)
+## [CRITICAL] Date/Time Handling
 
 | Required | Forbidden |
 | --- | --- |
@@ -145,7 +145,7 @@ Architecture tests live in `src/__tests__/architecture`:
 - Validate inputs with Zod before database operations
 - Centralize queries in `$lib/server/db/` — no inline queries in routes
 
-### Migration Naming (CRITICAL)
+### [CRITICAL] Migration Naming
 
 Drizzle Kit generates random codenames by default (e.g. `0000_daffy_captain_britain`). **Always** provide a descriptive `--name` when generating migrations:
 

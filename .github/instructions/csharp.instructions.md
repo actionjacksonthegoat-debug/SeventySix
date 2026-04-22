@@ -95,6 +95,8 @@ See `copilot-instructions.md` Cross-Platform Compatibility section for Windows/L
 
 Static class + static `HandleAsync` method. Dependencies injected as **method parameters** (NOT constructor). Each command/query lives in its own subfolder. Wolverine auto-discovers and wires them.
 
+> **Accepted Pattern — Not Overengineering.** The one-handler-per-file convention reflects Wolverine's discovery model. Do NOT consolidate handlers into shared classes to reduce file count — it breaks conventional routing and obscures the command/query surface. The 50+ static handler classes across the codebase are by design.
+
 ```csharp
 // Command (record in {Domain}/Commands/{Action}{Entity}/)
 public record DeleteLogCommand(long LogId);
@@ -191,7 +193,7 @@ ISoftDeletable (+IsDeleted, +DeletedAt, +DeletedBy)  — separate mixin
 
 `AuditInterceptor` in `SeventySix.Shared.Persistence` auto-sets timestamps/user tracking from these interfaces.
 
-## Date/Time Handling (CRITICAL)
+## [CRITICAL] Date/Time Handling
 
 | Required | Forbidden |
 | --- | --- |
@@ -205,7 +207,7 @@ ISoftDeletable (+IsDeleted, +DeletedAt, +DeletedBy)  — separate mixin
 
 Controllers are thin dispatchers — NO business logic. `IMessageBus.InvokeAsync<T>` for CQRS, `outputCacheStore.EvictByTagAsync` on mutations. See existing controllers for reference (`LogsController`, `UsersController`, etc.).
 
-## EF Core Migrations (CRITICAL)
+## [CRITICAL] EF Core Migrations
 
 ### Migration Folder Structure
 

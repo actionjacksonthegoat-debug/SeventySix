@@ -27,6 +27,9 @@ namespace SeventySix.Api.Controllers;
 /// <param name="trustedDeviceSettings">
 /// Trusted device configuration for cookie lifetime.
 /// </param>
+/// <param name="metricsService">
+/// Application metrics for recording MFA events.
+/// </param>
 /// <param name="logger">
 /// Logger for MFA operations.
 /// </param>
@@ -38,6 +41,7 @@ public sealed class MfaController(
 	IAuthCookieService cookieService,
 	IOptions<AuthSettings> authSettings,
 	IOptions<TrustedDeviceSettings> trustedDeviceSettings,
+	IMetricsService metricsService,
 	ILogger<MfaController> logger) : AuthControllerBase(cookieService, authSettings, logger)
 {
 	/// <summary>
@@ -80,6 +84,7 @@ public sealed class MfaController(
 
 		if (!result.Success)
 		{
+			metricsService.RecordMfaVerifyFailure(result.ErrorCode ?? "unknown");
 			return HandleFailedAuthResult(result, "MFA Verification");
 		}
 

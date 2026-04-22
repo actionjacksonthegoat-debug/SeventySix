@@ -1,30 +1,15 @@
 <script lang="ts">
 	import { enhance } from "$app/forms";
 	import { MAX_CART_ITEM_QUANTITY } from "$lib/constants";
+	import type { CartItem as CartItemType } from "@seventysixcommerce/shared/cart";
 
-	interface CartItemData {
-		id: string;
-		productId: string;
-		variantId: string;
-		quantity: number;
-		unitPrice: string;
-		productTitle: string;
-		productSlug: string;
-		variantName: string;
-		imageUrl: string;
-	}
-
-	let { item }: { item: CartItemData } = $props();
-
-	const lineTotal: string = $derived(
-		`$${(Number(item.unitPrice) * item.quantity).toFixed(2)}`,
-	);
+	let { item }: { item: CartItemType } = $props();
 </script>
 
 <div class="flex items-center gap-4 border-b border-border py-4">
 	<div class="h-20 w-20 flex-shrink-0 overflow-hidden rounded-md bg-bg-tertiary">
 		<img
-			src={item.imageUrl}
+			src={item.thumbnailUrl}
 			alt={item.productTitle}
 			width="80"
 			height="80"
@@ -73,7 +58,7 @@
 		</form>
 	</div>
 
-	<p class="w-20 text-right text-sm font-medium text-text-primary">{lineTotal}</p>
+	<p class="w-20 text-right text-sm font-medium text-text-primary">${item.lineTotal}</p>
 
 	<form method="POST" action="?/removeItem" use:enhance>
 		<input type="hidden" name="cartItemId" value={item.id} />

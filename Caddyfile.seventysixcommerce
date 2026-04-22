@@ -1,9 +1,24 @@
 # SeventySixCommerce routes — imported by Caddyfile.production
 # No global options block here — the primary Caddyfile owns that.
 
+# Security headers for commerce sites — Stripe JS in script-src/frame-src,
+# Stripe + Printful + Brevo in connect-src.
+(commerce_security_headers) {
+	header {
+		Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "accelerometer=(), camera=(), geolocation=(), microphone=(), payment=(self)"
+		Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://js.stripe.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://api.stripe.com https://api.printful.com https://api.brevo.com; frame-src https://js.stripe.com; frame-ancestors 'none'"
+		-Server
+	}
+}
+
 # TanStack Start (React) — SeventySixCommerce-react.seventysixsandbox.com
 SeventySixCommerce-react.seventysixsandbox.com {
 	tls /etc/caddy/certs/origin.crt /etc/caddy/certs/origin.key
+	import commerce_security_headers
 
 	handle /api/* {
 		reverse_proxy localhost:3000 {
@@ -25,6 +40,7 @@ www.SeventySixCommerce-react.seventysixsandbox.com {
 # SvelteKit — SeventySixCommerce-svelte.seventysixsandbox.com
 SeventySixCommerce-svelte.seventysixsandbox.com {
 	tls /etc/caddy/certs/origin.crt /etc/caddy/certs/origin.key
+	import commerce_security_headers
 
 	handle /api/* {
 		reverse_proxy localhost:3001 {

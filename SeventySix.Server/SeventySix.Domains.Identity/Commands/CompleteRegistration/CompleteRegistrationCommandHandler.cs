@@ -57,7 +57,7 @@ public static class CompleteRegistrationCommandHandler
 	public static async Task<AuthResult> HandleAsync(
 		CompleteRegistrationCommand command,
 		UserManager<ApplicationUser> userManager,
-		AuthenticationService authenticationService,
+		IAuthenticationService authenticationService,
 		BreachCheckDependencies breachCheck,
 		TimeProvider timeProvider,
 		ILogger<CompleteRegistrationCommand> logger,

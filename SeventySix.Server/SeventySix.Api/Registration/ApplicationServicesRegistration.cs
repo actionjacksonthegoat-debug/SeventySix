@@ -38,37 +38,22 @@ public static class ApplicationServicesRegistration
 		this IServiceCollection services,
 		IConfiguration configuration)
 	{
-		// Register FluentValidation validators for settings
-		services.AddSingleton<IValidator<RateLimitingSettings>, RateLimitingSettingsValidator>();
-		services.AddSingleton<IValidator<RequestLimitsSettings>, RequestLimitsSettingsValidator>();
-		services.AddSingleton<IValidator<ResilienceSettings>, ResilienceSettingsValidator>();
-		services.AddSingleton<IValidator<OutputCacheSettings>, OutputCacheSettingsValidator>();
-		services.AddSingleton<IValidator<SiteSettings>, SiteSettingsValidator>();
-
 		// Configuration options with FluentValidation + ValidateOnStart
-		services
-			.AddOptions<ResilienceSettings>()
-			.Bind(configuration.GetSection(ResilienceSettings.SectionName))
-			.ValidateWithFluentValidation()
-			.ValidateOnStart();
+		services.AddDomainSettings<ResilienceSettings, ResilienceSettingsValidator>(
+			configuration,
+			ResilienceSettings.SectionName);
 
-		services
-			.AddOptions<OutputCacheSettings>()
-			.Bind(configuration.GetSection(OutputCacheSettings.SectionName))
-			.ValidateWithFluentValidation()
-			.ValidateOnStart();
+		services.AddDomainSettings<OutputCacheSettings, OutputCacheSettingsValidator>(
+			configuration,
+			OutputCacheSettings.SectionName);
 
-		services
-			.AddOptions<RateLimitingSettings>()
-			.BindConfiguration(RateLimitingSettings.SectionName)
-			.ValidateWithFluentValidation()
-			.ValidateOnStart();
+		services.AddDomainSettings<RateLimitingSettings, RateLimitingSettingsValidator>(
+			configuration,
+			RateLimitingSettings.SectionName);
 
-		services
-			.AddOptions<RequestLimitsSettings>()
-			.BindConfiguration(RequestLimitsSettings.SectionName)
-			.ValidateWithFluentValidation()
-			.ValidateOnStart();
+		services.AddDomainSettings<RequestLimitsSettings, RequestLimitsSettingsValidator>(
+			configuration,
+			RequestLimitsSettings.SectionName);
 
 		// Note: FluentValidation, Repositories, and Business Services
 		// are now registered via bounded context extensions:
@@ -77,11 +62,9 @@ public static class ApplicationServicesRegistration
 		// - AddApiTrackingDomain()
 		// - AddInfrastructure()
 
-		services
-			.AddOptions<SiteSettings>()
-			.BindConfiguration(SiteSettings.SectionName)
-			.ValidateWithFluentValidation()
-			.ValidateOnStart();
+		services.AddDomainSettings<SiteSettings, SiteSettingsValidator>(
+			configuration,
+			SiteSettings.SectionName);
 
 		// Memory cache
 		services.AddMemoryCache();

@@ -106,7 +106,7 @@ describe("ChangePasswordComponent",
 					.toBeTruthy();
 			});
 
-		describe("ngOnInit",
+		describe("constructor initialization",
 			() =>
 			{
 				it("should not redirect when authenticated",

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { currentYear } from "$lib/utils/date";
+	import { currentYear } from "@seventysixcommerce/shared/date";
 </script>
 
 <footer class="border-t border-border bg-bg-secondary">

@@ -38,7 +38,7 @@ describe("Mock Stripe",
 				expect(retrieved.metadata.cartSessionId)
 					.toBe("cart-123");
 				expect(retrieved.customer_details.email)
-					.toBe("demo@SeventySixCommerce.art");
+					.toBe("mock-customer@example.com");
 			});
 
 		it("throws on retrieve of unknown session",

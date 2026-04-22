@@ -1,5 +1,4 @@
 import { CART_EXPIRY_DAYS } from "$lib/constants";
-import { addDays, now } from "$lib/utils/date";
 import {
 	addToCart as sharedAddToCart,
 	type AddToCartResult,
@@ -8,6 +7,7 @@ import {
 	removeCartItem,
 	updateCartItemQuantity
 } from "@seventysixcommerce/shared/cart";
+import { addDays, now } from "@seventysixcommerce/shared/date";
 import { recordCartAdd, recordCartRemove } from "../metrics";
 import { db } from "./index";
 

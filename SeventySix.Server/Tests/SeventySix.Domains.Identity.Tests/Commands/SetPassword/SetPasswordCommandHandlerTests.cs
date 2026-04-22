@@ -24,7 +24,7 @@ public sealed class SetPasswordCommandHandlerTests
 {
 	private readonly UserManager<ApplicationUser> UserManager;
 	private readonly ITokenRepository TokenRepository;
-	private readonly AuthenticationService AuthenticationService;
+	private readonly IAuthenticationService AuthenticationService;
 	private readonly IIdentityCacheService IdentityCache;
 	private readonly BreachCheckDependencies BreachCheck;
 	private readonly FakeTimeProvider TimeProvider;

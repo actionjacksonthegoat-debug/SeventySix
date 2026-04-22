@@ -62,8 +62,14 @@ public sealed class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 		ITokenRepository tokenRepository =
 			new TokenRepository(context);
 
+		SessionManagementService sessionManagementService =
+			new(
+			tokenRepository,
+			AuthOptions);
+
 		return new TokenService(
 			tokenRepository,
+			sessionManagementService,
 			JwtOptions,
 			AuthOptions,
 			NullLogger<TokenService>.Instance,
@@ -347,9 +353,15 @@ public sealed class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 		ITokenRepository tokenRepository =
 			new TokenRepository(context);
 
+		SessionManagementService sessionManagementService =
+			new(
+			tokenRepository,
+			limitedAuthOptions);
+
 		TokenService service =
 			new(
 			tokenRepository,
+			sessionManagementService,
 			JwtOptions,
 			limitedAuthOptions,
 			NullLogger<TokenService>.Instance,
@@ -690,7 +702,6 @@ public sealed class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 			await CreateTestUserAsync(context);
 		TokenService service =
 			CreateService(context);
-
 		return (service, user);
 	}
 
@@ -753,14 +764,10 @@ public sealed class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 		return user;
 	}
 
-	private static string ComputeSha256Hash(string input)
-	{
-		byte[] bytes =
+	private static string ComputeSha256Hash(string input) =>
+		Convert.ToHexString(
 			System.Security.Cryptography.SHA256.HashData(
-			System.Text.Encoding.UTF8.GetBytes(input));
-
-		return Convert.ToHexString(bytes);
-	}
+				System.Text.Encoding.UTF8.GetBytes(input)));
 
 	#endregion
 }

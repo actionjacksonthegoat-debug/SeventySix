@@ -1,3 +1,9 @@
+/**
+ * TanStack-specific JSON-LD generators.
+ * These intentionally differ from `@seventysixcommerce/shared/seo` — TanStack uses richer
+ * schema.org markup (SearchAction, ItemList, SKU) and framework-specific product types.
+ * The shared module provides the base generators used by SvelteKit.
+ */
 import { BRAND_NAME, SITE_URL } from "~/lib/constants";
 import type { Product, ProductDetail } from "~/server/functions/products";
 

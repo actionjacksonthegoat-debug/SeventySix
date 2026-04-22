@@ -20,7 +20,7 @@ Tests/
 └── SeventySix.Shared.Tests/     # Shared utility tests
 ```
 
-## Naming Conventions (CRITICAL)
+## [CRITICAL] Naming Conventions
 
 | Test Type     | File Suffix              | Example                                |
 | ------------- | ------------------------ | -------------------------------------- |
@@ -37,7 +37,7 @@ Handle_ExpiredToken_ReturnsUnauthorizedAsync
 Validate_NullInput_ThrowsArgumentExceptionAsync
 ```
 
-## Test Libraries (CRITICAL)
+## [CRITICAL] Test Libraries
 
 | Allowed     | Forbidden        |
 | ----------- | ---------------- |
@@ -176,7 +176,7 @@ await client.GetAsync($"/api/users/{userId}");
 [Collection("DatabaseTests")]
 ```
 
-## Time-Based Testing (CRITICAL)
+## [CRITICAL] Time-Based Testing
 
 ```csharp
 // [ALWAYS] — Use FakeTimeProvider
@@ -197,7 +197,7 @@ Thread.Sleep(500);        // FORBIDDEN
 [Collection("DatabaseTests")]
 ```
 
-## File Structure Requirements (CRITICAL)
+## [CRITICAL] File Structure Requirements
 
 Every test file MUST start with a copyright header, followed by a `/// <summary>` class comment:
 
@@ -361,7 +361,7 @@ Focus coverage on the **20% of code that carries 80% of risk**:
 
 **Skip tests for:** Simple property-to-property mapping, DTOs, constants, entities with no behavior.
 
-## Test Failure Rule (CRITICAL)
+## [CRITICAL] Test Failure Rule
 
 > **NEVER** attribute a failing test to "another change" to skip fixing it.
 > ALL failing tests in `dotnet test` MUST be fixed before claiming completion — regardless of when or how they were introduced.

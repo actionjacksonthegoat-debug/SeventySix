@@ -117,8 +117,8 @@ public sealed class CompleteRegistrationCommandHandlerTests(
 			{
 				AccessTokenExpirationMinutes = 60
 			};
-		AuthenticationService authenticationService =
-			new(
+		IAuthenticationService authenticationService =
+			new AuthenticationService(
 				authRepository,
 				tokenService,
 				Options.Create(jwtSettings),
@@ -211,8 +211,8 @@ public sealed class CompleteRegistrationCommandHandlerTests(
 			{
 				AccessTokenExpirationMinutes = 60
 			};
-		AuthenticationService authenticationService =
-			new(
+		IAuthenticationService authenticationService =
+			new AuthenticationService(
 				authRepository,
 				tokenService,
 				Options.Create(jwtSettings),
@@ -338,7 +338,7 @@ public sealed class CompleteRegistrationCommandHandlerTests(
 				tempUser.Email!,
 				emailToken);
 
-		(AuthenticationService authService, BreachCheckDependencies breachCheck) =
+		(IAuthenticationService authService, BreachCheckDependencies breachCheck) =
 			CreateAuthDependencies(userManager, timeProvider);
 
 		CompleteRegistrationCommand command =
@@ -367,7 +367,7 @@ public sealed class CompleteRegistrationCommandHandlerTests(
 	/// <summary>
 	/// Creates mock authentication and breach check dependencies for handler tests.
 	/// </summary>
-	private static (AuthenticationService AuthService, BreachCheckDependencies BreachCheck)
+	private static (IAuthenticationService AuthService, BreachCheckDependencies BreachCheck)
 		CreateAuthDependencies(
 			UserManager<ApplicationUser> userManager,
 			TimeProvider timeProvider)
@@ -391,8 +391,8 @@ public sealed class CompleteRegistrationCommandHandlerTests(
 		JwtSettings jwtSettings =
 			new() { AccessTokenExpirationMinutes = 60 };
 
-		AuthenticationService authService =
-			new(
+		IAuthenticationService authService =
+			new AuthenticationService(
 				Substitute.For<IAuthRepository>(),
 				tokenService,
 				Options.Create(jwtSettings),

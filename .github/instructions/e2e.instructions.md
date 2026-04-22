@@ -1,4 +1,3 @@
-````instructions
 ---
 description: E2E testing rules for Playwright tests
 applyTo: "**/SeventySix.Client/e2e/**/*.ts"
@@ -6,7 +5,7 @@ applyTo: "**/SeventySix.Client/e2e/**/*.ts"
 
 # E2E Testing (Playwright)
 
-## E2E Environment Isolation (CRITICAL)
+## [CRITICAL] E2E Environment Isolation
 
 E2E tests run in a **fully isolated Docker environment** (`docker-compose.e2e.yml`). You do NOT need to start the dev environment (`npm start`) for E2E tests.
 
@@ -34,7 +33,7 @@ docker compose -f docker-compose.e2e.yml down -v --remove-orphans
 
 With the environment alive, use Playwright MCP or Playwright CLI to fine-tune tests interactively against `https://localhost:4201`.
 
-## Import Rule (CRITICAL)
+## [CRITICAL] Import Rule
 
 ```typescript
 //  ALWAYS import from barrel
@@ -127,7 +126,7 @@ The enhanced `concise-reporter.ts` reads these attachments and prints verbose di
 
 When creating new fixtures, extend `page-helpers.fixture.ts` (or `diagnostics.fixture.ts` if page helpers aren't needed).
 
-## Anti-Flake Rules (CRITICAL)
+## [CRITICAL] Anti-Flake Rules
 
 | [NEVER] | [ALWAYS] |
 |----------|-----------|
@@ -165,7 +164,7 @@ test("should complete multi-step flow",
 - Tests with multi-step wizard/stepper (60s)
 - Tests creating isolated contexts + login (90s)
 
-## CI Compatibility (CRITICAL)
+## [CRITICAL] CI Compatibility
 
 | Rule | Pattern |
 |------|---------|
@@ -201,7 +200,7 @@ export class UserManagementPageHelper
 }
 ```
 
-## Test Isolation (CRITICAL)
+## [CRITICAL] Test Isolation
 
 ### Own Your Test Data — Never Borrow and Return
 
@@ -262,7 +261,7 @@ finally
 | Form validation (no submit) | No | No server state change |
 | Fill form without saving | No | Client-side only |
 
-## Test Failure Rule (CRITICAL)
+## [CRITICAL] Test Failure Rule
 
 > **NEVER** attribute a failing E2E test to "another change" to skip fixing it.
 > **ALL** failing tests in `npm run test:e2e` MUST be fixed before claiming completion — regardless of when or how they were introduced.
@@ -287,4 +286,3 @@ When tests fail: Chrome DevTools MCP (`list_console_messages`, `list_network_req
 
 
 
-````

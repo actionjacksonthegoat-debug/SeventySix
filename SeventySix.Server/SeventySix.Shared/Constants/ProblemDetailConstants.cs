@@ -231,5 +231,10 @@ public static class ProblemDetailConstants
 		/// Detail for inactive user account.
 		/// </summary>
 		public const string UserAccountInactive = "User account is inactive.";
+
+		/// <summary>
+		/// Detail for generic internal server errors (replaces raw exception messages).
+		/// </summary>
+		public const string InternalServerError = "An error occurred processing your request.";
 	}
 }

@@ -45,9 +45,7 @@ describe("createPrintfulClient",
 					{
 						const warnSpy: ReturnType<typeof vi.spyOn> =
 							vi
-								.spyOn(console, "warn")
-								.mockImplementation(() => undefined);
-
+								.spyOn(console, "warn");
 						const result =
 							await client.createPrintfulOrder(
 								{

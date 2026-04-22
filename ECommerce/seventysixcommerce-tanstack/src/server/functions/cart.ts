@@ -1,74 +1,21 @@
 import {
 	addToCart as sharedAddToCart,
 	type CartItemRow,
+	type CartResponse,
 	getCartItems,
 	removeCartItem,
+	toCartResponse,
 	updateCartItemQuantity
 } from "@seventysixcommerce/shared/cart";
+import { futureDate } from "@seventysixcommerce/shared/date";
+import { addToCartSchema, removeCartItemSchema, updateCartItemSchema } from "@seventysixcommerce/shared/validation";
 import { createServerFn } from "@tanstack/react-start";
-import { z } from "zod";
-import { CART_SESSION_MAX_AGE_SECONDS, MAX_CART_ITEM_QUANTITY } from "~/lib/constants";
-import { futureDate } from "~/lib/date";
+import { CART_SESSION_MAX_AGE_SECONDS } from "~/lib/constants";
 import { db } from "../db";
 import { queueLog } from "../log-forwarder";
 import { recordCartAdd, recordCartRemove } from "../metrics";
 import { cartSessionMiddleware } from "../middleware/cart-session";
 import { csrfMiddleware } from "../middleware/csrf";
-
-/** Cart item with product details. */
-export interface CartItem
-{
-	id: string;
-	productId: string;
-	variantId: string;
-	productTitle: string;
-	variantName: string;
-	thumbnailUrl: string;
-	quantity: number;
-	unitPrice: string;
-	lineTotal: string;
-}
-
-/** Cart response shape. */
-export interface CartResponse
-{
-	items: CartItem[];
-	itemCount: number;
-	subtotal: string;
-}
-
-/** Transforms shared cart rows into the TanStack CartResponse shape. */
-function toCartResponse(rows: CartItemRow[]): CartResponse
-{
-	let subtotal: number = 0;
-
-	const items: CartItem[] =
-		rows.map(
-			(row) =>
-			{
-				const lineTotal: number =
-					parseFloat(row.unitPrice) * row.quantity;
-				subtotal += lineTotal;
-
-				return {
-					id: row.id,
-					productId: row.productId,
-					variantId: row.variantId,
-					productTitle: row.productTitle,
-					variantName: row.variantName,
-					thumbnailUrl: row.imageUrl,
-					quantity: row.quantity,
-					unitPrice: row.unitPrice,
-					lineTotal: lineTotal.toFixed(2)
-				};
-			});
-
-	return {
-		items,
-		itemCount: items.reduce((sum, item) => sum + item.quantity, 0),
-		subtotal: subtotal.toFixed(2)
-	};
-}
 
 /** Retrieves the current cart contents with product details and pricing. */
 export const getCart =
@@ -90,20 +37,7 @@ export const addToCart =
 	createServerFn(
 		{ method: "POST" })
 		.inputValidator(
-			z.object(
-				{
-					productId: z
-						.string()
-						.uuid(),
-					variantId: z
-						.string()
-						.uuid(),
-					quantity: z
-						.number()
-						.int()
-						.positive()
-						.max(MAX_CART_ITEM_QUANTITY)
-				}))
+			addToCartSchema)
 		.middleware(
 			[cartSessionMiddleware, csrfMiddleware])
 		.handler(
@@ -144,17 +78,7 @@ export const updateCartItem =
 	createServerFn(
 		{ method: "POST" })
 		.inputValidator(
-			z.object(
-				{
-					cartItemId: z
-						.string()
-						.uuid(),
-					quantity: z
-						.number()
-						.int()
-						.min(0)
-						.max(MAX_CART_ITEM_QUANTITY)
-				}))
+			updateCartItemSchema)
 		.middleware(
 			[cartSessionMiddleware, csrfMiddleware])
 		.handler(
@@ -186,12 +110,7 @@ export const updateCartItem =
 export const removeFromCart =
 	createServerFn(
 		{ method: "POST" })
-		.inputValidator(z.object(
-			{
-				cartItemId: z
-					.string()
-					.uuid()
-			}))
+		.inputValidator(removeCartItemSchema)
 		.middleware(
 			[cartSessionMiddleware, csrfMiddleware])
 		.handler(

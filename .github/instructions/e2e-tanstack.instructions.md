@@ -10,7 +10,7 @@ applyTo: "**/ECommerce/seventysixcommerce-tanstack/e2e/**/*.ts"
 - Import ONLY from the barrel `../fixtures` (or `../fixtures/index`)
 - NEVER import directly from individual fixture/constant files
 
-## Anti-Flake Rules (CRITICAL)
+## [CRITICAL] Anti-Flake Rules
 
 | [NEVER] | [ALWAYS] |
 | ------- | -------- |

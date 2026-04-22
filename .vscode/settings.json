@@ -92,5 +92,42 @@
 	// CodeQL extension settings
 	"codeQL.runningQueries.maxQueries": 20,
 	"codeQL.runningQueries.memory": 4096,
-	"codeQL.resultsDisplay.pageSize": 100
+	"codeQL.resultsDisplay.pageSize": 100,
+
+	// Exclude high-churn directories from file watcher (prevents VS Code freezes during load tests)
+	"files.watcherExclude": {
+		"**/.git/objects/**": true,
+		"**/.git/subtree-cache/**": true,
+		"**/node_modules/**": true,
+		"**/dist/**": true,
+		"**/coverage/**": true,
+		"**/.angular/**": true,
+		"**/load-testing/results/**": true,
+		"**/load-testing/reports/**": true,
+		"**/TestResults/**": true,
+		"**/dast-reports/**": true,
+		"**/playwright-report/**": true,
+		"**/test-results/**": true,
+		"**/.svelte-kit/**": true,
+		"**/.output/**": true,
+		"**/.vinxi/**": true
+	},
+
+	// Hide high-churn output directories from Explorer and language servers
+	"files.exclude": {
+		"**/load-testing/results": true,
+		"**/load-testing/reports": true
+	},
+
+	// Exclude test output from search results
+	"search.exclude": {
+		"**/load-testing/results/**": true,
+		"**/load-testing/reports/**": true,
+		"**/TestResults/**": true,
+		"**/dast-reports/**": true,
+		"**/coverage/**": true,
+		"**/playwright-report/**": true,
+		"**/test-results/**": true,
+		"**/.svelte-kit/**": true
+	}
 }

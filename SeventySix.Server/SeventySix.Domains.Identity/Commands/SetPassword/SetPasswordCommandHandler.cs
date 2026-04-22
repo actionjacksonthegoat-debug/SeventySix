@@ -60,7 +60,7 @@ public static class SetPasswordCommandHandler
 		SetPasswordCommand command,
 		UserManager<ApplicationUser> userManager,
 		ITokenRepository tokenRepository,
-		AuthenticationService authenticationService,
+		IAuthenticationService authenticationService,
 		IIdentityCacheService identityCache,
 		BreachCheckDependencies breachCheck,
 		TimeProvider timeProvider,

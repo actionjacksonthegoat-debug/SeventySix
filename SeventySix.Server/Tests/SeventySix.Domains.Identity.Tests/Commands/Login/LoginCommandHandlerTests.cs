@@ -24,7 +24,7 @@ public sealed class LoginCommandHandlerTests
 	private readonly UserManager<ApplicationUser> UserManager;
 	private readonly SignInManager<ApplicationUser> SignInManager;
 	private readonly IAuthRepository AuthRepository;
-	private readonly AuthenticationService AuthenticationService;
+	private readonly IAuthenticationService AuthenticationService;
 	private readonly IAltchaService AltchaService;
 	private readonly ISecurityAuditService SecurityAuditService;
 	private readonly IMfaOrchestrator MfaOrchestrator;

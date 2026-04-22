@@ -34,7 +34,7 @@ public sealed class OAuthServiceTests
 	private readonly OAuthProviderFactory ProviderFactory;
 	private readonly IOAuthProviderStrategy MockStrategy;
 	private readonly IOptions<AuthSettings> AuthSettings;
-	private readonly AuthenticationService AuthenticationService;
+	private readonly IAuthenticationService AuthenticationService;
 	private readonly ILogger<OAuthService> Logger;
 
 	private const string TestState = "test-state-12345";

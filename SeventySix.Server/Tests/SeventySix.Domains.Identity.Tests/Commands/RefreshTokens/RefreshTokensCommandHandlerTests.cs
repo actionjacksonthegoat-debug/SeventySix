@@ -39,7 +39,7 @@ public sealed class RefreshTokensCommandHandlerTests
 		UserManager<ApplicationUser> userManager =
 			IdentityMockFactory.CreateUserManager();
 
-		AuthenticationService authenticationService =
+		IAuthenticationService authenticationService =
 			IdentityMockFactory.CreateAuthenticationService();
 
 		ApplicationUser user =
@@ -122,7 +122,7 @@ public sealed class RefreshTokensCommandHandlerTests
 		UserManager<ApplicationUser> userManager =
 			IdentityMockFactory.CreateUserManager();
 
-		AuthenticationService authenticationService =
+		IAuthenticationService authenticationService =
 			IdentityMockFactory.CreateAuthenticationService();
 
 		ApplicationUser user =
@@ -205,7 +205,7 @@ public sealed class RefreshTokensCommandHandlerTests
 		UserManager<ApplicationUser> userManager =
 			IdentityMockFactory.CreateUserManager();
 
-		AuthenticationService authenticationService =
+		IAuthenticationService authenticationService =
 			IdentityMockFactory.CreateAuthenticationService();
 
 		ApplicationUser user =
@@ -270,7 +270,7 @@ public sealed class RefreshTokensCommandHandlerTests
 		UserManager<ApplicationUser> userManager =
 			IdentityMockFactory.CreateUserManager();
 
-		AuthenticationService authenticationService =
+		IAuthenticationService authenticationService =
 			IdentityMockFactory.CreateAuthenticationService();
 
 		ApplicationUser user =
@@ -362,7 +362,7 @@ public sealed class RefreshTokensCommandHandlerTests
 			Substitute.For<ITokenService>();
 		UserManager<ApplicationUser> userManager =
 			IdentityMockFactory.CreateUserManager();
-		AuthenticationService authenticationService =
+		IAuthenticationService authenticationService =
 			IdentityMockFactory.CreateAuthenticationService();
 
 		ApplicationUser user =
