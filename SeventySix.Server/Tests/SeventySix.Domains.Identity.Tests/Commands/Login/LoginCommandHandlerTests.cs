@@ -460,6 +460,76 @@ public sealed class LoginCommandHandlerTests
 		result.MfaMethod.ShouldBe(MfaMethod.Email);
 	}
 
+	/// <summary>
+	/// Tests that MFA is required when MfaSettings.Enabled is true, RequiredForAllUsers is false,
+	/// but the individual user has MFA enabled — exercises the user.MfaEnabled branch of IsMfaRequired.
+	/// </summary>
+	[Fact]
+	public async Task HandleAsync_MfaEnabledForUser_RequiredForAllUsersFalse_ReturnsMfaRequiredAsync()
+	{
+		// Arrange — user has MFA enabled; settings do not force it for all users
+		ApplicationUser user =
+			new UserBuilder(TimeProvider)
+				.WithId(30)
+				.WithUsername("mfauser2")
+				.WithEmail("mfauser2@example.com")
+				.WithRequiresPasswordChange(false)
+				.WithMfaEnabled(true)
+				.Build();
+
+		LoginCommand command =
+			CreateLoginCommand(
+				"mfauser2",
+				"ValidPass123!");
+
+		AuthRepository
+			.FindByUsernameOrEmailAsync(
+				Arg.Any<string>(),
+				Arg.Any<CancellationToken>())
+			.Returns(user);
+		IdentityMockFactory.ConfigureSignInManagerForSuccess(SignInManager);
+
+		// RequiredForAllUsers is false — MFA is triggered by user.MfaEnabled
+		IOptions<MfaSettings> testMfaSettings =
+			Options.Create(
+				new MfaSettings
+				{
+					Enabled = true,
+					RequiredForAllUsers = false,
+				});
+
+		string challengeToken = "user-mfa-challenge-token";
+		MfaChallengeDispatcher
+			.InitiateChallengeAsync(
+				Arg.Any<ApplicationUser>(),
+				Arg.Any<CancellationToken>())
+			.Returns(
+				AuthResult.MfaRequired(
+					challengeToken,
+					"mfauser2@example.com",
+					MfaMethod.Email,
+					[MfaMethod.Email]));
+
+		// Act
+		AuthResult result =
+			await LoginCommandHandler.HandleAsync(
+				command,
+				SignInManager,
+				AuthRepository,
+				AuthenticationService,
+				AltchaService,
+				SecurityAuditService,
+				MfaChallengeDispatcher,
+				TrustedDeviceService,
+				testMfaSettings,
+				CancellationToken.None);
+
+		// Assert — MFA challenge should be initiated because user.MfaEnabled = true
+		result.Success.ShouldBeFalse();
+		result.RequiresMfa.ShouldBeTrue();
+		result.MfaChallengeToken.ShouldBe(challengeToken);
+	}
+
 	private static LoginCommand CreateLoginCommand(
 		string usernameOrEmail,
 		string password) =>

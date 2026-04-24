@@ -462,6 +462,14 @@ describe("Checkout",
 															.fn()
 															.mockResolvedValue([])
 													})
+										}),
+								delete: vi
+									.fn()
+									.mockReturnValue(
+										{
+											where: vi
+												.fn()
+												.mockResolvedValue(undefined)
 										})
 							};
 						await fn(mockTx);
@@ -483,5 +491,53 @@ describe("Checkout",
 
 				expect(mockDbTransaction)
 					.toHaveBeenCalledOnce();
+			});
+
+		it("returns fail(500) when Stripe session URL is null",
+			async () =>
+			{
+				const cartItems =
+					[
+						{
+							id: "ci-1",
+							productId: "p-1",
+							variantId: "v-1",
+							quantity: 1,
+							unitPrice: "29.99",
+							productTitle: "Cosmic Drift Print",
+							productSlug: "cosmic-drift-print",
+							variantName: "8x10",
+							imageUrl: "/images/cosmic-drift.jpg"
+						}
+					];
+				mockGetCart.mockResolvedValue(cartItems);
+				setupDbSelectMock("29.99");
+				// Stripe returns session with no redirect URL
+				mockStripeSessionCreate.mockResolvedValue(
+					{
+						id: "cs_test_no_url",
+						url: null
+					});
+				mockDbInsert.mockReturnValue(
+					{
+						values: vi
+							.fn()
+							.mockResolvedValue(undefined)
+					});
+
+				const { actions } =
+					await import("../../../routes/checkout/+page.server");
+
+				const result =
+					await actions.default({
+						locals: { cartSessionId: "sess-null-url" }
+					} as never);
+
+				expect(result)
+					.toEqual(
+						{
+							status: 500,
+							body: { error: "Checkout session creation failed" }
+						});
 			});
 	});
