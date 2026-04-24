@@ -190,6 +190,19 @@ async function ensureContextAuthenticated(
 			await probe.waitForURL(ROUTES.home,
 				{ timeout: TIMEOUTS.auth });
 		}
+
+		// Wait for the authenticated UI shell to appear.
+		// This confirms Angular has fully initialized and any in-flight
+		// token rotation (POST /auth/refresh) has completed and its
+		// Set-Cookie response has been committed to the context's cookie jar.
+		// Closing the probe page before this point causes a race condition:
+		// the server revokes the old token and issues a new one, but the
+		// browser never stores the new cookie because the page was closed
+		// while the response was still in-flight.
+		await probe
+			.locator(SELECTORS.layout.userMenuButton)
+			.waitFor(
+				{ state: "visible", timeout: TIMEOUTS.auth });
 	}
 	finally
 	{

@@ -28,3 +28,8 @@ allow-dependencies-licenses:
     - 'pkg:npm/%40angular/service-worker'
     - 'pkg:npm/altcha'
     - 'pkg:npm/electron-to-chromium'
+    # OpenTelemetry.NET 1.15.3: Apache-2.0 licensed. GitHub advisory database lacks
+    # license metadata for this recently-released version, so it returns null/unknown.
+    - 'pkg:nuget/OpenTelemetry.Api'
+    - 'pkg:nuget/OpenTelemetry.Exporter.OpenTelemetryProtocol'
+    - 'pkg:nuget/OpenTelemetry.Extensions.Hosting'
