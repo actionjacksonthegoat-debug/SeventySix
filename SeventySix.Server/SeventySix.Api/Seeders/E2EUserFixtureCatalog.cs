@@ -88,6 +88,16 @@ public static class E2EUserFixtureCatalog
 				"e2e_crosstab@test.local",
 				"E2E_CrossTab_Password_123!",
 				[RoleConstants.User]),
+			new E2EUserFixture(
+				"e2e_admin_dashboard",
+				"e2e_admin_dashboard@test.local",
+				"E2E_AdminDashboard_Password_123!",
+				[RoleConstants.User, RoleConstants.Admin]),
+			new E2EUserFixture(
+				"e2e_developer_styleguide",
+				"e2e_developer_styleguide@test.local",
+				"E2E_DevStyleGuide_Password_123!",
+				[RoleConstants.User, RoleConstants.Developer]),
 		];
 	}
 

@@ -9,14 +9,14 @@ import {
 	type DiagnosticsCollector,
 	instrumentPageForDiagnostics
 } from "./diagnostics.fixture";
+import { solveAltchaChallenge } from "./helpers/altcha.helper";
 import { loginInFreshContext } from "./helpers/context-login.helper";
 import { test as base } from "./page-helpers.fixture";
 import { AdminDashboardPageHelper } from "./pages/admin-dashboard.page";
 import { ROUTES } from "./routes.constant";
-import { TEST_USERS, type TestUser } from "./test-users.constant";
 import { SELECTORS } from "./selectors.constant";
+import { TEST_USERS, type TestUser } from "./test-users.constant";
 import { TIMEOUTS } from "./timeouts.constant";
-import { solveAltchaChallenge } from "./helpers/altcha.helper";
 
 /**
  * Extended test fixture with role-based authentication.
@@ -173,15 +173,19 @@ async function ensureContextAuthenticated(
 			const user: TestUser =
 				findTestUserByRole(role);
 
-			await probe.locator(SELECTORS.form.usernameInput)
+			await probe
+				.locator(SELECTORS.form.usernameInput)
 				.waitFor(
 					{ state: "visible", timeout: TIMEOUTS.auth });
-			await probe.locator(SELECTORS.form.usernameInput)
+			await probe
+				.locator(SELECTORS.form.usernameInput)
 				.fill(user.username);
-			await probe.locator(SELECTORS.form.passwordInput)
+			await probe
+				.locator(SELECTORS.form.passwordInput)
 				.fill(user.password);
 			await solveAltchaChallenge(probe);
-			await probe.locator(SELECTORS.form.submitButton)
+			await probe
+				.locator(SELECTORS.form.submitButton)
 				.click();
 			await probe.waitForURL(ROUTES.home,
 				{ timeout: TIMEOUTS.auth });

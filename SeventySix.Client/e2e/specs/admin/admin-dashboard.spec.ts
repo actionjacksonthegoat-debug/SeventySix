@@ -1,4 +1,6 @@
 import {
+	ADMIN_DASHBOARD_USER,
+	AdminDashboardPageHelper,
 	expect,
 	PAGE_TEXT,
 	ROUTES,
@@ -6,6 +8,7 @@ import {
 	test,
 	TIMEOUTS
 } from "@e2e-fixtures";
+import { Page } from "@playwright/test";
 
 /**
  * E2E Tests for Admin Dashboard
@@ -19,19 +22,34 @@ import {
 test.describe("Admin Dashboard",
 	() =>
 	{
+		let page: Page;
+		let adminDashboardPage: AdminDashboardPageHelper;
+
 		test.beforeEach(
-			async ({ adminPage }) =>
+			async ({ authenticatedPage }) =>
 			{
-				await adminPage.goto(ROUTES.admin.dashboard);
-				await expect(adminPage.locator(SELECTORS.adminDashboard.toolbarHeading))
+				page =
+					await authenticatedPage(ADMIN_DASHBOARD_USER);
+				adminDashboardPage =
+					new AdminDashboardPageHelper(page);
+				await page.goto(ROUTES.admin.dashboard);
+				await expect(page.locator(SELECTORS.adminDashboard.toolbarHeading))
 					.toBeVisible();
+			});
+
+		test.afterEach(
+			async () =>
+			{
+				await page
+					.context()
+					.close();
 			});
 
 		test.describe("Page Structure",
 			() =>
 			{
 				test("should display dashboard title and toolbar",
-					async ({ adminDashboardPage }) =>
+					async () =>
 					{
 						await expect(adminDashboardPage.toolbarHeading)
 							.toHaveText(PAGE_TEXT.headings.adminDashboard);
@@ -40,7 +58,7 @@ test.describe("Admin Dashboard",
 					});
 
 				test("should display four tabs",
-					async ({ adminDashboardPage }) =>
+					async () =>
 					{
 						await expect(adminDashboardPage.tabs.first())
 							.toBeVisible();
@@ -64,7 +82,7 @@ test.describe("Admin Dashboard",
 			() =>
 			{
 				test("should display Grafana dashboard embed for system health",
-					async ({ adminDashboardPage }) =>
+					async () =>
 					{
 						// System Overview is the default tab
 						await expect(adminDashboardPage.grafanaEmbed.first())
@@ -72,7 +90,7 @@ test.describe("Admin Dashboard",
 					});
 
 				test("should have System Health & Metrics title",
-					async ({ adminDashboardPage }) =>
+					async () =>
 					{
 						await expect(adminDashboardPage.grafanaEmbed.first())
 							.toHaveAttribute("title", PAGE_TEXT.adminDashboard.embedTitles.systemHealth,
@@ -86,14 +104,14 @@ test.describe("Admin Dashboard",
 			() =>
 			{
 				test.beforeEach(
-					async ({ adminDashboardPage }) =>
+					async () =>
 					{
 						// Click API Metrics tab
 						await adminDashboardPage.selectTab(PAGE_TEXT.adminDashboard.tabs.apiMetrics);
 					});
 
 				test("should display Grafana embed with API Endpoint Metrics title",
-					async ({ adminDashboardPage }) =>
+					async () =>
 					{
 						await expect(adminDashboardPage.getGrafanaByTitle(PAGE_TEXT.adminDashboard.embedTitles.apiEndpoint))
 							.toBeVisible();
@@ -104,14 +122,14 @@ test.describe("Admin Dashboard",
 			() =>
 			{
 				test.beforeEach(
-					async ({ adminDashboardPage }) =>
+					async () =>
 					{
 						// Click Cache Metrics tab
 						await adminDashboardPage.selectTab(PAGE_TEXT.adminDashboard.tabs.cacheMetrics);
 					});
 
 				test("should display Grafana embed with Valkey Cache Metrics title",
-					async ({ adminDashboardPage }) =>
+					async () =>
 					{
 						await expect(adminDashboardPage.getGrafanaByTitle(PAGE_TEXT.adminDashboard.embedTitles.valkeyCache))
 							.toBeVisible();
@@ -122,70 +140,70 @@ test.describe("Admin Dashboard",
 			() =>
 			{
 				test.beforeEach(
-					async ({ adminDashboardPage }) =>
+					async () =>
 					{
 						// Click External Systems tab
 						await adminDashboardPage.selectTab(PAGE_TEXT.adminDashboard.tabs.externalSystems);
 					});
 
 				test("should display API statistics table",
-					async ({ adminDashboardPage }) =>
+					async () =>
 					{
 						await expect(adminDashboardPage.apiStatsTable)
 							.toBeVisible();
 					});
 
 				test("should display Observability Tools card",
-					async ({ adminDashboardPage }) =>
+					async () =>
 					{
 						await expect(adminDashboardPage.observabilityCard)
 							.toBeVisible();
 					});
 
 				test("should display Data Tools card",
-					async ({ adminDashboardPage }) =>
+					async () =>
 					{
 						await expect(adminDashboardPage.dataCard)
 							.toBeVisible();
 					});
 
 				test("should display Jaeger Tracing button",
-					async ({ adminDashboardPage }) =>
+					async () =>
 					{
 						await expect(adminDashboardPage.jaegerButton)
 							.toBeVisible();
 					});
 
 				test("should display Prometheus Metrics button",
-					async ({ adminDashboardPage }) =>
+					async () =>
 					{
 						await expect(adminDashboardPage.prometheusButton)
 							.toBeVisible();
 					});
 
 				test("should display Grafana Full View button",
-					async ({ adminDashboardPage }) =>
+					async () =>
 					{
 						await expect(adminDashboardPage.grafanaButton)
 							.toBeVisible();
 					});
 
 				test("should display pgAdmin button",
-					async ({ adminDashboardPage }) =>
+					async () =>
 					{
 						await expect(adminDashboardPage.pgAdminButton)
 							.toBeVisible();
 					});
 
 				test("should display RedisInsight button",
-					async ({ adminDashboardPage }) =>
+					async () =>
 					{
 						await expect(adminDashboardPage.redisInsightButton)
 							.toBeVisible();
 					});
 
 				test("should have three observability buttons and two data buttons",
-					async ({ adminDashboardPage }) =>
+					async () =>
 					{
 						// Observability buttons (3)
 						await expect(adminDashboardPage.jaegerButton)
@@ -207,7 +225,7 @@ test.describe("Admin Dashboard",
 			() =>
 			{
 				test("should switch between tabs",
-					async ({ adminDashboardPage }) =>
+					async () =>
 					{
 						// Verify System Overview tab is active by default
 						await expect(adminDashboardPage.getTab(PAGE_TEXT.adminDashboard.tabs.systemOverview))

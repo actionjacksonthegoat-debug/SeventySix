@@ -10,6 +10,14 @@ const mockHandleCheckoutCompleted: ReturnType<typeof vi.fn> =
 	vi.hoisted(() => vi.fn());
 const mockIsOrderProcessed: ReturnType<typeof vi.fn> =
 	vi.hoisted(() => vi.fn());
+const mockGetStripe: ReturnType<typeof vi.fn> =
+	vi.hoisted(() =>
+		vi
+			.fn()
+			.mockReturnValue(
+				{ checkout: { sessions: { create: vi.fn() } } }));
+const mockCreatePrintfulOrder: ReturnType<typeof vi.fn> =
+	vi.hoisted(() => vi.fn());
 
 vi.mock(
 	"@seventysixcommerce/shared/webhook",
@@ -24,12 +32,7 @@ vi.mock(
 	"@seventysixcommerce/shared/stripe",
 	() => (
 		{
-			getStripe: vi
-				.fn()
-				.mockReturnValue(
-					{
-						checkout: { sessions: { create: vi.fn() } }
-					})
+			getStripe: mockGetStripe
 		}));
 
 vi.mock(
@@ -43,7 +46,7 @@ vi.mock(
 	"~/lib/printful",
 	() => (
 		{
-			createPrintfulOrder: vi.fn()
+			createPrintfulOrder: mockCreatePrintfulOrder
 		}));
 
 vi.mock(
@@ -85,6 +88,8 @@ describe("handleStripeWebhook",
 				delete process.env.STRIPE_WEBHOOK_SECRET;
 				delete process.env.STRIPE_SECRET_KEY;
 				delete process.env.MOCK_SERVICES;
+				delete process.env.BASE_URL;
+				delete process.env.PRINTFUL_API_KEY;
 			});
 
 		it("handleStripeWebhook_ThrowsError_WhenSecretNotConfigured",
@@ -164,7 +169,7 @@ describe("handleStripeWebhook",
 					};
 
 				mockProcessStripeWebhook.mockImplementation(
-					async ({ handlers }: { handlers: Record<string, (event: unknown) => Promise<void>> }) =>
+					async ({ handlers }: { handlers: Record<string, (event: unknown) => Promise<void>>; }) =>
 					{
 						await handlers["checkout.session.completed"](
 							{ data: { object: mockSession } });
@@ -198,7 +203,7 @@ describe("handleStripeWebhook",
 					};
 
 				mockProcessStripeWebhook.mockImplementation(
-					async ({ handlers }: { handlers: Record<string, (event: unknown) => Promise<void>> }) =>
+					async ({ handlers }: { handlers: Record<string, (event: unknown) => Promise<void>>; }) =>
 					{
 						await handlers["checkout.session.completed"](
 							{ data: { object: mockSession } });
@@ -212,5 +217,207 @@ describe("handleStripeWebhook",
 
 				expect(mockHandleCheckoutCompleted)
 					.toHaveBeenCalledOnce();
+			});
+
+		it("handleStripeWebhook_WhenMockServicesNotFalse_CallsGetStripeWithUseMocksTrue",
+			async () =>
+			{
+				delete process.env.MOCK_SERVICES;
+
+				mockProcessStripeWebhook.mockResolvedValue(
+					{ status: "ok" });
+
+				await handleStripeWebhook("{}", "sig=test");
+
+				const stripeOptions: Record<string, unknown> =
+					mockGetStripe.mock.calls[0][0] as Record<string, unknown>;
+
+				expect(stripeOptions.useMocks)
+					.toBe(true);
+			});
+
+		it("handleStripeWebhook_WhenBaseUrlUnset_UsesDefaultBaseUrl",
+			async () =>
+			{
+				mockProcessStripeWebhook.mockResolvedValue(
+					{ status: "ok" });
+
+				await handleStripeWebhook("{}", "sig=test");
+
+				const stripeOptions: Record<string, unknown> =
+					mockGetStripe.mock.calls[0][0] as Record<string, unknown>;
+
+				expect(stripeOptions.baseUrl)
+					.toBe("https://localhost:3002");
+			});
+
+		it("handleStripeWebhook_WhenPrintfulKeyEmpty_PassesNullCreatorToHandler",
+			async () =>
+			{
+				const mockSession: Record<string, unknown> =
+					{
+						id: "cs_printful_empty",
+						metadata: { cartSessionId: "cart-1" },
+						customer_details: { email: "buyer@example.com" },
+						amount_total: 5000,
+						collected_information: null
+					};
+
+				mockProcessStripeWebhook.mockImplementation(
+					async ({ handlers }: { handlers: Record<string, (event: unknown) => Promise<void>>; }) =>
+					{
+						await handlers["checkout.session.completed"](
+							{ data: { object: mockSession } });
+						return { status: "ok" };
+					});
+
+				mockIsOrderProcessed.mockResolvedValue(false);
+				mockHandleCheckoutCompleted.mockResolvedValue(undefined);
+
+				await handleStripeWebhook("{}", "sig=test");
+
+				const printfulArg: unknown =
+					mockHandleCheckoutCompleted.mock.calls[0][2];
+
+				expect(printfulArg)
+					.toBeNull();
+			});
+
+		it("handleStripeWebhook_WhenPrintfulKeyPresent_PassesCreatePrintfulOrderToHandler",
+			async () =>
+			{
+				const mockSession: Record<string, unknown> =
+					{
+						id: "cs_printful_present",
+						metadata: { cartSessionId: "cart-2" },
+						customer_details: { email: "buyer@example.com" },
+						amount_total: 9900,
+						collected_information: null
+					};
+
+				process.env.PRINTFUL_API_KEY = "pf_test_key";
+
+				mockProcessStripeWebhook.mockImplementation(
+					async ({ handlers }: { handlers: Record<string, (event: unknown) => Promise<void>>; }) =>
+					{
+						await handlers["checkout.session.completed"](
+							{ data: { object: mockSession } });
+						return { status: "ok" };
+					});
+
+				mockIsOrderProcessed.mockResolvedValue(false);
+				mockHandleCheckoutCompleted.mockResolvedValue(undefined);
+
+				await handleStripeWebhook("{}", "sig=test");
+
+				const printfulArg: unknown =
+					mockHandleCheckoutCompleted.mock.calls[0][2];
+
+				expect(printfulArg)
+					.toBe(mockCreatePrintfulOrder);
+			});
+
+		it("handleStripeWebhook_WhenCartSessionIdMissing_UsesEmptyStringFallback",
+			async () =>
+			{
+				const mockSession: Record<string, unknown> =
+					{
+						id: "cs_no_cart_id",
+						metadata: {},
+						customer_details: { email: "buyer@example.com" },
+						amount_total: 3000,
+						collected_information: null
+					};
+
+				mockProcessStripeWebhook.mockImplementation(
+					async ({ handlers }: { handlers: Record<string, (event: unknown) => Promise<void>>; }) =>
+					{
+						await handlers["checkout.session.completed"](
+							{ data: { object: mockSession } });
+						return { status: "ok" };
+					});
+
+				mockIsOrderProcessed.mockResolvedValue(false);
+				mockHandleCheckoutCompleted.mockResolvedValue(undefined);
+
+				await handleStripeWebhook("{}", "sig=test");
+
+				const sessionData: Record<string, unknown> =
+					mockHandleCheckoutCompleted.mock.calls[0][1] as Record<
+						string,
+						unknown>;
+
+				expect(sessionData.cartSessionId)
+					.toBe("");
+			});
+
+		it("handleStripeWebhook_WhenCustomerEmailMissing_UsesEmptyStringFallback",
+			async () =>
+			{
+				const mockSession: Record<string, unknown> =
+					{
+						id: "cs_no_email",
+						metadata: { cartSessionId: "cart-3" },
+						customer_details: {},
+						amount_total: 2000,
+						collected_information: null
+					};
+
+				mockProcessStripeWebhook.mockImplementation(
+					async ({ handlers }: { handlers: Record<string, (event: unknown) => Promise<void>>; }) =>
+					{
+						await handlers["checkout.session.completed"](
+							{ data: { object: mockSession } });
+						return { status: "ok" };
+					});
+
+				mockIsOrderProcessed.mockResolvedValue(false);
+				mockHandleCheckoutCompleted.mockResolvedValue(undefined);
+
+				await handleStripeWebhook("{}", "sig=test");
+
+				const sessionData: Record<string, unknown> =
+					mockHandleCheckoutCompleted.mock.calls[0][1] as Record<
+						string,
+						unknown>;
+
+				expect(sessionData.customerEmail)
+					.toBe("");
+			});
+
+		it("handleStripeWebhook_WhenShippingDetailsMissing_PassesNullAddressAndName",
+			async () =>
+			{
+				const mockSession: Record<string, unknown> =
+					{
+						id: "cs_no_shipping",
+						metadata: { cartSessionId: "cart-4" },
+						customer_details: { email: "buyer@example.com" },
+						amount_total: 4000,
+						collected_information: { shipping_details: null }
+					};
+
+				mockProcessStripeWebhook.mockImplementation(
+					async ({ handlers }: { handlers: Record<string, (event: unknown) => Promise<void>>; }) =>
+					{
+						await handlers["checkout.session.completed"](
+							{ data: { object: mockSession } });
+						return { status: "ok" };
+					});
+
+				mockIsOrderProcessed.mockResolvedValue(false);
+				mockHandleCheckoutCompleted.mockResolvedValue(undefined);
+
+				await handleStripeWebhook("{}", "sig=test");
+
+				const sessionData: Record<string, unknown> =
+					mockHandleCheckoutCompleted.mock.calls[0][1] as Record<
+						string,
+						unknown>;
+
+				expect(sessionData.shippingAddress)
+					.toBeNull();
+				expect(sessionData.shippingName)
+					.toBeNull();
 			});
 	});

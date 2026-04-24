@@ -155,6 +155,49 @@ public sealed class ProductionSecuritySettingsValidationRuleUnitTests
 			() => _rule.Validate(configuration, environment, _logger));
 	}
 
+	/// <summary>
+	/// Verifies that production with all configuration sections absent does not throw.
+	/// The rule uses null-pattern guards so absent sections produce no violations.
+	/// </summary>
+	[Fact]
+	public void Validate_Production_AllSectionsMissing_DoesNotThrow()
+	{
+		IConfiguration configuration =
+			new ConfigurationBuilder()
+				.AddInMemoryCollection(new Dictionary<string, string?>())
+				.Build();
+
+		IHostEnvironment environment =
+			CreateEnvironment(Environments.Production);
+
+		Should.NotThrow(
+			() => _rule.Validate(configuration, environment, _logger));
+	}
+
+	/// <summary>
+	/// Verifies that production with valid MFA and TOTP but an absent Auth section does not throw.
+	/// The null-conditional <c>authSettings?.Cookie</c> short-circuits when Auth is unbound.
+	/// </summary>
+	[Fact]
+	public void Validate_Production_AuthSectionAbsent_WithValidMfaTotp_DoesNotThrow()
+	{
+		IConfiguration configuration =
+			new ConfigurationBuilder()
+				.AddInMemoryCollection(
+					new Dictionary<string, string?>
+					{
+						["Mfa:Enabled"] = "true",
+						["Totp:Enabled"] = "true",
+					})
+				.Build();
+
+		IHostEnvironment environment =
+			CreateEnvironment(Environments.Production);
+
+		Should.NotThrow(
+			() => _rule.Validate(configuration, environment, _logger));
+	}
+
 	private static IConfiguration BuildProductionConfig(
 		bool mfaEnabled,
 		bool totpEnabled,

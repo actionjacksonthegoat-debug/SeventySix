@@ -263,3 +263,27 @@ export function getTestUserByRole(role: TestUser["role"]): TestUser
 
 	return foundUser;
 }
+
+/**
+ * Dedicated test user for admin dashboard E2E tests.
+ * Isolated so admin dashboard state mutations do not affect other admin users.
+ */
+export const ADMIN_DASHBOARD_USER: TestUser =
+	{
+		username: "e2e_admin_dashboard",
+		password: "E2E_AdminDashboard_Password_123!",
+		role: "Admin",
+		email: "e2e_admin_dashboard@test.local"
+	} as const;
+
+/**
+ * Dedicated test user for developer style guide E2E tests.
+ * Isolated so style guide navigation does not affect other developer users.
+ */
+export const DEVELOPER_STYLEGUIDE_USER: TestUser =
+	{
+		username: "e2e_developer_styleguide",
+		password: "E2E_DevStyleGuide_Password_123!",
+		role: "Developer",
+		email: "e2e_developer_styleguide@test.local"
+	} as const;
