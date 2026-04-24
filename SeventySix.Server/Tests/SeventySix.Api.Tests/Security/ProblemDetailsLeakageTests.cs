@@ -125,7 +125,7 @@ public sealed class ProblemDetailsLeakageTests : IDisposable
 		using HttpClient client =
 			Factory.CreateClient();
 
-		StringContent emptyBody =
+		using StringContent emptyBody =
 			new(
 				"{}",
 				System.Text.Encoding.UTF8,

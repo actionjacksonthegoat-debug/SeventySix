@@ -1,0 +1,30 @@
+fail-on-severity: 'high'
+comment-summary-in-pr: 'always'
+retry-on-snapshot-warnings: true
+retry-on-snapshot-warnings-timeout: 300
+
+# OpenSSF Scorecard: warn when package score is below this threshold (default: 3).
+# Lowered to 1 because all flagged low-score packages are transitive build-tool
+# dependencies (Vite/Rollup/SvelteKit ecosystem) that cannot be replaced without
+# forking upstream tooling. The fail-on-severity: high gate retains full
+# vulnerability protection.
+show-openssf-scorecard: true
+warn-on-openssf-scorecard-level: 1
+
+# Packages excluded from license checks.
+# GitHub's dependency-review API returns null/unknown license metadata for these
+# packages even though all are MIT-licensed. allow-dependencies-licenses bypasses
+# the resolver for each listed package so the check does not flag them as unknown.
+allow-dependencies-licenses:
+    - 'pkg:npm/%40angular/animations'
+    - 'pkg:npm/%40angular/cdk'
+    - 'pkg:npm/%40angular/common'
+    - 'pkg:npm/%40angular/compiler'
+    - 'pkg:npm/%40angular/core'
+    - 'pkg:npm/%40angular/forms'
+    - 'pkg:npm/%40angular/material'
+    - 'pkg:npm/%40angular/platform-browser'
+    - 'pkg:npm/%40angular/router'
+    - 'pkg:npm/%40angular/service-worker'
+    - 'pkg:npm/altcha'
+    - 'pkg:npm/electron-to-chromium'

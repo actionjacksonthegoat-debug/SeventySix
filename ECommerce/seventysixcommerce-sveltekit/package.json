@@ -2,6 +2,7 @@
 	"name": "seventysixcommerce-sveltekit",
 	"private": true,
 	"version": "0.0.1",
+	"license": "UNLICENSED",
 	"type": "module",
 	"scripts": {
 		"dev": "vite dev --port 3001",

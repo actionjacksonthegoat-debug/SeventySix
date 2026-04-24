@@ -2,6 +2,7 @@
   "name": "seventysixcommerce-tanstack",
   "version": "1.0.0",
   "description": "SeventySixCommerce art merchandise storefront — TanStack Start",
+  "license": "UNLICENSED",
   "type": "module",
   "scripts": {
     "dev": "vite dev --port 3002",
