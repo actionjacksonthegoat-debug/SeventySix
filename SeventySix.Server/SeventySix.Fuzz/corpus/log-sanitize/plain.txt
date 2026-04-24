@@ -1,0 +1,1 @@
+plain text input with no special chars

@@ -45,7 +45,7 @@ jobs:
 
       - name: Restore dependencies
         working-directory: SeventySix.Server
-        run: dotnet restore SeventySix.Server.slnx
+        run: dotnet restore SeventySix.Server.slnx --locked-mode
 
       - name: Build .NET solution
         working-directory: SeventySix.Server

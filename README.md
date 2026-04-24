@@ -11,6 +11,8 @@
 [![OpenTelemetry](https://img.shields.io/badge/OpenTelemetry-enabled-425CC7?logo=opentelemetry&logoColor=white)](https://opentelemetry.io)
 [![DAST](https://github.com/actionjacksonthegoat-debug/SeventySix/actions/workflows/dast.yml/badge.svg)](https://github.com/actionjacksonthegoat-debug/SeventySix/actions/workflows/dast.yml)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/actionjacksonthegoat-debug/SeventySix/badge)](https://scorecard.dev/viewer/?uri=github.com/actionjacksonthegoat-debug/SeventySix)
+<!-- OpenSSF Best Practices badge — application in progress; replace with the live badge URL once the project ID is assigned. See docs/Security-Policy.md. -->
+[![OpenSSF Best Practices](https://img.shields.io/badge/OpenSSF_Best_Practices-application_in_progress-lightgrey)](docs/Security-Policy.md)
 [![WCAG 2.2 AA](https://img.shields.io/badge/WCAG_2.2-AA_Compliant-0078D4)](https://www.w3.org/TR/WCAG22/)
 
 This site has been deployed to production - You can try it here at [SeventySix](https://seventysixsandbox.com/). Logged in users will be given access to the development and style-guide page.

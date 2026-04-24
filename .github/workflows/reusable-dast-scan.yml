@@ -57,15 +57,18 @@ on:
                 default: ""
 
 permissions:
-    security-events: write
     contents: read
-    actions: read
 
 jobs:
     dast:
         name: OWASP ZAP Scan — ${{ inputs.app-name }}
         runs-on: ubuntu-latest
         timeout-minutes: 30
+
+        permissions:
+            contents: read
+            security-events: write
+            actions: read
 
         steps:
             - name: Checkout code

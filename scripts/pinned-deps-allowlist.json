@@ -1,0 +1,74 @@
+[
+    {
+        "file": "scripts/backup.sh",
+        "line": 144,
+        "command": "apt-get install",
+        "reason": "Operator-run backup script installs system PostgreSQL client tooling (postgresql-client) on a one-shot basis. Intended for ad-hoc use on a freshly provisioned host; tracked-version pinning here would block the operator from running it on hosts with newer Ubuntu archives."
+    },
+    {
+        "file": "scripts/bootstrap.ps1",
+        "line": 57,
+        "command": "npm install",
+        "reason": "Developer bootstrap installs `npm-check-updates` globally (no project lockfile applies). Documented in scripts/README.md as a one-time setup tool."
+    },
+    {
+        "file": "scripts/bootstrap.ps1",
+        "line": 58,
+        "command": "npm install",
+        "reason": "Developer bootstrap installs `concurrently` globally for the orchestrator scripts. One-time setup; no project lockfile."
+    },
+    {
+        "file": "scripts/bootstrap.ps1",
+        "line": 59,
+        "command": "npm install",
+        "reason": "Developer bootstrap installs `cross-env` globally. One-time setup; no project lockfile."
+    },
+    {
+        "file": "scripts/bootstrap.ps1",
+        "line": 141,
+        "command": "apt-get install",
+        "reason": "WSL/Linux developer-machine bootstrap. Installs base toolchain (curl, ca-certificates, gnupg). Pinning would block fresh OS installs on newer distros."
+    },
+    {
+        "file": "scripts/bootstrap.sh",
+        "line": 27,
+        "command": "apt-get install",
+        "reason": "Developer-machine bootstrap on Linux. System packages installed once for setup; not part of CI supply chain."
+    },
+    {
+        "file": "scripts/bootstrap.sh",
+        "line": 48,
+        "command": "apt-get install",
+        "reason": "Developer-machine bootstrap on Linux. System packages installed once for setup; not part of CI supply chain."
+    },
+    {
+        "file": "scripts/bootstrap.sh",
+        "line": 68,
+        "command": "apt-get install",
+        "reason": "Developer-machine bootstrap on Linux. System packages installed once for setup; not part of CI supply chain."
+    },
+    {
+        "file": "scripts/codeql-ci-scan.sh",
+        "line": 27,
+        "command": "apt-get install",
+        "reason": "CodeQL CLI bootstrap on a self-hosted scanner. System tooling (jq) needed for SARIF post-processing; pinned upstream by Ubuntu LTS package set."
+    },
+    {
+        "file": "scripts/codeql-ci-scan.sh",
+        "line": 92,
+        "command": "npm install",
+        "reason": "CodeQL CLI requires running `npm install` (NOT `npm ci`) to build a native dependency tree it can scan; the lockfile-restoring `npm ci` would skip the postinstall scripts CodeQL needs to observe. Source-of-truth lockfile is committed."
+    },
+    {
+        "file": "scripts/codeql-ci-scan.sh",
+        "line": 98,
+        "command": "npm install",
+        "reason": "Same as line 92 — CodeQL JS analyzer requires `npm install` to observe build steps."
+    },
+    {
+        "file": "scripts/codeql-ci-scan.sh",
+        "line": 104,
+        "command": "npm install",
+        "reason": "Same as line 92 — CodeQL JS analyzer requires `npm install` to observe build steps."
+    }
+]

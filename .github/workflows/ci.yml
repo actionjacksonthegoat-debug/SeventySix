@@ -70,7 +70,7 @@ jobs:
             - name: dotnet list package --vulnerable (server)
               working-directory: SeventySix.Server
               run: |
-                  dotnet restore SeventySix.Server.slnx
+                  dotnet restore SeventySix.Server.slnx --locked-mode
                   dotnet list SeventySix.Server.slnx package --vulnerable --include-transitive
 
             - name: Gitleaks secret scan
@@ -89,6 +89,9 @@ jobs:
         name: Client Build & Test
         runs-on: ubuntu-latest
         timeout-minutes: 30
+
+        permissions:
+            contents: read
 
         defaults:
             run:
@@ -158,7 +161,7 @@ jobs:
                   dotnet-version: "10.0.x"
 
             - name: Restore dependencies
-              run: dotnet restore SeventySix.Server.slnx
+              run: dotnet restore SeventySix.Server.slnx --locked-mode
 
             - name: Build
               run: dotnet build SeventySix.Server.slnx --configuration Release --no-restore /p:TreatWarningsAsErrors=true
@@ -206,6 +209,9 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 15
 
+        permissions:
+            contents: read
+
         services:
             postgres:
                 image: postgres:17
@@ -238,7 +244,7 @@ jobs:
               run: dotnet tool restore
 
             - name: Restore dependencies
-              run: dotnet restore SeventySix.Server.slnx
+              run: dotnet restore SeventySix.Server.slnx --locked-mode
 
             - name: Build
               run: dotnet build SeventySix.Server.slnx --configuration Release --no-restore
@@ -316,6 +322,9 @@ jobs:
         # NOTE: E2E tests use Docker Compose for infrastructure (database, cache, API, client).
         # ubuntu-latest includes Docker and Docker Compose by default.
         # Playwright runs on the host against Dockerized services.
+
+        permissions:
+            contents: read
 
         defaults:
             run:
@@ -395,6 +404,9 @@ jobs:
         # NOTE: Load tests use Docker Compose for infrastructure + k6 on the host.
         # ubuntu-latest includes Docker and Docker Compose by default.
 
+        permissions:
+            contents: read
+
         steps:
             - name: Checkout code
               uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -463,6 +475,9 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 15
         if: always()
+
+        permissions:
+            contents: read
 
         steps:
             - name: Evaluate gate results

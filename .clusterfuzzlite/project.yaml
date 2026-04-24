@@ -1,0 +1,10 @@
+# Project: SeventySix
+# Language: csharp (community fuzzing via SharpFuzz; ClusterFuzzLite tooling
+# does not natively support .NET — see ../.clusterfuzzlite/README.md).
+language: csharp
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+homepage: "https://github.com/actionjacksonthegoat-debug/SeventySix"
+primary_contact: "github://actionjacksonthegoat-debug"

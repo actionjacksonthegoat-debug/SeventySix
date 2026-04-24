@@ -36,6 +36,9 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 30
 
+        permissions:
+            contents: read
+
         strategy:
             matrix:
                 include:
@@ -139,6 +142,9 @@ jobs:
         timeout-minutes: 30
         needs: [commerce-build]
 
+        permissions:
+            contents: read
+
         defaults:
             run:
                 working-directory: ECommerce/seventysixcommerce-sveltekit
@@ -237,6 +243,9 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 30
         needs: [commerce-build]
+
+        permissions:
+            contents: read
 
         defaults:
             run:
@@ -357,6 +366,9 @@ jobs:
         timeout-minutes: 30
         needs: [commerce-build]
 
+        permissions:
+            contents: read
+
         defaults:
             run:
                 working-directory: ECommerce/seventysixcommerce-sveltekit
@@ -455,6 +467,9 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 30
         needs: [commerce-build]
+
+        permissions:
+            contents: read
 
         defaults:
             run:
@@ -581,6 +596,9 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 15
         if: always()
+
+        permissions:
+            contents: read
 
         steps:
             - name: Evaluate gate results

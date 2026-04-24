@@ -1,0 +1,124 @@
+name: Fuzz
+
+on:
+  pull_request:
+    paths:
+      - 'SeventySix.Server/SeventySix.Shared/**'
+      - 'SeventySix.Server/SeventySix.Fuzz/**'
+      - '.github/workflows/fuzz.yml'
+  schedule:
+    # Daily at 06:00 UTC.
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+# OpenSSF Scorecard: Token-Permissions — least-privilege baseline.
+permissions:
+  contents: read
+
+concurrency:
+  group: fuzz-${{ github.ref }}-${{ github.event_name }}
+  cancel-in-progress: true
+
+jobs:
+  sharpfuzz:
+    name: SharpFuzz (${{ matrix.target }})
+    runs-on: ubuntu-latest
+    # Only requires read access to the repository contents to checkout source.
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - registration-token
+          - log-sanitize
+          - log-mask-email
+          - log-mask-username
+          - log-mask-email-subject
+
+    env:
+      FUZZ_TARGET: ${{ matrix.target }}
+      # Managed-heap growth budget (MB) above the post-warmup baseline.
+      # The harness throws (recorded as a crash) if exceeded — covers managed
+      # memory leaks since libFuzzer's LSan only inspects native allocations.
+      FUZZ_MEMORY_BUDGET_MB: '16'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Build fuzz harness
+        working-directory: SeventySix.Server/SeventySix.Fuzz
+        run: dotnet build --configuration Release /p:TreatWarningsAsErrors=true
+
+      - name: Replay seed corpus (${{ matrix.target }})
+        working-directory: SeventySix.Server/SeventySix.Fuzz
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          target_dir="corpus/${FUZZ_TARGET}"
+          if [ ! -d "$target_dir" ]; then
+            echo "::error::No corpus directory for target ${FUZZ_TARGET}"
+            exit 1
+          fi
+          failed=0
+          seed_count=0
+          for seed in "$target_dir"/*; do
+            [ -f "$seed" ] || continue
+            seed_count=$((seed_count + 1))
+            echo "::group::Replay $seed"
+            if ! cat "$seed" | dotnet run --configuration Release --no-build; then
+              echo "::error file=$seed::Harness crashed on seed input"
+              mkdir -p crashes
+              cp "$seed" "crashes/seed-$(basename "$seed")"
+              failed=1
+            fi
+            echo "::endgroup::"
+          done
+          if [ "$seed_count" -eq 0 ]; then
+            echo "::error::No seeds found in $target_dir"
+            exit 1
+          fi
+          echo "Replayed $seed_count seed(s) for ${FUZZ_TARGET}"
+          exit $failed
+
+      - name: Bounded mutation run with memory-leak guard (scheduled only)
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        working-directory: SeventySix.Server/SeventySix.Fuzz
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Random-byte mutation pass: 10000 small random inputs per target.
+          # The harness's per-iteration managed-heap growth check
+          # (FUZZ_MEMORY_BUDGET_MB) catches managed memory leaks.
+          mkdir -p "mutated/${FUZZ_TARGET}"
+          for i in $(seq 1 10000); do
+            head -c $((RANDOM % 256)) /dev/urandom > "mutated/${FUZZ_TARGET}/$i.bin"
+          done
+          failed=0
+          for seed in "mutated/${FUZZ_TARGET}"/*.bin; do
+            if ! cat "$seed" | dotnet run --configuration Release --no-build > /dev/null 2>&1; then
+              echo "::error file=$seed::Harness crashed on mutated input (target=${FUZZ_TARGET})"
+              mkdir -p crashes
+              cp "$seed" "crashes/mutated-$(basename "$seed")"
+              failed=1
+            fi
+          done
+          exit $failed
+
+      - name: Upload crashing inputs
+        if: failure()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: fuzz-crashes-${{ matrix.target }}-${{ github.run_id }}
+          path: SeventySix.Server/SeventySix.Fuzz/crashes/
+          if-no-files-found: ignore
+          retention-days: 30
