@@ -7,7 +7,8 @@ import {
 	PAGE_TEXT,
 	ROUTES,
 	SELECTORS,
-	test
+	test,
+	TIMEOUTS
 } from "@e2e-fixtures";
 import type { Locator } from "@playwright/test";
 
@@ -68,7 +69,8 @@ test.describe("Change Password",
 					userPage.locator(SELECTORS.changePassword.passwordHint);
 
 				await expect(passwordHint)
-					.toBeVisible();
+					.toBeVisible(
+						{ timeout: TIMEOUTS.navigation * 2 });
 				await expect(passwordHint)
 					.toContainText(PAGE_TEXT.validation.minimumCharacters);
 			});

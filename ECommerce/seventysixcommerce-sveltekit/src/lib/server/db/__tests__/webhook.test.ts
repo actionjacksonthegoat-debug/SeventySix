@@ -56,13 +56,23 @@ vi.mock("$lib/server/integrations/brevo", () => ({
 		.mockResolvedValue(undefined)
 }));
 
-vi.mock("$lib/server/stripe", () => ({
+vi.mock("@seventysixcommerce/shared/stripe", () => ({
 	getStripe: () => ({
 		webhooks: {
 			constructEvent: mockConstructEvent
 		}
 	})
 }));
+
+vi.mock("@seventysixcommerce/shared/webhook",
+	async (importActual) =>
+	{
+		const actual: typeof import("@seventysixcommerce/shared/webhook") =
+			await importActual<
+		typeof import("@seventysixcommerce/shared/webhook")>();
+
+		return { ...actual };
+	});
 
 describe("Stripe Webhook",
 	() =>

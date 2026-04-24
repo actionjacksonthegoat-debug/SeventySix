@@ -8,12 +8,12 @@ import {
 } from "@seventysixcommerce/shared/checkout";
 import { now } from "@seventysixcommerce/shared/date";
 import { cartEmptyError, checkoutFailedError, itemsUnavailableError } from "@seventysixcommerce/shared/errors";
+import { getStripe, type StripeClient } from "@seventysixcommerce/shared/stripe";
 import { isNullOrUndefined } from "@seventysixcommerce/shared/utils";
 import { createServerFn } from "@tanstack/react-start";
 import { eq } from "drizzle-orm";
 import { db } from "../db";
 import * as schema from "../db/schema";
-import { getStripe } from "../lib/stripe";
 import { queueLog } from "../log-forwarder";
 import { recordCheckoutComplete, recordCheckoutStart } from "../metrics";
 import { cartSessionMiddleware } from "../middleware/cart-session";
@@ -122,8 +122,16 @@ export const createCheckoutSession =
 				const baseUrl: string =
 					process.env.BASE_URL ?? "https://localhost:3002";
 
+				const stripe: StripeClient =
+					getStripe(
+						{
+							secretKey: process.env.STRIPE_SECRET_KEY,
+							useMocks: process.env.MOCK_SERVICES !== "false",
+							baseUrl
+						});
+
 				const session =
-					await getStripe().checkout.sessions.create(
+					await stripe.checkout.sessions.create(
 						{
 							mode: "payment",
 							line_items: lineItems,

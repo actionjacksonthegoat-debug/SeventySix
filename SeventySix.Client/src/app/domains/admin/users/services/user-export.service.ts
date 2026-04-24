@@ -140,7 +140,7 @@ export class UserExportService
 				URL.createObjectURL(blob);
 			link.setAttribute("href", url);
 			link.setAttribute("download", filename);
-			link.style.visibility = "hidden";
+			link.hidden = true;
 			document.body.appendChild(link);
 			link.click();
 			document.body.removeChild(link);

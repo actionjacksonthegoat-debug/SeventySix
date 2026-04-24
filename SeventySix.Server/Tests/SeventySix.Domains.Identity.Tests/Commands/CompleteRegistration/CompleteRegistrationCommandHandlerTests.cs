@@ -13,6 +13,7 @@ using SeventySix.Shared.Interfaces;
 using SeventySix.Shared.Utilities;
 using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.Constants;
+using SeventySix.TestUtilities.Mocks;
 using SeventySix.TestUtilities.TestBases;
 using Shouldly;
 
@@ -99,12 +100,15 @@ public sealed class CompleteRegistrationCommandHandlerTests(
 		ITokenService tokenService =
 			Substitute.For<ITokenService>();
 		tokenService
-			.GenerateAccessToken(
+			.IssueAccessToken(
 				Arg.Any<long>(),
 				Arg.Any<string>(),
 				Arg.Any<IList<string>>(),
 				Arg.Any<bool>())
-			.Returns("access-token");
+			.Returns(
+				new IssuedAccessToken(
+					"access-token",
+					DateTimeOffset.UtcNow.AddMinutes(60)));
 		tokenService
 			.GenerateRefreshTokenAsync(
 				Arg.Any<long>(),
@@ -112,16 +116,10 @@ public sealed class CompleteRegistrationCommandHandlerTests(
 				Arg.Any<CancellationToken>())
 			.Returns(Task.FromResult("refresh-token"));
 
-		JwtSettings jwtSettings =
-			new()
-			{
-				AccessTokenExpirationMinutes = 60
-			};
 		IAuthenticationService authenticationService =
 			new AuthenticationService(
 				authRepository,
 				tokenService,
-				Options.Create(jwtSettings),
 				timeProvider,
 				userManager);
 
@@ -206,16 +204,10 @@ public sealed class CompleteRegistrationCommandHandlerTests(
 		ITokenService tokenService =
 			Substitute.For<ITokenService>();
 
-		JwtSettings jwtSettings =
-			new()
-			{
-				AccessTokenExpirationMinutes = 60
-			};
 		IAuthenticationService authenticationService =
 			new AuthenticationService(
 				authRepository,
 				tokenService,
-				Options.Create(jwtSettings),
 				timeProvider,
 				userManager);
 
@@ -365,6 +357,128 @@ public sealed class CompleteRegistrationCommandHandlerTests(
 	}
 
 	/// <summary>
+	/// Verifies that role assignment failure during registration completion returns a failed AuthResult.
+	/// Uses a mocked UserManager to force AddToRoleAsync to fail regardless of DB state.
+	/// </summary>
+	[Fact]
+	public async Task HandleAsync_RoleAssignmentFails_ReturnsFailedAuthResultAsync()
+	{
+		// Arrange — mock UserManager to control role assignment failure
+		UserManager<ApplicationUser> userManager =
+			IdentityMockFactory.CreateUserManager();
+
+		TimeProvider timeProvider =
+			TestTimeProviderBuilder.CreateDefault();
+
+		string testEmail =
+			$"roletest_{Guid.NewGuid():N}@example.com";
+
+		ApplicationUser existingUser =
+			new UserBuilder(timeProvider)
+				.WithId(99)
+				.WithEmail(testEmail)
+				.WithUsername("tempuser")
+				.Build();
+
+		existingUser.SecurityStamp =
+			Guid.NewGuid().ToString();
+
+		// Use any string as confirmation token — mocked UserManager accepts anything
+		string fakeEmailToken =
+			"fake-email-token";
+		string combinedToken =
+			RegistrationTokenService.Encode(
+				testEmail,
+				fakeEmailToken);
+
+		userManager
+			.FindByEmailAsync(Arg.Any<string>())
+			.Returns(existingUser);
+
+		userManager
+			.ConfirmEmailAsync(
+				Arg.Any<ApplicationUser>(),
+				Arg.Any<string>())
+			.Returns(IdentityResult.Success);
+
+		userManager
+			.UpdateAsync(Arg.Any<ApplicationUser>())
+			.Returns(IdentityResult.Success);
+
+		userManager
+			.AddPasswordAsync(
+				Arg.Any<ApplicationUser>(),
+				Arg.Any<string>())
+			.Returns(IdentityResult.Success);
+
+		userManager
+			.AddToRoleAsync(
+				Arg.Any<ApplicationUser>(),
+				Arg.Any<string>())
+			.Returns(
+				IdentityResult.Failed(
+					new IdentityError
+					{
+						Code = "InvalidRole",
+						Description = $"Role '{RoleConstants.User}' does not exist.",
+					}));
+
+		BreachCheckDependencies breachCheck =
+			CreateNotBreachedCheckDependencies();
+
+		CompleteRegistrationCommand command =
+			new(
+				new CompleteRegistrationRequest(
+					combinedToken,
+					"newusername",
+					"P@ssword123!"));
+
+		// Act
+		AuthResult result =
+			await CompleteRegistrationCommandHandler.HandleAsync(
+				command,
+				userManager,
+				Substitute.For<IAuthenticationService>(),
+				breachCheck,
+				timeProvider,
+				NullLogger<CompleteRegistrationCommand>.Instance,
+				TransactionManager,
+				CancellationToken.None);
+
+		// Assert — role assignment fails → AuthResult failed
+		result.Success.ShouldBeFalse();
+	}
+
+	/// <summary>
+	/// Creates a <see cref="BreachCheckDependencies"/> configured to always report passwords as not breached.
+	/// </summary>
+	/// <returns>
+	/// A <see cref="BreachCheckDependencies"/> with a mocked service that returns <see cref="BreachCheckResult.NotBreached"/>.
+	/// </returns>
+	private static BreachCheckDependencies CreateNotBreachedCheckDependencies()
+	{
+		IBreachedPasswordService breachedPasswordService =
+			Substitute.For<IBreachedPasswordService>();
+		breachedPasswordService
+			.CheckPasswordAsync(
+				Arg.Any<string>(),
+				Arg.Any<CancellationToken>())
+			.Returns(BreachCheckResult.NotBreached());
+
+		return new BreachCheckDependencies(
+			breachedPasswordService,
+			Options.Create(
+				new AuthSettings
+				{
+					BreachedPassword = new BreachedPasswordSettings
+					{
+						Enabled = true,
+						BlockBreachedPasswords = true,
+					},
+				}));
+	}
+
+	/// <summary>
 	/// Creates mock authentication and breach check dependencies for handler tests.
 	/// </summary>
 	private static (IAuthenticationService AuthService, BreachCheckDependencies BreachCheck)
@@ -375,12 +489,15 @@ public sealed class CompleteRegistrationCommandHandlerTests(
 		ITokenService tokenService =
 			Substitute.For<ITokenService>();
 		tokenService
-			.GenerateAccessToken(
+			.IssueAccessToken(
 				Arg.Any<long>(),
 				Arg.Any<string>(),
 				Arg.Any<IList<string>>(),
 				Arg.Any<bool>())
-			.Returns("access-token");
+			.Returns(
+				new IssuedAccessToken(
+					"access-token",
+					DateTimeOffset.UtcNow.AddMinutes(60)));
 		tokenService
 			.GenerateRefreshTokenAsync(
 				Arg.Any<long>(),
@@ -388,14 +505,10 @@ public sealed class CompleteRegistrationCommandHandlerTests(
 				Arg.Any<CancellationToken>())
 			.Returns(Task.FromResult("refresh-token"));
 
-		JwtSettings jwtSettings =
-			new() { AccessTokenExpirationMinutes = 60 };
-
 		IAuthenticationService authService =
 			new AuthenticationService(
 				Substitute.For<IAuthRepository>(),
 				tokenService,
-				Options.Create(jwtSettings),
 				timeProvider,
 				userManager);
 

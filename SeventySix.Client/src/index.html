@@ -87,29 +87,6 @@
 			content="/icons/icon-512x512.png"
 		/>
 
-		<!-- Structured data (JSON-LD) — primary schema in <head> for Lighthouse SEO audit -->
-		<script type="application/ld+json">
-		{
-			"@context": "https://schema.org",
-			"@type": "WebApplication",
-			"name": "SeventySix",
-			"url": "https://seventysixsandbox.com",
-			"description": "Production-ready .NET 10 + Angular 21 monorepo demonstrating DDD, Hexagonal Architecture, CQRS, Wolverine, TanStack Query, and comprehensive testing.",
-			"applicationCategory": "DeveloperApplication",
-			"operatingSystem": "Web",
-			"offers": {
-				"@type": "Offer",
-				"price": "0",
-				"priceCurrency": "USD"
-			},
-			"author": {
-				"@type": "Organization",
-				"name": "SeventySix Team",
-				"url": "https://seventysixsandbox.com"
-			}
-		}
-		</script>
-
 		<!-- Canonical URL -->
 		<link rel="canonical" href="https://seventysixsandbox.com/" />
 
@@ -157,7 +134,11 @@
 		/>
 	</head>
 	<body>
-		<app-root></app-root>
+		<!-- ngCspNonce is read by Angular at bootstrap to stamp every injected <style> element
+		     with a nonce attribute. In production, Caddy rewrites __CSP_NONCE__ to a fresh
+		     cryptographically-random value per response, removing the need for 'unsafe-inline'
+		     in the style-src CSP directive. -->
+		<app-root ngCspNonce="__CSP_NONCE__"></app-root>
 		<noscript>Please enable JavaScript to continue using this application.</noscript>
 	</body>
 </html>

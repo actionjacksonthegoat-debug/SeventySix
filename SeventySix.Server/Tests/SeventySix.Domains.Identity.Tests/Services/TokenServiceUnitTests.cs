@@ -30,7 +30,6 @@ public sealed class TokenServiceUnitTests
 	private readonly ITokenRepository TokenRepository;
 	private readonly ISessionManagementService SessionManagement;
 	private readonly IOptions<JwtSettings> JwtOptions;
-	private readonly IOptions<AuthSettings> AuthOptions;
 	private readonly FakeTimeProvider TimeProvider;
 	private readonly TokenService Service;
 
@@ -52,13 +51,6 @@ public sealed class TokenServiceUnitTests
 				RefreshTokenRememberMeExpirationDays = 14,
 				AbsoluteSessionTimeoutDays = 30,
 			});
-		AuthOptions =
-			Options.Create(
-			new AuthSettings
-			{
-				Token =
-					new TokenSettings { MaxActiveSessionsPerUser = 5 },
-			});
 		TimeProvider =
 			new FakeTimeProvider(FixedTime);
 
@@ -67,9 +59,8 @@ public sealed class TokenServiceUnitTests
 			TokenRepository,
 			SessionManagement,
 			JwtOptions,
-			AuthOptions,
-			NullLogger<TokenService>.Instance,
-			TimeProvider);
+			TimeProvider,
+			NullLogger<TokenService>.Instance);
 	}
 
 	#region GenerateAccessToken Tests
@@ -383,65 +374,51 @@ public sealed class TokenServiceUnitTests
 				Arg.Any<CancellationToken>());
 	}
 
+	#endregion
+
+	#region JWT Security Header Tests
+
+	/// <summary>
+	/// Verifies the token is signed with HMAC-SHA256 (HS256).
+	/// Defense-in-depth: explicit algorithm check prevents alg:none downgrade attacks.
+	/// </summary>
 	[Fact]
-	public async Task RotateRefreshTokenAsync_ReuseOfRevokedToken_WithDisableRotation_StillRevokesFamilyAsync()
+	public void GenerateAccessToken_UsesHmacSha256Algorithm()
 	{
-		// Arrange — even with DisableRotation=true, reuse detection must fire
-		Guid familyId =
-			Guid.NewGuid();
-		const long userId =
-			42L;
-
-		IOptions<AuthSettings> disableRotationOptions =
-			Options.Create(
-			new AuthSettings
-			{
-				Token =
-					new TokenSettings
-					{
-						MaxActiveSessionsPerUser = 5,
-						DisableRotation = true,
-					},
-			});
-
-		TokenService serviceWithDisableRotation =
-			new(
-			TokenRepository,
-			SessionManagement,
-			JwtOptions,
-			disableRotationOptions,
-			NullLogger<TokenService>.Instance,
-			TimeProvider);
-
-		RefreshToken revokedToken =
-			new RefreshTokenBuilder(TimeProvider)
-				.WithUserId(userId)
-				.WithFamilyId(familyId)
-				.AsRevoked()
-				.BuildWithPlainToken(out string plainToken);
-
-		TokenRepository
-			.GetByTokenHashAsync(
-				Arg.Any<string>(),
-				Arg.Any<CancellationToken>())
-			.Returns(revokedToken);
-
 		// Act
-		(string? token, bool rememberMe) result =
-			await serviceWithDisableRotation.RotateRefreshTokenAsync(
-				plainToken,
-				CancellationToken.None);
+		string token =
+			GenerateTestAccessToken();
 
-		// Assert — reuse STILL detected despite DisableRotation=true
-		result.token.ShouldBeNull();
-		result.rememberMe.ShouldBeFalse();
+		// Assert
+		JwtSecurityTokenHandler handler =
+			new();
+		JwtSecurityToken jwt =
+			handler.ReadJwtToken(token);
 
-		await TokenRepository
-			.Received(1)
-			.RevokeFamilyAsync(
-				familyId,
-				Arg.Any<DateTimeOffset>(),
-				Arg.Any<CancellationToken>());
+		jwt.Header.Alg.ShouldBe(
+			Microsoft.IdentityModel.Tokens.SecurityAlgorithms.HmacSha256);
+	}
+
+	/// <summary>
+	/// Verifies the JWT header contains a key-id (kid) value.
+	/// Required for key rotation: the kid identifies which signing key was used,
+	/// allowing graceful rotation without invalidating all existing tokens.
+	/// </summary>
+	[Fact]
+	public void GenerateAccessToken_ContainsKidHeader()
+	{
+		// Act
+		string token =
+			GenerateTestAccessToken();
+
+		// Assert
+		JwtSecurityTokenHandler handler =
+			new();
+		JwtSecurityToken jwt =
+			handler.ReadJwtToken(token);
+
+		jwt.Header.Kid.ShouldNotBeNullOrEmpty(
+			"JWT must include a kid header for key rotation support.");
 	}
 
 	#endregion

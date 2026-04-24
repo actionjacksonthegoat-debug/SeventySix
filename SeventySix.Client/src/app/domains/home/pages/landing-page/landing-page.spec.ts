@@ -10,6 +10,7 @@ import {
 import { provideAnimations } from "@angular/platform-browser/animations";
 import { TECH_STACK_CATEGORIES } from "@home/constants/landing-page.constants";
 import { TechStackCategory, TechStackItem } from "@home/models";
+import { LandingPageSeoService } from "@home/services";
 import { vi } from "vitest";
 import { LandingPageComponent } from "./landing-page";
 
@@ -52,7 +53,11 @@ describe("LandingPageComponent",
 								provideZonelessChangeDetection(),
 								provideAnimations(),
 								provideHttpClient(),
-								provideHttpClientTesting()
+								provideHttpClientTesting(),
+								{
+									provide: LandingPageSeoService,
+									useValue: { setup: vi.fn() }
+								}
 							]
 						})
 					.compileComponents();

@@ -1,12 +1,15 @@
 # Pinning policy: base images use @sha256 digests for reproducible builds.
 # Dependabot (.github/dependabot.yml, docker ecosystem) auto-creates PRs
 # when new digests are available.
-FROM node:22-alpine3.21@sha256:af8023ec879993821f6d5b21382ed915622a1b0f1cc03dbeb6804afaf01f8885 AS builder
+FROM node:24-alpine3.21@sha256:5579647898d35dbc9ca22010e46c207deb6320f785822a3c5ba3a84b81b57309 AS builder
 
 WORKDIR /workspace
 
 # Copy shared package (needed for file: dependency resolution)
 COPY seventysixcommerce-shared/ ./seventysixcommerce-shared/
+
+# Copy build shims required by vite.config.ts alias (protobuf-inquire)
+COPY build-shims/ ./build-shims/
 
 # Copy SvelteKit app
 WORKDIR /workspace/seventysixcommerce-sveltekit
@@ -21,7 +24,7 @@ FROM builder AS db-init
 CMD ["sh", "-c", "npx drizzle-kit push --force && npx tsx src/lib/server/db/seed.ts"]
 
 # Production stage
-FROM node:22-alpine3.21@sha256:af8023ec879993821f6d5b21382ed915622a1b0f1cc03dbeb6804afaf01f8885 AS production
+FROM node:24-alpine3.21@sha256:5579647898d35dbc9ca22010e46c207deb6320f785822a3c5ba3a84b81b57309 AS production
 
 RUN addgroup -g 1001 nodegroup && \
 	adduser -u 1001 -G nodegroup -D nodeuser

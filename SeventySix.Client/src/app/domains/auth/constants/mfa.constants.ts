@@ -16,11 +16,6 @@ export const MFA_METHOD: Readonly<{
 	} as const;
 
 /**
- * Type for MFA method values.
- */
-export type MfaMethodType = (typeof MFA_METHOD)[keyof typeof MFA_METHOD];
-
-/**
  * Configuration constants for MFA code handling.
  */
 export const MFA_CONFIG: Readonly<{

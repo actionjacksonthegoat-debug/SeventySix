@@ -1,4 +1,4 @@
-// <copyright file="MfaOrchestrator.cs" company="SeventySix">
+// <copyright file="MfaChallengeDispatcher.cs" company="SeventySix">
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
@@ -9,10 +9,14 @@ using Wolverine;
 namespace SeventySix.Identity;
 
 /// <summary>
-/// Default implementation of <see cref="IMfaOrchestrator"/>.
-/// Consolidates the MFA-related logic extracted from <see cref="LoginCommandHandler"/>:
-/// MFA requirement checking, trusted-device bypass, and challenge initiation (TOTP or email).
+/// Default implementation of <see cref="IMfaChallengeDispatcher"/>.
+/// Selects the appropriate MFA challenge method (TOTP or email) and issues the challenge token.
 /// </summary>
+/// <remarks>
+/// This class has a single responsibility: dispatching MFA challenges. Login-flow policy
+/// (whether MFA is required, trusted-device bypass) is handled by
+/// <see cref="LoginCommandHandler"/> as inline private helpers.
+/// </remarks>
 /// <param name="mfaService">
 /// MFA service for challenge creation.
 /// </param>
@@ -22,74 +26,19 @@ namespace SeventySix.Identity;
 /// <param name="totpSettings">
 /// TOTP configuration settings.
 /// </param>
-/// <param name="trustedDeviceService">
-/// Service for trusted device validation and MFA bypass.
+/// <param name="messageBus">
+/// Message bus for enqueueing MFA email notifications.
 /// </param>
 /// <param name="securityAuditService">
 /// Service for logging security audit events.
 /// </param>
-/// <param name="messageBus">
-/// Message bus for enqueueing emails.
-/// </param>
-/// <param name="authenticationService">
-/// Service to generate auth tokens on trusted-device bypass.
-/// </param>
-public sealed class MfaOrchestrator(
+internal sealed class MfaChallengeDispatcher(
 	IMfaService mfaService,
 	IOptions<MfaSettings> mfaSettings,
 	IOptions<TotpSettings> totpSettings,
-	ITrustedDeviceService trustedDeviceService,
-	ISecurityAuditService securityAuditService,
 	IMessageBus messageBus,
-	IAuthenticationService authenticationService) : IMfaOrchestrator
+	ISecurityAuditService securityAuditService) : IMfaChallengeDispatcher
 {
-	/// <inheritdoc />
-	public bool IsMfaRequired(ApplicationUser user)
-	{
-		MfaSettings config =
-			mfaSettings.Value;
-
-		return config.Enabled
-			&& (config.RequiredForAllUsers || user.MfaEnabled);
-	}
-
-	/// <inheritdoc />
-	public async Task<AuthResult?> TryBypassViaTrustedDeviceAsync(
-		LoginCommand command,
-		ApplicationUser user,
-		CancellationToken cancellationToken)
-	{
-		if (string.IsNullOrEmpty(command.TrustedDeviceToken))
-		{
-			return null;
-		}
-
-		bool isTrusted =
-			await trustedDeviceService.ValidateTrustedDeviceAsync(
-				user.Id,
-				command.TrustedDeviceToken,
-				command.UserAgent ?? string.Empty,
-				cancellationToken);
-
-		if (!isTrusted)
-		{
-			return null;
-		}
-
-		await securityAuditService.LogEventAsync(
-			SecurityEventType.LoginSuccess,
-			user,
-			success: true,
-			details: "MFA bypassed via trusted device",
-			cancellationToken);
-
-		return await authenticationService.GenerateAuthResultAsync(
-			user,
-			user.RequiresPasswordChange,
-			command.Request.RememberMe,
-			cancellationToken);
-	}
-
 	/// <inheritdoc />
 	public async Task<AuthResult> InitiateChallengeAsync(
 		ApplicationUser user,

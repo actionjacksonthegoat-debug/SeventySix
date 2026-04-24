@@ -222,7 +222,7 @@ public static class IdentityRegistration
 		services.AddScoped<ITokenService, TokenService>();
 		services.AddScoped<IAuthenticationService, AuthenticationService>();
 		services.AddScoped<IMfaService, MfaService>();
-		services.AddScoped<IMfaOrchestrator, MfaOrchestrator>();
+		services.AddScoped<IMfaChallengeDispatcher, MfaChallengeDispatcher>();
 		services.AddScoped<ITotpService, TotpService>();
 		services.AddScoped<TotpSecretProtector>();
 
@@ -231,7 +231,6 @@ public static class IdentityRegistration
 		services.AddScoped<IBackupCodeService, BackupCodeService>();
 
 		services.AddScoped<ITrustedDeviceService, TrustedDeviceService>();
-		services.AddScoped<ITrustedDeviceLimitEnforcer, TrustedDeviceLimitEnforcer>();
 		services.AddScoped<ITrustedDeviceRevocationService, TrustedDeviceRevocationService>();
 
 		// MFA brute-force protection — singleton because the underlying FusionCache is
@@ -256,11 +255,9 @@ public static class IdentityRegistration
 			configuration,
 			TrustedDeviceSettings.SectionName);
 
-		// Register OAuth strategies (Singleton — stateless, IHttpClientFactory is Singleton-compatible)
+		// Register OAuth strategy (Singleton — stateless, IHttpClientFactory is Singleton-compatible)
+		// YAGNI: Only GitHub is supported. When a second provider is needed, introduce a factory then.
 		services.AddSingleton<IOAuthProviderStrategy, GitHubOAuthStrategy>();
-		// Future providers: services.AddSingleton<IOAuthProviderStrategy, GoogleOAuthStrategy>();
-
-		services.AddSingleton<OAuthProviderFactory>();
 
 		services.AddScoped<OAuthService>();
 		services.AddScoped<IOAuthService>(

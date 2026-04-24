@@ -3,6 +3,7 @@
 // </copyright>
 
 using Microsoft.Extensions.Options;
+using SeventySix.Api.Configuration;
 using SeventySix.Identity;
 
 namespace SeventySix.Api.Infrastructure;
@@ -71,7 +72,8 @@ public sealed class AuthCookieService(
 			authSettings.Value.Cookie.RefreshTokenCookieName,
 			refreshToken,
 			TimeSpan.FromDays(expirationDays),
-			sameSite);
+			sameSite,
+			CookiePathConstants.AuthEndpoints);
 	}
 
 	/// <inheritdoc/>
@@ -81,7 +83,9 @@ public sealed class AuthCookieService(
 
 	/// <inheritdoc/>
 	public void ClearRefreshTokenCookie() =>
-		DeleteCookie(authSettings.Value.Cookie.RefreshTokenCookieName);
+		DeleteCookie(
+			authSettings.Value.Cookie.RefreshTokenCookieName,
+			CookiePathConstants.AuthEndpoints);
 
 	/// <inheritdoc/>
 	public void SetOAuthStateCookie(string state) =>
@@ -158,11 +162,16 @@ public sealed class AuthCookieService(
 	/// <param name="sameSite">
 	/// SameSite policy (defaults to Strict).
 	/// </param>
+	/// <param name="path">
+	/// Cookie path scope (defaults to "/").
+	/// Use a narrower path to restrict which requests carry the cookie.
+	/// </param>
 	private void SetSecureCookie(
 		string name,
 		string value,
 		TimeSpan expiration,
-		SameSiteMode sameSite = SameSiteMode.Strict)
+		SameSiteMode sameSite = SameSiteMode.Strict,
+		string path = "/")
 	{
 		CookieOptions options =
 			new()
@@ -173,6 +182,7 @@ public sealed class AuthCookieService(
 				SameSite = sameSite,
 				Expires =
 					timeProvider.GetUtcNow().Add(expiration),
+				Path = path,
 			};
 
 		HttpContext.Response.Cookies.Append(name, value, options);
@@ -184,6 +194,14 @@ public sealed class AuthCookieService(
 	/// <param name="name">
 	/// The cookie name to delete.
 	/// </param>
-	private void DeleteCookie(string name) =>
-		HttpContext.Response.Cookies.Delete(name);
+	/// <param name="path">
+	/// Cookie path scope — must match the path the cookie was set with.
+	/// Defaults to "/".
+	/// </param>
+	private void DeleteCookie(
+		string name,
+		string path = "/") =>
+		HttpContext.Response.Cookies.Delete(
+			name,
+			new CookieOptions { Path = path });
 }

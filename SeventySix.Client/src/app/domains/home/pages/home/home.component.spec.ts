@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
+import { LandingPageSeoService } from "@home/services";
 import { withComponentDefaults } from "@testing/provider-helpers";
 import { vi } from "vitest";
 import { HomeComponent } from "./home.component";
@@ -38,7 +39,13 @@ describe("HomeComponent",
 					.configureTestingModule(
 						{
 							imports: [HomeComponent],
-							providers: [...withComponentDefaults()]
+							providers: [
+								...withComponentDefaults(),
+								{
+									provide: LandingPageSeoService,
+									useValue: { setup: vi.fn() }
+								}
+							]
 						})
 					.compileComponents();
 

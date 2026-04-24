@@ -51,10 +51,6 @@ public static class ApplicationServicesRegistration
 			configuration,
 			RateLimitingSettings.SectionName);
 
-		services.AddDomainSettings<RequestLimitsSettings, RequestLimitsSettingsValidator>(
-			configuration,
-			RequestLimitsSettings.SectionName);
-
 		// Note: FluentValidation, Repositories, and Business Services
 		// are now registered via bounded context extensions:
 		// - AddIdentityDomain()

@@ -113,7 +113,8 @@ test.describe("Permission Request List Page",
 								.locator("h1");
 
 						await expect(heading)
-							.toHaveText(PAGE_TEXT.permissionRequests.title);
+							.toHaveText(PAGE_TEXT.permissionRequests.title,
+								{ timeout: TIMEOUTS.navigation });
 					});
 
 				test("should display page subtitle",

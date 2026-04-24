@@ -3,7 +3,7 @@
 # Serves over HTTPS to match production environment
 
 # Stage 1: Build
-FROM node:22-alpine3.21 AS build
+FROM node:24-alpine3.21@sha256:5579647898d35dbc9ca22010e46c207deb6320f785822a3c5ba3a84b81b57309 AS build
 WORKDIR /app
 
 # Copy package files
@@ -50,7 +50,6 @@ EXPOSE 8443
 
 # Health check via HTTPS
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
-	CMD wget --quiet --tries=1 --spider --no-check-certificate https://localhost:8443/ || exit 1
-
+        CMD wget --quiet --tries=1 --spider --no-check-certificate https://127.0.0.1:8443/ || exit 1
 # Start Nginx
 CMD ["nginx", "-g", "daemon off;"]

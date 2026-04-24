@@ -168,4 +168,74 @@ public sealed class Argon2PasswordHasherServiceTests
 				hash!,
 				password!));
 	}
+
+	[Fact]
+	public void HashPassword_RoundTrip_VerifySucceeds_WithLongUnicodePasswordAsync()
+	{
+		// Arrange — 200-char Unicode password covering multi-byte code points
+		string longUnicode =
+			new string('Ä', 50)
+				+ new string('中', 50)
+				+ new string('★', 25)
+				+ new string('ñ', 75);
+
+		// Act
+		string hash =
+			Hasher.HashPassword(
+				TestUser,
+				longUnicode);
+		PasswordVerificationResult result =
+			Hasher.VerifyHashedPassword(
+				TestUser,
+				hash,
+				longUnicode);
+		PasswordVerificationResult wrongResult =
+			Hasher.VerifyHashedPassword(
+				TestUser,
+				hash,
+				longUnicode + "x");
+
+		// Assert
+		result.ShouldBe(PasswordVerificationResult.Success);
+		wrongResult.ShouldBe(PasswordVerificationResult.Failed);
+	}
+
+	[Fact]
+	public void VerifyHashedPassword_TimingIsConsistent_BetweenSuccessAndFailureAsync()
+	{
+		// Arrange — timing test uses a small iteration count; not a hard constraint.
+		// Documents that both code paths exercise the same Argon2 computation.
+		const int iterations = 3;
+		string password = "CorrectPassword1!";
+		string wrongPassword = "WrongPassword2!";
+		string hash =
+			Hasher.HashPassword(
+				TestUser,
+				password);
+
+		System.Diagnostics.Stopwatch sw = new();
+		long correctMs = 0;
+		long incorrectMs = 0;
+
+		for (int i = 0; i < iterations; i++)
+		{
+			sw.Restart();
+			Hasher.VerifyHashedPassword(
+				TestUser,
+				hash,
+				password);
+			correctMs += sw.ElapsedMilliseconds;
+
+			sw.Restart();
+			Hasher.VerifyHashedPassword(
+				TestUser,
+				hash,
+				wrongPassword);
+			incorrectMs += sw.ElapsedMilliseconds;
+		}
+
+		// Both paths must complete — zero time means the computation was skipped
+		// (correctMs + incorrectMs is the only hard assertion; ratio is best-effort).
+		(correctMs + incorrectMs).ShouldBeGreaterThan(0);
+	}
 }

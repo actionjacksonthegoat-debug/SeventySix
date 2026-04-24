@@ -14,11 +14,11 @@ concurrency:
     cancel-in-progress: false
 
 jobs:
-    deploy-staging:
-        name: Deploy SeventySixCommerce to Staging
+    deploy-production:
+        name: Deploy SeventySixCommerce to Production
         runs-on: ubuntu-latest
         timeout-minutes: 30
-        environment: staging
+        environment: production
         if: >-
             github.event_name == 'workflow_dispatch' ||
             github.event.workflow_run.conclusion == 'success'
@@ -80,8 +80,31 @@ jobs:
                       sudo caddy validate --config /etc/caddy/Caddyfile
                       sudo systemctl reload caddy
 
+                      echo "=== Saving pre-deploy image digests for rollback ==="
+                      TANSTACK_DEFAULT_IMAGE="ghcr.io/${GITHUB_OWNER}/SeventySixCommerce-tanstack:latest"
+                      SVELTEKIT_DEFAULT_IMAGE="ghcr.io/${GITHUB_OWNER}/SeventySixCommerce-sveltekit:latest"
+                      PREV_TANSTACK=$(docker image inspect --format='{{index .RepoDigests 0}}' "${TANSTACK_DEFAULT_IMAGE}" 2>/dev/null || echo "")
+                      PREV_SVELTEKIT=$(docker image inspect --format='{{index .RepoDigests 0}}' "${SVELTEKIT_DEFAULT_IMAGE}" 2>/dev/null || echo "")
+                      if [ -n "${PREV_TANSTACK}" ] && [ -n "${PREV_SVELTEKIT}" ]; then
+                          printf '{"tanstack":"%s","sveltekit":"%s"}\n' "${PREV_TANSTACK}" "${PREV_SVELTEKIT}" > /tmp/prev-deploy-commerce.json.tmp
+                          mv /tmp/prev-deploy-commerce.json.tmp "${APP_DIR}/prev-deploy-commerce.json"
+                          echo "Saved rollback target: tanstack=${PREV_TANSTACK} sveltekit=${PREV_SVELTEKIT}"
+                      else
+                          echo "No existing images found — skipping rollback target save (first deploy or images pruned)"
+                          rm -f "${APP_DIR}/prev-deploy-commerce.json"
+                      fi
+
                       echo "=== Pulling SeventySixCommerce images ==="
                       docker compose -f docker-compose.seventysixcommerce.yml pull tanstack sveltekit
+
+                      echo "=== Recording deployed image digests ==="
+                      NEW_TANSTACK=$(docker image inspect --format='{{index .RepoDigests 0}}' "${TANSTACK_DEFAULT_IMAGE}" 2>/dev/null || echo "")
+                      NEW_SVELTEKIT=$(docker image inspect --format='{{index .RepoDigests 0}}' "${SVELTEKIT_DEFAULT_IMAGE}" 2>/dev/null || echo "")
+                      if [ -n "${NEW_TANSTACK}" ] && [ -n "${NEW_SVELTEKIT}" ]; then
+                          printf '{"tanstack":"%s","sveltekit":"%s"}\n' "${NEW_TANSTACK}" "${NEW_SVELTEKIT}" > /tmp/last-known-good-commerce.json.tmp
+                          mv /tmp/last-known-good-commerce.json.tmp "${APP_DIR}/last-known-good-commerce.json"
+                          echo "Recorded deployed digests to last-known-good-commerce.json"
+                      fi
 
                       echo "=== Restarting SeventySixCommerce containers ==="
                       docker compose -f docker-compose.seventysixcommerce.yml up -d --remove-orphans
@@ -126,9 +149,9 @@ jobs:
                       echo ""
                       echo "=== SeventySixCommerce deploy complete ==="
 
-    smoke-staging:
+    smoke:
         name: Post-Deploy Commerce Smoke Test
-        needs: [deploy-staging]
+        needs: [deploy-production]
         runs-on: ubuntu-latest
         timeout-minutes: 5
 
@@ -155,9 +178,9 @@ jobs:
                       exit 1
                   fi
 
-    rollback-staging:
-        name: Rollback Commerce Staging (on smoke failure)
-        needs: [smoke-staging]
+    rollback:
+        name: Rollback Commerce on Smoke Failure
+        needs: [smoke]
         if: failure()
         runs-on: ubuntu-latest
         timeout-minutes: 15
@@ -169,10 +192,13 @@ jobs:
         steps:
             - name: Rollback via SSH
               uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1
+              env:
+                  GITHUB_OWNER: ${{ github.repository_owner }}
               with:
                   host: ${{ secrets.PROD_HOST }}
                   username: ${{ secrets.PROD_USER }}
                   key: ${{ secrets.PROD_SSH_KEY }}
+                  envs: GITHUB_OWNER
                   script: |
                       set -euo pipefail
 
@@ -187,10 +213,27 @@ jobs:
                       sudo caddy validate --config /etc/caddy/Caddyfile
                       sudo systemctl reload caddy
 
-                      echo "=== Pulling previous images ==="
-                      docker compose -f docker-compose.seventysixcommerce.yml pull tanstack sveltekit
+                      echo "=== Loading pinned rollback image digests ==="
+                      if [ ! -f "${APP_DIR}/prev-deploy-commerce.json" ]; then
+                          echo "ERROR: No rollback target found — prev-deploy-commerce.json does not exist."
+                          echo "This is the first deployment or the file was manually removed."
+                          echo "Manual intervention required — use: GITHUB_OWNER=<owner> docker compose -f docker-compose.seventysixcommerce.yml up -d"
+                          exit 1
+                      fi
+                      PREV_TANSTACK=$(python3 -c "import json; d=json.load(open('${APP_DIR}/prev-deploy-commerce.json')); print(d['tanstack'])")
+                      PREV_SVELTEKIT=$(python3 -c "import json; d=json.load(open('${APP_DIR}/prev-deploy-commerce.json')); print(d['sveltekit'])")
+                      echo "Rolling back to tanstack=${PREV_TANSTACK}"
+                      echo "Rolling back to sveltekit=${PREV_SVELTEKIT}"
 
-                      echo "=== Restarting with previous version ==="
+                      echo "=== Pulling and re-tagging pinned rollback images ==="
+                      docker pull "${PREV_TANSTACK}"
+                      TANSTACK_BASE="${PREV_TANSTACK%@*}"
+                      docker tag "${PREV_TANSTACK}" "${TANSTACK_BASE}:latest"
+                      docker pull "${PREV_SVELTEKIT}"
+                      SVELTEKIT_BASE="${PREV_SVELTEKIT%@*}"
+                      docker tag "${PREV_SVELTEKIT}" "${SVELTEKIT_BASE}:latest"
+
+                      echo "=== Restarting with pinned previous version ==="
                       docker compose -f docker-compose.seventysixcommerce.yml up -d --remove-orphans
 
                       echo "=== Waiting for TanStack health (max 60s) ==="
@@ -234,24 +277,4 @@ jobs:
                         labels: ['incident', 'deploy']
                       });
 
-    deploy-production:
-        name: Promote Commerce to Production
-        needs: [smoke-staging]
-        runs-on: ubuntu-latest
-        timeout-minutes: 5
-        # Production environment requires manual approval via GitHub Environment protection rules.
-        # NOTE: You must create a "production" environment in GitHub repo settings with required reviewers.
-        environment: production
 
-        steps:
-            - name: Confirm production promotion
-              run: |
-                  echo "============================================"
-                  echo "  Commerce Production Promotion Approved"
-                  echo "============================================"
-                  echo ""
-                  echo "  Staging deploy and smoke tests passed."
-                  echo "  Manual approval received via GitHub Environment protection."
-                  echo "  Commerce sites are now serving the deployed version."
-                  echo ""
-                  echo "============================================"

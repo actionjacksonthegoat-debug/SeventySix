@@ -6,6 +6,7 @@ import Stripe from "stripe";
 import { isNullOrUndefined } from "../utils/null-check";
 import { createMockStripe, type MockStripeClient } from "./mock-stripe";
 
+export { _clearStripeCache, getStripe } from "./client";
 export type { MockSession, MockStripeClient } from "./mock-stripe";
 export { _clearMockSessions, createMockStripe } from "./mock-stripe";
 
@@ -21,6 +22,11 @@ export interface StripeClientConfig
 	useMocks: boolean;
 	/** Base URL for mock success/cancel redirects. */
 	baseUrl: string;
+	/**
+	 * Optional Stripe API version to pin for this client.
+	 * When omitted the Stripe SDK uses its built-in default.
+	 */
+	apiVersion?: string;
 }
 
 /**
@@ -41,5 +47,9 @@ export function createStripeClient(config: StripeClientConfig): StripeClient
 			"STRIPE_SECRET_KEY is required when MOCK_SERVICES is not true");
 	}
 
-	return new Stripe(config.secretKey);
+	return new Stripe(
+		config.secretKey,
+		(isNullOrUndefined(config.apiVersion)
+			? undefined
+			: { apiVersion: config.apiVersion }) as ConstructorParameters<typeof Stripe>[1]);
 }

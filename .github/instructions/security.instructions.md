@@ -209,3 +209,64 @@ const stored = sessionStorage.getItem("returnUrl") ?? "/";
 this.router.navigateByUrl(sanitizeReturnUrl(stored));
 ```
 
+## CSP Nonce Architecture (Angular + Caddy + Nginx)
+
+### Purpose
+Removes `style-src 'unsafe-inline'` from production CSP by using per-request nonces injected into `<style>` and `<script>` elements.
+
+### Nonce Flow
+
+| Environment | Nonce Source | Result |
+|-------------|-------------|--------|
+| Production | Caddy generates `{http.request.uuid}`, forwarded as `X-Csp-Nonce` header to Nginx | All `__CSP_NONCE__` occurrences in HTML body replaced with UUID; CSP header uses same UUID |
+| E2E / Dev nginx (no Caddy) | `map` directive defaults `$csp_nonce` to literal `__CSP_NONCE__` | Nonce attributes stay unchanged; CSP uses literal `'nonce-__CSP_NONCE__'` which matches |
+
+### index.html (Angular entry point)
+```html
+<!-- ngCspNonce is read by Angular at bootstrap to stamp every injected <style> with a nonce. -->
+<!-- In production, Caddy sets X-Csp-Nonce → Nginx sub_filter replaces __CSP_NONCE__. -->
+<!-- In E2E/dev, literal __CSP_NONCE__ remains and matches the CSP header nonce. -->
+<app-root ngCspNonce="__CSP_NONCE__"></app-root>
+```
+
+### nginx.conf (key directives in `location /`)
+```nginx
+map $http_x_csp_nonce $csp_nonce {
+    default $http_x_csp_nonce;
+    ""      "__CSP_NONCE__";
+}
+
+# In location /:
+gzip off;                                     # required — sub_filter and gzip are incompatible
+sub_filter '__CSP_NONCE__' $csp_nonce;
+sub_filter_once off;                          # replace ALL occurrences
+add_header Content-Security-Policy "... script-src 'self' 'nonce-__CSP_NONCE__'; style-src 'self' 'nonce-__CSP_NONCE__' ..." always;
+```
+
+### Caddyfile.production (key directives)
+```caddy
+header_up X-Csp-Nonce {http.request.uuid}    # forwarded to Nginx for sub_filter
+header Content-Security-Policy "... script-src 'self' 'nonce-{http.request.uuid}'; style-src 'self' 'nonce-{http.request.uuid}' ..."
+```
+Caddy's `header {}` block REPLACES Nginx's CSP header — Nginx sets, Caddy overrides on the way out.
+
+### `readNonceFromRoot` helper
+Location: `SeventySix.Client/src/app/shared/csp/csp-nonce.provider.ts`
+
+```typescript
+// Reads the ngcspnonce attribute (lowercase as DOM stores it) from the root element.
+export function readNonceFromRoot(rootElement: Element | null): string
+{
+    if (rootElement === null) { return ""; }
+    return rootElement.getAttribute("ngcspnonce") ?? "";
+}
+```
+
+Use `CSP_NONCE` DI token from `@angular/core` when a component needs to inject `<style>` elements programmatically — Angular auto-stamps them with the nonce.
+
+### Rules
+- **NEVER** use `'unsafe-inline'` in `style-src` or `script-src` in production (`Caddyfile.production`)
+- **ALWAYS** add `nonce="__CSP_NONCE__"` to any manually added `<script>` or `<style>` tags in `index.html`
+- **NEVER** use inline `style` attributes for dynamic values that change per-request — use `data-*` attributes + CSS selectors instead (avoids `style-src 'unsafe-inline'`)
+- `[style.someProperty]="value"` Angular bindings are DOM mutations — **NOT** blocked by CSP
+

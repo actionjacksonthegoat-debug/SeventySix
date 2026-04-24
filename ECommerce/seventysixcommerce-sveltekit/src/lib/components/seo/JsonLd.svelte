@@ -13,5 +13,5 @@
 </script>
 
 <svelte:head>
-	{@html `<script type="application/ld+json">${safeJsonLd(schema)}</script>`}
+	{@html '<script type="application/ld+json">' + safeJsonLd(schema) + '</script>'}
 </svelte:head>

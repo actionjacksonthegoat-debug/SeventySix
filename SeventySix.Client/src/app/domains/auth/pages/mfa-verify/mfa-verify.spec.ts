@@ -13,12 +13,12 @@ import {
 	MfaState,
 	VerifyMfaRequest
 } from "@auth/models";
-import { MfaService } from "@auth/services";
+import { MfaCooldownTimerService, MfaService } from "@auth/services";
 import { APP_ROUTES } from "@shared/constants";
 import { VerifyBackupCodeRequest, VerifyTotpRequest } from "@shared/models";
 import { AuthService, NotificationService } from "@shared/services";
 import { createMockNotificationService } from "@shared/testing";
-import { of, throwError } from "rxjs";
+import { NEVER, of, throwError } from "rxjs";
 import { vi } from "vitest";
 import { MfaVerifyComponent } from "./mfa-verify";
 
@@ -64,6 +64,13 @@ describe("MfaVerifyComponent",
 		let component: MfaVerifyComponent;
 		let fixture: ComponentFixture<MfaVerifyComponent>;
 		let mockMfaService: MockMfaService;
+		let mockCooldownTimerService: {
+			isActive: ReturnType<typeof vi.fn>;
+			remainingSeconds: ReturnType<typeof vi.fn>;
+			start: ReturnType<typeof vi.fn>;
+			stop: ReturnType<typeof vi.fn>;
+			completed: typeof NEVER;
+		};
 		let mockAuthService: MockAuthService;
 		let mockNotificationService: ReturnType<typeof createMockNotificationService>;
 		let router: Router;
@@ -95,6 +102,18 @@ describe("MfaVerifyComponent",
 				};
 			mockNotificationService =
 				createMockNotificationService();
+			mockCooldownTimerService =
+				{
+					isActive: vi
+						.fn()
+						.mockReturnValue(false),
+					remainingSeconds: vi
+						.fn()
+						.mockReturnValue(0),
+					start: vi.fn(),
+					stop: vi.fn(),
+					completed: NEVER
+				};
 
 			TestBed
 				.configureTestingModule(
@@ -107,6 +126,10 @@ describe("MfaVerifyComponent",
 							{
 								provide: NotificationService,
 								useValue: mockNotificationService
+							},
+							{
+								provide: MfaCooldownTimerService,
+								useValue: mockCooldownTimerService
 							}
 						]
 					});
@@ -551,14 +574,14 @@ describe("MfaVerifyComponent",
 					{
 						component["onResendCode"]();
 
-						expect(component["resendOnCooldown"]())
-							.toBe(true);
+						expect(mockCooldownTimerService.start)
+							.toHaveBeenCalledWith(expect.any(Number));
 					});
 
 				it("should not resend when on cooldown",
 					() =>
 					{
-						component["resendOnCooldown"].set(true);
+						mockCooldownTimerService.isActive.mockReturnValue(true);
 
 						component["onResendCode"]();
 
@@ -592,8 +615,8 @@ describe("MfaVerifyComponent",
 
 						expect(mockNotificationService.warning)
 							.toHaveBeenCalledWith("Please wait before requesting another code.");
-						expect(component["resendOnCooldown"]())
-							.toBe(true);
+						expect(mockCooldownTimerService.start)
+							.toHaveBeenCalledWith(expect.any(Number));
 					});
 
 				it("should clear MFA state and redirect when resend challenge is invalid",
@@ -644,33 +667,6 @@ describe("MfaVerifyComponent",
 						expect(mockMfaService.resendMfaCode)
 							.not
 							.toHaveBeenCalled();
-					});
-
-				it("should decrement cooldown and stop when the timer reaches zero",
-					() =>
-					{
-						vi.useFakeTimers();
-
-						try
-						{
-							component["resendCooldownSeconds"].set(2);
-							component["resendOnCooldown"].set(true);
-							component["startCooldown"]();
-
-							vi.advanceTimersByTime(1000);
-							expect(component["resendCooldownSeconds"]())
-								.toBeGreaterThan(0);
-
-							vi.advanceTimersByTime(60000);
-							expect(component["resendOnCooldown"]())
-								.toBe(false);
-							expect(component["resendCooldownSeconds"]())
-								.toBe(0);
-						}
-						finally
-						{
-							vi.useRealTimers();
-						}
 					});
 			});
 

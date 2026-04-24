@@ -18,6 +18,7 @@ import type {
 	TableColumn
 } from "@shared/models";
 import { NotificationService } from "@shared/services";
+import { getMutationErrorMessage } from "@shared/utilities";
 
 /**
  * Permission request list page.
@@ -276,7 +277,9 @@ export class PermissionRequestListPage
 					onError: (error: Error) =>
 					{
 						this.notificationService.error(
-							`Failed to approve request: ${error.message}`);
+							getMutationErrorMessage(
+								error,
+								"Failed to approve request"));
 					}
 				});
 		}
@@ -291,7 +294,9 @@ export class PermissionRequestListPage
 					onError: (error: Error) =>
 					{
 						this.notificationService.error(
-							`Failed to reject request: ${error.message}`);
+							getMutationErrorMessage(
+								error,
+								"Failed to reject request"));
 					}
 				});
 		}
@@ -320,7 +325,9 @@ export class PermissionRequestListPage
 					onError: (error: Error) =>
 					{
 						this.notificationService.error(
-							`Failed to approve requests: ${error.message}`);
+							getMutationErrorMessage(
+								error,
+								"Failed to approve requests"));
 					}
 				});
 		}
@@ -336,7 +343,9 @@ export class PermissionRequestListPage
 					onError: (error: Error) =>
 					{
 						this.notificationService.error(
-							`Failed to reject requests: ${error.message}`);
+							getMutationErrorMessage(
+								error,
+								"Failed to reject requests"));
 					}
 				});
 		}

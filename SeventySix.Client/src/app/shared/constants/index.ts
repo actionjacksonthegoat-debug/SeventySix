@@ -6,7 +6,6 @@
  * Shared constants barrel export.
  */
 export * from "./accessibility.constants";
-export * from "./altcha.constants";
 export * from "./auth-events.constants";
 export * from "./breakpoint.constants";
 export * from "./browser.constants";

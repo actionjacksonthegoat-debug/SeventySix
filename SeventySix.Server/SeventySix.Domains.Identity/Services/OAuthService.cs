@@ -19,12 +19,12 @@ namespace SeventySix.Identity;
 /// Design Principles:
 /// - Returns AuthResult for explicit error handling (no exceptions for auth failures)
 /// - Uses ASP.NET Core Identity for user management
-/// - Delegates provider-specific logic to IOAuthProviderStrategy via OAuthProviderFactory
+/// - Delegates provider-specific logic to IOAuthProviderStrategy (GitHub)
 /// - Syncs Display Name from provider on login (only if user's is empty)
 /// </remarks>
 public sealed class OAuthService(
 	UserManager<ApplicationUser> userManager,
-	OAuthProviderFactory providerFactory,
+	IOAuthProviderStrategy oauthStrategy,
 	IOptions<AuthSettings> authSettings,
 	TimeProvider timeProvider,
 	IAuthenticationService authenticationService,
@@ -40,10 +40,7 @@ public sealed class OAuthService(
 		OAuthProviderSettings providerSettings =
 			GetProviderSettings(provider);
 
-		IOAuthProviderStrategy strategy =
-			providerFactory.GetStrategy(provider);
-
-		return strategy.BuildAuthorizationUrl(
+		return oauthStrategy.BuildAuthorizationUrl(
 			providerSettings,
 			redirectUri,
 			state,
@@ -59,11 +56,7 @@ public sealed class OAuthService(
 		CancellationToken cancellationToken = default)
 	{
 		OAuthProviderSettings? providerSettings =
-			authSettings.Value.OAuth.Providers.FirstOrDefault(
-				providerConfig => string.Equals(
-					providerConfig.Provider,
-					provider,
-					StringComparison.OrdinalIgnoreCase));
+			LookupProviderSettings(provider);
 
 		if (providerSettings is null)
 		{
@@ -73,27 +66,25 @@ public sealed class OAuthService(
 				AuthErrorCodes.OAuthError);
 		}
 
+		OAuthUserInfoResult? userInfo =
+			await TryExchangeAndFetchUserInfoAsync(
+				providerSettings,
+				code,
+				redirectUri,
+				codeVerifier,
+				provider,
+				cancellationToken);
+
+		if (userInfo is null)
+		{
+			return AuthResult.Failed(
+				OAuthProviderConstants.ErrorMessages.AuthenticationFailed(
+					provider),
+				AuthErrorCodes.OAuthError);
+		}
+
 		try
 		{
-			IOAuthProviderStrategy strategy =
-				providerFactory.GetStrategy(provider);
-
-			// Exchange code for access token
-			string accessToken =
-				await strategy.ExchangeCodeForTokenAsync(
-					providerSettings,
-					code,
-					redirectUri,
-					codeVerifier,
-					cancellationToken);
-
-			// Get user info from provider
-			OAuthUserInfoResult userInfo =
-				await strategy.GetUserInfoAsync(
-					accessToken,
-					cancellationToken);
-
-			// Find or create user
 			ApplicationUser user =
 				await FindOrCreateOAuthUserAsync(
 					provider,
@@ -106,38 +97,11 @@ public sealed class OAuthService(
 				rememberMe: false,
 				cancellationToken);
 		}
-		catch (HttpRequestException ex)
-		{
-			logger.LogError(
-				ex,
-				"OAuth network error for provider {Provider} "
-					+ "— possible firewall block or DNS failure. Status: {StatusCode}",
-				LogSanitizer.Sanitize(provider),
-				ex.StatusCode);
-
-			return AuthResult.Failed(
-				OAuthProviderConstants.ErrorMessages.AuthenticationFailed(
-					provider),
-				AuthErrorCodes.OAuthError);
-		}
-		catch (JsonException ex)
-		{
-			logger.LogError(
-				ex,
-				"OAuth response parsing failed for provider {Provider} — unexpected response format",
-				LogSanitizer.Sanitize(provider));
-
-			return AuthResult.Failed(
-				OAuthProviderConstants.ErrorMessages.AuthenticationFailed(
-					provider),
-				AuthErrorCodes.OAuthError);
-		}
 		catch (InvalidOperationException ex)
 		{
 			logger.LogError(
 				ex,
-				"OAuth configuration error for provider {Provider} "
-					+ "— check ClientId, ClientSecret, and RedirectUri",
+				"OAuth user setup failed for provider {Provider}",
 				LogSanitizer.Sanitize(provider));
 
 			return AuthResult.Failed(
@@ -156,63 +120,20 @@ public sealed class OAuthService(
 		CancellationToken cancellationToken = default)
 	{
 		OAuthProviderSettings? providerSettings =
-			authSettings.Value.OAuth.Providers.FirstOrDefault(
-				providerConfig => string.Equals(
-					providerConfig.Provider,
-					provider,
-					StringComparison.OrdinalIgnoreCase));
+			LookupProviderSettings(provider);
 
 		if (providerSettings is null)
 		{
 			return null;
 		}
 
-		try
-		{
-			IOAuthProviderStrategy strategy =
-				providerFactory.GetStrategy(provider);
-
-			string accessToken =
-				await strategy.ExchangeCodeForTokenAsync(
-					providerSettings,
-					code,
-					redirectUri,
-					codeVerifier,
-					cancellationToken);
-
-			return await strategy.GetUserInfoAsync(
-				accessToken,
-				cancellationToken);
-		}
-		catch (HttpRequestException ex)
-		{
-			logger.LogError(
-				ex,
-				"OAuth network error exchanging code for provider {Provider} — possible firewall block or DNS failure. Status: {StatusCode}",
-				LogSanitizer.Sanitize(provider),
-				ex.StatusCode);
-
-			return null;
-		}
-		catch (JsonException ex)
-		{
-			logger.LogError(
-				ex,
-				"OAuth response parsing failed exchanging code for provider {Provider} — unexpected response format",
-				LogSanitizer.Sanitize(provider));
-
-			return null;
-		}
-		catch (InvalidOperationException ex)
-		{
-			logger.LogError(
-				ex,
-				"OAuth configuration error exchanging code for provider {Provider} "
-					+ "— check ClientId, ClientSecret, and RedirectUri",
-				LogSanitizer.Sanitize(provider));
-
-			return null;
-		}
+		return await TryExchangeAndFetchUserInfoAsync(
+			providerSettings,
+			code,
+			redirectUri,
+			codeVerifier,
+			provider,
+			cancellationToken);
 	}
 
 	/// <summary>
@@ -229,14 +150,107 @@ public sealed class OAuthService(
 	/// </exception>
 	private OAuthProviderSettings GetProviderSettings(string provider)
 	{
+		return LookupProviderSettings(provider)
+			?? throw new InvalidOperationException(
+				OAuthProviderConstants.ErrorMessages.ProviderNotConfigured(
+					provider));
+	}
+
+	/// <summary>
+	/// Returns the settings for a configured OAuth provider, or <see langword="null"/> when not found.
+	/// </summary>
+	/// <param name="provider">
+	/// The OAuth provider name.
+	/// </param>
+	/// <returns>
+	/// The matching <see cref="OAuthProviderSettings"/>, or <see langword="null"/> if not configured.
+	/// </returns>
+	private OAuthProviderSettings? LookupProviderSettings(string provider)
+	{
 		return authSettings.Value.OAuth.Providers.FirstOrDefault(
 			providerConfig => string.Equals(
 				providerConfig.Provider,
 				provider,
-				StringComparison.OrdinalIgnoreCase))
-			?? throw new InvalidOperationException(
-				OAuthProviderConstants.ErrorMessages.ProviderNotConfigured(
-					provider));
+				StringComparison.OrdinalIgnoreCase));
+	}
+
+	/// <summary>
+	/// Exchanges an authorization code for OAuth user information via the provider strategy.
+	/// Captures network, parsing, and configuration errors as <see langword="null"/> returns.
+	/// </summary>
+	/// <param name="providerSettings">
+	/// The configured OAuth provider settings.
+	/// </param>
+	/// <param name="code">
+	/// The authorization code received from the provider.
+	/// </param>
+	/// <param name="redirectUri">
+	/// The redirect URI used in the original authorization request.
+	/// </param>
+	/// <param name="codeVerifier">
+	/// The PKCE code verifier to validate the token exchange.
+	/// </param>
+	/// <param name="provider">
+	/// The OAuth provider name, used in structured log messages.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// The OAuth user information on success; <see langword="null"/> if exchange or parsing fails.
+	/// </returns>
+	private async Task<OAuthUserInfoResult?> TryExchangeAndFetchUserInfoAsync(
+		OAuthProviderSettings providerSettings,
+		string code,
+		string redirectUri,
+		string codeVerifier,
+		string provider,
+		CancellationToken cancellationToken)
+	{
+		try
+		{
+			string accessToken =
+				await oauthStrategy.ExchangeCodeForTokenAsync(
+					providerSettings,
+					code,
+					redirectUri,
+					codeVerifier,
+					cancellationToken);
+
+			return await oauthStrategy.GetUserInfoAsync(
+				accessToken,
+				cancellationToken);
+		}
+		catch (HttpRequestException ex)
+		{
+			logger.LogError(
+				ex,
+				"OAuth network error for provider {Provider} "
+					+ "— possible firewall block or DNS failure. Status: {StatusCode}",
+				LogSanitizer.Sanitize(provider),
+				ex.StatusCode);
+
+			return null;
+		}
+		catch (JsonException ex)
+		{
+			logger.LogError(
+				ex,
+				"OAuth response parsing failed for provider {Provider} — unexpected response format",
+				LogSanitizer.Sanitize(provider));
+
+			return null;
+		}
+		catch (InvalidOperationException ex)
+		{
+			logger.LogError(
+				ex,
+				"OAuth configuration error for provider {Provider} "
+					+ "— check ClientId, ClientSecret, and RedirectUri",
+				LogSanitizer.Sanitize(provider));
+
+			return null;
+		}
 	}
 
 	/// <summary>

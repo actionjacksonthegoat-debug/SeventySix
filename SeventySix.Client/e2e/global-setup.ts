@@ -16,8 +16,81 @@ import * as fs from "fs";
 import * as path from "path";
 
 /**
+ * Number of per-worker auth state files created per role.
+ * Must be >= the maximum Playwright worker count (4 in CI, up to 8 locally).
+ * Each worker uses its own session to prevent token-rotation conflicts
+ * that would occur when multiple workers refresh the same refresh token.
+ */
+const WORKER_SESSION_COUNT: number = 8;
+
+/**
+ * Logs in as a test user and saves the browser storage state to a file.
+ * @param browser
+ * The Playwright browser instance.
+ * @param baseURL
+ * The base URL for the application.
+ * @param testUser
+ * The test user to log in as.
+ * @param sessionIndex
+ * The index suffix appended to the auth state filename (0-based).
+ * @returns
+ * A promise that resolves when the login and state save are complete.
+ */
+async function loginAndSaveSession(
+	browser: Browser,
+	baseURL: string,
+	testUser: TestUser,
+	sessionIndex: number): Promise<void>
+{
+	const browserContext: BrowserContext =
+		await browser.newContext(
+			{ baseURL, ignoreHTTPSErrors: true });
+	const page: Page =
+		await browserContext.newPage();
+
+	await page.goto(ROUTES.auth.login);
+	await page
+		.locator(SELECTORS.form.usernameInput)
+		.waitFor(
+			{ state: "visible", timeout: TIMEOUTS.globalSetup });
+
+	await page
+		.locator(SELECTORS.form.usernameInput)
+		.fill(testUser.username);
+	await page
+		.locator(SELECTORS.form.passwordInput)
+		.fill(testUser.password);
+
+	await solveAltchaChallenge(
+		page,
+		{ initTimeout: TIMEOUTS.globalSetup });
+
+	await page
+		.locator(SELECTORS.form.submitButton)
+		.click();
+	await page.waitForURL(ROUTES.home);
+
+	await page
+		.locator(SELECTORS.layout.userMenuButton)
+		.waitFor(
+			{ state: "visible", timeout: TIMEOUTS.auth });
+
+	const authDir: string =
+		path.join(process.cwd(), "e2e", ".auth");
+	const authStatePath: string =
+		path.join(authDir, `${testUser.role.toLowerCase()}_${sessionIndex}.json`);
+	await browserContext.storageState(
+		{ path: authStatePath });
+
+	await browserContext.close();
+}
+
+/**
  * Global setup that runs once before all tests.
  * Creates authenticated browser states for each role.
+ * Creates WORKER_SESSION_COUNT sessions per role so that each parallel
+ * Playwright worker has its own unique refresh token, preventing token-rotation
+ * conflicts that would occur when workers share the same session.
  */
 async function globalSetup(config: FullConfig): Promise<void>
 {
@@ -38,63 +111,31 @@ async function globalSetup(config: FullConfig): Promise<void>
 	const browser: Browser =
 		await chromium.launch();
 
-	// Authenticate each test role in parallel — each uses its own context and auth file
+	// Authenticate each test role in parallel — each uses its own context and auth file.
 	// MFA-enabled users are excluded because they require MFA verification after login
 	// and cannot complete the standard login → home redirect flow.
+	// WORKER_SESSION_COUNT separate sessions are created per role so that each
+	// Playwright worker gets its own unique refresh token (prevents rotation conflicts).
 	const nonMfaUsers: Array<TestUser> =
 		TEST_USERS.filter(
 			(testUser) => !testUser.mfaEnabled);
 
-	await Promise.all(
-		nonMfaUsers.map(
-			async (testUser) =>
-			{
-				const browserContext: BrowserContext =
-					await browser.newContext(
-						{ baseURL, ignoreHTTPSErrors: true });
-				const page: Page =
-					await browserContext.newPage();
+	const loginTasks: Array<Promise<void>> = [];
 
-				// Navigate to login page and wait for form to be ready
-				await page.goto(ROUTES.auth.login);
-				await page
-					.locator(SELECTORS.form.usernameInput)
-					.waitFor(
-						{ state: "visible", timeout: TIMEOUTS.globalSetup });
+	for (const testUser of nonMfaUsers)
+	{
+		for (let sessionIndex: number = 0; sessionIndex < WORKER_SESSION_COUNT; sessionIndex++)
+		{
+			loginTasks.push(
+				loginAndSaveSession(
+					browser,
+					baseURL,
+					testUser,
+					sessionIndex));
+		}
+	}
 
-				// Fill login form
-				await page
-					.locator(SELECTORS.form.usernameInput)
-					.fill(testUser.username);
-				await page
-					.locator(SELECTORS.form.passwordInput)
-					.fill(testUser.password);
-
-				await solveAltchaChallenge(
-					page,
-					{ initTimeout: TIMEOUTS.globalSetup });
-
-				// Submit and wait for redirect
-				await page
-					.locator(SELECTORS.form.submitButton)
-					.click();
-				await page.waitForURL(ROUTES.home);
-
-				// Wait for the app to be fully interactive (user menu visible means auth complete)
-				// This ensures we capture the final cookie state after authentication
-				await page
-					.locator(SELECTORS.layout.userMenuButton)
-					.waitFor(
-						{ state: "visible", timeout: TIMEOUTS.auth });
-
-				// Save storage state for this role
-				const authStatePath: string =
-					path.join(authDir, `${testUser.role.toLowerCase()}.json`);
-				await browserContext.storageState(
-					{ path: authStatePath });
-
-				await browserContext.close();
-			}));
+	await Promise.all(loginTasks);
 
 	await browser.close();
 }

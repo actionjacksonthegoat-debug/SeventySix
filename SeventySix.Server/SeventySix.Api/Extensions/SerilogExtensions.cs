@@ -68,6 +68,8 @@ public static class SerilogExtensions
 		return config
 			.ReadFrom
 			.Configuration(configuration)
+			.Destructure
+			.With<SensitivePropertyDestructuringPolicy>()
 			.ConfigureEnrichers()
 			.ConfigureMinimumLevels();
 	}
@@ -109,6 +111,8 @@ public static class SerilogExtensions
 			new LoggerConfiguration()
 				.ReadFrom
 				.Configuration(configuration)
+				.Destructure
+				.With<SensitivePropertyDestructuringPolicy>()
 				.ConfigureEnrichers()
 				.WriteTo
 				.Database(

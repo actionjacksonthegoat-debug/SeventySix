@@ -1,5 +1,10 @@
 name: DAST Security Scan
 
+# NOTE: DAST runs on push to master (non-blocking discovery) and weekly schedule.
+# It is NOT part of the deploy gate — deploy.yml does not wait for DAST.
+# DAST failures are informational and tracked via GitHub Security tab.
+# For pre-deploy security validation, see the 'security-scan' job in ci.yml.
+
 on:
     push:
         branches: [master]

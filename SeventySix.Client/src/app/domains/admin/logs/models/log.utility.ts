@@ -92,24 +92,6 @@ export function getLogLevelIconName(logLevel: string): string
 // ============================================================
 
 /**
- * Truncates text to a maximum length with ellipsis.
- * @param {string} text
- * The text to truncate.
- * @param {number} maxLength
- * The maximum allowed length for the returned string.
- * @returns {string}
- * The truncated string with an ellipsis appended if it exceeded maxLength.
- */
-export function truncateText(text: string, maxLength: number): string
-{
-	if (text.length <= maxLength)
-	{
-		return text;
-	}
-	return text.substring(0, maxLength) + "...";
-}
-
-/**
  * Formats JSON properties string with indentation.
  * @param {string | null} properties
  * A JSON string containing properties to format.

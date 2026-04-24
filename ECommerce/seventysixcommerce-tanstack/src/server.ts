@@ -6,6 +6,7 @@ import {
 	createStartHandler,
 	defaultStreamHandler
 } from "@tanstack/react-start/server";
+import { randomBytes } from "node:crypto";
 import { configureLogForwarder, queueLog } from "~/server/log-forwarder";
 import { initTelemetry } from "~/server/telemetry";
 
@@ -15,8 +16,72 @@ configureLogForwarder(process.env.SEVENTYSIX_API_URL ?? "");
 // Initialize OpenTelemetry if endpoint is configured
 initTelemetry(process.env.OTEL_EXPORTER_OTLP_ENDPOINT ?? "");
 
-const handler: ReturnType<typeof createStartHandler> =
-	createStartHandler(defaultStreamHandler);
+/**
+ * Creates a cryptographically random CSP nonce for a single HTTP response.
+ * @returns {string}
+ * Base64 nonce string for CSP script/style directives.
+ */
+function createCspNonce(): string
+{
+	return randomBytes(16)
+		.toString("base64");
+}
+
+/**
+ * Builds a strict CSP for SSR responses that include nonce-decorated inline scripts/styles.
+ * @param {string} nonce
+ * Per-response CSP nonce value.
+ * @returns {string}
+ * Serialized Content-Security-Policy header value.
+ */
+function buildContentSecurityPolicy(nonce: string): string
+{
+	return [
+		"default-src 'self'",
+		"base-uri 'self'",
+		"form-action 'self'",
+		"object-src 'none'",
+		"frame-ancestors 'none'",
+		"upgrade-insecure-requests",
+		`script-src 'self' 'nonce-${nonce}' https://www.googletagmanager.com`,
+		"script-src-attr 'none'",
+		`style-src 'self' 'nonce-${nonce}'`,
+		"style-src-attr 'none'",
+		"img-src 'self' data:",
+		"font-src 'self'",
+		"connect-src 'self' https://www.google-analytics.com https://www.googletagmanager.com"
+	]
+		.join("; ");
+}
+
+const startHandler: ReturnType<typeof createStartHandler> =
+	createStartHandler(
+		async ({ request, router, responseHeaders }): Promise<Response> =>
+		{
+			const cspNonce: string =
+				createCspNonce();
+
+			router.update(
+				{
+					ssr: {
+						nonce: cspNonce
+					}
+				});
+
+			const response: Response =
+				await defaultStreamHandler(
+					{
+						request,
+						router,
+						responseHeaders
+					});
+
+			response.headers.set(
+				"Content-Security-Policy",
+				buildContentSecurityPolicy(cspNonce));
+
+			return response;
+		});
 
 export default {
 	async fetch(request: Request): Promise<Response>
@@ -28,7 +93,7 @@ export default {
 		try
 		{
 			const response: Response =
-				await handler(request);
+				await startHandler(request);
 
 			response.headers.set("X-Content-Type-Options", "nosniff");
 			response.headers.set("X-Frame-Options", "DENY");
@@ -36,11 +101,6 @@ export default {
 			response.headers.set(
 				"Permissions-Policy",
 				"camera=(), microphone=(), geolocation=()");
-			// TanStack Start emits inline hydration/scroll-restoration scripts that
-			// cannot use nonces yet, so 'unsafe-inline' is required for script-src.
-			response.headers.set(
-				"Content-Security-Policy",
-				"default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://www.google-analytics.com https://www.googletagmanager.com; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'");
 			response.headers.set(
 				"Cross-Origin-Embedder-Policy",
 				"credentialless");

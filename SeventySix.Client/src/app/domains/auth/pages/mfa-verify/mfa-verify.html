@@ -82,12 +82,12 @@
 					type="button"
 					data-testid="resend-code-button"
 					(click)="onResendCode()"
-					[disabled]="resendOnCooldown() || isResending()"
+					[disabled]="cooldownTimer.isActive() || isResending()"
 					class="resend-button">
 					@if (isResending()) {
 						Sending...
-					} @else if (resendOnCooldown()) {
-						Resend in {{ resendCooldownSeconds() }}s
+					} @else if (cooldownTimer.isActive()) {
+						Resend in {{ cooldownTimer.remainingSeconds() }}s
 					} @else {
 						Resend Code
 					}

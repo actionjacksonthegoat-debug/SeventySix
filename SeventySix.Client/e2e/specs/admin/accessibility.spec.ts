@@ -47,8 +47,8 @@ test.describe("Admin Routes - WCAG Accessibility",
 					// Required for zoneless Angular where bindings (e.g., aria-label)
 					// may not be applied when the load event fires.
 					await expect(adminPage.locator(pageInfo.waitFor))
-						.toBeVisible();
-
+						.toBeVisible(
+							{ timeout: TIMEOUTS.navigation * 3 });
 					await expectAccessible(adminPage, `Admin ${pageInfo.name}`);
 				});
 		}

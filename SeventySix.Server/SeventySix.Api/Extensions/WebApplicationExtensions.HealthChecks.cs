@@ -5,6 +5,7 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using SeventySix.Api.Attributes;
 using SeventySix.Shared.Constants;
 
 namespace SeventySix.Api.Extensions;
@@ -33,7 +34,8 @@ public static partial class WebApplicationExtensions
 					_ => false,
 				ResponseWriter =
 					WriteLivenessResponseAsync,
-			});
+			})
+			.WithMetadata(new AllowHttpAttribute());
 
 		app.MapHealthChecks(
 			EndpointPathConstants.Health.Ready,
@@ -43,7 +45,8 @@ public static partial class WebApplicationExtensions
 					check => check.Tags.Contains("ready"),
 				ResponseWriter =
 					WriteHealthCheckResponseAsync,
-			});
+			})
+			.WithMetadata(new AllowHttpAttribute());
 
 		app.MapHealthChecks(
 			EndpointPathConstants.Health.Base,
@@ -51,7 +54,8 @@ public static partial class WebApplicationExtensions
 			{
 				ResponseWriter =
 					WriteHealthCheckResponseAsync,
-			});
+			})
+			.WithMetadata(new AllowHttpAttribute());
 
 		return app;
 	}

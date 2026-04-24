@@ -50,6 +50,13 @@ import { NgxSkeletonLoaderModule } from "ngx-skeleton-loader";
  * Provides reusable table infrastructure for feature components
  * Follows Material Design 3 patterns with OnPush change detection
  * Angular 20+ compliant: signals, zoneless, inject() pattern
+ *
+ * @remarks
+ * Further decomposition of this component (e.g. extracting date-range filtering
+ * or virtual-scroll logic into child components) is intentionally deferred.
+ * The component is consumed by many feature tables; splitting it now would
+ * require coordinated changes across all consumers and carries a high regression
+ * risk. Decompose when a concrete, measurable benefit justifies the coupling cost.
  */
 @Component(
 	{

@@ -14,11 +14,11 @@ concurrency:
     cancel-in-progress: false  # Never cancel an in-progress deploy
 
 jobs:
-    deploy-staging:
-        name: Deploy to Staging
+    deploy-production:
+        name: Deploy to Production
         runs-on: ubuntu-latest
         timeout-minutes: 30
-        environment: staging
+        environment: production
         if: >-
             github.event_name == 'workflow_dispatch' ||
             github.event.workflow_run.conclusion == 'success'
@@ -115,8 +115,31 @@ jobs:
                       # restart does a clean stop+start which is more reliable for config changes.
                       sudo systemctl restart caddy
 
+                      echo "=== Saving pre-deploy image digests for rollback ==="
+                      API_DEFAULT_IMAGE="ghcr.io/actionjacksonthegoat-debug/seventysix-api:latest"
+                      CLIENT_DEFAULT_IMAGE="ghcr.io/actionjacksonthegoat-debug/seventysix-client:latest"
+                      PREV_API=$(docker image inspect --format='{{index .RepoDigests 0}}' "${API_DEFAULT_IMAGE}" 2>/dev/null || echo "")
+                      PREV_CLIENT=$(docker image inspect --format='{{index .RepoDigests 0}}' "${CLIENT_DEFAULT_IMAGE}" 2>/dev/null || echo "")
+                      if [ -n "${PREV_API}" ] && [ -n "${PREV_CLIENT}" ]; then
+                          printf '{"api":"%s","client":"%s"}\n' "${PREV_API}" "${PREV_CLIENT}" > /tmp/prev-deploy.json.tmp
+                          mv /tmp/prev-deploy.json.tmp "${APP_DIR}/prev-deploy.json"
+                          echo "Saved rollback target: api=${PREV_API} client=${PREV_CLIENT}"
+                      else
+                          echo "No existing images found — skipping rollback target save (first deploy or images pruned)"
+                          rm -f "${APP_DIR}/prev-deploy.json"
+                      fi
+
                       echo "=== Pulling pre-built images from GHCR ==="
                       docker compose -f docker-compose.production.yml pull api client
+
+                      echo "=== Recording deployed image digests ==="
+                      NEW_API=$(docker image inspect --format='{{index .RepoDigests 0}}' "${API_DEFAULT_IMAGE}" 2>/dev/null || echo "")
+                      NEW_CLIENT=$(docker image inspect --format='{{index .RepoDigests 0}}' "${CLIENT_DEFAULT_IMAGE}" 2>/dev/null || echo "")
+                      if [ -n "${NEW_API}" ] && [ -n "${NEW_CLIENT}" ]; then
+                          printf '{"api":"%s","client":"%s"}\n' "${NEW_API}" "${NEW_CLIENT}" > /tmp/last-known-good.json.tmp
+                          mv /tmp/last-known-good.json.tmp "${APP_DIR}/last-known-good.json"
+                          echo "Recorded deployed digests to last-known-good.json"
+                      fi
 
                       echo "=== Verifying container UIDs match cert ACLs ==="
                       bash "$APP_DIR/scripts/verify-cert-uids.sh"
@@ -207,9 +230,9 @@ jobs:
                       echo ""
                       echo "=== Deploy complete ==="
 
-    smoke-staging:
+    smoke:
         name: Post-Deploy Smoke Test
-        needs: [deploy-staging]
+        needs: [deploy-production]
         runs-on: ubuntu-latest
         timeout-minutes: 5
 
@@ -245,9 +268,9 @@ jobs:
                       exit 1
                   fi
 
-    rollback-staging:
-        name: Rollback Staging (on smoke failure)
-        needs: [smoke-staging]
+    rollback:
+        name: Rollback on Smoke Failure
+        needs: [smoke]
         if: failure()
         runs-on: ubuntu-latest
         timeout-minutes: 15
@@ -278,11 +301,21 @@ jobs:
                       sudo caddy validate --config /etc/caddy/Caddyfile
                       sudo systemctl restart caddy
 
-                      echo "=== Pulling previous images ==="
-                      docker compose -f docker-compose.production.yml pull api client
+                      echo "=== Loading pinned rollback image digests ==="
+                      if [ ! -f "${APP_DIR}/prev-deploy.json" ]; then
+                          echo "ERROR: No rollback target found — prev-deploy.json does not exist."
+                          echo "This is the first deployment or the file was manually removed."
+                          echo "Manual intervention required — use: API_IMAGE=<digest> CLIENT_IMAGE=<digest> docker compose -f docker-compose.production.yml up -d"
+                          exit 1
+                      fi
+                      PREV_API=$(python3 -c "import json; d=json.load(open('${APP_DIR}/prev-deploy.json')); print(d['api'])")
+                      PREV_CLIENT=$(python3 -c "import json; d=json.load(open('${APP_DIR}/prev-deploy.json')); print(d['client'])")
+                      echo "Rolling back to api=${PREV_API}"
+                      echo "Rolling back to client=${PREV_CLIENT}"
 
-                      echo "=== Restarting with previous version ==="
-                      docker compose -f docker-compose.production.yml up -d --remove-orphans
+                      echo "=== Restarting with pinned previous version ==="
+                      API_IMAGE="${PREV_API}" CLIENT_IMAGE="${PREV_CLIENT}" \
+                        docker compose -f docker-compose.production.yml up -d --remove-orphans
 
                       echo "=== Waiting for API health (max 150s) ==="
                       for i in $(seq 1 30); do
@@ -312,24 +345,4 @@ jobs:
                         labels: ['incident', 'deploy']
                       });
 
-    deploy-production:
-        name: Promote to Production
-        needs: [smoke-staging]
-        runs-on: ubuntu-latest
-        timeout-minutes: 5
-        # Production environment requires manual approval via GitHub Environment protection rules.
-        # NOTE: You must create a "production" environment in GitHub repo settings with required reviewers.
-        environment: production
 
-        steps:
-            - name: Confirm production promotion
-              run: |
-                  echo "============================================"
-                  echo "  Production Promotion Approved"
-                  echo "============================================"
-                  echo ""
-                  echo "  Staging deploy and smoke tests passed."
-                  echo "  Manual approval received via GitHub Environment protection."
-                  echo "  Production is now serving the deployed version."
-                  echo ""
-                  echo "============================================"

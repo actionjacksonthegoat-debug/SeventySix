@@ -1,6 +1,12 @@
 import { Routes } from "@angular/router";
 import { mfaFeatureGuard } from "@auth/guards/mfa-feature.guard";
-import { BackupCodesService, MfaService, TotpService } from "@auth/services";
+import {
+	BackupCodesService,
+	ChangePasswordService,
+	MfaCooldownTimerService,
+	MfaService,
+	TotpService
+} from "@auth/services";
 
 /**
  * Authentication feature routes (login, registration, password flows).
@@ -42,6 +48,7 @@ export const AUTH_ROUTES: Routes =
 			loadComponent: () =>
 				import("./pages/change-password/change-password").then(
 					(m) => m.ChangePasswordComponent),
+			providers: [ChangePasswordService],
 			data: { breadcrumb: "Change Password" }
 		},
 		{
@@ -57,7 +64,7 @@ export const AUTH_ROUTES: Routes =
 			loadComponent: () =>
 				import("./pages/mfa-verify/mfa-verify").then(
 					(m) => m.MfaVerifyComponent),
-			providers: [MfaService],
+			providers: [MfaService, MfaCooldownTimerService],
 			data: { breadcrumb: "Verify Identity" }
 		},
 		{

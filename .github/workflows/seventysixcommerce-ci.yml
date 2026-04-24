@@ -29,34 +29,56 @@ concurrency:
 
 jobs:
     # ──────────────────────────────────────────────────────────
-    # Stage 1: TanStack Start — Typecheck + Test + Build
+    # Stage 1: Commerce Apps — Typecheck + Test + Build (matrix)
     # ──────────────────────────────────────────────────────────
-    tanstack-build:
-        name: TanStack Build & Test
+    commerce-build:
+        name: ${{ matrix.name }}
         runs-on: ubuntu-latest
         timeout-minutes: 30
 
+        strategy:
+            matrix:
+                include:
+                    - app: tanstack
+                      name: "TanStack Build & Test"
+                      working-directory: ECommerce/seventysixcommerce-tanstack
+                      pg-port: 5438
+                      pg-user: SeventySixCommerce
+                      pg-password: seventysixcommerce_ci
+                      pg-db: SeventySixCommerce
+                      database-url: postgresql://SeventySixCommerce:seventysixcommerce_ci@localhost:5438/SeventySixCommerce
+                      codecov-flag: seventysixcommerce-tanstack
+                    - app: sveltekit
+                      name: "SvelteKit Build & Test"
+                      working-directory: ECommerce/seventysixcommerce-sveltekit
+                      pg-port: 5439
+                      pg-user: test_user
+                      pg-password: test_password
+                      pg-db: seventysixcommerce_sveltekit_test
+                      database-url: postgresql://test_user:test_password@localhost:5439/seventysixcommerce_sveltekit_test
+                      codecov-flag: seventysixcommerce-sveltekit
+
         defaults:
             run:
-                working-directory: ECommerce/seventysixcommerce-tanstack
+                working-directory: ${{ matrix.working-directory }}
 
         services:
             postgres:
                 image: postgres:17-alpine
                 env:
-                    POSTGRES_USER: SeventySixCommerce
-                    POSTGRES_PASSWORD: seventysixcommerce_ci
-                    POSTGRES_DB: SeventySixCommerce
+                    POSTGRES_USER: ${{ matrix.pg-user }}
+                    POSTGRES_PASSWORD: ${{ matrix.pg-password }}
+                    POSTGRES_DB: ${{ matrix.pg-db }}
                 ports:
-                    - 5438:5432
+                    - ${{ matrix.pg-port }}:5432
                 options: >-
-                    --health-cmd "pg_isready -U SeventySixCommerce"
+                    --health-cmd "pg_isready -U ${{ matrix.pg-user }}"
                     --health-interval 5s
                     --health-timeout 3s
                     --health-retries 5
 
         env:
-            DATABASE_URL: postgresql://SeventySixCommerce:seventysixcommerce_ci@localhost:5438/SeventySixCommerce
+            DATABASE_URL: ${{ matrix.database-url }}
             MOCK_SERVICES: "true"
 
         steps:
@@ -66,100 +88,46 @@ jobs:
             - name: Setup Node.js
               uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
               with:
-                  node-version: "22.x"
+                  node-version: "24.x"
                   cache: "npm"
-                  cache-dependency-path: ECommerce/seventysixcommerce-tanstack/package-lock.json
+                  cache-dependency-path: |
+                      ECommerce/seventysixcommerce-shared/package-lock.json
+                      ${{ matrix.working-directory }}/package-lock.json
 
             - name: Install dependencies
               run: npm ci
 
             - name: Link shared module resolution to app dependencies
-              run: node ../../scripts/link-commerce-shared-node-modules.mjs --app tanstack
+              run: node ../../scripts/link-commerce-shared-node-modules.mjs --app ${{ matrix.app }}
 
-            - name: Build
+            - name: Build (TanStack)
+              if: matrix.app == 'tanstack'
               run: npm run build
 
-            - name: Typecheck
+            - name: Typecheck (TanStack)
+              if: matrix.app == 'tanstack'
               run: npx tsc --noEmit
 
-            - name: Test with coverage
-              run: npx vitest run --coverage
-
-            - name: Upload coverage
-              if: always()
-              uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de # v5
-              with:
-                  token: ${{ secrets.CODECOV_TOKEN }}
-                  flags: seventysixcommerce-tanstack
-                  directory: ECommerce/seventysixcommerce-tanstack/coverage
-                  fail_ci_if_error: true
-
-    # ──────────────────────────────────────────────────────────
-    # Stage 1: SvelteKit — Check + Test + Build
-    # ──────────────────────────────────────────────────────────
-    sveltekit-build:
-        name: SvelteKit Build & Test
-        runs-on: ubuntu-latest
-        timeout-minutes: 30
-
-        defaults:
-            run:
-                working-directory: ECommerce/seventysixcommerce-sveltekit
-
-        services:
-            postgres:
-                image: postgres:17-alpine
-                env:
-                    POSTGRES_DB: seventysixcommerce_sveltekit_test
-                    POSTGRES_USER: test_user
-                    POSTGRES_PASSWORD: test_password
-                ports:
-                    - 5439:5432
-                options: >-
-                    --health-cmd "pg_isready -U test_user"
-                    --health-interval 5s
-                    --health-timeout 3s
-                    --health-retries 5
-
-        env:
-            DATABASE_URL: postgresql://test_user:test_password@localhost:5439/seventysixcommerce_sveltekit_test
-            MOCK_SERVICES: "true"
-
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-
-            - name: Setup Node.js
-              uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
-              with:
-                  node-version: "22.x"
-                  cache: "npm"
-                  cache-dependency-path: ECommerce/seventysixcommerce-sveltekit/package-lock.json
-
-            - name: Install dependencies
-              run: npm ci
-
-            - name: Link shared module resolution to app dependencies
-              run: node ../../scripts/link-commerce-shared-node-modules.mjs --app sveltekit
-
-            - name: Svelte Check
+            - name: Svelte Check (SvelteKit)
+              if: matrix.app == 'sveltekit'
               run: npm run check
 
             - name: Test with coverage
               run: npx vitest run --coverage
 
-            - name: Build
+            - name: Build (SvelteKit)
+              if: matrix.app == 'sveltekit'
               run: npm run build
               env:
-                  DATABASE_URL: postgresql://test_user:test_password@localhost:5439/seventysixcommerce_sveltekit_test
+                  DATABASE_URL: ${{ matrix.database-url }}
 
             - name: Upload coverage
               if: always()
               uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de # v5
               with:
                   token: ${{ secrets.CODECOV_TOKEN }}
-                  flags: seventysixcommerce-sveltekit
-                  directory: ECommerce/seventysixcommerce-sveltekit/coverage
+                  flags: ${{ matrix.codecov-flag }}
+                  directory: ${{ matrix.working-directory }}/coverage
                   fail_ci_if_error: true
 
     # ──────────────────────────────────────────────────────────
@@ -169,7 +137,7 @@ jobs:
         name: SvelteKit E2E Tests
         runs-on: ubuntu-latest
         timeout-minutes: 30
-        needs: [sveltekit-build]
+        needs: [commerce-build]
 
         defaults:
             run:
@@ -197,9 +165,7 @@ jobs:
             - name: Setup Node.js
               uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
               with:
-                  node-version: "22.x"
-                  cache: "npm"
-                  cache-dependency-path: ECommerce/seventysixcommerce-sveltekit/package-lock.json
+                  node-version: "24.x"
 
             - name: Install dependencies
               run: npm ci
@@ -270,7 +236,7 @@ jobs:
         name: TanStack E2E Tests
         runs-on: ubuntu-latest
         timeout-minutes: 30
-        needs: [tanstack-build]
+        needs: [commerce-build]
 
         defaults:
             run:
@@ -298,9 +264,7 @@ jobs:
             - name: Setup Node.js
               uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
               with:
-                  node-version: "22.x"
-                  cache: "npm"
-                  cache-dependency-path: ECommerce/seventysixcommerce-tanstack/package-lock.json
+                  node-version: "24.x"
 
             - name: Install dependencies
               run: npm ci --legacy-peer-deps
@@ -391,7 +355,7 @@ jobs:
         name: SvelteKit Load Tests
         runs-on: ubuntu-latest
         timeout-minutes: 30
-        needs: [sveltekit-build]
+        needs: [commerce-build]
 
         defaults:
             run:
@@ -423,9 +387,7 @@ jobs:
             - name: Setup Node.js
               uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
               with:
-                  node-version: "22.x"
-                  cache: "npm"
-                  cache-dependency-path: ECommerce/seventysixcommerce-sveltekit/package-lock.json
+                  node-version: "24.x"
 
             - name: Install dependencies
               run: npm ci
@@ -492,7 +454,7 @@ jobs:
         name: TanStack Load Tests
         runs-on: ubuntu-latest
         timeout-minutes: 30
-        needs: [tanstack-build]
+        needs: [commerce-build]
 
         defaults:
             run:
@@ -524,9 +486,7 @@ jobs:
             - name: Setup Node.js
               uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
               with:
-                  node-version: "22.x"
-                  cache: "npm"
-                  cache-dependency-path: ECommerce/seventysixcommerce-tanstack/package-lock.json
+                  node-version: "24.x"
 
             - name: Install dependencies
               run: npm ci --legacy-peer-deps
@@ -610,14 +570,14 @@ jobs:
     # Stage 3: Quality gate — all checks must pass
     # ──────────────────────────────────────────────────────────
     # NOTE: Add the following as required status checks in GitHub branch protection:
-    # - "SvelteKit Build & Test"
-    # - "TanStack Build & Test"
+    # - "TanStack Build & Test" (commerce-build matrix entry)
+    # - "SvelteKit Build & Test" (commerce-build matrix entry)
     # - "SvelteKit E2E Tests"
     # - "TanStack E2E Tests"
     # - "SeventySixCommerce Quality Gate"
     quality-gate:
         name: SeventySixCommerce Quality Gate
-        needs: [tanstack-build, sveltekit-build, e2e-sveltekit, e2e-tanstack, loadtest-sveltekit, loadtest-tanstack]
+        needs: [commerce-build, e2e-sveltekit, e2e-tanstack, loadtest-sveltekit, loadtest-tanstack]
         runs-on: ubuntu-latest
         timeout-minutes: 15
         if: always()
@@ -643,8 +603,7 @@ jobs:
                       fi
                   }
 
-                  check_job "TanStack Build & Test" "${{ needs.tanstack-build.result }}"
-                  check_job "SvelteKit Build & Test" "${{ needs.sveltekit-build.result }}"
+                  check_job "Commerce Build & Test" "${{ needs.commerce-build.result }}"
                   check_job "SvelteKit E2E Tests" "${{ needs.e2e-sveltekit.result }}"
                   check_job "TanStack E2E Tests" "${{ needs.e2e-tanstack.result }}"
                   check_job "SvelteKit Load Tests" "${{ needs.loadtest-sveltekit.result }}"

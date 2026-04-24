@@ -20,6 +20,8 @@
 }
 
 .oauth-button {
+	--oauth-color: var(--mat-sys-primary);
+
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -51,6 +53,12 @@
 	&:disabled {
 		opacity: 0.6;
 		cursor: not-allowed;
+	}
+
+	&[data-oauth-provider="github"] {
+		// Use the GitHub brand color directly — ensures WCAG AA contrast with white text.
+		// var(--mat-sys-secondary) is too light in the Material light theme.
+		--oauth-color: #24292e;
 	}
 
 	.oauth-icon {

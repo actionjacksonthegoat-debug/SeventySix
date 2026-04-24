@@ -1,0 +1,69 @@
+name: Dependabot Auto-merge
+
+on:
+    pull_request_target:
+        types: [opened, synchronize, reopened]
+
+permissions:
+    pull-requests: write
+    contents: write
+
+jobs:
+    auto-merge:
+        name: Auto-merge Patch Updates
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        # Only process PRs opened by Dependabot
+        if: github.actor == 'dependabot[bot]'
+
+        steps:
+            - name: Evaluate update type and approve
+              uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
+              with:
+                  # pull_request_target has write access — GITHUB_TOKEN is sufficient.
+                  github-token: ${{ secrets.GITHUB_TOKEN }}
+                  script: |
+                      const pr = context.payload.pull_request;
+                      const prNumber = pr.number;
+
+                      // Dependabot embeds machine-readable metadata in the PR body.
+                      // Only auto-merge semver-patch updates; minor/major require human review.
+                      const body = pr.body ?? '';
+                      const isPatchOnly = body.includes('update-type: version-update:semver-patch')
+                          && !body.includes('update-type: version-update:semver-minor')
+                          && !body.includes('update-type: version-update:semver-major');
+
+                      if (!isPatchOnly) {
+                          core.info(`PR #${prNumber} is not a patch-only update — skipping auto-merge`);
+                          return;
+                      }
+
+                      core.info(`PR #${prNumber} is a patch update — approving and enabling auto-merge`);
+
+                      // Approve the PR
+                      await github.rest.pulls.createReview({
+                          owner: context.repo.owner,
+                          repo: context.repo.repo,
+                          pull_number: prNumber,
+                          event: 'APPROVE',
+                          body: 'Auto-approved: semver-patch Dependabot update.',
+                      });
+
+                      // Enable auto-merge via GraphQL so it only merges after all
+                      // required status checks pass (respects branch protection rules).
+                      await github.graphql(`
+                          mutation EnableAutoMerge($prId: ID!) {
+                              enablePullRequestAutoMerge(input: {
+                                  pullRequestId: $prId,
+                                  mergeMethod: SQUASH
+                              }) {
+                                  pullRequest {
+                                      autoMergeRequest {
+                                          enabledAt
+                                      }
+                                  }
+                              }
+                          }
+                      `, { prId: pr.node_id });
+
+                      core.info(`Auto-merge enabled for PR #${prNumber}: ${pr.title}`);

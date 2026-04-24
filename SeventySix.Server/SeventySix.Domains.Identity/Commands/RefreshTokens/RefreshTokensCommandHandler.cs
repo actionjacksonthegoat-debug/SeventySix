@@ -11,6 +11,9 @@ namespace SeventySix.Identity;
 /// </summary>
 /// <remarks>
 /// Rotates refresh tokens following security best practices and logs audit events.
+/// Access token generation is performed inline via <see cref="ITokenService.IssueAccessToken"/>
+/// so that this handler has no dependency on <see cref="IAuthenticationService"/>
+/// (which owns the full login flow including refresh-token issuance and last-login update).
 /// </remarks>
 public static class RefreshTokensCommandHandler
 {
@@ -21,13 +24,10 @@ public static class RefreshTokensCommandHandler
 	/// The refresh tokens command containing the refresh token and client IP.
 	/// </param>
 	/// <param name="tokenService">
-	/// Service for validating and rotating refresh tokens.
+	/// Service for validating, rotating, and issuing tokens.
 	/// </param>
 	/// <param name="userManager">
-	/// Identity <see cref="UserManager{TUser}"/> for user lookups.
-	/// </param>
-	/// <param name="authenticationService">
-	/// Service to generate new authentication results.
+	/// Identity <see cref="UserManager{TUser}"/> for user lookups and role resolution.
 	/// </param>
 	/// <param name="securityAuditService">
 	/// Service for logging security audit events.
@@ -42,7 +42,6 @@ public static class RefreshTokensCommandHandler
 		RefreshTokensCommand command,
 		ITokenService tokenService,
 		UserManager<ApplicationUser> userManager,
-		IAuthenticationService authenticationService,
 		ISecurityAuditService securityAuditService,
 		CancellationToken cancellationToken)
 	{
@@ -106,17 +105,27 @@ public static class RefreshTokensCommandHandler
 				AuthErrorCodes.TokenReuse);
 		}
 
+		if (string.IsNullOrWhiteSpace(user.Email))
+		{
+			return AuthResult.Failed(
+				"User account is missing required email.",
+				AuthErrorCodes.AccountInactive);
+		}
+
 		// Use the database flag as the single source of truth
 		bool requiresPasswordChange =
 			user.RequiresPasswordChange;
 
-		// Generate access token only — no orphaned refresh token created
-		AuthResult accessTokenResult =
-			await authenticationService.GenerateAccessTokenResultAsync(
-				user,
-				requiresPasswordChange,
-				rememberMe,
-				cancellationToken);
+		// Issue access token directly — no new refresh token created here
+		IList<string> roles =
+			await userManager.GetRolesAsync(user);
+
+		IssuedAccessToken issuedToken =
+			tokenService.IssueAccessToken(
+				user.Id,
+				user.UserName ?? string.Empty,
+				roles,
+				requiresPasswordChange);
 
 		// Log successful token refresh
 		await securityAuditService.LogEventAsync(
@@ -126,13 +135,13 @@ public static class RefreshTokensCommandHandler
 			details: null,
 			cancellationToken);
 
-		// Replace with rotated refresh token
+		// Return the new access token paired with the rotated refresh token
 		return AuthResult.Succeeded(
-			accessTokenResult.AccessToken!,
+			issuedToken.Token,
 			newRefreshToken,
-			accessTokenResult.ExpiresAt!.Value,
-			accessTokenResult.Email!,
-			accessTokenResult.FullName,
+			issuedToken.ExpiresAt,
+			user.Email,
+			user.FullName,
 			requiresPasswordChange,
 			rememberMe);
 	}

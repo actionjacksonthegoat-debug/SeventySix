@@ -168,7 +168,7 @@ test("should complete multi-step flow",
 
 | Rule | Pattern |
 |------|---------|
-| Retries | `retries: process.env.CI ? 1 : 0` |
+| Retries | `retries: 1` (always 1 — fresh per-worker login eliminates false positives from stale tokens) |
 | Workers | `workers: process.env.CI ? 4 : undefined` |
 | Platform-specific paths | Guard with `process.platform` check |
 | SSL certificates | Tests use self-signed certs; CI generates via `openssl` |

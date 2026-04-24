@@ -103,43 +103,4 @@ public sealed class SessionManagementServiceUnitTests
 				Arg.Any<DateTimeOffset>(),
 				Arg.Any<CancellationToken>());
 	}
-
-	/// <summary>
-	/// Verifies that session limit enforcement is skipped when rotation is disabled (E2E testing).
-	/// </summary>
-	[Fact]
-	public async Task EnforceSessionLimitAsync_RotationDisabled_SkipsEnforcementAsync()
-	{
-		// Arrange
-		IOptions<AuthSettings> disabledAuthOptions =
-			Options.Create(
-			new AuthSettings
-			{
-				Token =
-					new TokenSettings
-					{
-						MaxActiveSessionsPerUser = 3,
-						DisableRotation = true,
-					},
-			});
-
-		SessionManagementService disabledService =
-			new(
-			TokenRepository,
-			disabledAuthOptions);
-
-		// Act
-		await disabledService.EnforceSessionLimitAsync(
-			userId: 1L,
-			now: FixedTime,
-			cancellationToken: CancellationToken.None);
-
-		// Assert
-		await TokenRepository
-			.DidNotReceive()
-			.GetActiveSessionCountAsync(
-				Arg.Any<long>(),
-				Arg.Any<DateTimeOffset>(),
-				Arg.Any<CancellationToken>());
-	}
 }

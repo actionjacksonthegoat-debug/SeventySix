@@ -1,3 +1,5 @@
+import { useRouter } from "@tanstack/react-router";
+import type { RegisteredRouter } from "@tanstack/react-router";
 import type { JSX } from "react";
 
 /**
@@ -19,8 +21,14 @@ function safeJsonLd(data: object): string
  */
 export function JsonLd({ data }: Readonly<{ data: object; }>): JSX.Element
 {
+	const router: RegisteredRouter =
+		useRouter();
+	const cspNonce: string | undefined =
+		router.options.ssr?.nonce;
+
 	return (
 		<script
+			nonce={cspNonce}
 			type="application/ld+json"
 			dangerouslySetInnerHTML={{ __html: safeJsonLd(data) }}
 		/>);

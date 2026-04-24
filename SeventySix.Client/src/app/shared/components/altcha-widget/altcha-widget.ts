@@ -2,6 +2,7 @@ import "altcha";
 import {
 	ChangeDetectionStrategy,
 	Component,
+	computed,
 	CUSTOM_ELEMENTS_SCHEMA,
 	ElementRef,
 	input,
@@ -13,7 +14,6 @@ import {
 	Signal,
 	viewChild
 } from "@angular/core";
-import { ALTCHA_STRINGS } from "@shared/constants";
 import { AltchaWidgetState } from "@shared/models";
 import { isNullOrUndefined } from "@shared/utilities/null-check.utility";
 
@@ -28,15 +28,15 @@ import { isNullOrUndefined } from "@shared/utilities/null-check.utility";
 		changeDetection: ChangeDetectionStrategy.OnPush,
 		schemas: [CUSTOM_ELEMENTS_SCHEMA],
 		host: {
-			"[style.display]": "'block'"
+			class: "altcha-widget-host"
 		},
 		template: `
 <altcha-widget
 	#widget
-	[attr.challengeurl]="challengeUrl()"
-	[attr.hidefooter]="hideFooter() || undefined"
-	[attr.strings]="stringified"></altcha-widget>
-`
+	[attr.challenge]="challengeUrl()"
+	[attr.configuration]="widgetConfiguration()"></altcha-widget>
+`,
+		styleUrl: "./altcha-widget.scss"
 	})
 /**
  * Wraps the ALTCHA proof-of-work widget and exposes Angular-friendly outputs.
@@ -82,13 +82,19 @@ export class AltchaWidgetComponent implements OnInit, OnDestroy
 			"widget");
 
 	/**
-	 * JSON-stringified widget UI strings.
-	 * @type {string}
+	 * JSON-serialized widget configuration derived from inputs.
+	 * Passes `hideFooter` to the altcha widget via the `configuration` attribute.
+	 * @type {Signal<string | null>}
 	 * @protected
 	 * @readonly
 	 */
-	protected readonly stringified: string =
-		JSON.stringify(ALTCHA_STRINGS);
+	protected readonly widgetConfiguration: Signal<string | null> =
+		computed(
+			() =>
+				this.hideFooter()
+					? JSON.stringify(
+						{ hideFooter: true })
+					: null);
 
 	/**
 	 * Bound reference to the statechange handler for cleanup.

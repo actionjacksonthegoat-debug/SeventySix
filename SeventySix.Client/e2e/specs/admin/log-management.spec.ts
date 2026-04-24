@@ -61,7 +61,8 @@ test.describe("Log Management Page",
 							adminPage.locator(SELECTORS.logManagement.logList);
 
 						await expect(logList)
-							.toBeVisible();
+							.toBeVisible(
+								{ timeout: TIMEOUTS.navigation });
 					});
 
 				test("should display data table",

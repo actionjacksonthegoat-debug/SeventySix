@@ -6,7 +6,6 @@ import {
 } from "$lib/server/db/schema";
 import { queueLog } from "$lib/server/log-forwarder";
 import { recordCheckoutComplete, recordCheckoutStart } from "$lib/server/metrics";
-import { getStripe } from "$lib/server/stripe";
 import {
 	buildShippingOptions,
 	buildStripeLineItems,
@@ -16,6 +15,7 @@ import {
 	type ValidatedCartRow
 } from "@seventysixcommerce/shared/checkout";
 import { now } from "@seventysixcommerce/shared/date";
+import { getStripe, type StripeClient } from "@seventysixcommerce/shared/stripe";
 import { isNullOrUndefined } from "@seventysixcommerce/shared/utils";
 import { fail, redirect } from "@sveltejs/kit";
 import { and, eq, inArray } from "drizzle-orm";
@@ -102,8 +102,13 @@ export const actions: Actions =
 			const shippingOptions =
 				buildShippingOptions(subtotal);
 
-			const stripe: ReturnType<typeof getStripe> =
-				getStripe();
+			const stripe: StripeClient =
+				getStripe(
+					{
+						secretKey: env.STRIPE_SECRET_KEY,
+						useMocks: env.MOCK_SERVICES !== "false",
+						baseUrl: env.BASE_URL ?? ""
+					});
 			const session: Awaited<ReturnType<typeof stripe.checkout.sessions.create>> =
 				await stripe
 					.checkout

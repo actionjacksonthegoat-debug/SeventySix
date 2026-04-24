@@ -1,0 +1,136 @@
+name: Nightly Load Tests
+
+on:
+    schedule:
+        # Monday–Friday at 06:30 UTC (after CodeQL at 06:00 Monday and well before business hours)
+        - cron: "30 6 * * 1-5"
+    workflow_dispatch:
+
+permissions:
+    contents: read
+
+concurrency:
+    group: nightly-load-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    # ──────────────────────────────────────────────────────────
+    # Load test all three apps in parallel (fail-fast: false so
+    # all reports are collected even when one suite regresses).
+    # ──────────────────────────────────────────────────────────
+    load-test:
+        name: ${{ matrix.name }} Load Tests
+        runs-on: ubuntu-latest
+        timeout-minutes: 30
+
+        strategy:
+            fail-fast: false
+            matrix:
+                include:
+                    - app: main
+                      name: "Main App"
+                      script: "loadtest:quick"
+                      needs-ssl: true
+                    - app: sveltekit
+                      name: "SvelteKit Commerce"
+                      script: "loadtest:svelte:quick"
+                      needs-ssl: false
+                    - app: tanstack
+                      name: "TanStack Commerce"
+                      script: "loadtest:tanstack:quick"
+                      needs-ssl: false
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+            - name: Setup Node.js
+              uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+              with:
+                  node-version: "24.x"
+
+            - name: Install root dependencies
+              run: npm ci
+
+            - name: Generate SSL certificates
+              if: matrix.needs-ssl
+              shell: pwsh
+              run: scripts/generate-dev-ssl-cert.ps1 -SkipTrust
+
+            - name: Fix SSL permissions for Linux
+              if: matrix.needs-ssl
+              run: |
+                  sudo chown root:root docker/certs/*.crt docker/certs/*.key 2>/dev/null || true
+                  sudo chmod 644 docker/certs/*.crt 2>/dev/null || true
+                  sudo chmod 600 docker/certs/*.key 2>/dev/null || true
+
+            - name: Install k6
+              run: |
+                  curl -sS https://dl.k6.io/key.gpg | sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg --import
+                  echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+                  sudo apt-get update && sudo apt-get install -y k6
+
+            - name: Run load tests
+              id: run-load-tests
+              run: npm run ${{ matrix.script }}
+
+            - name: Upload load test report
+              uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+              if: always()
+              with:
+                  name: load-test-report-${{ matrix.app }}
+                  path: |
+                      .dev-tools-output/loadtest-summary.json
+                      SeventySix.Client/load-testing/results/
+                      SeventySix.Client/load-testing/reports/
+                      ECommerce/seventysixcommerce-sveltekit/load-testing/results/
+                      ECommerce/seventysixcommerce-sveltekit/load-testing/reports/
+                      ECommerce/seventysixcommerce-tanstack/load-testing/results/
+                      ECommerce/seventysixcommerce-tanstack/load-testing/reports/
+                  if-no-files-found: ignore
+                  retention-days: 30
+
+    # ──────────────────────────────────────────────────────────
+    # Open a GitHub Issue when any load test suite fails so the
+    # regression is tracked and assigned.
+    # ──────────────────────────────────────────────────────────
+    open-issue-on-failure:
+        name: Open Incident Issue
+        needs: [load-test]
+        if: failure()
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+
+        permissions:
+            issues: write
+            contents: read
+
+        steps:
+            - name: Create incident issue
+              uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
+              with:
+                  script: |
+                      const date = new Date().toISOString().slice(0, 10);
+                      await github.rest.issues.create({
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        title: `[INCIDENT] Nightly load tests failed — ${date}`,
+                        body: [
+                          '## Nightly Load Test Failure',
+                          '',
+                          `**Run:** ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+                          `**Ref:** ${context.ref}`,
+                          `**SHA:** ${context.sha}`,
+                          `**Date:** ${new Date().toISOString()}`,
+                          '',
+                          'One or more nightly load test scenarios exceeded their configured thresholds.',
+                          'Review the run logs and uploaded artefacts for per-suite details.',
+                          '',
+                          '### Next Steps',
+                          '1. Open the run link above and inspect each failing matrix entry',
+                          '2. Download the load test report artefacts for k6 threshold details',
+                          '3. Identify whether this is a performance regression or infrastructure issue',
+                          '4. Fix and close this issue once the next nightly run passes',
+                        ].join('\n'),
+                        labels: ['incident', 'performance', 'load-test'],
+                      });

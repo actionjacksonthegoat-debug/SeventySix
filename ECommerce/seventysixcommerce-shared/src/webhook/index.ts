@@ -3,6 +3,15 @@
  * Both SvelteKit and TanStack apps delegate core webhook logic here,
  * keeping only signature verification and framework-specific wrappers.
  */
+export {
+	processStripeWebhook,
+	type ProcessStripeWebhookInput,
+	type ProcessStripeWebhookResult,
+	type StripeClientInterface,
+	type StripeEvent,
+	type WebhookHandler,
+	type WebhookHandlerMap
+} from "./orchestrator";
 import { eq } from "drizzle-orm";
 import type { CommerceDb } from "../cart";
 import {

@@ -4,7 +4,15 @@
 
 # Security headers snippet — imported by every site block.
 # CSP is intentionally strict: frame-ancestors 'none' (no iframe embedding),
-# script-src includes 'unsafe-inline' for Angular's inline bootstrap.
+# base-uri 'self' (prevents base-tag injection), form-action 'self' (blocks
+# cross-origin form submissions), object-src 'none' (disables Flash/plugins).
+#
+# CSP hardening status:
+# - script-src uses per-request nonce ('nonce-{http.request.uuid}') — no unsafe-inline
+# - style-src uses per-request nonce ('nonce-{http.request.uuid}') — no unsafe-inline
+#   Caddy forwards the nonce to Nginx via X-Csp-Nonce; Nginx rewrites __CSP_NONCE__
+#   in index.html body with sub_filter so every inline <style> and <script> element
+#   carries the matching nonce attribute at the time the HTML is served.
 (security_headers) {
 	header {
 		Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
@@ -12,7 +20,7 @@
 		X-Frame-Options "DENY"
 		Referrer-Policy "strict-origin-when-cross-origin"
 		Permissions-Policy "accelerometer=(), camera=(), geolocation=(), microphone=(), payment=(self)"
-		Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://api.seventysixsandbox.com; frame-ancestors 'none'"
+		Content-Security-Policy "default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests; script-src 'self' 'nonce-{http.request.uuid}'; script-src-attr 'none'; style-src 'self' 'nonce-{http.request.uuid}' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://api.seventysixsandbox.com; frame-ancestors 'none'"
 		-Server
 	}
 }
@@ -49,6 +57,10 @@ seventysixsandbox.com {
 	handle {
 		reverse_proxy localhost:8080 {
 			header_up X-Forwarded-For {header.CF-Connecting-IP}
+			# Forward per-request nonce to Nginx so sub_filter can rewrite __CSP_NONCE__
+			# in index.html. Caddy also stamps the same UUID into the Content-Security-Policy
+			# header (see security_headers snippet above), removing style-src 'unsafe-inline'.
+			header_up X-Csp-Nonce {http.request.uuid}
 		}
 	}
 }

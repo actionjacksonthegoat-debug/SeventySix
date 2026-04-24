@@ -52,10 +52,10 @@ cd SeventySix.Server/SeventySix.Api; dotnet user-secrets list
 ```
 
 Look for:
-- `AdminSeeder:Email` — the admin email (default: `admin@seventysix.local`)
+- `AdminSeeder:Email` — the admin email (e.g., `admin@seventysix.local`). The **username** for login is the local part before `@` — e.g., `admin`.
 - `AdminSeeder:InitialPassword` — the admin password (default: `SeventySixAdmin76!`)
 
-Store these values for use in the login step. If the user secrets command fails, ask the user for the admin email and password.
+Store the **username** (not email) and password for use in the login step. The login form uses a username field, not email. If the user secrets command fails, ask the user for the admin username and password.
 
 ---
 
@@ -164,8 +164,8 @@ The following console messages are expected in development and should be **ignor
 ### Step 6: Admin Login
 
 1. Navigate to `https://localhost:4200/auth/login`
-2. Fill the email field with the admin email from user secrets
-3. Fill the password field with the admin password from user secrets
+2. Fill the **username** field with `admin` (the login form uses username, not email)
+3. Fill the password field with the admin password from user secrets (`AdminSeeder:InitialPassword`)
 4. If an Altcha captcha widget is visible, click the checkbox/widget and wait for it to complete
 5. Click the Sign In button
 6. Wait for navigation — expect one of:

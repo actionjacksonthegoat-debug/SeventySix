@@ -2,6 +2,9 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using System.Security.Cryptography;
+using System.Text;
+
 namespace SeventySix.Identity;
 
 /// <summary>
@@ -67,4 +70,59 @@ public sealed record JwtSettings
 	/// Must be configured in appsettings.json.
 	/// </summary>
 	public int TokenRefreshBufferSeconds { get; init; }
+
+	/// <summary>
+	/// Gets the key identifier used in the JWT kid header.
+	/// Identifies which signing key was used — required for graceful key rotation.
+	/// If not set, defaults to a deterministic SHA256 fingerprint of <see cref="SecretKey"/>.
+	/// </summary>
+	public string? KeyId { get; init; }
+
+	/// <summary>
+	/// Gets the previous secret key accepted during a key rotation window.
+	/// Set this to the old <see cref="SecretKey"/> value when rotating to a new key.
+	/// Unset after all tokens signed with the previous key have expired.
+	/// </summary>
+	public string? PreviousSecretKey { get; init; }
+
+	/// <summary>
+	/// Gets the key identifier matching the kid header of tokens signed with <see cref="PreviousSecretKey"/>.
+	/// If not set and <see cref="PreviousSecretKey"/> is configured, defaults to a fingerprint
+	/// of <see cref="PreviousSecretKey"/>.
+	/// </summary>
+	public string? PreviousKeyId { get; init; }
+
+	/// <summary>
+	/// Gets the effective key identifier for the current secret key.
+	/// Returns <see cref="KeyId"/> when configured; otherwise computes a SHA256 fingerprint.
+	/// </summary>
+	/// <returns>
+	/// The effective key identifier string.
+	/// </returns>
+	public string GetEffectiveKeyId() =>
+		string.IsNullOrEmpty(KeyId)
+			? ComputeKeyFingerprint(SecretKey)
+			: KeyId;
+
+	/// <summary>
+	/// Computes a short, stable key identifier from a secret key.
+	/// Takes the first 8 base64url characters of the SHA256 hash of the key bytes.
+	/// </summary>
+	/// <param name="secretKey">
+	/// The secret key to fingerprint.
+	/// </param>
+	/// <returns>
+	/// An 8-character base64url string uniquely identifying the key.
+	/// </returns>
+	public static string ComputeKeyFingerprint(string secretKey)
+	{
+		byte[] hash =
+			SHA256.HashData(
+				Encoding.UTF8.GetBytes(secretKey));
+
+		return Convert.ToBase64String(hash)
+			.Replace('+', '-')
+			.Replace('/', '_')
+			.TrimEnd('=')[..8];
+	}
 }

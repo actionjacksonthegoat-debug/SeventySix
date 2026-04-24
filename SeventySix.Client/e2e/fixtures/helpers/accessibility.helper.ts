@@ -5,7 +5,7 @@
 import AxeBuilder from "@axe-core/playwright";
 import type { Page } from "@playwright/test";
 import { expect } from "@playwright/test";
-import type { Result, Results } from "axe-core";
+import type { AxeResults, Result } from "axe-core";
 
 /**
  * Runs an axe-core accessibility scan and asserts
@@ -26,7 +26,7 @@ export async function expectAccessible(
 	// eslint-disable-next-line playwright/no-networkidle
 	await page.waitForLoadState("networkidle");
 
-	const axeResults: Results =
+	const axeResults: AxeResults =
 		await new AxeBuilder(
 			{ page })
 			.withTags(
