@@ -181,7 +181,21 @@ export const test: ReturnType<typeof base.extend<{ autoFailureDiagnostics: void;
 
 					await use();
 
-					await attachDiagnosticsOnFailure(page, collector, testInfo);
+					// Only capture diagnostics from the built-in page if no other fixture
+					// has already attached diagnostics (e.g., adminPage, userPage, developerPage).
+					// Those role-specific fixtures instrument their own pages and call
+					// attachDiagnosticsOnFailure themselves. If we let both write to the same
+					// "diagnostics.txt" path, the auto-fixture's capture (from a never-navigated
+					// page at about:blank) would overwrite the role-page's correct URL.
+					const alreadyAttached: boolean =
+						testInfo.attachments.some(
+							(attachment) =>
+								attachment.name === "diagnostics");
+
+					if (!alreadyAttached)
+					{
+						await attachDiagnosticsOnFailure(page, collector, testInfo);
+					}
 				},
 				{ auto: true }
 			]

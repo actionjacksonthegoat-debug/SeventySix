@@ -1,15 +1,18 @@
 import { now } from "@seventysixcommerce/shared/date";
+import { getStripe, type StripeClient } from "@seventysixcommerce/shared/stripe";
 import { isNullOrEmpty } from "@seventysixcommerce/shared/utils";
 import {
 	type CheckoutSessionData,
 	handleCheckoutCompleted,
-	isOrderProcessed
+	isOrderProcessed,
+	processStripeWebhook,
+	type ProcessStripeWebhookResult,
+	type StripeEvent
 } from "@seventysixcommerce/shared/webhook";
 import type Stripe from "stripe";
 import { sendOrderConfirmation } from "../../lib/brevo";
 import { createPrintfulOrder } from "../../lib/printful";
 import { db } from "../db";
-import { getStripe } from "../lib/stripe";
 import { queueLog } from "../log-forwarder";
 
 /**
@@ -32,57 +35,60 @@ export async function handleStripeWebhook(
 		throw new Error("Webhook secret not configured");
 	}
 
-	let event: Stripe.Event;
+	const stripe: StripeClient =
+		getStripe(
+			{
+				secretKey: process.env.STRIPE_SECRET_KEY,
+				useMocks: process.env.MOCK_SERVICES !== "false",
+				baseUrl: process.env.BASE_URL ?? "https://localhost:3002"
+			});
 
-	try
-	{
-		event =
-			getStripe().webhooks.constructEvent(
+	const result: ProcessStripeWebhookResult =
+		await processStripeWebhook(
+			{
 				rawBody,
 				signature,
-				secret) as Stripe.Event;
-	}
-	catch
+				secret,
+				stripe,
+				handlers: {
+					"checkout.session.completed": async (event: StripeEvent): Promise<void> =>
+					{
+						const session: Stripe.Checkout.Session =
+							event.data.object as Stripe.Checkout.Session;
+
+						const alreadyProcessed: boolean =
+							await isOrderProcessed(db, session.id);
+						if (!alreadyProcessed)
+						{
+							const sessionData: CheckoutSessionData =
+								{
+									stripeSessionId: session.id,
+									cartSessionId: session.metadata?.cartSessionId ?? "",
+									customerEmail: session.customer_details?.email ?? "",
+									amountTotalCents: session.amount_total ?? null,
+									shippingAddress: (session.collected_information?.shipping_details?.address
+										?? null) as Record<string, string> | null,
+									shippingName: session.collected_information?.shipping_details?.name
+										?? null
+								};
+
+							const printfulApiKey: string =
+								process.env.PRINTFUL_API_KEY ?? "";
+
+							await handleCheckoutCompleted(
+								db,
+								sessionData,
+								printfulApiKey !== "" ? createPrintfulOrder : null,
+								sendOrderConfirmation,
+								now);
+						}
+					}
+				}
+			});
+
+	if (result.status === "invalid-signature")
 	{
 		throw new Error("Invalid webhook signature");
-	}
-
-	switch (event.type)
-	{
-		case "checkout.session.completed":
-		{
-			const session: Stripe.Checkout.Session =
-				event.data.object as Stripe.Checkout.Session;
-
-			const alreadyProcessed: boolean =
-				await isOrderProcessed(db, session.id);
-			if (!alreadyProcessed)
-			{
-				const sessionData: CheckoutSessionData =
-					{
-						stripeSessionId: session.id,
-						cartSessionId: session.metadata?.cartSessionId ?? "",
-						customerEmail: session.customer_details?.email ?? "",
-						amountTotalCents: session.amount_total ?? null,
-						shippingAddress: (session.collected_information?.shipping_details?.address
-							?? null) as Record<string, string> | null,
-						shippingName: session.collected_information?.shipping_details?.name
-							?? null
-					};
-
-				const printfulApiKey: string =
-					process.env.PRINTFUL_API_KEY ?? "";
-
-				await handleCheckoutCompleted(
-					db,
-					sessionData,
-					printfulApiKey !== "" ? createPrintfulOrder : null,
-					sendOrderConfirmation,
-					now);
-			}
-			break;
-		}
-			// Additional event types can be added here
 	}
 
 	return { received: true };

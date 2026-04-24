@@ -39,6 +39,14 @@ paths-ignore:
   # CodeQL local scan working directory — contains .NET SDK template files that generate
   # false-positive findings (e.g. BlazorWasm.web.config → cs/web/missing-x-frame-options).
   - ".codeql/**"
+  # SvelteKit and TanStack framework build artefacts — generated at build time, not source.
+  - "**/.svelte-kit/**"
+  - "**/.tanstack/**"
+  # Test files — unit/integration tests; security findings here are lower-risk and
+  # generate noise. Runtime source files above still receive full analysis.
+  - "**/*.spec.ts"
+  - "**/*.test.ts"
+  - "**/__tests__/**"
 
 queries:
   - uses: security-and-quality

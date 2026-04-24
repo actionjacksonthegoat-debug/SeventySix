@@ -9,6 +9,9 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
+	width: 100%;
+	height: 100%;
+	color: inherit;
 
 	/* ::ng-deep required: SVG is injected via [innerHTML] which places it outside
 	   Angular's view encapsulation. No alternative exists for styling innerHTML content. */

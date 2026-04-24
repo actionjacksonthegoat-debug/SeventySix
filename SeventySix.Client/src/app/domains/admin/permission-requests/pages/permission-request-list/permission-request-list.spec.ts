@@ -1,5 +1,6 @@
 import { PermissionRequestDto } from "@admin/permission-requests/models";
 import { PermissionRequestService } from "@admin/permission-requests/services";
+import { HttpErrorResponse } from "@angular/common/http";
 import { ComponentFixture } from "@angular/core/testing";
 import type { BulkActionEvent, RowActionEvent } from "@shared/models";
 import { NotificationService } from "@shared/services";
@@ -207,12 +208,24 @@ describe("PermissionRequestListPage",
 
 				const mutateCall: Mock =
 					mockApproveMutation.mutate;
-				const callbackArg: { onError: (error: Error) => void; } =
+				const callbackArg: { onError: (error: unknown) => void; } =
 					mutateCall.mock.calls.at(-1)![1];
-				callbackArg.onError(new Error("Network failure"));
 
-				expect(mockNotificationService.error)
-					.toHaveBeenCalledWith("Failed to approve request: Network failure");
+				const httpError: HttpErrorResponse =
+					new HttpErrorResponse(
+						{
+							status: 500,
+							error: { detail: "SENTINEL_SERVER_INTERNAL_DETAIL" }
+						});
+				callbackArg.onError(httpError);
+
+				const errorArg: string =
+					(mockNotificationService.error as Mock).mock.calls.at(-1)![0] as string;
+				expect(errorArg)
+					.not
+					.toContain("SENTINEL_SERVER_INTERNAL_DETAIL");
+				expect(errorArg)
+					.toBe("Failed to approve request");
 			});
 
 		it("should show success notification when reject succeeds",
@@ -249,12 +262,24 @@ describe("PermissionRequestListPage",
 
 				const mutateCall: Mock =
 					mockRejectMutation.mutate;
-				const callbackArg: { onError: (error: Error) => void; } =
+				const callbackArg: { onError: (error: unknown) => void; } =
 					mutateCall.mock.calls.at(-1)![1];
-				callbackArg.onError(new Error("Database error"));
 
-				expect(mockNotificationService.error)
-					.toHaveBeenCalledWith("Failed to reject request: Database error");
+				const httpError: HttpErrorResponse =
+					new HttpErrorResponse(
+						{
+							status: 500,
+							error: { detail: "SENTINEL_SERVER_INTERNAL_DETAIL" }
+						});
+				callbackArg.onError(httpError);
+
+				const errorArg: string =
+					(mockNotificationService.error as Mock).mock.calls.at(-1)![0] as string;
+				expect(errorArg)
+					.not
+					.toContain("SENTINEL_SERVER_INTERNAL_DETAIL");
+				expect(errorArg)
+					.toBe("Failed to reject request");
 			});
 
 		it("should ignore unsupported row actions",
@@ -312,12 +337,24 @@ describe("PermissionRequestListPage",
 
 				const mutateCall: Mock =
 					mockBulkApproveMutation.mutate;
-				const callbackArg: { onError: (error: Error) => void; } =
+				const callbackArg: { onError: (error: unknown) => void; } =
 					mutateCall.mock.calls.at(-1)![1];
-				callbackArg.onError(new Error("Permission denied"));
 
-				expect(mockNotificationService.error)
-					.toHaveBeenCalledWith("Failed to approve requests: Permission denied");
+				const httpError: HttpErrorResponse =
+					new HttpErrorResponse(
+						{
+							status: 500,
+							error: { detail: "SENTINEL_SERVER_INTERNAL_DETAIL" }
+						});
+				callbackArg.onError(httpError);
+
+				const errorArg: string =
+					(mockNotificationService.error as Mock).mock.calls.at(-1)![0] as string;
+				expect(errorArg)
+					.not
+					.toContain("SENTINEL_SERVER_INTERNAL_DETAIL");
+				expect(errorArg)
+					.toBe("Failed to approve requests");
 			});
 
 		it("should show success notification with count when bulk reject succeeds",
@@ -356,12 +393,24 @@ describe("PermissionRequestListPage",
 
 				const mutateCall: Mock =
 					mockBulkRejectMutation.mutate;
-				const callbackArg: { onError: (error: Error) => void; } =
+				const callbackArg: { onError: (error: unknown) => void; } =
 					mutateCall.mock.calls.at(-1)![1];
-				callbackArg.onError(new Error("Timeout"));
 
-				expect(mockNotificationService.error)
-					.toHaveBeenCalledWith("Failed to reject requests: Timeout");
+				const httpError: HttpErrorResponse =
+					new HttpErrorResponse(
+						{
+							status: 500,
+							error: { detail: "SENTINEL_SERVER_INTERNAL_DETAIL" }
+						});
+				callbackArg.onError(httpError);
+
+				const errorArg: string =
+					(mockNotificationService.error as Mock).mock.calls.at(-1)![0] as string;
+				expect(errorArg)
+					.not
+					.toContain("SENTINEL_SERVER_INTERNAL_DETAIL");
+				expect(errorArg)
+					.toBe("Failed to reject requests");
 			});
 
 		it("should ignore unsupported bulk actions",

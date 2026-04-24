@@ -8,6 +8,7 @@ import { resolve } from 'node:path';
 
 const certificatePath = resolve(import.meta.dirname, '..', '..', 'SeventySix.Client', 'ssl', 'dev-certificate.crt');
 const privateKeyPath = resolve(import.meta.dirname, '..', '..', 'SeventySix.Client', 'ssl', 'dev-certificate.key');
+const protobufInquireShimPath = resolve(import.meta.dirname, '..', 'build-shims', 'protobuf-inquire.cjs');
 const hasSharedCertificate = existsSync(certificatePath) && existsSync(privateKeyPath);
 const useBasicSsl = !hasSharedCertificate && process.env.NODE_ENV !== 'production';
 const sslPlugins = useBasicSsl ? [basicSsl()] : [];
@@ -15,6 +16,7 @@ const sslPlugins = useBasicSsl ? [basicSsl()] : [];
 export default defineConfig({
   resolve: {
     alias: {
+      '@protobufjs/inquire': protobufInquireShimPath,
       '~': resolve(import.meta.dirname, 'src'),
     },
   },

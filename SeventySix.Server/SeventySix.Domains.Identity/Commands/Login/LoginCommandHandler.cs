@@ -3,6 +3,7 @@
 // </copyright>
 
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
 
 namespace SeventySix.Identity;
 
@@ -38,8 +39,14 @@ public static class LoginCommandHandler
 	/// <param name="securityAuditService">
 	/// Service for logging security audit events.
 	/// </param>
-	/// <param name="mfaOrchestrator">
-	/// Orchestrates MFA requirement checks, trusted device bypass, and challenge initiation.
+	/// <param name="mfaChallengeDispatcher">
+	/// Dispatches MFA challenges (TOTP or email) when MFA is required.
+	/// </param>
+	/// <param name="trustedDeviceService">
+	/// Service for trusted device validation and MFA bypass.
+	/// </param>
+	/// <param name="mfaSettings">
+	/// MFA configuration settings used to determine if MFA is required.
 	/// </param>
 	/// <param name="cancellationToken">
 	/// Cancellation token.
@@ -54,7 +61,9 @@ public static class LoginCommandHandler
 		IAuthenticationService authenticationService,
 		IAltchaService altchaService,
 		ISecurityAuditService securityAuditService,
-		IMfaOrchestrator mfaOrchestrator,
+		IMfaChallengeDispatcher mfaChallengeDispatcher,
+		ITrustedDeviceService trustedDeviceService,
+		IOptions<MfaSettings> mfaSettings,
 		CancellationToken cancellationToken)
 	{
 		AuthResult? altchaFailure =
@@ -80,12 +89,17 @@ public static class LoginCommandHandler
 			return credentialFailure;
 		}
 
-		if (mfaOrchestrator.IsMfaRequired(user!))
+		if (IsMfaRequired(
+			user!,
+			mfaSettings.Value))
 		{
 			AuthResult? trustedDeviceResult =
-				await mfaOrchestrator.TryBypassViaTrustedDeviceAsync(
+				await TryBypassViaTrustedDeviceAsync(
 					command,
 					user!,
+					trustedDeviceService,
+					securityAuditService,
+					authenticationService,
 					cancellationToken);
 
 			if (trustedDeviceResult is not null)
@@ -93,7 +107,7 @@ public static class LoginCommandHandler
 				return trustedDeviceResult;
 			}
 
-			return await mfaOrchestrator.InitiateChallengeAsync(
+			return await mfaChallengeDispatcher.InitiateChallengeAsync(
 				user!,
 				cancellationToken);
 		}
@@ -108,6 +122,85 @@ public static class LoginCommandHandler
 		return await authenticationService.GenerateAuthResultAsync(
 			user!,
 			user!.RequiresPasswordChange,
+			command.Request.RememberMe,
+			cancellationToken);
+	}
+
+	/// <summary>
+	/// Determines whether MFA is required for the given user.
+	/// </summary>
+	/// <param name="user">
+	/// The authenticated user.
+	/// </param>
+	/// <param name="settings">
+	/// MFA configuration settings.
+	/// </param>
+	/// <returns>
+	/// True if MFA is required; false if login can proceed without MFA.
+	/// </returns>
+	private static bool IsMfaRequired(ApplicationUser user, MfaSettings settings) =>
+		settings.Enabled && (settings.RequiredForAllUsers || user.MfaEnabled);
+
+	/// <summary>
+	/// Attempts to bypass MFA via a trusted device token.
+	/// </summary>
+	/// <param name="command">
+	/// The login command containing the trusted device token and user agent.
+	/// </param>
+	/// <param name="user">
+	/// The authenticated user.
+	/// </param>
+	/// <param name="trustedDeviceService">
+	/// Service for trusted device validation.
+	/// </param>
+	/// <param name="securityAuditService">
+	/// Service for logging security audit events.
+	/// </param>
+	/// <param name="authenticationService">
+	/// Service to generate auth tokens when bypass succeeds.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// A successful <see cref="AuthResult"/> if the device is trusted and MFA is bypassed;
+	/// null if MFA is still required.
+	/// </returns>
+	private static async Task<AuthResult?> TryBypassViaTrustedDeviceAsync(
+		LoginCommand command,
+		ApplicationUser user,
+		ITrustedDeviceService trustedDeviceService,
+		ISecurityAuditService securityAuditService,
+		IAuthenticationService authenticationService,
+		CancellationToken cancellationToken)
+	{
+		if (string.IsNullOrEmpty(command.TrustedDeviceToken))
+		{
+			return null;
+		}
+
+		bool isTrusted =
+			await trustedDeviceService.ValidateTrustedDeviceAsync(
+				user.Id,
+				command.TrustedDeviceToken,
+				command.UserAgent ?? string.Empty,
+				cancellationToken);
+
+		if (!isTrusted)
+		{
+			return null;
+		}
+
+		await securityAuditService.LogEventAsync(
+			SecurityEventType.LoginSuccess,
+			user,
+			success: true,
+			details: "MFA bypassed via trusted device",
+			cancellationToken);
+
+		return await authenticationService.GenerateAuthResultAsync(
+			user,
+			user.RequiresPasswordChange,
 			command.Request.RememberMe,
 			cancellationToken);
 	}

@@ -71,9 +71,8 @@ public sealed class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 			tokenRepository,
 			sessionManagementService,
 			JwtOptions,
-			AuthOptions,
-			NullLogger<TokenService>.Instance,
-			timeProvider);
+			timeProvider,
+			NullLogger<TokenService>.Instance);
 	}
 
 	#region GenerateRefreshTokenAsync Tests
@@ -363,9 +362,8 @@ public sealed class TokenServiceTests(IdentityPostgreSqlFixture fixture)
 			tokenRepository,
 			sessionManagementService,
 			JwtOptions,
-			limitedAuthOptions,
-			NullLogger<TokenService>.Instance,
-			timeProvider);
+			timeProvider,
+			NullLogger<TokenService>.Instance);
 
 		// Act - Create tokens up to and beyond limit
 		await service.GenerateRefreshTokenAsync(

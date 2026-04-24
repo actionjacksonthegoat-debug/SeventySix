@@ -294,12 +294,6 @@ public sealed record TokenSettings
 	/// </summary>
 	public int MaxActiveSessionsPerUser { get; init; }
 
-	/// <summary>
-	/// Gets a value indicating whether to disable token rotation on refresh.
-	/// When true, the old refresh token is NOT revoked during rotation.
-	/// WARNING: Only enable for E2E testing where the same token must work across contexts.
-	/// </summary>
-	public bool DisableRotation { get; init; }
 }
 
 /// <summary>

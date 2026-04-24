@@ -58,6 +58,8 @@
 }
 
 .tech-item {
+	--tech-item-icon-color: color-mix(in srgb, var(--mat-sys-primary) 85%, var(--mat-sys-tertiary));
+
 	display: flex;
 	align-items: center;
 	gap: vars.$spacing-md;
@@ -92,6 +94,7 @@
 	flex-shrink: 0;
 	width: vars.$tech-icon-size;
 	height: vars.$tech-icon-size;
+	color: var(--tech-item-icon-color);
 
 	@media (max-width: vars.$breakpoint-sm-min) {
 		width: vars.$tech-icon-size-mobile;

@@ -39,9 +39,6 @@ public sealed class RefreshTokensCommandHandlerTests
 		UserManager<ApplicationUser> userManager =
 			IdentityMockFactory.CreateUserManager();
 
-		IAuthenticationService authenticationService =
-			IdentityMockFactory.CreateAuthenticationService();
-
 		ApplicationUser user =
 			new()
 			{
@@ -68,27 +65,20 @@ public sealed class RefreshTokensCommandHandlerTests
 				Arg.Any<CancellationToken>())
 			.Returns(("new-token", false));
 
-		TimeProvider timeProvider =
-			Substitute.For<TimeProvider>();
-		DateTimeOffset now =
-			timeProvider.GetUtcNow();
+		userManager
+			.GetRolesAsync(user)
+			.Returns(new List<string>());
 
-		AuthResult expectedAccessTokenResult =
-			AuthResult.Succeeded(
-				"access-token",
-				string.Empty,
-				now.AddMinutes(15),
-				user.Email,
-				null,
-				false);
-
-		authenticationService
-			.GenerateAccessTokenResultAsync(
-				Arg.Any<ApplicationUser>(),
-				Arg.Any<bool>(),
-				Arg.Any<bool>(),
-				Arg.Any<CancellationToken>())
-			.Returns(Task.FromResult(expectedAccessTokenResult));
+		tokenService
+			.IssueAccessToken(
+				Arg.Any<long>(),
+				Arg.Any<string>(),
+				Arg.Any<IList<string>>(),
+				Arg.Any<bool>())
+			.Returns(
+				new IssuedAccessToken(
+					"access-token",
+					DateTimeOffset.UtcNow.AddMinutes(15)));
 
 		RefreshTokensCommand command =
 			new(refreshToken);
@@ -99,7 +89,6 @@ public sealed class RefreshTokensCommandHandlerTests
 				command,
 				tokenService,
 				userManager,
-				authenticationService,
 				SecurityAuditService,
 				CancellationToken.None);
 
@@ -121,9 +110,6 @@ public sealed class RefreshTokensCommandHandlerTests
 
 		UserManager<ApplicationUser> userManager =
 			IdentityMockFactory.CreateUserManager();
-
-		IAuthenticationService authenticationService =
-			IdentityMockFactory.CreateAuthenticationService();
 
 		ApplicationUser user =
 			new()
@@ -151,27 +137,20 @@ public sealed class RefreshTokensCommandHandlerTests
 				Arg.Any<CancellationToken>())
 			.Returns(("new-token", false));
 
-		TimeProvider timeProvider =
-			Substitute.For<TimeProvider>();
-		DateTimeOffset now =
-			timeProvider.GetUtcNow();
+		userManager
+			.GetRolesAsync(user)
+			.Returns(new List<string>());
 
-		AuthResult expectedAccessTokenResult =
-			AuthResult.Succeeded(
-				"access-token",
-				string.Empty,
-				now.AddMinutes(15),
-				user.Email,
-				null,
-				true);
-
-		authenticationService
-			.GenerateAccessTokenResultAsync(
-				user,
-				Arg.Any<bool>(),
-				Arg.Any<bool>(),
-				Arg.Any<CancellationToken>())
-			.Returns(Task.FromResult(expectedAccessTokenResult));
+		tokenService
+			.IssueAccessToken(
+				Arg.Any<long>(),
+				Arg.Any<string>(),
+				Arg.Any<IList<string>>(),
+				Arg.Any<bool>())
+			.Returns(
+				new IssuedAccessToken(
+					"access-token",
+					DateTimeOffset.UtcNow.AddMinutes(15)));
 
 		RefreshTokensCommand command =
 			new(refreshToken);
@@ -182,7 +161,6 @@ public sealed class RefreshTokensCommandHandlerTests
 				command,
 				tokenService,
 				userManager,
-				authenticationService,
 				SecurityAuditService,
 				CancellationToken.None);
 
@@ -204,9 +182,6 @@ public sealed class RefreshTokensCommandHandlerTests
 
 		UserManager<ApplicationUser> userManager =
 			IdentityMockFactory.CreateUserManager();
-
-		IAuthenticationService authenticationService =
-			IdentityMockFactory.CreateAuthenticationService();
 
 		ApplicationUser user =
 			new()
@@ -245,7 +220,6 @@ public sealed class RefreshTokensCommandHandlerTests
 				command,
 				tokenService,
 				userManager,
-				authenticationService,
 				SecurityAuditService,
 				CancellationToken.None);
 
@@ -269,9 +243,6 @@ public sealed class RefreshTokensCommandHandlerTests
 
 		UserManager<ApplicationUser> userManager =
 			IdentityMockFactory.CreateUserManager();
-
-		IAuthenticationService authenticationService =
-			IdentityMockFactory.CreateAuthenticationService();
 
 		ApplicationUser user =
 			new()
@@ -299,27 +270,20 @@ public sealed class RefreshTokensCommandHandlerTests
 				Arg.Any<CancellationToken>())
 			.Returns((newRefreshToken, false));
 
-		TimeProvider timeProvider =
-			Substitute.For<TimeProvider>();
-		DateTimeOffset now =
-			timeProvider.GetUtcNow();
+		userManager
+			.GetRolesAsync(user)
+			.Returns(new List<string>());
 
-		AuthResult expectedAccessTokenResult =
-			AuthResult.Succeeded(
-				"new-access-token",
-				string.Empty,
-				now.AddMinutes(15),
-				user.Email,
-				null,
-				false);
-
-		authenticationService
-			.GenerateAccessTokenResultAsync(
-				user,
-				Arg.Any<bool>(),
-				Arg.Any<bool>(),
-				Arg.Any<CancellationToken>())
-			.Returns(Task.FromResult(expectedAccessTokenResult));
+		tokenService
+			.IssueAccessToken(
+				Arg.Any<long>(),
+				Arg.Any<string>(),
+				Arg.Any<IList<string>>(),
+				Arg.Any<bool>())
+			.Returns(
+				new IssuedAccessToken(
+					"new-access-token",
+					DateTimeOffset.UtcNow.AddMinutes(15)));
 
 		RefreshTokensCommand command =
 			new(oldRefreshToken);
@@ -330,7 +294,6 @@ public sealed class RefreshTokensCommandHandlerTests
 				command,
 				tokenService,
 				userManager,
-				authenticationService,
 				SecurityAuditService,
 				CancellationToken.None);
 
@@ -346,10 +309,10 @@ public sealed class RefreshTokensCommandHandlerTests
 	}
 
 	/// <summary>
-	/// Proves the orphaned token bug: GenerateAuthResultAsync creates an unnecessary
-	/// refresh token that is immediately discarded in favor of the rotated one.
-	/// After the fix, this test verifies that only GenerateAccessTokenResultAsync is called
-	/// (no orphaned refresh token created).
+	/// Verifies that token refresh issues an access token via <see cref="ITokenService.IssueAccessToken"/>
+	/// without creating a new refresh token via <see cref="ITokenService.GenerateRefreshTokenAsync"/>.
+	/// The rotated refresh token from <see cref="ITokenService.RotateRefreshTokenAsync"/> is
+	/// used directly — no orphaned tokens are created.
 	/// </summary>
 	[Fact]
 	public async Task HandleAsync_TokenRefresh_DoesNotCreateOrphanedRefreshTokenAsync()
@@ -362,8 +325,6 @@ public sealed class RefreshTokensCommandHandlerTests
 			Substitute.For<ITokenService>();
 		UserManager<ApplicationUser> userManager =
 			IdentityMockFactory.CreateUserManager();
-		IAuthenticationService authenticationService =
-			IdentityMockFactory.CreateAuthenticationService();
 
 		ApplicationUser user =
 			new()
@@ -391,26 +352,20 @@ public sealed class RefreshTokensCommandHandlerTests
 				Arg.Any<CancellationToken>())
 			.Returns((newRefreshToken, false));
 
-		TimeProvider timeProvider =
-			Substitute.For<TimeProvider>();
-		DateTimeOffset now =
-			timeProvider.GetUtcNow();
+		userManager
+			.GetRolesAsync(user)
+			.Returns(new List<string>());
 
-		AuthResult expectedAccessTokenResult =
-			AuthResult.Succeeded(
-				"access-token",
-				string.Empty,
-				now.AddMinutes(15),
-				user.Email,
-				null);
-
-		authenticationService
-			.GenerateAccessTokenResultAsync(
-				user,
-				Arg.Any<bool>(),
-				Arg.Any<bool>(),
-				Arg.Any<CancellationToken>())
-			.Returns(Task.FromResult(expectedAccessTokenResult));
+		tokenService
+			.IssueAccessToken(
+				Arg.Any<long>(),
+				Arg.Any<string>(),
+				Arg.Any<IList<string>>(),
+				Arg.Any<bool>())
+			.Returns(
+				new IssuedAccessToken(
+					"access-token",
+					DateTimeOffset.UtcNow.AddMinutes(15)));
 
 		RefreshTokensCommand command =
 			new(oldRefreshToken);
@@ -421,27 +376,25 @@ public sealed class RefreshTokensCommandHandlerTests
 				command,
 				tokenService,
 				userManager,
-				authenticationService,
 				SecurityAuditService,
 				CancellationToken.None);
 
-		// Assert — GenerateAuthResultAsync should NOT be called (it creates orphaned tokens)
-		await authenticationService
+		// Assert — GenerateRefreshTokenAsync must NOT be called (only RotateRefreshTokenAsync provides the new token)
+		await tokenService
 			.DidNotReceive()
-			.GenerateAuthResultAsync(
-				Arg.Any<ApplicationUser>(),
-				Arg.Any<bool>(),
+			.GenerateRefreshTokenAsync(
+				Arg.Any<long>(),
 				Arg.Any<bool>(),
 				Arg.Any<CancellationToken>());
 
-		// Verify GenerateAccessTokenResultAsync WAS called (access-token-only path)
-		await authenticationService
+		// Verify IssueAccessToken WAS called
+		tokenService
 			.Received(1)
-			.GenerateAccessTokenResultAsync(
-				Arg.Any<ApplicationUser>(),
-				Arg.Any<bool>(),
-				Arg.Any<bool>(),
-				Arg.Any<CancellationToken>());
+			.IssueAccessToken(
+				Arg.Any<long>(),
+				Arg.Any<string>(),
+				Arg.Any<IList<string>>(),
+				Arg.Any<bool>());
 
 		result.Success.ShouldBeTrue();
 		result.RefreshToken.ShouldBe(newRefreshToken);

@@ -4,6 +4,7 @@
  */
 import { Routes } from "@angular/router";
 import { HomeComponent } from "@home/pages/home/home.component";
+import { LandingPageSeoService } from "@home/services";
 
 /**
  * Home feature routes (landing page and public home routes).
@@ -16,7 +17,8 @@ export const HOME_ROUTES: Routes =
 			// Eager — part of initial bundle so landing page renders in the first Angular cycle
 			component: HomeComponent,
 			title: "SeventySix - Home",
-			data: { breadcrumb: "Home" }
+			data: { breadcrumb: "Home" },
+			providers: [LandingPageSeoService]
 		},
 		{
 			path: "privacy-policy",

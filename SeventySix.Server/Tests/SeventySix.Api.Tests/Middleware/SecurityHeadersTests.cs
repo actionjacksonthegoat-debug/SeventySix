@@ -360,6 +360,116 @@ public sealed class SecurityHeadersTests : IDisposable
 		scriptSrc.ShouldNotContain("'unsafe-inline'");
 	}
 
+	/// <summary>
+	/// Tests that all default security headers are present on the auth endpoint.
+	/// Headers must be applied uniformly across all endpoints, including authenticated ones.
+	/// </summary>
+	[Fact]
+	public async Task AuthEndpointResponse_ContainsAllDefaultSecurityHeadersAsync()
+	{
+		// Arrange
+		using HttpClient client =
+			Factory.CreateClient();
+
+		// Act — unauthenticated request returns 401 but headers must still be present
+		HttpResponseMessage response =
+			await client.GetAsync(ApiEndpoints.Auth.Me);
+
+		// Assert — all OWASP-recommended headers present regardless of auth status
+		response.Headers.Contains(SecurityHeaderConstants.Names.ContentTypeOptions)
+			.ShouldBeTrue();
+		response.Headers.Contains(SecurityHeaderConstants.Names.FrameOptions)
+			.ShouldBeTrue();
+		response.Headers.Contains(SecurityHeaderConstants.Names.XssProtection)
+			.ShouldBeTrue();
+		response.Headers.Contains(SecurityHeaderConstants.Names.ContentSecurityPolicy)
+			.ShouldBeTrue();
+		response.Headers.Contains(SecurityHeaderConstants.Names.ReferrerPolicy)
+			.ShouldBeTrue();
+		response.Headers.Contains(SecurityHeaderConstants.Names.PermissionsPolicy)
+			.ShouldBeTrue();
+	}
+
+	/// <summary>
+	/// Tests that CSP connect-src does not include https://github.com.
+	/// GitHub OAuth uses top-level browser redirects — fetch/XHR to github.com is not required.
+	/// Any deviation must be justified and this test updated explicitly (fail-fast gate).
+	/// </summary>
+	[Fact]
+	public async Task Csp_ConnectSrc_DoesNotContainGithubComAsync()
+	{
+		// Arrange
+		using HttpClient httpClient =
+			Factory.CreateClient();
+
+		// Act
+		HttpResponseMessage response =
+			await httpClient.GetAsync(ApiEndpoints.Health.Base);
+
+		// Assert
+		response.Headers.TryGetValues(
+			SecurityHeaderConstants.Names.ContentSecurityPolicy,
+			out IEnumerable<string>? cspValues).ShouldBeTrue();
+		cspValues.ShouldNotBeNull();
+		string cspHeader =
+			cspValues.First();
+
+		string connectSrc =
+			cspHeader.Split(';')
+				.Select(directive => directive.Trim())
+				.FirstOrDefault(directive =>
+					directive.StartsWith(
+						"connect-src",
+						StringComparison.OrdinalIgnoreCase))
+				?? string.Empty;
+
+		connectSrc.ShouldNotContain(
+			"https://github.com",
+			Case.Insensitive);
+	}
+
+	/// <summary>
+	/// Tests that CSP connect-src contains exactly the approved origins.
+	/// Fail-fast gate: adding any new origin must update this test explicitly.
+	/// Approved origins: 'self', https://cloudflareinsights.com, https://static.cloudflareinsights.com.
+	/// </summary>
+	[Fact]
+	public async Task Csp_ConnectSrc_ContainsOnlyApprovedOriginsAsync()
+	{
+		// Arrange
+		using HttpClient httpClient =
+			Factory.CreateClient();
+
+		// Act
+		HttpResponseMessage response =
+			await httpClient.GetAsync(ApiEndpoints.Health.Base);
+
+		// Assert
+		response.Headers.TryGetValues(
+			SecurityHeaderConstants.Names.ContentSecurityPolicy,
+			out IEnumerable<string>? cspValues).ShouldBeTrue();
+		cspValues.ShouldNotBeNull();
+		string cspHeader =
+			cspValues.First();
+
+		string connectSrc =
+			cspHeader.Split(';')
+				.Select(directive => directive.Trim())
+				.FirstOrDefault(directive =>
+					directive.StartsWith(
+						"connect-src",
+						StringComparison.OrdinalIgnoreCase))
+				?? string.Empty;
+
+		connectSrc.ShouldContain("'self'", Case.Insensitive);
+		connectSrc.ShouldContain(
+			"https://cloudflareinsights.com",
+			Case.Insensitive);
+		connectSrc.ShouldContain(
+			"https://static.cloudflareinsights.com",
+			Case.Insensitive);
+	}
+
 	/// <inheritdoc/>
 	public void Dispose() =>
 		Factory.Dispose();

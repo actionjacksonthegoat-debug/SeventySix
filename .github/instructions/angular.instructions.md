@@ -152,6 +152,10 @@ export class UserService extends BaseQueryService<UserQueryRequest> {
 | `QueryKeys`                | Centralized cache key factory               |
 | `CacheCoordinationService` | Cross-feature cache invalidation            |
 
+**Query key convention:** `[resource, operation, ...params]` — e.g. `['users', 'paged', filter]`, `['users', 'single', id]`, `['health', 'status']`. All keys MUST be declared in `src/app/shared/utilities/query-keys.utility.ts`. Never inline raw string arrays.
+
+**HttpClient exception (auth domain only):** Auth domain services (`auth/services/`) use `HttpClient` directly with `withCredentials: true`. These are auth flow mutations (login, MFA, password change, TOTP, backup codes) that manage cookies — NOT cached data. Do NOT convert auth domain services to `injectQuery`/`createMutation`. `ApiService` documents this exception explicitly.
+
 ## App Initialization Pattern
 
 ```typescript
@@ -200,3 +204,28 @@ export function roleGuard(...requiredRoles: string[]): CanMatchFn {
 ## Chrome DevTools Verification (REQUIRED)
 
 After any component/service change, verify via Chrome DevTools MCP — see `copilot-instructions.md` → Chrome DevTools Verification section.
+
+## CSP Nonce Pattern
+
+Angular reads the `ngcspnonce` attribute from `<app-root>` at bootstrap and automatically stamps every dynamically injected `<style>` element with that nonce. This enables `style-src 'nonce-VALUE'` in the CSP without `'unsafe-inline'`.
+
+**index.html** — the placeholder is replaced by Nginx `sub_filter` at serve time:
+```html
+<app-root ngCspNonce="__CSP_NONCE__"></app-root>
+```
+
+**Inline styles**: Use `data-*` attribute selectors in SCSS instead of `[style.--var]` Angular bindings to avoid needing `'unsafe-inline'`:
+```html
+<!-- NEVER (requires style-src 'unsafe-inline' for CSS variables) -->
+<button [style.--oauth-color]="provider.color">
+
+<!-- ALWAYS (uses data-attr + CSS selector — no CSP issue) -->
+<button [attr.data-oauth-provider]="provider.id">
+```
+```scss
+&[data-oauth-provider="github"] { --oauth-color: #24292e; }
+```
+
+**Reading the nonce**: Use `readNonceFromRoot()` from `@shared/csp/csp-nonce.provider` or inject `CSP_NONCE` from `@angular/core` for programmatic style injection.
+
+**Important**: `[style.someProperty]="value"` bindings (non-variable properties) are JS DOM mutations — they are **not** blocked by `style-src` CSP.

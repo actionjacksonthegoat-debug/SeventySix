@@ -1,3 +1,4 @@
+import { HttpErrorResponse } from "@angular/common/http";
 import { provideZonelessChangeDetection } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
 import { ConfirmOptions } from "@shared/models";
@@ -152,15 +153,19 @@ describe("mutation-dialog.utility",
 				it("should show error notification when mutation fails",
 					() =>
 					{
-						const testError: Error =
-							new Error("Something went wrong");
+						const httpError: HttpErrorResponse =
+							new HttpErrorResponse(
+								{
+									status: 500,
+									error: { detail: "SENTINEL_SERVER_INTERNAL_DETAIL" }
+								});
 						dialogService.confirm.mockReturnValue(of(true));
 						mutation.mutate.mockImplementation(
 							(
 								_input: unknown,
-								callbacks: { onError?: (error: Error) => void; }) =>
+								callbacks: { onError?: (error: unknown) => void; }) =>
 							{
-								callbacks.onError?.(testError);
+								callbacks.onError?.(httpError);
 							});
 
 						confirmAndMutate(
@@ -172,8 +177,13 @@ describe("mutation-dialog.utility",
 							"Success message",
 							"Failed to complete");
 
-						expect(notificationService.error)
-							.toHaveBeenCalledWith("Failed to complete: Something went wrong");
+						const errorArg: string =
+							(notificationService.error as Mock).mock.calls.at(-1)![0] as string;
+						expect(errorArg)
+							.not
+							.toContain("SENTINEL_SERVER_INTERNAL_DETAIL");
+						expect(errorArg)
+							.toBe("Failed to complete");
 					});
 
 				it("should pass correct input to mutation",

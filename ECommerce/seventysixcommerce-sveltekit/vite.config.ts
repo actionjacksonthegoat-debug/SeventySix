@@ -7,10 +7,16 @@ import { defineConfig } from 'vite';
 
 const certificatePath = resolve(import.meta.dirname, '..', '..', 'SeventySix.Client', 'ssl', 'dev-certificate.crt');
 const privateKeyPath = resolve(import.meta.dirname, '..', '..', 'SeventySix.Client', 'ssl', 'dev-certificate.key');
+const protobufInquireShimPath = resolve(import.meta.dirname, '..', 'build-shims', 'protobuf-inquire.cjs');
 const hasSharedCertificate = existsSync(certificatePath) && existsSync(privateKeyPath);
 const sslPlugins = hasSharedCertificate ? [] : [basicSsl()];
 
 export default defineConfig({
+	resolve: {
+		alias: {
+			'@protobufjs/inquire': protobufInquireShimPath
+		}
+	},
 	server: {
 		https: hasSharedCertificate
 			? {

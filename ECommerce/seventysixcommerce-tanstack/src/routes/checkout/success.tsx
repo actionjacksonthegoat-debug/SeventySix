@@ -1,10 +1,10 @@
+import { getStripe, type StripeClient } from "@seventysixcommerce/shared/stripe";
 import { isNullOrUndefined } from "@seventysixcommerce/shared/utils";
 import { createFileRoute } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import type { JSX } from "react";
 import type Stripe from "stripe";
 import { z } from "zod";
-import { getStripe } from "~/server/lib/stripe";
 import { queueLog } from "~/server/log-forwarder";
 import { recordPageView } from "~/server/metrics";
 import { cartSessionMiddleware } from "~/server/middleware/cart-session";
@@ -34,8 +34,16 @@ const getOrderConfirmation =
 			{
 				try
 				{
+					const stripe: StripeClient =
+						getStripe(
+							{
+								secretKey: process.env.STRIPE_SECRET_KEY,
+								useMocks: process.env.MOCK_SERVICES !== "false",
+								baseUrl: process.env.BASE_URL ?? "https://localhost:3002"
+							});
+
 					const session =
-						(await getStripe().checkout.sessions.retrieve(
+						(await stripe.checkout.sessions.retrieve(
 							(data as { sessionId: string; }).sessionId)) as unknown as Stripe.Checkout.Session;
 					// Ownership check — verify this session belongs to the current cart
 					if (session.metadata?.cartSessionId !== context.cartSessionId)

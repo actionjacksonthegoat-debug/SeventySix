@@ -1,6 +1,7 @@
+import { env } from "$env/dynamic/private";
 import { queueLog } from "$lib/server/log-forwarder";
 import { recordPageView } from "$lib/server/metrics";
-import { getStripe } from "$lib/server/stripe";
+import { getStripe, type StripeClient } from "@seventysixcommerce/shared/stripe";
 import { error } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 
@@ -26,8 +27,13 @@ export const load: PageServerLoad =
 			error(400, "Missing or invalid session ID");
 		}
 
-		const stripe =
-			getStripe();
+		const stripe: StripeClient =
+			getStripe(
+				{
+					secretKey: env.STRIPE_SECRET_KEY,
+					useMocks: env.MOCK_SERVICES !== "false",
+					baseUrl: env.BASE_URL ?? ""
+				});
 		const session =
 			(await stripe.checkout.sessions.retrieve(
 				sessionId)) as unknown as import("stripe").default.Checkout.Session;

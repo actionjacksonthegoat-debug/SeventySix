@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using System.Text.Json;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -20,7 +21,7 @@ namespace SeventySix.Identity.Tests.Services;
 /// </summary>
 /// <remarks>
 /// Security-critical tests following 80/20 rule:
-/// - Provider delegation via OAuthProviderFactory
+/// - Provider delegation via IOAuthProviderStrategy (GitHub)
 /// - Callback error handling (provider not configured, strategy exceptions)
 /// - Display Name sync on login
 /// - User creation via FindByLoginAsync fallback
@@ -31,7 +32,6 @@ public sealed class OAuthServiceTests
 		TestDates.CreateDefaultTimeProvider();
 
 	private readonly UserManager<ApplicationUser> UserManager;
-	private readonly OAuthProviderFactory ProviderFactory;
 	private readonly IOAuthProviderStrategy MockStrategy;
 	private readonly IOptions<AuthSettings> AuthSettings;
 	private readonly IAuthenticationService AuthenticationService;
@@ -64,10 +64,6 @@ public sealed class OAuthServiceTests
 		MockStrategy =
 			Substitute.For<IOAuthProviderStrategy>();
 		MockStrategy.ProviderName.Returns(TestProvider);
-
-		// Create real factory with mock strategy
-		ProviderFactory =
-			new OAuthProviderFactory([MockStrategy]);
 
 		AuthSettings settings =
 			new()
@@ -157,7 +153,7 @@ public sealed class OAuthServiceTests
 		OAuthService service =
 			new(
 				UserManager,
-				ProviderFactory,
+				MockStrategy,
 				emptySettings,
 				TimeProvider,
 				AuthenticationService,
@@ -199,7 +195,7 @@ public sealed class OAuthServiceTests
 		OAuthService service =
 			new(
 				UserManager,
-				ProviderFactory,
+				MockStrategy,
 				emptySettings,
 				TimeProvider,
 				AuthenticationService,
@@ -470,6 +466,74 @@ public sealed class OAuthServiceTests
 	}
 
 	/// <summary>
+	/// Verifies callback returns failure when JSON parsing throws.
+	/// Security: Error responses should not leak implementation details.
+	/// </summary>
+	[Fact]
+	public async Task HandleCallbackAsync_JsonParsingFails_ReturnsFailureAsync()
+	{
+		// Arrange
+		MockStrategy
+			.ExchangeCodeForTokenAsync(
+				Arg.Any<OAuthProviderSettings>(),
+				Arg.Any<string>(),
+				Arg.Any<string>(),
+				Arg.Any<string>(),
+				Arg.Any<CancellationToken>())
+			.ThrowsAsync(new JsonException("Unexpected response format"));
+
+		OAuthService service =
+			CreateService();
+
+		// Act
+		AuthResult result =
+			await service.HandleCallbackAsync(
+				TestProvider,
+				TestAuthorizationCode,
+				TestRedirectUri,
+				TestCodeVerifier,
+				CancellationToken.None);
+
+		// Assert
+		result.Success.ShouldBeFalse();
+		result.ErrorCode.ShouldBe(AuthErrorCodes.OAuthError);
+	}
+
+	/// <summary>
+	/// Verifies callback returns failure when OAuth configuration is invalid.
+	/// Security: Error responses should not leak implementation details.
+	/// </summary>
+	[Fact]
+	public async Task HandleCallbackAsync_InvalidOAuthConfiguration_ReturnsFailureAsync()
+	{
+		// Arrange
+		MockStrategy
+			.ExchangeCodeForTokenAsync(
+				Arg.Any<OAuthProviderSettings>(),
+				Arg.Any<string>(),
+				Arg.Any<string>(),
+				Arg.Any<string>(),
+				Arg.Any<CancellationToken>())
+			.ThrowsAsync(new InvalidOperationException("Config error"));
+
+		OAuthService service =
+			CreateService();
+
+		// Act
+		AuthResult result =
+			await service.HandleCallbackAsync(
+				TestProvider,
+				TestAuthorizationCode,
+				TestRedirectUri,
+				TestCodeVerifier,
+				CancellationToken.None);
+
+		// Assert
+		result.Success.ShouldBeFalse();
+		result.ErrorCode.ShouldBe(AuthErrorCodes.OAuthError);
+	}
+
+	/// <summary>
 	/// Verifies callback throws when provider is not registered in factory.
 	/// </summary>
 	[Fact]
@@ -500,7 +564,7 @@ public sealed class OAuthServiceTests
 	{
 		return new OAuthService(
 			UserManager,
-			ProviderFactory,
+			MockStrategy,
 			AuthSettings,
 			TimeProvider,
 			AuthenticationService,

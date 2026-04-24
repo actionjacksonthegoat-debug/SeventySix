@@ -25,7 +25,7 @@
 					class="oauth-button"
 					data-testid="oauth-button"
 					mat-stroked-button
-					[style.--oauth-color]="provider.color"
+					[attr.data-oauth-provider]="provider.id"
 					[disabled]="isLoading() || isOAuthInProgress()"
 					(click)="onOAuthLogin(provider.id)"
 					[attr.aria-label]="'Continue with ' + provider.displayName"

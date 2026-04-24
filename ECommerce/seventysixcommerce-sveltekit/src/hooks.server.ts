@@ -1,3 +1,4 @@
+import { dev } from "$app/environment";
 import { env } from "$env/dynamic/private";
 import { CART_SESSION_COOKIE, CART_SESSION_MAX_AGE_SECONDS } from "$lib/constants";
 import { configureLogForwarder, queueLog } from "$lib/server/log-forwarder";
@@ -44,7 +45,7 @@ export const handle: Handle =
 				{
 					path: "/",
 					httpOnly: true,
-					secure: true,
+					secure: !dev,
 					sameSite: "lax",
 					maxAge: CART_SESSION_MAX_AGE_SECONDS
 				});

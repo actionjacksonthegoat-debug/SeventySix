@@ -16,6 +16,7 @@ import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatTableDataSource, MatTableModule } from "@angular/material/table";
 import { SKELETON_TABLE_CELL, SkeletonTheme } from "@shared/constants";
 import { DateService } from "@shared/services/date.service";
+import { getMutationErrorMessage } from "@shared/utilities/mutation-error.utility";
 import { isNullOrUndefined } from "@shared/utilities/null-check.utility";
 import { NgxSkeletonLoaderModule } from "ngx-skeleton-loader";
 
@@ -106,12 +107,11 @@ export class ScheduledJobsTableComponent
 				const queryError: Error | null =
 					this.jobsQuery.error();
 				return queryError
-					? queryError.message ?? "Failed to load scheduled job data"
+					? getMutationErrorMessage(queryError, "Failed to load scheduled job data")
 					: null;
 			});
 
 	/**
-	 * Data source with computed display properties.
 	 * @type {Signal<MatTableDataSource<ScheduledJobDisplay>>}
 	 */
 	readonly dataSource: Signal<MatTableDataSource<ScheduledJobDisplay>> =

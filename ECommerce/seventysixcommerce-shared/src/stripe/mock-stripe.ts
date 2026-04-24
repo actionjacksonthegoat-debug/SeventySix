@@ -45,7 +45,7 @@ export interface MockStripeClient
 		};
 	};
 	webhooks: {
-		constructEvent: (payload: string, sig: string, secret: string) => unknown;
+		constructEvent: (payload: string | Buffer, sig: string, secret: string) => unknown;
 	};
 }
 
@@ -159,11 +159,16 @@ export function createMockStripe(baseUrl: string): MockStripeClient
 		},
 		webhooks: {
 			constructEvent: (
-				payload: string,
+				payload: string | Buffer,
 				_sig: string,
 				_secret: string) =>
 			{
-				return safeParseStripeBody(payload);
+				const raw: string =
+					typeof payload === "string"
+						? payload
+						: payload.toString("utf-8");
+
+				return safeParseStripeBody(raw);
 			}
 		}
 	};

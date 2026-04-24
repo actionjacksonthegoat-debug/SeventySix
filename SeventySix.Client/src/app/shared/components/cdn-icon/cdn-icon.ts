@@ -13,10 +13,10 @@ import { switchMap } from "rxjs";
 
 /**
  * CDN Icon Component — displays an SVG icon loaded from CDN.
- * Icons are cached after first load. Renders inline SVG for CSS color control.
+ * Icons are cached after first load. Renders inline SVG with inherited CSS color.
  *
  * @example
- * <app-cdn-icon slug="angular" [size]="'2rem'" [color]="'#DD0031'" />
+ * <app-cdn-icon slug="angular" />
  */
 @Component(
 	{
@@ -25,9 +25,6 @@ import { switchMap } from "rxjs";
 		template: `
 			<span
 				class="cdn-icon"
-				[style.width]="size()"
-				[style.height]="size()"
-				[style.color]="color()"
 				[innerHTML]="iconHtml()"
 				aria-hidden="true"
 				role="img">
@@ -42,12 +39,6 @@ export class CdnIconComponent
 
 	readonly source: InputSignal<string> =
 		input<string>("simpleIcons");
-
-	readonly size: InputSignal<string> =
-		input<string>("1.5rem");
-
-	readonly color: InputSignal<string> =
-		input<string>("currentColor");
 
 	private readonly cdnIconService: CdnIconService =
 		inject(CdnIconService);

@@ -1,14 +1,9 @@
 /**
  * Change password page.
  * Handles both required (first login) and voluntary password changes.
- *
- * **Design Note:** Uses HttpClient directly (not ApiService) because password
- * change requires `withCredentials: true` for secure cookie handling.
- *
- * @see {@link ApiService} for documentation on when to use HttpClient directly
  */
 
-import { HttpClient, HttpErrorResponse } from "@angular/common/http";
+import { HttpErrorResponse } from "@angular/common/http";
 import {
 	ChangeDetectionStrategy,
 	Component,
@@ -28,13 +23,14 @@ import {
 } from "@angular/forms";
 import { ActivatedRoute, Router } from "@angular/router";
 import { ValidationResult } from "@auth/models";
+import type { ChangePasswordRequest } from "@auth/models";
+import { ChangePasswordService } from "@auth/services";
 import {
 	mapAuthError,
 	sanitizeRedirectUrl,
 	validatePassword,
 	validatePasswordsMatch
 } from "@auth/utilities";
-import { environment } from "@environments/environment";
 import { APP_ROUTES } from "@shared/constants";
 import { PASSWORD_VALIDATION } from "@shared/constants/validation.constants";
 import { FieldMessageDirective } from "@shared/directives";
@@ -43,12 +39,6 @@ import { AuthErrorResult } from "@shared/models";
 import { AuthService } from "@shared/services/auth.service";
 import { NotificationService } from "@shared/services/notification.service";
 import { getValidationError } from "@shared/utilities";
-
-interface ChangePasswordRequest
-{
-	currentPassword: string | null;
-	newPassword: string;
-}
 
 @Component(
 	{
@@ -75,11 +65,13 @@ export class ChangePasswordComponent
 		inject(DestroyRef);
 
 	/**
-	 * HTTP client used to call the change-password API endpoint.
-	 * @type {HttpClient}
+	 * Service for changing the authenticated user's password.
+	 * @type {ChangePasswordService}
+	 * @private
+	 * @readonly
 	 */
-	private readonly http: HttpClient =
-		inject(HttpClient);
+	private readonly changePasswordService: ChangePasswordService =
+		inject(ChangePasswordService);
 
 	/**
 	 * Auth service for clearing requirement and session-related checks.
@@ -284,11 +276,8 @@ export class ChangePasswordComponent
 			};
 
 		this
-			.http
-			.post<void>(`${environment.apiUrl}/auth/password/change`, request,
-				{
-					withCredentials: true
-				})
+			.changePasswordService
+			.changePassword(request)
 			.pipe(
 				takeUntilDestroyed(this.destroyRef))
 			.subscribe(

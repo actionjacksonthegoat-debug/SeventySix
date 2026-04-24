@@ -3,20 +3,22 @@
 // </copyright>
 
 import type { Browser, BrowserContext, Page } from "@playwright/test";
-import { E2E_CONFIG } from "./config.constant";
 import {
 	attachDiagnosticsOnFailure,
 	createDiagnosticsCollector,
 	type DiagnosticsCollector,
 	instrumentPageForDiagnostics
 } from "./diagnostics.fixture";
+import { loginInFreshContext } from "./helpers/context-login.helper";
 import { test as base } from "./page-helpers.fixture";
-import { TestUser } from "./test-users.constant";
+import { AdminDashboardPageHelper } from "./pages/admin-dashboard.page";
+import { ROUTES } from "./routes.constant";
+import { TEST_USERS, TestUser } from "./test-users.constant";
 
 /**
  * Extended test fixture with role-based authentication.
  * Extends page-helpers.fixture to include authPage, homePage, adminDashboardPage.
- * Each test gets a pre-authenticated browser context based on role.
+ * Each test gets a fresh page from a worker-scoped browser context.
  */
 interface AuthFixtures
 {
@@ -46,75 +48,170 @@ interface AuthFixtures
 }
 
 /**
- * Creates an authenticated page for a role.
- * Shared helper to avoid code duplication.
+ * Worker-scoped fixtures that hold a single browser context per role per worker.
+ * Sharing the context across tests within a worker ensures that rotating refresh
+ * tokens remain valid: each test's Angular bootstrap refreshes the token in-place
+ * inside the shared context's cookie store, so the next test in the same worker
+ * uses the already-rotated (still valid) token rather than re-reading the stale
+ * token from the session file on disk.
+ */
+interface AuthWorkerFixtures
+{
+	/**
+	 * Browser context authenticated as User role (one per worker).
+	 */
+	userContext: BrowserContext;
+
+	/**
+	 * Browser context authenticated as Admin role (one per worker).
+	 */
+	adminContext: BrowserContext;
+
+	/**
+	 * Browser context authenticated as Developer role (one per worker).
+	 */
+	developerContext: BrowserContext;
+}
+
+/**
+ * Finds a test user by role case-insensitively.
+ * @param role
+ * The role to match (e.g. "user", "admin", "developer").
+ * @returns
+ * The matching test user.
+ */
+function findTestUserByRole(role: string): TestUser
+{
+	const normalized: string =
+		role.toLowerCase();
+	const user: TestUser | undefined =
+		TEST_USERS.find(
+			(candidate: TestUser): boolean =>
+				candidate.role.toLowerCase() === normalized);
+
+	if (user === undefined)
+	{
+		throw new Error(`No TEST_USERS entry found for role "${role}"`);
+	}
+
+	return user;
+}
+
+/**
+ * Creates a worker-scoped authenticated browser context by performing a fresh
+ * programmatic login. This avoids relying on stale refresh tokens that may have
+ * been rotated on disk by the global setup but rotated further in-memory by
+ * other workers. Each worker gets its own login session with a distinct token
+ * family so parallel workers never compete over the same refresh token chain.
  * @param browser
  * The browser instance.
  * @param role
- * The role to authenticate as.
+ * The role to authenticate as (case-insensitive).
  * @returns
- * A page with the role's authentication state.
+ * A browser context with fresh authenticated cookies.
  */
-async function createAuthenticatedPage(
+async function createFreshWorkerContext(
 	browser: Browser,
-	role: string): Promise<{ page: Page; browserContext: BrowserContext; }>
+	role: string): Promise<BrowserContext>
 {
-	const authStatePath: string =
-		`e2e/.auth/${role.toLowerCase()}.json`;
-	const browserContext: BrowserContext =
-		await browser.newContext(
+	const user: TestUser =
+		findTestUserByRole(role);
+	const { page, context } =
+		await loginInFreshContext(
+			browser,
+			user,
 			{
-				storageState: authStatePath,
-				// Mirror the playwright.config.ts `use` settings for manually-created
-				// contexts. browser.newContext() does not inherit config-level `use`
-				// options, so ignoreHTTPSErrors must be set explicitly to prevent SSL
-				// errors against the self-signed dev certificate in CI.
-				baseURL: E2E_CONFIG.clientBaseUrl,
-				ignoreHTTPSErrors: true
+				expectedUrl: (url: URL): boolean =>
+					url.pathname === ROUTES.home
+						|| url.pathname.includes("/mfa/")
 			});
-	const page: Page =
-		await browserContext.newPage();
 
-	return { page, browserContext };
+	// Close the login page; subsequent tests open their own pages in this context.
+	await page.close();
+	return context;
 }
 
-export const test: ReturnType<typeof base.extend<AuthFixtures>> =
-	base.extend<AuthFixtures>(
+export const test: ReturnType<typeof base.extend<AuthFixtures, AuthWorkerFixtures>> =
+	base.extend<
+		AuthFixtures,
+		AuthWorkerFixtures>(
 		{
-			userPage: async ({ browser }, use, testInfo) =>
+		// --- Worker-scoped contexts (one per worker, shared across tests) ---
+		// Using worker scope ensures each test in a worker reuses the same
+		// cookie store. When a test's Angular bootstrap rotates the refresh
+		// token the updated cookie lives in the shared context so the next
+		// test in the same worker uses the current (valid) token, not the
+		// stale one from the session file on disk.
+
+			userContext: [
+				async ({ browser }, use) =>
+				{
+					const context: BrowserContext =
+						await createFreshWorkerContext(browser, "user");
+					await use(context);
+					await context.close();
+				},
+				{ scope: "worker" }
+			],
+
+			adminContext: [
+				async ({ browser }, use) =>
+				{
+					const context: BrowserContext =
+						await createFreshWorkerContext(browser, "admin");
+					await use(context);
+					await context.close();
+				},
+				{ scope: "worker" }
+			],
+
+			developerContext: [
+				async ({ browser }, use) =>
+				{
+					const context: BrowserContext =
+						await createFreshWorkerContext(browser, "developer");
+					await use(context);
+					await context.close();
+				},
+				{ scope: "worker" }
+			],
+
+			// --- Test-scoped pages (fresh page per test, shared context) ---
+
+			userPage: async ({ userContext }, use, testInfo) =>
 			{
-				const { page, browserContext } =
-					await createAuthenticatedPage(browser, "user");
+				const page: Page =
+					await userContext.newPage();
 				const collector: DiagnosticsCollector =
 					createDiagnosticsCollector();
 				instrumentPageForDiagnostics(page, collector);
 				await use(page);
 				await attachDiagnosticsOnFailure(page, collector, testInfo);
-				await browserContext.close();
+				await page.close();
 			},
 
-			adminPage: async ({ browser }, use, testInfo) =>
+			adminPage: async ({ adminContext }, use, testInfo) =>
 			{
-				const { page, browserContext } =
-					await createAuthenticatedPage(browser, "admin");
+				const page: Page =
+					await adminContext.newPage();
 				const collector: DiagnosticsCollector =
 					createDiagnosticsCollector();
 				instrumentPageForDiagnostics(page, collector);
 				await use(page);
 				await attachDiagnosticsOnFailure(page, collector, testInfo);
-				await browserContext.close();
+				await page.close();
 			},
 
-			developerPage: async ({ browser }, use, testInfo) =>
+			developerPage: async ({ developerContext }, use, testInfo) =>
 			{
-				const { page, browserContext } =
-					await createAuthenticatedPage(browser, "developer");
+				const page: Page =
+					await developerContext.newPage();
 				const collector: DiagnosticsCollector =
 					createDiagnosticsCollector();
 				instrumentPageForDiagnostics(page, collector);
 				await use(page);
 				await attachDiagnosticsOnFailure(page, collector, testInfo);
-				await browserContext.close();
+				await page.close();
 			},
 
 			authenticatedPage: async ({ browser }, use) =>
@@ -123,10 +220,27 @@ export const test: ReturnType<typeof base.extend<AuthFixtures>> =
 					async (testUser: TestUser): Promise<Page> =>
 					{
 						const { page } =
-							await createAuthenticatedPage(browser, testUser.role);
+							await loginInFreshContext(
+								browser,
+								testUser,
+								{
+									expectedUrl: (url: URL): boolean =>
+										url.pathname === ROUTES.home
+											|| url.pathname.includes("/mfa/")
+								});
 						return page;
 					};
 				await use(createPage);
+			},
+
+			// Override the parent page-helpers.fixture adminDashboardPage so that it
+			// wraps adminPage (the worker-scoped authenticated page) instead of the
+			// built-in page fixture (which uses the project-level storageState shared
+			// across all workers). Using adminPage prevents token-rotation conflicts
+			// when multiple parallel workers all navigate to the admin dashboard.
+			adminDashboardPage: async ({ adminPage }, use) =>
+			{
+				await use(new AdminDashboardPageHelper(adminPage));
 			}
 		});
 

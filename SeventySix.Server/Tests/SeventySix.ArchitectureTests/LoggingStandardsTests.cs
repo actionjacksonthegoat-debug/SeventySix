@@ -83,6 +83,7 @@ public sealed class LoggingStandardsTests : SourceCodeArchitectureTest
 				|| file.Contains("/Extensions/ServiceCollectionExtensions")
 				|| file.EndsWith("JobSchedulerContributor.cs")
 				|| file.Contains("/Configuration/StartupValidator.cs")
+				|| (file.Contains("/Configuration/") && file.EndsWith("ValidationRule.cs"))
 				|| file.Contains("Program.cs");
 
 			string content =

@@ -15,6 +15,10 @@ namespace SeventySix.Shared.Persistence;
 /// <typeparam name="TEntity">The entity type managed by this repository.</typeparam>
 /// <typeparam name="TContext">The DbContext type for database operations.</typeparam>
 /// <remarks>
+/// Active concrete implementations: <see cref="SeventySix.Logging.LogRepository"/>
+/// and <c>ThirdPartyApiRequestRepository</c>. Retained by DRY (not YAGNI) — the
+/// shared error-handling template eliminates duplication across both.
+///
 /// This class centralizes error handling logic that was previously duplicated
 /// across UserRepository, LogRepository, and ThirdPartyApiRequestRepository.
 ///

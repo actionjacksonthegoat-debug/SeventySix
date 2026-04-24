@@ -251,7 +251,7 @@
 						}
 						@for (column of visibleColumns(); track column.key)
 						{
-							<col [style.width]="column.width ?? null" />
+							<col [attr.width]="column.width ?? null" />
 						}
 						@if (rowActions().length > 0)
 						{

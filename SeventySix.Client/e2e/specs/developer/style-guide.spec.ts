@@ -3,7 +3,8 @@ import {
 	PAGE_TEXT,
 	ROUTES,
 	SELECTORS,
-	test
+	test,
+	TIMEOUTS
 } from "@e2e-fixtures";
 import { Locator, Page } from "@playwright/test";
 
@@ -22,6 +23,11 @@ test.describe("Style Guide Page",
 			async ({ developerPage }: { developerPage: Page; }) =>
 			{
 				await developerPage.goto(ROUTES.developer.styleGuide);
+
+				// Warm-up: wait for the style guide to fully load (handles token refresh delay under Docker load)
+				await expect(developerPage.locator(SELECTORS.developer.styleGuideHeader))
+					.toBeVisible(
+						{ timeout: TIMEOUTS.navigation * 2 });
 			});
 
 		test.describe("Page Structure",
@@ -44,7 +50,8 @@ test.describe("Style Guide Page",
 							developerPage.locator(SELECTORS.developer.styleGuideContainer);
 
 						await expect(header)
-							.toContainText(PAGE_TEXT.developer.styleGuide.description);
+							.toContainText(PAGE_TEXT.developer.styleGuide.description,
+								{ timeout: TIMEOUTS.navigation * 2 });
 					});
 
 				test("should display theme toggle button",
@@ -67,7 +74,8 @@ test.describe("Style Guide Page",
 						const colorSchemeSelect: Locator =
 							developerPage.locator(SELECTORS.developer.colorSchemeSelect);
 						await expect(colorSchemeSelect)
-							.toBeVisible();
+							.toBeVisible(
+								{ timeout: TIMEOUTS.navigation });
 					});
 			});
 

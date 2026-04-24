@@ -1,6 +1,6 @@
 import { RecurringJobStatusResponse } from "@admin/models";
 import { HealthApiService } from "@admin/services";
-import { provideHttpClient } from "@angular/common/http";
+import { HttpErrorResponse, provideHttpClient } from "@angular/common/http";
 import { provideHttpClientTesting } from "@angular/common/http/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
@@ -153,20 +153,30 @@ describe("ScheduledJobsTableComponent",
 		it("should display error message when query fails",
 			() =>
 			{
-				const errorMessage: string = "Failed to load scheduled job data";
+				const httpError: HttpErrorResponse =
+					new HttpErrorResponse(
+						{
+							status: 500,
+							error: { detail: "SENTINEL_SERVER_INTERNAL_DETAIL" }
+						});
 				healthApiService.getScheduledJobs.mockReturnValue(
 					createMockQueryResult<RecurringJobStatusResponse[]>(undefined,
 						{
 							isError: true,
-							error: new Error(errorMessage)
+							error: httpError
 						}));
 
 				createComponent();
 
 				expect(component.isLoading())
 					.toBe(false);
-				expect(component.error())
-					.toBeTruthy();
+				const errorValue: string | null =
+					component.error();
+				expect(errorValue)
+					.not
+					.toContain("SENTINEL_SERVER_INTERNAL_DETAIL");
+				expect(errorValue)
+					.toBe("Failed to load scheduled job data");
 				expect(component.dataSource().data.length)
 					.toBe(0);
 			});

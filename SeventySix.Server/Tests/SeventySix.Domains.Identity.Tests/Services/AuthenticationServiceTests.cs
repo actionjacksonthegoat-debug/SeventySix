@@ -3,7 +3,6 @@
 // </copyright>
 
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Options;
 using NSubstitute;
 using SeventySix.Identity.Constants;
 using SeventySix.TestUtilities.Builders;
@@ -25,7 +24,6 @@ public sealed class AuthenticationServiceTests
 {
 	private readonly IAuthRepository AuthRepository;
 	private readonly ITokenService TokenService;
-	private readonly IOptions<JwtSettings> JwtSettings;
 	private readonly TimeProvider TimeProvider;
 	private readonly UserManager<ApplicationUser> UserManager;
 	private readonly AuthenticationService ServiceUnderTest;
@@ -50,19 +48,10 @@ public sealed class AuthenticationServiceTests
 				null,
 				null);
 
-		JwtSettings =
-			Options.Create(
-			new JwtSettings
-			{
-				AccessTokenExpirationMinutes = 15,
-				RefreshTokenExpirationDays = 7,
-			});
-
 		ServiceUnderTest =
 			new AuthenticationService(
 				AuthRepository,
 				TokenService,
-				JwtSettings,
 				TimeProvider,
 				UserManager);
 	}
@@ -95,12 +84,15 @@ public sealed class AuthenticationServiceTests
 			.Returns(roles);
 
 		TokenService
-			.GenerateAccessToken(
+			.IssueAccessToken(
 				user.Id,
 				user.UserName!,
-				Arg.Any<IEnumerable<string>>(),
+				Arg.Any<IList<string>>(),
 				Arg.Any<bool>())
-			.Returns(expectedAccessToken);
+			.Returns(
+				new IssuedAccessToken(
+					expectedAccessToken,
+					utcNow.AddMinutes(15)));
 
 		TokenService
 			.GenerateRefreshTokenAsync(
@@ -156,12 +148,15 @@ public sealed class AuthenticationServiceTests
 			.Returns(Array.Empty<string>());
 
 		TokenService
-			.GenerateAccessToken(
+			.IssueAccessToken(
 				Arg.Any<long>(),
 				Arg.Any<string>(),
-				Arg.Any<IEnumerable<string>>(),
+				Arg.Any<IList<string>>(),
 				Arg.Any<bool>())
-			.Returns("token");
+			.Returns(
+				new IssuedAccessToken(
+					"token",
+					DateTimeOffset.UtcNow.AddMinutes(15)));
 
 		TokenService
 			.GenerateRefreshTokenAsync(
@@ -208,12 +203,15 @@ public sealed class AuthenticationServiceTests
 			.Returns(Array.Empty<string>());
 
 		TokenService
-			.GenerateAccessToken(
+			.IssueAccessToken(
 				Arg.Any<long>(),
 				Arg.Any<string>(),
-				Arg.Any<IEnumerable<string>>(),
+				Arg.Any<IList<string>>(),
 				Arg.Any<bool>())
-			.Returns("token");
+			.Returns(
+				new IssuedAccessToken(
+					"token",
+					DateTimeOffset.UtcNow.AddMinutes(15)));
 
 		TokenService
 			.GenerateRefreshTokenAsync(
@@ -262,14 +260,17 @@ public sealed class AuthenticationServiceTests
 			.GetRolesAsync(user)
 			.Returns(roles);
 
-		IEnumerable<string>? capturedRoles = null;
+		IList<string>? capturedRoles = null;
 		TokenService
-			.GenerateAccessToken(
+			.IssueAccessToken(
 				Arg.Any<long>(),
 				Arg.Any<string>(),
-				Arg.Do<IEnumerable<string>>(roleList => capturedRoles = roleList),
+				Arg.Do<IList<string>>(roleList => capturedRoles = roleList),
 				Arg.Any<bool>())
-			.Returns("token");
+			.Returns(
+				new IssuedAccessToken(
+					"token",
+					DateTimeOffset.UtcNow.AddMinutes(15)));
 
 		TokenService
 			.GenerateRefreshTokenAsync(
@@ -290,81 +291,11 @@ public sealed class AuthenticationServiceTests
 		// Assert
 		capturedRoles.ShouldNotBeNull();
 		List<string> roleList =
-			capturedRoles.ToList();
+			[.. capturedRoles];
 		roleList.Count.ShouldBe(3);
 		roleList.ShouldContain(RoleConstants.User);
 		roleList.ShouldContain(RoleConstants.Admin);
 		roleList.ShouldContain(RoleConstants.Developer);
-	}
-
-	/// <summary>
-	/// Verifies GenerateAccessTokenResultAsync returns access token without creating a refresh token.
-	/// </summary>
-	[Fact]
-	public async Task GenerateAccessTokenResultAsync_WithValidUser_ReturnsAccessTokenOnlyAsync()
-	{
-		// Arrange
-		ApplicationUser user =
-			new()
-			{
-				Id = 5,
-				UserName = "accessonlyuser",
-				Email = "accessonly@example.com",
-				FullName = "Access Only",
-			};
-
-		IList<string> roles =
-			[RoleConstants.User];
-		string expectedAccessToken = "access_token_only";
-		DateTimeOffset utcNow =
-			TestDates.DefaultUtc;
-
-		UserManager
-			.GetRolesAsync(user)
-			.Returns(roles);
-
-		TokenService
-			.GenerateAccessToken(
-				user.Id,
-				user.UserName!,
-				Arg.Any<IEnumerable<string>>(),
-				Arg.Any<bool>())
-			.Returns(expectedAccessToken);
-
-		TimeProvider.GetUtcNow().Returns(new DateTimeOffset(utcNow.UtcDateTime));
-
-		// Act
-		AuthResult result =
-			await ServiceUnderTest.GenerateAccessTokenResultAsync(
-				user,
-				requiresPasswordChange: false,
-				rememberMe: true,
-				CancellationToken.None);
-
-		// Assert
-		result.Success.ShouldBeTrue();
-		result.AccessToken.ShouldBe(expectedAccessToken);
-		result.RefreshToken.ShouldBe(string.Empty);
-		result.ExpiresAt.ShouldBe(utcNow.AddMinutes(15));
-		result.Email.ShouldBe(user.Email);
-		result.FullName.ShouldBe(user.FullName);
-		result.RememberMe.ShouldBeTrue();
-
-		// Verify NO refresh token was generated
-		await TokenService
-			.DidNotReceive()
-			.GenerateRefreshTokenAsync(
-				Arg.Any<long>(),
-				Arg.Any<bool>(),
-				Arg.Any<CancellationToken>());
-
-		// Verify last login was NOT updated (access-token-only path)
-		await AuthRepository
-			.DidNotReceive()
-			.UpdateLastLoginAsync(
-				Arg.Any<long>(),
-				Arg.Any<DateTimeOffset>(),
-				Arg.Any<CancellationToken>());
 	}
 
 	/// <summary>
@@ -388,12 +319,15 @@ public sealed class AuthenticationServiceTests
 			.Returns(Array.Empty<string>());
 
 		TokenService
-			.GenerateAccessToken(
+			.IssueAccessToken(
 				Arg.Any<long>(),
 				Arg.Any<string>(),
-				Arg.Any<IEnumerable<string>>(),
+				Arg.Any<IList<string>>(),
 				Arg.Any<bool>())
-			.Returns("token");
+			.Returns(
+				new IssuedAccessToken(
+					"token",
+					DateTimeOffset.UtcNow.AddMinutes(15)));
 
 		TokenService
 			.GenerateRefreshTokenAsync(
@@ -437,12 +371,15 @@ public sealed class AuthenticationServiceTests
 			.Returns(Array.Empty<string>());
 
 		TokenService
-			.GenerateAccessToken(
+			.IssueAccessToken(
 				Arg.Any<long>(),
 				Arg.Any<string>(),
-				Arg.Any<IEnumerable<string>>(),
+				Arg.Any<IList<string>>(),
 				Arg.Any<bool>())
-			.Returns("token");
+			.Returns(
+				new IssuedAccessToken(
+					"token",
+					DateTimeOffset.UtcNow.AddMinutes(15)));
 
 		TokenService
 			.GenerateRefreshTokenAsync(

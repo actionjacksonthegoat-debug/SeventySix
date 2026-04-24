@@ -43,6 +43,37 @@ public interface ITokenService
 		bool requiresPasswordChange = false);
 
 	/// <summary>
+	/// Issues a JWT access token for the specified user with pre-loaded roles,
+	/// returning an <see cref="IssuedAccessToken"/> that includes the token string
+	/// and its expiration timestamp.
+	/// </summary>
+	/// <remarks>
+	/// Combines token generation and expiry computation in one call so callers
+	/// do not need to depend on <c>IOptions&lt;JwtSettings&gt;</c> directly.
+	/// PII (email, fullName) is NOT included in JWT claims for GDPR compliance.
+	/// </remarks>
+	/// <param name="userId">
+	/// The user's ID.
+	/// </param>
+	/// <param name="username">
+	/// The user's username.
+	/// </param>
+	/// <param name="roles">
+	/// The pre-loaded role names for the user.
+	/// </param>
+	/// <param name="requiresPasswordChange">
+	/// Whether the user must change their password before accessing the application.
+	/// </param>
+	/// <returns>
+	/// An <see cref="IssuedAccessToken"/> containing the signed JWT string and its expiration.
+	/// </returns>
+	public IssuedAccessToken IssueAccessToken(
+		long userId,
+		string username,
+		IList<string> roles,
+		bool requiresPasswordChange = false);
+
+	/// <summary>
 	/// Generates a new refresh token and stores it.
 	/// </summary>
 	/// <param name="userId">

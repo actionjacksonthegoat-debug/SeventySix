@@ -254,7 +254,7 @@ If a server needs credentials, ask the user. After VS Code restart, MCP tool tog
 > **ABSOLUTE PROHIBITION**: Chrome DevTools MCP must **NEVER** change the seeded admin user's password. If redirected to password change, STOP and ask the user.
 
 1. Run `npm start` to start the full dev stack
-2. Log in with seeded admin credentials from user secrets (`AdminSeeder:Email` / `AdminSeeder:InitialPassword`)
+2. Log in using the **username** field (not email). The seeded admin username is `admin` (derived from `AdminSeeder:Email`). The password is from `AdminSeeder:InitialPassword` in user secrets.
 3. For MFA, retrieve code via PostgreSQL MCP:
    ```sql
    SELECT "TemplateData"->>'code' AS "MfaCode"

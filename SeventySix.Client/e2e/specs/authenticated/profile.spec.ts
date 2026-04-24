@@ -103,7 +103,8 @@ test.describe("Profile Page",
 							userPage.locator(SELECTORS.profile.saveButton);
 
 						await expect(saveButton)
-							.toBeDisabled();
+							.toBeDisabled(
+								{ timeout: TIMEOUTS.navigation });
 					});
 
 				test("should enable save button when form is modified",

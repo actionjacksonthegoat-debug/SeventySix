@@ -1,6 +1,7 @@
 import { ConfirmOptions } from "@shared/models";
 import { DialogService } from "@shared/services/dialog.service";
 import { NotificationService } from "@shared/services/notification.service";
+import { getMutationErrorMessage } from "@shared/utilities/mutation-error.utility";
 import { CreateMutationResult } from "@tanstack/angular-query-experimental";
 
 /**
@@ -27,7 +28,8 @@ import { CreateMutationResult } from "@tanstack/angular-query-experimental";
  * Message to display on successful mutation.
  *
  * @param {string} errorPrefix
- * Prefix for error messages (e.g., "Failed to delete user").
+ * Fallback message to display when the mutation fails
+ * (e.g., "Failed to delete user").
  *
  * @example
  * confirmAndMutate(
@@ -65,7 +67,7 @@ export function confirmAndMutate<TInput, TResult>(
 						onSuccess: () =>
 							notificationService.success(successMessage),
 						onError: (error: Error) =>
-							notificationService.error(`${errorPrefix}: ${error.message}`)
+							notificationService.error(getMutationErrorMessage(error, errorPrefix))
 					});
 			});
 }

@@ -89,19 +89,14 @@ test.describe("User Detail",
 		test("should display save button as disabled when no changes made",
 			async ({ adminPage }) =>
 			{
-				await expect(adminPage
-					.locator(SELECTORS.userDetail.saveChangesButton))
-					.toBeDisabled(
-						{ timeout: TIMEOUTS.api });
-			});
-
-		test("should enable save button when full name is modified",
-			async ({ adminPage }) =>
-			{
 				const fullNameInput: Locator =
 					adminPage.locator(SELECTORS.userDetail.fullNameInput);
 				const saveButton: Locator =
 					adminPage.locator(SELECTORS.userDetail.saveChangesButton);
+
+				await expect(saveButton)
+					.toBeDisabled(
+						{ timeout: TIMEOUTS.navigation * 2 });
 
 				await expect(fullNameInput)
 					.toBeVisible(

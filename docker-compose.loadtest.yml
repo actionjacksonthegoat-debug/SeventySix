@@ -146,7 +146,6 @@ services:
             - Auth__Lockout__Enabled=true
             - Auth__Cookie__SecureCookie=true
             - Auth__Cookie__SameSiteLax=true
-            - Auth__Token__DisableRotation=false
             - Auth__BreachedPassword__Enabled=false
             - Auth__BreachedPassword__BlockBreachedPasswords=false
             # ALTCHA (disabled — CPU-bound PoW not suitable for load testing)

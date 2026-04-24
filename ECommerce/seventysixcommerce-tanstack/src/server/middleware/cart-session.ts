@@ -25,7 +25,7 @@ export const cartSessionMiddleware =
 					setCookie(CART_SESSION_COOKIE, sessionId,
 						{
 							httpOnly: true,
-							secure: true,
+							secure: process.env.NODE_ENV === "production",
 							sameSite: "lax",
 							maxAge: CART_SESSION_MAX_AGE_SECONDS,
 							path: "/"

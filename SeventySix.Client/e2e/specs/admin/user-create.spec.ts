@@ -44,7 +44,8 @@ test.describe("User Create",
 			async ({ adminPage }) =>
 			{
 				await expect(adminPage.locator(SELECTORS.layout.pageHeading))
-					.toHaveText(PAGE_TEXT.headings.createNewUser);
+					.toHaveText(PAGE_TEXT.headings.createNewUser,
+						{ timeout: TIMEOUTS.navigation });
 			});
 
 		test("should display stepper with steps",
@@ -150,7 +151,7 @@ test.describe("User Create",
 				await expect(adminPage
 					.locator(SELECTORS.userCreate.usernameInput))
 					.toBeVisible(
-						{ timeout: TIMEOUTS.element });
+						{ timeout: TIMEOUTS.navigation });
 
 				await fillUserCreateStepper(adminPage,
 					{

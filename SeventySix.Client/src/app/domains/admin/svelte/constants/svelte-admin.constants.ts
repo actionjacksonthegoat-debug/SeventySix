@@ -6,12 +6,6 @@ import { environment } from "@environments/environment";
  */
 
 /**
- * Source context identifier for SvelteKit sandbox log filtering.
- * @type {string}
- */
-export const SVELTE_SOURCE_CONTEXT: string = "seventysixcommerce-sveltekit";
-
-/**
  * Grafana dashboard UIDs for SvelteKit performance and commerce dashboards.
  */
 export const SVELTE_DASHBOARD_UIDS: Readonly<{

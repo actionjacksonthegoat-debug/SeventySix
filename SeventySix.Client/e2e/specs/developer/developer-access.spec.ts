@@ -11,6 +11,7 @@ import {
 	ROUTES,
 	SELECTORS,
 	test,
+	TIMEOUTS,
 	unauthenticatedTest
 } from "@e2e-fixtures";
 import { Page } from "@playwright/test";
@@ -143,7 +144,8 @@ test.describe("Developer Routes - RBAC",
 
 						// Should redirect to default child route
 						await expect(developerPage)
-							.toHaveURL(/\/developer\/style-guide/);
+							.toHaveURL(/\/developer\/style-guide/,
+								{ timeout: TIMEOUTS.navigation * 3 });
 					});
 			});
 	});

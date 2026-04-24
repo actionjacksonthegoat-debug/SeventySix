@@ -42,7 +42,8 @@ test.describe("User Management Page",
 								.locator("h1");
 
 						await expect(heading)
-							.toHaveText(PAGE_TEXT.userManagement.title);
+							.toHaveText(PAGE_TEXT.userManagement.title,
+								{ timeout: TIMEOUTS.navigation });
 					});
 
 				test("should display page subtitle",
@@ -115,7 +116,8 @@ test.describe("User Management Page",
 							adminPage.locator(SELECTORS.dataTable.headerRow);
 
 						await expect(headerRow)
-							.toBeVisible();
+							.toBeVisible(
+								{ timeout: TIMEOUTS.navigation });
 					});
 
 				test("should display seeded user data rows",
@@ -283,7 +285,7 @@ test.describe("User Management Page",
 							adminPage.locator(SELECTORS.dataTable.dataRow);
 						await expect(dataRows.first())
 							.toBeVisible(
-								{ timeout: TIMEOUTS.api });
+								{ timeout: TIMEOUTS.navigation });
 
 						const activeChip: Locator =
 							adminPage

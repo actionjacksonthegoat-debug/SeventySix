@@ -216,6 +216,174 @@ public sealed class AuthCookieServiceTests
 	}
 
 	/// <summary>
+	/// Verifies the refresh token cookie Path is scoped to the auth endpoints.
+	/// The cookie must only be sent on /api/v1/auth/* requests, not on every API call.
+	/// This prevents credential exposure on non-auth endpoints (OWASP A01).
+	/// </summary>
+	[Fact]
+	public void SetRefreshTokenCookie_SetsPathScopedToAuthEndpoints()
+	{
+		// Arrange
+		AuthCookieService service =
+			CreateService();
+
+		// Act
+		service.SetRefreshTokenCookie(TestRefreshToken);
+
+		// Assert
+		string? setCookieHeader =
+			HttpContext.Response.Headers.SetCookie
+				.FirstOrDefault(header =>
+					header != null
+					&& header.Contains(RefreshTokenCookieName));
+
+		setCookieHeader.ShouldNotBeNull();
+		setCookieHeader.ShouldContain(
+			"path=/api/v1/auth",
+			Case.Insensitive);
+	}
+
+	/// <summary>
+	/// Verifies the Secure flag is set on the refresh token cookie.
+	/// </summary>
+	[Fact]
+	public void SetRefreshTokenCookie_SetsSecureFlag()
+	{
+		// Arrange
+		AuthCookieService service =
+			CreateService();
+
+		// Act
+		service.SetRefreshTokenCookie(TestRefreshToken);
+
+		// Assert
+		string? setCookieHeader =
+			HttpContext.Response.Headers.SetCookie
+				.FirstOrDefault(header =>
+					header != null
+					&& header.Contains(RefreshTokenCookieName));
+
+		setCookieHeader.ShouldNotBeNull();
+		setCookieHeader.ShouldContain("secure", Case.Insensitive);
+	}
+
+	/// <summary>
+	/// Verifies RememberMe=true uses the extended expiration days.
+	/// </summary>
+	[Fact]
+	public void SetRefreshTokenCookie_WithRememberMe_UsesRememberMeExpiration()
+	{
+		// Arrange
+		FakeTimeProvider timeProvider =
+			new();
+		DateTimeOffset frozenNow =
+			timeProvider.GetUtcNow();
+		AuthCookieService service =
+			CreateService(timeProvider);
+
+		// Act
+		service.SetRefreshTokenCookie(
+			TestRefreshToken,
+			rememberMe: true);
+
+		// Assert
+		string? setCookieHeader =
+			HttpContext.Response.Headers.SetCookie
+				.FirstOrDefault(header =>
+					header != null
+					&& header.Contains(RefreshTokenCookieName));
+
+		setCookieHeader.ShouldNotBeNull();
+
+		DateTimeOffset cookieExpires =
+			ParseExpiresFromSetCookieHeader(setCookieHeader);
+		DateTimeOffset expectedExpiry =
+			frozenNow.AddDays(RememberMeExpirationDays);
+
+		cookieExpires.ShouldBeGreaterThanOrEqualTo(
+			expectedExpiry.AddSeconds(-1));
+		cookieExpires.ShouldBeLessThanOrEqualTo(
+			expectedExpiry.AddSeconds(1));
+	}
+
+	/// <summary>
+	/// Verifies OAuth state cookie uses SameSite=Lax for cross-site OAuth flow support.
+	/// </summary>
+	[Fact]
+	public void SetOAuthStateCookie_UsesSameSiteLax()
+	{
+		// Arrange
+		const string OAuthStateCookieName = "__oauth_state";
+		IOptions<AuthSettings> oauthSettings =
+			Options.Create(
+				new AuthSettings
+				{
+					Cookie =
+						new AuthCookieSettings
+						{
+							RefreshTokenCookieName = RefreshTokenCookieName,
+							OAuthStateCookieName = OAuthStateCookieName,
+							SecureCookie = true,
+							SameSiteLax = false,
+						},
+					OAuth =
+						new OAuthSettings
+						{
+							ClientCallbackUrl = "https://example.com/callback",
+						},
+				});
+
+		IHttpContextAccessor httpContextAccessor =
+			new HttpContextAccessor { HttpContext = HttpContext };
+
+		AuthCookieService service =
+			new(
+				httpContextAccessor,
+				oauthSettings,
+				JwtSettings,
+				TrustedDeviceSettings,
+				TimeProvider.System);
+
+		// Act
+		service.SetOAuthStateCookie("test-oauth-state");
+
+		// Assert — OAuth state cookie uses Lax regardless of global config
+		string? setCookieHeader =
+			HttpContext.Response.Headers.SetCookie
+				.FirstOrDefault(header =>
+					header != null
+					&& header.Contains(OAuthStateCookieName));
+
+		setCookieHeader.ShouldNotBeNull();
+		setCookieHeader.ShouldContain("samesite=lax", Case.Insensitive);
+	}
+
+	/// <summary>
+	/// Verifies ClearRefreshTokenCookie adds an expired Set-Cookie header
+	/// to instruct the browser to delete the cookie.
+	/// </summary>
+	[Fact]
+	public void ClearRefreshTokenCookie_AddsExpiredCookieHeader()
+	{
+		// Arrange
+		AuthCookieService service =
+			CreateService();
+
+		// Act
+		service.ClearRefreshTokenCookie();
+
+		// Assert — response must include a Set-Cookie for the refresh token
+		bool cookieHeaderPresent =
+			HttpContext.Response.Headers.SetCookie
+				.Any(header =>
+					header != null
+					&& header.Contains(RefreshTokenCookieName));
+
+		cookieHeaderPresent.ShouldBeTrue(
+			"ClearRefreshTokenCookie must emit a Set-Cookie header to delete the cookie.");
+	}
+
+	/// <summary>
 	/// Parses the "expires" value from a Set-Cookie header string.
 	/// </summary>
 	/// <param name="setCookieHeader">

@@ -15,6 +15,7 @@ import {
 import { provideZonelessChangeDetection, signal } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideRouter, Router } from "@angular/router";
+import { ChangePasswordService } from "@auth/services";
 import { environment } from "@environments/environment";
 import { AuthService } from "@shared/services/auth.service";
 import { NotificationService } from "@shared/services/notification.service";
@@ -71,6 +72,7 @@ describe("ChangePasswordComponent",
 								provideRouter([]),
 								provideHttpClient(withInterceptorsFromDi()),
 								provideHttpClientTesting(),
+								ChangePasswordService,
 								{ provide: AuthService, useValue: mockAuthService },
 								{
 									provide: NotificationService,

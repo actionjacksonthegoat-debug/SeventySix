@@ -65,14 +65,3 @@ export const PASSWORD_VALIDATION: {
 		MIN_LENGTH: 12,
 		MAX_LENGTH: 100
 	};
-
-/**
- * Combined validation for username or email fields (e.g., login).
- * Server: LoginRequestValidator
- */
-export const USERNAME_OR_EMAIL_VALIDATION: {
-	readonly MAX_LENGTH: 255;
-} =
-	{
-		MAX_LENGTH: 255
-	};

@@ -16,9 +16,14 @@ import { ConfirmDialogData } from "@shared/models";
 		template: `
 		<h2 mat-dialog-title>
 			@if (data.icon) {
-				<mat-icon [style.color]="getIconColor()">{{
-					data.icon
-				}}</mat-icon>
+				<mat-icon
+					aria-hidden="true"
+					class="confirm-icon"
+					[class.confirm-icon-warn]="data.confirmColor === 'warn'"
+					[class.confirm-icon-accent]="data.confirmColor === 'accent'"
+					[class.confirm-icon-primary]="data.confirmColor !== 'warn' && data.confirmColor !== 'accent'">
+					{{ data.icon }}
+				</mat-icon>
 			}
 			{{ data.title }}
 		</h2>
@@ -51,6 +56,18 @@ import { ConfirmDialogData } from "@shared/models";
 					font-size: 28px;
 					width: 28px;
 					height: 28px;
+
+					&.confirm-icon-warn {
+						color: var(--mat-sys-error);
+					}
+
+					&.confirm-icon-accent {
+						color: var(--mat-sys-tertiary);
+					}
+
+					&.confirm-icon-primary {
+						color: var(--mat-sys-primary);
+					}
 				}
 			}
 
@@ -112,22 +129,5 @@ export class ConfirmDialogComponent
 	onCancel(): void
 	{
 		this.dialogRef.close(false);
-	}
-
-	/**
-	 * Maps the confirm button color to a CSS variable used for the icon.
-	 * @returns {string}
-	 */
-	getIconColor(): string
-	{
-		switch (this.data.confirmColor)
-		{
-			case "warn":
-				return "var(--mat-sys-error)";
-			case "accent":
-				return "var(--mat-sys-tertiary)";
-			default:
-				return "var(--mat-sys-primary)";
-		}
 	}
 }

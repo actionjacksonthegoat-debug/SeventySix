@@ -5,6 +5,7 @@ export * from "./http-error.utility";
 export * from "./http-params.utility";
 export * from "./log-level.utility";
 export * from "./mutation-dialog.utility";
+export * from "./mutation-error.utility";
 export * from "./mutation-factory.utility";
 export * from "./null-check.utility";
 export * from "./query-config.utility";

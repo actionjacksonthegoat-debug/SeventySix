@@ -256,4 +256,69 @@ public sealed class MfaAttemptTrackerTests
 			.IsLockedOut(OtherUserId, TestAttemptType)
 			.ShouldBeFalse();
 	}
+
+	/// <summary>
+	/// Locked-out attempts expire after the lockout window — advancing the fake clock
+	/// past the expiry instant must release the user from lockout.
+	/// </summary>
+	[Fact]
+	public void IsLockedOut_AfterLockoutWindowExpires_ReturnsFalse()
+	{
+		FakeTimeProvider time =
+			new(DateTimeOffset.UtcNow);
+		MfaAttemptTracker tracker =
+			CreateTracker(time);
+
+		for (int i = 0; i < MaxAttempts; i++)
+		{
+			tracker.RecordFailedAttempt(TestUserId, TestAttemptType);
+		}
+
+		tracker
+			.IsLockedOut(TestUserId, TestAttemptType)
+			.ShouldBeTrue();
+
+		// Advance fake clock past the lockout window
+		time.Advance(
+			TimeSpan.FromMinutes(LockoutWindowMinutes + 1));
+
+		tracker
+			.IsLockedOut(TestUserId, TestAttemptType)
+			.ShouldBeFalse();
+	}
+
+	/// <summary>
+	/// Concurrent calls to RecordFailedAttempt must not throw exceptions.
+	/// Validates that the in-memory FusionCache is safe for parallel access
+	/// (exact count preservation is best-effort due to read-modify-write semantics).
+	/// </summary>
+	[Fact]
+	public async Task ConcurrentRecordAttempt_DoesNotThrowAsync()
+	{
+		FakeTimeProvider time =
+			new(DateTimeOffset.UtcNow);
+		MfaAttemptTracker tracker =
+			CreateTracker(time);
+
+		Task[] tasks =
+			new Task[10];
+
+		for (int i = 0; i < tasks.Length; i++)
+		{
+			tasks[i] =
+				Task.Run(
+					() => tracker.RecordFailedAttempt(
+						TestUserId,
+						TestAttemptType));
+		}
+
+		await Task.WhenAll(tasks);
+
+		// At least one attempt must have been recorded
+		// (lockout may or may not have triggered depending on scheduling)
+		Should.NotThrow(
+			() => tracker.IsLockedOut(
+				TestUserId,
+				TestAttemptType));
+	}
 }

@@ -7,6 +7,9 @@ WORKDIR /workspace
 # Copy shared package (needed for file: dependency resolution)
 COPY seventysixcommerce-shared/ ./seventysixcommerce-shared/
 
+# Copy build shims required by vite.config.ts alias (protobuf-inquire)
+COPY build-shims/ ./build-shims/
+
 # Copy TanStack app
 WORKDIR /workspace/seventysixcommerce-tanstack
 COPY seventysixcommerce-tanstack/package*.json seventysixcommerce-tanstack/.npmrc ./

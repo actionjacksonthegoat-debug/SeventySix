@@ -1,4 +1,5 @@
-import { HeadContent, Scripts } from "@tanstack/react-router";
+import { HeadContent, Scripts, useRouter } from "@tanstack/react-router";
+import type { RegisteredRouter } from "@tanstack/react-router";
 import type { JSX, ReactNode } from "react";
 import { ThemeProvider } from "~/context/theme-context";
 import { FOUC_SCRIPT } from "~/lib/fouc-script";
@@ -18,6 +19,11 @@ export function RootDocument({
 	children
 }: Readonly<RootDocumentProps>): JSX.Element
 {
+	const router: RegisteredRouter =
+		useRouter();
+	const cspNonce: string | undefined =
+		router.options.ssr?.nonce;
+
 	return (
 		<html
 			lang="en"
@@ -25,7 +31,7 @@ export function RootDocument({
 			suppressHydrationWarning
 		>
 			<head>
-				<script dangerouslySetInnerHTML={{ __html: FOUC_SCRIPT }} />
+				<script nonce={cspNonce} dangerouslySetInnerHTML={{ __html: FOUC_SCRIPT }} />
 				<HeadContent />
 			</head>
 			<body>

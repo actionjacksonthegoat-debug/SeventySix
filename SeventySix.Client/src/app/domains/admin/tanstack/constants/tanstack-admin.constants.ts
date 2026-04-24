@@ -6,12 +6,6 @@ import { environment } from "@environments/environment";
  */
 
 /**
- * Source context identifier for TanStack sandbox log filtering.
- * @type {string}
- */
-export const TANSTACK_SOURCE_CONTEXT: string = "seventysixcommerce-tanstack";
-
-/**
  * Grafana dashboard UIDs for TanStack performance and commerce dashboards.
  */
 export const TANSTACK_DASHBOARD_UIDS: Readonly<{

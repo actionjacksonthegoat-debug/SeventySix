@@ -41,6 +41,10 @@ SeventySix uses a layered configuration system. This document provides a high-le
 | `Altcha:ComplexityMin/Max` | CAPTCHA proof-of-work range | 50000–100000 |
 | `Auth:OAuth:Providers` | OAuth providers (GitHub) | Configured via user secrets |
 | `Auth:RateLimiting` | Per-action rate limits | Per-action defaults |
+| `Jwt:SecretKey` | HS256 signing key — must be ≥ 32 chars | User secrets |
+| `Jwt:KeyId` | Optional `kid` JWT header for key rotation | Auto-computed SHA256 fingerprint |
+| `Jwt:PreviousSecretKey` | Previous signing key for graceful rotation | User secrets (unset when not rotating) |
+| `Jwt:PreviousKeyId` | Optional `kid` for the previous key | Auto-computed from previous key |
 
 ## Background Jobs
 
@@ -159,5 +163,6 @@ The e-commerce sites (SvelteKit and TanStack) use environment variables (not .NE
 Both commerce sites support `MOCK_SERVICES=true` which replaces Stripe, Printful, and Brevo with in-memory mock implementations. This is the default for development, E2E tests, and load tests.
 
 For detailed configuration, see:
+
 - [SvelteKit Commerce README](../ECommerce/seventysixcommerce-sveltekit/README.md)
 - [TanStack Commerce README](../ECommerce/seventysixcommerce-tanstack/README.md)

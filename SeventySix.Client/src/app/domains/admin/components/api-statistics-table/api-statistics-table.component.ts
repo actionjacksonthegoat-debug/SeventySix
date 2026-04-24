@@ -16,6 +16,7 @@ import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatTableDataSource, MatTableModule } from "@angular/material/table";
 import { SKELETON_TABLE_CELL, SkeletonTheme } from "@shared/constants";
 import { DateService } from "@shared/services/date.service";
+import { getMutationErrorMessage } from "@shared/utilities/mutation-error.utility";
 import { isNullOrUndefined } from "@shared/utilities/null-check.utility";
 import { NgxSkeletonLoaderModule } from "ngx-skeleton-loader";
 
@@ -98,11 +99,12 @@ export class ApiStatisticsTableComponent
 			{
 				const queryError: Error | null =
 					this.apiDataQuery.error();
-				return queryError ? queryError.message ?? "Failed to load API data" : null;
+				return queryError
+					? getMutationErrorMessage(queryError, "Failed to load API data")
+					: null;
 			});
 
 	/**
-	 * Data source with computed display properties (formatted dates and status).
 	 * @type {Signal<MatTableDataSource<ThirdPartyApiRequestDisplay>>}
 	 */
 	readonly dataSource: Signal<

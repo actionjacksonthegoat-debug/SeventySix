@@ -93,14 +93,20 @@ public static class AuthenticationExtensions
 							ValidAudience = jwtSettings.Audience,
 							IssuerSigningKey =
 								new SymmetricSecurityKey(
-									Encoding.UTF8.GetBytes(jwtSettings.SecretKey)),
+									Encoding.UTF8.GetBytes(jwtSettings.SecretKey))
+								{
+									KeyId = jwtSettings.GetEffectiveKeyId(),
+								},
 							ClockSkew =
 								TimeSpan.FromMinutes(jwtSettings.ClockSkewMinutes),
 							// Explicit algorithm validation (defense-in-depth against alg:none attacks)
 							ValidAlgorithms =
 								[SecurityAlgorithms.HmacSha256],
+							IssuerSigningKeyResolver =
+								!string.IsNullOrEmpty(jwtSettings.PreviousSecretKey)
+									? BuildRotationKeyResolver(jwtSettings)
+									: null,
 						};
-
 					options.Events =
 						new JwtBearerEvents
 						{
@@ -125,6 +131,46 @@ public static class AuthenticationExtensions
 		services.AddHttpClient();
 
 		return services;
+	}
+
+	/// <summary>
+	/// Builds an <see cref="IssuerSigningKeyResolver"/> that accepts both the current
+	/// and previous signing key during a key rotation window.
+	/// </summary>
+	/// <remarks>
+	/// Use this when rotating the JWT secret key:
+	/// 1. Set <c>Jwt:PreviousSecretKey</c> = old <c>Jwt:SecretKey</c>
+	/// 2. Set <c>Jwt:SecretKey</c> = new key
+	/// 3. Wait until all tokens issued with the old key have expired
+	/// 4. Remove <c>Jwt:PreviousSecretKey</c>
+	/// </remarks>
+	/// <param name="jwtSettings">
+	/// The JWT settings containing current and previous key information.
+	/// </param>
+	/// <returns>
+	/// A key resolver that returns both current and previous keys for validation.
+	/// </returns>
+	private static IssuerSigningKeyResolver BuildRotationKeyResolver(
+		JwtSettings jwtSettings)
+	{
+		SymmetricSecurityKey currentKey =
+			new(
+				Encoding.UTF8.GetBytes(jwtSettings.SecretKey))
+			{
+				KeyId = jwtSettings.GetEffectiveKeyId(),
+			};
+
+		SymmetricSecurityKey previousKey =
+			new(
+				Encoding.UTF8.GetBytes(jwtSettings.PreviousSecretKey!))
+			{
+				KeyId =
+					string.IsNullOrEmpty(jwtSettings.PreviousKeyId)
+						? JwtSettings.ComputeKeyFingerprint(jwtSettings.PreviousSecretKey!)
+						: jwtSettings.PreviousKeyId,
+			};
+
+		return (token, securityToken, kid, parameters) => [currentKey, previousKey];
 	}
 
 	/// <summary>

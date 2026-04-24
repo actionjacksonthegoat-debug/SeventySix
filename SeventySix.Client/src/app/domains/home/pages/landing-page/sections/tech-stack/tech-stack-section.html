@@ -29,6 +29,7 @@
 							role="listitem"
 							appScrollReveal
 							[revealDelay]="index * 50"
+							[attr.data-tech-slug]="item.slug"
 							[href]="item.url"
 							target="_blank"
 							rel="noopener noreferrer"
@@ -41,9 +42,7 @@
 								<app-cdn-icon
 									class="tech-item-icon"
 									[slug]="item.slug"
-									[source]="item.cdnSource"
-									[size]="'2rem'"
-									[color]="item.brandColor" />
+									[source]="item.cdnSource" />
 							}
 							<div class="tech-item-info">
 								<span class="tech-item-name">{{ item.name }}</span>

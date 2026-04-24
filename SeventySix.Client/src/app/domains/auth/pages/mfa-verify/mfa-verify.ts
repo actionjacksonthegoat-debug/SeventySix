@@ -33,7 +33,7 @@ import {
 	MfaState,
 	VerifyMfaRequest
 } from "@auth/models";
-import { MfaService } from "@auth/services";
+import { MfaCooldownTimerService, MfaService } from "@auth/services";
 import {
 	getBackupCodeErrorMessage,
 	getMfaErrorMessage,
@@ -44,11 +44,6 @@ import { FORM_MATERIAL_MODULES } from "@shared/material-bundles.constants";
 import { VerifyBackupCodeRequest, VerifyTotpRequest } from "@shared/models";
 import { AuthService, NotificationService } from "@shared/services";
 import { isNullOrUndefined } from "@shared/utilities/null-check.utility";
-import {
-	interval,
-	Subject
-} from "rxjs";
-import { takeUntil } from "rxjs/operators";
 
 @Component(
 	{
@@ -149,24 +144,6 @@ export class MfaVerifyComponent
 	 */
 	protected readonly isResending: WritableSignal<boolean> =
 		signal<boolean>(false);
-
-	/**
-	 * Whether resend is on cooldown.
-	 * @type {WritableSignal<boolean>}
-	 * @protected
-	 * @readonly
-	 */
-	protected readonly resendOnCooldown: WritableSignal<boolean> =
-		signal<boolean>(false);
-
-	/**
-	 * Seconds remaining on resend cooldown.
-	 * @type {WritableSignal<number>}
-	 * @protected
-	 * @readonly
-	 */
-	protected readonly resendCooldownSeconds: WritableSignal<number> =
-		signal<number>(0);
 
 	/**
 	 * The masked email address displayed to user.
@@ -275,13 +252,13 @@ export class MfaVerifyComponent
 			});
 
 	/**
-	 * Subject to stop the cooldown timer.
-	 * @type {Subject<void>}
-	 * @private
+	 * Cooldown timer service for resend throttling.
+	 * @type {MfaCooldownTimerService}
+	 * @protected
 	 * @readonly
 	 */
-	private readonly stopCooldownSubject: Subject<void> =
-		new Subject<void>();
+	protected readonly cooldownTimer: MfaCooldownTimerService =
+		inject(MfaCooldownTimerService);
 
 	/**
 	 * Angular destroy reference for automatic cleanup.
@@ -553,7 +530,7 @@ export class MfaVerifyComponent
 	 */
 	protected onResendCode(): void
 	{
-		if (isNullOrUndefined(this.mfaState) || this.resendOnCooldown() || this.isResending())
+		if (isNullOrUndefined(this.mfaState) || this.cooldownTimer.isActive() || this.isResending())
 		{
 			return;
 		}
@@ -582,7 +559,7 @@ export class MfaVerifyComponent
 	{
 		this.isResending.set(false);
 		this.notification.success("A new code has been sent to your email.");
-		this.startCooldown();
+		this.cooldownTimer.start(MFA_CONFIG.resendCooldownSeconds);
 	}
 
 	/**
@@ -602,7 +579,7 @@ export class MfaVerifyComponent
 		{
 			case "MFA_RESEND_COOLDOWN":
 				this.notification.warning("Please wait before requesting another code.");
-				this.startCooldown();
+				this.cooldownTimer.start(MFA_CONFIG.resendCooldownSeconds);
 				break;
 			case "MFA_INVALID_CHALLENGE":
 				this.notification.error("Session expired. Please log in again.");
@@ -614,48 +591,6 @@ export class MfaVerifyComponent
 				this.notification.error(
 					"Failed to resend code. Please try again.");
 		}
-	}
-
-	/**
-	 * Starts the resend cooldown timer using RxJS interval.
-	 * Timer automatically stops when cooldown reaches 0 or component is destroyed.
-	 * @private
-	 */
-	private startCooldown(): void
-	{
-		this.resendOnCooldown.set(true);
-		this.resendCooldownSeconds.set(MFA_CONFIG.resendCooldownSeconds);
-
-		interval(1000)
-			.pipe(
-				takeUntil(this.stopCooldownSubject),
-				takeUntilDestroyed(this.destroyRef))
-			.subscribe(
-				() =>
-				{
-					const remaining: number =
-						this.resendCooldownSeconds() - 1;
-
-					if (remaining <= 0)
-					{
-						this.stopCooldown();
-					}
-					else
-					{
-						this.resendCooldownSeconds.set(remaining);
-					}
-				});
-	}
-
-	/**
-	 * Stops the resend cooldown timer by emitting on the stop Subject.
-	 * @private
-	 */
-	private stopCooldown(): void
-	{
-		this.stopCooldownSubject.next();
-		this.resendOnCooldown.set(false);
-		this.resendCooldownSeconds.set(0);
 	}
 
 	/**

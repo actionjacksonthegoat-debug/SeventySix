@@ -43,8 +43,3 @@ export const MFA_ERROR_CODE: Readonly<{
 		/** No backup codes are available. */
 		NO_BACKUP_CODES_AVAILABLE: "NO_BACKUP_CODES_AVAILABLE"
 	} as const;
-
-/**
- * MFA error code type for type-safe comparisons.
- */
-export type MfaErrorCode = typeof MFA_ERROR_CODE[keyof typeof MFA_ERROR_CODE];

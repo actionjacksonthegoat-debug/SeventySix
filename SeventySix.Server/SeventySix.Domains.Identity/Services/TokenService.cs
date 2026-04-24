@@ -21,14 +21,15 @@ namespace SeventySix.Identity;
 /// PII (email, fullName) is NOT included in JWT claims for GDPR compliance.
 /// Handles revoking individual tokens, token families (reuse attack response),
 /// and all tokens for a user (logout-all, account compromise response).
+/// Refresh token rotation — including reuse-attack detection and absolute session
+/// timeout enforcement — is handled by the private rotation methods in this class.
 /// </remarks>
-public sealed class TokenService(
+internal sealed class TokenService(
 	ITokenRepository tokenRepository,
 	ISessionManagementService sessionManagementService,
 	IOptions<JwtSettings> jwtSettings,
-	IOptions<AuthSettings> authSettings,
-	ILogger<TokenService> logger,
-	TimeProvider timeProvider) : ITokenService
+	TimeProvider timeProvider,
+	ILogger<TokenService> logger) : ITokenService
 {
 	/// <inheritdoc/>
 	public string GenerateAccessToken(
@@ -69,7 +70,10 @@ public sealed class TokenService(
 
 		SymmetricSecurityKey key =
 			new(
-				Encoding.UTF8.GetBytes(jwtSettings.Value.SecretKey));
+				Encoding.UTF8.GetBytes(jwtSettings.Value.SecretKey))
+			{
+				KeyId = jwtSettings.Value.GetEffectiveKeyId(),
+			};
 
 		SigningCredentials credentials =
 			new(
@@ -89,6 +93,27 @@ public sealed class TokenService(
 				signingCredentials: credentials);
 
 		return new JwtSecurityTokenHandler().WriteToken(token);
+	}
+
+	/// <inheritdoc/>
+	public IssuedAccessToken IssueAccessToken(
+		long userId,
+		string username,
+		IList<string> roles,
+		bool requiresPasswordChange = false)
+	{
+		string accessToken =
+			GenerateAccessToken(
+				userId,
+				username,
+				roles,
+				requiresPasswordChange);
+
+		DateTimeOffset expiresAt =
+			timeProvider.GetUtcNow()
+				.AddMinutes(jwtSettings.Value.AccessTokenExpirationMinutes);
+
+		return new IssuedAccessToken(accessToken, expiresAt);
 	}
 
 	/// <inheritdoc/>
@@ -133,85 +158,53 @@ public sealed class TokenService(
 		DateTimeOffset now =
 			timeProvider.GetUtcNow();
 
-		// Find the token (including revoked ones for reuse detection)
 		RefreshToken? existingToken =
 			await tokenRepository.GetByTokenHashAsync(
 				tokenHash,
 				cancellationToken);
 
-		// Token not found
-		if (existingToken == null)
+		if (existingToken is null)
 		{
 			return (null, false);
 		}
 
-		// Token expired
 		if (existingToken.ExpiresAt <= now)
 		{
 			return (null, false);
 		}
 
-		// Check absolute session timeout (30 days from session start)
-		DateTimeOffset absoluteTimeout =
-			existingToken.SessionStartedAt.AddDays(
-				jwtSettings.Value.AbsoluteSessionTimeoutDays);
-
-		if (now >= absoluteTimeout)
-		{
-			logger.LogWarning(
-				"Absolute session timeout reached for user {UserId}. Session started: {SessionStartedAt}",
-				existingToken.UserId,
-				existingToken.SessionStartedAt);
-
-			// Revoke this token
-			await tokenRepository.RevokeAsync(
+		(string? Token, bool RememberMe)? timeoutResult =
+			await ValidateAbsoluteSessionTimeoutAsync(
 				existingToken,
 				now,
 				cancellationToken);
 
-			return (null, false);
+		if (timeoutResult is not null)
+		{
+			return timeoutResult.Value;
 		}
 
-		// REUSE ATTACK DETECTED: Token already revoked but attacker trying to use it
-		// Reuse detection ALWAYS runs regardless of DisableRotation —
-		// the flag only skips issuing a new token, never weakens security
-		if (existingToken.IsRevoked)
-		{
-			logger.LogWarning(
-				"Token reuse attack detected for user {UserId}, revoking family {FamilyId}",
-				existingToken.UserId,
-				existingToken.FamilyId);
-
-			// Revoke entire token family - this invalidates the legitimate user's token too
-			await tokenRepository.RevokeFamilyAsync(
-				existingToken.FamilyId,
+		(string? Token, bool RememberMe)? reuseResult =
+			await DetectReuseAttackAsync(
+				existingToken,
 				now,
 				cancellationToken);
 
-			return (null, false);
+		if (reuseResult is not null)
+		{
+			return reuseResult.Value;
 		}
-
-		// Calculate rememberMe from token expiration to preserve original setting
-		int tokenLifetimeDays =
-			(int)
-			(
-				existingToken.ExpiresAt - existingToken.SessionStartedAt).TotalDays;
 
 		bool rememberMe =
-			tokenLifetimeDays > jwtSettings.Value.RefreshTokenExpirationDays;
+			DeriveRememberMe(existingToken);
 
-		// Valid rotation - revoke current token (unless disabled for E2E testing)
-		if (!authSettings.Value.Token.DisableRotation)
-		{
-			await tokenRepository.RevokeAsync(
-				existingToken,
-				now,
-				cancellationToken);
-		}
+		await tokenRepository.RevokeAsync(
+			existingToken,
+			now,
+			cancellationToken);
 
-		// Generate new token inheriting the family and session start
 		string newToken =
-			await GenerateRefreshTokenWithFamilyAsync(
+			await IssueRotatedTokenAsync(
 				existingToken.UserId,
 				rememberMe,
 				existingToken.FamilyId,
@@ -317,6 +310,172 @@ public sealed class TokenService(
 			};
 
 		await tokenRepository.CreateAsync(refreshToken, cancellationToken);
+
+		return plainTextToken;
+	}
+
+	/// <summary>
+	/// Returns a failure tuple when the absolute session timeout has been exceeded,
+	/// revoking the current token. Returns <see langword="null"/> when within bounds.
+	/// </summary>
+	/// <param name="existingToken">
+	/// The token being rotated.
+	/// </param>
+	/// <param name="now">
+	/// Current UTC timestamp.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// A failed rotation tuple if the session has expired; otherwise <see langword="null"/>.
+	/// </returns>
+	private async Task<(string? Token, bool RememberMe)?> ValidateAbsoluteSessionTimeoutAsync(
+		RefreshToken existingToken,
+		DateTimeOffset now,
+		CancellationToken cancellationToken)
+	{
+		DateTimeOffset absoluteTimeout =
+			existingToken.SessionStartedAt.AddDays(
+				jwtSettings.Value.AbsoluteSessionTimeoutDays);
+
+		if (now < absoluteTimeout)
+		{
+			return null;
+		}
+
+		logger.LogWarning(
+			"Absolute session timeout reached for user {UserId}. Session started: {SessionStartedAt}",
+			existingToken.UserId,
+			existingToken.SessionStartedAt);
+
+		await tokenRepository.RevokeAsync(
+			existingToken,
+			now,
+			cancellationToken);
+
+		return (null, false);
+	}
+
+	/// <summary>
+	/// Returns a failure tuple and revokes the entire token family when a reuse
+	/// attack is detected (a revoked token being presented again).
+	/// Returns <see langword="null"/> when no reuse is detected.
+	/// </summary>
+	/// <param name="existingToken">
+	/// The token being rotated.
+	/// </param>
+	/// <param name="now">
+	/// Current UTC timestamp.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// A failed rotation tuple if a reuse attack is detected; otherwise <see langword="null"/>.
+	/// </returns>
+	private async Task<(string? Token, bool RememberMe)?> DetectReuseAttackAsync(
+		RefreshToken existingToken,
+		DateTimeOffset now,
+		CancellationToken cancellationToken)
+	{
+		if (!existingToken.IsRevoked)
+		{
+			return null;
+		}
+
+		logger.LogWarning(
+			"Token reuse attack detected for user {UserId}, revoking family {FamilyId}",
+			existingToken.UserId,
+			existingToken.FamilyId);
+
+		await tokenRepository.RevokeFamilyAsync(
+			existingToken.FamilyId,
+			now,
+			cancellationToken);
+
+		return (null, false);
+	}
+
+	/// <summary>
+	/// Derives the rememberMe flag from the original token lifetime.
+	/// </summary>
+	/// <param name="existingToken">
+	/// The token being rotated.
+	/// </param>
+	/// <returns>
+	/// <see langword="true"/> when the token lifetime exceeds the standard
+	/// refresh token expiration days.
+	/// </returns>
+	private bool DeriveRememberMe(RefreshToken existingToken)
+	{
+		int tokenLifetimeDays =
+			(int)(existingToken.ExpiresAt - existingToken.SessionStartedAt).TotalDays;
+
+		return tokenLifetimeDays > jwtSettings.Value.RefreshTokenExpirationDays;
+	}
+
+	/// <summary>
+	/// Creates and persists the replacement refresh token, inheriting the family
+	/// and session-start timestamp of the revoked token.
+	/// </summary>
+	/// <param name="userId">
+	/// The user's ID.
+	/// </param>
+	/// <param name="rememberMe">
+	/// Whether to use extended token expiration.
+	/// </param>
+	/// <param name="familyId">
+	/// Token family identifier inherited from the original token.
+	/// </param>
+	/// <param name="sessionStartedAt">
+	/// Original session start timestamp for absolute-timeout tracking.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// The new plaintext refresh token.
+	/// </returns>
+	private async Task<string> IssueRotatedTokenAsync(
+		long userId,
+		bool rememberMe,
+		Guid familyId,
+		DateTimeOffset sessionStartedAt,
+		CancellationToken cancellationToken)
+	{
+		DateTimeOffset now =
+			timeProvider.GetUtcNow();
+
+		await sessionManagementService.EnforceSessionLimitAsync(
+			userId,
+			now,
+			cancellationToken);
+
+		string plainTextToken =
+			CryptoExtensions.GenerateSecureToken();
+
+		string tokenHash =
+			CryptoExtensions.ComputeSha256Hash(plainTextToken);
+
+		int expirationDays =
+			rememberMe
+			? jwtSettings.Value.RefreshTokenRememberMeExpirationDays
+			: jwtSettings.Value.RefreshTokenExpirationDays;
+
+		RefreshToken rotatedToken =
+			new()
+			{
+				TokenHash = tokenHash,
+				UserId = userId,
+				FamilyId = familyId,
+				ExpiresAt = now.AddDays(expirationDays),
+				SessionStartedAt = sessionStartedAt,
+				CreateDate = now,
+				IsRevoked = false,
+			};
+
+		await tokenRepository.CreateAsync(rotatedToken, cancellationToken);
 
 		return plainTextToken;
 	}

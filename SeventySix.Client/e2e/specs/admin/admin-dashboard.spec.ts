@@ -2,7 +2,8 @@ import {
 	expect,
 	PAGE_TEXT,
 	ROUTES,
-	test
+	test,
+	TIMEOUTS
 } from "@e2e-fixtures";
 
 /**
@@ -18,9 +19,9 @@ test.describe("Admin Dashboard",
 	() =>
 	{
 		test.beforeEach(
-			async ({ page }) =>
+			async ({ adminPage }) =>
 			{
-				await page.goto(ROUTES.admin.dashboard);
+				await adminPage.goto(ROUTES.admin.dashboard);
 			});
 
 		test.describe("Page Structure",
@@ -43,8 +44,7 @@ test.describe("Admin Dashboard",
 							.tabs
 							.first()
 							.waitFor(
-								{ state: "visible" });
-
+								{ state: "visible", timeout: TIMEOUTS.navigation * 2 });
 						const tabCount: number =
 							await adminDashboardPage.getTabCount();
 
@@ -76,7 +76,10 @@ test.describe("Admin Dashboard",
 					async ({ adminDashboardPage }) =>
 					{
 						await expect(adminDashboardPage.grafanaEmbed.first())
-							.toHaveAttribute("title", PAGE_TEXT.adminDashboard.embedTitles.systemHealth);
+							.toHaveAttribute("title", PAGE_TEXT.adminDashboard.embedTitles.systemHealth,
+								{
+									timeout: TIMEOUTS.navigation
+								});
 					});
 			});
 

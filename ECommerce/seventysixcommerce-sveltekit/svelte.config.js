@@ -32,7 +32,11 @@ const config = {
 				'script-src': isProduction
 					? ['self', 'https://www.googletagmanager.com']
 					: ['self', 'unsafe-inline', 'unsafe-eval', 'https://www.googletagmanager.com'],
-				'style-src': ['self', 'unsafe-inline'],
+				'script-src-attr': ['none'],
+				'style-src': isProduction
+					? ['self']
+					: ['self', 'unsafe-inline'],
+				'style-src-attr': ['none'],
 				'img-src': ['self', 'data:'],
 				'font-src': ['self'],
 				'connect-src': ['self', 'https://www.google-analytics.com', 'https://www.googletagmanager.com'],

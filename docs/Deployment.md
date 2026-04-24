@@ -278,7 +278,7 @@ www.seventysixsandbox.com {
 }
 
 # API — served from Docker container port 5085
-# Security headers are handled by the API middleware (AttributeBasedSecurityHeadersMiddleware),
+# Security headers are handled by the API middleware (NetEscapades SecurityHeaders via UseSecurityHeaders),
 # so no Caddy-level header overrides are needed here.
 api.seventysixsandbox.com {
     reverse_proxy localhost:5085 {
@@ -1191,38 +1191,61 @@ hcloud server change-type seventysix-prod ccx33
 
 ### Rollback to Previous Image
 
-The deploy pipeline includes **automated rollback**. When post-deploy smoke tests fail:
+The deploy pipeline includes **automated rollback using immutable image digests**. When post-deploy smoke tests fail:
 
-1. The `rollback-staging` job runs automatically via `if: failure()`
-2. It SSH-es to the server and resets to the previous Git commit (`HEAD@{1}`)
-3. It pulls the prior images and restarts containers
-4. If the rollback itself fails, a GitHub issue with the `incident` label is created
+1. The `rollback` job runs automatically via `if: failure()`
+2. It SSH-es to the server and reads `prev-deploy.json` (written by the deploy step before pulling)
+3. The previous `API_IMAGE` and `CLIENT_IMAGE` are set to pinned `@sha256:...` digests — never re-pulling `:latest`
+4. Containers are restarted with the pinned previous images
+5. If the rollback itself fails, a GitHub issue with the `incident` label is created
 
-**Manual rollback** (if automated rollback is unavailable):
+**Manual rollback** using the saved digest file:
 
 ```bash
-# Find the previous image SHA (on the server)
-ssh deploy@$SERVER_IP \
-  docker images ghcr.io/actionjacksonthegoat-debug/seventysix-api \
-  --format "{{.Tag}}\t{{.CreatedAt}}" | head -5
+ssh deploy@$SERVER_IP
+cd /srv/seventysix
 
-# Pin the API_IMAGE variable to a specific tag, then trigger CD
-gh variable set API_IMAGE \
-  --body "ghcr.io/actionjacksonthegoat-debug/seventysix-api:PREVIOUS_TAG" \
-  --repo actionjacksonthegoat-debug/SeventySix
-gh workflow run deploy.yml --repo actionjacksonthegoat-debug/SeventySix
+# View the saved rollback target
+cat prev-deploy.json
 
-# After verifying the rollback, restore latest:
-gh variable delete API_IMAGE --repo actionjacksonthegoat-debug/SeventySix
+# Roll back to pinned digests (read from the file)
+PREV_API=$(python3 -c "import json; d=json.load(open('prev-deploy.json')); print(d['api'])")
+PREV_CLIENT=$(python3 -c "import json; d=json.load(open('prev-deploy.json')); print(d['client'])")
+
+echo "Rolling back to api=${PREV_API}"
+echo "Rolling back to client=${PREV_CLIENT}"
+
+API_IMAGE="${PREV_API}" CLIENT_IMAGE="${PREV_CLIENT}" \
+  docker compose -f docker-compose.production.yml up -d --remove-orphans
 ```
 
-**Commerce rollback** follows the same automated pattern via `rollback-staging` in `seventysixcommerce-deploy.yml`.
+**Commerce manual rollback** follows the same pattern using `prev-deploy-commerce.json`:
+
+```bash
+PREV_TANSTACK=$(python3 -c "import json; d=json.load(open('prev-deploy-commerce.json')); print(d['tanstack'])")
+PREV_SVELTEKIT=$(python3 -c "import json; d=json.load(open('prev-deploy-commerce.json')); print(d['sveltekit'])")
+
+# Pull and re-tag the pinned previous images
+docker pull "${PREV_TANSTACK}"
+docker tag "${PREV_TANSTACK}" "${PREV_TANSTACK%@*}:latest"
+docker pull "${PREV_SVELTEKIT}"
+docker tag "${PREV_SVELTEKIT}" "${PREV_SVELTEKIT%@*}:latest"
+
+docker compose -f docker-compose.seventysixcommerce.yml up -d --remove-orphans
+```
+
+> **Third-party action risk register:** See [Third-Party-Action-Risk-Register.md](Third-Party-Action-Risk-Register.md) for the full list of non-`actions/` workflow actions with their pinned SHAs, audit dates, and risk mitigations.
 
 ### Restore from Backup
+
+**Main application:**
 
 ```bash
 # Download backup from R2
 rclone copy r2:seventysix-backups/db_YYYYMMDD_HHMMSS.sql.gz /tmp/
+
+# If backup was GPG-encrypted (has .gpg extension), decrypt first:
+# gpg --decrypt /tmp/db_YYYYMMDD_HHMMSS.sql.gz.gpg > /tmp/db_YYYYMMDD_HHMMSS.sql.gz
 
 # Restore
 gunzip -c /tmp/db_YYYYMMDD_HHMMSS.sql.gz | \
@@ -1232,6 +1255,98 @@ gunzip -c /tmp/db_YYYYMMDD_HHMMSS.sql.gz | \
 # Restart API to pick up restored data (restart does not need env vars)
 docker compose -f docker-compose.production.yml restart api
 ```
+
+**Commerce databases:**
+
+```bash
+# Download commerce backups
+rclone copy r2:seventysix-backups/commerce_tanstack_YYYYMMDD_HHMMSS.sql.gz /tmp/
+rclone copy r2:seventysix-backups/commerce_sveltekit_YYYYMMDD_HHMMSS.sql.gz /tmp/
+
+# Decrypt if encrypted:
+# gpg --decrypt /tmp/commerce_tanstack_*.sql.gz.gpg > /tmp/commerce_tanstack.sql.gz
+
+# Restore TanStack database
+gunzip -c /tmp/commerce_tanstack_YYYYMMDD_HHMMSS.sql.gz | \
+  docker exec -i SeventySixCommerce-postgres-prod \
+  psql -U "$COMMERCE_DB_USER" SeventySixCommerce
+
+# Restore SvelteKit database
+gunzip -c /tmp/commerce_sveltekit_YYYYMMDD_HHMMSS.sql.gz | \
+  docker exec -i SeventySixCommerce-postgres-prod \
+  psql -U "$COMMERCE_DB_USER" SeventySixCommerce_sveltekit
+
+# Restart commerce containers
+docker compose -f docker-compose.seventysixcommerce.yml restart tanstack sveltekit
+```
+
+> **Backup restore drills** run automatically on the 1st of each month via the `backup-restore-drill` GitHub Actions workflow — verifying that migration-based schema reconstruction and dump/restore roundtrips succeed. Check the workflow run history at `.github/workflows/backup-restore-drill.yml`.
+
+### Backup Encryption Setup {#backup-encryption-setup}
+
+To enable GPG encryption of database backups (recommended for production):
+
+```bash
+# On your local machine: generate a dedicated backup encryption key
+gpg --full-gen-key
+# Choose: (1) RSA and RSA, 4096 bits, no expiry
+# Name: SeventySix Backup
+# Email: backup@seventysixsandbox.com
+
+# Export the public key
+gpg --armor --export backup@seventysixsandbox.com > backup-pub.key
+
+# Copy the public key to the server
+scp backup-pub.key deploy@$SERVER_IP:/srv/seventysix/
+
+# On the server: import the public key
+ssh deploy@$SERVER_IP
+gpg --import /srv/seventysix/backup-pub.key
+gpg --list-keys  # Confirm it appears
+
+# Set the BACKUP_GPG_RECIPIENT in the crontab entry
+crontab -e
+# Change:  0 3 * * * /srv/seventysix/scripts/backup.sh >> /var/log/seventysix-backup.log 2>&1
+# To:      0 3 * * * BACKUP_GPG_RECIPIENT=backup@seventysixsandbox.com /srv/seventysix/scripts/backup.sh >> /var/log/seventysix-backup.log 2>&1
+
+# The private key MUST be stored securely offline (e.g., password manager vault).
+# Without it, encrypted backups CANNOT be restored.
+```
+
+### SSH Key Rotation {#ssh-key-rotation}
+
+The `PROD_SSH_KEY` GitHub Secret authenticates the CD pipeline to the production server.
+
+**Rotation procedure:**
+
+```bash
+# 1. Generate a new ED25519 keypair locally
+ssh-keygen -t ed25519 -f ~/.ssh/seventysix-prod-new -C "seventysix-prod-deploy"
+
+# 2. Add the NEW public key to the server (while old key still works)
+ssh deploy@$SERVER_IP "echo '$(cat ~/.ssh/seventysix-prod-new.pub)' >> ~/.ssh/authorized_keys"
+
+# 3. Test the new key works
+ssh -i ~/.ssh/seventysix-prod-new deploy@$SERVER_IP "echo OK"
+
+# 4. Update PROD_SSH_KEY GitHub Secret
+gh secret set PROD_SSH_KEY \
+  --body "$(cat ~/.ssh/seventysix-prod-new)" \
+  --repo actionjacksonthegoat-debug/SeventySix
+
+# 5. Trigger a test deploy to confirm the new key works
+gh workflow run deploy.yml --repo actionjacksonthegoat-debug/SeventySix
+
+# 6. After the deploy succeeds, remove the old public key from authorized_keys
+ssh -i ~/.ssh/seventysix-prod-new deploy@$SERVER_IP
+# Remove the old key line from ~/.ssh/authorized_keys
+
+# 7. Store the new private key securely and delete the old one
+```
+
+**Rotation schedule:** Rotate at least annually, or immediately after any team member with key access departs.
+
+See [Third-Party-Action-Risk-Register.md](Third-Party-Action-Risk-Register.md) for the risk register covering all non-`actions/` workflow actions used in CI/CD.
 
 ### Server Migration (to different provider or server)
 
@@ -1360,6 +1475,15 @@ The simple filter builder has no "matches regex" operator (requires Pro+). Use "
 
 **CSP blocks Cloudflare's auto-injected analytics beacon.**
 Cloudflare injects `beacon.min.js` from `static.cloudflareinsights.com` when Browser Insights / Web Analytics is enabled. The production `Content-Security-Policy` blocks it unless you add `https://static.cloudflareinsights.com` to `script-src` and `https://cloudflareinsights.com` to `connect-src`. Alternatively, disable Browser Insights in the Cloudflare dashboard.
+
+**CSP nonce wiring: Caddy → Nginx `sub_filter` → Angular `ngCspNonce`.**
+Production CSP uses per-request nonces (`'nonce-{uuid}'`) instead of `'unsafe-inline'` for both `script-src` and `style-src`. The flow is:
+
+1. Caddy generates `{http.request.uuid}` per request and forwards it as `X-Csp-Nonce` to Nginx.
+2. Nginx `sub_filter` replaces ALL `__CSP_NONCE__` occurrences in `index.html` with the UUID.
+3. Caddy sets the `Content-Security-Policy` header with `'nonce-{uuid}'` (overriding Nginx's header).
+4. Angular reads `ngcspnonce` from `<app-root>` and stamps dynamically injected `<style>` elements.
+In E2E/dev (no Caddy), the Nginx `map` directive defaults `$csp_nonce` to the literal `__CSP_NONCE__`, which matches the nonce attributes already in the HTML — so inline scripts and styles work without Caddy.
 
 **`new URL("/api/v1")` throws in production.**
 Client code using `new URL(environment.apiUrl)` works in dev (where `apiUrl` is a full URL) but throws `TypeError: Invalid URL` in production (where `apiUrl` is the relative path `"/api/v1"`). Guard with `environment.apiUrl.startsWith("http") ? new URL(environment.apiUrl).origin : window.location.origin`.

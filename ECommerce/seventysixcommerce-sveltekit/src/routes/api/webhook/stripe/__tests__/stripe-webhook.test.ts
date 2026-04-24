@@ -18,7 +18,7 @@ const mockHandleCheckoutCompleted =
 const mockQueueLog =
 	vi.fn();
 
-vi.mock("$lib/server/stripe", () => (
+vi.mock("@seventysixcommerce/shared/stripe", () => (
 	{
 		getStripe: () => (
 			{
@@ -28,11 +28,19 @@ vi.mock("$lib/server/stripe", () => (
 			})
 	}));
 
-vi.mock("@seventysixcommerce/shared/webhook", () => (
+vi.mock("@seventysixcommerce/shared/webhook",
+	async (importActual) =>
 	{
-		isOrderProcessed: mockIsOrderProcessed,
-		handleCheckoutCompleted: mockHandleCheckoutCompleted
-	}));
+		const actual: typeof import("@seventysixcommerce/shared/webhook") =
+			await importActual<
+		typeof import("@seventysixcommerce/shared/webhook")>();
+
+		return {
+			...actual,
+			isOrderProcessed: mockIsOrderProcessed,
+			handleCheckoutCompleted: mockHandleCheckoutCompleted
+		};
+	});
 
 vi.mock("$lib/server/log-forwarder", () => (
 	{

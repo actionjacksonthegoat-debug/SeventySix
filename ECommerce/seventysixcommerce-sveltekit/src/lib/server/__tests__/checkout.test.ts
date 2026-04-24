@@ -44,7 +44,7 @@ vi.mock("drizzle-orm", () => ({
 
 vi.mock("$env/dynamic/private", () => ({ env: mockCheckoutEnv }));
 
-vi.mock("$lib/server/stripe", () => ({
+vi.mock("@seventysixcommerce/shared/stripe", () => ({
 	getStripe: () => ({
 		checkout: {
 			sessions: {

@@ -1,6 +1,6 @@
 import { ThirdPartyApiRequestDto } from "@admin/models";
 import { ThirdPartyApiService } from "@admin/services";
-import { provideHttpClient } from "@angular/common/http";
+import { HttpErrorResponse, provideHttpClient } from "@angular/common/http";
 import { provideHttpClientTesting } from "@angular/common/http/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
@@ -151,20 +151,30 @@ describe("ApiStatisticsTableComponent",
 		it("should display error message when API data query fails",
 			() =>
 			{
-				const errorMessage: string = "Failed to load API data";
+				const httpError: HttpErrorResponse =
+					new HttpErrorResponse(
+						{
+							status: 500,
+							error: { detail: "SENTINEL_SERVER_INTERNAL_DETAIL" }
+						});
 				thirdPartyApiService.getAllThirdPartyApis.mockReturnValue(
 					createMockQueryResult<ThirdPartyApiRequestDto[]>(undefined,
 						{
 							isError: true,
-							error: new Error(errorMessage)
+							error: httpError
 						}));
 
 				createComponent();
 
 				expect(component.isLoading())
 					.toBe(false);
-				expect(component.error())
-					.toBeTruthy();
+				const errorValue: string | null =
+					component.error();
+				expect(errorValue)
+					.not
+					.toContain("SENTINEL_SERVER_INTERNAL_DETAIL");
+				expect(errorValue)
+					.toBe("Failed to load API data");
 				expect(component.dataSource().data.length)
 					.toBe(0);
 			});

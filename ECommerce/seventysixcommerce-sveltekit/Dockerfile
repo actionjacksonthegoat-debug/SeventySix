@@ -8,6 +8,9 @@ WORKDIR /workspace
 # Copy shared package (needed for file: dependency resolution)
 COPY seventysixcommerce-shared/ ./seventysixcommerce-shared/
 
+# Copy build shims required by vite.config.ts alias (protobuf-inquire)
+COPY build-shims/ ./build-shims/
+
 # Copy SvelteKit app
 WORKDIR /workspace/seventysixcommerce-sveltekit
 COPY seventysixcommerce-sveltekit/package.json seventysixcommerce-sveltekit/package-lock.json ./

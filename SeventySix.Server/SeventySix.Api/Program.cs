@@ -24,15 +24,17 @@
 using FluentValidation;
 using JasperFx.Resources;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using NetEscapades.AspNetCore.SecurityHeaders;
 using Scalar.AspNetCore;
 using Serilog;
+using SeventySix.Api.Attributes;
 using SeventySix.Api.Configuration;
 using SeventySix.Api.Extensions;
-using SeventySix.Api.Middleware;
 using SeventySix.Api.Registration;
 using SeventySix.EcommerceCleanup.Registration;
 using SeventySix.Identity.Registration;
 using SeventySix.Registration;
+using SeventySix.Shared.Constants;
 using SeventySix.Shared.Registration;
 using Wolverine;
 using Wolverine.FluentValidation;
@@ -258,27 +260,42 @@ builder.Services.AddAuthenticationServices(builder.Configuration);
 // OpenAPI/Swagger configuration for API documentation
 builder.Services.AddOpenApi();
 
+// Security header policies — NetEscapades replaces AttributeBasedSecurityHeadersMiddleware.
+// The selector is called per-request (at OnStarting time) so it can honour the CSP override
+// that AuthControllerBase places in HttpContext.Items for OAuth callback pages.
+HeaderPolicyCollection standardPolicy =
+			SecurityHeaderPolicies.Build(builder.Environment);
+builder.Services.AddSecurityHeaderPolicies()
+	.SetPolicySelector(
+		ctx =>
+		{
+			ctx.HttpContext.Items.TryGetValue(
+				SecurityHeaderConstants.ItemKeys.CspOverride,
+				out object? cspOverrideRaw);
+			if (cspOverrideRaw is string overrideCsp)
+			{
+				return SecurityHeaderPolicies.BuildWithCspOverride(
+					builder.Environment,
+					overrideCsp);
+			}
+
+			return standardPolicy;
+		});
+
+// Configure HTTPS redirection port from SecuritySettings so the built-in
+// UseHttpsRedirection() middleware knows which port to redirect to.
+builder.Services.AddHttpsRedirection(
+	options =>
+	{
+		options.HttpsPort =
+			builder.Configuration.GetValue<int>($"{SecuritySettings.SectionName}:HttpsPort");
+	});
+
 WebApplication app = builder.Build();
 
-// Validate required configuration settings (fails fast in production if secrets missing)
-StartupValidator.ValidateConfiguration(
-	builder.Configuration,
-	app.Environment,
-	app.Services.GetRequiredService<ILogger<Program>>());
-
-// Validate AllowedHosts is not wildcard in production
-StartupValidator.ValidateAllowedHosts(
-	builder.Configuration,
-	app.Environment);
-
-// Validate security-critical settings are enabled in production
-StartupValidator.ValidateProductionSecuritySettings(
-	builder.Configuration,
-	app.Environment,
-	app.Services.GetRequiredService<ILogger<Program>>());
-
-// Validate dependencies (in debug scenarios this provides actionable errors for VS)
-await app.ValidateDependenciesAsync(builder.Configuration);
+// Validate configuration, allowed hosts, production security settings,
+// and external dependencies in a single coordinated startup gate.
+await app.UseStartupValidationAsync();
 
 // Database migrations
 await app.ApplyMigrationsAsync(builder.Configuration);
@@ -297,6 +314,21 @@ app.UseRequestLogging();
 // Middleware pipeline
 app.UseConfiguredForwardedHeaders(builder.Configuration);
 
+// Endpoint routing — placed early so all downstream middleware can inspect endpoint metadata
+// (rate limiter endpoint policies, security header policy selector, AllowHttp exemptions).
+app.UseRouting();
+
+// Selective HTTPS redirection — respects the EnforceHttps configuration flag and
+// exempts endpoints tagged with [AllowHttp] (health checks, metrics).
+bool enforceHttps =
+			app.Configuration.GetValue<bool>($"{SecuritySettings.SectionName}:EnforceHttps");
+if (enforceHttps)
+{
+	app.UseWhen(
+		ctx => ctx.GetEndpoint()?.Metadata.GetMetadata<AllowHttpAttribute>() is null,
+		pipeline => pipeline.UseHttpsRedirection());
+}
+
 // CORS - Must be early so preflight (OPTIONS) requests are handled
 app.UseCors("AllowedOrigins");
 
@@ -305,9 +337,9 @@ app.UseCors("AllowedOrigins");
 // Must be early to catch exceptions from all subsequent middleware
 app.UseExceptionHandler();
 
-// Security headers middleware - Attribute-aware implementation
-// Reads [SecurityHeaders] attributes from controllers/actions for customization
-app.UseMiddleware<AttributeBasedSecurityHeadersMiddleware>();
+// Security headers middleware — NetEscapades.AspNetCore.SecurityHeaders
+// Policy is selected per-request; see SecurityHeaderPolicies.cs for the full policy definition.
+app.UseSecurityHeaders();
 
 // Rate limiting - Uses ASP.NET Core's built-in rate limiter
 app.UseRateLimiter();
@@ -336,16 +368,19 @@ if (app.Environment.IsDevelopment())
 	_ = app.MapScalarApiReference();
 }
 
-// Smart HTTPS redirection - Centralized enforcement with configurable exemptions
-// Controlled by Security section in appsettings.json (single source of truth)
-app.UseMiddleware<SmartHttpsRedirectionMiddleware>();
-
 // Authentication and Authorization middleware
 app.UseAuthentication();
 app.UseAuthorization();
 
 // Endpoints
 app.MapHealthCheckEndpoints();
+
+// /metrics is served by the OTel Collector in production via reverse-proxy routing.
+// Mapped here so the AllowHttp metadata exempts it from HTTPS redirection.
+app.MapGet(
+	EndpointPathConstants.Metrics,
+	() => Results.NotFound())
+	.WithMetadata(new AllowHttpAttribute());
 
 app.MapControllers();
 

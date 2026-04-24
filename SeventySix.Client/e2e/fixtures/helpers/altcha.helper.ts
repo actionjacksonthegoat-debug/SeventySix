@@ -55,10 +55,14 @@ export async function solveAltchaChallenge(
 			"unverified",
 			{ timeout: initTimeout });
 
-	// Click the checkbox to start proof-of-work challenge
+	// Click the checkbox to start proof-of-work challenge.
+	// dispatchEvent bypasses the SVG overlay that intercepts pointer events —
+	// the input is functional; the SVG is aria-hidden visual decoration.
 	await altchaWidget
 		.locator("input[type='checkbox']")
-		.click(
+		.dispatchEvent(
+			"click",
+			undefined,
 			{ timeout: solveTimeout });
 
 	// Wait for challenge to solve (unverified → verifying → verified)

@@ -3,6 +3,7 @@
 // </copyright>
 
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using SeventySix.TestUtilities.Builders;
@@ -27,7 +28,9 @@ public sealed class LoginCommandHandlerTests
 	private readonly IAuthenticationService AuthenticationService;
 	private readonly IAltchaService AltchaService;
 	private readonly ISecurityAuditService SecurityAuditService;
-	private readonly IMfaOrchestrator MfaOrchestrator;
+	private readonly IMfaChallengeDispatcher MfaChallengeDispatcher;
+	private readonly ITrustedDeviceService TrustedDeviceService;
+	private readonly IOptions<MfaSettings> MfaSettings;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="LoginCommandHandlerTests"/> class.
@@ -48,11 +51,14 @@ public sealed class LoginCommandHandlerTests
 			Substitute.For<IAltchaService>();
 		SecurityAuditService =
 			Substitute.For<ISecurityAuditService>();
-		MfaOrchestrator =
-			Substitute.For<IMfaOrchestrator>();
-		MfaOrchestrator
-			.IsMfaRequired(Arg.Any<ApplicationUser>())
-			.Returns(false);
+		MfaChallengeDispatcher =
+			Substitute.For<IMfaChallengeDispatcher>();
+		TrustedDeviceService =
+			Substitute.For<ITrustedDeviceService>();
+
+		// Default: MFA disabled so tests skip the MFA branch without extra setup
+		MfaSettings =
+			Options.Create(new MfaSettings());
 
 		// Default: ALTCHA disabled for most tests
 		AltchaService.IsEnabled.Returns(false);
@@ -94,7 +100,9 @@ public sealed class LoginCommandHandlerTests
 				AuthenticationService,
 				AltchaService,
 				SecurityAuditService,
-				MfaOrchestrator,
+				MfaChallengeDispatcher,
+				TrustedDeviceService,
+				MfaSettings,
 				CancellationToken.None);
 
 		// Assert
@@ -142,7 +150,9 @@ public sealed class LoginCommandHandlerTests
 				AuthenticationService,
 				AltchaService,
 				SecurityAuditService,
-				MfaOrchestrator,
+				MfaChallengeDispatcher,
+				TrustedDeviceService,
+				MfaSettings,
 				CancellationToken.None);
 
 		// Assert
@@ -190,7 +200,9 @@ public sealed class LoginCommandHandlerTests
 				AuthenticationService,
 				AltchaService,
 				SecurityAuditService,
-				MfaOrchestrator,
+				MfaChallengeDispatcher,
+				TrustedDeviceService,
+				MfaSettings,
 				CancellationToken.None);
 
 		// Assert
@@ -225,7 +237,9 @@ public sealed class LoginCommandHandlerTests
 				AuthenticationService,
 				AltchaService,
 				SecurityAuditService,
-				MfaOrchestrator,
+				MfaChallengeDispatcher,
+				TrustedDeviceService,
+				MfaSettings,
 				CancellationToken.None);
 
 		// Assert
@@ -268,7 +282,9 @@ public sealed class LoginCommandHandlerTests
 				AuthenticationService,
 				AltchaService,
 				SecurityAuditService,
-				MfaOrchestrator,
+				MfaChallengeDispatcher,
+				TrustedDeviceService,
+				MfaSettings,
 				CancellationToken.None);
 
 		// Assert
@@ -308,7 +324,9 @@ public sealed class LoginCommandHandlerTests
 				AuthenticationService,
 				AltchaService,
 				SecurityAuditService,
-				MfaOrchestrator,
+				MfaChallengeDispatcher,
+				TrustedDeviceService,
+				MfaSettings,
 				CancellationToken.None);
 
 		// Assert — returns generic InvalidCredentials (no enumeration)
@@ -318,12 +336,13 @@ public sealed class LoginCommandHandlerTests
 
 	/// <summary>
 	/// When RequiredForAllUsers is false and user has not enrolled in MFA,
-	/// the login succeeds without any MFA challenge — IMfaOrchestrator returns false for IsMfaRequired.
+	/// the login succeeds without any MFA challenge — IsMfaRequired returns false
+	/// because MfaSettings.Enabled defaults to false.
 	/// </summary>
 	[Fact]
 	public async Task HandleAsync_RequiredForAllUsersFalse_UserWithoutMfa_SkipsMfaChallengeAsync()
 	{
-		// Arrange — orchestrator default (IsMfaRequired returns false)
+		// Arrange — default MfaSettings has Enabled = false so MFA branch is skipped
 		ApplicationUser user =
 			new UserBuilder(TimeProvider)
 				.WithId(20)
@@ -355,15 +374,17 @@ public sealed class LoginCommandHandlerTests
 				AuthenticationService,
 				AltchaService,
 				SecurityAuditService,
-				MfaOrchestrator,
+				MfaChallengeDispatcher,
+				TrustedDeviceService,
+				MfaSettings,
 				CancellationToken.None);
 
 		// Assert — MFA is skipped because IsMfaRequired returns false
 		result.Success.ShouldBeTrue();
 		result.RequiresMfa.ShouldBeFalse();
 
-		// Orchestrator InitiateChallengeAsync should never be called
-		await MfaOrchestrator
+		// Dispatcher InitiateChallengeAsync should never be called
+		await MfaChallengeDispatcher
 			.DidNotReceive()
 			.InitiateChallengeAsync(
 				Arg.Any<ApplicationUser>(),
@@ -371,7 +392,7 @@ public sealed class LoginCommandHandlerTests
 	}
 
 	/// <summary>
-	/// Tests that MFA is required when IMfaOrchestrator.IsMfaRequired returns true.
+	/// Tests that MFA is required when MfaSettings.Enabled is true and RequiredForAllUsers is true.
 	/// </summary>
 	[Fact]
 	public async Task HandleAsync_MfaEnabledForAllUsers_ReturnsMfaRequiredAsync()
@@ -397,17 +418,17 @@ public sealed class LoginCommandHandlerTests
 			.Returns(user);
 		IdentityMockFactory.ConfigureSignInManagerForSuccess(SignInManager);
 
+		// MFA is required via settings — RequiredForAllUsers forces the branch
+		IOptions<MfaSettings> testMfaSettings =
+			Options.Create(
+				new MfaSettings
+				{
+					Enabled = true,
+					RequiredForAllUsers = true,
+				});
+
 		string challengeToken = "mfa-challenge-token-123";
-		MfaOrchestrator
-			.IsMfaRequired(Arg.Any<ApplicationUser>())
-			.Returns(true);
-		MfaOrchestrator
-			.TryBypassViaTrustedDeviceAsync(
-				Arg.Any<LoginCommand>(),
-				Arg.Any<ApplicationUser>(),
-				Arg.Any<CancellationToken>())
-			.Returns(default(AuthResult?));
-		MfaOrchestrator
+		MfaChallengeDispatcher
 			.InitiateChallengeAsync(
 				Arg.Any<ApplicationUser>(),
 				Arg.Any<CancellationToken>())
@@ -427,7 +448,9 @@ public sealed class LoginCommandHandlerTests
 				AuthenticationService,
 				AltchaService,
 				SecurityAuditService,
-				MfaOrchestrator,
+				MfaChallengeDispatcher,
+				TrustedDeviceService,
+				testMfaSettings,
 				CancellationToken.None);
 
 		// Assert

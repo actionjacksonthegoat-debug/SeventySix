@@ -8,14 +8,17 @@ const DESKTOP_CHROME =
 
 /**
  * Auth state path pattern - DRY helper.
+ * Uses the index-0 session file as the fallback for the built-in page fixture.
+ * Authenticated test fixtures (userPage, adminPage, etc.) select per-worker session
+ * files using testInfo.parallelIndex to prevent token-rotation conflicts.
  * @param role
  * The role name (lowercase).
  * @returns
- * Path to the auth state file.
+ * Path to the auth state file for worker 0.
  */
 function getAuthStatePath(role: string): string
 {
-	return `e2e/.auth/${role}.json`;
+	return `e2e/.auth/${role}_0.json`;
 }
 
 /**
@@ -49,8 +52,8 @@ export default defineConfig({
 	testDir: "./e2e",
 	fullyParallel: true,
 	forbidOnly: process.env.CI != null,
-	retries: process.env.CI ? 1 : 0,
-	workers: process.env.CI ? 4 : undefined,
+	retries: 1,
+	workers: 4,
 	reporter: [
 		["html", { outputFolder: "playwright-report", open: "never" }],
 		["./e2e/reporters/concise-reporter.ts"]

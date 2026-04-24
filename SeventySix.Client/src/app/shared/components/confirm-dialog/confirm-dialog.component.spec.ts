@@ -74,13 +74,13 @@ describe("ConfirmDialogComponent",
 					.toHaveBeenCalledWith(false);
 			});
 
-		it("should get correct icon color for warn",
+		it("should apply warn icon class for warn confirmColor",
 			() =>
 			{
-				const color: string =
-					component.getIconColor();
-				expect(color)
-					.toBe("var(--mat-sys-error)");
+				const icon: Element | null =
+					fixture.nativeElement.querySelector("mat-icon.confirm-icon");
+				expect(icon?.classList.contains("confirm-icon-warn"))
+					.toBe(true);
 			});
 
 		it("should display custom button text when provided",
@@ -98,7 +98,7 @@ describe("ConfirmDialogComponent",
 describe("ConfirmDialogComponent accent color",
 	() =>
 	{
-		let accentComponent: ConfirmDialogComponent;
+		let accentFixture: ComponentFixture<ConfirmDialogComponent>;
 
 		beforeEach(
 			async () =>
@@ -107,10 +107,11 @@ describe("ConfirmDialogComponent accent color",
 					{
 						title: "Confirm",
 						message: "Are you sure?",
+						icon: "info",
 						confirmColor: "accent"
 					};
 
-				const accentFixture: ComponentFixture<ConfirmDialogComponent> =
+				accentFixture =
 					await new ComponentTestBed<
 						ConfirmDialogComponent>()
 						.withProvider(
@@ -125,22 +126,23 @@ describe("ConfirmDialogComponent accent color",
 							})
 						.build(ConfirmDialogComponent);
 
-				accentComponent =
-					accentFixture.componentInstance;
+				accentFixture.detectChanges();
 			});
 
-		it("should return tertiary color for accent confirmColor",
+		it("should apply accent icon class for accent confirmColor",
 			() =>
 			{
-				expect(accentComponent.getIconColor())
-					.toBe("var(--mat-sys-tertiary)");
+				const icon: Element | null =
+					accentFixture.nativeElement.querySelector("mat-icon.confirm-icon");
+				expect(icon?.classList.contains("confirm-icon-accent"))
+					.toBe(true);
 			});
 	});
 
 describe("ConfirmDialogComponent default color",
 	() =>
 	{
-		let defaultComponent: ConfirmDialogComponent;
+		let defaultFixture: ComponentFixture<ConfirmDialogComponent>;
 
 		beforeEach(
 			async () =>
@@ -148,10 +150,11 @@ describe("ConfirmDialogComponent default color",
 				const defaultData: ConfirmDialogData =
 					{
 						title: "Confirm",
-						message: "Are you sure?"
+						message: "Are you sure?",
+						icon: "info"
 					};
 
-				const defaultFixture: ComponentFixture<ConfirmDialogComponent> =
+				defaultFixture =
 					await new ComponentTestBed<
 						ConfirmDialogComponent>()
 						.withProvider(
@@ -166,14 +169,15 @@ describe("ConfirmDialogComponent default color",
 							})
 						.build(ConfirmDialogComponent);
 
-				defaultComponent =
-					defaultFixture.componentInstance;
+				defaultFixture.detectChanges();
 			});
 
-		it("should return primary color when no confirmColor is set",
+		it("should apply primary icon class when no confirmColor is set",
 			() =>
 			{
-				expect(defaultComponent.getIconColor())
-					.toBe("var(--mat-sys-primary)");
+				const icon: Element | null =
+					defaultFixture.nativeElement.querySelector("mat-icon.confirm-icon");
+				expect(icon?.classList.contains("confirm-icon-primary"))
+					.toBe(true);
 			});
 	});

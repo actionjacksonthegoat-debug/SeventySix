@@ -11,8 +11,7 @@ namespace SeventySix.Identity;
 /// </summary>
 /// <remarks>
 /// When the session limit is reached, the oldest active token is revoked
-/// to make room for a new session. Skips enforcement when token rotation
-/// is disabled (E2E testing mode).
+/// to make room for a new session.
 /// </remarks>
 public sealed class SessionManagementService(
 	ITokenRepository tokenRepository,
@@ -24,13 +23,6 @@ public sealed class SessionManagementService(
 		DateTimeOffset now,
 		CancellationToken cancellationToken)
 	{
-		// Skip session limit enforcement when rotation is disabled (E2E testing)
-		// to allow parallel workers to share auth state without token revocation
-		if (authSettings.Value.Token.DisableRotation)
-		{
-			return;
-		}
-
 		int maxSessions =
 			authSettings.Value.Token.MaxActiveSessionsPerUser;
 
