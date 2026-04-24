@@ -13,7 +13,10 @@ import { loginInFreshContext } from "./helpers/context-login.helper";
 import { test as base } from "./page-helpers.fixture";
 import { AdminDashboardPageHelper } from "./pages/admin-dashboard.page";
 import { ROUTES } from "./routes.constant";
-import { TEST_USERS, TestUser } from "./test-users.constant";
+import { TEST_USERS, type TestUser } from "./test-users.constant";
+import { SELECTORS } from "./selectors.constant";
+import { TIMEOUTS } from "./timeouts.constant";
+import { solveAltchaChallenge } from "./helpers/altcha.helper";
 
 /**
  * Extended test fixture with role-based authentication.
@@ -131,6 +134,65 @@ async function createFreshWorkerContext(
 	return context;
 }
 
+/**
+ * Ensures the browser context still holds a valid authenticated session.
+ * Opens a probe page, navigates to the home route, and checks whether Angular
+ * redirected to the login page (indicating the refresh token was invalidated).
+ * If authentication has lapsed, performs a fresh in-context login so the shared
+ * worker context is restored before the test page is handed to the caller.
+ *
+ * @param context
+ * The worker-scoped browser context to probe and optionally re-authenticate.
+ *
+ * @param role
+ * The role to re-authenticate as if the session has expired.
+ */
+async function ensureContextAuthenticated(
+	context: BrowserContext,
+	role: string): Promise<void>
+{
+	const probe: Page =
+		await context.newPage();
+
+	try
+	{
+		await probe.goto(ROUTES.home,
+			{ timeout: TIMEOUTS.auth });
+		await probe.waitForURL(
+			(url: URL): boolean =>
+				url.pathname === ROUTES.home
+					|| url.pathname.startsWith(ROUTES.auth.login),
+			{ timeout: TIMEOUTS.auth });
+
+		const currentUrl: string =
+			probe.url();
+
+		if (currentUrl.includes(ROUTES.auth.login))
+		{
+			// Session has expired — re-authenticate inside this context
+			const user: TestUser =
+				findTestUserByRole(role);
+
+			await probe.locator(SELECTORS.form.usernameInput)
+				.waitFor(
+					{ state: "visible", timeout: TIMEOUTS.auth });
+			await probe.locator(SELECTORS.form.usernameInput)
+				.fill(user.username);
+			await probe.locator(SELECTORS.form.passwordInput)
+				.fill(user.password);
+			await solveAltchaChallenge(probe);
+			await probe.locator(SELECTORS.form.submitButton)
+				.click();
+			await probe.waitForURL(ROUTES.home,
+				{ timeout: TIMEOUTS.auth });
+		}
+	}
+	finally
+	{
+		await probe.close();
+	}
+}
+
 export const test: ReturnType<typeof base.extend<AuthFixtures, AuthWorkerFixtures>> =
 	base.extend<
 		AuthFixtures,
@@ -180,6 +242,7 @@ export const test: ReturnType<typeof base.extend<AuthFixtures, AuthWorkerFixture
 
 			userPage: async ({ userContext }, use, testInfo) =>
 			{
+				await ensureContextAuthenticated(userContext, "user");
 				const page: Page =
 					await userContext.newPage();
 				const collector: DiagnosticsCollector =
@@ -192,6 +255,7 @@ export const test: ReturnType<typeof base.extend<AuthFixtures, AuthWorkerFixture
 
 			adminPage: async ({ adminContext }, use, testInfo) =>
 			{
+				await ensureContextAuthenticated(adminContext, "admin");
 				const page: Page =
 					await adminContext.newPage();
 				const collector: DiagnosticsCollector =
@@ -204,6 +268,7 @@ export const test: ReturnType<typeof base.extend<AuthFixtures, AuthWorkerFixture
 
 			developerPage: async ({ developerContext }, use, testInfo) =>
 			{
+				await ensureContextAuthenticated(developerContext, "developer");
 				const page: Page =
 					await developerContext.newPage();
 				const collector: DiagnosticsCollector =
