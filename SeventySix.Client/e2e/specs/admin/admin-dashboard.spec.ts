@@ -2,6 +2,7 @@ import {
 	expect,
 	PAGE_TEXT,
 	ROUTES,
+	SELECTORS,
 	test,
 	TIMEOUTS
 } from "@e2e-fixtures";
@@ -22,6 +23,8 @@ test.describe("Admin Dashboard",
 			async ({ adminPage }) =>
 			{
 				await adminPage.goto(ROUTES.admin.dashboard);
+				await expect(adminPage.locator(SELECTORS.adminDashboard.toolbarHeading))
+					.toBeVisible();
 			});
 
 		test.describe("Page Structure",
@@ -39,12 +42,8 @@ test.describe("Admin Dashboard",
 				test("should display four tabs",
 					async ({ adminDashboardPage }) =>
 					{
-						// Wait for tabs to be visible before counting
-						await adminDashboardPage
-							.tabs
-							.first()
-							.waitFor(
-								{ state: "visible", timeout: TIMEOUTS.navigation * 2 });
+						await expect(adminDashboardPage.tabs.first())
+							.toBeVisible();
 						const tabCount: number =
 							await adminDashboardPage.getTabCount();
 
