@@ -1,32 +1,51 @@
 # Security-sensitive paths require owner review
-# See: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# See: <https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners>
+
+# Global fallback — every change requires owner review (OpenSSF Scorecard: Code-Review)
+
+# More-specific patterns below override this default for security-critical paths
+
+# but the owner remains the same; this entry guarantees coverage of any new file
+
+# that doesn't match an explicit rule
+
+* @actionjacksonthegoat-debug
 
 # CI/CD workflows
+
 .github/workflows/ @actionjacksonthegoat-debug
 
 # Project rules and instructions
+
 .github/instructions/ @actionjacksonthegoat-debug
 .github/copilot-instructions.md @actionjacksonthegoat-debug
 
 # Production infrastructure
+
 docker-compose.production.yml @actionjacksonthegoat-debug
 Caddyfile.production @actionjacksonthegoat-debug
 
 # Server security configuration
+
 SeventySix.Server/SeventySix.Api/Configuration/ @actionjacksonthegoat-debug
 SeventySix.Server/SeventySix.Api/Middleware/ @actionjacksonthegoat-debug
 
 # Client security headers
+
 SeventySix.Client/nginx.conf @actionjacksonthegoat-debug
 
 # Commerce app source, configuration, and workflows
+
 ECommerce/ @actionjacksonthegoat-debug
 
 # Commerce infrastructure
+
 docker-compose.seventysixcommerce.yml @actionjacksonthegoat-debug
 docker-compose.loadtest-svelte.yml @actionjacksonthegoat-debug
 docker-compose.loadtest-tanstack.yml @actionjacksonthegoat-debug
 Caddyfile.seventysixcommerce @actionjacksonthegoat-debug
 
 # Shared build scripts
+
 scripts/ @actionjacksonthegoat-debug

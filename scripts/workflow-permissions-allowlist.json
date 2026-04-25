@@ -1,0 +1,140 @@
+[
+    {
+        "workflow": "scorecard.yml",
+        "job": "analysis",
+        "scope": "id-token: write, security-events: write, contents: read",
+        "reason": "OpenSSF Scorecard requires id-token: write to publish results to the public OSSF dashboard and security-events: write to upload SARIF. Documented at https://github.com/ossf/scorecard-action#workflow-permissions."
+    },
+    {
+        "workflow": "ci.yml",
+        "job": "publish",
+        "scope": "packages: write",
+        "reason": "Pushes built API + Client images to GHCR (ghcr.io/${owner}/seventysix-*). Required for Docker registry push."
+    },
+    {
+        "workflow": "ci.yml",
+        "job": "scan-api-image",
+        "scope": "security-events: write",
+        "reason": "Trivy scan SARIF upload to GitHub Security tab (Code scanning alerts)."
+    },
+    {
+        "workflow": "ci.yml",
+        "job": "scan-client-image",
+        "scope": "security-events: write",
+        "reason": "Trivy scan SARIF upload to GitHub Security tab."
+    },
+    {
+        "workflow": "ci.yml",
+        "job": "security-scan",
+        "scope": "security-events: write",
+        "reason": "Gitleaks SARIF upload to GitHub Security tab."
+    },
+    {
+        "workflow": "ci.yml",
+        "job": "server-build",
+        "scope": "checks: write, pull-requests: write",
+        "reason": "EnricoMi/publish-unit-test-result-action posts test result summary as a PR check + comment."
+    },
+    {
+        "workflow": "codeql.yml",
+        "job": "analyze-csharp",
+        "scope": "security-events: write, actions: read",
+        "reason": "CodeQL SARIF upload + workflow run metadata read."
+    },
+    {
+        "workflow": "codeql.yml",
+        "job": "analyze-javascript",
+        "scope": "security-events: write, actions: read",
+        "reason": "CodeQL SARIF upload + workflow run metadata read."
+    },
+    {
+        "workflow": "dast.yml",
+        "job": "dast-scan",
+        "scope": "security-events: write, actions: read",
+        "reason": "OWASP ZAP SARIF upload to GitHub Security tab."
+    },
+    {
+        "workflow": "dast.yml",
+        "job": "dast-scan-commerce-sveltekit",
+        "scope": "security-events: write, actions: read",
+        "reason": "OWASP ZAP SARIF upload to GitHub Security tab."
+    },
+    {
+        "workflow": "dast.yml",
+        "job": "dast-scan-commerce-tanstack",
+        "scope": "security-events: write, actions: read",
+        "reason": "OWASP ZAP SARIF upload to GitHub Security tab."
+    },
+    {
+        "workflow": "deploy.yml",
+        "job": "rollback",
+        "scope": "issues: write",
+        "reason": "Creates an incident GitHub issue when automated rollback fails (operational alerting)."
+    },
+    {
+        "workflow": "dependency-review.yml",
+        "job": "dependency-review",
+        "scope": "pull-requests: write, contents: read",
+        "reason": "actions/dependency-review-action posts a PR comment summarizing dependency changes."
+    },
+    {
+        "workflow": "dependabot-auto-merge.yml",
+        "job": "auto-merge",
+        "scope": "contents: write, pull-requests: write",
+        "reason": "Auto-approves and merges Dependabot PRs after CI passes (security/patch updates only)."
+    },
+    {
+        "workflow": "reusable-container-scan.yml",
+        "job": "scan",
+        "scope": "security-events: write",
+        "reason": "Reusable workflow uploads Trivy SARIF; called from ci.yml scan-* jobs."
+    },
+    {
+        "workflow": "reusable-dast-scan.yml",
+        "job": "dast",
+        "scope": "security-events: write, actions: read",
+        "reason": "Reusable workflow uploads ZAP SARIF; called from dast.yml jobs."
+    },
+    {
+        "workflow": "nightly-load.yml",
+        "job": "open-issue-on-failure",
+        "scope": "issues: write",
+        "reason": "Opens a GitHub issue when nightly load tests fail (operational alerting)."
+    },
+    {
+        "workflow": "seventysixcommerce-ci.yml",
+        "job": "publish",
+        "scope": "packages: write",
+        "reason": "Pushes built SvelteKit + TanStack commerce images to GHCR."
+    },
+    {
+        "workflow": "seventysixcommerce-ci.yml",
+        "job": "scan-tanstack-image",
+        "scope": "security-events: write",
+        "reason": "Trivy scan SARIF upload for TanStack commerce image."
+    },
+    {
+        "workflow": "seventysixcommerce-ci.yml",
+        "job": "scan-sveltekit-image",
+        "scope": "security-events: write",
+        "reason": "Trivy scan SARIF upload for SvelteKit commerce image."
+    },
+    {
+        "workflow": "seventysixcommerce-deploy.yml",
+        "job": "rollback",
+        "scope": "issues: write",
+        "reason": "Creates an incident GitHub issue when automated commerce rollback fails."
+    },
+    {
+        "workflow": "seventysixcommerce-ci.yml",
+        "job": "*",
+        "scope": "checks: write, pull-requests: write",
+        "reason": "Test result publish + PR commenting (test report action)."
+    },
+    {
+        "workflow": "seventysixcommerce-deploy.yml",
+        "job": "*",
+        "scope": "deployments: write, contents: read",
+        "reason": "Records GitHub Deployment events for the SeventySixCommerce production environment."
+    }
+]

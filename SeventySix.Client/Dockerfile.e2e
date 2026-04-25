@@ -20,7 +20,7 @@ COPY . .
 RUN npm run build -- --configuration e2e
 
 # Stage 2: Runtime with Nginx (HTTPS)
-FROM nginx:1.27-alpine AS final
+FROM nginx:1.27-alpine@sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10 AS final
 
 # Copy custom nginx configuration for E2E (HTTPS enabled)
 COPY nginx-e2e.conf /etc/nginx/nginx.conf

@@ -184,14 +184,15 @@ public sealed class DatabaseLogSink(
 					.ServiceProvider
 					.GetRequiredService<ILogRepository>();
 
-			foreach (LogEvent logEvent in batch)
-			{
-				Log log =
+			IEnumerable<Log> logs =
+				batch.Select(logEvent =>
 					LogEventEnricher.BuildLog(
 						logEvent,
 						environment,
-						machineName);
+						machineName));
 
+			foreach (Log log in logs)
+			{
 				await logRepository.CreateAsync(log);
 			}
 		}

@@ -22,6 +22,9 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 15
 
+        permissions:
+            contents: read
+
         services:
             postgres:
                 image: postgres:17
@@ -52,7 +55,7 @@ jobs:
 
             - name: Restore dependencies
               working-directory: SeventySix.Server
-              run: dotnet restore SeventySix.Server.slnx
+              run: dotnet restore SeventySix.Server.slnx --locked-mode
 
             - name: Build
               working-directory: SeventySix.Server

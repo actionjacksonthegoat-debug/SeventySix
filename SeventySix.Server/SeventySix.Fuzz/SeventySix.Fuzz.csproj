@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net10.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<RootNamespace>SeventySix.Fuzz</RootNamespace>
+		<AssemblyName>SeventySix.Fuzz</AssemblyName>
+		<!--
+			Fuzz harness binaries are not shipped to production and the
+			SharpFuzz instrumentation toolchain is the public API surface.
+			Suppress documentation requirements that don't add value here.
+		-->
+		<GenerateDocumentationFile>false</GenerateDocumentationFile>
+		<NoWarn>$(NoWarn);CS1591;SA1633;SA0001</NoWarn>
+		<!-- Fuzz harness is intentionally excluded from packages.lock enforcement. -->
+		<RestorePackagesWithLockFile>false</RestorePackagesWithLockFile>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="SharpFuzz" Version="2.2.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\SeventySix.Shared\SeventySix.Shared.csproj" />
+	</ItemGroup>
+
+</Project>

@@ -1,0 +1,6 @@
+# Fuzz runtime artifacts — generated per CI run, never committed.
+mutated/
+crashes/
+findings/
+fuzz-*.log
+*.crash

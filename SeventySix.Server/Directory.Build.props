@@ -1,6 +1,13 @@
 <Project>
 	<PropertyGroup>
 		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+		<!--
+			Supply-chain hardening (OpenSSF Scorecard: Pinned-Dependencies).
+			Require packages.lock.json files to exist alongside every csproj.
+			In CI, restore must use the locked mode flag to fail the build on lockfile drift.
+			Locally, dotnet restore regenerates the lockfile when adding/removing packages.
+		-->
+		<RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
 	</PropertyGroup>
 
 	<!--
