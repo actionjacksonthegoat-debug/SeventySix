@@ -901,14 +901,14 @@ describe("DataTableComponent",
 							.toBe("600px");
 					});
 
-				it("should return 0px when not loading and data is empty",
+				it("should return TABLE_HEADER_HEIGHT when not loading and data is empty",
 					() =>
 					{
 						const result: string =
 							(component as unknown as ViewportHelper)
 								.computeViewportHeight(400, 0, false, 48);
 						expect(result)
-							.toBe("0px");
+							.toBe("56px");
 					});
 
 				it("should return content height when data fits in available space",
