@@ -127,6 +127,7 @@ jobs:
                   flags: client
                   name: client-coverage
                   fail_ci_if_error: true
+                  skip_validation: true  # ubuntu-latest runners don't pre-install Codecov's GPG key; SHA-pinned action provides supply-chain integrity
 
             - name: Upload client artifact
               uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
@@ -192,6 +193,7 @@ jobs:
                   flags: server
                   name: server-coverage
                   fail_ci_if_error: true
+                  skip_validation: true  # ubuntu-latest runners don't pre-install Codecov's GPG key; SHA-pinned action provides supply-chain integrity
 
             - name: Upload coverage artifact
               uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6

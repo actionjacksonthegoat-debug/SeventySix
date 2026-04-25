@@ -723,7 +723,8 @@ export class DataTableComponent<T extends { id: number; }>
 	 * Three cases:
 	 * 1. Initial load (isLoading=true, no data yet): reserve TABLE_VIEWPORT_MIN_HEIGHT
 	 *    for skeleton rows — prevents CLS on first paint.
-	 * 2. Empty (not loading, no data): 0px — collapses viewport; empty-state message shows in flow.
+	 * 2. Empty (not loading, no data): TABLE_HEADER_HEIGHT — keeps the sticky header
+	 *    row visible while the empty-state message renders in document flow below.
 	 * 3. Has data: min(headerH + contentH, availableH) — fills available space but shrinks for sparse data.
 	 *
 	 * @returns {void}
@@ -796,8 +797,9 @@ export class DataTableComponent<T extends { id: number; }>
 		}
 		if (dataLength === 0)
 		{
-			// Empty: collapse viewport so empty-state message renders in flow below
-			return "0px";
+			// Empty: collapse to the header row height only so the sticky header remains
+			// visible while the empty-state message renders in document flow below.
+			return `${DataTableComponent.TABLE_HEADER_HEIGHT}px`;
 		}
 		// Has data: shrink to content height but never exceed available height.
 		// Add TABLE_HEADER_HEIGHT because the sticky header lives inside the CDK viewport.
