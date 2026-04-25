@@ -89,7 +89,6 @@
 							"optimization": false,
 							"extractLicenses": false,
 							"sourceMap": true,
-							"serviceWorker": "ngsw-config.json",
 							"fileReplacements": [
 								{
 									"replace": "src/environments/environment.ts",
