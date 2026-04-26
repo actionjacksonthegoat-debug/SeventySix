@@ -136,5 +136,47 @@
         "job": "*",
         "scope": "deployments: write, contents: read",
         "reason": "Records GitHub Deployment events for the SeventySixCommerce production environment."
+    },
+    {
+        "workflow": "ci.yml",
+        "job": "scan-migrations-image",
+        "scope": "security-events: write",
+        "reason": "Trivy scan SARIF upload to GitHub Security tab for the migrations image."
+    },
+    {
+        "workflow": "scheduled-security-scan.yml",
+        "job": "trivy-image-client",
+        "scope": "security-events: write",
+        "reason": "Scheduled daily Trivy scan uploads SARIF to GitHub Security tab for the client image."
+    },
+    {
+        "workflow": "scheduled-security-scan.yml",
+        "job": "trivy-image-api",
+        "scope": "security-events: write",
+        "reason": "Scheduled daily Trivy scan uploads SARIF to GitHub Security tab for the API image."
+    },
+    {
+        "workflow": "scheduled-security-scan.yml",
+        "job": "trivy-image-svelte",
+        "scope": "security-events: write",
+        "reason": "Scheduled daily Trivy scan uploads SARIF to GitHub Security tab for the SvelteKit image."
+    },
+    {
+        "workflow": "scheduled-security-scan.yml",
+        "job": "trivy-image-tanstack",
+        "scope": "security-events: write",
+        "reason": "Scheduled daily Trivy scan uploads SARIF to GitHub Security tab for the TanStack image."
+    },
+    {
+        "workflow": "scheduled-security-scan.yml",
+        "job": "trivy-image-migrations",
+        "scope": "security-events: write",
+        "reason": "Scheduled daily Trivy scan uploads SARIF to GitHub Security tab for the migrations image."
+    },
+    {
+        "workflow": "scheduled-security-scan.yml",
+        "job": "trivy-filesystem",
+        "scope": "security-events: write",
+        "reason": "Scheduled daily Trivy filesystem/IaC/secrets scan uploads SARIF to GitHub Security tab."
     }
 ]

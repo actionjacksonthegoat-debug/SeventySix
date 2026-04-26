@@ -1,7 +1,7 @@
 # Pinning policy: base images use @sha256 digests for reproducible builds.
 # Dependabot (.github/dependabot.yml, docker ecosystem) auto-creates PRs
 # when new digests are available.
-FROM node:24-alpine3.21@sha256:5579647898d35dbc9ca22010e46c207deb6320f785822a3c5ba3a84b81b57309 AS builder
+FROM node:24-alpine3.22@sha256:b689d4005875ae167178471a7a622ec2909459a3bbb32277260be1971af7a99f AS builder
 
 WORKDIR /workspace
 
@@ -24,9 +24,11 @@ FROM builder AS db-init
 CMD ["sh", "-c", "npx drizzle-kit push --force && npx tsx src/lib/server/db/seed.ts"]
 
 # Production stage
-FROM node:24-alpine3.21@sha256:5579647898d35dbc9ca22010e46c207deb6320f785822a3c5ba3a84b81b57309 AS production
+FROM node:24-alpine3.22@sha256:b689d4005875ae167178471a7a622ec2909459a3bbb32277260be1971af7a99f AS production
 
-RUN addgroup -g 1001 nodegroup && \
+# Upgrade all Alpine packages to pick up security patches (libcrypto3, libssl3, libxml2)
+RUN apk upgrade --no-cache && \
+	addgroup -g 1001 nodegroup && \
 	adduser -u 1001 -G nodegroup -D nodeuser
 
 WORKDIR /workspace

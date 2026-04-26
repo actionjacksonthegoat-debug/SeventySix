@@ -3,7 +3,7 @@
 # Dependabot (.github/dependabot.yml, docker ecosystem) auto-creates PRs
 # when new digests are available.
 # Stage 1: Build
-FROM node:24-alpine3.21@sha256:5579647898d35dbc9ca22010e46c207deb6320f785822a3c5ba3a84b81b57309 AS build
+FROM node:24-alpine3.22@sha256:b689d4005875ae167178471a7a622ec2909459a3bbb32277260be1971af7a99f AS build
 WORKDIR /app
 
 # Copy package files
@@ -20,7 +20,10 @@ COPY . .
 RUN npm run build -- --configuration production
 
 # Stage 2: Runtime with Nginx
-FROM nginx:1.27-alpine@sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10 AS final
+FROM nginx:1.28-alpine@sha256:a8b39bd9cf0f83869a2162827a0caf6137ddf759d50a171451b335cecc87d236 AS final
+
+# Upgrade all Alpine packages to pick up security patches (libcrypto3, libssl3, libxml2)
+RUN apk upgrade --no-cache
 
 # Copy custom nginx configuration
 COPY nginx.conf /etc/nginx/nginx.conf

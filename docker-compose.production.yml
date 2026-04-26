@@ -9,424 +9,454 @@
 name: seventysix-prod
 
 services:
-  # Valkey - Open Source Redis-Compatible Cache (BSD licensed, Linux Foundation)
-  valkey:
-    image: valkey/valkey:9.0-alpine
-    container_name: seventysix-valkey-prod
-    volumes:
-      - valkey_data:/data
-      - ./docker/certs/valkey/server.crt:/tls/server.crt:ro
-      - ./docker/certs/valkey/server.key:/tls/server.key:ro
-      - ./docker/certs/ca.crt:/tls/ca.crt:ro
-      # Client certs reused for the healthcheck — api/client.key has ACL u:999:r
-      # (Valkey runs as UID 999 via gosu, same as appuser/caddy on this host)
-      - ./docker/certs/api/client.crt:/tls/client.crt:ro
-      - ./docker/certs/api/client.key:/tls/client.key:ro
-    command: >
-      valkey-server --save 60 1 --loglevel warning --appendonly yes --requirepass ${VALKEY_PASSWORD:?VALKEY_PASSWORD must be set} --tls-port 6379 --port 0 --tls-cert-file /tls/server.crt --tls-key-file /tls/server.key --tls-ca-cert-file /tls/ca.crt --tls-auth-clients yes
-    healthcheck:
-      test: [ "CMD", "valkey-cli", "--tls", "--cacert", "/tls/ca.crt", "--cert", "/tls/client.crt", "--key", "/tls/client.key", "-a", "${VALKEY_PASSWORD}", "ping" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
-    networks:
-      - seventysix-network
-    restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 512M
-        reservations:
-          cpus: '0.25'
-          memory: 128M
+    # Valkey - Open Source Redis-Compatible Cache (BSD licensed, Linux Foundation)
+    valkey:
+        image: valkey/valkey:9.0-alpine@sha256:e1095c6c76ee982cb2d1e07edbb7fb2a53606630a1d810d5a47c9f646b708bf5
+        container_name: seventysix-valkey-prod
+        volumes:
+            - valkey_data:/data
+            - ./docker/certs/valkey/server.crt:/tls/server.crt:ro
+            - ./docker/certs/valkey/server.key:/tls/server.key:ro
+            - ./docker/certs/ca.crt:/tls/ca.crt:ro
+            # Client certs reused for the healthcheck — api/client.key has ACL u:999:r
+            # (Valkey runs as UID 999 via gosu, same as appuser/caddy on this host)
+            - ./docker/certs/api/client.crt:/tls/client.crt:ro
+            - ./docker/certs/api/client.key:/tls/client.key:ro
+        command: >
+            valkey-server --save 60 1 --loglevel warning --appendonly yes --requirepass ${VALKEY_PASSWORD:?VALKEY_PASSWORD must be set} --tls-port 6379 --port 0 --tls-cert-file /tls/server.crt --tls-key-file /tls/server.key --tls-ca-cert-file /tls/ca.crt --tls-auth-clients yes
+        healthcheck:
+            test: [ "CMD", "valkey-cli", "--tls", "--cacert", "/tls/ca.crt", "--cert", "/tls/client.crt", "--key", "/tls/client.key", "-a", "${VALKEY_PASSWORD}", "ping" ]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+            start_period: 10s
+        networks:
+            - seventysix-network
+        restart: unless-stopped
+        deploy:
+            resources:
+                limits:
+                    cpus: '0.5'
+                    memory: 512M
+                reservations:
+                    cpus: '0.25'
+                    memory: 128M
 
-  # Redis Exporter - Prometheus metrics for Valkey monitoring
-  redis-exporter:
-    image: oliver006/redis_exporter:v1.67.0
-    container_name: seventysix-redis-exporter-prod
-    environment:
-      REDIS_ADDR: "rediss://valkey:6379"
-      REDIS_PASSWORD: "${VALKEY_PASSWORD:?VALKEY_PASSWORD must be set}"
-      REDIS_EXPORTER_TLS_CA_CERT_FILE: "/tls/ca.crt"
-      REDIS_EXPORTER_TLS_CLIENT_CERT_FILE: "/tls/client.crt"
-      REDIS_EXPORTER_TLS_CLIENT_KEY_FILE: "/tls/client.key"
-      REDIS_EXPORTER_SKIP_TLS_VERIFICATION: "false"
-    volumes:
-      - ./docker/certs/ca.crt:/tls/ca.crt:ro
-      - ./docker/certs/api/client.crt:/tls/client.crt:ro
-      - ./docker/certs/api/client.key:/tls/client.key:ro
-    ports:
-      - "127.0.0.1:9121:9121" # Redis metrics — internal only
-    depends_on:
-      valkey:
-        condition: service_healthy
-    networks:
-      - seventysix-network
-    restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          cpus: '0.25'
-          memory: 64M
+    # Redis Exporter - Prometheus metrics for Valkey monitoring
+    redis-exporter:
+        image: oliver006/redis_exporter:v1.67.0@sha256:120f7ec77293459ccfdad66bb1db75ab72e8bfeab99f58b1cc2564cadcd7a9e7
+        container_name: seventysix-redis-exporter-prod
+        environment:
+            REDIS_ADDR: "rediss://valkey:6379"
+            REDIS_PASSWORD: "${VALKEY_PASSWORD:?VALKEY_PASSWORD must be set}"
+            REDIS_EXPORTER_TLS_CA_CERT_FILE: "/tls/ca.crt"
+            REDIS_EXPORTER_TLS_CLIENT_CERT_FILE: "/tls/client.crt"
+            REDIS_EXPORTER_TLS_CLIENT_KEY_FILE: "/tls/client.key"
+            REDIS_EXPORTER_SKIP_TLS_VERIFICATION: "false"
+        volumes:
+            - ./docker/certs/ca.crt:/tls/ca.crt:ro
+            - ./docker/certs/api/client.crt:/tls/client.crt:ro
+            - ./docker/certs/api/client.key:/tls/client.key:ro
+        ports:
+            - "127.0.0.1:9121:9121" # Redis metrics — internal only
+        depends_on:
+            valkey:
+                condition: service_healthy
+        networks:
+            - seventysix-network
+        restart: unless-stopped
+        deploy:
+            resources:
+                limits:
+                    cpus: '0.25'
+                    memory: 64M
 
-  # OpenTelemetry Collector - Receives telemetry from API, exports to Prometheus/Jaeger
-  otel-collector:
-    image: otel/opentelemetry-collector-contrib:0.123.0
-    container_name: seventysix-otel-collector-prod
-    command: [ "--config=/etc/otel-collector.yaml" ]
-    volumes:
-      - ./observability/otel-collector-mtls.yaml:/etc/otel-collector.yaml:ro
-      - ./docker/certs/otel-collector/server.crt:/tls/server.crt:ro
-      - ./docker/certs/otel-collector/server.key:/tls/server.key:ro
-      - ./docker/certs/otel-client/client.crt:/tls/client.crt:ro
-      - ./docker/certs/otel-client/client.key:/tls/client.key:ro
-      - ./docker/certs/ca.crt:/tls/ca.crt:ro
-    ports:
-      - "127.0.0.1:4317:4317" # OTLP gRPC receiver — internal only
-      - "127.0.0.1:4318:4318" # OTLP HTTP receiver — internal only
-      - "127.0.0.1:8889:8889" # Prometheus metrics export — internal only
-    depends_on:
-      jaeger:
-        condition: service_healthy
-    healthcheck:
-      # Image is scratch-based (no wget/curl/shell) — healthcheck runs from host via depends_on
-      disable: true
-    networks:
-      - seventysix-network
-    restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 256M
+    # OpenTelemetry Collector - Receives telemetry from API, exports to Prometheus/Jaeger
+    otel-collector:
+        image: otel/opentelemetry-collector-contrib:0.123.0@sha256:e39311df1f3d941923c00da79ac7ba6269124a870ee87e3c3ad24d60f8aee4d2
+        container_name: seventysix-otel-collector-prod
+        command: [ "--config=/etc/otel-collector.yaml" ]
+        volumes:
+            - ./observability/otel-collector-mtls.yaml:/etc/otel-collector.yaml:ro
+            - ./docker/certs/otel-collector/server.crt:/tls/server.crt:ro
+            - ./docker/certs/otel-collector/server.key:/tls/server.key:ro
+            - ./docker/certs/otel-client/client.crt:/tls/client.crt:ro
+            - ./docker/certs/otel-client/client.key:/tls/client.key:ro
+            - ./docker/certs/ca.crt:/tls/ca.crt:ro
+        ports:
+            - "127.0.0.1:4317:4317" # OTLP gRPC receiver — internal only
+            - "127.0.0.1:4318:4318" # OTLP HTTP receiver — internal only
+            - "127.0.0.1:8889:8889" # Prometheus metrics export — internal only
+        depends_on:
+            jaeger:
+                condition: service_healthy
+        healthcheck:
+            # Image is scratch-based (no wget/curl/shell) — healthcheck runs from host via depends_on
+            disable: true
+        networks:
+            - seventysix-network
+        restart: unless-stopped
+        deploy:
+            resources:
+                limits:
+                    cpus: '0.5'
+                    memory: 256M
 
-  # PostgreSQL Database - Persistent storage for production
-  database:
-    image: postgres:18-alpine
-    container_name: seventysix-postgres-prod
-    environment:
-      POSTGRES_DB: ${DB_NAME:-seventysix}
-      POSTGRES_USER: ${DB_USER:-postgres}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set}
-      PGDATA: /var/lib/postgresql/data/pgdata
-    ports:
-      - "127.0.0.1:5433:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./docker/certs/postgres/server.crt:/var/lib/postgresql/server.crt:ro
-      - ./docker/certs/postgres/server.key:/var/lib/postgresql/server.key:ro
-      - ./docker/certs/ca.crt:/var/lib/postgresql/ca.crt:ro
-      - ./docker/postgres/pg_hba.conf:/var/lib/postgresql/pg_hba.conf:ro
-    command: >
-      -c ssl=on -c ssl_cert_file=/var/lib/postgresql/server.crt -c ssl_key_file=/var/lib/postgresql/server.key -c ssl_ca_file=/var/lib/postgresql/ca.crt -c hba_file=/var/lib/postgresql/pg_hba.conf
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
-    networks:
-      - seventysix-network
-    restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          cpus: '1.5'
-          memory: 2G
-        reservations:
-          cpus: '0.5'
-          memory: 1G
+    # PostgreSQL Database - Persistent storage for production
+    database:
+        image: postgres:18-alpine@sha256:54451ecb8ab38c24c3ec123f2fd501303a3a1856a5c66e98cecf2460d5e1e9d7
+        container_name: seventysix-postgres-prod
+        environment:
+            POSTGRES_DB: ${DB_NAME:-seventysix}
+            POSTGRES_USER: ${DB_USER:?DB_USER must be set - use a dedicated application user (not the postgres superuser)}
+            POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set}
+            PGDATA: /var/lib/postgresql/data/pgdata
+        ports:
+            - "127.0.0.1:5433:5432"
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+            - ./docker/certs/postgres/server.crt:/var/lib/postgresql/server.crt:ro
+            - ./docker/certs/postgres/server.key:/var/lib/postgresql/server.key:ro
+            - ./docker/certs/ca.crt:/var/lib/postgresql/ca.crt:ro
+            - ./docker/postgres/pg_hba.conf:/var/lib/postgresql/pg_hba.conf:ro
+        command: >
+            -c ssl=on -c ssl_cert_file=/var/lib/postgresql/server.crt -c ssl_key_file=/var/lib/postgresql/server.key -c ssl_ca_file=/var/lib/postgresql/ca.crt -c hba_file=/var/lib/postgresql/pg_hba.conf
+        healthcheck:
+            test: [ "CMD-SHELL", "pg_isready -U ${DB_USER}" ]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+            start_period: 10s
+        networks:
+            - seventysix-network
+        restart: unless-stopped
+        deploy:
+            resources:
+                limits:
+                    cpus: '1.5'
+                    memory: 2G
+                reservations:
+                    cpus: '0.5'
+                    memory: 1G
 
-  # .NET API Service - Runs migrations on startup
-  api:
-    image: ${API_IMAGE:-ghcr.io/actionjacksonthegoat-debug/seventysix-api:latest}
-    pull_policy: always # Always pull from GHCR — never use cached local image
-    build:
-      context: ./SeventySix.Server
-      dockerfile: Dockerfile.production
-    container_name: seventysix-api-prod
-    ports:
-      - "127.0.0.1:5085:8080" # Localhost-only — Caddy reverse proxy is the only entry point
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Production
-      - ASPNETCORE_URLS=http://+:8080
-      # PostgreSQL Connection (uses Database:* configuration mapped from DB_* env vars)
-      - Database__Host=database
-      - Database__Port=5432
-      - Database__Name=${DB_NAME:-seventysix}
-      - Database__User=${DB_USER:-postgres}
-      - Database__Password=${DB_PASSWORD:?DB_PASSWORD must be set}
-      # Migration entrypoint uses $DB_HOST, $DB_NAME, $DB_USER, $DB_PASSWORD for psql
-      - DB_HOST=database
-      - DB_NAME=${DB_NAME:-seventysix}
-      - DB_USER=${DB_USER:-postgres}
-      - DB_PASSWORD=${DB_PASSWORD:?DB_PASSWORD must be set}
-      # JWT Authentication
-      - Jwt__SecretKey=${JWT_SECRET_KEY:?JWT_SECRET_KEY must be set}
-      # GitHub OAuth
-      - Auth__OAuth__Enabled=true
-      - Auth__OAuth__Providers__0__ClientId=${GITHUB_CLIENT_ID:?GITHUB_CLIENT_ID must be set}
-      - Auth__OAuth__Providers__0__ClientSecret=${GITHUB_CLIENT_SECRET:?GITHUB_CLIENT_SECRET must be set}
-      # Email Configuration
-      - Email__Enabled=true
-      - Email__ApiKey=${EMAIL_API_KEY:?EMAIL_API_KEY must be set}
-      - Email__FromAddress=${EMAIL_FROM_ADDRESS:?EMAIL_FROM_ADDRESS must be set}
-      # Site — contact email for legal pages (never hardcoded in client)
-      - Site__Email=${SITE_EMAIL:?SITE_EMAIL must be set}
-      # ALTCHA (Proof-of-Work) - enabled by default, uses self-hosted verification
-      - Altcha__Enabled=true
-      - Altcha__HmacKeyBase64=${ALTCHA_HMAC_KEY:?ALTCHA_HMAC_KEY must be set}
-      # Admin Seeding
-      - AdminSeeder__Email=${ADMIN_EMAIL:?ADMIN_EMAIL is required in production}
-      - AdminSeeder__InitialPassword=${ADMIN_PASSWORD:?ADMIN_PASSWORD must be set}
-      # Data Protection
-      - DataProtection__UseCertificate=${DATA_PROTECTION_USE_CERTIFICATE:-true}
-      - DataProtection__CertificatePath=${DATA_PROTECTION_CERTIFICATE_PATH:-/app/keys/dataprotection.pfx}
-      - DataProtection__CertificatePassword=${DATA_PROTECTION_CERTIFICATE_PASSWORD:?DATA_PROTECTION_CERTIFICATE_PASSWORD must be set}
-      # Host Filtering — MUST NOT be wildcard in production (StartupValidator rejects '*')
-      - AllowedHosts=${ALLOWED_HOSTS:?ALLOWED_HOSTS must be set - e.g. seventysixsandbox.com;www.seventysixsandbox.com;api.seventysixsandbox.com}
-      # OAuth Callback URLs — MUST use the same domain as the client (not the API subdomain)
-      # The OAuth popup opens through nginx on the client domain. Cookies are set on that domain.
-      # If the redirect goes to a different domain (e.g. api.example.com), cookies are lost.
-      - Auth__OAuth__ClientCallbackUrl=${OAUTH_CALLBACK_URL:?OAUTH_CALLBACK_URL must be set - e.g. https://seventysixsandbox.com/auth/callback}
-      - Auth__OAuth__Providers__0__RedirectUri=${OAUTH_REDIRECT_URI:?OAUTH_REDIRECT_URI must be set - e.g. https://seventysixsandbox.com/api/v1/auth/oauth/github/callback}
-      # Email — public URL for email links (password reset, verification, etc.)
-      - Email__ClientBaseUrl=${CLIENT_BASE_URL:?CLIENT_BASE_URL must be set - e.g. https://seventysixsandbox.com}
-      # Admin Seeder — customize username/fullname; disable after first login + password change
-      - AdminSeeder__Username=${ADMIN_USERNAME:-admin}
-      - AdminSeeder__FullName=${ADMIN_FULLNAME:-System Administrator}
-      - AdminSeeder__Enabled=${ADMIN_SEEDER_ENABLED:-true}
-      # CORS - Use HTTPS for all external origins
-      - Cors__AllowedOrigins__0=${CORS_ORIGIN_0:?CORS_ORIGIN_0 is required - set to your production domain e.g. https://seventysixsandbox.com}
-      - Cors__AllowedOrigins__1=${CORS_ORIGIN_1:-}
-      # ForwardedHeaders — trust Caddy (loopback) + Docker bridge for X-Forwarded-* headers
-      - ForwardedHeaders__KnownProxies__0=127.0.0.1
-      - ForwardedHeaders__KnownProxies__1=::1
-      - ForwardedHeaders__KnownNetworks__0=10.0.0.0/8
-      - ForwardedHeaders__KnownNetworks__1=172.16.0.0/12
-      - ForwardedHeaders__KnownNetworks__2=192.168.0.0/16
-      - ForwardedHeaders__ForwardLimit=1
-      # Database SSL — require encrypted connections with CA verification and client cert
-      - Database__SslMode=VerifyFull
-      - Database__SslCaCertificate=/tls/ca.crt
-      - Database__SslClientCertificate=/tls/api/client.crt
-      - Database__SslClientKey=/tls/api/client.key
-      # Valkey Cache Connection — TLS with client certificate
-      - Cache__Valkey__ConnectionString=valkey:6379,password=${VALKEY_PASSWORD:?VALKEY_PASSWORD must be set},ssl=true
-      - Cache__Valkey__UseSsl=true
-      - Cache__Valkey__SslCaCertificate=/tls/ca.crt
-      - Cache__Valkey__SslClientCertificate=/tls/api/client.crt
-      - Cache__Valkey__SslClientKey=/tls/api/client.key
-      # OpenTelemetry — send to collector over TLS
-      - OpenTelemetry__OtlpEndpoint=https://otel-collector:4317
-      - OpenTelemetry__TlsCaCertificate=/tls/ca.crt
-      - OpenTelemetry__TlsClientCertificate=/tls/api/client.crt
-      - OpenTelemetry__TlsClientKey=/tls/api/client.key
-      - OpenTelemetry__Enabled=true
-      # Trusted Device (Remember This Device) — MFA bypass for trusted browsers
-      - TrustedDevices__TokenLifetimeDays=30
-      - TrustedDevices__MaxDevicesPerUser=5
-      - TrustedDevices__CookieName=__TD
-      # Global API per-IP limiter; must handle auth_request-heavy observability pages
-      - RateLimiting__PermitLimit=5000
-    volumes:
-      - dataprotection_keys:/app/keys
-      - ./docker/certs/ca.crt:/tls/ca.crt:ro
-      - ./docker/certs/api/client.crt:/tls/api/client.crt:ro
-      - ./docker/certs/api/client.key:/tls/api/client.key:ro
-    depends_on:
-      database:
-        condition: service_healthy
-      valkey:
-        condition: service_healthy
-      otel-collector:
-        condition: service_started # scratch image — no in-container healthcheck available
-    stop_grace_period: 30s # Allow Wolverine to deregister node and drain in-flight messages
-    healthcheck:
-      test: [ "CMD", "curl", "--fail", "--silent", "http://localhost:8080/health/ready" ]
-      interval: 30s
-      timeout: 3s
-      retries: 3
-      start_period: 60s # Allow time for migrations
-    networks:
-      seventysix-network:
-        aliases:
-          - seventysix-api
-    restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          cpus: '2.0'
-          memory: 2G
-        reservations:
-          cpus: '0.5'
-          memory: 512M
+    # .NET API Service - Runs migrations on startup
+    api:
+        image: ${API_IMAGE:-ghcr.io/actionjacksonthegoat-debug/seventysix-api:latest}
+        pull_policy: always # Always pull from GHCR — never use cached local image
+        build:
+            context: ./SeventySix.Server
+            dockerfile: Dockerfile.production
+        container_name: seventysix-api-prod
+        ports:
+            - "127.0.0.1:5085:8080" # Localhost-only — Caddy reverse proxy is the only entry point
+        environment:
+            - ASPNETCORE_ENVIRONMENT=Production
+            - ASPNETCORE_URLS=http://+:8080
+            # PostgreSQL Connection (uses Database:* configuration mapped from DB_* env vars)
+            - Database__Host=database
+            - Database__Port=5432
+            - Database__Name=${DB_NAME:-seventysix}
+            - Database__User=${DB_USER:?DB_USER must be set - use a dedicated application user (not the postgres superuser)}
+            - Database__Password=${DB_PASSWORD:?DB_PASSWORD must be set}
+            # JWT Authentication
+            - Jwt__SecretKey=${JWT_SECRET_KEY:?JWT_SECRET_KEY must be set}
+            # GitHub OAuth
+            - Auth__OAuth__Enabled=true
+            - Auth__OAuth__Providers__0__ClientId=${GITHUB_CLIENT_ID:?GITHUB_CLIENT_ID must be set}
+            - Auth__OAuth__Providers__0__ClientSecret=${GITHUB_CLIENT_SECRET:?GITHUB_CLIENT_SECRET must be set}
+            # Email Configuration
+            - Email__Enabled=true
+            - Email__ApiKey=${EMAIL_API_KEY:?EMAIL_API_KEY must be set}
+            - Email__FromAddress=${EMAIL_FROM_ADDRESS:?EMAIL_FROM_ADDRESS must be set}
+            # Site — contact email for legal pages (never hardcoded in client)
+            - Site__Email=${SITE_EMAIL:?SITE_EMAIL must be set}
+            # ALTCHA (Proof-of-Work) - enabled by default, uses self-hosted verification
+            - Altcha__Enabled=true
+            - Altcha__HmacKeyBase64=${ALTCHA_HMAC_KEY:?ALTCHA_HMAC_KEY must be set}
+            # Admin Seeding
+            - AdminSeeder__Email=${ADMIN_EMAIL:?ADMIN_EMAIL is required in production}
+            - AdminSeeder__InitialPassword=${ADMIN_PASSWORD:?ADMIN_PASSWORD must be set}
+            # Data Protection
+            - DataProtection__UseCertificate=${DATA_PROTECTION_USE_CERTIFICATE:-true}
+            - DataProtection__CertificatePath=${DATA_PROTECTION_CERTIFICATE_PATH:-/app/keys/dataprotection.pfx}
+            - DataProtection__CertificatePassword=${DATA_PROTECTION_CERTIFICATE_PASSWORD:?DATA_PROTECTION_CERTIFICATE_PASSWORD must be set}
+            # Host Filtering — MUST NOT be wildcard in production (StartupValidator rejects '*')
+            - AllowedHosts=${ALLOWED_HOSTS:?ALLOWED_HOSTS must be set - e.g. seventysixsandbox.com;www.seventysixsandbox.com;api.seventysixsandbox.com}
+            # OAuth Callback URLs — MUST use the same domain as the client (not the API subdomain)
+            # The OAuth popup opens through nginx on the client domain. Cookies are set on that domain.
+            # If the redirect goes to a different domain (e.g. api.example.com), cookies are lost.
+            - Auth__OAuth__ClientCallbackUrl=${OAUTH_CALLBACK_URL:?OAUTH_CALLBACK_URL must be set - e.g. https://seventysixsandbox.com/auth/callback}
+            - Auth__OAuth__Providers__0__RedirectUri=${OAUTH_REDIRECT_URI:?OAUTH_REDIRECT_URI must be set - e.g. https://seventysixsandbox.com/api/v1/auth/oauth/github/callback}
+            # Email — public URL for email links (password reset, verification, etc.)
+            - Email__ClientBaseUrl=${CLIENT_BASE_URL:?CLIENT_BASE_URL must be set - e.g. https://seventysixsandbox.com}
+            # Admin Seeder — customize username/fullname; disable after first login + password change
+            - AdminSeeder__Username=${ADMIN_USERNAME:-admin}
+            - AdminSeeder__FullName=${ADMIN_FULLNAME:-System Administrator}
+            - AdminSeeder__Enabled=${ADMIN_SEEDER_ENABLED:-true}
+            # CORS - Use HTTPS for all external origins
+            - Cors__AllowedOrigins__0=${CORS_ORIGIN_0:?CORS_ORIGIN_0 is required - set to your production domain e.g. https://seventysixsandbox.com}
+            - Cors__AllowedOrigins__1=${CORS_ORIGIN_1:-}
+            # ForwardedHeaders — trust Caddy (loopback) + Docker bridge for X-Forwarded-* headers
+            - ForwardedHeaders__KnownProxies__0=127.0.0.1
+            - ForwardedHeaders__KnownProxies__1=::1
+            - ForwardedHeaders__KnownNetworks__0=10.0.0.0/8
+            - ForwardedHeaders__KnownNetworks__1=172.16.0.0/12
+            - ForwardedHeaders__KnownNetworks__2=192.168.0.0/16
+            - ForwardedHeaders__ForwardLimit=1
+            # Database SSL — require encrypted connections with CA verification and client cert
+            - Database__SslMode=VerifyFull
+            - Database__SslCaCertificate=/tls/ca.crt
+            - Database__SslClientCertificate=/tls/api/client.crt
+            - Database__SslClientKey=/tls/api/client.key
+            # Valkey Cache Connection — TLS with client certificate
+            - Cache__Valkey__ConnectionString=valkey:6379,password=${VALKEY_PASSWORD:?VALKEY_PASSWORD must be set},ssl=true
+            - Cache__Valkey__UseSsl=true
+            - Cache__Valkey__SslCaCertificate=/tls/ca.crt
+            - Cache__Valkey__SslClientCertificate=/tls/api/client.crt
+            - Cache__Valkey__SslClientKey=/tls/api/client.key
+            # OpenTelemetry — send to collector over TLS
+            - OpenTelemetry__OtlpEndpoint=https://otel-collector:4317
+            - OpenTelemetry__TlsCaCertificate=/tls/ca.crt
+            - OpenTelemetry__TlsClientCertificate=/tls/api/client.crt
+            - OpenTelemetry__TlsClientKey=/tls/api/client.key
+            - OpenTelemetry__Enabled=true
+            # Trusted Device (Remember This Device) — MFA bypass for trusted browsers
+            - TrustedDevices__TokenLifetimeDays=30
+            - TrustedDevices__MaxDevicesPerUser=5
+            - TrustedDevices__CookieName=__TD
+            # Global API per-IP limiter; must handle auth_request-heavy observability pages
+            - RateLimiting__PermitLimit=5000
+        volumes:
+            - dataprotection_keys:/app/keys
+            - ./docker/certs/ca.crt:/tls/ca.crt:ro
+            - ./docker/certs/api/client.crt:/tls/api/client.crt:ro
+            - ./docker/certs/api/client.key:/tls/api/client.key:ro
+        depends_on:
+            database:
+                condition: service_healthy
+            valkey:
+                condition: service_healthy
+            otel-collector:
+                condition: service_started # scratch image — no in-container healthcheck available
+            seventysix-migrations:
+                condition: service_completed_successfully
+        stop_grace_period: 30s # Allow Wolverine to deregister node and drain in-flight messages
+        healthcheck:
+            # Chiseled image has no curl/wget — healthcheck disabled; liveness monitored via Caddy.
+            disable: true
+        networks:
+            seventysix-network:
+                aliases:
+                    - seventysix-api
+        restart: unless-stopped
+        deploy:
+            resources:
+                limits:
+                    cpus: '2.0'
+                    memory: 2G
+                reservations:
+                    cpus: '0.5'
+                    memory: 512M
 
-  # Angular Client Service
-  client:
-    image: ${CLIENT_IMAGE:-ghcr.io/actionjacksonthegoat-debug/seventysix-client:latest}
-    pull_policy: always # Always pull from GHCR — never use cached local image
-    build:
-      context: ./SeventySix.Client
-      dockerfile: Dockerfile.production
-    container_name: seventysix-client-prod
-    ports:
-      - "127.0.0.1:8080:8080" # Localhost-only — Caddy reverse proxy is the only entry point
-    environment:
-      - API_URL=http://api:8080
-    depends_on:
-      api:
-        condition: service_healthy
-      grafana:
-        condition: service_healthy
-      jaeger:
-        condition: service_healthy
-      prometheus:
-        condition: service_healthy
-    healthcheck:
-      test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://127.0.0.1:8080" ]
-      interval: 30s
-      timeout: 3s
-      retries: 3
-      start_period: 10s
-    networks:
-      - seventysix-network
-    restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 256M
-        reservations:
-          cpus: '0.25'
-          memory: 128M
+    # Database Migrations Sidecar — runs SQL migration scripts then exits (restart: "no").
+    # SQL files are baked into the migrations image (Stage 4 of Dockerfile.production).
+    # Depends on database being healthy; API depends on this completing successfully.
+    seventysix-migrations:
+        image: ${MIGRATIONS_IMAGE:-ghcr.io/actionjacksonthegoat-debug/seventysix-migrations:latest}
+        pull_policy: always # Always pull from GHCR — never use cached local image
+        build:
+            context: ./SeventySix.Server
+            dockerfile: Dockerfile.production
+            target: migrations
+            args:
+                DB_DESIGN_HOST: ${DB_HOST:-database}
+                DB_DESIGN_PORT: ${DB_PORT:-5432}
+                DB_DESIGN_NAME: ${DB_NAME:-seventysix}
+                DB_DESIGN_USER: ${DB_USER:-postgres}
+                DB_DESIGN_PASSWORD: ${DB_PASSWORD:-unused}
+        container_name: seventysix-migrations-prod
+        depends_on:
+            database:
+                condition: service_healthy
+        volumes:
+            - ./docker/certs/ca.crt:/tls/ca.crt:ro
+            - ./docker/certs/api/client.crt:/tls/api/client.crt:ro
+            - ./docker/certs/api/client.key:/tls/api/client.key:ro
+        environment:
+            - DB_HOST=database
+            - DB_NAME=${DB_NAME:-seventysix}
+            - DB_USER=${DB_USER:-postgres}
+            - DB_PASSWORD=${DB_PASSWORD:?DB_PASSWORD must be set}
+        entrypoint: [ "sh", "-c" ]
+        command: >
+            cp /tls/api/client.key /tmp/pg-client.key && chmod 600 /tmp/pg-client.key && export PGSSLMODE=verify-full && export PGSSLCERT=/tls/api/client.crt && export PGSSLKEY=/tmp/pg-client.key && export PGSSLROOTCERT=/tls/ca.crt && until pg_isready -h "$$DB_HOST" -U "$$DB_USER" 2>/dev/null; do echo "Waiting for PostgreSQL..." && sleep 2; done && PGPASSWORD=$$DB_PASSWORD psql -h "$$DB_HOST" -U "$$DB_USER" -d "$$DB_NAME" -f /migrations/identity-migrations.sql && PGPASSWORD=$$DB_PASSWORD psql -h "$$DB_HOST" -U "$$DB_USER" -d "$$DB_NAME" -f /migrations/logging-migrations.sql && PGPASSWORD=$$DB_PASSWORD psql -h "$$DB_HOST" -U "$$DB_USER" -d "$$DB_NAME" -f /migrations/apitracking-migrations.sql && PGPASSWORD=$$DB_PASSWORD psql -h "$$DB_HOST" -U "$$DB_USER" -d "$$DB_NAME" -f /migrations/electronicnotifications-migrations.sql
+        networks:
+            - seventysix-network
+        restart: "no"
 
-  # Prometheus - Metrics collection
-  prometheus:
-    image: prom/prometheus:v2.54.1
-    container_name: seventysix-prometheus-prod
-    # No port binding — accessed only via nginx reverse proxy (auth_request-protected)
-    volumes:
-      - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-      - prometheus_data:/prometheus
-    command:
-      - "--config.file=/etc/prometheus/prometheus.yml"
-      - "--storage.tsdb.path=/prometheus"
-      - "--web.external-url=/prometheus/"
-      - "--web.route-prefix=/"
-    healthcheck:
-      test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9090/-/healthy" ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 10s
-    networks:
-      - seventysix-network
-    restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 1G
+    # Angular Client Service
+    client:
+        image: ${CLIENT_IMAGE:-ghcr.io/actionjacksonthegoat-debug/seventysix-client:latest}
+        pull_policy: always # Always pull from GHCR — never use cached local image
+        build:
+            context: ./SeventySix.Client
+            dockerfile: Dockerfile.production
+        container_name: seventysix-client-prod
+        ports:
+            - "127.0.0.1:8080:8080" # Localhost-only — Caddy reverse proxy is the only entry point
+        environment:
+            - API_URL=http://api:8080
+        depends_on:
+            api:
+                condition: service_started
+            grafana:
+                condition: service_healthy
+            jaeger:
+                condition: service_healthy
+            prometheus:
+                condition: service_healthy
+        healthcheck:
+            test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://127.0.0.1:8080" ]
+            interval: 30s
+            timeout: 3s
+            retries: 3
+            start_period: 10s
+        networks:
+            - seventysix-network
+        restart: unless-stopped
+        deploy:
+            resources:
+                limits:
+                    cpus: '0.5'
+                    memory: 256M
+                reservations:
+                    cpus: '0.25'
+                    memory: 128M
 
-  # Jaeger - Distributed tracing
-  # Note: Receives traces from otel-collector, NOT directly from API
-  jaeger:
-    image: jaegertracing/all-in-one:1.62.0
-    container_name: seventysix-jaeger-prod
-    # No port binding — accessed only via nginx reverse proxy (auth_request-protected)
-    environment:
-      - COLLECTOR_OTLP_ENABLED=true
-      - QUERY_BASE_PATH=/jaeger
-      - COLLECTOR_OTLP_GRPC_TLS_ENABLED=true
-      - COLLECTOR_OTLP_GRPC_TLS_CERT=/tls/server.crt
-      - COLLECTOR_OTLP_GRPC_TLS_KEY=/tls/server.key
-      - COLLECTOR_OTLP_GRPC_TLS_CLIENT_CA=/tls/ca.crt
-    volumes:
-      - ./docker/certs/jaeger/server.crt:/tls/server.crt:ro
-      - ./docker/certs/jaeger/server.key:/tls/server.key:ro
-      - ./docker/certs/ca.crt:/tls/ca.crt:ro
-    healthcheck:
-      test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:14269/" ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 10s
-    networks:
-      - seventysix-network
-    restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 512M
+    # Prometheus - Metrics collection
+    prometheus:
+        image: prom/prometheus:v2.54.1@sha256:f6639335d34a77d9d9db382b92eeb7fc00934be8eae81dbc03b31cfe90411a94
+        container_name: seventysix-prometheus-prod
+        # No port binding — accessed only via nginx reverse proxy (auth_request-protected)
+        volumes:
+            - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+            - prometheus_data:/prometheus
+        command:
+            - "--config.file=/etc/prometheus/prometheus.yml"
+            - "--storage.tsdb.path=/prometheus"
+            - "--web.external-url=/prometheus/"
+            - "--web.route-prefix=/"
+        healthcheck:
+            test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9090/-/healthy" ]
+            interval: 30s
+            timeout: 10s
+            retries: 3
+            start_period: 10s
+        networks:
+            - seventysix-network
+        restart: unless-stopped
+        deploy:
+            resources:
+                limits:
+                    cpus: '0.5'
+                    memory: 1G
 
-  # Grafana - Metrics visualization
-  grafana:
-    image: grafana/grafana:11.6.12
-    container_name: seventysix-grafana-prod
-    # No port binding — accessed only via nginx reverse proxy (auth_request-protected)
-    environment:
-      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
-      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:?GRAFANA_ADMIN_PASSWORD must be set}
-      - GF_USERS_DEFAULT_THEME=dark
-      # Anonymous viewer — nginx auth_request validates admin session before
-      # requests reach Grafana, so anonymous access here is safe (pre-authenticated).
-      - GF_AUTH_ANONYMOUS_ENABLED=true
-      - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
-      - GF_SECURITY_ALLOW_EMBEDDING=true
-      - GF_SECURITY_COOKIE_SAMESITE=lax
-      - GF_SECURITY_COOKIE_SECURE=true
-      - GF_ANALYTICS_REPORTING_ENABLED=false
-      # Sub-path serving — Grafana is proxied under /grafana/
-      - GF_SERVER_ROOT_URL=%(protocol)s://%(domain)s/grafana/
-      - GF_SERVER_SERVE_FROM_SUB_PATH=true
-      - GF_INSTALL_PLUGINS=yesoreyeram-infinity-datasource
-    volumes:
-      - grafana_data:/var/lib/grafana
-      - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
-    depends_on:
-      - prometheus
-    healthcheck:
-      test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/grafana/api/health" ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 10s
-    networks:
-      - seventysix-network
-    restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          cpus: "0.5"
-          memory: 512M
-        reservations:
-          cpus: '0.25'
-          memory: 128M
+    # Jaeger - Distributed tracing
+    # Note: Receives traces from otel-collector, NOT directly from API
+    jaeger:
+        image: jaegertracing/all-in-one:1.62.0@sha256:836e9b69c88afbedf7683ea7162e179de63b1f981662e83f5ebb68badadc710f
+        container_name: seventysix-jaeger-prod
+        # No port binding — accessed only via nginx reverse proxy (auth_request-protected)
+        environment:
+            - COLLECTOR_OTLP_ENABLED=true
+            - QUERY_BASE_PATH=/jaeger
+            - COLLECTOR_OTLP_GRPC_TLS_ENABLED=true
+            - COLLECTOR_OTLP_GRPC_TLS_CERT=/tls/server.crt
+            - COLLECTOR_OTLP_GRPC_TLS_KEY=/tls/server.key
+            - COLLECTOR_OTLP_GRPC_TLS_CLIENT_CA=/tls/ca.crt
+        volumes:
+            - ./docker/certs/jaeger/server.crt:/tls/server.crt:ro
+            - ./docker/certs/jaeger/server.key:/tls/server.key:ro
+            - ./docker/certs/ca.crt:/tls/ca.crt:ro
+        healthcheck:
+            test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:14269/" ]
+            interval: 30s
+            timeout: 10s
+            retries: 3
+            start_period: 10s
+        networks:
+            - seventysix-network
+        restart: unless-stopped
+        deploy:
+            resources:
+                limits:
+                    cpus: '0.5'
+                    memory: 512M
+
+    # Grafana - Metrics visualization
+    grafana:
+        image: grafana/grafana:11.6.12@sha256:8ef2202d72a61c4b1e60d0200fb71fe0e3feaebdfb42a8215867bbbb6a6fbe77
+        container_name: seventysix-grafana-prod
+        # No port binding — accessed only via nginx reverse proxy (auth_request-protected)
+        environment:
+            - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
+            - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:?GRAFANA_ADMIN_PASSWORD must be set}
+            - GF_USERS_DEFAULT_THEME=dark
+            # Anonymous viewer — nginx auth_request validates admin session before
+            # requests reach Grafana, so anonymous access here is safe (pre-authenticated).
+            - GF_AUTH_ANONYMOUS_ENABLED=true
+            - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
+            - GF_SECURITY_ALLOW_EMBEDDING=true
+            - GF_SECURITY_COOKIE_SAMESITE=lax
+            - GF_SECURITY_COOKIE_SECURE=true
+            - GF_ANALYTICS_REPORTING_ENABLED=false
+            # Sub-path serving — Grafana is proxied under /grafana/
+            - GF_SERVER_ROOT_URL=%(protocol)s://%(domain)s/grafana/
+            - GF_SERVER_SERVE_FROM_SUB_PATH=true
+            - GF_INSTALL_PLUGINS=yesoreyeram-infinity-datasource
+        volumes:
+            - grafana_data:/var/lib/grafana
+            - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
+        depends_on:
+            - prometheus
+        healthcheck:
+            test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/grafana/api/health" ]
+            interval: 30s
+            timeout: 10s
+            retries: 3
+            start_period: 10s
+        networks:
+            - seventysix-network
+        restart: unless-stopped
+        deploy:
+            resources:
+                limits:
+                    cpus: "0.5"
+                    memory: 512M
+                reservations:
+                    cpus: '0.25'
+                    memory: 128M
 
 # Named volumes for data persistence across container lifecycle
 # Data survives: docker-compose down, docker-compose up, container restarts
 volumes:
-  valkey_data:
-    driver: local
-    name: seventysix_valkey_prod_data
-  postgres_data:
-    driver: local
-    name: seventysix_postgres_prod_data
-  prometheus_data:
-    driver: local
-    name: seventysix_prometheus_prod_data
-  grafana_data:
-    driver: local
-    name: seventysix_grafana_prod_data
-  dataprotection_keys:
-    driver: local
-    name: seventysix_dataprotection_prod_keys
+    valkey_data:
+        driver: local
+        name: seventysix_valkey_prod_data
+    postgres_data:
+        driver: local
+        name: seventysix_postgres_prod_data
+    prometheus_data:
+        driver: local
+        name: seventysix_prometheus_prod_data
+    grafana_data:
+        driver: local
+        name: seventysix_grafana_prod_data
+    dataprotection_keys:
+        driver: local
+        name: seventysix_dataprotection_prod_keys
 
 networks:
-  seventysix-network:
-    driver: bridge
-    name: seventysix_prod_network
+    seventysix-network:
+        driver: bridge
+        name: seventysix_prod_network

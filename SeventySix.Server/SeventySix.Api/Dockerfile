@@ -18,7 +18,7 @@ COPY ["SeventySix.Domains.Identity/SeventySix.Domains.Identity.csproj", "Seventy
 COPY ["SeventySix.Shared/SeventySix.Shared.csproj", "SeventySix.Shared/"]
 COPY ["SeventySix.Analyzers/SeventySix.Analyzers.csproj", "SeventySix.Analyzers/"]
 COPY ["SeventySix.Analyzers.CodeFixes/SeventySix.Analyzers.CodeFixes.csproj", "SeventySix.Analyzers.CodeFixes/"]
-RUN dotnet restore "./SeventySix.Api/SeventySix.Api.csproj"
+RUN dotnet restore "./SeventySix.Api/SeventySix.Api.csproj" --locked-mode
 COPY . .
 WORKDIR "/src/SeventySix.Api"
 RUN dotnet build "./SeventySix.Api.csproj" -c $BUILD_CONFIGURATION -o /app/build

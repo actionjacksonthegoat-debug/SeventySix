@@ -3,7 +3,7 @@
 # Dependabot (.github/dependabot.yml, docker ecosystem) auto-creates PRs when
 # new digests are available. Never change the tag without updating the digest.
 # Stage 1: Build
-FROM mcr.microsoft.com/dotnet/sdk:10.0@sha256:adc02be8b87957d07208a4a3e51775935b33bad3317de8c45b1e67357b4c073b AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0@sha256:8a90a473da5205a16979de99d2fc20975e922c68304f5c79d564e666dc3982fc AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 
@@ -17,7 +17,7 @@ COPY ["SeventySix.Analyzers/SeventySix.Analyzers.csproj", "SeventySix.Analyzers/
 COPY ["SeventySix.Analyzers.CodeFixes/SeventySix.Analyzers.CodeFixes.csproj", "SeventySix.Analyzers.CodeFixes/"]
 
 # Restore dependencies
-RUN dotnet restore "SeventySix.Api/SeventySix.Api.csproj"
+RUN dotnet restore "SeventySix.Api/SeventySix.Api.csproj" --locked-mode
 
 # Copy all source files
 COPY . .
@@ -80,89 +80,39 @@ RUN export Database__Host="$DB_DESIGN_HOST" && \
 	--configuration Release \
 	--output /app/electronicnotifications-migrations.sql
 
-# Stage 3: Runtime
-FROM mcr.microsoft.com/dotnet/aspnet:10.0@sha256:9271888dde1f4408dfb7ce75bc0f513c903d20ff2f1287ab153b641d4588ec7d AS final
+# Stage 3: Runtime — chiseled image (no shell, no apt, minimal attack surface)
+# UID 999 matches the setfacl entries in scripts/generate-internal-ca.ps1 (u:999:r).
+# Migrations are handled by the seventysix-migrations sidecar (Stage 4) in
+# docker-compose.production.yml, which uses a self-contained postgres+SQL image.
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-noble-chiseled-extra@sha256:b4855d6d1c557c19a7c7165b354a138b47c17b29669ad0b3b22fb046a1b84fd8 AS final
 WORKDIR /app
 
-# Install curl and PostgreSQL client for healthchecks and migrations
-RUN apt-get update && \
-	apt-get install -y curl postgresql-client && \
-	apt-get clean && \
-	rm -rf /var/lib/apt/lists/*
-
-# Create a non-root user with a pinned UID (999) so ACLs on mounted cert files
-# remain correct across base image upgrades. The UID must match the setfacl
-# entries in scripts/generate-internal-ca.ps1 (u:999:r).
-RUN groupadd -r -g 999 appuser && useradd -r -u 999 -g appuser appuser
-
-# Copy published files and migration scripts
+# Copy published application
 COPY --from=publish /app/publish .
-COPY --from=publish /app/identity-migrations.sql .
-COPY --from=publish /app/logging-migrations.sql .
-COPY --from=publish /app/apitracking-migrations.sql .
-COPY --from=publish /app/electronicnotifications-migrations.sql .
 
-# Create logs and data protection keys directories with proper permissions
-# The keys directory should be mounted as a Docker volume for persistence across container restarts
-RUN mkdir -p /app/logs /app/keys && chown -R appuser:appuser /app
-
-# Create entrypoint script that runs migrations then starts the app.
-# psql must use mTLS because pg_hba.conf requires clientcert=verify-ca for all
-# remote connections. The cert paths match the volumes in docker-compose.production.yml.
-# The client key file is copied to /tmp because libpq rejects key files whose
-# stat() group bits include the ACL mask (shows 0640 instead of 0600).
-RUN echo '#!/bin/bash\n\
-	set -e\n\
-	\n\
-	# Copy client key to /app with 0600 perms\n\
-	# so libpq accepts it (copied from mounted volume to ensure 0600 perms).\n\
-	cp /tls/api/client.key /app/pg-client.key\n\
-	chmod 600 /app/pg-client.key\n\
-	\n\
-	export PGSSLMODE=verify-full\n\
-	export PGSSLCERT=/tls/api/client.crt\n\
-	export PGSSLKEY=/app/pg-client.key\n\
-	export PGSSLROOTCERT=/tls/ca.crt\n\
-	\n\
-	echo "Waiting for PostgreSQL..."\n\
-	until pg_isready -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" 2>/dev/null; do\n\
-	echo "PostgreSQL is unavailable - sleeping"\n\
-	sleep 2\n\
-	done\n\
-	\n\
-	echo "PostgreSQL is up - executing migrations"\n\
-	PGPASSWORD=$DB_PASSWORD psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" -f /app/identity-migrations.sql\n\
-	PGPASSWORD=$DB_PASSWORD psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" -f /app/logging-migrations.sql\n\
-	PGPASSWORD=$DB_PASSWORD psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" -f /app/apitracking-migrations.sql\n\
-	PGPASSWORD=$DB_PASSWORD psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" -f /app/electronicnotifications-migrations.sql\n\
-	\n\
-	# Clean up temp key before handing off to the app\n\
-	rm -f /app/pg-client.key\n\
-	\n\
-	echo "Starting application"\n\
-	exec dotnet SeventySix.Api.dll' > /app/entrypoint.sh
-
-RUN chmod +x /app/entrypoint.sh
-
-# Switch to non-root user for application execution.
-# Use numeric UID (not name) so docker image inspect returns "999", which is
-# what scripts/verify-cert-uids.sh compares against for ACL validation.
+# Use numeric UID (not name) — chiseled images have no useradd/groupadd.
+# UID 999 is pre-provisioned in the chiseled base image as the app user.
 USER 999
 
 # Expose ports
 EXPOSE 8080
 EXPOSE 8081
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
-	CMD curl -f http://localhost:8080/health || exit 1
+# Chiseled images have no shell or curl — disable the in-container healthcheck.
+# Liveness/readiness is monitored externally via Caddy and docker-compose depends_on.
+HEALTHCHECK NONE
 
-# Set environment variables (non-sensitive defaults only)
-# Sensitive values (DB_PASSWORD) must be provided at runtime via docker-compose or secrets
 ENV ASPNETCORE_URLS=http://+:8080
 ENV ASPNETCORE_ENVIRONMENT=Production
-ENV DB_HOST=database
-ENV DB_NAME=seventysix
-ENV DB_USER=postgres
 
-ENTRYPOINT ["/app/entrypoint.sh"]
+ENTRYPOINT ["dotnet", "SeventySix.Api.dll"]
+
+# Stage 4: Migrations runner — postgres client + SQL scripts baked in (no named volume needed).
+# Build with --target migrations to produce the seventysix-migrations image.
+# CI pushes this to GHCR alongside the API/client images.
+# The SQL files are generated in Stage 2 (publish) via dotnet-ef and copied here.
+FROM postgres:18-alpine@sha256:54451ecb8ab38c24c3ec123f2fd501303a3a1856a5c66e98cecf2460d5e1e9d7 AS migrations
+COPY --from=publish /app/identity-migrations.sql /migrations/
+COPY --from=publish /app/logging-migrations.sql /migrations/
+COPY --from=publish /app/apitracking-migrations.sql /migrations/
+COPY --from=publish /app/electronicnotifications-migrations.sql /migrations/

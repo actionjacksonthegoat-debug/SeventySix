@@ -1,0 +1,241 @@
+name: Scheduled Security Scan
+
+on:
+    schedule:
+        - cron: "0 6 * * *" # 06:00 UTC daily
+    workflow_dispatch:
+
+permissions:
+    contents: read
+
+jobs:
+    trivy-image-client:
+        name: Scan Client Image
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
+
+        permissions:
+            contents: read
+            security-events: write
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+            - name: Build client image
+              run: docker build -t seventysix-client:scheduled -f SeventySix.Client/Dockerfile.production SeventySix.Client
+
+            - name: Run Trivy vulnerability scanner
+              uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+              with:
+                  image-ref: seventysix-client:scheduled
+                  format: sarif
+                  output: trivy-client.sarif
+                  severity: CRITICAL,HIGH
+                  exit-code: "0"
+
+            - name: Upload SARIF
+              uses: github/codeql-action/upload-sarif@0d579ffd059c29b07949a3cce3983f0780820c98 # v4
+              with:
+                  sarif_file: trivy-client.sarif
+                  category: scheduled-trivy-image-client
+
+            - name: Upload artifact
+              uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+              with:
+                  name: trivy-scan-client
+                  path: trivy-client.sarif
+                  retention-days: 30
+
+    trivy-image-api:
+        name: Scan API Image
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
+
+        permissions:
+            contents: read
+            security-events: write
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+            - name: Build api image
+              run: docker build -t seventysix-api:scheduled -f SeventySix.Server/Dockerfile.production SeventySix.Server
+
+            - name: Run Trivy vulnerability scanner
+              uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+              with:
+                  image-ref: seventysix-api:scheduled
+                  format: sarif
+                  output: trivy-api.sarif
+                  severity: CRITICAL,HIGH
+                  exit-code: "0"
+
+            - name: Upload SARIF
+              uses: github/codeql-action/upload-sarif@0d579ffd059c29b07949a3cce3983f0780820c98 # v4
+              with:
+                  sarif_file: trivy-api.sarif
+                  category: scheduled-trivy-image-api
+
+            - name: Upload artifact
+              uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+              with:
+                  name: trivy-scan-api
+                  path: trivy-api.sarif
+                  retention-days: 30
+
+    trivy-image-svelte:
+        name: Scan SvelteKit Image
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
+
+        permissions:
+            contents: read
+            security-events: write
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+            - name: Build sveltekit image
+              run: docker build -t seventysixcommerce-sveltekit:scheduled --target production -f ECommerce/seventysixcommerce-sveltekit/Dockerfile ECommerce
+
+            - name: Run Trivy vulnerability scanner
+              uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+              with:
+                  image-ref: seventysixcommerce-sveltekit:scheduled
+                  format: sarif
+                  output: trivy-svelte.sarif
+                  severity: CRITICAL,HIGH
+                  exit-code: "0"
+
+            - name: Upload SARIF
+              uses: github/codeql-action/upload-sarif@0d579ffd059c29b07949a3cce3983f0780820c98 # v4
+              with:
+                  sarif_file: trivy-svelte.sarif
+                  category: scheduled-trivy-image-svelte
+
+            - name: Upload artifact
+              uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+              with:
+                  name: trivy-scan-svelte
+                  path: trivy-svelte.sarif
+                  retention-days: 30
+
+    trivy-image-tanstack:
+        name: Scan TanStack Image
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
+
+        permissions:
+            contents: read
+            security-events: write
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+            - name: Build tanstack image
+              run: docker build -t seventysixcommerce-tanstack:scheduled --target runner -f ECommerce/seventysixcommerce-tanstack/Dockerfile ECommerce
+
+            - name: Run Trivy vulnerability scanner
+              uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+              with:
+                  image-ref: seventysixcommerce-tanstack:scheduled
+                  format: sarif
+                  output: trivy-tanstack.sarif
+                  severity: CRITICAL,HIGH
+                  exit-code: "0"
+
+            - name: Upload SARIF
+              uses: github/codeql-action/upload-sarif@0d579ffd059c29b07949a3cce3983f0780820c98 # v4
+              with:
+                  sarif_file: trivy-tanstack.sarif
+                  category: scheduled-trivy-image-tanstack
+
+            - name: Upload artifact
+              uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+              with:
+                  name: trivy-scan-tanstack
+                  path: trivy-tanstack.sarif
+                  retention-days: 30
+
+    trivy-image-migrations:
+        name: Scan Migrations Image
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
+
+        permissions:
+            contents: read
+            security-events: write
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+            - name: Build migrations image
+              run: |
+                  docker build -t seventysix-migrations:scheduled \
+                    --target migrations \
+                    -f SeventySix.Server/Dockerfile.production \
+                    SeventySix.Server
+
+            - name: Run Trivy vulnerability scanner
+              uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+              with:
+                  image-ref: seventysix-migrations:scheduled
+                  format: sarif
+                  output: trivy-migrations.sarif
+                  severity: CRITICAL,HIGH
+                  exit-code: "0"
+
+            - name: Upload SARIF
+              uses: github/codeql-action/upload-sarif@0d579ffd059c29b07949a3cce3983f0780820c98 # v4
+              with:
+                  sarif_file: trivy-migrations.sarif
+                  category: scheduled-trivy-image-migrations
+
+            - name: Upload artifact
+              uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+              with:
+                  name: trivy-scan-migrations
+                  path: trivy-migrations.sarif
+                  retention-days: 30
+
+    trivy-filesystem:
+        name: Filesystem, IaC, and Secrets Scan
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+
+        permissions:
+            contents: read
+            security-events: write
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+            - name: Trivy filesystem + IaC + secrets scan
+              uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+              with:
+                  scan-type: fs
+                  scan-ref: .
+                  scanners: vuln,misconfig,secret
+                  severity: CRITICAL,HIGH,MEDIUM
+                  ignore-unfixed: true
+                  format: sarif
+                  output: trivy-fs.sarif
+
+            - name: Upload SARIF
+              uses: github/codeql-action/upload-sarif@0d579ffd059c29b07949a3cce3983f0780820c98 # v4
+              with:
+                  sarif_file: trivy-fs.sarif
+                  category: scheduled-trivy-filesystem
+
+            - name: Upload artifact
+              uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+              with:
+                  name: trivy-scan-filesystem
+                  path: trivy-fs.sarif
+                  retention-days: 30
