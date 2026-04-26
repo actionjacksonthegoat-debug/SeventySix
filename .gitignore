@@ -517,3 +517,5 @@ dast-reports/
 #################################
 docker/certs/
 
+
+.security-audit/
