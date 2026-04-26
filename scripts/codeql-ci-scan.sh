@@ -24,7 +24,7 @@ mkdir -p "${DB_DIR}" "${RESULTS_DIR}"
 # ─── Ensure curl is available (node:*-slim images omit it) ──────────────────
 if ! command -v curl &>/dev/null; then
   echo ">>> Installing curl..."
-  apt-get update -qq && apt-get install -y --no-install-recommends curl ca-certificates
+  apt-get update -qq && apt-get install -y --no-install-recommends curl=8.5.0-2ubuntu10.8 ca-certificates=20240203
 fi
 
 # ─── Install CodeQL CLI ───────────────────────────────────────────────────────
@@ -35,9 +35,11 @@ if [[ ! -f "${CODEQL_CACHE_BIN}" ]]; then
   echo ">>> Downloading CodeQL CLI ${CODEQL_VERSION}..."
   CODEQL_BUNDLE="codeql-bundle-linux64.tar.gz"
   CODEQL_URL="https://github.com/github/codeql-action/releases/download/codeql-bundle-v${CODEQL_VERSION}/${CODEQL_BUNDLE}"
+  CODEQL_SHA256="bc082757b2e6d4fd35f82c8588dbbb05c8c348c6e4456d53ae7cd6b10438d599"
   CODEQL_EXTRACT_DIR="${CODEQL_DIR}/codeql-${CODEQL_VERSION}"
   mkdir -p "${CODEQL_EXTRACT_DIR}"
   curl -fsSL "${CODEQL_URL}" -o /tmp/codeql.tar.gz
+  echo "${CODEQL_SHA256}  /tmp/codeql.tar.gz" | sha256sum -c -
   tar -xzf /tmp/codeql.tar.gz -C "${CODEQL_EXTRACT_DIR}" --strip-components=1
   rm /tmp/codeql.tar.gz
   echo ">>> CodeQL CLI installed at ${CODEQL_CACHE_BIN}"
@@ -89,19 +91,19 @@ if [[ "${LANGUAGE}" == "typescript" ]]; then
   cd "${REPO_ROOT}/SeventySix.Client"
   # Use npm ci in the container (no caching needed — volume mount provides node_modules from host if present)
   if [[ ! -d node_modules ]]; then
-    npm ci --prefer-offline 2>/dev/null || npm install
+    npm ci --ignore-scripts
   fi
 
   echo ">>> [TS] Installing SvelteKit packages..."
   cd "${REPO_ROOT}/ECommerce/seventysixcommerce-sveltekit"
   if [[ ! -d node_modules ]]; then
-    npm ci --prefer-offline 2>/dev/null || npm install
+    npm ci --ignore-scripts
   fi
 
   echo ">>> [TS] Installing TanStack packages..."
   cd "${REPO_ROOT}/ECommerce/seventysixcommerce-tanstack"
   if [[ ! -d node_modules ]]; then
-    npm ci --prefer-offline 2>/dev/null || npm install
+    npm ci --ignore-scripts
   fi
 
   cd "${REPO_ROOT}"

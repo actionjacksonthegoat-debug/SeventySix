@@ -610,6 +610,34 @@ jobs:
                   format: spdx-json
                   output-file: sbom-client.spdx.json
 
+            - name: Build and push Migrations image
+              uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7
+              with:
+                  context: ./SeventySix.Server
+                  file: ./SeventySix.Server/Dockerfile.production
+                  target: migrations
+                  platforms: linux/amd64
+                  push: true
+                  tags: |
+                      ghcr.io/${{ github.repository_owner }}/seventysix-migrations:latest
+                      ghcr.io/${{ github.repository_owner }}/seventysix-migrations:${{ github.sha }}
+                      ghcr.io/${{ github.repository_owner }}/seventysix-migrations:${{ steps.meta.outputs.date }}-${{ steps.meta.outputs.sha_short }}
+                  build-args: |
+                      DB_DESIGN_HOST=${{ vars.DB_HOST }}
+                      DB_DESIGN_PORT=${{ vars.DB_PORT }}
+                      DB_DESIGN_NAME=${{ vars.DB_NAME }}
+                      DB_DESIGN_USER=${{ vars.DB_USER }}
+                      DB_DESIGN_PASSWORD=${{ secrets.DB_PASSWORD }}
+                  cache-from: type=gha
+                  cache-to: type=gha,mode=max
+
+            - name: Generate SBOM for Migrations image
+              uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
+              with:
+                  image: ghcr.io/${{ github.repository_owner }}/seventysix-migrations:${{ github.sha }}
+                  format: spdx-json
+                  output-file: sbom-migrations.spdx.json
+
             - name: Upload SBOM artifacts
               uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
               with:
@@ -617,6 +645,7 @@ jobs:
                   path: |
                       sbom-api.spdx.json
                       sbom-client.spdx.json
+                      sbom-migrations.spdx.json
                   retention-days: 90
 
     # ──────────────────────────────────────────────────────────
@@ -642,6 +671,18 @@ jobs:
         with:
             image-ref: ghcr.io/${{ github.repository_owner }}/seventysix-client:${{ github.sha }}
             image-name: seventysix-client
+        permissions:
+            contents: read
+            security-events: write
+
+    scan-migrations-image:
+        name: Scan Migrations Image
+        needs: [publish]
+        if: needs.publish.result == 'success'
+        uses: ./.github/workflows/reusable-container-scan.yml
+        with:
+            image-ref: ghcr.io/${{ github.repository_owner }}/seventysix-migrations:${{ github.sha }}
+            image-name: seventysix-migrations
         permissions:
             contents: read
             security-events: write

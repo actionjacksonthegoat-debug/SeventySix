@@ -13,6 +13,11 @@ on:
                 description: "Short name for artifact naming (e.g. seventysix-api)"
                 required: true
                 type: string
+            sarif-category:
+                description: "Override SARIF category for Code Scanning (default: trivy-{image-name})"
+                required: false
+                type: string
+                default: ""
 
 permissions:
     contents: read
@@ -41,7 +46,7 @@ jobs:
               uses: github/codeql-action/upload-sarif@0d579ffd059c29b07949a3cce3983f0780820c98 # v4
               with:
                   sarif_file: "trivy-${{ inputs.image-name }}.sarif"
-                  category: "trivy-${{ inputs.image-name }}"
+                  category: ${{ inputs.sarif-category != '' && inputs.sarif-category || format('trivy-{0}', inputs.image-name) }}
 
             - name: Upload Trivy SARIF as artifact
               uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6

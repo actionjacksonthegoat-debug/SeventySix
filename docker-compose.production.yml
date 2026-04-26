@@ -158,11 +158,6 @@ services:
       - Database__Name=${DB_NAME:-seventysix}
       - Database__User=${DB_USER:-postgres}
       - Database__Password=${DB_PASSWORD:?DB_PASSWORD must be set}
-      # Migration entrypoint uses $DB_HOST, $DB_NAME, $DB_USER, $DB_PASSWORD for psql
-      - DB_HOST=database
-      - DB_NAME=${DB_NAME:-seventysix}
-      - DB_USER=${DB_USER:-postgres}
-      - DB_PASSWORD=${DB_PASSWORD:?DB_PASSWORD must be set}
       # JWT Authentication
       - Jwt__SecretKey=${JWT_SECRET_KEY:?JWT_SECRET_KEY must be set}
       # GitHub OAuth
@@ -243,13 +238,12 @@ services:
         condition: service_healthy
       otel-collector:
         condition: service_started # scratch image — no in-container healthcheck available
+      seventysix-migrations:
+        condition: service_completed_successfully
     stop_grace_period: 30s # Allow Wolverine to deregister node and drain in-flight messages
     healthcheck:
-      test: [ "CMD", "curl", "--fail", "--silent", "http://localhost:8080/health/ready" ]
-      interval: 30s
-      timeout: 3s
-      retries: 3
-      start_period: 60s # Allow time for migrations
+      # Chiseled image has no curl/wget — healthcheck disabled; liveness monitored via Caddy.
+      disable: true
     networks:
       seventysix-network:
         aliases:
@@ -263,6 +257,42 @@ services:
         reservations:
           cpus: '0.5'
           memory: 512M
+
+  # Database Migrations Sidecar — runs SQL migration scripts then exits (restart: "no").
+  # SQL files are baked into the migrations image (Stage 4 of Dockerfile.production).
+  # Depends on database being healthy; API depends on this completing successfully.
+  seventysix-migrations:
+    image: ${MIGRATIONS_IMAGE:-ghcr.io/actionjacksonthegoat-debug/seventysix-migrations:latest}
+    pull_policy: always # Always pull from GHCR — never use cached local image
+    build:
+      context: ./SeventySix.Server
+      dockerfile: Dockerfile.production
+      target: migrations
+      args:
+        DB_DESIGN_HOST: ${DB_HOST:-database}
+        DB_DESIGN_PORT: ${DB_PORT:-5432}
+        DB_DESIGN_NAME: ${DB_NAME:-seventysix}
+        DB_DESIGN_USER: ${DB_USER:-postgres}
+        DB_DESIGN_PASSWORD: ${DB_PASSWORD:-unused}
+    container_name: seventysix-migrations-prod
+    depends_on:
+      database:
+        condition: service_healthy
+    volumes:
+      - ./docker/certs/ca.crt:/tls/ca.crt:ro
+      - ./docker/certs/api/client.crt:/tls/api/client.crt:ro
+      - ./docker/certs/api/client.key:/tls/api/client.key:ro
+    environment:
+      - DB_HOST=database
+      - DB_NAME=${DB_NAME:-seventysix}
+      - DB_USER=${DB_USER:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:?DB_PASSWORD must be set}
+    entrypoint: [ "sh", "-c" ]
+    command: >
+      cp /tls/api/client.key /tmp/pg-client.key && chmod 600 /tmp/pg-client.key && export PGSSLMODE=verify-full && export PGSSLCERT=/tls/api/client.crt && export PGSSLKEY=/tmp/pg-client.key && export PGSSLROOTCERT=/tls/ca.crt && until pg_isready -h "$$DB_HOST" -U "$$DB_USER" 2>/dev/null; do echo "Waiting for PostgreSQL..." && sleep 2; done && PGPASSWORD=$$DB_PASSWORD psql -h "$$DB_HOST" -U "$$DB_USER" -d "$$DB_NAME" -f /migrations/identity-migrations.sql && PGPASSWORD=$$DB_PASSWORD psql -h "$$DB_HOST" -U "$$DB_USER" -d "$$DB_NAME" -f /migrations/logging-migrations.sql && PGPASSWORD=$$DB_PASSWORD psql -h "$$DB_HOST" -U "$$DB_USER" -d "$$DB_NAME" -f /migrations/apitracking-migrations.sql && PGPASSWORD=$$DB_PASSWORD psql -h "$$DB_HOST" -U "$$DB_USER" -d "$$DB_NAME" -f /migrations/electronicnotifications-migrations.sql
+    networks:
+      - seventysix-network
+    restart: "no"
 
   # Angular Client Service
   client:
@@ -278,7 +308,7 @@ services:
       - API_URL=http://api:8080
     depends_on:
       api:
-        condition: service_healthy
+        condition: service_started
       grafana:
         condition: service_healthy
       jaeger:

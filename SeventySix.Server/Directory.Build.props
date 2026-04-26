@@ -8,6 +8,7 @@
 			Locally, dotnet restore regenerates the lockfile when adding/removing packages.
 		-->
 		<RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+		<RestoreLockedMode>true</RestoreLockedMode>
 	</PropertyGroup>
 
 	<!--
