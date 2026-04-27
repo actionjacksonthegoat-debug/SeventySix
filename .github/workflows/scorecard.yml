@@ -32,9 +32,7 @@ jobs:
 
       - name: Run Scorecard Analysis
         id: scorecard
-        # Tolerate transient GitHub GraphQL failures (e.g. ListCommits "E008" hiccups)
-        # so a server-side blip does not fail the security scan workflow.
-        continue-on-error: true
+        continue-on-error: true # justification: tolerate transient GitHub GraphQL failures (e.g. ListCommits "E008" hiccups) so a server-side blip does not fail the security scan workflow
         uses: ossf/scorecard-action@4eaacf0543bb3f2c246792bd56e8cdeffafb205a # v2.4.3
         with:
           results_file: results.sarif
