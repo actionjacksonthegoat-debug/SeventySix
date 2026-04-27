@@ -33,6 +33,9 @@ jobs:
             security-events: write
 
         steps:
+            - name: Checkout code
+              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
             - name: Run Trivy vulnerability scanner
               uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
               with:
@@ -41,6 +44,7 @@ jobs:
                   output: "trivy-${{ inputs.image-name }}.sarif"
                   severity: "CRITICAL,HIGH"
                   exit-code: "0"
+                  trivyignores: .trivyignore
 
             - name: Upload Trivy SARIF to GitHub Security tab
               uses: github/codeql-action/upload-sarif@0d579ffd059c29b07949a3cce3983f0780820c98 # v4
@@ -63,3 +67,4 @@ jobs:
                   severity: "CRITICAL"
                   exit-code: "1"
                   ignore-unfixed: true
+                  trivyignores: .trivyignore
