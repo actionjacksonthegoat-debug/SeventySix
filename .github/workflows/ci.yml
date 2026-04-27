@@ -567,7 +567,7 @@ jobs:
               with:
                   context: ./SeventySix.Server
                   file: ./SeventySix.Server/Dockerfile.production
-GOSO                  target: final
+                  target: final
                   platforms: linux/amd64
                   push: true
                   tags: |
