@@ -1,0 +1,12 @@
+# CVE suppressions for Trivy container scans.
+# Each entry must include a justification and a removal condition.
+
+# CVE-2025-68121 — crypto/tls incorrect certificate validation during TLS session resumption (Go stdlib).
+# Affects: usr/local/bin/gosu in postgres:18-alpine (seventysix-migrations image).
+# Justification: gosu is a privilege-dropping utility that never establishes network or TLS connections.
+#   The vulnerable code path (TLS session resumption in crypto/tls) is unreachable in gosu's execution
+#   model. gosu forks a process as a different user — it performs no I/O that would exercise crypto/tls.
+# Upstream status: gosu 1.19 (latest, Sep 2025) and postgres:18-alpine are both compiled with Go 1.24.6.
+#   The fix (Go 1.24.13 / 1.25.7) has not yet been incorporated into an upstream gosu or postgres release.
+# Remove this entry once postgres:18-alpine ships with gosu compiled against Go >=1.24.13.
+CVE-2025-68121
